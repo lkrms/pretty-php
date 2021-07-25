@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Lkrms\Pretty\Php;
 
-class PhpToken
+use JsonSerializable;
+
+class PhpToken implements JsonSerializable
 {
     /**
      * @var int
@@ -177,6 +179,23 @@ class PhpToken
             $this->_prev        = $prev;
             $this->_prev->_next = $this;
         }
+    }
+
+    public function jsonSerialize()
+    {
+        $a = get_object_vars($this);
+
+        foreach ($a["BracketStack"] as & $t)
+        {
+            $t = $t->Index;
+        }
+
+        $a["OpenedBy"] = $a["OpenedBy"]->Index ?? null;
+        $a["ClosedBy"] = $a["ClosedBy"]->Index ?? null;
+        $a["_prev"]    = $a["_prev"]->Index ?? null;
+        $a["_next"]    = $a["_next"]->Index ?? null;
+
+        return $a;
     }
 
     public function Prev(int $offset = 1): PhpToken
