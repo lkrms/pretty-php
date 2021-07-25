@@ -1,0 +1,31 @@
+#!/usr/bin/env php
+<?php
+
+use Lkrms\Assert;
+use Lkrms\Cli\Cli;
+use Lkrms\Pretty\Php\PhpFormatter;
+
+//
+require (__DIR__ . "/../vendor/autoload.php");
+
+//
+Assert::SapiIsCli();
+
+//
+Cli::AddOption("file", "f", "path", "PHP file to format.", Cli::OPTION_TYPE_VALUE);
+Cli::AddOption("help", "h", null, "Display usage information.");
+
+//
+$file = Cli::GetOptionValue("file");
+
+//
+$in = file_get_contents($file ?: "php://stdin");
+
+if ($in === false)
+{
+    throw new RuntimeException("Could not read $file");
+}
+
+$fmt = new PhpFormatter();
+$out = $fmt->Format($in);
+echo $out;

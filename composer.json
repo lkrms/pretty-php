@@ -1,0 +1,15 @@
+{
+    "name": "lkrms/pretty-php",
+    "description": "Just another PHP formatter",
+    "bin": [
+        "bin/pretty-php"
+    ],
+    "require": {
+        "lkrms/util": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Lkrms\\Pretty\\": "src/"
+        }
+    }
+}

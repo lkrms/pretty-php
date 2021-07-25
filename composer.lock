@@ -1,0 +1,54 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "59466997454bae105fa815409fe30fbe",
+    "packages": [
+        {
+            "name": "lkrms/util",
+            "version": "v0.1.12",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/lkrms/util-php.git",
+                "reference": "2e2eb84313535f6c855bbe311959dbaf9a66315f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/lkrms/util-php/zipball/2e2eb84313535f6c855bbe311959dbaf9a66315f",
+                "reference": "2e2eb84313535f6c855bbe311959dbaf9a66315f",
+                "shasum": ""
+            },
+            "require": {
+                "lib-curl": "*",
+                "php": ">=7.2"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Lkrms\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Frequently used functions + cURL wrapper + CLI helper",
+            "support": {
+                "issues": "https://github.com/lkrms/util-php/issues",
+                "source": "https://github.com/lkrms/util-php/tree/v0.1.12"
+            },
+            "time": "2021-07-23T14:08:52+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": [],
+    "plugin-api-version": "2.1.0"
+}
