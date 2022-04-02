@@ -6,6 +6,11 @@ namespace Lkrms\Pretty\Php;
 
 class PhpTokenType
 {
+    public const WHITESPACE = [
+        T_WHITESPACE,
+        T_BAD_CHARACTER,
+    ];
+
     public const OPERATOR_ARITHMETIC = [
         "+",     // Can be unary or binary
         "-",     // Can be unary or binary
@@ -89,9 +94,6 @@ class PhpTokenType
         T_INSTANCEOF,     // instanceof
         ];
 
-    //
-    // Type-casting
-    //
     public const CAST = [
         T_INT_CAST,     // (int) or (integer)
         T_BOOL_CAST,     // (bool) or (boolean)
@@ -101,5 +103,6 @@ class PhpTokenType
         T_OBJECT_CAST,     // (object)
         T_UNSET_CAST,     // (unset)
         ];
+
 }
 

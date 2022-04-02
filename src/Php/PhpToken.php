@@ -76,7 +76,8 @@ class PhpToken implements JsonSerializable
         $token,
         ?PhpToken $prev,
         int $bracketLevel,
-        array $bracketStack
+        array $bracketStack,
+        array $plainTokens
     )
     {
         if (is_array($token))
@@ -86,7 +87,28 @@ class PhpToken implements JsonSerializable
         else
         {
             $this->Type = $this->Code = $token;
-            $this->Line = $prev->Line ?? 1;
+
+            // To get the original line number, add the last known line number
+            // to the number of newlines since. Use `$plainTokens` because there
+            // may have been whitespace between `$prev` and `$this`.
+            $lastLine = 1;
+            $code     = "";
+            $i        = $index;
+
+            while ($i--)
+            {
+                $plain = $plainTokens[$i];
+                $code  = ($plain[1] ?? $plain) . $code;
+
+                if (is_array($plain))
+                {
+                    $lastLine = $plain[2];
+
+                    break;
+                }
+            }
+
+            $this->Line = $lastLine + substr_count($code, "\n");
         }
 
         $this->Index        = $index;
@@ -187,9 +209,9 @@ class PhpToken implements JsonSerializable
     {
         if ($this->isOneOf(
             "~",
-            ...PhpTokenType::OPERATOR_ERROR_CONTROL,
-            ...PhpTokenType::OPERATOR_INCREMENT_DECREMENT,
             "!",
+            ...PhpTokenType::OPERATOR_ERROR_CONTROL,
+            ...PhpTokenType::OPERATOR_INCREMENT_DECREMENT
         ))
         {
             return true;
