@@ -4,26 +4,153 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "59466997454bae105fa815409fe30fbe",
+    "content-hash": "88fec98b0a63a91d7345b2a14da4088d",
     "packages": [
         {
-            "name": "lkrms/util",
-            "version": "v0.1.12",
+            "name": "filp/whoops",
+            "version": "2.14.5",
             "source": {
                 "type": "git",
-                "url": "https://github.com/lkrms/util-php.git",
-                "reference": "2e2eb84313535f6c855bbe311959dbaf9a66315f"
+                "url": "https://github.com/filp/whoops.git",
+                "reference": "a63e5e8f26ebbebf8ed3c5c691637325512eb0dc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/util-php/zipball/2e2eb84313535f6c855bbe311959dbaf9a66315f",
-                "reference": "2e2eb84313535f6c855bbe311959dbaf9a66315f",
+                "url": "https://api.github.com/repos/filp/whoops/zipball/a63e5e8f26ebbebf8ed3c5c691637325512eb0dc",
+                "reference": "a63e5e8f26ebbebf8ed3c5c691637325512eb0dc",
                 "shasum": ""
             },
             "require": {
-                "lib-curl": "*",
-                "php": ">=7.2"
+                "php": "^5.5.9 || ^7.0 || ^8.0",
+                "psr/log": "^1.0.1 || ^2.0 || ^3.0"
             },
+            "require-dev": {
+                "mockery/mockery": "^0.9 || ^1.0",
+                "phpunit/phpunit": "^4.8.36 || ^5.7.27 || ^6.5.14 || ^7.5.20 || ^8.5.8 || ^9.3.3",
+                "symfony/var-dumper": "^2.6 || ^3.0 || ^4.0 || ^5.0"
+            },
+            "suggest": {
+                "symfony/var-dumper": "Pretty print complex values better with var-dumper available",
+                "whoops/soap": "Formats errors as SOAP responses"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.7-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Whoops\\": "src/Whoops/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Filipe Dobreira",
+                    "homepage": "https://github.com/filp",
+                    "role": "Developer"
+                }
+            ],
+            "description": "php error handling for cool kids",
+            "homepage": "https://filp.github.io/whoops/",
+            "keywords": [
+                "error",
+                "exception",
+                "handling",
+                "library",
+                "throwable",
+                "whoops"
+            ],
+            "support": {
+                "issues": "https://github.com/filp/whoops/issues",
+                "source": "https://github.com/filp/whoops/tree/2.14.5"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/denis-sokolov",
+                    "type": "github"
+                }
+            ],
+            "time": "2022-01-07T12:00:00+00:00"
+        },
+        {
+            "name": "lkrms/dice",
+            "version": "v4.0.3.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/lkrms/Dice.git",
+                "reference": "50a8c9c01510194faa5ef72ed87f91e10e237623"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/lkrms/Dice/zipball/50a8c9c01510194faa5ef72ed87f91e10e237623",
+                "reference": "50a8c9c01510194faa5ef72ed87f91e10e237623",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.0.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^6.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Dice\\": "./"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-2-Clause"
+            ],
+            "description": "A minimalist Dependency injection container (DIC) for PHP. Forked from level-2/dice.",
+            "homepage": "http://r.je/dice.html",
+            "keywords": [
+                "dependency injection",
+                "dependency injection container",
+                "di",
+                "ioc"
+            ],
+            "support": {
+                "source": "https://github.com/lkrms/Dice/tree/v4.0.3.1"
+            },
+            "time": "2022-03-23T23:40:39+00:00"
+        },
+        {
+            "name": "lkrms/util",
+            "version": "v0.7.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/lkrms/util-php.git",
+                "reference": "3af2c705058918f9859063d0d07fe03f214fa94e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/lkrms/util-php/zipball/3af2c705058918f9859063d0d07fe03f214fa94e",
+                "reference": "3af2c705058918f9859063d0d07fe03f214fa94e",
+                "shasum": ""
+            },
+            "require": {
+                "composer-runtime-api": "^2.2",
+                "filp/whoops": "^2.14",
+                "lkrms/dice": "^4.0.3.1",
+                "php": ">=7.2",
+                "psr/log": "^1.1"
+            },
+            "require-dev": {
+                "analog/analog": "^1.0",
+                "phpstan/phpstan": "^1.5"
+            },
+            "suggest": {
+                "analog/analog": "Log console output to Analog"
+            },
+            "bin": [
+                "bin/lk-util"
+            ],
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -34,12 +161,62 @@
             "license": [
                 "MIT"
             ],
-            "description": "Frequently used functions + cURL wrapper + CLI helper",
+            "description": "A PHP toolkit with opinionated defaults and a small footprint",
             "support": {
                 "issues": "https://github.com/lkrms/util-php/issues",
-                "source": "https://github.com/lkrms/util-php/tree/v0.1.12"
+                "source": "https://github.com/lkrms/util-php/tree/v0.7.3"
             },
-            "time": "2021-07-23T14:08:52+00:00"
+            "time": "2022-03-31T23:26:25+00:00"
+        },
+        {
+            "name": "psr/log",
+            "version": "1.1.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/log.git",
+                "reference": "d49695b909c3b7628b6289db5479a1c204601f11"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/log/zipball/d49695b909c3b7628b6289db5479a1c204601f11",
+                "reference": "d49695b909c3b7628b6289db5479a1c204601f11",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.1.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Log\\": "Psr/Log/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for logging libraries",
+            "homepage": "https://github.com/php-fig/log",
+            "keywords": [
+                "log",
+                "psr",
+                "psr-3"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/log/tree/1.1.4"
+            },
+            "time": "2021-05-03T11:20:27+00:00"
         }
     ],
     "packages-dev": [],
@@ -50,5 +227,5 @@
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "2.1.0"
+    "plugin-api-version": "2.2.0"
 }

@@ -63,101 +63,21 @@ class PhpToken implements JsonSerializable
      */
     private $_next;
 
-    //
-    // Operators
-    //
-    private const ARITHMETIC = [
-        "+",
-        "-",
-        "*",
-        "/",
-        "%",
-        T_POW,
-    ];
-
-    private const ASSIGNMENT = [
-        "=",
-        T_PLUS_EQUAL,
-        T_MINUS_EQUAL,
-        T_MUL_EQUAL,
-        T_DIV_EQUAL,
-        T_MOD_EQUAL,
-        T_POW_EQUAL,
-        T_AND_EQUAL,
-        T_OR_EQUAL,
-        T_XOR_EQUAL,
-        T_SL_EQUAL,
-        T_SR_EQUAL,
-        T_CONCAT_EQUAL,
-        T_COALESCE_EQUAL,
-    ];
-
-    private const BITWISE = [
-        "&",
-        "|",
-        "^",
-        "~",
-        T_SL,
-        T_SR,
-    ];
-
-    private const COMPARISON = [
-        "<",
-        ">",
-        T_IS_EQUAL,
-        T_IS_GREATER_OR_EQUAL,
-        T_IS_IDENTICAL,
-        T_IS_NOT_EQUAL,
-        T_IS_NOT_IDENTICAL,
-        T_IS_SMALLER_OR_EQUAL,
-        T_SPACESHIP,
-    ];
-
-    private const ERROR_CONTROL = [
-        "@",
-    ];
-
-    private const EXECUTION = [
-        "`",
-    ];
-
-    private const INCREMENT_DECREMENT = [
-        T_INC,
-        T_DEC,
-    ];
-
-    private const LOGICAL = [
-        T_LOGICAL_AND,
-        T_LOGICAL_OR,
-        T_LOGICAL_XOR,
-        "!",
-        T_BOOLEAN_AND,
-        T_BOOLEAN_OR,
-    ];
-
-    private const STRING = [
-        "."
-    ];
-
-    //
-    // Type-casting
-    //
-    private const CAST = [
-        T_ARRAY_CAST,
-        T_BOOL_CAST,
-        T_DOUBLE_CAST,
-        T_INT_CAST,
-        T_OBJECT_CAST,
-        T_STRING_CAST,
-        T_UNSET_CAST,
-    ];
-
     /**
-     * @var array
+     *
+     * @param int $index
+     * @param array|string $token
+     * @param null|PhpToken $prev
+     * @param int $bracketLevel
+     * @param array $bracketStack
      */
-    private static $_operators;
-
-    public function __construct(int $index, $token, ?PhpToken $prev, int $bracketLevel, array $bracketStack)
+    public function __construct(
+        int $index,
+        $token,
+        ?PhpToken $prev,
+        int $bracketLevel,
+        array $bracketStack
+    )
     {
         if (is_array($token))
         {
@@ -198,7 +118,7 @@ class PhpToken implements JsonSerializable
         return $a;
     }
 
-    public function Prev(int $offset = 1): PhpToken
+    public function prev(int $offset = 1): PhpToken
     {
         $prev = $this;
 
@@ -210,7 +130,7 @@ class PhpToken implements JsonSerializable
         return ($prev ?: new PhpNullToken());
     }
 
-    public function Next(int $offset = 1): PhpToken
+    public function next(int $offset = 1): PhpToken
     {
         $next = $this;
 
@@ -222,53 +142,67 @@ class PhpToken implements JsonSerializable
         return ($next ?: new PhpNullToken());
     }
 
-    public function Is($type): bool
+    public function is($type): bool
     {
         return $this->Type === $type;
     }
 
-    public function IsOneOf(array $types): bool
+    public function isOneOf(...$types): bool
     {
         return in_array($this->Type, $types, true);
     }
 
-    public function IsOpenBracket(): bool
+    public function isOpenBracket(): bool
     {
-        return $this->IsOneOf( [
-            "(",
-            "[",
-            "{",
-            T_CURLY_OPEN,
-            T_DOLLAR_OPEN_CURLY_BRACES,
-        ]);
+        return $this->isOneOf("(", "[", "{", T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES);
     }
 
-    public function IsCloseBracket(): bool
+    public function isCloseBracket(): bool
     {
-        return $this->IsOneOf( [
-            ")",
-            "]",
-            "}",
-        ]);
+        return $this->isOneOf(")", "]", "}");
     }
 
-    /**
-     * "Standalone" means "not anchored to anything", i.e. amenable to leading
-     * and trailing whitespace
-     */
-    public function IsStandaloneOperator(): bool
+    public function isOperator()
     {
-        if ( ! self::$_operators)
+        // TODO: return false if part of a declaration
+
+        // OPERATOR_EXECUTION is excluded because for formatting purposes,
+        // commands between backticks are equivalent to double-quoted strings
+        return $this->isOneOf(
+            ...PhpTokenType::OPERATOR_ARITHMETIC,
+            ...PhpTokenType::OPERATOR_ASSIGNMENT,
+            ...PhpTokenType::OPERATOR_BITWISE,
+            ...PhpTokenType::OPERATOR_COMPARISON,
+            ...PhpTokenType::OPERATOR_TERNARY,
+            ...PhpTokenType::OPERATOR_ERROR_CONTROL,
+            ...PhpTokenType::OPERATOR_INCREMENT_DECREMENT,
+            ...PhpTokenType::OPERATOR_LOGICAL,
+            ...PhpTokenType::OPERATOR_STRING,
+            ...PhpTokenType::OPERATOR_INSTANCEOF
+        );
+
+    }
+
+    public function isUnaryOperator(): bool
+    {
+        if ($this->isOneOf(
+            "~",
+            ...PhpTokenType::OPERATOR_ERROR_CONTROL,
+            ...PhpTokenType::OPERATOR_INCREMENT_DECREMENT,
+            "!",
+        ))
         {
-            self::$_operators = array_merge(self::ARITHMETIC, self::ASSIGNMENT, self::BITWISE, self::COMPARISON, self::LOGICAL, self::STRING);
+            return true;
         }
 
-        return $this->IsOneOf(self::$_operators);
+        // TODO: check if this is a unary "+" or "-", e.g. "$a = -$b"
+
+        return false;
     }
 
-    public function IsTerminator(): bool
+    public function isBinaryOrTernaryOperator(): bool
     {
-        return $this->Is(";") || ($this->Is(T_CLOSE_TAG) && ! $this->Prev()->Is(";"));
+        return $this->isOperator() && !$this->isUnaryOperator();
     }
 }
 

@@ -5,7 +5,7 @@
         "bin/pretty-php"
     ],
     "require": {
-        "lkrms/util": "*"
+        "lkrms/util": "^0.7.3"
     },
     "autoload": {
         "psr-4": {

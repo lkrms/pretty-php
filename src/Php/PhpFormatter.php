@@ -23,7 +23,7 @@ class PhpFormatter
      */
     public $Tokens;
 
-    private function Parse(string $code, ?array & $array, callable $filter = null)
+    private function parse(string $code, ?array & $array, callable $filter = null)
     {
         if (is_null($filter))
         {
@@ -35,9 +35,9 @@ class PhpFormatter
         }
     }
 
-    public function Format(string $code): string
+    public function format(string $code): string
     {
-        $this->Parse($code, $this->Tokens, new PhpSkipFilter());
+        $this->parse($code, $this->Tokens, new PhpSkipFilter());
         $bracketStack = [];
         $bracketLevel = 0;
 
@@ -46,13 +46,13 @@ class PhpFormatter
             $token = new PhpToken($index, $token, $last ?? null, $bracketLevel, $bracketStack);
             $last  = $token;
 
-            if ($token->IsOpenBracket())
+            if ($token->isOpenBracket())
             {
                 array_push($bracketStack, $token);
                 $bracketLevel++;
             }
 
-            if ($token->IsCloseBracket())
+            if ($token->isCloseBracket())
             {
                 $opener           = array_pop($bracketStack);
                 $opener->ClosedBy = $token;
