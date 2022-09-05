@@ -5,45 +5,45 @@ namespace Lkrms\Pretty\Php\Command;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
+use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Pretty\Php\PhpFormatter;
-use RuntimeException;
 
 class Format extends CliCommand
 {
-    public function getDescription(): string
+    protected function _getDescription(): string
     {
         return "Format a PHP file";
     }
 
-    protected function _getName(): array
-    {
-        return ["php", "format"];
-    }
-
     protected function _getOptions(): array
     {
-        return [[
-            "long"        => "file",
-            "short"       => "f",
-            "valueName"   => "PATH",
-            "description" => "PHP file to format",
-            "optionType"  => CliOptionType::VALUE,
-        ], [
-            "long"        => "help",
-            "short"       => "h",
-            "description" => "Display usage information"
-        ]];
-
+        return [
+            (CliOption::build()
+                ->long("file")
+                ->short("f")
+                ->valueName("FILE")
+                ->description("PHP file to format")
+                ->optionType(CliOptionType::VALUE)
+                ->get()),
+        ];
     }
 
     protected function run(...$params)
     {
-        $file = $this->getOptionValue("file") ?: "php://stdin";
-        $in   = file_get_contents($file);
+        $file = $this->getOptionValue("file");
+        if (is_null($file) && stream_isatty(STDIN))
+        {
+            throw new InvalidCliArgumentException("--file argument required when input is a TTY");
+        }
+        elseif (!$file || $file === "-")
+        {
+            $file = "php://stdin";
+        }
 
-        $fmt = new PhpFormatter();
-        $out = $fmt->format($in);
-        echo json_encode($fmt->Tokens);
+        $formatter = new PhpFormatter();
+        $in        = file_get_contents($file);
+        $out       = $formatter->format($in);
+
+        echo $out;
     }
 }
-

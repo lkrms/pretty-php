@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Lkrms\Pretty\Php;
 
 use JsonSerializable;
+use Lkrms\Pretty\WhitespaceType;
 
-class PhpToken implements JsonSerializable
+class Token implements JsonSerializable
 {
     /**
      * @var int
@@ -44,45 +45,71 @@ class PhpToken implements JsonSerializable
     public $TypeName;
 
     /**
-     * @var PhpToken
+     * @var Token
      */
     public $OpenedBy;
 
     /**
-     * @var PhpToken
+     * @var Token
      */
     public $ClosedBy;
 
     /**
-     * @var PhpToken
+     * @var string[]
+     */
+    public $Tags = [];
+
+    /**
+     * @var int
+     */
+    public $WhitespaceBefore = WhitespaceType::NONE;
+
+    /**
+     * @var int
+     */
+    public $WhitespaceAfter = WhitespaceType::NONE;
+
+    /**
+     * @var Token
      */
     private $_prev;
 
     /**
-     * @var PhpToken
+     * @var Token
      */
     private $_next;
 
     /**
-     *
-     * @param int $index
      * @param array|string $token
-     * @param null|PhpToken $prev
-     * @param int $bracketLevel
-     * @param array $bracketStack
      */
     public function __construct(
         int $index,
         $token,
-        ?PhpToken $prev,
+        ?Token $prev,
         int $bracketLevel,
         array $bracketStack,
         array $plainTokens
-    )
-    {
+    ) {
         if (is_array($token))
         {
             list ($this->Type, $this->Code, $this->Line) = $token;
+            if ($this->isOneOf(...PhpTokenType::DO_NOT_MODIFY_LHS))
+            {
+                $code = rtrim($this->Code);
+            }
+            elseif ($this->isOneOf(...PhpTokenType::DO_NOT_MODIFY_RHS))
+            {
+                $code = ltrim($this->Code);
+            }
+            elseif (!$this->isOneOf(...PhpTokenType::DO_NOT_MODIFY))
+            {
+                $code = trim($this->Code);
+            }
+            if (isset($code) && $code !== $this->Code)
+            {
+                $this->Code   = $code;
+                $this->Tags[] = "trimmed";
+            }
         }
         else
         {
@@ -99,11 +126,9 @@ class PhpToken implements JsonSerializable
             {
                 $plain = $plainTokens[$i];
                 $code  = ($plain[1] ?? $plain) . $code;
-
                 if (is_array($plain))
                 {
                     $lastLine = $plain[2];
-
                     break;
                 }
             }
@@ -123,24 +148,25 @@ class PhpToken implements JsonSerializable
         }
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         $a = get_object_vars($this);
-
-        foreach ($a["BracketStack"] as & $t)
+        foreach ($a["BracketStack"] as &$t)
         {
             $t = $t->Index;
         }
-
         $a["OpenedBy"] = $a["OpenedBy"]->Index ?? null;
         $a["ClosedBy"] = $a["ClosedBy"]->Index ?? null;
         $a["_prev"]    = $a["_prev"]->Index ?? null;
         $a["_next"]    = $a["_next"]->Index ?? null;
-
+        if (empty($a["Tags"]))
+        {
+            unset($a["Tags"]);
+        }
         return $a;
     }
 
-    public function prev(int $offset = 1): PhpToken
+    public function prev(int $offset = 1): Token
     {
         $prev = $this;
 
@@ -152,7 +178,7 @@ class PhpToken implements JsonSerializable
         return ($prev ?: new PhpNullToken());
     }
 
-    public function next(int $offset = 1): PhpToken
+    public function next(int $offset = 1): Token
     {
         $next = $this;
 
@@ -162,6 +188,26 @@ class PhpToken implements JsonSerializable
         }
 
         return ($next ?: new PhpNullToken());
+    }
+
+    public function hasNewlineBefore(): bool
+    {
+        return (bool)(($this->WhitespaceBefore | $this->prev()->WhitespaceAfter) & (WhitespaceType::LINE | WhitespaceType::BLANK));
+    }
+
+    public function hasNewlineAfter(): bool
+    {
+        return (bool)(($this->WhitespaceAfter | $this->next()->WhitespaceBefore) & (WhitespaceType::LINE | WhitespaceType::BLANK));
+    }
+
+    public function hasWhitespaceBefore(): bool
+    {
+        return (bool)($this->WhitespaceBefore | $this->prev()->WhitespaceAfter);
+    }
+
+    public function hasWhitespaceAfter(): bool
+    {
+        return (bool)($this->WhitespaceAfter | $this->next()->WhitespaceBefore);
     }
 
     public function is($type): bool
@@ -182,6 +228,11 @@ class PhpToken implements JsonSerializable
     public function isCloseBracket(): bool
     {
         return $this->isOneOf(")", "]", "}");
+    }
+
+    public function isOneLineComment(): bool
+    {
+        return $this->is(T_COMMENT) && preg_match('@^(//|#)@', $this->Code);
     }
 
     public function isOperator()
@@ -226,5 +277,22 @@ class PhpToken implements JsonSerializable
     {
         return $this->isOperator() && !$this->isUnaryOperator();
     }
-}
 
+    public function render(): string
+    {
+        if ($this->isOneOf(...PhpTokenType::DO_NOT_MODIFY))
+        {
+            return $this->Code;
+        }
+        $code = $this->Code;
+        if (!$this->isOneOf(...PhpTokenType::DO_NOT_MODIFY_LHS))
+        {
+            $code = WhitespaceType::toWhitespace($this->WhitespaceBefore | $this->prev()->WhitespaceAfter) . $code;
+        }
+        if (is_null($this->_next) && !$this->isOneOf(...PhpTokenType::DO_NOT_MODIFY_RHS))
+        {
+            $code .= WhitespaceType::toWhitespace($this->WhitespaceAfter | WhitespaceType::LINE);
+        }
+        return $code;
+    }
+}

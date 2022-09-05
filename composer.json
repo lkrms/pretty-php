@@ -5,11 +5,24 @@
         "bin/pretty-php"
     ],
     "require": {
-        "lkrms/util": "^0.7.3"
+        "php": ">=7.4,<8.2",
+        "lkrms/util": "^0.17.2"
     },
     "autoload": {
         "psr-4": {
             "Lkrms\\Pretty\\": "src/"
         }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "phpstan/extension-installer": true
+        }
+    },
+    "require-dev": {
+        "phpstan/extension-installer": "^1",
+        "phpstan/phpstan": "^1",
+        "phpstan/phpstan-deprecation-rules": "^1",
+        "phpunit/phpunit": "^9"
     }
 }

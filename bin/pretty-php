@@ -1,16 +1,11 @@
 #!/usr/bin/env php
 <?php
 
-use Lkrms\Cli\Cli;
-use Lkrms\Err\Err;
+use Lkrms\Facade\Cli;
+use Lkrms\Pretty\Php\Command\Format;
 
-require (__DIR__ . "/../vendor/autoload.php");
+require (dirname(__DIR__) . "/vendor/autoload.php");
 
-Err::handleErrors();
-
-ini_set("memory_limit", "-1");
-
-Lkrms\Pretty\Php\Command\Format::register();
-
-$status = Cli::RunCommand();
-exit ($status);
+(Cli::load(dirname(__DIR__))
+    ->command([], Format::class)
+    ->runAndExit());

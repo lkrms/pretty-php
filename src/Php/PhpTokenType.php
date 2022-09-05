@@ -6,9 +6,28 @@ namespace Lkrms\Pretty\Php;
 
 class PhpTokenType
 {
+    public const DO_NOT_MODIFY = [
+        T_ENCAPSED_AND_WHITESPACE,
+        T_INLINE_HTML,
+    ];
+
+    public const DO_NOT_MODIFY_RHS = [
+        T_CLOSE_TAG,
+    ];
+
+    public const DO_NOT_MODIFY_LHS = [
+        T_OPEN_TAG,
+        T_OPEN_TAG_WITH_ECHO,
+    ];
+
     public const WHITESPACE = [
         T_WHITESPACE,
         T_BAD_CHARACTER,
+    ];
+
+    public const COMMENT = [
+        T_COMMENT,
+        T_DOC_COMMENT,
     ];
 
     public const OPERATOR_ARITHMETIC = [
@@ -18,7 +37,7 @@ class PhpTokenType
         "/",
         "%",
         T_POW,     // **
-        ];
+    ];
 
     public const OPERATOR_ASSIGNMENT = [
         "=",
@@ -35,7 +54,7 @@ class PhpTokenType
         T_SR_EQUAL,     // >>=
         T_CONCAT_EQUAL,     // .=
         T_COALESCE_EQUAL,     // ??=
-        ];
+    ];
 
     public const OPERATOR_BITWISE = [
         "&",
@@ -44,7 +63,7 @@ class PhpTokenType
         "~",
         T_SL,     // <<
         T_SR,     // >>
-        ];
+    ];
 
     public const OPERATOR_COMPARISON = [
         T_IS_EQUAL,     // ==
@@ -57,7 +76,7 @@ class PhpTokenType
         T_IS_GREATER_OR_EQUAL,     // >=
         T_SPACESHIP,     // <=>
         T_COALESCE,     // ??
-        ];
+    ];
 
     public const OPERATOR_TERNARY = [
         "?",
@@ -75,7 +94,7 @@ class PhpTokenType
     public const OPERATOR_INCREMENT_DECREMENT = [
         T_INC,     // ++
         T_DEC,     // --
-        ];
+    ];
 
     public const OPERATOR_LOGICAL = [
         T_LOGICAL_AND,     // and
@@ -84,7 +103,7 @@ class PhpTokenType
         "!",
         T_BOOLEAN_AND,     // &&
         T_BOOLEAN_OR,     // ||
-        ];
+    ];
 
     public const OPERATOR_STRING = [
         ".",
@@ -92,7 +111,7 @@ class PhpTokenType
 
     public const OPERATOR_INSTANCEOF = [
         T_INSTANCEOF,     // instanceof
-        ];
+    ];
 
     public const CAST = [
         T_INT_CAST,     // (int) or (integer)
@@ -102,7 +121,6 @@ class PhpTokenType
         T_ARRAY_CAST,     // (array)
         T_OBJECT_CAST,     // (object)
         T_UNSET_CAST,     // (unset)
-        ];
+    ];
 
 }
-
