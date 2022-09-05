@@ -70,12 +70,12 @@ class Token implements JsonSerializable
     public $WhitespaceAfter = WhitespaceType::NONE;
 
     /**
-     * @var Token
+     * @var Token|null
      */
     private $_prev;
 
     /**
-     * @var Token
+     * @var Token|null
      */
     private $_next;
 

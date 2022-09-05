@@ -40,8 +40,7 @@ class PhpFormatter
         $commentFilter    = new RemoveCommentTokens();
 
         $this->PlainTokens = token_get_all($code, TOKEN_PARSE);
-        /** @var Token[] */
-        $this->Tokens = [];
+        $this->Tokens      = [];
 
         $bracketStack = [];
         $bracketLevel = 0;
