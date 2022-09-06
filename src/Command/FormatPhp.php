@@ -6,6 +6,8 @@ use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Exception\InvalidCliArgumentException;
+use Lkrms\Facade\Env;
+use Lkrms\Facade\File;
 use Lkrms\Pretty\Php\Formatter;
 
 class FormatPhp extends CliCommand
@@ -25,6 +27,13 @@ class FormatPhp extends CliCommand
                 ->description("PHP file to format")
                 ->optionType(CliOptionType::VALUE)
                 ->get()),
+            (CliOption::build()
+                ->long("debug")
+                ->valueName("DIR")
+                ->description("Create debug output in DIR")
+                ->optionType(CliOptionType::VALUE_OPTIONAL)
+                ->defaultValue($this->app()->TempPath . "/pretty-php")
+                ->get()),
         ];
     }
 
@@ -35,15 +44,30 @@ class FormatPhp extends CliCommand
         {
             throw new InvalidCliArgumentException("--file argument required when input is a TTY");
         }
-        elseif (!$file || $file === "-")
+        elseif (is_null($file) || $file === "-")
         {
             $file = "php://stdin";
         }
 
-        $formatter = new Formatter();
-        $in        = file_get_contents($file);
-        $out       = $formatter->format($in);
+        $debug = $this->getOptionValue("debug");
+        if (!is_null($debug))
+        {
+            Env::debug(true);
+            File::maybeCreateDirectory($debug);
+            $debug = realpath($debug);
+        }
 
-        echo $out;
+        $formatter = new Formatter();
+        $input     = file_get_contents($file);
+        $output    = $formatter->format($input);
+
+        if (!is_null($debug))
+        {
+            file_put_contents($debug . "/input.php", $input);
+            file_put_contents($debug . "/output.php", $output);
+            file_put_contents($debug . "/tokens.json", json_encode($formatter->Tokens, JSON_PRETTY_PRINT));
+        }
+
+        print $output;
     }
 }
