@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Pretty\Php;
 
-class PhpTokenType
+class TokenType
 {
     public const DO_NOT_MODIFY = [
         T_ENCAPSED_AND_WHITESPACE,

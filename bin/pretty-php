@@ -2,10 +2,10 @@
 <?php
 
 use Lkrms\Facade\Cli;
-use Lkrms\Pretty\Php\Command\Format;
+use Lkrms\Pretty\Command\FormatPhp;
 
 require (dirname(__DIR__) . "/vendor/autoload.php");
 
 (Cli::load(dirname(__DIR__))
-    ->command([], Format::class)
+    ->command([], FormatPhp::class)
     ->runAndExit());

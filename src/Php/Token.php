@@ -93,15 +93,15 @@ class Token implements JsonSerializable
         if (is_array($token))
         {
             list ($this->Type, $this->Code, $this->Line) = $token;
-            if ($this->isOneOf(...PhpTokenType::DO_NOT_MODIFY_LHS))
+            if ($this->isOneOf(...TokenType::DO_NOT_MODIFY_LHS))
             {
                 $code = rtrim($this->Code);
             }
-            elseif ($this->isOneOf(...PhpTokenType::DO_NOT_MODIFY_RHS))
+            elseif ($this->isOneOf(...TokenType::DO_NOT_MODIFY_RHS))
             {
                 $code = ltrim($this->Code);
             }
-            elseif (!$this->isOneOf(...PhpTokenType::DO_NOT_MODIFY))
+            elseif (!$this->isOneOf(...TokenType::DO_NOT_MODIFY))
             {
                 $code = trim($this->Code);
             }
@@ -175,7 +175,7 @@ class Token implements JsonSerializable
             $prev = $prev->_prev ?? null;
         }
 
-        return ($prev ?: new PhpNullToken());
+        return ($prev ?: new NullToken());
     }
 
     public function next(int $offset = 1): Token
@@ -187,7 +187,7 @@ class Token implements JsonSerializable
             $next = $next->_next ?? null;
         }
 
-        return ($next ?: new PhpNullToken());
+        return ($next ?: new NullToken());
     }
 
     public function hasNewlineBefore(): bool
@@ -242,16 +242,16 @@ class Token implements JsonSerializable
         // OPERATOR_EXECUTION is excluded because for formatting purposes,
         // commands between backticks are equivalent to double-quoted strings
         return $this->isOneOf(
-            ...PhpTokenType::OPERATOR_ARITHMETIC,
-            ...PhpTokenType::OPERATOR_ASSIGNMENT,
-            ...PhpTokenType::OPERATOR_BITWISE,
-            ...PhpTokenType::OPERATOR_COMPARISON,
-            ...PhpTokenType::OPERATOR_TERNARY,
-            ...PhpTokenType::OPERATOR_ERROR_CONTROL,
-            ...PhpTokenType::OPERATOR_INCREMENT_DECREMENT,
-            ...PhpTokenType::OPERATOR_LOGICAL,
-            ...PhpTokenType::OPERATOR_STRING,
-            ...PhpTokenType::OPERATOR_INSTANCEOF
+            ...TokenType::OPERATOR_ARITHMETIC,
+            ...TokenType::OPERATOR_ASSIGNMENT,
+            ...TokenType::OPERATOR_BITWISE,
+            ...TokenType::OPERATOR_COMPARISON,
+            ...TokenType::OPERATOR_TERNARY,
+            ...TokenType::OPERATOR_ERROR_CONTROL,
+            ...TokenType::OPERATOR_INCREMENT_DECREMENT,
+            ...TokenType::OPERATOR_LOGICAL,
+            ...TokenType::OPERATOR_STRING,
+            ...TokenType::OPERATOR_INSTANCEOF
         );
 
     }
@@ -261,8 +261,8 @@ class Token implements JsonSerializable
         if ($this->isOneOf(
             "~",
             "!",
-            ...PhpTokenType::OPERATOR_ERROR_CONTROL,
-            ...PhpTokenType::OPERATOR_INCREMENT_DECREMENT
+            ...TokenType::OPERATOR_ERROR_CONTROL,
+            ...TokenType::OPERATOR_INCREMENT_DECREMENT
         ))
         {
             return true;
@@ -280,16 +280,16 @@ class Token implements JsonSerializable
 
     public function render(): string
     {
-        if ($this->isOneOf(...PhpTokenType::DO_NOT_MODIFY))
+        if ($this->isOneOf(...TokenType::DO_NOT_MODIFY))
         {
             return $this->Code;
         }
         $code = $this->Code;
-        if (!$this->isOneOf(...PhpTokenType::DO_NOT_MODIFY_LHS))
+        if (!$this->isOneOf(...TokenType::DO_NOT_MODIFY_LHS))
         {
             $code = WhitespaceType::toWhitespace($this->WhitespaceBefore | $this->prev()->WhitespaceAfter) . $code;
         }
-        if (is_null($this->_next) && !$this->isOneOf(...PhpTokenType::DO_NOT_MODIFY_RHS))
+        if (is_null($this->_next) && !$this->isOneOf(...TokenType::DO_NOT_MODIFY_RHS))
         {
             $code .= WhitespaceType::toWhitespace($this->WhitespaceAfter | WhitespaceType::LINE);
         }

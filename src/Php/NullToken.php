@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Pretty\Php;
 
-class PhpNullToken extends Token
+class NullToken extends Token
 {
     function __construct()
     {

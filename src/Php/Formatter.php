@@ -10,7 +10,7 @@ use Lkrms\Pretty\Php\Filter\RemoveWhitespaceTokens;
 use Lkrms\Pretty\Php\Rule\AddEssentialWhitespace;
 use RuntimeException;
 
-class PhpFormatter
+class Formatter
 {
     /**
      * @var string

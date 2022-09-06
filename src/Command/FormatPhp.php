@@ -1,14 +1,14 @@
 <?php
 
-namespace Lkrms\Pretty\Php\Command;
+namespace Lkrms\Pretty\Command;
 
 use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Exception\InvalidCliArgumentException;
-use Lkrms\Pretty\Php\PhpFormatter;
+use Lkrms\Pretty\Php\Formatter;
 
-class Format extends CliCommand
+class FormatPhp extends CliCommand
 {
     protected function _getDescription(): string
     {
@@ -40,7 +40,7 @@ class Format extends CliCommand
             $file = "php://stdin";
         }
 
-        $formatter = new PhpFormatter();
+        $formatter = new Formatter();
         $in        = file_get_contents($file);
         $out       = $formatter->format($in);
 
