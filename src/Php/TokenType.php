@@ -123,4 +123,25 @@ class TokenType
         T_UNSET_CAST,     // (unset)
     ];
 
+    public const DECLARATION = [
+        T_ABSTRACT,
+        T_CLASS,
+        T_CONST,
+        T_ENUM,
+        T_EXTENDS,
+        T_FINAL,
+        T_FUNCTION,
+        T_IMPLEMENTS,
+        T_INTERFACE,
+        T_NAMESPACE,
+        T_PRIVATE,
+        T_PROTECTED,
+        T_PUBLIC,
+        T_READONLY,
+        T_STATIC,
+        T_TRAIT,
+        T_USE,
+        T_VAR,
+    ];
+
 }

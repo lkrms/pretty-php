@@ -2,22 +2,22 @@
 
 namespace Lkrms\Pretty\Command;
 
-use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
-use Lkrms\Exception\InvalidCliArgumentException;
+use Lkrms\Cli\Concept\CliCommand;
+use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\File;
 use Lkrms\Pretty\Php\Formatter;
 
 class FormatPhp extends CliCommand
 {
-    protected function _getDescription(): string
+    public function getDescription(): string
     {
         return "Format a PHP file";
     }
 
-    protected function _getOptions(): array
+    protected function getOptionList(): array
     {
         return [
             (CliOption::build()
@@ -25,15 +25,13 @@ class FormatPhp extends CliCommand
                 ->short("f")
                 ->valueName("FILE")
                 ->description("PHP file to format")
-                ->optionType(CliOptionType::VALUE)
-                ->get()),
+                ->optionType(CliOptionType::VALUE)),
             (CliOption::build()
                 ->long("debug")
                 ->valueName("DIR")
                 ->description("Create debug output in DIR")
                 ->optionType(CliOptionType::VALUE_OPTIONAL)
-                ->defaultValue($this->app()->TempPath . "/pretty-php")
-                ->get()),
+                ->defaultValue($this->app()->TempPath . "/pretty-php")),
         ];
     }
 
@@ -42,7 +40,7 @@ class FormatPhp extends CliCommand
         $file = $this->getOptionValue("file");
         if (is_null($file) && stream_isatty(STDIN))
         {
-            throw new InvalidCliArgumentException("--file argument required when input is a TTY");
+            throw new CliArgumentsInvalidException("--file argument required when input is a TTY");
         }
         elseif (is_null($file) || $file === "-")
         {

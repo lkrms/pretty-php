@@ -8,6 +8,8 @@ use Lkrms\Pretty\Php\Contract\TokenFilter;
 use Lkrms\Pretty\Php\Filter\RemoveCommentTokens;
 use Lkrms\Pretty\Php\Filter\RemoveWhitespaceTokens;
 use Lkrms\Pretty\Php\Rule\AddEssentialWhitespace;
+use Lkrms\Pretty\Php\Rule\BracePosition;
+use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
 use RuntimeException;
 
 class Formatter
@@ -21,6 +23,8 @@ class Formatter
      * @var string[]
      */
     public $Rules = [
+        BracePosition::class,
+        BreakAfterSeparators::class,
         AddEssentialWhitespace::class,
     ];
 
@@ -63,7 +67,7 @@ class Formatter
 
             if ($token->isCloseBracket())
             {
-                $opener           = array_pop($bracketStack);
+                $opener = array_pop($bracketStack);
                 $opener->ClosedBy = $token;
                 $token->OpenedBy  = $opener;
                 $bracketLevel--;

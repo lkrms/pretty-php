@@ -35,7 +35,7 @@ class Token implements JsonSerializable
     public $BracketLevel;
 
     /**
-     * @var array
+     * @var Token[]
      */
     public $BracketStack;
 
@@ -45,12 +45,12 @@ class Token implements JsonSerializable
     public $TypeName;
 
     /**
-     * @var Token
+     * @var Token|null
      */
     public $OpenedBy;
 
     /**
-     * @var Token
+     * @var Token|null
      */
     public $ClosedBy;
 
@@ -81,6 +81,7 @@ class Token implements JsonSerializable
 
     /**
      * @param array|string $token
+     * @param Token[] $bracketStack
      */
     public function __construct(
         int $index,
@@ -148,6 +149,40 @@ class Token implements JsonSerializable
         }
     }
 
+    /**
+     * @param Token[] $tokens
+     * @param int|string $type
+     */
+    public static function has(array $tokens, $type): bool
+    {
+        foreach ($tokens as $token)
+        {
+            if ($token->is($type))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param Token[] $tokens
+     * @param int|string ...$types
+     */
+    public static function hasOneOf(array $tokens, ...$types): bool
+    {
+        foreach ($tokens as $token)
+        {
+            if ($token->isOneOf(...$types))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function jsonSerialize(): array
     {
         $a = get_object_vars($this);
@@ -190,6 +225,61 @@ class Token implements JsonSerializable
         return ($next ?: new NullToken());
     }
 
+    /**
+     * @return Token[]
+     */
+    public function outer(): array
+    {
+        $current = $this->OpenedBy ?: $this;
+        $last    = $this->ClosedBy ?: $this;
+
+        $tokens[] = $current;
+        while ($current !== $last)
+        {
+            $tokens[] = $current = $current->next();
+        }
+
+        return $tokens;
+    }
+
+    /**
+     * @return Token[]
+     */
+    public function sinceLastStatement(): array
+    {
+        $current = $this->prev();
+        while (!$current->startsNewStatement() && !($current instanceof NullToken))
+        {
+            if ($current->isCloseBracket())
+            {
+                $tokens  = array_merge($tokens ?? [], array_reverse($current->outer()));
+                $current = $current->OpenedBy->prev();
+                continue;
+            }
+            $tokens[] = $current;
+            $current  = $current->prev();
+        }
+
+        return array_reverse($tokens ?? []);
+    }
+
+    /**
+     * @todo Reimplement after building keyword token list
+     * @return Token[]
+     */
+    public function wordsSinceLastStatement(): array
+    {
+        foreach ($this->sinceLastStatement() as $token)
+        {
+            if ($token->isOpenBracket())
+            {
+                break;
+            }
+            $tokens[] = $token;
+        }
+        return $tokens ?? [];
+    }
+
     public function hasNewlineBefore(): bool
     {
         return (bool)(($this->WhitespaceBefore | $this->prev()->WhitespaceAfter) & (WhitespaceType::LINE | WhitespaceType::BLANK));
@@ -218,6 +308,11 @@ class Token implements JsonSerializable
     public function isOneOf(...$types): bool
     {
         return in_array($this->Type, $types, true);
+    }
+
+    public function startsNewStatement(): bool
+    {
+        return $this->isOneOf(";", "{", "}");
     }
 
     public function isOpenBracket(): bool
@@ -278,12 +373,18 @@ class Token implements JsonSerializable
         return $this->isOperator() && !$this->isUnaryOperator();
     }
 
+    public function isDeclaration(): bool
+    {
+        return self::hasOneOf($this->wordsSinceLastStatement(), ...TokenType::DECLARATION);
+    }
+
     public function render(): string
     {
         if ($this->isOneOf(...TokenType::DO_NOT_MODIFY))
         {
             return $this->Code;
         }
+
         $code = $this->Code;
         if (!$this->isOneOf(...TokenType::DO_NOT_MODIFY_LHS))
         {
@@ -293,6 +394,7 @@ class Token implements JsonSerializable
         {
             $code .= WhitespaceType::toWhitespace($this->WhitespaceAfter | WhitespaceType::LINE);
         }
+
         return $code;
     }
 }
