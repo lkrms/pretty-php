@@ -10,7 +10,7 @@ use Lkrms\Pretty\Php\Filter\RemoveWhitespaceTokens;
 use Lkrms\Pretty\Php\Rule\AddEssentialWhitespace;
 use Lkrms\Pretty\Php\Rule\BracePosition;
 use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
-use RuntimeException;
+use Lkrms\Pretty\PrettyException;
 
 class Formatter
 {
@@ -93,8 +93,9 @@ class Formatter
         $after  = $this->strip(token_get_all($out, TOKEN_PARSE), $whitespaceFilter, $commentFilter);
         if ($before !== $after)
         {
-            throw new RuntimeException("Formatting check failed: parsed output doesn't match input");
+            throw new PrettyException("Formatting check failed: parsed output doesn't match input", $out, $this->Tokens);
         }
+
         return $out;
     }
 

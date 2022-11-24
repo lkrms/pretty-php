@@ -6,6 +6,7 @@ namespace Lkrms\Pretty\Php;
 
 use JsonSerializable;
 use Lkrms\Pretty\WhitespaceType;
+use RuntimeException;
 
 class Token implements JsonSerializable
 {
@@ -58,6 +59,11 @@ class Token implements JsonSerializable
      * @var string[]
      */
     public $Tags = [];
+
+    /**
+     * @var int
+     */
+    public $Indent = 0;
 
     /**
      * @var int
@@ -300,11 +306,17 @@ class Token implements JsonSerializable
         return (bool)($this->WhitespaceAfter | $this->next()->WhitespaceBefore);
     }
 
+    /**
+     * @param int|string $type
+     */
     public function is($type): bool
     {
         return $this->Type === $type;
     }
 
+    /**
+     * @param int|string ...$types
+     */
     public function isOneOf(...$types): bool
     {
         return in_array($this->Type, $types, true);
@@ -328,6 +340,13 @@ class Token implements JsonSerializable
     public function isOneLineComment(): bool
     {
         return $this->is(T_COMMENT) && preg_match('@^(//|#)@', $this->Code);
+    }
+
+    public function isMultiLineComment(): bool
+    {
+        return ($this->is(T_DOC_COMMENT) ||
+            ($this->is(T_COMMENT) && preg_match('@^/\*@', $this->Code))) &&
+        strpos($this->Code, "\n");
     }
 
     public function isOperator()
@@ -378,18 +397,26 @@ class Token implements JsonSerializable
         return self::hasOneOf($this->wordsSinceLastStatement(), ...TokenType::DECLARATION);
     }
 
-    public function render(): string
+    public function render(string $tab = "    "): string
     {
         if ($this->isOneOf(...TokenType::DO_NOT_MODIFY))
         {
             return $this->Code;
         }
 
-        $code = $this->Code;
         if (!$this->isOneOf(...TokenType::DO_NOT_MODIFY_LHS))
         {
-            $code = WhitespaceType::toWhitespace($this->WhitespaceBefore | $this->prev()->WhitespaceAfter) . $code;
+            $code = WhitespaceType::toWhitespace($this->WhitespaceBefore | $this->prev()->WhitespaceAfter);
+            if (substr($code, -1) === "\n" && $this->Indent)
+            {
+                $code .= str_repeat($tab, $this->Indent);
+            }
         }
+
+        $code = ($code ?? "") . ($this->isMultiLineComment()
+            ? $this->renderComment($tab)
+            : $this->Code);
+
         if (is_null($this->_next) && !$this->isOneOf(...TokenType::DO_NOT_MODIFY_RHS))
         {
             $code .= WhitespaceType::toWhitespace($this->WhitespaceAfter | WhitespaceType::LINE);
@@ -397,4 +424,30 @@ class Token implements JsonSerializable
 
         return $code;
     }
+
+    private function renderComment(string $tab): string
+    {
+        // Remove trailing whitespace from each line
+        $code = preg_replace('/\h+$/m', "", $this->Code);
+        switch ($this->Type)
+        {
+            case T_DOC_COMMENT:
+                $indent = "\n" . str_repeat($tab, $this->Indent);
+                return preg_replace([
+                    '/\n\h*(?:\* |\*(?!\/)(?=[\h\S])|(?=[^\s*]))/',
+                    '/\n\h*\*?$/m',
+                    '/\n\h*\*\//',
+                ], [
+                    $indent . " * ",
+                    $indent . " *",
+                    $indent . " */",
+                ], $code);
+
+            case T_COMMENT:
+                return $code;
+        }
+
+        throw new RuntimeException("Not a T_COMMENT or T_DOC_COMMENT");
+    }
+
 }

@@ -9,9 +9,15 @@ use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\File;
 use Lkrms\Pretty\Php\Formatter;
+use Lkrms\Pretty\PrettyException;
 
 class FormatPhp extends CliCommand
 {
+    /**
+     * @var string|null
+     */
+    private $DebugDirectory;
+
     public function getDescription(): string
     {
         return "Format a PHP file";
@@ -52,20 +58,33 @@ class FormatPhp extends CliCommand
         {
             Env::debug(true);
             File::maybeCreateDirectory($debug);
-            $debug = realpath($debug);
+            $debug = $this->DebugDirectory = realpath($debug) ?: null;
         }
 
         $formatter = new Formatter();
         $input     = file_get_contents($file);
-        $output    = $formatter->format($input);
-
-        if (!is_null($debug))
+        try
         {
-            file_put_contents($debug . "/input.php", $input);
-            file_put_contents($debug . "/output.php", $output);
-            file_put_contents($debug . "/tokens.json", json_encode($formatter->Tokens, JSON_PRETTY_PRINT));
+            $output = $formatter->format($input);
+        }
+        catch (PrettyException $ex)
+        {
+            $this->maybeDumpDebugOutput($input, $ex->getOutput(), $ex->getData());
+            throw $ex;
         }
 
+        $this->maybeDumpDebugOutput($input, $output, $formatter->Tokens);
+
         print $output;
+    }
+
+    private function maybeDumpDebugOutput(string $input, string $output, array $tokens)
+    {
+        if (!is_null($this->DebugDirectory))
+        {
+            file_put_contents($this->DebugDirectory . "/input.php", $input);
+            file_put_contents($this->DebugDirectory . "/output.php", $output);
+            file_put_contents($this->DebugDirectory . "/tokens.json", json_encode($tokens, JSON_PRETTY_PRINT));
+        }
     }
 }
