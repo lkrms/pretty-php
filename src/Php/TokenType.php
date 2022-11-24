@@ -13,11 +13,13 @@ class TokenType
 
     public const DO_NOT_MODIFY_RHS = [
         T_CLOSE_TAG,
+        T_START_HEREDOC,
     ];
 
     public const DO_NOT_MODIFY_LHS = [
         T_OPEN_TAG,
         T_OPEN_TAG_WITH_ECHO,
+        T_END_HEREDOC,
     ];
 
     public const WHITESPACE = [

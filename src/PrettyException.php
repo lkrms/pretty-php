@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Pretty;
 
 use Lkrms\Exception\Exception;
+use Throwable;
 
 class PrettyException extends Exception
 {
@@ -21,9 +22,9 @@ class PrettyException extends Exception
     /**
      * @param array|object|null $data
      */
-    public function __construct(string $message, string $output = null, $data = null)
+    public function __construct(string $message = "", ?string $output = null, $data = null, ?Throwable $previous = null)
     {
-        parent::__construct($message);
+        parent::__construct($message, $previous);
 
         $this->Output = $output;
         $this->Data   = $data;

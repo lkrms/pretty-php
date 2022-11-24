@@ -12,6 +12,6 @@ interface TokenFilter
      * `[$tokenId, $code, $lineNumber]`
      * @return bool `false` if the token should be discarded, otherwise `true`.
      */
-    public function __invoke($token): bool;
+    public function __invoke(&$token): bool;
 
 }

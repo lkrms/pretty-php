@@ -31,11 +31,6 @@ class Token implements JsonSerializable
     public $Line;
 
     /**
-     * @var int
-     */
-    public $BracketLevel;
-
-    /**
      * @var Token[]
      */
     public $BracketStack;
@@ -76,6 +71,11 @@ class Token implements JsonSerializable
     public $WhitespaceAfter = WhitespaceType::NONE;
 
     /**
+     * @var Formatter
+     */
+    private $Formatter;
+
+    /**
      * @var Token|null
      */
     private $_prev;
@@ -93,9 +93,8 @@ class Token implements JsonSerializable
         int $index,
         $token,
         ?Token $prev,
-        int $bracketLevel,
         array $bracketStack,
-        array $plainTokens
+        Formatter $formatter
     ) {
         if (is_array($token))
         {
@@ -123,15 +122,15 @@ class Token implements JsonSerializable
             $this->Type = $this->Code = $token;
 
             // To get the original line number, add the last known line number
-            // to the number of newlines since. Use `$plainTokens` because there
-            // may have been whitespace between `$prev` and `$this`.
+            // to the number of newlines since, using `$formatter->PlainTokens`
+            // in case there was whitespace between `$prev` and `$this`
             $lastLine = 1;
             $code     = "";
             $i        = $index;
 
             while ($i--)
             {
-                $plain = $plainTokens[$i];
+                $plain = $formatter->PlainTokens[$i];
                 $code  = ($plain[1] ?? $plain) . $code;
                 if (is_array($plain))
                 {
@@ -144,9 +143,9 @@ class Token implements JsonSerializable
         }
 
         $this->Index        = $index;
-        $this->BracketLevel = $bracketLevel;
         $this->BracketStack = $bracketStack;
         $this->TypeName     = is_int($this->Type) ? token_name($this->Type) : $this->Type;
+        $this->Formatter    = $formatter;
 
         if ($prev)
         {
@@ -231,6 +230,11 @@ class Token implements JsonSerializable
         return ($next ?: new NullToken());
     }
 
+    public function parent(): Token
+    {
+        return (end($this->BracketStack) ?: new NullToken());
+    }
+
     /**
      * @return Token[]
      */
@@ -294,6 +298,11 @@ class Token implements JsonSerializable
     public function hasNewlineAfter(): bool
     {
         return (bool)(($this->WhitespaceAfter | $this->next()->WhitespaceBefore) & (WhitespaceType::LINE | WhitespaceType::BLANK));
+    }
+
+    public function hasNewLineBeforeOrAfter(): bool
+    {
+        return $this->hasNewlineBefore() || $this->hasNewlineAfter();
     }
 
     public function hasWhitespaceBefore(): bool
@@ -397,7 +406,14 @@ class Token implements JsonSerializable
         return self::hasOneOf($this->wordsSinceLastStatement(), ...TokenType::DECLARATION);
     }
 
-    public function render(string $tab = "    "): string
+    public function indent(): string
+    {
+        return $this->Indent
+            ? str_repeat($this->Formatter->Tab, $this->Indent)
+            : "";
+    }
+
+    public function render(): string
     {
         if ($this->isOneOf(...TokenType::DO_NOT_MODIFY))
         {
@@ -409,30 +425,31 @@ class Token implements JsonSerializable
             $code = WhitespaceType::toWhitespace($this->WhitespaceBefore | $this->prev()->WhitespaceAfter);
             if (substr($code, -1) === "\n" && $this->Indent)
             {
-                $code .= str_repeat($tab, $this->Indent);
+                $code .= $this->indent();
             }
         }
 
         $code = ($code ?? "") . ($this->isMultiLineComment()
-            ? $this->renderComment($tab)
+            ? $this->renderComment()
             : $this->Code);
 
-        if (is_null($this->_next) && !$this->isOneOf(...TokenType::DO_NOT_MODIFY_RHS))
+        if ((is_null($this->_next) || $this->next()->isOneOf(...TokenType::DO_NOT_MODIFY)) &&
+            !$this->isOneOf(...TokenType::DO_NOT_MODIFY_RHS))
         {
-            $code .= WhitespaceType::toWhitespace($this->WhitespaceAfter | WhitespaceType::LINE);
+            $code .= WhitespaceType::toWhitespace($this->WhitespaceAfter);
         }
 
         return $code;
     }
 
-    private function renderComment(string $tab): string
+    private function renderComment(): string
     {
         // Remove trailing whitespace from each line
         $code = preg_replace('/\h+$/m', "", $this->Code);
         switch ($this->Type)
         {
             case T_DOC_COMMENT:
-                $indent = "\n" . str_repeat($tab, $this->Indent);
+                $indent = "\n" . $this->indent();
                 return preg_replace([
                     '/\n\h*(?:\* |\*(?!\/)(?=[\h\S])|(?=[^\s*]))/',
                     '/\n\h*\*?$/m',

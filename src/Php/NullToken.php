@@ -12,7 +12,6 @@ class NullToken extends Token
         $this->Line = -1;
 
         $this->Index        = -1;
-        $this->BracketLevel = -1;
         $this->BracketStack = [];
         $this->TypeName     = "";
     }

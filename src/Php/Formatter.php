@@ -4,65 +4,101 @@ declare(strict_types=1);
 
 namespace Lkrms\Pretty\Php;
 
+use Lkrms\Concern\TFullyReadable;
+use Lkrms\Contract\IReadable;
 use Lkrms\Pretty\Php\Contract\TokenFilter;
 use Lkrms\Pretty\Php\Filter\RemoveCommentTokens;
 use Lkrms\Pretty\Php\Filter\RemoveWhitespaceTokens;
+use Lkrms\Pretty\Php\Filter\StripHeredocIndents;
 use Lkrms\Pretty\Php\Rule\AddEssentialWhitespace;
+use Lkrms\Pretty\Php\Rule\AddIndentation;
 use Lkrms\Pretty\Php\Rule\BracePosition;
 use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
+use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
+use Lkrms\Pretty\Php\Rule\SpaceOperators;
 use Lkrms\Pretty\PrettyException;
+use Lkrms\Pretty\WhitespaceType;
+use ParseError;
 
-class Formatter
+/**
+ * @property-read string $Tab
+ * @property-read string[] $Rules
+ * @property-read array<string|array{0:int,1:string,2:int}>|null $PlainTokens
+ * @property-read Token[]|null $Tokens
+ */
+final class Formatter implements IReadable
 {
+    use TFullyReadable;
+
     /**
      * @var string
      */
-    public $Tab = "    ";
+    protected $Tab;
 
     /**
      * @var string[]
      */
-    public $Rules = [
-        BracePosition::class,
+    protected $Rules = [
         BreakAfterSeparators::class,
+        BracePosition::class,
+        SpaceOperators::class,
+        AddIndentation::class,
+        ReindentHeredocs::class,
         AddEssentialWhitespace::class,
     ];
 
     /**
-     * @var array<int,string|array{0:int,1:string,2:int}>
+     * @var array<string|array{0:int,1:string,2:int}>|null
      */
-    public $PlainTokens = [];
+    protected $PlainTokens;
 
     /**
-     * @var Token[]
+     * @var Token[]|null
      */
-    public $Tokens = [];
+    protected $Tokens;
+
+    /**
+     * @var TokenFilter[]
+     */
+    private $Filters;
+
+    /**
+     * @var TokenFilter[]
+     */
+    private $ComparisonFilters;
+
+    public function __construct(string $tab = "    ")
+    {
+        $this->Tab = $tab;
+
+        $this->Filters = [
+            new RemoveWhitespaceTokens(),
+            new StripHeredocIndents(),
+        ];
+        $this->ComparisonFilters = [
+            ...$this->Filters,
+            new RemoveCommentTokens(),
+        ];
+    }
 
     public function format(string $code): string
     {
-        $whitespaceFilter = new RemoveWhitespaceTokens();
-        $commentFilter    = new RemoveCommentTokens();
-
-        $this->PlainTokens = token_get_all($code, TOKEN_PARSE);
-        $this->Tokens      = [];
+        [$this->PlainTokens, $this->Tokens] = [token_get_all($code, TOKEN_PARSE), []];
 
         $bracketStack = [];
-        $bracketLevel = 0;
-        foreach ($this->filter($this->PlainTokens, $whitespaceFilter) as $index => $plainToken)
+        foreach ($this->filter($this->PlainTokens, ...$this->Filters) as $index => $plainToken)
         {
             $this->Tokens[$index] = $token = new Token(
                 $index,
                 $plainToken,
                 end($this->Tokens) ?: null,
-                $bracketLevel,
                 $bracketStack,
-                $this->PlainTokens
+                $this
             );
 
             if ($token->isOpenBracket())
             {
                 array_push($bracketStack, $token);
-                $bracketLevel++;
             }
 
             if ($token->isCloseBracket())
@@ -70,8 +106,12 @@ class Formatter
                 $opener = array_pop($bracketStack);
                 $opener->ClosedBy = $token;
                 $token->OpenedBy  = $opener;
-                $bracketLevel--;
             }
+        }
+
+        if (isset($token))
+        {
+            $token->WhitespaceAfter |= WhitespaceType::LINE;
         }
 
         foreach ($this->Rules as $rule)
@@ -89,8 +129,17 @@ class Formatter
             $out .= $token->render();
         }
 
-        $before = $this->strip($this->PlainTokens, $whitespaceFilter, $commentFilter);
-        $after  = $this->strip(token_get_all($out, TOKEN_PARSE), $whitespaceFilter, $commentFilter);
+        try
+        {
+            $tokensOut = token_get_all($out, TOKEN_PARSE);
+        }
+        catch (ParseError $ex)
+        {
+            throw new PrettyException("Formatting check failed: output cannot be parsed", $out, $this->Tokens, $ex);
+        }
+
+        $before = $this->strip($this->PlainTokens, ...$this->ComparisonFilters);
+        $after  = $this->strip($tokensOut, ...$this->ComparisonFilters);
         if ($before !== $after)
         {
             throw new PrettyException("Formatting check failed: parsed output doesn't match input", $out, $this->Tokens);
@@ -103,8 +152,16 @@ class Formatter
     {
         foreach ($filters as $filter)
         {
-            $tokens = array_filter($tokens, $filter);
+            foreach ($tokens as $key => & $token)
+            {
+                if (!$filter($token))
+                {
+                    unset($tokens[$key]);
+                }
+            }
+            unset($token);
         }
+
         return $tokens;
     }
 
