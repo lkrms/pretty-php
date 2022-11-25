@@ -8,12 +8,15 @@ use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Pretty\Php\Contract\TokenFilter;
 use Lkrms\Pretty\Php\Filter\RemoveCommentTokens;
+use Lkrms\Pretty\Php\Filter\RemoveEmptyTokens;
 use Lkrms\Pretty\Php\Filter\RemoveWhitespaceTokens;
 use Lkrms\Pretty\Php\Filter\StripHeredocIndents;
 use Lkrms\Pretty\Php\Rule\AddEssentialWhitespace;
 use Lkrms\Pretty\Php\Rule\AddIndentation;
 use Lkrms\Pretty\Php\Rule\BracePosition;
 use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
+use Lkrms\Pretty\Php\Rule\CommaCommaComma;
+use Lkrms\Pretty\Php\Rule\PlaceComments;
 use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
 use Lkrms\Pretty\Php\Rule\SpaceOperators;
 use Lkrms\Pretty\PrettyException;
@@ -42,6 +45,8 @@ final class Formatter implements IReadable
         BreakAfterSeparators::class,
         BracePosition::class,
         SpaceOperators::class,
+        CommaCommaComma::class,
+        PlaceComments::class,
         AddIndentation::class,
         ReindentHeredocs::class,
         AddEssentialWhitespace::class,
@@ -78,6 +83,7 @@ final class Formatter implements IReadable
         $this->ComparisonFilters = [
             ...$this->Filters,
             new RemoveCommentTokens(),
+            new RemoveEmptyTokens(),
         ];
     }
 

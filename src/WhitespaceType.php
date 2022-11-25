@@ -20,14 +20,24 @@ final class WhitespaceType extends Enumeration
     public const SPACE = 1;
 
     /**
+     * Four or more horizontal spaces
+     */
+    public const TAB = 2;
+
+    /**
      * Newline
      */
-    public const LINE = 2;
+    public const LINE = 4;
 
     /**
      * Two newlines
      */
-    public const BLANK = 4;
+    public const BLANK = 8;
+
+    /**
+     * All whitespace types
+     */
+    public const ALL = WhitespaceType::SPACE | WhitespaceType::TAB | WhitespaceType::LINE | WhitespaceType::BLANK;
 
     public static function toWhitespace(int $value): string
     {
@@ -35,15 +45,19 @@ final class WhitespaceType extends Enumeration
         {
             return "";
         }
-        elseif ($value & self::BLANK)
+        if ($value & self::BLANK)
         {
             return "\n\n";
         }
-        elseif ($value & self::LINE)
+        if ($value & self::LINE)
         {
             return "\n";
         }
-        elseif ($value & self::SPACE)
+        if ($value & self::TAB)
+        {
+            return "    ";
+        }
+        if ($value & self::SPACE)
         {
             return " ";
         }

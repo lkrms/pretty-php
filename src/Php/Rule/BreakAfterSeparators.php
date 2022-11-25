@@ -25,7 +25,8 @@ class BreakAfterSeparators implements TokenRule
             return;
         }
 
-        $token->WhitespaceBefore = $token->prev()->WhitespaceAfter = WhitespaceType::NONE;
-        $token->WhitespaceAfter |= WhitespaceType::LINE;
+        $token->WhitespaceBefore   = WhitespaceType::NONE;
+        $token->WhitespaceMaskPrev = WhitespaceType::NONE;
+        $token->WhitespaceAfter   |= WhitespaceType::LINE;
     }
 }

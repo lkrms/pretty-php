@@ -26,7 +26,9 @@ no leading asterisk
   */
 PHP;
         $out = <<<PHP
-<?php /**
+<?php
+
+/**
  * leading asterisk and space
  * leading asterisk
  * 	leading asterisk and tab

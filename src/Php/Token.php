@@ -71,6 +71,16 @@ class Token implements JsonSerializable
     public $WhitespaceAfter = WhitespaceType::NONE;
 
     /**
+     * @var int
+     */
+    public $WhitespaceMaskPrev = WhitespaceType::ALL;
+
+    /**
+     * @var int
+     */
+    public $WhitespaceMaskNext = WhitespaceType::ALL;
+
+    /**
      * @var Formatter
      */
     private $Formatter;
@@ -89,13 +99,8 @@ class Token implements JsonSerializable
      * @param array|string $token
      * @param Token[] $bracketStack
      */
-    public function __construct(
-        int $index,
-        $token,
-        ?Token $prev,
-        array $bracketStack,
-        Formatter $formatter
-    ) {
+    public function __construct(int $index, $token, ?Token $prev, array $bracketStack, Formatter $formatter)
+    {
         if (is_array($token))
         {
             list ($this->Type, $this->Code, $this->Line) = $token;
@@ -154,40 +159,6 @@ class Token implements JsonSerializable
         }
     }
 
-    /**
-     * @param Token[] $tokens
-     * @param int|string $type
-     */
-    public static function has(array $tokens, $type): bool
-    {
-        foreach ($tokens as $token)
-        {
-            if ($token->is($type))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @param Token[] $tokens
-     * @param int|string ...$types
-     */
-    public static function hasOneOf(array $tokens, ...$types): bool
-    {
-        foreach ($tokens as $token)
-        {
-            if ($token->isOneOf(...$types))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     public function jsonSerialize(): array
     {
         $a = get_object_vars($this);
@@ -204,6 +175,34 @@ class Token implements JsonSerializable
             unset($a["Tags"]);
         }
         return $a;
+    }
+
+    public function wasFirstOnLine(): bool
+    {
+        $prev = $this->prev();
+
+        return $prev->isNull() || $this->Line > $prev->Line;
+    }
+
+    public function wasLastOnLine(): bool
+    {
+        $next = $this->next();
+        if ($next->isNull() || $this->Line < $next->Line)
+        {
+            return true;
+        }
+        if (!$next->startsNewStatement())
+        {
+            return false;
+        }
+        $next = $this->next(2);
+
+        return $next->isNull() || $this->Line < $next->Line;
+    }
+
+    public function wasBetweenTokensOnLine(): bool
+    {
+        return !$this->wasFirstOnLine() && !$this->wasLastOnLine();
     }
 
     public function prev(int $offset = 1): Token
@@ -235,50 +234,47 @@ class Token implements JsonSerializable
         return (end($this->BracketStack) ?: new NullToken());
     }
 
-    /**
-     * @return Token[]
-     */
-    public function outer(): array
+    public function isNull(): bool
+    {
+        return false;
+    }
+
+    public function outer(): TokenCollection
     {
         $current = $this->OpenedBy ?: $this;
         $last    = $this->ClosedBy ?: $this;
 
-        $tokens[] = $current;
-        while ($current !== $last)
-        {
-            $tokens[] = $current = $current->next();
-        }
-
-        return $tokens;
+        return $this->collect($current, $last);
     }
 
-    /**
-     * @return Token[]
-     */
-    public function sinceLastStatement(): array
+    public function startOfStatement(): Token
     {
-        $current = $this->prev();
-        while (!$current->startsNewStatement() && !($current instanceof NullToken))
+        $current = $this;
+        while (!$current->prev()->startsNewStatement() && !$current->prev()->isNull())
         {
-            if ($current->isCloseBracket())
+            if ($current->OpenedBy)
             {
-                $tokens  = array_merge($tokens ?? [], array_reverse($current->outer()));
-                $current = $current->OpenedBy->prev();
+                $current = $current->OpenedBy;
                 continue;
             }
-            $tokens[] = $current;
-            $current  = $current->prev();
+            $current = $current->prev();
         }
 
-        return array_reverse($tokens ?? []);
+        return $current;
+    }
+
+    public function sinceLastStatement(): TokenCollection
+    {
+        return $this->collect($this->startOfStatement(), $this);
     }
 
     /**
      * @todo Reimplement after building keyword token list
-     * @return Token[]
      */
-    public function wordsSinceLastStatement(): array
+    public function wordsSinceLastStatement(): TokenCollection
     {
+        $tokens = new TokenCollection();
+        /** @var Token $token */
         foreach ($this->sinceLastStatement() as $token)
         {
             if ($token->isOpenBracket())
@@ -287,17 +283,28 @@ class Token implements JsonSerializable
             }
             $tokens[] = $token;
         }
-        return $tokens ?? [];
+
+        return $tokens;
+    }
+
+    public function effectiveWhitespaceBefore(): int
+    {
+        return ($this->WhitespaceBefore & $this->prev()->WhitespaceMaskNext) | ($this->prev()->WhitespaceAfter & $this->WhitespaceMaskPrev);
+    }
+
+    public function effectiveWhitespaceAfter(): int
+    {
+        return ($this->WhitespaceAfter & $this->next()->WhitespaceMaskPrev) | ($this->next()->WhitespaceBefore & $this->WhitespaceMaskNext);
     }
 
     public function hasNewlineBefore(): bool
     {
-        return (bool)(($this->WhitespaceBefore | $this->prev()->WhitespaceAfter) & (WhitespaceType::LINE | WhitespaceType::BLANK));
+        return (bool)($this->effectiveWhitespaceBefore() & (WhitespaceType::LINE | WhitespaceType::BLANK));
     }
 
     public function hasNewlineAfter(): bool
     {
-        return (bool)(($this->WhitespaceAfter | $this->next()->WhitespaceBefore) & (WhitespaceType::LINE | WhitespaceType::BLANK));
+        return (bool)($this->effectiveWhitespaceAfter() & (WhitespaceType::LINE | WhitespaceType::BLANK));
     }
 
     public function hasNewLineBeforeOrAfter(): bool
@@ -307,12 +314,17 @@ class Token implements JsonSerializable
 
     public function hasWhitespaceBefore(): bool
     {
-        return (bool)($this->WhitespaceBefore | $this->prev()->WhitespaceAfter);
+        return (bool)$this->effectiveWhitespaceBefore();
     }
 
     public function hasWhitespaceAfter(): bool
     {
-        return (bool)($this->WhitespaceAfter | $this->next()->WhitespaceBefore);
+        return (bool)$this->effectiveWhitespaceAfter();
+    }
+
+    public function hasNewline(): bool
+    {
+        return strpos($this->Code, "\n") !== false;
     }
 
     /**
@@ -333,7 +345,7 @@ class Token implements JsonSerializable
 
     public function startsNewStatement(): bool
     {
-        return $this->isOneOf(";", "{", "}");
+        return $this->isOneOf(";", "{", "}", T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO);
     }
 
     public function isOpenBracket(): bool
@@ -346,16 +358,19 @@ class Token implements JsonSerializable
         return $this->isOneOf(")", "]", "}");
     }
 
-    public function isOneLineComment(): bool
+    public function isOneLineComment(bool $anyType = false): bool
     {
-        return $this->is(T_COMMENT) && preg_match('@^(//|#)@', $this->Code);
+        return $anyType
+            ? $this->isOneOf(...TokenType::COMMENT) && !$this->hasNewline()
+            : $this->is(T_COMMENT) && preg_match('@^(//|#)@', $this->Code);
     }
 
-    public function isMultiLineComment(): bool
+    public function isMultiLineComment(bool $anyType = false): bool
     {
-        return ($this->is(T_DOC_COMMENT) ||
-            ($this->is(T_COMMENT) && preg_match('@^/\*@', $this->Code))) &&
-        strpos($this->Code, "\n");
+        return $anyType
+            ? $this->isOneOf(...TokenType::COMMENT) && $this->hasNewline()
+            : ($this->is(T_DOC_COMMENT) ||
+                ($this->is(T_COMMENT) && preg_match('@^/\*@', $this->Code)));
     }
 
     public function isOperator()
@@ -382,8 +397,7 @@ class Token implements JsonSerializable
     public function isUnaryOperator(): bool
     {
         if ($this->isOneOf(
-            "~",
-            "!",
+            "~", "!",
             ...TokenType::OPERATOR_ERROR_CONTROL,
             ...TokenType::OPERATOR_INCREMENT_DECREMENT
         ))
@@ -396,6 +410,11 @@ class Token implements JsonSerializable
         return false;
     }
 
+    public function isTernaryOperator(): bool
+    {
+        return $this->isOneOf(...TokenType::OPERATOR_TERNARY);
+    }
+
     public function isBinaryOrTernaryOperator(): bool
     {
         return $this->isOperator() && !$this->isUnaryOperator();
@@ -403,7 +422,7 @@ class Token implements JsonSerializable
 
     public function isDeclaration(): bool
     {
-        return self::hasOneOf($this->wordsSinceLastStatement(), ...TokenType::DECLARATION);
+        return $this->wordsSinceLastStatement()->hasTokenWithTypeInList(...TokenType::DECLARATION);
     }
 
     public function indent(): string
@@ -422,14 +441,14 @@ class Token implements JsonSerializable
 
         if (!$this->isOneOf(...TokenType::DO_NOT_MODIFY_LHS))
         {
-            $code = WhitespaceType::toWhitespace($this->WhitespaceBefore | $this->prev()->WhitespaceAfter);
+            $code = WhitespaceType::toWhitespace($this->effectiveWhitespaceBefore());
             if (substr($code, -1) === "\n" && $this->Indent)
             {
                 $code .= $this->indent();
             }
         }
 
-        $code = ($code ?? "") . ($this->isMultiLineComment()
+        $code = ($code ?? "") . ($this->isMultiLineComment(true)
             ? $this->renderComment()
             : $this->Code);
 
@@ -465,6 +484,19 @@ class Token implements JsonSerializable
         }
 
         throw new RuntimeException("Not a T_COMMENT or T_DOC_COMMENT");
+    }
+
+    private function collect(Token $from, Token $to): TokenCollection
+    {
+        $tokens = new TokenCollection();
+
+        $tokens[] = $from;
+        while ($from !== $to)
+        {
+            $tokens[] = $from = $from->next();
+        }
+
+        return $tokens;
     }
 
 }

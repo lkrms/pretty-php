@@ -31,7 +31,22 @@ class StripHeredocIndents implements TokenFilter
         {
             if (preg_match('/^\h+/', $token[1], $matches))
             {
-                $stripped = preg_replace("/^{$matches[0]}/m", "", $this->Heredoc);
+                // The pattern below won't match the first line or closing
+                // identifier unless newlines are added temporarily
+                $keys = [0];
+                if (count($this->Heredoc) > 1)
+                {
+                    $keys[] = count($this->Heredoc) - 1;
+                }
+                foreach ($keys as $key)
+                {
+                    $this->Heredoc[$key] = "\n" . $this->Heredoc[$key];
+                }
+                $stripped = preg_replace("/\\n{$matches[0]}/", "\n", $this->Heredoc);
+                foreach ($keys as $key)
+                {
+                    $stripped[$key] = substr($stripped[$key], 1);
+                }
                 foreach ($this->Heredoc as $i => & $code)
                 {
                     $code = $stripped[$i];

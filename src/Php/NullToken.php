@@ -6,7 +6,7 @@ namespace Lkrms\Pretty\Php;
 
 class NullToken extends Token
 {
-    function __construct()
+    public function __construct()
     {
         $this->Type = $this->Code = "";
         $this->Line = -1;
@@ -14,5 +14,10 @@ class NullToken extends Token
         $this->Index        = -1;
         $this->BracketStack = [];
         $this->TypeName     = "";
+    }
+
+    public function isNull(): bool
+    {
+        return true;
     }
 }
