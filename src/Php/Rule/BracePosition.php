@@ -12,7 +12,7 @@ class BracePosition implements TokenRule
 {
     public function __invoke(Token $token): void
     {
-        if (!($token->is("{") || ($token->is("}") && $token->OpenedBy->is("{"))))
+        if (!$token->isBrace())
         {
             return;
         }

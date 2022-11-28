@@ -22,8 +22,9 @@ class AddIndentation implements TokenRule
         $prev = $token->prev();
         $token->Indent = $prev->Indent;
 
-        if ($prev->hasNewLineBeforeOrAfter() && $prev->ClosedBy)
+        if ($prev->hasNewlineAfter() && $prev->ClosedBy)
         {
+            $prev->Tags[] = "indented";
             $token->Indent++;
 
             if ($prev->hasNewlineAfter())

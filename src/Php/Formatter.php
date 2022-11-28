@@ -12,11 +12,13 @@ use Lkrms\Pretty\Php\Filter\RemoveEmptyTokens;
 use Lkrms\Pretty\Php\Filter\RemoveWhitespaceTokens;
 use Lkrms\Pretty\Php\Filter\StripHeredocIndents;
 use Lkrms\Pretty\Php\Rule\AddEssentialWhitespace;
+use Lkrms\Pretty\Php\Rule\AddHangingIndentation;
 use Lkrms\Pretty\Php\Rule\AddIndentation;
 use Lkrms\Pretty\Php\Rule\BracePosition;
 use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
 use Lkrms\Pretty\Php\Rule\CommaCommaComma;
 use Lkrms\Pretty\Php\Rule\PlaceComments;
+use Lkrms\Pretty\Php\Rule\PreserveNewlines;
 use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
 use Lkrms\Pretty\Php\Rule\SpaceOperators;
 use Lkrms\Pretty\PrettyException;
@@ -47,7 +49,9 @@ final class Formatter implements IReadable
         SpaceOperators::class,
         CommaCommaComma::class,
         PlaceComments::class,
+        PreserveNewlines::class,
         AddIndentation::class,
+        AddHangingIndentation::class,
         ReindentHeredocs::class,
         AddEssentialWhitespace::class,
     ];

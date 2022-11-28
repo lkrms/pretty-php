@@ -22,6 +22,21 @@ class TokenType
         T_END_HEREDOC,
     ];
 
+    public const PRESERVE_NEWLINE_AFTER = [
+        "(", ",", "=", "[",
+        T_DOUBLE_ARROW,     // =>
+        ...self::OPERATOR_ASSIGNMENT,
+        ...self::OPERATOR_LOGICAL,
+    ];
+
+    public const PRESERVE_NEWLINE_BEFORE = [
+        ...self::OPERATOR_ARITHMETIC,
+        ...self::OPERATOR_BITWISE,
+        ...self::OPERATOR_COMPARISON,
+        ...self::OPERATOR_TERNARY,
+        ...self::OPERATOR_STRING,
+    ];
+
     public const WHITESPACE = [
         T_WHITESPACE,
         T_BAD_CHARACTER,
@@ -30,6 +45,15 @@ class TokenType
     public const COMMENT = [
         T_COMMENT,
         T_DOC_COMMENT,
+    ];
+
+    public const NOT_CODE = [
+        T_INLINE_HTML,
+        T_OPEN_TAG,
+        T_OPEN_TAG_WITH_ECHO,
+        T_CLOSE_TAG,
+        ...self::WHITESPACE,
+        ...self::COMMENT,
     ];
 
     public const OPERATOR_ARITHMETIC = [
@@ -144,6 +168,19 @@ class TokenType
         T_TRAIT,
         T_USE,
         T_VAR,
+    ];
+
+    public const HAS_STATEMENT_WITH_OPTIONAL_BRACES = [
+        T_DO,
+        T_ELSE,
+    ];
+
+    public const HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES = [
+        T_ELSEIF,
+        T_FOR,
+        T_FOREACH,
+        T_IF,
+        T_WHILE,
     ];
 
 }

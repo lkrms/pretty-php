@@ -14,14 +14,14 @@ final class TokenCollection extends TypedCollection
     }
 
     /**
-     * @param int|string $type
+     * @param int|string ...$types
      */
-    public function hasTokenWithType($type): bool
+    public function hasOneOf(...$types): bool
     {
         /** @var Token $token */
         foreach ($this as $token)
         {
-            if ($token->is($type))
+            if ($token->isOneOf(...$types))
             {
                 return true;
             }
@@ -30,15 +30,25 @@ final class TokenCollection extends TypedCollection
         return false;
     }
 
-    /**
-     * @param int|string ...$types
-     */
-    public function hasTokenWithTypeInList(...$types): bool
+    public function hasInnerNewline(): bool
     {
+        if (count($this) < 2)
+        {
+            return false;
+        }
+        $i = 0;
         /** @var Token $token */
         foreach ($this as $token)
         {
-            if ($token->isOneOf(...$types))
+            if (substr_count($token->Code, "\n"))
+            {
+                return true;
+            }
+            if (!$i++)
+            {
+                continue;
+            }
+            if ($token->hasNewlineBefore())
             {
                 return true;
             }

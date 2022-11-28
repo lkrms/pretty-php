@@ -61,6 +61,11 @@ class Token implements JsonSerializable
     public $Indent = 0;
 
     /**
+     * @var Token[]
+     */
+    public $IndentStack = [];
+
+    /**
      * @var int
      */
     public $WhitespaceBefore = WhitespaceType::NONE;
@@ -166,14 +171,27 @@ class Token implements JsonSerializable
         {
             $t = $t->Index;
         }
+        foreach ($a["IndentStack"] as &$bracketStack)
+        {
+            foreach ($bracketStack as &$t)
+            {
+                $t = $t->Index;
+            }
+        }
         $a["OpenedBy"] = $a["OpenedBy"]->Index ?? null;
         $a["ClosedBy"] = $a["ClosedBy"]->Index ?? null;
         $a["_prev"]    = $a["_prev"]->Index ?? null;
         $a["_next"]    = $a["_next"]->Index ?? null;
+        unset($a["Formatter"]);
         if (empty($a["Tags"]))
         {
             unset($a["Tags"]);
         }
+        $a["prevSibling()"]      = $this->prevSibling()->Index;
+        $a["nextSibling()"]      = $this->nextSibling()->Index;
+        $a["startOfStatement()"] = $this->startOfStatement()->Index;
+        $a["endOfStatement()"]   = $this->endOfStatement()->Index;
+
         return $a;
     }
 
@@ -187,15 +205,6 @@ class Token implements JsonSerializable
     public function wasLastOnLine(): bool
     {
         $next = $this->next();
-        if ($next->isNull() || $this->Line < $next->Line)
-        {
-            return true;
-        }
-        if (!$next->startsNewStatement())
-        {
-            return false;
-        }
-        $next = $this->next(2);
 
         return $next->isNull() || $this->Line < $next->Line;
     }
@@ -229,9 +238,102 @@ class Token implements JsonSerializable
         return ($next ?: new NullToken());
     }
 
+    public function prevCode(int $offset = 1): Token
+    {
+        $prev = $this;
+
+        for ($i = 0; $i < $offset; $i++)
+        {
+            do
+            {
+                $prev = $prev->_prev ?? null;
+            }
+            while ($prev && !$prev->isCode());
+        }
+
+        return ($prev ?: new NullToken());
+    }
+
+    public function nextCode(int $offset = 1): Token
+    {
+        $next = $this;
+
+        for ($i = 0; $i < $offset; $i++)
+        {
+            do
+            {
+                $next = $next->_next ?? null;
+            }
+            while ($next && !$next->isCode());
+        }
+
+        return ($next ?: new NullToken());
+    }
+
+    public function prevSibling(int $offset = 1): Token
+    {
+        $prev = $this->OpenedBy ?: $this;
+
+        for ($i = 0; $i < $offset; $i++)
+        {
+            do
+            {
+                $prev = $prev->_prev ?? null;
+            }
+            while ($prev && !$prev->isCode());
+            if ($prev->OpenedBy ?? null)
+            {
+                $prev = $prev->OpenedBy;
+            }
+            if (($prev->BracketStack ?? null) !== ($this->OpenedBy ?: $this)->BracketStack)
+            {
+                $prev = null;
+            }
+            if (!$prev)
+            {
+                break;
+            }
+        }
+
+        return ($prev ?: new NullToken());
+    }
+
+    public function nextSibling(int $offset = 1): Token
+    {
+        $next = $this->OpenedBy ?: $this;
+
+        for ($i = 0; $i < $offset; $i++)
+        {
+            if ($next->ClosedBy ?? null)
+            {
+                $next = $next->ClosedBy;
+            }
+            do
+            {
+                $next = $next->_next ?? null;
+            }
+            while ($next && !$next->isCode());
+            if (($next->BracketStack ?? null) !== ($this->OpenedBy ?: $this)->BracketStack || $next->isCloseBracket())
+            {
+                $next = null;
+            }
+            if (!$next)
+            {
+                break;
+            }
+        }
+
+        return ($next ?: new NullToken());
+    }
+
     public function parent(): Token
     {
         return (end($this->BracketStack) ?: new NullToken());
+    }
+
+    public function isCode(): bool
+    {
+        return !$this->isOneOf(...TokenType::NOT_CODE);
     }
 
     public function isNull(): bool
@@ -239,39 +341,56 @@ class Token implements JsonSerializable
         return false;
     }
 
-    public function outer(): TokenCollection
+    public function hasTags(string ...$tags): bool
     {
-        $current = $this->OpenedBy ?: $this;
-        $last    = $this->ClosedBy ?: $this;
+        return array_intersect($tags, $this->Tags) === $tags;
+    }
 
-        return $this->collect($current, $last);
+    public function statement(): TokenCollection
+    {
+        return $this->startOfStatement()->collect($this->endOfStatement());
     }
 
     public function startOfStatement(): Token
     {
-        $current = $this;
-        while (!$current->prev()->startsNewStatement() && !$current->prev()->isNull())
+        $current = (($this->is(";") ? $this->prevCode()->OpenedBy : null)
+            ?: $this->OpenedBy
+            ?: $this);
+        while (!$current->prevCode()->isStatementPrecursor() && !$current->prevCode()->isNull())
         {
-            if ($current->OpenedBy)
-            {
-                $current = $current->OpenedBy;
-                continue;
-            }
-            $current = $current->prev();
+            $current = $current->prevSibling();
         }
 
         return $current;
     }
 
+    public function endOfStatement(): Token
+    {
+        $current = $this->OpenedBy ?: $this;
+        while (!$current->isStatementTerminator() && !$current->nextCode()->isNull())
+        {
+            $last    = $current;
+            $current = $current->nextSibling();
+            if (!$current->isStatementTerminator() &&
+                $current->prevCode()->isStatementTerminator())
+            {
+                return $current->prevCode();
+            }
+        }
+        $current = $current->isNull() ? ($last ?? $current) : $current;
+
+        return $current->ClosedBy ?: $current;
+    }
+
     public function sinceLastStatement(): TokenCollection
     {
-        return $this->collect($this->startOfStatement(), $this);
+        return $this->startOfStatement()->collect($this);
     }
 
     /**
      * @todo Reimplement after building keyword token list
      */
-    public function wordsSinceLastStatement(): TokenCollection
+    public function stringsAfterLastStatement(): TokenCollection
     {
         $tokens = new TokenCollection();
         /** @var Token $token */
@@ -307,11 +426,6 @@ class Token implements JsonSerializable
         return (bool)($this->effectiveWhitespaceAfter() & (WhitespaceType::LINE | WhitespaceType::BLANK));
     }
 
-    public function hasNewLineBeforeOrAfter(): bool
-    {
-        return $this->hasNewlineBefore() || $this->hasNewlineAfter();
-    }
-
     public function hasWhitespaceBefore(): bool
     {
         return (bool)$this->effectiveWhitespaceBefore();
@@ -343,9 +457,25 @@ class Token implements JsonSerializable
         return in_array($this->Type, $types, true);
     }
 
-    public function startsNewStatement(): bool
+    public function isStatementTerminator(): bool
     {
-        return $this->isOneOf(";", "{", "}", T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO);
+        return $this->isOneOf(";", "}");
+    }
+
+    public function isExpressionTerminator(): bool
+    {
+        return $this->isOneOf(")", ";", "]", "}");
+    }
+
+    public function isStatementPrecursor(): bool
+    {
+        return $this->isOneOf("(", ";", "[", "{", "}") ||
+            ($this->is(",") && $this->parent()->isOneOf("(", "["));
+    }
+
+    public function isBrace()
+    {
+        return $this->is("{") || ($this->is("}") && $this->OpenedBy->is("{"));
     }
 
     public function isOpenBracket(): bool
@@ -422,7 +552,7 @@ class Token implements JsonSerializable
 
     public function isDeclaration(): bool
     {
-        return $this->wordsSinceLastStatement()->hasTokenWithTypeInList(...TokenType::DECLARATION);
+        return $this->stringsAfterLastStatement()->hasOneOf(...TokenType::DECLARATION);
     }
 
     public function indent(): string
@@ -486,9 +616,15 @@ class Token implements JsonSerializable
         throw new RuntimeException("Not a T_COMMENT or T_DOC_COMMENT");
     }
 
-    private function collect(Token $from, Token $to): TokenCollection
+    public function collect(Token $to): TokenCollection
     {
         $tokens = new TokenCollection();
+        $from   = $this;
+
+        if ($from->isNull() || $to->isNull())
+        {
+            return $tokens;
+        }
 
         $tokens[] = $from;
         while ($from !== $to)
