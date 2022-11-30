@@ -9,6 +9,10 @@ use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\File;
 use Lkrms\Pretty\Php\Formatter;
+use Lkrms\Pretty\Php\Rule\CommaCommaComma;
+use Lkrms\Pretty\Php\Rule\PreserveNewlines;
+use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
+use Lkrms\Pretty\Php\Rule\SpaceOperators;
 use Lkrms\Pretty\PrettyException;
 
 class FormatPhp extends CliCommand
@@ -17,6 +21,16 @@ class FormatPhp extends CliCommand
      * @var string|null
      */
     private $DebugDirectory;
+
+    /**
+     * @var array<string,string>
+     */
+    private $SkipMap = [
+        "preserve-newlines"      => PreserveNewlines::class,
+        "space-around-operators" => SpaceOperators::class,
+        "space-after-commas"     => CommaCommaComma::class,
+        "indent-heredocs"        => ReindentHeredocs::class,
+    ];
 
     public function getDescription(): string
     {
@@ -28,10 +42,30 @@ class FormatPhp extends CliCommand
         return [
             (CliOption::build()
                 ->long("file")
-                ->short("f")
-                ->valueName("FILE")
-                ->description("PHP file to format")
-                ->optionType(CliOptionType::VALUE)),
+                ->description("One or more PHP files to format")
+                ->optionType(CliOptionType::VALUE_POSITIONAL)
+                ->multipleAllowed()),
+            (CliOption::build()
+                ->long("tab")
+                ->short("t")
+                ->description("Indent using tabs")),
+            (CliOption::build()
+                ->long("space")
+                ->short("s")
+                ->description("Indent using spaces")
+                ->optionType(CliOptionType::ONE_OF_OPTIONAL)
+                ->allowedValues(["2", "4"])
+                ->defaultValue("4")),
+            (CliOption::build()
+                ->long("skip")
+                ->short("i")
+                ->description("Skip one or more rules")
+                ->optionType(CliOptionType::ONE_OF)
+                ->allowedValues(array_keys($this->SkipMap))
+                ->multipleAllowed()),
+            (CliOption::build()
+                ->short("n")
+                ->description("Shorthand for '--skip preserve-newlines'")),
             (CliOption::build()
                 ->long("debug")
                 ->valueName("DIR")
@@ -43,14 +77,29 @@ class FormatPhp extends CliCommand
 
     protected function run(...$params)
     {
-        $file = $this->getOptionValue("file");
-        if (is_null($file) && stream_isatty(STDIN))
+        $tab   = $this->getOptionValue("tab");
+        $space = $this->getOptionValue("space");
+        if ($tab && $space)
         {
-            throw new CliArgumentsInvalidException("--file argument required when input is a TTY");
+            throw new CliArgumentsInvalidException("--tab and --space cannot be used together");
         }
-        elseif (is_null($file) || $file === "-")
+        $tab = $tab ? "\t" : ($space === "2" ? "  " : "    ");
+
+        $skip = $this->getOptionValue("skip");
+        if ($this->getOptionValue("n"))
         {
-            $file = "php://stdin";
+            $skip[] = "preserve-newlines";
+        }
+        $skip = array_values(array_intersect_key($this->SkipMap, array_flip($skip)));
+
+        $files = $this->getOptionValue("file");
+        if (!$files && stream_isatty(STDIN))
+        {
+            throw new CliArgumentsInvalidException("FILE required when input is a TTY");
+        }
+        elseif (!$files || $files === ["-"])
+        {
+            $files = ["php://stdin"];
         }
 
         $debug = $this->getOptionValue("debug");
@@ -61,21 +110,24 @@ class FormatPhp extends CliCommand
             $debug = $this->DebugDirectory = realpath($debug) ?: null;
         }
 
-        $formatter = new Formatter();
-        $input     = file_get_contents($file);
-        try
+        $formatter = new Formatter($tab, $skip);
+        foreach ($files as $file)
         {
-            $output = $formatter->format($input);
-        }
-        catch (PrettyException $ex)
-        {
-            $this->maybeDumpDebugOutput($input, $ex->getOutput(), $ex->getData());
-            throw $ex;
-        }
+            $input = file_get_contents($file);
+            try
+            {
+                $output = $formatter->format($input);
+            }
+            catch (PrettyException $ex)
+            {
+                $this->maybeDumpDebugOutput($input, $ex->getOutput(), $ex->getData());
+                throw $ex;
+            }
 
-        $this->maybeDumpDebugOutput($input, $output, $formatter->Tokens);
+            $this->maybeDumpDebugOutput($input, $output, $formatter->Tokens);
 
-        print $output;
+            print $output;
+        }
     }
 
     private function maybeDumpDebugOutput(string $input, string $output, array $tokens)

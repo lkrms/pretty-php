@@ -80,9 +80,17 @@ final class Formatter implements IReadable
      */
     private $ComparisonFilters;
 
-    public function __construct(string $tab = "    ")
+    /**
+     * @param string[] $skipRules
+     */
+    public function __construct(string $tab = "    ", array $skipRules = [])
     {
         $this->Tab = $tab;
+
+        if ($skipRules)
+        {
+            $this->Rules = array_diff($this->Rules, $skipRules);
+        }
 
         $this->Filters = [
             new RemoveWhitespaceTokens(),

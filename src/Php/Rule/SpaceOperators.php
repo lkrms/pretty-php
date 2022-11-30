@@ -12,8 +12,14 @@ class SpaceOperators implements TokenRule
 {
     public function __invoke(Token $token): void
     {
-        if (!$token->isBinaryOrTernaryOperator() || $token->parent()->prev()->is(T_DECLARE))
+        if (!$token->isOperator() || $token->parent()->prev()->is(T_DECLARE))
         {
+            return;
+        }
+        if ($token->isUnaryOperator())
+        {
+            $token->WhitespaceMaskNext = WhitespaceType::NONE;
+
             return;
         }
 
