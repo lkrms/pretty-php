@@ -20,12 +20,12 @@ class BracePosition implements TokenRule
         $token->WhitespaceAfter |= WhitespaceType::LINE;
         if ($token->is("{"))
         {
-            $token->WhitespaceBefore  |= $token->isDeclaration() ? WhitespaceType::LINE : WhitespaceType::SPACE;
-            $token->WhitespaceMaskNext = WhitespaceType::ALL & ~WhitespaceType::BLANK;
+            $token->WhitespaceBefore   |= $token->isDeclaration() ? WhitespaceType::LINE : WhitespaceType::SPACE;
+            $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
 
             return;
         }
-        $token->WhitespaceBefore  |= WhitespaceType::LINE;
-        $token->WhitespaceMaskPrev = WhitespaceType::ALL & ~WhitespaceType::BLANK;
+        $token->WhitespaceBefore   |= WhitespaceType::LINE;
+        $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
     }
 }

@@ -57,4 +57,16 @@ final class TokenCollection extends TypedCollection
         return false;
     }
 
+    /**
+     * @return $this
+     */
+    public function withEach(callable $callback)
+    {
+        foreach ($this as $token)
+        {
+            $callback($token);
+        }
+
+        return $this;
+    }
 }

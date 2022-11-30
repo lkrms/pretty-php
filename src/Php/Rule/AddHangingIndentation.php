@@ -58,7 +58,7 @@ class AddHangingIndentation implements TokenRule
                 return false;
             }
         }
-        return $prev->Indent === $token->Indent &&
+        return ($prev->Indent - $prev->Deindent) === ($token->Indent - $token->Deindent) &&
             !($token->isBrace() && $token->hasNewlineBefore()) &&
             !($prev->isStatementPrecursor() &&
                 ($prev->parent()->isNull() || $prev->parent()->hasNewlineAfter()));

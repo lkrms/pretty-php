@@ -30,7 +30,8 @@ class PreserveNewlines implements TokenRule
         if ($tokenTernary && $token->Type . $token->next()->Type === "?:")
         {
             // Check for newlines between $prev and `:`
-            $token = $token->next();
+            $tokenOrig = $token;
+            $token     = $token->next();
         }
         elseif ($prevTernary && $prev->prev()->Type . $prev->Type === "?:")
         {
@@ -59,31 +60,44 @@ class PreserveNewlines implements TokenRule
             $type = WhitespaceType::LINE;
         }
         [$min, $max] = [$prev->Line, $token->Line];
-        $this->maybeAddNewline($prev, $token, $type, $min, $max) ||
-            $this->maybeAddNewline($prev->prev(), $prev, $type, $min, $max);
+        $this->maybeAddNewline($prev, $token, $tokenOrig ?? null, $type, $min, $max) ||
+            $this->maybeAddNewline($prev->prev(), $prev, null, $type, $min, $max);
     }
 
-    private function maybeAddNewline(Token $token1, Token $token2, int $whitespaceType, int $min, int $max): bool
+    private function maybeAddNewline(Token $token1, Token $token2, ?Token $token2Orig, int $whitespaceType, int $min, int $max): bool
     {
         if (!Test::isBetween($token1->Line, $min, $max) ||
             !Test::isBetween($token2->Line, $min, $max) ||
-            $token1->hasNewlineAfter())
+            ($token1->effectiveWhitespaceAfter() & $whitespaceType) === $whitespaceType)
         {
             return false;
         }
-        if ($token1->isOneOf(...TokenType::PRESERVE_NEWLINE_AFTER))
+        if ($this->preserveNewlineAfter($token1))
         {
             $token1->WhitespaceAfter |= $whitespaceType;
 
             return true;
         }
-        if ($token2->isOneOf(...TokenType::PRESERVE_NEWLINE_BEFORE))
+        if ($this->preserveNewlineBefore($token2))
         {
+            $token2 = $token2Orig ?: $token2;
             $token2->WhitespaceBefore |= $whitespaceType;
 
             return true;
         }
 
         return false;
+    }
+
+    private function preserveNewlineAfter(Token $token): bool
+    {
+        return $token->isOneOf(...TokenType::PRESERVE_NEWLINE_AFTER) &&
+            (!$token->is(":") || $token->isTernaryOperator());
+    }
+
+    private function preserveNewlineBefore(Token $token): bool
+    {
+        return $token->isOneOf(...TokenType::PRESERVE_NEWLINE_BEFORE) &&
+            (!$token->is(":") || $token->isTernaryOperator());
     }
 }

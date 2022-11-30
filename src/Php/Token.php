@@ -61,6 +61,11 @@ class Token implements JsonSerializable
     public $Indent = 0;
 
     /**
+     * @var int
+     */
+    public $Deindent = 0;
+
+    /**
      * @var Token[]
      */
     public $IndentStack = [];
@@ -326,9 +331,50 @@ class Token implements JsonSerializable
         return ($next ?: new NullToken());
     }
 
+    /**
+     * @param int|string ...$types
+     */
+    public function prevSiblingOf(...$types): ?Token
+    {
+        do
+        {
+            $prev = $this->prevSibling();
+            if ($prev->isNull())
+            {
+                return null;
+            }
+        }
+        while (!$prev->isOneOf(...$types));
+
+        return $prev;
+    }
+
+    /**
+     * @param int|string ...$types
+     */
+    public function nextSiblingOf(...$types): ?Token
+    {
+        do
+        {
+            $next = $this->nextSibling();
+            if ($next->isNull())
+            {
+                return null;
+            }
+        }
+        while (!$next->isOneOf(...$types));
+
+        return $next;
+    }
+
     public function parent(): Token
     {
         return (end($this->BracketStack) ?: new NullToken());
+    }
+
+    public function inner(): TokenCollection
+    {
+        return ($this->OpenedBy ?: $this)->next()->collect(($this->ClosedBy ?: $this)->prev());
     }
 
     public function isCode(): bool
@@ -505,8 +551,6 @@ class Token implements JsonSerializable
 
     public function isOperator()
     {
-        // TODO: return false if part of a declaration
-
         // OPERATOR_EXECUTION is excluded because for formatting purposes,
         // commands between backticks are equivalent to double-quoted strings
         return $this->isOneOf(
@@ -514,14 +558,12 @@ class Token implements JsonSerializable
             ...TokenType::OPERATOR_ASSIGNMENT,
             ...TokenType::OPERATOR_BITWISE,
             ...TokenType::OPERATOR_COMPARISON,
-            ...TokenType::OPERATOR_TERNARY,
             ...TokenType::OPERATOR_ERROR_CONTROL,
             ...TokenType::OPERATOR_INCREMENT_DECREMENT,
             ...TokenType::OPERATOR_LOGICAL,
             ...TokenType::OPERATOR_STRING,
             ...TokenType::OPERATOR_INSTANCEOF
-        );
-
+        ) || $this->isTernaryOperator();
     }
 
     public function isUnaryOperator(): bool
@@ -542,7 +584,8 @@ class Token implements JsonSerializable
 
     public function isTernaryOperator(): bool
     {
-        return $this->isOneOf(...TokenType::OPERATOR_TERNARY);
+        return ($this->is("?") && ($this->collectSiblings($this->endOfStatement())->hasOneOf(":"))) ||
+            ($this->is(":") && ($this->startOfStatement()->collectSiblings($this)->hasOneOf("?")));
     }
 
     public function isBinaryOrTernaryOperator(): bool
@@ -557,8 +600,8 @@ class Token implements JsonSerializable
 
     public function indent(): string
     {
-        return $this->Indent
-            ? str_repeat($this->Formatter->Tab, $this->Indent)
+        return ($this->Indent - $this->Deindent)
+            ? str_repeat($this->Formatter->Tab, $this->Indent - $this->Deindent)
             : "";
     }
 
@@ -572,7 +615,7 @@ class Token implements JsonSerializable
         if (!$this->isOneOf(...TokenType::DO_NOT_MODIFY_LHS))
         {
             $code = WhitespaceType::toWhitespace($this->effectiveWhitespaceBefore());
-            if (substr($code, -1) === "\n" && $this->Indent)
+            if (substr($code, -1) === "\n" && ($this->Indent - $this->Deindent))
             {
                 $code .= $this->indent();
             }
@@ -621,7 +664,7 @@ class Token implements JsonSerializable
         $tokens = new TokenCollection();
         $from   = $this;
 
-        if ($from->isNull() || $to->isNull())
+        if ($from->Index > $to->Index || $from->isNull() || $to->isNull())
         {
             return $tokens;
         }
@@ -630,6 +673,25 @@ class Token implements JsonSerializable
         while ($from !== $to)
         {
             $tokens[] = $from = $from->next();
+        }
+
+        return $tokens;
+    }
+
+    public function collectSiblings(Token $to = null): TokenCollection
+    {
+        $tokens = new TokenCollection();
+        $from   = $this->OpenedBy ?: $this;
+
+        if (($to && ($from->Index > $to->Index || $to->isNull())) || $from->isNull())
+        {
+            return $tokens;
+        }
+
+        $tokens[] = $from;
+        while (!$from->isNull() && !($to && $from === $to))
+        {
+            $tokens[] = $from = $from->nextSibling();
         }
 
         return $tokens;

@@ -48,5 +48,8 @@ PHP;
     {
         $formatter = new Formatter();
         $this->assertSame($expected, $formatter->format($code));
+
+        //$this->assertSame($expected, $output = $formatter->format($code));
+        //file_put_contents("/tmp/formatter.out", $output);
     }
 }
