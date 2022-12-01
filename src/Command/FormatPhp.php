@@ -6,6 +6,7 @@ use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Cli\Concept\CliCommand;
 use Lkrms\Cli\Exception\CliArgumentsInvalidException;
+use Lkrms\Facade\Console;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\File;
 use Lkrms\Pretty\Php\Formatter;
@@ -42,7 +43,14 @@ class FormatPhp extends CliCommand
         return [
             (CliOption::build()
                 ->long("file")
-                ->description("One or more PHP files to format")
+                ->description(<<<EOF
+One or more PHP files to format
+
+If no files are named on the command line, __{{command}}__
+reads the standard input and writes formatted code to the
+standard output.
+EOF
+                )
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->multipleAllowed()),
             (CliOption::build()
@@ -59,6 +67,7 @@ class FormatPhp extends CliCommand
             (CliOption::build()
                 ->long("skip")
                 ->short("i")
+                ->valueName("RULE")
                 ->description("Skip one or more rules")
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys($this->SkipMap))
@@ -66,6 +75,10 @@ class FormatPhp extends CliCommand
             (CliOption::build()
                 ->short("n")
                 ->description("Shorthand for '--skip preserve-newlines'")),
+            (CliOption::build()
+                ->long("stdout")
+                ->short("o")
+                ->description("Write to the standard output")),
             (CliOption::build()
                 ->long("debug")
                 ->valueName("DIR")
@@ -92,14 +105,20 @@ class FormatPhp extends CliCommand
         }
         $skip = array_values(array_intersect_key($this->SkipMap, array_flip($skip)));
 
-        $files = $this->getOptionValue("file");
+        $files  = $this->getOptionValue("file");
+        $stdout = $this->getOptionValue("stdout");
         if (!$files && stream_isatty(STDIN))
         {
             throw new CliArgumentsInvalidException("FILE required when input is a TTY");
         }
-        elseif (!$files || $files === ["-"])
+        elseif (!$files)
         {
-            $files = ["php://stdin"];
+            $files  = ["php://stdin"];
+            $stdout = true;
+        }
+        if ($stdout)
+        {
+            Console::registerStderrTarget(true);
         }
 
         $debug = $this->getOptionValue("debug");
@@ -113,6 +132,7 @@ class FormatPhp extends CliCommand
         $formatter = new Formatter($tab, $skip);
         foreach ($files as $file)
         {
+            Console::info("Formatting", $file);
             $input = file_get_contents($file);
             try
             {
@@ -120,23 +140,55 @@ class FormatPhp extends CliCommand
             }
             catch (PrettyException $ex)
             {
-                $this->maybeDumpDebugOutput($input, $ex->getOutput(), $ex->getData());
+                $this->maybeDumpDebugOutput($input, $ex->getOutput(), $ex->getTokens(), $ex->getData());
                 throw $ex;
             }
+            $this->maybeDumpDebugOutput($input, $output, $formatter->Tokens, null);
 
-            $this->maybeDumpDebugOutput($input, $output, $formatter->Tokens);
+            if ($stdout)
+            {
+                print $output;
+                continue;
+            }
 
-            print $output;
+            if ($input === $output)
+            {
+                Console::log("Nothing to do");
+                continue;
+            }
+
+            Console::log("Replacing", $file);
+            file_put_contents($file, $output);
         }
     }
 
-    private function maybeDumpDebugOutput(string $input, string $output, array $tokens)
+    /**
+     * @param \Lkrms\Pretty\Php\Token[] $tokens
+     * @param mixed $data
+     */
+    private function maybeDumpDebugOutput(string $input, ?string $output, ?array $tokens, $data): void
     {
         if (!is_null($this->DebugDirectory))
         {
-            file_put_contents($this->DebugDirectory . "/input.php", $input);
-            file_put_contents($this->DebugDirectory . "/output.php", $output);
-            file_put_contents($this->DebugDirectory . "/tokens.json", json_encode($tokens, JSON_PRETTY_PRINT));
+            foreach ([
+                "input.php"   => $input,
+                "output.php"  => $output,
+                "tokens.json" => $tokens,
+                "data.json"   => $data,
+            ] as $file        => $contents)
+            {
+                $file = "{$this->DebugDirectory}/{$file}";
+                File::maybeDelete($file);
+                if (!is_null($contents))
+                {
+                    file_put_contents(
+                        $file,
+                        is_string($contents)
+                        ? $contents
+                        : json_encode($contents, JSON_PRETTY_PRINT)
+                    );
+                }
+            }
         }
     }
 }

@@ -1,2 +1,16 @@
 parameters:
-	ignoreErrors: []
+	ignoreErrors:
+		-
+			message: "#^Method Lkrms\\\\Pretty\\\\Php\\\\Token\\:\\:jsonSerialize\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Php/Token.php
+
+		-
+			message: "#^Method Lkrms\\\\Pretty\\\\Tests\\\\Php\\\\TokenTest\\:\\:runFormatter\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: tests/Php/TokenTest.php
+
+		-
+			message: "#^Method Lkrms\\\\Pretty\\\\Tests\\\\Php\\\\TokenTest\\:\\:testRenderPhpDoc\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: tests/Php/TokenTest.php

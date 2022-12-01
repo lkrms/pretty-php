@@ -6,6 +6,9 @@ namespace Lkrms\Pretty\Php;
 
 use Lkrms\Concept\TypedCollection;
 
+/**
+ * @extends TypedCollection<Token>
+ */
 final class TokenCollection extends TypedCollection
 {
     protected function getItemClass(): string
@@ -28,6 +31,38 @@ final class TokenCollection extends TypedCollection
         }
 
         return false;
+    }
+
+    /**
+     * @param int|string ...$types
+     */
+    public function getAnyOf(...$types): TokenCollection
+    {
+        $tokens = new TokenCollection();
+        /** @var Token $token */
+        foreach ($this as $token)
+        {
+            if ($token->isOneOf(...$types))
+            {
+                $tokens[] = $token;
+            }
+        }
+
+        return $tokens;
+    }
+
+    /**
+     * @return array<int|string>
+     */
+    public function getTypes(): array
+    {
+        /** @var Token $token */
+        foreach ($this as $token)
+        {
+            $types[] = $token->Type;
+        }
+
+        return $types ?? [];
     }
 
     public function hasInnerNewline(): bool

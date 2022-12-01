@@ -19,8 +19,10 @@ use Lkrms\Pretty\Php\Rule\AddStandardWhitespace;
 use Lkrms\Pretty\Php\Rule\BracePosition;
 use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
 use Lkrms\Pretty\Php\Rule\CommaCommaComma;
+use Lkrms\Pretty\Php\Rule\MatchPosition;
 use Lkrms\Pretty\Php\Rule\PlaceComments;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
+use Lkrms\Pretty\Php\Rule\ProtectStrings;
 use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
 use Lkrms\Pretty\Php\Rule\SpaceOperators;
 use Lkrms\Pretty\Php\Rule\SwitchPosition;
@@ -47,6 +49,7 @@ final class Formatter implements IReadable
      * @var string[]
      */
     protected $Rules = [
+        ProtectStrings::class,
         BreakAfterSeparators::class,
         BracePosition::class,
         SpaceOperators::class,
@@ -56,6 +59,7 @@ final class Formatter implements IReadable
         PreserveNewlines::class,
         AddIndentation::class,
         SwitchPosition::class,
+        MatchPosition::class,
         AddHangingIndentation::class,
         ReindentHeredocs::class,
         AddEssentialWhitespace::class,
@@ -176,19 +180,34 @@ final class Formatter implements IReadable
         }
         catch (ParseError $ex)
         {
-            throw new PrettyException("Formatting check failed: output cannot be parsed", $out, $this->Tokens, $ex);
+            throw new PrettyException(
+                "Formatting check failed: output cannot be parsed",
+                $out,
+                $this->Tokens,
+                null,
+                $ex
+            );
         }
 
         $before = $this->strip($this->PlainTokens, ...$this->ComparisonFilters);
         $after  = $this->strip($tokensOut, ...$this->ComparisonFilters);
         if ($before !== $after)
         {
-            throw new PrettyException("Formatting check failed: parsed output doesn't match input", $out, $this->Tokens);
+            throw new PrettyException(
+                "Formatting check failed: parsed output doesn't match input",
+                $out,
+                $this->Tokens,
+                [$before, $after]
+            );
         }
 
         return $out;
     }
 
+    /**
+     * @param array<string|array{0:int,1:string,2:int}> $tokens
+     * @return array<string|array{0:int,1:string,2:int}>
+     */
     private function filter(array $tokens, TokenFilter ...$filters): array
     {
         foreach ($filters as $filter)
@@ -206,6 +225,10 @@ final class Formatter implements IReadable
         return $tokens;
     }
 
+    /**
+     * @param array<string|array{0:int,1:string,2:int}> $tokens
+     * @return array<string|array{0:int,1:string,2:int}>
+     */
     private function strip(array $tokens, TokenFilter ...$filters): array
     {
         $tokens = array_values($this->filter($tokens, ...$filters));

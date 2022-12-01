@@ -19,7 +19,7 @@ class SwitchPosition implements TokenRule
             return;
         }
 
-        if (!$token->is(T_CASE) || !$token->parent()->prevSibling(2)->is(T_SWITCH))
+        if (!$token->isOneOf(T_CASE, T_DEFAULT) || !$token->parent()->prevSibling(2)->is(T_SWITCH))
         {
             return;
         }

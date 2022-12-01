@@ -31,6 +31,7 @@ final class TokenType
 
     public const PRESERVE_NEWLINE_BEFORE = [
         "!",
+        T_OBJECT_OPERATOR,
         ...self::OPERATOR_ARITHMETIC,
         ...self::OPERATOR_BITWISE,
         ...self::OPERATOR_COMPARISON,
@@ -181,6 +182,10 @@ final class TokenType
         T_VAR,
     ];
 
+    public const DECLARATION_CONDENSE = [
+        T_USE,
+    ];
+
     public const HAS_STATEMENT_WITH_OPTIONAL_BRACES = [
         T_DO,
         T_ELSE,
@@ -210,8 +215,11 @@ final class TokenType
     public const ADD_SPACE_AFTER = [
         T_INCLUDE,
         T_INCLUDE_ONCE,
+        T_MATCH,
         T_REQUIRE,
         T_REQUIRE_ONCE,
+        T_RETURN,
+        T_SWITCH,
         ...self::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES,
     ];
 
@@ -223,63 +231,88 @@ final class TokenType
         ...self::CAST,
     ];
 
-    public const OTHER = [
-        T_ATTRIBUTE,
-        T_BREAK,
-        T_CASE,
-        T_CATCH,
-        T_CLASS_C,
-        T_CLONE,
-        T_CONSTANT_ENCAPSED_STRING,
-        T_CONTINUE,
-        T_CURLY_OPEN,
-        T_DECLARE,
-        T_DEFAULT,
-        T_DIR,
-        T_DNUMBER,
-        T_DOLLAR_OPEN_CURLY_BRACES,
-        T_ECHO,
-        T_EMPTY,
+    public const ALTERNATIVE_SYNTAX = [
         T_ENDDECLARE,
         T_ENDFOR,
         T_ENDFOREACH,
         T_ENDIF,
         T_ENDSWITCH,
         T_ENDWHILE,
+    ];
+
+    public const MAGIC_CONSTANT = [
+        T_CLASS_C,
+        T_DIR,
+        T_FILE,
+        T_FUNC_C,
+        T_LINE,
+        T_METHOD_C,
+        T_NS_C,
+        T_TRAIT_C,
+    ];
+
+    public const KEYWORD = [
+        T_ARRAY,
+        T_AS,
+        T_BREAK,
+        T_CALLABLE,
+        T_CASE,
+        T_CATCH,
+        T_CLONE,
+        T_CONTINUE,
+        T_DECLARE,
+        T_DEFAULT,
+        T_DO,
+        T_ECHO,
+        T_ELLIPSIS,
+        T_ELSE,
+        T_ELSEIF,
+        T_EMPTY,
         T_EVAL,
         T_EXIT,
-        T_FILE,
         T_FINALLY,
         T_FN,
-        T_FUNC_C,
+        T_FOR,
+        T_FOREACH,
         T_GLOBAL,
         T_GOTO,
         T_HALT_COMPILER,
+        T_IF,
+        T_INCLUDE_ONCE,
+        T_INCLUDE,
+        T_INSTEADOF,
         T_ISSET,
-        T_LINE,
         T_LIST,
-        T_LNUMBER,
         T_MATCH,
-        T_METHOD_C,
+        T_NEW,
+        T_PRINT,
+        T_REQUIRE_ONCE,
+        T_REQUIRE,
+        T_RETURN,
+        T_SWITCH,
+        T_THROW,
+        T_TRY,
+        T_UNSET,
+        T_WHILE,
+        T_YIELD_FROM,
+        T_YIELD,
+        ...self::DECLARATION,
+        ...self::ALTERNATIVE_SYNTAX,
+    ];
+
+    public const OTHER = [
+        T_ATTRIBUTE,
+        T_CONSTANT_ENCAPSED_STRING,
+        T_CURLY_OPEN,
+        T_DNUMBER,
+        T_DOLLAR_OPEN_CURLY_BRACES,
+        T_LNUMBER,
         T_NAME_FULLY_QUALIFIED,
         T_NAME_QUALIFIED,
         T_NAME_RELATIVE,
-        T_NEW,
-        T_NS_C,
         T_NS_SEPARATOR,
         T_NUM_STRING,
-        T_PAAMAYIM_NEKUDOTAYIM,
-        T_PRINT,
-        T_RETURN,
-        T_STRING,
         T_STRING_VARNAME,
-        T_SWITCH,
-        T_THROW,
-        T_TRAIT_C,
-        T_TRY,
-        T_UNSET,
-        T_YIELD,
-        T_YIELD_FROM,
     ];
 
 }

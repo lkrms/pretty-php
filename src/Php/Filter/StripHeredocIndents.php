@@ -8,6 +8,9 @@ use Lkrms\Pretty\Php\Contract\TokenFilter;
 
 class StripHeredocIndents implements TokenFilter
 {
+    /**
+     * @var string[]|null
+     */
     private $Heredoc;
 
     public function __invoke(&$token): bool

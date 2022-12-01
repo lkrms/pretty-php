@@ -106,7 +106,7 @@ class Token implements JsonSerializable
     private $_next;
 
     /**
-     * @param array|string $token
+     * @param string|array{0:int,1:string,2:int} $token
      * @param Token[] $bracketStack
      */
     public function __construct(int $index, $token, ?Token $prev, array $bracketStack, Formatter $formatter)
@@ -192,10 +192,6 @@ class Token implements JsonSerializable
         {
             unset($a["Tags"]);
         }
-        $a["prevSibling()"]      = $this->prevSibling()->Index;
-        $a["nextSibling()"]      = $this->nextSibling()->Index;
-        $a["startOfStatement()"] = $this->startOfStatement()->Index;
-        $a["endOfStatement()"]   = $this->endOfStatement()->Index;
 
         return $a;
     }
@@ -518,10 +514,12 @@ class Token implements JsonSerializable
     public function isStatementPrecursor(): bool
     {
         return $this->isOneOf("(", ";", "[", "{", "}") ||
-            ($this->is(",") && $this->parent()->isOneOf("(", "["));
+            ($this->is(",") &&
+                (($parent = $this->parent())->isOneOf("(", "[") ||
+                    ($parent->is("{") && $parent->prevSibling(2)->is(T_MATCH))));
     }
 
-    public function isBrace()
+    public function isBrace(): bool
     {
         return $this->is("{") || ($this->is("}") && $this->OpenedBy->is("{"));
     }
@@ -551,7 +549,7 @@ class Token implements JsonSerializable
                 ($this->is(T_COMMENT) && preg_match('@^/\*@', $this->Code)));
     }
 
-    public function isOperator()
+    public function isOperator(): bool
     {
         // OPERATOR_EXECUTION is excluded because for formatting purposes,
         // commands between backticks are equivalent to double-quoted strings
@@ -606,9 +604,13 @@ class Token implements JsonSerializable
             ...TokenType::OPERATOR_STRING,
             ...TokenType::OPERATOR_DOUBLE_ARROW,
             ...TokenType::CAST,
+            ...TokenType::KEYWORD,
         ) || $prev->isTernaryOperator();
     }
 
+    /**
+     * @param int|string ...$types
+     */
     public function isDeclaration(...$types): bool
     {
         $strings = $this->stringsAfterLastStatement();
@@ -617,6 +619,9 @@ class Token implements JsonSerializable
             (!$types || $strings->hasOneOf(...$types));
     }
 
+    /**
+     * @param int|string ...$types
+     */
     public function inDeclaration(...$types): bool
     {
         $parent = $this->parent();
