@@ -204,14 +204,14 @@ class Token implements JsonSerializable
     {
         $prev = $this->prev();
 
-        return $prev->isNull() || $this->Line > $prev->Line;
+        return $this->Line > $prev->Line || $prev->isNull();
     }
 
     public function wasLastOnLine(): bool
     {
         $next = $this->next();
 
-        return $next->isNull() || $this->Line < $next->Line;
+        return $this->Line < $next->Line || $next->isNull();
     }
 
     public function wasBetweenTokensOnLine(): bool
@@ -336,9 +336,10 @@ class Token implements JsonSerializable
      */
     public function prevSiblingOf(...$types): ?Token
     {
+        $prev = $this;
         do
         {
-            $prev = $this->prevSibling();
+            $prev = $prev->prevSibling();
             if ($prev->isNull())
             {
                 return null;
@@ -354,9 +355,10 @@ class Token implements JsonSerializable
      */
     public function nextSiblingOf(...$types): ?Token
     {
+        $next = $this;
         do
         {
-            $next = $this->nextSibling();
+            $next = $next->nextSibling();
             if ($next->isNull())
             {
                 return null;
@@ -562,24 +564,21 @@ class Token implements JsonSerializable
             ...TokenType::OPERATOR_INCREMENT_DECREMENT,
             ...TokenType::OPERATOR_LOGICAL,
             ...TokenType::OPERATOR_STRING,
+            ...TokenType::OPERATOR_DOUBLE_ARROW,
             ...TokenType::OPERATOR_INSTANCEOF
         ) || $this->isTernaryOperator();
     }
 
     public function isUnaryOperator(): bool
     {
-        if ($this->isOneOf(
+        return ($this->isOneOf(
             "~", "!",
             ...TokenType::OPERATOR_ERROR_CONTROL,
             ...TokenType::OPERATOR_INCREMENT_DECREMENT
-        ))
-        {
-            return true;
-        }
-
-        // TODO: check if this is a unary "+" or "-", e.g. "$a = -$b"
-
-        return false;
+        ) || (
+            $this->isOneOf("+", "-") &&
+            $this->isUnaryContext()
+        ));
     }
 
     public function isTernaryOperator(): bool
@@ -593,9 +592,36 @@ class Token implements JsonSerializable
         return $this->isOperator() && !$this->isUnaryOperator();
     }
 
-    public function isDeclaration(): bool
+    public function isUnaryContext(): bool
     {
-        return $this->stringsAfterLastStatement()->hasOneOf(...TokenType::DECLARATION);
+        $prev = $this->prevCode();
+
+        return $prev->isOneOf(
+            "(", ",", ";", "[", "{", "}",
+            ...TokenType::OPERATOR_ARITHMETIC,
+            ...TokenType::OPERATOR_ASSIGNMENT,
+            ...TokenType::OPERATOR_BITWISE,
+            ...TokenType::OPERATOR_COMPARISON,
+            ...TokenType::OPERATOR_LOGICAL,
+            ...TokenType::OPERATOR_STRING,
+            ...TokenType::OPERATOR_DOUBLE_ARROW,
+            ...TokenType::CAST,
+        ) || $prev->isTernaryOperator();
+    }
+
+    public function isDeclaration(...$types): bool
+    {
+        $strings = $this->stringsAfterLastStatement();
+
+        return $strings->hasOneOf(...TokenType::DECLARATION) &&
+            (!$types || $strings->hasOneOf(...$types));
+    }
+
+    public function inDeclaration(...$types): bool
+    {
+        $parent = $this->parent();
+
+        return $parent->isOneOf("(", "{") && $parent->isDeclaration(...$types);
     }
 
     public function indent(): string

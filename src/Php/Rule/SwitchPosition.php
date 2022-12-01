@@ -12,15 +12,15 @@ class SwitchPosition implements TokenRule
 {
     public function __invoke(Token $token): void
     {
-        if (!$token->isOneOf(T_CASE, T_SWITCH))
-        {
-            return;
-        }
-
         if ($token->is(T_SWITCH))
         {
             $token->nextSibling(2)->inner()->withEach(fn(Token $t) => $t->Indent++);
 
+            return;
+        }
+
+        if (!$token->is(T_CASE) || !$token->parent()->prevSibling(2)->is(T_SWITCH))
+        {
             return;
         }
 

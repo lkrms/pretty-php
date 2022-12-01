@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Pretty\Php;
 
-class TokenType
+final class TokenType
 {
     public const DO_NOT_MODIFY = [
         T_ENCAPSED_AND_WHITESPACE,
@@ -23,13 +23,14 @@ class TokenType
     ];
 
     public const PRESERVE_NEWLINE_AFTER = [
-        "(", ",", ";", "=", "[", "}",
-        T_DOUBLE_ARROW,     // =>
+        "(", ",", ";", "[", "}",
         ...self::OPERATOR_ASSIGNMENT,
-        ...self::OPERATOR_LOGICAL,
+        ...self::OPERATOR_DOUBLE_ARROW,
+        ...self::OPERATOR_LOGICAL_EXCEPT_NOT,
     ];
 
     public const PRESERVE_NEWLINE_BEFORE = [
+        "!",
         ...self::OPERATOR_ARITHMETIC,
         ...self::OPERATOR_BITWISE,
         ...self::OPERATOR_COMPARISON,
@@ -54,6 +55,12 @@ class TokenType
         T_CLOSE_TAG,
         ...self::WHITESPACE,
         ...self::COMMENT,
+    ];
+
+    public const AMPERSAND = [
+        "&",
+        T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+        T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
     ];
 
     public const OPERATOR_ARITHMETIC = [
@@ -83,21 +90,17 @@ class TokenType
     ];
 
     public const OPERATOR_BITWISE = [
-        "&",
-        "|",
-        "^",
-        "~",
+        "&", "|", "^", "~",
         T_SL,     // <<
         T_SR,     // >>
     ];
 
     public const OPERATOR_COMPARISON = [
+        "<", ">",
         T_IS_EQUAL,     // ==
         T_IS_IDENTICAL,     // ===
         T_IS_NOT_EQUAL,     // != or <>
         T_IS_NOT_IDENTICAL,     // !==
-        "<",
-        ">",
         T_IS_SMALLER_OR_EQUAL,     // <=
         T_IS_GREATER_OR_EQUAL,     // >=
         T_SPACESHIP,     // <=>
@@ -122,17 +125,25 @@ class TokenType
         T_DEC,     // --
     ];
 
-    public const OPERATOR_LOGICAL = [
+    public const OPERATOR_LOGICAL_EXCEPT_NOT = [
         T_LOGICAL_AND,     // and
         T_LOGICAL_OR,     // or
         T_LOGICAL_XOR,     // xor
-        "!",
         T_BOOLEAN_AND,     // &&
         T_BOOLEAN_OR,     // ||
     ];
 
+    public const OPERATOR_LOGICAL = [
+        "!",
+        ...self::OPERATOR_LOGICAL_EXCEPT_NOT,
+    ];
+
     public const OPERATOR_STRING = [
         ".",
+    ];
+
+    public const OPERATOR_DOUBLE_ARROW = [
+        T_DOUBLE_ARROW,     // =>
     ];
 
     public const OPERATOR_INSTANCEOF = [
@@ -183,22 +194,38 @@ class TokenType
         T_WHILE,
     ];
 
-    public const HAS_SPACE_AFTER = [
-        T_ELSEIF,
-        T_FOR,
-        T_FOREACH,
-        T_IF,
-        T_WHILE,
+    public const ADD_SPACE_AROUND = [
+        T_AS,
+        T_INSTEADOF,
+    ];
+
+    public const ADD_SPACE_BEFORE = [
+        T_ARRAY,
+        T_CALLABLE,
+        T_ELLIPSIS,
+        T_STRING,
+        T_VARIABLE,
+    ];
+
+    public const ADD_SPACE_AFTER = [
+        T_INCLUDE,
+        T_INCLUDE_ONCE,
+        T_REQUIRE,
+        T_REQUIRE_ONCE,
+        ...self::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES,
+    ];
+
+    public const SUPPRESS_SPACE_AFTER = [
+        T_DOUBLE_COLON,
+        T_ELLIPSIS,
+        T_NULLSAFE_OBJECT_OPERATOR,
+        T_OBJECT_OPERATOR,
+        ...self::CAST,
     ];
 
     public const OTHER = [
-        T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
-        T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
-        T_ARRAY,
-        T_AS,
         T_ATTRIBUTE,
         T_BREAK,
-        T_CALLABLE,
         T_CASE,
         T_CATCH,
         T_CLASS_C,
@@ -211,7 +238,6 @@ class TokenType
         T_DIR,
         T_DNUMBER,
         T_DOLLAR_OPEN_CURLY_BRACES,
-        T_DOUBLE_COLON,
         T_ECHO,
         T_EMPTY,
         T_ENDDECLARE,
@@ -229,9 +255,6 @@ class TokenType
         T_GLOBAL,
         T_GOTO,
         T_HALT_COMPILER,
-        T_INCLUDE,
-        T_INCLUDE_ONCE,
-        T_INSTEADOF,
         T_ISSET,
         T_LINE,
         T_LIST,
@@ -244,13 +267,9 @@ class TokenType
         T_NEW,
         T_NS_C,
         T_NS_SEPARATOR,
-        T_NULLSAFE_OBJECT_OPERATOR,
         T_NUM_STRING,
-        T_OBJECT_OPERATOR,
         T_PAAMAYIM_NEKUDOTAYIM,
         T_PRINT,
-        T_REQUIRE,
-        T_REQUIRE_ONCE,
         T_RETURN,
         T_STRING,
         T_STRING_VARNAME,
@@ -259,7 +278,6 @@ class TokenType
         T_TRAIT_C,
         T_TRY,
         T_UNSET,
-        T_VARIABLE,
         T_YIELD,
         T_YIELD_FROM,
     ];

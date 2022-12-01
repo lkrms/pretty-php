@@ -6,6 +6,7 @@ namespace Lkrms\Pretty\Php;
 
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
+use Lkrms\Facade\Env;
 use Lkrms\Pretty\Php\Contract\TokenFilter;
 use Lkrms\Pretty\Php\Filter\RemoveCommentTokens;
 use Lkrms\Pretty\Php\Filter\RemoveEmptyTokens;
@@ -136,12 +137,30 @@ final class Formatter implements IReadable
             $token->WhitespaceAfter |= WhitespaceType::LINE;
         }
 
-        foreach ($this->Rules as $rule)
+        foreach ($this->Rules as $_rule)
         {
-            $rule = new $rule();
+            $rule = new $_rule();
+
+            if (!Env::debug())
+            {
+                /** @var Token $token */
+                foreach ($this->Tokens as $token)
+                {
+                    $rule($token);
+                }
+
+                continue;
+            }
+
+            /** @var Token $token */
             foreach ($this->Tokens as $token)
             {
+                $clone = clone $token;
                 $rule($token);
+                if ($clone != $token)
+                {
+                    $token->Tags[] = "rule:$_rule";
+                }
             }
         }
 

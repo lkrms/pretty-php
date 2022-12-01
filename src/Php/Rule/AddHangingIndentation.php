@@ -7,6 +7,11 @@ namespace Lkrms\Pretty\Php\Rule;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 
+/**
+ * If the first token on a new line continues a statement from the previous
+ * line, add a hanging indent
+ *
+ */
 class AddHangingIndentation implements TokenRule
 {
     public function __invoke(Token $token): void
@@ -58,6 +63,12 @@ class AddHangingIndentation implements TokenRule
                 return false;
             }
         }
+
+        // $token is regarded as a continuation of $prev if:
+        // - $token and $prev both have the same level of indentation;
+        // - $token is not an opening brace (`{`) on its own line; and
+        // - $prev is not a statement delimiter in a context where indentation
+        //   is inherited from enclosing tokens
         return ($prev->Indent - $prev->Deindent) === ($token->Indent - $token->Deindent) &&
             !($token->isBrace() && $token->hasNewlineBefore()) &&
             !($prev->isStatementPrecursor() &&
