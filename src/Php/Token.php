@@ -71,6 +71,11 @@ class Token implements JsonSerializable
     public $IndentStack = [];
 
     /**
+     * @var int
+     */
+    public $Padding = 0;
+
+    /**
      * @var Token|null
      */
     public $HeredocOpenedBy;
@@ -682,6 +687,10 @@ class Token implements JsonSerializable
             if (substr($code, -1) === "\n" && ($this->Indent - $this->Deindent))
             {
                 $code .= $this->indent();
+            }
+            if ($this->Padding)
+            {
+                $code .= str_repeat(" ", $this->Padding);
             }
         }
 

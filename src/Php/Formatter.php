@@ -7,7 +7,9 @@ namespace Lkrms\Pretty\Php;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Facade\Env;
+use Lkrms\Pretty\Php\Contract\BlockRule;
 use Lkrms\Pretty\Php\Contract\TokenFilter;
+use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Filter\RemoveCommentTokens;
 use Lkrms\Pretty\Php\Filter\RemoveEmptyTokens;
 use Lkrms\Pretty\Php\Filter\RemoveWhitespaceTokens;
@@ -16,6 +18,7 @@ use Lkrms\Pretty\Php\Rule\AddEssentialWhitespace;
 use Lkrms\Pretty\Php\Rule\AddHangingIndentation;
 use Lkrms\Pretty\Php\Rule\AddIndentation;
 use Lkrms\Pretty\Php\Rule\AddStandardWhitespace;
+use Lkrms\Pretty\Php\Rule\AlignAssignments;
 use Lkrms\Pretty\Php\Rule\BracePosition;
 use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
 use Lkrms\Pretty\Php\Rule\CommaCommaComma;
@@ -49,7 +52,8 @@ final class Formatter implements IReadable
      * @var string[]
      */
     protected $Rules = [
-        ProtectStrings::class,
+    // TokenRules
+    ProtectStrings::class,
         BreakAfterSeparators::class,
         BracePosition::class,
         SpaceOperators::class,
@@ -63,6 +67,9 @@ final class Formatter implements IReadable
         AddHangingIndentation::class,
         ReindentHeredocs::class,
         AddEssentialWhitespace::class,
+
+        // BlockRules
+        AlignAssignments::class,
     ];
 
     /**
@@ -136,13 +143,20 @@ final class Formatter implements IReadable
             }
         }
 
-        if (isset($token))
+        if (!isset($token))
         {
-            $token->WhitespaceAfter |= WhitespaceType::LINE;
+            return "";
         }
+
+        $token->WhitespaceAfter |= WhitespaceType::LINE;
 
         foreach ($this->Rules as $_rule)
         {
+            if (!is_a($_rule, TokenRule::class, true))
+            {
+                continue;
+            }
+
             $rule = new $_rule();
 
             if (!Env::debug())
@@ -165,6 +179,62 @@ final class Formatter implements IReadable
                 {
                     $token->Tags[] = "rule:$_rule";
                 }
+            }
+        }
+
+        /** @var array<TokenCollection[]> $blocks */
+        $blocks = [];
+        /** @var TokenCollection[] $block */
+        $block = [];
+        $line  = new TokenCollection();
+        /** @var Token $token */
+        $token  = reset($this->Tokens);
+        $line[] = $token;
+
+        do
+        {
+            if (($token = $token->next())->isNull())
+            {
+                $token = null;
+            }
+            $before = ($token
+                ? $token->effectiveWhitespaceBefore() & (WhitespaceType::BLANK | WhitespaceType::LINE)
+                : WhitespaceType::BLANK);
+            if (!$before)
+            {
+                $line[] = $token;
+                continue;
+            }
+            if ($before === WhitespaceType::LINE)
+            {
+                $block[] = $line;
+                $line    = new TokenCollection();
+                $line[]  = $token;
+                continue;
+            }
+            $block[]  = $line;
+            $blocks[] = $block;
+            if ($token)
+            {
+                $block  = [];
+                $line   = new TokenCollection();
+                $line[] = $token;
+            }
+        }
+        while ($token);
+
+        foreach ($this->Rules as $_rule)
+        {
+            if (!is_a($_rule, BlockRule::class, true))
+            {
+                continue;
+            }
+
+            $rule = new $_rule();
+
+            foreach ($blocks as $block)
+            {
+                $rule($block);
             }
         }
 

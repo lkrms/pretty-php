@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Pretty\Php;
 
 use Lkrms\Concept\TypedCollection;
+use Lkrms\Pretty\WhitespaceType;
 
 /**
  * @extends TypedCollection<Token>
@@ -49,6 +50,23 @@ final class TokenCollection extends TypedCollection
         }
 
         return $tokens;
+    }
+
+    /**
+     * @param int|string ...$types
+     */
+    public function getFirstOf(...$types): ?Token
+    {
+        /** @var Token $token */
+        foreach ($this as $token)
+        {
+            if ($token->isOneOf(...$types))
+            {
+                return $token;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -103,5 +121,25 @@ final class TokenCollection extends TypedCollection
         }
 
         return $this;
+    }
+
+    public function render(): string
+    {
+        [$code, $i] = ["", 0];
+        /** @var Token $token */
+        foreach ($this as $token)
+        {
+            $code .= $token->render();
+            if (!$i++)
+            {
+                $before = WhitespaceType::toWhitespace($token->effectiveWhitespaceBefore());
+                if ($before)
+                {
+                    $code = substr($code, strlen($before));
+                }
+            }
+        }
+
+        return $code;
     }
 }
