@@ -129,10 +129,11 @@ EOF
             $debug = $this->DebugDirectory = realpath($debug) ?: null;
         }
 
-        $formatter = new Formatter($tab, $skip);
+        $formatter   = new Formatter($tab, $skip);
+        [$i, $count] = [0, count($files)];
         foreach ($files as $file)
         {
-            Console::info("Formatting", $file);
+            Console::info(sprintf("Formatting %d of %d:", ++$i, $count), $file);
             $input = file_get_contents($file);
             try
             {

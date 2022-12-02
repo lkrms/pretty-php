@@ -22,6 +22,8 @@ class ProtectStrings implements TokenRule
             return;
         }
 
+        $token->StringOpenedBy = $token->prev()->StringOpenedBy ?: $token;
+
         if (!$this->InString)
         {
             $token->WhitespaceMaskNext = WhitespaceType::NONE;

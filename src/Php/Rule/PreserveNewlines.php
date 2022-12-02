@@ -92,12 +92,14 @@ class PreserveNewlines implements TokenRule
     private function preserveNewlineAfter(Token $token): bool
     {
         return $token->isOneOf(...TokenType::PRESERVE_NEWLINE_AFTER) &&
+            !($token->isOpenBracket() && $token->next()->isCloseBracket()) &&
             (!$token->is(":") || $token->isTernaryOperator());
     }
 
     private function preserveNewlineBefore(Token $token): bool
     {
         return $token->isOneOf(...TokenType::PRESERVE_NEWLINE_BEFORE) &&
+            !($token->isCloseBracket() && $token->prev()->isOpenBracket()) &&
             (!$token->is(":") || $token->isTernaryOperator());
     }
 }

@@ -6,6 +6,7 @@ namespace Lkrms\Pretty\Php\Rule;
 
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
+use Lkrms\Pretty\WhitespaceType;
 
 class ReindentHeredocs implements TokenRule
 {
@@ -20,33 +21,27 @@ class ReindentHeredocs implements TokenRule
         {
             return;
         }
+        $token->HeredocOpenedBy = $token->prev()->HeredocOpenedBy ?: $token;
         if (!$this->InHeredoc)
         {
+            $token->WhitespaceMaskNext = WhitespaceType::NONE;
             $this->InHeredoc = true;
-
-            return;
         }
-        if ($token->is(T_END_HEREDOC))
+        elseif ($token->is(T_END_HEREDOC))
         {
-            if ($token->Indent)
-            {
-                $token->Code = $token->indent() . $token->Code;
-            }
+            $token->WhitespaceMaskPrev = WhitespaceType::NONE;
             $this->InHeredoc = false;
-
-            return;
+        }
+        else
+        {
+            $token->WhitespaceMaskPrev = WhitespaceType::NONE;
+            $token->WhitespaceMaskNext = WhitespaceType::NONE;
         }
         if (!$token->Indent)
         {
             return;
         }
-        $indent = $token->indent();
-        // Only indent lines that aren't empty
-        $token->Code = preg_replace('/\n(?=[\h\S])/', "\n" . $indent, $token->Code);
-        if ($token->prev()->is(T_START_HEREDOC) && preg_match('/^(?=[\h\S])/', $token->Code))
-        {
-            $token->Code = $indent . $token->Code;
-        }
+        $token->Code = str_replace("\n", "\n" . $token->HeredocOpenedBy->indent(), $token->Code);
     }
 
 }

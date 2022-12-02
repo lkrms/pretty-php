@@ -71,6 +71,16 @@ class Token implements JsonSerializable
     public $IndentStack = [];
 
     /**
+     * @var Token|null
+     */
+    public $HeredocOpenedBy;
+
+    /**
+     * @var Token|null
+     */
+    public $StringOpenedBy;
+
+    /**
      * @var int
      */
     public $WhitespaceBefore = WhitespaceType::NONE;
@@ -183,10 +193,12 @@ class Token implements JsonSerializable
                 $t = $t->Index;
             }
         }
-        $a["OpenedBy"] = $a["OpenedBy"]->Index ?? null;
-        $a["ClosedBy"] = $a["ClosedBy"]->Index ?? null;
-        $a["_prev"]    = $a["_prev"]->Index ?? null;
-        $a["_next"]    = $a["_next"]->Index ?? null;
+        $a["OpenedBy"]        = $a["OpenedBy"]->Index ?? null;
+        $a["ClosedBy"]        = $a["ClosedBy"]->Index ?? null;
+        $a["HeredocOpenedBy"] = $a["HeredocOpenedBy"]->Index ?? null;
+        $a["StringOpenedBy"]  = $a["StringOpenedBy"]->Index ?? null;
+        $a["_prev"] = $a["_prev"]->Index ?? null;
+        $a["_next"] = $a["_next"]->Index ?? null;
         unset($a["Formatter"]);
         if (empty($a["Tags"]))
         {
@@ -452,12 +464,12 @@ class Token implements JsonSerializable
 
     public function effectiveWhitespaceBefore(): int
     {
-        return ($this->WhitespaceBefore & $this->prev()->WhitespaceMaskNext) | ($this->prev()->WhitespaceAfter & $this->WhitespaceMaskPrev);
+        return ($this->WhitespaceBefore | $this->prev()->WhitespaceAfter) & $this->prev()->WhitespaceMaskNext & $this->WhitespaceMaskPrev;
     }
 
     public function effectiveWhitespaceAfter(): int
     {
-        return ($this->WhitespaceAfter & $this->next()->WhitespaceMaskPrev) | ($this->next()->WhitespaceBefore & $this->WhitespaceMaskNext);
+        return ($this->WhitespaceAfter | $this->next()->WhitespaceBefore) & $this->next()->WhitespaceMaskPrev & $this->WhitespaceMaskNext;
     }
 
     public function hasNewlineBefore(): bool
@@ -638,9 +650,30 @@ class Token implements JsonSerializable
 
     public function render(): string
     {
-        if ($this->isOneOf(...TokenType::DO_NOT_MODIFY))
+        if ($this->HeredocOpenedBy)
+        {
+            // Render heredocs in one go so we can safely trim empty lines
+            if ($this->HeredocOpenedBy !== $this)
+            {
+                return "";
+            }
+            $heredoc = "";
+            $current = $this;
+            do
+            {
+                $heredoc .= $current->Code;
+                $current  = $current->next();
+            }
+            while ($current->HeredocOpenedBy === $this);
+            $heredoc = str_replace("\n" . $this->indent() . "\n", "\n\n", $heredoc);
+        }
+        elseif ($this->isOneOf(...TokenType::DO_NOT_MODIFY))
         {
             return $this->Code;
+        }
+        elseif ($this->isMultiLineComment(true))
+        {
+            $comment = $this->renderComment();
         }
 
         if (!$this->isOneOf(...TokenType::DO_NOT_MODIFY_LHS))
@@ -652,14 +685,12 @@ class Token implements JsonSerializable
             }
         }
 
-        $code = ($code ?? "") . ($this->isMultiLineComment(true)
-            ? $this->renderComment()
-            : $this->Code);
+        $code = ($code ?? "") . ($heredoc ?? $comment ?? $this->Code);
 
         if ((is_null($this->_next) || $this->next()->isOneOf(...TokenType::DO_NOT_MODIFY)) &&
             !$this->isOneOf(...TokenType::DO_NOT_MODIFY_RHS))
         {
-            $code .= WhitespaceType::toWhitespace($this->WhitespaceAfter);
+            $code .= WhitespaceType::toWhitespace($this->effectiveWhitespaceAfter());
         }
 
         return $code;
