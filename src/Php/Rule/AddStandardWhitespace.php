@@ -58,7 +58,7 @@ class AddStandardWhitespace implements TokenRule
                 $token->WhitespaceAfter |= WhitespaceType::SPACE;
                 $token                   = $end;
             }
-            $token->WhitespaceAfter |= WhitespaceType::LINE;
+            $token->WhitespaceAfter |= WhitespaceType::BLANK;
 
             return;
         }

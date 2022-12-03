@@ -62,6 +62,14 @@ final class TokenCollection extends TypedCollection
     }
 
     /**
+     * @param int|string ...$types
+     */
+    public function getLastOf(...$types): ?Token
+    {
+        return $this->reverse()->getFirstOf(...$types);
+    }
+
+    /**
      * @return array<int|string>
      */
     public function getTypes(): array

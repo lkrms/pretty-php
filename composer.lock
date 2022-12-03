@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2a5b3eea2b07e3258f851ff8ed6b2f2d",
+    "content-hash": "626b921c394948e1192d1587bc9d0292",
     "packages": [
         {
             "name": "filp/whoops",
@@ -122,16 +122,16 @@
         },
         {
             "name": "lkrms/util",
-            "version": "v0.18.7",
+            "version": "v0.18.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/php-util.git",
-                "reference": "36fea0c3319880b9d8e7e1cb100aaa85d2d4a703"
+                "reference": "062516ae0557ee3774b34fdd3e25eacb1ce62deb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/php-util/zipball/36fea0c3319880b9d8e7e1cb100aaa85d2d4a703",
-                "reference": "36fea0c3319880b9d8e7e1cb100aaa85d2d4a703",
+                "url": "https://api.github.com/repos/lkrms/php-util/zipball/062516ae0557ee3774b34fdd3e25eacb1ce62deb",
+                "reference": "062516ae0557ee3774b34fdd3e25eacb1ce62deb",
                 "shasum": ""
             },
             "require": {
@@ -173,9 +173,9 @@
             "description": "A lightweight PHP toolkit for elegant backend/CLI apps. May contain traces of Laravel.",
             "support": {
                 "issues": "https://github.com/lkrms/php-util/issues",
-                "source": "https://github.com/lkrms/php-util/tree/v0.18.7"
+                "source": "https://github.com/lkrms/php-util/tree/v0.18.10"
             },
-            "time": "2022-11-25T05:27:24+00:00"
+            "time": "2022-12-03T14:01:15+00:00"
         },
         {
             "name": "psr/container",

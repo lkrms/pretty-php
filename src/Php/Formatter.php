@@ -17,6 +17,7 @@ use Lkrms\Pretty\Php\Rule\AddHangingIndentation;
 use Lkrms\Pretty\Php\Rule\AddIndentation;
 use Lkrms\Pretty\Php\Rule\AddStandardWhitespace;
 use Lkrms\Pretty\Php\Rule\AlignAssignments;
+use Lkrms\Pretty\Php\Rule\AlignComments;
 use Lkrms\Pretty\Php\Rule\BracePosition;
 use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
 use Lkrms\Pretty\Php\Rule\CommaCommaComma;
@@ -68,6 +69,7 @@ final class Formatter implements IReadable
 
         // BlockRules
         AlignAssignments::class,
+        AlignComments::class,
     ];
 
     /**
@@ -178,13 +180,8 @@ final class Formatter implements IReadable
         $token  = reset($this->Tokens);
         $line[] = $token;
 
-        do {
-            if (($token = $token->next())->isNull()) {
-                $token = null;
-            }
-            $before = ($token
-                ? $token->effectiveWhitespaceBefore() & (WhitespaceType::BLANK | WhitespaceType::LINE)
-                : WhitespaceType::BLANK);
+        while (!($token = $token->next())->isNull()) {
+            $before = $token->effectiveWhitespaceBefore() & (WhitespaceType::BLANK | WhitespaceType::LINE);
             if (!$before) {
                 $line[] = $token;
                 continue;
@@ -197,12 +194,12 @@ final class Formatter implements IReadable
             }
             $block[]  = $line;
             $blocks[] = $block;
-            if ($token) {
-                $block  = [];
-                $line   = new TokenCollection();
-                $line[] = $token;
-            }
-        } while ($token);
+            $block    = [];
+            $line     = new TokenCollection();
+            $line[]   = $token;
+        }
+        $block[]  = $line;
+        $blocks[] = $block;
 
         foreach ($this->Rules as $_rule) {
             if (!is_a($_rule, BlockRule::class, true)) {

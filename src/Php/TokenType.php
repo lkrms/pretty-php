@@ -22,6 +22,7 @@ final class TokenType
 
     public const PRESERVE_NEWLINE_AFTER = [
         "(", ",", ";", "[", "}",
+        ...self::COMMENT,
         ...self::OPERATOR_ASSIGNMENT,
         ...self::OPERATOR_DOUBLE_ARROW,
         ...self::OPERATOR_LOGICAL_EXCEPT_NOT,
@@ -211,6 +212,7 @@ final class TokenType
     ];
 
     public const ADD_SPACE_AFTER = [
+        T_CATCH,
         T_INCLUDE,
         T_INCLUDE_ONCE,
         T_MATCH,

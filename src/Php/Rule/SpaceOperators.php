@@ -37,6 +37,7 @@ class SpaceOperators implements TokenRule
             return;
         }
         if ($token->is("?") && !$token->isTernaryOperator()) {
+            $token->WhitespaceBefore  |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
 
             return;

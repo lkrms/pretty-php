@@ -34,6 +34,7 @@ class PlaceComments implements TokenRule
         $token->WhitespaceAfter |= WhitespaceType::LINE;
         if (!$token->is(T_DOC_COMMENT)) {
             $token->WhitespaceBefore |= WhitespaceType::LINE;
+
             return;
         }
         $token->WhitespaceBefore   |= $token->hasNewline() ? WhitespaceType::BLANK : WhitespaceType::LINE;

@@ -695,7 +695,7 @@ class Token implements JsonSerializable
         }
 
         $tokens[] = $from;
-        while (!$from->isNull() && !($to && $from === $to)) {
+        while (!$from->isNull() && !($to && ($from === $to || $from === $to->OpenedBy))) {
             $tokens[] = $from = $from->nextSibling();
         }
 
