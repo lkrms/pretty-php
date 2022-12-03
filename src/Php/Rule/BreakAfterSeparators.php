@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Pretty\Php\Rule;
 
@@ -12,16 +10,14 @@ class BreakAfterSeparators implements TokenRule
 {
     public function __invoke(Token $token): void
     {
-        if (!$token->is(";"))
-        {
+        if (!$token->is(";")) {
             return;
         }
 
         // Don't break after `for` expressions
         if (($bracket = end($token->BracketStack)) &&
             $bracket->is("(") &&
-            $bracket->prev()->is(T_FOR))
-        {
+            $bracket->prev()->is(T_FOR)) {
             return;
         }
 

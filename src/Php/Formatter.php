@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Pretty\Php;
 
@@ -52,8 +50,8 @@ final class Formatter implements IReadable
      * @var string[]
      */
     protected $Rules = [
-    // TokenRules
-    ProtectStrings::class,
+        // TokenRules
+        ProtectStrings::class,
         BreakAfterSeparators::class,
         BracePosition::class,
         SpaceOperators::class,
@@ -99,8 +97,7 @@ final class Formatter implements IReadable
     {
         $this->Tab = $tab;
 
-        if ($skipRules)
-        {
+        if ($skipRules) {
             $this->Rules = array_diff($this->Rules, $skipRules);
         }
 
@@ -120,8 +117,7 @@ final class Formatter implements IReadable
         [$this->PlainTokens, $this->Tokens] = [token_get_all($code, TOKEN_PARSE), []];
 
         $bracketStack = [];
-        foreach ($this->filter($this->PlainTokens, ...$this->Filters) as $index => $plainToken)
-        {
+        foreach ($this->filter($this->PlainTokens, ...$this->Filters) as $index => $plainToken) {
             $this->Tokens[$index] = $token = new Token(
                 $index,
                 $plainToken,
@@ -130,40 +126,33 @@ final class Formatter implements IReadable
                 $this
             );
 
-            if ($token->isOpenBracket())
-            {
+            if ($token->isOpenBracket()) {
                 array_push($bracketStack, $token);
             }
 
-            if ($token->isCloseBracket())
-            {
-                $opener = array_pop($bracketStack);
+            if ($token->isCloseBracket()) {
+                $opener           = array_pop($bracketStack);
                 $opener->ClosedBy = $token;
                 $token->OpenedBy  = $opener;
             }
         }
 
-        if (!isset($token))
-        {
+        if (!isset($token)) {
             return "";
         }
 
         $token->WhitespaceAfter |= WhitespaceType::LINE;
 
-        foreach ($this->Rules as $_rule)
-        {
-            if (!is_a($_rule, TokenRule::class, true))
-            {
+        foreach ($this->Rules as $_rule) {
+            if (!is_a($_rule, TokenRule::class, true)) {
                 continue;
             }
 
             $rule = new $_rule();
 
-            if (!Env::debug())
-            {
+            if (!Env::debug()) {
                 /** @var Token $token */
-                foreach ($this->Tokens as $token)
-                {
+                foreach ($this->Tokens as $token) {
                     $rule($token);
                 }
 
@@ -171,12 +160,10 @@ final class Formatter implements IReadable
             }
 
             /** @var Token $token */
-            foreach ($this->Tokens as $token)
-            {
+            foreach ($this->Tokens as $token) {
                 $clone = clone $token;
                 $rule($token);
-                if ($clone != $token)
-                {
+                if ($clone != $token) {
                     $token->Tags[] = "rule:$_rule";
                 }
             }
@@ -185,28 +172,24 @@ final class Formatter implements IReadable
         /** @var array<TokenCollection[]> $blocks */
         $blocks = [];
         /** @var TokenCollection[] $block */
-        $block = [];
-        $line  = new TokenCollection();
+        $block  = [];
+        $line   = new TokenCollection();
         /** @var Token $token */
         $token  = reset($this->Tokens);
         $line[] = $token;
 
-        do
-        {
-            if (($token = $token->next())->isNull())
-            {
+        do {
+            if (($token = $token->next())->isNull()) {
                 $token = null;
             }
             $before = ($token
                 ? $token->effectiveWhitespaceBefore() & (WhitespaceType::BLANK | WhitespaceType::LINE)
                 : WhitespaceType::BLANK);
-            if (!$before)
-            {
+            if (!$before) {
                 $line[] = $token;
                 continue;
             }
-            if ($before === WhitespaceType::LINE)
-            {
+            if ($before === WhitespaceType::LINE) {
                 $block[] = $line;
                 $line    = new TokenCollection();
                 $line[]  = $token;
@@ -214,42 +197,33 @@ final class Formatter implements IReadable
             }
             $block[]  = $line;
             $blocks[] = $block;
-            if ($token)
-            {
+            if ($token) {
                 $block  = [];
                 $line   = new TokenCollection();
                 $line[] = $token;
             }
-        }
-        while ($token);
+        } while ($token);
 
-        foreach ($this->Rules as $_rule)
-        {
-            if (!is_a($_rule, BlockRule::class, true))
-            {
+        foreach ($this->Rules as $_rule) {
+            if (!is_a($_rule, BlockRule::class, true)) {
                 continue;
             }
 
             $rule = new $_rule();
 
-            foreach ($blocks as $block)
-            {
+            foreach ($blocks as $block) {
                 $rule($block);
             }
         }
 
         $out = "";
-        foreach ($this->Tokens as $token)
-        {
+        foreach ($this->Tokens as $token) {
             $out .= $token->render();
         }
 
-        try
-        {
+        try {
             $tokensOut = token_get_all($out, TOKEN_PARSE);
-        }
-        catch (ParseError $ex)
-        {
+        } catch (ParseError $ex) {
             throw new PrettyException(
                 "Formatting check failed: output cannot be parsed",
                 $out,
@@ -261,8 +235,7 @@ final class Formatter implements IReadable
 
         $before = $this->strip($this->PlainTokens, ...$this->ComparisonFilters);
         $after  = $this->strip($tokensOut, ...$this->ComparisonFilters);
-        if ($before !== $after)
-        {
+        if ($before !== $after) {
             throw new PrettyException(
                 "Formatting check failed: parsed output doesn't match input",
                 $out,
@@ -280,12 +253,9 @@ final class Formatter implements IReadable
      */
     private function filter(array $tokens, TokenFilter ...$filters): array
     {
-        foreach ($filters as $filter)
-        {
-            foreach ($tokens as $key => & $token)
-            {
-                if (!$filter($token))
-                {
+        foreach ($filters as $filter) {
+            foreach ($tokens as $key => &$token) {
+                if (!$filter($token)) {
                     unset($tokens[$key]);
                 }
             }
@@ -302,13 +272,10 @@ final class Formatter implements IReadable
     private function strip(array $tokens, TokenFilter ...$filters): array
     {
         $tokens = array_values($this->filter($tokens, ...$filters));
-        foreach ($tokens as &$token)
-        {
-            if (is_array($token))
-            {
+        foreach ($tokens as &$token) {
+            if (is_array($token)) {
                 unset($token[2]);
-                if (in_array($token[0], [T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO]))
-                {
+                if (in_array($token[0], [T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO])) {
                     $token[1] = rtrim($token[1]);
                 }
             }

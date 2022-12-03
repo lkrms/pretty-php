@@ -44,13 +44,12 @@ class FormatPhp extends CliCommand
             (CliOption::build()
                 ->long("file")
                 ->description(<<<EOF
-One or more PHP files to format
+                One or more PHP files to format
 
-If no files are named on the command line, __{{command}}__
-reads the standard input and writes formatted code to the
-standard output.
-EOF
-                )
+                If no files are named on the command line, __{{command}}__
+                reads the standard input and writes formatted code to the
+                standard output.
+                EOF)
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->multipleAllowed()),
             (CliOption::build()
@@ -92,38 +91,31 @@ EOF
     {
         $tab   = $this->getOptionValue("tab");
         $space = $this->getOptionValue("space");
-        if ($tab && $space)
-        {
+        if ($tab && $space) {
             throw new CliArgumentsInvalidException("--tab and --space cannot be used together");
         }
         $tab = $tab ? "\t" : ($space === "2" ? "  " : "    ");
 
         $skip = $this->getOptionValue("skip");
-        if ($this->getOptionValue("n"))
-        {
+        if ($this->getOptionValue("n")) {
             $skip[] = "preserve-newlines";
         }
         $skip = array_values(array_intersect_key($this->SkipMap, array_flip($skip)));
 
         $files  = $this->getOptionValue("file");
         $stdout = $this->getOptionValue("stdout");
-        if (!$files && stream_isatty(STDIN))
-        {
+        if (!$files && stream_isatty(STDIN)) {
             throw new CliArgumentsInvalidException("FILE required when input is a TTY");
-        }
-        elseif (!$files)
-        {
+        } elseif (!$files) {
             $files  = ["php://stdin"];
             $stdout = true;
         }
-        if ($stdout)
-        {
+        if ($stdout) {
             Console::registerStderrTarget(true);
         }
 
         $debug = $this->getOptionValue("debug");
-        if (!is_null($debug))
-        {
+        if (!is_null($debug)) {
             Env::debug(true);
             File::maybeCreateDirectory($debug);
             $debug = $this->DebugDirectory = realpath($debug) ?: null;
@@ -131,29 +123,23 @@ EOF
 
         $formatter   = new Formatter($tab, $skip);
         [$i, $count] = [0, count($files)];
-        foreach ($files as $file)
-        {
+        foreach ($files as $file) {
             Console::info(sprintf("Formatting %d of %d:", ++$i, $count), $file);
             $input = file_get_contents($file);
-            try
-            {
+            try {
                 $output = $formatter->format($input);
-            }
-            catch (PrettyException $ex)
-            {
+            } catch (PrettyException $ex) {
                 $this->maybeDumpDebugOutput($input, $ex->getOutput(), $ex->getTokens(), $ex->getData());
                 throw $ex;
             }
             $this->maybeDumpDebugOutput($input, $output, $formatter->Tokens, null);
 
-            if ($stdout)
-            {
+            if ($stdout) {
                 print $output;
                 continue;
             }
 
-            if ($input === $output)
-            {
+            if ($input === $output) {
                 Console::log("Nothing to do");
                 continue;
             }
@@ -169,24 +155,21 @@ EOF
      */
     private function maybeDumpDebugOutput(string $input, ?string $output, ?array $tokens, $data): void
     {
-        if (!is_null($this->DebugDirectory))
-        {
+        if (!is_null($this->DebugDirectory)) {
             foreach ([
                 "input.php"   => $input,
                 "output.php"  => $output,
                 "tokens.json" => $tokens,
                 "data.json"   => $data,
-            ] as $file        => $contents)
-            {
+            ] as $file => $contents) {
                 $file = "{$this->DebugDirectory}/{$file}";
                 File::maybeDelete($file);
-                if (!is_null($contents))
-                {
+                if (!is_null($contents)) {
                     file_put_contents(
                         $file,
                         is_string($contents)
-                        ? $contents
-                        : json_encode($contents, JSON_PRETTY_PRINT)
+                            ? $contents
+                            : json_encode($contents, JSON_PRETTY_PRINT)
                     );
                 }
             }

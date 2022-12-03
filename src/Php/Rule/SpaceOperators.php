@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Pretty\Php\Rule;
 
@@ -14,8 +12,7 @@ class SpaceOperators implements TokenRule
     public function __invoke(Token $token): void
     {
         if (!($token->isOperator() || $token->isOneOf("?", ...TokenType::AMPERSAND)) ||
-            $token->parent()->prev()->is(T_DECLARE))
-        {
+            $token->parent()->prev()->is(T_DECLARE)) {
             return;
         }
 
@@ -26,8 +23,7 @@ class SpaceOperators implements TokenRule
                 $token->isUnaryContext() ||
                 ($token->next()->is(T_VARIABLE) &&
                     $token->inDeclaration(T_FUNCTION) &&
-                    !$token->sinceLastStatement()->hasOneOf("="))))
-        {
+                    !$token->sinceLastStatement()->hasOneOf("=")))) {
             $token->WhitespaceBefore  |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
 
@@ -35,21 +31,18 @@ class SpaceOperators implements TokenRule
         }
         // Suppress whitespace between types in unions and intersections
         if ($token->isOneOf("|", ...TokenType::AMPERSAND) &&
-            $token->inDeclaration(T_FUNCTION) && !$token->sinceLastStatement()->hasOneOf("="))
-        {
+            $token->inDeclaration(T_FUNCTION) && !$token->sinceLastStatement()->hasOneOf("=")) {
             $token->WhitespaceMaskNext = $token->WhitespaceMaskPrev = WhitespaceType::NONE;
 
             return;
         }
-        if ($token->is("?") && !$token->isTernaryOperator())
-        {
+        if ($token->is("?") && !$token->isTernaryOperator()) {
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
 
             return;
         }
 
-        if ($token->isUnaryOperator() && !$token->nextCode()->isUnaryOperator())
-        {
+        if ($token->isUnaryOperator() && !$token->nextCode()->isUnaryOperator()) {
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
 
             return;
@@ -58,8 +51,7 @@ class SpaceOperators implements TokenRule
         $token->WhitespaceAfter |= WhitespaceType::SPACE;
 
         // Collapse ternary operators if there is nothing between `?` and `:`
-        if ($token->isTernaryOperator() && $token->prev()->isTernaryOperator())
-        {
+        if ($token->isTernaryOperator() && $token->prev()->isTernaryOperator()) {
             $token->WhitespaceBefore = $token->prev()->WhitespaceAfter = WhitespaceType::NONE;
 
             return;

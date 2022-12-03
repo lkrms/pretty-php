@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Pretty\Php\Contract;
 
@@ -12,5 +10,4 @@ interface BlockRule
      * @param TokenCollection[] $block
      */
     public function __invoke(array $block): void;
-
 }

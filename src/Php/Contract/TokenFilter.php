@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Pretty\Php\Contract;
 
@@ -13,5 +11,4 @@ interface TokenFilter
      * @return bool `false` if the token should be discarded, otherwise `true`.
      */
     public function __invoke(&$token): bool;
-
 }

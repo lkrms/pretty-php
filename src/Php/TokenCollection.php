@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Pretty\Php;
 
@@ -23,10 +21,8 @@ final class TokenCollection extends TypedCollection
     public function hasOneOf(...$types): bool
     {
         /** @var Token $token */
-        foreach ($this as $token)
-        {
-            if ($token->isOneOf(...$types))
-            {
+        foreach ($this as $token) {
+            if ($token->isOneOf(...$types)) {
                 return true;
             }
         }
@@ -41,10 +37,8 @@ final class TokenCollection extends TypedCollection
     {
         $tokens = new TokenCollection();
         /** @var Token $token */
-        foreach ($this as $token)
-        {
-            if ($token->isOneOf(...$types))
-            {
+        foreach ($this as $token) {
+            if ($token->isOneOf(...$types)) {
                 $tokens[] = $token;
             }
         }
@@ -58,10 +52,8 @@ final class TokenCollection extends TypedCollection
     public function getFirstOf(...$types): ?Token
     {
         /** @var Token $token */
-        foreach ($this as $token)
-        {
-            if ($token->isOneOf(...$types))
-            {
+        foreach ($this as $token) {
+            if ($token->isOneOf(...$types)) {
                 return $token;
             }
         }
@@ -75,8 +67,7 @@ final class TokenCollection extends TypedCollection
     public function getTypes(): array
     {
         /** @var Token $token */
-        foreach ($this as $token)
-        {
+        foreach ($this as $token) {
             $types[] = $token->Type;
         }
 
@@ -85,24 +76,19 @@ final class TokenCollection extends TypedCollection
 
     public function hasInnerNewline(): bool
     {
-        if (count($this) < 2)
-        {
+        if (count($this) < 2) {
             return false;
         }
         $i = 0;
         /** @var Token $token */
-        foreach ($this as $token)
-        {
-            if (substr_count($token->Code, "\n"))
-            {
+        foreach ($this as $token) {
+            if (substr_count($token->Code, "\n")) {
                 return true;
             }
-            if (!$i++)
-            {
+            if (!$i++) {
                 continue;
             }
-            if ($token->hasNewlineBefore())
-            {
+            if ($token->hasNewlineBefore()) {
                 return true;
             }
         }
@@ -115,8 +101,7 @@ final class TokenCollection extends TypedCollection
      */
     public function withEach(callable $callback)
     {
-        foreach ($this as $token)
-        {
+        foreach ($this as $token) {
             $callback($token);
         }
 
@@ -127,14 +112,11 @@ final class TokenCollection extends TypedCollection
     {
         [$code, $i] = ["", 0];
         /** @var Token $token */
-        foreach ($this as $token)
-        {
+        foreach ($this as $token) {
             $code .= $token->render();
-            if (!$i++)
-            {
+            if (!$i++) {
                 $before = WhitespaceType::toWhitespace($token->effectiveWhitespaceBefore());
-                if ($before)
-                {
+                if ($before) {
                     $code = substr($code, strlen($before));
                 }
             }

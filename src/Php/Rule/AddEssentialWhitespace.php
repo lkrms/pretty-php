@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Pretty\Php\Rule;
 
@@ -12,26 +10,22 @@ class AddEssentialWhitespace implements TokenRule
 {
     public function __invoke(Token $token): void
     {
-        if ($token->hasNewlineAfter())
-        {
+        if ($token->hasNewlineAfter()) {
             return;
         }
 
-        if ($token->isOneLineComment() && !$token->next()->is(T_CLOSE_TAG))
-        {
+        if ($token->isOneLineComment() && !$token->next()->is(T_CLOSE_TAG)) {
             $token->WhitespaceAfter |= WhitespaceType::LINE;
 
             return;
         }
 
-        if ($token->hasWhitespaceAfter())
-        {
+        if ($token->hasWhitespaceAfter()) {
             return;
         }
 
         if ($token->is(T_OPEN_TAG) ||
-            preg_match('/^[a-zA-Z0-9\\\\_\x80-\xff]{2}$/', substr($token->Code, -1) . substr($token->next()->Code, 0, 1)))
-        {
+            preg_match('/^[a-zA-Z0-9\\\\_\x80-\xff]{2}$/', substr($token->Code, -1) . substr($token->next()->Code, 0, 1))) {
             $token->WhitespaceAfter |= WhitespaceType::SPACE;
         }
     }

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Pretty;
 
@@ -67,5 +65,4 @@ class PrettyException extends Exception
     {
         return $this->Data;
     }
-
 }

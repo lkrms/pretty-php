@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Pretty\Php\Rule;
 
@@ -12,13 +10,11 @@ class BracePosition implements TokenRule
 {
     public function __invoke(Token $token): void
     {
-        if (!$token->isBrace())
-        {
+        if (!$token->isBrace()) {
             return;
         }
 
-        if ($token->is("{"))
-        {
+        if ($token->is("{")) {
             $token->WhitespaceBefore   |= $token->isDeclaration() ? WhitespaceType::LINE : WhitespaceType::SPACE;
             $token->WhitespaceAfter    |= WhitespaceType::LINE;
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
@@ -31,8 +27,7 @@ class BracePosition implements TokenRule
 
         $next = $token->nextCode();
         if ($next->isOneOf(T_ELSE, T_ELSEIF, T_CATCH, T_FINALLY) ||
-            ($next->is(T_WHILE) && $next->nextSibling(2)->is(";")))
-        {
+            ($next->is(T_WHILE) && $next->nextSibling(2)->is(";"))) {
             $token->WhitespaceAfter    |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
 

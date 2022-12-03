@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Pretty\Php\Rule;
 
@@ -21,40 +19,30 @@ class PreserveNewlines implements TokenRule
             $prev->isTernaryOperator(),
             $token->isTernaryOperator(),
         ];
-        if ($prevTernary && $tokenTernary && $prev->Type . $token->Type === "?:")
-        {
+        if ($prevTernary && $tokenTernary && $prev->Type . $token->Type === "?:") {
             // Don't check for newlines between `?` and `:`
             return;
         }
         $effective = $token->effectiveWhitespaceBefore();
-        if ($tokenTernary && $token->Type . $token->next()->Type === "?:")
-        {
+        if ($tokenTernary && $token->Type . $token->next()->Type === "?:") {
             // Check for newlines between $prev and `:`
             $tokenOrig = $token;
             $token     = $token->next();
-        }
-        elseif ($prevTernary && $prev->prev()->Type . $prev->Type === "?:")
-        {
+        } elseif ($prevTernary && $prev->prev()->Type . $prev->Type === "?:") {
             // Check for newlines between `?` and $token
             $prev = $prev->prev();
         }
 
-        if ($prev->isNull() || !($lines = $token->Line - $prev->Line - substr_count($prev->Code, "\n")))
-        {
+        if ($prev->isNull() || !($lines = $token->Line - $prev->Line - substr_count($prev->Code, "\n"))) {
             return;
         }
-        if ($lines > 1)
-        {
-            if ($effective & WhitespaceType::BLANK)
-            {
+        if ($lines > 1) {
+            if ($effective & WhitespaceType::BLANK) {
                 return;
             }
             $type = WhitespaceType::BLANK;
-        }
-        else
-        {
-            if ($effective & (WhitespaceType::LINE | WhitespaceType::BLANK))
-            {
+        } else {
+            if ($effective & (WhitespaceType::LINE | WhitespaceType::BLANK)) {
                 return;
             }
             $type = WhitespaceType::LINE;
@@ -68,19 +56,16 @@ class PreserveNewlines implements TokenRule
     {
         if (!Test::isBetween($token1->Line, $min, $max) ||
             !Test::isBetween($token2->Line, $min, $max) ||
-            ($token1->effectiveWhitespaceAfter() & $whitespaceType) === $whitespaceType)
-        {
+            ($token1->effectiveWhitespaceAfter() & $whitespaceType) === $whitespaceType) {
             return false;
         }
-        if ($this->preserveNewlineAfter($token1))
-        {
+        if ($this->preserveNewlineAfter($token1)) {
             $token1->WhitespaceAfter |= $whitespaceType;
 
             return true;
         }
-        if ($this->preserveNewlineBefore($token2))
-        {
-            $token2 = $token2Orig ?: $token2;
+        if ($this->preserveNewlineBefore($token2)) {
+            $token2                    = $token2Orig ?: $token2;
             $token2->WhitespaceBefore |= $whitespaceType;
 
             return true;

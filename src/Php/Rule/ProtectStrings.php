@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Pretty\Php\Rule;
 
@@ -17,25 +15,22 @@ class ProtectStrings implements TokenRule
 
     public function __invoke(Token $token): void
     {
-        if (!$this->InString && !$token->is('"'))
-        {
+        if (!$this->InString && !$token->is('"')) {
             return;
         }
 
         $token->StringOpenedBy = $token->prev()->StringOpenedBy ?: $token;
 
-        if (!$this->InString)
-        {
+        if (!$this->InString) {
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
-            $this->InString = true;
+            $this->InString            = true;
 
             return;
         }
 
-        if ($token->is('"'))
-        {
+        if ($token->is('"')) {
             $token->WhitespaceMaskPrev = WhitespaceType::NONE;
-            $this->InString = false;
+            $this->InString            = false;
 
             return;
         }

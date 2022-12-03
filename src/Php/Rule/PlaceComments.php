@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Pretty\Php\Rule;
 
@@ -13,14 +11,12 @@ class PlaceComments implements TokenRule
 {
     public function __invoke(Token $token): void
     {
-        if (!$token->isOneOf(...TokenType::COMMENT))
-        {
+        if (!$token->isOneOf(...TokenType::COMMENT)) {
             return;
         }
 
         // Leave embedded comments alone
-        if ($token->wasBetweenTokensOnLine())
-        {
+        if ($token->wasBetweenTokensOnLine()) {
             $token->WhitespaceBefore |= WhitespaceType::SPACE;
             $token->WhitespaceAfter  |= WhitespaceType::SPACE;
 
@@ -28,8 +24,7 @@ class PlaceComments implements TokenRule
         }
 
         // Don't move comments beside code to the next line
-        if (!$token->wasFirstOnLine() && $token->wasLastOnLine() && $token->isOneLineComment(true))
-        {
+        if (!$token->wasFirstOnLine() && $token->wasLastOnLine() && $token->isOneLineComment(true)) {
             $token->WhitespaceBefore |= WhitespaceType::TAB;
             $token->WhitespaceAfter  |= WhitespaceType::LINE;
 
@@ -37,8 +32,7 @@ class PlaceComments implements TokenRule
         }
 
         $token->WhitespaceAfter |= WhitespaceType::LINE;
-        if (!$token->is(T_DOC_COMMENT))
-        {
+        if (!$token->is(T_DOC_COMMENT)) {
             $token->WhitespaceBefore |= WhitespaceType::LINE;
             return;
         }

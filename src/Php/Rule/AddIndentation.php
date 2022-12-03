@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Pretty\Php\Rule;
 
@@ -12,23 +10,20 @@ class AddIndentation implements TokenRule
 {
     public function __invoke(Token $token): void
     {
-        if ($token->OpenedBy)
-        {
+        if ($token->OpenedBy) {
             $token->Indent = $token->OpenedBy->Indent;
 
             return;
         }
 
-        $prev = $token->prev();
+        $prev          = $token->prev();
         $token->Indent = $prev->Indent;
 
-        if ($prev->hasNewlineAfter() && $prev->ClosedBy)
-        {
+        if ($prev->hasNewlineAfter() && $prev->ClosedBy) {
             $prev->Tags[] = "indented";
             $token->Indent++;
 
-            if ($prev->hasNewlineAfter())
-            {
+            if ($prev->hasNewlineAfter()) {
                 $prev->ClosedBy->WhitespaceBefore |= WhitespaceType::LINE;
             }
         }

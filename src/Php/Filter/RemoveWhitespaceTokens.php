@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Pretty\Php\Filter;
 
@@ -13,5 +11,4 @@ class RemoveWhitespaceTokens implements TokenFilter
     {
         return !(is_array($token) && in_array($token[0], TokenType::WHITESPACE));
     }
-
 }

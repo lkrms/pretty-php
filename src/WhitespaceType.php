@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Pretty;
 
@@ -41,27 +39,21 @@ final class WhitespaceType extends Enumeration
 
     public static function toWhitespace(int $value): string
     {
-        if (!$value)
-        {
+        if (!$value) {
             return "";
         }
-        if ($value & self::BLANK)
-        {
+        if ($value & self::BLANK) {
             return "\n\n";
         }
-        if ($value & self::LINE)
-        {
+        if ($value & self::LINE) {
             return "\n";
         }
-        if ($value & self::TAB)
-        {
+        if ($value & self::TAB) {
             return "    ";
         }
-        if ($value & self::SPACE)
-        {
+        if ($value & self::SPACE) {
             return " ";
         }
         throw new UnexpectedValueException("Invalid WhitespaceType: $value");
     }
-
 }
