@@ -376,7 +376,9 @@ class Token implements JsonSerializable
 
     public function parent(): Token
     {
-        return (end($this->BracketStack) ?: new NullToken());
+        $current = $this->OpenedBy ?: $this;
+
+        return (end($current->BracketStack) ?: new NullToken());
     }
 
     public function inner(): TokenCollection
@@ -507,17 +509,13 @@ class Token implements JsonSerializable
 
     public function isStatementTerminator(): bool
     {
-        return $this->isOneOf(";", "}");
-    }
-
-    public function isExpressionTerminator(): bool
-    {
-        return $this->isOneOf(")", ";", "]", "}");
+        return $this->isOneOf(";", "}") || ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE));
     }
 
     public function isStatementPrecursor(): bool
     {
         return $this->isOneOf("(", ";", "[", "{", "}") ||
+            ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE)) ||
             ($this->is(",") &&
                 (($parent = $this->parent())->isOneOf("(", "[") ||
                     ($parent->is("{") && $parent->prevSibling(2)->is(T_MATCH))));
@@ -530,7 +528,7 @@ class Token implements JsonSerializable
 
     public function isOpenBracket(): bool
     {
-        return $this->isOneOf("(", "[", "{", T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES);
+        return $this->isOneOf("(", "[", "{", T_ATTRIBUTE, T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES);
     }
 
     public function isCloseBracket(): bool

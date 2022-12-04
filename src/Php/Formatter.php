@@ -25,6 +25,7 @@ use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
 use Lkrms\Pretty\Php\Rule\CommaCommaComma;
 use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\MatchPosition;
+use Lkrms\Pretty\Php\Rule\PlaceAttributes;
 use Lkrms\Pretty\Php\Rule\PlaceComments;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
 use Lkrms\Pretty\Php\Rule\ProtectStrings;
@@ -57,6 +58,7 @@ final class Formatter implements IReadable
         // TokenRules
         ProtectStrings::class,
         BreakAfterSeparators::class,
+        PlaceAttributes::class,
         BracePosition::class,
         SpaceOperators::class,
         CommaCommaComma::class,
