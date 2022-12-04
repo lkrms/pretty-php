@@ -18,14 +18,16 @@ class AddIndentation implements TokenRule
 
         $prev          = $token->prev();
         $token->Indent = $prev->Indent;
-
-        if ($prev->hasNewlineAfter() && $prev->ClosedBy) {
+        if (!$prev->ClosedBy) {
+            return;
+        }
+        if ($prev->hasNewlineAfter()) {
             $prev->Tags[] = "indented";
             $token->Indent++;
+            $prev->ClosedBy->WhitespaceBefore |= WhitespaceType::LINE;
 
-            if ($prev->hasNewlineAfter()) {
-                $prev->ClosedBy->WhitespaceBefore |= WhitespaceType::LINE;
-            }
+            return;
         }
+        $prev->ClosedBy->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
     }
 }

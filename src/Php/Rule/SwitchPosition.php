@@ -24,8 +24,9 @@ class SwitchPosition implements TokenRule
             return;
         }
 
-        $token->WhitespaceBefore    |= WhitespaceType::BLANK;
-        $separator->WhitespaceAfter |= WhitespaceType::LINE;
+        $token->WhitespaceBefore       |= WhitespaceType::BLANK;
+        $separator->WhitespaceAfter    |= WhitespaceType::LINE;
+        $separator->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
         $token->collect($separator)->withEach(fn(Token $t) => $t->Deindent++);
     }
 }

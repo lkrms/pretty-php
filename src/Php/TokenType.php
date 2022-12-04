@@ -201,6 +201,7 @@ final class TokenType
     public const ADD_SPACE_AROUND = [
         T_AS,
         T_INSTEADOF,
+        T_USE,
     ];
 
     public const ADD_SPACE_BEFORE = [

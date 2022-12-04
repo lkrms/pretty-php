@@ -12,6 +12,8 @@ use Lkrms\Pretty\Php\Filter\RemoveCommentTokens;
 use Lkrms\Pretty\Php\Filter\RemoveEmptyTokens;
 use Lkrms\Pretty\Php\Filter\RemoveWhitespaceTokens;
 use Lkrms\Pretty\Php\Filter\StripHeredocIndents;
+use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
+use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeYield;
 use Lkrms\Pretty\Php\Rule\AddEssentialWhitespace;
 use Lkrms\Pretty\Php\Rule\AddHangingIndentation;
 use Lkrms\Pretty\Php\Rule\AddIndentation;
@@ -21,6 +23,7 @@ use Lkrms\Pretty\Php\Rule\AlignComments;
 use Lkrms\Pretty\Php\Rule\BracePosition;
 use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
 use Lkrms\Pretty\Php\Rule\CommaCommaComma;
+use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\MatchPosition;
 use Lkrms\Pretty\Php\Rule\PlaceComments;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
@@ -58,7 +61,10 @@ final class Formatter implements IReadable
         SpaceOperators::class,
         CommaCommaComma::class,
         AddStandardWhitespace::class,
+        DeclareArgumentsOnOneLine::class,
         PlaceComments::class,
+        AddBlankLineBeforeReturn::class,     // Must be after PlaceComments
+        AddBlankLineBeforeYield::class,      // Ditto
         PreserveNewlines::class,
         AddIndentation::class,
         SwitchPosition::class,
@@ -278,6 +284,7 @@ final class Formatter implements IReadable
             }
         }
         unset($token);
+
         return $tokens;
     }
 }

@@ -18,10 +18,12 @@ class StripHeredocIndents implements TokenFilter
         }
         if (is_null($this->Heredoc)) {
             $this->Heredoc = [];
+
             return true;
         }
         if (!is_array($token)) {
             $this->Heredoc[] = &$token;
+
             return true;
         }
         $this->Heredoc[] = &$token[1];

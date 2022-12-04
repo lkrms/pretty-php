@@ -22,7 +22,7 @@ class SpaceOperators implements TokenRule
             ($token->prevCode()->is(T_FUNCTION) ||
                 $token->isUnaryContext() ||
                 ($token->next()->is(T_VARIABLE) &&
-                    $token->inDeclaration(T_FUNCTION) &&
+                    $token->inFunctionDeclaration() &&
                     !$token->sinceLastStatement()->hasOneOf("=")))) {
             $token->WhitespaceBefore  |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
@@ -31,7 +31,7 @@ class SpaceOperators implements TokenRule
         }
         // Suppress whitespace between types in unions and intersections
         if ($token->isOneOf("|", ...TokenType::AMPERSAND) &&
-            $token->inDeclaration(T_FUNCTION) && !$token->sinceLastStatement()->hasOneOf("=")) {
+            $token->inFunctionDeclaration() && !$token->sinceLastStatement()->hasOneOf("=")) {
             $token->WhitespaceMaskNext = $token->WhitespaceMaskPrev = WhitespaceType::NONE;
 
             return;

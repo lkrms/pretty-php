@@ -217,7 +217,6 @@ class Token implements JsonSerializable
     public function prev(int $offset = 1): Token
     {
         $prev = $this;
-
         for ($i = 0; $i < $offset; $i++) {
             $prev = $prev->_prev ?? null;
         }
@@ -228,7 +227,6 @@ class Token implements JsonSerializable
     public function next(int $offset = 1): Token
     {
         $next = $this;
-
         for ($i = 0; $i < $offset; $i++) {
             $next = $next->_next ?? null;
         }
@@ -239,7 +237,6 @@ class Token implements JsonSerializable
     public function prevCode(int $offset = 1): Token
     {
         $prev = $this;
-
         for ($i = 0; $i < $offset; $i++) {
             do {
                 $prev = $prev->_prev ?? null;
@@ -252,7 +249,6 @@ class Token implements JsonSerializable
     public function nextCode(int $offset = 1): Token
     {
         $next = $this;
-
         for ($i = 0; $i < $offset; $i++) {
             do {
                 $next = $next->_next ?? null;
@@ -265,7 +261,6 @@ class Token implements JsonSerializable
     public function prevSibling(int $offset = 1): Token
     {
         $prev = $this->OpenedBy ?: $this;
-
         for ($i = 0; $i < $offset; $i++) {
             do {
                 $prev = $prev->_prev ?? null;
@@ -287,7 +282,6 @@ class Token implements JsonSerializable
     public function nextSibling(int $offset = 1): Token
     {
         $next = $this->OpenedBy ?: $this;
-
         for ($i = 0; $i < $offset; $i++) {
             if ($next->ClosedBy ?? null) {
                 $next = $next->ClosedBy;
@@ -338,6 +332,48 @@ class Token implements JsonSerializable
         return $next;
     }
 
+    /**
+     * Collect the token's siblings up to but not including the last that isn't
+     * one of the listed types
+     *
+     * Tokens are collected in order from the closest sibling to the farthest.
+     *
+     * @param bool $includeToken If `true`, collect the token itself. If it
+     * isn't one of the listed types, an empty collection will be returned.
+     * @param int|string ...$types
+     */
+    public function prevSiblingsWhile(bool $includeToken = false, ...$types): TokenCollection
+    {
+        $tokens = new TokenCollection();
+        $prev   = $includeToken ? $this : $this->prevSibling();
+        while ($prev->isOneOf(...$types)) {
+            $tokens[] = $prev;
+            $prev     = $prev->prevSibling();
+        }
+
+        return $tokens;
+    }
+
+    /**
+     * Collect the token's siblings up to but not including the first that isn't
+     * one of the listed types
+     *
+     * @param bool $includeToken If `true`, collect the token itself. If it
+     * isn't one of the listed types, an empty collection will be returned.
+     * @param int|string ...$types
+     */
+    public function nextSiblingsWhile(bool $includeToken = false, ...$types): TokenCollection
+    {
+        $tokens = new TokenCollection();
+        $next   = $includeToken ? $this : $this->nextSibling();
+        while ($next->isOneOf(...$types)) {
+            $tokens[] = $next;
+            $next     = $next->nextSibling();
+        }
+
+        return $tokens;
+    }
+
     public function parent(): Token
     {
         return (end($this->BracketStack) ?: new NullToken());
@@ -370,9 +406,9 @@ class Token implements JsonSerializable
 
     public function startOfStatement(): Token
     {
-        $current = (($this->is(";") ? $this->prevCode()->OpenedBy : null)
+        $current = ($this->is(";") ? $this->prevCode()->OpenedBy : null)
             ?: $this->OpenedBy
-            ?: $this);
+            ?: $this;
         while (!$current->prevCode()->isStatementPrecursor() && !$current->prevCode()->isNull()) {
             $current = $current->prevSibling();
         }
@@ -420,12 +456,12 @@ class Token implements JsonSerializable
 
     public function effectiveWhitespaceBefore(): int
     {
-        return ($this->WhitespaceBefore | $this->prev()->WhitespaceAfter) &$this->prev()->WhitespaceMaskNext &$this->WhitespaceMaskPrev;
+        return ($this->WhitespaceBefore | $this->prev()->WhitespaceAfter) & $this->prev()->WhitespaceMaskNext & $this->WhitespaceMaskPrev;
     }
 
     public function effectiveWhitespaceAfter(): int
     {
-        return ($this->WhitespaceAfter | $this->next()->WhitespaceBefore) &$this->next()->WhitespaceMaskPrev &$this->WhitespaceMaskNext;
+        return ($this->WhitespaceAfter | $this->next()->WhitespaceBefore) & $this->next()->WhitespaceMaskPrev & $this->WhitespaceMaskNext;
     }
 
     public function hasNewlineBefore(): bool
@@ -587,14 +623,11 @@ class Token implements JsonSerializable
             (!$types || $strings->hasOneOf(...$types));
     }
 
-    /**
-     * @param int|string ...$types
-     */
-    public function inDeclaration(...$types): bool
+    public function inFunctionDeclaration(): bool
     {
         $parent = $this->parent();
 
-        return $parent->isOneOf("(", "{") && $parent->isDeclaration(...$types);
+        return $parent->is("(") && $parent->isDeclaration(T_FUNCTION);
     }
 
     public function indent(): string
@@ -651,6 +684,7 @@ class Token implements JsonSerializable
         switch ($this->Type) {
             case T_DOC_COMMENT:
                 $indent = "\n" . $this->indent();
+
                 return preg_replace([
                     '/\n\h*(?:\* |\*(?!\/)(?=[\h\S])|(?=[^\s*]))/',
                     '/\n\h*\*?$/m',
