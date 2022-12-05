@@ -24,6 +24,8 @@ final class TokenType
         '(', ',', ';', '[', '}',
         ...self::COMMENT,
         ...self::OPERATOR_ASSIGNMENT,
+        ...self::OPERATOR_BITWISE,
+        ...self::OPERATOR_COMPARISON,
         ...self::OPERATOR_DOUBLE_ARROW,
         ...self::OPERATOR_LOGICAL_EXCEPT_NOT,
     ];
@@ -32,8 +34,6 @@ final class TokenType
         '!',
         T_OBJECT_OPERATOR,
         ...self::OPERATOR_ARITHMETIC,
-        ...self::OPERATOR_BITWISE,
-        ...self::OPERATOR_COMPARISON,
         ...self::OPERATOR_TERNARY,
         ...self::OPERATOR_STRING,
     ];

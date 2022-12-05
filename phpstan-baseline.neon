@@ -6,11 +6,11 @@ parameters:
 			path: src/Php/Token.php
 
 		-
-			message: "#^Method Lkrms\\\\Pretty\\\\Tests\\\\Php\\\\TokenTest\\:\\:runFormatter\\(\\) has no return type specified\\.$#"
+			message: "#^Method Lkrms\\\\Pretty\\\\Tests\\\\Php\\\\FormatterTest\\:\\:testFormatter\\(\\) has no return type specified\\.$#"
 			count: 1
-			path: tests/Php/TokenTest.php
+			path: tests/Php/FormatterTest.php
 
 		-
-			message: "#^Method Lkrms\\\\Pretty\\\\Tests\\\\Php\\\\TokenTest\\:\\:testRenderPhpDoc\\(\\) has no return type specified\\.$#"
+			message: "#^Method Lkrms\\\\Pretty\\\\Tests\\\\Php\\\\FormatterTest\\:\\:testRenderComment\\(\\) has no return type specified\\.$#"
 			count: 1
-			path: tests/Php/TokenTest.php
+			path: tests/Php/FormatterTest.php
