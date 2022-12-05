@@ -11,7 +11,7 @@ class SpaceOperators implements TokenRule
 {
     public function __invoke(Token $token): void
     {
-        if (!($token->isOperator() || $token->isOneOf("?", ...TokenType::AMPERSAND)) ||
+        if (!($token->isOperator() || $token->isOneOf('?', ...TokenType::AMPERSAND)) ||
             $token->parent()->prev()->is(T_DECLARE)) {
             return;
         }
@@ -23,20 +23,20 @@ class SpaceOperators implements TokenRule
                 $token->isUnaryContext() ||
                 ($token->next()->is(T_VARIABLE) &&
                     $token->inFunctionDeclaration() &&
-                    !$token->sinceLastStatement()->hasOneOf("=")))) {
+                    !$token->sinceLastStatement()->hasOneOf('=')))) {
             $token->WhitespaceBefore  |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
 
             return;
         }
         // Suppress whitespace between types in unions and intersections
-        if ($token->isOneOf("|", ...TokenType::AMPERSAND) &&
-            $token->inFunctionDeclaration() && !$token->sinceLastStatement()->hasOneOf("=")) {
+        if ($token->isOneOf('|', ...TokenType::AMPERSAND) &&
+            $token->inFunctionDeclaration() && !$token->sinceLastStatement()->hasOneOf('=')) {
             $token->WhitespaceMaskNext = $token->WhitespaceMaskPrev = WhitespaceType::NONE;
 
             return;
         }
-        if ($token->is("?") && !$token->isTernaryOperator()) {
+        if ($token->is('?') && !$token->isTernaryOperator()) {
             $token->WhitespaceBefore  |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
 

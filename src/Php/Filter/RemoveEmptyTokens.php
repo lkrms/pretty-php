@@ -8,6 +8,6 @@ class RemoveEmptyTokens implements TokenFilter
 {
     public function __invoke(&$token): bool
     {
-        return !($token === "" || (is_array($token) && $token[1] === ""));
+        return !($token === '' || (is_array($token) && $token[1] === ''));
     }
 }

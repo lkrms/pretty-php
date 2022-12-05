@@ -40,7 +40,7 @@ final class WhitespaceType extends Enumeration
     public static function toWhitespace(int $value): string
     {
         if (!$value) {
-            return "";
+            return '';
         }
         if ($value & self::BLANK) {
             return "\n\n";
@@ -49,10 +49,10 @@ final class WhitespaceType extends Enumeration
             return "\n";
         }
         if ($value & self::TAB) {
-            return "    ";
+            return '    ';
         }
         if ($value & self::SPACE) {
-            return " ";
+            return ' ';
         }
         throw new UnexpectedValueException("Invalid WhitespaceType: $value");
     }

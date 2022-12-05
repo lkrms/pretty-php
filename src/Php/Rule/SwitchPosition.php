@@ -20,7 +20,7 @@ class SwitchPosition implements TokenRule
             return;
         }
 
-        if (!($separator = $token->nextSiblingOf(":", ";"))) {
+        if (!($separator = $token->nextSiblingOf(':', ';'))) {
             return;
         }
 

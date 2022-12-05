@@ -14,7 +14,7 @@ class BracePosition implements TokenRule
             return;
         }
 
-        if ($token->is("{")) {
+        if ($token->is('{')) {
             $token->WhitespaceBefore   |= $token->isDeclaration() ? WhitespaceType::LINE : WhitespaceType::SPACE;
             $token->WhitespaceAfter    |= WhitespaceType::LINE;
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
@@ -27,7 +27,7 @@ class BracePosition implements TokenRule
 
         $next = $token->nextCode();
         if ($next->isOneOf(T_ELSE, T_ELSEIF, T_CATCH, T_FINALLY) ||
-            ($next->is(T_WHILE) && $next->nextSibling(2)->is(";"))) {
+            ($next->is(T_WHILE) && $next->nextSibling(2)->is(';'))) {
             $token->WhitespaceAfter    |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
 

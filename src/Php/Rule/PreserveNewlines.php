@@ -19,16 +19,16 @@ class PreserveNewlines implements TokenRule
             $prev->isTernaryOperator(),
             $token->isTernaryOperator(),
         ];
-        if ($prevTernary && $tokenTernary && $prev->Type . $token->Type === "?:") {
+        if ($prevTernary && $tokenTernary && $prev->Type . $token->Type === '?:') {
             // Don't check for newlines between `?` and `:`
             return;
         }
         $effective = $token->effectiveWhitespaceBefore();
-        if ($tokenTernary && $token->Type . $token->next()->Type === "?:") {
+        if ($tokenTernary && $token->Type . $token->next()->Type === '?:') {
             // Check for newlines between $prev and `:`
             $tokenOrig = $token;
             $token     = $token->next();
-        } elseif ($prevTernary && $prev->prev()->Type . $prev->Type === "?:") {
+        } elseif ($prevTernary && $prev->prev()->Type . $prev->Type === '?:') {
             // Check for newlines between `?` and $token
             $prev = $prev->prev();
         }
@@ -78,13 +78,13 @@ class PreserveNewlines implements TokenRule
     {
         return $token->isOneOf(...TokenType::PRESERVE_NEWLINE_AFTER) &&
             !($token->isOpenBracket() && $token->next()->isCloseBracket()) &&
-            (!$token->is(":") || $token->isTernaryOperator());
+            (!$token->is(':') || $token->isTernaryOperator());
     }
 
     private function preserveNewlineBefore(Token $token): bool
     {
         return $token->isOneOf(...TokenType::PRESERVE_NEWLINE_BEFORE) &&
             !($token->isCloseBracket() && $token->prev()->isOpenBracket()) &&
-            (!$token->is(":") || $token->isTernaryOperator());
+            (!$token->is(':') || $token->isTernaryOperator());
     }
 }

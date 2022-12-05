@@ -16,7 +16,7 @@ class MatchPosition implements TokenRule
 
             while ($current && $current !== $arms->ClosedBy) {
                 if (($current = $current->nextSiblingOf(T_DOUBLE_ARROW)) &&
-                    ($current = $current->nextSiblingOf(","))) {
+                    ($current = $current->nextSiblingOf(','))) {
                     $current->WhitespaceAfter |= WhitespaceType::LINE;
                 }
             }

@@ -29,22 +29,22 @@ class FormatPhp extends CliCommand
      * @var array<string,string>
      */
     private $SkipMap = [
-        "preserve-newlines"      => PreserveNewlines::class,
-        "space-around-operators" => SpaceOperators::class,
-        "space-after-commas"     => CommaCommaComma::class,
-        "indent-heredocs"        => ReindentHeredocs::class,
+        'preserve-newlines'      => PreserveNewlines::class,
+        'space-around-operators' => SpaceOperators::class,
+        'space-after-commas'     => CommaCommaComma::class,
+        'indent-heredocs'        => ReindentHeredocs::class,
     ];
 
     public function getDescription(): string
     {
-        return "Format a PHP file";
+        return 'Format a PHP file';
     }
 
     protected function getOptionList(): array
     {
         return [
             (CliOption::build()
-                ->long("file")
+                ->long('file')
                 ->description(<<<EOF
                 One or more PHP files to format
 
@@ -55,68 +55,68 @@ class FormatPhp extends CliCommand
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->multipleAllowed()),
             (CliOption::build()
-                ->long("tab")
-                ->short("t")
-                ->description("Indent using tabs")),
+                ->long('tab')
+                ->short('t')
+                ->description('Indent using tabs')),
             (CliOption::build()
-                ->long("space")
-                ->short("s")
-                ->description("Indent using spaces")
+                ->long('space')
+                ->short('s')
+                ->description('Indent using spaces')
                 ->optionType(CliOptionType::ONE_OF_OPTIONAL)
-                ->allowedValues(["2", "4"])
-                ->defaultValue("4")),
+                ->allowedValues(['2', '4'])
+                ->defaultValue('4')),
             (CliOption::build()
-                ->long("skip")
-                ->short("i")
-                ->valueName("RULE")
-                ->description("Skip one or more rules")
+                ->long('skip')
+                ->short('i')
+                ->valueName('RULE')
+                ->description('Skip one or more rules')
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys($this->SkipMap))
                 ->multipleAllowed()),
             (CliOption::build()
-                ->short("n")
+                ->short('n')
                 ->description("Shorthand for '--skip preserve-newlines'")),
             (CliOption::build()
-                ->long("stdout")
-                ->short("o")
-                ->description("Write to the standard output")),
+                ->long('stdout')
+                ->short('o')
+                ->description('Write to the standard output')),
             (CliOption::build()
-                ->long("debug")
-                ->valueName("DIR")
-                ->description("Create debug output in DIR")
+                ->long('debug')
+                ->valueName('DIR')
+                ->description('Create debug output in DIR')
                 ->optionType(CliOptionType::VALUE_OPTIONAL)
-                ->defaultValue($this->app()->TempPath . "/pretty-php")),
+                ->defaultValue($this->app()->TempPath . '/pretty-php')),
         ];
     }
 
     protected function run(...$params)
     {
-        $tab   = $this->getOptionValue("tab");
-        $space = $this->getOptionValue("space");
+        $tab   = $this->getOptionValue('tab');
+        $space = $this->getOptionValue('space');
         if ($tab && $space) {
-            throw new CliArgumentsInvalidException("--tab and --space cannot be used together");
+            throw new CliArgumentsInvalidException('--tab and --space cannot be used together');
         }
-        $tab = $tab ? "\t" : ($space === "2" ? "  " : "    ");
+        $tab = $tab ? "\t" : ($space === '2' ? '  ' : '    ');
 
-        $skip = $this->getOptionValue("skip");
-        if ($this->getOptionValue("n")) {
-            $skip[] = "preserve-newlines";
+        $skip = $this->getOptionValue('skip');
+        if ($this->getOptionValue('n')) {
+            $skip[] = 'preserve-newlines';
         }
         $skip = array_values(array_intersect_key($this->SkipMap, array_flip($skip)));
 
-        $files  = $this->getOptionValue("file");
-        $stdout = $this->getOptionValue("stdout");
+        $files  = $this->getOptionValue('file');
+        $stdout = $this->getOptionValue('stdout');
         if (!$files && stream_isatty(STDIN)) {
-            throw new CliArgumentsInvalidException("FILE required when input is a TTY");
+            throw new CliArgumentsInvalidException('FILE required when input is a TTY');
         } elseif (!$files) {
-            $files  = ["php://stdin"];
+            $files  = ['php://stdin'];
             $stdout = true;
         }
         if ($stdout) {
             Console::registerStderrTarget(true);
         }
 
-        $debug = $this->getOptionValue("debug");
+        $debug = $this->getOptionValue('debug');
         if (!is_null($debug)) {
             Env::debug(true);
             File::maybeCreateDirectory($debug);
@@ -126,7 +126,7 @@ class FormatPhp extends CliCommand
         $formatter            = new Formatter($tab, $skip);
         [$i, $count, $errors] = [0, count($files), []];
         foreach ($files as $file) {
-            Console::info(sprintf("Formatting %d of %d:", ++$i, $count), $file);
+            Console::info(sprintf('Formatting %d of %d:', ++$i, $count), $file);
             $input = file_get_contents($file);
             try {
                 $output = $formatter->format($input);
@@ -147,17 +147,17 @@ class FormatPhp extends CliCommand
             }
 
             if ($input === $output) {
-                Console::log("Nothing to do");
+                Console::log('Nothing to do');
                 continue;
             }
 
-            Console::log("Replacing", $file);
+            Console::log('Replacing', $file);
             file_put_contents($file, $output);
         }
 
         if ($errors) {
             Console::error(
-                Convert::plural(count($errors), "file", null, true) . " with invalid syntax not formatted:",
+                Convert::plural(count($errors), 'file', null, true) . ' with invalid syntax not formatted:',
                 implode("\n", $errors),
                 null,
                 false
@@ -175,10 +175,10 @@ class FormatPhp extends CliCommand
     {
         if (!is_null($this->DebugDirectory)) {
             foreach ([
-                "input.php"   => $input,
-                "output.php"  => $output,
-                "tokens.json" => $tokens,
-                "data.json"   => $data,
+                'input.php'   => $input,
+                'output.php'  => $output,
+                'tokens.json' => $tokens,
+                'data.json'   => $data,
             ] as $file => $contents) {
                 $file = "{$this->DebugDirectory}/{$file}";
                 File::maybeDelete($file);

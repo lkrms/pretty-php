@@ -10,7 +10,7 @@ class DeclareArgumentsOnOneLine implements TokenRule
 {
     public function __invoke(Token $token): void
     {
-        if ($token->is("(") &&
+        if ($token->is('(') &&
             ($token->prevCode()->isOneOf(T_FN, T_FUNCTION) ||
                 $token->prevCode(2)->is(T_FUNCTION))) {
             $mask                                 = ~WhitespaceType::BLANK & ~WhitespaceType::LINE;

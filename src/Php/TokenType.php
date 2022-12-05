@@ -21,7 +21,7 @@ final class TokenType
     ];
 
     public const PRESERVE_NEWLINE_AFTER = [
-        "(", ",", ";", "[", "}",
+        '(', ',', ';', '[', '}',
         ...self::COMMENT,
         ...self::OPERATOR_ASSIGNMENT,
         ...self::OPERATOR_DOUBLE_ARROW,
@@ -29,7 +29,7 @@ final class TokenType
     ];
 
     public const PRESERVE_NEWLINE_BEFORE = [
-        "!",
+        '!',
         T_OBJECT_OPERATOR,
         ...self::OPERATOR_ARITHMETIC,
         ...self::OPERATOR_BITWISE,
@@ -58,22 +58,22 @@ final class TokenType
     ];
 
     public const AMPERSAND = [
-        "&",
+        '&',
         T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
         T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
     ];
 
     public const OPERATOR_ARITHMETIC = [
-        "+",      // Can be unary or binary
-        "-",      // Can be unary or binary
-        "*",
-        "/",
-        "%",
+        '+',      // Can be unary or binary
+        '-',      // Can be unary or binary
+        '*',
+        '/',
+        '%',
         T_POW,    // **
     ];
 
     public const OPERATOR_ASSIGNMENT = [
-        "=",
+        '=',
         T_PLUS_EQUAL,        // +=
         T_MINUS_EQUAL,       // -=
         T_MUL_EQUAL,         // *=
@@ -90,13 +90,13 @@ final class TokenType
     ];
 
     public const OPERATOR_BITWISE = [
-        "&", "|", "^", "~",
+        '&', '|', '^', '~',
         T_SL,                  // <<
         T_SR,                  // >>
     ];
 
     public const OPERATOR_COMPARISON = [
-        "<", ">",
+        '<', '>',
         T_IS_EQUAL,               // ==
         T_IS_IDENTICAL,           // ===
         T_IS_NOT_EQUAL,           // != or <>
@@ -108,16 +108,16 @@ final class TokenType
     ];
 
     public const OPERATOR_TERNARY = [
-        "?",
-        ":",
+        '?',
+        ':',
     ];
 
     public const OPERATOR_ERROR_CONTROL = [
-        "@",
+        '@',
     ];
 
     public const OPERATOR_EXECUTION = [
-        "`",
+        '`',
     ];
 
     public const OPERATOR_INCREMENT_DECREMENT = [
@@ -134,12 +134,12 @@ final class TokenType
     ];
 
     public const OPERATOR_LOGICAL = [
-        "!",
+        '!',
         ...self::OPERATOR_LOGICAL_EXCEPT_NOT,
     ];
 
     public const OPERATOR_STRING = [
-        ".",
+        '.',
     ];
 
     public const OPERATOR_DOUBLE_ARROW = [

@@ -10,7 +10,7 @@ class CommaCommaComma implements TokenRule
 {
     public function __invoke(Token $token): void
     {
-        if (!$token->is(",")) {
+        if (!$token->is(',')) {
             return;
         }
 

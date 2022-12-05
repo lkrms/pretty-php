@@ -36,13 +36,13 @@ class AddStandardWhitespace implements TokenRule
         if ($token->isOneOf(...TokenType::DECLARATION)) {
             /** @var Token $start */
             $start = $token->prevSiblingsWhile(true, T_STRING, ...TokenType::DECLARATION)->last();
-            if ($start->is(T_USE) && $start->prevCode()->is(")")) {
+            if ($start->is(T_USE) && $start->prevCode()->is(')')) {
                 return;
             }
-            if ($start->hasTags("declaration")) {
+            if ($start->hasTags('declaration')) {
                 return;
             }
-            $start->Tags[] = "declaration";
+            $start->Tags[] = 'declaration';
 
             $strings = $start->nextSiblingsWhile(true, T_STRING, ...TokenType::DECLARATION);
             /** @var Token $last */

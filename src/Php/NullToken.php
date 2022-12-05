@@ -6,12 +6,12 @@ class NullToken extends Token
 {
     public function __construct()
     {
-        $this->Type = $this->Code = "";
+        $this->Type = $this->Code = '';
         $this->Line = -1;
 
         $this->Index        = -1;
         $this->BracketStack = [];
-        $this->TypeName     = "";
+        $this->TypeName     = '';
     }
 
     public function isNull(): bool

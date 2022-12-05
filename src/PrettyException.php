@@ -27,7 +27,7 @@ class PrettyException extends Exception
      * @param Token[]|null $tokens
      * @param mixed[]|object|null $data
      */
-    public function __construct(string $message = "", ?string $output = null, ?array $tokens = null, $data = null, ?Throwable $previous = null)
+    public function __construct(string $message = '', ?string $output = null, ?array $tokens = null, $data = null, ?Throwable $previous = null)
     {
         parent::__construct($message, $previous);
 
@@ -39,9 +39,9 @@ class PrettyException extends Exception
     public function getDetail(): array
     {
         return [
-            "output" => $this->Output,
-            "tokens" => json_encode($this->Tokens, JSON_PRETTY_PRINT),
-            "data"   => json_encode($this->Data, JSON_PRETTY_PRINT),
+            'output' => $this->Output,
+            'tokens' => json_encode($this->Tokens, JSON_PRETTY_PRINT),
+            'data'   => json_encode($this->Data, JSON_PRETTY_PRINT),
         ];
     }
 

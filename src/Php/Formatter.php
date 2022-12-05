@@ -107,7 +107,7 @@ final class Formatter implements IReadable
     /**
      * @param string[] $skipRules
      */
-    public function __construct(string $tab = "    ", array $skipRules = [])
+    public function __construct(string $tab = '    ', array $skipRules = [])
     {
         $this->Tab = $tab;
 
@@ -132,7 +132,7 @@ final class Formatter implements IReadable
         try {
             [$this->PlainTokens, $this->Tokens] = [token_get_all($code, TOKEN_PARSE), []];
         } catch (ParseError $ex) {
-            throw new PrettyBadSyntaxException("Formatting failed: input cannot be parsed", $ex);
+            throw new PrettyBadSyntaxException('Formatting failed: input cannot be parsed', $ex);
         }
 
         $bracketStack = [];
@@ -157,7 +157,7 @@ final class Formatter implements IReadable
         }
 
         if (!isset($token)) {
-            return "";
+            return '';
         }
 
         $token->WhitespaceAfter |= WhitespaceType::LINE;
@@ -230,7 +230,7 @@ final class Formatter implements IReadable
             }
         }
 
-        $out = "";
+        $out = '';
         foreach ($this->Tokens as $token) {
             $out .= $token->render();
         }
@@ -239,7 +239,7 @@ final class Formatter implements IReadable
             $tokensOut = token_get_all($out, TOKEN_PARSE);
         } catch (ParseError $ex) {
             throw new PrettyException(
-                "Formatting check failed: output cannot be parsed",
+                'Formatting check failed: output cannot be parsed',
                 $out,
                 $this->Tokens,
                 null,

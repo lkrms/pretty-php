@@ -10,13 +10,13 @@ class BreakAfterSeparators implements TokenRule
 {
     public function __invoke(Token $token): void
     {
-        if (!$token->is(";")) {
+        if (!$token->is(';')) {
             return;
         }
 
         // Don't break after `for` expressions
         if (($bracket = end($token->BracketStack)) &&
-            $bracket->is("(") &&
+            $bracket->is('(') &&
             $bracket->prev()->is(T_FOR)) {
             return;
         }

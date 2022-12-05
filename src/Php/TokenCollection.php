@@ -118,7 +118,7 @@ final class TokenCollection extends TypedCollection
 
     public function render(): string
     {
-        [$code, $i] = ["", 0];
+        [$code, $i] = ['', 0];
         /** @var Token $token */
         foreach ($this as $token) {
             $code .= $token->render();

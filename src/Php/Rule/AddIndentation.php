@@ -22,7 +22,7 @@ class AddIndentation implements TokenRule
             return;
         }
         if ($prev->hasNewlineAfter()) {
-            $prev->Tags[] = "indented";
+            $prev->Tags[] = 'indented';
             $token->Indent++;
             $prev->ClosedBy->WhitespaceBefore |= WhitespaceType::LINE;
 

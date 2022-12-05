@@ -135,7 +135,7 @@ class Token implements JsonSerializable
             }
             if (isset($code) && $code !== $this->Code) {
                 $this->Code   = $code;
-                $this->Tags[] = "trimmed";
+                $this->Tags[] = 'trimmed';
             }
         } else {
             $this->Type = $this->Code = $token;
@@ -144,7 +144,7 @@ class Token implements JsonSerializable
             // to the number of newlines since, using `$formatter->PlainTokens`
             // in case there was whitespace between `$prev` and `$this`
             $lastLine = 1;
-            $code     = "";
+            $code     = '';
             $i        = $index;
 
             while ($i--) {
@@ -173,23 +173,23 @@ class Token implements JsonSerializable
     public function jsonSerialize(): array
     {
         $a = get_object_vars($this);
-        foreach ($a["BracketStack"] as &$t) {
+        foreach ($a['BracketStack'] as &$t) {
             $t = $t->Index;
         }
-        foreach ($a["IndentStack"] as &$bracketStack) {
+        foreach ($a['IndentStack'] as &$bracketStack) {
             foreach ($bracketStack as &$t) {
                 $t = $t->Index;
             }
         }
-        $a["OpenedBy"]        = $a["OpenedBy"]->Index ?? null;
-        $a["ClosedBy"]        = $a["ClosedBy"]->Index ?? null;
-        $a["HeredocOpenedBy"] = $a["HeredocOpenedBy"]->Index ?? null;
-        $a["StringOpenedBy"]  = $a["StringOpenedBy"]->Index ?? null;
-        $a["_prev"]           = $a["_prev"]->Index ?? null;
-        $a["_next"]           = $a["_next"]->Index ?? null;
-        unset($a["Formatter"]);
-        if (empty($a["Tags"])) {
-            unset($a["Tags"]);
+        $a['OpenedBy']        = $a['OpenedBy']->Index ?? null;
+        $a['ClosedBy']        = $a['ClosedBy']->Index ?? null;
+        $a['HeredocOpenedBy'] = $a['HeredocOpenedBy']->Index ?? null;
+        $a['StringOpenedBy']  = $a['StringOpenedBy']->Index ?? null;
+        $a['_prev']           = $a['_prev']->Index ?? null;
+        $a['_next']           = $a['_next']->Index ?? null;
+        unset($a['Formatter']);
+        if (empty($a['Tags'])) {
+            unset($a['Tags']);
         }
 
         return $a;
@@ -408,7 +408,7 @@ class Token implements JsonSerializable
 
     public function startOfStatement(): Token
     {
-        $current = ($this->is(";") ? $this->prevCode()->OpenedBy : null)
+        $current = ($this->is(';') ? $this->prevCode()->OpenedBy : null)
             ?: $this->OpenedBy
             ?: $this;
         while (!$current->prevCode()->isStatementPrecursor() && !$current->prevCode()->isNull()) {
@@ -509,31 +509,31 @@ class Token implements JsonSerializable
 
     public function isStatementTerminator(): bool
     {
-        return $this->isOneOf(";", "}") || ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE));
+        return $this->isOneOf(';', '}') || ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE));
     }
 
     public function isStatementPrecursor(): bool
     {
-        return $this->isOneOf("(", ";", "[", "{", "}") ||
+        return $this->isOneOf('(', ';', '[', '{', '}') ||
             ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE)) ||
-            ($this->is(",") &&
-                (($parent = $this->parent())->isOneOf("(", "[") ||
-                    ($parent->is("{") && $parent->prevSibling(2)->is(T_MATCH))));
+            ($this->is(',') &&
+                (($parent = $this->parent())->isOneOf('(', '[') ||
+                    ($parent->is('{') && $parent->prevSibling(2)->is(T_MATCH))));
     }
 
     public function isBrace(): bool
     {
-        return $this->is("{") || ($this->is("}") && $this->OpenedBy->is("{"));
+        return $this->is('{') || ($this->is('}') && $this->OpenedBy->is('{'));
     }
 
     public function isOpenBracket(): bool
     {
-        return $this->isOneOf("(", "[", "{", T_ATTRIBUTE, T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES);
+        return $this->isOneOf('(', '[', '{', T_ATTRIBUTE, T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES);
     }
 
     public function isCloseBracket(): bool
     {
-        return $this->isOneOf(")", "]", "}");
+        return $this->isOneOf(')', ']', '}');
     }
 
     public function isOneLineComment(bool $anyType = false): bool
@@ -572,19 +572,19 @@ class Token implements JsonSerializable
     public function isUnaryOperator(): bool
     {
         return ($this->isOneOf(
-            "~", "!",
+            '~', '!',
             ...TokenType::OPERATOR_ERROR_CONTROL,
             ...TokenType::OPERATOR_INCREMENT_DECREMENT
         ) || (
-            $this->isOneOf("+", "-") &&
+            $this->isOneOf('+', '-') &&
                 $this->isUnaryContext()
         ));
     }
 
     public function isTernaryOperator(): bool
     {
-        return ($this->is("?") && ($this->collectSiblings($this->endOfStatement())->hasOneOf(":"))) ||
-            ($this->is(":") && ($this->startOfStatement()->collectSiblings($this)->hasOneOf("?")));
+        return ($this->is('?') && ($this->collectSiblings($this->endOfStatement())->hasOneOf(':'))) ||
+            ($this->is(':') && ($this->startOfStatement()->collectSiblings($this)->hasOneOf('?')));
     }
 
     public function isBinaryOrTernaryOperator(): bool
@@ -597,7 +597,7 @@ class Token implements JsonSerializable
         $prev = $this->prevCode();
 
         return $prev->isOneOf(
-            "(", ",", ";", "[", "{", "}",
+            '(', ',', ';', '[', '{', '}',
             ...TokenType::OPERATOR_ARITHMETIC,
             ...TokenType::OPERATOR_ASSIGNMENT,
             ...TokenType::OPERATOR_BITWISE,
@@ -625,14 +625,14 @@ class Token implements JsonSerializable
     {
         $parent = $this->parent();
 
-        return $parent->is("(") && $parent->isDeclaration(T_FUNCTION);
+        return $parent->is('(') && $parent->isDeclaration(T_FUNCTION);
     }
 
     public function indent(): string
     {
         return ($this->Indent - $this->Deindent)
             ? str_repeat($this->Formatter->Tab, $this->Indent - $this->Deindent)
-            : "";
+            : '';
     }
 
     public function render(): string
@@ -640,9 +640,9 @@ class Token implements JsonSerializable
         if ($this->HeredocOpenedBy) {
             // Render heredocs in one go so we can safely trim empty lines
             if ($this->HeredocOpenedBy !== $this) {
-                return "";
+                return '';
             }
-            $heredoc = "";
+            $heredoc = '';
             $current = $this;
             do {
                 $heredoc .= $current->Code;
@@ -661,11 +661,11 @@ class Token implements JsonSerializable
                 $code .= $this->indent();
             }
             if ($this->Padding) {
-                $code .= str_repeat(" ", $this->Padding);
+                $code .= str_repeat(' ', $this->Padding);
             }
         }
 
-        $code = ($code ?? "") . ($heredoc ?? $comment ?? $this->Code);
+        $code = ($code ?? '') . ($heredoc ?? $comment ?? $this->Code);
 
         if ((is_null($this->_next) || $this->next()->isOneOf(...TokenType::DO_NOT_MODIFY)) &&
             !$this->isOneOf(...TokenType::DO_NOT_MODIFY_RHS)) {
@@ -678,7 +678,7 @@ class Token implements JsonSerializable
     private function renderComment(): string
     {
         // Remove trailing whitespace from each line
-        $code = preg_replace('/\h+$/m', "", $this->Code);
+        $code = preg_replace('/\h+$/m', '', $this->Code);
         switch ($this->Type) {
             case T_DOC_COMMENT:
                 $indent = "\n" . $this->indent();
@@ -688,16 +688,16 @@ class Token implements JsonSerializable
                     '/\n\h*\*?$/m',
                     '/\n\h*\*\//',
                 ], [
-                    $indent . " * ",
-                    $indent . " *",
-                    $indent . " */",
+                    $indent . ' * ',
+                    $indent . ' *',
+                    $indent . ' */',
                 ], $code);
 
             case T_COMMENT:
                 return $code;
         }
 
-        throw new RuntimeException("Not a T_COMMENT or T_DOC_COMMENT");
+        throw new RuntimeException('Not a T_COMMENT or T_DOC_COMMENT');
     }
 
     public function collect(Token $to): TokenCollection
