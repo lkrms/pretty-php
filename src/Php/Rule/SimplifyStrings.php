@@ -1,0 +1,73 @@
+<?php declare(strict_types=1);
+
+namespace Lkrms\Pretty\Php\Rule;
+
+use Lkrms\Pretty\Php\Contract\TokenRule;
+use Lkrms\Pretty\Php\Token;
+
+class SimplifyStrings implements TokenRule
+{
+    public function __invoke(Token $token): void
+    {
+        if (!$token->is(T_CONSTANT_ENCAPSED_STRING)) {
+            return;
+        }
+
+        // \x00 -> \t, \v, \f, \x0e -> \x1f is effectively \x00 -> \x1f without
+        // LF (\n) or CR (\r), which aren't escaped unless already escaped
+        $escape = "\x00..\t\v\f\x0e..\x1f\x7f..\xff\"\$\\";
+        $match  = '';
+
+        if (!$token->hasNewline()) {
+            $escape .= "\n\r";
+            $match   = '\n\r';
+        }
+
+        $string = '';
+        eval("\$string = {$token->Code};");
+        $double = $this->doubleQuote($string, $escape);
+        if (preg_match("/[\\x00-\\t\\v\\f\\x0e-\\x1f\\x7f-\\xff{$match}]/", $string)) {
+            $token->Code = $double;
+
+            return;
+        }
+        $single      = $this->singleQuote($string);
+        $token->Code = (strlen($single) <= strlen($double) &&
+            ($this->compareEscapes($single) || !$this->compareEscapes($double)))
+            ? $single
+            : $double;
+    }
+
+    private function singleQuote(string $string): string
+    {
+        return "'" . preg_replace(
+            "/(?:\\\\(?=\\\\)|(?<=\\\\)\\\\)|\\\\(?='|\$)|'/",
+            '\\\\$0',
+            $string
+        ) . "'";
+    }
+
+    private function doubleQuote(string $string, string $escape): string
+    {
+        return '"' . preg_replace_callback(
+            '/\\\\(?:(?P<octal>[0-7]{3})|.)/',
+            fn(array $matches) => ($matches['octal'] ?? null)
+                ? sprintf('\x%02x', octdec($matches['octal']))
+                : $matches[0],
+                addcslashes($string, $escape)
+        ) . '"';
+    }
+
+    /**
+     * Return true if $string contains "\" or "\\", but not both
+     *
+     * Also returns true if `$string` doesn't contain either sequence.
+     */
+    private function compareEscapes(string $string): bool
+    {
+        $singles = preg_match_all('/(?<!\\\\)\\\\(?!\\\\)/', $string);
+        $doubles = preg_match_all('/(?<!\\\\)\\\\\\\\(?!\\\\)/', $string);
+
+        return !($singles + $doubles) || ($singles xor $doubles);
+    }
+}

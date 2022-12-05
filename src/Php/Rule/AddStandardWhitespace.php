@@ -54,6 +54,8 @@ class AddStandardWhitespace implements TokenRule
             // statement as in the last one, don't add a blank line between them
             $types = $strings->getAnyOf(...TokenType::DECLARATION_CONDENSE)->getTypes();
             if ($types && $start->prevCode()->stringsAfterLastStatement()->hasOneOf(...$types)) {
+                $start->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
+
                 return;
             }
             $start->WhitespaceBefore |= WhitespaceType::BLANK;

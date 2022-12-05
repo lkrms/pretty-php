@@ -8,6 +8,7 @@ use Lkrms\Facade\Env;
 use Lkrms\Pretty\Php\Contract\BlockRule;
 use Lkrms\Pretty\Php\Contract\TokenFilter;
 use Lkrms\Pretty\Php\Contract\TokenRule;
+use Lkrms\Pretty\Php\Filter\NormaliseStrings;
 use Lkrms\Pretty\Php\Filter\RemoveCommentTokens;
 use Lkrms\Pretty\Php\Filter\RemoveEmptyTokens;
 use Lkrms\Pretty\Php\Filter\RemoveWhitespaceTokens;
@@ -25,6 +26,7 @@ use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
 use Lkrms\Pretty\Php\Rule\CommaCommaComma;
 use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\MatchPosition;
+use Lkrms\Pretty\Php\Rule\SimplifyStrings;
 use Lkrms\Pretty\Php\Rule\PlaceAttributes;
 use Lkrms\Pretty\Php\Rule\PlaceComments;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
@@ -58,6 +60,7 @@ final class Formatter implements IReadable
     protected $Rules = [
         // TokenRules
         ProtectStrings::class,
+        SimplifyStrings::class,
         BreakAfterSeparators::class,
         PlaceAttributes::class,
         BracePosition::class,
@@ -118,6 +121,7 @@ final class Formatter implements IReadable
         ];
         $this->ComparisonFilters = [
             ...$this->Filters,
+            new NormaliseStrings(),
             new RemoveCommentTokens(),
             new RemoveEmptyTokens(),
         ];
