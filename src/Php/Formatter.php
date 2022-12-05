@@ -32,6 +32,7 @@ use Lkrms\Pretty\Php\Rule\ProtectStrings;
 use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
 use Lkrms\Pretty\Php\Rule\SpaceOperators;
 use Lkrms\Pretty\Php\Rule\SwitchPosition;
+use Lkrms\Pretty\PrettyBadSyntaxException;
 use Lkrms\Pretty\PrettyException;
 use Lkrms\Pretty\WhitespaceType;
 use ParseError;
@@ -124,7 +125,11 @@ final class Formatter implements IReadable
 
     public function format(string $code): string
     {
-        [$this->PlainTokens, $this->Tokens] = [token_get_all($code, TOKEN_PARSE), []];
+        try {
+            [$this->PlainTokens, $this->Tokens] = [token_get_all($code, TOKEN_PARSE), []];
+        } catch (ParseError $ex) {
+            throw new PrettyBadSyntaxException("Formatting failed: input cannot be parsed", $ex);
+        }
 
         $bracketStack = [];
         foreach ($this->filter($this->PlainTokens, ...$this->Filters) as $index => $plainToken) {

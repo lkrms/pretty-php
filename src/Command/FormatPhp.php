@@ -7,6 +7,7 @@ use Lkrms\Cli\CliOptionType;
 use Lkrms\Cli\Concept\CliCommand;
 use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Facade\Console;
+use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\File;
 use Lkrms\Pretty\Php\Formatter;
@@ -14,6 +15,7 @@ use Lkrms\Pretty\Php\Rule\CommaCommaComma;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
 use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
 use Lkrms\Pretty\Php\Rule\SpaceOperators;
+use Lkrms\Pretty\PrettyBadSyntaxException;
 use Lkrms\Pretty\PrettyException;
 
 class FormatPhp extends CliCommand
@@ -121,13 +123,18 @@ class FormatPhp extends CliCommand
             $debug = $this->DebugDirectory = realpath($debug) ?: null;
         }
 
-        $formatter   = new Formatter($tab, $skip);
-        [$i, $count] = [0, count($files)];
+        $formatter            = new Formatter($tab, $skip);
+        [$i, $count, $errors] = [0, count($files), []];
         foreach ($files as $file) {
             Console::info(sprintf("Formatting %d of %d:", ++$i, $count), $file);
             $input = file_get_contents($file);
             try {
                 $output = $formatter->format($input);
+            } catch (PrettyBadSyntaxException $ex) {
+                Console::exception($ex);
+                $this->setExitStatus(2);
+                $errors[] = $file;
+                continue;
             } catch (PrettyException $ex) {
                 $this->maybeDumpDebugOutput($input, $ex->getOutput(), $ex->getTokens(), $ex->getData());
                 throw $ex;
@@ -147,6 +154,17 @@ class FormatPhp extends CliCommand
             Console::log("Replacing", $file);
             file_put_contents($file, $output);
         }
+
+        if ($errors) {
+            Console::error(
+                Convert::plural(count($errors), "file", null, true) . " with invalid syntax not formatted:",
+                implode("\n", $errors),
+                null,
+                false
+            );
+        }
+
+        Console::summary();
     }
 
     /**
