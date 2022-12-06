@@ -7,4 +7,6 @@ use Lkrms\Pretty\Php\Token;
 interface TokenRule
 {
     public function __invoke(Token $token): void;
+
+    public function getReverseTokens(): bool;
 }

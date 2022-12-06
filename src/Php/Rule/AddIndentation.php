@@ -2,11 +2,11 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Pretty\Php\Contract\TokenRule;
+use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
 
-class AddIndentation implements TokenRule
+class AddIndentation extends AbstractTokenRule
 {
     public function __invoke(Token $token): void
     {
@@ -22,7 +22,6 @@ class AddIndentation implements TokenRule
             return;
         }
         if ($prev->hasNewlineAfter()) {
-            $prev->Tags[] = 'indented';
             $token->Indent++;
             $prev->ClosedBy->WhitespaceBefore |= WhitespaceType::LINE;
 

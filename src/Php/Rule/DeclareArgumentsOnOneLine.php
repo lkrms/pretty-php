@@ -2,17 +2,17 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Pretty\Php\Contract\TokenRule;
+use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
 
-class DeclareArgumentsOnOneLine implements TokenRule
+class DeclareArgumentsOnOneLine extends AbstractTokenRule
 {
     public function __invoke(Token $token): void
     {
         if ($token->is('(') &&
-            ($token->prevCode()->isOneOf(T_FN, T_FUNCTION) ||
-                $token->prevCode(2)->is(T_FUNCTION))) {
+                ($token->prevCode()->isOneOf(T_FN, T_FUNCTION) ||
+                    $token->prevCode(2)->is(T_FUNCTION))) {
             $mask                                 = ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
             $token->WhitespaceMaskNext           &= $mask;
             $token->ClosedBy->WhitespaceMaskPrev &= $mask;

@@ -20,9 +20,9 @@ class AlignComments implements BlockRule
         $last     = null;
         foreach ($block as $i => $line) {
             if (($comment = $line->getLastOf(...TokenType::COMMENT)) &&
-                $comment->hasNewlineAfter() &&
-                !$comment->hasNewlineBefore() &&
-                !$comment->hasNewline()) {
+                    $comment->hasNewlineAfter() &&
+                    !$comment->hasNewlineBefore() &&
+                    !$comment->hasNewline()) {
                 $comments[$i] = $comment;
                 /** @var Token $first */
                 $first        = $first ?: $line[0];
@@ -41,7 +41,7 @@ class AlignComments implements BlockRule
             // Ignore lines before $first and after $last unless their bracket
             // stacks match $first and $last respectively
             if (!$lengths && $token->BracketStack !== $first->BracketStack ||
-                ($token->Index > $last->Index && $token->BracketStack !== $last->BracketStack)) {
+                    ($token->Index > $last->Index && $token->BracketStack !== $last->BracketStack)) {
                 continue;
             }
             if ($comment = $comments[$i] ?? null) {

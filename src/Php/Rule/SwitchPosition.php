@@ -2,11 +2,11 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Pretty\Php\Contract\TokenRule;
+use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
 
-class SwitchPosition implements TokenRule
+class SwitchPosition extends AbstractTokenRule
 {
     public function __invoke(Token $token): void
     {
@@ -24,7 +24,7 @@ class SwitchPosition implements TokenRule
             return;
         }
 
-        $token->WhitespaceBefore       |= WhitespaceType::BLANK;
+        $token->WhitespaceBefore       |= WhitespaceType::LINE;
         $separator->WhitespaceAfter    |= WhitespaceType::LINE;
         $separator->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
         $token->collect($separator)->withEach(fn(Token $t) => $t->Deindent++);

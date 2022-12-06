@@ -64,9 +64,19 @@ class Token implements JsonSerializable
     public $Deindent = 0;
 
     /**
+     * @var int
+     */
+    public $HangingIndent = 0;
+
+    /**
      * @var Token[]
      */
     public $IndentStack = [];
+
+    /**
+     * @var array<Token[]>
+     */
+    public $IndentBracketStack = [];
 
     /**
      * @var int
@@ -135,7 +145,7 @@ class Token implements JsonSerializable
             }
             if (isset($code) && $code !== $this->Code) {
                 $this->Code   = $code;
-                $this->Tags[] = 'trimmed';
+                $this->Tags[] = 'Trimmed';
             }
         } else {
             $this->Type = $this->Code = $token;
@@ -176,18 +186,25 @@ class Token implements JsonSerializable
         foreach ($a['BracketStack'] as &$t) {
             $t = $t->Index;
         }
-        foreach ($a['IndentStack'] as &$bracketStack) {
+        foreach ($a['IndentStack'] as &$t) {
+            $t = $t->Index;
+        }
+        foreach ($a['IndentBracketStack'] as &$bracketStack) {
             foreach ($bracketStack as &$t) {
                 $t = $t->Index;
             }
         }
-        $a['OpenedBy']        = $a['OpenedBy']->Index ?? null;
-        $a['ClosedBy']        = $a['ClosedBy']->Index ?? null;
-        $a['HeredocOpenedBy'] = $a['HeredocOpenedBy']->Index ?? null;
-        $a['StringOpenedBy']  = $a['StringOpenedBy']->Index ?? null;
-        $a['_prev']           = $a['_prev']->Index ?? null;
-        $a['_next']           = $a['_next']->Index ?? null;
-        unset($a['Formatter']);
+        $a['OpenedBy'] = $a['OpenedBy']->Index ?? null;
+        $a['ClosedBy'] = $a['ClosedBy']->Index ?? null;
+        $a['_prev']    = $a['_prev']->Index ?? null;
+        $a['_next']    = $a['_next']->Index ?? null;
+        unset(
+            $a['Index'],
+            $a['Type'],
+            $a['HeredocOpenedBy'],
+            $a['StringOpenedBy'],
+            $a['Formatter']
+        );
         if (empty($a['Tags'])) {
             unset($a['Tags']);
         }
@@ -386,6 +403,11 @@ class Token implements JsonSerializable
         return ($this->OpenedBy ?: $this)->next()->collect(($this->ClosedBy ?: $this)->prev());
     }
 
+    public function innerSiblings(): TokenCollection
+    {
+        return ($this->OpenedBy ?: $this)->nextCode()->collectSiblings(($this->ClosedBy ?: $this)->prevCode());
+    }
+
     public function isCode(): bool
     {
         return !$this->isOneOf(...TokenType::NOT_CODE);
@@ -425,7 +447,23 @@ class Token implements JsonSerializable
             $last    = $current;
             $current = $current->nextSibling();
             if (!$current->isStatementTerminator() &&
-                $current->prevCode()->isStatementTerminator()) {
+                    $current->prevCode()->isStatementTerminator()) {
+                return $current->prevCode();
+            }
+        }
+        $current = $current->isNull() ? ($last ?? $current) : $current;
+
+        return $current->ClosedBy ?: $current;
+    }
+
+    public function endOfExpression(): Token
+    {
+        $current = $this->OpenedBy ?: $this;
+        while (!$current->isStatementPrecursor() && !$current->nextCode()->isNull()) {
+            $last    = $current;
+            $current = $current->nextSibling();
+            if (!$current->isStatementPrecursor() &&
+                    $current->prevCode()->isStatementPrecursor()) {
                 return $current->prevCode();
             }
         }
@@ -630,8 +668,8 @@ class Token implements JsonSerializable
 
     public function indent(): string
     {
-        return ($this->Indent - $this->Deindent)
-            ? str_repeat($this->Formatter->Tab, $this->Indent - $this->Deindent)
+        return ($this->Indent + $this->HangingIndent - $this->Deindent)
+            ? str_repeat($this->Formatter->Tab, $this->Indent + $this->HangingIndent - $this->Deindent)
             : '';
     }
 
@@ -657,7 +695,7 @@ class Token implements JsonSerializable
 
         if (!$this->isOneOf(...TokenType::DO_NOT_MODIFY_LHS)) {
             $code = WhitespaceType::toWhitespace($this->effectiveWhitespaceBefore());
-            if (substr($code, -1) === "\n" && ($this->Indent - $this->Deindent)) {
+            if (substr($code, -1) === "\n" && ($this->Indent + $this->HangingIndent - $this->Deindent)) {
                 $code .= $this->indent();
             }
             if ($this->Padding) {
@@ -668,7 +706,7 @@ class Token implements JsonSerializable
         $code = ($code ?? '') . ($heredoc ?? $comment ?? $this->Code);
 
         if ((is_null($this->_next) || $this->next()->isOneOf(...TokenType::DO_NOT_MODIFY)) &&
-            !$this->isOneOf(...TokenType::DO_NOT_MODIFY_RHS)) {
+                !$this->isOneOf(...TokenType::DO_NOT_MODIFY_RHS)) {
             $code .= WhitespaceType::toWhitespace($this->effectiveWhitespaceAfter());
         }
 

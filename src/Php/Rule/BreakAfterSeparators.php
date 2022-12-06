@@ -2,11 +2,11 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Pretty\Php\Contract\TokenRule;
+use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
 
-class BreakAfterSeparators implements TokenRule
+class BreakAfterSeparators extends AbstractTokenRule
 {
     public function __invoke(Token $token): void
     {
@@ -16,8 +16,8 @@ class BreakAfterSeparators implements TokenRule
 
         // Don't break after `for` expressions
         if (($bracket = end($token->BracketStack)) &&
-            $bracket->is('(') &&
-            $bracket->prev()->is(T_FOR)) {
+                $bracket->is('(') &&
+                $bracket->prev()->is(T_FOR)) {
             return;
         }
 

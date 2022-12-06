@@ -2,11 +2,11 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Pretty\Php\Contract\TokenRule;
+use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
 
-class ProtectStrings implements TokenRule
+class ProtectStrings extends AbstractTokenRule
 {
     /**
      * @var bool|null

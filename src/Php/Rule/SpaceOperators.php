@@ -2,28 +2,28 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Pretty\Php\Contract\TokenRule;
+use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
-class SpaceOperators implements TokenRule
+class SpaceOperators extends AbstractTokenRule
 {
     public function __invoke(Token $token): void
     {
         if (!($token->isOperator() || $token->isOneOf('?', ...TokenType::AMPERSAND)) ||
-            $token->parent()->prev()->is(T_DECLARE)) {
+                $token->parent()->prev()->is(T_DECLARE)) {
             return;
         }
 
         // Suppress whitespace after ampersands related to returning, assigning
         // or passing by reference
         if ($token->isOneOf(...TokenType::AMPERSAND) &&
-            ($token->prevCode()->is(T_FUNCTION) ||
-                $token->isUnaryContext() ||
-                ($token->next()->is(T_VARIABLE) &&
-                    $token->inFunctionDeclaration() &&
-                    !$token->sinceLastStatement()->hasOneOf('=')))) {
+                ($token->prevCode()->is(T_FUNCTION) ||
+                    $token->isUnaryContext() ||
+                    ($token->next()->is(T_VARIABLE) &&
+                        $token->inFunctionDeclaration() &&
+                        !$token->sinceLastStatement()->hasOneOf('=')))) {
             $token->WhitespaceBefore  |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
 
@@ -31,7 +31,7 @@ class SpaceOperators implements TokenRule
         }
         // Suppress whitespace between types in unions and intersections
         if ($token->isOneOf('|', ...TokenType::AMPERSAND) &&
-            $token->inFunctionDeclaration() && !$token->sinceLastStatement()->hasOneOf('=')) {
+                $token->inFunctionDeclaration() && !$token->sinceLastStatement()->hasOneOf('=')) {
             $token->WhitespaceMaskNext = $token->WhitespaceMaskPrev = WhitespaceType::NONE;
 
             return;

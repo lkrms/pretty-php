@@ -22,6 +22,8 @@ final class TokenType
 
     public const PRESERVE_NEWLINE_AFTER = [
         '(', ',', ';', '[', '}',
+        T_OPEN_TAG,
+        T_OPEN_TAG_WITH_ECHO,
         ...self::COMMENT,
         ...self::OPERATOR_ASSIGNMENT,
         ...self::OPERATOR_BITWISE,
@@ -32,6 +34,7 @@ final class TokenType
 
     public const PRESERVE_NEWLINE_BEFORE = [
         '!',
+        T_CLOSE_TAG,
         T_OBJECT_OPERATOR,
         ...self::OPERATOR_ARITHMETIC,
         ...self::OPERATOR_TERNARY,

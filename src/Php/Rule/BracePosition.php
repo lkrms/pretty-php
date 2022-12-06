@@ -2,11 +2,11 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Pretty\Php\Contract\TokenRule;
+use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
 
-class BracePosition implements TokenRule
+class BracePosition extends AbstractTokenRule
 {
     public function __invoke(Token $token): void
     {
@@ -27,7 +27,7 @@ class BracePosition implements TokenRule
 
         $next = $token->nextCode();
         if ($next->isOneOf(T_ELSE, T_ELSEIF, T_CATCH, T_FINALLY) ||
-            ($next->is(T_WHILE) && $next->nextSibling(2)->is(';'))) {
+                ($next->is(T_WHILE) && $next->nextSibling(2)->is(';'))) {
             $token->WhitespaceAfter    |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
 

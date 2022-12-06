@@ -26,12 +26,12 @@ use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
 use Lkrms\Pretty\Php\Rule\CommaCommaComma;
 use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\MatchPosition;
-use Lkrms\Pretty\Php\Rule\SimplifyStrings;
 use Lkrms\Pretty\Php\Rule\PlaceAttributes;
 use Lkrms\Pretty\Php\Rule\PlaceComments;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
 use Lkrms\Pretty\Php\Rule\ProtectStrings;
 use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
+use Lkrms\Pretty\Php\Rule\SimplifyStrings;
 use Lkrms\Pretty\Php\Rule\SpaceOperators;
 use Lkrms\Pretty\Php\Rule\SwitchPosition;
 use Lkrms\Pretty\PrettyBadSyntaxException;
@@ -159,9 +159,9 @@ final class Formatter implements IReadable
         if (!isset($token)) {
             return '';
         }
-
         $token->WhitespaceAfter |= WhitespaceType::LINE;
 
+        $reversed = array_reverse($this->Tokens, true);
         foreach ($this->Rules as $_rule) {
             if (!is_a($_rule, TokenRule::class, true)) {
                 continue;
@@ -171,7 +171,7 @@ final class Formatter implements IReadable
 
             if (!Env::debug()) {
                 /** @var Token $token */
-                foreach ($this->Tokens as $token) {
+                foreach (($rule->getReverseTokens() ? $reversed : $this->Tokens) as $token) {
                     $rule($token);
                 }
 
@@ -179,11 +179,11 @@ final class Formatter implements IReadable
             }
 
             /** @var Token $token */
-            foreach ($this->Tokens as $token) {
+            foreach (($rule->getReverseTokens() ? $reversed : $this->Tokens) as $token) {
                 $clone = clone $token;
                 $rule($token);
                 if ($clone != $token) {
-                    $token->Tags[] = "rule:$_rule";
+                    $token->Tags[] = "Rule:$_rule";
                 }
             }
         }

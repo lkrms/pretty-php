@@ -2,11 +2,11 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Pretty\Php\Contract\TokenRule;
+use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
 
-class MatchPosition implements TokenRule
+class MatchPosition extends AbstractTokenRule
 {
     public function __invoke(Token $token): void
     {
@@ -16,7 +16,7 @@ class MatchPosition implements TokenRule
 
             while ($current && $current !== $arms->ClosedBy) {
                 if (($current = $current->nextSiblingOf(T_DOUBLE_ARROW)) &&
-                    ($current = $current->nextSiblingOf(','))) {
+                        ($current = $current->nextSiblingOf(','))) {
                     $current->WhitespaceAfter |= WhitespaceType::LINE;
                 }
             }

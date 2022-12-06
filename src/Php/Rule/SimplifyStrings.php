@@ -2,10 +2,10 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Pretty\Php\Contract\TokenRule;
+use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
 use Lkrms\Pretty\Php\Token;
 
-class SimplifyStrings implements TokenRule
+class SimplifyStrings extends AbstractTokenRule
 {
     public function __invoke(Token $token): void
     {
@@ -54,7 +54,7 @@ class SimplifyStrings implements TokenRule
             fn(array $matches) => ($matches['octal'] ?? null)
                 ? sprintf('\x%02x', octdec($matches['octal']))
                 : $matches[0],
-                addcslashes($string, $escape)
+            addcslashes($string, $escape)
         ) . '"';
     }
 

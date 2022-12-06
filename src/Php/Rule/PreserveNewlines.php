@@ -3,12 +3,12 @@
 namespace Lkrms\Pretty\Php\Rule;
 
 use Lkrms\Facade\Test;
-use Lkrms\Pretty\Php\Contract\TokenRule;
+use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
-class PreserveNewlines implements TokenRule
+class PreserveNewlines extends AbstractTokenRule
 {
     public function __invoke(Token $token): void
     {
@@ -55,8 +55,8 @@ class PreserveNewlines implements TokenRule
     private function maybeAddNewline(Token $token1, Token $token2, ?Token $token2Orig, int $whitespaceType, int $min, int $max): bool
     {
         if (!Test::isBetween($token1->Line, $min, $max) ||
-            !Test::isBetween($token2->Line, $min, $max) ||
-            ($token1->effectiveWhitespaceAfter() & $whitespaceType) === $whitespaceType) {
+                !Test::isBetween($token2->Line, $min, $max) ||
+                ($token1->effectiveWhitespaceAfter() & $whitespaceType) === $whitespaceType) {
             return false;
         }
         if ($this->preserveNewlineAfter($token1)) {

@@ -2,12 +2,12 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Pretty\Php\Contract\TokenRule;
+use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
-class AddStandardWhitespace implements TokenRule
+class AddStandardWhitespace extends AbstractTokenRule
 {
     public function __invoke(Token $token): void
     {
@@ -25,7 +25,7 @@ class AddStandardWhitespace implements TokenRule
         }
 
         if ($token->isOpenBracket() ||
-            $token->isOneOf(...TokenType::SUPPRESS_SPACE_AFTER)) {
+                $token->isOneOf(...TokenType::SUPPRESS_SPACE_AFTER)) {
             $token->WhitespaceMaskNext &= ~WhitespaceType::SPACE;
         }
 
@@ -39,10 +39,10 @@ class AddStandardWhitespace implements TokenRule
             if ($start->is(T_USE) && $start->prevCode()->is(')')) {
                 return;
             }
-            if ($start->hasTags('declaration')) {
+            if ($start->hasTags('StartOfDeclaration')) {
                 return;
             }
-            $start->Tags[] = 'declaration';
+            $start->Tags[] = 'StartOfDeclaration';
 
             $strings = $start->nextSiblingsWhile(true, T_STRING, ...TokenType::DECLARATION);
             /** @var Token $last */
@@ -63,12 +63,12 @@ class AddStandardWhitespace implements TokenRule
 
         if ($token->isOneOf(T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO)) {
             if ($token->is(T_OPEN_TAG) &&
-                ($declare = $token->next())->is(T_DECLARE) &&
-                ($end = $declare->nextSibling(2)) === $declare->endOfStatement()) {
+                    ($declare = $token->next())->is(T_DECLARE) &&
+                    ($end = $declare->nextSibling(2)) === $declare->endOfStatement()) {
                 $token->WhitespaceAfter |= WhitespaceType::SPACE;
                 $token                   = $end;
             }
-            $token->WhitespaceAfter |= WhitespaceType::BLANK;
+            $token->WhitespaceAfter |= WhitespaceType::LINE;
 
             return;
         }
