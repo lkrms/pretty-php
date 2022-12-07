@@ -4,15 +4,38 @@ namespace Lkrms\Pretty\Php;
 
 use Lkrms\Concept\TypedCollection;
 use Lkrms\Pretty\WhitespaceType;
+use RuntimeException;
 
 /**
  * @extends TypedCollection<Token>
  */
 final class TokenCollection extends TypedCollection
 {
+    /**
+     * @var bool
+     */
+    private $Collected = false;
+
     protected function getItemClass(): string
     {
         return Token::class;
+    }
+
+    public static function collect(Token $from, Token $to): TokenCollection
+    {
+        $tokens            = new TokenCollection();
+        $tokens->Collected = true;
+
+        if ($from->Index > $to->Index || $from->isNull() || $to->isNull()) {
+            return $tokens;
+        }
+
+        $tokens[] = $from;
+        while ($from !== $to) {
+            $tokens[] = $from = $from->next();
+        }
+
+        return $tokens;
     }
 
     /**
@@ -82,10 +105,14 @@ final class TokenCollection extends TypedCollection
         return $types ?? [];
     }
 
+    /**
+     * Return true if the collection will render over multiple lines, not
+     * including whitespace before the first or after the last token
+     */
     public function hasInnerNewline(): bool
     {
-        if (count($this) < 2) {
-            return false;
+        if (!$this->Collected) {
+            throw new RuntimeException('Collection not created by ' . static::class . '::collect()');
         }
         $i = 0;
         /** @var Token $token */
@@ -105,6 +132,11 @@ final class TokenCollection extends TypedCollection
     }
 
     /**
+     * @psalm-param callable(Token $token) $callback
+     * @param callable $callback
+     * ```php
+     * callable(Token $token)
+     * ```
      * @return $this
      */
     public function withEach(callable $callback)
@@ -114,6 +146,30 @@ final class TokenCollection extends TypedCollection
         }
 
         return $this;
+    }
+
+    /**
+     * @psalm-param callable(Token $token, bool &$return): bool $filter
+     * @param callable $filter
+     * ```php
+     * callable(Token $token, bool &$return): bool
+     * ```
+     */
+    public function filter(callable $filter): TokenCollection
+    {
+        $tokens = new TokenCollection();
+        $return = false;
+        /** @var Token $token */
+        foreach ($this as $token) {
+            if ($filter($token, $return)) {
+                $tokens[] = $token;
+            }
+            if ($return) {
+                return $tokens;
+            }
+        }
+
+        return $tokens;
     }
 
     public function render(): string

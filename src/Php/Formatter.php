@@ -13,6 +13,7 @@ use Lkrms\Pretty\Php\Filter\RemoveCommentTokens;
 use Lkrms\Pretty\Php\Filter\RemoveEmptyTokens;
 use Lkrms\Pretty\Php\Filter\RemoveWhitespaceTokens;
 use Lkrms\Pretty\Php\Filter\StripHeredocIndents;
+use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeDeclaration;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeYield;
 use Lkrms\Pretty\Php\Rule\AddEssentialWhitespace;
@@ -69,12 +70,13 @@ final class Formatter implements IReadable
         AddStandardWhitespace::class,
         DeclareArgumentsOnOneLine::class,
         PlaceComments::class,
-        AddBlankLineBeforeReturn::class,     // Must be after PlaceComments
-        AddBlankLineBeforeYield::class,      // Ditto
+        AddBlankLineBeforeReturn::class,         // Must be after PlaceComments
+        AddBlankLineBeforeYield::class,          // Ditto
         PreserveNewlines::class,
         AddIndentation::class,
         SwitchPosition::class,
         MatchPosition::class,
+        AddBlankLineBeforeDeclaration::class,
         AddHangingIndentation::class,
         ReindentHeredocs::class,
         AddEssentialWhitespace::class,
@@ -183,7 +185,7 @@ final class Formatter implements IReadable
                 $clone = clone $token;
                 $rule($token);
                 if ($clone != $token) {
-                    $token->Tags[] = "Rule:$_rule";
+                    $token->Tags["Rule:$_rule"] = true;
                 }
             }
         }

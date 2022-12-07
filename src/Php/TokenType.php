@@ -33,7 +33,7 @@ final class TokenType
     ];
 
     public const PRESERVE_NEWLINE_BEFORE = [
-        '!',
+        '!', ')', ']',
         T_CLOSE_TAG,
         T_OBJECT_OPERATOR,
         ...self::OPERATOR_ARITHMETIC,
@@ -178,13 +178,19 @@ final class TokenType
         T_PROTECTED,
         T_PUBLIC,
         T_READONLY,
-        T_STATIC,
         T_TRAIT,
         T_USE,
         T_VAR,
     ];
 
+    public const DECLARATION_PART = [
+        T_STATIC,
+        T_STRING,
+        ...self::DECLARATION,
+    ];
+
     public const DECLARATION_CONDENSE = [
+        T_CONST,
         T_USE,
     ];
 
@@ -217,6 +223,7 @@ final class TokenType
 
     public const ADD_SPACE_AFTER = [
         T_CATCH,
+        T_FUNCTION,
         T_INCLUDE,
         T_INCLUDE_ONCE,
         T_MATCH,
@@ -224,8 +231,11 @@ final class TokenType
         T_REQUIRE_ONCE,
         T_RETURN,
         T_SWITCH,
+        ...self::CAST,
         ...self::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES,
     ];
+
+    public const SUPPRESS_SPACE_BEFORE = [];
 
     public const SUPPRESS_SPACE_AFTER = [
         T_DOUBLE_COLON,
@@ -293,6 +303,7 @@ final class TokenType
         T_REQUIRE_ONCE,
         T_REQUIRE,
         T_RETURN,
+        T_STATIC,
         T_SWITCH,
         T_THROW,
         T_TRY,

@@ -10,12 +10,16 @@ class BracePosition extends AbstractTokenRule
 {
     public function __invoke(Token $token): void
     {
-        if (!$token->isBrace()) {
+        if (!$token->isStructuralBrace()) {
             return;
         }
 
         if ($token->is('{')) {
-            $token->WhitespaceBefore   |= $token->isDeclaration() ? WhitespaceType::LINE : WhitespaceType::SPACE;
+            $token->WhitespaceBefore |= ($token->isDeclaration() &&
+                (($prev = $token->startOfExpression()->prevCode())->isNull() ||
+                    $prev->isStatementPrecursor('(', '['))
+                    ? WhitespaceType::LINE
+                    : WhitespaceType::SPACE);
             $token->WhitespaceAfter    |= WhitespaceType::LINE;
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
 
