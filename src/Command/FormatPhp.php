@@ -10,10 +10,19 @@ use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\File;
+use Lkrms\Facade\Test;
 use Lkrms\Pretty\Php\Formatter;
+use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeDeclaration;
+use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
+use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeYield;
+use Lkrms\Pretty\Php\Rule\AlignAssignments;
+use Lkrms\Pretty\Php\Rule\AlignComments;
 use Lkrms\Pretty\Php\Rule\CommaCommaComma;
+use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
+use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterNot;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
 use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
+use Lkrms\Pretty\Php\Rule\SimplifyStrings;
 use Lkrms\Pretty\Php\Rule\SpaceOperators;
 use Lkrms\Pretty\PrettyBadSyntaxException;
 use Lkrms\Pretty\PrettyException;
@@ -29,10 +38,24 @@ class FormatPhp extends CliCommand
      * @var array<string,string>
      */
     private $SkipMap = [
-        'preserve-newlines'      => PreserveNewlines::class,
-        'space-around-operators' => SpaceOperators::class,
-        'space-after-commas'     => CommaCommaComma::class,
-        'indent-heredocs'        => ReindentHeredocs::class,
+        'simplify-strings'         => SimplifyStrings::class,
+        'space-around-operators'   => SpaceOperators::class,
+        'space-after-commas'       => CommaCommaComma::class,
+        'one-line-arguments'       => DeclareArgumentsOnOneLine::class,
+        'blank-before-return'      => AddBlankLineBeforeReturn::class,
+        'blank-before-yield'       => AddBlankLineBeforeYield::class,
+        'preserve-newlines'        => PreserveNewlines::class,
+        'blank-before-declaration' => AddBlankLineBeforeDeclaration::class,
+        'indent-heredocs'          => ReindentHeredocs::class,
+        'align-assignments'        => AlignAssignments::class,
+        'align-comments'           => AlignComments::class,
+    ];
+
+    /**
+     * @var array<string,string>
+     */
+    private $RuleMap = [
+        'space-after-not' => AddSpaceAfterNot::class,
     ];
 
     public function getDescription(): string
@@ -74,12 +97,30 @@ class FormatPhp extends CliCommand
                 ->allowedValues(array_keys($this->SkipMap))
                 ->multipleAllowed()),
             (CliOption::build()
+                ->long('rule')
+                ->short('r')
+                ->valueName('RULE')
+                ->description('Add one or more non-standard rules')
+                ->optionType(CliOptionType::ONE_OF)
+                ->allowedValues(array_keys($this->RuleMap))
+                ->multipleAllowed()),
+            (CliOption::build()
                 ->short('n')
                 ->description("Shorthand for '--skip preserve-newlines'")),
             (CliOption::build()
-                ->long('stdout')
+                ->long('output')
                 ->short('o')
-                ->description('Write to the standard output')),
+                ->valueName('FILE')
+                ->description(<<<EOF
+                Write output to FILE instead of replacing the input file
+
+                If FILE is '-' (a single dash), __{{command}}__ writes to the
+                standard output.
+
+                May be used once per input file.
+                EOF)
+                ->optionType(CliOptionType::VALUE)
+                ->multipleAllowed()),
             (CliOption::build()
                 ->long('debug')
                 ->valueName('DIR')
@@ -103,16 +144,23 @@ class FormatPhp extends CliCommand
             $skip[] = 'preserve-newlines';
         }
         $skip = array_values(array_intersect_key($this->SkipMap, array_flip($skip)));
-
-        $files  = $this->getOptionValue('file');
-        $stdout = $this->getOptionValue('stdout');
-        if (!$files && stream_isatty(STDIN)) {
-            throw new CliArgumentsInvalidException('FILE required when input is a TTY');
-        } elseif (!$files) {
-            $files  = ['php://stdin'];
-            $stdout = true;
+        if ($rules = $this->getOptionValue('rule')) {
+            $rules = array_values(array_intersect_key($this->RuleMap, array_flip($rules)));
         }
-        if ($stdout) {
+
+        $in  = $this->getOptionValue('file');
+        $out = $this->getOptionValue('output');
+        if (!$in && stream_isatty(STDIN)) {
+            throw new CliArgumentsInvalidException('FILE required when input is a TTY');
+        } elseif (!$in || $in === ['-']) {
+            $in  = ['php://stdin'];
+            $out = ['-'];
+        } elseif ($out && count($out) !== count($in) && $out !== ['-']) {
+            throw new CliArgumentsInvalidException('--output is required once per input file');
+        } elseif (!$out) {
+            $out = $in;
+        }
+        if ($out === ['-']) {
             Console::registerStderrTarget(true);
         }
 
@@ -123,9 +171,9 @@ class FormatPhp extends CliCommand
             $debug = $this->DebugDirectory = realpath($debug) ?: null;
         }
 
-        $formatter            = new Formatter($tab, $skip);
-        [$i, $count, $errors] = [0, count($files), []];
-        foreach ($files as $file) {
+        $formatter            = new Formatter($tab, $skip, $rules);
+        [$i, $count, $errors] = [0, count($in), []];
+        foreach ($in as $key => $file) {
             Console::info(sprintf('Formatting %d of %d:', ++$i, $count), $file);
             $input = file_get_contents($file);
             try {
@@ -141,18 +189,23 @@ class FormatPhp extends CliCommand
             }
             $this->maybeDumpDebugOutput($input, $output, $formatter->Tokens, null);
 
-            if ($stdout) {
+            $outFile = $out[$key] ?? '-';
+            if ($outFile === '-') {
                 print $output;
                 continue;
             }
 
-            if ($input === $output) {
-                Console::log('Nothing to do');
+            if (!Test::areSameFile($file, $outFile)) {
+                $input = is_file($outFile) ? file_get_contents($outFile) : null;
+            }
+
+            if (!is_null($input) && $input === $output) {
+                Console::log('Already formatted:', $outFile);
                 continue;
             }
 
-            Console::log('Replacing', $file);
-            file_put_contents($file, $output);
+            Console::log('Replacing', $outFile);
+            file_put_contents($outFile, $output);
         }
 
         if ($errors) {

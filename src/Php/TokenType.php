@@ -231,6 +231,7 @@ final class TokenType
         T_REQUIRE_ONCE,
         T_RETURN,
         T_SWITCH,
+        T_THROW,
         ...self::CAST,
         ...self::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES,
     ];
@@ -242,7 +243,6 @@ final class TokenType
         T_ELLIPSIS,
         T_NULLSAFE_OBJECT_OPERATOR,
         T_OBJECT_OPERATOR,
-        ...self::CAST,
     ];
 
     public const ALTERNATIVE_SYNTAX = [

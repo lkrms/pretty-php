@@ -588,22 +588,22 @@ class Token implements JsonSerializable
 
     public function hasNewlineBefore(): bool
     {
-        return (bool)($this->effectiveWhitespaceBefore() & (WhitespaceType::LINE | WhitespaceType::BLANK));
+        return (bool) ($this->effectiveWhitespaceBefore() & (WhitespaceType::LINE | WhitespaceType::BLANK));
     }
 
     public function hasNewlineAfter(): bool
     {
-        return (bool)($this->effectiveWhitespaceAfter() & (WhitespaceType::LINE | WhitespaceType::BLANK));
+        return (bool) ($this->effectiveWhitespaceAfter() & (WhitespaceType::LINE | WhitespaceType::BLANK));
     }
 
     public function hasWhitespaceBefore(): bool
     {
-        return (bool)$this->effectiveWhitespaceBefore();
+        return (bool) $this->effectiveWhitespaceBefore();
     }
 
     public function hasWhitespaceAfter(): bool
     {
-        return (bool)$this->effectiveWhitespaceAfter();
+        return (bool) $this->effectiveWhitespaceAfter();
     }
 
     public function hasNewline(): bool
@@ -629,7 +629,9 @@ class Token implements JsonSerializable
 
     public function isStatementTerminator(): bool
     {
-        return $this->isOneOf(';', '}') || ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE));
+        return $this->is(';') ||
+            ($this->is('}') && $this->isStructuralBrace()) ||
+            ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE));
     }
 
     /**

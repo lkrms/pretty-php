@@ -108,13 +108,18 @@ final class Formatter implements IReadable
 
     /**
      * @param string[] $skipRules
+     * @param string[] $addRules
      */
-    public function __construct(string $tab = '    ', array $skipRules = [])
+    public function __construct(string $tab = '    ', array $skipRules = [], array $addRules = [])
     {
         $this->Tab = $tab;
 
         if ($skipRules) {
             $this->Rules = array_diff($this->Rules, $skipRules);
+        }
+
+        if ($addRules) {
+            array_push($this->Rules, ...$addRules);
         }
 
         $this->Filters = [
