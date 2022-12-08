@@ -13,6 +13,7 @@ use Lkrms\Pretty\Php\Filter\RemoveCommentTokens;
 use Lkrms\Pretty\Php\Filter\RemoveEmptyTokens;
 use Lkrms\Pretty\Php\Filter\RemoveWhitespaceTokens;
 use Lkrms\Pretty\Php\Filter\StripHeredocIndents;
+use Lkrms\Pretty\Php\Filter\TrimInsideCasts;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeDeclaration;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeYield;
@@ -125,6 +126,7 @@ final class Formatter implements IReadable
         $this->Filters = [
             new RemoveWhitespaceTokens(),
             new StripHeredocIndents(),
+            new TrimInsideCasts(),
         ];
         $this->ComparisonFilters = [
             ...$this->Filters,
