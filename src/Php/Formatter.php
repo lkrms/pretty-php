@@ -31,6 +31,7 @@ use Lkrms\Pretty\Php\Rule\MatchPosition;
 use Lkrms\Pretty\Php\Rule\PlaceAttributes;
 use Lkrms\Pretty\Php\Rule\PlaceComments;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
+use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
 use Lkrms\Pretty\Php\Rule\ProtectStrings;
 use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
 use Lkrms\Pretty\Php\Rule\SimplifyStrings;
@@ -69,11 +70,12 @@ final class Formatter implements IReadable
         SpaceOperators::class,
         CommaCommaComma::class,
         AddStandardWhitespace::class,
+        PreserveNewlines::class,
+        PreserveOneLineStatements::class,
         DeclareArgumentsOnOneLine::class,
         PlaceComments::class,
         AddBlankLineBeforeReturn::class,         // Must be after PlaceComments
         AddBlankLineBeforeYield::class,          // Ditto
-        PreserveNewlines::class,
         AddIndentation::class,
         SwitchPosition::class,
         MatchPosition::class,

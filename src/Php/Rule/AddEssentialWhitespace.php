@@ -10,7 +10,7 @@ class AddEssentialWhitespace extends AbstractTokenRule
 {
     public function __invoke(Token $token): void
     {
-        if ($token->hasNewlineAfter()) {
+        if ($token->StringOpenedBy || $token->HeredocOpenedBy || $token->hasNewlineAfter()) {
             return;
         }
 

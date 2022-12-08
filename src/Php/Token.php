@@ -84,6 +84,11 @@ class Token implements JsonSerializable
     public $IndentBracketStack = [];
 
     /**
+     * @var bool
+     */
+    public $PinToCode = false;
+
+    /**
      * @var int
      */
     public $Padding = 0;
@@ -502,6 +507,20 @@ class Token implements JsonSerializable
     /**
      * @param int $ignore A bitmask of {@see TokenBoundary} values
      */
+    public function isStartOfExpression(int $ignore = TokenBoundary::COMPARISON): bool
+    {
+        return ($prev = $this->prevCode())->isNull() ||
+            $prev->isStatementPrecursor() ||
+            $prev->isTernaryOperator() ||
+            $prev->isOneOf(
+                ...TokenBoundary::getTokenTypes(TokenBoundary::ALL & ~$ignore),
+                ...TokenType::OPERATOR_DOUBLE_ARROW
+            );
+    }
+
+    /**
+     * @param int $ignore A bitmask of {@see TokenBoundary} values
+     */
     public function startOfExpression(int $ignore = TokenBoundary::COMPARISON): Token
     {
         $current = $this->OpenedBy ?: $this;
@@ -578,10 +597,31 @@ class Token implements JsonSerializable
 
     public function effectiveWhitespaceBefore(): int
     {
+        if ($this->PinToCode && ($next = $this->next())->isCode() && !$next->PinToCode) {
+            return $this->_effectiveWhitespaceBefore() | $next->_effectiveWhitespaceBefore();
+        }
+        if (!$this->PinToCode && $this->prev()->PinToCode && $this->isCode()) {
+            return ($this->_effectiveWhitespaceBefore() | WhitespaceType::LINE) & ~WhitespaceType::BLANK;
+        }
+
+        return $this->_effectiveWhitespaceBefore();
+    }
+
+    private function _effectiveWhitespaceBefore(): int
+    {
         return ($this->WhitespaceBefore | $this->prev()->WhitespaceAfter) & $this->prev()->WhitespaceMaskNext & $this->WhitespaceMaskPrev;
     }
 
     public function effectiveWhitespaceAfter(): int
+    {
+        if ($this->PinToCode && ($next = $this->next())->isCode() && !$next->PinToCode) {
+            return ($this->_effectiveWhitespaceAfter() | WhitespaceType::LINE) & ~WhitespaceType::BLANK;
+        }
+
+        return $this->_effectiveWhitespaceAfter();
+    }
+
+    private function _effectiveWhitespaceAfter(): int
     {
         return ($this->WhitespaceAfter | $this->next()->WhitespaceBefore) & $this->next()->WhitespaceMaskPrev & $this->WhitespaceMaskNext;
     }

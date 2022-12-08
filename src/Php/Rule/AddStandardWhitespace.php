@@ -38,8 +38,9 @@ class AddStandardWhitespace extends AbstractTokenRule
             if ($token->is(T_OPEN_TAG) &&
                     ($declare = $token->next())->is(T_DECLARE) &&
                     ($end = $declare->nextSibling(2)) === $declare->endOfStatement()) {
-                $token->WhitespaceAfter |= WhitespaceType::SPACE;
-                $token                   = $end;
+                $token->WhitespaceAfter   |= WhitespaceType::SPACE;
+                $token->WhitespaceMaskNext = WhitespaceType::SPACE;
+                $token                     = $end;
             }
             $token->WhitespaceAfter |= WhitespaceType::LINE;
 

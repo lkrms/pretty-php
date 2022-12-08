@@ -27,7 +27,7 @@ final class TokenType
         ...self::COMMENT,
         ...self::OPERATOR_ASSIGNMENT,
         ...self::OPERATOR_BITWISE,
-        ...self::OPERATOR_COMPARISON,
+        ...self::OPERATOR_COMPARISON_EXCEPT_COALESCE,
         ...self::OPERATOR_DOUBLE_ARROW,
         ...self::OPERATOR_LOGICAL_EXCEPT_NOT,
     ];
@@ -35,6 +35,7 @@ final class TokenType
     public const PRESERVE_NEWLINE_BEFORE = [
         '!', ')', ']',
         T_CLOSE_TAG,
+        T_COALESCE,
         T_OBJECT_OPERATOR,
         ...self::OPERATOR_ARITHMETIC,
         ...self::OPERATOR_TERNARY,
@@ -98,7 +99,7 @@ final class TokenType
         T_SR,                  // >>
     ];
 
-    public const OPERATOR_COMPARISON = [
+    public const OPERATOR_COMPARISON_EXCEPT_COALESCE = [
         '<', '>',
         T_IS_EQUAL,               // ==
         T_IS_IDENTICAL,           // ===
@@ -107,7 +108,11 @@ final class TokenType
         T_IS_SMALLER_OR_EQUAL,    // <=
         T_IS_GREATER_OR_EQUAL,    // >=
         T_SPACESHIP,              // <=>
-        T_COALESCE,               // ??
+    ];
+
+    public const OPERATOR_COMPARISON = [
+        T_COALESCE,    // ??
+        ...self::OPERATOR_COMPARISON_EXCEPT_COALESCE,
     ];
 
     public const OPERATOR_TERNARY = [

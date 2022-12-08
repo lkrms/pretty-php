@@ -13,12 +13,26 @@ class ProtectStrings extends AbstractTokenRule
      */
     private $InString;
 
+    /**
+     * @var bool|null
+     */
+    private $InHeredoc;
+
     public function __invoke(Token $token): void
     {
-        if (!$this->InString && !$token->is('"')) {
+        if ($this->InString || $token->is('"')) {
+            $this->protectString($token);
+
             return;
         }
 
+        if ($this->InHeredoc || $token->is(T_START_HEREDOC)) {
+            $this->protectHeredoc($token);
+        }
+    }
+
+    private function protectString(Token $token): void
+    {
         $token->StringOpenedBy = $token->prev()->StringOpenedBy ?: $token;
 
         if (!$this->InString) {
@@ -31,6 +45,28 @@ class ProtectStrings extends AbstractTokenRule
         if ($token->is('"')) {
             $token->WhitespaceMaskPrev = WhitespaceType::NONE;
             $this->InString            = false;
+
+            return;
+        }
+
+        $token->WhitespaceMaskPrev = WhitespaceType::NONE;
+        $token->WhitespaceMaskNext = WhitespaceType::NONE;
+    }
+
+    private function protectHeredoc(Token $token): void
+    {
+        $token->HeredocOpenedBy = $token->prev()->HeredocOpenedBy ?: $token;
+
+        if (!$this->InHeredoc) {
+            $token->WhitespaceMaskNext = WhitespaceType::NONE;
+            $this->InHeredoc           = true;
+
+            return;
+        }
+
+        if ($token->is(T_END_HEREDOC)) {
+            $token->WhitespaceMaskPrev = WhitespaceType::NONE;
+            $this->InHeredoc           = false;
 
             return;
         }

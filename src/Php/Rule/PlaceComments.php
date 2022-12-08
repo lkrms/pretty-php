@@ -34,10 +34,19 @@ class PlaceComments extends AbstractTokenRule
         $token->WhitespaceAfter |= WhitespaceType::LINE;
         if (!$token->is(T_DOC_COMMENT)) {
             $token->WhitespaceBefore |= WhitespaceType::LINE;
+            $token->PinToCode         = true;
 
             return;
         }
-        $token->WhitespaceBefore   |= $token->hasNewline() ? WhitespaceType::BLANK : WhitespaceType::LINE;
+        $token->WhitespaceBefore |= $token->hasNewline() ? WhitespaceType::BLANK : WhitespaceType::LINE;
+        // PHPDoc comments immediately before namespace declarations are
+        // generally associated with the file, not the namespace
+        if ($token->nextCode()->isDeclaration(T_NAMESPACE)) {
+            $token->WhitespaceAfter |= WhitespaceType::BLANK;
+
+            return;
+        }
         $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
+        $token->PinToCode           = true;
     }
 }
