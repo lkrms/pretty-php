@@ -31,16 +31,11 @@ class AddBlankLineBeforeDeclaration extends AbstractTokenRule
             return;
         }
 
-        $end = $start->endOfStatement();
-        if (!$end->next()->isNull()) {
-            $end->WhitespaceAfter |= WhitespaceType::BLANK;
-        }
-
         // If the same DECLARATION_CONDENSE token types appear in this
         // statement as in the last one, don't add a blank line between them
         $types = $parts->getAnyOf(...TokenType::DECLARATION_CONDENSE)->getTypes();
         if ($types) {
-            $block      = $start->collect($end);
+            $block      = $start->collect($start->endOfStatement());
             $hasNewline = $block->hasInnerNewline();
             if (!$hasNewline) {
                 [$prev, $start->Tags['HasNoInnerNewline']] = [

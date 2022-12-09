@@ -295,6 +295,8 @@ class Token implements JsonSerializable
             $a['StringOpenedBy'],
             $a['Formatter']
         );
+        $a['WhitespaceBefore'] = WhitespaceType::toWhitespace($a['WhitespaceBefore']);
+        $a['WhitespaceAfter']  = WhitespaceType::toWhitespace($a['WhitespaceAfter']);
         if (empty($a['Tags'])) {
             unset($a['Tags']);
         }
@@ -739,7 +741,10 @@ class Token implements JsonSerializable
                 ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE)) ||
                 ($this->is(',') &&
                     (($parent = $this->parent())->isOneOf('(', '[') ||
-                        ($parent->is('{') && $parent->prevSibling(2)->is(T_MATCH))))
+                        ($parent->is('{') && $parent->prevSibling(2)->is(T_MATCH)))) ||
+                ($this->is(':') &&
+                    $this->startOfStatement()->isOneOf(T_CASE, T_DEFAULT) &&
+                    ($parent = $this->parent())->is('{') && $parent->prevSibling(2)->is(T_SWITCH))
         );
     }
 

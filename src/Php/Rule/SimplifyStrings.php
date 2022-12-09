@@ -31,9 +31,14 @@ class SimplifyStrings extends AbstractTokenRule
 
             return;
         }
-        $single      = $this->singleQuote($string);
+        $single = $this->singleQuote($string);
+        // '\Lkrms\\' looks invalid and "\\Lkrms\\" uses double quotes
+        // unnecessarily, so try '\\Lkrms\\' before giving up on single quotes
+        if (!$this->checkConsistency($single) && $this->checkConsistency($double)) {
+            $single = preg_replace('/(?<!\\\\)\\\\(?!\\\\)/', '\\\\$0', $single);
+        }
         $token->Code = (strlen($single) <= strlen($double) &&
-            ($this->compareEscapes($single) || !$this->compareEscapes($double)))
+            ($this->checkConsistency($single) || !$this->checkConsistency($double)))
             ? $single
             : $double;
     }
@@ -63,7 +68,7 @@ class SimplifyStrings extends AbstractTokenRule
      *
      * Also returns true if `$string` doesn't contain either sequence.
      */
-    private function compareEscapes(string $string): bool
+    private function checkConsistency(string $string): bool
     {
         $singles = preg_match_all('/(?<!\\\\)\\\\(?!\\\\)/', $string);
         $doubles = preg_match_all('/(?<!\\\\)\\\\\\\\(?!\\\\)/', $string);

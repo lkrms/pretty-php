@@ -20,6 +20,7 @@ use Lkrms\Pretty\Php\Rule\AlignComments;
 use Lkrms\Pretty\Php\Rule\CommaCommaComma;
 use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterNot;
+use Lkrms\Pretty\Php\Rule\Extra\SuppressSpaceAroundStringOperator;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
 use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
 use Lkrms\Pretty\Php\Rule\SimplifyStrings;
@@ -55,7 +56,8 @@ class FormatPhp extends CliCommand
      * @var array<string,string>
      */
     private $RuleMap = [
-        'space-after-not' => AddSpaceAfterNot::class,
+        'no-concat-spaces' => SuppressSpaceAroundStringOperator::class,
+        'space-after-not'  => AddSpaceAfterNot::class,
     ];
 
     public function getDescription(): string
