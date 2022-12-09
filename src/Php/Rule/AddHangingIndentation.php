@@ -18,7 +18,7 @@ class AddHangingIndentation extends AbstractTokenRule
             if ($token->innerSiblings()->hasOneOf(',') ||
                     ($token->is('(') && ($token->nextSibling()->is('{') ||
                         $token->innerSiblings()->hasOneOf(';')))) {
-                $token->inner()->withEach(
+                $token->inner()->forEach(
                     function (Token $t) {
                         $t->OverhangingIndent++;
                     }

@@ -41,11 +41,14 @@ class AddBlankLineBeforeDeclaration extends AbstractTokenRule
         $types = $parts->getAnyOf(...TokenType::DECLARATION_CONDENSE)->getTypes();
         if ($types) {
             $block      = $start->collect($end);
-            $hasNewline = $start->Tags['HasInnerNewline'] = $block->hasInnerNewline();
+            $hasNewline = $block->hasInnerNewline();
             if (!$hasNewline) {
-                $prev = $start->prevCode()->startOfStatement();
+                [$prev, $start->Tags['HasNoInnerNewline']] = [
+                    $start->prevCode()->startOfStatement(),
+                    true,
+                ];
                 if ($prev->declarationParts()->hasOneOf(...$types) &&
-                        !($prev->Tags['HasInnerNewline'] ?? true)) {
+                        ($prev->Tags['HasNoInnerNewline'] ?? null)) {
                     $start->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
 
                     return;

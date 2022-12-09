@@ -25,11 +25,9 @@ final class TokenCollection extends TypedCollection
     {
         $tokens            = new TokenCollection();
         $tokens->Collected = true;
-
         if ($from->Index > $to->Index || $from->isNull() || $to->isNull()) {
             return $tokens;
         }
-
         $tokens[] = $from;
         while ($from !== $to) {
             $tokens[] = $from = $from->next();
@@ -43,14 +41,9 @@ final class TokenCollection extends TypedCollection
      */
     public function hasOneOf(...$types): bool
     {
-        /** @var Token $token */
-        foreach ($this as $token) {
-            if ($token->isOneOf(...$types)) {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->find(
+            fn(Token $t) => $t->isOneOf(...$types)
+        ) !== false;
     }
 
     /**
@@ -58,15 +51,9 @@ final class TokenCollection extends TypedCollection
      */
     public function getAnyOf(...$types): TokenCollection
     {
-        $tokens = new TokenCollection();
-        /** @var Token $token */
-        foreach ($this as $token) {
-            if ($token->isOneOf(...$types)) {
-                $tokens[] = $token;
-            }
-        }
-
-        return $tokens;
+        return $this->filter(
+            fn(Token $t) => $t->isOneOf(...$types)
+        );
     }
 
     /**
@@ -74,14 +61,9 @@ final class TokenCollection extends TypedCollection
      */
     public function getFirstOf(...$types): ?Token
     {
-        /** @var Token $token */
-        foreach ($this as $token) {
-            if ($token->isOneOf(...$types)) {
-                return $token;
-            }
-        }
-
-        return null;
+        return $this->find(
+            fn(Token $t) => $t->isOneOf(...$types)
+        ) ?: null;
     }
 
     /**
@@ -129,47 +111,6 @@ final class TokenCollection extends TypedCollection
         }
 
         return false;
-    }
-
-    /**
-     * @psalm-param callable(Token $token) $callback
-     * @param callable $callback
-     * ```php
-     * callable(Token $token)
-     * ```
-     * @return $this
-     */
-    public function withEach(callable $callback)
-    {
-        foreach ($this as $token) {
-            $callback($token);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @psalm-param callable(Token $token, bool &$return): bool $filter
-     * @param callable $filter
-     * ```php
-     * callable(Token $token, bool &$return): bool
-     * ```
-     */
-    public function filter(callable $filter): TokenCollection
-    {
-        $tokens = new TokenCollection();
-        $return = false;
-        /** @var Token $token */
-        foreach ($this as $token) {
-            if ($filter($token, $return)) {
-                $tokens[] = $token;
-            }
-            if ($return) {
-                return $tokens;
-            }
-        }
-
-        return $tokens;
     }
 
     public function render(): string

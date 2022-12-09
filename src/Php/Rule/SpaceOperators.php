@@ -20,7 +20,7 @@ class SpaceOperators extends AbstractTokenRule
         // or passing by reference
         if ($token->isOneOf(...TokenType::AMPERSAND) &&
                 ($token->prevCode()->is(T_FUNCTION) ||
-                    $token->isUnaryContext() ||
+                    $token->inUnaryContext() ||
                     ($token->next()->is(T_VARIABLE) &&
                         $token->inFunctionDeclaration() &&
                         !$token->sinceStartOfStatement()->hasOneOf('=')))) {
@@ -29,13 +29,16 @@ class SpaceOperators extends AbstractTokenRule
 
             return;
         }
+
         // Suppress whitespace between types in unions and intersections
         if ($token->isOneOf('|', ...TokenType::AMPERSAND) &&
-                $token->inFunctionDeclaration() && !$token->sinceStartOfStatement()->hasOneOf('=')) {
+                $token->inFunctionDeclaration() &&
+                !$token->sinceStartOfStatement()->hasOneOf('=')) {
             $token->WhitespaceMaskNext = $token->WhitespaceMaskPrev = WhitespaceType::NONE;
 
             return;
         }
+
         if ($token->is('?') && !$token->isTernaryOperator()) {
             $token->WhitespaceBefore  |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext = WhitespaceType::NONE;

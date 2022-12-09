@@ -20,7 +20,7 @@ class PreserveOneLineStatements extends AbstractTokenRule
             $token->next()
                 ->collect($end->prev())
                 // Because why not test the rule in the rule itself?
-                ->withEach(
+                ->forEach(
                     function (Token $t) use ($mask) {$t->WhitespaceMaskPrev &= $mask; $t->WhitespaceMaskNext &= $mask;}
                 );
             $token->WhitespaceMaskNext &= $mask;

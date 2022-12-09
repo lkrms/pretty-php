@@ -96,6 +96,7 @@ class PreserveNewlines extends AbstractTokenRule
                 ($noBrackets || !($token->isOpenBracket() && $next->isCloseBracket())) &&
                 (!$token->is(':') || $token->isTernaryOperator())) {
             $token->WhitespaceAfter |= $type;
+            $token->PinToCode        = $token->PinToCode && ($type === WhitespaceType::LINE);
 
             return true;
         }

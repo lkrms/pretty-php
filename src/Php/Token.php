@@ -6,27 +6,81 @@ use JsonSerializable;
 use Lkrms\Pretty\WhitespaceType;
 use RuntimeException;
 
+/**
+ * @property-read int $Index
+ * @property-read int|string $Type
+ * @property-read int $Line
+ * @property-read string $TypeName
+ * @property Token|null $OpenedBy
+ * @property Token|null $ClosedBy
+ * @property string $Code
+ * @property Token[] $BracketStack
+ * @property array<string,true> $Tags
+ * @property int $Indent
+ * @property int $Deindent
+ * @property int $HangingIndent
+ * @property int $OverhangingIndent
+ * @property Token[] $IndentStack
+ * @property array<Token[]> $IndentBracketStack
+ * @property bool $PinToCode
+ * @property int $Padding
+ * @property Token|null $HeredocOpenedBy
+ * @property Token|null $StringOpenedBy
+ * @property int $WhitespaceBefore
+ * @property int $WhitespaceAfter
+ * @property int $WhitespaceMaskPrev
+ * @property int $WhitespaceMaskNext
+ */
 class Token implements JsonSerializable
 {
+    private const ALLOW_READ = [
+        'Index',
+        'Type',
+        'Line',
+        'TypeName',
+        'OpenedBy',
+        'ClosedBy',
+    ];
+
+    private const ALLOW_WRITE = [
+        'Code',
+        'BracketStack',
+        'Tags',
+        'Indent',
+        'Deindent',
+        'HangingIndent',
+        'OverhangingIndent',
+        'IndentStack',
+        'IndentBracketStack',
+        'PinToCode',
+        'Padding',
+        'HeredocOpenedBy',
+        'StringOpenedBy',
+        'WhitespaceBefore',
+        'WhitespaceAfter',
+        'WhitespaceMaskPrev',
+        'WhitespaceMaskNext',
+    ];
+
     /**
      * @var int
      */
-    public $Index;
+    protected $Index;
 
     /**
      * @var int|string
      */
-    public $Type;
+    protected $Type;
 
     /**
      * @var string
      */
-    public $Code;
+    protected $Code;
 
     /**
      * @var int
      */
-    public $Line;
+    protected $Line;
 
     /**
      * @var Token[]
@@ -36,37 +90,37 @@ class Token implements JsonSerializable
     /**
      * @var string
      */
-    public $TypeName;
+    protected $TypeName;
 
     /**
      * @var Token|null
      */
-    public $OpenedBy;
+    private $OpenedBy;
 
     /**
      * @var Token|null
      */
-    public $ClosedBy;
+    private $ClosedBy;
 
     /**
-     * @var string[]
+     * @var array<string,true>
      */
     public $Tags = [];
 
     /**
      * @var int
      */
-    public $Indent = 0;
+    private $Indent = 0;
 
     /**
      * @var int
      */
-    public $Deindent = 0;
+    private $Deindent = 0;
 
     /**
      * @var int
      */
-    public $HangingIndent = 0;
+    private $HangingIndent = 0;
 
     /**
      * @var int
@@ -86,12 +140,12 @@ class Token implements JsonSerializable
     /**
      * @var bool
      */
-    public $PinToCode = false;
+    private $PinToCode = false;
 
     /**
      * @var int
      */
-    public $Padding = 0;
+    private $Padding = 0;
 
     /**
      * @var Token|null
@@ -106,22 +160,22 @@ class Token implements JsonSerializable
     /**
      * @var int
      */
-    public $WhitespaceBefore = WhitespaceType::NONE;
+    private $WhitespaceBefore = WhitespaceType::NONE;
 
     /**
      * @var int
      */
-    public $WhitespaceAfter = WhitespaceType::NONE;
+    private $WhitespaceAfter = WhitespaceType::NONE;
 
     /**
      * @var int
      */
-    public $WhitespaceMaskPrev = WhitespaceType::ALL;
+    private $WhitespaceMaskPrev = WhitespaceType::ALL;
 
     /**
      * @var int
      */
-    public $WhitespaceMaskNext = WhitespaceType::ALL;
+    private $WhitespaceMaskNext = WhitespaceType::ALL;
 
     /**
      * @var Formatter
@@ -773,11 +827,11 @@ class Token implements JsonSerializable
             ...TokenType::OPERATOR_INCREMENT_DECREMENT
         ) || (
             $this->isOneOf('+', '-') &&
-                $this->isUnaryContext()
+                $this->inUnaryContext()
         ));
     }
 
-    public function isUnaryContext(): bool
+    public function inUnaryContext(): bool
     {
         $prev = $this->prevCode();
 
@@ -909,5 +963,40 @@ class Token implements JsonSerializable
         }
 
         return $tokens;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function __get(string $name)
+    {
+        if (!in_array($name, [...self::ALLOW_READ, ...self::ALLOW_WRITE])) {
+            throw new RuntimeException('Cannot access property ' . static::class . '::$' . $name);
+        }
+
+        return $this->$name;
+    }
+
+    /**
+     * @param mixed $value
+     */
+    public function __set(string $name, $value): void
+    {
+        if (!in_array($name, self::ALLOW_WRITE) &&
+                !(is_null($this->$name) && in_array($name, self::ALLOW_READ))) {
+            throw new RuntimeException('Cannot access property ' . static::class . '::$' . $name);
+        }
+        if ($this->$name === $value) {
+            return;
+        }
+        if ($this->Formatter->Debug && ($service = $this->Formatter->RunningService)) {
+            $this->Tags[$service . ':' . $name . ':' . $this->$name . ':' . $value] = true;
+        }
+        $this->$name = $value;
+    }
+
+    public function __toString(): string
+    {
+        return (string) $this->Index;
     }
 }

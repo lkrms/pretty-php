@@ -43,6 +43,8 @@ use Lkrms\Pretty\WhitespaceType;
 use ParseError;
 
 /**
+ * @property-read bool $Debug
+ * @property-read string|null $RunningService
  * @property-read string $Tab
  * @property-read string[] $Rules
  * @property-read array<string|array{0:int,1:string,2:int}>|null $PlainTokens
@@ -51,6 +53,16 @@ use ParseError;
 final class Formatter implements IReadable
 {
     use TFullyReadable;
+
+    /**
+     * @var bool
+     */
+    protected $Debug;
+
+    /**
+     * @var string|null
+     */
+    protected $RunningService;
 
     /**
      * @var string
@@ -130,12 +142,15 @@ final class Formatter implements IReadable
             new StripHeredocIndents(),
             new TrimInsideCasts(),
         ];
+
         $this->ComparisonFilters = [
             ...$this->Filters,
             new NormaliseStrings(),
             new RemoveCommentTokens(),
             new RemoveEmptyTokens(),
         ];
+
+        $this->Debug = Env::debug();
     }
 
     public function format(string $code): string
@@ -177,27 +192,14 @@ final class Formatter implements IReadable
             if (!is_a($_rule, TokenRule::class, true)) {
                 continue;
             }
-
-            $rule = new $_rule();
-
-            if (!Env::debug()) {
-                /** @var Token $token */
-                foreach (($rule->getReverseTokens() ? $reversed : $this->Tokens) as $token) {
-                    $rule($token);
-                }
-
-                continue;
-            }
-
+            $this->RunningService = $_rule;
+            $rule                 = new $_rule();
             /** @var Token $token */
             foreach (($rule->getReverseTokens() ? $reversed : $this->Tokens) as $token) {
-                $clone = clone $token;
                 $rule($token);
-                if ($clone != $token) {
-                    $token->Tags["Rule:$_rule"] = true;
-                }
             }
         }
+        $this->RunningService = null;
 
         /** @var array<TokenCollection[]> $blocks */
         $blocks = [];
