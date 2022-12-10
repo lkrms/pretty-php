@@ -541,7 +541,8 @@ class Token implements JsonSerializable
         $current = ($this->is(';') ? $this->prevCode()->OpenedBy : null)
             ?: $this->OpenedBy
             ?: $this;
-        while (!$current->prevCode()->isStatementPrecursor() && !$current->prevCode()->isNull()) {
+        while (!($prev = $current->prevCode())->isStatementPrecursor() &&
+                !$prev->isNull()) {
             $current = $current->prevSibling();
         }
 
@@ -555,8 +556,8 @@ class Token implements JsonSerializable
             $last    = $current;
             $current = $current->nextSibling();
             if (!$current->isStatementTerminator() &&
-                    $current->prevCode()->isStatementTerminator()) {
-                return $current->prevCode();
+                    ($prev = $current->prevCode())->isStatementTerminator()) {
+                return $prev;
             }
         }
         $current = $current->isNull() ? ($last ?? $current) : $current;
@@ -615,10 +616,9 @@ class Token implements JsonSerializable
     public function endOfExpression(int $ignore = TokenBoundary::COMPARISON): Token
     {
         $current = $this->OpenedBy ?: $this;
-        if ($current->IsEndOfExpression[$ignore] ?? null) {
-            return $current;
+        if (($current->ClosedBy ?: $current)->IsEndOfExpression[$ignore] ?? null) {
+            return $current->ClosedBy ?: $current;
         }
-        $types = TokenBoundary::getTokenTypes(TokenBoundary::ALL & ~$ignore);
         if (!$current->isTernaryOperator() &&
                 ($prev = ($start = $current->startOfExpression($ignore))->prevCode())->is('?') &&
                 $prev->isTernaryOperator() &&
@@ -628,6 +628,9 @@ class Token implements JsonSerializable
         while (!($next = $current->nextSibling())->isNull() &&
                 !$next->isStatementPrecursor('(', '[', '{')) {
             $current = $next;
+            if (($prev = $current->prevCode())->isStatementTerminator()) {
+                return $this->_endOfExpression($ignore, $prev, $start ?? null);
+            }
         }
 
         return $this->_endOfExpression($ignore, $current->ClosedBy ?: $current, $start ?? null);
