@@ -16,9 +16,8 @@ class DeclareArgumentsOnOneLine extends AbstractTokenRule
             $mask                                 = ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
             $token->WhitespaceMaskNext           &= $mask;
             $token->ClosedBy->WhitespaceMaskPrev &= $mask;
-            $token->inner()->withEach(
-                static function(Token $t) use ($mask)
-                {
+            $token->inner()->forEach(
+                static function (Token $t) use ($mask) {
                     $t->WhitespaceMaskPrev &= $mask;
                     $t->WhitespaceMaskNext &= $mask;
                 }

@@ -11,7 +11,7 @@ class SwitchPosition extends AbstractTokenRule
     public function __invoke(Token $token): void
     {
         if ($token->is(T_SWITCH)) {
-            $token->nextSibling(2)->inner()->withEach(fn(Token $t) => $t->Indent++);
+            $token->nextSibling(2)->inner()->forEach(fn(Token $t) => $t->Indent++);
 
             return;
         }
@@ -27,6 +27,6 @@ class SwitchPosition extends AbstractTokenRule
         $token->WhitespaceBefore       |= WhitespaceType::LINE;
         $separator->WhitespaceAfter    |= WhitespaceType::LINE;
         $separator->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
-        $token->collect($separator)->withEach(fn(Token $t) => $t->Deindent++);
+        $token->collect($separator)->forEach(fn(Token $t) => $t->Deindent++);
     }
 }

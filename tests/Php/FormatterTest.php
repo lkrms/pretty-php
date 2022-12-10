@@ -56,11 +56,11 @@ final class FormatterTest extends \PHPUnit\Framework\TestCase
         $files = new RecursiveIteratorIterator($dir);
         /** @var SplFileInfo $file */
         foreach ($files as $file) {
-            if ($file->isFile() && $file->getExtension() === 'in') {
-                $in      = file_get_contents((string)$file);
-                $outFile = $outDir . substr((string)$file, strlen($inDir), -3) . '.out';
+            if ($file->isFile() && in_array($file->getExtension(), ['php', 'in', ''], true)) {
+                $in      = file_get_contents((string) $file);
+                $outFile = preg_replace('/\.in$/', '.out', $outDir . substr((string) $file, strlen($inDir)));
                 if (!file_exists($outFile)) {
-                    printf("Formatting %s\n", (string)$file);
+                    printf("Formatting %s\n", (string) $file);
                     $out = (new Formatter("\t"))->format($in);
                     file_put_contents($outFile, $out);
                 } else {

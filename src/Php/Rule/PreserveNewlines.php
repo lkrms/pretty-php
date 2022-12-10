@@ -12,30 +12,39 @@ class PreserveNewlines extends AbstractTokenRule
 {
     public function __invoke(Token $token): void
     {
-        $prev = $token->prev();
+        if (($prev = $token->prev())->isNull()) {
+            return;
+        }
 
-        // Treat `?:` as one operator (TODO: make this simpler)
-        [$prevTernary, $tokenTernary] = [
-            $prev->isTernaryOperator(),
-            $token->isTernaryOperator(),
-        ];
-        if ($prevTernary && $tokenTernary && $prev->Type . $token->Type === '?:') {
-            // Don't check for newlines between `?` and `:`
+        // Treat `?:` as one operator
+        if ($token->isTernaryOperator()) {
+            if ($token->is(':') && $prev->is('?')) {
+                return;
+            }
+            $next = $token->next();
+            if ($token->is('?') && $next->is(':')) {
+                $tokenEnd = $next;
+            }
+        } elseif ($prev->isTernaryOperator() &&
+                $prev->is(':') && ($prevPrev = $prev->prev())->is('?')) {
+            $prevStart = $prevPrev;
+        }
+
+        // Don't replace non-consecutive newlines with a blank line
+        if ($tokenEnd ?? $prevStart ?? null) {
+            $lines = max(
+                ($tokenEnd ?? null) ? $tokenEnd->Line - $token->Line - substr_count($token->Code, "\n") : 0,
+                $token->Line - $prev->Line - substr_count($prev->Code, "\n"),
+                ($prevStart ?? null) ? $prev->Line - $prevStart->Line - substr_count($prevStart->Code, "\n") : 0
+            );
+        } else {
+            $lines = $token->Line - $prev->Line - substr_count($prev->Code, "\n");
+        }
+
+        if (!$lines) {
             return;
         }
         $effective = $token->effectiveWhitespaceBefore();
-        if ($tokenTernary && $token->Type . $token->next()->Type === '?:') {
-            // Check for newlines between $prev and `:`
-            $tokenOrig = $token;
-            $token     = $token->next();
-        } elseif ($prevTernary && $prev->prev()->Type . $prev->Type === '?:') {
-            // Check for newlines between `?` and $token
-            $prev = $prev->prev();
-        }
-
-        if ($prev->isNull() || !($lines = $token->Line - $prev->Line - substr_count($prev->Code, "\n"))) {
-            return;
-        }
         if ($lines > 1) {
             if ($effective & WhitespaceType::BLANK) {
                 return;
@@ -47,26 +56,29 @@ class PreserveNewlines extends AbstractTokenRule
             }
             $type = WhitespaceType::LINE;
         }
-        [$min, $max] = [$prev->Line, $token->Line];
-        $this->maybeAddNewline($prev, $token, $tokenOrig ?? null, $type, $min, $max) ||
-            $this->maybeAddNewline($prev->prev(), $prev, null, $type, $min, $max);
+
+        $min = ($prevStart ?? $prev)->Line;
+        $max = ($tokenEnd ?? $token)->Line;
+        foreach ([true, false] as $noBrackets) {
+            if ($this->maybePreserveNewlineAfter($prev, $token, $type, $min, $max, $noBrackets) ||
+                    $this->maybePreserveNewlineBefore($token, $prev, $type, $min, $max, $noBrackets) ||
+                    $this->maybePreserveNewlineBefore($prev, $prevPrev ?? $prev->prev(), $type, $min, $max, $noBrackets) ||
+                    $this->maybePreserveNewlineAfter($token, $next ?? $token->next(), $type, $min, $max, $noBrackets)) {
+                return;
+            }
+        }
     }
 
-    private function maybeAddNewline(Token $token1, Token $token2, ?Token $token2Orig, int $whitespaceType, int $min, int $max): bool
+    private function maybePreserveNewlineBefore(Token $token, Token $prev, int $type, int $min, int $max, bool $noBrackets): bool
     {
-        if (!Test::isBetween($token1->Line, $min, $max) ||
-                !Test::isBetween($token2->Line, $min, $max) ||
-                ($token1->effectiveWhitespaceAfter() & $whitespaceType) === $whitespaceType) {
+        if ($noBrackets && $token->isCloseBracket()) {
             return false;
         }
-        if ($this->preserveNewlineAfter($token1)) {
-            $token1->WhitespaceAfter |= $whitespaceType;
-
-            return true;
-        }
-        if ($this->preserveNewlineBefore($token2)) {
-            $token2                    = $token2Orig ?: $token2;
-            $token2->WhitespaceBefore |= $whitespaceType;
+        if (Test::isBetween($token->Line, $min, $max) &&
+                $token->isOneOf(...TokenType::PRESERVE_NEWLINE_BEFORE) &&
+                ($noBrackets || !($token->isCloseBracket() && $prev->isOpenBracket())) &&
+                (!$token->is(':') || $token->isTernaryOperator())) {
+            $token->WhitespaceBefore |= $type;
 
             return true;
         }
@@ -74,17 +86,21 @@ class PreserveNewlines extends AbstractTokenRule
         return false;
     }
 
-    private function preserveNewlineAfter(Token $token): bool
+    private function maybePreserveNewlineAfter(Token $token, Token $next, int $type, int $min, int $max, bool $noBrackets): bool
     {
-        return $token->isOneOf(...TokenType::PRESERVE_NEWLINE_AFTER) &&
-            !($token->isOpenBracket() && $token->next()->isCloseBracket()) &&
-            (!$token->is(':') || $token->isTernaryOperator());
-    }
+        if ($noBrackets && $token->isOpenBracket()) {
+            return false;
+        }
+        if (Test::isBetween($next->Line, $min, $max) &&
+                $token->isOneOf(...TokenType::PRESERVE_NEWLINE_AFTER) &&
+                ($noBrackets || !($token->isOpenBracket() && $next->isCloseBracket())) &&
+                (!$token->is(':') || $token->isTernaryOperator())) {
+            $token->WhitespaceAfter |= $type;
+            $token->PinToCode        = $token->PinToCode && ($type === WhitespaceType::LINE);
 
-    private function preserveNewlineBefore(Token $token): bool
-    {
-        return $token->isOneOf(...TokenType::PRESERVE_NEWLINE_BEFORE) &&
-            !($token->isCloseBracket() && $token->prev()->isOpenBracket()) &&
-            (!$token->is(':') || $token->isTernaryOperator());
+            return true;
+        }
+
+        return false;
     }
 }

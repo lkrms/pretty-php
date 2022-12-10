@@ -13,6 +13,8 @@ use Lkrms\Pretty\Php\Filter\RemoveCommentTokens;
 use Lkrms\Pretty\Php\Filter\RemoveEmptyTokens;
 use Lkrms\Pretty\Php\Filter\RemoveWhitespaceTokens;
 use Lkrms\Pretty\Php\Filter\StripHeredocIndents;
+use Lkrms\Pretty\Php\Filter\TrimInsideCasts;
+use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeDeclaration;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeYield;
 use Lkrms\Pretty\Php\Rule\AddEssentialWhitespace;
@@ -25,10 +27,12 @@ use Lkrms\Pretty\Php\Rule\BracePosition;
 use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
 use Lkrms\Pretty\Php\Rule\CommaCommaComma;
 use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
+use Lkrms\Pretty\Php\Rule\FindUnnecessaryParentheses;
 use Lkrms\Pretty\Php\Rule\MatchPosition;
 use Lkrms\Pretty\Php\Rule\PlaceAttributes;
 use Lkrms\Pretty\Php\Rule\PlaceComments;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
+use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
 use Lkrms\Pretty\Php\Rule\ProtectStrings;
 use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
 use Lkrms\Pretty\Php\Rule\SimplifyStrings;
@@ -40,6 +44,8 @@ use Lkrms\Pretty\WhitespaceType;
 use ParseError;
 
 /**
+ * @property-read bool $Debug
+ * @property-read string|null $RunningService
  * @property-read string $Tab
  * @property-read string[] $Rules
  * @property-read array<string|array{0:int,1:string,2:int}>|null $PlainTokens
@@ -48,6 +54,16 @@ use ParseError;
 final class Formatter implements IReadable
 {
     use TFullyReadable;
+
+    /**
+     * @var bool
+     */
+    protected $Debug;
+
+    /**
+     * @var string|null
+     */
+    protected $RunningService;
 
     /**
      * @var string
@@ -67,14 +83,16 @@ final class Formatter implements IReadable
         SpaceOperators::class,
         CommaCommaComma::class,
         AddStandardWhitespace::class,
-        DeclareArgumentsOnOneLine::class,
         PlaceComments::class,
-        AddBlankLineBeforeReturn::class,     // Must be after PlaceComments
-        AddBlankLineBeforeYield::class,      // Ditto
         PreserveNewlines::class,
+        PreserveOneLineStatements::class,
+        DeclareArgumentsOnOneLine::class,
+        AddBlankLineBeforeReturn::class,         // Must be after PlaceComments
+        AddBlankLineBeforeYield::class,          // Ditto
         AddIndentation::class,
         SwitchPosition::class,
         MatchPosition::class,
+        AddBlankLineBeforeDeclaration::class,
         AddHangingIndentation::class,
         ReindentHeredocs::class,
         AddEssentialWhitespace::class,
@@ -82,6 +100,9 @@ final class Formatter implements IReadable
         // BlockRules
         AlignAssignments::class,
         AlignComments::class,
+
+        // Read-only rules
+        FindUnnecessaryParentheses::class,
     ];
 
     /**
@@ -106,8 +127,9 @@ final class Formatter implements IReadable
 
     /**
      * @param string[] $skipRules
+     * @param string[] $addRules
      */
-    public function __construct(string $tab = '    ', array $skipRules = [])
+    public function __construct(string $tab = '    ', array $skipRules = [], array $addRules = [])
     {
         $this->Tab = $tab;
 
@@ -115,16 +137,24 @@ final class Formatter implements IReadable
             $this->Rules = array_diff($this->Rules, $skipRules);
         }
 
+        if ($addRules) {
+            array_push($this->Rules, ...$addRules);
+        }
+
         $this->Filters = [
             new RemoveWhitespaceTokens(),
             new StripHeredocIndents(),
+            new TrimInsideCasts(),
         ];
+
         $this->ComparisonFilters = [
             ...$this->Filters,
             new NormaliseStrings(),
             new RemoveCommentTokens(),
             new RemoveEmptyTokens(),
         ];
+
+        $this->Debug = Env::debug();
     }
 
     public function format(string $code): string
@@ -166,27 +196,14 @@ final class Formatter implements IReadable
             if (!is_a($_rule, TokenRule::class, true)) {
                 continue;
             }
-
-            $rule = new $_rule();
-
-            if (!Env::debug()) {
-                /** @var Token $token */
-                foreach (($rule->getReverseTokens() ? $reversed : $this->Tokens) as $token) {
-                    $rule($token);
-                }
-
-                continue;
-            }
-
+            $this->RunningService = $_rule;
+            $rule                 = new $_rule();
             /** @var Token $token */
             foreach (($rule->getReverseTokens() ? $reversed : $this->Tokens) as $token) {
-                $clone = clone $token;
                 $rule($token);
-                if ($clone != $token) {
-                    $token->Tags[] = "Rule:$_rule";
-                }
             }
         }
+        $this->RunningService = null;
 
         /** @var array<TokenCollection[]> $blocks */
         $blocks = [];

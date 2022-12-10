@@ -4,8 +4,9 @@
 use Lkrms\Facade\Cli;
 use Lkrms\Pretty\Command\FormatPhp;
 
-require (dirname(__DIR__) . '/vendor/autoload.php');
+require dirname(__DIR__) . '/vendor/autoload.php';
 
-(Cli::load(dirname(__DIR__))
+Cli::load(dirname(__DIR__))
+    ->logConsoleMessages()
     ->command([], FormatPhp::class)
-    ->runAndExit());
+    ->runAndExit();

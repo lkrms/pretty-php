@@ -4,43 +4,33 @@ namespace Lkrms\Pretty\Php;
 
 use Lkrms\Concept\TypedCollection;
 use Lkrms\Pretty\WhitespaceType;
+use RuntimeException;
 
 /**
  * @extends TypedCollection<Token>
  */
 final class TokenCollection extends TypedCollection
 {
+    /**
+     * @var bool
+     */
+    private $Collected = false;
+
     protected function getItemClass(): string
     {
         return Token::class;
     }
 
-    /**
-     * @param int|string ...$types
-     */
-    public function hasOneOf(...$types): bool
+    public static function collect(Token $from, Token $to): TokenCollection
     {
-        /** @var Token $token */
-        foreach ($this as $token) {
-            if ($token->isOneOf(...$types)) {
-                return true;
-            }
+        $tokens            = new TokenCollection();
+        $tokens->Collected = true;
+        if ($from->Index > $to->Index || $from->isNull() || $to->isNull()) {
+            return $tokens;
         }
-
-        return false;
-    }
-
-    /**
-     * @param int|string ...$types
-     */
-    public function getAnyOf(...$types): TokenCollection
-    {
-        $tokens = new TokenCollection();
-        /** @var Token $token */
-        foreach ($this as $token) {
-            if ($token->isOneOf(...$types)) {
-                $tokens[] = $token;
-            }
+        $tokens[] = $from;
+        while ($from !== $to) {
+            $tokens[] = $from = $from->next();
         }
 
         return $tokens;
@@ -49,16 +39,31 @@ final class TokenCollection extends TypedCollection
     /**
      * @param int|string ...$types
      */
+    public function hasOneOf(...$types): bool
+    {
+        return $this->find(
+            fn(Token $t) => $t->isOneOf(...$types)
+        ) !== false;
+    }
+
+    /**
+     * @param int|string ...$types
+     */
+    public function getAnyOf(...$types): TokenCollection
+    {
+        return $this->filter(
+            fn(Token $t) => $t->isOneOf(...$types)
+        );
+    }
+
+    /**
+     * @param int|string ...$types
+     */
     public function getFirstOf(...$types): ?Token
     {
-        /** @var Token $token */
-        foreach ($this as $token) {
-            if ($token->isOneOf(...$types)) {
-                return $token;
-            }
-        }
-
-        return null;
+        return $this->find(
+            fn(Token $t) => $t->isOneOf(...$types)
+        ) ?: null;
     }
 
     /**
@@ -82,10 +87,14 @@ final class TokenCollection extends TypedCollection
         return $types ?? [];
     }
 
+    /**
+     * Return true if the collection will render over multiple lines, not
+     * including whitespace before the first or after the last token
+     */
     public function hasInnerNewline(): bool
     {
-        if (count($this) < 2) {
-            return false;
+        if (!$this->Collected) {
+            throw new RuntimeException('Collection not created by ' . static::class . '::collect()');
         }
         $i = 0;
         /** @var Token $token */
@@ -102,18 +111,6 @@ final class TokenCollection extends TypedCollection
         }
 
         return false;
-    }
-
-    /**
-     * @return $this
-     */
-    public function withEach(callable $callback)
-    {
-        foreach ($this as $token) {
-            $callback($token);
-        }
-
-        return $this;
     }
 
     public function render(): string
