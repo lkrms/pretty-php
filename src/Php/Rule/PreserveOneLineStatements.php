@@ -10,7 +10,7 @@ class PreserveOneLineStatements extends AbstractTokenRule
 {
     public function __invoke(Token $token): void
     {
-        if (!$token->isStartOfExpression()) {
+        if (!$token->isCode() || !$token->isStartOfExpression()) {
             return;
         }
 

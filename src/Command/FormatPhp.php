@@ -68,7 +68,7 @@ class FormatPhp extends CliCommand
     protected function getOptionList(): array
     {
         return [
-            (CliOption::build()
+            CliOption::build()
                 ->long('file')
                 ->description(<<<EOF
                 One or more PHP files to format
@@ -78,38 +78,38 @@ class FormatPhp extends CliCommand
                 standard output.
                 EOF)
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
-                ->multipleAllowed()),
-            (CliOption::build()
+                ->multipleAllowed(),
+            CliOption::build()
                 ->long('tab')
                 ->short('t')
-                ->description('Indent using tabs')),
-            (CliOption::build()
+                ->description('Indent using tabs'),
+            CliOption::build()
                 ->long('space')
                 ->short('s')
                 ->description('Indent using spaces')
                 ->optionType(CliOptionType::ONE_OF_OPTIONAL)
                 ->allowedValues(['2', '4'])
-                ->defaultValue('4')),
-            (CliOption::build()
+                ->defaultValue('4'),
+            CliOption::build()
                 ->long('skip')
                 ->short('i')
                 ->valueName('RULE')
                 ->description('Skip one or more rules')
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys($this->SkipMap))
-                ->multipleAllowed()),
-            (CliOption::build()
+                ->multipleAllowed(),
+            CliOption::build()
                 ->long('rule')
                 ->short('r')
                 ->valueName('RULE')
                 ->description('Add one or more non-standard rules')
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys($this->RuleMap))
-                ->multipleAllowed()),
-            (CliOption::build()
+                ->multipleAllowed(),
+            CliOption::build()
                 ->short('n')
-                ->description("Shorthand for '--skip preserve-newlines'")),
-            (CliOption::build()
+                ->description("Shorthand for '--skip preserve-newlines'"),
+            CliOption::build()
                 ->long('output')
                 ->short('o')
                 ->valueName('FILE')
@@ -122,13 +122,13 @@ class FormatPhp extends CliCommand
                 May be used once per input file.
                 EOF)
                 ->optionType(CliOptionType::VALUE)
-                ->multipleAllowed()),
-            (CliOption::build()
+                ->multipleAllowed(),
+            CliOption::build()
                 ->long('debug')
                 ->valueName('DIR')
                 ->description('Create debug output in DIR')
                 ->optionType(CliOptionType::VALUE_OPTIONAL)
-                ->defaultValue($this->app()->TempPath . '/pretty-php')),
+                ->defaultValue($this->app()->TempPath . '/pretty-php'),
         ];
     }
 

@@ -203,12 +203,12 @@ class Token implements JsonSerializable
     private $IsEndOfExpression = [];
 
     /**
-     * @var array<int,Token>
+     * @var array<int,Token[]>
      */
     private $EndOfExpression = [];
 
     /**
-     * @var array<int,Token>
+     * @var array<int,Token[]>
      */
     private $StartOfExpression = [];
 
@@ -278,11 +278,15 @@ class Token implements JsonSerializable
                 $t = $t->Index;
             }
         }
-        foreach ($a['EndOfExpression'] as &$t) {
-            $t = $t->Index;
+        foreach ($a['EndOfExpression'] as &$tokens) {
+            foreach ($tokens as &$t) {
+                $t = $t->Index;
+            }
         }
-        foreach ($a['StartOfExpression'] as &$t) {
-            $t = $t->Index;
+        foreach ($a['StartOfExpression'] as &$tokens) {
+            foreach ($tokens as &$t) {
+                $t = $t->Index;
+            }
         }
         $a['OpenedBy'] = $a['OpenedBy']->Index ?? null;
         $a['ClosedBy'] = $a['ClosedBy']->Index ?? null;
@@ -565,13 +569,15 @@ class Token implements JsonSerializable
      */
     public function isStartOfExpression(int $ignore = TokenBoundary::COMPARISON): bool
     {
-        return ($prev = $this->prevCode())->isNull() ||
-            $prev->isStatementPrecursor() ||
-            $prev->isTernaryOperator() ||
-            $prev->isOneOf(
-                ...TokenBoundary::getTokenTypes(TokenBoundary::ALL & ~$ignore),
-                ...TokenType::OPERATOR_DOUBLE_ARROW
-            );
+        return !$this->OpenedBy &&
+            !$this->isStatementPrecursor('(', '[', '{') &&
+            (($prev = $this->prevCode())->isNull() ||
+                $prev->isStatementPrecursor() ||
+                $prev->isTernaryOperator() ||
+                $prev->isOneOf(
+                    ...TokenBoundary::getTokenTypes(TokenBoundary::ALL & ~$ignore),
+                    ...TokenType::OPERATOR_DOUBLE_ARROW
+                ));
     }
 
     /**
@@ -582,6 +588,10 @@ class Token implements JsonSerializable
         $current = $this->OpenedBy ?: $this;
         if ($current->IsStartOfExpression[$ignore] ?? null) {
             return $current;
+        }
+        // Don't return delimiters as separate expressions
+        if ($current->isStatementPrecursor('(', '[', '{')) {
+            $current = $current->prevCode();
         }
         $types = [
             ...TokenBoundary::getTokenTypes(TokenBoundary::ALL & ~$ignore),
@@ -615,17 +625,10 @@ class Token implements JsonSerializable
                 $next = $prev->nextSiblingOf(':')) {
             return $this->_endOfExpression($ignore, $next->prevCode(), $start);
         }
-        while (!$current->isStatementPrecursor('(', '[') &&
-                !($next = $current->nextSibling())->isNull() &&
-                !$next->isStatementTerminator()) {
-            $last    = $current;
+        while (!($next = $current->nextSibling())->isNull() &&
+                !$next->isStatementPrecursor('(', '[', '{')) {
             $current = $next;
-            if (!$current->isStatementPrecursor('(', '[') &&
-                    ($prev = $current->prevCode())->isStatementPrecursor('(', '[')) {
-                return $this->_endOfExpression($ignore, $prev, $start ?? null);
-            }
         }
-        $current = $current->isNull() ? ($last ?? $current) : $current;
 
         return $this->_endOfExpression($ignore, $current->ClosedBy ?: $current, $start ?? null);
     }
@@ -633,8 +636,8 @@ class Token implements JsonSerializable
     private function _endOfExpression(int $ignore, Token $end, ?Token $start = null): Token
     {
         if ($start) {
-            $start->EndOfExpression[$ignore] = $end;
-            $end->StartOfExpression[$ignore] = $start;
+            $start->EndOfExpression[$ignore][] = $end;
+            $end->StartOfExpression[$ignore][] = $start;
         }
         $end->IsEndOfExpression[$ignore] = true;
 
@@ -735,17 +738,19 @@ class Token implements JsonSerializable
      */
     public function isStatementPrecursor(...$except): bool
     {
-        return (!$except || !$this->isOneOf(...$except)) && (
-            $this->isOneOf('(', ';', '[') ||
-                $this->isStructuralBrace() ||
-                ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE)) ||
-                ($this->is(',') &&
-                    (($parent = $this->parent())->isOneOf('(', '[') ||
-                        ($parent->is('{') && $parent->prevSibling(2)->is(T_MATCH)))) ||
-                ($this->is(':') &&
-                    $this->startOfStatement()->isOneOf(T_CASE, T_DEFAULT) &&
-                    ($parent = $this->parent())->is('{') && $parent->prevSibling(2)->is(T_SWITCH))
-        );
+        if ($except && $this->isOneOf(...$except)) {
+            return false;
+        }
+
+        return $this->isOneOf('(', ';', '[') ||
+            $this->isStructuralBrace() ||
+            ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE)) ||
+            ($this->is(',') &&
+                (($parent = $this->parent())->isOneOf('(', '[') ||
+                    ($parent->is('{') && $parent->prevSibling(2)->is(T_MATCH)))) ||
+            ($this->is(':') &&
+                $this->startOfStatement()->isOneOf(T_CASE, T_DEFAULT) &&
+                ($parent = $this->parent())->is('{') && $parent->prevSibling(2)->is(T_SWITCH));
     }
 
     public function isBrace(): bool

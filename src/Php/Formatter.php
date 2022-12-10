@@ -27,6 +27,7 @@ use Lkrms\Pretty\Php\Rule\BracePosition;
 use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
 use Lkrms\Pretty\Php\Rule\CommaCommaComma;
 use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
+use Lkrms\Pretty\Php\Rule\FindUnnecessaryParentheses;
 use Lkrms\Pretty\Php\Rule\MatchPosition;
 use Lkrms\Pretty\Php\Rule\PlaceAttributes;
 use Lkrms\Pretty\Php\Rule\PlaceComments;
@@ -99,6 +100,9 @@ final class Formatter implements IReadable
         // BlockRules
         AlignAssignments::class,
         AlignComments::class,
+
+        // Read-only rules
+        FindUnnecessaryParentheses::class,
     ];
 
     /**
