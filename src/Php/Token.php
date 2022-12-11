@@ -334,7 +334,7 @@ class Token implements JsonSerializable
             $prev = $prev->_prev ?? null;
         }
 
-        return ($prev ?: new NullToken());
+        return $prev ?: new NullToken();
     }
 
     public function next(int $offset = 1): Token
@@ -344,7 +344,7 @@ class Token implements JsonSerializable
             $next = $next->_next ?? null;
         }
 
-        return ($next ?: new NullToken());
+        return $next ?: new NullToken();
     }
 
     public function prevCode(int $offset = 1): Token
@@ -356,7 +356,7 @@ class Token implements JsonSerializable
             } while ($prev && !$prev->isCode());
         }
 
-        return ($prev ?: new NullToken());
+        return $prev ?: new NullToken();
     }
 
     public function nextCode(int $offset = 1): Token
@@ -368,7 +368,7 @@ class Token implements JsonSerializable
             } while ($next && !$next->isCode());
         }
 
-        return ($next ?: new NullToken());
+        return $next ?: new NullToken();
     }
 
     public function prevSibling(int $offset = 1): Token
@@ -492,7 +492,7 @@ class Token implements JsonSerializable
     {
         $current = $this->OpenedBy ?: $this;
 
-        return (end($current->BracketStack) ?: new NullToken());
+        return end($current->BracketStack) ?: new NullToken();
     }
 
     /**
@@ -834,14 +834,14 @@ class Token implements JsonSerializable
 
     public function isUnaryOperator(): bool
     {
-        return ($this->isOneOf(
+        return $this->isOneOf(
             '~', '!',
             ...TokenType::OPERATOR_ERROR_CONTROL,
             ...TokenType::OPERATOR_INCREMENT_DECREMENT
         ) || (
             $this->isOneOf('+', '-') &&
                 $this->inUnaryContext()
-        ));
+        );
     }
 
     public function inUnaryContext(): bool

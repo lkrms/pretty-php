@@ -4,13 +4,14 @@ namespace Lkrms\Pretty\Php\Rule;
 
 use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
 use Lkrms\Pretty\Php\Token;
+use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
 class AddEssentialWhitespace extends AbstractTokenRule
 {
     public function __invoke(Token $token): void
     {
-        if ($token->StringOpenedBy || $token->HeredocOpenedBy || $token->hasNewlineAfter()) {
+        if ($token->hasNewlineAfter() || $token->StringOpenedBy || $token->HeredocOpenedBy) {
             return;
         }
 
@@ -22,7 +23,9 @@ class AddEssentialWhitespace extends AbstractTokenRule
             return;
         }
 
-        if ($token->hasWhitespaceAfter()) {
+        if ($token->hasWhitespaceAfter() ||
+                $token->isOneOf(...TokenType::SUPPRESS_SPACE_AFTER) ||
+                $token->next()->isOneOf(...TokenType::SUPPRESS_SPACE_BEFORE)) {
             return;
         }
 

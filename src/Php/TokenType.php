@@ -2,6 +2,17 @@
 
 namespace Lkrms\Pretty\Php;
 
+defined('T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG') || define('T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG', 10001);
+defined('T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG') || define('T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG', 10002);
+defined('T_ATTRIBUTE') || define('T_ATTRIBUTE', 10003);
+defined('T_ENUM') || define('T_ENUM', 10004);
+defined('T_MATCH') || define('T_MATCH', 10005);
+defined('T_NAME_FULLY_QUALIFIED') || define('T_NAME_FULLY_QUALIFIED', 10006);
+defined('T_NAME_QUALIFIED') || define('T_NAME_QUALIFIED', 10007);
+defined('T_NAME_RELATIVE') || define('T_NAME_RELATIVE', 10008);
+defined('T_NULLSAFE_OBJECT_OPERATOR') || define('T_NULLSAFE_OBJECT_OPERATOR', 10009);
+defined('T_READONLY') || define('T_READONLY', 10010);
+
 final class TokenType
 {
     public const DO_NOT_MODIFY = [
@@ -212,6 +223,23 @@ final class TokenType
         T_WHILE,
     ];
 
+    public const HAS_EXPRESSION_WITH_OPTIONAL_PARENTHESES = [
+        T_BREAK,
+        T_CASE,
+        T_CLONE,
+        T_CONTINUE,
+        T_ECHO,
+        T_INCLUDE,
+        T_INCLUDE_ONCE,
+        T_PRINT,
+        T_REQUIRE,
+        T_REQUIRE_ONCE,
+        T_RETURN,
+        T_THROW,
+        T_YIELD,
+        T_YIELD_FROM,
+    ];
+
     public const ADD_SPACE_AROUND = [
         T_AS,
         T_INSTEADOF,
@@ -227,25 +255,43 @@ final class TokenType
     ];
 
     public const ADD_SPACE_AFTER = [
+        T_BREAK,
+        T_CASE,
         T_CATCH,
+        T_CLONE,
+        T_CONTINUE,
+        T_ECHO,
+        T_ELSEIF,
+        T_EXIT,
+        T_FOR,
+        T_FOREACH,
         T_FUNCTION,
+        T_GOTO,
+        T_IF,
         T_INCLUDE,
         T_INCLUDE_ONCE,
         T_MATCH,
+        T_NEW,
+        T_PRINT,
         T_REQUIRE,
         T_REQUIRE_ONCE,
         T_RETURN,
         T_SWITCH,
         T_THROW,
+        T_WHILE,
+        T_YIELD,
+        T_YIELD_FROM,
         ...self::CAST,
-        ...self::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES,
     ];
 
-    public const SUPPRESS_SPACE_BEFORE = [];
+    public const SUPPRESS_SPACE_BEFORE = [
+        T_NS_SEPARATOR,
+    ];
 
     public const SUPPRESS_SPACE_AFTER = [
         T_DOUBLE_COLON,
         T_ELLIPSIS,
+        T_NS_SEPARATOR,
         T_NULLSAFE_OBJECT_OPERATOR,
         T_OBJECT_OPERATOR,
     ];
