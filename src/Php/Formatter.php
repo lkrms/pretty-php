@@ -25,6 +25,7 @@ use Lkrms\Pretty\Php\Rule\AlignAssignments;
 use Lkrms\Pretty\Php\Rule\AlignComments;
 use Lkrms\Pretty\Php\Rule\BracePosition;
 use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
+use Lkrms\Pretty\Php\Rule\BreakBeforeControlStructureBody;
 use Lkrms\Pretty\Php\Rule\CommaCommaComma;
 use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\FindUnnecessaryParentheses;
@@ -87,12 +88,13 @@ final class Formatter implements IReadable
         PreserveNewlines::class,
         PreserveOneLineStatements::class,
         DeclareArgumentsOnOneLine::class,
-        AddBlankLineBeforeReturn::class,         // Must be after PlaceComments
-        AddBlankLineBeforeYield::class,          // Ditto
+        AddBlankLineBeforeReturn::class,           // Must be after PlaceComments
+        AddBlankLineBeforeYield::class,            // Ditto
         AddIndentation::class,
         SwitchPosition::class,
         MatchPosition::class,
         AddBlankLineBeforeDeclaration::class,
+        BreakBeforeControlStructureBody::class,
         AddHangingIndentation::class,
         ReindentHeredocs::class,
         AddEssentialWhitespace::class,
