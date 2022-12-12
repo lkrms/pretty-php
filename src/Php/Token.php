@@ -570,8 +570,10 @@ class Token implements JsonSerializable
             ?: $this->canonicalThis(__METHOD__);
         while (!($prev = $current->prevCode())->isStatementPrecursor() &&
                 !$prev->isNull()) {
+            $last    = $current;
             $current = $current->prevSibling();
         }
+        $current = $current->isNull() ? ($last ?? $current) : $current;
 
         return $current;
     }
