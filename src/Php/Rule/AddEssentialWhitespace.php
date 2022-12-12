@@ -9,7 +9,7 @@ use Lkrms\Pretty\WhitespaceType;
 
 class AddEssentialWhitespace extends AbstractTokenRule
 {
-    public function __invoke(Token $token): void
+    public function __invoke(Token $token, int $stage): void
     {
         if ($token->hasNewlineAfter() || $token->StringOpenedBy || $token->HeredocOpenedBy) {
             return;

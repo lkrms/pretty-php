@@ -19,6 +19,7 @@ use Lkrms\Pretty\Php\Rule\AlignAssignments;
 use Lkrms\Pretty\Php\Rule\AlignComments;
 use Lkrms\Pretty\Php\Rule\CommaCommaComma;
 use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
+use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterFn;
 use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterNot;
 use Lkrms\Pretty\Php\Rule\Extra\SuppressSpaceAroundStringOperator;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
@@ -57,6 +58,7 @@ class FormatPhp extends CliCommand
      */
     private $RuleMap = [
         'no-concat-spaces' => SuppressSpaceAroundStringOperator::class,
+        'space-after-fn'   => AddSpaceAfterFn::class,
         'space-after-not'  => AddSpaceAfterNot::class,
     ];
 
@@ -107,8 +109,20 @@ class FormatPhp extends CliCommand
                 ->allowedValues(array_keys($this->RuleMap))
                 ->multipleAllowed(),
             CliOption::build()
-                ->short('n')
-                ->description("Shorthand for '--skip preserve-newlines'"),
+                ->long('ignore-newlines')
+                ->short('N')
+                ->description(<<<EOF
+                Equivalent to:
+                    --skip preserve-newlines
+                EOF),
+            CliOption::build()
+                ->long('laravel')
+                ->short('l')
+                ->description(<<<EOF
+                Equivalent to:
+                    --skip one-line-arguments,indent-heredocs,align-assignments
+                    --rule no-concat-spaces,space-after-fn,space-after-not
+                EOF),
             CliOption::build()
                 ->long('output')
                 ->short('o')
@@ -141,14 +155,21 @@ class FormatPhp extends CliCommand
         }
         $tab = $tab ? "\t" : ($space === '2' ? '  ' : '    ');
 
-        $skip = $this->getOptionValue('skip');
-        if ($this->getOptionValue('n')) {
+        $skip  = $this->getOptionValue('skip');
+        $rules = $this->getOptionValue('rule');
+        if ($this->getOptionValue('ignore-newlines')) {
             $skip[] = 'preserve-newlines';
         }
-        $skip = array_values(array_intersect_key($this->SkipMap, array_flip($skip)));
-        if ($rules = $this->getOptionValue('rule')) {
-            $rules = array_values(array_intersect_key($this->RuleMap, array_flip($rules)));
+        if ($this->getOptionValue('laravel')) {
+            $skip[]  = 'one-line-arguments';
+            $skip[]  = 'indent-heredocs';
+            $skip[]  = 'align-assignments';
+            $rules[] = 'no-concat-spaces';
+            $rules[] = 'space-after-fn';
+            $rules[] = 'space-after-not';
         }
+        $skip  = array_values(array_intersect_key($this->SkipMap, array_flip($skip)));
+        $rules = array_values(array_intersect_key($this->RuleMap, array_flip($rules)));
 
         $in  = $this->getOptionValue('file');
         $out = $this->getOptionValue('output');

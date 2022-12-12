@@ -14,3 +14,8 @@ parameters:
 			message: "#^Method Lkrms\\\\Pretty\\\\Tests\\\\Php\\\\FormatterTest\\:\\:testRenderComment\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: tests/Php/FormatterTest.php
+
+		-
+			message: "#^Method Lkrms\\\\Pretty\\\\Tests\\\\Php\\\\Rule\\\\AlignChainedCallsTest\\:\\:testAfterTokenLoop\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: tests/Php/Rule/AlignChainedCallsTest.php

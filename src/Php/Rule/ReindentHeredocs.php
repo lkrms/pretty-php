@@ -7,7 +7,7 @@ use Lkrms\Pretty\Php\Token;
 
 class ReindentHeredocs extends AbstractTokenRule
 {
-    public function __invoke(Token $token): void
+    public function __invoke(Token $token, int $stage): void
     {
         if (!$token->HeredocOpenedBy ||
                 !($indent = $token->HeredocOpenedBy->indent())) {

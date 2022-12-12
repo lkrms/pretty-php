@@ -9,7 +9,7 @@ use Lkrms\Pretty\WhitespaceType;
 
 class PlaceComments extends AbstractTokenRule
 {
-    public function __invoke(Token $token): void
+    public function __invoke(Token $token, int $stage): void
     {
         if (!$token->isOneOf(...TokenType::COMMENT)) {
             return;

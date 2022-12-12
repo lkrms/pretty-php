@@ -8,9 +8,9 @@ use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 
-class FindUnnecessaryParentheses extends AbstractTokenRule
+class ReportUnnecessaryParentheses extends AbstractTokenRule
 {
-    public function __invoke(Token $token): void
+    public function __invoke(Token $token, int $stage): void
     {
         if (!$token->is('(') ||
                 !($token->isStartOfExpression() ||
@@ -33,7 +33,7 @@ class FindUnnecessaryParentheses extends AbstractTokenRule
         }
         $prev = $start->prevCode();
         $next = $token->ClosedBy->nextCode();
-        if (!($prev->isStatementPrecursor() &&
+        if (!(($prev->isStatementPrecursor() || $prev->isOneOf(...TokenType::OPERATOR_ASSIGNMENT)) &&
                 ($prev->ClosedBy === $next || $next->isStatementPrecursor()))) {
             return;
         }

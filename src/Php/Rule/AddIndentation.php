@@ -8,9 +8,9 @@ use Lkrms\Pretty\WhitespaceType;
 
 class AddIndentation extends AbstractTokenRule
 {
-    public function __invoke(Token $token): void
+    public function __invoke(Token $token, int $stage): void
     {
-        if ($token->OpenedBy) {
+        if ($token->isCode() && $token->OpenedBy) {
             $token->Indent = $token->OpenedBy->Indent;
 
             return;
@@ -18,7 +18,7 @@ class AddIndentation extends AbstractTokenRule
 
         $prev          = $token->prev();
         $token->Indent = $prev->Indent;
-        if (!$prev->ClosedBy) {
+        if (!$prev->isCode() || !$prev->ClosedBy) {
             return;
         }
         if ($prev->hasNewlineAfter()) {

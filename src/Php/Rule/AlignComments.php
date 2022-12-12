@@ -53,7 +53,7 @@ class AlignComments implements BlockRule
         }
         /** @var Token $comment */
         foreach ($comments as $i => $comment) {
-            $comment->Padding = $max - $lengths[$i];
+            $comment->Padding += $max - $lengths[$i];
         }
     }
 }

@@ -8,7 +8,7 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 
-final class FormatterTest extends \PHPUnit\Framework\TestCase
+final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
 {
     public function testRenderComment()
     {
@@ -43,7 +43,7 @@ final class FormatterTest extends \PHPUnit\Framework\TestCase
          */
 
         PHP;
-        $this->runFormatter($in, $out);
+        $this->assertFormatterOutputIs($in, $out);
     }
 
     public function testFormatter()
@@ -52,6 +52,11 @@ final class FormatterTest extends \PHPUnit\Framework\TestCase
             dirname(__DIR__) . '.in',
             dirname(__DIR__) . '.out',
         ];
+        if (!is_dir($inDir) || !is_dir($outDir)) {
+            $this->expectNotToPerformAssertions();
+
+            return;
+        }
         $dir   = new RecursiveDirectoryIterator($inDir, FS::KEY_AS_PATHNAME | FS::CURRENT_AS_FILEINFO | FS::SKIP_DOTS);
         $files = new RecursiveIteratorIterator($dir);
         /** @var SplFileInfo $file */
@@ -59,21 +64,16 @@ final class FormatterTest extends \PHPUnit\Framework\TestCase
             if ($file->isFile() && in_array($file->getExtension(), ['php', 'in', ''], true)) {
                 $in      = file_get_contents((string) $file);
                 $outFile = preg_replace('/\.in$/', '.out', $outDir . substr((string) $file, strlen($inDir)));
+                $tab     = basename($file->getPath()) === 'phpfmt' ? "\t" : '    ';
                 if (!file_exists($outFile)) {
                     printf("Formatting %s\n", (string) $file);
-                    $out = (new Formatter("\t"))->format($in);
+                    $out = (new Formatter($tab))->format($in);
                     file_put_contents($outFile, $out);
                 } else {
                     $out = file_get_contents($outFile);
                 }
-                $this->runFormatter($in, $out, "\t", $file->getBasename());
+                $this->assertFormatterOutputIs($in, $out, $tab, $file->getBasename());
             }
         }
-    }
-
-    private function runFormatter(string $code, string $expected, string $tab = '    ', string $message = ''): void
-    {
-        $formatter = new Formatter($tab);
-        $this->assertSame($expected, $formatter->format($code), $message);
     }
 }

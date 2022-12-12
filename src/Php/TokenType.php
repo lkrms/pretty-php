@@ -47,6 +47,7 @@ final class TokenType
         '!', ')', ']',
         T_CLOSE_TAG,
         T_COALESCE,
+        T_NULLSAFE_OBJECT_OPERATOR,
         T_OBJECT_OPERATOR,
         ...self::OPERATOR_ARITHMETIC,
         ...self::OPERATOR_TERNARY,

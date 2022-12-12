@@ -11,7 +11,7 @@ use Lkrms\Pretty\WhitespaceType;
 
 class BreakBeforeControlStructureBody extends AbstractTokenRule
 {
-    public function __invoke(Token $token): void
+    public function __invoke(Token $token, int $stage): void
     {
         if ($token->isOneOf(...TokenType::HAS_STATEMENT_WITH_OPTIONAL_BRACES)) {
             $offset = 1;

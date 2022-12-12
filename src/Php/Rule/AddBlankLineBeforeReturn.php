@@ -9,7 +9,7 @@ use Lkrms\Pretty\WhitespaceType;
 
 class AddBlankLineBeforeReturn extends AbstractTokenRule
 {
-    public function __invoke(Token $token): void
+    public function __invoke(Token $token, int $stage): void
     {
         if ($token->is(T_RETURN) &&
                 !($token->prev()->isOneOf(...TokenType::COMMENT) && $token->prev()->hasNewlineBefore())) {
