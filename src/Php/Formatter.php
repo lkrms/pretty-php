@@ -22,12 +22,13 @@ use Lkrms\Pretty\Php\Rule\AddHangingIndentation;
 use Lkrms\Pretty\Php\Rule\AddIndentation;
 use Lkrms\Pretty\Php\Rule\AddStandardWhitespace;
 use Lkrms\Pretty\Php\Rule\AlignAssignments;
+use Lkrms\Pretty\Php\Rule\AlignChainedCalls;
 use Lkrms\Pretty\Php\Rule\AlignComments;
 use Lkrms\Pretty\Php\Rule\BracePosition;
 use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
+use Lkrms\Pretty\Php\Rule\BreakBeforeControlStructureBody;
 use Lkrms\Pretty\Php\Rule\CommaCommaComma;
 use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
-use Lkrms\Pretty\Php\Rule\FindUnnecessaryParentheses;
 use Lkrms\Pretty\Php\Rule\MatchPosition;
 use Lkrms\Pretty\Php\Rule\PlaceAttributes;
 use Lkrms\Pretty\Php\Rule\PlaceComments;
@@ -35,6 +36,7 @@ use Lkrms\Pretty\Php\Rule\PreserveNewlines;
 use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
 use Lkrms\Pretty\Php\Rule\ProtectStrings;
 use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
+use Lkrms\Pretty\Php\Rule\ReportUnnecessaryParentheses;
 use Lkrms\Pretty\Php\Rule\SimplifyStrings;
 use Lkrms\Pretty\Php\Rule\SpaceOperators;
 use Lkrms\Pretty\Php\Rule\SwitchPosition;
@@ -87,13 +89,15 @@ final class Formatter implements IReadable
         PreserveNewlines::class,
         PreserveOneLineStatements::class,
         DeclareArgumentsOnOneLine::class,
-        AddBlankLineBeforeReturn::class,         // Must be after PlaceComments
-        AddBlankLineBeforeYield::class,          // Ditto
+        AddBlankLineBeforeReturn::class,           // Must be after PlaceComments
+        AddBlankLineBeforeYield::class,            // Ditto
         AddIndentation::class,
         SwitchPosition::class,
         MatchPosition::class,
         AddBlankLineBeforeDeclaration::class,
+        BreakBeforeControlStructureBody::class,
         AddHangingIndentation::class,
+        AlignChainedCalls::class,
         ReindentHeredocs::class,
         AddEssentialWhitespace::class,
 
@@ -102,7 +106,7 @@ final class Formatter implements IReadable
         AlignComments::class,
 
         // Read-only rules
-        FindUnnecessaryParentheses::class,
+        ReportUnnecessaryParentheses::class,
     ];
 
     /**
@@ -166,6 +170,7 @@ final class Formatter implements IReadable
         }
 
         $bracketStack = [];
+        $openTag      = null;
         foreach ($this->filter($this->PlainTokens, ...$this->Filters) as $index => $plainToken) {
             $this->Tokens[$index] = $token = new Token(
                 $index,
@@ -176,13 +181,27 @@ final class Formatter implements IReadable
             );
 
             if ($token->isOpenBracket()) {
-                array_push($bracketStack, $token);
+                $bracketStack[] = $token;
+                continue;
             }
 
             if ($token->isCloseBracket()) {
                 $opener           = array_pop($bracketStack);
                 $opener->ClosedBy = $token;
                 $token->OpenedBy  = $opener;
+                continue;
+            }
+
+            if ($token->isOneOf(T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO)) {
+                $openTag = $token;
+                continue;
+            }
+
+            if ($token->is(T_CLOSE_TAG)) {
+                /** @var Token $openTag */
+                $openTag->ClosedBy = $token;
+                $token->OpenedBy   = $openTag;
+                $openTag           = null;
             }
         }
 
@@ -191,17 +210,40 @@ final class Formatter implements IReadable
         }
         $token->WhitespaceAfter |= WhitespaceType::LINE;
 
-        $reversed = array_reverse($this->Tokens, true);
+        /** @var TokenRule[] $rules */
+        $rules  = [];
+        /** @var array<array{int,int,TokenRule,int}> $stages */
+        $stages = [];
+        $index  = 0;
         foreach ($this->Rules as $_rule) {
             if (!is_a($_rule, TokenRule::class, true)) {
                 continue;
             }
-            $this->RunningService = $_rule;
-            $rule                 = new $_rule();
-            /** @var Token $token */
-            foreach (($rule->getReverseTokens() ? $reversed : $this->Tokens) as $token) {
-                $rule($token);
+            /** @var TokenRule $rule */
+            $rule    = new $_rule($this);
+            $rules[] = $rule;
+            foreach ($rule->getStages() as $stage => $priority) {
+                $stages[] = [
+                    is_null($priority) ? 100 : $priority,
+                    $index,
+                    $rule,
+                    $stage,
+                ];
             }
+            $index++;
+        }
+        // Sort by priority then order of appearance
+        usort($stages, fn(array $a, array $b) => ($a[0] <=> $b[0]) ?: $a[1] <=> $b[1]);
+        foreach ($stages as [,, $rule, $stage]) {
+            $this->RunningService = get_class($rule);
+            /** @var Token $token */
+            foreach ($this->Tokens as $token) {
+                $rule($token, $stage);
+            }
+        }
+        foreach ($rules as $rule) {
+            $this->RunningService = get_class($rule);
+            $rule->afterTokenLoop();
         }
         $this->RunningService = null;
 
@@ -240,12 +282,20 @@ final class Formatter implements IReadable
                 continue;
             }
 
-            $rule = new $_rule();
+            $this->RunningService = $_rule;
+            $rule                 = new $_rule();
 
             foreach ($blocks as $block) {
                 $rule($block);
             }
         }
+        $this->RunningService = null;
+
+        foreach ($rules as $rule) {
+            $this->RunningService = get_class($rule);
+            $rule->beforeRender();
+        }
+        $this->RunningService = null;
 
         $out = '';
         foreach ($this->Tokens as $token) {

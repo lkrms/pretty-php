@@ -7,7 +7,7 @@ use Lkrms\Pretty\Php\Token;
 
 class SimplifyStrings extends AbstractTokenRule
 {
-    public function __invoke(Token $token): void
+    public function __invoke(Token $token, int $stage): void
     {
         if (!$token->is(T_CONSTANT_ENCAPSED_STRING)) {
             return;

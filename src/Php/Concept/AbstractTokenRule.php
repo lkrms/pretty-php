@@ -3,11 +3,34 @@
 namespace Lkrms\Pretty\Php\Concept;
 
 use Lkrms\Pretty\Php\Contract\TokenRule;
+use Lkrms\Pretty\Php\Formatter;
 
 abstract class AbstractTokenRule implements TokenRule
 {
-    public function getReverseTokens(): bool
+    /**
+     * @var Formatter
+     */
+    protected $Formatter;
+
+    public function __construct(Formatter $formatter)
     {
-        return false;
+        $this->Formatter = $formatter;
+    }
+
+    public function getStages(): array
+    {
+        return [1 => null];
+    }
+
+    public function afterTokenLoop(): void
+    {
+    }
+
+    public function beforeRender(): void
+    {
+    }
+
+    public function clear(): void
+    {
     }
 }

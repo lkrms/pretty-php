@@ -6,17 +6,20 @@ use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
 use Lkrms\Pretty\Php\Token;
+use Lkrms\Pretty\Php\TokenType;
 
-class FindUnnecessaryParentheses extends AbstractTokenRule
+class ReportUnnecessaryParentheses extends AbstractTokenRule
 {
-    public function __invoke(Token $token): void
+    public function __invoke(Token $token, int $stage): void
     {
         if (!$token->is('(') ||
-                !$token->isStartOfExpression() ||
+                !($token->isStartOfExpression() ||
+                    (($start = $token->prevCode())->isStartOfExpression() &&
+                        $start->isOneOf(...TokenType::HAS_EXPRESSION_WITH_OPTIONAL_PARENTHESES))) ||
                 $token->endOfExpression() !== $token->ClosedBy) {
             return;
         }
-
+        $start = $start ?? $token;
         $inner = $token->inner();
         if (!count($inner)) {
             return;
@@ -28,9 +31,9 @@ class FindUnnecessaryParentheses extends AbstractTokenRule
                 $first->endOfExpression() !== $last) {
             return;
         }
-        $prev = $token->prevCode();
+        $prev = $start->prevCode();
         $next = $token->ClosedBy->nextCode();
-        if (!($prev->isStatementPrecursor() &&
+        if (!(($prev->isStatementPrecursor() || $prev->isOneOf(...TokenType::OPERATOR_ASSIGNMENT)) &&
                 ($prev->ClosedBy === $next || $next->isStatementPrecursor()))) {
             return;
         }

@@ -13,8 +13,9 @@ class AlignAssignments implements BlockRule
         if (count($block) < 2) {
             return;
         }
-        $group = [];
-        $stack = null;
+        $group        = [];
+        $stack        = null;
+        $isAssignment = null;
         while ($block) {
             $line   = array_shift($block);
             /** @var Token $token1 */
@@ -27,21 +28,25 @@ class AlignAssignments implements BlockRule
                 ...TokenType::OPERATOR_DOUBLE_ARROW
             )) {
                 if (is_null($stack)) {
-                    $stack   = $token2->BracketStack;
-                    $group[] = [$token1, $token2];
+                    $stack        = $token2->BracketStack;
+                    $isAssignment = $token2->isOneOf(...TokenType::OPERATOR_ASSIGNMENT);
+                    $group[]      = [$token1, $token2];
                     continue;
                 }
-                if ($stack === $token2->BracketStack) {
+                if ($stack === $token2->BracketStack &&
+                        !($isAssignment xor $token2->isOneOf(...TokenType::OPERATOR_ASSIGNMENT))) {
                     $group[] = [$token1, $token2];
                     continue;
                 }
             }
             $this->processGroup($group);
-            $group = [];
-            $stack = null;
+            $group        = [];
+            $stack        = null;
+            $isAssignment = null;
             if ($token2) {
-                $stack   = $token2->BracketStack;
-                $group[] = [$token1, $token2];
+                $stack        = $token2->BracketStack;
+                $isAssignment = $token2->isOneOf(...TokenType::OPERATOR_ASSIGNMENT);
+                $group[]      = [$token1, $token2];
             }
         }
         $this->processGroup($group);
@@ -67,7 +72,7 @@ class AlignAssignments implements BlockRule
 
         /** @var Token $token2 */
         foreach ($group as $i => [$token1, $token2]) {
-            $token2->Padding = $max - $lengths[$i];
+            $token2->Padding += $max - $lengths[$i];
         }
     }
 }

@@ -10,7 +10,7 @@ use Lkrms\Pretty\WhitespaceType;
 
 class PreserveNewlines extends AbstractTokenRule
 {
-    public function __invoke(Token $token): void
+    public function __invoke(Token $token, int $stage): void
     {
         if (($prev = $token->prev())->isNull()) {
             return;

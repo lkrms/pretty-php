@@ -9,7 +9,7 @@ use Lkrms\Pretty\WhitespaceType;
 
 class AddBlankLineBeforeYield extends AbstractTokenRule
 {
-    public function __invoke(Token $token): void
+    public function __invoke(Token $token, int $stage): void
     {
         if ($token->isOneOf(T_YIELD, T_YIELD_FROM) &&
                 !($token->prev()->isOneOf(...TokenType::COMMENT) && $token->prev()->hasNewlineBefore())) {

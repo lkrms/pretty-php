@@ -8,7 +8,7 @@ use Lkrms\Pretty\WhitespaceType;
 
 class AddSpaceAfterNot extends AbstractTokenRule
 {
-    public function __invoke(Token $token): void
+    public function __invoke(Token $token, int $stage): void
     {
         if (!$token->is('!') || $token->nextCode()->isUnaryOperator()) {
             return;

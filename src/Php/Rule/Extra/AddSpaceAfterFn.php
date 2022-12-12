@@ -4,18 +4,18 @@ namespace Lkrms\Pretty\Php\Rule\Extra;
 
 use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
 use Lkrms\Pretty\Php\Token;
-use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
-class SuppressSpaceAroundStringOperator extends AbstractTokenRule
+class AddSpaceAfterFn extends AbstractTokenRule
 {
     public function __invoke(Token $token, int $stage): void
     {
-        if (!$token->isOneOf(...TokenType::OPERATOR_STRING)) {
+        if (!$token->is(T_FN)) {
             return;
         }
 
-        $token->WhitespaceMaskPrev &= ~WhitespaceType::SPACE;
-        $token->WhitespaceMaskNext &= ~WhitespaceType::SPACE;
+        $token->WhitespaceBefore  |= WhitespaceType::SPACE;
+        $token->WhitespaceAfter   |= WhitespaceType::SPACE;
+        $token->WhitespaceMaskNext = WhitespaceType::SPACE;
     }
 }

@@ -8,7 +8,7 @@ use Lkrms\Pretty\WhitespaceType;
 
 class SwitchPosition extends AbstractTokenRule
 {
-    public function __invoke(Token $token): void
+    public function __invoke(Token $token, int $stage): void
     {
         if ($token->is(T_SWITCH)) {
             $token->nextSibling(2)->inner()->forEach(fn(Token $t) => $t->Indent++);

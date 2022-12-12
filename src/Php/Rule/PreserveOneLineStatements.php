@@ -8,22 +8,26 @@ use Lkrms\Pretty\WhitespaceType;
 
 class PreserveOneLineStatements extends AbstractTokenRule
 {
-    public function __invoke(Token $token): void
+    public function __invoke(Token $token, int $stage): void
     {
-        if (!$token->isCode() || !$token->isStartOfExpression()) {
-            return;
+        if ($token->isOneOf(T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO) && $token->ClosedBy) {
+            $this->maybePreserveOneLine($token, $token->ClosedBy);
+        } elseif ($token->isCode() && $token->isStartOfExpression()) {
+            $this->maybePreserveOneLine($token, $token->endOfExpression());
         }
+    }
 
-        $end = $token->endOfExpression();
-        if ($token->Line === $end->Line && $token !== $end) {
+    private function maybePreserveOneLine(Token $start, Token $end): void
+    {
+        if ($start->Line === $end->Line && $start !== $end) {
             $mask = ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
-            $token->next()
-                ->collect($end->prev())
-                // Because why not test the rule in the rule itself?
-                ->forEach(
-                    function (Token $t) use ($mask) {$t->WhitespaceMaskPrev &= $mask; $t->WhitespaceMaskNext &= $mask;}
-                );
-            $token->WhitespaceMaskNext &= $mask;
+            $start->next()
+                  ->collect($end->prev())
+                  // Because why not test the rule in the rule itself?
+                  ->forEach(
+                      function (Token $t) use ($mask) {$t->WhitespaceMaskPrev &= $mask; $t->WhitespaceMaskNext &= $mask;}
+                  );
+            $start->WhitespaceMaskNext &= $mask;
             $end->WhitespaceMaskPrev   &= $mask;
         }
     }

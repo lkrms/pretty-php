@@ -12,7 +12,7 @@ use Lkrms\Pretty\Php\Token;
  */
 class AddHangingIndentation extends AbstractTokenRule
 {
-    public function __invoke(Token $token): void
+    public function __invoke(Token $token, int $stage): void
     {
         if ($token->isOneOf('(', '[') && !$token->hasNewlineAfter()) {
             if ($token->innerSiblings()->hasOneOf(',') ||
@@ -28,7 +28,7 @@ class AddHangingIndentation extends AbstractTokenRule
             }
         }
 
-        if (!$this->isHanging($token)) {
+        if (!$token->isCode() || !$this->isHanging($token)) {
             return;
         }
 
@@ -121,7 +121,10 @@ class AddHangingIndentation extends AbstractTokenRule
             ($token->isTernaryOperator() ||
                 (!($token->isBrace() && $token->hasNewlineBefore()) &&
                     !($prev->isStatementPrecursor() &&
-                        ($prev->parent()->isNull() || $prev->parent()->hasNewlineAfter()))));
+                        ($prev->parent()->isNull() || $prev->parent()->hasNewlineAfter())) &&
+                    !($token->isOneOf(T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR) &&
+                        in_array(AlignChainedCalls::class, $this->Formatter->Rules) &&
+                        $token->hasNewlineBefore())));
     }
 
     private function claimOverhang(Token $token): int

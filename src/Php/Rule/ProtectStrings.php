@@ -18,7 +18,7 @@ class ProtectStrings extends AbstractTokenRule
      */
     private $InHeredoc;
 
-    public function __invoke(Token $token): void
+    public function __invoke(Token $token, int $stage): void
     {
         if ($this->InString || $token->is('"')) {
             $this->protectString($token);

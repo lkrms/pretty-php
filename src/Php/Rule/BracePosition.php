@@ -8,20 +8,20 @@ use Lkrms\Pretty\WhitespaceType;
 
 class BracePosition extends AbstractTokenRule
 {
-    public function __invoke(Token $token): void
+    public function __invoke(Token $token, int $stage): void
     {
         if (!$token->isStructuralBrace()) {
             return;
         }
 
         if ($token->is('{')) {
-            $token->WhitespaceBefore |= ($token->isDeclaration() &&
+            $token->WhitespaceBefore |= $token->isDeclaration() &&
                 (($parent = $token->parent())->isNull() || $parent->is('{')) &&
                 (($prev = $token->startOfExpression()->prevCode())->isNull() ||
                     $prev->isOneOf(';', '{', '}') ||
                     ($prev->is(']') && $prev->OpenedBy->is(T_ATTRIBUTE)))
                     ? WhitespaceType::LINE
-                    : WhitespaceType::SPACE);
+                    : WhitespaceType::SPACE;
             $token->WhitespaceAfter    |= WhitespaceType::LINE;
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
 

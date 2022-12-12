@@ -9,7 +9,7 @@ use Lkrms\Pretty\WhitespaceType;
 
 class SpaceOperators extends AbstractTokenRule
 {
-    public function __invoke(Token $token): void
+    public function __invoke(Token $token, int $stage): void
     {
         if (!($token->isOperator() || $token->isOneOf('?', ...TokenType::AMPERSAND)) ||
                 $token->parent()->prev()->is(T_DECLARE)) {
