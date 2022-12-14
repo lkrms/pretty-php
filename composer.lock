@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6ed265450be46fc75c6e182f0deba4d6",
+    "content-hash": "116da8f567ef7c96faecb1d0b5c042e7",
     "packages": [
         {
             "name": "filp/whoops",
@@ -122,23 +122,23 @@
         },
         {
             "name": "lkrms/util",
-            "version": "v0.18.14",
+            "version": "v0.18.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/php-util.git",
-                "reference": "6ac0e2a411398f8815958828970677219e692263"
+                "reference": "2ac50791417ee7d68b642e6aed16b3620768c8f8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/php-util/zipball/6ac0e2a411398f8815958828970677219e692263",
-                "reference": "6ac0e2a411398f8815958828970677219e692263",
+                "url": "https://api.github.com/repos/lkrms/php-util/zipball/2ac50791417ee7d68b642e6aed16b3620768c8f8",
+                "reference": "2ac50791417ee7d68b642e6aed16b3620768c8f8",
                 "shasum": ""
             },
             "require": {
                 "composer-runtime-api": "^2.2",
                 "filp/whoops": "^2",
                 "lkrms/dice": "^4.1.3",
-                "php": ">=7.4,<8.2",
+                "php": ">=7.4,<=8.2",
                 "psr/container": "^2",
                 "psr/log": "^1"
             },
@@ -173,9 +173,9 @@
             "description": "A lightweight PHP toolkit for elegant backend/CLI apps. May contain traces of Laravel.",
             "support": {
                 "issues": "https://github.com/lkrms/php-util/issues",
-                "source": "https://github.com/lkrms/php-util/tree/v0.18.14"
+                "source": "https://github.com/lkrms/php-util/tree/v0.18.15"
             },
-            "time": "2022-12-12T13:22:47+00:00"
+            "time": "2022-12-13T14:27:09+00:00"
         },
         {
             "name": "psr/container",
@@ -2172,7 +2172,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=7.4,<8.2"
+        "php": ">=7.4,<=8.2"
     },
     "platform-dev": [],
     "plugin-api-version": "2.3.0"

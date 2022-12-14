@@ -14,18 +14,11 @@ use RuntimeException;
  * @property Token|null $OpenedBy
  * @property Token|null $ClosedBy
  * @property string $Code
- * @property Token[] $BracketStack
- * @property array<string,true> $Tags
  * @property int $Indent
  * @property int $Deindent
  * @property int $HangingIndent
- * @property int $OverhangingIndent
- * @property Token[] $IndentStack
- * @property array<Token[]> $IndentBracketStack
  * @property bool $PinToCode
  * @property int $Padding
- * @property Token|null $HeredocOpenedBy
- * @property Token|null $StringOpenedBy
  * @property int $WhitespaceBefore
  * @property int $WhitespaceAfter
  * @property int $WhitespaceMaskPrev
@@ -44,18 +37,11 @@ class Token implements JsonSerializable
 
     private const ALLOW_WRITE = [
         'Code',
-        'BracketStack',
-        'Tags',
         'Indent',
         'Deindent',
         'HangingIndent',
-        'OverhangingIndent',
-        'IndentStack',
-        'IndentBracketStack',
         'PinToCode',
         'Padding',
-        'HeredocOpenedBy',
-        'StringOpenedBy',
         'WhitespaceBefore',
         'WhitespaceAfter',
         'WhitespaceMaskPrev',

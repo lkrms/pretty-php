@@ -10,6 +10,7 @@ use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\File;
+use Lkrms\Facade\Sys;
 use Lkrms\Facade\Test;
 use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeDeclaration;
@@ -199,6 +200,7 @@ class FormatPhp extends CliCommand
         foreach ($in as $key => $file) {
             Console::info(sprintf('Formatting %d of %d:', ++$i, $count), $file);
             $input = file_get_contents($file);
+            Sys::startTimer($file, 'file');
             try {
                 $output = $formatter->format($input);
             } catch (PrettyBadSyntaxException $ex) {
@@ -209,6 +211,8 @@ class FormatPhp extends CliCommand
             } catch (PrettyException $ex) {
                 $this->maybeDumpDebugOutput($input, $ex->getOutput(), $ex->getTokens(), $ex->getData());
                 throw $ex;
+            } finally {
+                Sys::stopTimer($file, 'file');
             }
             $this->maybeDumpDebugOutput($input, $output, $formatter->Tokens, null);
 

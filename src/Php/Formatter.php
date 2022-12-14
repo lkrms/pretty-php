@@ -4,7 +4,9 @@ namespace Lkrms\Pretty\Php;
 
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
+use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
+use Lkrms\Facade\Sys;
 use Lkrms\Pretty\Php\Contract\BlockRule;
 use Lkrms\Pretty\Php\Contract\TokenFilter;
 use Lkrms\Pretty\Php\Contract\TokenRule;
@@ -235,15 +237,19 @@ final class Formatter implements IReadable
         // Sort by priority then order of appearance
         usort($stages, fn(array $a, array $b) => ($a[0] <=> $b[0]) ?: $a[1] <=> $b[1]);
         foreach ($stages as [,, $rule, $stage]) {
-            $this->RunningService = get_class($rule);
+            $this->RunningService = $_rule = get_class($rule);
+            Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
             /** @var Token $token */
             foreach ($this->Tokens as $token) {
                 $rule($token, $stage);
             }
+            Sys::stopTimer($timer, 'rule');
         }
         foreach ($rules as $rule) {
-            $this->RunningService = get_class($rule);
+            $this->RunningService = $_rule = get_class($rule);
+            Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
             $rule->afterTokenLoop();
+            Sys::stopTimer($timer, 'rule');
         }
         $this->RunningService = null;
 
@@ -285,9 +291,11 @@ final class Formatter implements IReadable
             $this->RunningService = $_rule;
             $rule                 = new $_rule();
 
+            Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
             foreach ($blocks as $block) {
                 $rule($block);
             }
+            Sys::stopTimer($timer, 'rule');
         }
         $this->RunningService = null;
 
