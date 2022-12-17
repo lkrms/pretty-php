@@ -57,7 +57,7 @@ class AlignChainedCalls extends AbstractTokenRule
             }
             $start   = $alignWith->startOfLine();
             $padding = max(0, strlen($start->collect($alignWith)->render())
-                    - (strlen($alignWith->Code) + strlen($alignWith->indent()) + $start->Padding)
+                    - (strlen($alignWith->Code) + strlen($alignWith->renderIndent()) + $start->Padding)
                     + ($adjust ?? 0));
             $token->collect($token->endOfExpression())
                   ->filter(fn(Token $t) => $t->hasNewlineBefore())

@@ -19,11 +19,11 @@ class SpaceOperators extends AbstractTokenRule
         // Suppress whitespace after ampersands related to returning, assigning
         // or passing by reference
         if ($token->isOneOf(...TokenType::AMPERSAND) &&
-                ($token->prevCode()->is(T_FUNCTION) ||
-                    $token->inUnaryContext() ||
-                    ($token->next()->is(T_VARIABLE) &&
-                        $token->inFunctionDeclaration() &&
-                        !$token->sinceStartOfStatement()->hasOneOf('=')))) {
+            ($token->prevCode()->is(T_FUNCTION) ||
+                $token->inUnaryContext() ||
+                ($token->next()->is(T_VARIABLE) &&
+                    $token->inFunctionDeclaration() &&
+                    !$token->sinceStartOfStatement()->hasOneOf('=')))) {
             $token->WhitespaceBefore  |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
 
@@ -44,6 +44,15 @@ class SpaceOperators extends AbstractTokenRule
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
 
             return;
+        }
+
+        if ($token->isOneOf(...TokenType::OPERATOR_INCREMENT_DECREMENT)) {
+            if ($token->prev()->is(T_VARIABLE)) {
+                $token->WhitespaceMaskPrev = WhitespaceType::NONE;
+            }
+            if ($token->next()->is(T_VARIABLE)) {
+                $token->WhitespaceMaskNext = WhitespaceType::NONE;
+            }
         }
 
         if ($token->isUnaryOperator() && !$token->nextCode()->isUnaryOperator()) {

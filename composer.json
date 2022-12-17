@@ -20,6 +20,7 @@
         }
     },
     "require-dev": {
+        "clue/phar-composer": "^1.4",
         "phpstan/extension-installer": "^1",
         "phpstan/phpstan": "^1",
         "phpstan/phpstan-deprecation-rules": "^1",

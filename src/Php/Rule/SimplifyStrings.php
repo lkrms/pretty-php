@@ -38,7 +38,7 @@ class SimplifyStrings extends AbstractTokenRule
             $single = preg_replace('/(?<!\\\\)\\\\(?!\\\\)/', '\\\\$0', $single);
         }
         $token->Code = (strlen($single) <= strlen($double) &&
-            ($this->checkConsistency($single) || !$this->checkConsistency($double)))
+                ($this->checkConsistency($single) || !$this->checkConsistency($double)))
             ? $single
             : $double;
     }

@@ -46,6 +46,7 @@ use Lkrms\Pretty\PrettyBadSyntaxException;
 use Lkrms\Pretty\PrettyException;
 use Lkrms\Pretty\WhitespaceType;
 use ParseError;
+use UnexpectedValueException;
 
 /**
  * @property-read bool $Debug
@@ -212,30 +213,47 @@ final class Formatter implements IReadable
         }
         $token->WhitespaceAfter |= WhitespaceType::LINE;
 
-        /** @var TokenRule[] $rules */
-        $rules  = [];
         /** @var array<array{int,int,TokenRule,int}> $stages */
-        $stages = [];
-        $index  = 0;
+        $stages         = [];
+        /** @var array<array{int,int,TokenRule}> $afterTokenLoop */
+        $afterTokenLoop = [];
+        /** @var array<array{int,int,TokenRule}> $beforeRender */
+        $beforeRender   = [];
+        $index          = 0;
         foreach ($this->Rules as $_rule) {
             if (!is_a($_rule, TokenRule::class, true)) {
                 continue;
             }
             /** @var TokenRule $rule */
-            $rule    = new $_rule($this);
-            $rules[] = $rule;
+            $rule = new $_rule($this);
             foreach ($rule->getStages() as $stage => $priority) {
-                $stages[] = [
+                $_stage = [
                     is_null($priority) ? 100 : $priority,
                     $index,
                     $rule,
-                    $stage,
+                    ...($stage > 0 ? [$stage] : [])
                 ];
+                switch ($stage) {
+                    case TokenRule::STAGE_AFTER_TOKEN_LOOP:
+                        $afterTokenLoop[] = $_stage;
+                        break;
+                    case TokenRule::STAGE_BEFORE_RENDER:
+                        $beforeRender[] = $_stage;
+                        break;
+                    default:
+                        if ($stage < 1) {
+                            throw new UnexpectedValueException("Stage returned by $_rule::getStages() is not a positive integer: $stage");
+                        }
+                        $stages[] = $_stage;
+                        break;
+                }
             }
             $index++;
         }
         // Sort by priority then order of appearance
         usort($stages, fn(array $a, array $b) => ($a[0] <=> $b[0]) ?: $a[1] <=> $b[1]);
+        usort($afterTokenLoop, fn(array $a, array $b) => ($a[0] <=> $b[0]) ?: $a[1] <=> $b[1]);
+        usort($beforeRender, fn(array $a, array $b) => ($a[0] <=> $b[0]) ?: $a[1] <=> $b[1]);
         foreach ($stages as [,, $rule, $stage]) {
             $this->RunningService = $_rule = get_class($rule);
             Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
@@ -245,7 +263,7 @@ final class Formatter implements IReadable
             }
             Sys::stopTimer($timer, 'rule');
         }
-        foreach ($rules as $rule) {
+        foreach ($afterTokenLoop as [,, $rule]) {
             $this->RunningService = $_rule = get_class($rule);
             Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
             $rule->afterTokenLoop();
@@ -299,7 +317,7 @@ final class Formatter implements IReadable
         }
         $this->RunningService = null;
 
-        foreach ($rules as $rule) {
+        foreach ($beforeRender as [,, $rule]) {
             $this->RunningService = get_class($rule);
             $rule->beforeRender();
         }

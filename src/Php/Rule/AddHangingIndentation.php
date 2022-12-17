@@ -6,26 +6,56 @@ use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
 use Lkrms\Pretty\Php\Token;
 
 /**
- * If the first token on a new line continues a statement from the previous
- * line, add a hanging indent
+ * If the first token on a new line continues a statement from the previous one,
+ * add a hanging indent
  *
  */
 class AddHangingIndentation extends AbstractTokenRule
 {
+    /**
+     * => [$token, $token->endOfExpression()]
+     *
+     * Entries represent a range of tokens where an 'overhanging' indent has
+     * been applied in addition to a hanging indent.
+     *
+     * Used to collapse unnecessary overhanging indents.
+     *
+     * @var array<array{Token,Token}>
+     */
+    private $OverhangingTokens = [];
+
+    /**
+     * Parent index => indent (1 or 2) => true
+     *
+     * Entries represent token locations.
+     *
+     * @var array<int,array<int,true>>
+     */
+    private $ParentIndentsWithTokens = [];
+
+    /**
+     * Parent index => indent (1 or 2) => token array
+     *
+     * Entries represent indentation levels beyond which there are one or more
+     * tokens.
+     *
+     * Used to collapse empty indentation levels.
+     *
+     * @var array<int,array<int,Token[]>>
+     */
+    private $ParentIndentsBeforeTokens = [];
+
     public function __invoke(Token $token, int $stage): void
     {
         if ($token->isOneOf('(', '[') && !$token->hasNewlineAfter()) {
-            if ($token->innerSiblings()->hasOneOf(',') ||
-                    ($token->is('(') && ($token->nextSibling()->is('{') ||
-                        $token->innerSiblings()->hasOneOf(';')))) {
-                /** @var Token $t */
-                foreach ($token->inner() as $t) {
-                    if ($t->isOpenBracket() && $t->hasNewlineAfter()) {
-                        break;
-                    }
-                    $t->OverhangingIndent++;
-                }
-            }
+            $token->IsHangingParent     = true;
+            $token->IsOverhangingParent =
+                // Does it have delimited values? (e.g. `list($var1, $var2)`)
+                $token->innerSiblings()->hasOneOf(',') ||
+                // Delimited expressions? (e.g. `for (expr; expr; expr)`)
+                ($token->is('(') && $token->innerSiblings()->hasOneOf(';')) ||
+                // A subsequent statement or block? (e.g. `if (expr) statement`)
+                $token->endOfStatement()->Index > $token->ClosedBy->endOfLine()->Index;
         }
 
         if (!$token->isCode() || !$this->isHanging($token)) {
@@ -47,12 +77,11 @@ class AddHangingIndentation extends AbstractTokenRule
         //
         // Similarly, differentiate between ternary operators and earlier lines
         // with the same bracket stack by adding the first indented operator to
-        // `$stack`, as seen on line 82 at the time of writing:
+        // `$stack`, e.g.:
         //
-        //     $current->HangingIndent +=
-        //        is_null($add)
-        //            ? 1 + $this->claimOverhang($current)
-        //            : $add;
+        //     return is_string($contents)
+        //         ? $contents
+        //         : json_encode($contents, JSON_PRETTY_PRINT);
         //
         if ($latest && $latest->BracketStack === $token->BracketStack) {
             if (!$prev->isStatementPrecursor() &&
@@ -64,27 +93,54 @@ class AddHangingIndentation extends AbstractTokenRule
             }
         }
 
+        $parent  = $token->parent();
+        $current = $parent->parent();
+        $add     = 0;
+        while (!$current->isNull()) {
+            if ($current->IsHangingParent) {
+                $add++;
+                $indent = 1;
+                if ($current->IsOverhangingParent) {
+                    $add++;
+                    $indent++;
+                }
+                $this->ParentIndentsBeforeTokens[$current->Index][$indent][] = $token;
+            }
+            $current = $current->parent();
+        }
+
         // If a hanging indent has already been applied to a token with the same
         // stack, don't add it again
         if (in_array($stack, $token->IndentBracketStack, true)) {
             return;
         }
 
-        $parent = $token->parent();
-        $add    = $parent->hasNewlineAfter() && $prev->isStatementPrecursor()
-            ? 0
-            : ($prev->isStatementPrecursor() ||
-                ($latest && $latest->BracketStack === $token->BracketStack)
-                    ? 1
-                    : null);
+        if ($token->HangingParentsApplied) {
+            $add = 0;
+        }
 
         $current = $token;
         $until   = $token->endOfExpression();
+        $indent  = 0;
+        if ($token->prevCode()->isStatementPrecursor()) {
+            if (!$parent->hasNewlineAfter()) {
+                $add++;
+                $indent++;
+            }
+        } else {
+            $add++;
+            $indent++;
+            if ($parent->IsOverhangingParent) {
+                $add++;
+                $indent++;
+                $this->OverhangingTokens[] = [$token, $until];
+            }
+        }
+        $this->ParentIndentsWithTokens[$parent->Index][$indent] = true;
+
         do {
-            $current->HangingIndent +=
-                is_null($add)
-                    ? 1 + $this->claimOverhang($current)
-                    : $add;
+            $current->HangingIndent        += $add;
+            $current->HangingParentsApplied = true;
             if ($current !== $token) {
                 $current->IndentBracketStack[] = $stack;
                 $current->IndentStack[]        = $token;
@@ -94,6 +150,42 @@ class AddHangingIndentation extends AbstractTokenRule
             }
             $current = $current->next();
         } while (!$current->isNull());
+    }
+
+    public function afterTokenLoop(): void
+    {
+        foreach ($this->ParentIndentsBeforeTokens as $parentIndex => $tokensByIndent) {
+            foreach ([1, 2] as $indent) {
+                if (!($this->ParentIndentsWithTokens[$parentIndex][$indent] ?? null)) {
+                    foreach (($tokensByIndent[$indent] ?? []) as $token) {
+                        $token->HangingIndent--;
+                    }
+                }
+            }
+        }
+
+        /**
+         * @var Token $token
+         * @var Token $until
+         */
+        foreach ($this->OverhangingTokens as [$token, $until]) {
+            if (!$token->HangingIndent) {
+                continue;
+            }
+            $indent     = $token->indent();
+            $nextLine   = $token->endOfLine()->next();
+            $nextIndent = $nextLine->indent();
+            // If $nextLine falls between $token and $until, adjust the
+            // calculation below accordingly
+            $adjust     = $nextLine->Index <= $until->Index;
+            // The purpose of 'overhanging' indents is to visually separate
+            // distinct blocks of code that would otherwise run together, but
+            // this is unnecessary when indentation increases on the next line
+            if ($nextIndent > $indent ||
+                    $indent - $nextIndent > ($adjust ? 0 : 1)) {
+                $token->collect($until)->forEach(fn(Token $t) => $t->HangingIndent--);
+            }
+        }
     }
 
     private function isHanging(Token $token): bool
@@ -125,15 +217,5 @@ class AddHangingIndentation extends AbstractTokenRule
                     !($token->isOneOf(T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR) &&
                         in_array(AlignChainedCalls::class, $this->Formatter->Rules) &&
                         $token->hasNewlineBefore())));
-    }
-
-    private function claimOverhang(Token $token): int
-    {
-        if (!$token->OverhangingIndent) {
-            return 0;
-        }
-        $token->OverhangingIndent--;
-
-        return 1;
     }
 }

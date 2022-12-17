@@ -109,9 +109,19 @@ class Token implements JsonSerializable
     private $HangingIndent = 0;
 
     /**
-     * @var int
+     * @var bool
      */
-    public $OverhangingIndent = 0;
+    public $IsHangingParent;
+
+    /**
+     * @var bool
+     */
+    public $IsOverhangingParent;
+
+    /**
+     * @var bool
+     */
+    public $HangingParentsApplied;
 
     /**
      * @var Token[]
@@ -550,6 +560,16 @@ class Token implements JsonSerializable
         return $current;
     }
 
+    public function endOfLine(): Token
+    {
+        $current = $this;
+        while (!$current->hasNewlineAfter() && !($next = $current->next())->isNull()) {
+            $current = $next;
+        }
+
+        return $current;
+    }
+
     public function startOfStatement(): Token
     {
         $current = ($this->is(';') ? $this->prevCode()->OpenedBy : null)
@@ -897,7 +917,12 @@ class Token implements JsonSerializable
             ($parent->isDeclaration(T_FUNCTION) || $parent->prevCode()->is(T_FN));
     }
 
-    public function indent(): string
+    public function indent(): int
+    {
+        return $this->Indent + $this->HangingIndent - $this->Deindent;
+    }
+
+    public function renderIndent(): string
     {
         return ($this->Indent + $this->HangingIndent - $this->Deindent)
             ? str_repeat($this->Formatter->Tab, $this->Indent + $this->HangingIndent - $this->Deindent)
@@ -917,7 +942,7 @@ class Token implements JsonSerializable
                 $heredoc .= $current->Code;
                 $current  = $current->next();
             } while ($current->HeredocOpenedBy === $this);
-            $indent = $this->indent();
+            $indent = $this->renderIndent();
             if ($padding = str_repeat(' ', $this->startOfLine()->Padding)) {
                 $heredoc = str_replace("\n$indent", "\n$indent$padding", $heredoc);
             }
@@ -931,7 +956,7 @@ class Token implements JsonSerializable
         if (!$this->isOneOf(...TokenType::DO_NOT_MODIFY_LHS)) {
             $code = WhitespaceType::toWhitespace($this->effectiveWhitespaceBefore());
             if (substr($code, -1) === "\n" && ($this->Indent + $this->HangingIndent - $this->Deindent)) {
-                $code .= $this->indent();
+                $code .= $this->renderIndent();
             }
             if ($this->Padding) {
                 $code .= str_repeat(' ', $this->Padding);
@@ -954,7 +979,7 @@ class Token implements JsonSerializable
         $code = preg_replace('/\h+$/m', '', $this->Code);
         switch ($this->Type) {
             case T_DOC_COMMENT:
-                $indent = "\n" . $this->indent();
+                $indent = "\n" . $this->renderIndent();
 
                 return preg_replace([
                     '/\n\h*(?:\* |\*(?!\/)(?=[\h\S])|(?=[^\s*]))/',

@@ -9,6 +9,19 @@ use Lkrms\Pretty\WhitespaceType;
 
 class PlaceComments extends AbstractTokenRule
 {
+    /**
+     * @var Token[]
+     */
+    private $ToAlign = [];
+
+    public function getStages(): array
+    {
+        $stages                            = parent::getStages();
+        $stages[self::STAGE_BEFORE_RENDER] = 999;
+
+        return $stages;
+    }
+
     public function __invoke(Token $token, int $stage): void
     {
         if (!$token->isOneOf(...TokenType::COMMENT)) {
@@ -31,6 +44,8 @@ class PlaceComments extends AbstractTokenRule
             return;
         }
 
+        $this->ToAlign[] = $token;
+
         $token->WhitespaceAfter |= WhitespaceType::LINE;
         if (!$token->is(T_DOC_COMMENT)) {
             $token->WhitespaceBefore |= WhitespaceType::LINE;
@@ -48,5 +63,21 @@ class PlaceComments extends AbstractTokenRule
         }
         $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
         $token->PinToCode           = true;
+    }
+
+    public function beforeRender(): void
+    {
+        foreach ($this->ToAlign as $token) {
+            $next = $token->nextCode();
+            if ($next->isNull() || $next->isCloseBracket()) {
+                continue;
+            }
+            [$token->Indent, $token->Deindent, $token->HangingIndent, $token->Padding] = [
+                $next->Indent,
+                $next->Deindent,
+                $next->HangingIndent,
+                $next->Padding,
+            ];
+        }
     }
 }
