@@ -46,6 +46,8 @@ use Lkrms\Pretty\PrettyBadSyntaxException;
 use Lkrms\Pretty\PrettyException;
 use Lkrms\Pretty\WhitespaceType;
 use ParseError;
+use RuntimeException;
+use Throwable;
 use UnexpectedValueException;
 
 /**
@@ -173,6 +175,7 @@ final class Formatter implements IReadable
         }
 
         $bracketStack = [];
+        $altStack     = [];
         $openTag      = null;
         foreach ($this->filter($this->PlainTokens, ...$this->Filters) as $index => $plainToken) {
             $this->Tokens[$index] = $token = new Token(
@@ -192,6 +195,25 @@ final class Formatter implements IReadable
                 $opener           = array_pop($bracketStack);
                 $opener->ClosedBy = $token;
                 $token->OpenedBy  = $opener;
+                continue;
+            }
+
+            if ($token->startsAlternativeSyntax()) {
+                $bracketStack[] = $token;
+                $altStack[]     = $token;
+                continue;
+            }
+
+            if ($token->endsAlternativeSyntax()) {
+                $opener    = array_pop($bracketStack);
+                $altOpener = array_pop($altStack);
+                if ($opener !== $altOpener) {
+                    throw new RuntimeException('Formatting failed: unable to traverse control structures');
+                }
+                $virtual = new VirtualToken($this->PlainTokens, $this->Tokens,
+                    $token, $token->BracketStack, $this, $bracketStack);
+                $opener->ClosedBy  = $virtual;
+                $virtual->OpenedBy = $opener;
                 continue;
             }
 
@@ -323,9 +345,19 @@ final class Formatter implements IReadable
         }
         $this->RunningService = null;
 
-        $out = '';
-        foreach ($this->Tokens as $token) {
-            $out .= $token->render();
+        try {
+            $out = '';
+            foreach ($this->Tokens as $token) {
+                $out .= $token->render();
+            }
+        } catch (Throwable $ex) {
+            throw new PrettyException(
+                'Formatting failed: output cannot be rendered',
+                $out,
+                $this->Tokens,
+                null,
+                $ex
+            );
         }
 
         try {

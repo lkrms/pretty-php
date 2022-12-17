@@ -181,7 +181,7 @@ class Token implements JsonSerializable
     /**
      * @var Formatter
      */
-    private $Formatter;
+    protected $Formatter;
 
     /**
      * @var Token|null
@@ -263,6 +263,14 @@ class Token implements JsonSerializable
             $this->_prev        = $prev;
             $this->_prev->_next = $this;
         }
+    }
+
+    protected function insertBefore(Token $token): void
+    {
+        $this->_prev        = $token->_prev;
+        $this->_next        = $token;
+        $this->_prev->_next = $this;
+        $this->_next->_prev = $this;
     }
 
     public function jsonSerialize(): array
@@ -815,6 +823,32 @@ class Token implements JsonSerializable
     public function isCloseBracket(): bool
     {
         return $this->isOneOf(')', ']', '}');
+    }
+
+    public function startsAlternativeSyntax(): bool
+    {
+        return $this->is(':') &&
+            (($this->prevSibling()->is('(') && $this->prevSibling(2)->isOneOf(
+                ...TokenType::CAN_START_ALTERNATIVE_SYNTAX,
+                ...TokenType::CAN_CONTINUE_ALTERNATIVE_SYNTAX_WITH_EXPRESSION
+            )) || $this->prevSibling()->isOneOf(
+                ...TokenType::CAN_CONTINUE_ALTERNATIVE_SYNTAX_WITHOUT_EXPRESSION
+            ));
+    }
+
+    public function endsAlternativeSyntax(): bool
+    {
+        // Subsequent tokens may not be available yet, so the approach used in
+        // startsAlternativeSyntax() won't work here
+        $bracketStack = $this->BracketStack;
+        $opener       = array_pop($bracketStack);
+
+        return $opener && $opener->is(':') && $opener->BracketStack === $bracketStack &&
+            $this->isOneOf(
+                ...TokenType::ENDS_ALTERNATIVE_SYNTAX,
+                ...TokenType::CAN_CONTINUE_ALTERNATIVE_SYNTAX_WITH_EXPRESSION,
+                ...TokenType::CAN_CONTINUE_ALTERNATIVE_SYNTAX_WITHOUT_EXPRESSION
+            );
     }
 
     public function isOneLineComment(bool $anyType = false): bool

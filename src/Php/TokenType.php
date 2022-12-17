@@ -15,6 +15,8 @@ defined('T_READONLY') || define('T_READONLY', 10010);
 
 final class TokenType
 {
+    public const T_VIRTUAL = 20001;
+
     public const DO_NOT_MODIFY = [
         T_ENCAPSED_AND_WHITESPACE,
         T_INLINE_HTML,
@@ -297,7 +299,24 @@ final class TokenType
         T_OBJECT_OPERATOR,
     ];
 
-    public const ALTERNATIVE_SYNTAX = [
+    public const CAN_START_ALTERNATIVE_SYNTAX = [
+        T_DECLARE,
+        T_FOR,
+        T_FOREACH,
+        T_IF,
+        T_SWITCH,
+        T_WHILE,
+    ];
+
+    public const CAN_CONTINUE_ALTERNATIVE_SYNTAX_WITHOUT_EXPRESSION = [
+        T_ELSE,
+    ];
+
+    public const CAN_CONTINUE_ALTERNATIVE_SYNTAX_WITH_EXPRESSION = [
+        T_ELSEIF,
+    ];
+
+    public const ENDS_ALTERNATIVE_SYNTAX = [
         T_ENDDECLARE,
         T_ENDFOR,
         T_ENDFOREACH,
@@ -364,7 +383,7 @@ final class TokenType
         T_YIELD_FROM,
         T_YIELD,
         ...self::DECLARATION,
-        ...self::ALTERNATIVE_SYNTAX,
+        ...self::ENDS_ALTERNATIVE_SYNTAX,
     ];
 
     public const OTHER = [
