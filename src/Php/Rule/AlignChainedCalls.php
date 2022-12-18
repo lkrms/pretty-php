@@ -32,9 +32,18 @@ class AlignChainedCalls extends AbstractTokenRule
     public function beforeRender(): void
     {
         foreach ($this->Chains as $chain) {
-            /** @var Token $token */
-            $token = $chain->shift();
-            // Reduce the chain to object operators immediately after newlines
+            // Start from the last `->` with no preceding newline, if one exists
+            do {
+                /** @var Token $token */
+                $token = $chain->shift();
+                if ($token->hasNewlineBefore()) {
+                    break;
+                }
+                /** @var Token|false $next */
+                $next = $chain->first();
+            } while ($next && !$next->hasNewlineBefore());
+            // Reduce the remaining chain to object operators immediately after
+            // newlines
             $chain = $chain->filter(fn(Token $t) => $t->hasNewlineBefore());
             if (!($token->hasNewlineBefore() || count($chain))) {
                 continue;
