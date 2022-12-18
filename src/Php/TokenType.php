@@ -15,7 +15,8 @@ defined('T_READONLY') || define('T_READONLY', 10010);
 
 final class TokenType
 {
-    public const T_VIRTUAL = 20001;
+    public const T_NULL    = 20001;
+    public const T_VIRTUAL = 20002;
 
     public const DO_NOT_MODIFY = [
         T_ENCAPSED_AND_WHITESPACE,

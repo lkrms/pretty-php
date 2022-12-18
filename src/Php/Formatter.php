@@ -210,8 +210,14 @@ final class Formatter implements IReadable
                 if ($opener !== $altOpener) {
                     throw new RuntimeException('Formatting failed: unable to traverse control structures');
                 }
-                $virtual = new VirtualToken($this->PlainTokens, $this->Tokens,
-                    $token, $token->BracketStack, $this, $bracketStack);
+                $virtual = new VirtualToken(
+                    $this->PlainTokens,
+                    $this->Tokens,
+                    $token,
+                    $token->BracketStack,
+                    $this,
+                    $bracketStack
+                );
                 $opener->ClosedBy  = $virtual;
                 $virtual->OpenedBy = $opener;
                 continue;

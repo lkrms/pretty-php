@@ -42,13 +42,13 @@ class AddStandardWhitespace extends AbstractTokenRule
                 $token->WhitespaceMaskNext = WhitespaceType::SPACE;
                 $token                     = $end;
             }
-            $token->WhitespaceAfter |= WhitespaceType::LINE;
+            $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
 
             return;
         }
 
         if ($token->is(T_CLOSE_TAG)) {
-            $token->WhitespaceBefore |= WhitespaceType::LINE;
+            $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
         }
     }
 }

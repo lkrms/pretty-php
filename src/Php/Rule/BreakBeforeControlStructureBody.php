@@ -21,7 +21,7 @@ class BreakBeforeControlStructureBody extends AbstractTokenRule
             return;
         }
 
-        if (($body = $token->nextSibling($offset))->isOneOf(':', ';', '{')) {
+        if (($body = $token->nextSibling($offset))->isOneOf(':', ';', '{', TokenType::T_NULL)) {
             return;
         }
 

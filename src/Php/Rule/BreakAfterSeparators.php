@@ -10,14 +10,13 @@ class BreakAfterSeparators extends AbstractTokenRule
 {
     public function __invoke(Token $token, int $stage): void
     {
-        if (!$token->is(';')) {
-            return;
-        }
-
-        // Don't break after `for` expressions
-        if (($bracket = end($token->BracketStack)) &&
-                $bracket->is('(') &&
-                $bracket->prev()->is(T_FOR)) {
+        if ($token->is(';')) {
+            // Don't break after `for` expressions
+            if (($parent = $token->parent())->is('(') &&
+                    $parent->prevCode()->is(T_FOR)) {
+                return;
+            }
+        } elseif (!$token->startsAlternativeSyntax()) {
             return;
         }
 

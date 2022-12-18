@@ -119,11 +119,6 @@ class Token implements JsonSerializable
     public $IsOverhangingParent;
 
     /**
-     * @var bool
-     */
-    public $HangingParentsApplied;
-
-    /**
      * @var Token[]
      */
     public $IndentStack = [];
@@ -265,6 +260,11 @@ class Token implements JsonSerializable
         }
     }
 
+    /**
+     * Update _prev and _next as needed to insert $this between $token and its
+     * current predecessor
+     *
+     */
     protected function insertBefore(Token $token): void
     {
         $this->_prev        = $token->_prev;
@@ -386,6 +386,36 @@ class Token implements JsonSerializable
         }
 
         return $next ?: new NullToken();
+    }
+
+    /**
+     * @param int|string ...$types
+     */
+    public function prevCodeWhile(bool $includeToken = false, ...$types): TokenCollection
+    {
+        $tokens = new TokenCollection();
+        $prev   = $includeToken ? $this : $this->prevCode();
+        while ($prev->isOneOf(...$types)) {
+            $tokens[] = $prev;
+            $prev     = $prev->prevCode();
+        }
+
+        return $tokens;
+    }
+
+    /**
+     * @param int|string ...$types
+     */
+    public function nextCodeWhile(bool $includeToken = false, ...$types): TokenCollection
+    {
+        $tokens = new TokenCollection();
+        $next   = $includeToken ? $this : $this->nextCode();
+        while ($next->isOneOf(...$types)) {
+            $tokens[] = $next;
+            $next     = $next->nextCode();
+        }
+
+        return $tokens;
     }
 
     public function prevSibling(int $offset = 1): Token
@@ -691,6 +721,22 @@ class Token implements JsonSerializable
         return $end;
     }
 
+    public function hasAdjacentBlock(): bool
+    {
+        $_this = $this->canonicalThis(__METHOD__);
+        if (!$_this->isOneOf('(', '[')) {
+            return false;
+        }
+        /** @var Token */
+        $lastOuterBracket = $_this->ClosedBy->nextCodeWhile(true, ')', ']')->last();
+        [$end, $next]     = [
+            $lastOuterBracket->endOfStatement(),
+            $lastOuterBracket->nextCode(),
+        ];
+
+        return !$end->isNull() && !$next->isNull() && $end->Index > $next->Index;
+    }
+
     public function declarationParts(): TokenCollection
     {
         return $this->startOfExpression()->nextSiblingsWhile(true, ...TokenType::DECLARATION_PART);
@@ -795,6 +841,7 @@ class Token implements JsonSerializable
             ($this->is(',') &&
                 (($parent = $this->parent())->isOneOf('(', '[') ||
                     ($parent->is('{') && $parent->prevSibling(2)->is(T_MATCH)))) ||
+            $this->startsAlternativeSyntax() ||
             ($this->is(':') &&
                 $this->startOfStatement()->isOneOf(T_CASE, T_DEFAULT) &&
                 ($parent = $this->parent())->is('{') && $parent->prevSibling(2)->is(T_SWITCH));
@@ -828,10 +875,10 @@ class Token implements JsonSerializable
     public function startsAlternativeSyntax(): bool
     {
         return $this->is(':') &&
-            (($this->prevSibling()->is('(') && $this->prevSibling(2)->isOneOf(
+            ((($prev = $this->prevCode())->is(')') && $prev->prevSibling()->isOneOf(
                 ...TokenType::CAN_START_ALTERNATIVE_SYNTAX,
                 ...TokenType::CAN_CONTINUE_ALTERNATIVE_SYNTAX_WITH_EXPRESSION
-            )) || $this->prevSibling()->isOneOf(
+            )) || $this->prevCode()->isOneOf(
                 ...TokenType::CAN_CONTINUE_ALTERNATIVE_SYNTAX_WITHOUT_EXPRESSION
             ));
     }
@@ -841,9 +888,8 @@ class Token implements JsonSerializable
         // Subsequent tokens may not be available yet, so the approach used in
         // startsAlternativeSyntax() won't work here
         $bracketStack = $this->BracketStack;
-        $opener       = array_pop($bracketStack);
 
-        return $opener && $opener->is(':') && $opener->BracketStack === $bracketStack &&
+        return ($opener = array_pop($bracketStack)) && $opener->is(':') && $opener->BracketStack === $bracketStack &&
             $this->isOneOf(
                 ...TokenType::ENDS_ALTERNATIVE_SYNTAX,
                 ...TokenType::CAN_CONTINUE_ALTERNATIVE_SYNTAX_WITH_EXPRESSION,
