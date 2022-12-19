@@ -56,13 +56,15 @@ class PlaceComments extends AbstractTokenRule
         $token->WhitespaceBefore |= $token->hasNewline() ? WhitespaceType::BLANK : WhitespaceType::LINE;
         // PHPDoc comments immediately before namespace declarations are
         // generally associated with the file, not the namespace
-        if ($token->nextCode()->isDeclaration(T_NAMESPACE)) {
+        if ($token->next()->isDeclaration(T_NAMESPACE)) {
             $token->WhitespaceAfter |= WhitespaceType::BLANK;
 
             return;
         }
-        $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
-        $token->PinToCode           = true;
+        if ($token->next()->isCode()) {
+            $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
+            $token->PinToCode           = true;
+        }
     }
 
     public function beforeRender(): void

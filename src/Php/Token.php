@@ -699,8 +699,15 @@ class Token implements JsonSerializable
                 $next = $prev->nextSiblingOf(':')) {
             return $this->_endOfExpression($ignore, $next->prevCode(), $start);
         }
+        $ignoreTokens = [];
+        if ($current->inSwitchCase()) {
+            if ($token = $current->startOfStatement()->nextSiblingOf(':', ';')) {
+                $ignoreTokens[] = $token;
+            }
+        }
         while (!($next = $current->nextSibling())->isNull() &&
-                !$next->isStatementPrecursor('(', '[', '{')) {
+            (!$next->isStatementPrecursor('(', '[', '{') ||
+                in_array($next, $ignoreTokens, true))) {
             $current = $next;
             if (($prev = $current->prevCode())->isStatementTerminator()) {
                 return $this->_endOfExpression($ignore, $prev, $start ?? null);
@@ -842,9 +849,14 @@ class Token implements JsonSerializable
                 (($parent = $this->parent())->isOneOf('(', '[') ||
                     ($parent->is('{') && $parent->prevSibling(2)->is(T_MATCH)))) ||
             $this->startsAlternativeSyntax() ||
-            ($this->is(':') &&
-                $this->startOfStatement()->isOneOf(T_CASE, T_DEFAULT) &&
-                ($parent = $this->parent())->is('{') && $parent->prevSibling(2)->is(T_SWITCH));
+            ($this->is(':') && $this->inSwitchCase());
+    }
+
+    public function inSwitchCase(): bool
+    {
+        return $this->isCode() &&
+            $this->startOfStatement()->isOneOf(T_CASE, T_DEFAULT) &&
+            $this->parent()->prevSibling(2)->is(T_SWITCH);
     }
 
     public function isBrace(): bool
@@ -983,6 +995,9 @@ class Token implements JsonSerializable
      */
     public function isDeclaration(...$types): bool
     {
+        if (!$this->isCode()) {
+            return false;
+        }
         $parts = $this->declarationParts();
 
         return $parts->hasOneOf(...TokenType::DECLARATION) &&
