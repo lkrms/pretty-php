@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "532bf945e7f7bc044400ff1a4bc15017",
+    "content-hash": "4ddae3d76f7fcf4a8ac28bce6046cd8d",
     "packages": [
         {
             "name": "filp/whoops",
@@ -122,16 +122,16 @@
         },
         {
             "name": "lkrms/util",
-            "version": "v0.18.15",
+            "version": "v0.19.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/php-util.git",
-                "reference": "2ac50791417ee7d68b642e6aed16b3620768c8f8"
+                "reference": "0703ebcc8e6bf0087104d6a8f73f1fae9e83dfc5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/php-util/zipball/2ac50791417ee7d68b642e6aed16b3620768c8f8",
-                "reference": "2ac50791417ee7d68b642e6aed16b3620768c8f8",
+                "url": "https://api.github.com/repos/lkrms/php-util/zipball/0703ebcc8e6bf0087104d6a8f73f1fae9e83dfc5",
+                "reference": "0703ebcc8e6bf0087104d6a8f73f1fae9e83dfc5",
                 "shasum": ""
             },
             "require": {
@@ -145,6 +145,7 @@
             "require-dev": {
                 "adodb/adodb-php": "^5.22",
                 "analog/analog": "^1",
+                "clue/phar-composer": "^1",
                 "phpstan/extension-installer": "^1",
                 "phpstan/phpstan": "^1",
                 "phpstan/phpstan-deprecation-rules": "^1",
@@ -152,7 +153,8 @@
             },
             "suggest": {
                 "adodb/adodb-php": "Required for access to databases",
-                "analog/analog": "Allows Analog handlers to be used as Lkrms\\Console\\Console message targets"
+                "analog/analog": "Allows Analog handlers to be used as Lkrms\\Console\\Console message targets",
+                "clue/phar-composer": "Simplifies creation of phar archives"
             },
             "bin": [
                 "bin/lk-util"
@@ -173,9 +175,9 @@
             "description": "A lightweight PHP toolkit for elegant backend/CLI apps. May contain traces of Laravel.",
             "support": {
                 "issues": "https://github.com/lkrms/php-util/issues",
-                "source": "https://github.com/lkrms/php-util/tree/v0.18.15"
+                "source": "https://github.com/lkrms/php-util/tree/v0.19.0"
             },
-            "time": "2022-12-13T14:27:09+00:00"
+            "time": "2022-12-18T11:19:28+00:00"
         },
         {
             "name": "psr/container",
