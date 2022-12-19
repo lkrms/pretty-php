@@ -11,8 +11,8 @@ class DeclareArgumentsOnOneLine extends AbstractTokenRule
     public function __invoke(Token $token, int $stage): void
     {
         if ($token->is('(') &&
-                ($token->prevCode()->isOneOf(T_FN, T_FUNCTION) ||
-                    $token->prevCode(2)->is(T_FUNCTION))) {
+            ($token->prevCode()->isOneOf(T_FN, T_FUNCTION) ||
+                $token->prevCode(2)->is(T_FUNCTION))) {
             $mask                                 = ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
             $token->WhitespaceMaskNext           &= $mask;
             $token->ClosedBy->WhitespaceMaskPrev &= $mask;

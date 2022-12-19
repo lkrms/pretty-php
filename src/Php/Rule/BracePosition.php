@@ -18,8 +18,8 @@ class BracePosition extends AbstractTokenRule
             $token->WhitespaceBefore |= $token->isDeclaration() &&
                 (($parent = $token->parent())->isNull() || $parent->is('{')) &&
                 (($prev = $token->startOfExpression()->prevCode())->isNull() ||
-                    $prev->isOneOf(';', '{', '}') ||
-                    ($prev->is(']') && $prev->OpenedBy->is(T_ATTRIBUTE)))
+                        $prev->isOneOf(';', '{', '}') ||
+                        ($prev->is(']') && $prev->OpenedBy->is(T_ATTRIBUTE)))
                     ? WhitespaceType::LINE
                     : WhitespaceType::SPACE;
             $token->WhitespaceAfter    |= WhitespaceType::LINE;

@@ -109,9 +109,14 @@ class Token implements JsonSerializable
     private $HangingIndent = 0;
 
     /**
-     * @var int
+     * @var bool
      */
-    public $OverhangingIndent = 0;
+    public $IsHangingParent;
+
+    /**
+     * @var bool
+     */
+    public $IsOverhangingParent;
 
     /**
      * @var Token[]
@@ -171,7 +176,7 @@ class Token implements JsonSerializable
     /**
      * @var Formatter
      */
-    private $Formatter;
+    protected $Formatter;
 
     /**
      * @var Token|null
@@ -253,6 +258,19 @@ class Token implements JsonSerializable
             $this->_prev        = $prev;
             $this->_prev->_next = $this;
         }
+    }
+
+    /**
+     * Update _prev and _next as needed to insert $this between $token and its
+     * current predecessor
+     *
+     */
+    protected function insertBefore(Token $token): void
+    {
+        $this->_prev        = $token->_prev;
+        $this->_next        = $token;
+        $this->_prev->_next = $this;
+        $this->_next->_prev = $this;
     }
 
     public function jsonSerialize(): array
@@ -368,6 +386,36 @@ class Token implements JsonSerializable
         }
 
         return $next ?: new NullToken();
+    }
+
+    /**
+     * @param int|string ...$types
+     */
+    public function prevCodeWhile(bool $includeToken = false, ...$types): TokenCollection
+    {
+        $tokens = new TokenCollection();
+        $prev   = $includeToken ? $this : $this->prevCode();
+        while ($prev->isOneOf(...$types)) {
+            $tokens[] = $prev;
+            $prev     = $prev->prevCode();
+        }
+
+        return $tokens;
+    }
+
+    /**
+     * @param int|string ...$types
+     */
+    public function nextCodeWhile(bool $includeToken = false, ...$types): TokenCollection
+    {
+        $tokens = new TokenCollection();
+        $next   = $includeToken ? $this : $this->nextCode();
+        while ($next->isOneOf(...$types)) {
+            $tokens[] = $next;
+            $next     = $next->nextCode();
+        }
+
+        return $tokens;
     }
 
     public function prevSibling(int $offset = 1): Token
@@ -550,6 +598,16 @@ class Token implements JsonSerializable
         return $current;
     }
 
+    public function endOfLine(): Token
+    {
+        $current = $this;
+        while (!$current->hasNewlineAfter() && !($next = $current->next())->isNull()) {
+            $current = $next;
+        }
+
+        return $current;
+    }
+
     public function startOfStatement(): Token
     {
         $current = ($this->is(';') ? $this->prevCode()->OpenedBy : null)
@@ -641,8 +699,15 @@ class Token implements JsonSerializable
                 $next = $prev->nextSiblingOf(':')) {
             return $this->_endOfExpression($ignore, $next->prevCode(), $start);
         }
+        $ignoreTokens = [];
+        if ($current->inSwitchCase()) {
+            if ($token = $current->startOfStatement()->nextSiblingOf(':', ';')) {
+                $ignoreTokens[] = $token;
+            }
+        }
         while (!($next = $current->nextSibling())->isNull() &&
-                !$next->isStatementPrecursor('(', '[', '{')) {
+            (!$next->isStatementPrecursor('(', '[', '{') ||
+                in_array($next, $ignoreTokens, true))) {
             $current = $next;
             if (($prev = $current->prevCode())->isStatementTerminator()) {
                 return $this->_endOfExpression($ignore, $prev, $start ?? null);
@@ -661,6 +726,22 @@ class Token implements JsonSerializable
         $end->IsEndOfExpression[$ignore] = true;
 
         return $end;
+    }
+
+    public function hasAdjacentBlock(): bool
+    {
+        $_this = $this->canonicalThis(__METHOD__);
+        if (!$_this->isOneOf('(', '[')) {
+            return false;
+        }
+        /** @var Token */
+        $lastOuterBracket = $_this->ClosedBy->nextCodeWhile(true, ')', ']')->last();
+        [$end, $next]     = [
+            $lastOuterBracket->endOfStatement(),
+            $lastOuterBracket->nextCode(),
+        ];
+
+        return !$end->isNull() && !$next->isNull() && $end->Index > $next->Index;
     }
 
     public function declarationParts(): TokenCollection
@@ -767,9 +848,15 @@ class Token implements JsonSerializable
             ($this->is(',') &&
                 (($parent = $this->parent())->isOneOf('(', '[') ||
                     ($parent->is('{') && $parent->prevSibling(2)->is(T_MATCH)))) ||
-            ($this->is(':') &&
-                $this->startOfStatement()->isOneOf(T_CASE, T_DEFAULT) &&
-                ($parent = $this->parent())->is('{') && $parent->prevSibling(2)->is(T_SWITCH));
+            $this->startsAlternativeSyntax() ||
+            ($this->is(':') && $this->inSwitchCase());
+    }
+
+    public function inSwitchCase(): bool
+    {
+        return $this->isCode() &&
+            $this->startOfStatement()->isOneOf(T_CASE, T_DEFAULT) &&
+            $this->parent()->prevSibling(2)->is(T_SWITCH);
     }
 
     public function isBrace(): bool
@@ -795,6 +882,31 @@ class Token implements JsonSerializable
     public function isCloseBracket(): bool
     {
         return $this->isOneOf(')', ']', '}');
+    }
+
+    public function startsAlternativeSyntax(): bool
+    {
+        return $this->is(':') &&
+            ((($prev = $this->prevCode())->is(')') && $prev->prevSibling()->isOneOf(
+                ...TokenType::CAN_START_ALTERNATIVE_SYNTAX,
+                ...TokenType::CAN_CONTINUE_ALTERNATIVE_SYNTAX_WITH_EXPRESSION
+            )) || $this->prevCode()->isOneOf(
+                ...TokenType::CAN_CONTINUE_ALTERNATIVE_SYNTAX_WITHOUT_EXPRESSION
+            ));
+    }
+
+    public function endsAlternativeSyntax(): bool
+    {
+        // Subsequent tokens may not be available yet, so the approach used in
+        // startsAlternativeSyntax() won't work here
+        $bracketStack = $this->BracketStack;
+
+        return ($opener = array_pop($bracketStack)) && $opener->is(':') && $opener->BracketStack === $bracketStack &&
+            $this->isOneOf(
+                ...TokenType::ENDS_ALTERNATIVE_SYNTAX,
+                ...TokenType::CAN_CONTINUE_ALTERNATIVE_SYNTAX_WITH_EXPRESSION,
+                ...TokenType::CAN_CONTINUE_ALTERNATIVE_SYNTAX_WITHOUT_EXPRESSION
+            );
     }
 
     public function isOneLineComment(bool $anyType = false): bool
@@ -883,6 +995,9 @@ class Token implements JsonSerializable
      */
     public function isDeclaration(...$types): bool
     {
+        if (!$this->isCode()) {
+            return false;
+        }
         $parts = $this->declarationParts();
 
         return $parts->hasOneOf(...TokenType::DECLARATION) &&
@@ -897,7 +1012,12 @@ class Token implements JsonSerializable
             ($parent->isDeclaration(T_FUNCTION) || $parent->prevCode()->is(T_FN));
     }
 
-    public function indent(): string
+    public function indent(): int
+    {
+        return $this->Indent + $this->HangingIndent - $this->Deindent;
+    }
+
+    public function renderIndent(): string
     {
         return ($this->Indent + $this->HangingIndent - $this->Deindent)
             ? str_repeat($this->Formatter->Tab, $this->Indent + $this->HangingIndent - $this->Deindent)
@@ -917,7 +1037,7 @@ class Token implements JsonSerializable
                 $heredoc .= $current->Code;
                 $current  = $current->next();
             } while ($current->HeredocOpenedBy === $this);
-            $indent = $this->indent();
+            $indent = $this->renderIndent();
             if ($padding = str_repeat(' ', $this->startOfLine()->Padding)) {
                 $heredoc = str_replace("\n$indent", "\n$indent$padding", $heredoc);
             }
@@ -931,7 +1051,7 @@ class Token implements JsonSerializable
         if (!$this->isOneOf(...TokenType::DO_NOT_MODIFY_LHS)) {
             $code = WhitespaceType::toWhitespace($this->effectiveWhitespaceBefore());
             if (substr($code, -1) === "\n" && ($this->Indent + $this->HangingIndent - $this->Deindent)) {
-                $code .= $this->indent();
+                $code .= $this->renderIndent();
             }
             if ($this->Padding) {
                 $code .= str_repeat(' ', $this->Padding);
@@ -954,7 +1074,7 @@ class Token implements JsonSerializable
         $code = preg_replace('/\h+$/m', '', $this->Code);
         switch ($this->Type) {
             case T_DOC_COMMENT:
-                $indent = "\n" . $this->indent();
+                $indent = "\n" . $this->renderIndent();
 
                 return preg_replace([
                     '/\n\h*(?:\* |\*(?!\/)(?=[\h\S])|(?=[^\s*]))/',

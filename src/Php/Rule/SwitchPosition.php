@@ -25,7 +25,7 @@ class SwitchPosition extends AbstractTokenRule
         }
 
         $token->WhitespaceBefore       |= WhitespaceType::LINE;
-        $separator->WhitespaceAfter    |= WhitespaceType::LINE;
+        $separator->WhitespaceAfter    |= WhitespaceType::LINE | WhitespaceType::SPACE;
         $separator->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
         $token->collect($separator)->forEach(fn(Token $t) => $t->Deindent++);
     }

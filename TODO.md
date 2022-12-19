@@ -21,14 +21,14 @@
 
 ### Required
 
-- [ ] **Preserve one-line case statements**, e.g.
+- [x] **Preserve one-line case statements**, e.g.
 
     ```php
     case $value1: return something();
     case $value2: return somethingElse();
     ```
 
-- [ ] **Preserve blank lines between DocBlocks**
+- [x] **Preserve blank lines between DocBlocks**
 - [ ] Place labels on their own line (labels are comprised of `T_STRING` folled by `':'`)
 - [ ] Suppress blank lines between consecutive `yield` statements
 - [ ] Suppress blank line before `private` in `function __construct(private $var) {`

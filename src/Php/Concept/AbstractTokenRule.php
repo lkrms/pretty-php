@@ -19,7 +19,11 @@ abstract class AbstractTokenRule implements TokenRule
 
     public function getStages(): array
     {
-        return [1 => null];
+        return [
+            1                            => null,
+            self::STAGE_AFTER_TOKEN_LOOP => null,
+            self::STAGE_BEFORE_RENDER    => null,
+        ];
     }
 
     public function afterTokenLoop(): void
