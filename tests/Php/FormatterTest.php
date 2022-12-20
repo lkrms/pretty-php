@@ -10,6 +10,13 @@ use SplFileInfo;
 
 final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
 {
+    public function testEmptyString()
+    {
+        $in  = '';
+        $out = '';
+        $this->assertFormatterOutputIs($in, $out);
+    }
+
     public function testRenderComment()
     {
         $in = <<<PHP

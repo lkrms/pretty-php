@@ -2,8 +2,6 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Facade\Console;
-use Lkrms\Facade\Convert;
 use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
@@ -37,7 +35,6 @@ class ReportUnnecessaryParentheses extends AbstractTokenRule
                 ($prev->ClosedBy === $next || $next->isStatementPrecursor()))) {
             return;
         }
-        Console::warn(sprintf('Unnecessary parentheses %s',
-                              Convert::pluralRange($first->Line, $last->Line, 'line')));
+        $this->Formatter->reportProblem('Unnecessary parentheses', $first, $last);
     }
 }

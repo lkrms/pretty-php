@@ -273,6 +273,9 @@ class Token implements JsonSerializable
         $this->_next->_prev = $this;
     }
 
+    /**
+     * @return array<string,mixed>
+     */
     public function jsonSerialize(): array
     {
         $a = get_object_vars($this);

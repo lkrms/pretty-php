@@ -3,7 +3,10 @@
 namespace Lkrms\Pretty\Php;
 
 use Lkrms\Concern\TFullyReadable;
+use Lkrms\Concern\TWritable;
 use Lkrms\Contract\IReadable;
+use Lkrms\Contract\IWritable;
+use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\Sys;
@@ -53,20 +56,32 @@ use UnexpectedValueException;
 
 /**
  * @property-read bool $Debug
+ * @property int $QuietLevel
+ * @property string|null $Filename
  * @property-read string|null $RunningService
  * @property-read string $Tab
  * @property-read string[] $Rules
  * @property-read array<string|array{0:int,1:string,2:int}>|null $PlainTokens
  * @property-read Token[]|null $Tokens
  */
-final class Formatter implements IReadable
+final class Formatter implements IReadable, IWritable
 {
-    use TFullyReadable;
+    use TFullyReadable, TWritable;
 
     /**
      * @var bool
      */
     protected $Debug;
+
+    /**
+     * @var int
+     */
+    protected $QuietLevel = 0;
+
+    /**
+     * @var string|null
+     */
+    protected $Filename;
 
     /**
      * @var string|null
@@ -166,6 +181,14 @@ final class Formatter implements IReadable
         ];
 
         $this->Debug = Env::debug();
+    }
+
+    public static function getWritable(): array
+    {
+        return [
+            'QuietLevel',
+            'Filename',
+        ];
     }
 
     public function format(string $code): string
@@ -430,5 +453,28 @@ final class Formatter implements IReadable
         unset($token);
 
         return $tokens;
+    }
+
+    /**
+     * @param string $message e.g. `"Unnecessary parentheses"`
+     * @param mixed ...$values
+     */
+    public function reportProblem(string $message, Token $start, ?Token $end = null, ...$values): void
+    {
+        if ($this->QuietLevel > 1) {
+            return;
+        }
+        if ($this->Filename) {
+            $values[] = $this->Filename;
+            $values[] = $start->Line;
+            Console::warn(sprintf($message . ': %s:%d', ...$values));
+
+            return;
+        }
+
+        $values[] = Convert::pluralRange($start->Line,
+                                         $end ? $end->Line : $start->Line,
+                                         'line');
+        Console::warn(sprintf($message . ' %s', ...$values));
     }
 }

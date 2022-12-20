@@ -152,6 +152,11 @@ class FormatPhp extends CliCommand
                 ->description('Create debug output in DIR')
                 ->optionType(CliOptionType::VALUE_OPTIONAL)
                 ->defaultValue($this->app()->TempPath . '/pretty-php'),
+            CliOption::build()
+                ->long('quiet')
+                ->short('q')
+                ->description('Suppress unnecessary output (may be given multiple times)')
+                ->multipleAllowed()
         ];
     }
 
@@ -166,6 +171,7 @@ class FormatPhp extends CliCommand
 
         $skip  = $this->getOptionValue('skip');
         $rules = $this->getOptionValue('rule');
+        $quiet = (int) $this->getOptionValue('quiet');
         if ($this->getOptionValue('ignore-newlines')) {
             $skip[] = 'preserve-newlines';
         }
@@ -176,6 +182,9 @@ class FormatPhp extends CliCommand
             $rules[] = 'no-concat-spaces';
             $rules[] = 'space-after-fn';
             $rules[] = 'space-after-not';
+        }
+        if ($quiet > 1) {
+            $skip[] = 'report-brackets';
         }
         $skip  = array_values(array_intersect_key($this->SkipMap, array_flip($skip)));
         $rules = array_values(array_intersect_key($this->RuleMap, array_flip($rules)));
@@ -203,10 +212,14 @@ class FormatPhp extends CliCommand
             $debug = $this->DebugDirectory = realpath($debug) ?: null;
         }
 
-        $formatter            = new Formatter($tab, $skip, $rules);
-        [$i, $count, $errors] = [0, count($in), []];
+        $formatter             = new Formatter($tab, $skip, $rules);
+        $formatter->QuietLevel = $quiet;
+        [$i, $count, $errors]  = [0, count($in), []];
         foreach ($in as $key => $file) {
-            Console::info(sprintf('Formatting %d of %d:', ++$i, $count), $file);
+            $quiet > 2 || Console::info(sprintf('Formatting %d of %d:', ++$i, $count), $file);
+            $formatter->Filename = $file === 'php://stdin'
+                ? null
+                : $file;
             $input = file_get_contents($file);
             Sys::startTimer($file, 'file');
             try {
@@ -235,11 +248,11 @@ class FormatPhp extends CliCommand
             }
 
             if (!is_null($input) && $input === $output) {
-                Console::log('Already formatted:', $outFile);
+                $quiet || Console::log('Already formatted:', $outFile);
                 continue;
             }
 
-            Console::log('Replacing', $outFile);
+            $quiet > 1 || Console::log('Replacing', $outFile);
             file_put_contents($outFile, $output);
         }
 
@@ -252,7 +265,7 @@ class FormatPhp extends CliCommand
             );
         }
 
-        Console::summary();
+        $quiet > 2 || Console::summary();
     }
 
     /**

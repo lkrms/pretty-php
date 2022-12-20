@@ -2,8 +2,6 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Facade\Console;
-use Lkrms\Facade\Convert;
 use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
@@ -30,9 +28,6 @@ class BreakBeforeControlStructureBody extends AbstractTokenRule
         $body->WhitespaceMaskPrev         &= ~WhitespaceType::BLANK;
         $body->prev()->WhitespaceMaskNext |= WhitespaceType::LINE;
         $body->collect($end = $body->endOfStatement())->forEach(fn(Token $t) => $t->Indent++);
-
-        Console::warn(sprintf('Braces not used in %s control structure %s',
-                              $token->TypeName,
-                              Convert::pluralRange($token->Line, $end->Line, 'line')));
+        $this->Formatter->reportProblem('Braces not used in %s control structure', $token, $end, $token->TypeName);
     }
 }
