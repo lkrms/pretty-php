@@ -16,7 +16,7 @@ class AddBlankLineBeforeDeclaration extends AbstractTokenRule
             return;
         }
         /** @var Token $start */
-        $start = $token->prevSiblingsWhile(true, ...TokenType::DECLARATION_PART)->last();
+        $start = $token->withPrevSiblingsWhile(...TokenType::DECLARATION_PART)->last();
         if ($start->Tags['StartOfDeclaration'] ?? null) {
             return;
         }
@@ -24,7 +24,7 @@ class AddBlankLineBeforeDeclaration extends AbstractTokenRule
         if ($start !== $start->startOfStatement()) {
             return;
         }
-        $parts = $start->nextSiblingsWhile(true, ...TokenType::DECLARATION_PART);
+        $parts = $start->withNextSiblingsWhile(...TokenType::DECLARATION_PART);
         /** @var Token $last */
         $last  = $parts->last();
         if ($last->isOneOf(T_FN, T_FUNCTION)) {

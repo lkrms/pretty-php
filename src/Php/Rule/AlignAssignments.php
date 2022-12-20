@@ -23,10 +23,10 @@ class AlignAssignments implements BlockRule
             if (count($line) === 1 && $token1->isOneOf(...TokenType::COMMENT)) {
                 continue;
             }
-            if ($token2 = $line->getFirstOf(
+            if (($token2 = $line->getFirstOf(
                 ...TokenType::OPERATOR_ASSIGNMENT,
                 ...TokenType::OPERATOR_DOUBLE_ARROW
-            )) {
+            )) && !$this->lastLineHasInnerNewline(end($group), $token1)) {
                 if (is_null($stack)) {
                     $stack        = $token2->BracketStack;
                     $isAssignment = $token2->isOneOf(...TokenType::OPERATOR_ASSIGNMENT);
@@ -50,6 +50,22 @@ class AlignAssignments implements BlockRule
             }
         }
         $this->processGroup($group);
+    }
+
+    /**
+     * @param array{Token,Token}|false $last
+     */
+    private function lastLineHasInnerNewline($last, Token $token1): bool
+    {
+        if (!$last) {
+            return false;
+        }
+        /** @var Token $lastToken2 */
+        [, $lastToken2] = $last;
+
+        return $lastToken2->collect($token1->prevCode())
+                          ->filter(fn(Token $t) => $t->isCode())
+                          ->hasInnerNewline();
     }
 
     /**

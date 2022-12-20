@@ -12,7 +12,7 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
 {
     public function testRenderComment()
     {
-        $in  = <<<PHP
+        $in = <<<PHP
         <?php
 
         /**

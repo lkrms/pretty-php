@@ -499,11 +499,30 @@ class Token implements JsonSerializable
      *
      * Tokens are collected in order from the closest sibling to the farthest.
      *
-     * @param bool $includeToken If `true`, collect the token itself. If it
-     * isn't one of the listed types, an empty collection is returned.
      * @param int|string ...$types
      */
-    public function prevSiblingsWhile(bool $includeToken = false, ...$types): TokenCollection
+    public function prevSiblingsWhile(...$types): TokenCollection
+    {
+        return $this->_prevSiblingsWhile(false, ...$types);
+    }
+
+    /**
+     * Collect the token and its siblings up to but not including the last that
+     * isn't one of the listed types
+     *
+     * Tokens are collected in order from the closest sibling to the farthest.
+     *
+     * @param int|string ...$types
+     */
+    public function withPrevSiblingsWhile(...$types): TokenCollection
+    {
+        return $this->_prevSiblingsWhile(true, ...$types);
+    }
+
+    /**
+     * @param int|string ...$types
+     */
+    private function _prevSiblingsWhile(bool $includeToken = false, ...$types): TokenCollection
     {
         $tokens = new TokenCollection();
         $prev   = $includeToken ? $this : $this->prevSibling();
@@ -519,11 +538,28 @@ class Token implements JsonSerializable
      * Collect the token's siblings up to but not including the first that isn't
      * one of the listed types
      *
-     * @param bool $includeToken If `true`, collect the token itself. If it
-     * isn't one of the listed types, an empty collection is returned.
      * @param int|string ...$types
      */
-    public function nextSiblingsWhile(bool $includeToken = false, ...$types): TokenCollection
+    public function nextSiblingsWhile(...$types): TokenCollection
+    {
+        return $this->_nextSiblingsWhile(false, ...$types);
+    }
+
+    /**
+     * Collect the token and its siblings up to but not including the first that
+     * isn't one of the listed types
+     *
+     * @param int|string ...$types
+     */
+    public function withNextSiblingsWhile(...$types): TokenCollection
+    {
+        return $this->_nextSiblingsWhile(true, ...$types);
+    }
+
+    /**
+     * @param int|string ...$types
+     */
+    private function _nextSiblingsWhile(bool $includeToken = false, ...$types): TokenCollection
     {
         $tokens = new TokenCollection();
         $next   = $includeToken ? $this : $this->nextSibling();
@@ -746,7 +782,7 @@ class Token implements JsonSerializable
 
     public function declarationParts(): TokenCollection
     {
-        return $this->startOfExpression()->nextSiblingsWhile(true, ...TokenType::DECLARATION_PART);
+        return $this->startOfExpression()->withNextSiblingsWhile(...TokenType::DECLARATION_PART);
     }
 
     public function sinceStartOfStatement(): TokenCollection

@@ -23,6 +23,7 @@ use Lkrms\Pretty\Php\Rule\AddEssentialWhitespace;
 use Lkrms\Pretty\Php\Rule\AddHangingIndentation;
 use Lkrms\Pretty\Php\Rule\AddIndentation;
 use Lkrms\Pretty\Php\Rule\AddStandardWhitespace;
+use Lkrms\Pretty\Php\Rule\AlignArguments;
 use Lkrms\Pretty\Php\Rule\AlignAssignments;
 use Lkrms\Pretty\Php\Rule\AlignChainedCalls;
 use Lkrms\Pretty\Php\Rule\AlignComments;
@@ -103,6 +104,7 @@ final class Formatter implements IReadable
         BreakBeforeControlStructureBody::class,
         AddHangingIndentation::class,
         AlignChainedCalls::class,
+        AlignArguments::class,
         ReindentHeredocs::class,
         AddEssentialWhitespace::class,
 

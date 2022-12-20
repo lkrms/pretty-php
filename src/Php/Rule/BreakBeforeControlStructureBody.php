@@ -32,7 +32,7 @@ class BreakBeforeControlStructureBody extends AbstractTokenRule
         $body->collect($end = $body->endOfStatement())->forEach(fn(Token $t) => $t->Indent++);
 
         Console::warn(sprintf('Braces not used in %s control structure %s',
-            $token->TypeName,
-            Convert::pluralRange($token->Line, $end->Line, 'line')));
+                              $token->TypeName,
+                              Convert::pluralRange($token->Line, $end->Line, 'line')));
     }
 }

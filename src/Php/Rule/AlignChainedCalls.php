@@ -19,10 +19,12 @@ class AlignChainedCalls extends AbstractTokenRule
                 !$token->isOneOf(T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR)) {
             return;
         }
-        $chain = $token->nextSiblingsWhile(true, '(', '[', '{',
-                           T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR, T_STRING)
-                       ->filter(fn(Token $t) =>
-                           $t->isOneOf(T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR));
+        $chain = $token->withNextSiblingsWhile('(', '[', '{',
+                                               T_OBJECT_OPERATOR,
+                                               T_NULLSAFE_OBJECT_OPERATOR,
+                                               T_STRING)
+                       ->filter(fn(Token $t) => $t->isOneOf(T_OBJECT_OPERATOR,
+                                                            T_NULLSAFE_OBJECT_OPERATOR));
         if ($token->hasNewlineBefore() || count($chain) > 1) {
             $chain->forEach(fn(Token $t) => $t === $token || ($t->ChainOpenedBy = $token));
             $this->Chains[] = $chain;
@@ -52,7 +54,9 @@ class AlignChainedCalls extends AbstractTokenRule
             // closest `::` in the same expression if one exists, otherwise
             // indent the `->`
             if ($token->hasNewlineBefore()) {
-                $alignWith = $token->prevSiblingsWhile(false, '(', '[', '{', T_DOUBLE_COLON, T_STRING)
+                $alignWith = $token->prevSiblingsWhile('(', '[', '{',
+                                                       T_DOUBLE_COLON,
+                                                       T_STRING)
                                    ->getFirstOf(T_DOUBLE_COLON);
                 if ($alignWith && ($length = strlen(trim($alignWith->prevCode()->outer()->render()))) > 7) {
                     $adjust = 4 - $length;

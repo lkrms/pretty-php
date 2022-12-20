@@ -38,6 +38,6 @@ class ReportUnnecessaryParentheses extends AbstractTokenRule
             return;
         }
         Console::warn(sprintf('Unnecessary parentheses %s',
-            Convert::pluralRange($first->Line, $last->Line, 'line')));
+                              Convert::pluralRange($first->Line, $last->Line, 'line')));
     }
 }
