@@ -19,7 +19,11 @@ class AlignArguments extends AbstractTokenRule
             return;
         }
         $align = $token->innerSiblings()->filter(fn(Token $t) => $t->hasNewlineBefore());
-        if (!count($align) || count($align->filter(fn(Token $t) => !$t->prevCode()->is(',')))) {
+        if (!count($align) ||
+            count($align->filter(fn(Token $t) => !$t->prevCode()->is(','))) ||
+            count($token->inner()->filter(
+                fn(Token $t) => $t->hasNewlineBefore() && !$align->has($t) && $t->prevCode()->isOneOf('(', '[', '{')
+            ))) {
             return;
         }
         $this->Lists[] = $align;
