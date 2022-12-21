@@ -2,18 +2,21 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
+use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
+use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenCollection;
 
-class AlignChainedCalls extends AbstractTokenRule
+class AlignChainedCalls implements TokenRule
 {
+    use TokenRuleTrait;
+
     /**
      * @var TokenCollection[]
      */
     private $Chains = [];
 
-    public function __invoke(Token $token, int $stage): void
+    public function processToken(Token $token): void
     {
         if ($token->ChainOpenedBy ||
                 !$token->isOneOf(T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR)) {

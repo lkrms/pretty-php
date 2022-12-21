@@ -2,27 +2,32 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
+use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
+use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
-class PlaceComments extends AbstractTokenRule
+class PlaceComments implements TokenRule
 {
+    use TokenRuleTrait;
+
     /**
      * @var Token[]
      */
     private $ToAlign = [];
 
-    public function getStages(): array
+    public function getPriority(string $method): ?int
     {
-        $stages                            = parent::getStages();
-        $stages[self::STAGE_BEFORE_RENDER] = 999;
+        switch ($method) {
+            case self::BEFORE_RENDER:
+                return 999;
+        }
 
-        return $stages;
+        return null;
     }
 
-    public function __invoke(Token $token, int $stage): void
+    public function processToken(Token $token): void
     {
         if (!$token->isOneOf(...TokenType::COMMENT)) {
             return;

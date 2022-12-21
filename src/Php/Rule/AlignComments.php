@@ -2,13 +2,16 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
+use Lkrms\Pretty\Php\Concern\BlockRuleTrait;
 use Lkrms\Pretty\Php\Contract\BlockRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 
 class AlignComments implements BlockRule
 {
-    public function __invoke(array $block): void
+    use BlockRuleTrait;
+
+    public function processBlock(array $block): void
     {
         if (count($block) < 2) {
             return;

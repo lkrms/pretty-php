@@ -2,7 +2,8 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
+use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
+use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 
 /**
@@ -10,8 +11,10 @@ use Lkrms\Pretty\Php\Token;
  * add a hanging indent
  *
  */
-class AddHangingIndentation extends AbstractTokenRule
+class AddHangingIndentation implements TokenRule
 {
+    use TokenRuleTrait;
+
     /**
      * => [$token, $token->endOfExpression()]
      *
@@ -20,11 +23,11 @@ class AddHangingIndentation extends AbstractTokenRule
      *
      * Used to collapse unnecessary overhanging indents.
      *
-     * @var array<array{Token,Token}>
+     * @var array<array{0:Token,1:Token}>
      */
     private $OverhangingTokens = [];
 
-    public function __invoke(Token $token, int $stage): void
+    public function processToken(Token $token): void
     {
         if ($token->isOneOf('(', '[') && !$token->hasNewlineAfter()) {
             $token->IsHangingParent     = true;

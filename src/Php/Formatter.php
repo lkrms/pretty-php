@@ -13,6 +13,7 @@ use Lkrms\Facade\Sys;
 use Lkrms\Pretty\Php\Contract\BlockRule;
 use Lkrms\Pretty\Php\Contract\TokenFilter;
 use Lkrms\Pretty\Php\Contract\TokenRule;
+use Lkrms\Pretty\Php\Contract\Rule;
 use Lkrms\Pretty\Php\Filter\NormaliseStrings;
 use Lkrms\Pretty\Php\Filter\RemoveCommentTokens;
 use Lkrms\Pretty\Php\Filter\RemoveEmptyTokens;
@@ -52,7 +53,6 @@ use Lkrms\Pretty\WhitespaceType;
 use ParseError;
 use RuntimeException;
 use Throwable;
-use UnexpectedValueException;
 
 /**
  * @property-read bool $Debug
@@ -266,57 +266,46 @@ final class Formatter implements IReadable, IWritable
         }
         $token->WhitespaceAfter |= WhitespaceType::LINE;
 
-        /** @var array<array{int,int,TokenRule,int}> $stages */
-        $stages         = [];
-        /** @var array<array{int,int,TokenRule}> $afterTokenLoop */
+        $tokenLoop      = [];
         $afterTokenLoop = [];
-        /** @var array<array{int,int,TokenRule}> $beforeRender */
+        $blockLoop      = [];
+        $afterBlockLoop = [];
         $beforeRender   = [];
         $index          = 0;
         foreach ($this->Rules as $_rule) {
-            if (!is_a($_rule, TokenRule::class, true)) {
-                continue;
+            if (!is_a($_rule, Rule::class, true)) {
+                throw new RuntimeException('Not a ' . Rule::class . ': ' . $_rule);
             }
-            /** @var TokenRule $rule */
+            /** @var Rule $rule */
             $rule = new $_rule($this);
-            foreach ($rule->getStages() as $stage => $priority) {
-                $_stage = [
-                    is_null($priority) ? 100 : $priority,
-                    $index,
-                    $rule,
-                    ...($stage > 0 ? [$stage] : [])
-                ];
-                switch ($stage) {
-                    case TokenRule::STAGE_AFTER_TOKEN_LOOP:
-                        $afterTokenLoop[] = $_stage;
-                        break;
-                    case TokenRule::STAGE_BEFORE_RENDER:
-                        $beforeRender[] = $_stage;
-                        break;
-                    default:
-                        if ($stage < 1) {
-                            throw new UnexpectedValueException("Stage returned by $_rule::getStages() is not a positive integer: $stage");
-                        }
-                        $stages[] = $_stage;
-                        break;
-                }
+            if ($rule instanceof TokenRule) {
+                $tokenLoop[]      = [$this->getPriority($rule, TokenRule::PROCESS_TOKEN), $index, $rule];
+                $afterTokenLoop[] = [$this->getPriority($rule, TokenRule::AFTER_TOKEN_LOOP), $index, $rule];
             }
+            if ($rule instanceof BlockRule) {
+                $blockLoop[]      = [$this->getPriority($rule, BlockRule::PROCESS_BLOCK), $index, $rule];
+                $afterBlockLoop[] = [$this->getPriority($rule, BlockRule::AFTER_BLOCK_LOOP), $index, $rule];
+            }
+            $beforeRender[] = [$this->getPriority($rule, Rule::BEFORE_RENDER), $index, $rule];
             $index++;
         }
-        // Sort by priority then order of appearance
-        usort($stages, fn(array $a, array $b) => ($a[0] <=> $b[0]) ?: $a[1] <=> $b[1]);
-        usort($afterTokenLoop, fn(array $a, array $b) => ($a[0] <=> $b[0]) ?: $a[1] <=> $b[1]);
-        usort($beforeRender, fn(array $a, array $b) => ($a[0] <=> $b[0]) ?: $a[1] <=> $b[1]);
-        foreach ($stages as [,, $rule, $stage]) {
+        $tokenLoop      = $this->sortRules($tokenLoop);
+        $afterTokenLoop = $this->sortRules($afterTokenLoop);
+        $blockLoop      = $this->sortRules($blockLoop);
+        $afterBlockLoop = $this->sortRules($afterBlockLoop);
+        $beforeRender   = $this->sortRules($beforeRender);
+        /** @var TokenRule $rule */
+        foreach ($tokenLoop as $rule) {
             $this->RunningService = $_rule = get_class($rule);
             Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
             /** @var Token $token */
             foreach ($this->Tokens as $token) {
-                $rule($token, $stage);
+                $rule->processToken($token);
             }
             Sys::stopTimer($timer, 'rule');
         }
-        foreach ($afterTokenLoop as [,, $rule]) {
+        /** @var TokenRule $rule */
+        foreach ($afterTokenLoop as $rule) {
             $this->RunningService = $_rule = get_class($rule);
             Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
             $rule->afterTokenLoop();
@@ -354,23 +343,26 @@ final class Formatter implements IReadable, IWritable
         $block[]  = $line;
         $blocks[] = $block;
 
-        foreach ($this->Rules as $_rule) {
-            if (!is_a($_rule, BlockRule::class, true)) {
-                continue;
-            }
-
-            $this->RunningService = $_rule;
-            $rule                 = new $_rule();
-
+        /** @var BlockRule $rule */
+        foreach ($blockLoop as $rule) {
+            $this->RunningService = $_rule = get_class($rule);
             Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
             foreach ($blocks as $block) {
-                $rule($block);
+                $rule->processBlock($block);
             }
+            Sys::stopTimer($timer, 'rule');
+        }
+        /** @var BlockRule $rule */
+        foreach ($afterBlockLoop as $rule) {
+            $this->RunningService = $_rule = get_class($rule);
+            Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
+            $rule->afterBlockLoop();
             Sys::stopTimer($timer, 'rule');
         }
         $this->RunningService = null;
 
-        foreach ($beforeRender as [,, $rule]) {
+        /** @var Rule $rule */
+        foreach ($beforeRender as $rule) {
             $this->RunningService = get_class($rule);
             $rule->beforeRender();
         }
@@ -415,6 +407,28 @@ final class Formatter implements IReadable, IWritable
         }
 
         return $out;
+    }
+
+    private function getPriority(Rule $rule, string $method): int
+    {
+        $priority = $rule->getPriority($method);
+
+        return is_null($priority)
+            ? 100
+            : $priority;
+    }
+
+    /**
+     * Sort rules by priority
+     *
+     * @param array<array{0:int,1:int,2:Rule}> $rules
+     * @return Rule[]
+     */
+    private function sortRules(array $rules): array
+    {
+        usort($rules, fn(array $a, array $b) => ($a[0] <=> $b[0]) ?: $a[1] <=> $b[1]);
+
+        return array_map(fn(array $rule) => $rule[2], $rules);
     }
 
     /**
@@ -473,8 +487,8 @@ final class Formatter implements IReadable, IWritable
         }
 
         $values[] = Convert::pluralRange($start->Line,
-                                         $end ? $end->Line : $start->Line,
-                                         'line');
+            $end ? $end->Line : $start->Line,
+            'line');
         Console::warn(sprintf($message . ' %s', ...$values));
     }
 }

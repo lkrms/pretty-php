@@ -3,14 +3,17 @@
 namespace Lkrms\Pretty\Php\Rule;
 
 use Lkrms\Facade\Test;
-use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
+use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
+use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
-class PreserveNewlines extends AbstractTokenRule
+class PreserveNewlines implements TokenRule
 {
-    public function __invoke(Token $token, int $stage): void
+    use TokenRuleTrait;
+
+    public function processToken(Token $token): void
     {
         if (($prev = $token->prev())->isNull()) {
             return;

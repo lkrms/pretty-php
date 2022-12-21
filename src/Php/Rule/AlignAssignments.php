@@ -2,13 +2,16 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
+use Lkrms\Pretty\Php\Concern\BlockRuleTrait;
 use Lkrms\Pretty\Php\Contract\BlockRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 
 class AlignAssignments implements BlockRule
 {
-    public function __invoke(array $block): void
+    use BlockRuleTrait;
+
+    public function processBlock(array $block): void
     {
         if (count($block) < 2) {
             return;
@@ -53,7 +56,7 @@ class AlignAssignments implements BlockRule
     }
 
     /**
-     * @param array{Token,Token}|false $last
+     * @param array{0:Token,1:Token}|false $last
      */
     private function lastLineHasInnerNewline($last, Token $token1): bool
     {
@@ -69,7 +72,7 @@ class AlignAssignments implements BlockRule
     }
 
     /**
-     * @param array<array{Token,Token}> $group
+     * @param array<array{0:Token,1:Token}> $group
      */
     private function processGroup(array $group): void
     {
