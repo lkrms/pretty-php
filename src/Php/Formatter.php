@@ -487,8 +487,8 @@ final class Formatter implements IReadable, IWritable
         }
 
         $values[] = Convert::pluralRange($start->Line,
-            $end ? $end->Line : $start->Line,
-            'line');
+                                         $end ? $end->Line : $start->Line,
+                                         'line');
         Console::warn(sprintf($message . ' %s', ...$values));
     }
 }

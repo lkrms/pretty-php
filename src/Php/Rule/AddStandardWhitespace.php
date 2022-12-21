@@ -27,12 +27,12 @@ class AddStandardWhitespace implements TokenRule
             $token->WhitespaceAfter |= WhitespaceType::SPACE;
         }
 
-        if ($token->isOpenBracket() ||
+        if (($token->isOpenBracket() && !$token->isStructuralBrace()) ||
                 $token->isOneOf(...TokenType::SUPPRESS_SPACE_AFTER)) {
             $token->WhitespaceMaskNext &= ~WhitespaceType::SPACE;
         }
 
-        if ($token->isCloseBracket() ||
+        if (($token->isCloseBracket() && !$token->isStructuralBrace()) ||
                 $token->isOneOf(...TokenType::SUPPRESS_SPACE_BEFORE)) {
             $token->WhitespaceMaskPrev &= ~WhitespaceType::SPACE;
         }

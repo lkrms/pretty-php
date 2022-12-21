@@ -20,18 +20,19 @@ class BracePosition implements TokenRule
         if ($token->is('{')) {
             $token->WhitespaceBefore |= $token->isDeclaration() &&
                 (($parent = $token->parent())->isNull() || $parent->is('{')) &&
-                (($prev = $token->startOfExpression()->prevCode())->isNull() ||
-                        $prev->isOneOf(';', '{', '}') ||
-                        ($prev->is(']') && $prev->OpenedBy->is(T_ATTRIBUTE)))
-                    ? WhitespaceType::LINE
+                (($prev = ($start = $token->startOfExpression())->prevCode())->isNull() ||
+                    $prev->isOneOf(';', '{', '}') ||
+                    ($prev->is(']') && $prev->OpenedBy->is(T_ATTRIBUTE))) &&
+                !$start->is(T_USE)
+                    ? WhitespaceType::LINE | WhitespaceType::SPACE
                     : WhitespaceType::SPACE;
-            $token->WhitespaceAfter    |= WhitespaceType::LINE;
+            $token->WhitespaceAfter    |= WhitespaceType::LINE | WhitespaceType::SPACE;
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
 
             return;
         }
 
-        $token->WhitespaceBefore   |= WhitespaceType::LINE;
+        $token->WhitespaceBefore   |= WhitespaceType::LINE | WhitespaceType::SPACE;
         $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
 
         $next = $token->next();
@@ -43,6 +44,6 @@ class BracePosition implements TokenRule
             return;
         }
 
-        $token->WhitespaceAfter |= WhitespaceType::LINE;
+        $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
     }
 }

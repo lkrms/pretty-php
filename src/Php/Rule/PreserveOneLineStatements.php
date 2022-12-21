@@ -28,7 +28,7 @@ class PreserveOneLineStatements implements TokenRule
                   ->collect($end->prev())
                   // Because why not test the rule in the rule itself?
                   ->forEach(
-                      function (Token $t) use ($mask) {$t->WhitespaceMaskPrev &= $mask; $t->WhitespaceMaskNext &= $mask;}
+                      function (Token $t) use ($mask) { $t->WhitespaceMaskPrev &= $mask; $t->WhitespaceMaskNext &= $mask; }
                   );
             $start->WhitespaceMaskNext &= $mask;
             $end->WhitespaceMaskPrev   &= $mask;
