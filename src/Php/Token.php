@@ -905,12 +905,17 @@ class Token implements JsonSerializable
 
     public function isStructuralBrace(): bool
     {
-        return $this->isBrace() &&
-            !$this->canonicalThis(__METHOD__)->prevCode()->isOneOf(
-                T_OBJECT_OPERATOR,    // $object->{$property}
-                T_DOUBLE_COLON,       // Facade::{$method}()
-                T_VARIABLE            // $string{0}
-            );
+        if (!$this->isBrace()) {
+            return false;
+        }
+        $_this  = $this->canonicalThis(__METHOD__);
+        $parent = $_this->parent();
+
+        return !$_this->prevCode()->isOneOf(T_OBJECT_OPERATOR,    // $object->{$property}
+                                            T_DOUBLE_COLON,       // Facade::{$method}()
+                                            T_VARIABLE) &&        // $string{0}
+            !(($parent->isNull() || $parent->isDeclaration(T_NAMESPACE)) &&
+                $_this->isDeclaration(T_USE));
     }
 
     public function isOpenBracket(): bool

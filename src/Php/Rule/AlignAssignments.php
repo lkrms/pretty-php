@@ -11,14 +11,31 @@ class AlignAssignments implements BlockRule
 {
     use BlockRuleTrait;
 
+    /**
+     * @var array<array<array{0:Token,1:Token}>>
+     */
+    private $Groups = [];
+
+    public function getPriority(string $method): ?int
+    {
+        switch ($method) {
+            case self::BEFORE_RENDER:
+                return 940;
+        }
+
+        return null;
+    }
+
     public function processBlock(array $block): void
     {
         if (count($block) < 2) {
             return;
         }
-        $group        = [];
-        $stack        = null;
-        $isAssignment = null;
+        $group          = [];
+        $stack          = null;
+        $indent         = null;
+        $hasAlignedArgs = null;
+        $isAssignment   = null;
         while ($block) {
             $line   = array_shift($block);
             /** @var Token $token1 */
@@ -31,28 +48,38 @@ class AlignAssignments implements BlockRule
                 ...TokenType::OPERATOR_DOUBLE_ARROW
             )) && !$this->lastLineHasInnerNewline(end($group), $token1)) {
                 if (is_null($stack)) {
-                    $stack        = $token2->BracketStack;
-                    $isAssignment = $token2->isOneOf(...TokenType::OPERATOR_ASSIGNMENT);
-                    $group[]      = [$token1, $token2];
+                    $stack          = $token2->BracketStack;
+                    $indent         = $token2->indent();
+                    $hasAlignedArgs = $token1->Tags['HasAlignedArguments'] ?? false;
+                    $isAssignment   = $token2->isOneOf(...TokenType::OPERATOR_ASSIGNMENT);
+                    $group[]        = [$token1, $token2];
                     continue;
                 }
                 if ($stack === $token2->BracketStack &&
-                        !($isAssignment xor $token2->isOneOf(...TokenType::OPERATOR_ASSIGNMENT))) {
+                    ($indent === $token2->indent() ||
+                        ($hasAlignedArgs && ($token1->Tags['HasAlignedArguments'] ?? false))) &&
+                    !($isAssignment xor $token2->isOneOf(...TokenType::OPERATOR_ASSIGNMENT))) {
                     $group[] = [$token1, $token2];
                     continue;
                 }
             }
-            $this->processGroup($group);
-            $group        = [];
-            $stack        = null;
-            $isAssignment = null;
+            count($group) < 2 ||
+                $this->Groups[] = $group;
+            $group          = [];
+            $stack          = null;
+            $indent         = null;
+            $hasAlignedArgs = null;
+            $isAssignment   = null;
             if ($token2) {
-                $stack        = $token2->BracketStack;
-                $isAssignment = $token2->isOneOf(...TokenType::OPERATOR_ASSIGNMENT);
-                $group[]      = [$token1, $token2];
+                $stack          = $token2->BracketStack;
+                $indent         = $token2->indent();
+                $hasAlignedArgs = $token1->Tags['HasAlignedArguments'] ?? false;
+                $isAssignment   = $token2->isOneOf(...TokenType::OPERATOR_ASSIGNMENT);
+                $group[]        = [$token1, $token2];
             }
         }
-        $this->processGroup($group);
+        count($group) < 2 ||
+            $this->Groups[] = $group;
     }
 
     /**
@@ -71,27 +98,24 @@ class AlignAssignments implements BlockRule
                           ->hasInnerNewline();
     }
 
-    /**
-     * @param array<array{0:Token,1:Token}> $group
-     */
-    private function processGroup(array $group): void
+    public function beforeRender(): void
     {
-        if (count($group) < 2) {
-            return;
-        }
-        $lengths = [];
-        $max     = 0;
+        /** @var array<array{0:Token,1:Token}> $group */
+        foreach ($this->Groups as $group) {
+            $lengths = [];
+            $max     = 0;
 
-        /** @var Token $token1 */
-        foreach ($group as [$token1, $token2]) {
-            $length    = strlen($token1->collect($token2)->render());
-            $lengths[] = $length;
-            $max       = max($max, $length);
-        }
+            /** @var Token $token1 */
+            foreach ($group as [$token1, $token2]) {
+                $length    = strlen($token1->collect($token2)->render());
+                $lengths[] = $length;
+                $max       = max($max, $length);
+            }
 
-        /** @var Token $token2 */
-        foreach ($group as $i => [$token1, $token2]) {
-            $token2->Padding += $max - $lengths[$i];
+            /** @var Token $token2 */
+            foreach ($group as $i => [$token1, $token2]) {
+                $token2->Padding += $max - $lengths[$i];
+            }
         }
     }
 }

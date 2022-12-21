@@ -16,6 +16,16 @@ class AlignArguments implements TokenRule
      */
     private $Lists = [];
 
+    public function getPriority(string $method): ?int
+    {
+        switch ($method) {
+            case self::BEFORE_RENDER:
+                return 920;
+        }
+
+        return null;
+    }
+
     public function processToken(Token $token): void
     {
         if (!$token->isOneOf('(', '[') || $token->hasNewlineAfter()) {
@@ -29,6 +39,8 @@ class AlignArguments implements TokenRule
             ))) {
             return;
         }
+        $align->forEach(fn(Token $t) => $this->tagToken($t));
+        $this->tagToken($align->first()->parent()->startOfLine());
         $this->Lists[] = $align;
     }
 
@@ -47,5 +59,10 @@ class AlignArguments implements TokenRule
     public function clear(): void
     {
         $this->Lists = [];
+    }
+
+    private function tagToken(Token $token): void
+    {
+        $token->Tags['HasAlignedArguments'] = true;
     }
 }

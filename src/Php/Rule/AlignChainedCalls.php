@@ -16,6 +16,16 @@ class AlignChainedCalls implements TokenRule
      */
     private $Chains = [];
 
+    public function getPriority(string $method): ?int
+    {
+        switch ($method) {
+            case self::BEFORE_RENDER:
+                return 900;
+        }
+
+        return null;
+    }
+
     public function processToken(Token $token): void
     {
         if ($token->ChainOpenedBy ||
