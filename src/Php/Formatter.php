@@ -152,6 +152,11 @@ final class Formatter implements IReadable, IWritable
     private $ComparisonFilters;
 
     /**
+     * @var array<int,array<array{0:Rule,1:callable}>>
+     */
+    private $Callbacks = [];
+
+    /**
      * @param string[] $skipRules
      * @param string[] $addRules
      */
@@ -368,6 +373,17 @@ final class Formatter implements IReadable, IWritable
         }
         $this->RunningService = null;
 
+        ksort($this->Callbacks);
+        foreach ($this->Callbacks as $index => $callbacks) {
+            foreach ($callbacks as [$rule, $callback]) {
+                $this->RunningService = $_rule = get_class($rule);
+                Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
+                $callback();
+                Sys::stopTimer($timer, 'rule');
+            }
+            unset($this->Callbacks[$index]);
+        }
+
         try {
             $out = '';
             foreach ($this->Tokens as $token) {
@@ -467,6 +483,11 @@ final class Formatter implements IReadable, IWritable
         unset($token);
 
         return $tokens;
+    }
+
+    public function registerCallback(Rule $rule, Token $first, callable $callback): void
+    {
+        $this->Callbacks[$first->Index][] = [$rule, $callback];
     }
 
     /**

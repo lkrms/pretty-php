@@ -11,21 +11,6 @@ class AlignAssignments implements BlockRule
 {
     use BlockRuleTrait;
 
-    /**
-     * @var array<array<array{0:Token,1:Token}>>
-     */
-    private $Groups = [];
-
-    public function getPriority(string $method): ?int
-    {
-        switch ($method) {
-            case self::BEFORE_RENDER:
-                return 940;
-        }
-
-        return null;
-    }
-
     public function processBlock(array $block): void
     {
         if (count($block) < 2) {
@@ -64,7 +49,7 @@ class AlignAssignments implements BlockRule
                 }
             }
             count($group) < 2 ||
-                $this->Groups[] = $group;
+                $this->registerGroup($group);
             $group          = [];
             $stack          = null;
             $indent         = null;
@@ -79,7 +64,7 @@ class AlignAssignments implements BlockRule
             }
         }
         count($group) < 2 ||
-            $this->Groups[] = $group;
+            $this->registerGroup($group);
     }
 
     /**
@@ -98,24 +83,32 @@ class AlignAssignments implements BlockRule
                           ->hasInnerNewline();
     }
 
-    public function beforeRender(): void
+    /**
+     * @param array<array{0:Token,1:Token}> $group
+     */
+    private function registerGroup(array $group): void
     {
-        /** @var array<array{0:Token,1:Token}> $group */
-        foreach ($this->Groups as $group) {
-            $lengths = [];
-            $max     = 0;
+        $this->Formatter->registerCallback($this, $group[0][1], fn() => $this->alignGroup($group));
+    }
 
-            /** @var Token $token1 */
-            foreach ($group as [$token1, $token2]) {
-                $length    = strlen($token1->collect($token2)->render());
-                $lengths[] = $length;
-                $max       = max($max, $length);
-            }
+    /**
+     * @param array<array{0:Token,1:Token}> $group
+     */
+    private function alignGroup(array $group): void
+    {
+        $lengths = [];
+        $max     = 0;
 
-            /** @var Token $token2 */
-            foreach ($group as $i => [$token1, $token2]) {
-                $token2->Padding += $max - $lengths[$i];
-            }
+        /** @var Token $token1 */
+        foreach ($group as [$token1, $token2]) {
+            $length    = strlen($token1->collect($token2)->render());
+            $lengths[] = $length;
+            $max       = max($max, $length);
+        }
+
+        /** @var Token $token2 */
+        foreach ($group as $i => [$token1, $token2]) {
+            $token2->Padding += $max - $lengths[$i];
         }
     }
 }

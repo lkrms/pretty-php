@@ -11,21 +11,6 @@ class AlignArguments implements TokenRule
 {
     use TokenRuleTrait;
 
-    /**
-     * @var TokenCollection[]
-     */
-    private $Lists = [];
-
-    public function getPriority(string $method): ?int
-    {
-        switch ($method) {
-            case self::BEFORE_RENDER:
-                return 920;
-        }
-
-        return null;
-    }
-
     public function processToken(Token $token): void
     {
         if (!$token->isOneOf('(', '[') || $token->hasNewlineAfter()) {
@@ -41,24 +26,17 @@ class AlignArguments implements TokenRule
         }
         $align->forEach(fn(Token $t) => $this->tagToken($t));
         $this->tagToken($align->first()->parent()->startOfLine());
-        $this->Lists[] = $align;
+        $this->Formatter->registerCallback($this, $align->first(), fn() => $this->alignList($align));
     }
 
-    public function beforeRender(): void
+    private function alignList(TokenCollection $list): void
     {
-        foreach ($this->Lists as $list) {
-            /** @var Token $first */
-            $first     = $list->first();
-            $alignWith = $first->parent();
-            $start     = $alignWith->startOfLine();
-            $alignAt   = strlen($start->collect($alignWith)->render());
-            $list->forEach(fn(Token $t) => $t->Padding += $alignAt - (strlen($t->renderIndent()) + $t->Padding));
-        }
-    }
-
-    public function clear(): void
-    {
-        $this->Lists = [];
+        /** @var Token $first */
+        $first     = $list->first();
+        $alignWith = $first->parent();
+        $start     = $alignWith->startOfLine();
+        $alignAt   = strlen($start->collect($alignWith)->render());
+        $list->forEach(fn(Token $t) => $t->Padding += $alignAt - (strlen($t->renderIndent()) + $t->Padding));
     }
 
     private function tagToken(Token $token): void

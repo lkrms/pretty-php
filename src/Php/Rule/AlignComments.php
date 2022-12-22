@@ -12,21 +12,6 @@ class AlignComments implements BlockRule
 {
     use BlockRuleTrait;
 
-    /**
-     * @var array<array{0:TokenCollection[],1:Token[],2:Token,3:Token}>
-     */
-    private $ToAlign = [];
-
-    public function getPriority(string $method): ?int
-    {
-        switch ($method) {
-            case self::BEFORE_RENDER:
-                return 999;
-        }
-
-        return null;
-    }
-
     public function processBlock(array $block): void
     {
         if (count($block) < 2) {
@@ -52,34 +37,37 @@ class AlignComments implements BlockRule
         if (count($comments) < 2) {
             return;
         }
-        $this->ToAlign[] = [$block, $comments, $first, $last];
+        $this->Formatter->registerCallback($this, reset($comments), fn() =>
+            $this->alignComments($block, $comments, $first, $last));
     }
 
-    public function beforeRender(): void
+    /**
+     * @param TokenCollection[] $block
+     * @param Token[] $comments
+     */
+    private function alignComments(array $block, array $comments, Token $first, Token $last): void
     {
-        foreach ($this->ToAlign as [$block, $comments, $first, $last]) {
-            $lengths = [];
-            $max     = 0;
-            foreach ($block as $i => $line) {
-                /** @var Token $token */
-                $token = $line[0];
-                // Ignore lines before $first and after $last unless their
-                // bracket stacks match $first and $last respectively
-                if (!$lengths && $token->BracketStack !== $first->BracketStack ||
-                        ($token->Index > $last->Index && $token->BracketStack !== $last->BracketStack)) {
-                    continue;
-                }
-                if ($comment = $comments[$i] ?? null) {
-                    $line = $token->collect($comment->prev());
-                }
-                $length      = strlen($line->render());
-                $lengths[$i] = $length;
-                $max         = max($max, $length);
+        $lengths = [];
+        $max     = 0;
+        foreach ($block as $i => $line) {
+            /** @var Token $token */
+            $token = $line[0];
+            // Ignore lines before $first and after $last unless their
+            // bracket stacks match $first and $last respectively
+            if (!$lengths && $token->BracketStack !== $first->BracketStack ||
+                    ($token->Index > $last->Index && $token->BracketStack !== $last->BracketStack)) {
+                continue;
             }
-            /** @var Token $comment */
-            foreach ($comments as $i => $comment) {
-                $comment->Padding += $max - $lengths[$i];
+            if ($comment = $comments[$i] ?? null) {
+                $line = $token->collect($comment->prev());
             }
+            $length      = strlen($line->render());
+            $lengths[$i] = $length;
+            $max         = max($max, $length);
+        }
+        /** @var Token $comment */
+        foreach ($comments as $i => $comment) {
+            $comment->Padding += $max - $lengths[$i];
         }
     }
 }

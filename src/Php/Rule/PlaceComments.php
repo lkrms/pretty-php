@@ -12,21 +12,6 @@ class PlaceComments implements TokenRule
 {
     use TokenRuleTrait;
 
-    /**
-     * @var Token[]
-     */
-    private $ToAlign = [];
-
-    public function getPriority(string $method): ?int
-    {
-        switch ($method) {
-            case self::BEFORE_RENDER:
-                return 999;
-        }
-
-        return null;
-    }
-
     public function processToken(Token $token): void
     {
         if (!$token->isOneOf(...TokenType::COMMENT)) {
@@ -49,7 +34,10 @@ class PlaceComments implements TokenRule
             return;
         }
 
-        $this->ToAlign[] = $token;
+        $next = $token->nextCode();
+        if (!($next->isNull() || $next->isCloseBracket())) {
+            $this->Formatter->registerCallback($this, $token, fn() => $this->alignComment($token, $next));
+        }
 
         $token->WhitespaceAfter |= WhitespaceType::LINE;
         if (!$token->is(T_DOC_COMMENT)) {
@@ -72,19 +60,13 @@ class PlaceComments implements TokenRule
         }
     }
 
-    public function beforeRender(): void
+    private function alignComment(Token $token, Token $next): void
     {
-        foreach ($this->ToAlign as $token) {
-            $next = $token->nextCode();
-            if ($next->isNull() || $next->isCloseBracket()) {
-                continue;
-            }
-            [$token->Indent, $token->Deindent, $token->HangingIndent, $token->Padding] = [
-                $next->Indent,
-                $next->Deindent,
-                $next->HangingIndent,
-                $next->Padding,
-            ];
-        }
+        [$token->Indent, $token->Deindent, $token->HangingIndent, $token->Padding] = [
+            $next->Indent,
+            $next->Deindent,
+            $next->HangingIndent,
+            $next->Padding,
+        ];
     }
 }
