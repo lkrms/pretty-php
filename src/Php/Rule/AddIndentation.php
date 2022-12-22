@@ -13,7 +13,7 @@ class AddIndentation implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->isCode() && $token->OpenedBy) {
+        if ($token->isCloseBracket() || $token->endsAlternativeSyntax()) {
             $token->Indent = $token->OpenedBy->Indent;
 
             return;
@@ -21,7 +21,7 @@ class AddIndentation implements TokenRule
 
         $prev          = $token->prev();
         $token->Indent = $prev->Indent;
-        if (!$prev->isCode() || !$prev->ClosedBy) {
+        if (!($prev->isOpenBracket() || $prev->startsAlternativeSyntax())) {
             return;
         }
         if ($prev->hasNewlineAfter()) {

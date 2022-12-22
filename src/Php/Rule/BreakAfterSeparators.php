@@ -19,6 +19,10 @@ class BreakAfterSeparators implements TokenRule
                     $parent->prevCode()->is(T_FOR)) {
                 return;
             }
+        } elseif ($token->is(T_CLOSE_TAG) && !$token->prev()->is(';')) {
+            $token->prev()->WhitespaceAfter |= WhitespaceType::LINE;
+
+            return;
         } elseif (!$token->startsAlternativeSyntax()) {
             return;
         }

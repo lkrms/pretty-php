@@ -74,7 +74,9 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
                 $tab     = basename($file->getPath()) === 'phpfmt' ? "\t" : '    ';
                 if (!file_exists($outFile)) {
                     printf("Formatting %s\n", (string) $file);
-                    $out = (new Formatter($tab))->format($in);
+                    $formatter             = new Formatter($tab);
+                    $formatter->QuietLevel = 3;
+                    $out                   = $formatter->format($in);
                     file_put_contents($outFile, $out);
                 } else {
                     $out = file_get_contents($outFile);

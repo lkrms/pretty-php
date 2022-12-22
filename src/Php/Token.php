@@ -619,7 +619,13 @@ class Token implements JsonSerializable
 
     public function isCode(): bool
     {
-        return !$this->isOneOf(...TokenType::NOT_CODE);
+        return !$this->isNotCode();
+    }
+
+    public function isNotCode(): bool
+    {
+        return $this->isOneOf(...TokenType::NOT_CODE) &&
+            (!$this->is(T_CLOSE_TAG) || $this->prev()->is(';'));
     }
 
     public function isNull(): bool
@@ -649,7 +655,7 @@ class Token implements JsonSerializable
 
     public function startOfStatement(): Token
     {
-        $current = ($this->is(';') ? $this->prevCode()->OpenedBy : null)
+        $current = ($this->isOneOf(';', T_CLOSE_TAG) ? $this->prevCode()->OpenedBy : null)
             ?: $this->canonicalThis(__METHOD__);
         while (!($prev = $current->prevCode())->isStatementPrecursor() &&
                 !$prev->isNull()) {
@@ -740,7 +746,7 @@ class Token implements JsonSerializable
         }
         $ignoreTokens = [];
         if ($current->inSwitchCase()) {
-            if ($token = $current->startOfStatement()->nextSiblingOf(':', ';')) {
+            if ($token = $current->startOfStatement()->nextSiblingOf(':', ';', T_CLOSE_TAG)) {
                 $ignoreTokens[] = $token;
             }
         }
@@ -867,7 +873,7 @@ class Token implements JsonSerializable
 
     public function isStatementTerminator(): bool
     {
-        return $this->is(';') ||
+        return $this->isOneOf(';', T_CLOSE_TAG) ||
             ($this->is('}') && $this->isStructuralBrace()) ||
             ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE));
     }
@@ -882,6 +888,7 @@ class Token implements JsonSerializable
         }
 
         return $this->isOneOf('(', ';', '[') ||
+            ($this->is(T_CLOSE_TAG) && !$this->prev()->is(';')) ||
             $this->isStructuralBrace() ||
             ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE)) ||
             ($this->is(',') &&
@@ -908,14 +915,16 @@ class Token implements JsonSerializable
         if (!$this->isBrace()) {
             return false;
         }
-        $_this  = $this->canonicalThis(__METHOD__);
-        $parent = $_this->parent();
+        $_this     = $this->canonicalThis(__METHOD__);
+        $lastInner = $_this->ClosedBy->prevCode();
+        $parent    = $_this->parent();
 
-        return !$_this->prevCode()->isOneOf(T_OBJECT_OPERATOR,    // $object->{$property}
-                                            T_DOUBLE_COLON,       // Facade::{$method}()
-                                            T_VARIABLE) &&        // $string{0}
-            !(($parent->isNull() || $parent->isDeclaration(T_NAMESPACE)) &&
-                $_this->isDeclaration(T_USE));
+        return ($lastInner === $_this ||                                        // `{}`
+                $lastInner->isOneOf(';', T_CLOSE_TAG) ||                        // `{ statement; }`
+                ($lastInner->is('}') && $lastInner->isStructuralBrace())) &&    // `{ { statement; } }`
+            !(($parent->isNull() ||
+                    $parent->prevSiblingsWhile(...TokenType::DECLARATION_PART)->hasOneOf(T_NAMESPACE)) &&
+                $parent->prevSiblingsWhile(...TokenType::DECLARATION_PART)->hasOneOf(T_USE));
     }
 
     public function isOpenBracket(): bool
@@ -941,6 +950,15 @@ class Token implements JsonSerializable
 
     public function endsAlternativeSyntax(): bool
     {
+        // PHP's alternative syntax has no `}` equivalent, so a virtual token is
+        // inserted where it should be
+        if ($this->is(TokenType::T_VIRTUAL) && $this->OpenedBy && $this->OpenedBy->is(':')) {
+            return true;
+        }
+        if ($this->prev()->is(TokenType::T_VIRTUAL)) {
+            return false;
+        }
+
         // Subsequent tokens may not be available yet, so the approach used in
         // startsAlternativeSyntax() won't work here
         $bracketStack = $this->BracketStack;
@@ -1022,6 +1040,7 @@ class Token implements JsonSerializable
 
         return $prev->isOneOf(
             '(', ',', ';', '[', '{', '}',
+            T_CLOSE_TAG,
             ...TokenType::OPERATOR_ARITHMETIC,
             ...TokenType::OPERATOR_ASSIGNMENT,
             ...TokenType::OPERATOR_BITWISE,
@@ -1200,7 +1219,7 @@ class Token implements JsonSerializable
 
     private function canonicalThis(string $method): Token
     {
-        if ($this->isOneOf(...TokenType::NOT_CODE)) {
+        if ($this->isNotCode()) {
             throw new RuntimeException(sprintf('%s cannot be called on %s tokens', $method, $this->TypeName));
         }
 

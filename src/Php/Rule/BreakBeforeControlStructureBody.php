@@ -22,7 +22,7 @@ class BreakBeforeControlStructureBody implements TokenRule
             return;
         }
 
-        if (($body = $token->nextSibling($offset))->isOneOf(':', ';', '{', TokenType::T_NULL)) {
+        if (($body = $token->nextSibling($offset))->isOneOf(':', ';', '{', T_CLOSE_TAG, TokenType::T_NULL)) {
             return;
         }
 
