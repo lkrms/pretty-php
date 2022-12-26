@@ -48,8 +48,7 @@ class AlignAssignments implements BlockRule
                     continue;
                 }
             }
-            count($group) < 2 ||
-                $this->registerGroup($group);
+            $this->maybeRegisterGroup($group);
             $group          = [];
             $stack          = null;
             $indent         = null;
@@ -63,8 +62,7 @@ class AlignAssignments implements BlockRule
                 $group[]        = [$token1, $token2];
             }
         }
-        count($group) < 2 ||
-            $this->registerGroup($group);
+        $this->maybeRegisterGroup($group);
     }
 
     /**
@@ -83,11 +81,21 @@ class AlignAssignments implements BlockRule
                           ->hasInnerNewline();
     }
 
+    private function assignmentHasInnerNewline(Token $token2): bool
+    {
+        return $token2->collect($token2->endOfExpression())
+                      ->filter(fn(Token $t) => $t->isCode())
+                      ->hasInnerNewline();
+    }
+
     /**
      * @param array<array{0:Token,1:Token}> $group
      */
-    private function registerGroup(array $group): void
+    private function maybeRegisterGroup(array $group): void
     {
+        if (count($group) < 2) {
+            return;
+        }
         $this->Formatter->registerCallback($this, $group[0][1], fn() => $this->alignGroup($group));
     }
 
@@ -98,10 +106,32 @@ class AlignAssignments implements BlockRule
     {
         $lengths = [];
         $max     = 0;
+        $count   = count($group);
 
         /** @var Token $token1 */
-        foreach ($group as [$token1, $token2]) {
-            $length    = strlen($token1->collect($token2)->render());
+        foreach ($group as $i => [$token1, $token2]) {
+            $length = strlen($token1->collect($token2)->render());
+
+            // If the last assignment in the group breaks over multiple lines
+            // and can't be accommodated without increasing $max, ignore it to
+            // avoid output like:
+            //
+            //     $a               = $b;
+            //     $cc              = $dd;
+            //     [$e, $f, $g, $h] = [
+            //         $i,
+            //         $j,
+            //         $k,
+            //         $l,
+            //     ];
+            if ($i + 1 === $count && $length - $max > 4 &&
+                    $this->assignmentHasInnerNewline($token2)) {
+                if ($count < 3) {
+                    return;
+                }
+                array_pop($group);
+                break;
+            }
             $lengths[] = $length;
             $max       = max($max, $length);
         }
