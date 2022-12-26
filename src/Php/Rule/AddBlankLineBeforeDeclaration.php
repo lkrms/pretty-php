@@ -2,21 +2,24 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
+use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
+use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
-class AddBlankLineBeforeDeclaration extends AbstractTokenRule
+class AddBlankLineBeforeDeclaration implements TokenRule
 {
-    public function __invoke(Token $token, int $stage): void
+    use TokenRuleTrait;
+
+    public function processToken(Token $token): void
     {
         if (!$token->isOneOf(...TokenType::DECLARATION) ||
                 ($token->is(T_USE) && $token->prevCode()->is(')'))) {
             return;
         }
         /** @var Token $start */
-        $start = $token->prevSiblingsWhile(true, ...TokenType::DECLARATION_PART)->last();
+        $start = $token->withPrevSiblingsWhile(...TokenType::DECLARATION_PART)->last();
         if ($start->Tags['StartOfDeclaration'] ?? null) {
             return;
         }
@@ -24,7 +27,7 @@ class AddBlankLineBeforeDeclaration extends AbstractTokenRule
         if ($start !== $start->startOfStatement()) {
             return;
         }
-        $parts = $start->nextSiblingsWhile(true, ...TokenType::DECLARATION_PART);
+        $parts = $start->withNextSiblingsWhile(...TokenType::DECLARATION_PART);
         /** @var Token $last */
         $last  = $parts->last();
         if ($last->isOneOf(T_FN, T_FUNCTION)) {
@@ -38,10 +41,9 @@ class AddBlankLineBeforeDeclaration extends AbstractTokenRule
             $block      = $start->collect($start->endOfStatement());
             $hasNewline = $block->hasInnerNewline();
             if (!$hasNewline) {
-                [$prev, $start->Tags['HasNoInnerNewline']] = [
-                    $start->prevCode()->startOfStatement(),
-                    true,
-                ];
+                $prev = $start->prevCode()
+                              ->startOfStatement();
+                $start->Tags['HasNoInnerNewline'] = true;
                 if ($prev->declarationParts()->hasOneOf(...$types) &&
                         ($prev->Tags['HasNoInnerNewline'] ?? null)) {
                     $start->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;

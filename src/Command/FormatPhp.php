@@ -16,7 +16,9 @@ use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeDeclaration;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeYield;
+use Lkrms\Pretty\Php\Rule\AlignArguments;
 use Lkrms\Pretty\Php\Rule\AlignAssignments;
+use Lkrms\Pretty\Php\Rule\AlignChainedCalls;
 use Lkrms\Pretty\Php\Rule\AlignComments;
 use Lkrms\Pretty\Php\Rule\CommaCommaComma;
 use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
@@ -24,7 +26,9 @@ use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterFn;
 use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterNot;
 use Lkrms\Pretty\Php\Rule\Extra\SuppressSpaceAroundStringOperator;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
+use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
 use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
+use Lkrms\Pretty\Php\Rule\ReportUnnecessaryParentheses;
 use Lkrms\Pretty\Php\Rule\SimplifyStrings;
 use Lkrms\Pretty\Php\Rule\SpaceOperators;
 use Lkrms\Pretty\PrettyBadSyntaxException;
@@ -44,14 +48,18 @@ class FormatPhp extends CliCommand
         'simplify-strings'         => SimplifyStrings::class,
         'space-around-operators'   => SpaceOperators::class,
         'space-after-commas'       => CommaCommaComma::class,
+        'preserve-newlines'        => PreserveNewlines::class,
+        'preserve-one-line'        => PreserveOneLineStatements::class,
         'one-line-arguments'       => DeclareArgumentsOnOneLine::class,
         'blank-before-return'      => AddBlankLineBeforeReturn::class,
         'blank-before-yield'       => AddBlankLineBeforeYield::class,
-        'preserve-newlines'        => PreserveNewlines::class,
         'blank-before-declaration' => AddBlankLineBeforeDeclaration::class,
+        'align-chains'             => AlignChainedCalls::class,
+        'align-args'               => AlignArguments::class,
         'indent-heredocs'          => ReindentHeredocs::class,
         'align-assignments'        => AlignAssignments::class,
         'align-comments'           => AlignComments::class,
+        'report-brackets'          => ReportUnnecessaryParentheses::class,
     ];
 
     /**
@@ -144,6 +152,11 @@ class FormatPhp extends CliCommand
                 ->description('Create debug output in DIR')
                 ->optionType(CliOptionType::VALUE_OPTIONAL)
                 ->defaultValue($this->app()->TempPath . '/pretty-php'),
+            CliOption::build()
+                ->long('quiet')
+                ->short('q')
+                ->description('Suppress unnecessary output (may be given multiple times)')
+                ->multipleAllowed()
         ];
     }
 
@@ -158,6 +171,7 @@ class FormatPhp extends CliCommand
 
         $skip  = $this->getOptionValue('skip');
         $rules = $this->getOptionValue('rule');
+        $quiet = (int) $this->getOptionValue('quiet');
         if ($this->getOptionValue('ignore-newlines')) {
             $skip[] = 'preserve-newlines';
         }
@@ -168,6 +182,9 @@ class FormatPhp extends CliCommand
             $rules[] = 'no-concat-spaces';
             $rules[] = 'space-after-fn';
             $rules[] = 'space-after-not';
+        }
+        if ($quiet > 1) {
+            $skip[] = 'report-brackets';
         }
         $skip  = array_values(array_intersect_key($this->SkipMap, array_flip($skip)));
         $rules = array_values(array_intersect_key($this->RuleMap, array_flip($rules)));
@@ -195,10 +212,14 @@ class FormatPhp extends CliCommand
             $debug = $this->DebugDirectory = realpath($debug) ?: null;
         }
 
-        $formatter            = new Formatter($tab, $skip, $rules);
-        [$i, $count, $errors] = [0, count($in), []];
+        $formatter             = new Formatter($tab, $skip, $rules);
+        $formatter->QuietLevel = $quiet;
+        [$i, $count, $errors]  = [0, count($in), []];
         foreach ($in as $key => $file) {
-            Console::info(sprintf('Formatting %d of %d:', ++$i, $count), $file);
+            $quiet > 2 || Console::info(sprintf('Formatting %d of %d:', ++$i, $count), $file);
+            $formatter->Filename = $file === 'php://stdin'
+                ? null
+                : $file;
             $input = file_get_contents($file);
             Sys::startTimer($file, 'file');
             try {
@@ -227,11 +248,11 @@ class FormatPhp extends CliCommand
             }
 
             if (!is_null($input) && $input === $output) {
-                Console::log('Already formatted:', $outFile);
+                $quiet || Console::log('Already formatted:', $outFile);
                 continue;
             }
 
-            Console::log('Replacing', $outFile);
+            $quiet > 1 || Console::log('Replacing', $outFile);
             file_put_contents($outFile, $output);
         }
 
@@ -244,7 +265,7 @@ class FormatPhp extends CliCommand
             );
         }
 
-        Console::summary();
+        $quiet > 2 || Console::summary();
     }
 
     /**

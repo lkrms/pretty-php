@@ -273,6 +273,9 @@ class Token implements JsonSerializable
         $this->_next->_prev = $this;
     }
 
+    /**
+     * @return array<string,mixed>
+     */
     public function jsonSerialize(): array
     {
         $a = get_object_vars($this);
@@ -499,11 +502,30 @@ class Token implements JsonSerializable
      *
      * Tokens are collected in order from the closest sibling to the farthest.
      *
-     * @param bool $includeToken If `true`, collect the token itself. If it
-     * isn't one of the listed types, an empty collection is returned.
      * @param int|string ...$types
      */
-    public function prevSiblingsWhile(bool $includeToken = false, ...$types): TokenCollection
+    public function prevSiblingsWhile(...$types): TokenCollection
+    {
+        return $this->_prevSiblingsWhile(false, ...$types);
+    }
+
+    /**
+     * Collect the token and its siblings up to but not including the last that
+     * isn't one of the listed types
+     *
+     * Tokens are collected in order from the closest sibling to the farthest.
+     *
+     * @param int|string ...$types
+     */
+    public function withPrevSiblingsWhile(...$types): TokenCollection
+    {
+        return $this->_prevSiblingsWhile(true, ...$types);
+    }
+
+    /**
+     * @param int|string ...$types
+     */
+    private function _prevSiblingsWhile(bool $includeToken = false, ...$types): TokenCollection
     {
         $tokens = new TokenCollection();
         $prev   = $includeToken ? $this : $this->prevSibling();
@@ -519,11 +541,28 @@ class Token implements JsonSerializable
      * Collect the token's siblings up to but not including the first that isn't
      * one of the listed types
      *
-     * @param bool $includeToken If `true`, collect the token itself. If it
-     * isn't one of the listed types, an empty collection is returned.
      * @param int|string ...$types
      */
-    public function nextSiblingsWhile(bool $includeToken = false, ...$types): TokenCollection
+    public function nextSiblingsWhile(...$types): TokenCollection
+    {
+        return $this->_nextSiblingsWhile(false, ...$types);
+    }
+
+    /**
+     * Collect the token and its siblings up to but not including the first that
+     * isn't one of the listed types
+     *
+     * @param int|string ...$types
+     */
+    public function withNextSiblingsWhile(...$types): TokenCollection
+    {
+        return $this->_nextSiblingsWhile(true, ...$types);
+    }
+
+    /**
+     * @param int|string ...$types
+     */
+    private function _nextSiblingsWhile(bool $includeToken = false, ...$types): TokenCollection
     {
         $tokens = new TokenCollection();
         $next   = $includeToken ? $this : $this->nextSibling();
@@ -580,7 +619,13 @@ class Token implements JsonSerializable
 
     public function isCode(): bool
     {
-        return !$this->isOneOf(...TokenType::NOT_CODE);
+        return !$this->isNotCode();
+    }
+
+    public function isNotCode(): bool
+    {
+        return $this->isOneOf(...TokenType::NOT_CODE) &&
+            (!$this->is(T_CLOSE_TAG) || $this->prev()->is(';'));
     }
 
     public function isNull(): bool
@@ -610,7 +655,7 @@ class Token implements JsonSerializable
 
     public function startOfStatement(): Token
     {
-        $current = ($this->is(';') ? $this->prevCode()->OpenedBy : null)
+        $current = ($this->isOneOf(';', T_CLOSE_TAG) ? $this->prevCode()->OpenedBy : null)
             ?: $this->canonicalThis(__METHOD__);
         while (!($prev = $current->prevCode())->isStatementPrecursor() &&
                 !$prev->isNull()) {
@@ -701,7 +746,7 @@ class Token implements JsonSerializable
         }
         $ignoreTokens = [];
         if ($current->inSwitchCase()) {
-            if ($token = $current->startOfStatement()->nextSiblingOf(':', ';')) {
+            if ($token = $current->startOfStatement()->nextSiblingOf(':', ';', T_CLOSE_TAG)) {
                 $ignoreTokens[] = $token;
             }
         }
@@ -746,7 +791,7 @@ class Token implements JsonSerializable
 
     public function declarationParts(): TokenCollection
     {
-        return $this->startOfExpression()->nextSiblingsWhile(true, ...TokenType::DECLARATION_PART);
+        return $this->startOfExpression()->withNextSiblingsWhile(...TokenType::DECLARATION_PART);
     }
 
     public function sinceStartOfStatement(): TokenCollection
@@ -828,7 +873,7 @@ class Token implements JsonSerializable
 
     public function isStatementTerminator(): bool
     {
-        return $this->is(';') ||
+        return $this->isOneOf(';', T_CLOSE_TAG) ||
             ($this->is('}') && $this->isStructuralBrace()) ||
             ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE));
     }
@@ -843,6 +888,7 @@ class Token implements JsonSerializable
         }
 
         return $this->isOneOf('(', ';', '[') ||
+            ($this->is(T_CLOSE_TAG) && !$this->prev()->is(';')) ||
             $this->isStructuralBrace() ||
             ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE)) ||
             ($this->is(',') &&
@@ -866,12 +912,19 @@ class Token implements JsonSerializable
 
     public function isStructuralBrace(): bool
     {
-        return $this->isBrace() &&
-            !$this->canonicalThis(__METHOD__)->prevCode()->isOneOf(
-                T_OBJECT_OPERATOR,    // $object->{$property}
-                T_DOUBLE_COLON,       // Facade::{$method}()
-                T_VARIABLE            // $string{0}
-            );
+        if (!$this->isBrace()) {
+            return false;
+        }
+        $_this     = $this->canonicalThis(__METHOD__);
+        $lastInner = $_this->ClosedBy->prevCode();
+        $parent    = $_this->parent();
+
+        return ($lastInner === $_this ||                                        // `{}`
+                $lastInner->isOneOf(';', T_CLOSE_TAG) ||                        // `{ statement; }`
+                ($lastInner->is('}') && $lastInner->isStructuralBrace())) &&    // `{ { statement; } }`
+            !(($parent->isNull() ||
+                    $parent->prevSiblingsWhile(...TokenType::DECLARATION_PART)->hasOneOf(T_NAMESPACE)) &&
+                $parent->prevSiblingsWhile(...TokenType::DECLARATION_PART)->hasOneOf(T_USE));
     }
 
     public function isOpenBracket(): bool
@@ -897,6 +950,15 @@ class Token implements JsonSerializable
 
     public function endsAlternativeSyntax(): bool
     {
+        // PHP's alternative syntax has no `}` equivalent, so a virtual token is
+        // inserted where it should be
+        if ($this->is(TokenType::T_VIRTUAL) && $this->OpenedBy && $this->OpenedBy->is(':')) {
+            return true;
+        }
+        if ($this->prev()->is(TokenType::T_VIRTUAL)) {
+            return false;
+        }
+
         // Subsequent tokens may not be available yet, so the approach used in
         // startsAlternativeSyntax() won't work here
         $bracketStack = $this->BracketStack;
@@ -978,6 +1040,7 @@ class Token implements JsonSerializable
 
         return $prev->isOneOf(
             '(', ',', ';', '[', '{', '}',
+            T_CLOSE_TAG,
             ...TokenType::OPERATOR_ARITHMETIC,
             ...TokenType::OPERATOR_ASSIGNMENT,
             ...TokenType::OPERATOR_BITWISE,
@@ -1156,7 +1219,7 @@ class Token implements JsonSerializable
 
     private function canonicalThis(string $method): Token
     {
-        if ($this->isOneOf(...TokenType::NOT_CODE)) {
+        if ($this->isNotCode()) {
             throw new RuntimeException(sprintf('%s cannot be called on %s tokens', $method, $this->TypeName));
         }
 

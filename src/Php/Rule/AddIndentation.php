@@ -2,15 +2,18 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
+use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
+use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
 
-class AddIndentation extends AbstractTokenRule
+class AddIndentation implements TokenRule
 {
-    public function __invoke(Token $token, int $stage): void
+    use TokenRuleTrait;
+
+    public function processToken(Token $token): void
     {
-        if ($token->isCode() && $token->OpenedBy) {
+        if ($token->isCloseBracket() || $token->endsAlternativeSyntax()) {
             $token->Indent = $token->OpenedBy->Indent;
 
             return;
@@ -18,7 +21,7 @@ class AddIndentation extends AbstractTokenRule
 
         $prev          = $token->prev();
         $token->Indent = $prev->Indent;
-        if (!$prev->isCode() || !$prev->ClosedBy) {
+        if (!($prev->isOpenBracket() || $prev->startsAlternativeSyntax())) {
             return;
         }
         if ($prev->hasNewlineAfter()) {

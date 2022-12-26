@@ -9,3 +9,5 @@ parameters:
     - tests
   bootstrapFiles:
     - tests/bootstrap.php
+  ignoreErrors:
+    - "#^Method Lkrms\\\\Pretty\\\\Tests\\\\.+ has no return type specified\\.$#"

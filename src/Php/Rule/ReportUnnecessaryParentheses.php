@@ -2,15 +2,16 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Facade\Console;
-use Lkrms\Facade\Convert;
-use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
+use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
+use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 
-class ReportUnnecessaryParentheses extends AbstractTokenRule
+class ReportUnnecessaryParentheses implements TokenRule
 {
-    public function __invoke(Token $token, int $stage): void
+    use TokenRuleTrait;
+
+    public function processToken(Token $token): void
     {
         if (!$token->is('(') ||
             !($token->isStartOfExpression() ||
@@ -37,7 +38,6 @@ class ReportUnnecessaryParentheses extends AbstractTokenRule
                 ($prev->ClosedBy === $next || $next->isStatementPrecursor()))) {
             return;
         }
-        Console::warn(sprintf('Unnecessary parentheses %s',
-            Convert::pluralRange($first->Line, $last->Line, 'line')));
+        $this->Formatter->reportProblem('Unnecessary parentheses', $first, $last);
     }
 }

@@ -2,13 +2,17 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
+use Lkrms\Pretty\Php\Concern\BlockRuleTrait;
 use Lkrms\Pretty\Php\Contract\BlockRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
+use Lkrms\Pretty\Php\TokenCollection;
 
 class AlignComments implements BlockRule
 {
-    public function __invoke(array $block): void
+    use BlockRuleTrait;
+
+    public function processBlock(array $block): void
     {
         if (count($block) < 2) {
             return;
@@ -33,13 +37,23 @@ class AlignComments implements BlockRule
         if (count($comments) < 2) {
             return;
         }
+        $this->Formatter->registerCallback($this, reset($comments), fn() =>
+            $this->alignComments($block, $comments, $first, $last));
+    }
+
+    /**
+     * @param TokenCollection[] $block
+     * @param Token[] $comments
+     */
+    private function alignComments(array $block, array $comments, Token $first, Token $last): void
+    {
         $lengths = [];
         $max     = 0;
         foreach ($block as $i => $line) {
             /** @var Token $token */
             $token = $line[0];
-            // Ignore lines before $first and after $last unless their bracket
-            // stacks match $first and $last respectively
+            // Ignore lines before $first and after $last unless their
+            // bracket stacks match $first and $last respectively
             if (!$lengths && $token->BracketStack !== $first->BracketStack ||
                     ($token->Index > $last->Index && $token->BracketStack !== $last->BracketStack)) {
                 continue;

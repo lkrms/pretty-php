@@ -2,13 +2,16 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
+use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
+use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
 
-class PreserveOneLineStatements extends AbstractTokenRule
+class PreserveOneLineStatements implements TokenRule
 {
-    public function __invoke(Token $token, int $stage): void
+    use TokenRuleTrait;
+
+    public function processToken(Token $token): void
     {
         if ($token->isOneOf(T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO) && $token->ClosedBy) {
             $this->maybePreserveOneLine($token, $token->ClosedBy);
@@ -25,7 +28,7 @@ class PreserveOneLineStatements extends AbstractTokenRule
                   ->collect($end->prev())
                   // Because why not test the rule in the rule itself?
                   ->forEach(
-                      function (Token $t) use ($mask) {$t->WhitespaceMaskPrev &= $mask; $t->WhitespaceMaskNext &= $mask;}
+                      function (Token $t) use ($mask) { $t->WhitespaceMaskPrev &= $mask; $t->WhitespaceMaskNext &= $mask; }
                   );
             $start->WhitespaceMaskNext &= $mask;
             $end->WhitespaceMaskPrev   &= $mask;

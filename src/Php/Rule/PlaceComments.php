@@ -2,27 +2,17 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
+use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
+use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
-class PlaceComments extends AbstractTokenRule
+class PlaceComments implements TokenRule
 {
-    /**
-     * @var Token[]
-     */
-    private $ToAlign = [];
+    use TokenRuleTrait;
 
-    public function getStages(): array
-    {
-        $stages                            = parent::getStages();
-        $stages[self::STAGE_BEFORE_RENDER] = 999;
-
-        return $stages;
-    }
-
-    public function __invoke(Token $token, int $stage): void
+    public function processToken(Token $token): void
     {
         if (!$token->isOneOf(...TokenType::COMMENT)) {
             return;
@@ -44,7 +34,10 @@ class PlaceComments extends AbstractTokenRule
             return;
         }
 
-        $this->ToAlign[] = $token;
+        $next = $token->nextCode();
+        if (!($next->isNull() || $next->isCloseBracket())) {
+            $this->Formatter->registerCallback($this, $token, fn() => $this->alignComment($token, $next));
+        }
 
         $token->WhitespaceAfter |= WhitespaceType::LINE;
         if (!$token->is(T_DOC_COMMENT)) {
@@ -67,19 +60,13 @@ class PlaceComments extends AbstractTokenRule
         }
     }
 
-    public function beforeRender(): void
+    private function alignComment(Token $token, Token $next): void
     {
-        foreach ($this->ToAlign as $token) {
-            $next = $token->nextCode();
-            if ($next->isNull() || $next->isCloseBracket()) {
-                continue;
-            }
-            [$token->Indent, $token->Deindent, $token->HangingIndent, $token->Padding] = [
-                $next->Indent,
-                $next->Deindent,
-                $next->HangingIndent,
-                $next->Padding,
-            ];
-        }
+        [$token->Indent, $token->Deindent, $token->HangingIndent, $token->Padding] = [
+            $next->Indent,
+            $next->Deindent,
+            $next->HangingIndent,
+            $next->Padding,
+        ];
     }
 }

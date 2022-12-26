@@ -2,14 +2,17 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
+use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
+use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
-class AddBlankLineBeforeYield extends AbstractTokenRule
+class AddBlankLineBeforeYield implements TokenRule
 {
-    public function __invoke(Token $token, int $stage): void
+    use TokenRuleTrait;
+
+    public function processToken(Token $token): void
     {
         if ($token->isOneOf(T_YIELD, T_YIELD_FROM) &&
                 !($token->prev()->isOneOf(...TokenType::COMMENT) && $token->prev()->hasNewlineBefore())) {

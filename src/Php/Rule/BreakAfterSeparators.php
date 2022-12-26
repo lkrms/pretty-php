@@ -2,13 +2,16 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
+use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
+use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
 
-class BreakAfterSeparators extends AbstractTokenRule
+class BreakAfterSeparators implements TokenRule
 {
-    public function __invoke(Token $token, int $stage): void
+    use TokenRuleTrait;
+
+    public function processToken(Token $token): void
     {
         if ($token->is(';')) {
             // Don't break after `for` expressions
@@ -16,6 +19,10 @@ class BreakAfterSeparators extends AbstractTokenRule
                     $parent->prevCode()->is(T_FOR)) {
                 return;
             }
+        } elseif ($token->is(T_CLOSE_TAG) && !$token->prev()->is(';')) {
+            $token->prev()->WhitespaceAfter |= WhitespaceType::LINE;
+
+            return;
         } elseif (!$token->startsAlternativeSyntax()) {
             return;
         }

@@ -2,14 +2,17 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Pretty\Php\Concept\AbstractTokenRule;
+use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
+use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
-class AddStandardWhitespace extends AbstractTokenRule
+class AddStandardWhitespace implements TokenRule
 {
-    public function __invoke(Token $token, int $stage): void
+    use TokenRuleTrait;
+
+    public function processToken(Token $token): void
     {
         if ($token->isOneOf(...TokenType::ADD_SPACE_AROUND)) {
             $token->WhitespaceBefore |= WhitespaceType::SPACE;
@@ -24,12 +27,12 @@ class AddStandardWhitespace extends AbstractTokenRule
             $token->WhitespaceAfter |= WhitespaceType::SPACE;
         }
 
-        if ($token->isOpenBracket() ||
+        if (($token->isOpenBracket() && !$token->isStructuralBrace()) ||
                 $token->isOneOf(...TokenType::SUPPRESS_SPACE_AFTER)) {
             $token->WhitespaceMaskNext &= ~WhitespaceType::SPACE;
         }
 
-        if ($token->isCloseBracket() ||
+        if (($token->isCloseBracket() && !$token->isStructuralBrace()) ||
                 $token->isOneOf(...TokenType::SUPPRESS_SPACE_BEFORE)) {
             $token->WhitespaceMaskPrev &= ~WhitespaceType::SPACE;
         }
