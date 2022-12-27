@@ -49,5 +49,5 @@
     ```
 
 - [ ] Sort `use <FQCN>` blocks
-- [ ] Output UTF-8 characters when simplifying strings, i.e. `'—'` instead of `"\xe2\x80\x94"`
+- [x] Output UTF-8 characters when simplifying strings, i.e. `'—'` instead of `"\xe2\x80\x94"`
 
