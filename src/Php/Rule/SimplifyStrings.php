@@ -7,6 +7,16 @@ use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 
+/**
+ * Replace single- and double-quoted strings with whichever is clearer and more
+ * efficient
+ *
+ * Single-quoted strings are preferred unless:
+ * - one or more characters require a backslash escape;
+ * - the double-quoted equivalent is shorter; or
+ * - the single-quoted string contains a mix of `\` and `\\` and the
+ *   double-quoted equivalent contains one or the other, but not both.
+ */
 class SimplifyStrings implements TokenRule
 {
     use TokenRuleTrait;
@@ -70,9 +80,10 @@ class SimplifyStrings implements TokenRule
     {
         return '"' . preg_replace_callback(
             '/\\\\(?:(?P<octal>[0-7]{3})|.)/',
-            fn(array $matches) => ($matches['octal'] ?? null)
-                ? sprintf('\x%02x', octdec($matches['octal']))
-                : $matches[0],
+            fn(array $matches) =>
+                ($matches['octal'] ?? null)
+                    ? sprintf('\x%02x', octdec($matches['octal']))
+                    : $matches[0],
             addcslashes($string, $escape)
         ) . '"';
     }

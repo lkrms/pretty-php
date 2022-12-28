@@ -97,7 +97,7 @@ class PreserveNewlines implements TokenRule
         if (Test::isBetween($next->Line, $min, $max) &&
                 $token->isOneOf(...TokenType::PRESERVE_NEWLINE_AFTER) &&
                 ($noBrackets || !($token->isOpenBracket() && $next->isCloseBracket())) &&
-                (!$token->is(':') || $token->isTernaryOperator())) {
+                (!$token->is(':') || $token->inSwitchCase() || $token->inLabel())) {
             $token->WhitespaceAfter |= $type;
             $token->PinToCode        = $token->PinToCode && ($type === WhitespaceType::LINE);
 

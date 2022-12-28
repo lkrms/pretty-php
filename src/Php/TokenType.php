@@ -35,9 +35,12 @@ final class TokenType
     ];
 
     public const PRESERVE_NEWLINE_AFTER = [
-        '(', ',', ';', '[', '}',
+        '(', ',', ':', ';', '[', '}',
         T_OPEN_TAG,
         T_OPEN_TAG_WITH_ECHO,
+        T_RETURN,
+        T_YIELD,
+        T_YIELD_FROM,
         ...self::COMMENT,
         ...self::OPERATOR_ASSIGNMENT,
         ...self::OPERATOR_BITWISE,

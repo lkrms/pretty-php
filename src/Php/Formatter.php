@@ -105,10 +105,10 @@ final class Formatter implements IReadable, IWritable
         BracePosition::class,
         SpaceOperators::class,
         CommaCommaComma::class,
+        PreserveOneLineStatements::class,
         AddStandardWhitespace::class,
         PlaceComments::class,
         PreserveNewlines::class,
-        PreserveOneLineStatements::class,
         DeclareArgumentsOnOneLine::class,
         AddBlankLineBeforeReturn::class,           // Must be after PlaceComments
         AddBlankLineBeforeYield::class,            // Ditto

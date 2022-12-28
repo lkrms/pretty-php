@@ -15,7 +15,9 @@ class AddBlankLineBeforeYield implements TokenRule
     public function processToken(Token $token): void
     {
         if ($token->isOneOf(T_YIELD, T_YIELD_FROM) &&
-                !($token->prev()->isOneOf(...TokenType::COMMENT) && $token->prev()->hasNewlineBefore())) {
+            !$token->prevStatementStart()->isOneOf(T_RETURN, T_YIELD, T_YIELD_FROM) &&
+            !($token->prev()->isOneOf(...TokenType::COMMENT) &&
+                $token->prev()->hasNewlineBefore())) {
             $token->WhitespaceBefore |= WhitespaceType::BLANK;
         }
     }

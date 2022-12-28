@@ -7,6 +7,15 @@ use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
 
+/**
+ * Suppress changes to whitespace within strings and heredocs
+ *
+ * Assigns:
+ * - {@see Token::$StringOpenedBy}
+ * - {@see Token::$HeredocOpenedBy}
+ * - {@see Token::$WhitespaceMaskPrev} = {@see WhitespaceType::NONE};
+ * - {@see Token::$WhitespaceMaskNext} = {@see WhitespaceType::NONE};
+ */
 class ProtectStrings implements TokenRule
 {
     use TokenRuleTrait;
@@ -25,11 +34,7 @@ class ProtectStrings implements TokenRule
     {
         if ($this->InString || $token->is('"')) {
             $this->protectString($token);
-
-            return;
-        }
-
-        if ($this->InHeredoc || $token->is(T_START_HEREDOC)) {
+        } elseif ($this->InHeredoc || $token->is(T_START_HEREDOC)) {
             $this->protectHeredoc($token);
         }
     }

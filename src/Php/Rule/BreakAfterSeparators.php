@@ -13,22 +13,21 @@ class BreakAfterSeparators implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->is(';')) {
-            // Don't break after `for` expressions
-            if (($parent = $token->parent())->is('(') &&
-                    $parent->prevCode()->is(T_FOR)) {
-                return;
-            }
-        } elseif ($token->is(T_CLOSE_TAG) && !$token->prev()->is(';')) {
-            $token->prev()->WhitespaceAfter |= WhitespaceType::LINE;
+        if ($token->isCloseTagStatementTerminator()) {
+            $token->prev()->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
 
             return;
-        } elseif (!$token->startsAlternativeSyntax()) {
+        }
+        if (!($token->startsAlternativeSyntax() ||
+            ($token->is(';') &&
+                // Don't break after `for` expressions
+                !(($parent = $token->parent())->is('(') &&
+                    $parent->prevCode()->is(T_FOR))))) {
             return;
         }
 
         $token->WhitespaceBefore   = WhitespaceType::NONE;
         $token->WhitespaceMaskPrev = WhitespaceType::NONE;
-        $token->WhitespaceAfter   |= WhitespaceType::LINE;
+        $token->WhitespaceAfter   |= WhitespaceType::LINE | WhitespaceType::SPACE;
     }
 }
