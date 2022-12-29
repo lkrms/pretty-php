@@ -38,7 +38,7 @@ class AlignComments implements BlockRule
             return;
         }
         $this->Formatter->registerCallback($this, reset($comments), fn() =>
-            $this->alignComments($block, $comments, $first, $last));
+            $this->alignComments($block, $comments, $first, $last), 999);
     }
 
     /**

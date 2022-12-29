@@ -3,6 +3,7 @@
 namespace Lkrms\Pretty\Tests\Php;
 
 use FilesystemIterator as FS;
+use Lkrms\Facade\File;
 use Lkrms\Pretty\Php\Formatter;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -74,6 +75,7 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
                 $tab     = basename($file->getPath()) === 'phpfmt' ? "\t" : '    ';
                 if (!file_exists($outFile)) {
                     printf("Formatting %s\n", (string) $file);
+                    File::maybeCreateDirectory(dirname($outFile));
                     $formatter             = new Formatter($tab);
                     $formatter->QuietLevel = 3;
                     $out                   = $formatter->format($in);

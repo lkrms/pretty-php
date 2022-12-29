@@ -152,7 +152,7 @@ final class Formatter implements IReadable, IWritable
     private $ComparisonFilters;
 
     /**
-     * @var array<int,array<array{0:Rule,1:callable}>>
+     * @var array<int,array<int,array<array{0:Rule,1:callable}>>>
      */
     private $Callbacks = [];
 
@@ -269,7 +269,9 @@ final class Formatter implements IReadable, IWritable
         if (!isset($token)) {
             return '';
         }
-        $token->WhitespaceAfter |= WhitespaceType::LINE;
+        if ($token->isCode() && !$token->startOfStatement()->is(T_HALT_COMPILER)) {
+            $token->WhitespaceAfter |= WhitespaceType::LINE;
+        }
 
         $tokenLoop      = [];
         $afterTokenLoop = [];
@@ -374,14 +376,18 @@ final class Formatter implements IReadable, IWritable
         $this->RunningService = null;
 
         ksort($this->Callbacks);
-        foreach ($this->Callbacks as $index => $callbacks) {
-            foreach ($callbacks as [$rule, $callback]) {
-                $this->RunningService = $_rule = get_class($rule);
-                Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
-                $callback();
-                Sys::stopTimer($timer, 'rule');
+        foreach ($this->Callbacks as $priority => &$tokenCallbacks) {
+            ksort($tokenCallbacks);
+            foreach ($tokenCallbacks as $index => $callbacks) {
+                foreach ($callbacks as [$rule, $callback]) {
+                    $this->RunningService = $_rule = get_class($rule);
+                    Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
+                    $callback();
+                    Sys::stopTimer($timer, 'rule');
+                }
+                unset($tokenCallbacks[$index]);
             }
-            unset($this->Callbacks[$index]);
+            unset($this->Callbacks[$priority]);
         }
 
         try {
@@ -485,9 +491,9 @@ final class Formatter implements IReadable, IWritable
         return $tokens;
     }
 
-    public function registerCallback(Rule $rule, Token $first, callable $callback): void
+    public function registerCallback(Rule $rule, Token $first, callable $callback, int $priority = 100): void
     {
-        $this->Callbacks[$first->Index][] = [$rule, $callback];
+        $this->Callbacks[$priority][$first->Index][] = [$rule, $callback];
     }
 
     /**

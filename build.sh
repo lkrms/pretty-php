@@ -28,7 +28,7 @@ BUILD_DIR=build/phar
 BUILD_TARGET=${BUILD_DIR%/*}/${PWD##*/}.phar
 rm -rf "$BUILD_DIR" "$BUILD_TARGET" &&
     mkdir -pv "$BUILD_DIR" &&
-    cp -Rv !(build*|docs|phpstan*|phpunit*|tests|var|vendor|LICENSE*|README*|*.md|*.txt|*.code-workspace) "$BUILD_DIR/" &&
+    cp -Rv !(build*|docs|phpstan*|phpunit*|tests*|var|vendor|LICENSE*|README*|*.md|*.txt|*.code-workspace) "$BUILD_DIR/" &&
     composer install -d "$BUILD_DIR" --no-dev ||
     _die "error preparing $PWD/$BUILD_DIR"
 

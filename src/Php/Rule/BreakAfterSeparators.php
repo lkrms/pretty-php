@@ -22,7 +22,8 @@ class BreakAfterSeparators implements TokenRule
             ($token->is(';') &&
                 // Don't break after `for` expressions
                 !(($parent = $token->parent())->is('(') &&
-                    $parent->prevCode()->is(T_FOR))))) {
+                    $parent->prevCode()->is(T_FOR)) &&
+                !$token->startOfStatement()->is(T_HALT_COMPILER)))) {
             return;
         }
 
