@@ -113,12 +113,12 @@ final class TokenCollection extends TypedCollection
         return false;
     }
 
-    public function render(): string
+    public function render(bool $softTabs = false): string
     {
         [$code, $i] = ['', 0];
         /** @var Token $token */
         foreach ($this as $token) {
-            $code .= $token->render();
+            $code .= $token->render($softTabs);
             if (!$i++) {
                 $before = WhitespaceType::toWhitespace($token->effectiveWhitespaceBefore());
                 if ($before) {

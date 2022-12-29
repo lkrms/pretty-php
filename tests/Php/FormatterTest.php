@@ -72,18 +72,22 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
             if ($file->isFile() && in_array($file->getExtension(), ['php', 'in', ''], true)) {
                 $in      = file_get_contents((string) $file);
                 $outFile = preg_replace('/\.in$/', '.out', $outDir . substr((string) $file, strlen($inDir)));
-                $tab     = basename($file->getPath()) === 'phpfmt' ? "\t" : '    ';
+                $relPath = substr((string) $file, strlen($inDir) + 1);
+                [$tab, $tabSize] =
+                    basename($file->getPath()) === 'phpfmt'
+                        ? ["\t", 4]
+                        : ['    ', 4];
                 if (!file_exists($outFile)) {
-                    printf("Formatting %s\n", (string) $file);
+                    printf("Formatting %s\n", $relPath);
                     File::maybeCreateDirectory(dirname($outFile));
-                    $formatter             = new Formatter($tab);
+                    $formatter             = new Formatter($tab, $tabSize);
                     $formatter->QuietLevel = 3;
                     $out                   = $formatter->format($in);
                     file_put_contents($outFile, $out);
                 } else {
                     $out = file_get_contents($outFile);
                 }
-                $this->assertFormatterOutputIs($in, $out, $tab, $file->getBasename());
+                $this->assertFormatterOutputIs($in, $out, $tab, $tabSize, $relPath);
             }
         }
     }

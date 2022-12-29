@@ -60,6 +60,7 @@ use Throwable;
  * @property string|null $Filename
  * @property-read string|null $RunningService
  * @property-read string $Tab
+ * @property-read string $SoftTab
  * @property-read string[] $Rules
  * @property-read array<string|array{0:int,1:string,2:int}>|null $PlainTokens
  * @property-read Token[]|null $Tokens
@@ -92,6 +93,11 @@ final class Formatter implements IReadable, IWritable
      * @var string
      */
     protected $Tab;
+
+    /**
+     * @var string
+     */
+    protected $SoftTab;
 
     /**
      * @var string[]
@@ -160,9 +166,10 @@ final class Formatter implements IReadable, IWritable
      * @param string[] $skipRules
      * @param string[] $addRules
      */
-    public function __construct(string $tab = '    ', array $skipRules = [], array $addRules = [])
+    public function __construct(string $tab = '    ', int $tabSize = 4, array $skipRules = [], array $addRules = [])
     {
-        $this->Tab = $tab;
+        $this->Tab     = $tab;
+        $this->SoftTab = str_repeat(' ', $tabSize);
 
         if ($skipRules) {
             $this->Rules = array_diff($this->Rules, $skipRules);

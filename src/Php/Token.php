@@ -347,13 +347,13 @@ class Token implements JsonSerializable
         return !$this->wasFirstOnLine() && !$this->wasLastOnLine();
     }
 
-    public function prev(int $offset = 1): Token { $p = $this;for ($i = 0; $i < $offset; $i++) { $p = $p->_prev ?? null; } return $p ?: new NullToken(); }
+    public function prev(int $offset = 1): Token { $p = $this; for ($i = 0; $i < $offset; $i++) { $p = $p->_prev ?? null; } return $p ?: new NullToken(); }
 
-    public function next(int $offset = 1): Token { $n = $this;for ($i = 0; $i < $offset; $i++) { $n = $n->_next ?? null; } return $n ?: new NullToken(); }
+    public function next(int $offset = 1): Token { $n = $this; for ($i = 0; $i < $offset; $i++) { $n = $n->_next ?? null; } return $n ?: new NullToken(); }
 
-    public function prevCode(int $offset = 1): Token { $p = $this;for ($i = 0; $i < $offset; $i++) { do { $p = $p->_prev ?? null; } while ($p && !$p->isCode()); } return $p ?: new NullToken(); }
+    public function prevCode(int $offset = 1): Token { $p = $this; for ($i = 0; $i < $offset; $i++) { do { $p = $p->_prev ?? null; } while ($p && !$p->isCode()); } return $p ?: new NullToken(); }
 
-    public function nextCode(int $offset = 1): Token { $n = $this;for ($i = 0; $i < $offset; $i++) { do { $n = $n->_next ?? null; } while ($n && !$n->isCode()); } return $n ?: new NullToken(); }
+    public function nextCode(int $offset = 1): Token { $n = $this; for ($i = 0; $i < $offset; $i++) { do { $n = $n->_next ?? null; } while ($n && !$n->isCode()); } return $n ?: new NullToken(); }
 
     /**
      * @param int|string ...$types
@@ -368,7 +368,7 @@ class Token implements JsonSerializable
     /**
      * @param int|string ...$types
      */
-    private function _prevCodeWhile(bool $with, ...$types): TokenCollection { $c = new TokenCollection(); $p = $with ? $this : $this->prevCode();while ($p->isOneOf(...$types)) { $c[] = $p; $p = $p->prevCode(); } return $c; }
+    private function _prevCodeWhile(bool $with, ...$types): TokenCollection { $c = new TokenCollection(); $p = $with ? $this : $this->prevCode(); while ($p->isOneOf(...$types)) { $c[] = $p; $p = $p->prevCode(); } return $c; }
 
     /**
      * @param int|string ...$types
@@ -383,7 +383,7 @@ class Token implements JsonSerializable
     /**
      * @param int|string ...$types
      */
-    private function _nextCodeWhile(bool $with, ...$types): TokenCollection { $c = new TokenCollection(); $n = $with ? $this : $this->nextCode();while ($n->isOneOf(...$types)) { $c[] = $n; $n = $n->nextCode(); } return $c; }
+    private function _nextCodeWhile(bool $with, ...$types): TokenCollection { $c = new TokenCollection(); $n = $with ? $this : $this->nextCode(); while ($n->isOneOf(...$types)) { $c[] = $n; $n = $n->nextCode(); } return $c; }
 
     public function prevSibling(int $offset = 1): Token
     {
@@ -1084,14 +1084,14 @@ class Token implements JsonSerializable
         return $this->Indent + $this->HangingIndent - $this->Deindent;
     }
 
-    public function renderIndent(): string
+    public function renderIndent(bool $softTabs = false): string
     {
         return ($this->Indent + $this->HangingIndent - $this->Deindent)
-            ? str_repeat($this->Formatter->Tab, $this->Indent + $this->HangingIndent - $this->Deindent)
+            ? str_repeat($softTabs ? $this->Formatter->SoftTab : $this->Formatter->Tab, $this->Indent + $this->HangingIndent - $this->Deindent)
             : '';
     }
 
-    public function render(): string
+    public function render(bool $softTabs = false): string
     {
         if ($this->HeredocOpenedBy) {
             // Render heredocs in one go so we can safely trim empty lines
@@ -1104,7 +1104,7 @@ class Token implements JsonSerializable
                 $heredoc .= $current->Code;
                 $current  = $current->next();
             } while ($current->HeredocOpenedBy === $this);
-            $indent = $this->renderIndent();
+            $indent = $this->renderIndent($softTabs);
             if ($padding = str_repeat(' ', $this->startOfLine()->Padding)) {
                 $heredoc = str_replace("\n$indent", "\n$indent$padding", $heredoc);
             }
@@ -1112,13 +1112,13 @@ class Token implements JsonSerializable
         } elseif ($this->isOneOf(...TokenType::DO_NOT_MODIFY)) {
             return $this->Code;
         } elseif ($this->isMultiLineComment(true)) {
-            $comment = $this->renderComment();
+            $comment = $this->renderComment($softTabs);
         }
 
         if (!$this->isOneOf(...TokenType::DO_NOT_MODIFY_LHS)) {
             $code = WhitespaceType::toWhitespace($this->effectiveWhitespaceBefore());
             if (substr($code, -1) === "\n" && ($this->Indent + $this->HangingIndent - $this->Deindent)) {
-                $code .= $this->renderIndent();
+                $code .= $this->renderIndent($softTabs);
             }
             if ($this->Padding) {
                 $code .= str_repeat(' ', $this->Padding);
@@ -1135,13 +1135,13 @@ class Token implements JsonSerializable
         return $code;
     }
 
-    private function renderComment(): string
+    private function renderComment(bool $softTabs = false): string
     {
         // Remove trailing whitespace from each line
         $code = preg_replace('/\h+$/m', '', $this->Code);
         switch ($this->Type) {
             case T_DOC_COMMENT:
-                $indent = "\n" . $this->renderIndent();
+                $indent = "\n" . $this->renderIndent($softTabs);
 
                 return preg_replace([
                     '/\n\h*(?:\* |\*(?!\/)(?=[\h\S])|(?=[^\s*]))/',
