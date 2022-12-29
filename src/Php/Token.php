@@ -821,6 +821,13 @@ class Token implements JsonSerializable
         return strpos($this->Code, "\n") !== false;
     }
 
+    public function hasNewlineAfterCode(): bool
+    {
+        return $this->hasNewlineAfter() ||
+            (!$this->next()->isCode() &&
+                $this->collect($this->nextCode())->hasInnerNewline());
+    }
+
     /**
      * @param int|string $type
      */

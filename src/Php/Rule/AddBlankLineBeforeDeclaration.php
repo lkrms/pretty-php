@@ -39,7 +39,7 @@ class AddBlankLineBeforeDeclaration implements TokenRule
         $types = $parts->getAnyOf(...TokenType::DECLARATION_CONDENSE)->getTypes();
         if ($types) {
             $block      = $start->collect($start->endOfStatement());
-            $hasNewline = $block->hasInnerNewline();
+            $hasNewline = $block->hasOuterNewline();
             if (!$hasNewline) {
                 $prev = $start->prevCode()
                               ->startOfStatement();

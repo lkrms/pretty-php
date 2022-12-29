@@ -13,7 +13,7 @@ class AlignArguments implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if (!$token->isOneOf('(', '[') || $token->hasNewlineAfter()) {
+        if (!$token->isOneOf('(', '[') || $token->hasNewlineAfterCode()) {
             return;
         }
         $align = $token->innerSiblings()->filter(fn(Token $t) => $t->hasNewlineBefore());

@@ -91,7 +91,7 @@ final class TokenCollection extends TypedCollection
      * Return true if the collection will render over multiple lines, not
      * including whitespace before the first or after the last token
      */
-    public function hasInnerNewline(): bool
+    public function hasOuterNewline(): bool
     {
         if (!$this->Collected) {
             throw new RuntimeException('Collection not created by ' . static::class . '::collect()');
@@ -106,6 +106,37 @@ final class TokenCollection extends TypedCollection
                 continue;
             }
             if ($token->hasNewlineBefore()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Return true if the collection will render over multiple lines, not
+     * including the content of the first or last token
+     */
+    public function hasInnerNewline(): bool
+    {
+        if (!$this->Collected) {
+            throw new RuntimeException('Collection not created by ' . static::class . '::collect()');
+        }
+        [$i, $count] = [0, count($this)];
+        /** @var Token $token */
+        foreach ($this as $token) {
+            // Ignore the first token
+            if (!$i++) {
+                continue;
+            }
+            if ($token->hasNewlineBefore()) {
+                return true;
+            }
+            // Ignore the content of the last token
+            if ($i === $count) {
+                continue;
+            }
+            if (substr_count($token->Code, "\n")) {
                 return true;
             }
         }
