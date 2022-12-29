@@ -61,7 +61,7 @@ class AlignComments implements BlockRule
             if ($comment = $comments[$i] ?? null) {
                 $line = $token->collect($comment->prev());
             }
-            $length      = strlen($line->render(true));
+            $length      = mb_strlen($line->render(true));
             $lengths[$i] = $length;
             $max         = max($max, $length);
         }

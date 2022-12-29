@@ -35,7 +35,7 @@ class AlignArguments implements TokenRule
         $first     = $list->first();
         $alignWith = $first->parent();
         $start     = $alignWith->startOfLine();
-        $alignAt   = strlen($start->collect($alignWith)->render(true));
+        $alignAt   = mb_strlen($start->collect($alignWith)->render(true));
         $list->forEach(
             function (Token $t) use ($alignWith, $alignAt) {
                 [$t->Indent, $t->Deindent, $t->HangingIndent] =

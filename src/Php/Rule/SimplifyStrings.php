@@ -61,7 +61,7 @@ class SimplifyStrings implements TokenRule
         if (!$this->checkConsistency($single) && $this->checkConsistency($double)) {
             $single = preg_replace('/(?<!\\\\)\\\\(?!\\\\)/', '\\\\$0', $single);
         }
-        $token->Code = (strlen($single) <= strlen($double) &&
+        $token->Code = (mb_strlen($single) <= mb_strlen($double) &&
                 ($this->checkConsistency($single) || !$this->checkConsistency($double)))
             ? $single
             : $double;
