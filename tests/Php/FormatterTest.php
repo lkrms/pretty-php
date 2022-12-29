@@ -5,6 +5,8 @@ namespace Lkrms\Pretty\Tests\Php;
 use FilesystemIterator as FS;
 use Lkrms\Facade\File;
 use Lkrms\Pretty\Php\Formatter;
+use Lkrms\Pretty\Php\Rule\AlignAssignments;
+use Lkrms\Pretty\Php\Rule\SimplifyStrings;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
@@ -60,7 +62,7 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
             dirname(__DIR__) . '.in',
             dirname(__DIR__) . '.out',
         ];
-        if (!is_dir($inDir) || !is_dir($outDir)) {
+        if (!is_dir($inDir)) {
             $this->expectNotToPerformAssertions();
 
             return;
@@ -73,21 +75,35 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
                 $in      = file_get_contents((string) $file);
                 $outFile = preg_replace('/\.in$/', '.out', $outDir . substr((string) $file, strlen($inDir)));
                 $relPath = substr((string) $file, strlen($inDir) + 1);
-                [$tab, $tabSize] =
-                    basename($file->getPath()) === 'phpfmt'
-                        ? ["\t", 4]
-                        : ['    ', 4];
+                [$tab, $tabSize, $skipRules, $addRules] = [
+                    '    ', 4, [], []
+                ];
+                switch (explode(DIRECTORY_SEPARATOR, $relPath)[0]) {
+                    case 'phpfmt':
+                        [$tab, $tabSize] = ["\t", 4];
+                        break;
+                    case 'php-doc':
+                        $skipRules = [
+                            AlignAssignments::class,
+                            SimplifyStrings::class,
+                        ];
+                        break;
+                }
                 if (!file_exists($outFile)) {
                     printf("Formatting %s\n", $relPath);
                     File::maybeCreateDirectory(dirname($outFile));
-                    $formatter             = new Formatter($tab, $tabSize);
+                    $formatter = new Formatter($tab,
+                                               $tabSize,
+                                               $skipRules,
+                                               $addRules);
                     $formatter->QuietLevel = 3;
-                    $out                   = $formatter->format($in);
-                    file_put_contents($outFile, $out);
+                    file_put_contents($outFile, $out = $formatter->format($in));
                 } else {
                     $out = file_get_contents($outFile);
                 }
-                $this->assertFormatterOutputIs($in, $out, $tab, $tabSize, $relPath);
+                $this->assertFormatterOutputIs($in, $out,
+                                               $tab, $tabSize, $skipRules, $addRules,
+                                               $relPath);
             }
         }
     }
