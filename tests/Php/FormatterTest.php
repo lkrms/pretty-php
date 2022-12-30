@@ -6,6 +6,7 @@ use FilesystemIterator as FS;
 use Lkrms\Facade\File;
 use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Rule\AlignAssignments;
+use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\SimplifyStrings;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -84,8 +85,9 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
                         break;
                     case 'php-doc':
                         $skipRules = [
-                            AlignAssignments::class,
                             SimplifyStrings::class,
+                            DeclareArgumentsOnOneLine::class,
+                            AlignAssignments::class,
                         ];
                         break;
                 }

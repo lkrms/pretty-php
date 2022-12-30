@@ -767,7 +767,11 @@ class Token implements JsonSerializable
 
     public function effectiveWhitespaceBefore(): int
     {
-        if ($this->PinToCode && ($next = $this->next())->isCode() && !$next->PinToCode) {
+        if ($this->PinToCode &&
+                (!$this->prev()->PinToCode || !$this->isSameTypeAs($this->prev())) &&
+                !count($this->next()
+                            ->collect(($next = $this->nextCode())->prev())
+                            ->filter(fn(Token $t) => !$t->PinToCode || !$this->isSameTypeAs($t)))) {
             return $this->_effectiveWhitespaceBefore() | $next->_effectiveWhitespaceBefore();
         }
         if (!$this->PinToCode && $this->prev()->PinToCode && $this->isCode()) {
@@ -1235,6 +1239,13 @@ class Token implements JsonSerializable
         }
 
         return $this->OpenedBy ?: $this;
+    }
+
+    private function isSameTypeAs(Token $token): bool
+    {
+        return $this->Type === $token->Type &&
+            (!$this->isOneOf(...TokenType::COMMENT) ||
+                $this->isMultiLineComment() === $token->isMultiLineComment());
     }
 
     private function isSibling(Token $token): bool
