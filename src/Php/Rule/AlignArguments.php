@@ -13,7 +13,7 @@ class AlignArguments implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if (!$token->isOneOf('(', '[') || $token->hasNewlineAfter()) {
+        if (!$token->isOneOf('(', '[') || $token->hasNewlineAfterCode()) {
             return;
         }
         $align = $token->innerSiblings()->filter(fn(Token $t) => $t->hasNewlineBefore());
@@ -35,8 +35,14 @@ class AlignArguments implements TokenRule
         $first     = $list->first();
         $alignWith = $first->parent();
         $start     = $alignWith->startOfLine();
-        $alignAt   = strlen($start->collect($alignWith)->render());
-        $list->forEach(fn(Token $t) => $t->Padding += $alignAt - (strlen($t->renderIndent()) + $t->Padding));
+        $alignAt   = mb_strlen($start->collect($alignWith)->render(true));
+        $list->forEach(
+            function (Token $t) use ($alignWith, $alignAt) {
+                [$t->Indent, $t->Deindent, $t->HangingIndent] =
+                    [$alignWith->Indent, $alignWith->Deindent, $alignWith->HangingIndent];
+                $t->Padding += $alignAt - (strlen($t->renderIndent(true)) + $t->Padding);
+            }
+        );
     }
 
     private function tagToken(Token $token): void

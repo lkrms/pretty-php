@@ -91,7 +91,7 @@ final class TokenCollection extends TypedCollection
      * Return true if the collection will render over multiple lines, not
      * including whitespace before the first or after the last token
      */
-    public function hasInnerNewline(): bool
+    public function hasOuterNewline(): bool
     {
         if (!$this->Collected) {
             throw new RuntimeException('Collection not created by ' . static::class . '::collect()');
@@ -113,12 +113,43 @@ final class TokenCollection extends TypedCollection
         return false;
     }
 
-    public function render(): string
+    /**
+     * Return true if the collection will render over multiple lines, not
+     * including the content of the first or last token
+     */
+    public function hasInnerNewline(): bool
+    {
+        if (!$this->Collected) {
+            throw new RuntimeException('Collection not created by ' . static::class . '::collect()');
+        }
+        [$i, $count] = [0, count($this)];
+        /** @var Token $token */
+        foreach ($this as $token) {
+            // Ignore the first token
+            if (!$i++) {
+                continue;
+            }
+            if ($token->hasNewlineBefore()) {
+                return true;
+            }
+            // Ignore the content of the last token
+            if ($i === $count) {
+                continue;
+            }
+            if (substr_count($token->Code, "\n")) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function render(bool $softTabs = false): string
     {
         [$code, $i] = ['', 0];
         /** @var Token $token */
         foreach ($this as $token) {
-            $code .= $token->render();
+            $code .= $token->render($softTabs);
             if (!$i++) {
                 $before = WhitespaceType::toWhitespace($token->effectiveWhitespaceBefore());
                 if ($before) {

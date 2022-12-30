@@ -38,7 +38,7 @@ class AlignComments implements BlockRule
             return;
         }
         $this->Formatter->registerCallback($this, reset($comments), fn() =>
-            $this->alignComments($block, $comments, $first, $last));
+            $this->alignComments($block, $comments, $first, $last), 999);
     }
 
     /**
@@ -61,7 +61,7 @@ class AlignComments implements BlockRule
             if ($comment = $comments[$i] ?? null) {
                 $line = $token->collect($comment->prev());
             }
-            $length      = strlen($line->render());
+            $length      = mb_strlen($line->render(true));
             $lengths[$i] = $length;
             $max         = max($max, $length);
         }

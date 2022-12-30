@@ -93,10 +93,15 @@ class FormatPhp extends CliCommand
             CliOption::build()
                 ->long('tab')
                 ->short('t')
-                ->description('Indent using tabs'),
+                ->valueName('SIZE')
+                ->description('Indent using tabs')
+                ->optionType(CliOptionType::ONE_OF_OPTIONAL)
+                ->allowedValues(['4', '8'])
+                ->defaultValue('4'),
             CliOption::build()
                 ->long('space')
                 ->short('s')
+                ->valueName('SIZE')
                 ->description('Indent using spaces')
                 ->optionType(CliOptionType::ONE_OF_OPTIONAL)
                 ->allowedValues(['2', '4'])
@@ -162,12 +167,13 @@ class FormatPhp extends CliCommand
 
     protected function run(...$params)
     {
-        $tab   = $this->getOptionValue('tab');
-        $space = $this->getOptionValue('space');
+        $tab   = Convert::toIntOrNull($this->getOptionValue('tab'));
+        $space = Convert::toIntOrNull($this->getOptionValue('space'));
         if ($tab && $space) {
             throw new CliArgumentsInvalidException('--tab and --space cannot be used together');
         }
-        $tab = $tab ? "\t" : ($space === '2' ? '  ' : '    ');
+        $tabSize = $tab ?: $space ?: 4;
+        $tab     = $tab ? "\t" : str_repeat(' ', $tabSize);
 
         $skip  = $this->getOptionValue('skip');
         $rules = $this->getOptionValue('rule');
@@ -212,7 +218,7 @@ class FormatPhp extends CliCommand
             $debug = $this->DebugDirectory = realpath($debug) ?: null;
         }
 
-        $formatter             = new Formatter($tab, $skip, $rules);
+        $formatter             = new Formatter($tab, $tabSize, $skip, $rules);
         $formatter->QuietLevel = $quiet;
         [$i, $count, $errors]  = [0, count($in), []];
         foreach ($in as $key => $file) {

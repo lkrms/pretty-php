@@ -29,19 +29,21 @@
     ```
 
 - [x] **Preserve blank lines between DocBlocks**
-- [ ] Place labels on their own line (labels are comprised of `T_STRING` folled by `':'`)
-- [ ] Suppress blank lines between consecutive `yield` statements
+- [x] Place labels on their own line (labels are comprised of `T_STRING` folled by `':'`)
+- [x] Suppress blank lines between consecutive `yield` statements
 - [ ] Suppress blank line before `private` in `function __construct(private $var) {`
-- [ ] Suppress blank line before `use function <FUNCTION>` in `use <FQCN>` block
+- [x] Suppress blank line before `use function <FUNCTION>` in `use <FQCN>` block
 - [ ] Improve handling of `use <trait>` directives
   - [ ] Move opening brace onto the same line as `use`
   - [ ] Condense consecutive directives (even multiline ones)
 - [ ] Improve spacing in attributes (e.g. add space after `':'`)
+- [ ] Add support for named arguments (e.g. `myFunction(paramName: $value)`, `array_foobar(array: $value)`)
 - [ ] Review anonymous `class` formatting
+- [ ] Simplify `"\x00"` to `"\0"` in double-quoted strings
 
 ### Optional
 
-- [ ] Align on opening parentheses (maybe limited to `AlignedChainedCalls` contexts?), i.e.
+- [x] Align on opening parentheses ~~(maybe limited to `AlignedChainedCalls` contexts?)~~, i.e.
 
     ```php
     someFunction($argument1,
@@ -49,5 +51,5 @@
     ```
 
 - [ ] Sort `use <FQCN>` blocks
-- [ ] Output UTF-8 characters when simplifying strings, i.e. `'—'` instead of `"\xe2\x80\x94"`
+- [x] Output UTF-8 characters when simplifying strings, i.e. `'—'` instead of `"\xe2\x80\x94"`
 

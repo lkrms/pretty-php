@@ -78,14 +78,14 @@ class AlignAssignments implements BlockRule
 
         return $lastToken2->collect($token1->prevCode())
                           ->filter(fn(Token $t) => $t->isCode())
-                          ->hasInnerNewline();
+                          ->hasOuterNewline();
     }
 
     private function assignmentHasInnerNewline(Token $token2): bool
     {
         return $token2->collect($token2->endOfExpression())
                       ->filter(fn(Token $t) => $t->isCode())
-                      ->hasInnerNewline();
+                      ->hasOuterNewline();
     }
 
     /**
@@ -110,7 +110,7 @@ class AlignAssignments implements BlockRule
 
         /** @var Token $token1 */
         foreach ($group as $i => [$token1, $token2]) {
-            $length = strlen($token1->collect($token2)->render());
+            $length = mb_strlen($token1->collect($token2)->render(true));
 
             // If the last assignment in the group breaks over multiple lines
             // and can't be accommodated without increasing $max, ignore it to

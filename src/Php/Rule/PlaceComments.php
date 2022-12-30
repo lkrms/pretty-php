@@ -28,8 +28,9 @@ class PlaceComments implements TokenRule
 
         // Don't move comments beside code to the next line
         if (!$token->wasFirstOnLine() && $token->wasLastOnLine() && $token->isOneLineComment(true)) {
-            $token->WhitespaceBefore |= WhitespaceType::TAB;
-            $token->WhitespaceAfter  |= WhitespaceType::LINE;
+            $token->WhitespaceBefore   |= WhitespaceType::TAB;
+            $token->WhitespaceMaskPrev &= ~WhitespaceType::LINE & ~WhitespaceType::BLANK;
+            $token->WhitespaceAfter    |= WhitespaceType::LINE;
 
             return;
         }

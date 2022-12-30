@@ -24,7 +24,7 @@ class AddIndentation implements TokenRule
         if (!($prev->isOpenBracket() || $prev->startsAlternativeSyntax())) {
             return;
         }
-        if ($prev->hasNewlineAfter()) {
+        if ($prev->hasNewlineAfterCode()) {
             $token->Indent++;
             $prev->ClosedBy->WhitespaceBefore |= WhitespaceType::LINE;
 

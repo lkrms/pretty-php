@@ -2,10 +2,21 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
+use Lkrms\Facade\Env;
 use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 
+/**
+ * Replace single- and double-quoted strings with whichever is clearer and more
+ * efficient
+ *
+ * Single-quoted strings are preferred unless:
+ * - one or more characters require a backslash escape;
+ * - the double-quoted equivalent is shorter; or
+ * - the single-quoted string contains a mix of `\` and `\\` and the
+ *   double-quoted equivalent contains one or the other, but not both.
+ */
 class SimplifyStrings implements TokenRule
 {
     use TokenRuleTrait;
@@ -18,18 +29,28 @@ class SimplifyStrings implements TokenRule
 
         // \x00 -> \t, \v, \f, \x0e -> \x1f is effectively \x00 -> \x1f without
         // LF (\n) or CR (\r), which aren't escaped unless already escaped
-        $escape = "\x00..\t\v\f\x0e..\x1f\x7f..\xff\"\$\\";
+        $escape = "\x00..\t\v\f\x0e..\x1f\"\$\\";
         $match  = '';
 
         if (!$token->hasNewline()) {
             $escape .= "\n\r";
-            $match   = '\n\r';
+            $match  .= '\n\r';
+        }
+
+        if (Env::isLocaleUtf8()) {
+            // Don't escape UTF-8 leading bytes (\xc2 -> \xf4) or continuation
+            // bytes (\x80 -> \xbf)
+            $escape .= "\x7f\xc0\xc1\xf5..\xff";
+            $match  .= '\x7f\xc0\xc1\xf5-\xff';
+        } else {
+            $escape .= "\x7f..\xff";
+            $match  .= '\x7f-\xff';
         }
 
         $string = '';
         eval("\$string = {$token->Code};");
         $double = $this->doubleQuote($string, $escape);
-        if (preg_match("/[\\x00-\\t\\v\\f\\x0e-\\x1f\\x7f-\\xff{$match}]/", $string)) {
+        if (preg_match("/[\\x00-\\t\\v\\f\\x0e-\\x1f{$match}]/", $string)) {
             $token->Code = $double;
 
             return;
@@ -40,7 +61,7 @@ class SimplifyStrings implements TokenRule
         if (!$this->checkConsistency($single) && $this->checkConsistency($double)) {
             $single = preg_replace('/(?<!\\\\)\\\\(?!\\\\)/', '\\\\$0', $single);
         }
-        $token->Code = (strlen($single) <= strlen($double) &&
+        $token->Code = (mb_strlen($single) <= mb_strlen($double) &&
                 ($this->checkConsistency($single) || !$this->checkConsistency($double)))
             ? $single
             : $double;
@@ -59,9 +80,10 @@ class SimplifyStrings implements TokenRule
     {
         return '"' . preg_replace_callback(
             '/\\\\(?:(?P<octal>[0-7]{3})|.)/',
-            fn(array $matches) => ($matches['octal'] ?? null)
-                ? sprintf('\x%02x', octdec($matches['octal']))
-                : $matches[0],
+            fn(array $matches) =>
+                ($matches['octal'] ?? null)
+                    ? sprintf('\x%02x', octdec($matches['octal']))
+                    : $matches[0],
             addcslashes($string, $escape)
         ) . '"';
     }

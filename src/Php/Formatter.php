@@ -60,6 +60,7 @@ use Throwable;
  * @property string|null $Filename
  * @property-read string|null $RunningService
  * @property-read string $Tab
+ * @property-read string $SoftTab
  * @property-read string[] $Rules
  * @property-read array<string|array{0:int,1:string,2:int}>|null $PlainTokens
  * @property-read Token[]|null $Tokens
@@ -94,6 +95,11 @@ final class Formatter implements IReadable, IWritable
     protected $Tab;
 
     /**
+     * @var string
+     */
+    protected $SoftTab;
+
+    /**
      * @var string[]
      */
     protected $Rules = [
@@ -101,14 +107,15 @@ final class Formatter implements IReadable, IWritable
         ProtectStrings::class,
         SimplifyStrings::class,
         BreakAfterSeparators::class,
+        BreakBeforeControlStructureBody::class,
         PlaceAttributes::class,
         BracePosition::class,
         SpaceOperators::class,
         CommaCommaComma::class,
+        PreserveOneLineStatements::class,
         AddStandardWhitespace::class,
         PlaceComments::class,
         PreserveNewlines::class,
-        PreserveOneLineStatements::class,
         DeclareArgumentsOnOneLine::class,
         AddBlankLineBeforeReturn::class,           // Must be after PlaceComments
         AddBlankLineBeforeYield::class,            // Ditto
@@ -116,7 +123,6 @@ final class Formatter implements IReadable, IWritable
         SwitchPosition::class,
         MatchPosition::class,
         AddBlankLineBeforeDeclaration::class,
-        BreakBeforeControlStructureBody::class,
         AddHangingIndentation::class,
         AlignChainedCalls::class,
         AlignArguments::class,
@@ -152,7 +158,7 @@ final class Formatter implements IReadable, IWritable
     private $ComparisonFilters;
 
     /**
-     * @var array<int,array<array{0:Rule,1:callable}>>
+     * @var array<int,array<int,array<array{0:Rule,1:callable}>>>
      */
     private $Callbacks = [];
 
@@ -160,9 +166,10 @@ final class Formatter implements IReadable, IWritable
      * @param string[] $skipRules
      * @param string[] $addRules
      */
-    public function __construct(string $tab = '    ', array $skipRules = [], array $addRules = [])
+    public function __construct(string $tab = '    ', int $tabSize = 4, array $skipRules = [], array $addRules = [])
     {
-        $this->Tab = $tab;
+        $this->Tab     = $tab;
+        $this->SoftTab = str_repeat(' ', $tabSize);
 
         if ($skipRules) {
             $this->Rules = array_diff($this->Rules, $skipRules);
@@ -269,7 +276,9 @@ final class Formatter implements IReadable, IWritable
         if (!isset($token)) {
             return '';
         }
-        $token->WhitespaceAfter |= WhitespaceType::LINE;
+        if ($token->isCode() && !$token->startOfStatement()->is(T_HALT_COMPILER)) {
+            $token->WhitespaceAfter |= WhitespaceType::LINE;
+        }
 
         $tokenLoop      = [];
         $afterTokenLoop = [];
@@ -374,14 +383,18 @@ final class Formatter implements IReadable, IWritable
         $this->RunningService = null;
 
         ksort($this->Callbacks);
-        foreach ($this->Callbacks as $index => $callbacks) {
-            foreach ($callbacks as [$rule, $callback]) {
-                $this->RunningService = $_rule = get_class($rule);
-                Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
-                $callback();
-                Sys::stopTimer($timer, 'rule');
+        foreach ($this->Callbacks as $priority => &$tokenCallbacks) {
+            ksort($tokenCallbacks);
+            foreach ($tokenCallbacks as $index => $callbacks) {
+                foreach ($callbacks as [$rule, $callback]) {
+                    $this->RunningService = $_rule = get_class($rule);
+                    Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
+                    $callback();
+                    Sys::stopTimer($timer, 'rule');
+                }
+                unset($tokenCallbacks[$index]);
             }
-            unset($this->Callbacks[$index]);
+            unset($this->Callbacks[$priority]);
         }
 
         try {
@@ -485,9 +498,9 @@ final class Formatter implements IReadable, IWritable
         return $tokens;
     }
 
-    public function registerCallback(Rule $rule, Token $first, callable $callback): void
+    public function registerCallback(Rule $rule, Token $first, callable $callback, int $priority = 100): void
     {
-        $this->Callbacks[$first->Index][] = [$rule, $callback];
+        $this->Callbacks[$priority][$first->Index][] = [$rule, $callback];
     }
 
     /**

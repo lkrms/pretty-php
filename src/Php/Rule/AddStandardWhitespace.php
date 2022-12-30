@@ -52,6 +52,13 @@ class AddStandardWhitespace implements TokenRule
 
         if ($token->is(T_CLOSE_TAG)) {
             $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
+
+            return;
+        }
+
+        if ($token->is(':') && $token->inLabel()) {
+            $token->WhitespaceAfter    |= WhitespaceType::LINE;
+            $token->WhitespaceMaskNext |= WhitespaceType::LINE;
         }
     }
 }

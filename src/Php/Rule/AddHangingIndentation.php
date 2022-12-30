@@ -29,7 +29,7 @@ class AddHangingIndentation implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->isOneOf('(', '[') && !$token->hasNewlineAfter()) {
+        if ($token->isOneOf('(', '[', '{') && !$token->hasNewlineAfterCode()) {
             $token->IsHangingParent     = true;
             $token->IsOverhangingParent =
                 // Does it have delimited values? (e.g. `list(var, var)`)
@@ -86,7 +86,7 @@ class AddHangingIndentation implements TokenRule
         $until   = $token->endOfExpression();
         $indent  = 0;
         if ($token->prevCode()->isStatementPrecursor()) {
-            if (!$parent->hasNewlineAfter()) {
+            if (!$parent->hasNewlineAfterCode()) {
                 $indent++;
             }
         } else {
@@ -149,14 +149,8 @@ class AddHangingIndentation implements TokenRule
             return false;
         }
         $prev = $token->prevCode();
-        if ($prev === $token->prev()) {
-            if (!$prev->hasNewlineAfter()) {
-                return false;
-            }
-        } else {
-            if (!$prev->collect($token)->hasInnerNewline()) {
-                return false;
-            }
+        if (!$prev->hasNewlineAfterCode()) {
+            return false;
         }
 
         // $token is regarded as a continuation of $prev if:
@@ -169,7 +163,8 @@ class AddHangingIndentation implements TokenRule
             ($token->isTernaryOperator() ||
                 (!($token->isBrace() && $token->hasNewlineBefore()) &&
                     !($prev->isStatementPrecursor() &&
-                        ($prev->parent()->isNull() || $prev->parent()->hasNewlineAfter())) &&
+                        ($prev->parent()->isNull() ||
+                            $prev->parent()->hasNewlineAfterCode())) &&
                     !($token->isOneOf(T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR) &&
                         in_array(AlignChainedCalls::class, $this->Formatter->Rules) &&
                         $token->hasNewlineBefore())));
