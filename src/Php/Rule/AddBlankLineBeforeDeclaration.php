@@ -30,7 +30,7 @@ class AddBlankLineBeforeDeclaration implements TokenRule
         $parts = $start->withNextSiblingsWhile(...TokenType::DECLARATION_PART);
         /** @var Token $last */
         $last  = $parts->last();
-        if ($last->isOneOf(T_FN, T_FUNCTION)) {
+        if ($last->isOneOf(T_FN, T_FUNCTION) && $last->nextCode()->is('(')) {
             return;
         }
 

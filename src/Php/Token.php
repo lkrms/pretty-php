@@ -881,7 +881,7 @@ class Token implements JsonSerializable
             ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE)) ||
             ($this->is(',') &&
                 (($parent = $this->parent())->isOneOf('(', '[') ||
-                    ($parent->is('{') && $parent->prevSibling(2)->is(T_MATCH)))) ||
+                    ($parent->is('{') && (!$parent->isStructuralBrace() || $parent->prevSibling(2)->is(T_MATCH))))) ||
             $this->startsAlternativeSyntax() ||
             ($this->is(':') && ($this->inSwitchCase() || $this->inLabel()));
     }

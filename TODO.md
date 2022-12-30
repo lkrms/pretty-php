@@ -32,11 +32,12 @@
 - [x] Place labels on their own line (labels are comprised of `T_STRING` folled by `':'`)
 - [x] Suppress blank lines between consecutive `yield` statements
 - [ ] Suppress blank line before `private` in `function __construct(private $var) {`
-- [ ] Suppress blank line before `use function <FUNCTION>` in `use <FQCN>` block
+- [x] Suppress blank line before `use function <FUNCTION>` in `use <FQCN>` block
 - [ ] Improve handling of `use <trait>` directives
   - [ ] Move opening brace onto the same line as `use`
   - [ ] Condense consecutive directives (even multiline ones)
 - [ ] Improve spacing in attributes (e.g. add space after `':'`)
+- [ ] Add support for named arguments (e.g. `myFunction(paramName: $value)`, `array_foobar(array: $value)`)
 - [ ] Review anonymous `class` formatting
 - [ ] Simplify `"\x00"` to `"\0"` in double-quoted strings
 
