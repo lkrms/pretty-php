@@ -5,6 +5,7 @@ namespace Lkrms\Pretty\Tests\Php;
 use FilesystemIterator as FS;
 use Lkrms\Facade\File;
 use Lkrms\Pretty\Php\Formatter;
+use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeDeclaration;
 use Lkrms\Pretty\Php\Rule\AlignAssignments;
 use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\SimplifyStrings;
@@ -87,6 +88,7 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
                         $skipRules = [
                             SimplifyStrings::class,
                             DeclareArgumentsOnOneLine::class,
+                            AddBlankLineBeforeDeclaration::class,
                             AlignAssignments::class,
                         ];
                         break;
