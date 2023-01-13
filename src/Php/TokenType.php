@@ -43,7 +43,6 @@ final class TokenType
         T_YIELD_FROM,
         ...self::COMMENT,
         ...self::OPERATOR_ASSIGNMENT,
-        ...self::OPERATOR_BITWISE,
         ...self::OPERATOR_COMPARISON_EXCEPT_COALESCE,
         ...self::OPERATOR_DOUBLE_ARROW,
         ...self::OPERATOR_LOGICAL_EXCEPT_NOT,
@@ -51,13 +50,16 @@ final class TokenType
 
     public const PRESERVE_NEWLINE_BEFORE = [
         '!', ')', ']',
+        T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+        T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
         T_CLOSE_TAG,
         T_COALESCE,
         T_NULLSAFE_OBJECT_OPERATOR,
         T_OBJECT_OPERATOR,
         ...self::OPERATOR_ARITHMETIC,
-        ...self::OPERATOR_TERNARY,
+        ...self::OPERATOR_BITWISE,
         ...self::OPERATOR_STRING,
+        ...self::OPERATOR_TERNARY,
     ];
 
     public const WHITESPACE = [
@@ -186,6 +188,12 @@ final class TokenType
         T_UNSET_CAST,     // (unset)
     ];
 
+    public const VISIBILITY = [
+        T_PRIVATE,
+        T_PROTECTED,
+        T_PUBLIC,
+    ];
+
     public const DECLARATION = [
         T_ABSTRACT,
         T_CLASS,
@@ -197,13 +205,11 @@ final class TokenType
         T_IMPLEMENTS,
         T_INTERFACE,
         T_NAMESPACE,
-        T_PRIVATE,
-        T_PROTECTED,
-        T_PUBLIC,
         T_READONLY,
         T_TRAIT,
         T_USE,
         T_VAR,
+        ...self::VISIBILITY,
     ];
 
     public const DECLARATION_PART = [

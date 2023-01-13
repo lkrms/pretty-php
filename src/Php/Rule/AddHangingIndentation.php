@@ -23,7 +23,8 @@ class AddHangingIndentation implements TokenRule
      *
      * Used to collapse unnecessary overhanging indents.
      *
-     * @var array<array{0:Token,1:Token}>
+     * @var array<Token[]>
+     * @psalm-var array<array{0:Token,1:Token}>
      */
     private $OverhangingTokens = [];
 
@@ -159,7 +160,7 @@ class AddHangingIndentation implements TokenRule
         // - $prev is not a statement delimiter in a context where indentation
         //   is inherited from enclosing tokens
         // - $token is not subject to alignment by AlignChainedCalls
-        return ($prev->Indent - $prev->Deindent) === ($token->Indent - $token->Deindent) &&
+        return ($prev->PreIndent + $prev->Indent - $prev->Deindent) === ($token->PreIndent + $token->Indent - $token->Deindent) &&
             ($token->isTernaryOperator() ||
                 (!($token->isBrace() && $token->hasNewlineBefore()) &&
                     !($prev->isStatementPrecursor() &&

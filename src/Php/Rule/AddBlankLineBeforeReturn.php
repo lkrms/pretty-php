@@ -14,11 +14,14 @@ class AddBlankLineBeforeReturn implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->is(T_RETURN) &&
-            !$token->prevStatementStart()->isOneOf(T_RETURN, T_YIELD, T_YIELD_FROM) &&
-            !($token->prev()->isOneOf(...TokenType::COMMENT) &&
-                $token->prev()->hasNewlineBefore())) {
-            $token->WhitespaceBefore |= WhitespaceType::BLANK;
+        if ($token->isOneOf(T_RETURN, T_YIELD, T_YIELD_FROM) &&
+                !$token->prevStatementStart()->isOneOf(T_RETURN, T_YIELD, T_YIELD_FROM)) {
+            $prev = $token->prev();
+            while ($prev->isOneOf(...TokenType::COMMENT) && $prev->hasNewlineBefore()) {
+                $prev->PinToCode = true;
+                $prev            = $prev->prev();
+            }
+            $token->WhitespaceBefore |= WhitespaceType::BLANK | WhitespaceType::SPACE;
         }
     }
 }

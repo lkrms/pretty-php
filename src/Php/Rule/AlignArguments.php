@@ -38,8 +38,8 @@ class AlignArguments implements TokenRule
         $alignAt   = mb_strlen($start->collect($alignWith)->render(true));
         $list->forEach(
             function (Token $t) use ($alignWith, $alignAt) {
-                [$t->Indent, $t->Deindent, $t->HangingIndent] =
-                    [$alignWith->Indent, $alignWith->Deindent, $alignWith->HangingIndent];
+                [$t->PreIndent, $t->Indent, $t->Deindent, $t->HangingIndent] =
+                    [$alignWith->PreIndent, $alignWith->Indent, $alignWith->Deindent, $alignWith->HangingIndent];
                 $t->Padding += $alignAt - (strlen($t->renderIndent(true)) + $t->Padding);
             }
         );

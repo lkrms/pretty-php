@@ -8,7 +8,7 @@ use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
-class BreakBeforeControlStructureBody implements TokenRule
+final class BreakBeforeControlStructureBody implements TokenRule
 {
     use TokenRuleTrait;
 
@@ -26,11 +26,11 @@ class BreakBeforeControlStructureBody implements TokenRule
             return;
         }
 
-        $body->WhitespaceBefore           |= WhitespaceType::LINE;
+        $body->WhitespaceBefore           |= WhitespaceType::LINE | WhitespaceType::SPACE;
         $body->WhitespaceMaskPrev         |= WhitespaceType::LINE;
         $body->WhitespaceMaskPrev         &= ~WhitespaceType::BLANK;
         $body->prev()->WhitespaceMaskNext |= WhitespaceType::LINE;
-        $body->collect($end = $body->endOfStatement())->forEach(fn(Token $t) => $t->Indent++);
+        $body->collect($end = $body->endOfStatement())->forEach(fn(Token $t) => $t->PreIndent++);
         $this->Formatter->reportProblem('Braces not used in %s control structure', $token, $end, $token->TypeName);
     }
 }

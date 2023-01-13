@@ -14,7 +14,8 @@ class SpaceOperators implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if (!($token->isOperator() || $token->isOneOf('?', ...TokenType::AMPERSAND)) ||
+        if (!($token->isOperator() ||
+                $token->isOneOf(':', '?', ...TokenType::AMPERSAND)) ||
                 $token->parent()->prev()->is(T_DECLARE)) {
             return;
         }
@@ -58,13 +59,17 @@ class SpaceOperators implements TokenRule
             }
         }
 
-        if ($token->isUnaryOperator() && !$token->nextCode()->isUnaryOperator()) {
+        if ($token->isUnaryOperator() && !$token->nextCode()->isOperator()) {
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
 
             return;
         }
 
         $token->WhitespaceAfter |= WhitespaceType::SPACE;
+
+        if ($token->is(':') && !$token->isTernaryOperator()) {
+            return;
+        }
 
         // Collapse ternary operators if there is nothing between `?` and `:`
         if ($token->isTernaryOperator() && $token->prev()->isTernaryOperator()) {

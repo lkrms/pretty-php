@@ -7,7 +7,7 @@ use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
 
-class BreakAfterSeparators implements TokenRule
+final class BreakAfterSeparators implements TokenRule
 {
     use TokenRuleTrait;
 
@@ -15,20 +15,13 @@ class BreakAfterSeparators implements TokenRule
     {
         if ($token->isCloseTagStatementTerminator()) {
             $token->prev()->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
-
-            return;
+        } elseif (($token->is(';') &&
+                !(($parent = $token->parent())->is('(') && $parent->prevCode()->is(T_FOR)) &&
+                !$token->startOfStatement()->is(T_HALT_COMPILER)) ||
+                $token->startsAlternativeSyntax()) {
+            $token->WhitespaceBefore   = WhitespaceType::NONE;
+            $token->WhitespaceMaskPrev = WhitespaceType::NONE;
+            $token->WhitespaceAfter   |= WhitespaceType::LINE | WhitespaceType::SPACE;
         }
-        if (!($token->startsAlternativeSyntax() ||
-            ($token->is(';') &&
-                // Don't break after `for` expressions
-                !(($parent = $token->parent())->is('(') &&
-                    $parent->prevCode()->is(T_FOR)) &&
-                !$token->startOfStatement()->is(T_HALT_COMPILER)))) {
-            return;
-        }
-
-        $token->WhitespaceBefore   = WhitespaceType::NONE;
-        $token->WhitespaceMaskPrev = WhitespaceType::NONE;
-        $token->WhitespaceAfter   |= WhitespaceType::LINE | WhitespaceType::SPACE;
     }
 }

@@ -22,7 +22,6 @@ use Lkrms\Pretty\Php\Filter\StripHeredocIndents;
 use Lkrms\Pretty\Php\Filter\TrimInsideCasts;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeDeclaration;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
-use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeYield;
 use Lkrms\Pretty\Php\Rule\AddEssentialWhitespace;
 use Lkrms\Pretty\Php\Rule\AddHangingIndentation;
 use Lkrms\Pretty\Php\Rule\AddIndentation;
@@ -117,8 +116,7 @@ final class Formatter implements IReadable, IWritable
         PlaceComments::class,
         PreserveNewlines::class,
         DeclareArgumentsOnOneLine::class,
-        AddBlankLineBeforeReturn::class,           // Must be after PlaceComments
-        AddBlankLineBeforeYield::class,            // Ditto
+        AddBlankLineBeforeReturn::class,    // Must be after PlaceComments
         AddIndentation::class,
         SwitchPosition::class,
         MatchPosition::class,
@@ -257,6 +255,7 @@ final class Formatter implements IReadable, IWritable
                 );
                 $opener->ClosedBy  = $virtual;
                 $virtual->OpenedBy = $opener;
+                array_pop($token->BracketStack);
                 continue;
             }
 

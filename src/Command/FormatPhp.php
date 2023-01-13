@@ -15,7 +15,6 @@ use Lkrms\Facade\Test;
 use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeDeclaration;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
-use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeYield;
 use Lkrms\Pretty\Php\Rule\AlignArguments;
 use Lkrms\Pretty\Php\Rule\AlignAssignments;
 use Lkrms\Pretty\Php\Rule\AlignChainedCalls;
@@ -52,7 +51,6 @@ class FormatPhp extends CliCommand
         'preserve-one-line'        => PreserveOneLineStatements::class,
         'one-line-arguments'       => DeclareArgumentsOnOneLine::class,
         'blank-before-return'      => AddBlankLineBeforeReturn::class,
-        'blank-before-yield'       => AddBlankLineBeforeYield::class,
         'blank-before-declaration' => AddBlankLineBeforeDeclaration::class,
         'align-chains'             => AlignChainedCalls::class,
         'align-args'               => AlignArguments::class,
