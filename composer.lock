@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c6579fbcdc7f857292f10db5204e8a53",
+    "content-hash": "1f52c9af163a5edbe3929a4e1aa54dac",
     "packages": [
         {
             "name": "filp/whoops",
@@ -79,16 +79,16 @@
         },
         {
             "name": "lkrms/dice",
-            "version": "v4.1.3",
+            "version": "v4.1.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/Dice.git",
-                "reference": "1c7ece2e497552efa725b91910778200aceca069"
+                "reference": "ffd9f7f82ebb5525b99b4d57a8efc164c76d6d9e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/Dice/zipball/1c7ece2e497552efa725b91910778200aceca069",
-                "reference": "1c7ece2e497552efa725b91910778200aceca069",
+                "url": "https://api.github.com/repos/lkrms/Dice/zipball/ffd9f7f82ebb5525b99b4d57a8efc164c76d6d9e",
+                "reference": "ffd9f7f82ebb5525b99b4d57a8efc164c76d6d9e",
                 "shasum": ""
             },
             "require": {
@@ -116,29 +116,29 @@
                 "ioc"
             ],
             "support": {
-                "source": "https://github.com/lkrms/Dice/tree/v4.1.3"
+                "source": "https://github.com/lkrms/Dice/tree/v4.1.4"
             },
-            "time": "2022-11-09T12:24:15+00:00"
+            "time": "2023-01-12T05:01:06+00:00"
         },
         {
             "name": "lkrms/util",
-            "version": "v0.19.2",
+            "version": "v0.19.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/php-util.git",
-                "reference": "1254bf4222211fa76c1fba4f90a5efb770ef7a68"
+                "reference": "b6f9c1496a1487a48a8875f25949b558519af0f3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/php-util/zipball/1254bf4222211fa76c1fba4f90a5efb770ef7a68",
-                "reference": "1254bf4222211fa76c1fba4f90a5efb770ef7a68",
+                "url": "https://api.github.com/repos/lkrms/php-util/zipball/b6f9c1496a1487a48a8875f25949b558519af0f3",
+                "reference": "b6f9c1496a1487a48a8875f25949b558519af0f3",
                 "shasum": ""
             },
             "require": {
                 "composer-runtime-api": "^2.2",
                 "filp/whoops": "^2",
-                "lkrms/dice": "^4.1.3",
-                "php": ">=7.4,<=8.2",
+                "lkrms/dice": "^4.1.4",
+                "php": ">=7.4,<8.3",
                 "psr/container": "^2",
                 "psr/log": "^1"
             },
@@ -175,9 +175,9 @@
             "description": "A lightweight PHP toolkit for elegant backend/CLI apps. May contain traces of Laravel.",
             "support": {
                 "issues": "https://github.com/lkrms/php-util/issues",
-                "source": "https://github.com/lkrms/php-util/tree/v0.19.2"
+                "source": "https://github.com/lkrms/php-util/tree/v0.19.4"
             },
-            "time": "2022-12-27T02:54:20+00:00"
+            "time": "2023-01-12T05:10:28+00:00"
         },
         {
             "name": "psr/container",
@@ -445,30 +445,30 @@
         },
         {
             "name": "doctrine/instantiator",
-            "version": "1.4.1",
+            "version": "1.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/instantiator.git",
-                "reference": "10dcfce151b967d20fde1b34ae6640712c3891bc"
+                "reference": "0a0fa9780f5d4e507415a065172d26a98d02047b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/instantiator/zipball/10dcfce151b967d20fde1b34ae6640712c3891bc",
-                "reference": "10dcfce151b967d20fde1b34ae6640712c3891bc",
+                "url": "https://api.github.com/repos/doctrine/instantiator/zipball/0a0fa9780f5d4e507415a065172d26a98d02047b",
+                "reference": "0a0fa9780f5d4e507415a065172d26a98d02047b",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.1 || ^8.0"
             },
             "require-dev": {
-                "doctrine/coding-standard": "^9",
+                "doctrine/coding-standard": "^9 || ^11",
                 "ext-pdo": "*",
                 "ext-phar": "*",
                 "phpbench/phpbench": "^0.16 || ^1",
                 "phpstan/phpstan": "^1.4",
                 "phpstan/phpstan-phpunit": "^1",
                 "phpunit/phpunit": "^7.5 || ^8.5 || ^9.5",
-                "vimeo/psalm": "^4.22"
+                "vimeo/psalm": "^4.30 || ^5.4"
             },
             "type": "library",
             "autoload": {
@@ -495,7 +495,7 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/instantiator/issues",
-                "source": "https://github.com/doctrine/instantiator/tree/1.4.1"
+                "source": "https://github.com/doctrine/instantiator/tree/1.5.0"
             },
             "funding": [
                 {
@@ -511,7 +511,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-03-03T08:28:38+00:00"
+            "time": "2022-12-30T00:15:36+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -1173,16 +1173,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.9.4",
+            "version": "1.9.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "d03bccee595e2146b7c9d174486b84f4dc61b0f2"
+                "reference": "60f3d68481eef216199eae7a2603cd5fe124d464"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/d03bccee595e2146b7c9d174486b84f4dc61b0f2",
-                "reference": "d03bccee595e2146b7c9d174486b84f4dc61b0f2",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/60f3d68481eef216199eae7a2603cd5fe124d464",
+                "reference": "60f3d68481eef216199eae7a2603cd5fe124d464",
                 "shasum": ""
             },
             "require": {
@@ -1212,7 +1212,7 @@
             ],
             "support": {
                 "issues": "https://github.com/phpstan/phpstan/issues",
-                "source": "https://github.com/phpstan/phpstan/tree/1.9.4"
+                "source": "https://github.com/phpstan/phpstan/tree/1.9.11"
             },
             "funding": [
                 {
@@ -1228,7 +1228,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-12-17T13:33:52+00:00"
+            "time": "2023-01-12T14:04:13+00:00"
         },
         {
             "name": "phpstan/phpstan-deprecation-rules",
@@ -3712,7 +3712,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=7.4,<=8.2"
+        "php": ">=7.4,<8.3"
     },
     "platform-dev": [],
     "plugin-api-version": "2.3.0"
