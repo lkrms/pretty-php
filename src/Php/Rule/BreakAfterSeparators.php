@@ -15,13 +15,28 @@ final class BreakAfterSeparators implements TokenRule
     {
         if ($token->isCloseTagStatementTerminator()) {
             $token->prev()->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
-        } elseif (($token->is(';') &&
-                !(($parent = $token->parent())->is('(') && $parent->prevCode()->is(T_FOR)) &&
-                !$token->startOfStatement()->is(T_HALT_COMPILER)) ||
-                $token->startsAlternativeSyntax()) {
-            $token->WhitespaceBefore   = WhitespaceType::NONE;
-            $token->WhitespaceMaskPrev = WhitespaceType::NONE;
-            $token->WhitespaceAfter   |= WhitespaceType::LINE | WhitespaceType::SPACE;
+
+            return;
         }
+        if ($token->is(';')) {
+            if (($parent = $token->parent())->is('(') && $parent->prevCode()->is(T_FOR)) {
+                $token->WhitespaceAfter |= WhitespaceType::SPACE;
+                $this->Formatter->registerCallback($this, $token, function () use ($token) {
+                    $token->WhitespaceMaskNext         |= WhitespaceType::SPACE;
+                    $token->next()->WhitespaceMaskPrev |= WhitespaceType::SPACE;
+                });
+
+                return;
+            }
+            if ($token->startOfStatement()->is(T_HALT_COMPILER)) {
+                return;
+            }
+        } elseif (!$token->startsAlternativeSyntax()) {
+            return;
+        }
+
+        $token->WhitespaceBefore   = WhitespaceType::NONE;
+        $token->WhitespaceMaskPrev = WhitespaceType::NONE;
+        $token->WhitespaceAfter   |= WhitespaceType::LINE | WhitespaceType::SPACE;
     }
 }
