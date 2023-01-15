@@ -42,14 +42,15 @@ final class WhitespaceType extends Enumeration
         if (!$value) {
             return '';
         }
+        $tab = ($value & self::TAB) ? '    ' : '';
         if ($value & self::BLANK) {
-            return "\n\n";
+            return "\n\n$tab";
         }
         if ($value & self::LINE) {
-            return "\n";
+            return "\n$tab";
         }
         if ($value & self::TAB) {
-            return '    ';
+            return $tab;
         }
         if ($value & self::SPACE) {
             return ' ';

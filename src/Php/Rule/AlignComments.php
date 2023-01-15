@@ -7,6 +7,7 @@ use Lkrms\Pretty\Php\Contract\BlockRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\Php\TokenCollection;
+use Lkrms\Pretty\WhitespaceType;
 
 class AlignComments implements BlockRule
 {
@@ -17,22 +18,49 @@ class AlignComments implements BlockRule
         if (count($block) < 2) {
             return;
         }
-        // Collect comments that appear beside code, but don't calculate line
-        // lengths until we know the rendering expense is necessary
-        $comments = [];
-        $first    = null;
-        $last     = null;
+        // Collect comments that appear beside code
+        $comments    = [];
+        $first       = null;
+        $last        = null;
+        $lastComment = null;
         foreach ($block as $i => $line) {
-            if (($comment = $line->getLastOf(...TokenType::COMMENT)) &&
-                    $comment->hasNewlineAfter() &&
-                    !$comment->hasNewlineBefore() &&
-                    !$comment->hasNewline()) {
-                $comments[$i] = $comment;
-                /** @var Token $first */
-                $first        = $first ?: $line[0];
-                /** @var Token $last */
-                $last         = $line[0];
+            if (!(($comment = $line->getLastOf(...TokenType::COMMENT)) &&
+                    $comment->hasNewlineAfter()) ||
+                    $comment->hasNewline()) {
+                $lastComment = null;
+                continue;
             }
+            if ($comment->hasNewlineBefore()) {
+                if (($standalone = ($prev = $comment->prev()) !== $lastComment) ||
+                        $comment->Line - $prev->Line > 1) {
+                    /**
+                     * Preserve blank lines so comments don't merge on
+                     * subsequent runs:
+                     *
+                     * ```php
+                     * $a = 1;
+                     * $b = 2;    // Comment
+                     *
+                     * // If the blank line were removed, this would become part
+                     * // of the comment beside `$b = 2;` on the next run
+                     * $c = 3;
+                     * ```
+                     */
+                    if (!$standalone) {
+                        $comment->WhitespaceBefore |= WhitespaceType::BLANK;
+                    }
+                    $lastComment = null;
+                    continue;
+                }
+                $comment->WhitespaceBefore |= WhitespaceType::TAB;
+            }
+
+            $comments[$i] = $comment;
+            /** @var Token $first */
+            $first        = $first ?: $line[0];
+            /** @var Token $last */
+            $last         = $line[0];
+            $lastComment  = $comment;
         }
         if (count($comments) < 2) {
             return;
@@ -61,9 +89,11 @@ class AlignComments implements BlockRule
             if ($comment = $comments[$i] ?? null) {
                 $line = $token->collect($comment->prev());
             }
-            $length      = mb_strlen($line->render(true));
-            $lengths[$i] = $length;
-            $max         = max($max, $length);
+            foreach (explode("\n", $line->render(true)) as $line) {
+                $length      = mb_strlen(trim($line, "\r"));
+                $lengths[$i] = $length;
+                $max         = max($max, $length);
+            }
         }
         /** @var Token $comment */
         foreach ($comments as $i => $comment) {
