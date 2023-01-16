@@ -26,13 +26,13 @@ class AlignComments implements BlockRule
             $lastComment = $prevComment ?? null;
             $prevComment = null;
             if (!(($comment = $line->getLastOf(...TokenType::COMMENT)) &&
-                    $comment->hasNewlineAfter()) ||
+                        $comment->hasNewlineAfter()) ||
                     $comment->hasNewline()) {
                 continue;
             }
             if ($comment->hasNewlineBefore()) {
                 if (($standalone = ($prev = $comment->prev()) !== $lastComment ||
-                        $comment->isMultiLineComment()) ||
+                            $comment->isMultiLineComment()) ||
                         $comment->Line - $prev->Line > 1) {
                     /**
                      * Preserve blank lines so comments don't merge on
