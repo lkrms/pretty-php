@@ -948,7 +948,7 @@ class Token implements JsonSerializable
         $parent    = $_this->parent();
 
         return ($lastInner === $_this ||                                        // `{}`
-                $lastInner->isOneOf(';') ||                                     // `{ statement; }`
+                $lastInner->isOneOf(':', ';') ||                                // `{ statement; }`
                 $lastInner->isCloseTagStatementTerminator() ||                  /* `{ statement ?>...<?php }` */
                 ($lastInner->is('}') && $lastInner->isStructuralBrace())) &&    // `{ { statement; } }`
             !(($parent->isNull() ||
