@@ -39,19 +39,3 @@
                       $b);
       ```
 
-- [ ] Fix comment indentation:
-
-      ```php
-      calling($value,
-          // comment
-              ...$otherValues);
-      ```
-
-- [ ] Add space before `static`:
-
-      ```php
-      function test():static
-      {
-      }
-      ```
-

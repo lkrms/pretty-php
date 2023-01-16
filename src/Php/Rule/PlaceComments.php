@@ -37,7 +37,7 @@ class PlaceComments implements TokenRule
 
         $next = $token->nextCode();
         if (!($next->isNull() || $next->isCloseBracket())) {
-            $this->Formatter->registerCallback($this, $token, fn() => $this->alignComment($token, $next));
+            $this->Formatter->registerCallback($this, $token, fn() => $this->alignComment($token, $next), 998);
         }
 
         $token->WhitespaceAfter |= WhitespaceType::LINE;

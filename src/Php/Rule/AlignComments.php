@@ -19,19 +19,20 @@ class AlignComments implements BlockRule
             return;
         }
         // Collect comments that appear beside code
-        $comments    = [];
-        $first       = null;
-        $last        = null;
-        $lastComment = null;
+        $comments = [];
+        $first    = null;
+        $last     = null;
         foreach ($block as $i => $line) {
+            $lastComment = $prevComment ?? null;
+            $prevComment = null;
             if (!(($comment = $line->getLastOf(...TokenType::COMMENT)) &&
                     $comment->hasNewlineAfter()) ||
                     $comment->hasNewline()) {
-                $lastComment = null;
                 continue;
             }
             if ($comment->hasNewlineBefore()) {
-                if (($standalone = ($prev = $comment->prev()) !== $lastComment) ||
+                if (($standalone = ($prev = $comment->prev()) !== $lastComment ||
+                        $comment->isMultiLineComment()) ||
                         $comment->Line - $prev->Line > 1) {
                     /**
                      * Preserve blank lines so comments don't merge on
@@ -49,7 +50,6 @@ class AlignComments implements BlockRule
                     if (!$standalone) {
                         $comment->WhitespaceBefore |= WhitespaceType::BLANK;
                     }
-                    $lastComment = null;
                     continue;
                 }
                 $comment->WhitespaceBefore |= WhitespaceType::TAB;
@@ -60,7 +60,7 @@ class AlignComments implements BlockRule
             $first        = $first ?: $line[0];
             /** @var Token $last */
             $last         = $line[0];
-            $lastComment  = $comment;
+            $prevComment  = $comment;
         }
         if (count($comments) < 2) {
             return;
@@ -88,6 +88,8 @@ class AlignComments implements BlockRule
             }
             if ($comment = $comments[$i] ?? null) {
                 $line = $token->collect($comment->prev());
+            } elseif ($token->isOneOf(...TokenType::COMMENT)) {
+                continue;
             }
             foreach (explode("\n", $line->render(true)) as $line) {
                 $length      = mb_strlen(trim($line, "\r"));
@@ -97,7 +99,7 @@ class AlignComments implements BlockRule
         }
         /** @var Token $comment */
         foreach ($comments as $i => $comment) {
-            $comment->Padding += $max - $lengths[$i];
+            $comment->Padding = $max - $lengths[$i];
         }
     }
 }
