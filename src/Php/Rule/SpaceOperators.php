@@ -15,7 +15,7 @@ class SpaceOperators implements TokenRule
     public function processToken(Token $token): void
     {
         if (!($token->isOperator() ||
-                $token->isOneOf(':', '?', ...TokenType::AMPERSAND)) ||
+                    $token->isOneOf(':', '?', ...TokenType::AMPERSAND)) ||
                 $token->parent()->prev()->is(T_DECLARE)) {
             return;
         }

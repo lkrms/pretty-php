@@ -28,14 +28,3 @@
 
 ## Bugs
 
-- [ ] Fix indentation (decrease `?`, increase `$b`):
-
-      ```php
-      usort($arr,
-          fn($a, $b) =>
-              $value === $otherValue
-                      ? 0
-                      : $a <=>
-                      $b);
-      ```
-

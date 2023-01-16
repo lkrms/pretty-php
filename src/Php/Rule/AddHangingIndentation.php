@@ -41,11 +41,13 @@ class AddHangingIndentation implements TokenRule
                 $token->hasAdjacentBlock();
         }
 
-        if (!$token->isCode() || !$this->isHanging($token)) {
+        if (!$token->isCode() ||
+                $token->is(T_CLOSE_TAG) ||
+                !$this->isHanging($token)) {
             return;
         }
 
-        $stack  = $token->BracketStack;
+        $stack  = [$token->BracketStack];
         $latest = end($token->IndentStack);
         $prev   = $token->prevCode();
         $parent = $token->parent();
@@ -67,12 +69,24 @@ class AddHangingIndentation implements TokenRule
         //         ? $contents
         //         : json_encode($contents, JSON_PRETTY_PRINT);
         //
+        // In the same way, differentiate between the start of a ternary
+        // expression and a continued one, e.g. lines 4 and 5 here:
+        //
+        //     fn($a, $b) =>
+        //         $a === $b
+        //             ? 0
+        //             : $a <=>
+        //                 $b;
+        //
         if ($latest && $latest->BracketStack === $token->BracketStack) {
             if (!$prev->isStatementPrecursor() &&
                     $latest->prevCode()->isStatementPrecursor()) {
                 $stack[] = $latest;
             } elseif ($token->isTernaryOperator() &&
                     !$latest->isTernaryOperator()) {
+                $stack[] = $token;
+            } elseif (!$token->isTernaryOperator() &&
+                    $latest->isTernaryOperator()) {
                 $stack[] = $token;
             }
         }
@@ -83,13 +97,40 @@ class AddHangingIndentation implements TokenRule
             return;
         }
 
-        $current = $token;
+        // Add indentation for any unapplied 'hanging parents' of $parent to
+        // ensure indentation accurately represents depth, e.g. in line 2 here:
+        //
+        //     if (!(($comment = $line->getLastOf(...TokenType::COMMENT)) &&
+        //                 $comment->hasNewlineAfter()) ||
+        //             $comment->hasNewline())
+        //
         $until   = $token->endOfExpression();
         $indent  = 0;
-        if ($token->prevCode()->isStatementPrecursor()) {
-            if (!$parent->hasNewlineAfterCode()) {
+        $parents = in_array($parent, $token->IndentParentStack, true)
+            ? []
+            : [$parent];
+        $current = $parent;
+        while (!($current = $current->parent())->isNull() && $current->IsHangingParent) {
+            if (!in_array($current, $token->IndentParentStack, true)) {
+                $parents[] = $current;
+                // Don't add indentation for this parent if it doesn't have
+                // hanging children anywhere in the token hierarchy
+                $children  = $current->innerSiblings()->filter(fn(Token $t) => $this->isHanging($t, true));
+                if (!count($children)) {
+                    continue;
+                }
                 $indent++;
+                if ($current->IsOverhangingParent &&
+                    $children->find(
+                        fn(Token $t) => !$t->prevCode()->isStatementPrecursor()
+                    ) !== false) {
+                    $indent++;
+                }
             }
+        }
+
+        if ($token->prevCode()->isStatementPrecursor()) {
+            $indent++;
         } else {
             $indent++;
             if ($parent->IsOverhangingParent) {
@@ -98,11 +139,13 @@ class AddHangingIndentation implements TokenRule
             }
         }
 
+        $current = $token;
         do {
             $current->HangingIndent += $indent;
             if ($current !== $token) {
                 $current->IndentBracketStack[] = $stack;
                 $current->IndentStack[]        = $token;
+                array_push($current->IndentParentStack, ...$parents);
             }
             if ($current === $until) {
                 break;
@@ -137,37 +180,38 @@ class AddHangingIndentation implements TokenRule
             // The purpose of 'overhanging' indents is to visually separate
             // distinct blocks of code that would otherwise run together, but
             // this is unnecessary when indentation increases on the next line
-            if ($nextIndent > $indent ||
+            if ($next->isNull() ||
+                    $nextIndent > $indent ||
                     $indent - $nextIndent > ($adjust ? 0 : 1)) {
                 $token->collect($until)->forEach(fn(Token $t) => $t->HangingIndent--);
             }
         }
     }
 
-    private function isHanging(Token $token): bool
+    private function isHanging(Token $token, bool $ignoreIndent = false): bool
     {
-        if ($token->is(T_CLOSE_TAG)) {
-            return false;
-        }
         $prev = $token->prevCode();
-        if (!$prev->hasNewlineAfterCode()) {
-            return false;
-        }
 
         // $token is regarded as a continuation of $prev if:
-        // - $token and $prev both have the same level of indentation;
-        // - $token is not an opening brace (`{`) on its own line; and
+        // - $token and $prev both have the same level of indentation
+        // - $token is not an opening brace (`{`) on its own line
         // - $prev is not a statement delimiter in a context where indentation
         //   is inherited from enclosing tokens
         // - $token is not subject to alignment by AlignChainedCalls
-        return ($prev->PreIndent + $prev->Indent - $prev->Deindent) === ($token->PreIndent + $token->Indent - $token->Deindent) &&
-            ($token->isTernaryOperator() ||
-                (!($token->isBrace() && $token->hasNewlineBefore()) &&
-                    !($prev->isStatementPrecursor() &&
-                        ($prev->parent()->isNull() ||
-                            $prev->parent()->hasNewlineAfterCode())) &&
-                    !($token->isOneOf(T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR) &&
-                        in_array(AlignChainedCalls::class, $this->Formatter->Rules) &&
-                        $token->hasNewlineBefore())));
+        if (!$prev->hasNewlineAfterCode() ||
+            (!$ignoreIndent && $this->indent($prev) !== $this->indent($token)) ||
+            $token->isBrace() ||
+            ($prev->isStatementPrecursor() && !$prev->parent()->IsHangingParent) ||
+            ($token->isOneOf(T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR) &&
+                in_array(AlignChainedCalls::class, $this->Formatter->Rules))) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function indent(Token $token): int
+    {
+        return $token->PreIndent + $token->Indent - $token->Deindent;
     }
 }

@@ -131,6 +131,11 @@ class Token implements JsonSerializable
     public $IndentStack = [];
 
     /**
+     * @var Token[]
+     */
+    public $IndentParentStack = [];
+
+    /**
      * @var array<Token[]>
      */
     public $IndentBracketStack = [];
@@ -292,8 +297,17 @@ class Token implements JsonSerializable
         foreach ($a['IndentStack'] as &$t) {
             $t = $t->Index;
         }
+        foreach ($a['IndentParentStack'] as &$t) {
+            $t = $t->Index;
+        }
         foreach ($a['IndentBracketStack'] as &$bracketStack) {
             foreach ($bracketStack as &$t) {
+                if (is_array($t)) {
+                    foreach ($t as &$_t) {
+                        $_t = $_t->Index;
+                    }
+                    continue;
+                }
                 $t = $t->Index;
             }
         }
@@ -316,6 +330,7 @@ class Token implements JsonSerializable
             $a['Type'],
             //$a['BracketStack'],
             //$a['IndentStack'],
+            //$a['IndentParentStack'],
             //$a['IndentBracketStack'],
             $a['ChainOpenedBy'],
             $a['HeredocOpenedBy'],
