@@ -17,7 +17,7 @@ use Lkrms\Pretty\Php\Token;
  * - the single-quoted string contains a mix of `\` and `\\` and the
  *   double-quoted equivalent contains one or the other, but not both.
  */
-class SimplifyStrings implements TokenRule
+final class SimplifyStrings implements TokenRule
 {
     use TokenRuleTrait;
 
@@ -29,7 +29,7 @@ class SimplifyStrings implements TokenRule
 
         // \x00 -> \t, \v, \f, \x0e -> \x1f is effectively \x00 -> \x1f without
         // LF (\n) or CR (\r), which aren't escaped unless already escaped
-        $escape = "\x00..\t\v\f\x0e..\x1f\"\$\\";
+        $escape = "\0..\t\v\f\x0e..\x1f\"\$\\";
         $match  = '';
 
         if (!$token->hasNewline()) {
@@ -50,7 +50,7 @@ class SimplifyStrings implements TokenRule
         $string = '';
         eval("\$string = {$token->Code};");
         $double = $this->doubleQuote($string, $escape);
-        if (preg_match("/[\\x00-\\t\\v\\f\\x0e-\\x1f{$match}]/", $string)) {
+        if (preg_match("/[\\x00-\\x09\\x0b\\x0c\\x0e-\\x1f{$match}]/", $string)) {
             $token->Code = $double;
 
             return;
@@ -82,7 +82,9 @@ class SimplifyStrings implements TokenRule
             '/\\\\(?:(?P<octal>[0-7]{3})|.)/',
             fn(array $matches) =>
                 ($matches['octal'] ?? null)
-                    ? sprintf('\x%02x', octdec($matches['octal']))
+                    ? (($dec = octdec($matches['octal']))
+                        ? sprintf('\x%02x', $dec)
+                        : '\0')
                     : $matches[0],
             addcslashes($string, $escape)
         ) . '"';

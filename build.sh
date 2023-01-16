@@ -32,4 +32,4 @@ rm -rf "$BUILD_DIR" "$BUILD_TARGET" &&
     composer install -d "$BUILD_DIR" --no-dev ||
     _die "error preparing $PWD/$BUILD_DIR"
 
-vendor/bin/phar-composer build "$BUILD_DIR/" "$BUILD_TARGET"
+php -d phar.readonly=off vendor/bin/phar-composer build "$BUILD_DIR/" "$BUILD_TARGET"

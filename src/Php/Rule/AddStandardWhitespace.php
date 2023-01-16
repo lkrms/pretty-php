@@ -59,6 +59,17 @@ class AddStandardWhitespace implements TokenRule
         if ($token->is(':') && $token->inLabel()) {
             $token->WhitespaceAfter    |= WhitespaceType::LINE;
             $token->WhitespaceMaskNext |= WhitespaceType::LINE;
+
+            return;
+        }
+
+        // Suppress whitespace in the directive section of `declare` blocks
+        if ($token->is('(') && $token->prevCode()->is(T_DECLARE)) {
+            $first = $token->inner()
+                           ->forEach(fn(Token $t) =>
+                               $t->WhitespaceMaskNext = WhitespaceType::NONE)
+                           ->first();
+            !$first || $first->WhitespaceMaskPrev = WhitespaceType::NONE;
         }
     }
 }

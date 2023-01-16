@@ -37,17 +37,18 @@ class PlaceComments implements TokenRule
 
         $next = $token->nextCode();
         if (!($next->isNull() || $next->isCloseBracket())) {
-            $this->Formatter->registerCallback($this, $token, fn() => $this->alignComment($token, $next));
+            $this->Formatter->registerCallback($this, $token, fn() => $this->alignComment($token, $next), 998);
         }
 
         $token->WhitespaceAfter |= WhitespaceType::LINE;
         if (!$token->is(T_DOC_COMMENT)) {
-            $token->WhitespaceBefore |= WhitespaceType::LINE;
+            $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
             $token->PinToCode         = true;
 
             return;
         }
-        $token->WhitespaceBefore |= $token->hasNewline() ? WhitespaceType::BLANK : WhitespaceType::LINE;
+        $token->WhitespaceBefore |= WhitespaceType::SPACE
+            | ($token->hasNewline() ? WhitespaceType::BLANK : WhitespaceType::LINE);
         // PHPDoc comments immediately before namespace declarations are
         // generally associated with the file, not the namespace
         if ($token->next()->isDeclaration(T_NAMESPACE)) {
@@ -63,7 +64,8 @@ class PlaceComments implements TokenRule
 
     private function alignComment(Token $token, Token $next): void
     {
-        [$token->Indent, $token->Deindent, $token->HangingIndent, $token->Padding] = [
+        [$token->PreIndent, $token->Indent, $token->Deindent, $token->HangingIndent, $token->Padding] = [
+            $next->PreIndent,
             $next->Indent,
             $next->Deindent,
             $next->HangingIndent,

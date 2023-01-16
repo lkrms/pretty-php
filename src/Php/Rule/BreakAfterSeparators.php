@@ -7,7 +7,7 @@ use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
 
-class BreakAfterSeparators implements TokenRule
+final class BreakAfterSeparators implements TokenRule
 {
     use TokenRuleTrait;
 
@@ -18,12 +18,20 @@ class BreakAfterSeparators implements TokenRule
 
             return;
         }
-        if (!($token->startsAlternativeSyntax() ||
-            ($token->is(';') &&
-                // Don't break after `for` expressions
-                !(($parent = $token->parent())->is('(') &&
-                    $parent->prevCode()->is(T_FOR)) &&
-                !$token->startOfStatement()->is(T_HALT_COMPILER)))) {
+        if ($token->is(';')) {
+            if (($parent = $token->parent())->is('(') && $parent->prevCode()->is(T_FOR)) {
+                $token->WhitespaceAfter |= WhitespaceType::SPACE;
+                $this->Formatter->registerCallback($this, $token, function () use ($token) {
+                    $token->WhitespaceMaskNext         |= WhitespaceType::SPACE;
+                    $token->next()->WhitespaceMaskPrev |= WhitespaceType::SPACE;
+                });
+
+                return;
+            }
+            if ($token->startOfStatement()->is(T_HALT_COMPILER)) {
+                return;
+            }
+        } elseif (!$token->startsAlternativeSyntax()) {
             return;
         }
 

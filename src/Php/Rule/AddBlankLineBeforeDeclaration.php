@@ -15,15 +15,17 @@ class AddBlankLineBeforeDeclaration implements TokenRule
     public function processToken(Token $token): void
     {
         if (!$token->isOneOf(...TokenType::DECLARATION) ||
-                ($token->is(T_USE) && $token->prevCode()->is(')'))) {
+                ($token->is(T_USE) && $token->prevCode()->is(')')) ||
+                ($token->isOneOf(...TokenType::VISIBILITY) && $token->inFunctionDeclaration())) {
             return;
         }
+
         /** @var Token $start */
         $start = $token->withPrevSiblingsWhile(...TokenType::DECLARATION_PART)->last();
-        if ($start->Tags['StartOfDeclaration'] ?? null) {
+        if ($start->Tags[__CLASS__ . '/start'] ?? null) {
             return;
         }
-        $start->Tags['StartOfDeclaration'] = true;
+        $start->Tags[__CLASS__ . '/start'] = true;
         if ($start !== $start->startOfStatement()) {
             return;
         }
@@ -34,23 +36,18 @@ class AddBlankLineBeforeDeclaration implements TokenRule
             return;
         }
 
-        // If the same DECLARATION_CONDENSE token types appear in this
-        // statement as in the last one, don't add a blank line between them
-        $types = $parts->getAnyOf(...TokenType::DECLARATION_CONDENSE)->getTypes();
-        if ($types) {
-            $block      = $start->collect($start->endOfStatement());
-            $hasNewline = $block->hasOuterNewline();
-            if (!$hasNewline) {
-                $prev = $start->prevCode()
-                              ->startOfStatement();
-                $start->Tags['HasNoInnerNewline'] = true;
-                if ($prev->declarationParts()->hasOneOf(...$types) &&
-                        ($prev->Tags['HasNoInnerNewline'] ?? null)) {
-                    $start->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
+        // If the same DECLARATION_CONDENSE token types appear in this statement
+        // as in the last one, don't add a blank line between them
+        if (($types = $parts->getAnyOf(...TokenType::DECLARATION_CONDENSE)->getTypes()) &&
+            ($prev = $start->prevCode()->startOfStatement())->declarationParts()->hasOneOf(...$types) &&
+            // `use` statements are always condensed, otherwise this and the
+            // previous statement can't have newlines
+            ($parts->hasOneOf(T_USE) ||
+                (!$start->collect($start->endOfStatement())->hasOuterNewline() &&
+                    !$prev->collect($start->prev())->hasOuterNewline()))) {
+            $start->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
 
-                    return;
-                }
-            }
+            return;
         }
 
         $start->WhitespaceBefore |= WhitespaceType::BLANK;

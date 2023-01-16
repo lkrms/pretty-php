@@ -10,13 +10,8 @@ use Lkrms\Pretty\WhitespaceType;
 /**
  * Suppress changes to whitespace within strings and heredocs
  *
- * Assigns:
- * - {@see Token::$StringOpenedBy}
- * - {@see Token::$HeredocOpenedBy}
- * - {@see Token::$WhitespaceMaskPrev} = {@see WhitespaceType::NONE};
- * - {@see Token::$WhitespaceMaskNext} = {@see WhitespaceType::NONE};
  */
-class ProtectStrings implements TokenRule
+final class ProtectStrings implements TokenRule
 {
     use TokenRuleTrait;
 

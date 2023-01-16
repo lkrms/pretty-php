@@ -11,6 +11,12 @@ class BracePosition implements TokenRule
 {
     use TokenRuleTrait;
 
+    /**
+     * @var array<Token[]>
+     * @psalm-var array<array{0:Token,1:Token}>
+     */
+    private $BracketBracePairs = [];
+
     public function processToken(Token $token): void
     {
         if (!$token->isStructuralBrace()) {
@@ -19,6 +25,9 @@ class BracePosition implements TokenRule
 
         $next = $token->next();
         if ($token->is('{')) {
+            if (($prev = $token->prev())->is(')')) {
+                $this->BracketBracePairs[] = [$prev, $token];
+            }
             $token->WhitespaceBefore |= $token->isDeclaration() &&
                 (($parent = $token->parent())->isNull() || $parent->is('{')) &&
                 (($prev = ($start = $token->startOfExpression())->prevCode())->isNull() ||
@@ -48,5 +57,15 @@ class BracePosition implements TokenRule
         }
 
         $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
+    }
+
+    public function beforeRender(): void
+    {
+        foreach ($this->BracketBracePairs as [$bracket, $brace]) {
+            if ($bracket->hasNewlineBefore() && $brace->hasNewlineBefore()) {
+                $brace->WhitespaceBefore  |= WhitespaceType::SPACE;
+                $brace->WhitespaceMaskPrev = WhitespaceType::SPACE;
+            }
+        }
     }
 }

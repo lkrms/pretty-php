@@ -14,7 +14,7 @@ class SwitchPosition implements TokenRule
     public function processToken(Token $token): void
     {
         if ($token->is(T_SWITCH)) {
-            $token->nextSibling(2)->inner()->forEach(fn(Token $t) => $t->Indent++);
+            $token->nextSibling(2)->inner()->forEach(fn(Token $t) => $t->PreIndent++);
 
             return;
         }
