@@ -1,6 +1,7 @@
 {
     "name": "lkrms/pretty-php",
     "description": "The perfect PHP formatter doesn't exi...",
+    "license": "MIT",
     "bin": [
         "bin/pretty-php"
     ],
