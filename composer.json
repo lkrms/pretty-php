@@ -1,6 +1,6 @@
 {
     "name": "lkrms/pretty-php",
-    "description": "Just another PHP formatter",
+    "description": "The perfect PHP formatter doesn't exi...",
     "bin": [
         "bin/pretty-php"
     ],
