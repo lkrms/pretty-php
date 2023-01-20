@@ -25,6 +25,12 @@
 - [ ] Review anonymous `class` formatting
 - [ ] Match indentation of `?>` tags with their respective `<?php` tags
 - [ ] Sort `use <FQCN>` blocks
+- [ ] Extend one-line statement checks to the end of multi-block control structures, e.g.
+
+      ```php
+      // No newline after `c();`
+      if ($a) c(); else b();
+      ```
 
 ## Bugs
 
