@@ -94,7 +94,7 @@ class FormatPhp extends CliCommand
                 ->valueName('SIZE')
                 ->description('Indent using tabs')
                 ->optionType(CliOptionType::ONE_OF_OPTIONAL)
-                ->allowedValues(['4', '8'])
+                ->allowedValues(['2', '4', '8'])
                 ->defaultValue('4'),
             CliOption::build()
                 ->long('space')
@@ -102,7 +102,7 @@ class FormatPhp extends CliCommand
                 ->valueName('SIZE')
                 ->description('Indent using spaces')
                 ->optionType(CliOptionType::ONE_OF_OPTIONAL)
-                ->allowedValues(['2', '4'])
+                ->allowedValues(['2', '4', '8'])
                 ->defaultValue('4'),
             CliOption::build()
                 ->long('skip')
