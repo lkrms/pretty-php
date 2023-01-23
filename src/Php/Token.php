@@ -1148,6 +1148,10 @@ class Token implements JsonSerializable
             } while ($current->HeredocOpenedBy === $this);
             $indent = $this->renderIndent($softTabs);
             if ($padding = str_repeat(' ', $this->startOfLine()->Padding)) {
+                if ($indent && $indent[0] === "\t") {
+                    $heredoc = str_replace("\n$indent", "\n" . ($newIndent = $this->renderIndent(true)), $heredoc);
+                    $indent  = $newIndent;
+                }
                 $heredoc = str_replace("\n$indent", "\n$indent$padding", $heredoc);
             }
             $heredoc = str_replace("\n$indent$padding\n", "\n\n", $heredoc);
