@@ -1154,7 +1154,8 @@ class Token implements JsonSerializable
                 }
                 $heredoc = str_replace("\n$indent", "\n$indent$padding", $heredoc);
             }
-            $heredoc = str_replace("\n$indent$padding\n", "\n\n", $heredoc);
+            $regex   = preg_quote("$indent$padding", '/');
+            $heredoc = preg_replace("/\\n$regex\$/m", "\n", $heredoc);
         } elseif ($this->isOneOf(...TokenType::DO_NOT_MODIFY)) {
             return $this->Code;
         } elseif ($this->isMultiLineComment(true)) {

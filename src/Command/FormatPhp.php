@@ -69,7 +69,7 @@ class FormatPhp extends CliCommand
         'space-after-not'  => AddSpaceAfterNot::class,
     ];
 
-    public function getDescription(): string
+    public function getShortDescription(): string
     {
         return 'Format a PHP file';
     }
@@ -161,6 +161,16 @@ class FormatPhp extends CliCommand
                 ->description('Suppress unnecessary output (may be given multiple times)')
                 ->multipleAllowed()
         ];
+    }
+
+    public function getLongDescription(): ?string
+    {
+        return null;
+    }
+
+    public function getUsageSections(): ?array
+    {
+        return null;
     }
 
     protected function run(...$params)
