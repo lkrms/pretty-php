@@ -29,7 +29,11 @@ BUILD_TARGET=${BUILD_DIR%/*}/${PWD##*/}.phar
 rm -rf "$BUILD_DIR" "$BUILD_TARGET" &&
     mkdir -pv "$BUILD_DIR" &&
     cp -Rv !(build*|docs|phpstan*|phpunit*|tests*|var|vendor|LICENSE*|README*|*.md|*.txt|*.code-workspace) "$BUILD_DIR/" &&
-    composer install -d "$BUILD_DIR" --no-dev ||
+    { ! VERSION=$(git describe 2>/dev/null | grep -Eo '^v?[0-9]+(\.[0-9]+){2,}') ||
+        { composer config -d "$BUILD_DIR" version "$VERSION" &&
+            composer update -d "$BUILD_DIR" --no-install --no-plugins --lock; }; } &&
+    # Remove --classmap-authoritative if support for classes generated at runtime is required
+    composer install -d "$BUILD_DIR" --no-dev --no-plugins --optimize-autoloader --classmap-authoritative ||
     _die "error preparing $PWD/$BUILD_DIR"
 
 php -d phar.readonly=off vendor/bin/phar-composer build "$BUILD_DIR/" "$BUILD_TARGET"
