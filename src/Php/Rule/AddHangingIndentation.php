@@ -15,19 +15,6 @@ class AddHangingIndentation implements TokenRule
 {
     use TokenRuleTrait;
 
-    /**
-     * => [$token, $token->endOfExpression()]
-     *
-     * Entries represent a range of tokens where an 'overhanging' indent has
-     * been applied in addition to a hanging indent.
-     *
-     * Used to collapse unnecessary overhanging indents.
-     *
-     * @var array<Token[]>
-     * @psalm-var array<array{0:Token,1:Token}>
-     */
-    private $OverhangingTokens = [];
-
     public function processToken(Token $token): void
     {
         if ($token->isOneOf('(', '[', '{') && !$token->hasNewlineAfterCode()) {
@@ -113,17 +100,16 @@ class AddHangingIndentation implements TokenRule
         while (!($current = $current->parent())->isNull() && $current->IsHangingParent) {
             if (!in_array($current, $token->IndentParentStack, true)) {
                 $parents[] = $current;
-                // Don't add indentation for this parent if it doesn't have
-                // hanging children anywhere in the token hierarchy
+                // Don't add indentation for this parent if it doesn't have any
+                // hanging children
                 $children  = $current->innerSiblings()->filter(fn(Token $t) => $this->isHanging($t, true));
                 if (!count($children)) {
                     continue;
                 }
                 $indent++;
                 if ($current->IsOverhangingParent &&
-                    $children->find(
-                        fn(Token $t) => !$t->prevCode()->isStatementPrecursor()
-                    ) !== false) {
+                    $children->find(fn(Token $t) =>
+                        !$t->prevCode()->isStatementPrecursor())) {
                     $indent++;
                 }
             }
@@ -135,8 +121,11 @@ class AddHangingIndentation implements TokenRule
             $indent++;
             if ($parent->IsOverhangingParent) {
                 $indent++;
-                $this->OverhangingTokens[$token->Index] = [$token, $until];
             }
+        }
+
+        if ($indent > 1) {
+            $this->Formatter->registerCallback($this, $token, fn() => $this->maybeCollapseOverhanging($token, $until, $indent - 1), 700);
         }
 
         $current = $token;
@@ -154,16 +143,9 @@ class AddHangingIndentation implements TokenRule
         } while (!$current->isNull());
     }
 
-    public function afterTokenLoop(): void
+    private function maybeCollapseOverhanging(Token $token, Token $until, int $overhang): void
     {
-        /**
-         * @var Token $token
-         * @var Token $until
-         */
-        foreach ($this->OverhangingTokens as [$token, $until]) {
-            if (!$token->HangingIndent) {
-                continue;
-            }
+        while ($token->HangingIndent && $overhang) {
             $indent     = $token->indent();
             $next       = $token;
             $nextIndent = 0;
@@ -174,17 +156,21 @@ class AddHangingIndentation implements TokenRule
                 }
                 $nextIndent = $next->indent();
             } while ($nextIndent === $indent);
-            // If $nextLine falls between $token and $until, adjust the
-            // calculation below accordingly
-            $adjust = !$next->isNull() && $next->Index <= $until->Index;
-            // The purpose of 'overhanging' indents is to visually separate
-            // distinct blocks of code that would otherwise run together, but
-            // this is unnecessary when indentation increases on the next line
-            if ($next->isNull() ||
-                    $nextIndent > $indent ||
-                    $indent - $nextIndent > ($adjust ? 0 : 1)) {
-                $token->collect($until)->forEach(fn(Token $t) => $t->HangingIndent--);
+            // Drop $indent and $nextLine (if it falls between $token and
+            // $until) for comparison
+            $indent--;
+            $nextIndent = $next->isNull() || $next->Index > $until->Index
+                ? $nextIndent
+                : $nextIndent - 1;
+            // The purpose of overhanging indents is to visually separate
+            // distinct blocks of code that would otherwise run together,
+            // but this is unnecessary when indentation changes on the next
+            // line
+            if ($nextIndent === $indent && !$next->isNull()) {
+                break;
             }
+            $token->collect($until)->forEach(fn(Token $t) => $t->HangingIndent--);
+            $overhang--;
         }
     }
 

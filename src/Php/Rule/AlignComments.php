@@ -91,7 +91,7 @@ class AlignComments implements BlockRule
             } elseif ($token->isOneOf(...TokenType::COMMENT)) {
                 continue;
             }
-            foreach (explode("\n", $line->render(true)) as $line) {
+            foreach (explode("\n", ltrim($line->render(true, false), "\n")) as $line) {
                 $length      = mb_strlen(trim($line, "\r"));
                 $lengths[$i] = $length;
                 $max         = max($max, $length);

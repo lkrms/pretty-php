@@ -203,88 +203,98 @@ final class Formatter implements IReadable, IWritable
 
     public function format(string $code): string
     {
+        Sys::startTimer(__METHOD__ . '#parse-input');
+        $this->Tokens = [];
         try {
-            [$this->PlainTokens, $this->Tokens] = [token_get_all($code, TOKEN_PARSE), []];
+            $this->PlainTokens = token_get_all($code, TOKEN_PARSE);
         } catch (ParseError $ex) {
             throw new PrettyBadSyntaxException('Formatting failed: input cannot be parsed', $ex);
+        } finally {
+            Sys::stopTimer(__METHOD__ . '#parse-input');
         }
 
+        $tokens = $this->filter($this->PlainTokens, ...$this->Filters);
+
+        Sys::startTimer(__METHOD__ . '#build-tokens');
         $bracketStack = [];
         $altStack     = [];
         $openTag      = null;
-        foreach ($this->filter($this->PlainTokens, ...$this->Filters) as $index => $plainToken) {
-            $this->Tokens[$index] = $token = new Token(
-                $index,
-                $plainToken,
-                end($this->Tokens) ?: null,
-                $bracketStack,
-                $this
-            );
-
-            if ($token->isOpenBracket()) {
-                $bracketStack[] = $token;
-                continue;
-            }
-
-            if ($token->isCloseBracket()) {
-                $opener           = array_pop($bracketStack);
-                $opener->ClosedBy = $token;
-                $token->OpenedBy  = $opener;
-                continue;
-            }
-
-            if ($token->startsAlternativeSyntax()) {
-                $bracketStack[] = $token;
-                $altStack[]     = $token;
-                continue;
-            }
-
-            if ($token->endsAlternativeSyntax()) {
-                $opener    = array_pop($bracketStack);
-                $altOpener = array_pop($altStack);
-                if ($opener !== $altOpener) {
-                    throw new RuntimeException('Formatting failed: unable to traverse control structures');
-                }
-                $virtual = new VirtualToken(
-                    $this->PlainTokens,
-                    $this->Tokens,
-                    $token,
-                    $token->BracketStack,
-                    $this,
-                    $bracketStack
+        try {
+            foreach ($tokens as $index => $plainToken) {
+                $this->Tokens[$index] = $token = new Token(
+                    $index,
+                    $plainToken,
+                    end($this->Tokens) ?: null,
+                    $bracketStack,
+                    $this
                 );
-                $opener->ClosedBy  = $virtual;
-                $virtual->OpenedBy = $opener;
-                array_pop($token->BracketStack);
-                continue;
+
+                if ($token->isOpenBracket()) {
+                    $bracketStack[] = $token;
+                    continue;
+                }
+
+                if ($token->isCloseBracket()) {
+                    $opener           = array_pop($bracketStack);
+                    $opener->ClosedBy = $token;
+                    $token->OpenedBy  = $opener;
+                    continue;
+                }
+
+                if ($token->startsAlternativeSyntax()) {
+                    $bracketStack[] = $token;
+                    $altStack[]     = $token;
+                    continue;
+                }
+
+                if ($token->endsAlternativeSyntax()) {
+                    $opener    = array_pop($bracketStack);
+                    $altOpener = array_pop($altStack);
+                    if ($opener !== $altOpener) {
+                        throw new RuntimeException('Formatting failed: unable to traverse control structures');
+                    }
+                    $virtual = new VirtualToken(
+                        $this->PlainTokens,
+                        $this->Tokens,
+                        $token,
+                        $token->BracketStack,
+                        $this,
+                        $bracketStack
+                    );
+                    $opener->ClosedBy  = $virtual;
+                    $virtual->OpenedBy = $opener;
+                    array_pop($token->BracketStack);
+                    continue;
+                }
+
+                if ($token->isOneOf(T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO)) {
+                    $openTag = $token;
+                    continue;
+                }
+
+                if ($token->is(T_CLOSE_TAG)) {
+                    /** @var Token $openTag */
+                    $openTag->ClosedBy = $token;
+                    $token->OpenedBy   = $openTag;
+                    $openTag           = null;
+                }
             }
 
-            if ($token->isOneOf(T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO)) {
-                $openTag = $token;
-                continue;
+            if (!isset($token)) {
+                return '';
             }
-
-            if ($token->is(T_CLOSE_TAG)) {
-                /** @var Token $openTag */
-                $openTag->ClosedBy = $token;
-                $token->OpenedBy   = $openTag;
-                $openTag           = null;
+            if ($token->isCode() && !$token->startOfStatement()->is(T_HALT_COMPILER)) {
+                $token->WhitespaceAfter |= WhitespaceType::LINE;
             }
+        } finally {
+            Sys::stopTimer(__METHOD__ . '#build-tokens');
         }
 
-        if (!isset($token)) {
-            return '';
-        }
-        if ($token->isCode() && !$token->startOfStatement()->is(T_HALT_COMPILER)) {
-            $token->WhitespaceAfter |= WhitespaceType::LINE;
-        }
-
-        $tokenLoop      = [];
-        $afterTokenLoop = [];
-        $blockLoop      = [];
-        $afterBlockLoop = [];
-        $beforeRender   = [];
-        $index          = 0;
+        Sys::startTimer(__METHOD__ . '#sort-rules');
+        $tokenLoop    = [];
+        $blockLoop    = [];
+        $beforeRender = [];
+        $index        = 0;
         foreach ($this->Rules as $_rule) {
             if (!is_a($_rule, Rule::class, true)) {
                 throw new RuntimeException('Not a ' . Rule::class . ': ' . $_rule);
@@ -292,21 +302,19 @@ final class Formatter implements IReadable, IWritable
             /** @var Rule $rule */
             $rule = new $_rule($this);
             if ($rule instanceof TokenRule) {
-                $tokenLoop[]      = [$this->getPriority($rule, TokenRule::PROCESS_TOKEN), $index, $rule];
-                $afterTokenLoop[] = [$this->getPriority($rule, TokenRule::AFTER_TOKEN_LOOP), $index, $rule];
+                $tokenLoop[] = [$this->getPriority($rule, TokenRule::PROCESS_TOKEN), $index, $rule];
             }
             if ($rule instanceof BlockRule) {
-                $blockLoop[]      = [$this->getPriority($rule, BlockRule::PROCESS_BLOCK), $index, $rule];
-                $afterBlockLoop[] = [$this->getPriority($rule, BlockRule::AFTER_BLOCK_LOOP), $index, $rule];
+                $blockLoop[] = [$this->getPriority($rule, BlockRule::PROCESS_BLOCK), $index, $rule];
             }
             $beforeRender[] = [$this->getPriority($rule, Rule::BEFORE_RENDER), $index, $rule];
             $index++;
         }
-        $tokenLoop      = $this->sortRules($tokenLoop);
-        $afterTokenLoop = $this->sortRules($afterTokenLoop);
-        $blockLoop      = $this->sortRules($blockLoop);
-        $afterBlockLoop = $this->sortRules($afterBlockLoop);
-        $beforeRender   = $this->sortRules($beforeRender);
+        $tokenLoop    = $this->sortRules($tokenLoop);
+        $blockLoop    = $this->sortRules($blockLoop);
+        $beforeRender = $this->sortRules($beforeRender);
+        Sys::stopTimer(__METHOD__ . '#sort-rules');
+
         /** @var TokenRule $rule */
         foreach ($tokenLoop as $rule) {
             $this->RunningService = $_rule = get_class($rule);
@@ -317,15 +325,9 @@ final class Formatter implements IReadable, IWritable
             }
             Sys::stopTimer($timer, 'rule');
         }
-        /** @var TokenRule $rule */
-        foreach ($afterTokenLoop as $rule) {
-            $this->RunningService = $_rule = get_class($rule);
-            Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
-            $rule->afterTokenLoop();
-            Sys::stopTimer($timer, 'rule');
-        }
         $this->RunningService = null;
 
+        Sys::startTimer(__METHOD__ . '#find-blocks');
         /** @var array<TokenCollection[]> $blocks */
         $blocks = [];
         /** @var TokenCollection[] $block */
@@ -355,6 +357,7 @@ final class Formatter implements IReadable, IWritable
         }
         $block[]  = $line;
         $blocks[] = $block;
+        Sys::stopTimer(__METHOD__ . '#find-blocks');
 
         /** @var BlockRule $rule */
         foreach ($blockLoop as $rule) {
@@ -365,19 +368,14 @@ final class Formatter implements IReadable, IWritable
             }
             Sys::stopTimer($timer, 'rule');
         }
-        /** @var BlockRule $rule */
-        foreach ($afterBlockLoop as $rule) {
-            $this->RunningService = $_rule = get_class($rule);
-            Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
-            $rule->afterBlockLoop();
-            Sys::stopTimer($timer, 'rule');
-        }
         $this->RunningService = null;
 
         /** @var Rule $rule */
         foreach ($beforeRender as $rule) {
-            $this->RunningService = get_class($rule);
+            $this->RunningService = $_rule = get_class($rule);
+            Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
             $rule->beforeRender();
+            Sys::stopTimer($timer, 'rule');
         }
         $this->RunningService = null;
 
@@ -396,6 +394,7 @@ final class Formatter implements IReadable, IWritable
             unset($this->Callbacks[$priority]);
         }
 
+        Sys::startTimer(__METHOD__ . '#render');
         try {
             $out = '';
             foreach ($this->Tokens as $token) {
@@ -409,8 +408,11 @@ final class Formatter implements IReadable, IWritable
                 null,
                 $ex
             );
+        } finally {
+            Sys::stopTimer(__METHOD__ . '#render');
         }
 
+        Sys::startTimer(__METHOD__ . '#parse-output');
         try {
             $tokensOut = token_get_all($out, TOKEN_PARSE);
         } catch (ParseError $ex) {
@@ -421,6 +423,8 @@ final class Formatter implements IReadable, IWritable
                 null,
                 $ex
             );
+        } finally {
+            Sys::stopTimer(__METHOD__ . '#parse-output');
         }
 
         $before = $this->strip($this->PlainTokens, ...$this->ComparisonFilters);
@@ -465,6 +469,7 @@ final class Formatter implements IReadable, IWritable
      */
     private function filter(array $tokens, TokenFilter ...$filters): array
     {
+        Sys::startTimer(__METHOD__);
         foreach ($filters as $filter) {
             foreach ($tokens as $key => &$token) {
                 if (!$filter($token)) {
@@ -473,6 +478,7 @@ final class Formatter implements IReadable, IWritable
             }
             unset($token);
         }
+        Sys::stopTimer(__METHOD__);
 
         return $tokens;
     }
@@ -483,7 +489,9 @@ final class Formatter implements IReadable, IWritable
      */
     private function strip(array $tokens, TokenFilter ...$filters): array
     {
-        $tokens = array_values($this->filter($tokens, ...$filters));
+        $tokens = $this->filter($tokens, ...$filters);
+        Sys::startTimer(__METHOD__);
+        $tokens = array_values($tokens);
         foreach ($tokens as &$token) {
             if (is_array($token)) {
                 unset($token[2]);
@@ -493,6 +501,7 @@ final class Formatter implements IReadable, IWritable
             }
         }
         unset($token);
+        Sys::stopTimer(__METHOD__);
 
         return $tokens;
     }

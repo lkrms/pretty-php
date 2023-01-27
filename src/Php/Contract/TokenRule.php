@@ -6,8 +6,7 @@ use Lkrms\Pretty\Php\Token;
 
 interface TokenRule extends Rule
 {
-    public const PROCESS_TOKEN    = 'processToken';
-    public const AFTER_TOKEN_LOOP = 'afterTokenLoop';
+    public const PROCESS_TOKEN = 'processToken';
 
     /**
      * Apply the rule to a token
@@ -17,6 +16,4 @@ interface TokenRule extends Rule
      *
      */
     public function processToken(Token $token): void;
-
-    public function afterTokenLoop(): void;
 }

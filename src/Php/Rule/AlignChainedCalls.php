@@ -55,7 +55,7 @@ class AlignChainedCalls implements TokenRule
                                                    T_DOUBLE_COLON,
                                                    T_STRING)
                                ->getFirstOf(T_DOUBLE_COLON);
-            if ($alignWith && ($length = mb_strlen(trim($alignWith->prevCode()->outer()->render(true)))) > 7) {
+            if ($alignWith && ($length = mb_strlen($alignWith->prevCode()->outer()->render(true))) > 7) {
                 $adjust = 4 - $length;
             }
         } else {
@@ -67,7 +67,7 @@ class AlignChainedCalls implements TokenRule
         }
         $start   = $alignWith->startOfLine();
         $padding = max(0, mb_strlen($start->collect($alignWith)->render(true))
-            - (mb_strlen($alignWith->Code) + strlen($alignWith->renderIndent(true)) + $start->Padding)
+            - mb_strlen($alignWith->Code)
             + ($adjust ?? 0));
         $token->collect($token->endOfExpression())
               ->filter(fn(Token $t) => $t->hasNewlineBefore())
