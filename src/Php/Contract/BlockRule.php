@@ -6,8 +6,7 @@ use Lkrms\Pretty\Php\TokenCollection;
 
 interface BlockRule extends Rule
 {
-    public const PROCESS_BLOCK    = 'processBlock';
-    public const AFTER_BLOCK_LOOP = 'afterBlockLoop';
+    public const PROCESS_BLOCK = 'processBlock';
 
     /**
      * Apply the rule to a code block
@@ -20,6 +19,4 @@ interface BlockRule extends Rule
      * @param TokenCollection[] $block
      */
     public function processBlock(array $block): void;
-
-    public function afterBlockLoop(): void;
 }

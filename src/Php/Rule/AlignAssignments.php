@@ -7,7 +7,7 @@ use Lkrms\Pretty\Php\Contract\BlockRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 
-class AlignAssignments implements BlockRule
+final class AlignAssignments implements BlockRule
 {
     use BlockRuleTrait;
 
@@ -21,6 +21,14 @@ class AlignAssignments implements BlockRule
         $indent         = null;
         $hasAlignedArgs = null;
         $isAssignment   = null;
+        $startGroup     =
+            function (Token $t1, Token $t2) use (&$group, &$stack, &$indent, &$hasAlignedArgs, &$isAssignment) {
+                $stack          = $t2->BracketStack;
+                $indent         = $t2->indent();
+                $hasAlignedArgs = $t1->Tags['HasAlignedArguments'] ?? false;
+                $isAssignment   = $t2->isOneOf(...TokenType::OPERATOR_ASSIGNMENT);
+                $group[]        = [$t1, $t2];
+            };
         while ($block) {
             $line   = array_shift($block);
             /** @var Token $token1 */
@@ -31,13 +39,9 @@ class AlignAssignments implements BlockRule
             if (($token2 = $line->getFirstOf(
                 ...TokenType::OPERATOR_ASSIGNMENT,
                 ...TokenType::OPERATOR_DOUBLE_ARROW
-            )) && !$this->lastLineHasInnerNewline(end($group), $token1)) {
+            )) && !$this->codeSinceLastAssignmentHasNewline(end($group), $token1)) {
                 if (is_null($stack)) {
-                    $stack          = $token2->BracketStack;
-                    $indent         = $token2->indent();
-                    $hasAlignedArgs = $token1->Tags['HasAlignedArguments'] ?? false;
-                    $isAssignment   = $token2->isOneOf(...TokenType::OPERATOR_ASSIGNMENT);
-                    $group[]        = [$token1, $token2];
+                    $startGroup($token1, $token2);
                     continue;
                 }
                 if ($stack === $token2->BracketStack &&
@@ -55,11 +59,7 @@ class AlignAssignments implements BlockRule
             $hasAlignedArgs = null;
             $isAssignment   = null;
             if ($token2) {
-                $stack          = $token2->BracketStack;
-                $indent         = $token2->indent();
-                $hasAlignedArgs = $token1->Tags['HasAlignedArguments'] ?? false;
-                $isAssignment   = $token2->isOneOf(...TokenType::OPERATOR_ASSIGNMENT);
-                $group[]        = [$token1, $token2];
+                $startGroup($token1, $token2);
             }
         }
         $this->maybeRegisterGroup($group);
@@ -68,7 +68,7 @@ class AlignAssignments implements BlockRule
     /**
      * @param array{0:Token,1:Token}|false $last
      */
-    private function lastLineHasInnerNewline($last, Token $token1): bool
+    private function codeSinceLastAssignmentHasNewline($last, Token $token1): bool
     {
         if (!$last) {
             return false;
@@ -96,7 +96,7 @@ class AlignAssignments implements BlockRule
         if (count($group) < 2) {
             return;
         }
-        $this->Formatter->registerCallback($this, $group[0][1], fn() => $this->alignGroup($group));
+        $this->Formatter->registerCallback($this, $group[0][1], fn() => $this->alignGroup($group), 710);
     }
 
     /**

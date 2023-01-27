@@ -10,7 +10,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * @param string[] $skipRules
      * @param string[] $addRules
      */
-    public function assertFormatterOutputIs(string $code, string $expected, string $tab = '    ', int $tabSize = 4, array $skipRules = [], array $addRules = [], string $message = ''): void
+    public function assertFormatterOutputIs(string $code, string $expected, array $skipRules = [], array $addRules = [], string $tab = '    ', int $tabSize = 4, string $message = ''): void
     {
         $formatter             = new Formatter($tab, $tabSize, $skipRules, $addRules);
         $formatter->QuietLevel = 3;

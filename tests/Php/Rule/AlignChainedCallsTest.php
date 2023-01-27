@@ -2,9 +2,11 @@
 
 namespace Lkrms\Pretty\Tests\Php\Rule;
 
+use Lkrms\Pretty\Php\Rule\AlignArguments;
+
 final class AlignChainedCallsTest extends \Lkrms\Pretty\Tests\Php\TestCase
 {
-    public function testAfterTokenLoop()
+    public function testAlignChain()
     {
         [$in, $out] = [
             <<<'PHP'
@@ -41,7 +43,7 @@ final class AlignChainedCallsTest extends \Lkrms\Pretty\Tests\Php\TestCase
 
             PHP,
         ];
-        $this->assertFormatterOutputIs($in, $out);
+        $this->assertFormatterOutputIs($in, $out, [AlignArguments::class]);
 
         [$in, $out] = [
             <<<'PHP'
@@ -144,6 +146,6 @@ final class AlignChainedCallsTest extends \Lkrms\Pretty\Tests\Php\TestCase
 
             PHP,
         ];
-        $this->assertFormatterOutputIs($in, $out);
+        $this->assertFormatterOutputIs($in, $out, [AlignArguments::class]);
     }
 }

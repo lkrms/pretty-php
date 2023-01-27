@@ -291,12 +291,10 @@ final class Formatter implements IReadable, IWritable
         }
 
         Sys::startTimer(__METHOD__ . '#sort-rules');
-        $tokenLoop      = [];
-        $afterTokenLoop = [];
-        $blockLoop      = [];
-        $afterBlockLoop = [];
-        $beforeRender   = [];
-        $index          = 0;
+        $tokenLoop    = [];
+        $blockLoop    = [];
+        $beforeRender = [];
+        $index        = 0;
         foreach ($this->Rules as $_rule) {
             if (!is_a($_rule, Rule::class, true)) {
                 throw new RuntimeException('Not a ' . Rule::class . ': ' . $_rule);
@@ -304,21 +302,17 @@ final class Formatter implements IReadable, IWritable
             /** @var Rule $rule */
             $rule = new $_rule($this);
             if ($rule instanceof TokenRule) {
-                $tokenLoop[]      = [$this->getPriority($rule, TokenRule::PROCESS_TOKEN), $index, $rule];
-                $afterTokenLoop[] = [$this->getPriority($rule, TokenRule::AFTER_TOKEN_LOOP), $index, $rule];
+                $tokenLoop[] = [$this->getPriority($rule, TokenRule::PROCESS_TOKEN), $index, $rule];
             }
             if ($rule instanceof BlockRule) {
-                $blockLoop[]      = [$this->getPriority($rule, BlockRule::PROCESS_BLOCK), $index, $rule];
-                $afterBlockLoop[] = [$this->getPriority($rule, BlockRule::AFTER_BLOCK_LOOP), $index, $rule];
+                $blockLoop[] = [$this->getPriority($rule, BlockRule::PROCESS_BLOCK), $index, $rule];
             }
             $beforeRender[] = [$this->getPriority($rule, Rule::BEFORE_RENDER), $index, $rule];
             $index++;
         }
-        $tokenLoop      = $this->sortRules($tokenLoop);
-        $afterTokenLoop = $this->sortRules($afterTokenLoop);
-        $blockLoop      = $this->sortRules($blockLoop);
-        $afterBlockLoop = $this->sortRules($afterBlockLoop);
-        $beforeRender   = $this->sortRules($beforeRender);
+        $tokenLoop    = $this->sortRules($tokenLoop);
+        $blockLoop    = $this->sortRules($blockLoop);
+        $beforeRender = $this->sortRules($beforeRender);
         Sys::stopTimer(__METHOD__ . '#sort-rules');
 
         /** @var TokenRule $rule */
@@ -329,13 +323,6 @@ final class Formatter implements IReadable, IWritable
             foreach ($this->Tokens as $token) {
                 $rule->processToken($token);
             }
-            Sys::stopTimer($timer, 'rule');
-        }
-        /** @var TokenRule $rule */
-        foreach ($afterTokenLoop as $rule) {
-            $this->RunningService = $_rule = get_class($rule);
-            Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
-            $rule->afterTokenLoop();
             Sys::stopTimer($timer, 'rule');
         }
         $this->RunningService = null;
@@ -379,13 +366,6 @@ final class Formatter implements IReadable, IWritable
             foreach ($blocks as $block) {
                 $rule->processBlock($block);
             }
-            Sys::stopTimer($timer, 'rule');
-        }
-        /** @var BlockRule $rule */
-        foreach ($afterBlockLoop as $rule) {
-            $this->RunningService = $_rule = get_class($rule);
-            Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
-            $rule->afterBlockLoop();
             Sys::stopTimer($timer, 'rule');
         }
         $this->RunningService = null;

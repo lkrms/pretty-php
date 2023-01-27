@@ -19,6 +19,7 @@ use RuntimeException;
  * @property int $Deindent
  * @property int $HangingIndent
  * @property bool $PinToCode
+ * @property int $LinePadding
  * @property int $Padding
  * @property int $WhitespaceBefore
  * @property int $WhitespaceAfter
@@ -43,6 +44,7 @@ class Token implements JsonSerializable
         'Deindent',
         'HangingIndent',
         'PinToCode',
+        'LinePadding',
         'Padding',
         'WhitespaceBefore',
         'WhitespaceAfter',
@@ -144,6 +146,11 @@ class Token implements JsonSerializable
      * @var bool
      */
     private $PinToCode = false;
+
+    /**
+     * @var int
+     */
+    private $LinePadding = 0;
 
     /**
      * @var int
@@ -853,6 +860,10 @@ class Token implements JsonSerializable
         return strpos($this->Code, "\n") !== false;
     }
 
+    /**
+     * There's a newline between this token and the next code token
+     *
+     */
     public function hasNewlineAfterCode(): bool
     {
         return $this->hasNewlineAfter() ||
@@ -1126,11 +1137,24 @@ class Token implements JsonSerializable
 
     public function renderIndent(bool $softTabs = false): string
     {
-        $indent = $this->PreIndent + $this->Indent + $this->HangingIndent - $this->Deindent;
-
-        return $indent
+        return ($indent = $this->PreIndent + $this->Indent + $this->HangingIndent - $this->Deindent)
             ? str_repeat($softTabs ? $this->Formatter->SoftTab : $this->Formatter->Tab, $indent)
             : '';
+    }
+
+    public function renderWhitespaceBefore(bool $softTabs = false): string
+    {
+        $whitespaceBefore = $this->effectiveWhitespaceBefore();
+
+        return WhitespaceType::toWhitespace($whitespaceBefore)
+            . ($whitespaceBefore & (WhitespaceType::LINE | WhitespaceType::BLANK)
+                ? (($indent = $this->PreIndent + $this->Indent + $this->HangingIndent - $this->Deindent)
+                        ? str_repeat($softTabs ? $this->Formatter->SoftTab : $this->Formatter->Tab, $indent)
+                        : '')
+                    . (($padding = $this->LinePadding + $this->Padding)
+                        ? str_repeat(' ', $padding)
+                        : '')
+                : ($this->Padding ? str_repeat(' ', $this->Padding) : ''));
     }
 
     public function render(bool $softTabs = false): string
@@ -1147,8 +1171,9 @@ class Token implements JsonSerializable
                 $current  = $current->next();
             } while ($current->HeredocOpenedBy === $this);
             $indent = $this->renderIndent($softTabs);
-            if ($padding = str_repeat(' ', $this->startOfLine()->Padding)) {
-                if ($indent && $indent[0] === "\t") {
+            $start  = $this->startOfLine();
+            if ($padding = str_repeat(' ', $start->LinePadding + $start->Padding)) {
+                if (($indent[0] ?? null) === "\t") {
                     $heredoc = str_replace("\n$indent", "\n" . ($newIndent = $this->renderIndent(true)), $heredoc);
                     $indent  = $newIndent;
                 }
@@ -1164,8 +1189,13 @@ class Token implements JsonSerializable
 
         if (!$this->isOneOf(...TokenType::DO_NOT_MODIFY_LHS)) {
             $code = WhitespaceType::toWhitespace($this->effectiveWhitespaceBefore());
-            if (substr($code, -1) === "\n" && ($this->PreIndent + $this->Indent + $this->HangingIndent - $this->Deindent)) {
-                $code .= $this->renderIndent($softTabs);
+            if (($code[0] ?? null) === "\n") {
+                if ($this->PreIndent + $this->Indent + $this->HangingIndent - $this->Deindent) {
+                    $code .= $this->renderIndent($softTabs);
+                }
+                if ($this->LinePadding) {
+                    $code .= str_repeat(' ', $this->LinePadding);
+                }
             }
             if ($this->Padding) {
                 $code .= str_repeat(' ', $this->Padding);
