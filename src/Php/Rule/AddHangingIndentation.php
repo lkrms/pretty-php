@@ -125,7 +125,7 @@ class AddHangingIndentation implements TokenRule
         }
 
         if ($indent > 1) {
-            $this->Formatter->registerCallback($this, $token, fn() => $this->maybeCollapseOverhanging($token, $until, $indent - 1), 700);
+            $this->Formatter->registerCallback($this, $token, fn() => $this->maybeCollapseOverhanging($token, $until, $indent - 1), 800);
         }
 
         $current = $token;
@@ -146,7 +146,7 @@ class AddHangingIndentation implements TokenRule
     private function maybeCollapseOverhanging(Token $token, Token $until, int $overhang): void
     {
         while ($token->HangingIndent && $overhang) {
-            $indent     = $token->indent();
+            $indent     = $token->indent() + $this->paddingIndent($token);
             $next       = $token;
             $nextIndent = 0;
             do {
@@ -154,7 +154,7 @@ class AddHangingIndentation implements TokenRule
                 if ($next->isNull()) {
                     break;
                 }
-                $nextIndent = $next->indent();
+                $nextIndent = $next->indent() + $this->paddingIndent($next);
             } while ($nextIndent === $indent);
             // Drop $indent and $nextLine (if it falls between $token and
             // $until) for comparison
@@ -199,5 +199,11 @@ class AddHangingIndentation implements TokenRule
     private function indent(Token $token): int
     {
         return $token->PreIndent + $token->Indent - $token->Deindent;
+    }
+
+    private function paddingIndent(Token $token): int
+    {
+        return (int) (($token->LinePadding + $token->Padding)
+            / strlen($this->Formatter->SoftTab));
     }
 }

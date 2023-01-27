@@ -797,10 +797,10 @@ class Token implements JsonSerializable
     public function effectiveWhitespaceBefore(): int
     {
         if ($this->PinToCode &&
-                (!$this->prev()->PinToCode || !$this->isSameTypeAs($this->prev())) &&
-                !count($this->next()
-                            ->collect(($next = $this->nextCode())->prev())
-                            ->filter(fn(Token $t) => !$t->PinToCode || !$this->isSameTypeAs($t)))) {
+            (!$this->prev()->PinToCode || !$this->isSameTypeAs($this->prev())) &&
+            !count($this->next()
+                        ->collect(($next = $this->nextCode())->prev())
+                        ->filter(fn(Token $t) => !$t->PinToCode || !$this->isSameTypeAs($t)))) {
             return ($this->_effectiveWhitespaceBefore()
                     | $next->_effectiveWhitespaceBefore())
                 & $this->prev()->WhitespaceMaskNext & $this->WhitespaceMaskPrev;
