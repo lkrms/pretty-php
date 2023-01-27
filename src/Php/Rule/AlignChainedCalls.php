@@ -25,7 +25,7 @@ class AlignChainedCalls implements TokenRule
                                                             T_NULLSAFE_OBJECT_OPERATOR));
         if ($token->hasNewlineBefore() || count($chain) > 1) {
             $chain->forEach(fn(Token $t) => $t === $token || ($t->ChainOpenedBy = $token));
-            $this->Formatter->registerCallback($this, $chain->first(), fn() => $this->alignChain($chain));
+            $this->Formatter->registerCallback($this, $chain->first(), fn() => $this->alignChain($chain), 710);
         }
     }
 

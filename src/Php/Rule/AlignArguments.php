@@ -24,7 +24,7 @@ final class AlignArguments implements TokenRule
         }
         $align->forEach(fn(Token $t) => $this->tagToken($t));
         $this->tagToken($align->first()->parent()->startOfLine());
-        $this->Formatter->registerCallback($this, $align->first(), fn() => $this->alignList($align), 600);
+        $this->Formatter->registerCallback($this, $align->first(), fn() => $this->alignList($align), 710);
     }
 
     private function alignList(TokenCollection $list): void
