@@ -359,60 +359,150 @@ class Token implements JsonSerializable
 
     public function wasFirstOnLine(): bool
     {
-        $prev = $this->prev();
+        if ($this->isOneOf(TokenType::T_NULL, TokenType::T_VIRTUAL)) {
+            return false;
+        }
+        do {
+            $prev = $this->prev();
+        } while ($prev->is(TokenType::T_VIRTUAL));
+        if ($prev->isNull()) {
+            return true;
+        }
+        $prevPlain    = $this->Formatter->PlainTokens[$prev->Index];
+        $prevNewlines = substr_count($prevPlain[1] ?? $prevPlain, "\n");
 
-        return $this->Line > $prev->Line || $prev->isNull();
+        return $this->Line > ($prev->Line + $prevNewlines);
     }
 
     public function wasLastOnLine(): bool
     {
-        $next = $this->next();
+        if ($this->isOneOf(TokenType::T_NULL, TokenType::T_VIRTUAL)) {
+            return false;
+        }
+        do {
+            $next = $this->next();
+        } while ($next->is(TokenType::T_VIRTUAL));
+        if ($next->isNull()) {
+            return true;
+        }
+        $plain    = $this->Formatter->PlainTokens[$this->Index];
+        $newlines = substr_count($plain[1] ?? $plain, "\n");
 
-        return $this->Line < $next->Line || $next->isNull();
+        return ($this->Line + $newlines) < $next->Line;
     }
 
-    public function wasBetweenTokensOnLine(): bool
+    public function wasBetweenTokensOnLine(bool $canHaveInnerNewline = false): bool
     {
-        return !$this->wasFirstOnLine() && !$this->wasLastOnLine();
+        return !$this->wasFirstOnLine() &&
+            !$this->wasLastOnLine() &&
+            ($canHaveInnerNewline || !$this->hasNewline());
     }
 
-    public function prev(int $offset = 1): Token { $p = $this; for ($i = 0; $i < $offset; $i++) { $p = $p->_prev ?? null; } return $p ?: new NullToken(); }
+    public function prev(int $offset = 1): Token
+    {
+        $p = $this;
+        for ($i = 0; $i < $offset; $i++) {
+            $p = $p->_prev ?? null;
+        }
 
-    public function next(int $offset = 1): Token { $n = $this; for ($i = 0; $i < $offset; $i++) { $n = $n->_next ?? null; } return $n ?: new NullToken(); }
+        return $p ?: new NullToken();
+    }
 
-    public function prevCode(int $offset = 1): Token { $p = $this; for ($i = 0; $i < $offset; $i++) { do { $p = $p->_prev ?? null; } while ($p && !$p->isCode()); } return $p ?: new NullToken(); }
+    public function next(int $offset = 1): Token
+    {
+        $n = $this;
+        for ($i = 0; $i < $offset; $i++) {
+            $n = $n->_next ?? null;
+        }
 
-    public function nextCode(int $offset = 1): Token { $n = $this; for ($i = 0; $i < $offset; $i++) { do { $n = $n->_next ?? null; } while ($n && !$n->isCode()); } return $n ?: new NullToken(); }
+        return $n ?: new NullToken();
+    }
+
+    public function prevCode(int $offset = 1): Token
+    {
+        $p = $this;
+        for ($i = 0; $i < $offset; $i++) {
+            do {
+                $p = $p->_prev ?? null;
+            } while ($p && !$p->isCode());
+        }
+
+        return $p ?: new NullToken();
+    }
+
+    public function nextCode(int $offset = 1): Token
+    {
+        $n = $this;
+        for ($i = 0; $i < $offset; $i++) {
+            do {
+                $n = $n->_next ?? null;
+            } while ($n && !$n->isCode());
+        }
+
+        return $n ?: new NullToken();
+    }
 
     /**
      * @param int|string ...$types
      */
-    public function prevCodeWhile(...$types): TokenCollection { return $this->_prevCodeWhile(false, ...$types); }
+    public function prevCodeWhile(...$types): TokenCollection
+    {
+        return $this->_prevCodeWhile(false, ...$types);
+    }
 
     /**
      * @param int|string ...$types
      */
-    public function withPrevCodeWhile(...$types): TokenCollection { return $this->_prevCodeWhile(true, ...$types); }
+    public function withPrevCodeWhile(...$types): TokenCollection
+    {
+        return $this->_prevCodeWhile(true, ...$types);
+    }
 
     /**
      * @param int|string ...$types
      */
-    private function _prevCodeWhile(bool $with, ...$types): TokenCollection { $c = new TokenCollection(); $p = $with ? $this : $this->prevCode(); while ($p->isOneOf(...$types)) { $c[] = $p; $p = $p->prevCode(); } return $c; }
+    private function _prevCodeWhile(bool $with, ...$types): TokenCollection
+    {
+        $c = new TokenCollection();
+        $p = $with ? $this : $this->prevCode();
+        while ($p->isOneOf(...$types)) {
+            $c[] = $p;
+            $p   = $p->prevCode();
+        }
+
+        return $c;
+    }
 
     /**
      * @param int|string ...$types
      */
-    public function nextCodeWhile(...$types): TokenCollection { return $this->_nextCodeWhile(false, ...$types); }
+    public function nextCodeWhile(...$types): TokenCollection
+    {
+        return $this->_nextCodeWhile(false, ...$types);
+    }
 
     /**
      * @param int|string ...$types
      */
-    public function withNextCodeWhile(...$types): TokenCollection { return $this->_nextCodeWhile(true, ...$types); }
+    public function withNextCodeWhile(...$types): TokenCollection
+    {
+        return $this->_nextCodeWhile(true, ...$types);
+    }
 
     /**
      * @param int|string ...$types
      */
-    private function _nextCodeWhile(bool $with, ...$types): TokenCollection { $c = new TokenCollection(); $n = $with ? $this : $this->nextCode(); while ($n->isOneOf(...$types)) { $c[] = $n; $n = $n->nextCode(); } return $c; }
+    private function _nextCodeWhile(bool $with, ...$types): TokenCollection
+    {
+        $c = new TokenCollection();
+        $n = $with ? $this : $this->nextCode();
+        while ($n->isOneOf(...$types)) {
+            $c[] = $n;
+            $n   = $n->nextCode();
+        }
+
+        return $c;
+    }
 
     public function prevSibling(int $offset = 1): Token
     {
@@ -796,11 +886,18 @@ class Token implements JsonSerializable
 
     public function effectiveWhitespaceBefore(): int
     {
+        // If this is a comment pinned to the code below it ...
         if ($this->PinToCode &&
+            // and the previous token isn't a pinned comment (or if it is, it
+            // has a different type and is therefore distinct) ...
             (!$this->prev()->PinToCode || !$this->isSameTypeAs($this->prev())) &&
+            // and there are no comments between this and the next code token
+            // that aren't pinned or have a different type, then ...
             !count($this->next()
                         ->collect(($next = $this->nextCode())->prev())
                         ->filter(fn(Token $t) => !$t->PinToCode || !$this->isSameTypeAs($t)))) {
+            // Combine this token's effective whitespace with the next code
+            // token's effective whitespace
             return ($this->_effectiveWhitespaceBefore()
                     | $next->_effectiveWhitespaceBefore())
                 & $this->prev()->WhitespaceMaskNext & $this->WhitespaceMaskPrev;
@@ -868,7 +965,10 @@ class Token implements JsonSerializable
     {
         return $this->hasNewlineAfter() ||
             (!$this->next()->isCode() &&
-                $this->collect($this->nextCode())->hasInnerNewline());
+                $this->next()
+                     ->collect($this->nextCode())
+                     ->find(fn(Token $t) =>
+                         $t->hasNewlineBefore()));
     }
 
     /**
@@ -1217,8 +1317,21 @@ class Token implements JsonSerializable
         // Remove trailing whitespace from each line
         $code = preg_replace('/\h+$/m', '', $this->Code);
         switch ($this->Type) {
+            case T_COMMENT:
+                if (!$this->isMultiLineComment() ||
+                        preg_match('/\n\h*([^*]|$)/', $code)) {
+                    return $code;
+                }
             case T_DOC_COMMENT:
-                $indent = "\n" . $this->renderIndent($softTabs);
+                $start  = $this->startOfLine();
+                $indent =
+                    "\n" . ($start === $this
+                        ? $this->renderIndent($softTabs)
+                            . str_repeat(' ', $this->LinePadding + $this->Padding)
+                        : ltrim($start->renderWhitespaceBefore(), "\n")
+                            . str_repeat(' ', mb_strlen($start->collect($this->prev())->render($softTabs))
+                                + strlen(WhitespaceType::toWhitespace($this->effectiveWhitespaceBefore()))
+                                + $this->Padding));
 
                 return preg_replace([
                     '/\n\h*(?:\* |\*(?!\/)(?=[\h\S])|(?=[^\s*]))/',
@@ -1229,9 +1342,6 @@ class Token implements JsonSerializable
                     $indent . ' *',
                     $indent . ' */',
                 ], $code);
-
-            case T_COMMENT:
-                return $code;
         }
 
         throw new RuntimeException('Not a T_COMMENT or T_DOC_COMMENT');

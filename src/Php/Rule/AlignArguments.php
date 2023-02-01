@@ -27,17 +27,23 @@ final class AlignArguments implements TokenRule
         $this->Formatter->registerCallback($this, $align->first(), fn() => $this->alignList($align), 710);
     }
 
-    private function alignList(TokenCollection $list): void
+    private function alignList(TokenCollection $align): void
     {
         /** @var Token $first */
-        $first        = $list->first();
-        $alignWith    = $first->parent();
-        $start        = $alignWith->startOfLine();
-        $alignAt      = mb_strlen(ltrim($start->collect($alignWith)->render(true, false), "\n"));
-        $alignFirst   = $list->find(fn(Token $t) => $t->hasNewlineBefore());
-        $hangingDelta = $alignWith->HangingIndent - $alignFirst->HangingIndent;
-        $paddingDelta = $alignAt - (strlen($alignFirst->renderIndent(true)) + $hangingDelta * strlen($this->Formatter->SoftTab) + $alignFirst->LinePadding + $alignFirst->Padding);
-        $list->forEach(
+        $first      = $align->first();
+        $alignWith  = $first->parent();
+        $start      = $alignWith->startOfLine();
+        $alignAt    = mb_strlen(ltrim($start->collect($alignWith)->render(true, false), "\n"));
+        $alignFirst = $align->find(fn(Token $t) => $t->hasNewlineBefore())
+            ?: $first->parent()->inner()->find(fn(Token $t) => $t->hasNewlineBefore());
+        if ($alignFirst) {
+            $hangingDelta = $alignWith->HangingIndent - $alignFirst->HangingIndent;
+            $paddingDelta = $alignAt - (strlen($alignFirst->renderIndent(true)) + $hangingDelta * strlen($this->Formatter->SoftTab) + $alignFirst->LinePadding + $alignFirst->Padding);
+        } else {
+            $hangingDelta = 0;
+            $paddingDelta = $alignAt - (strlen($start->renderIndent(true)) + $start->LinePadding + $start->Padding);
+        }
+        $align->forEach(
             function (Token $t, ?Token $prev, ?Token $next) use ($alignWith, $hangingDelta, $paddingDelta) {
                 if ($hangingDelta && (!$prev || !$t->hasNewlineBefore())) {
                     $hangingDelta += 1;

@@ -185,11 +185,10 @@ class AddHangingIndentation implements TokenRule
         //   is inherited from enclosing tokens
         // - $token is not subject to alignment by AlignChainedCalls
         if (!$prev->hasNewlineAfterCode() ||
-            (!$ignoreIndent && $this->indent($prev) !== $this->indent($token)) ||
-            $token->isBrace() ||
-            ($prev->isStatementPrecursor() && !$prev->parent()->IsHangingParent) ||
-            ($token->isOneOf(T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR) &&
-                in_array(AlignChainedCalls::class, $this->Formatter->Rules))) {
+                (!$ignoreIndent && $this->indent($prev) !== $this->indent($token)) ||
+                $token->ChainOpenedBy ||
+                $token->isBrace() ||
+                ($prev->isStatementPrecursor() && !$prev->parent()->IsHangingParent)) {
             return false;
         }
 

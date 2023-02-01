@@ -19,15 +19,15 @@ class PlaceComments implements TokenRule
         }
 
         // Leave embedded comments alone
-        if ($token->wasBetweenTokensOnLine()) {
-            $token->WhitespaceBefore |= WhitespaceType::SPACE;
+        if ($token->wasBetweenTokensOnLine(true)) {
+            $token->WhitespaceBefore |= $token->hasNewline() ? WhitespaceType::TAB : WhitespaceType::SPACE;
             $token->WhitespaceAfter  |= WhitespaceType::SPACE;
 
             return;
         }
 
         // Don't move comments beside code to the next line
-        if (!$token->wasFirstOnLine() && $token->wasLastOnLine() && $token->isOneLineComment(true)) {
+        if (!$token->wasFirstOnLine() && $token->wasLastOnLine()) {
             $token->WhitespaceBefore   |= WhitespaceType::TAB;
             $token->WhitespaceMaskPrev &= ~WhitespaceType::LINE & ~WhitespaceType::BLANK;
             $token->WhitespaceAfter    |= WhitespaceType::LINE;
@@ -35,15 +35,20 @@ class PlaceComments implements TokenRule
             return;
         }
 
+        // Just before rendering, copy indentation and padding values to
+        // comments from code below them
         $next = $token->nextCode();
         if (!($next->isNull() || $next->isCloseBracket())) {
-            $this->Formatter->registerCallback($this, $token, fn() => $this->alignComment($token, $next), 998);
+            $this->Formatter->registerCallback($this,
+                                               $token,
+                                               fn() => $this->alignComment($token, $next),
+                                               998);
         }
 
         $token->WhitespaceAfter |= WhitespaceType::LINE;
         if (!$token->is(T_DOC_COMMENT)) {
             $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
-            $token->PinToCode         = true;
+            $token->PinToCode         = !$next->isCloseBracket();
 
             return;
         }
@@ -58,18 +63,24 @@ class PlaceComments implements TokenRule
         }
         if ($token->next()->isCode()) {
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
-            $token->PinToCode           = true;
+            $token->PinToCode           = !$next->isCloseBracket();
         }
     }
 
     private function alignComment(Token $token, Token $next): void
     {
-        [$token->PreIndent, $token->Indent, $token->Deindent, $token->HangingIndent, $token->Padding] = [
-            $next->PreIndent,
-            $next->Indent,
-            $next->Deindent,
-            $next->HangingIndent,
-            $next->Padding,
-        ];
+        [$token->PreIndent,
+         $token->Indent,
+         $token->Deindent,
+         $token->HangingIndent,
+         $token->LinePadding] = [$next->PreIndent,
+                                 $next->Indent,
+                                 $next->Deindent,
+                                 $next->HangingIndent,
+                                 $next->LinePadding];
+
+        if ($token->hasNewlineAfter()) {
+            $token->Padding = $next->Padding;
+        }
     }
 }

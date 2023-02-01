@@ -110,7 +110,7 @@ final class AlignAssignments implements BlockRule
 
         /** @var Token $token1 */
         foreach ($group as $i => [$token1, $token2]) {
-            $length = mb_strlen($token1->collect($token2)->render(true));
+            $length = mb_strlen(ltrim($token1->collect($token2)->render(true, false), "\n"));
 
             // If the last assignment in the group breaks over multiple lines
             // and can't be accommodated without increasing $max, ignore it to
