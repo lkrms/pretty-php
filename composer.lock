@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d36fac63a77dd94aa8b42dbbf50576c9",
+    "content-hash": "1f1f19e589da32029c89ea5c4b407df7",
     "packages": [
         {
             "name": "filp/whoops",
@@ -122,16 +122,16 @@
         },
         {
             "name": "lkrms/util",
-            "version": "v0.19.7",
+            "version": "v0.19.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/php-util.git",
-                "reference": "f08b3cc6d4992f528928acb4961aaa7487977c54"
+                "reference": "b0b6e945fb98e796ff7063d7b1e0496442bb653f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/php-util/zipball/f08b3cc6d4992f528928acb4961aaa7487977c54",
-                "reference": "f08b3cc6d4992f528928acb4961aaa7487977c54",
+                "url": "https://api.github.com/repos/lkrms/php-util/zipball/b0b6e945fb98e796ff7063d7b1e0496442bb653f",
+                "reference": "b0b6e945fb98e796ff7063d7b1e0496442bb653f",
                 "shasum": ""
             },
             "require": {
@@ -172,12 +172,12 @@
             "license": [
                 "MIT"
             ],
-            "description": "A lightweight PHP toolkit for elegant backend/CLI apps. May contain traces of Laravel.",
+            "description": "A lightweight PHP toolkit for expressive backend/CLI apps",
             "support": {
                 "issues": "https://github.com/lkrms/php-util/issues",
-                "source": "https://github.com/lkrms/php-util/tree/v0.19.7"
+                "source": "https://github.com/lkrms/php-util/tree/v0.19.9"
             },
-            "time": "2023-01-27T04:39:16+00:00"
+            "time": "2023-02-02T11:37:55+00:00"
         },
         {
             "name": "psr/container",
@@ -1280,16 +1280,16 @@
         },
         {
             "name": "phpunit/php-code-coverage",
-            "version": "9.2.23",
+            "version": "9.2.24",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
-                "reference": "9f1f0f9a2fbb680b26d1cf9b61b6eac43a6e4e9c"
+                "reference": "2cf940ebc6355a9d430462811b5aaa308b174bed"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/9f1f0f9a2fbb680b26d1cf9b61b6eac43a6e4e9c",
-                "reference": "9f1f0f9a2fbb680b26d1cf9b61b6eac43a6e4e9c",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/2cf940ebc6355a9d430462811b5aaa308b174bed",
+                "reference": "2cf940ebc6355a9d430462811b5aaa308b174bed",
                 "shasum": ""
             },
             "require": {
@@ -1345,7 +1345,7 @@
             ],
             "support": {
                 "issues": "https://github.com/sebastianbergmann/php-code-coverage/issues",
-                "source": "https://github.com/sebastianbergmann/php-code-coverage/tree/9.2.23"
+                "source": "https://github.com/sebastianbergmann/php-code-coverage/tree/9.2.24"
             },
             "funding": [
                 {
@@ -1353,7 +1353,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2022-12-28T12:41:10+00:00"
+            "time": "2023-01-26T08:26:55+00:00"
         },
         {
             "name": "phpunit/php-file-iterator",

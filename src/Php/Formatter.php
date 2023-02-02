@@ -114,16 +114,16 @@ final class Formatter implements IReadable, IWritable
         PreserveOneLineStatements::class,
         AddStandardWhitespace::class,
         PlaceComments::class,
-        PreserveNewlines::class,
+        PreserveNewlines::class,                   // Must be after PlaceComments
         DeclareArgumentsOnOneLine::class,
-        AddBlankLineBeforeReturn::class,    // Must be after PlaceComments
+        AddBlankLineBeforeReturn::class,           // Must be after PlaceComments
         AddIndentation::class,
         SwitchPosition::class,
         MatchPosition::class,
         AddBlankLineBeforeDeclaration::class,
-        AddHangingIndentation::class,
         AlignChainedCalls::class,
         AlignArguments::class,
+        AddHangingIndentation::class,              // Must be after AlignChainedCalls
         ReindentHeredocs::class,
         AddEssentialWhitespace::class,
 

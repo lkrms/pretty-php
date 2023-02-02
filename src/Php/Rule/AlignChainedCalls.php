@@ -6,6 +6,7 @@ use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenCollection;
+use Lkrms\Pretty\WhitespaceType;
 
 class AlignChainedCalls implements TokenRule
 {
@@ -17,60 +18,93 @@ class AlignChainedCalls implements TokenRule
                 !$token->isOneOf(T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR)) {
             return;
         }
+
         $chain = $token->withNextSiblingsWhile('(', '[', '{',
                                                T_OBJECT_OPERATOR,
                                                T_NULLSAFE_OBJECT_OPERATOR,
                                                T_STRING)
-                       ->filter(fn(Token $t) => $t->isOneOf(T_OBJECT_OPERATOR,
-                                                            T_NULLSAFE_OBJECT_OPERATOR));
-        if ($token->hasNewlineBefore() || count($chain) > 1) {
-            $chain->forEach(fn(Token $t) => $t === $token || ($t->ChainOpenedBy = $token));
-            $this->Formatter->registerCallback($this, $chain->first(), fn() => $this->alignChain($chain), 710);
-        }
-    }
+                       ->filter(fn(Token $t) =>
+                           $t->isOneOf(T_OBJECT_OPERATOR,
+                                       T_NULLSAFE_OBJECT_OPERATOR));
 
-    private function alignChain(TokenCollection $chain): void
-    {
-        // Start from the last `->` with no preceding newline, if one exists
-        do {
-            /** @var Token $token */
-            $token = $chain->shift();
-            if ($token->hasNewlineBefore()) {
-                break;
+        // Don't process tokens in the chain multiple times
+        $chain->forEach(fn(Token $t) => $t->ChainOpenedBy = $token);
+
+        /** @var ?Token $alignWith */
+        $alignWith = null;
+        // Find the first `->` in the chain with a leading newline
+        $first     = $chain->find(
+            function (Token $token, ?Token $prev) use (&$alignWith): bool {
+                if (!$token->hasNewlineBefore()) {
+                    return false;
+                }
+                $alignWith = $prev;
+
+                return true;
             }
-            /** @var Token|false $next */
-            $next = $chain->first();
-        } while ($next && !$next->hasNewlineBefore());
-        // Reduce the remaining chain to object operators immediately after
-        // newlines
-        $chain = $chain->filter(fn(Token $t) => $t->hasNewlineBefore());
-        if (!($token->hasNewlineBefore() || count($chain))) {
+        );
+
+        // If there are no leading newlines, there's nothing to do
+        if (!$first) {
             return;
         }
-        // If the first `->` is immediately after a newline, align with the
-        // closest `::` in the same expression if one exists, otherwise
-        // indent the `->`
-        if ($token->hasNewlineBefore()) {
-            $alignWith = $token->prevSiblingsWhile('(', '[', '{',
+
+        // If the first `->` in the chain has a leading newline ($alignWith
+        // would be set otherwise), align with the closest `::` in the same
+        // expression (if there is one)
+        if (!$alignWith) {
+            $alignWith = $first->prevSiblingsWhile('(', '[', '{',
                                                    T_DOUBLE_COLON,
                                                    T_STRING)
                                ->getFirstOf(T_DOUBLE_COLON);
-            if ($alignWith && ($length = mb_strlen($alignWith->prevCode()->outer()->render(true))) > 7) {
-                $adjust = 4 - $length;
-            }
-        } else {
-            $alignWith = $token;
         }
+
+        // Remove tokens before $first from the chain
+        while ($chain->first()->Index < $first->Index) {
+            $chain->shift();
+        }
+
+        // Apply a leading newline to the remaining tokens
+        $chain->forEach(fn(Token $t) =>
+            $t === $first || ($t->WhitespaceBefore |= WhitespaceType::LINE));
+        $this->Formatter->registerCallback($this,
+                                           $alignWith ?: $first,
+                                           fn() => $this->alignChain($chain, $first, $alignWith),
+                                           710);
+    }
+
+    private function alignChain(TokenCollection $chain, Token $first, ?Token $alignWith): void
+    {
+        // Don't proceed if tokens have been moved to the previous line by other
+        // rules
+        if ($chain->find(fn(Token $t) => !$t->hasNewlineBefore())) {
+            return;
+        }
+
+        // Create a hanging indent if there's nothing to $alignWith
+        $tabSize = strlen($this->Formatter->SoftTab);
         if (!$alignWith) {
-            $alignWith = $token;
-            $adjust    = 4;
+            $delta = $tabSize;
+        } else {
+            $delta = max(0, mb_strlen(ltrim($alignWith->startOfLine()->collect($alignWith)->render(true, false), "\n"))
+                - mb_strlen(ltrim($first->startOfLine()->collect($first)->render(true, false), "\n")));
+
+            // If aligning with `::` and there's a long string before it, align
+            // just inside the start of the string instead
+            if ($alignWith->is(T_DOUBLE_COLON) &&
+                    ($prev = $alignWith->prev())->is(T_STRING) &&
+                    ($length = mb_strlen($prev->Code)) > 2 * $tabSize - 1) {
+                $delta -= $length - $tabSize;
+            }
         }
-        $start   = $alignWith->startOfLine();
-        $padding = max(0, mb_strlen($start->collect($alignWith)->render(true))
-            - mb_strlen($alignWith->Code)
-            + ($adjust ?? 0));
-        $token->collect($token->endOfExpression())
+
+        // Apply the same delta to code between $alignWith and $first
+        if ($alignWith) {
+            $first = $alignWith->next();
+        }
+
+        $first->collect($first->endOfExpression())
               ->filter(fn(Token $t) => $t->hasNewlineBefore())
-              ->forEach(fn(Token $t) => $t->Padding += $padding);
+              ->forEach(fn(Token $t) => $t->Padding += $delta);
     }
 }
