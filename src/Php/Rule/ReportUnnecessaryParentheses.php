@@ -14,10 +14,10 @@ class ReportUnnecessaryParentheses implements TokenRule
     public function processToken(Token $token): void
     {
         if (!$token->is('(') ||
-            !($token->isStartOfExpression() ||
-                (($start = $token->prevCode())->isStartOfExpression() &&
-                    $start->isOneOf(...TokenType::HAS_EXPRESSION_WITH_OPTIONAL_PARENTHESES))) ||
-            $token->endOfExpression() !== $token->ClosedBy) {
+                !($token->isStartOfExpression() ||
+                    (($start = $token->prevCode())->isStartOfExpression() &&
+                        $start->isOneOf(...TokenType::HAS_EXPRESSION_WITH_OPTIONAL_PARENTHESES))) ||
+                $token->endOfExpression() !== $token->ClosedBy) {
             return;
         }
         $start = $start ?? $token;

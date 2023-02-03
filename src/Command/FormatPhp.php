@@ -92,7 +92,12 @@ class FormatPhp extends CliCommand
                 ->long('tab')
                 ->short('t')
                 ->valueName('SIZE')
-                ->description('Indent using tabs')
+                ->description(<<<EOF
+                Indent using tabs
+
+                Implies:
+                    --skip align-chains,align-args
+                EOF)
                 ->optionType(CliOptionType::ONE_OF_OPTIONAL)
                 ->allowedValues(['2', '4', '8'])
                 ->defaultValue('4'),
@@ -124,17 +129,15 @@ class FormatPhp extends CliCommand
                 ->long('ignore-newlines')
                 ->short('N')
                 ->description(<<<EOF
+                Do not add line breaks at the position of newlines in the input
+
                 Equivalent to:
                     --skip preserve-newlines
                 EOF),
             CliOption::build()
                 ->long('laravel')
                 ->short('l')
-                ->description(<<<EOF
-                Equivalent to:
-                    --skip one-line-arguments,indent-heredocs,align-assignments
-                    --rule no-concat-spaces,space-after-fn,space-after-not
-                EOF),
+                ->description('Enable Laravel-friendly rules'),
             CliOption::build()
                 ->long('output')
                 ->short('o')
@@ -180,8 +183,6 @@ class FormatPhp extends CliCommand
         if ($tab && $space) {
             throw new CliArgumentsInvalidException('--tab and --space cannot be used together');
         }
-        $tabSize = $tab ?: $space ?: 4;
-        $tab     = $tab ? "\t" : str_repeat(' ', $tabSize);
 
         $skip  = $this->getOptionValue('skip');
         $rules = $this->getOptionValue('rule');
@@ -227,18 +228,27 @@ class FormatPhp extends CliCommand
             $debug = $this->DebugDirectory = realpath($debug) ?: null;
         }
 
-        $formatter             = new Formatter($tab, $tabSize, $skip, $rules);
-        $formatter->QuietLevel = $quiet;
-        [$i, $count, $errors]  = [0, count($in), []];
+        $formatter = new Formatter(
+            !$tab,
+            $tab ?: $space ?: 4,
+            $skip,
+            $rules
+        );
+        $i      = 0;
+        $count  = count($in);
+        $errors = [];
         foreach ($in as $key => $file) {
             $quiet > 2 || Console::info(sprintf('Formatting %d of %d:', ++$i, $count), $file);
-            $formatter->Filename = $file === 'php://stdin'
-                ? null
-                : $file;
             $input = file_get_contents($file);
             Sys::startTimer($file, 'file');
             try {
-                $output = $formatter->format($input);
+                $output = $formatter->format(
+                    $input,
+                    $quiet,
+                    $file === 'php://stdin'
+                        ? null
+                        : $file,
+                );
             } catch (PrettyBadSyntaxException $ex) {
                 Console::exception($ex);
                 $this->setExitStatus(2);

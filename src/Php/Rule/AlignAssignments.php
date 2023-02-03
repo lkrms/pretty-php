@@ -45,9 +45,9 @@ final class AlignAssignments implements BlockRule
                     continue;
                 }
                 if ($stack === $token2->BracketStack &&
-                    ($indent === $token2->indent() ||
-                        ($hasAlignedArgs && ($token1->Tags['HasAlignedArguments'] ?? false))) &&
-                    !($isAssignment xor $token2->isOneOf(...TokenType::OPERATOR_ASSIGNMENT))) {
+                        ($indent === $token2->indent() ||
+                            ($hasAlignedArgs && ($token1->Tags['HasAlignedArguments'] ?? false))) &&
+                        !($isAssignment xor $token2->isOneOf(...TokenType::OPERATOR_ASSIGNMENT))) {
                     $group[] = [$token1, $token2];
                     continue;
                 }

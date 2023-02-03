@@ -5,6 +5,7 @@ namespace Lkrms\Pretty\Php\Rule;
 use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
+use Lkrms\Pretty\Php\TokenType;
 
 /**
  * If the first token on a new line continues a statement from the previous one,
@@ -24,12 +25,12 @@ class AddHangingIndentation implements TokenRule
                 $token->innerSiblings()->hasOneOf(',') ||
                     // Delimited expressions? (e.g. `for (expr; expr; expr)`)
                     ($token->is('(') && $token->innerSiblings()->hasOneOf(';')) ||
-                    // A subsequent statement or block? (e.g. `if (expr) statement`)
-                    $token->hasAdjacentBlock();
+                    // A subsequent statement or block? (e.g. `if (expr)
+                    // statement`)
+                    $token->adjacentBlock();
         }
 
-        if (!$token->isCode() ||
-                $token->is(T_CLOSE_TAG) ||
+        if ($token->isOneOf(...TokenType::NOT_CODE) ||
                 !$this->isHanging($token)) {
             return;
         }
@@ -69,6 +70,9 @@ class AddHangingIndentation implements TokenRule
             if (!$token->isStartOfExpression() &&
                     $latest->isStartOfExpression()) {
                 $stack[] = $latest;
+            } elseif (!$prev->isStatementPrecursor() &&
+                    $latest->prevCode()->isStatementPrecursor()) {
+                $stack[] = $latest;
             } elseif ($token->isTernaryOperator() &&
                     !$latest->isTernaryOperator()) {
                 $stack[] = $token;
@@ -93,44 +97,57 @@ class AddHangingIndentation implements TokenRule
         //
         $until   = $token->endOfExpression();
         $indent  = 0;
+        $hanging = [];
         $parents = in_array($parent, $token->IndentParentStack, true)
             ? []
             : [$parent];
+        $adjacents = ($adjacent = $parent->adjacentBlock())
+            ? [$adjacent->Index => $adjacent]
+            : [];
         $current = $parent;
         while (!($current = $current->parent())->isNull() && $current->IsHangingParent) {
-            if (!in_array($current, $token->IndentParentStack, true)) {
-                $parents[] = $current;
-                // Don't add indentation for this parent if it doesn't have any
-                // hanging children
-                $children  = $current->innerSiblings()->filter(fn(Token $t) => $this->isHanging($t, true));
-                if (!count($children)) {
-                    continue;
-                }
+            if (in_array($current, $token->IndentParentStack, true)) {
+                continue;
+            }
+            $parents[] = $current;
+            if ($adjacent = $current->adjacentBlock()) {
+                $adjacents[$adjacent->Index] = $adjacent;
+            }
+            // Don't add indentation for this parent if it doesn't have any
+            // hanging children
+            $children = $current->innerSiblings()
+                                ->filter(fn(Token $t) => $this->isHanging($t, true));
+            if (!count($children)) {
+                continue;
+            }
+            $indent++;
+            $hanging[$current->Index] = 1;
+            if ($current->IsOverhangingParent) {
                 $indent++;
-                if ($current->IsOverhangingParent &&
-                    $children->find(fn(Token $t) =>
-                        !$t->prevCode()->isStatementPrecursor())) {
-                    $indent++;
-                }
+                $hanging[$current->Index]++;
             }
         }
 
-        if ($token->prevCode()->isStatementPrecursor()) {
+        $indent++;
+        if (!$token->prevCode()->isStatementPrecursor() &&
+                $parent->IsOverhangingParent) {
             $indent++;
-        } else {
-            $indent++;
-            if ($parent->IsOverhangingParent) {
-                $indent++;
-            }
+            $hanging[$parent->Index] = 1;
         }
 
         if ($indent > 1) {
-            $this->Formatter->registerCallback($this, $token, fn() => $this->maybeCollapseOverhanging($token, $until, $indent - 1), 800);
+            $this->Formatter->registerCallback(
+                $this,
+                $token,
+                fn() => $this->maybeCollapseOverhanging($token, $until, $adjacents, $hanging),
+                800
+            );
         }
 
         $current = $token;
         do {
-            $current->HangingIndent += $indent;
+            $current->HangingIndent      += $indent;
+            $current->OverhangingParents += $hanging;
             if ($current !== $token) {
                 $current->IndentBracketStack[] = $stack;
                 $current->IndentStack[]        = $token;
@@ -143,34 +160,69 @@ class AddHangingIndentation implements TokenRule
         } while (!$current->isNull());
     }
 
-    private function maybeCollapseOverhanging(Token $token, Token $until, int $overhang): void
+    /**
+     * @param array<int,Token> $adjacents
+     * @param array<int,int> $hanging
+     */
+    private function maybeCollapseOverhanging(Token $token, Token $until, array $adjacents, array $hanging): void
     {
-        while ($token->HangingIndent && $overhang) {
-            $indent     = $token->indent() + $this->paddingIndent($token);
-            $next       = $token;
-            $nextIndent = 0;
-            do {
-                $next = $next->endOfLine()->next();
-                if ($next->isNull()) {
-                    break;
+        $tokens = $token->collect($until);
+        foreach ($hanging as $index => $count) {
+            for ($i = 0; $i < $count; $i++) {
+                $indent     = $this->effectiveIndent($token);
+                // Find the next line with an indentation level that differs
+                // from token's
+                $next       = $token;
+                $nextIndent = 0;
+                do {
+                    $next = $next->endOfLine()->next();
+                    if ($next->isNull()) {
+                        break;
+                    }
+                    $nextIndent = $this->effectiveIndent($next);
+                } while ($nextIndent === $indent);
+                // Drop $indent and $nextIndent (if $next falls between $token
+                // and $until and this hanging indent hasn't already been
+                // collapsed) for comparison
+                $indent    -= $this->Formatter->TabSize;
+                $nextIndent = $next->isNull() ||
+                    $next->Index > $until->Index ||
+                    !($next->OverhangingParents[$index] ?? 0)
+                        ? $nextIndent
+                        : $nextIndent - $this->Formatter->TabSize;
+                // The purpose of overhanging indents is to visually separate
+                // distinct blocks of code that would otherwise run together, so
+                // $indent and $nextIndent can't be the same
+                if ($nextIndent === $indent && !$next->isNull()) {
+                    break 2;
                 }
-                $nextIndent = $next->indent() + $this->paddingIndent($next);
-            } while ($nextIndent === $indent);
-            // Drop $indent and $nextLine (if it falls between $token and
-            // $until) for comparison
-            $indent--;
-            $nextIndent = $next->isNull() || $next->Index > $until->Index
-                ? $nextIndent
-                : $nextIndent - 1;
-            // The purpose of overhanging indents is to visually separate
-            // distinct blocks of code that would otherwise run together,
-            // but this is unnecessary when indentation changes on the next
-            // line
-            if ($nextIndent === $indent && !$next->isNull()) {
-                break;
+                foreach ($adjacents as $adjacent) {
+                    $token2 = null;
+                    if ($adjacent->is('{')) {
+                        if (!$adjacent->hasNewlineAfter() ||
+                                ($token2 = $adjacent->startOfLine())->Index > $until->Index) {
+                            continue;
+                        }
+                        $adjacent = $adjacent->next();
+                    } elseif (!$adjacent->hasNewlineBefore() ||
+                            ($token2 = $adjacent->prev()->startOfLine())->Index > $until->Index) {
+                        continue;
+                    }
+                    $indent     = $this->effectiveIndent($token2) - $this->Formatter->TabSize;
+                    $nextIndent = $this->effectiveIndent($adjacent);
+                    if ($nextIndent === $indent) {
+                        break 3;
+                    }
+                }
+                $tokens->forEach(
+                    function (Token $t) use ($index) {
+                        if ($t->OverhangingParents[$index] ?? 0) {
+                            $t->HangingIndent--;
+                            $t->OverhangingParents[$index]--;
+                        }
+                    }
+                );
             }
-            $token->collect($until)->forEach(fn(Token $t) => $t->HangingIndent--);
-            $overhang--;
         }
     }
 
@@ -200,9 +252,8 @@ class AddHangingIndentation implements TokenRule
         return $token->PreIndent + $token->Indent - $token->Deindent;
     }
 
-    private function paddingIndent(Token $token): int
+    private function effectiveIndent(Token $token): int
     {
-        return (int) (($token->LinePadding + $token->Padding)
-            / strlen($this->Formatter->SoftTab));
+        return $token->indent() * $this->Formatter->TabSize + $token->LinePadding + $token->Padding;
     }
 }

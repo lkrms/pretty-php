@@ -119,6 +119,13 @@ class Token implements JsonSerializable
     private $HangingIndent = 0;
 
     /**
+     * Index => count
+     *
+     * @var array<int,int>
+     */
+    public $OverhangingParents = [];
+
+    /**
      * @var bool
      */
     public $IsHangingParent;
@@ -816,6 +823,11 @@ class Token implements JsonSerializable
     }
 
     /**
+     * Get the sibling at the end of the expression to which the token belongs
+     *
+     * Statement separators do not form part of expressions and are not returned
+     * by this method.
+     *
      * @param int $ignore A bitmask of {@see TokenBoundary} values
      */
     public function endOfExpression(int $ignore = TokenBoundary::COMPARISON): Token
@@ -859,20 +871,28 @@ class Token implements JsonSerializable
         return $end;
     }
 
-    public function hasAdjacentBlock(): bool
+    public function adjacentBlock(bool $controlStructureOnly = false): ?Token
     {
         $_this = $this->canonicalThis(__METHOD__);
-        if (!$_this->isOneOf('(', '[')) {
-            return false;
+        if (!$_this->isOneOf('(', '[', '{')) {
+            return null;
         }
         /** @var Token */
-        $lastOuterBracket = $_this->ClosedBy->withNextCodeWhile(')', ']')->last();
-        [$end, $next]     = [
-            $lastOuterBracket->endOfStatement(),
-            $lastOuterBracket->nextCode(),
-        ];
+        $lastOuterBracket = $_this->ClosedBy->withNextCodeWhile(')', ']', '}')->last();
+        if (($end = $lastOuterBracket->endOfStatement())->isNull() ||
+                ($next = $lastOuterBracket->nextCode())->isNull() ||
+                ($end->Index <= $next->Index)) {
+            return null;
+        }
+        if (!$controlStructureOnly ||
+            ($lastOuterBracket->is(')') &&
+                $next->prevSibling(2)->isOneOf(
+                    ...TokenType::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES
+                ))) {
+            return $next;
+        }
 
-        return !$end->isNull() && !$next->isNull() && $end->Index > $next->Index;
+        return null;
     }
 
     public function declarationParts(): TokenCollection
@@ -1334,7 +1354,7 @@ class Token implements JsonSerializable
         switch ($this->Type) {
             case T_COMMENT:
                 if (!$this->isMultiLineComment() ||
-                        preg_match('/\n\h*([^*]|$)/', $code)) {
+                        preg_match('/\n\h*(?!\*)(\S|$)/', $code)) {
                     return $code;
                 }
             case T_DOC_COMMENT:

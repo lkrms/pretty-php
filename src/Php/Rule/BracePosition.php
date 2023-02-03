@@ -28,14 +28,16 @@ class BracePosition implements TokenRule
             if (($prev = $token->prev())->is(')')) {
                 $this->BracketBracePairs[] = [$prev, $token];
             }
-            $token->WhitespaceBefore |= $token->isDeclaration() &&
-                (($parent = $token->parent())->isNull() || $parent->is('{')) &&
-                (($prev = ($start = $token->startOfExpression())->prevCode())->isNull() ||
-                    $prev->isOneOf(';', '{', '}', T_CLOSE_TAG) ||
-                    ($prev->is(']') && $prev->OpenedBy->is(T_ATTRIBUTE))) &&
-                !$start->is(T_USE)
-                    ? WhitespaceType::LINE | WhitespaceType::SPACE
-                    : WhitespaceType::SPACE;
+            if ($token->isDeclaration() &&
+                    (($parent = $token->parent())->isNull() || $parent->is('{')) &&
+                    (($prev = ($start = $token->startOfExpression())->prevCode())->isNull() ||
+                        $prev->isOneOf(';', '{', '}', T_CLOSE_TAG) ||
+                        ($prev->is(']') && $prev->OpenedBy->is(T_ATTRIBUTE))) &&
+                    !$start->is(T_USE)) {
+                $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
+            } else {
+                $token->WhitespaceBefore |= WhitespaceType::SPACE;
+            }
             $token->WhitespaceAfter    |= WhitespaceType::LINE | WhitespaceType::SPACE;
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
             if ($next->is('}')) {

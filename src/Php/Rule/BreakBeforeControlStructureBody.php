@@ -22,7 +22,20 @@ final class BreakBeforeControlStructureBody implements TokenRule
             return;
         }
 
-        if (($body = $token->nextSibling($offset))->isOneOf(':', ';', '{', T_CLOSE_TAG, TokenType::T_NULL)) {
+        /**
+         * For reference, the following code prints "11" because the T_CLOSE_TAG
+         * terminates the `while` structure:
+         *
+         * ```php
+         * <?php
+         * $i = 0;
+         * while ($i++ < 10)
+         * ?><?php
+         * echo $i;
+         * ```
+         */
+        $body = $token->nextSibling($offset);
+        if ($body->isOneOf(':', ';', '{', T_CLOSE_TAG, TokenType::T_NULL)) {
             return;
         }
 

@@ -7,6 +7,8 @@ parameters:
     - bin
     - src
     - tests
+  excludePaths:
+    - tests/temp.php
   bootstrapFiles:
     - tests/bootstrap.php
   ignoreErrors:

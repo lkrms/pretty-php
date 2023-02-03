@@ -3,9 +3,7 @@
 namespace Lkrms\Pretty\Php;
 
 use Lkrms\Concern\TFullyReadable;
-use Lkrms\Concern\TWritable;
 use Lkrms\Contract\IReadable;
-use Lkrms\Contract\IWritable;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
@@ -55,18 +53,19 @@ use Throwable;
 
 /**
  * @property-read bool $Debug
- * @property int $QuietLevel
- * @property string|null $Filename
+ * @property-read int $QuietLevel
+ * @property-read string|null $Filename
  * @property-read string|null $RunningService
  * @property-read string $Tab
+ * @property-read int $TabSize
  * @property-read string $SoftTab
  * @property-read string[] $Rules
  * @property-read array<string|array{0:int,1:string,2:int}>|null $PlainTokens
  * @property-read Token[]|null $Tokens
  */
-final class Formatter implements IReadable, IWritable
+final class Formatter implements IReadable
 {
-    use TFullyReadable, TWritable;
+    use TFullyReadable;
 
     /**
      * @var bool
@@ -76,7 +75,7 @@ final class Formatter implements IReadable, IWritable
     /**
      * @var int
      */
-    protected $QuietLevel = 0;
+    protected $QuietLevel;
 
     /**
      * @var string|null
@@ -92,6 +91,11 @@ final class Formatter implements IReadable, IWritable
      * @var string
      */
     protected $Tab;
+
+    /**
+     * @var int
+     */
+    protected $TabSize;
 
     /**
      * @var string
@@ -164,13 +168,21 @@ final class Formatter implements IReadable, IWritable
      * @param string[] $skipRules
      * @param string[] $addRules
      */
-    public function __construct(string $tab = '    ', int $tabSize = 4, array $skipRules = [], array $addRules = [])
+    public function __construct(bool $insertSpaces = true, int $tabSize = 4, array $skipRules = [], array $addRules = [])
     {
-        $this->Tab     = $tab;
+        $this->Tab     = $insertSpaces ? str_repeat(' ', $tabSize) : "\t";
+        $this->TabSize = $tabSize;
         $this->SoftTab = str_repeat(' ', $tabSize);
 
-        if ($skipRules) {
-            $this->Rules = array_diff($this->Rules, $skipRules);
+        if (!$insertSpaces) {
+            $skip = [
+                AlignChainedCalls::class,
+                AlignArguments::class,
+            ];
+        }
+
+        if ($skipRules || ($skip ?? null)) {
+            $this->Rules = array_diff($this->Rules, $skipRules, $skip ?? []);
         }
 
         if ($addRules) {
@@ -193,16 +205,16 @@ final class Formatter implements IReadable, IWritable
         $this->Debug = Env::debug();
     }
 
-    public static function getWritable(): array
+    /**
+     *
+     * @param string|null $filename Advisory only. No file operations are
+     * performed on `$filename`.
+     */
+    public function format(string $code, int $quietLevel = 0, ?string $filename = null): string
     {
-        return [
-            'QuietLevel',
-            'Filename',
-        ];
-    }
+        $this->QuietLevel = $quietLevel;
+        $this->Filename   = $filename;
 
-    public function format(string $code): string
-    {
         Sys::startTimer(__METHOD__ . '#parse-input');
         $this->Tokens = [];
         try {
