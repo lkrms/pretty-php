@@ -3,6 +3,7 @@
 namespace Lkrms\Pretty\Php;
 
 use JsonSerializable;
+use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
 use Lkrms\Pretty\WhitespaceType;
 use RuntimeException;
 
@@ -942,6 +943,18 @@ class Token implements JsonSerializable
             & (WhitespaceType::LINE | WhitespaceType::BLANK));
     }
 
+    public function hasBlankLineBefore(): bool
+    {
+        return (bool) ($this->effectiveWhitespaceBefore()
+            & WhitespaceType::BLANK);
+    }
+
+    public function hasBlankLineAfter(): bool
+    {
+        return (bool) ($this->effectiveWhitespaceAfter()
+            & WhitespaceType::BLANK);
+    }
+
     public function hasWhitespaceBefore(): bool
     {
         return (bool) $this->effectiveWhitespaceBefore();
@@ -1270,17 +1283,19 @@ class Token implements JsonSerializable
                 $heredoc .= $current->Code;
                 $current  = $current->next();
             } while ($current->HeredocOpenedBy === $this);
-            $indent = $this->renderIndent($softTabs);
-            $start  = $this->startOfLine();
-            if ($padding = str_repeat(' ', $start->LinePadding + $start->Padding)) {
-                if (($indent[0] ?? null) === "\t") {
-                    $heredoc = str_replace("\n$indent", "\n" . ($newIndent = $this->renderIndent(true)), $heredoc);
-                    $indent  = $newIndent;
+            if (in_array(ReindentHeredocs::class, $this->Formatter->Rules)) {
+                $indent = $this->renderIndent($softTabs);
+                $start  = $this->startOfLine();
+                if ($padding = str_repeat(' ', $start->LinePadding + $start->Padding)) {
+                    if (($indent[0] ?? null) === "\t") {
+                        $heredoc = str_replace("\n$indent", "\n" . ($newIndent = $this->renderIndent(true)), $heredoc);
+                        $indent  = $newIndent;
+                    }
+                    $heredoc = str_replace("\n$indent", "\n$indent$padding", $heredoc);
                 }
-                $heredoc = str_replace("\n$indent", "\n$indent$padding", $heredoc);
+                $regex   = preg_quote("$indent$padding", '/');
+                $heredoc = preg_replace("/\\n$regex\$/m", "\n", $heredoc);
             }
-            $regex   = preg_quote("$indent$padding", '/');
-            $heredoc = preg_replace("/\\n$regex\$/m", "\n", $heredoc);
         } elseif ($this->isOneOf(...TokenType::DO_NOT_MODIFY)) {
             return $this->Code;
         } elseif ($this->isMultiLineComment(true)) {

@@ -38,7 +38,8 @@ class PlaceComments implements TokenRule
         // Just before rendering, copy indentation and padding values to
         // comments from code below them
         $next = $token->nextCode();
-        if (!($next->isNull() || $next->isCloseBracket())) {
+        if (!$next->isNull() &&
+                !$next->isCloseBracket()) {
             $this->Formatter->registerCallback($this,
                                                $token,
                                                fn() => $this->alignComment($token, $next),
@@ -69,6 +70,42 @@ class PlaceComments implements TokenRule
 
     private function alignComment(Token $token, Token $next): void
     {
+        // Comments are usually aligned to the code below them, but switch
+        // blocks are a special case, e.g.:
+        //
+        // ```
+        // switch ($a) {
+        //     //
+        //     case 0:
+        //     case 1:
+        //         //
+        //         func();
+        //         // Aligns with previous statement
+        //     case 2:
+        //     //
+        //     case 3:
+        //         func2();
+        //         break;
+        //
+        //         // Aligns with previous statement
+        //
+        //     case 4:
+        //         func();
+        //         break;
+        //
+        //     //
+        //     default:
+        //         break;
+        // }
+        // ```
+        $prev = $token->prevCode();
+        if ($next->isOneOf(T_CASE, T_DEFAULT) &&
+                $prev !== $next->parent() &&
+                ($next->hasBlankLineBefore() || !$prev->hasBlankLineAfter()) &&
+                !($prev->is(':') && $prev->prevSibling(2)->isOneOf(T_CASE, T_DEFAULT))) {
+            return;
+        }
+
         [$token->PreIndent,
          $token->Indent,
          $token->Deindent,

@@ -22,10 +22,10 @@ class AddHangingIndentation implements TokenRule
             $token->IsOverhangingParent =
                 // Does it have delimited values? (e.g. `list(var, var)`)
                 $token->innerSiblings()->hasOneOf(',') ||
-                // Delimited expressions? (e.g. `for (expr; expr; expr)`)
-                ($token->is('(') && $token->innerSiblings()->hasOneOf(';')) ||
-                // A subsequent statement or block? (e.g. `if (expr) statement`)
-                $token->hasAdjacentBlock();
+                    // Delimited expressions? (e.g. `for (expr; expr; expr)`)
+                    ($token->is('(') && $token->innerSiblings()->hasOneOf(';')) ||
+                    // A subsequent statement or block? (e.g. `if (expr) statement`)
+                    $token->hasAdjacentBlock();
         }
 
         if (!$token->isCode() ||
@@ -66,8 +66,8 @@ class AddHangingIndentation implements TokenRule
         //                 $b;
         //
         if ($latest && $latest->BracketStack === $token->BracketStack) {
-            if (!$prev->isStatementPrecursor() &&
-                    $latest->prevCode()->isStatementPrecursor()) {
+            if (!$token->isStartOfExpression() &&
+                    $latest->isStartOfExpression()) {
                 $stack[] = $latest;
             } elseif ($token->isTernaryOperator() &&
                     !$latest->isTernaryOperator()) {

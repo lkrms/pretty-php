@@ -11,7 +11,7 @@ final class TokenBoundary extends Enumeration
 
     public const ALL =
         self::ASSIGNMENT
-        | self::COMPARISON;
+            | self::COMPARISON;
 
     public const NONE = 0;
 

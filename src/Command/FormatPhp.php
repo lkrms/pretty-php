@@ -191,6 +191,7 @@ class FormatPhp extends CliCommand
         }
         if ($this->getOptionValue('laravel')) {
             $skip[]  = 'one-line-arguments';
+            $skip[]  = 'align-chains';
             $skip[]  = 'indent-heredocs';
             $skip[]  = 'align-assignments';
             $rules[] = 'no-concat-spaces';
