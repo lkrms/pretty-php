@@ -82,9 +82,8 @@ class AlignChainedCalls implements TokenRule
         }
 
         // Create a hanging indent if there's nothing to $alignWith
-        $tabSize = strlen($this->Formatter->SoftTab);
         if (!$alignWith) {
-            $delta = $tabSize;
+            $delta = $this->Formatter->TabSize;
         } else {
             $delta = max(0, mb_strlen(ltrim($alignWith->startOfLine()->collect($alignWith)->render(true, false), "\n"))
                 - mb_strlen(ltrim($first->startOfLine()->collect($first)->render(true, false), "\n")));
@@ -93,8 +92,8 @@ class AlignChainedCalls implements TokenRule
             // just inside the start of the string instead
             if ($alignWith->is(T_DOUBLE_COLON) &&
                     ($prev = $alignWith->prev())->is(T_STRING) &&
-                    ($length = mb_strlen($prev->Code)) > 2 * $tabSize - 1) {
-                $delta -= $length - $tabSize;
+                    ($length = mb_strlen($prev->Code)) > 2 * $this->Formatter->TabSize - 1) {
+                $delta -= $length - $this->Formatter->TabSize;
             }
         }
 

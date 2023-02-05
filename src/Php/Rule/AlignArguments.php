@@ -30,29 +30,39 @@ final class AlignArguments implements TokenRule
     private function alignList(TokenCollection $align): void
     {
         /** @var Token $first */
-        $first      = $align->first();
-        $alignWith  = $first->parent();
-        $start      = $alignWith->startOfLine();
-        $alignAt    = mb_strlen(ltrim($start->collect($alignWith)->render(true, false), "\n"));
-        $alignFirst = $align->find(fn(Token $t) => $t->hasNewlineBefore())
-            ?: $first->parent()->inner()->find(fn(Token $t) => $t->hasNewlineBefore());
-        if ($alignFirst) {
-            $hangingDelta = $alignWith->HangingIndent - $alignFirst->HangingIndent;
-            $paddingDelta = $alignAt - (strlen($alignFirst->renderIndent(true)) + $hangingDelta * strlen($this->Formatter->SoftTab) + $alignFirst->LinePadding + $alignFirst->Padding);
-        } else {
-            $hangingDelta = 0;
-            $paddingDelta = $alignAt - (strlen($start->renderIndent(true)) + $start->LinePadding + $start->Padding);
-        }
+        $first     = $align->first();
+        $alignWith = $first->parent();
+        $start     = $alignWith->startOfLine();
+        $alignAt   = mb_strlen(ltrim($start->collect($alignWith)->render(true, false), "\n"));
         $align->forEach(
-            function (Token $t, ?Token $prev, ?Token $next) use ($alignWith, $hangingDelta, $paddingDelta) {
-                if ($hangingDelta && (!$prev || !$t->hasNewlineBefore())) {
-                    $hangingDelta += 1;
-                }
+            function (Token $t, ?Token $prev, ?Token $next) use ($alignWith, $start, $alignAt) {
                 $until = ($next ?: $alignWith->ClosedBy)->prev();
+
+                $overhang = 0;
+                if (!$prev || !$t->hasNewlineBefore()) {
+                    $nextLine = $t->endOfLine()->next();
+                    if ($nextLine->isNull() || $nextLine->Index > $until->Index) {
+                        return;
+                    }
+                    $t        = $nextLine;
+                    $overhang = 1;
+                }
+
+                $hangingDelta = $start->HangingIndent - $t->HangingIndent + $overhang;
+                $paddingDelta = $alignAt
+                    - (strlen($t->renderIndent(true))
+                        // Subtract $overhang here to ensure hanging indentation
+                        // within arguments is preserved
+                        + ($hangingDelta - $overhang) * $this->Formatter->TabSize
+                        + $t->LinePadding
+                        + $t->Padding);
+                $overhangingDiff = array_diff_key($t->OverhangingParents, $start->OverhangingParents);
+
                 $t->collect($until)->forEach(
-                    function (Token $t) use ($hangingDelta, $paddingDelta) {
-                        $t->HangingIndent += $hangingDelta;
-                        $t->LinePadding   += $paddingDelta;
+                    function (Token $t) use ($hangingDelta, $paddingDelta, $overhangingDiff) {
+                        $t->HangingIndent     += $hangingDelta;
+                        $t->LinePadding       += $paddingDelta;
+                        $t->OverhangingParents = array_diff_key($t->OverhangingParents, $overhangingDiff);
                     }
                 );
             }

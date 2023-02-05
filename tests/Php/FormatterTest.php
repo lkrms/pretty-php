@@ -77,12 +77,14 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
                 $in      = file_get_contents((string) $file);
                 $outFile = preg_replace('/\.in$/', '.out', $outDir . substr((string) $file, strlen($inDir)));
                 $relPath = substr((string) $file, strlen($inDir) + 1);
-                [$tab, $tabSize, $skipRules, $addRules] = [
-                    '    ', 4, [], []
-                ];
+
+                $insertSpaces = true;
+                $tabSize      = 4;
+                $skipRules    = [];
+                $addRules     = [];
                 switch (explode(DIRECTORY_SEPARATOR, $relPath)[0]) {
                     case 'phpfmt':
-                        [$tab, $tabSize] = ["\t", 4];
+                        $insertSpaces = false;
                         break;
                     case 'php-doc':
                         $skipRules = [
@@ -96,17 +98,19 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
                 if (!file_exists($outFile)) {
                     printf("Formatting %s\n", $relPath);
                     File::maybeCreateDirectory(dirname($outFile));
-                    $formatter = new Formatter($tab,
+                    $formatter = new Formatter($insertSpaces,
                                                $tabSize,
                                                $skipRules,
                                                $addRules);
-                    $formatter->QuietLevel = 3;
-                    file_put_contents($outFile, $out = $formatter->format($in));
+                    file_put_contents(
+                        $outFile,
+                        $out = $formatter->format($in, 3, $relPath)
+                    );
                 } else {
                     $out = file_get_contents($outFile);
                 }
                 $this->assertFormatterOutputIs($in, $out,
-                                               $skipRules, $addRules, $tab, $tabSize,
+                                               $skipRules, $addRules, $insertSpaces, $tabSize,
                                                $relPath);
             }
         }

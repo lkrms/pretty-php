@@ -2,8 +2,6 @@
 
 namespace Lkrms\Pretty\Tests\Php\Rule;
 
-use Lkrms\Pretty\Php\Rule\AlignArguments;
-
 final class PlaceCommentsTest extends \Lkrms\Pretty\Tests\Php\TestCase
 {
     public function testAlignComment()
