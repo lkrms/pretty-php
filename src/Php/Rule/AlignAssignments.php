@@ -16,18 +16,18 @@ final class AlignAssignments implements BlockRule
         if (count($block) < 2) {
             return;
         }
-        $group          = [];
-        $stack          = null;
-        $indent         = null;
-        $hasAlignedArgs = null;
-        $isAssignment   = null;
-        $startGroup     =
-            function (Token $t1, Token $t2) use (&$group, &$stack, &$indent, &$hasAlignedArgs, &$isAssignment) {
-                $stack          = $t2->BracketStack;
-                $indent         = $t2->indent();
-                $hasAlignedArgs = $t1->Tags['HasAlignedArguments'] ?? false;
-                $isAssignment   = $t2->isOneOf(...TokenType::OPERATOR_ASSIGNMENT);
-                $group[]        = [$t1, $t2];
+        $group        = [];
+        $stack        = null;
+        $indent       = null;
+        $alignedWith  = null;
+        $isAssignment = null;
+        $startGroup   =
+            function (Token $t1, Token $t2) use (&$group, &$stack, &$indent, &$alignedWith, &$isAssignment) {
+                $stack        = $t2->BracketStack;
+                $indent       = $t2->indent();
+                $alignedWith  = $this->getAlignedWith($t1, $t2);
+                $isAssignment = $t2->isOneOf(...TokenType::OPERATOR_ASSIGNMENT);
+                $group[]      = [$t1, $t2];
             };
         while ($block) {
             $line   = array_shift($block);
@@ -46,23 +46,36 @@ final class AlignAssignments implements BlockRule
                 }
                 if ($stack === $token2->BracketStack &&
                         ($indent === $token2->indent() ||
-                            ($hasAlignedArgs && ($token1->Tags['HasAlignedArguments'] ?? false))) &&
+                            ($alignedWith && $alignedWith === $this->getAlignedWith($token1, $token2))) &&
                         !($isAssignment xor $token2->isOneOf(...TokenType::OPERATOR_ASSIGNMENT))) {
                     $group[] = [$token1, $token2];
                     continue;
                 }
             }
             $this->maybeRegisterGroup($group);
-            $group          = [];
-            $stack          = null;
-            $indent         = null;
-            $hasAlignedArgs = null;
-            $isAssignment   = null;
+            $group        = [];
+            $stack        = null;
+            $indent       = null;
+            $alignedWith  = null;
+            $isAssignment = null;
             if ($token2) {
                 $startGroup($token1, $token2);
             }
         }
         $this->maybeRegisterGroup($group);
+    }
+
+    private function getAlignedWith(Token $token1, Token $token2): ?Token
+    {
+        if ($token1->AlignedWith) {
+            return $token1->AlignedWith;
+        }
+        $parent = $token2->parent();
+        if ($parent->Index < $token1->Index) {
+            return null;
+        }
+
+        return $parent->nextCode()->AlignedWith;
     }
 
     /**

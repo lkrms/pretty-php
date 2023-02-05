@@ -6,6 +6,7 @@ use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenCollection;
+use Lkrms\Pretty\WhitespaceType;
 
 final class AlignArguments implements TokenRule
 {
@@ -22,8 +23,14 @@ final class AlignArguments implements TokenRule
         if (!$align->find(fn(Token $t) => $t->hasNewlineBefore())) {
             return;
         }
-        $align->forEach(fn(Token $t) => $this->tagToken($t));
-        $this->tagToken($align->first()->parent()->startOfLine());
+        $align->forEach(
+            function (Token $t) use ($token) {
+                if ($t->prevCode() !== $token) {
+                    $t->WhitespaceBefore |= WhitespaceType::LINE;
+                }
+                $t->AlignedWith = $token;
+            }
+        );
         $this->Formatter->registerCallback($this, $align->first(), fn() => $this->alignList($align), 710);
     }
 
@@ -67,10 +74,5 @@ final class AlignArguments implements TokenRule
                 );
             }
         );
-    }
-
-    private function tagToken(Token $token): void
-    {
-        $token->Tags['HasAlignedArguments'] = true;
     }
 }

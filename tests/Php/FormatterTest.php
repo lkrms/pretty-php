@@ -109,8 +109,12 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
                 } else {
                     $out = file_get_contents($outFile);
                 }
-                $this->assertFormatterOutputIs($in, $out,
-                                               $skipRules, $addRules, $insertSpaces, $tabSize,
+                $this->assertFormatterOutputIs($in,
+                                               $out,
+                                               $skipRules,
+                                               $addRules,
+                                               $insertSpaces,
+                                               $tabSize,
                                                $relPath);
             }
         }

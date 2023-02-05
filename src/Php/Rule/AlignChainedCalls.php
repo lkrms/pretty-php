@@ -19,7 +19,9 @@ class AlignChainedCalls implements TokenRule
             return;
         }
 
-        $chain = $token->withNextSiblingsWhile('(', '[', '{',
+        $chain = $token->withNextSiblingsWhile('(',
+                                               '[',
+                                               '{',
                                                T_OBJECT_OPERATOR,
                                                T_NULLSAFE_OBJECT_OPERATOR,
                                                T_STRING)
@@ -53,7 +55,9 @@ class AlignChainedCalls implements TokenRule
         // would be set otherwise), align with the closest `::` in the same
         // expression (if there is one)
         if (!$alignWith) {
-            $alignWith = $first->prevSiblingsWhile('(', '[', '{',
+            $alignWith = $first->prevSiblingsWhile('(',
+                                                   '[',
+                                                   '{',
                                                    T_DOUBLE_COLON,
                                                    T_STRING)
                                ->getFirstOf(T_DOUBLE_COLON);

@@ -119,13 +119,6 @@ class Token implements JsonSerializable
     private $HangingIndent = 0;
 
     /**
-     * Index => count
-     *
-     * @var array<int,int>
-     */
-    public $OverhangingParents = [];
-
-    /**
      * @var bool
      */
     public $IsHangingParent;
@@ -151,6 +144,13 @@ class Token implements JsonSerializable
     public $IndentBracketStack = [];
 
     /**
+     * Index => count
+     *
+     * @var array<int,int>
+     */
+    public $OverhangingParents = [];
+
+    /**
      * @var bool
      */
     private $PinToCode = false;
@@ -164,6 +164,11 @@ class Token implements JsonSerializable
      * @var int
      */
     private $Padding = 0;
+
+    /**
+     * @var Token|null
+     */
+    public $AlignedWith;
 
     /**
      * @var Token|null
@@ -347,6 +352,7 @@ class Token implements JsonSerializable
             //$a['IndentStack'],
             //$a['IndentParentStack'],
             //$a['IndentBracketStack'],
+            $a['AlignedWith'],
             $a['ChainOpenedBy'],
             $a['HeredocOpenedBy'],
             $a['StringOpenedBy'],
