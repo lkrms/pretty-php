@@ -35,7 +35,13 @@ final class TokenType
     ];
 
     public const PRESERVE_NEWLINE_AFTER = [
-        '(', ',', ':', ';', '[', '{', '}',
+        '(',
+        ',',
+        ':',
+        ';',
+        '[',
+        '{',
+        '}',
         T_OPEN_TAG,
         T_OPEN_TAG_WITH_ECHO,
         T_RETURN,
@@ -49,7 +55,9 @@ final class TokenType
     ];
 
     public const PRESERVE_NEWLINE_BEFORE = [
-        '!', ')', ']',
+        '!',
+        ')',
+        ']',
         T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
         T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
         T_CLOSE_TAG,
@@ -114,13 +122,17 @@ final class TokenType
     ];
 
     public const OPERATOR_BITWISE = [
-        '&', '|', '^', '~',
-        T_SL,                  // <<
-        T_SR,                  // >>
+        '&',
+        '|',
+        '^',
+        '~',
+        T_SL,    // <<
+        T_SR,    // >>
     ];
 
     public const OPERATOR_COMPARISON_EXCEPT_COALESCE = [
-        '<', '>',
+        '<',
+        '>',
         T_IS_EQUAL,               // ==
         T_IS_IDENTICAL,           // ===
         T_IS_NOT_EQUAL,           // != or <>

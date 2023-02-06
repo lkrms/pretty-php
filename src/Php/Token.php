@@ -1229,7 +1229,8 @@ class Token implements JsonSerializable
     public function isUnaryOperator(): bool
     {
         return $this->isOneOf(
-            '~', '!',
+            '~',
+            '!',
             ...TokenType::OPERATOR_ERROR_CONTROL,
             ...TokenType::OPERATOR_INCREMENT_DECREMENT
         ) || (
@@ -1243,7 +1244,12 @@ class Token implements JsonSerializable
         $prev = $this->prevCode();
 
         return $prev->isOneOf(
-            '(', ',', ';', '[', '{', '}',
+            '(',
+            ',',
+            ';',
+            '[',
+            '{',
+            '}',
             T_CLOSE_TAG,
             ...TokenType::OPERATOR_ARITHMETIC,
             ...TokenType::OPERATOR_ASSIGNMENT,
