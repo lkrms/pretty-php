@@ -6,25 +6,52 @@ use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenCollection;
+use Lkrms\Pretty\WhitespaceType;
 
-final class AlignArguments implements TokenRule
+final class AlignLists implements TokenRule
 {
     use TokenRuleTrait;
 
     public function processToken(Token $token): void
     {
-        if (!$token->isOneOf('(', '[') || $token->hasNewlineAfterCode()) {
+        if (!$token->isOneOf('(', '[')) {
             return;
         }
         $align = $token->innerSiblings()->filter(
             fn(Token $t) => $t->prevCode() === $token || $t->prevCode()->is(',')
         );
-        if (!$align->find(fn(Token $t) => $t->hasNewlineBefore())) {
-            return;
+        // Take a trailing delimiter as a request for newlines between items
+        if (!$token->ClosedBy->prevCode()->is(',')) {
+            // Suppress newlines between array items unless the array has a
+            // trailing delimiter, opens with a line break, or has a line break
+            // after the first item
+            if ($token->isArrayOpenBracket() &&
+                    !$token->hasNewlineAfterCode() &&
+                    !(($second = $align->nth(1)) && $second->hasNewlineBefore())) {
+                $align->forEach(
+                    fn(Token $t) =>
+                        $t->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE
+                );
+
+                return;
+            }
+            if (!$align->find(fn(Token $t) => $t->hasNewlineBefore())) {
+                return;
+            }
         }
-        $align->forEach(fn(Token $t) => $this->tagToken($t));
-        $this->tagToken($align->first()->parent()->startOfLine());
-        $this->Formatter->registerCallback($this, $align->first(), fn() => $this->alignList($align), 710);
+        $align->forEach(
+            function (Token $t) use ($token) {
+                if ($t->prevCode() !== $token) {
+                    $t->WhitespaceBefore           |= WhitespaceType::LINE;
+                    $t->WhitespaceMaskPrev         |= WhitespaceType::LINE;
+                    $t->prev()->WhitespaceMaskNext |= WhitespaceType::LINE;
+                }
+                $t->AlignedWith = $token;
+            }
+        );
+        if (!$token->hasNewlineAfterCode()) {
+            $this->Formatter->registerCallback($this, $align->first(), fn() => $this->alignList($align), 710);
+        }
     }
 
     private function alignList(TokenCollection $align): void
@@ -67,10 +94,5 @@ final class AlignArguments implements TokenRule
                 );
             }
         );
-    }
-
-    private function tagToken(Token $token): void
-    {
-        $token->Tags['HasAlignedArguments'] = true;
     }
 }

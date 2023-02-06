@@ -5,8 +5,8 @@ namespace Lkrms\Pretty\Php\Rule;
 use Lkrms\Pretty\Php\Concern\BlockRuleTrait;
 use Lkrms\Pretty\Php\Contract\BlockRule;
 use Lkrms\Pretty\Php\Token;
-use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\Php\TokenCollection;
+use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
 class AlignComments implements BlockRule

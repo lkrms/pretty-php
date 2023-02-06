@@ -94,9 +94,9 @@ class Token implements JsonSerializable
     private $ClosedBy;
 
     /**
-     * @var array<string,true>
+     * @var array<array<string,mixed>>
      */
-    public $Tags = [];
+    public $Log = [];
 
     /**
      * @var int
@@ -117,13 +117,6 @@ class Token implements JsonSerializable
      * @var int
      */
     private $HangingIndent = 0;
-
-    /**
-     * Index => count
-     *
-     * @var array<int,int>
-     */
-    public $OverhangingParents = [];
 
     /**
      * @var bool
@@ -151,6 +144,13 @@ class Token implements JsonSerializable
     public $IndentBracketStack = [];
 
     /**
+     * Index => count
+     *
+     * @var array<int,int>
+     */
+    public $OverhangingParents = [];
+
+    /**
      * @var bool
      */
     private $PinToCode = false;
@@ -164,6 +164,11 @@ class Token implements JsonSerializable
      * @var int
      */
     private $Padding = 0;
+
+    /**
+     * @var Token|null
+     */
+    public $AlignedWith;
 
     /**
      * @var Token|null
@@ -236,13 +241,18 @@ class Token implements JsonSerializable
     private $StartOfExpression = [];
 
     /**
+     * @var bool
+     */
+    public $IsStartOfDeclaration = false;
+
+    /**
      * @param string|array{0:int,1:string,2:int} $token
      * @param Token[] $bracketStack
      */
     public function __construct(int $index, $token, ?Token $prev, array $bracketStack, Formatter $formatter)
     {
         if (is_array($token)) {
-            list($this->Type, $this->Code, $this->Line) = $token;
+            [$this->Type, $this->Code, $this->Line] = $token;
             if ($this->isOneOf(...TokenType::DO_NOT_MODIFY_LHS)) {
                 $code = rtrim($this->Code);
             } elseif ($this->isOneOf(...TokenType::DO_NOT_MODIFY_RHS)) {
@@ -251,8 +261,7 @@ class Token implements JsonSerializable
                 $code = trim($this->Code);
             }
             if (isset($code) && $code !== $this->Code) {
-                $this->Code            = $code;
-                $this->Tags['Trimmed'] = true;
+                $this->Code = $code;
             }
         } else {
             $this->Type = $this->Code = $token;
@@ -347,19 +356,20 @@ class Token implements JsonSerializable
             //$a['IndentStack'],
             //$a['IndentParentStack'],
             //$a['IndentBracketStack'],
+            $a['AlignedWith'],
             $a['ChainOpenedBy'],
             $a['HeredocOpenedBy'],
             $a['StringOpenedBy'],
             $a['Formatter'],
-            //$a['_prev'],
-            //$a['_next'],
+            $a['_prev'],
+            $a['_next'],
             //$a['EndOfExpression'],
             //$a['StartOfExpression'],
         );
         $a['WhitespaceBefore'] = WhitespaceType::toWhitespace($a['WhitespaceBefore']);
         $a['WhitespaceAfter']  = WhitespaceType::toWhitespace($a['WhitespaceAfter']);
-        if (empty($a['Tags'])) {
-            unset($a['Tags']);
+        if (empty($a['Log'])) {
+            unset($a['Log']);
         }
 
         return $a;
@@ -1092,6 +1102,12 @@ class Token implements JsonSerializable
             (($prev = $current->prevCode())->isStatementTerminator() || $prev->isNull());
     }
 
+    public function isArrayOpenBracket(): bool
+    {
+        return $this->is('[') ||
+            ($this->is('(') && $this->prevCode()->is(T_ARRAY));
+    }
+
     public function isBrace(): bool
     {
         return $this->is('{') || ($this->is('}') && $this->OpenedBy->is('{'));
@@ -1213,7 +1229,8 @@ class Token implements JsonSerializable
     public function isUnaryOperator(): bool
     {
         return $this->isOneOf(
-            '~', '!',
+            '~',
+            '!',
             ...TokenType::OPERATOR_ERROR_CONTROL,
             ...TokenType::OPERATOR_INCREMENT_DECREMENT
         ) || (
@@ -1227,7 +1244,12 @@ class Token implements JsonSerializable
         $prev = $this->prevCode();
 
         return $prev->isOneOf(
-            '(', ',', ';', '[', '{', '}',
+            '(',
+            ',',
+            ';',
+            '[',
+            '{',
+            '}',
             T_CLOSE_TAG,
             ...TokenType::OPERATOR_ARITHMETIC,
             ...TokenType::OPERATOR_ASSIGNMENT,
@@ -1433,7 +1455,12 @@ class Token implements JsonSerializable
             return;
         }
         if ($this->Formatter->Debug && ($service = $this->Formatter->RunningService)) {
-            $this->Tags[$service . ':' . $name . ':' . $this->$name . ':' . $value] = true;
+            $this->Log[] = [
+                'service' => $service,
+                'value'   => $name,
+                'from'    => $this->$name,
+                'to'      => $value,
+            ];
         }
         $this->$name = $value;
     }
