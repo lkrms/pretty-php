@@ -15,10 +15,10 @@ use Lkrms\Facade\Test;
 use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeDeclaration;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
-use Lkrms\Pretty\Php\Rule\AlignArguments;
 use Lkrms\Pretty\Php\Rule\AlignAssignments;
 use Lkrms\Pretty\Php\Rule\AlignChainedCalls;
 use Lkrms\Pretty\Php\Rule\AlignComments;
+use Lkrms\Pretty\Php\Rule\AlignLists;
 use Lkrms\Pretty\Php\Rule\CommaCommaComma;
 use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterFn;
@@ -53,7 +53,7 @@ class FormatPhp extends CliCommand
         'blank-before-return'      => AddBlankLineBeforeReturn::class,
         'blank-before-declaration' => AddBlankLineBeforeDeclaration::class,
         'align-chains'             => AlignChainedCalls::class,
-        'align-args'               => AlignArguments::class,
+        'align-lists'              => AlignLists::class,
         'indent-heredocs'          => ReindentHeredocs::class,
         'align-assignments'        => AlignAssignments::class,
         'align-comments'           => AlignComments::class,
@@ -96,7 +96,7 @@ class FormatPhp extends CliCommand
                 Indent using tabs
 
                 Implies:
-                    --skip align-chains,align-args
+                    --skip align-chains,align-lists
                 EOF)
                 ->optionType(CliOptionType::ONE_OF_OPTIONAL)
                 ->allowedValues(['2', '4', '8'])

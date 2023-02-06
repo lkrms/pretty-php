@@ -2,7 +2,7 @@
 
 namespace Lkrms\Pretty\Tests\Php\Rule;
 
-use Lkrms\Pretty\Php\Rule\AlignArguments;
+use Lkrms\Pretty\Php\Rule\AlignLists;
 
 final class AlignChainedCallsTest extends \Lkrms\Pretty\Tests\Php\TestCase
 {
@@ -43,7 +43,7 @@ final class AlignChainedCallsTest extends \Lkrms\Pretty\Tests\Php\TestCase
 
             PHP,
         ];
-        $this->assertFormatterOutputIs($in, $out, [AlignArguments::class]);
+        $this->assertFormatterOutputIs($in, $out, [AlignLists::class]);
 
         [$in, $out] = [
             <<<'PHP'
@@ -146,6 +146,6 @@ final class AlignChainedCallsTest extends \Lkrms\Pretty\Tests\Php\TestCase
 
             PHP,
         ];
-        $this->assertFormatterOutputIs($in, $out, [AlignArguments::class]);
+        $this->assertFormatterOutputIs($in, $out, [AlignLists::class]);
     }
 }

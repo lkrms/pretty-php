@@ -22,10 +22,10 @@ class AddBlankLineBeforeDeclaration implements TokenRule
 
         /** @var Token $start */
         $start = $token->withPrevSiblingsWhile(...TokenType::DECLARATION_PART)->last();
-        if ($start->Tags[__CLASS__ . '/start'] ?? null) {
+        if ($start->IsStartOfDeclaration) {
             return;
         }
-        $start->Tags[__CLASS__ . '/start'] = true;
+        $start->IsStartOfDeclaration = true;
         if ($start !== $start->startOfStatement()) {
             return;
         }

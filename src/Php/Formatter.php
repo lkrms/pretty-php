@@ -9,9 +9,9 @@ use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\Sys;
 use Lkrms\Pretty\Php\Contract\BlockRule;
+use Lkrms\Pretty\Php\Contract\Rule;
 use Lkrms\Pretty\Php\Contract\TokenFilter;
 use Lkrms\Pretty\Php\Contract\TokenRule;
-use Lkrms\Pretty\Php\Contract\Rule;
 use Lkrms\Pretty\Php\Filter\NormaliseStrings;
 use Lkrms\Pretty\Php\Filter\RemoveCommentTokens;
 use Lkrms\Pretty\Php\Filter\RemoveEmptyTokens;
@@ -24,10 +24,10 @@ use Lkrms\Pretty\Php\Rule\AddEssentialWhitespace;
 use Lkrms\Pretty\Php\Rule\AddHangingIndentation;
 use Lkrms\Pretty\Php\Rule\AddIndentation;
 use Lkrms\Pretty\Php\Rule\AddStandardWhitespace;
-use Lkrms\Pretty\Php\Rule\AlignArguments;
 use Lkrms\Pretty\Php\Rule\AlignAssignments;
 use Lkrms\Pretty\Php\Rule\AlignChainedCalls;
 use Lkrms\Pretty\Php\Rule\AlignComments;
+use Lkrms\Pretty\Php\Rule\AlignLists;
 use Lkrms\Pretty\Php\Rule\BracePosition;
 use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
 use Lkrms\Pretty\Php\Rule\BreakBeforeControlStructureBody;
@@ -121,12 +121,12 @@ final class Formatter implements IReadable
         PreserveNewlines::class,                   // Must be after PlaceComments
         DeclareArgumentsOnOneLine::class,
         AddBlankLineBeforeReturn::class,           // Must be after PlaceComments
+        AlignChainedCalls::class,
+        AlignLists::class,
         AddIndentation::class,
         SwitchPosition::class,
         MatchPosition::class,
         AddBlankLineBeforeDeclaration::class,
-        AlignChainedCalls::class,
-        AlignArguments::class,
         AddHangingIndentation::class,              // Must be after AlignChainedCalls
         ReindentHeredocs::class,
         AddEssentialWhitespace::class,
@@ -177,7 +177,7 @@ final class Formatter implements IReadable
         if (!$insertSpaces) {
             $skip = [
                 AlignChainedCalls::class,
-                AlignArguments::class,
+                AlignLists::class,
             ];
         }
 
