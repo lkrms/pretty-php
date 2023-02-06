@@ -32,6 +32,7 @@ use Lkrms\Pretty\Php\Rule\SimplifyStrings;
 use Lkrms\Pretty\Php\Rule\SpaceOperators;
 use Lkrms\Pretty\PrettyBadSyntaxException;
 use Lkrms\Pretty\PrettyException;
+use Throwable;
 
 class FormatPhp extends CliCommand
 {
@@ -257,6 +258,9 @@ class FormatPhp extends CliCommand
             } catch (PrettyException $ex) {
                 $this->maybeDumpDebugOutput($input, $ex->getOutput(), $ex->getTokens(), $ex->getData());
                 throw $ex;
+            } catch (Throwable $ex) {
+                $this->maybeDumpDebugOutput($input, null, $formatter->Tokens, (string) $ex);
+                throw $ex;
             } finally {
                 Sys::stopTimer($file, 'file');
             }
@@ -304,7 +308,8 @@ class FormatPhp extends CliCommand
                 'input.php'   => $input,
                 'output.php'  => $output,
                 'tokens.json' => $tokens,
-                'data.json'   => $data,
+                'data.json'   => is_string($data) ? null : $data,
+                'data.out'    => is_string($data) ? $data : null,
             ] as $file => $contents) {
                 $file = "{$this->DebugDirectory}/{$file}";
                 File::maybeDelete($file);
