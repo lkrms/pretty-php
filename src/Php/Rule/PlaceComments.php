@@ -110,11 +110,13 @@ class PlaceComments implements TokenRule
          $token->Indent,
          $token->Deindent,
          $token->HangingIndent,
-         $token->LinePadding] = [$next->PreIndent,
-                                 $next->Indent,
-                                 $next->Deindent,
-                                 $next->HangingIndent,
-                                 $next->LinePadding];
+         $token->LinePadding,
+         $token->LineUnpadding] = [$next->PreIndent,
+                                   $next->Indent,
+                                   $next->Deindent,
+                                   $next->HangingIndent,
+                                   $next->LinePadding,
+                                   $next->LineUnpadding];
 
         if ($token->hasNewlineAfter()) {
             $token->Padding = $next->Padding;
