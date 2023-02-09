@@ -131,22 +131,36 @@ class Token implements JsonSerializable
     public $IsOverhangingParent;
 
     /**
+     * Tokens responsible for each level of hanging indentation applied to the
+     * token
+     *
      * @var Token[]
      */
     public $IndentStack = [];
 
     /**
+     * Parent tokens associated with hanging indentation levels applied to the
+     * token
+     *
      * @var Token[]
      */
     public $IndentParentStack = [];
 
     /**
-     * @var array<Token[]>
+     * The context of each level of hanging indentation applied to the token
+     *
+     * Only used by
+     * {@see \Lkrms\Pretty\Php\Rule\AddHangingIndentation::processToken()}.
+     *
+     * @var array<array<Token[]|Token>>
      */
     public $IndentBracketStack = [];
 
     /**
-     * Index => count
+     * Entries represent parent tokens and the collapsible ("overhanging")
+     * levels of indentation applied to the token on their behalf
+     *
+     * Parent token index => collapsible indentation levels applied
      *
      * @var array<int,int>
      */
