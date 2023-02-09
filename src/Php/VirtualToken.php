@@ -12,19 +12,19 @@ class VirtualToken extends Token
      * @param Token[] $bracketStack
      * @param Token[]|null $nextBracketStack
      */
-    public function __construct(array &$plainTokens, array &$tokens, Token $insertBefore, array $bracketStack, Formatter $formatter, ?array $nextBracketStack = null)
+    public function __construct(array &$plainTokens, array &$tokens, Token $insertAt, array $bracketStack, Formatter $formatter, ?array $nextBracketStack = null)
     {
         $this->Type = TokenType::T_VIRTUAL;
         $this->Code = '';
-        $this->Line = $insertBefore->Line;
+        $this->Line = $insertAt->Line;
 
         $plainTokens[] = '';
         end($plainTokens);
         $index = key($plainTokens);
-        Convert::arraySpliceAtKey($tokens, $insertBefore->Index, 0, [$index => $this]);
-        $this->insertBefore($insertBefore);
+        Convert::arraySpliceAtKey($tokens, $insertAt->Index, 0, [$index => $this]);
+        $this->insertAt($insertAt);
         if ($nextBracketStack) {
-            $insertBefore->BracketStack = $nextBracketStack;
+            $insertAt->BracketStack = $nextBracketStack;
         }
 
         $this->Index        = $index;

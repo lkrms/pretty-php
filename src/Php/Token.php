@@ -207,6 +207,16 @@ class Token implements JsonSerializable
     public $StringOpenedBy;
 
     /**
+     * @var bool
+     */
+    protected $IsNull = false;
+
+    /**
+     * @var bool
+     */
+    protected $IsVirtual = true;
+
+    /**
      * @var int
      */
     private $WhitespaceBefore = WhitespaceType::NONE;
@@ -275,14 +285,11 @@ class Token implements JsonSerializable
         if (is_array($token)) {
             [$this->Type, $this->Code, $this->Line] = $token;
             if ($this->isOneOf(...TokenType::DO_NOT_MODIFY_LHS)) {
-                $code = rtrim($this->Code);
+                $this->Code = rtrim($this->Code);
             } elseif ($this->isOneOf(...TokenType::DO_NOT_MODIFY_RHS)) {
-                $code = ltrim($this->Code);
+                $this->Code = ltrim($this->Code);
             } elseif (!$this->isOneOf(...TokenType::DO_NOT_MODIFY)) {
-                $code = trim($this->Code);
-            }
-            if (isset($code) && $code !== $this->Code) {
-                $this->Code = $code;
+                $this->Code = trim($this->Code);
             }
         } else {
             $this->Type = $this->Code = $token;
@@ -310,6 +317,7 @@ class Token implements JsonSerializable
         $this->BracketStack = $bracketStack;
         $this->TypeName     = is_int($this->Type) ? token_name($this->Type) : $this->Type;
         $this->Formatter    = $formatter;
+        $this->IsVirtual    = false;
 
         if ($prev) {
             $this->_prev        = $prev;
@@ -322,7 +330,7 @@ class Token implements JsonSerializable
      * current predecessor
      *
      */
-    protected function insertBefore(Token $token): void
+    final protected function insertAt(Token $token): void
     {
         $this->_prev        = $token->_prev;
         $this->_next        = $token;
@@ -373,10 +381,11 @@ class Token implements JsonSerializable
         unset(
             $a['Index'],
             $a['Type'],
-            //$a['BracketStack'],
-            //$a['IndentStack'],
-            //$a['IndentParentStack'],
-            //$a['IndentBracketStack'],
+            $a['BracketStack'],
+            $a['IndentStack'],
+            $a['IndentParentStack'],
+            $a['IndentBracketStack'],
+            $a['OverhangingParents'],
             $a['AlignedWith'],
             $a['ChainOpenedBy'],
             $a['HeredocOpenedBy'],
@@ -384,8 +393,8 @@ class Token implements JsonSerializable
             $a['Formatter'],
             $a['_prev'],
             $a['_next'],
-            //$a['EndOfExpression'],
-            //$a['StartOfExpression'],
+            $a['EndOfExpression'],
+            $a['StartOfExpression'],
         );
         $a['WhitespaceBefore'] = WhitespaceType::toWhitespace($a['WhitespaceBefore']);
         $a['WhitespaceAfter']  = WhitespaceType::toWhitespace($a['WhitespaceAfter']);
@@ -396,7 +405,7 @@ class Token implements JsonSerializable
         return $a;
     }
 
-    public function canonical(): Token
+    final public function canonical(): Token
     {
         if ($this->isOneOf(...TokenType::NOT_CODE)) {
             return $this;
@@ -405,38 +414,42 @@ class Token implements JsonSerializable
         return $this->OpenedBy ?: $this;
     }
 
-    public function wasFirstOnLine(): bool
+    final public function wasFirstOnLine(): bool
     {
-        if ($this->isOneOf(TokenType::T_NULL, TokenType::T_VIRTUAL)) {
+        if ($this->IsVirtual) {
             return false;
         }
         do {
             $prev = $this->prev();
-        } while ($prev->is(TokenType::T_VIRTUAL));
-        if ($prev->isNull()) {
-            return true;
-        }
+            if ($prev->IsNull) {
+                return true;
+            }
+        } while ($prev->IsVirtual);
         $prevPlain    = $this->Formatter->PlainTokens[$prev->Index];
-        $prevNewlines = substr_count($prevPlain[1] ?? $prevPlain, "\n");
+        $prevCode     = $prevPlain[1] ?? $prevPlain;
+        $prevNewlines = substr_count($prevCode, "\n");
 
-        return $this->Line > ($prev->Line + $prevNewlines);
+        return $this->Line > ($prev->Line + $prevNewlines) ||
+            $prevCode[-1] === "\n";
     }
 
-    public function wasLastOnLine(): bool
+    final public function wasLastOnLine(): bool
     {
-        if ($this->isOneOf(TokenType::T_NULL, TokenType::T_VIRTUAL)) {
+        if ($this->IsVirtual) {
             return false;
         }
         do {
             $next = $this->next();
-        } while ($next->is(TokenType::T_VIRTUAL));
-        if ($next->isNull()) {
-            return true;
-        }
+            if ($next->IsNull) {
+                return true;
+            }
+        } while ($next->IsVirtual);
         $plain    = $this->Formatter->PlainTokens[$this->Index];
-        $newlines = substr_count($plain[1] ?? $plain, "\n");
+        $code     = $plain[1] ?? $plain;
+        $newlines = substr_count($code, "\n");
 
-        return ($this->Line + $newlines) < $next->Line;
+        return ($this->Line + $newlines) < $next->Line ||
+            $code[-1] === "\n";
     }
 
     public function wasBetweenTokensOnLine(bool $canHaveInnerNewline = false): bool
@@ -761,7 +774,12 @@ class Token implements JsonSerializable
 
     public function isNull(): bool
     {
-        return false;
+        return $this->IsNull;
+    }
+
+    public function isVirtual(): bool
+    {
+        return $this->IsVirtual;
     }
 
     public function startOfLine(): Token
