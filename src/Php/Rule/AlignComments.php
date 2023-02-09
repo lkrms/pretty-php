@@ -19,21 +19,20 @@ class AlignComments implements BlockRule
             return;
         }
         // Collect comments that appear beside code
-        $comments = [];
-        $first    = null;
-        $last     = null;
+        $comments             = [];
+        $firstLineWithComment = null;
+        $lastLineWithComment  = null;
         foreach ($block as $i => $line) {
             $lastComment = $prevComment ?? null;
             $prevComment = null;
-            if (!(($comment = $line->getLastOf(...TokenType::COMMENT)) &&
-                        $comment->hasNewlineAfter()) ||
-                    $comment->hasNewline()) {
+            $comment     = $line->getLastOf(...TokenType::COMMENT);
+            if (!$comment || !$comment->hasNewlineAfter()) {
                 continue;
             }
             if ($comment->hasNewlineBefore()) {
-                if (($standalone = ($prev = $comment->prev()) !== $lastComment ||
-                            $comment->isMultiLineComment()) ||
-                        $comment->Line - $prev->Line > 1) {
+                $prev       = $comment->prev();
+                $standalone = $prev !== $lastComment;
+                if ($standalone || $comment->Line - $prev->Line > 1) {
                     /**
                      * Preserve blank lines so comments don't merge on
                      * subsequent runs:
@@ -52,21 +51,20 @@ class AlignComments implements BlockRule
                     }
                     continue;
                 }
-                $comment->WhitespaceBefore |= WhitespaceType::TAB;
             }
 
-            $comments[$i] = $comment;
-            /** @var Token $first */
-            $first        = $first ?: $line[0];
-            /** @var Token $last */
-            $last         = $line[0];
-            $prevComment  = $comment;
+            $comments[$i]         = $comment;
+            /** @var Token $firstLineWithComment */
+            $firstLineWithComment = $firstLineWithComment ?: $line[0];
+            /** @var Token $lastLineWithComment */
+            $lastLineWithComment  = $line[0];
+            $prevComment          = $comment;
         }
         if (count($comments) < 2) {
             return;
         }
         $this->Formatter->registerCallback($this, reset($comments), fn() =>
-            $this->alignComments($block, $comments, $first, $last), 999);
+            $this->alignComments($block, $comments, $firstLineWithComment, $lastLineWithComment), 999);
     }
 
     /**
@@ -87,6 +85,12 @@ class AlignComments implements BlockRule
                 continue;
             }
             if ($comment = $comments[$i] ?? null) {
+                if ($token === $comment) {
+                    $length      = strlen(ltrim($comment->renderWhitespaceBefore(true), "\n"));
+                    $lengths[$i] = $length;
+                    $max         = max($max, $length);
+                    continue;
+                }
                 $line = $token->collect($comment->prev());
             } elseif ($token->isOneOf(...TokenType::COMMENT)) {
                 continue;
@@ -99,7 +103,10 @@ class AlignComments implements BlockRule
         }
         /** @var Token $comment */
         foreach ($comments as $i => $comment) {
-            $comment->Padding = $max - $lengths[$i];
+            $comment->Padding = $max - $lengths[$i]
+                + ($comment->hasNewlineBefore()
+                    ? ($tabWidth ?? ($tabWidth = strlen(WhitespaceType::toWhitespace(WhitespaceType::TAB))))
+                    : 0);
         }
     }
 }

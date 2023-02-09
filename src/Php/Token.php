@@ -55,6 +55,11 @@ class Token implements JsonSerializable
         'WhitespaceMaskNext',
     ];
 
+    private const ALLOW_WRITE_IF_NULL = [
+        'OpenedBy',
+        'ClosedBy',
+    ];
+
     /**
      * @var int
      */
@@ -477,6 +482,68 @@ class Token implements JsonSerializable
         }
 
         return $n ?: new NullToken();
+    }
+
+    /**
+     * @param int|string ...$types
+     */
+    public function prevWhile(...$types): TokenCollection
+    {
+        return $this->_prevWhile(false, ...$types);
+    }
+
+    /**
+     * @param int|string ...$types
+     */
+    public function withPrevWhile(...$types): TokenCollection
+    {
+        return $this->_prevWhile(true, ...$types);
+    }
+
+    /**
+     * @param int|string ...$types
+     */
+    private function _prevWhile(bool $with, ...$types): TokenCollection
+    {
+        $c = new TokenCollection();
+        $p = $with ? $this : $this->prev();
+        while ($p->isOneOf(...$types)) {
+            $c[] = $p;
+            $p   = $p->prev();
+        }
+
+        return $c;
+    }
+
+    /**
+     * @param int|string ...$types
+     */
+    public function nextWhile(...$types): TokenCollection
+    {
+        return $this->_nextWhile(false, ...$types);
+    }
+
+    /**
+     * @param int|string ...$types
+     */
+    public function withNextWhile(...$types): TokenCollection
+    {
+        return $this->_nextWhile(true, ...$types);
+    }
+
+    /**
+     * @param int|string ...$types
+     */
+    private function _nextWhile(bool $with, ...$types): TokenCollection
+    {
+        $c = new TokenCollection();
+        $n = $with ? $this : $this->next();
+        while ($n->isOneOf(...$types)) {
+            $c[] = $n;
+            $n   = $n->next();
+        }
+
+        return $c;
     }
 
     public function prevCode(int $offset = 1): Token
@@ -1326,9 +1393,30 @@ class Token implements JsonSerializable
         //     return ($this->is('?') && ($this->nextSiblingOf(':'))) ||
         //         ($this->is(':') && ($this->prevSiblingOf('?')));
         //
-        // TODO: avoid collecting siblings, cache the result?
-        return ($this->is('?') && ($this->collectSiblings($this->endOfStatement())->hasOneOf(':'))) ||
-            ($this->is(':') && ($this->startOfStatement()->collectSiblings($this)->hasOneOf('?')));
+        switch ($this->Type) {
+            case '?':
+                while (!($current = ($current ?? $this)->nextSibling())->IsNull &&
+                        !$current->isStatementTerminator() &&
+                        !$current->prevCode()->isStatementTerminator()) {
+                    if ($current->is(':')) {
+                        return true;
+                    }
+                }
+                break;
+
+            case ':':
+                $current = $this;
+                while (!($prev = $current->prevCode())->isStatementPrecursor() &&
+                        !$prev->IsNull) {
+                    $current = $current->prevSibling();
+                    if ($current->is('?')) {
+                        return true;
+                    }
+                }
+                break;
+        }
+
+        return false;
     }
 
     public function isBinaryOrTernaryOperator(): bool
@@ -1558,7 +1646,7 @@ class Token implements JsonSerializable
     public function __set(string $name, $value): void
     {
         if (!in_array($name, self::ALLOW_WRITE) &&
-                !(is_null($this->$name) && in_array($name, self::ALLOW_READ))) {
+                !(is_null($this->$name) && in_array($name, self::ALLOW_WRITE_IF_NULL))) {
             throw new RuntimeException('Cannot access property ' . static::class . '::$' . $name);
         }
         if ($this->$name === $value) {
