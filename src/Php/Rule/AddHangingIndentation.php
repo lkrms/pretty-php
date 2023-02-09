@@ -27,11 +27,10 @@ class AddHangingIndentation implements TokenRule
                     ($token->is('(') && $token->innerSiblings()->hasOneOf(';')) ||
                     // A subsequent statement or block? (e.g. `if (expr)
                     // statement`)
-                    $token->adjacentBlock();
+                    $token->adjacent();
         }
 
-        if ($token->isOneOf(...TokenType::NOT_CODE) ||
-                !$this->isHanging($token)) {
+        if (!$this->isHanging($token)) {
             return;
         }
 
@@ -101,22 +100,16 @@ class AddHangingIndentation implements TokenRule
         $parents = in_array($parent, $token->IndentParentStack, true)
             ? []
             : [$parent];
-        $adjacents = ($adjacent = $parent->adjacentBlock())
-            ? [$adjacent->Index => $adjacent]
-            : [];
         $current = $parent;
         while (!($current = $current->parent())->isNull() && $current->IsHangingParent) {
             if (in_array($current, $token->IndentParentStack, true)) {
                 continue;
             }
             $parents[] = $current;
-            if ($adjacent = $current->adjacentBlock()) {
-                $adjacents[$adjacent->Index] = $adjacent;
-            }
             // Don't add indentation for this parent if it doesn't have any
             // hanging children
-            $children = $current->innerSiblings()
-                                ->filter(fn(Token $t) => $this->isHanging($t, true));
+            $children  = $current->innerSiblings()
+                                 ->filter(fn(Token $t) => $this->isHanging($t, true));
             if (!count($children)) {
                 continue;
             }
@@ -139,13 +132,29 @@ class AddHangingIndentation implements TokenRule
             $this->Formatter->registerCallback(
                 $this,
                 $token,
-                fn() => $this->maybeCollapseOverhanging($token, $until, $adjacents, $hanging),
+                fn() => $this->maybeCollapseOverhanging($token, $until, $hanging),
                 800
             );
         }
 
+        if ($adjacent = $until->adjacentBeforeNewline()) {
+            $until = $adjacent->endOfExpression();
+        }
+
         $current = $token;
         do {
+            // Allow multiple levels of hanging indentation within one parent:
+            //
+            // ```php
+            // $a = $b->c(fn() =>
+            //     $d &&
+            //         $e)
+            //     ?: $start;
+            // ```
+            if (array_key_exists($parent->Index, $current->OverhangingParents) &&
+                    ($hanging[$parent->Index] ?? null)) {
+                $current->OverhangingParents[$parent->Index] += $hanging[$parent->Index];
+            }
             $current->HangingIndent      += $indent;
             $current->OverhangingParents += $hanging;
             if ($current !== $token) {
@@ -161,59 +170,47 @@ class AddHangingIndentation implements TokenRule
     }
 
     /**
-     * @param array<int,Token> $adjacents
      * @param array<int,int> $hanging
      */
-    private function maybeCollapseOverhanging(Token $token, Token $until, array $adjacents, array $hanging): void
+    private function maybeCollapseOverhanging(Token $token, Token $until, array $hanging): void
     {
-        $tokens = $token->collect($until);
+        $tokens = $until->withAdjacentBeforeNewline($token);
         foreach ($hanging as $index => $count) {
             for ($i = 0; $i < $count; $i++) {
-                $indent     = $this->effectiveIndent($token);
-                // Find the next line with an indentation level that differs
-                // from token's
-                $next       = $token;
-                $nextIndent = 0;
-                do {
-                    $next = $next->endOfLine()->next();
-                    if ($next->isNull()) {
-                        break;
-                    }
-                    $nextIndent = $this->effectiveIndent($next);
-                } while ($nextIndent === $indent);
-                // Drop $indent and $nextIndent (if $next falls between $token
-                // and $until and this hanging indent hasn't already been
-                // collapsed) for comparison
-                $indent    -= $this->Formatter->TabSize;
-                $nextIndent = $next->isNull() ||
-                    $next->Index > $until->Index ||
-                    !($next->OverhangingParents[$index] ?? 0)
-                        ? $nextIndent
-                        : $nextIndent - $this->Formatter->TabSize;
                 // The purpose of overhanging indents is to visually separate
                 // distinct blocks of code that would otherwise run together, so
-                // $indent and $nextIndent can't be the same
-                if ($nextIndent === $indent && !$next->isNull()) {
-                    break 2;
-                }
-                foreach ($adjacents as $adjacent) {
-                    $token2 = null;
-                    if ($adjacent->is('{')) {
-                        if (!$adjacent->hasNewlineAfter() ||
-                                ($token2 = $adjacent->startOfLine())->Index > $until->Index) {
-                            continue;
+                // for every level of collapsible indentation, ensure subsequent
+                // lines with different indentation levels will remain distinct
+                // if a level is removed
+                $current = $token;
+                do {
+                    $indent     = $this->effectiveIndent($current);
+                    // Find the next line with an indentation level that differs
+                    // from the current line
+                    $next       = $current;
+                    $nextIndent = 0;
+                    do {
+                        $next = $next->endOfLine()->next();
+                        if ($next->isNull()) {
+                            break;
                         }
-                        $adjacent = $adjacent->next();
-                    } elseif (!$adjacent->hasNewlineBefore() ||
-                            ($token2 = $adjacent->prev()->startOfLine())->Index > $until->Index) {
-                        continue;
-                    }
-                    $indent     = $this->effectiveIndent($token2) - $this->Formatter->TabSize;
-                    $nextIndent = $this->effectiveIndent($adjacent);
-                    if ($nextIndent === $indent) {
+                        $nextIndent = $this->effectiveIndent($next);
+                    } while ($nextIndent === $indent &&
+                        $next->Index <= $until->Index);
+                    // Drop $indent and $nextIndent (if $next falls between
+                    // $token and $until and this hanging indent hasn't already
+                    // been collapsed) for comparison
+                    $indent    -= $this->Formatter->TabSize;
+                    $nextIndent = $next->isNull() ||
+                        $next->Index > $until->Index ||
+                        !($next->OverhangingParents[$index] ?? 0)
+                            ? $nextIndent
+                            : $nextIndent - $this->Formatter->TabSize;
+                    if ($nextIndent === $indent && !$next->isNull()) {
                         break 3;
                     }
-                }
+                    $current = $next;
+                } while (!$current->isNull() && $current->Index <= $until->Index);
                 $tokens->forEach(
                     function (Token $t) use ($index) {
                         if ($t->OverhangingParents[$index] ?? 0) {
@@ -228,19 +225,24 @@ class AddHangingIndentation implements TokenRule
 
     private function isHanging(Token $token, bool $ignoreIndent = false): bool
     {
-        $prev = $token->prevCode();
+        // Ignore tokens aligned by other rules
+        if ($token->AlignedWith ||
+                $token->isOneOf(...TokenType::NOT_CODE)) {
+            return false;
+        }
 
         // $token is regarded as a continuation of $prev if:
         // - $token and $prev both have the same level of indentation
         // - $token is not an opening brace (`{`) on its own line
         // - $prev is not a statement delimiter in a context where indentation
         //   is inherited from enclosing tokens
-        // - $token is not subject to alignment by AlignChainedCalls
+        $prev = $token->prevCode();
         if (!$prev->hasNewlineAfterCode() ||
-                (!$ignoreIndent && $this->indent($prev) !== $this->indent($token)) ||
-                $token->ChainOpenedBy ||
-                $token->isBrace() ||
-                ($prev->isStatementPrecursor() && !$prev->parent()->IsHangingParent)) {
+            $token->isBrace() ||
+            (!$ignoreIndent &&
+                $this->indent($prev) !== $this->indent($token)) ||
+            ($prev->isStatementPrecursor() &&
+                !$prev->parent()->IsHangingParent)) {
             return false;
         }
 
@@ -254,6 +256,9 @@ class AddHangingIndentation implements TokenRule
 
     private function effectiveIndent(Token $token): int
     {
-        return $token->indent() * $this->Formatter->TabSize + $token->LinePadding + $token->Padding;
+        // Ignore $token->LineUnpadding given its role in alignment
+        return $token->indent() * $this->Formatter->TabSize
+            + $token->LinePadding
+            + $token->Padding;
     }
 }

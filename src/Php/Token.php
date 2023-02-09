@@ -21,6 +21,7 @@ use RuntimeException;
  * @property int $HangingIndent
  * @property bool $PinToCode
  * @property int $LinePadding
+ * @property int $LineUnpadding
  * @property int $Padding
  * @property int $WhitespaceBefore
  * @property int $WhitespaceAfter
@@ -46,6 +47,7 @@ class Token implements JsonSerializable
         'HangingIndent',
         'PinToCode',
         'LinePadding',
+        'LineUnpadding',
         'Padding',
         'WhitespaceBefore',
         'WhitespaceAfter',
@@ -159,6 +161,11 @@ class Token implements JsonSerializable
      * @var int
      */
     private $LinePadding = 0;
+
+    /**
+     * @var int
+     */
+    private $LineUnpadding = 0;
 
     /**
      * @var int
@@ -373,6 +380,15 @@ class Token implements JsonSerializable
         }
 
         return $a;
+    }
+
+    public function canonical(): Token
+    {
+        if ($this->isOneOf(...TokenType::NOT_CODE)) {
+            return $this;
+        }
+
+        return $this->OpenedBy ?: $this;
     }
 
     public function wasFirstOnLine(): bool
@@ -754,6 +770,29 @@ class Token implements JsonSerializable
         return $current;
     }
 
+    /**
+     * Get the number of characters since the closest alignment token or the
+     * start of the line, whichever is encountered first
+     *
+     * An alignment token is a token where {@see Token::$AlignedWith} is set.
+     * Whitespace at the start of the line is ignored. Code in the token itself
+     * is included.
+     *
+     */
+    public function alignmentOffset(): int
+    {
+        $start = $this->startOfLine();
+        $start = $start->collect($this)
+                       ->reverse()
+                       ->find(fn(Token $t, ?Token $prev, ?Token $next) =>
+                           ($t->AlignedWith && $t->AlignedWith !== $this) ||
+                               ($next && $next === $this->AlignedWith))
+                           ?: $start;
+
+        return mb_strlen($start->collect($this)->render(true))
+            - ($start->hasNewlineBefore() ? $start->LineUnpadding : 0);
+    }
+
     public function startOfStatement(): Token
     {
         $current = ($this->is(';') || $this->isCloseTagStatementTerminator()
@@ -881,21 +920,21 @@ class Token implements JsonSerializable
         return $end;
     }
 
-    public function adjacentBlock(bool $controlStructureOnly = false): ?Token
+    public function adjacent(bool $controlStructureOnly = false): ?Token
     {
         $_this = $this->canonicalThis(__METHOD__);
         if (!$_this->isOneOf('(', '[', '{')) {
             return null;
         }
         /** @var Token */
-        $lastOuterBracket = $_this->ClosedBy->withNextCodeWhile(')', ']', '}')->last();
-        if (($end = $lastOuterBracket->endOfStatement())->isNull() ||
-                ($next = $lastOuterBracket->nextCode())->isNull() ||
+        $outer = $_this->ClosedBy->withNextCodeWhile(')', ']', '}')->last();
+        if (($end = $outer->endOfExpression())->isNull() ||
+                ($next = $outer->nextCode())->isNull() ||
                 ($end->Index <= $next->Index)) {
             return null;
         }
         if (!$controlStructureOnly ||
-            ($lastOuterBracket->is(')') &&
+            ($outer->is(')') &&
                 $next->prevSibling(2)->isOneOf(
                     ...TokenType::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES
                 ))) {
@@ -903,6 +942,45 @@ class Token implements JsonSerializable
         }
 
         return null;
+    }
+
+    public function adjacentBeforeNewline(bool $requireAlignedWith = true): ?Token
+    {
+        $current =
+            $this->isOneOf('(', ')', '[', ']', '{', '}')
+                ? ($this->ClosedBy ?: $this)
+                : $this->parent()->ClosedBy;
+        if (!$current) {
+            return null;
+        }
+        $eol   = $this->endOfLine();
+        $outer = $current->withNextCodeWhile(')', ']', '}')
+                         ->filter(fn(Token $t) => $t->Index <= $eol->Index)
+                         ->last();
+        if (!$outer ||
+                ($next = $outer->nextCode())->isNull() ||
+                ($next->Index > $eol->Index) ||
+                ($end = $outer->endOfExpression())->isNull() ||
+                ($end->Index <= $next->Index)) {
+            return null;
+        }
+
+        if ($requireAlignedWith &&
+            !$next->collect($this->endOfLine())
+                  ->find(fn(Token $item) => (bool) $item->AlignedWith)) {
+            return null;
+        }
+
+        return $next;
+    }
+
+    public function withAdjacentBeforeNewline(?Token $from = null, bool $requireAlignedWith = true): TokenCollection
+    {
+        if ($adjacent = $this->adjacentBeforeNewline($requireAlignedWith)) {
+            $until = $adjacent->endOfExpression();
+        }
+
+        return ($from ?: $this)->collect($until ?? $this);
     }
 
     public function declarationParts(): TokenCollection
@@ -1306,7 +1384,7 @@ class Token implements JsonSerializable
                 ? (($indent = $this->PreIndent + $this->Indent + $this->HangingIndent - $this->Deindent)
                         ? str_repeat($softTabs ? $this->Formatter->SoftTab : $this->Formatter->Tab, $indent)
                         : '')
-                    . (($padding = $this->LinePadding + $this->Padding)
+                    . (($padding = $this->LinePadding - $this->LineUnpadding + $this->Padding)
                         ? str_repeat(' ', $padding)
                         : '')
                 : ($this->Padding ? str_repeat(' ', $this->Padding) : ''));
@@ -1328,7 +1406,7 @@ class Token implements JsonSerializable
             if (in_array(ReindentHeredocs::class, $this->Formatter->Rules)) {
                 $indent = $this->renderIndent($softTabs);
                 $start  = $this->startOfLine();
-                if ($padding = str_repeat(' ', $start->LinePadding + $start->Padding)) {
+                if ($padding = str_repeat(' ', $start->LinePadding - $start->LineUnpadding + $start->Padding)) {
                     if (($indent[0] ?? null) === "\t") {
                         $heredoc = str_replace("\n$indent", "\n" . ($newIndent = $this->renderIndent(true)), $heredoc);
                         $indent  = $newIndent;
@@ -1350,8 +1428,8 @@ class Token implements JsonSerializable
                 if ($this->PreIndent + $this->Indent + $this->HangingIndent - $this->Deindent) {
                     $code .= $this->renderIndent($softTabs);
                 }
-                if ($this->LinePadding) {
-                    $code .= str_repeat(' ', $this->LinePadding);
+                if ($this->LinePadding - $this->LineUnpadding) {
+                    $code .= str_repeat(' ', $this->LinePadding - $this->LineUnpadding);
                 }
             }
             if ($this->Padding) {
@@ -1384,7 +1462,7 @@ class Token implements JsonSerializable
                 $indent =
                     "\n" . ($start === $this
                         ? $this->renderIndent($softTabs)
-                            . str_repeat(' ', $this->LinePadding + $this->Padding)
+                            . str_repeat(' ', $this->LinePadding - $this->LineUnpadding + $this->Padding)
                         : ltrim($start->renderWhitespaceBefore(), "\n")
                             . str_repeat(' ', mb_strlen($start->collect($this->prev())->render($softTabs))
                                 + strlen(WhitespaceType::toWhitespace($this->effectiveWhitespaceBefore()))

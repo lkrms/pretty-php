@@ -51,6 +51,96 @@ final class AlignArgumentsTest extends \Lkrms\Pretty\Tests\Php\TestCase
         ];
         $this->assertFormatterOutputIs($in, $out);
 
+        [$in, $out] = [
+            <<<'PHP'
+            <?php
+
+            $v = [[[$a ||
+            $b,
+            $c],
+            $d],
+            $e];
+            PHP,
+            <<<'PHP'
+            <?php
+
+            $v = [[[$a ||
+                        $b,
+                    $c],
+                   $d],
+                  $e];
+
+            PHP,
+        ];
+        $this->assertFormatterOutputIs($in, $out);
+
+        [$in, $out] = [
+            <<<'PHP'
+            <?php
+
+            fnA()->call1(fnB()->call2(fnC()->call3($a1 ||
+            $b1,
+            $c1 ||
+            $d1)->call4($a2 ||
+            $b2,
+            $c2)
+            ->call5(),
+            fnD()->call6($a3 ||
+            $b3,
+            $c3)->call7($a4 ||
+            $b4,
+            $c4)
+            ->call8(),
+            $e1)
+            ->call9($a5 ||
+            $b5,
+            $c5)
+            ->call10($a6 ||
+            $b6,
+            $c6),
+            $e2)
+            ->call11($a7 ||
+            $b7,
+            $c7)
+            ->call12($a8 ||
+            $b8,
+            $c8);
+            PHP,
+            <<<'PHP'
+            <?php
+
+            fnA()->call1(fnB()->call2(fnC()->call3($a1 ||
+                                                       $b1,
+                                                   $c1 ||
+                                                       $d1)->call4($a2 ||
+                                                                       $b2,
+                                                                   $c2)
+                                                           ->call5(),
+                                      fnD()->call6($a3 ||
+                                                       $b3,
+                                                   $c3)->call7($a4 ||
+                                                                   $b4,
+                                                               $c4)
+                                                       ->call8(),
+                                      $e1)
+                              ->call9($a5 ||
+                                          $b5,
+                                      $c5)
+                              ->call10($a6 ||
+                                           $b6,
+                                       $c6),
+                         $e2)
+                 ->call11($a7 ||
+                              $b7,
+                          $c7)
+                 ->call12($a8 ||
+                              $b8,
+                          $c8);
+
+            PHP
+        ];
+        $this->assertFormatterOutputIs($in, $out);
+
         // Same input as in AlignChainedCallsTest
         [$in, $out] = [
             <<<'PHP'

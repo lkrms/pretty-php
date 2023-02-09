@@ -18,7 +18,7 @@ final class AlignLists implements TokenRule
             return;
         }
         $align = $token->innerSiblings()->filter(
-            fn(Token $t) => $t->prevCode() === $token || $t->prevCode()->is(',')
+            fn(Token $t, ?Token $prev) => !$prev || $t->prevCode()->is(',')
         );
         // Take a trailing delimiter as a request for newlines between items
         if (!$token->ClosedBy->prevCode()->is(',')) {
@@ -40,8 +40,8 @@ final class AlignLists implements TokenRule
             }
         }
         $align->forEach(
-            function (Token $t) use ($token) {
-                if ($t->prevCode() !== $token) {
+            function (Token $t, ?Token $prev) use ($token) {
+                if ($prev) {
                     $t->WhitespaceBefore           |= WhitespaceType::LINE;
                     $t->WhitespaceMaskPrev         |= WhitespaceType::LINE;
                     $t->prev()->WhitespaceMaskNext |= WhitespaceType::LINE;
@@ -50,49 +50,30 @@ final class AlignLists implements TokenRule
             }
         );
         if (!$token->hasNewlineAfterCode()) {
-            $this->Formatter->registerCallback($this, $align->first(), fn() => $this->alignList($align), 710);
+            $this->Formatter->registerCallback($this, $align->first(), fn() => $this->alignList($align, $token), 710);
         }
     }
 
-    private function alignList(TokenCollection $align): void
+    private function alignList(TokenCollection $align, Token $token): void
     {
-        /** @var Token $first */
-        $first     = $align->first();
-        $alignWith = $first->parent();
-        $start     = $alignWith->startOfLine();
-        $alignAt   = mb_strlen(ltrim($start->collect($alignWith)->render(true, false), "\n"));
-        $align->forEach(
-            function (Token $t, ?Token $prev, ?Token $next) use ($alignWith, $start, $alignAt) {
-                $until = ($next ?: $alignWith->ClosedBy)->prev();
+        // Don't proceed if items have been moved by other rules
+        if ($align->find(fn(Token $t, ?Token $prev) => $prev && !$t->hasNewlineBefore())) {
+            return;
+        }
 
-                $overhang = 0;
-                if (!$prev || !$t->hasNewlineBefore()) {
-                    $nextLine = $t->endOfLine()->next();
-                    if ($nextLine->isNull() || $nextLine->Index > $until->Index) {
-                        return;
-                    }
-                    $t        = $nextLine;
-                    $overhang = 1;
+        $delta = $token->alignmentOffset();
+        $align->forEach(function (Token $t, ?Token $prev, ?Token $next) use ($delta) {
+            if ($next) {
+                $until = $next->prev(2);
+            } else {
+                $until = $t->endOfExpression();
+                if ($adjacent = $until->adjacentBeforeNewline()) {
+                    $until = $adjacent->endOfExpression();
                 }
-
-                $hangingDelta = $start->HangingIndent - $t->HangingIndent + $overhang;
-                $paddingDelta = $alignAt
-                    - (strlen($t->renderIndent(true))
-                        // Subtract $overhang here to ensure hanging indentation
-                        // within arguments is preserved
-                        + ($hangingDelta - $overhang) * $this->Formatter->TabSize
-                        + $t->LinePadding
-                        + $t->Padding);
-                $overhangingDiff = array_diff_key($t->OverhangingParents, $start->OverhangingParents);
-
-                $t->collect($until)->forEach(
-                    function (Token $t) use ($hangingDelta, $paddingDelta, $overhangingDiff) {
-                        $t->HangingIndent     += $hangingDelta;
-                        $t->LinePadding       += $paddingDelta;
-                        $t->OverhangingParents = array_diff_key($t->OverhangingParents, $overhangingDiff);
-                    }
-                );
             }
-        );
+            $t->collect($until)
+              ->forEach(fn(Token $_t) =>
+                  $_t->LinePadding += $delta);
+        });
     }
 }
