@@ -1369,20 +1369,7 @@ class Token implements JsonSerializable
 
     public function isOperator(): bool
     {
-        // OPERATOR_EXECUTION is excluded because for formatting purposes,
-        // commands between backticks are equivalent to double-quoted strings
-        return $this->isOneOf(
-            ...TokenType::OPERATOR_ARITHMETIC,
-            ...TokenType::OPERATOR_ASSIGNMENT,
-            ...TokenType::OPERATOR_BITWISE,
-            ...TokenType::OPERATOR_COMPARISON,
-            ...TokenType::OPERATOR_ERROR_CONTROL,
-            ...TokenType::OPERATOR_INCREMENT_DECREMENT,
-            ...TokenType::OPERATOR_LOGICAL,
-            ...TokenType::OPERATOR_STRING,
-            ...TokenType::OPERATOR_DOUBLE_ARROW,
-            ...TokenType::OPERATOR_INSTANCEOF
-        ) || $this->isTernaryOperator();
+        return $this->isOneOf(...TokenType::ALL_OPERATOR);
     }
 
     public function isTernaryOperator(): bool

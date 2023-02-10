@@ -12,11 +12,16 @@ final class AlignLists implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getTokenTypes(): ?array
+    {
+        return [
+            '(',
+            '[',
+        ];
+    }
+
     public function processToken(Token $token): void
     {
-        if (!$token->isOneOf('(', '[')) {
-            return;
-        }
         $align = $token->innerSiblings()->filter(
             fn(Token $t, ?Token $prev) => !$prev || $t->prevCode()->is(',')
         );

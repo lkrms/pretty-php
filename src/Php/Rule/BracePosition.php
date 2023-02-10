@@ -17,6 +17,14 @@ class BracePosition implements TokenRule
      */
     private $BracketBracePairs = [];
 
+    public function getTokenTypes(): ?array
+    {
+        return [
+            '{',
+            '}',
+        ];
+    }
+
     public function processToken(Token $token): void
     {
         if (!$token->isStructuralBrace()) {

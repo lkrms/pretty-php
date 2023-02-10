@@ -21,12 +21,15 @@ final class SimplifyStrings implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getTokenTypes(): ?array
+    {
+        return [
+            T_CONSTANT_ENCAPSED_STRING,
+        ];
+    }
+
     public function processToken(Token $token): void
     {
-        if (!$token->is(T_CONSTANT_ENCAPSED_STRING)) {
-            return;
-        }
-
         // \x00 -> \t, \v, \f, \x0e -> \x1f is effectively \x00 -> \x1f without
         // LF (\n) or CR (\r), which aren't escaped unless already escaped
         $escape = "\0..\t\v\f\x0e..\x1f\"\$\\";

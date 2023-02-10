@@ -12,12 +12,13 @@ class SuppressSpaceAroundStringOperator implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getTokenTypes(): ?array
+    {
+        return TokenType::OPERATOR_STRING;
+    }
+
     public function processToken(Token $token): void
     {
-        if (!$token->isOneOf(...TokenType::OPERATOR_STRING)) {
-            return;
-        }
-
         $token->WhitespaceMaskPrev &= ~WhitespaceType::SPACE;
         $token->WhitespaceMaskNext &= ~WhitespaceType::SPACE;
     }

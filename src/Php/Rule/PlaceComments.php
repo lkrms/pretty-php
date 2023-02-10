@@ -12,12 +12,13 @@ class PlaceComments implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getTokenTypes(): ?array
+    {
+        return TokenType::COMMENT;
+    }
+
     public function processToken(Token $token): void
     {
-        if (!$token->isOneOf(...TokenType::COMMENT)) {
-            return;
-        }
-
         // Leave embedded comments alone
         if ($token->wasBetweenTokensOnLine(true)) {
             $token->WhitespaceBefore |= WhitespaceType::SPACE;

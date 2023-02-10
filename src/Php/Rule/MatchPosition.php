@@ -11,20 +11,23 @@ class MatchPosition implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getTokenTypes(): ?array
+    {
+        return [
+            T_MATCH,
+        ];
+    }
+
     public function processToken(Token $token): void
     {
-        if ($token->is(T_MATCH)) {
-            $arms    = $token->nextSibling(2);
-            $current = $arms->nextCode();
+        $arms    = $token->nextSibling(2);
+        $current = $arms->nextCode();
 
-            while ($current && $current !== $arms->ClosedBy) {
-                if (($current = $current->nextSiblingOf(T_DOUBLE_ARROW)) &&
-                        ($current = $current->nextSiblingOf(','))) {
-                    $current->WhitespaceAfter |= WhitespaceType::LINE;
-                }
+        while ($current && $current !== $arms->ClosedBy) {
+            if (($current = $current->nextSiblingOf(T_DOUBLE_ARROW)) &&
+                    ($current = $current->nextSiblingOf(','))) {
+                $current->WhitespaceAfter |= WhitespaceType::LINE;
             }
-
-            return;
         }
     }
 }

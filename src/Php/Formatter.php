@@ -329,11 +329,20 @@ final class Formatter implements IReadable
 
         /** @var TokenRule $rule */
         foreach ($tokenLoop as $rule) {
+            // Prepare to filter the tokens as efficiently as possible
+            $types = $rule->getTokenTypes();
+            if ($types === []) {
+                continue;
+            }
+            $types = $types ? array_flip($types) : null;
+
             $this->RunningService = $_rule = get_class($rule);
             Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
             /** @var Token $token */
             foreach ($this->Tokens as $token) {
-                $rule->processToken($token);
+                if (!$types || ($types[$token->Type] ?? false) !== false) {
+                    $rule->processToken($token);
+                }
             }
             Sys::stopTimer($timer, 'rule');
         }

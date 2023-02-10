@@ -12,6 +12,33 @@ class AddStandardWhitespace implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getTokenTypes(): ?array
+    {
+        return [
+            ':',
+            T_OPEN_TAG,
+            T_OPEN_TAG_WITH_ECHO,
+            T_CLOSE_TAG,
+
+            ')',    // isCloseBracket()
+            ']',
+            '}',
+
+            '(',    // isOpenBracket()
+            '[',
+            '{',
+            T_ATTRIBUTE,
+            T_CURLY_OPEN,
+            T_DOLLAR_OPEN_CURLY_BRACES,
+
+            ...TokenType::ADD_SPACE_AROUND,
+            ...TokenType::ADD_SPACE_BEFORE,
+            ...TokenType::ADD_SPACE_AFTER,
+            ...TokenType::SUPPRESS_SPACE_AFTER,
+            ...TokenType::SUPPRESS_SPACE_BEFORE,
+        ];
+    }
+
     public function processToken(Token $token): void
     {
         if ($token->isOneOf(...TokenType::ADD_SPACE_AROUND)) {
