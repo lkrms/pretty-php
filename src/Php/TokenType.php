@@ -422,4 +422,22 @@ final class TokenType
         T_NUM_STRING,
         T_STRING_VARNAME,
     ];
+
+    // OPERATOR_EXECUTION is excluded because for formatting purposes, commands
+    // between backticks are equivalent to double-quoted strings
+    public const ALL_OPERATOR = [
+        T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+        T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
+        ...TokenType::OPERATOR_ARITHMETIC,
+        ...TokenType::OPERATOR_ASSIGNMENT,
+        ...TokenType::OPERATOR_BITWISE,
+        ...TokenType::OPERATOR_COMPARISON,
+        ...TokenType::OPERATOR_TERNARY,
+        ...TokenType::OPERATOR_ERROR_CONTROL,
+        ...TokenType::OPERATOR_INCREMENT_DECREMENT,
+        ...TokenType::OPERATOR_LOGICAL,
+        ...TokenType::OPERATOR_STRING,
+        ...TokenType::OPERATOR_DOUBLE_ARROW,
+        ...TokenType::OPERATOR_INSTANCEOF,
+    ];
 }

@@ -21,11 +21,17 @@ class AlignChainedCalls implements TokenRule
         T_STRING,
     ];
 
+    public function getTokenTypes(): ?array
+    {
+        return [
+            T_OBJECT_OPERATOR,
+            T_NULLSAFE_OBJECT_OPERATOR,
+        ];
+    }
+
     public function processToken(Token $token): void
     {
-        if ($token->ChainOpenedBy ||
-            !$token->isOneOf(T_OBJECT_OPERATOR,
-                             T_NULLSAFE_OBJECT_OPERATOR)) {
+        if ($token->ChainOpenedBy) {
             return;
         }
 

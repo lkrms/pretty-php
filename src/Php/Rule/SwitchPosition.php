@@ -11,6 +11,15 @@ class SwitchPosition implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getTokenTypes(): ?array
+    {
+        return [
+            T_SWITCH,
+            T_CASE,
+            T_DEFAULT,
+        ];
+    }
+
     public function processToken(Token $token): void
     {
         if ($token->is(T_SWITCH)) {

@@ -11,12 +11,15 @@ class PlaceAttributes implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getTokenTypes(): ?array
+    {
+        return [
+            T_ATTRIBUTE,
+        ];
+    }
+
     public function processToken(Token $token): void
     {
-        if (!$token->is(T_ATTRIBUTE)) {
-            return;
-        }
-
         $token->WhitespaceBefore             |= WhitespaceType::LINE;
         $token->ClosedBy->WhitespaceAfter    |= WhitespaceType::LINE;
         $token->ClosedBy->WhitespaceMaskNext &= ~WhitespaceType::BLANK;

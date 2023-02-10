@@ -12,14 +12,20 @@ final class BreakBeforeControlStructureBody implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getTokenTypes(): ?array
+    {
+        return [
+            ...TokenType::HAS_STATEMENT_WITH_OPTIONAL_BRACES,
+            ...TokenType::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES,
+        ];
+    }
+
     public function processToken(Token $token): void
     {
         if ($token->isOneOf(...TokenType::HAS_STATEMENT_WITH_OPTIONAL_BRACES)) {
             $offset = 1;
-        } elseif ($token->isOneOf(...TokenType::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES)) {
-            $offset = 2;
         } else {
-            return;
+            $offset = 2;
         }
 
         /**

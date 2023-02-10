@@ -11,12 +11,15 @@ class AddSpaceAfterFn implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getTokenTypes(): ?array
+    {
+        return [
+            T_FN,
+        ];
+    }
+
     public function processToken(Token $token): void
     {
-        if (!$token->is(T_FN)) {
-            return;
-        }
-
         $token->WhitespaceBefore  |= WhitespaceType::SPACE;
         $token->WhitespaceAfter   |= WhitespaceType::SPACE;
         $token->WhitespaceMaskNext = WhitespaceType::SPACE;

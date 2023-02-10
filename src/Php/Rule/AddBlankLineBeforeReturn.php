@@ -12,10 +12,18 @@ class AddBlankLineBeforeReturn implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getTokenTypes(): ?array
+    {
+        return [
+            T_RETURN,
+            T_YIELD,
+            T_YIELD_FROM,
+        ];
+    }
+
     public function processToken(Token $token): void
     {
-        if ($token->isOneOf(T_RETURN, T_YIELD, T_YIELD_FROM) &&
-                !$token->prevStatementStart()->isOneOf(T_RETURN, T_YIELD, T_YIELD_FROM)) {
+        if (!$token->prevStatementStart()->isOneOf(T_RETURN, T_YIELD, T_YIELD_FROM)) {
             $prev = $token->prev();
             while ($prev->isOneOf(...TokenType::COMMENT) && $prev->hasNewlineBefore()) {
                 $prev->PinToCode = true;

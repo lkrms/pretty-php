@@ -12,11 +12,14 @@ class SpaceOperators implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getTokenTypes(): ?array
+    {
+        return TokenType::ALL_OPERATOR;
+    }
+
     public function processToken(Token $token): void
     {
-        if (!($token->isOperator() ||
-                    $token->isOneOf(':', '?', ...TokenType::AMPERSAND)) ||
-                $token->parent()->prev()->is(T_DECLARE)) {
+        if ($token->parent()->prev()->is(T_DECLARE)) {
             return;
         }
 

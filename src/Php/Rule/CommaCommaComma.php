@@ -11,12 +11,15 @@ class CommaCommaComma implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getTokenTypes(): ?array
+    {
+        return [
+            ',',
+        ];
+    }
+
     public function processToken(Token $token): void
     {
-        if (!$token->is(',')) {
-            return;
-        }
-
         $token->WhitespaceMaskPrev = WhitespaceType::NONE;
         $token->WhitespaceAfter   |= WhitespaceType::SPACE;
     }

@@ -13,10 +13,6 @@ class NullToken extends Token
         $this->Index        = -1;
         $this->BracketStack = [];
         $this->TypeName     = TokenType::class . '::T_NULL';
-    }
-
-    public function isNull(): bool
-    {
-        return true;
+        $this->IsNull       = true;
     }
 }

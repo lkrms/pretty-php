@@ -11,11 +11,17 @@ class DeclareArgumentsOnOneLine implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getTokenTypes(): ?array
+    {
+        return [
+            '(',
+        ];
+    }
+
     public function processToken(Token $token): void
     {
-        if ($token->is('(') &&
-            ($token->prevCode()->isOneOf(T_FN, T_FUNCTION) ||
-                $token->prevCode(2)->is(T_FUNCTION))) {
+        if ($token->prevCode()->isOneOf(T_FN, T_FUNCTION) ||
+                $token->prevCode(2)->is(T_FUNCTION)) {
             $mask                                 = ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
             $token->WhitespaceMaskNext           &= $mask;
             $token->ClosedBy->WhitespaceMaskPrev &= $mask;

@@ -11,12 +11,18 @@ class ReportUnnecessaryParentheses implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getTokenTypes(): ?array
+    {
+        return [
+            '(',
+        ];
+    }
+
     public function processToken(Token $token): void
     {
-        if (!$token->is('(') ||
-                !($token->isStartOfExpression() ||
-                    (($start = $token->prevCode())->isStartOfExpression() &&
-                        $start->isOneOf(...TokenType::HAS_EXPRESSION_WITH_OPTIONAL_PARENTHESES))) ||
+        if (!($token->isStartOfExpression() ||
+            (($start = $token->prevCode())->isStartOfExpression() &&
+                    $start->isOneOf(...TokenType::HAS_EXPRESSION_WITH_OPTIONAL_PARENTHESES))) ||
                 $token->endOfExpression() !== $token->ClosedBy) {
             return;
         }
@@ -25,7 +31,6 @@ class ReportUnnecessaryParentheses implements TokenRule
         if (!count($inner)) {
             return;
         }
-        /** @var Token $first */
         $first = $inner->first();
         $last  = $inner->last();
         if (!$first->isStartOfExpression() ||

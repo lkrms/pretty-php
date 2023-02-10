@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
-shopt -s extglob
+shopt -s extglob globstar nullglob
 
 function _die() {
     local STATUS=$?
@@ -24,16 +24,22 @@ function _realpath() {
 FILE=$(_realpath "${BASH_SOURCE[0]}") &&
     cd "${FILE%/*}" || _die "error resolving ${BASH_SOURCE[0]}"
 
+VERSION=$(git describe 2>/dev/null | grep -Eo '^v?[0-9]+(\.[0-9]+){2,}') || VERSION=
 BUILD_DIR=build/phar
-BUILD_TARGET=${BUILD_DIR%/*}/${PWD##*/}.phar
+BUILD_TARGET=${BUILD_DIR%/*}/${PWD##*/}${VERSION:+-$VERSION}.phar
 rm -rf "$BUILD_DIR" "$BUILD_TARGET" &&
     mkdir -pv "$BUILD_DIR" &&
-    cp -Rv !(build*|docs|phpstan*|phpunit*|tests*|var|vendor|LICENSE*|README*|*.md|*.txt|*.code-workspace) "$BUILD_DIR/" &&
-    { ! VERSION=$(git describe 2>/dev/null | grep -Eo '^v?[0-9]+(\.[0-9]+){2,}') ||
+    cp -Rv !(build*|docs|phpdoc*|phpstan*|phpunit*|tests*|var|vendor|LICENSE*|README*|*.md|*.txt|*.code-workspace) "$BUILD_DIR/" &&
+    { [[ -z $VERSION ]] ||
         { composer config -d "$BUILD_DIR" version "$VERSION" &&
             composer update -d "$BUILD_DIR" --no-install --no-plugins --lock; }; } &&
     # Remove --classmap-authoritative if support for classes generated at runtime is required
-    composer install -d "$BUILD_DIR" --no-dev --no-plugins --optimize-autoloader --classmap-authoritative ||
+    composer install -d "$BUILD_DIR" --no-dev --no-plugins --optimize-autoloader --classmap-authoritative &&
+    rm -fv "$BUILD_DIR"/**/.DS_Store &&
+    rm -fv "$BUILD_DIR"/vendor/**/.gitignore &&
+    rm -rfv "$BUILD_DIR"/vendor/*/*/{docs,phpdoc*,phpstan*,phpunit*,tests*,LICENSE*,README*,*.md,*.txt,composer.json,.github} ||
     _die "error preparing $PWD/$BUILD_DIR"
 
-php -d phar.readonly=off vendor/bin/phar-composer build "$BUILD_DIR/" "$BUILD_TARGET"
+php -d phar.readonly=off vendor/bin/phar-composer build "$BUILD_DIR/" "$BUILD_TARGET" &&
+    { [[ -z $VERSION ]] ||
+        cp -alv "$BUILD_TARGET" "${BUILD_TARGET%-"$VERSION".phar}.phar"; }

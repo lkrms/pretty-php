@@ -11,9 +11,16 @@ class AddSpaceAfterNot implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getTokenTypes(): ?array
+    {
+        return [
+            '!',
+        ];
+    }
+
     public function processToken(Token $token): void
     {
-        if (!$token->is('!') || $token->nextCode()->isUnaryOperator()) {
+        if ($token->nextCode()->isUnaryOperator()) {
             return;
         }
 

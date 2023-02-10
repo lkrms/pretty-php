@@ -12,15 +12,16 @@ class PlaceComments implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getTokenTypes(): ?array
+    {
+        return TokenType::COMMENT;
+    }
+
     public function processToken(Token $token): void
     {
-        if (!$token->isOneOf(...TokenType::COMMENT)) {
-            return;
-        }
-
         // Leave embedded comments alone
         if ($token->wasBetweenTokensOnLine(true)) {
-            $token->WhitespaceBefore |= $token->hasNewline() ? WhitespaceType::TAB : WhitespaceType::SPACE;
+            $token->WhitespaceBefore |= WhitespaceType::SPACE;
             $token->WhitespaceAfter  |= WhitespaceType::SPACE;
 
             return;
@@ -40,10 +41,12 @@ class PlaceComments implements TokenRule
         $next = $token->nextCode();
         if (!$next->isNull() &&
                 !$next->isCloseBracket()) {
-            $this->Formatter->registerCallback($this,
-                                               $token,
-                                               fn() => $this->alignComment($token, $next),
-                                               998);
+            $this->Formatter->registerCallback(
+                $this,
+                $token,
+                fn() => $this->alignComment($token, $next),
+                998
+            );
         }
 
         $token->WhitespaceAfter |= WhitespaceType::LINE;

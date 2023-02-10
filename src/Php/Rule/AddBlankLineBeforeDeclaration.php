@@ -12,10 +12,14 @@ class AddBlankLineBeforeDeclaration implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getTokenTypes(): ?array
+    {
+        return TokenType::DECLARATION;
+    }
+
     public function processToken(Token $token): void
     {
-        if (!$token->isOneOf(...TokenType::DECLARATION) ||
-                ($token->is(T_USE) && $token->prevCode()->is(')')) ||
+        if (($token->is(T_USE) && $token->prevCode()->is(')')) ||
                 ($token->isOneOf(...TokenType::VISIBILITY) && $token->inFunctionDeclaration())) {
             return;
         }
