@@ -179,6 +179,17 @@ class FormatPhp extends CliCommand
 
     protected function run(...$params)
     {
+        $debug        = $this->getOptionValue('debug');
+        $updateStderr = false;
+        if (!is_null($debug)) {
+            File::maybeCreateDirectory($debug);
+            $debug = $this->DebugDirectory = realpath($debug) ?: null;
+            if (!Env::debug()) {
+                Env::debug(true);
+                $updateStderr = true;
+            }
+        }
+
         $tab   = Convert::toIntOrNull($this->getOptionValue('tab'));
         $space = Convert::toIntOrNull($this->getOptionValue('space'));
         if ($tab && $space) {
@@ -220,13 +231,8 @@ class FormatPhp extends CliCommand
         }
         if ($out === ['-']) {
             Console::registerStderrTarget(true);
-        }
-
-        $debug = $this->getOptionValue('debug');
-        if (!is_null($debug)) {
-            Env::debug(true);
-            File::maybeCreateDirectory($debug);
-            $debug = $this->DebugDirectory = realpath($debug) ?: null;
+        } elseif ($updateStderr) {
+            Console::registerStdioTargets(true);
         }
 
         $formatter = new Formatter(

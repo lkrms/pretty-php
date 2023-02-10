@@ -230,16 +230,17 @@ final class Formatter implements IReadable
         Sys::startTimer(__METHOD__ . '#build-tokens');
         $bracketStack = [];
         $altStack     = [];
-        $openTag      = null;
         try {
+            $last = null;
             foreach ($tokens as $index => $plainToken) {
                 $this->Tokens[$index] = $token = new Token(
                     $index,
                     $plainToken,
-                    end($this->Tokens) ?: null,
+                    $last,
                     $bracketStack,
                     $this
                 );
+                $last = $token;
 
                 if ($token->isOpenBracket()) {
                     $bracketStack[] = $token;
@@ -277,18 +278,6 @@ final class Formatter implements IReadable
                     $virtual->OpenedBy = $opener;
                     array_pop($token->BracketStack);
                     continue;
-                }
-
-                if ($token->isOneOf(T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO)) {
-                    $openTag = $token;
-                    continue;
-                }
-
-                if ($token->is(T_CLOSE_TAG)) {
-                    /** @var Token $openTag */
-                    $openTag->ClosedBy = $token;
-                    $token->OpenedBy   = $openTag;
-                    $openTag           = null;
                 }
             }
 

@@ -13,8 +13,8 @@ class PreserveOneLineStatements implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->isOneOf(T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO) && $token->ClosedBy) {
-            $this->maybePreserveOneLine($token, $token->ClosedBy);
+        if ($token->isOneOf(T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO) && $token->CloseTag) {
+            $this->maybePreserveOneLine($token, $token->CloseTag);
         } elseif ($token->isCode() && $token->isStartOfExpression()) {
             $this->maybePreserveOneLine($token, $token->endOfExpression());
         }
