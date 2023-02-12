@@ -8,6 +8,12 @@ use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
+/**
+ * Add newlines after control structures where the body has no enclosing braces
+ *
+ * Control structures where the body has no enclosing braces are also reported
+ * to the user via {@see \Lkrms\Pretty\Php\Formatter::reportProblem()}.
+ */
 final class BreakBeforeControlStructureBody implements TokenRule
 {
     use TokenRuleTrait;
@@ -41,7 +47,8 @@ final class BreakBeforeControlStructureBody implements TokenRule
          * ```
          */
         $body = $token->nextSibling($offset);
-        if ($body->isOneOf(':', ';', '{', T_CLOSE_TAG, TokenType::T_NULL)) {
+        if ($body->isNull() ||
+                $body->isOneOf(':', ';', '{', T_CLOSE_TAG)) {
             return;
         }
 
@@ -49,7 +56,13 @@ final class BreakBeforeControlStructureBody implements TokenRule
         $body->WhitespaceMaskPrev         |= WhitespaceType::LINE;
         $body->WhitespaceMaskPrev         &= ~WhitespaceType::BLANK;
         $body->prev()->WhitespaceMaskNext |= WhitespaceType::LINE;
-        $body->collect($end = $body->endOfStatement())->forEach(fn(Token $t) => $t->PreIndent++);
-        $this->Formatter->reportProblem('Braces not used in %s control structure', $token, $end, $token->TypeName);
+
+        $body->collect($end = $body->endOfStatement())
+             ->forEach(fn(Token $t) => $t->PreIndent++);
+
+        $this->Formatter->reportProblem('Braces not used in %s control structure',
+                                        $token,
+                                        $end,
+                                        $token->TypeName);
     }
 }

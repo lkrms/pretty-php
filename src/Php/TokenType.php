@@ -15,8 +15,13 @@ defined('T_READONLY') || define('T_READONLY', 10010);
 
 final class TokenType
 {
-    public const T_NULL    = 20001;
-    public const T_VIRTUAL = 20002;
+    public const T_NULL    = 20001;    // Returned when there aren't any real tokens to return
+    public const T_END_ALT = 20002;    // Inserted before `endif`, `endfor`, etc. in lieu of a closing brace
+
+    public const NAME_MAP = [
+        self::T_NULL    => 'T_NULL',
+        self::T_END_ALT => 'T_END_ALT',
+    ];
 
     public const DO_NOT_MODIFY = [
         T_ENCAPSED_AND_WHITESPACE,

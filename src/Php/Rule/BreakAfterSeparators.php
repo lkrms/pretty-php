@@ -7,9 +7,22 @@ use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
 
+/**
+ * Add newlines after statement terminators
+ *
+ */
 final class BreakAfterSeparators implements TokenRule
 {
     use TokenRuleTrait;
+
+    public function getTokenTypes(): ?array
+    {
+        return [
+            ';',
+            ':',
+            T_CLOSE_TAG,
+        ];
+    }
 
     public function processToken(Token $token): void
     {

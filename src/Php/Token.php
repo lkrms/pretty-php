@@ -7,6 +7,7 @@ use Lkrms\Facade\Convert;
 use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
 use Lkrms\Pretty\WhitespaceType;
 use RuntimeException;
+use UnexpectedValueException;
 
 /**
  * @property-read int $Index
@@ -60,10 +61,37 @@ class Token implements JsonSerializable
         'WhitespaceMaskNext',
     ];
 
-    private const ALLOW_WRITE_IF_NULL = [
-        'OpenedBy',
-        'ClosedBy',
-    ];
+    // Declare these first for ease of debugging
+
+    /**
+     * @var Token|null
+     */
+    private $_prev;
+
+    /**
+     * @var Token|null
+     */
+    private $_next;
+
+    /**
+     * @var Token|null
+     */
+    private $_prevCode;
+
+    /**
+     * @var Token|null
+     */
+    private $_nextCode;
+
+    /**
+     * @var Token|null
+     */
+    private $_prevSibling;
+
+    /**
+     * @var Token|null
+     */
+    private $_nextSibling;
 
     /**
      * @var int
@@ -88,7 +116,7 @@ class Token implements JsonSerializable
     /**
      * @var Token[]
      */
-    public $BracketStack;
+    public $BracketStack = [];
 
     /**
      * @var string
@@ -118,7 +146,7 @@ class Token implements JsonSerializable
     /**
      * @var bool
      */
-    public $IsCode = false;
+    public $IsCode = true;
 
     /**
      * @var array<array<string,mixed>>
@@ -239,7 +267,7 @@ class Token implements JsonSerializable
     /**
      * @var bool
      */
-    protected $IsVirtual = true;
+    protected $IsVirtual = false;
 
     /**
      * @var int
@@ -262,19 +290,9 @@ class Token implements JsonSerializable
     private $WhitespaceMaskNext = WhitespaceType::ALL;
 
     /**
-     * @var Formatter
+     * @var Formatter|null
      */
     protected $Formatter;
-
-    /**
-     * @var Token|null
-     */
-    private $_prev;
-
-    /**
-     * @var Token|null
-     */
-    private $_next;
 
     /**
      * @var array<int,bool>
@@ -308,9 +326,8 @@ class Token implements JsonSerializable
 
     /**
      * @param string|array{0:int,1:string,2:int} $token
-     * @param Token[] $bracketStack
      */
-    public function __construct(int $index, $token, ?Token $prev, array $bracketStack, Formatter $formatter)
+    public function __construct(int $index, $token, ?Token $prev, Formatter $formatter)
     {
         if (is_array($token)) {
             [$this->Type, $this->Code, $this->Line] = $token;
@@ -343,14 +360,12 @@ class Token implements JsonSerializable
             $this->Line = $lastLine + substr_count($code, "\n");
         }
 
-        $this->Index        = $index;
-        $this->BracketStack = $bracketStack;
-        $this->TypeName     = is_int($this->Type) ? token_name($this->Type) : $this->Type;
-        $this->Formatter    = $formatter;
-        $this->IsVirtual    = false;
+        $this->Index     = $index;
+        $this->TypeName  = is_int($this->Type) ? token_name($this->Type) : $this->Type;
+        $this->Formatter = $formatter;
 
-        if (!$this->isOneOf(...TokenType::NOT_CODE)) {
-            $this->IsCode = true;
+        if ($this->isOneOf(...TokenType::NOT_CODE)) {
+            $this->IsCode = false;
         }
 
         if ($this->isOneOf(T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO)) {
@@ -363,6 +378,86 @@ class Token implements JsonSerializable
 
         $this->_prev = $prev;
         $prev->_next = $this;
+
+        $this->_prevCode = $prev->IsCode
+            ? $prev
+            : $prev->_prevCode;
+        if ($this->IsCode) {
+            $t = $prev;
+            do {
+                $t->_nextCode = $this;
+                $t            = $t->_prev;
+            } while ($t && !$t->_nextCode);
+        }
+
+        $this->BracketStack = $prev->BracketStack;
+        $stackDelta         = 0;
+        if ($prev->isOpenBracket() || $prev->startsAlternativeSyntax()) {
+            $this->BracketStack[] = $prev;
+            $stackDelta++;
+        } elseif ($prev->isCloseBracket()) {
+            array_pop($this->BracketStack);
+            $stackDelta--;
+        }
+
+        if ($this->isCloseBracket()) {
+            $opener             = end($this->BracketStack);
+            $opener->ClosedBy   = $this;
+            $this->OpenedBy     = $opener;
+            $this->_prevSibling = &$opener->_prevSibling;
+            $this->_nextSibling = &$opener->_nextSibling;
+        } elseif ($this->endsAlternativeSyntax()) {
+            $virtual = new VirtualToken(
+                TokenType::T_END_ALT,
+                $formatter
+            );
+            $virtual->BracketStack = $this->BracketStack;
+            $virtual->OpenTag      = $prev->OpenTag;
+            $this->insertBefore($virtual);
+
+            $opener                = array_pop($this->BracketStack);
+            $opener->ClosedBy      = $virtual;
+            $virtual->OpenedBy     = $opener;
+            $virtual->_prevSibling = &$opener->_prevSibling;
+            $virtual->_nextSibling = &$opener->_nextSibling;
+        } else {
+            switch (true) {
+                // First token inside a pair of brackets
+                case $stackDelta > 0:
+                    // Nothing to do
+                    break;
+
+                // First token after a close bracket
+                case $stackDelta < 0:
+                    $this->_prevSibling = $prev->OpenedBy;
+                    break;
+
+                // Continuation of previous context
+                default:
+                    if ($this->_prevCode &&
+                            $this->_prevCode->canonical()->BracketStack === $this->BracketStack) {
+                        $this->_prevSibling = $this->_prevCode->canonical();
+                    }
+                    break;
+            }
+
+            if ($this->IsCode) {
+                if ($this->_prevSibling &&
+                        !$this->_prevSibling->_nextSibling) {
+                    $t = $this;
+                    do {
+                        $t               = $t->_prev->OpenedBy ?: $t->_prev;
+                        $t->_nextSibling = $this;
+                    } while ($t->_prev && $t !== $this->_prevSibling);
+                } elseif (!$this->_prevSibling) {
+                    $t = $this->_prev;
+                    while ($t && $t->BracketStack === $this->BracketStack) {
+                        $t->_nextSibling = $this;
+                        $t               = $t->_prev;
+                    }
+                }
+            }
+        }
 
         /**
          * Intended outcome:
@@ -387,7 +482,7 @@ class Token implements JsonSerializable
                 // TODO: use BracketStack for a more robust assessment?
                 $t = $prev;
                 while ($t->isOneOf(...TokenType::COMMENT)) {
-                    $t = $t->prev();
+                    $t = $t->_prev;
                 }
                 if ($t->Index > $this->OpenTag->Index &&
                         !$t->isOneOf('(', ',', ':', ';', '[', '{')) {
@@ -399,16 +494,46 @@ class Token implements JsonSerializable
     }
 
     /**
-     * Update _prev and _next as needed to insert $this between $token and its
-     * current predecessor
+     * Insert $token between $this and its current predecessor
      *
      */
-    final protected function insertAt(Token $token): void
+    private function insertBefore(Token $token): void
     {
-        $this->_prev        = $token->_prev;
-        $this->_next        = $token;
-        $this->_prev->_next = $this;
-        $this->_next->_prev = $this;
+        if ($token->BracketStack !== $this->BracketStack) {
+            throw new UnexpectedValueException('Only siblings can be inserted');
+        }
+
+        $this->Formatter->insertToken($token, $this);
+
+        $token->_prev        = $this->_prev;
+        $token->_prevCode    = $this->_prevCode;
+        $token->_prevSibling = $this->_prevSibling;
+
+        $this->_prev = $token;
+        if ($token->IsCode) {
+            $this->_prevCode    = $token;
+            $this->_prevSibling = $token;
+
+            $t = $token->_prev;
+            while ($t && (!$t->_nextCode ||
+                    $t->_nextCode === $this ||
+                    $t->_nextCode === $this->_nextCode)) {
+                $t->_nextCode    = $token;
+                $t->_nextSibling = $token;
+                $t               = $t->_prev;
+            }
+        }
+
+        $token->_next        = $this;
+        $token->_nextCode    = $this->IsCode ? $this : $this->_nextCode;
+        $token->_nextSibling = $this->IsCode ? $this : $this->_nextSibling;
+
+        !$token->_prev ||
+            $token->_prev->_next = $token;
+        !$token->_prevCode ||
+            $token->_prevCode->_nextCode = $token;
+        !$token->_prevSibling ||
+            $token->_prevSibling->_nextSibling = $token;
     }
 
     /**
@@ -502,24 +627,40 @@ class Token implements JsonSerializable
             ($canHaveInnerNewline || !$this->hasNewline());
     }
 
-    public function prev(int $offset = 1): Token
+    private function byOffset(string $name, int $offset): Token
     {
-        $p = $this;
+        $t = $this;
         for ($i = 0; $i < $offset; $i++) {
-            $p = $p->_prev ?? null;
+            $t = $t->{"_$name"} ?? null;
         }
 
-        return $p ?: new NullToken();
+        return $t ?: new NullToken();
+    }
+
+    public function prev(int $offset = 1): Token
+    {
+        switch ($offset) {
+            case 1:
+                return $this->_prev ?: new NullToken();
+
+            case 2:
+                return ($this->_prev->_prev ?? null) ?: new NullToken();
+        }
+
+        return $this->byOffset(__FUNCTION__, $offset);
     }
 
     public function next(int $offset = 1): Token
     {
-        $n = $this;
-        for ($i = 0; $i < $offset; $i++) {
-            $n = $n->_next ?? null;
+        switch ($offset) {
+            case 1:
+                return $this->_next ?: new NullToken();
+
+            case 2:
+                return ($this->_next->_next ?? null) ?: new NullToken();
         }
 
-        return $n ?: new NullToken();
+        return $this->byOffset(__FUNCTION__, $offset);
     }
 
     /**
@@ -586,26 +727,28 @@ class Token implements JsonSerializable
 
     public function prevCode(int $offset = 1): Token
     {
-        $p = $this;
-        for ($i = 0; $i < $offset; $i++) {
-            do {
-                $p = $p->_prev ?? null;
-            } while ($p && !$p->IsCode);
+        switch ($offset) {
+            case 1:
+                return $this->_prevCode ?: new NullToken();
+
+            case 2:
+                return ($this->_prevCode->_prevCode ?? null) ?: new NullToken();
         }
 
-        return $p ?: new NullToken();
+        return $this->byOffset(__FUNCTION__, $offset);
     }
 
     public function nextCode(int $offset = 1): Token
     {
-        $n = $this;
-        for ($i = 0; $i < $offset; $i++) {
-            do {
-                $n = $n->_next ?? null;
-            } while ($n && !$n->IsCode);
+        switch ($offset) {
+            case 1:
+                return $this->_nextCode ?: new NullToken();
+
+            case 2:
+                return ($this->_nextCode->_nextCode ?? null) ?: new NullToken();
         }
 
-        return $n ?: new NullToken();
+        return $this->byOffset(__FUNCTION__, $offset);
     }
 
     /**
@@ -672,45 +815,28 @@ class Token implements JsonSerializable
 
     public function prevSibling(int $offset = 1): Token
     {
-        $prev = $_this = $this->canonical();
-        for ($i = 0; $i < $offset; $i++) {
-            do {
-                $prev = $prev->_prev ?? null;
-            } while ($prev && !$prev->IsCode);
-            if ($prev->OpenedBy ?? null) {
-                $prev = $prev->OpenedBy;
-            }
-            if (($prev->BracketStack ?? null) !== $_this->BracketStack) {
-                $prev = null;
-            }
-            if (!$prev) {
-                break;
-            }
+        switch ($offset) {
+            case 1:
+                return $this->_prevSibling ?: new NullToken();
+
+            case 2:
+                return ($this->_prevSibling->_prevSibling ?? null) ?: new NullToken();
         }
 
-        return $prev ?: new NullToken();
+        return $this->byOffset(__FUNCTION__, $offset);
     }
 
     public function nextSibling(int $offset = 1): Token
     {
-        $next = $_this = $this->canonical();
-        for ($i = 0; $i < $offset; $i++) {
-            if ($next->ClosedBy ?? null) {
-                $next = $next->ClosedBy;
-            }
-            do {
-                $next = $next->_next ?? null;
-            } while ($next && !$next->IsCode);
-            if (($next->BracketStack ?? null) !== $_this->BracketStack ||
-                    $next->isCloseBracket()) {
-                $next = null;
-            }
-            if (!$next) {
-                break;
-            }
+        switch ($offset) {
+            case 1:
+                return $this->_nextSibling ?: new NullToken();
+
+            case 2:
+                return ($this->_nextSibling->_nextSibling ?? null) ?: new NullToken();
         }
 
-        return $next ?: new NullToken();
+        return $this->byOffset(__FUNCTION__, $offset);
     }
 
     /**
@@ -825,7 +951,7 @@ class Token implements JsonSerializable
 
     public function parent(): Token
     {
-        $current = $this->canonical();
+        $current = $this->OpenedBy ?: $this;
 
         return end($current->BracketStack) ?: new NullToken();
     }
@@ -841,7 +967,7 @@ class Token implements JsonSerializable
     public function parentsWhile(bool $includeToken = false, ...$types): TokenCollection
     {
         $tokens = new TokenCollection();
-        $next   = $this->canonical();
+        $next   = $this->OpenedBy ?: $this;
         $next   = $includeToken ? $next : $next->parent();
         while ($next->isOneOf(...$types)) {
             $tokens[] = $next;
@@ -929,7 +1055,7 @@ class Token implements JsonSerializable
         $current = ($this->is(';') || $this->isCloseTagStatementTerminator()
                 ? $this->prevCode()->OpenedBy
                 : null)
-            ?: $this->canonical();
+            ?: $this->OpenedBy ?: $this;
         while (!($prev = $current->prevCode())->isStatementPrecursor() &&
                 !$prev->isNull()) {
             $last    = $current;
@@ -942,7 +1068,7 @@ class Token implements JsonSerializable
 
     public function endOfStatement(): Token
     {
-        $current = $this->canonical();
+        $current = $this->OpenedBy ?: $this;
         while (!$current->isStatementTerminator() && !$current->nextCode()->isNull()) {
             $last    = $current;
             $current = $current->nextSibling();
@@ -978,7 +1104,7 @@ class Token implements JsonSerializable
      */
     public function startOfExpression(int $ignore = TokenBoundary::COMPARISON): Token
     {
-        $current = $this->canonical();
+        $current = $this->OpenedBy ?: $this;
         if ($current->IsStartOfExpression[$ignore] ?? null) {
             return $current;
         }
@@ -1012,7 +1138,7 @@ class Token implements JsonSerializable
      */
     public function endOfExpression(int $ignore = TokenBoundary::COMPARISON): Token
     {
-        $current = $this->canonical();
+        $current = $this->OpenedBy ?: $this;
         if (($current->ClosedBy ?: $current)->IsEndOfExpression[$ignore] ?? null) {
             return $current->ClosedBy ?: $current;
         }
@@ -1053,7 +1179,7 @@ class Token implements JsonSerializable
 
     public function adjacent(bool $controlStructureOnly = false): ?Token
     {
-        $_this = $this->canonical();
+        $_this = $this->OpenedBy ?: $this;
         if (!$_this->isOneOf('(', '[', '{')) {
             return null;
         }
@@ -1317,7 +1443,7 @@ class Token implements JsonSerializable
         if (!$this->isBrace()) {
             return false;
         }
-        $_this     = $this->canonical();
+        $_this     = $this->OpenedBy ?: $this;
         $lastInner = $_this->ClosedBy->prevCode();
         $parent    = $_this->parent();
 
@@ -1355,10 +1481,10 @@ class Token implements JsonSerializable
     {
         // PHP's alternative syntax has no `}` equivalent, so a virtual token is
         // inserted where it should be
-        if ($this->is(TokenType::T_VIRTUAL) && $this->OpenedBy && $this->OpenedBy->is(':')) {
+        if ($this->is(TokenType::T_END_ALT)) {
             return true;
         }
-        if ($this->prev()->is(TokenType::T_VIRTUAL)) {
+        if ($this->prev()->is(TokenType::T_END_ALT)) {
             return false;
         }
 
@@ -1366,7 +1492,9 @@ class Token implements JsonSerializable
         // startsAlternativeSyntax() won't work here
         $bracketStack = $this->BracketStack;
 
-        return ($opener = array_pop($bracketStack)) && $opener->is(':') && $opener->BracketStack === $bracketStack &&
+        return ($opener = array_pop($bracketStack)) &&
+            $opener->is(':') &&
+            $opener->BracketStack === $bracketStack &&
             $this->isOneOf(
                 ...TokenType::ENDS_ALTERNATIVE_SYNTAX,
                 ...TokenType::CAN_CONTINUE_ALTERNATIVE_SYNTAX_WITH_EXPRESSION,
@@ -1622,7 +1750,7 @@ class Token implements JsonSerializable
         if ($to && ($this->Index > $to->Index || $to->isNull())) {
             return $tokens;
         }
-        $from = $this->canonical();
+        $from = $this->OpenedBy ?: $this;
         if ($to && !$from->isSibling($to)) {
             throw new RuntimeException('Argument #1 ($to) is not a sibling');
         }
@@ -1654,8 +1782,7 @@ class Token implements JsonSerializable
      */
     public function __set(string $name, $value): void
     {
-        if (!in_array($name, self::ALLOW_WRITE) &&
-                !(is_null($this->$name) && in_array($name, self::ALLOW_WRITE_IF_NULL))) {
+        if (!in_array($name, self::ALLOW_WRITE)) {
             throw new RuntimeException('Cannot access property ' . static::class . '::$' . $name);
         }
         if ($this->$name === $value) {

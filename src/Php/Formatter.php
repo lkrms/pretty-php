@@ -50,6 +50,7 @@ use Lkrms\Pretty\WhitespaceType;
 use ParseError;
 use RuntimeException;
 use Throwable;
+use UnexpectedValueException;
 
 /**
  * @property-read bool $Debug
@@ -106,11 +107,26 @@ final class Formatter implements IReadable
      * @var string[]
      */
     protected $Rules = [
-        // TokenRules
-        ProtectStrings::class,
-        SimplifyStrings::class,
-        BreakAfterSeparators::class,
-        BreakBeforeControlStructureBody::class,
+        ProtectStrings::class,    // processToken:
+                                  // - `WhitespaceMaskPrev`=NONE
+                                  // - `WhitespaceMaskNext`=NONE
+
+        SimplifyStrings::class,    // processToken:
+                                   // - `Code`=<value>
+
+        BreakAfterSeparators::class,    // processToken:
+                                        // - `WhitespaceAfter`+LINE+SPACE
+                                        // callback:
+                                        // - `WhitespaceAfter`+SPACE
+                                        // - `WhitespaceMaskNext`+SPACE
+                                        // - `WhitespaceMaskPrev`+SPACE
+
+        BreakBeforeControlStructureBody::class,    // processToken:
+                                                   // - `WhitespaceBefore`+LINE+SPACE
+                                                   // - `WhitespaceMaskPrev`+LINE-BREAK
+                                                   // - `WhitespaceMaskNext`+LINE
+                                                   // - `PreIndent`++
+
         PlaceAttributes::class,
         BracePosition::class,
         SpaceOperators::class,
@@ -118,16 +134,16 @@ final class Formatter implements IReadable
         PreserveOneLineStatements::class,
         AddStandardWhitespace::class,
         PlaceComments::class,
-        PreserveNewlines::class,                   // Must be after PlaceComments
+        PreserveNewlines::class,                 // Must be after PlaceComments
         DeclareArgumentsOnOneLine::class,
-        AddBlankLineBeforeReturn::class,           // Must be after PlaceComments
+        AddBlankLineBeforeReturn::class,         // Must be after PlaceComments
         AlignChainedCalls::class,
         AlignLists::class,
         AddIndentation::class,
         SwitchPosition::class,
         MatchPosition::class,
         AddBlankLineBeforeDeclaration::class,
-        AddHangingIndentation::class,              // Must be after AlignChainedCalls
+        AddHangingIndentation::class,            // Must be after AlignChainedCalls
         ReindentHeredocs::class,
         AddEssentialWhitespace::class,
 
@@ -237,48 +253,9 @@ final class Formatter implements IReadable
                     $index,
                     $plainToken,
                     $last,
-                    $bracketStack,
                     $this
                 );
                 $last = $token;
-
-                if ($token->isOpenBracket()) {
-                    $bracketStack[] = $token;
-                    continue;
-                }
-
-                if ($token->isCloseBracket()) {
-                    $opener           = array_pop($bracketStack);
-                    $opener->ClosedBy = $token;
-                    $token->OpenedBy  = $opener;
-                    continue;
-                }
-
-                if ($token->startsAlternativeSyntax()) {
-                    $bracketStack[] = $token;
-                    $altStack[]     = $token;
-                    continue;
-                }
-
-                if ($token->endsAlternativeSyntax()) {
-                    $opener    = array_pop($bracketStack);
-                    $altOpener = array_pop($altStack);
-                    if ($opener !== $altOpener) {
-                        throw new RuntimeException('Formatting failed: unable to traverse control structures');
-                    }
-                    $virtual = new VirtualToken(
-                        $this->PlainTokens,
-                        $this->Tokens,
-                        $token,
-                        $token->BracketStack,
-                        $this,
-                        $bracketStack
-                    );
-                    $opener->ClosedBy  = $virtual;
-                    $virtual->OpenedBy = $opener;
-                    array_pop($token->BracketStack);
-                    continue;
-                }
             }
 
             if (!isset($token)) {
@@ -449,6 +426,21 @@ final class Formatter implements IReadable
         }
 
         return $out;
+    }
+
+    public function insertToken(Token $insert, Token $before): void
+    {
+        $this->PlainTokens[] = '';
+
+        $key = array_key_last($this->PlainTokens);
+        if ($token = $this->Tokens[$before->Index] ?? null) {
+            if ($token !== $before) {
+                throw new UnexpectedValueException('Token mismatch');
+            }
+            Convert::arraySpliceAtKey($this->Tokens, $before->Index, 0, [$key => $insert]);
+        } else {
+            $this->Tokens[$key] = $insert;
+        }
     }
 
     private function getPriority(Rule $rule, string $method): int
