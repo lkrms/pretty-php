@@ -35,7 +35,8 @@ final class AlignLists implements TokenRule
                             ->is(',')
         );
         // Apply BreakBetweenMultiLineItems if there's a trailing delimiter
-        if ($token->ClosedBy->prevCode()->is(',')) {
+        if ($token->ClosedBy && $token->ClosedBy->prevCode()->is(',')) {
+            $align[] = $token->ClosedBy;
             BreakBetweenMultiLineItems::applyTo($align);
 
             return;

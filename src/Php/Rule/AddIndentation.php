@@ -33,7 +33,12 @@ class AddIndentation implements TokenRule
         }
         if ($prev->hasNewlineAfterCode()) {
             $token->Indent++;
-            $prev->ClosedBy->WhitespaceBefore |= WhitespaceType::LINE;
+            $close                    = $prev->ClosedBy;
+            $close->WhitespaceBefore |= WhitespaceType::LINE;
+            if (!$close->hasNewlineBefore()) {
+                $close->WhitespaceMaskPrev         |= WhitespaceType::LINE;
+                $close->prev()->WhitespaceMaskNext |= WhitespaceType::LINE;
+            }
 
             return;
         }
