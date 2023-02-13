@@ -1,0 +1,39 @@
+<?php declare(strict_types=1);
+
+namespace Lkrms\Pretty\Php\Rule\Extra;
+
+use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
+use Lkrms\Pretty\Php\Contract\TokenRule;
+use Lkrms\Pretty\Php\Token;
+use Lkrms\Pretty\WhitespaceType;
+
+/**
+ * Add a newline after the opening bracket of a multi-line delimited list
+ *
+ */
+final class BreakBeforeMultiLineList implements TokenRule
+{
+    use TokenRuleTrait;
+
+    public function getTokenTypes(): ?array
+    {
+        return [
+            '(',
+            '[',
+        ];
+    }
+
+    public function processToken(Token $token): void
+    {
+        if (!$token->innerSiblings()->find(
+            fn(Token $t) =>
+                $t->prevCode()->is(',') && $t->hasNewlineBefore()
+        )) {
+            return;
+        }
+
+        $token->WhitespaceAfter            |= WhitespaceType::LINE;
+        $token->WhitespaceMaskNext         |= WhitespaceType::LINE;
+        $token->next()->WhitespaceMaskPrev |= WhitespaceType::LINE;
+    }
+}

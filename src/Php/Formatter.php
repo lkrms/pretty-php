@@ -31,6 +31,7 @@ use Lkrms\Pretty\Php\Rule\AlignLists;
 use Lkrms\Pretty\Php\Rule\BracePosition;
 use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
 use Lkrms\Pretty\Php\Rule\BreakBeforeControlStructureBody;
+use Lkrms\Pretty\Php\Rule\BreakBetweenMultiLineItems;
 use Lkrms\Pretty\Php\Rule\CommaCommaComma;
 use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\MatchPosition;
@@ -116,6 +117,7 @@ final class Formatter implements IReadable
 
         BreakAfterSeparators::class,    // processToken:
                                         // - `WhitespaceAfter`+LINE+SPACE
+                                        //
                                         // callback:
                                         // - `WhitespaceAfter`+SPACE
                                         // - `WhitespaceMaskNext`+SPACE
@@ -127,24 +129,67 @@ final class Formatter implements IReadable
                                                    // - `WhitespaceMaskNext`+LINE
                                                    // - `PreIndent`++
 
-        PlaceAttributes::class,
+        PlaceAttributes::class,    // processToken:
+                                   // - `WhitespaceBefore`+LINE
+                                   // - `WhitespaceAfter`+LINE
+                                   // - `WhitespaceMaskNext`-BLANK
+
         BracePosition::class,
         SpaceOperators::class,
         CommaCommaComma::class,
         PreserveOneLineStatements::class,
         AddStandardWhitespace::class,
         PlaceComments::class,
-        PreserveNewlines::class,                 // Must be after PlaceComments
+        PreserveNewlines::class,             // Must be after PlaceComments
         DeclareArgumentsOnOneLine::class,
-        AddBlankLineBeforeReturn::class,         // Must be after PlaceComments
+        AddBlankLineBeforeReturn::class,     // Must be after PlaceComments
+
+        BreakBetweenMultiLineItems::class,
+
         AlignChainedCalls::class,
-        AlignLists::class,
-        AddIndentation::class,
-        SwitchPosition::class,
-        MatchPosition::class,
-        AddBlankLineBeforeDeclaration::class,
-        AddHangingIndentation::class,            // Must be after AlignChainedCalls
-        ReindentHeredocs::class,
+
+        AlignLists::class,    // processToken (400):
+                              // - `WhitespaceBefore`+LINE    (via BreakBetweenMultiLineItems)
+                              // - `WhitespaceMaskPrev`+LINE  (via BreakBetweenMultiLineItems)
+                              // - `WhitespaceMaskNext`+LINE  (via BreakBetweenMultiLineItems)
+                              // - `AlignedWith`=<value>
+                              //
+                              // callback (710):
+                              // - `LinePadding`+=<value>
+
+        AddIndentation::class,    // processToken (600):
+                                  // - `Indent`=<value>
+                                  // - `WhitespaceBefore`+LINE
+                                  // - `WhitespaceMaskPrev`-BLANK-LINE
+
+        SwitchPosition::class,    // processToken (600):
+                                  // - `PreIndent`++
+                                  // - `Deindent`++
+
+        MatchPosition::class,    // processToken (600):
+                                 // - `WhitespaceAfter`+LINE
+
+        AddBlankLineBeforeDeclaration::class,    // processToken (620):
+                                                 // - `IsStartOfDeclaration`=true
+                                                 // - `WhitespaceMaskPrev`-BLANK
+                                                 // - `WhitespaceBefore`+BLANK
+
+        AddHangingIndentation::class,    // processToken (800):
+                                         // - `IsHangingParent`=true
+                                         // - `IsOverhangingParent`=true|false
+                                         // - `HangingIndent`+=<value>
+                                         // - `OverhangingParents[]`=<value>
+                                         // - `IndentBracketStack[]`=<value>
+                                         // - `IndentStack[]`=<value>
+                                         // - `IndentParentStack[]`=<value>
+                                         //
+                                         // callback (800):
+                                         // - `HangingIndent`--
+                                         // - `OverhangingParents[]`--
+
+        ReindentHeredocs::class,    // beforeRender:
+                                    // - `Code`=<value>
+
         AddEssentialWhitespace::class,
 
         // BlockRules
@@ -222,6 +267,21 @@ final class Formatter implements IReadable
     }
 
     /**
+     * Get formatted code
+     *
+     * Rules are processed from lowest to highest priority (smallest to biggest
+     * number). The default priority (applied if {@see Rule::getPriority()}
+     * returns `null`) is 100.
+     *
+     * Order of operations:
+     *
+     * 1. {@see TokenRule::processToken()} is called on enabled rules that
+     *    implement {@see TokenRule}.
+     * 2. {@see BlockRule::processBlock()} is called on enabled rules that
+     *    implement {@see BlockRule}.
+     * 3. Callbacks registered via {@see Formatter::registerCallback()} are
+     *    called in order of priority and token offset.
+     * 4. {@see Rule::beforeRender()} is called on enabled rules.
      *
      * @param string|null $filename Advisory only. No file operations are
      * performed on `$filename`.
@@ -357,29 +417,16 @@ final class Formatter implements IReadable
         }
         $this->RunningService = null;
 
+        $this->processCallbacks();
+
         /** @var Rule $rule */
         foreach ($beforeRender as $rule) {
             $this->RunningService = $_rule = get_class($rule);
             Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
-            $rule->beforeRender();
+            $rule->beforeRender($this->Tokens);
             Sys::stopTimer($timer, 'rule');
         }
         $this->RunningService = null;
-
-        ksort($this->Callbacks);
-        foreach ($this->Callbacks as $priority => &$tokenCallbacks) {
-            ksort($tokenCallbacks);
-            foreach ($tokenCallbacks as $index => $callbacks) {
-                foreach ($callbacks as [$rule, $callback]) {
-                    $this->RunningService = $_rule = get_class($rule);
-                    Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
-                    $callback();
-                    Sys::stopTimer($timer, 'rule');
-                }
-                unset($tokenCallbacks[$index]);
-            }
-            unset($this->Callbacks[$priority]);
-        }
 
         Sys::startTimer(__METHOD__ . '#render');
         try {
@@ -511,6 +558,25 @@ final class Formatter implements IReadable
     public function registerCallback(Rule $rule, Token $first, callable $callback, int $priority = 100): void
     {
         $this->Callbacks[$priority][$first->Index][] = [$rule, $callback];
+    }
+
+    private function processCallbacks(): void
+    {
+        ksort($this->Callbacks);
+        foreach ($this->Callbacks as $priority => &$tokenCallbacks) {
+            ksort($tokenCallbacks);
+            foreach ($tokenCallbacks as $index => $callbacks) {
+                foreach ($callbacks as [$rule, $callback]) {
+                    $this->RunningService = $_rule = get_class($rule);
+                    Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
+                    $callback();
+                    Sys::stopTimer($timer, 'rule');
+                }
+                unset($tokenCallbacks[$index]);
+            }
+            unset($this->Callbacks[$priority]);
+        }
+        $this->RunningService = null;
     }
 
     /**

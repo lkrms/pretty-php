@@ -240,6 +240,11 @@ class Token implements JsonSerializable
     private $Padding = 0;
 
     /**
+     * @var string|null
+     */
+    public $HeredocIndent;
+
+    /**
      * @var Token|null
      */
     public $AlignedWith;
@@ -1046,8 +1051,17 @@ class Token implements JsonSerializable
                                ($next && $next === $this->AlignedWith))
                            ?: $start;
 
-        return mb_strlen($start->collect($this)->render(true))
-            - ($start->hasNewlineBefore() ? $start->LineUnpadding : 0);
+        $code   = $start->collect($this)->render(true);
+        $offset = mb_strlen($code);
+        // Handle strings with embedded newlines
+        if (($newline = mb_strrpos($code, "\n")) !== false) {
+            $newLinePadding = $offset - $newline - 1;
+            $offset         = $newLinePadding - ($this->LinePadding - $this->LineUnpadding);
+        } else {
+            $offset -= ($start->hasNewlineBefore() ? $start->LineUnpadding : 0);
+        }
+
+        return $offset;
     }
 
     public function startOfStatement(): Token
@@ -1660,17 +1674,8 @@ class Token implements JsonSerializable
                 $heredoc .= $current->Code;
                 $current  = $current->next();
             } while ($current->HeredocOpenedBy === $this);
-            if (in_array(ReindentHeredocs::class, $this->Formatter->Rules)) {
-                $indent = $this->renderIndent($softTabs);
-                $start  = $this->startOfLine();
-                if ($padding = str_repeat(' ', $start->LinePadding - $start->LineUnpadding + $start->Padding)) {
-                    if (($indent[0] ?? null) === "\t") {
-                        $heredoc = str_replace("\n$indent", "\n" . ($newIndent = $this->renderIndent(true)), $heredoc);
-                        $indent  = $newIndent;
-                    }
-                    $heredoc = str_replace("\n$indent", "\n$indent$padding", $heredoc);
-                }
-                $regex   = preg_quote("$indent$padding", '/');
+            if ($this->HeredocIndent) {
+                $regex   = preg_quote($this->HeredocIndent, '/');
                 $heredoc = preg_replace("/\\n$regex\$/m", "\n", $heredoc);
             }
         } elseif ($this->isOneOf(...TokenType::DO_NOT_MODIFY)) {

@@ -16,6 +16,13 @@ class AddHangingIndentation implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getPriority(string $method): ?int
+    {
+        return $method === self::PROCESS_TOKEN
+            ? 800
+            : null;
+    }
+
     public function processToken(Token $token): void
     {
         if ($token->isOneOf('(', '[', '{') && !$token->hasNewlineAfterCode()) {
@@ -237,7 +244,8 @@ class AddHangingIndentation implements TokenRule
         // - $prev is not a statement delimiter in a context where indentation
         //   is inherited from enclosing tokens
         $prev = $token->prevCode();
-        if (!$prev->hasNewlineAfterCode() ||
+        if (!($prev->hasNewlineAfterCode() ||
+                    ($prev->is(T_START_HEREDOC) && !$token->prevCode(2)->hasNewlineAfterCode())) ||
             $token->isBrace() ||
             (!$ignoreIndent &&
                 $this->indent($prev) !== $this->indent($token)) ||

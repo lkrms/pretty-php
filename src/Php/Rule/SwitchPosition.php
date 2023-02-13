@@ -11,6 +11,13 @@ class SwitchPosition implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getPriority(string $method): ?int
+    {
+        return $method === self::PROCESS_TOKEN
+            ? 600
+            : null;
+    }
+
     public function getTokenTypes(): ?array
     {
         return [
@@ -28,11 +35,9 @@ class SwitchPosition implements TokenRule
             return;
         }
 
-        if (!$token->isOneOf(T_CASE, T_DEFAULT) || !$token->parent()->prevSibling(2)->is(T_SWITCH)) {
-            return;
-        }
-
-        if (!($separator = $token->nextSiblingOf(':', ';', T_CLOSE_TAG))) {
+        if (!$token->isOneOf(T_CASE, T_DEFAULT) ||
+                !$token->parent()->prevSibling(2)->is(T_SWITCH) ||
+                !($separator = $token->nextSiblingOf(':', ';', T_CLOSE_TAG))) {
             return;
         }
 

@@ -79,4 +79,22 @@
       // No newline after `c();`
       if ($a) c(); else b();
       ```
+- [ ] Align one-line switch cases, e.g.
+
+      ```php
+      switch ($operator) {
+        default:
+        case '=':
+        case '==':  return $retrieved == $value;
+        case '!=':
+        case '<>':  return $retrieved != $value;
+        case '<':   return $retrieved < $value;
+        case '>':   return $retrieved > $value;
+        case '<=':  return $retrieved <= $value;
+        case '>=':  return $retrieved >= $value;
+        case '===': return $retrieved === $value;
+        case '!==': return $retrieved !== $value;
+        case '<=>': return $retrieved <=> $value;
+      }
+      ```
 

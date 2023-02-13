@@ -280,8 +280,10 @@ final class TokenType
         T_ARRAY,
         T_CALLABLE,
         T_ELLIPSIS,
+        T_STATIC,
         T_STRING,
         T_VARIABLE,
+        ...self::DECLARATION,
     ];
 
     public const ADD_SPACE_AFTER = [

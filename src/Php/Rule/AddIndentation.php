@@ -11,6 +11,13 @@ class AddIndentation implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getPriority(string $method): ?int
+    {
+        return $method === self::PROCESS_TOKEN
+            ? 600
+            : null;
+    }
+
     public function processToken(Token $token): void
     {
         if ($token->isCloseBracket() || $token->endsAlternativeSyntax()) {

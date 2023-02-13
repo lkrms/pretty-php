@@ -12,6 +12,13 @@ class AddBlankLineBeforeDeclaration implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getPriority(string $method): ?int
+    {
+        return $method === self::PROCESS_TOKEN
+            ? 620
+            : null;
+    }
+
     public function getTokenTypes(): ?array
     {
         return TokenType::DECLARATION;
