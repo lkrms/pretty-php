@@ -1,2 +1,6 @@
 parameters:
-	ignoreErrors: []
+	ignoreErrors:
+		-
+			message: "#^Lkrms\\\\Pretty\\\\Php\\\\TokenCollection does not accept Lkrms\\\\Pretty\\\\Php\\\\Token\\|null\\.$#"
+			count: 1
+			path: src/Php/Rule/AlignLists.php

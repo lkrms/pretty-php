@@ -4,65 +4,74 @@ namespace Lkrms\Pretty\Tests\Php\Rule;
 
 final class PlaceCommentsTest extends \Lkrms\Pretty\Tests\Php\TestCase
 {
-    public function testAlignComment()
+    /**
+     * @dataProvider alignCommentProvider
+     */
+    public function testAlignComment(string $code, string $expected)
     {
-        [$in, $out] = [
-            <<<'PHP'
-            <?php
+        $this->assertFormatterOutputIs($code, $expected);
+    }
 
-            switch ($a) {
-            //
-            case 0:
-            case 1:
-            //
-            func();
-            // Aligns with previous statement
-            case 2:
-            //
-            case 3:
-            func2();
-            break;
+    public function alignCommentProvider()
+    {
+        return [
+            'switch comments' => [
+                <<<'PHP'
+                <?php
 
-            // Aligns with previous statement
-
-            case 4:
-            func();
-            break;
-
-            //
-            default:
-            break;
-            }
-            PHP,
-            <<<'PHP'
-            <?php
-
-            switch ($a) {
+                switch ($a) {
                 //
                 case 0:
                 case 1:
-                    //
-                    func();
-                    // Aligns with previous statement
+                //
+                func();
+                // Aligns with previous statement
                 case 2:
                 //
                 case 3:
-                    func2();
-                    break;
+                func2();
+                break;
 
-                    // Aligns with previous statement
+                // Aligns with previous statement
 
                 case 4:
-                    func();
-                    break;
+                func();
+                break;
 
                 //
                 default:
-                    break;
-            }
+                break;
+                }
+                PHP,
+                <<<'PHP'
+                <?php
 
-            PHP,
+                switch ($a) {
+                    //
+                    case 0:
+                    case 1:
+                        //
+                        func();
+                        // Aligns with previous statement
+                    case 2:
+                    //
+                    case 3:
+                        func2();
+                        break;
+
+                        // Aligns with previous statement
+
+                    case 4:
+                        func();
+                        break;
+
+                    //
+                    default:
+                        break;
+                }
+
+                PHP,
+            ]
         ];
-        $this->assertFormatterOutputIs($in, $out);
     }
 }

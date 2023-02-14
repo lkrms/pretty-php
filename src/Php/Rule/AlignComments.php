@@ -23,6 +23,7 @@ class AlignComments implements BlockRule
         $firstLineWithComment = null;
         $lastLineWithComment  = null;
         foreach ($block as $i => $line) {
+            /** @var Token|null $lastComment */
             $lastComment = $prevComment ?? null;
             $prevComment = null;
             $comment     = $line->getLastOf(...TokenType::COMMENT);
@@ -30,8 +31,10 @@ class AlignComments implements BlockRule
                 continue;
             }
             if ($comment->hasNewlineBefore()) {
-                $prev       = $comment->prev();
-                $standalone = $prev !== $lastComment;
+                $prev = $comment->prev();
+                $standalone = $prev !== $lastComment ||
+                    $comment->isMultiLineComment() ||
+                    $lastComment->isMultiLineComment();
                 if ($standalone || $comment->Line - $prev->Line > 1) {
                     /**
                      * Preserve blank lines so comments don't merge on
@@ -78,13 +81,16 @@ class AlignComments implements BlockRule
         foreach ($block as $i => $line) {
             /** @var Token $token */
             $token = $line[0];
-            // Ignore lines before $first and after $last unless their
-            // bracket stacks match $first and $last respectively
+            // Ignore lines before $first and after $last unless their bracket
+            // stacks match $first and $last respectively
             if (!$lengths && $token->BracketStack !== $first->BracketStack ||
                     ($token->Index > $last->Index && $token->BracketStack !== $last->BracketStack)) {
                 continue;
             }
             if ($comment = $comments[$i] ?? null) {
+                // If $comment is the first token on the line, there won't be
+                // anything to collect between $token and $comment->prev(), so
+                // use $comment's leading whitespace instead
                 if ($token === $comment) {
                     $length      = strlen(ltrim($comment->renderWhitespaceBefore(true), "\n"));
                     $lengths[$i] = $length;
