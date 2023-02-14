@@ -23,6 +23,7 @@ class AlignComments implements BlockRule
         $firstLineWithComment = null;
         $lastLineWithComment  = null;
         foreach ($block as $i => $line) {
+            /** @var Token|null $lastComment */
             $lastComment = $prevComment ?? null;
             $prevComment = null;
             $comment     = $line->getLastOf(...TokenType::COMMENT);
@@ -30,8 +31,10 @@ class AlignComments implements BlockRule
                 continue;
             }
             if ($comment->hasNewlineBefore()) {
-                $prev       = $comment->prev();
-                $standalone = $prev !== $lastComment;
+                $prev = $comment->prev();
+                $standalone = $prev !== $lastComment ||
+                    $comment->isMultiLineComment() ||
+                    $lastComment->isMultiLineComment();
                 if ($standalone || $comment->Line - $prev->Line > 1) {
                     /**
                      * Preserve blank lines so comments don't merge on
