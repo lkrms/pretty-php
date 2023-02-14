@@ -21,7 +21,8 @@ interface Rule
      */
     public function getPriority(string $method): ?int;
 
-    public function clear(): void;
-
-    public function beforeRender(): void;
+    /**
+     * @param \Lkrms\Pretty\Php\Token[] $tokens
+     */
+    public function beforeRender(array $tokens): void;
 }

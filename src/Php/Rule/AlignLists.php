@@ -4,13 +4,20 @@ namespace Lkrms\Pretty\Php\Rule;
 
 use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
+use Lkrms\Pretty\Php\Rule\BreakBetweenMultiLineItems;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenCollection;
-use Lkrms\Pretty\WhitespaceType;
 
 final class AlignLists implements TokenRule
 {
     use TokenRuleTrait;
+
+    public function getPriority(string $method): ?int
+    {
+        return $method === self::PROCESS_TOKEN
+            ? 400
+            : null;
+    }
 
     public function getTokenTypes(): ?array
     {
@@ -23,37 +30,22 @@ final class AlignLists implements TokenRule
     public function processToken(Token $token): void
     {
         $align = $token->innerSiblings()->filter(
-            fn(Token $t, ?Token $prev) => !$prev || $t->prevCode()->is(',')
+            fn(Token $t, ?Token $prev) =>
+                !$prev || $t->prevCode()
+                            ->is(',')
         );
-        // Take a trailing delimiter as a request for newlines between items
-        if (!$token->ClosedBy->prevCode()->is(',')) {
-            // Suppress newlines between array items unless the array has a
-            // trailing delimiter, opens with a line break, or has a line break
-            // after the first item
-            if ($token->isArrayOpenBracket() &&
-                    !$token->hasNewlineAfterCode() &&
-                    !(($second = $align->nth(1)) && $second->hasNewlineBefore())) {
-                $align->forEach(
-                    fn(Token $t) =>
-                        $t->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE
-                );
+        // Apply BreakBetweenMultiLineItems if there's a trailing delimiter
+        if ($token->ClosedBy && $token->ClosedBy->prevCode()->is(',')) {
+            $align[] = $token->ClosedBy;
+            BreakBetweenMultiLineItems::applyTo($align);
 
-                return;
-            }
-            if (!$align->find(fn(Token $t) => $t->hasNewlineBefore())) {
-                return;
-            }
+            return;
         }
-        $align->forEach(
-            function (Token $t, ?Token $prev) use ($token) {
-                if ($prev) {
-                    $t->WhitespaceBefore           |= WhitespaceType::LINE;
-                    $t->WhitespaceMaskPrev         |= WhitespaceType::LINE;
-                    $t->prev()->WhitespaceMaskNext |= WhitespaceType::LINE;
-                }
-                $t->AlignedWith = $token;
-            }
-        );
+        // Leave one-line lists alone
+        if (!$align->find(fn(Token $t) => $t->hasNewlineBefore())) {
+            return;
+        }
+        $align->forEach(fn(Token $t) => $t->AlignedWith = $token);
         if (!$token->hasNewlineAfterCode()) {
             $this->Formatter->registerCallback($this, $align->first(), fn() => $this->alignList($align, $token), 710);
         }
@@ -61,11 +53,6 @@ final class AlignLists implements TokenRule
 
     private function alignList(TokenCollection $align, Token $token): void
     {
-        // Don't proceed if items have been moved by other rules
-        if ($align->find(fn(Token $t, ?Token $prev) => $prev && !$t->hasNewlineBefore())) {
-            return;
-        }
-
         $delta = $token->alignmentOffset();
         $align->forEach(function (Token $t, ?Token $prev, ?Token $next) use ($delta) {
             if ($next) {

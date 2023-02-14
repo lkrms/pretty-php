@@ -12,4 +12,4 @@ parameters:
   bootstrapFiles:
     - tests/bootstrap.php
   ignoreErrors:
-    - "#^Method Lkrms\\\\Pretty\\\\Tests\\\\.+ has no return type specified\\.$#"
+    - "#^Method Lkrms\\\\Pretty\\\\Tests\\\\.+ (has no return type specified|return type has no value type specified in iterable type array)\\.$#"

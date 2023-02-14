@@ -19,10 +19,12 @@ use Lkrms\Pretty\Php\Rule\AlignAssignments;
 use Lkrms\Pretty\Php\Rule\AlignChainedCalls;
 use Lkrms\Pretty\Php\Rule\AlignComments;
 use Lkrms\Pretty\Php\Rule\AlignLists;
+use Lkrms\Pretty\Php\Rule\BreakBetweenMultiLineItems;
 use Lkrms\Pretty\Php\Rule\CommaCommaComma;
 use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterFn;
 use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterNot;
+use Lkrms\Pretty\Php\Rule\Extra\BreakBeforeMultiLineList;
 use Lkrms\Pretty\Php\Rule\Extra\SuppressSpaceAroundStringOperator;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
 use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
@@ -53,6 +55,7 @@ class FormatPhp extends CliCommand
         'one-line-arguments'       => DeclareArgumentsOnOneLine::class,
         'blank-before-return'      => AddBlankLineBeforeReturn::class,
         'blank-before-declaration' => AddBlankLineBeforeDeclaration::class,
+        'break-between-items'      => BreakBetweenMultiLineItems::class,
         'align-chains'             => AlignChainedCalls::class,
         'align-lists'              => AlignLists::class,
         'indent-heredocs'          => ReindentHeredocs::class,
@@ -65,9 +68,10 @@ class FormatPhp extends CliCommand
      * @var array<string,string>
      */
     private $RuleMap = [
-        'no-concat-spaces' => SuppressSpaceAroundStringOperator::class,
-        'space-after-fn'   => AddSpaceAfterFn::class,
-        'space-after-not'  => AddSpaceAfterNot::class,
+        'break-before-lists' => BreakBeforeMultiLineList::class,
+        'no-concat-spaces'   => SuppressSpaceAroundStringOperator::class,
+        'space-after-fn'     => AddSpaceAfterFn::class,
+        'space-after-not'    => AddSpaceAfterNot::class,
     ];
 
     public function getShortDescription(): string
@@ -81,12 +85,12 @@ class FormatPhp extends CliCommand
             CliOption::build()
                 ->long('file')
                 ->description(<<<EOF
-                One or more PHP files to format
+                    One or more PHP files to format
 
-                If no files are named on the command line, __{{command}}__
-                reads the standard input and writes formatted code to the
-                standard output.
-                EOF)
+                    If no files are named on the command line, __{{command}}__
+                    reads the standard input and writes formatted code to the
+                    standard output.
+                    EOF)
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->multipleAllowed(),
             CliOption::build()
@@ -94,11 +98,11 @@ class FormatPhp extends CliCommand
                 ->short('t')
                 ->valueName('SIZE')
                 ->description(<<<EOF
-                Indent using tabs
+                    Indent using tabs
 
-                Implies:
-                    --skip align-chains,align-lists
-                EOF)
+                    Implies:
+                        --skip align-chains,align-lists
+                    EOF)
                 ->optionType(CliOptionType::ONE_OF_OPTIONAL)
                 ->allowedValues(['2', '4', '8'])
                 ->defaultValue('4'),
@@ -130,11 +134,11 @@ class FormatPhp extends CliCommand
                 ->long('ignore-newlines')
                 ->short('N')
                 ->description(<<<EOF
-                Do not add line breaks at the position of newlines in the input
+                    Do not add line breaks at the position of newlines in the input
 
-                Equivalent to:
-                    --skip preserve-newlines
-                EOF),
+                    Equivalent to:
+                        --skip preserve-newlines
+                    EOF),
             CliOption::build()
                 ->long('laravel')
                 ->short('l')
@@ -144,13 +148,13 @@ class FormatPhp extends CliCommand
                 ->short('o')
                 ->valueName('FILE')
                 ->description(<<<EOF
-                Write output to FILE instead of replacing the input file
+                    Write output to FILE instead of replacing the input file
 
-                If FILE is '-' (a single dash), __{{command}}__ writes to the
-                standard output.
+                    If FILE is '-' (a single dash), __{{command}}__ writes to the
+                    standard output.
 
-                May be used once per input file.
-                EOF)
+                    May be used once per input file.
+                    EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->multipleAllowed(),
             CliOption::build()
@@ -204,8 +208,8 @@ class FormatPhp extends CliCommand
         }
         if ($this->getOptionValue('laravel')) {
             $skip[]  = 'one-line-arguments';
+            $skip[]  = 'break-between-items';
             $skip[]  = 'align-chains';
-            $skip[]  = 'indent-heredocs';
             $skip[]  = 'align-assignments';
             $rules[] = 'no-concat-spaces';
             $rules[] = 'space-after-fn';

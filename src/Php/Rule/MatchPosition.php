@@ -11,6 +11,13 @@ class MatchPosition implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getPriority(string $method): ?int
+    {
+        return $method === self::PROCESS_TOKEN
+            ? 600
+            : null;
+    }
+
     public function getTokenTypes(): ?array
     {
         return [
@@ -23,7 +30,11 @@ class MatchPosition implements TokenRule
         $arms    = $token->nextSibling(2);
         $current = $arms->nextCode();
 
-        while ($current && $current !== $arms->ClosedBy) {
+        if ($current === $arms->ClosedBy) {
+            return;
+        }
+
+        while ($current) {
             if (($current = $current->nextSiblingOf(T_DOUBLE_ARROW)) &&
                     ($current = $current->nextSiblingOf(','))) {
                 $current->WhitespaceAfter |= WhitespaceType::LINE;

@@ -79,4 +79,57 @@
       // No newline after `c();`
       if ($a) c(); else b();
       ```
+- [ ] Align one-line switch cases, e.g.
+
+      ```php
+      switch ($operator) {
+        default:
+        case '=':
+        case '==':  return $retrieved == $value;
+        case '!=':
+        case '<>':  return $retrieved != $value;
+        case '<':   return $retrieved < $value;
+        case '>':   return $retrieved > $value;
+        case '<=':  return $retrieved <= $value;
+        case '>=':  return $retrieved >= $value;
+        case '===': return $retrieved === $value;
+        case '!==': return $retrieved !== $value;
+        case '<=>': return $retrieved <=> $value;
+      }
+      ```
+
+## Review rules
+
+- [ ] AddBlankLineBeforeDeclaration
+- [ ] AddBlankLineBeforeReturn
+- [ ] AddEssentialWhitespace
+- [ ] AddHangingIndentation
+- [ ] AddIndentation
+- [x] AddStandardWhitespace
+- [ ] AlignAssignments
+- [ ] AlignChainedCalls
+- [ ] AlignComments
+- [ ] AlignLists
+- [ ] BracePosition
+- [x] BreakAfterSeparators
+- [x] BreakBeforeControlStructureBody
+- [x] BreakBetweenMultiLineItems
+- [ ] CommaCommaComma
+- [ ] DeclareArgumentsOnOneLine
+- [ ] MatchPosition
+- [ ] PlaceAttributes
+- [ ] PlaceComments
+- [ ] PreserveNewlines
+- [ ] PreserveOneLineStatements
+- [x] ProtectStrings
+- [x] ReindentHeredocs
+- [ ] ReportUnnecessaryParentheses
+- [x] SimplifyStrings
+- [x] SpaceOperators
+- [ ] SwitchPosition
+- Extra
+  - [ ] AddSpaceAfterFn
+  - [ ] AddSpaceAfterNot
+  - [x] BreakBeforeMultiLineList
+  - [ ] SuppressSpaceAroundStringOperator
 

@@ -21,11 +21,7 @@ trait RuleTrait
         return null;
     }
 
-    public function clear(): void
-    {
-    }
-
-    public function beforeRender(): void
+    public function beforeRender(array $tokens): void
     {
     }
 }

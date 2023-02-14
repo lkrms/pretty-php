@@ -5,6 +5,7 @@ namespace Lkrms\Pretty\Php\Rule;
 use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
+use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
 class BracePosition implements TokenRule
@@ -27,25 +28,39 @@ class BracePosition implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if (!$token->isStructuralBrace()) {
+        if (!$token->isStructuralBrace() &&
+                !$token->canonical()->prevSibling(2)->is(T_MATCH)) {
             return;
         }
 
         $next = $token->next();
         if ($token->is('{')) {
-            if (($prev = $token->prev())->is(')')) {
+            $prev = $token->prev();
+            if ($prev->is(')')) {
                 $this->BracketBracePairs[] = [$prev, $token];
             }
-            if ($token->isDeclaration() &&
-                    (($parent = $token->parent())->isNull() || $parent->is('{')) &&
-                    (($prev = ($start = $token->startOfExpression())->prevCode())->isNull() ||
-                        $prev->isOneOf(';', '{', '}', T_CLOSE_TAG) ||
-                        ($prev->is(']') && $prev->OpenedBy->is(T_ATTRIBUTE))) &&
-                    !$start->is(T_USE)) {
-                $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
-            } else {
-                $token->WhitespaceBefore |= WhitespaceType::SPACE;
+            $before = WhitespaceType::SPACE;
+            // Add a newline before this opening brace if:
+            // 1. it's part of a declaration (e.g. `function ... { ... }`
+            if ($token->isDeclaration()) {
+                // 2. it's not part of a `use` statement
+                $start = $token->startOfExpression();
+                if (!$start->is(T_USE)) {
+                    // 3. the token before the declaration is:
+                    //    - `;`
+                    //    - `{`
+                    //    - `}`
+                    //    - a T_CLOSE_TAG statement terminator
+                    //    - non-existent (no code precedes the declaration), or
+                    //    - the last token of an attribute
+                    $prevCode = $start->prevCode();
+                    if ($prevCode->isOneOf(';', '{', '}', T_CLOSE_TAG, TokenType::T_NULL) ||
+                            ($prevCode->is(']') && $prevCode->OpenedBy->is(T_ATTRIBUTE))) {
+                        $before |= WhitespaceType::LINE;
+                    }
+                }
             }
+            $token->WhitespaceBefore   |= $before;
             $token->WhitespaceAfter    |= WhitespaceType::LINE | WhitespaceType::SPACE;
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
             if ($next->is('}')) {
@@ -69,7 +84,7 @@ class BracePosition implements TokenRule
         $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
     }
 
-    public function beforeRender(): void
+    public function beforeRender(array $tokens): void
     {
         foreach ($this->BracketBracePairs as [$bracket, $brace]) {
             if ($bracket->hasNewlineBefore() && $brace->hasNewlineBefore()) {

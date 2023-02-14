@@ -2,34 +2,46 @@
 
 namespace Lkrms\Pretty\Php;
 
-use Lkrms\Facade\Convert;
-
 class VirtualToken extends Token
 {
     /**
-     * @param array<string|array{0:int,1:string,2:int}> $plainTokens
-     * @param Token[] $tokens
-     * @param Token[] $bracketStack
-     * @param Token[]|null $nextBracketStack
+     * @var int
      */
-    public function __construct(array &$plainTokens, array &$tokens, Token $insertAt, array $bracketStack, Formatter $formatter, ?array $nextBracketStack = null)
+    protected $Index = -1;
+
+    /**
+     * @var int
+     */
+    protected $Type;
+
+    /**
+     * @var string
+     */
+    protected $Code = '';
+
+    /**
+     * @var int
+     */
+    protected $Line = -1;
+
+    /**
+     * @var string
+     */
+    protected $TypeName;
+
+    /**
+     * @var bool
+     */
+    protected $IsVirtual = true;
+
+    /**
+     * @param int $type A TokenType::T_* value.
+     * @psalm-param TokenType::T_* $type
+     */
+    public function __construct(int $type, Formatter $formatter)
     {
-        $this->Type = TokenType::T_VIRTUAL;
-        $this->Code = '';
-        $this->Line = $insertAt->Line;
-
-        $plainTokens[] = '';
-        end($plainTokens);
-        $index = key($plainTokens);
-        Convert::arraySpliceAtKey($tokens, $insertAt->Index, 0, [$index => $this]);
-        $this->insertAt($insertAt);
-        if ($nextBracketStack) {
-            $insertAt->BracketStack = $nextBracketStack;
-        }
-
-        $this->Index        = $index;
-        $this->BracketStack = $bracketStack;
-        $this->TypeName     = TokenType::class . '::T_VIRTUAL';
-        $this->Formatter    = $formatter;
+        $this->Type      = $type;
+        $this->TypeName  = TokenType::NAME_MAP[$type];
+        $this->Formatter = $formatter;
     }
 }
