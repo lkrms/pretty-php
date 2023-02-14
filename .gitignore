@@ -12,3 +12,6 @@ phpunit.xml
 /var/
 
 /build/
+
+/docs/api/
+phpdoc.xml
