@@ -4,7 +4,6 @@ namespace Lkrms\Pretty\Php;
 
 use JsonSerializable;
 use Lkrms\Facade\Convert;
-use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
 use Lkrms\Pretty\WhitespaceType;
 use RuntimeException;
 use UnexpectedValueException;
@@ -1191,28 +1190,23 @@ class Token implements JsonSerializable
         return $end;
     }
 
-    public function adjacent(bool $controlStructureOnly = false): ?Token
+    /**
+     * @param int|string ...$types
+     */
+    final public function adjacent(...$types): ?Token
     {
-        $_this = $this->OpenedBy ?: $this;
-        if (!$_this->isOneOf('(', '[', '{')) {
+        $_this = $this->ClosedBy ?: $this;
+        if (!$_this->isOneOf(...($types ?: $types = [')', ',', ']', '}']))) {
             return null;
         }
-        /** @var Token */
-        $outer = $_this->ClosedBy->withNextCodeWhile(')', ']', '}')->last();
+        $outer = $_this->withNextCodeWhile(...$types)->last();
         if (($end = $outer->endOfExpression())->isNull() ||
                 ($next = $outer->nextCode())->isNull() ||
                 ($end->Index <= $next->Index)) {
             return null;
         }
-        if (!$controlStructureOnly ||
-            ($outer->is(')') &&
-                $next->prevSibling(2)->isOneOf(
-                    ...TokenType::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES
-                ))) {
-            return $next;
-        }
 
-        return null;
+        return $next;
     }
 
     public function adjacentBeforeNewline(bool $requireAlignedWith = true): ?Token

@@ -7,6 +7,7 @@ use Lkrms\Facade\File;
 use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeDeclaration;
 use Lkrms\Pretty\Php\Rule\AlignAssignments;
+use Lkrms\Pretty\Php\Rule\BreakBetweenMultiLineItems;
 use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\SimplifyStrings;
 use RecursiveDirectoryIterator;
@@ -25,36 +26,36 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
     public function testRenderComment()
     {
         $in = <<<PHP
-            <?php
+        <?php
 
-            /**
-            * leading asterisk and space
-            *leading asterisk
-            *	leading asterisk and tab
-            * 	leading asterisk, space and tab
-            * 
-            *
-            no leading asterisk
-            	leading tab and no leading asterisk
+        /**
+        * leading asterisk and space
+        *leading asterisk
+        *	leading asterisk and tab
+        * 	leading asterisk, space and tab
+        * 
+        *
+        no leading asterisk
+        	leading tab and no leading asterisk
 
-              */
-            PHP;
+          */
+        PHP;
         $out = <<<PHP
-            <?php
+        <?php
 
-            /**
-             * leading asterisk and space
-             * leading asterisk
-             * 	leading asterisk and tab
-             * 	leading asterisk, space and tab
-             *
-             *
-             * no leading asterisk
-             * leading tab and no leading asterisk
-             *
-             */
+        /**
+         * leading asterisk and space
+         * leading asterisk
+         * 	leading asterisk and tab
+         * 	leading asterisk, space and tab
+         *
+         *
+         * no leading asterisk
+         * leading tab and no leading asterisk
+         *
+         */
 
-            PHP;
+        PHP;
         $this->assertFormatterOutputIs($in, $out);
     }
 
@@ -90,6 +91,7 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
                         $skipRules = [
                             SimplifyStrings::class,
                             DeclareArgumentsOnOneLine::class,
+                            BreakBetweenMultiLineItems::class,
                             AddBlankLineBeforeDeclaration::class,
                             AlignAssignments::class,
                         ];
