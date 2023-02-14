@@ -1058,7 +1058,7 @@ class Token implements JsonSerializable
             $newLinePadding = $offset - $newline - 1;
             $offset         = $newLinePadding - ($this->LinePadding - $this->LineUnpadding);
         } else {
-            $offset -= ($start->hasNewlineBefore() ? $start->LineUnpadding : 0);
+            $offset -= $start->hasNewlineBefore() ? $start->LineUnpadding : 0;
         }
 
         return $offset;
@@ -1588,7 +1588,7 @@ class Token implements JsonSerializable
         );
     }
 
-    public function inUnaryContext(): bool
+    final public function inUnaryContext(): bool
     {
         $prev = $this->prevCode();
 
@@ -1599,7 +1599,6 @@ class Token implements JsonSerializable
             '[',
             '{',
             '}',
-            T_CLOSE_TAG,
             ...TokenType::OPERATOR_ARITHMETIC,
             ...TokenType::OPERATOR_ASSIGNMENT,
             ...TokenType::OPERATOR_BITWISE,
@@ -1609,7 +1608,9 @@ class Token implements JsonSerializable
             ...TokenType::OPERATOR_DOUBLE_ARROW,
             ...TokenType::CAST,
             ...TokenType::KEYWORD,
-        ) || $prev->isTernaryOperator();
+        ) ||
+            $prev->IsCloseTagStatementTerminator ||
+            $prev->isTernaryOperator();
     }
 
     /**

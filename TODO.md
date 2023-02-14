@@ -98,3 +98,38 @@
       }
       ```
 
+## Review rules
+
+- [ ] AddBlankLineBeforeDeclaration
+- [ ] AddBlankLineBeforeReturn
+- [ ] AddEssentialWhitespace
+- [ ] AddHangingIndentation
+- [ ] AddIndentation
+- [x] AddStandardWhitespace
+- [ ] AlignAssignments
+- [ ] AlignChainedCalls
+- [ ] AlignComments
+- [ ] AlignLists
+- [ ] BracePosition
+- [x] BreakAfterSeparators
+- [x] BreakBeforeControlStructureBody
+- [x] BreakBetweenMultiLineItems
+- [ ] CommaCommaComma
+- [ ] DeclareArgumentsOnOneLine
+- [ ] MatchPosition
+- [ ] PlaceAttributes
+- [ ] PlaceComments
+- [ ] PreserveNewlines
+- [ ] PreserveOneLineStatements
+- [x] ProtectStrings
+- [x] ReindentHeredocs
+- [ ] ReportUnnecessaryParentheses
+- [x] SimplifyStrings
+- [x] SpaceOperators
+- [ ] SwitchPosition
+- Extra
+  - [ ] AddSpaceAfterFn
+  - [ ] AddSpaceAfterNot
+  - [x] BreakBeforeMultiLineList
+  - [ ] SuppressSpaceAroundStringOperator
+

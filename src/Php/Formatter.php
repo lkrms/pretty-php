@@ -115,13 +115,17 @@ final class Formatter implements IReadable
         SimplifyStrings::class,    // processToken:
                                    // - `Code`=<value>
 
+        AddStandardWhitespace::class,    // processToken:
+                                         // - WhitespaceBefore+SPACE[+LINE]
+                                         // - WhitespaceAfter(+SPACE[+LINE]|+LINE)
+                                         // - WhitespaceMaskNext(-SPACE|=SPACE|+LINE|=NONE)
+                                         // - WhitespaceMaskPrev(-SPACE|=NONE)
+
         BreakAfterSeparators::class,    // processToken:
-                                        // - `WhitespaceAfter`+LINE+SPACE
-                                        //
-                                        // callback:
-                                        // - `WhitespaceAfter`+SPACE
+                                        // - `WhitespaceAfter`+SPACE[+LINE]
                                         // - `WhitespaceMaskNext`+SPACE
-                                        // - `WhitespaceMaskPrev`+SPACE
+                                        // - `WhitespaceMaskPrev`(+SPACE|=NONE)
+                                        // - `WhitespaceBefore`=NONE
 
         BreakBeforeControlStructureBody::class,    // processToken:
                                                    // - `WhitespaceBefore`+LINE+SPACE
@@ -135,16 +139,24 @@ final class Formatter implements IReadable
                                    // - `WhitespaceMaskNext`-BLANK
 
         BracePosition::class,
-        SpaceOperators::class,
+
+        SpaceOperators::class,    // processToken:
+                                  // `WhitespaceBefore`(+SPACE|=NONE)
+                                  // `WhitespaceMaskNext`=NONE
+                                  // `WhitespaceMaskPrev`=NONE
+                                  // `WhitespaceAfter`(+SPACE|=NONE)
+
         CommaCommaComma::class,
         PreserveOneLineStatements::class,
-        AddStandardWhitespace::class,
         PlaceComments::class,
         PreserveNewlines::class,             // Must be after PlaceComments
         DeclareArgumentsOnOneLine::class,
         AddBlankLineBeforeReturn::class,     // Must be after PlaceComments
 
-        BreakBetweenMultiLineItems::class,
+        BreakBetweenMultiLineItems::class,    // processToken:
+                                              // - `WhitespaceBefore`+LINE
+                                              // - `WhitespaceMaskPrev`+LINE
+                                              // - `WhitespaceMaskNext`+LINE
 
         AlignChainedCalls::class,
 
@@ -188,6 +200,7 @@ final class Formatter implements IReadable
                                          // - `OverhangingParents[]`--
 
         ReindentHeredocs::class,    // beforeRender:
+                                    // - `HeredocIndent`=<value>
                                     // - `Code`=<value>
 
         AddEssentialWhitespace::class,

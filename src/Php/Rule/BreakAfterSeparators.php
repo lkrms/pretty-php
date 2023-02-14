@@ -8,7 +8,8 @@ use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
 
 /**
- * Add newlines after statement terminators
+ * Add newlines after statement terminators and spaces between `for` loop
+ * expressions
  *
  */
 final class BreakAfterSeparators implements TokenRule
@@ -32,12 +33,11 @@ final class BreakAfterSeparators implements TokenRule
             return;
         }
         if ($token->is(';')) {
-            if (($parent = $token->parent())->is('(') && $parent->prevCode()->is(T_FOR)) {
-                $token->WhitespaceAfter |= WhitespaceType::SPACE;
-                $this->Formatter->registerCallback($this, $token, function () use ($token) {
-                    $token->WhitespaceMaskNext         |= WhitespaceType::SPACE;
-                    $token->next()->WhitespaceMaskPrev |= WhitespaceType::SPACE;
-                });
+            $parent = $token->parent();
+            if ($parent->is('(') && $parent->prevCode()->is(T_FOR)) {
+                $token->WhitespaceAfter            |= WhitespaceType::SPACE;
+                $token->WhitespaceMaskNext         |= WhitespaceType::SPACE;
+                $token->next()->WhitespaceMaskPrev |= WhitespaceType::SPACE;
 
                 return;
             }

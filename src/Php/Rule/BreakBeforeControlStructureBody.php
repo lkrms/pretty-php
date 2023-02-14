@@ -11,8 +11,8 @@ use Lkrms\Pretty\WhitespaceType;
 /**
  * Add newlines after control structures where the body has no enclosing braces
  *
- * Control structures where the body has no enclosing braces are also reported
- * to the user via {@see \Lkrms\Pretty\Php\Formatter::reportProblem()}.
+ * Control structures meeting this criteria are also reported to the user via
+ * {@see \Lkrms\Pretty\Php\Formatter::reportProblem()}.
  */
 final class BreakBeforeControlStructureBody implements TokenRule
 {
@@ -58,6 +58,7 @@ final class BreakBeforeControlStructureBody implements TokenRule
         $body->prev()->WhitespaceMaskNext |= WhitespaceType::LINE;
 
         $body->collect($end = $body->endOfStatement())
+             // Use PreIndent because AddIndentation clobbers Indent
              ->forEach(fn(Token $t) => $t->PreIndent++);
 
         $this->Formatter->reportProblem('Braces not used in %s control structure',
