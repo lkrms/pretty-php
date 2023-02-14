@@ -26,36 +26,36 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
     public function testRenderComment()
     {
         $in = <<<PHP
-        <?php
+            <?php
 
-        /**
-        * leading asterisk and space
-        *leading asterisk
-        *	leading asterisk and tab
-        * 	leading asterisk, space and tab
-        * 
-        *
-        no leading asterisk
-        	leading tab and no leading asterisk
+            /**
+            * leading asterisk and space
+            *leading asterisk
+            *	leading asterisk and tab
+            * 	leading asterisk, space and tab
+            * 
+            *
+            no leading asterisk
+            	leading tab and no leading asterisk
 
-          */
-        PHP;
+              */
+            PHP;
         $out = <<<PHP
-        <?php
+            <?php
 
-        /**
-         * leading asterisk and space
-         * leading asterisk
-         * 	leading asterisk and tab
-         * 	leading asterisk, space and tab
-         *
-         *
-         * no leading asterisk
-         * leading tab and no leading asterisk
-         *
-         */
+            /**
+             * leading asterisk and space
+             * leading asterisk
+             * 	leading asterisk and tab
+             * 	leading asterisk, space and tab
+             *
+             *
+             * no leading asterisk
+             * leading tab and no leading asterisk
+             *
+             */
 
-        PHP;
+            PHP;
         $this->assertFormatterOutputIs($in, $out);
     }
 
