@@ -64,9 +64,9 @@ final class AlignLists implements TokenRule
             if ($next) {
                 $until = $next->prev(2);
             } else {
-                $until = $t->endOfExpression();
+                $until = $t->pragmaticEndOfExpression();
                 if ($adjacent = $until->adjacentBeforeNewline()) {
-                    $until = $adjacent->endOfExpression();
+                    $until = $adjacent->pragmaticEndOfExpression();
                 }
             }
             $t->collect($until)

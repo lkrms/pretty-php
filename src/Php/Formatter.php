@@ -317,8 +317,6 @@ final class Formatter implements IReadable
         $tokens = $this->filter($this->PlainTokens, ...$this->Filters);
 
         Sys::startTimer(__METHOD__ . '#build-tokens');
-        $bracketStack = [];
-        $altStack     = [];
         try {
             $last = null;
             foreach ($tokens as $index => $plainToken) {
@@ -334,11 +332,21 @@ final class Formatter implements IReadable
             if (!isset($token)) {
                 return '';
             }
+        } finally {
+            Sys::stopTimer(__METHOD__ . '#build-tokens');
+        }
+
+        Sys::startTimer(__METHOD__ . '#load-tokens');
+        try {
+            /** @var Token $first */
+            $first = reset($this->Tokens);
+            $first->load();
+
             if ($token->isCode() && !$token->startOfStatement()->is(T_HALT_COMPILER)) {
                 $token->WhitespaceAfter |= WhitespaceType::LINE;
             }
         } finally {
-            Sys::stopTimer(__METHOD__ . '#build-tokens');
+            Sys::stopTimer(__METHOD__ . '#load-tokens');
         }
 
         Sys::startTimer(__METHOD__ . '#sort-rules');
