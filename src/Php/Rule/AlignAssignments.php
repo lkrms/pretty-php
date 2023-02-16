@@ -96,7 +96,7 @@ final class AlignAssignments implements BlockRule
 
     private function assignmentHasInnerNewline(Token $token2): bool
     {
-        return $token2->collect($token2->endOfExpression())
+        return $token2->collect($token2->pragmaticEndOfExpression())
                       ->filter(fn(Token $t) => $t->isCode())
                       ->hasOuterNewline();
     }

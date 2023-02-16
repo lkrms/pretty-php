@@ -101,7 +101,7 @@ class AddHangingIndentation implements TokenRule
         //                 $comment->hasNewlineAfter()) ||
         //             $comment->hasNewline())
         //
-        $until   = $token->endOfExpression();
+        $until   = $token->pragmaticEndOfExpression();
         $indent  = 0;
         $hanging = [];
         $parents = in_array($parent, $token->IndentParentStack, true)
@@ -145,7 +145,7 @@ class AddHangingIndentation implements TokenRule
         }
 
         if ($adjacent = $until->adjacentBeforeNewline()) {
-            $until = $adjacent->endOfExpression();
+            $until = $adjacent->pragmaticEndOfExpression();
         }
 
         $current = $token;

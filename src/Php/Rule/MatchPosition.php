@@ -34,9 +34,9 @@ class MatchPosition implements TokenRule
             return;
         }
 
-        while ($current) {
-            if (($current = $current->nextSiblingOf(T_DOUBLE_ARROW)) &&
-                    ($current = $current->nextSiblingOf(','))) {
+        while (!$current->isNull()) {
+            if (!($current = $current->nextSiblingOf(T_DOUBLE_ARROW))->isNull() &&
+                    !($current = $current->nextSiblingOf(','))->isNull()) {
                 $current->WhitespaceAfter |= WhitespaceType::LINE;
             }
         }

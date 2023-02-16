@@ -127,7 +127,7 @@ class AlignChainedCalls implements TokenRule
         }
 
         $callback = function (Token $t, ?Token $prev, ?Token $next) use ($length, $delta) {
-            $t->collect($next ? $next->prev() : $t->endOfExpression())
+            $t->collect($next ? $next->prev() : $t->pragmaticEndOfExpression())
               ->forEach(
                   function (Token $_t) use ($length, $delta, $t) {
                       $_t->LinePadding += $delta;

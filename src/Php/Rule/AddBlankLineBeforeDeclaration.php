@@ -31,7 +31,6 @@ class AddBlankLineBeforeDeclaration implements TokenRule
             return;
         }
 
-        /** @var Token $start */
         $start = $token->withPrevSiblingsWhile(...TokenType::DECLARATION_PART)->last();
         if ($start->IsStartOfDeclaration) {
             return;

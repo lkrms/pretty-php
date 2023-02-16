@@ -60,6 +60,21 @@ class Token implements JsonSerializable
         'WhitespaceMaskNext',
     ];
 
+    /**
+     * Tokens regarded as expression terminators
+     *
+     * Somewhat arbitrary, but effective for formatting purposes.
+     *
+     * @var array<int|string>
+     */
+    private const EXPRESSION_TERMINATOR = [
+        ')',
+        ';',
+        ']',
+        ...TokenType::OPERATOR_ASSIGNMENT,
+        ...TokenType::OPERATOR_DOUBLE_ARROW,
+    ];
+
     // Declare these first for ease of debugging
 
     /**
@@ -146,6 +161,26 @@ class Token implements JsonSerializable
      * @var bool
      */
     public $IsCode = true;
+
+    /**
+     * @var Token|null
+     */
+    public $Statement;
+
+    /**
+     * @var Token|null
+     */
+    public $EndStatement;
+
+    /**
+     * @var Token|false|null
+     */
+    public $Expression;
+
+    /**
+     * @var Token|null
+     */
+    public $EndExpression;
 
     /**
      * @var array<array<string,mixed>>
@@ -297,26 +332,6 @@ class Token implements JsonSerializable
      * @var Formatter|null
      */
     protected $Formatter;
-
-    /**
-     * @var array<int,bool>
-     */
-    private $IsStartOfExpression = [];
-
-    /**
-     * @var array<int,bool>
-     */
-    private $IsEndOfExpression = [];
-
-    /**
-     * @var array<int,Token[]>
-     */
-    private $EndOfExpression = [];
-
-    /**
-     * @var array<int,Token[]>
-     */
-    private $StartOfExpression = [];
 
     /**
      * @var bool
@@ -472,7 +487,7 @@ class Token implements JsonSerializable
          * ?>               // OpenTag = Token,  CloseTag = itself
          * ```
          *
-         * `CloseTag` is `null` if there's no T_CLOSE_TAG
+         * `CloseTag` is `null` if there's no closing `?>`
          */
         if (!$this->OpenTag && $prev->OpenTag && !$prev->CloseTag) {
             $this->OpenTag = $prev->OpenTag;
@@ -495,6 +510,18 @@ class Token implements JsonSerializable
                 }
             }
         }
+    }
+
+    public function load(): void
+    {
+        $current = $this;
+        do {
+            if ($current->IsCode) {
+                $current->maybeApplyStatement();
+                $current->maybeApplyExpression();
+            }
+            $current = $current->_next;
+        } while ($current);
     }
 
     /**
@@ -541,18 +568,173 @@ class Token implements JsonSerializable
     }
 
     /**
+     * If the token is a statement terminator, set Statement and EndStatement on
+     * siblings loaded since the previous terminator
+     *
+     */
+    private function maybeApplyStatement(): void
+    {
+        if ($this->is(';') ||
+                $this->IsCloseTagStatementTerminator ||
+                ($this->is('}') && $this->isStructuralBrace()) ||
+                $this->startsAlternativeSyntax() ||
+                ($this->is(':') && ($this->inSwitchCase() || $this->inLabel()))) {
+            $this->applyStatement();
+        } elseif ($this->isOneOf(')', ']')) {
+            $this->_prevCode->applyStatement();
+        } elseif ($this->is(',')) {
+            // For formatting purposes, commas are statement delimiters:
+            // - between parentheses and square brackets, e.g. in argument
+            //   lists, arrays, `for` expressions
+            // - between braces in `match` expressions
+            // - in `use` declarations, e.g. `use my_namespace\{a, b}`
+            //
+            // But they aren't delimiters:
+            // - in `use` statements, e.g. `use my_trait { a as b; c as d; }`
+            $parent = $this->parent();
+            if ($parent->isOneOf('(', '[') ||
+                ($parent->is('{') &&
+                    ($parent->prevSibling(2)->is(T_MATCH) || !$parent->isStructuralBrace()))) {
+                $this->applyStatement();
+            }
+        } elseif ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE)) {
+            $this->_prevCode->applyStatement();
+            $this->applyStatement();
+        }
+    }
+
+    /**
+     * Apply the token to the EndStatement property of itself and its previous
+     * siblings
+     *
+     * Stops when the most recently applied {@see Token::$EndStatement} is
+     * found, or when there are no more predecessors. The identified 'start'
+     * token is then applied to the {@see Token::$Statement} property of the
+     * same tokens.
+     *
+     */
+    private function applyStatement(): void
+    {
+        // Skip empty brackets
+        if ($this->ClosedBy && $this->_nextCode === $this->ClosedBy) {
+            return;
+        }
+
+        // Navigate back to the most recent statement terminator
+        $current = $this->OpenedBy ?: $this;
+        do {
+            $current->EndStatement = $this;
+            if ($current->ClosedBy) {
+                $current->ClosedBy->EndStatement = $this;
+            }
+            $latest  = $current;
+            $current = $current->_prevSibling;
+        } while ($current && !$current->EndStatement);
+
+        // And return
+        $current = $latest;
+        do {
+            $current->Statement = $latest;
+            if ($current->ClosedBy) {
+                $current->ClosedBy->Statement = $latest;
+            }
+            $current = $current->_nextSibling;
+        } while ($current && $current->EndStatement === $this);
+    }
+
+    /**
+     * Similar to maybeApplyStatement() (but not the same)
+     *
+     */
+    private function maybeApplyExpression(): void
+    {
+        if (($this->is('}') && $this->isStructuralBrace()) ||
+                ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE))) {
+            $this->_prevCode->applyExpression();
+            $this->applyExpression();
+        } elseif ($this->isOneOf(...self::EXPRESSION_TERMINATOR) ||
+                $this->IsCloseTagStatementTerminator ||
+                $this->startsAlternativeSyntax() ||
+                ($this->is(':') && ($this->inSwitchCase() || $this->inLabel())) ||
+                $this->isTernaryOperator()) {
+            // Expression terminators don't form part of the expression
+            $this->Expression = false;
+            $this->_prevCode->applyExpression();
+        } elseif ($this->is(',')) {
+            $parent = $this->parent();
+            if ($parent->isOneOf('(', '[') ||
+                ($parent->is('{') &&
+                    ($parent->prevSibling(2)->is(T_MATCH) || !$parent->isStructuralBrace()))) {
+                $this->Expression = false;
+                $this->_prevCode->applyExpression();
+            }
+        }
+
+        // Catch the last global expression
+        if (!$this->_next) {
+            $this->applyExpression();
+        }
+    }
+
+    /**
+     * Similar to applyStatement()
+     *
+     */
+    private function applyExpression(): void
+    {
+        if ($this->ClosedBy && $this->_nextCode === $this->ClosedBy) {
+            return;
+        }
+
+        $current = $this->OpenedBy ?: $this;
+        while ($current && !$current->EndExpression) {
+            $current->EndExpression = $this;
+            if ($current->ClosedBy) {
+                $current->ClosedBy->EndExpression = $this;
+            }
+            if ($current->Expression === false) {
+                break;
+            }
+            $latest  = $current;
+            $current = $current->_prevSibling;
+        }
+        if (!($latest ?? null)) {
+            return;
+        }
+
+        $current = $latest;
+        do {
+            $current->Expression = $latest;
+            if ($current->ClosedBy) {
+                $current->ClosedBy->Expression = $latest;
+            }
+            $current = $current->_nextSibling;
+        } while ($current && $current->EndExpression === $this);
+    }
+
+    /**
      * @return array<string,mixed>
      */
     public function jsonSerialize(): array
     {
         $a = get_object_vars($this);
         unset(
+            $a['_prev'],
+            $a['_next'],
+            $a['_prevCode'],
+            $a['_nextCode'],
+            $a['_prevSibling'],
+            $a['_nextSibling'],
             $a['Index'],
             $a['Type'],
             $a['BracketStack'],
             $a['OpenTag'],
             $a['CloseTag'],
+            $a['OpenedBy'],
+            $a['ClosedBy'],
             $a['IsCode'],
+            $a['IsHangingParent'],
+            $a['IsOverhangingParent'],
             $a['IndentStack'],
             $a['IndentParentStack'],
             $a['IndentBracketStack'],
@@ -561,20 +743,23 @@ class Token implements JsonSerializable
             $a['ChainOpenedBy'],
             $a['HeredocOpenedBy'],
             $a['StringOpenedBy'],
+            $a['IsNull'],
+            $a['IsVirtual'],
             $a['Formatter'],
-            $a['_prev'],
-            $a['_next'],
-            $a['EndOfExpression'],
-            $a['StartOfExpression'],
+            $a['IsStartOfDeclaration'],
+            $a['IsCloseTagStatementTerminator'],
         );
         $a['WhitespaceBefore'] = WhitespaceType::toWhitespace($a['WhitespaceBefore']);
         $a['WhitespaceAfter']  = WhitespaceType::toWhitespace($a['WhitespaceAfter']);
         if (empty($a['Log'])) {
             unset($a['Log']);
+        } else {
+            $a['Log'] = array_map(fn(array $entry) => json_encode($entry),
+                                  $a['Log']);
         }
         array_walk_recursive($a, function (&$value) {
             if ($value instanceof Token) {
-                $value = $value->Index . ':' . Convert::ellipsize($value->Code, 20);
+                $value = (string) $value;
             }
         });
 
@@ -844,35 +1029,33 @@ class Token implements JsonSerializable
     }
 
     /**
+     * Get the token's most recent sibling that is one of the listed types
+     *
      * @param int|string ...$types
      */
-    public function prevSiblingOf(...$types): ?Token
+    final public function prevSiblingOf(...$types): Token
     {
         $prev = $this;
         do {
-            $prev = $prev->prevSibling();
-            if ($prev->isNull()) {
-                return null;
-            }
-        } while (!$prev->isOneOf(...$types));
+            $prev = $prev->_prevSibling;
+        } while ($prev && !$prev->isOneOf(...$types));
 
-        return $prev;
+        return $prev ?: new NullToken();
     }
 
     /**
+     * Get the token's next sibling that is one of the listed types
+     *
      * @param int|string ...$types
      */
-    public function nextSiblingOf(...$types): ?Token
+    final public function nextSiblingOf(...$types): Token
     {
         $next = $this;
         do {
-            $next = $next->nextSibling();
-            if ($next->isNull()) {
-                return null;
-            }
-        } while (!$next->isOneOf(...$types));
+            $next = $next->_nextSibling;
+        } while ($next && !$next->isOneOf(...$types));
 
-        return $next;
+        return $next ?: new NullToken();
     }
 
     /**
@@ -1065,80 +1248,22 @@ class Token implements JsonSerializable
 
     public function startOfStatement(): Token
     {
-        $current = ($this->is(';') || $this->isCloseTagStatementTerminator()
-                ? $this->prevCode()->OpenedBy
-                : null)
-            ?: $this->OpenedBy ?: $this;
-        while (!($prev = $current->prevCode())->isStatementPrecursor() &&
-                !$prev->isNull()) {
-            $last    = $current;
-            $current = $current->prevSibling();
-        }
-        $current = $current->isNull() ? ($last ?? $current) : $current;
-
-        return $current;
+        return $this->Statement ?: $this;
     }
 
     public function endOfStatement(): Token
     {
-        $current = $this->OpenedBy ?: $this;
-        while (!$current->isStatementTerminator() && !$current->nextCode()->isNull()) {
-            $last    = $current;
-            $current = $current->nextSibling();
-            if (!$current->isStatementTerminator() &&
-                    ($prev = $current->prevCode())->isStatementTerminator()) {
-                return $prev;
-            }
-        }
-        $current = $current->isNull() ? ($last ?? $current) : $current;
-
-        return $current->ClosedBy ?: $current;
+        return $this->EndStatement ?: $this;
     }
 
-    /**
-     * @param int $ignore A bitmask of {@see TokenBoundary} values
-     */
-    public function isStartOfExpression(int $ignore = TokenBoundary::COMPARISON): bool
+    public function isStartOfExpression(): bool
     {
-        return $this->IsCode &&
-            !$this->OpenedBy &&
-            !$this->isStatementPrecursor('(', '[', '{') &&
-            (($prev = $this->prevCode())->isNull() ||
-                $prev->isStatementPrecursor() ||
-                $prev->isTernaryOperator() ||
-                $prev->isOneOf(
-                    ...TokenBoundary::getTokenTypes(TokenBoundary::ALL & ~$ignore),
-                    ...TokenType::OPERATOR_DOUBLE_ARROW
-                ));
+        return $this->Expression === $this;
     }
 
-    /**
-     * @param int $ignore A bitmask of {@see TokenBoundary} values
-     */
-    public function startOfExpression(int $ignore = TokenBoundary::COMPARISON): Token
+    public function startOfExpression(): Token
     {
-        $current = $this->OpenedBy ?: $this;
-        if ($current->IsStartOfExpression[$ignore] ?? null) {
-            return $current;
-        }
-        // Don't return delimiters as separate expressions
-        if ($current->isStatementPrecursor('(', '[', '{')) {
-            $current = $current->prevCode();
-        }
-        $types = [
-            ...TokenBoundary::getTokenTypes(TokenBoundary::ALL & ~$ignore),
-            ...TokenType::OPERATOR_DOUBLE_ARROW,
-        ];
-        $ternary = !$this->isTernaryOperator();
-        while (!(($prev = $current->prevCode())->isNull() ||
-                $prev->isOneOf(...$types) ||
-                $prev->isStatementPrecursor() ||
-                ($ternary && $prev->isTernaryOperator()))) {
-            $current = $current->prevSibling();
-        }
-        $current->IsStartOfExpression[$ignore] = true;
-
-        return $current;
+        return $this->Expression ?: $this;
     }
 
     /**
@@ -1147,47 +1272,36 @@ class Token implements JsonSerializable
      * Statement separators do not form part of expressions and are not returned
      * by this method.
      *
-     * @param int $ignore A bitmask of {@see TokenBoundary} values
      */
-    public function endOfExpression(int $ignore = TokenBoundary::COMPARISON): Token
+    public function pragmaticEndOfExpression(): Token
     {
-        $current = $this->OpenedBy ?: $this;
-        if (($current->ClosedBy ?: $current)->IsEndOfExpression[$ignore] ?? null) {
-            return $current->ClosedBy ?: $current;
+        $current = $this;
+        if ($current->Expression === false) {
+            $current = $current->_prevCode->Expression ?: $current;
         }
+        $current = $current->OpenedBy ?: $current;
+        // If the token is between `?` and `:` in ternary expression, return the
+        // last token before `:`
         if (!$current->isTernaryOperator() &&
-                ($prev = ($start = $current->startOfExpression($ignore))->prevCode())->is('?') &&
-                $prev->isTernaryOperator() &&
-                $next = $prev->nextSiblingOf(':')) {
-            return $this->_endOfExpression($ignore, $next->prevCode(), $start);
+                ($prev = $current->Expression->_prevCode ?? null) &&
+                $prev->is('?') &&
+                $prev->isTernaryOperator()) {
+            return $prev->_nextCode->EndExpression;
         }
-        $ignoreTokens = [];
-        if ($current->inSwitchCase()) {
-            if ($token = $current->startOfStatement()->nextSiblingOf(':', ';', T_CLOSE_TAG)) {
-                $ignoreTokens[] = $token;
+        while ($current->EndExpression) {
+            $current    = $current->EndExpression;
+            $terminator = $current->_nextSibling;
+            if (!($terminator->_nextSibling ?? null) ||
+                (!$terminator->isOneOf(T_DOUBLE_ARROW, ...TokenType::OPERATOR_ASSIGNMENT) &&
+                    // TODO: continue until the next `case` or `default`
+                    !$terminator->inSwitchCase() &&
+                    !$terminator->isTernaryOperator())) {
+                break;
             }
-        }
-        while (!($next = $current->nextSibling())->isNull() &&
-            (!$next->isStatementPrecursor('(', '[', '{') ||
-                in_array($next, $ignoreTokens, true))) {
-            $current = $next;
-            if (($prev = $current->prevCode())->isStatementTerminator()) {
-                return $this->_endOfExpression($ignore, $prev, $start ?? null);
-            }
+            $current = $terminator->_nextSibling;
         }
 
-        return $this->_endOfExpression($ignore, $current->ClosedBy ?: $current, $start ?? null);
-    }
-
-    private function _endOfExpression(int $ignore, Token $end, ?Token $start = null): Token
-    {
-        if ($start) {
-            $start->EndOfExpression[$ignore][] = $end;
-            $end->StartOfExpression[$ignore][] = $start;
-        }
-        $end->IsEndOfExpression[$ignore] = true;
-
-        return $end;
+        return $current;
     }
 
     /**
@@ -1200,13 +1314,12 @@ class Token implements JsonSerializable
             return null;
         }
         $outer = $_this->withNextCodeWhile(...$types)->last();
-        if (($end = $outer->endOfExpression())->isNull() ||
-                ($next = $outer->nextCode())->isNull() ||
-                ($end->Index <= $next->Index)) {
+        if (!$outer->EndStatement || !$outer->_nextCode ||
+                ($outer->EndStatement->Index <= $outer->_nextCode->Index)) {
             return null;
         }
 
-        return $next;
+        return $outer->_nextCode;
     }
 
     public function adjacentBeforeNewline(bool $requireAlignedWith = true): ?Token
@@ -1222,30 +1335,39 @@ class Token implements JsonSerializable
         $outer = $current->withNextCodeWhile(')', ']', '}')
                          ->filter(fn(Token $t) => $t->Index <= $eol->Index)
                          ->last();
-        if (!$outer ||
-                ($next = $outer->nextCode())->isNull() ||
-                ($next->Index > $eol->Index) ||
-                ($end = $outer->endOfExpression())->isNull() ||
-                ($end->Index <= $next->Index)) {
+        if (!$outer || !$outer->_nextCode ||
+                ($outer->_nextCode->Index > $eol->Index) ||
+                !$outer->EndStatement ||
+                ($outer->EndStatement->Index <= $outer->_nextCode->Index)) {
             return null;
         }
 
         if ($requireAlignedWith &&
-            !$next->collect($this->endOfLine())
-                  ->find(fn(Token $item) => (bool) $item->AlignedWith)) {
+            !$outer->_nextCode->collect($eol)
+                              ->find(fn(Token $item) => (bool) $item->AlignedWith)) {
             return null;
         }
 
-        return $next;
+        return $outer->_nextCode;
     }
 
     public function withAdjacentBeforeNewline(?Token $from = null, bool $requireAlignedWith = true): TokenCollection
     {
         if ($adjacent = $this->adjacentBeforeNewline($requireAlignedWith)) {
-            $until = $adjacent->endOfExpression();
+            $until = $adjacent->EndStatement;
         }
 
         return ($from ?: $this)->collect($until ?? $this);
+    }
+
+    public function withoutTerminator(): Token
+    {
+        if ($this->_prevCode &&
+                ($this->isOneOf(';', ',', ':') || $this->IsCloseTagStatementTerminator)) {
+            return $this->_prevCode;
+        }
+
+        return $this;
     }
 
     public function declarationParts(): TokenCollection
@@ -1383,10 +1505,10 @@ class Token implements JsonSerializable
         return $prev->startOfStatement();
     }
 
-    public function isStatementTerminator(): bool
+    final public function isStatementTerminator(): bool
     {
         return $this->is(';') ||
-            $this->isCloseTagStatementTerminator() ||
+            $this->IsCloseTagStatementTerminator ||
             ($this->is('}') && $this->isStructuralBrace()) ||
             ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE));
     }
@@ -1394,14 +1516,17 @@ class Token implements JsonSerializable
     /**
      * @param int|string ...$except
      */
-    public function isStatementPrecursor(...$except): bool
+    public function isStatementPrecursor(bool $orNull = false, ...$except): bool
     {
+        if ($orNull && $this->IsNull) {
+            return true;
+        }
         if ($except && $this->isOneOf(...$except)) {
             return false;
         }
 
         return $this->isOneOf('(', ';', '[') ||
-            $this->isCloseTagStatementTerminator() ||
+            $this->IsCloseTagStatementTerminator ||
             $this->isStructuralBrace() ||
             ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE)) ||
             ($this->is(',') &&
@@ -1421,18 +1546,22 @@ class Token implements JsonSerializable
 
     public function inSwitchCase(): bool
     {
-        return $this->IsCode &&
-            $this->startOfStatement()->isOneOf(T_CASE, T_DEFAULT) &&
-            $this->parent()->prevSibling(2)->is(T_SWITCH);
+        return $this->isOneOf(T_CASE, T_DEFAULT) ||
+            ($this->parent()->prevSibling(2)->is(T_SWITCH) &&
+                $this->prevSiblingOf(':', ';', T_CLOSE_TAG, T_CASE, T_DEFAULT)
+                     ->isOneOf(T_CASE, T_DEFAULT));
     }
 
     public function inLabel(): bool
     {
-        $current = $this->is(':') ? $this->prevCode() : $this;
+        if ($this->is(':')) {
+            return $this->prevCode()->is(T_STRING) &&
+                $this->prevCode(2)->isStatementPrecursor(true);
+        }
 
-        return $current->is(T_STRING) &&
-            $current->nextCode()->is(':') &&
-            (($prev = $current->prevCode())->isStatementTerminator() || $prev->isNull());
+        return $this->is(T_STRING) &&
+            $this->nextCode()->is(':') &&
+            $this->prevCode()->isStatementPrecursor(true);
     }
 
     public function isArrayOpenBracket(): bool
@@ -1457,7 +1586,7 @@ class Token implements JsonSerializable
 
         return ($lastInner === $_this ||                                        // `{}`
                 $lastInner->isOneOf(':', ';') ||                                // `{ statement; }`
-                $lastInner->isCloseTagStatementTerminator() ||                  /* `{ statement ?>...<?php }` */
+                $lastInner->IsCloseTagStatementTerminator ||                    /* `{ statement ?>...<?php }` */
                 ($lastInner->is('}') && $lastInner->isStructuralBrace())) &&    // `{ { statement; } }`
             !(($parent->isNull() ||
                     $parent->prevSiblingsWhile(...TokenType::DECLARATION_PART)->hasOneOf(T_NAMESPACE)) &&
@@ -1801,7 +1930,10 @@ class Token implements JsonSerializable
 
     public function __toString(): string
     {
-        return (string) $this->Index;
+        return sprintf('T%d:L%d:%s',
+                       $this->Index,
+                       $this->Line,
+                       Convert::ellipsize(var_export($this->Code, true), 20));
     }
 
     private function isSameTypeAs(Token $token): bool
