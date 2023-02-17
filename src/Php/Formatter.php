@@ -18,6 +18,7 @@ use Lkrms\Pretty\Php\Filter\RemoveEmptyTokens;
 use Lkrms\Pretty\Php\Filter\RemoveWhitespaceTokens;
 use Lkrms\Pretty\Php\Filter\StripHeredocIndents;
 use Lkrms\Pretty\Php\Filter\TrimInsideCasts;
+use Lkrms\Pretty\Php\Filter\TrimOpenTags;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeDeclaration;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
 use Lkrms\Pretty\Php\Rule\AddEssentialWhitespace;
@@ -51,7 +52,6 @@ use Lkrms\Pretty\WhitespaceType;
 use ParseError;
 use RuntimeException;
 use Throwable;
-use UnexpectedValueException;
 
 /**
  * @property-read bool $Debug
@@ -62,8 +62,6 @@ use UnexpectedValueException;
  * @property-read int $TabSize
  * @property-read string $SoftTab
  * @property-read string[] $Rules
- * @property-read array<string|array{0:int,1:string,2:int}>|null $PlainTokens
- * @property-read Token[]|null $Tokens
  */
 final class Formatter implements IReadable
 {
@@ -113,7 +111,7 @@ final class Formatter implements IReadable
                                   // - `WhitespaceMaskNext`=NONE
 
         SimplifyStrings::class,    // processToken:
-                                   // - `Code`=<value>
+                                   // - `text`=<value>
 
         AddStandardWhitespace::class,    // processToken:
                                          // - WhitespaceBefore+SPACE[+LINE]
@@ -201,7 +199,7 @@ final class Formatter implements IReadable
 
         ReindentHeredocs::class,    // beforeRender:
                                     // - `HeredocIndent`=<value>
-                                    // - `Code`=<value>
+                                    // - `text`=<value>
 
         AddEssentialWhitespace::class,
 
@@ -214,14 +212,9 @@ final class Formatter implements IReadable
     ];
 
     /**
-     * @var array<string|array{0:int,1:string,2:int}>|null
-     */
-    protected $PlainTokens;
-
-    /**
      * @var Token[]|null
      */
-    protected $Tokens;
+    public $Tokens;
 
     /**
      * @var TokenFilter[]
@@ -274,6 +267,7 @@ final class Formatter implements IReadable
             new NormaliseStrings(),
             new RemoveCommentTokens(),
             new RemoveEmptyTokens(),
+            new TrimOpenTags(),
         ];
 
         $this->Debug = Env::debug();
@@ -305,48 +299,24 @@ final class Formatter implements IReadable
         $this->Filename   = $filename;
 
         Sys::startTimer(__METHOD__ . '#parse-input');
-        $this->Tokens = [];
         try {
-            $this->PlainTokens = token_get_all($code, TOKEN_PARSE);
+            $this->Tokens = Token::tokenize($code,
+                                            TOKEN_PARSE,
+                                            $this,
+                                            ...$this->Filters);
+
+            $last = end($this->Tokens);
+            if (!$last) {
+                return '';
+            }
+
+            if ($last->isCode() && !$last->startOfStatement()->is(T_HALT_COMPILER)) {
+                $last->WhitespaceAfter |= WhitespaceType::LINE;
+            }
         } catch (ParseError $ex) {
             throw new PrettyBadSyntaxException('Formatting failed: input cannot be parsed', $ex);
         } finally {
             Sys::stopTimer(__METHOD__ . '#parse-input');
-        }
-
-        $tokens = $this->filter($this->PlainTokens, ...$this->Filters);
-
-        Sys::startTimer(__METHOD__ . '#build-tokens');
-        try {
-            $last = null;
-            foreach ($tokens as $index => $plainToken) {
-                $this->Tokens[$index] = $token = new Token(
-                    $index,
-                    $plainToken,
-                    $last,
-                    $this
-                );
-                $last = $token;
-            }
-
-            if (!isset($token)) {
-                return '';
-            }
-        } finally {
-            Sys::stopTimer(__METHOD__ . '#build-tokens');
-        }
-
-        Sys::startTimer(__METHOD__ . '#load-tokens');
-        try {
-            /** @var Token $first */
-            $first = reset($this->Tokens);
-            $first->load();
-
-            if ($token->isCode() && !$token->startOfStatement()->is(T_HALT_COMPILER)) {
-                $token->WhitespaceAfter |= WhitespaceType::LINE;
-            }
-        } finally {
-            Sys::stopTimer(__METHOD__ . '#load-tokens');
         }
 
         Sys::startTimer(__METHOD__ . '#sort-rules');
@@ -381,13 +351,13 @@ final class Formatter implements IReadable
             if ($types === []) {
                 continue;
             }
-            $types = $types ? array_flip($types) : null;
+            $types = $types ? TokenType::getIndex(...$types) : null;
 
             $this->RunningService = $_rule = get_class($rule);
             Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
             /** @var Token $token */
             foreach ($this->Tokens as $token) {
-                if (!$types || ($types[$token->Type] ?? false) !== false) {
+                if (!$types || ($types[$token->id] ?? false) !== false) {
                     $rule->processToken($token);
                 }
             }
@@ -469,7 +439,10 @@ final class Formatter implements IReadable
 
         Sys::startTimer(__METHOD__ . '#parse-output');
         try {
-            $tokensOut = token_get_all($out, TOKEN_PARSE);
+            $tokensOut = Token::tokenize($out,
+                                         TOKEN_PARSE,
+                                         $this,
+                                         ...$this->ComparisonFilters);
         } catch (ParseError $ex) {
             throw new PrettyException(
                 'Formatting check failed: output cannot be parsed',
@@ -482,8 +455,11 @@ final class Formatter implements IReadable
             Sys::stopTimer(__METHOD__ . '#parse-output');
         }
 
-        $before = $this->strip($this->PlainTokens, ...$this->ComparisonFilters);
-        $after  = $this->strip($tokensOut, ...$this->ComparisonFilters);
+        $before = $this->simplifyTokens(Token::tokenize($code,
+                                                        TOKEN_PARSE,
+                                                        $this,
+                                                        ...$this->ComparisonFilters));
+        $after = $this->simplifyTokens($tokensOut);
         if ($before !== $after) {
             throw new PrettyException(
                 "Formatting check failed: parsed output doesn't match input",
@@ -494,21 +470,6 @@ final class Formatter implements IReadable
         }
 
         return $out;
-    }
-
-    public function insertToken(Token $insert, Token $before): void
-    {
-        $this->PlainTokens[] = '';
-
-        $key = array_key_last($this->PlainTokens);
-        if ($token = $this->Tokens[$before->Index] ?? null) {
-            if ($token !== $before) {
-                throw new UnexpectedValueException('Token mismatch');
-            }
-            Convert::arraySpliceAtKey($this->Tokens, $before->Index, 0, [$key => $insert]);
-        } else {
-            $this->Tokens[$key] = $insert;
-        }
     }
 
     private function getPriority(Rule $rule, string $method): int
@@ -534,44 +495,15 @@ final class Formatter implements IReadable
     }
 
     /**
-     * @param array<string|array{0:int,1:string,2:int}> $tokens
-     * @return array<string|array{0:int,1:string,2:int}>
+     * @param Token[] $tokens
+     * @return array<array{0:int,1:string}>
      */
-    private function filter(array $tokens, TokenFilter ...$filters): array
+    private function simplifyTokens(array $tokens): array
     {
-        Sys::startTimer(__METHOD__);
-        foreach ($filters as $filter) {
-            foreach ($tokens as $key => &$token) {
-                if (!$filter($token)) {
-                    unset($tokens[$key]);
-                }
-            }
-            unset($token);
-        }
-        Sys::stopTimer(__METHOD__);
-
-        return $tokens;
-    }
-
-    /**
-     * @param array<string|array{0:int,1:string,2:int}> $tokens
-     * @return array<string|array{0:int,1:string,2:int}>
-     */
-    private function strip(array $tokens, TokenFilter ...$filters): array
-    {
-        $tokens = $this->filter($tokens, ...$filters);
-        Sys::startTimer(__METHOD__);
-        $tokens = array_values($tokens);
-        foreach ($tokens as &$token) {
-            if (is_array($token)) {
-                unset($token[2]);
-                if (in_array($token[0], [T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO])) {
-                    $token[1] = rtrim($token[1]);
-                }
-            }
-        }
-        unset($token);
-        Sys::stopTimer(__METHOD__);
+        $tokens = array_map(
+            fn(Token $t) => [$t->id, $t->text],
+            array_values($tokens)
+        );
 
         return $tokens;
     }
@@ -611,14 +543,14 @@ final class Formatter implements IReadable
         }
         if ($this->Filename) {
             $values[] = $this->Filename;
-            $values[] = $start->Line;
+            $values[] = $start->line;
             Console::warn(sprintf($message . ': %s:%d', ...$values));
 
             return;
         }
 
-        $values[] = Convert::pluralRange($start->Line,
-                                         $end ? $end->Line : $start->Line,
+        $values[] = Convert::pluralRange($start->line,
+                                         $end ? $end->line : $start->line,
                                          'line');
         Console::warn(sprintf($message . ' %s', ...$values));
     }

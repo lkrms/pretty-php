@@ -81,7 +81,7 @@ final class TokenCollection extends TypedCollection
     {
         /** @var Token $token */
         foreach ($this as $token) {
-            $types[] = $token->Type;
+            $types[] = $token->id;
         }
 
         return $types ?? [];
@@ -99,7 +99,7 @@ final class TokenCollection extends TypedCollection
         $i = 0;
         /** @var Token $token */
         foreach ($this as $token) {
-            if (substr_count($token->Code, "\n")) {
+            if (substr_count($token->text, "\n")) {
                 return true;
             }
             if (!$i++) {
@@ -136,7 +136,7 @@ final class TokenCollection extends TypedCollection
             if ($i === $count) {
                 continue;
             }
-            if (substr_count($token->Code, "\n")) {
+            if (substr_count($token->text, "\n")) {
                 return true;
             }
         }

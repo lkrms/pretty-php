@@ -36,12 +36,12 @@ class PreserveNewlines implements TokenRule
         // Don't replace non-consecutive newlines with a blank line
         if ($tokenEnd ?? $prevStart ?? null) {
             $lines = max(
-                ($tokenEnd ?? null) ? $tokenEnd->Line - $token->Line - substr_count($token->Code, "\n") : 0,
-                $token->Line - $prev->Line - substr_count($prev->Code, "\n"),
-                ($prevStart ?? null) ? $prev->Line - $prevStart->Line - substr_count($prevStart->Code, "\n") : 0
+                ($tokenEnd ?? null) ? $tokenEnd->line - $token->line - substr_count($token->text, "\n") : 0,
+                $token->line - $prev->line - substr_count($prev->text, "\n"),
+                ($prevStart ?? null) ? $prev->line - $prevStart->line - substr_count($prevStart->text, "\n") : 0
             );
         } else {
-            $lines = $token->Line - $prev->Line - substr_count($prev->Code, "\n");
+            $lines = $token->line - $prev->line - substr_count($prev->text, "\n");
         }
 
         if (!$lines) {
@@ -60,8 +60,8 @@ class PreserveNewlines implements TokenRule
             $type = WhitespaceType::LINE;
         }
 
-        $min = ($prevStart ?? $prev)->Line;
-        $max = ($tokenEnd ?? $token)->Line;
+        $min = ($prevStart ?? $prev)->line;
+        $max = ($tokenEnd ?? $token)->line;
         foreach ([true, false] as $noBrackets) {
             if ($this->maybePreserveNewlineAfter($prev, $token, $type, $min, $max, $noBrackets) ||
                     $this->maybePreserveNewlineBefore($token, $prev, $type, $min, $max, $noBrackets) ||
@@ -77,7 +77,7 @@ class PreserveNewlines implements TokenRule
         if ($noBrackets && $token->isCloseBracket()) {
             return false;
         }
-        if (Test::isBetween($token->Line, $min, $max) &&
+        if (Test::isBetween($token->line, $min, $max) &&
                 $token->isOneOf(...TokenType::PRESERVE_NEWLINE_BEFORE) &&
                 ($noBrackets || !($token->isCloseBracket() && $prev->isOpenBracket())) &&
                 (!$token->is(':') || $token->isTernaryOperator())) {
@@ -94,7 +94,7 @@ class PreserveNewlines implements TokenRule
         if ($noBrackets && $token->isOpenBracket()) {
             return false;
         }
-        if (Test::isBetween($next->Line, $min, $max) &&
+        if (Test::isBetween($next->line, $min, $max) &&
                 $token->isOneOf(...TokenType::PRESERVE_NEWLINE_AFTER) &&
                 ($noBrackets || !($token->isOpenBracket() && $next->isCloseBracket())) &&
                 (!$token->is(':') || $token->inSwitchCase() || $token->inLabel())) {

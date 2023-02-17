@@ -3,18 +3,31 @@
 namespace Lkrms\Pretty\Php\Filter;
 
 use Lkrms\Pretty\Php\Contract\TokenFilter;
+use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 
-class TrimInsideCasts implements TokenFilter
+/**
+ * Remove whitespace inside cast operators
+ *
+ */
+final class TrimInsideCasts implements TokenFilter
 {
-    public function __invoke(&$token): bool
+    public function __invoke(array $tokens): array
     {
-        if (!is_array($token) || !in_array($token[0], TokenType::CAST)) {
-            return true;
-        }
+        return array_map(
+            function (Token $t) {
+                if (!$t->is(TokenType::CAST)) {
+                    return $t;
+                }
+                $text    = $t->text;
+                $t->text = '(' . trim(substr($t->text, 1, -1)) . ')';
+                if ($text !== $t->text) {
+                    $t->OriginalText = $t->OriginalText ?: $text;
+                }
 
-        $token[1] = '(' . trim(substr($token[1], 1, -1)) . ')';
-
-        return true;
+                return $t;
+            },
+            $tokens
+        );
     }
 }

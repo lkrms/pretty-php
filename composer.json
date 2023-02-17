@@ -6,7 +6,7 @@
         "bin/pretty-php"
     ],
     "require": {
-        "php": ">=7.4,<8.3",
+        "php": ">=8,<8.3",
         "lkrms/util": "^0.19.14"
     },
     "autoload": {

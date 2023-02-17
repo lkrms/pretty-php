@@ -119,7 +119,7 @@ class AlignChainedCalls implements TokenRule
         }
 
         if ($alignWith) {
-            $length = mb_strlen($alignWith->Code);
+            $length = mb_strlen($alignWith->text);
             $delta  = $alignWith->alignmentOffset() - $length + $adjust;
         } else {
             $length = 2;
@@ -132,7 +132,7 @@ class AlignChainedCalls implements TokenRule
                   function (Token $_t) use ($length, $delta, $t) {
                       $_t->LinePadding += $delta;
                       if ($_t === $t) {
-                          $_t->LineUnpadding += mb_strlen($_t->Code) - $length;
+                          $_t->LineUnpadding += mb_strlen($_t->text) - $length;
                       }
                   }
               );

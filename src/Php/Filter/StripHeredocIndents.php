@@ -4,51 +4,57 @@ namespace Lkrms\Pretty\Php\Filter;
 
 use Lkrms\Pretty\Php\Contract\TokenFilter;
 
-class StripHeredocIndents implements TokenFilter
+/**
+ * Remove indentation from heredocs
+ *
+ */
+final class StripHeredocIndents implements TokenFilter
 {
-    /**
-     * @var string[]|null
-     */
-    private $Heredoc;
-
-    public function __invoke(&$token): bool
+    public function __invoke(array $tokens): array
     {
-        if (is_null($this->Heredoc) && (!is_array($token) || $token[0] !== T_START_HEREDOC)) {
-            return true;
-        }
-        if (is_null($this->Heredoc)) {
-            $this->Heredoc = [];
-
-            return true;
-        }
-        if (!is_array($token)) {
-            $this->Heredoc[] = &$token;
-
-            return true;
-        }
-        $this->Heredoc[] = &$token[1];
-        if ($token[0] === T_END_HEREDOC) {
-            if (preg_match('/^\h+/', $token[1], $matches)) {
-                // The pattern below won't match the first line or closing
-                // identifier unless newlines are added temporarily
-                $keys = [0];
-                if (count($this->Heredoc) > 1) {
-                    $keys[] = count($this->Heredoc) - 1;
+        $heredoc = null;
+        foreach ($tokens as $token) {
+            if (is_null($heredoc)) {
+                if ($token->id === T_START_HEREDOC) {
+                    $heredoc = [];
                 }
-                foreach ($keys as $key) {
-                    $this->Heredoc[$key] = "\n" . $this->Heredoc[$key];
-                }
-                $stripped = preg_replace("/\\n{$matches[0]}/", "\n", $this->Heredoc);
-                foreach ($keys as $key) {
-                    $stripped[$key] = substr($stripped[$key], 1);
-                }
-                foreach ($this->Heredoc as $i => &$code) {
-                    $code = $stripped[$i];
-                }
+                continue;
             }
-            $this->Heredoc = null;
+
+            // Collect references to the content of tokens in the heredoc
+            $heredoc[] = &$token->text;
+            if ($token->id !== T_END_HEREDOC) {
+                continue;
+            }
+
+            // Check for indentation to remove
+            if (!preg_match('/^\h+/', $token->text, $matches)) {
+                $heredoc = null;
+                continue;
+            }
+
+            // The pattern below won't match the first line or closing
+            // identifier unless newlines are added temporarily
+            $keys = [0];
+            if (count($heredoc) > 1) {
+                $keys[] = count($heredoc) - 1;
+            }
+            foreach ($keys as $key) {
+                $heredoc[$key] = "\n" . $heredoc[$key];
+            }
+            // TODO: replace temporary newlines with a better pattern?
+            $stripped = preg_replace("/\\n{$matches[0]}/", "\n", $heredoc);
+            foreach ($keys as $key) {
+                $stripped[$key] = substr($stripped[$key], 1);
+            }
+            foreach ($heredoc as $i => &$code) {
+                $code = $stripped[$i];
+            }
+            unset($code);
+
+            $heredoc = null;
         }
 
-        return true;
+        return $tokens;
     }
 }

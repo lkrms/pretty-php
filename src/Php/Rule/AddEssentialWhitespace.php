@@ -40,7 +40,7 @@ class AddEssentialWhitespace implements Rule
             }
 
             if ($token->is(T_OPEN_TAG) ||
-                    preg_match('/^[a-zA-Z0-9\\\\_\x80-\xff]{2}$/', substr($token->Code, -1) . substr($token->next()->Code, 0, 1))) {
+                    preg_match('/^[a-zA-Z0-9\\\\_\x80-\xff]{2}$/', substr($token->text, -1) . substr($token->next()->text, 0, 1))) {
                 $token->WhitespaceAfter            |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskNext         |= WhitespaceType::SPACE;
                 $token->next()->WhitespaceMaskPrev |= WhitespaceType::SPACE;
