@@ -439,10 +439,9 @@ final class Formatter implements IReadable
 
         Sys::startTimer(__METHOD__ . '#parse-output');
         try {
-            $tokensOut = Token::tokenize($out,
-                                         TOKEN_PARSE,
-                                         $this,
-                                         ...$this->ComparisonFilters);
+            $tokensOut = Token::tokenizeOnly($out,
+                                             TOKEN_PARSE,
+                                             ...$this->ComparisonFilters);
         } catch (ParseError $ex) {
             throw new PrettyException(
                 'Formatting check failed: output cannot be parsed',
@@ -455,10 +454,9 @@ final class Formatter implements IReadable
             Sys::stopTimer(__METHOD__ . '#parse-output');
         }
 
-        $before = $this->simplifyTokens(Token::tokenize($code,
-                                                        TOKEN_PARSE,
-                                                        $this,
-                                                        ...$this->ComparisonFilters));
+        $before = $this->simplifyTokens(Token::tokenizeOnly($code,
+                                                            TOKEN_PARSE,
+                                                            ...$this->ComparisonFilters));
         $after = $this->simplifyTokens($tokensOut);
         if ($before !== $after) {
             throw new PrettyException(

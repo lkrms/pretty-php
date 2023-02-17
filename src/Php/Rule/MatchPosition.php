@@ -6,6 +6,7 @@ use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
+use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
 class MatchPosition implements TokenRule
 {
@@ -36,7 +37,7 @@ class MatchPosition implements TokenRule
 
         while (!$current->isNull()) {
             if (!($current = $current->nextSiblingOf(T_DOUBLE_ARROW))->isNull() &&
-                    !($current = $current->nextSiblingOf(','))->isNull()) {
+                    !($current = $current->nextSiblingOf(T[',']))->isNull()) {
                 $current->WhitespaceAfter |= WhitespaceType::LINE;
             }
         }

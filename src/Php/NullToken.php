@@ -12,6 +12,6 @@ final class NullToken extends Token
 
     public static function create(): NullToken
     {
-        return new static(TokenType::T_NULL, '');
+        return new static(T_NULL, '');
     }
 }

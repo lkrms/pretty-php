@@ -7,15 +7,16 @@ use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenCollection;
 use Lkrms\Pretty\WhitespaceType;
+use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
 class AlignChainedCalls implements TokenRule
 {
     use TokenRuleTrait;
 
     private const CHAIN_TOKEN_TYPE = [
-        '(',
-        '[',
-        '{',
+        T['('],
+        T['['],
+        T['{'],
         T_OBJECT_OPERATOR,
         T_NULLSAFE_OBJECT_OPERATOR,
         T_STRING,
@@ -68,9 +69,9 @@ class AlignChainedCalls implements TokenRule
         // expression
         $adjust = 0;
         if (!$alignWith) {
-            $alignWith = $first->prevSiblingsWhile('(',
-                                                   '[',
-                                                   '{',
+            $alignWith = $first->prevSiblingsWhile(T['('],
+                                                   T['['],
+                                                   T['{'],
                                                    T_DOUBLE_COLON,
                                                    T_STRING)
                                ->getFirstOf(T_DOUBLE_COLON);

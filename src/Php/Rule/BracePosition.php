@@ -5,8 +5,9 @@ namespace Lkrms\Pretty\Php\Rule;
 use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
-use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
+use const Lkrms\Pretty\Php\T_ID_MAP as T;
+use const Lkrms\Pretty\Php\T_NULL;
 
 class BracePosition implements TokenRule
 {
@@ -21,8 +22,8 @@ class BracePosition implements TokenRule
     public function getTokenTypes(): ?array
     {
         return [
-            '{',
-            '}',
+            T['{'],
+            T['}'],
         ];
     }
 
@@ -34,9 +35,9 @@ class BracePosition implements TokenRule
         }
 
         $next = $token->next();
-        if ($token->is('{')) {
+        if ($token->is(T['{'])) {
             $prev = $token->prev();
-            if ($prev->is(')')) {
+            if ($prev->is(T[')'])) {
                 $this->BracketBracePairs[] = [$prev, $token];
             }
             $before = WhitespaceType::SPACE;
@@ -54,8 +55,8 @@ class BracePosition implements TokenRule
                     //    - non-existent (no code precedes the declaration), or
                     //    - the last token of an attribute
                     $prevCode = $start->prevCode();
-                    if ($prevCode->isOneOf(';', '{', '}', T_CLOSE_TAG, TokenType::T_NULL) ||
-                            ($prevCode->is(']') && $prevCode->OpenedBy->is(T_ATTRIBUTE))) {
+                    if ($prevCode->isOneOf(T[';'], T['{'], T['}'], T_CLOSE_TAG, T_NULL) ||
+                            ($prevCode->is(T[']']) && $prevCode->OpenedBy->is(T_ATTRIBUTE))) {
                         $before |= WhitespaceType::LINE;
                     }
                 }
@@ -63,7 +64,7 @@ class BracePosition implements TokenRule
             $token->WhitespaceBefore   |= $before;
             $token->WhitespaceAfter    |= WhitespaceType::LINE | WhitespaceType::SPACE;
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
-            if ($next->is('}')) {
+            if ($next->is(T['}'])) {
                 $token->WhitespaceMaskNext &= ~WhitespaceType::SPACE;
             }
 
@@ -74,7 +75,7 @@ class BracePosition implements TokenRule
         $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
 
         if ($next->isOneOf(T_ELSE, T_ELSEIF, T_CATCH, T_FINALLY) ||
-                ($next->is(T_WHILE) && $next->nextSibling(2)->isOneOf(';', T_CLOSE_TAG))) {
+                ($next->is(T_WHILE) && $next->nextSibling(2)->isOneOf(T[';'], T_CLOSE_TAG))) {
             $token->WhitespaceAfter    |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
 

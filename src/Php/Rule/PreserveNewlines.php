@@ -8,6 +8,7 @@ use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
+use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
 class PreserveNewlines implements TokenRule
 {
@@ -21,15 +22,15 @@ class PreserveNewlines implements TokenRule
 
         // Treat `?:` as one operator
         if ($token->isTernaryOperator()) {
-            if ($token->is(':') && $prev->is('?')) {
+            if ($token->is(T[':']) && $prev->is(T['?'])) {
                 return;
             }
             $next = $token->next();
-            if ($token->is('?') && $next->is(':')) {
+            if ($token->is(T['?']) && $next->is(T[':'])) {
                 $tokenEnd = $next;
             }
         } elseif ($prev->isTernaryOperator() &&
-                $prev->is(':') && ($prevPrev = $prev->prev())->is('?')) {
+                $prev->is(T[':']) && ($prevPrev = $prev->prev())->is(T['?'])) {
             $prevStart = $prevPrev;
         }
 
@@ -80,7 +81,7 @@ class PreserveNewlines implements TokenRule
         if (Test::isBetween($token->line, $min, $max) &&
                 $token->isOneOf(...TokenType::PRESERVE_NEWLINE_BEFORE) &&
                 ($noBrackets || !($token->isCloseBracket() && $prev->isOpenBracket())) &&
-                (!$token->is(':') || $token->isTernaryOperator())) {
+                (!$token->is(T[':']) || $token->isTernaryOperator())) {
             $token->WhitespaceBefore |= $type;
 
             return true;
@@ -97,7 +98,7 @@ class PreserveNewlines implements TokenRule
         if (Test::isBetween($next->line, $min, $max) &&
                 $token->isOneOf(...TokenType::PRESERVE_NEWLINE_AFTER) &&
                 ($noBrackets || !($token->isOpenBracket() && $next->isCloseBracket())) &&
-                (!$token->is(':') || $token->inSwitchCase() || $token->inLabel())) {
+                (!$token->is(T[':']) || $token->inSwitchCase() || $token->inLabel())) {
             $token->WhitespaceAfter |= $type;
             $token->PinToCode        = $token->PinToCode && ($type === WhitespaceType::LINE);
 

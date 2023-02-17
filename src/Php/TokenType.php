@@ -2,26 +2,13 @@
 
 namespace Lkrms\Pretty\Php;
 
-defined('T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG') || define('T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG', 10001);
-defined('T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG') || define('T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG', 10002);
-defined('T_ATTRIBUTE') || define('T_ATTRIBUTE', 10003);
-defined('T_BAD_CHARACTER') || define('T_BAD_CHARACTER', 10004);    // This is to silence Intelephense
-defined('T_ENUM') || define('T_ENUM', 10005);
-defined('T_MATCH') || define('T_MATCH', 10006);
-defined('T_NAME_FULLY_QUALIFIED') || define('T_NAME_FULLY_QUALIFIED', 10007);
-defined('T_NAME_QUALIFIED') || define('T_NAME_QUALIFIED', 10008);
-defined('T_NAME_RELATIVE') || define('T_NAME_RELATIVE', 10009);
-defined('T_NULLSAFE_OBJECT_OPERATOR') || define('T_NULLSAFE_OBJECT_OPERATOR', 10010);
-defined('T_READONLY') || define('T_READONLY', 10011);
+use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
 final class TokenType
 {
-    public const T_NULL    = 20001;    // Returned when there aren't any real tokens to return
-    public const T_END_ALT = 20002;    // Inserted before `endif`, `endfor`, etc. in lieu of a closing brace
-
     public const NAME_MAP = [
-        self::T_NULL    => 'T_NULL',
-        self::T_END_ALT => 'T_END_ALT',
+        T_NULL           => 'T_NULL',
+        T_END_ALT_SYNTAX => 'T_END_ALT_SYNTAX',
     ];
 
     public const DO_NOT_MODIFY = [
@@ -41,13 +28,13 @@ final class TokenType
     ];
 
     public const PRESERVE_NEWLINE_AFTER = [
-        '(',
-        ',',
-        ':',
-        ';',
-        '[',
-        '{',
-        '}',
+        T['('],
+        T[','],
+        T[':'],
+        T[';'],
+        T['['],
+        T['{'],
+        T['}'],
         T_OPEN_TAG,
         T_OPEN_TAG_WITH_ECHO,
         T_RETURN,
@@ -61,9 +48,9 @@ final class TokenType
     ];
 
     public const PRESERVE_NEWLINE_BEFORE = [
-        '!',
-        ')',
-        ']',
+        T['!'],
+        T[')'],
+        T[']'],
         T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
         T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
         T_CLOSE_TAG,
@@ -96,22 +83,22 @@ final class TokenType
     ];
 
     public const AMPERSAND = [
-        '&',
+        T['&'],
         T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
         T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
     ];
 
     public const OPERATOR_ARITHMETIC = [
-        '+',      // Can be unary or binary
-        '-',      // Can be unary or binary
-        '*',
-        '/',
-        '%',
-        T_POW,    // **
+        T['+'],    // Can be unary or binary
+        T['-'],    // Can be unary or binary
+        T['*'],
+        T['/'],
+        T['%'],
+        T_POW,     // **
     ];
 
     public const OPERATOR_ASSIGNMENT = [
-        '=',
+        T['='],
         T_PLUS_EQUAL,        // +=
         T_MINUS_EQUAL,       // -=
         T_MUL_EQUAL,         // *=
@@ -128,17 +115,17 @@ final class TokenType
     ];
 
     public const OPERATOR_BITWISE = [
-        '&',
-        '|',
-        '^',
-        '~',
-        T_SL,    // <<
-        T_SR,    // >>
+        T['&'],
+        T['|'],
+        T['^'],
+        T['~'],
+        T_SL,      // <<
+        T_SR,      // >>
     ];
 
     public const OPERATOR_COMPARISON_EXCEPT_COALESCE = [
-        '<',
-        '>',
+        T['<'],
+        T['>'],
         T_IS_EQUAL,               // ==
         T_IS_IDENTICAL,           // ===
         T_IS_NOT_EQUAL,           // != or <>
@@ -154,16 +141,16 @@ final class TokenType
     ];
 
     public const OPERATOR_TERNARY = [
-        '?',
-        ':',
+        T['?'],
+        T[':'],
     ];
 
     public const OPERATOR_ERROR_CONTROL = [
-        '@',
+        T['@'],
     ];
 
     public const OPERATOR_EXECUTION = [
-        '`',
+        T['`'],
     ];
 
     public const OPERATOR_INCREMENT_DECREMENT = [
@@ -180,12 +167,12 @@ final class TokenType
     ];
 
     public const OPERATOR_LOGICAL = [
-        '!',
+        T['!'],
         ...self::OPERATOR_LOGICAL_EXCEPT_NOT,
     ];
 
     public const OPERATOR_STRING = [
-        '.',
+        T['.'],
     ];
 
     public const OPERATOR_DOUBLE_ARROW = [

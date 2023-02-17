@@ -7,6 +7,7 @@ use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenCollection;
 use Lkrms\Pretty\WhitespaceType;
+use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
 /**
  * Add a newline between every item in a multi-line delimited list
@@ -19,8 +20,8 @@ final class BreakBetweenMultiLineItems implements TokenRule
     public function getTokenTypes(): ?array
     {
         return [
-            '(',
-            '[',
+            T['('],
+            T['['],
         ];
     }
 
@@ -28,7 +29,7 @@ final class BreakBetweenMultiLineItems implements TokenRule
     {
         $items = $token->innerSiblings()
                        ->filter(fn(Token $t) => $t->prevCode()
-                                                  ->is(','));
+                                                  ->is(T[',']));
 
         if (!$token->hasNewlineAfter() &&
                 !$items->find(fn(Token $t) => $t->hasNewlineBefore())) {

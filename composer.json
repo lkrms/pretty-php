@@ -12,7 +12,10 @@
     "autoload": {
         "psr-4": {
             "Lkrms\\Pretty\\": "src/"
-        }
+        },
+        "files": [
+            "bootstrap.php"
+        ]
     },
     "config": {
         "sort-packages": true,

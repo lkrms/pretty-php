@@ -6,6 +6,7 @@ use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
+use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
 class SwitchPosition implements TokenRule
 {
@@ -37,7 +38,7 @@ class SwitchPosition implements TokenRule
 
         if (!$token->isOneOf(T_CASE, T_DEFAULT) ||
                 !$token->parent()->prevSibling(2)->is(T_SWITCH) ||
-                ($separator = $token->nextSiblingOf(':', ';', T_CLOSE_TAG))->isNull()) {
+                ($separator = $token->nextSiblingOf(T[':'], T[';'], T_CLOSE_TAG))->isNull()) {
             return;
         }
 

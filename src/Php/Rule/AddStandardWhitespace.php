@@ -8,6 +8,7 @@ use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
+use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
 /**
  * Apply sensible default spacing
@@ -46,18 +47,18 @@ final class AddStandardWhitespace implements TokenRule
     public function getTokenTypes(): ?array
     {
         return [
-            ':',
+            T[':'],
             T_OPEN_TAG,
             T_OPEN_TAG_WITH_ECHO,
             T_CLOSE_TAG,
 
-            ')',    // isCloseBracket()
-            ']',
-            '}',
+            T[')'],    // isCloseBracket()
+            T[']'],
+            T['}'],
 
-            '(',    // isOpenBracket()
-            '[',
-            '{',
+            T['('],    // isOpenBracket()
+            T['['],
+            T['{'],
             T_ATTRIBUTE,
             T_CURLY_OPEN,
             T_DOLLAR_OPEN_CURLY_BRACES,
@@ -83,12 +84,12 @@ final class AddStandardWhitespace implements TokenRule
 
         if (($token->isOpenBracket() && !$token->isStructuralBrace()) ||
                 $token->isOneOf(...TokenType::SUPPRESS_SPACE_AFTER)) {
-            $token->WhitespaceMaskNext &= ~WhitespaceType::SPACE;
+            $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK & ~WhitespaceType::SPACE;
         }
 
         if (($token->isCloseBracket() && !$token->isStructuralBrace()) ||
                 $token->isOneOf(...TokenType::SUPPRESS_SPACE_BEFORE)) {
-            $token->WhitespaceMaskPrev &= ~WhitespaceType::SPACE;
+            $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::SPACE;
         }
 
         if ($token->isOneOf(T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO)) {
@@ -111,7 +112,7 @@ final class AddStandardWhitespace implements TokenRule
             return;
         }
 
-        if ($token->is(':') && $token->inLabel()) {
+        if ($token->is(T[':']) && $token->inLabel()) {
             $token->WhitespaceAfter    |= WhitespaceType::LINE;
             $token->WhitespaceMaskNext |= WhitespaceType::LINE;
 
@@ -119,7 +120,7 @@ final class AddStandardWhitespace implements TokenRule
         }
 
         // Suppress whitespace in the directive section of `declare` blocks
-        if ($token->is('(') && $token->prevCode()->is(T_DECLARE)) {
+        if ($token->is(T['(']) && $token->prevCode()->is(T_DECLARE)) {
             $first = $token->inner()
                            ->forEach(fn(Token $t) =>
                                $t->WhitespaceMaskNext = WhitespaceType::NONE)
