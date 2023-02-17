@@ -3,11 +3,19 @@
 namespace Lkrms\Pretty\Php\Filter;
 
 use Lkrms\Pretty\Php\Contract\TokenFilter;
+use Lkrms\Pretty\Php\Token;
 
-class RemoveEmptyTokens implements TokenFilter
+/**
+ * Remove tokens with no content
+ *
+ */
+final class RemoveEmptyTokens implements TokenFilter
 {
-    public function __invoke(&$token): bool
+    public function __invoke(array $tokens): array
     {
-        return !($token === '' || (is_array($token) && $token[1] === ''));
+        return array_filter(
+            $tokens,
+            fn(Token $t) => $t->text !== ''
+        );
     }
 }

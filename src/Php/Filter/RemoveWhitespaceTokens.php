@@ -3,12 +3,20 @@
 namespace Lkrms\Pretty\Php\Filter;
 
 use Lkrms\Pretty\Php\Contract\TokenFilter;
+use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 
-class RemoveWhitespaceTokens implements TokenFilter
+/**
+ * Remove whitespace tokens
+ *
+ */
+final class RemoveWhitespaceTokens implements TokenFilter
 {
-    public function __invoke(&$token): bool
+    public function __invoke(array $tokens): array
     {
-        return !(is_array($token) && in_array($token[0], TokenType::WHITESPACE));
+        return array_filter(
+            $tokens,
+            fn(Token $t) => !$t->is(TokenType::WHITESPACE)
+        );
     }
 }

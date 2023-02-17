@@ -2,16 +2,16 @@
 
 namespace Lkrms\Pretty\Php;
 
-class NullToken extends VirtualToken
+final class NullToken extends Token
 {
-    /**
-     * @var bool
-     */
-    protected $IsNull = true;
+    public ?int $Index = -1;
 
-    public function __construct()
+    public bool $IsNull = true;
+
+    public bool $IsVirtual = true;
+
+    public static function create(): NullToken
     {
-        $this->Type     = TokenType::T_NULL;
-        $this->TypeName = TokenType::NAME_MAP[$this->Type];
+        return new static(T_NULL, '');
     }
 }

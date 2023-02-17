@@ -6,6 +6,7 @@ use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
+use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
 /**
  * If the first token on a new line continues a statement from the previous one,
@@ -25,13 +26,13 @@ class AddHangingIndentation implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->isOneOf('(', '[', '{') && !$token->hasNewlineAfterCode()) {
+        if ($token->isOneOf(T['('], T['['], T['{']) && !$token->hasNewlineAfterCode()) {
             $token->IsHangingParent     = true;
             $token->IsOverhangingParent =
                 // Does it have delimited values? (e.g. `list(var, var)`)
-                $token->innerSiblings()->hasOneOf(',') ||
+                $token->innerSiblings()->hasOneOf(T[',']) ||
                     // Delimited expressions? (e.g. `for (expr; expr; expr)`)
-                    ($token->is('(') && $token->innerSiblings()->hasOneOf(';')) ||
+                    ($token->is(T['(']) && $token->innerSiblings()->hasOneOf(T[';'])) ||
                     // A subsequent statement or block? (e.g. `if (expr)
                     // statement`)
                     $token->adjacent();

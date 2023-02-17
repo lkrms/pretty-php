@@ -7,6 +7,7 @@ use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
+use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
 class AddBlankLineBeforeDeclaration implements TokenRule
 {
@@ -26,7 +27,7 @@ class AddBlankLineBeforeDeclaration implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if (($token->is(T_USE) && $token->prevCode()->is(')')) ||
+        if (($token->is(T_USE) && $token->prevCode()->is(T[')'])) ||
                 ($token->isOneOf(...TokenType::VISIBILITY) && $token->inFunctionDeclaration())) {
             return;
         }
@@ -42,7 +43,7 @@ class AddBlankLineBeforeDeclaration implements TokenRule
         $parts = $start->withNextSiblingsWhile(...TokenType::DECLARATION_PART);
         /** @var Token $last */
         $last  = $parts->last();
-        if ($last->isOneOf(T_FN, T_FUNCTION) && $last->nextCode()->is('(')) {
+        if ($last->isOneOf(T_FN, T_FUNCTION) && $last->nextCode()->is(T['('])) {
             return;
         }
 

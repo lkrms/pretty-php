@@ -6,21 +6,19 @@ use Lkrms\Pretty\Php\Contract\TokenFilter;
 use Lkrms\Pretty\Php\Token;
 
 /**
- * Use var_export() to normalise string constants for comparison
+ * Remove whitespace after T_OPEN_TAG and T_OPEN_TAG_WITH_ECHO for comparison
  *
  */
-final class NormaliseStrings implements TokenFilter
+final class TrimOpenTags implements TokenFilter
 {
     public function __invoke(array $tokens): array
     {
         return array_map(
             function (Token $t) {
-                if ($t->id !== T_CONSTANT_ENCAPSED_STRING) {
+                if (!$t->is([T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO])) {
                     return $t;
                 }
-                $string = '';
-                eval("\$string = {$t->text};");
-                $t->text = var_export($string, true);
+                $t->text = rtrim($t->text);
 
                 return $t;
             },

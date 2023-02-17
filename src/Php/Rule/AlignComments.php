@@ -35,7 +35,7 @@ class AlignComments implements BlockRule
                 $standalone = $prev !== $lastComment ||
                     $comment->isMultiLineComment() ||
                     $lastComment->isMultiLineComment();
-                if ($standalone || $comment->Line - $prev->Line > 1) {
+                if ($standalone || $comment->line - $prev->line > 1) {
                     /**
                      * Preserve blank lines so comments don't merge on
                      * subsequent runs:

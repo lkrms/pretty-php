@@ -22,7 +22,7 @@ class PreserveOneLineStatements implements TokenRule
 
     private function maybePreserveOneLine(Token $start, Token $end): void
     {
-        if ($start->Line === $end->Line && $start !== $end) {
+        if ($start->line === $end->line && $start !== $end) {
             $mask = ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
             $start->next()
                   ->collect($end->prev())

@@ -7,6 +7,7 @@ use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
+use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
 /**
  * Apply whitespace to operators
@@ -42,11 +43,11 @@ final class SpaceOperators implements TokenRule
         // or passing by reference
         if ($token->isOneOf(...TokenType::AMPERSAND) &&
             $token->next()->isCode() &&
-            ($token->prevCode()->is(T_FUNCTION) ||                          // - `function &getValue()`
-                $token->inUnaryContext() ||                                 // - `[&$variable]`, `$a = &getValue()`
-                ($token->next()->is(T_VARIABLE) &&                          // - `function getValue(&$param)`, but not
-                    $token->inFunctionDeclaration() &&                      //   `function getValue($param = $a & $b)`
-                    !$token->sinceStartOfStatement()->hasOneOf('=')))) {
+            ($token->prevCode()->is(T_FUNCTION) ||                             // - `function &getValue()`
+                $token->inUnaryContext() ||                                    // - `[&$variable]`, `$a = &getValue()`
+                ($token->next()->is(T_VARIABLE) &&                             // - `function getValue(&$param)`, but not
+                    $token->inFunctionDeclaration() &&                         //   `function getValue($param = $a & $b)`
+                    !$token->sinceStartOfStatement()->hasOneOf(T['='])))) {
             $token->WhitespaceBefore  |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
 
@@ -54,9 +55,9 @@ final class SpaceOperators implements TokenRule
         }
 
         // Suppress whitespace between operators in union and intersection types
-        if ($token->isOneOf('|', ...TokenType::AMPERSAND) &&
+        if ($token->isOneOf(T['|'], ...TokenType::AMPERSAND) &&
                 $token->inFunctionDeclaration() &&
-                !$token->sinceStartOfStatement()->hasOneOf('=')) {
+                !$token->sinceStartOfStatement()->hasOneOf(T['='])) {
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
             $token->WhitespaceMaskPrev = WhitespaceType::NONE;
 
@@ -64,7 +65,7 @@ final class SpaceOperators implements TokenRule
         }
 
         // Suppress whitespace after `?` in nullable types
-        if ($token->is('?') && !$token->isTernaryOperator()) {
+        if ($token->is(T['?']) && !$token->isTernaryOperator()) {
             $token->WhitespaceBefore  |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
 
@@ -92,7 +93,7 @@ final class SpaceOperators implements TokenRule
 
         $token->WhitespaceAfter |= WhitespaceType::SPACE;
 
-        if ($token->is(':') && !$token->isTernaryOperator()) {
+        if ($token->is(T[':']) && !$token->isTernaryOperator()) {
             return;
         }
 

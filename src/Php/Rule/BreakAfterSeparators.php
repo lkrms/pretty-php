@@ -6,6 +6,7 @@ use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
+use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
 /**
  * Add newlines after statement terminators and spaces between `for` loop
@@ -19,8 +20,8 @@ final class BreakAfterSeparators implements TokenRule
     public function getTokenTypes(): ?array
     {
         return [
-            ';',
-            ':',
+            T[';'],
+            T[':'],
             T_CLOSE_TAG,
         ];
     }
@@ -32,9 +33,9 @@ final class BreakAfterSeparators implements TokenRule
 
             return;
         }
-        if ($token->is(';')) {
+        if ($token->is(T[';'])) {
             $parent = $token->parent();
-            if ($parent->is('(') && $parent->prevCode()->is(T_FOR)) {
+            if ($parent->is(T['(']) && $parent->prevCode()->is(T_FOR)) {
                 $token->WhitespaceAfter            |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskNext         |= WhitespaceType::SPACE;
                 $token->next()->WhitespaceMaskPrev |= WhitespaceType::SPACE;

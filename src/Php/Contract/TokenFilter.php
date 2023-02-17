@@ -2,13 +2,16 @@
 
 namespace Lkrms\Pretty\Php\Contract;
 
+use Lkrms\Pretty\Php\Token;
+
 interface TokenFilter
 {
     /**
-     * @param string|array{0:int,1:string,2:int} $token As per
-     * `token_get_all()`, either a single character or a 3-element array:
-     * `[$tokenId, $code, $lineNumber]`
-     * @return bool `false` if the token should be discarded, otherwise `true`.
+     * Apply the filter to an array of tokens
+     *
+     * @template T of Token
+     * @param T[] $tokens
+     * @return T[]
      */
-    public function __invoke(&$token): bool;
+    public function __invoke(array $tokens): array;
 }

@@ -7,6 +7,7 @@ use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
+use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
 class PlaceComments implements TokenRule
 {
@@ -30,7 +31,7 @@ class PlaceComments implements TokenRule
         // Don't move comments beside code to the next line
         if (!$token->wasFirstOnLine() && $token->wasLastOnLine()) {
             $token->WhitespaceBefore   |= WhitespaceType::TAB;
-            $token->WhitespaceMaskPrev &= ~WhitespaceType::LINE & ~WhitespaceType::BLANK;
+            $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
             $token->WhitespaceAfter    |= WhitespaceType::LINE;
 
             return;
@@ -105,7 +106,7 @@ class PlaceComments implements TokenRule
         if ($next->isOneOf(T_CASE, T_DEFAULT) &&
                 $prev !== $next->parent() &&
                 ($next->hasBlankLineBefore() || !$prev->hasBlankLineAfter()) &&
-                !($prev->is(':') && $prev->prevSibling(2)->isOneOf(T_CASE, T_DEFAULT))) {
+                !($prev->is(T[':']) && $prev->prevSibling(2)->isOneOf(T_CASE, T_DEFAULT))) {
             return;
         }
 

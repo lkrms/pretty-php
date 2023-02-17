@@ -51,7 +51,7 @@ final class ReindentHeredocs implements TokenRule
 
             $token = $heredoc;
             do {
-                $token->Code = str_replace("\n", "\n" . $indent, $token->Code);
+                $token->text = str_replace("\n", "\n" . $indent, $token->text);
                 if ($token->is(T_END_HEREDOC)) {
                     break;
                 }
