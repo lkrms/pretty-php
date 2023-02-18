@@ -13,4 +13,3 @@ parameters:
     - tests/bootstrap.php
   ignoreErrors:
     - "#^Method Lkrms\\\\Pretty\\\\Tests\\\\.+ (has no return type specified|return type has no value type specified in iterable type array)\\.$#"
-    - "#^Call to deprecated method isOneOf\\(\\) of class Lkrms\\\\Pretty\\\\Php\\\\Token\\.$#"

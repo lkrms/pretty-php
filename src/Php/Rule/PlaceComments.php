@@ -41,7 +41,8 @@ class PlaceComments implements TokenRule
         // comments from code below them
         $next = $token->nextCode();
         if (!$next->isNull() &&
-                !$next->isCloseBracket()) {
+                !$next->isCloseBracket() &&
+                !$next->endsAlternativeSyntax()) {
             $this->Formatter->registerCallback(
                 $this,
                 $token,
@@ -53,7 +54,7 @@ class PlaceComments implements TokenRule
         $token->WhitespaceAfter |= WhitespaceType::LINE;
         if (!$token->is(T_DOC_COMMENT)) {
             $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
-            $token->PinToCode         = !$next->isCloseBracket();
+            $token->PinToCode         = !$next->isCloseBracket() && !$next->endsAlternativeSyntax();
 
             return;
         }
@@ -68,7 +69,7 @@ class PlaceComments implements TokenRule
         }
         if ($token->next()->isCode()) {
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
-            $token->PinToCode           = !$next->isCloseBracket();
+            $token->PinToCode           = !$next->isCloseBracket() && !$next->endsAlternativeSyntax();
         }
     }
 
@@ -103,10 +104,10 @@ class PlaceComments implements TokenRule
         // }
         // ```
         $prev = $token->prevCode();
-        if ($next->isOneOf(T_CASE, T_DEFAULT) &&
+        if ($next->is([T_CASE, T_DEFAULT]) &&
                 $prev !== $next->parent() &&
                 ($next->hasBlankLineBefore() || !$prev->hasBlankLineAfter()) &&
-                !($prev->is(T[':']) && $prev->prevSibling(2)->isOneOf(T_CASE, T_DEFAULT))) {
+                !($prev->is(T[':']) && $prev->prevSibling(2)->is([T_CASE, T_DEFAULT]))) {
             return;
         }
 

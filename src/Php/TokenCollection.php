@@ -42,7 +42,7 @@ final class TokenCollection extends TypedCollection
     public function hasOneOf(...$types): bool
     {
         return $this->find(
-            fn(Token $t) => $t->isOneOf(...$types)
+            fn(Token $t) => $t->is($types)
         ) !== false;
     }
 
@@ -52,7 +52,7 @@ final class TokenCollection extends TypedCollection
     public function getAnyOf(...$types): TokenCollection
     {
         return $this->filter(
-            fn(Token $t) => $t->isOneOf(...$types)
+            fn(Token $t) => $t->is($types)
         );
     }
 
@@ -62,7 +62,7 @@ final class TokenCollection extends TypedCollection
     public function getFirstOf(...$types): ?Token
     {
         return $this->find(
-            fn(Token $t) => $t->isOneOf(...$types)
+            fn(Token $t) => $t->is($types)
         ) ?: null;
     }
 

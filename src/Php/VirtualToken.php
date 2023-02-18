@@ -11,12 +11,10 @@ final class VirtualToken extends Token
     /**
      * @param int $type A TokenType::T_* value.
      * @psalm-param TokenType::T_* $type
+     * @return static
      */
-    public static function create(int $type, ?Formatter $formatter = null): VirtualToken
+    public static function create(int $type)
     {
-        $token            = new static($type, '');
-        $token->Formatter = $formatter;
-
-        return $token;
+        return new static($type, '');
     }
 }

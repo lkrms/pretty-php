@@ -21,7 +21,7 @@ class DeclareArgumentsOnOneLine implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->prevCode()->isOneOf(T_FN, T_FUNCTION) ||
+        if ($token->prevCode()->is([T_FN, T_FUNCTION]) ||
                 $token->prevCode(2)->is(T_FUNCTION)) {
             $mask                                 = ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
             $token->WhitespaceMaskNext           &= $mask;

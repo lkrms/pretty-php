@@ -73,26 +73,26 @@ final class AddStandardWhitespace implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->isOneOf(...TokenType::ADD_SPACE_AROUND, ...$this->AddSpaceAround)) {
+        if ($token->is([...TokenType::ADD_SPACE_AROUND, ...$this->AddSpaceAround])) {
             $token->WhitespaceBefore |= WhitespaceType::SPACE;
             $token->WhitespaceAfter  |= WhitespaceType::SPACE;
-        } elseif ($token->isOneOf(...TokenType::ADD_SPACE_BEFORE)) {
+        } elseif ($token->is(TokenType::ADD_SPACE_BEFORE)) {
             $token->WhitespaceBefore |= WhitespaceType::SPACE;
-        } elseif ($token->isOneOf(...TokenType::ADD_SPACE_AFTER)) {
+        } elseif ($token->is(TokenType::ADD_SPACE_AFTER)) {
             $token->WhitespaceAfter |= WhitespaceType::SPACE;
         }
 
         if (($token->isOpenBracket() && !$token->isStructuralBrace()) ||
-                $token->isOneOf(...TokenType::SUPPRESS_SPACE_AFTER)) {
+                $token->is(TokenType::SUPPRESS_SPACE_AFTER)) {
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK & ~WhitespaceType::SPACE;
         }
 
         if (($token->isCloseBracket() && !$token->isStructuralBrace()) ||
-                $token->isOneOf(...TokenType::SUPPRESS_SPACE_BEFORE)) {
+                $token->is(TokenType::SUPPRESS_SPACE_BEFORE)) {
             $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::SPACE;
         }
 
-        if ($token->isOneOf(T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO)) {
+        if ($token->is([T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO])) {
             // Place `declare` beside `<?php`
             if ($token->is(T_OPEN_TAG) &&
                     ($declare = $token->next())->is(T_DECLARE) &&

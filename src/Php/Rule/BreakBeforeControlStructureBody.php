@@ -29,7 +29,7 @@ final class BreakBeforeControlStructureBody implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->isOneOf(...TokenType::HAS_STATEMENT_WITH_OPTIONAL_BRACES)) {
+        if ($token->is(TokenType::HAS_STATEMENT_WITH_OPTIONAL_BRACES)) {
             $offset = 1;
         } else {
             $offset = 2;
@@ -49,7 +49,7 @@ final class BreakBeforeControlStructureBody implements TokenRule
          */
         $body = $token->nextSibling($offset);
         if ($body->isNull() ||
-                $body->isOneOf(T[':'], T[';'], T['{'], T_CLOSE_TAG)) {
+                $body->is([T[':'], T[';'], T['{'], T_CLOSE_TAG])) {
             return;
         }
 
