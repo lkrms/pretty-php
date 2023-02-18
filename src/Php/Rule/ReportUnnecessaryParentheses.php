@@ -23,7 +23,7 @@ class ReportUnnecessaryParentheses implements TokenRule
     {
         if (!($token->isStartOfExpression() ||
             (($start = $token->prevCode())->isStartOfExpression() &&
-                    $start->isOneOf(...TokenType::HAS_EXPRESSION_WITH_OPTIONAL_PARENTHESES))) ||
+                    $start->is(TokenType::HAS_EXPRESSION_WITH_OPTIONAL_PARENTHESES))) ||
                 $token->pragmaticEndOfExpression() !== $token->ClosedBy) {
             return;
         }
@@ -40,7 +40,7 @@ class ReportUnnecessaryParentheses implements TokenRule
         }
         $prev = $start->prevCode();
         $next = $token->ClosedBy->nextCode();
-        if (!(($prev->isStatementPrecursor() || $prev->isOneOf(...TokenType::OPERATOR_ASSIGNMENT)) &&
+        if (!(($prev->isStatementPrecursor() || $prev->is(TokenType::OPERATOR_ASSIGNMENT)) &&
                 ($prev->ClosedBy === $next || $next->isStatementPrecursor()))) {
             return;
         }

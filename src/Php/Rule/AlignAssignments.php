@@ -26,14 +26,14 @@ final class AlignAssignments implements BlockRule
                 $stack        = $t2->BracketStack;
                 $indent       = $t2->indent();
                 $alignedWith  = $this->getAlignedWith($t1, $t2);
-                $isAssignment = $t2->isOneOf(...TokenType::OPERATOR_ASSIGNMENT);
+                $isAssignment = $t2->is(TokenType::OPERATOR_ASSIGNMENT);
                 $group[]      = [$t1, $t2];
             };
         while ($block) {
             $line   = array_shift($block);
             /** @var Token $token1 */
             $token1 = $line[0];
-            if (count($line) === 1 && $token1->isOneOf(...TokenType::COMMENT)) {
+            if (count($line) === 1 && $token1->is(TokenType::COMMENT)) {
                 continue;
             }
             if (($token2 = $line->getFirstOf(
@@ -47,7 +47,7 @@ final class AlignAssignments implements BlockRule
                 if ($stack === $token2->BracketStack &&
                         ($indent === $token2->indent() ||
                             ($alignedWith && $alignedWith === $this->getAlignedWith($token1, $token2))) &&
-                        !($isAssignment xor $token2->isOneOf(...TokenType::OPERATOR_ASSIGNMENT))) {
+                        !($isAssignment xor $token2->is(TokenType::OPERATOR_ASSIGNMENT))) {
                     $group[] = [$token1, $token2];
                     continue;
                 }

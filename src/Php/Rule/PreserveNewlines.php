@@ -79,7 +79,7 @@ class PreserveNewlines implements TokenRule
             return false;
         }
         if (Test::isBetween($token->line, $min, $max) &&
-                $token->isOneOf(...TokenType::PRESERVE_NEWLINE_BEFORE) &&
+                $token->is(TokenType::PRESERVE_NEWLINE_BEFORE) &&
                 ($noBrackets || !($token->isCloseBracket() && $prev->isOpenBracket())) &&
                 (!$token->is(T[':']) || $token->isTernaryOperator())) {
             $token->WhitespaceBefore |= $type;
@@ -96,7 +96,7 @@ class PreserveNewlines implements TokenRule
             return false;
         }
         if (Test::isBetween($next->line, $min, $max) &&
-                $token->isOneOf(...TokenType::PRESERVE_NEWLINE_AFTER) &&
+                $token->is(TokenType::PRESERVE_NEWLINE_AFTER) &&
                 ($noBrackets || !($token->isOpenBracket() && $next->isCloseBracket())) &&
                 (!$token->is(T[':']) || $token->inSwitchCase() || $token->inLabel())) {
             $token->WhitespaceAfter |= $type;

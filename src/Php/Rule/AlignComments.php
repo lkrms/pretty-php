@@ -98,7 +98,7 @@ class AlignComments implements BlockRule
                     continue;
                 }
                 $line = $token->collect($comment->prev());
-            } elseif ($token->isOneOf(...TokenType::COMMENT)) {
+            } elseif ($token->is(TokenType::COMMENT)) {
                 continue;
             }
             foreach (explode("\n", ltrim($line->render(true, false), "\n")) as $line) {

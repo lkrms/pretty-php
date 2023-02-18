@@ -36,7 +36,7 @@ class SwitchPosition implements TokenRule
             return;
         }
 
-        if (!$token->isOneOf(T_CASE, T_DEFAULT) ||
+        if (!$token->is([T_CASE, T_DEFAULT]) ||
                 !$token->parent()->prevSibling(2)->is(T_SWITCH) ||
                 ($separator = $token->nextSiblingOf(T[':'], T[';'], T_CLOSE_TAG))->isNull()) {
             return;

@@ -41,7 +41,7 @@ final class SpaceOperators implements TokenRule
 
         // Suppress whitespace after ampersands related to returning, assigning
         // or passing by reference
-        if ($token->isOneOf(...TokenType::AMPERSAND) &&
+        if ($token->is(TokenType::AMPERSAND) &&
             $token->next()->isCode() &&
             ($token->prevCode()->is(T_FUNCTION) ||                             // - `function &getValue()`
                 $token->inUnaryContext() ||                                    // - `[&$variable]`, `$a = &getValue()`
@@ -55,7 +55,7 @@ final class SpaceOperators implements TokenRule
         }
 
         // Suppress whitespace between operators in union and intersection types
-        if ($token->isOneOf(T['|'], ...TokenType::AMPERSAND) &&
+        if ($token->is([T['|'], ...TokenType::AMPERSAND]) &&
                 $token->inFunctionDeclaration() &&
                 !$token->sinceStartOfStatement()->hasOneOf(T['='])) {
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
@@ -74,7 +74,7 @@ final class SpaceOperators implements TokenRule
 
         // Suppress whitespace between `++` and `--` and the variables they
         // operate on
-        if ($token->isOneOf(...TokenType::OPERATOR_INCREMENT_DECREMENT)) {
+        if ($token->is(TokenType::OPERATOR_INCREMENT_DECREMENT)) {
             if ($token->prev()->is(T_VARIABLE)) {
                 $token->WhitespaceMaskPrev = WhitespaceType::NONE;
             } elseif ($token->next()->is(T_VARIABLE)) {

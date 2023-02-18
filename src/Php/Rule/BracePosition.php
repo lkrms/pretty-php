@@ -55,7 +55,7 @@ class BracePosition implements TokenRule
                     //    - non-existent (no code precedes the declaration), or
                     //    - the last token of an attribute
                     $prevCode = $start->prevCode();
-                    if ($prevCode->isOneOf(T[';'], T['{'], T['}'], T_CLOSE_TAG, T_NULL) ||
+                    if ($prevCode->is([T[';'], T['{'], T['}'], T_CLOSE_TAG, T_NULL]) ||
                             ($prevCode->is(T[']']) && $prevCode->OpenedBy->is(T_ATTRIBUTE))) {
                         $before |= WhitespaceType::LINE;
                     }
@@ -74,8 +74,8 @@ class BracePosition implements TokenRule
         $token->WhitespaceBefore   |= WhitespaceType::LINE | WhitespaceType::SPACE;
         $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
 
-        if ($next->isOneOf(T_ELSE, T_ELSEIF, T_CATCH, T_FINALLY) ||
-                ($next->is(T_WHILE) && $next->nextSibling(2)->isOneOf(T[';'], T_CLOSE_TAG))) {
+        if ($next->is([T_ELSE, T_ELSEIF, T_CATCH, T_FINALLY]) ||
+                ($next->is(T_WHILE) && $next->nextSibling(2)->is([T[';'], T_CLOSE_TAG]))) {
             $token->WhitespaceAfter    |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
 

@@ -10,7 +10,10 @@ final class NullToken extends Token
 
     public bool $IsVirtual = true;
 
-    public static function create(): NullToken
+    /**
+     * @return static
+     */
+    public static function create()
     {
         return new static(T_NULL, '');
     }

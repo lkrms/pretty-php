@@ -37,8 +37,8 @@ class AlignChainedCalls implements TokenRule
         }
 
         $chain = $token->withNextSiblingsWhile(...self::CHAIN_TOKEN_TYPE)
-                       ->filter(fn(Token $t) => $t->isOneOf(T_OBJECT_OPERATOR,
-                                                            T_NULLSAFE_OBJECT_OPERATOR));
+                       ->filter(fn(Token $t) => $t->is([T_OBJECT_OPERATOR,
+                                                        T_NULLSAFE_OBJECT_OPERATOR]));
 
         // Don't process tokens in the chain multiple times
         $chain->forEach(fn(Token $t) => $t->ChainOpenedBy = $token);
