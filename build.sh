@@ -26,7 +26,7 @@ FILE=$(_realpath "${BASH_SOURCE[0]}") &&
 
 PACKAGE=${PWD##*/}
 VERSION=$(git describe --long 2>/dev/null |
-    awk -F- -vOFS=- '/^v?[0-9]+(\.[0-9]+){0,3}-[0-9]+-g[0-9a-f]+$/ { gsub(/-0-|-g/, "-"); print }') ||
+    awk '/^v?[0-9]+(\.[0-9]+){0,3}-[0-9]+-g[0-9a-f]+$/ { sub(/-0-/, "-"); sub(/g/, ""); print }') ||
     VERSION=
 BUILD=$PACKAGE${VERSION:+-$VERSION}
 BUILD_DIR=build/$PACKAGE
