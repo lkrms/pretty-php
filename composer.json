@@ -7,7 +7,7 @@
     ],
     "require": {
         "php": ">=8,<8.3",
-        "lkrms/util": "^0.19.14"
+        "lkrms/util": "^0.19.16"
     },
     "autoload": {
         "psr-4": {
@@ -28,6 +28,6 @@
         "phpstan/extension-installer": "^1",
         "phpstan/phpstan": "^1",
         "phpstan/phpstan-deprecation-rules": "^1",
-        "phpunit/phpunit": "^9"
+        "phpunit/phpunit": "^10"
     }
 }

@@ -21,7 +21,7 @@ final class BreakBeforeMultiLineListTest extends TestCase
                                        [BreakBeforeMultiLineList::class]);
     }
 
-    public function processTokenProvider(): array
+    public static function processTokenProvider(): array
     {
         return [
             'multi-line array' => [

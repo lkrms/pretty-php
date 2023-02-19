@@ -192,6 +192,7 @@ class FormatPhp extends CliCommand
                 Env::debug(true);
                 $updateStderr = true;
             }
+            $this->app()->logConsoleMessages();
         }
 
         $tab   = Convert::toIntOrNull($this->getOptionValue('tab'));

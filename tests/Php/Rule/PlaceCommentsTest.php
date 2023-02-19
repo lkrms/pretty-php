@@ -12,7 +12,7 @@ final class PlaceCommentsTest extends \Lkrms\Pretty\Tests\Php\TestCase
         $this->assertFormatterOutputIs($code, $expected);
     }
 
-    public function alignCommentProvider()
+    public static function alignCommentProvider()
     {
         return [
             'switch comments' => [
