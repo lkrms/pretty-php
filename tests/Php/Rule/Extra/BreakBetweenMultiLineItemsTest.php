@@ -20,7 +20,7 @@ final class BreakBetweenMultiLineItemsTest extends TestCase
                                        [BreakBetweenMultiLineItems::class]);
     }
 
-    public function processTokenProvider(): array
+    public static function processTokenProvider(): array
     {
         return [
             'multi-line array' => [
@@ -119,7 +119,7 @@ final class BreakBetweenMultiLineItemsTest extends TestCase
                                         BreakBeforeMultiLineList::class]);
     }
 
-    public function withBreakBeforeMultiLineListProvider(): array
+    public static function withBreakBeforeMultiLineListProvider(): array
     {
         return [
             'multi-line array' => [

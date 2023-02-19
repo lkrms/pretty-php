@@ -12,7 +12,7 @@ final class AlignCommentsTest extends \Lkrms\Pretty\Tests\Php\TestCase
         $this->assertFormatterOutputIs($code, $expected);
     }
 
-    public function alignCommentsProvider()
+    public static function alignCommentsProvider()
     {
         return [
             'standalone comments' => [

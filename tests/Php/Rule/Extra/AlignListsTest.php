@@ -14,7 +14,7 @@ final class AlignListsTest extends TestCase
         $this->assertFormatterOutputIs($code, $expected);
     }
 
-    public function processTokenProvider(): array
+    public static function processTokenProvider(): array
     {
         return [
             'array destructuring' => [
