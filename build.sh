@@ -25,7 +25,9 @@ FILE=$(_realpath "${BASH_SOURCE[0]}") &&
     cd "${FILE%/*}" || _die "error resolving ${BASH_SOURCE[0]}"
 
 PACKAGE=${PWD##*/}
-VERSION=$(git describe 2>/dev/null | grep -Eo '^v?[0-9]+(\.[0-9]+){2,}') || VERSION=
+VERSION=$(git describe --long 2>/dev/null |
+    awk -F- -vOFS=- '/^v?[0-9]+(\.[0-9]+){0,3}-[0-9]+-g[0-9a-f]+$/ { gsub(/-0-|-g/, "-"); print }') ||
+    VERSION=
 BUILD=$PACKAGE${VERSION:+-$VERSION}
 BUILD_DIR=build/$PACKAGE
 BUILD_TAR=${BUILD_DIR%/*}/$BUILD.tar.gz
@@ -33,9 +35,7 @@ BUILD_PHAR=${BUILD_DIR%/*}/$BUILD.phar
 rm -rf "$BUILD_DIR" "$BUILD_TAR" "$BUILD_PHAR" &&
     mkdir -pv "$BUILD_DIR" &&
     cp -Rv !(build*|docs|phpdoc*|phpstan*|phpunit*|tests*|var|vendor|LICENSE*|README*|*.md|*.txt|*.code-workspace) "$BUILD_DIR/" &&
-    { [[ -z $VERSION ]] ||
-        export COMPOSER_ROOT_VERSION=$VERSION; } &&
-    # Remove --classmap-authoritative if support for classes generated at runtime is required
+    #  Remove --classmap-authoritative if support for classes generated at runtime is required
     composer install -d "$BUILD_DIR" --no-dev --no-plugins --optimize-autoloader --classmap-authoritative &&
     rm -fv "$BUILD_DIR"/**/.DS_Store &&
     rm -fv "$BUILD_DIR"/vendor/**/.gitignore &&
