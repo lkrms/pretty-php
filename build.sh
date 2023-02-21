@@ -45,7 +45,10 @@ rm -rf "$BUILD_DIR" "$BUILD_TAR" "$BUILD_PHAR" &&
 echo
 
 echo "==> Creating $BUILD_TAR"
-tar -czvf "$BUILD_TAR" --strip-components 1 "$BUILD_DIR"
+tar -czvf "$BUILD_TAR" -C "${BUILD_DIR%/*}" "${BUILD_DIR##*/}" &&
+    { [[ -z $VERSION ]] ||
+        { rm -fv "${BUILD_TAR%-"$VERSION".tar.gz}.tar.gz" &&
+            ln -sv "${BUILD_TAR##*/}" "${BUILD_TAR%-"$VERSION".tar.gz}.tar.gz"; }; }
 echo
 echo "==> Successfully created $BUILD_TAR"
 echo
@@ -53,4 +56,4 @@ echo
 php -d phar.readonly=off vendor/bin/phar-composer build "$BUILD_DIR/" "$BUILD_PHAR" &&
     { [[ -z $VERSION ]] ||
         { rm -fv "${BUILD_PHAR%-"$VERSION".phar}.phar" &&
-            cp -av "$BUILD_PHAR" "${BUILD_PHAR%-"$VERSION".phar}.phar"; }; }
+            ln -sv "${BUILD_PHAR##*/}" "${BUILD_PHAR%-"$VERSION".phar}.phar"; }; }
