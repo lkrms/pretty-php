@@ -10,6 +10,10 @@ use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
+/**
+ * Preserve newlines adjacent to operators, delimiters and comments
+ *
+ */
 class PreserveNewlines implements TokenRule
 {
     use TokenRuleTrait;
