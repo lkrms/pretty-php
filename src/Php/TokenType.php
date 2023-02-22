@@ -223,8 +223,18 @@ final class TokenType
         ...self::DECLARATION,
     ];
 
-    public const DECLARATION_CONDENSE = [
+    public const DECLARATION_UNIQUE = [
+        T_CLASS,
         T_CONST,
+        T_ENUM,
+        T_FUNCTION,
+        T_INTERFACE,
+        T_NAMESPACE,
+        T_TRAIT,
+        T_USE,
+    ];
+
+    public const DECLARATION_CONDENSE = [
         T_USE,
     ];
 

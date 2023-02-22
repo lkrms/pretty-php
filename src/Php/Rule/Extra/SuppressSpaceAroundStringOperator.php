@@ -8,7 +8,11 @@ use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
-class SuppressSpaceAroundStringOperator implements TokenRule
+/**
+ * Suppress horizontal space before and after string concatenation operators
+ *
+ */
+final class SuppressSpaceAroundStringOperator implements TokenRule
 {
     use TokenRuleTrait;
 

@@ -10,6 +10,7 @@ use Lkrms\Pretty\WhitespaceType;
 use PhpToken;
 use RuntimeException;
 use Throwable;
+
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
 class Token extends PhpToken implements JsonSerializable
@@ -134,6 +135,11 @@ class Token extends PhpToken implements JsonSerializable
      * @var Token|null
      */
     public $EndExpression;
+
+    /**
+     * @var bool
+     */
+    public $IsTernaryOperator = false;
 
     /**
      * @var array<array<string,mixed>>
@@ -522,14 +528,17 @@ class Token extends PhpToken implements JsonSerializable
 
     private function load(): void
     {
-        $current = $this;
-        do {
-            if ($current->IsCode) {
-                $current->maybeApplyStatement();
-                $current->maybeApplyExpression();
-            }
-            $current = $current->_next;
-        } while ($current);
+        $callbacks = [
+            fn(Token $t) => !$t->IsCode || $t->maybeApplyStatement(),
+            fn(Token $t) => !$t->IsCode || $t->hydrate(),
+        ];
+        foreach ($callbacks as $callback) {
+            $current = $this;
+            do {
+                $callback($current);
+                $current = $current->_next;
+            } while ($current);
+        }
     }
 
     /**
@@ -605,6 +614,35 @@ class Token extends PhpToken implements JsonSerializable
             }
             $current = $current->_nextSibling;
         } while ($current && $current->EndStatement === $this);
+    }
+
+    private function hydrate(): void
+    {
+        switch ($this->id) {
+            case T['?']:
+                $current = $this;
+                while (($current = $current->_nextSibling) &&
+                        $this->EndStatement !== ($current->ClosedBy ?: $current)) {
+                    if ($current->is(T[':'])) {
+                        $this->IsTernaryOperator = true;
+                        break 2;
+                    }
+                }
+                break;
+
+            case T[':']:
+                $current = $this;
+                while (($current = $current->_prevSibling) &&
+                        $this->Statement !== $current) {
+                    if ($current->is(T['?'])) {
+                        $this->IsTernaryOperator = true;
+                        break 2;
+                    }
+                }
+                break;
+        }
+
+        $this->maybeApplyExpression();
     }
 
     /**
@@ -1465,27 +1503,9 @@ class Token extends PhpToken implements JsonSerializable
             ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE));
     }
 
-    /**
-     * @param int|string ...$except
-     */
-    public function isStatementPrecursor(bool $orNull = false, ...$except): bool
+    public function isStatementPrecursor(): bool
     {
-        if ($orNull && $this->IsNull) {
-            return true;
-        }
-        if ($except && $this->is($except)) {
-            return false;
-        }
-
-        return $this->is([T['('], T[';'], T['[']]) ||
-            $this->IsCloseTagStatementTerminator ||
-            $this->isStructuralBrace() ||
-            ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE)) ||
-            ($this->is(T[',']) &&
-                (($parent = $this->parent())->is([T['('], T['[']]) ||
-                    ($parent->is(T['{']) && (!$parent->isStructuralBrace() || $parent->prevSibling(2)->is(T_MATCH))))) ||
-            $this->startsAlternativeSyntax() ||
-            ($this->is(T[':']) && ($this->inSwitchCase() || $this->inLabel()));
+        return $this->_nextCode && $this->_nextCode->Statement === $this->_nextCode;
     }
 
     /**
@@ -1508,12 +1528,15 @@ class Token extends PhpToken implements JsonSerializable
     {
         if ($this->is(T[':'])) {
             return $this->prevCode()->is(T_STRING) &&
-                $this->prevCode(2)->isStatementPrecursor(true);
+                (($prev = $this->prevCode(2))->is([T['('], T[';'], T_CLOSE_TAG]) ||
+                    $prev->isStructuralBrace() ||
+                    $prev->startsAlternativeSyntax() ||
+                    ($prev->is(T[':']) && ($prev->inSwitchCase() || $prev->inLabel())));
         }
 
-        return $this->is(T_STRING) &&
-            $this->nextCode()->is(T[':']) &&
-            $this->prevCode()->isStatementPrecursor(true);
+        return $this->_nextCode &&
+            $this->_nextCode->is(T[':']) &&
+            $this->_nextCode->inLabel();
     }
 
     public function isArrayOpenBracket(): bool
@@ -1595,36 +1618,7 @@ class Token extends PhpToken implements JsonSerializable
 
     public function isTernaryOperator(): bool
     {
-        // We can't just do this, because nullable method return types tend to
-        // be followed by unrelated colons:
-        //
-        //     return ($this->is(T['?']) && ($this->nextSiblingOf(T[':']))) ||
-        //         ($this->is(T[':']) && ($this->prevSiblingOf(T['?'])));
-        //
-        switch ($this->id) {
-            case T['?']:
-                while (!($current = ($current ?? $this)->nextSibling())->IsNull &&
-                        !$current->isStatementTerminator() &&
-                        !$current->prevCode()->isStatementTerminator()) {
-                    if ($current->is(T[':'])) {
-                        return true;
-                    }
-                }
-                break;
-
-            case T[':']:
-                $current = $this;
-                while (!($prev = $current->prevCode())->isStatementPrecursor() &&
-                        !$prev->IsNull) {
-                    $current = $current->prevSibling();
-                    if ($current->is(T['?'])) {
-                        return true;
-                    }
-                }
-                break;
-        }
-
-        return false;
+        return $this->IsTernaryOperator;
     }
 
     public function isBinaryOrTernaryOperator(): bool

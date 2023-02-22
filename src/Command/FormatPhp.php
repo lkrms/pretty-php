@@ -19,12 +19,12 @@ use Lkrms\Pretty\Php\Rule\AlignAssignments;
 use Lkrms\Pretty\Php\Rule\AlignChainedCalls;
 use Lkrms\Pretty\Php\Rule\AlignComments;
 use Lkrms\Pretty\Php\Rule\AlignLists;
+use Lkrms\Pretty\Php\Rule\BreakBeforeMultiLineList;
 use Lkrms\Pretty\Php\Rule\BreakBetweenMultiLineItems;
 use Lkrms\Pretty\Php\Rule\CommaCommaComma;
 use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterFn;
 use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterNot;
-use Lkrms\Pretty\Php\Rule\Extra\BreakBeforeMultiLineList;
 use Lkrms\Pretty\Php\Rule\Extra\SuppressSpaceAroundStringOperator;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
 use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
@@ -59,7 +59,6 @@ class FormatPhp extends CliCommand
         'align-chains'             => AlignChainedCalls::class,
         'align-lists'              => AlignLists::class,
         'indent-heredocs'          => ReindentHeredocs::class,
-        'align-assignments'        => AlignAssignments::class,
         'align-comments'           => AlignComments::class,
         'report-brackets'          => ReportUnnecessaryParentheses::class,
     ];
@@ -68,6 +67,7 @@ class FormatPhp extends CliCommand
      * @var array<string,string>
      */
     private $RuleMap = [
+        'align-assignments'  => AlignAssignments::class,
         'break-before-lists' => BreakBeforeMultiLineList::class,
         'no-concat-spaces'   => SuppressSpaceAroundStringOperator::class,
         'space-after-fn'     => AddSpaceAfterFn::class,
@@ -140,6 +140,10 @@ class FormatPhp extends CliCommand
                         --skip preserve-newlines
                     EOF),
             CliOption::build()
+                ->long('align-all')
+                ->short('a')
+                ->description('Enable all alignment rules'),
+            CliOption::build()
                 ->long('laravel')
                 ->short('l')
                 ->description('Enable Laravel-friendly rules'),
@@ -207,11 +211,13 @@ class FormatPhp extends CliCommand
         if ($this->getOptionValue('ignore-newlines')) {
             $skip[] = 'preserve-newlines';
         }
+        if ($this->getOptionValue('align-all')) {
+            $rules[] = 'align-assignments';
+        }
         if ($this->getOptionValue('laravel')) {
             $skip[]  = 'one-line-arguments';
             $skip[]  = 'break-between-items';
             $skip[]  = 'align-chains';
-            $skip[]  = 'align-assignments';
             $rules[] = 'no-concat-spaces';
             $rules[] = 'space-after-fn';
             $rules[] = 'space-after-not';

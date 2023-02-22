@@ -7,6 +7,7 @@ use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
+
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
 class PlaceComments implements TokenRule
@@ -58,8 +59,15 @@ class PlaceComments implements TokenRule
 
             return;
         }
-        $token->WhitespaceBefore |= WhitespaceType::SPACE
-            | ($token->hasNewline() ? WhitespaceType::BLANK : WhitespaceType::LINE);
+        $type = WhitespaceType::LINE;
+        if ($token->hasNewline() &&
+            !($prev = $token->prev())->isNull() &&
+            !($prev->is(T[',']) ||
+                ($prev->is([T[':'], T[';']]) &&
+                    ($prev->inSwitchCase() || $prev->inLabel())))) {
+            $type = WhitespaceType::BLANK;
+        }
+        $token->WhitespaceBefore |= WhitespaceType::SPACE | $type;
         // PHPDoc comments immediately before namespace declarations are
         // generally associated with the file, not the namespace
         if ($token->next()->isDeclaration(T_NAMESPACE)) {
