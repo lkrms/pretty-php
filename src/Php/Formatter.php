@@ -16,6 +16,7 @@ use Lkrms\Pretty\Php\Filter\NormaliseStrings;
 use Lkrms\Pretty\Php\Filter\RemoveCommentTokens;
 use Lkrms\Pretty\Php\Filter\RemoveEmptyTokens;
 use Lkrms\Pretty\Php\Filter\RemoveWhitespaceTokens;
+use Lkrms\Pretty\Php\Filter\SortImports;
 use Lkrms\Pretty\Php\Filter\StripHeredocIndents;
 use Lkrms\Pretty\Php\Filter\TrimInsideCasts;
 use Lkrms\Pretty\Php\Filter\TrimOpenTags;
@@ -25,7 +26,6 @@ use Lkrms\Pretty\Php\Rule\AddEssentialWhitespace;
 use Lkrms\Pretty\Php\Rule\AddHangingIndentation;
 use Lkrms\Pretty\Php\Rule\AddIndentation;
 use Lkrms\Pretty\Php\Rule\AddStandardWhitespace;
-use Lkrms\Pretty\Php\Rule\AlignAssignments;
 use Lkrms\Pretty\Php\Rule\AlignChainedCalls;
 use Lkrms\Pretty\Php\Rule\AlignComments;
 use Lkrms\Pretty\Php\Rule\AlignLists;
@@ -204,7 +204,6 @@ final class Formatter implements IReadable
         AddEssentialWhitespace::class,
 
         // BlockRules
-        AlignAssignments::class,
         AlignComments::class,
 
         // Read-only rules
@@ -260,6 +259,7 @@ final class Formatter implements IReadable
             new RemoveWhitespaceTokens(),
             new StripHeredocIndents(),
             new TrimInsideCasts(),
+            new SortImports(),
         ];
 
         $this->ComparisonFilters = [

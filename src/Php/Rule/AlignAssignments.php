@@ -7,6 +7,11 @@ use Lkrms\Pretty\Php\Contract\BlockRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 
+/**
+ * Align consecutive assignment operators and double arrows when they have the
+ * same context
+ *
+ */
 final class AlignAssignments implements BlockRule
 {
     use BlockRuleTrait;
@@ -33,6 +38,7 @@ final class AlignAssignments implements BlockRule
             $line   = array_shift($block);
             /** @var Token $token1 */
             $token1 = $line[0];
+            // Don't allow comments to disrupt alignment
             if (count($line) === 1 && $token1->is(TokenType::COMMENT)) {
                 continue;
             }

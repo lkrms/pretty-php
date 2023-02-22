@@ -1,6 +1,16 @@
 parameters:
 	ignoreErrors:
 		-
+			message: "#^Variable \\$firstKey might not be defined\\.$#"
+			count: 1
+			path: src/Php/Filter/SortImports.php
+
+		-
+			message: "#^Variable \\$nextLine might not be defined\\.$#"
+			count: 2
+			path: src/Php/Filter/SortImports.php
+
+		-
 			message: "#^Lkrms\\\\Pretty\\\\Php\\\\TokenCollection does not accept Lkrms\\\\Pretty\\\\Php\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Php/Rule/AlignLists.php

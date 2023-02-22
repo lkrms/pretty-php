@@ -7,7 +7,11 @@ use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
 
-class AddSpaceAfterFn implements TokenRule
+/**
+ * Add a space after 'fn' in arrow functions
+ *
+ */
+final class AddSpaceAfterFn implements TokenRule
 {
     use TokenRuleTrait;
 
@@ -20,8 +24,7 @@ class AddSpaceAfterFn implements TokenRule
 
     public function processToken(Token $token): void
     {
-        $token->WhitespaceBefore  |= WhitespaceType::SPACE;
-        $token->WhitespaceAfter   |= WhitespaceType::SPACE;
-        $token->WhitespaceMaskNext = WhitespaceType::SPACE;
+        $token->WhitespaceAfter    |= WhitespaceType::SPACE;
+        $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
     }
 }

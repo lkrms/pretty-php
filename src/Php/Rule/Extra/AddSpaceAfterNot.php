@@ -6,9 +6,14 @@ use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
+
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
-class AddSpaceAfterNot implements TokenRule
+/**
+ * Add a space after '!' unless it appears before another '!'
+ *
+ */
+final class AddSpaceAfterNot implements TokenRule
 {
     use TokenRuleTrait;
 
@@ -21,12 +26,11 @@ class AddSpaceAfterNot implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->nextCode()->isUnaryOperator()) {
+        if ($token->next()->is(T['!'])) {
             return;
         }
 
-        $token->WhitespaceBefore  |= WhitespaceType::SPACE;
-        $token->WhitespaceAfter   |= WhitespaceType::SPACE;
-        $token->WhitespaceMaskNext = WhitespaceType::SPACE;
+        $token->WhitespaceAfter    |= WhitespaceType::SPACE;
+        $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
     }
 }

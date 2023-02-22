@@ -3,8 +3,8 @@
 namespace Lkrms\Pretty\Tests\Php\Rule\Extra;
 
 use Lkrms\Pretty\Php\Rule\AlignLists;
+use Lkrms\Pretty\Php\Rule\BreakBeforeMultiLineList;
 use Lkrms\Pretty\Php\Rule\BreakBetweenMultiLineItems;
-use Lkrms\Pretty\Php\Rule\Extra\BreakBeforeMultiLineList;
 use Lkrms\Pretty\Tests\Php\TestCase;
 
 final class BreakBeforeMultiLineListTest extends TestCase

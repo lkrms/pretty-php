@@ -8,7 +8,7 @@
   - Resolve expensive values once per `Token`, before applying rules:
     - [x] Statements
     - [x] Expressions
-    - [ ] `isTernaryOperator()`
+    - [x] `isTernaryOperator()`
     - [ ] Others?
   - [ ] Use `public` properties instead of method calls where possible
 - [ ] Reimplement `Token::$Log` using object comparison after deprecating the (slow) `__get()` / `__set()` method
@@ -75,7 +75,7 @@
 
 - [ ] Allow anonymous `function` arguments to break over multiple lines
 - [ ] Match indentation of `?>` tags with their respective `<?php` tags
-- [ ] Sort `use <FQCN>` blocks
+- [x] Sort `use <FQCN>` blocks
 - [ ] Extend one-line statement checks to the end of multi-block control structures, e.g.
 
       ```php
@@ -103,19 +103,20 @@
 
 ## Review rules
 
-- [ ] AddBlankLineBeforeDeclaration
+- [x] AddBlankLineBeforeDeclaration
 - [ ] AddBlankLineBeforeReturn
 - [ ] AddEssentialWhitespace
 - [ ] AddHangingIndentation
 - [ ] AddIndentation
 - [x] AddStandardWhitespace
-- [ ] AlignAssignments
+- [x] AlignAssignments
 - [ ] AlignChainedCalls
 - [ ] AlignComments
 - [ ] AlignLists
 - [ ] BracePosition
 - [x] BreakAfterSeparators
 - [x] BreakBeforeControlStructureBody
+- [x] BreakBeforeMultiLineList
 - [x] BreakBetweenMultiLineItems
 - [ ] CommaCommaComma
 - [ ] DeclareArgumentsOnOneLine
@@ -131,8 +132,7 @@
 - [x] SpaceOperators
 - [ ] SwitchPosition
 - Extra
-  - [ ] AddSpaceAfterFn
-  - [ ] AddSpaceAfterNot
-  - [x] BreakBeforeMultiLineList
-  - [ ] SuppressSpaceAroundStringOperator
+  - [x] AddSpaceAfterFn
+  - [x] AddSpaceAfterNot
+  - [x] SuppressSpaceAroundStringOperator
 

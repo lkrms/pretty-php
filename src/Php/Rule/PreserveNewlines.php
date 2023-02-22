@@ -8,6 +8,7 @@ use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
+
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
 /**

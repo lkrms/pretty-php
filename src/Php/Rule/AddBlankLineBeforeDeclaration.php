@@ -7,9 +7,15 @@ use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
+
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
-class AddBlankLineBeforeDeclaration implements TokenRule
+/**
+ * Add a blank line before declarations that span multiple lines, with some
+ * exceptions
+ *
+ */
+final class AddBlankLineBeforeDeclaration implements TokenRule
 {
     use TokenRuleTrait;
 
@@ -41,24 +47,33 @@ class AddBlankLineBeforeDeclaration implements TokenRule
             return;
         }
         $parts = $start->withNextSiblingsWhile(...TokenType::DECLARATION_PART);
-        /** @var Token $last */
         $last  = $parts->last();
+        // Leave anonymous and arrow functions alone
         if ($last->is([T_FN, T_FUNCTION]) && $last->nextCode()->is(T['('])) {
             return;
         }
 
-        // If the same DECLARATION_CONDENSE token types appear in this statement
-        // as in the last one, don't add a blank line between them
-        if (($types = $parts->getAnyOf(...TokenType::DECLARATION_CONDENSE)->getTypes()) &&
-            ($prev = $start->prevCode()->startOfStatement())->declarationParts()->hasOneOf(...$types) &&
-            // `use` statements are always condensed, otherwise this and the
-            // previous statement can't have newlines
-            ($parts->hasOneOf(T_USE) ||
-                (!$start->collect($start->endOfStatement())->hasOuterNewline() &&
-                    !$prev->collect($start->prev())->hasOuterNewline()))) {
-            $start->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
+        // If the same DECLARATION_UNIQUE tokens appear in consecutive one-line
+        // statements, don't force a blank line between them
+        $types = $parts->getAnyOf(...TokenType::DECLARATION_UNIQUE)
+                       ->getTypes();
+        $prev      = $start->prevCode()->startOfStatement();
+        $prevParts = $prev->withNextSiblingsWhile(...TokenType::DECLARATION_PART);
+        $prevTypes = $prevParts->getAnyOf(...TokenType::DECLARATION_UNIQUE)
+                               ->getTypes();
 
-            return;
+        if ($types === $prevTypes) {
+            // Suppress blank lines between DECLARATION_CONDENSE statements,
+            // multi-line or otherwise
+            if ($parts->hasOneOf(...TokenType::DECLARATION_CONDENSE)) {
+                $start->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
+
+                return;
+            }
+            if (!$start->collect($start->endOfStatement())->hasOuterNewline() &&
+                    !$prev->collect($start->prev())->hasOuterNewline()) {
+                return;
+            }
         }
 
         $start->WhitespaceBefore |= WhitespaceType::BLANK;

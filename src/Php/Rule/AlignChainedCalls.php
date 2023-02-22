@@ -7,6 +7,7 @@ use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenCollection;
 use Lkrms\Pretty\WhitespaceType;
+
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
 class AlignChainedCalls implements TokenRule
