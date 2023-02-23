@@ -142,6 +142,16 @@ class Token extends PhpToken implements JsonSerializable
     public $IsTernaryOperator = false;
 
     /**
+     * @var Token|null
+     */
+    public $TernaryOperator1;
+
+    /**
+     * @var Token|null
+     */
+    public $TernaryOperator2;
+
+    /**
      * @var array<array<string,mixed>>
      */
     public $Log = [];
@@ -316,9 +326,9 @@ class Token extends PhpToken implements JsonSerializable
     }
 
     /**
-     * @template T of Token
-     * @param T[] $tokens
-     * @return T[]
+     * @template T0 of Token
+     * @param T0[] $tokens
+     * @return T0[]
      */
     public static function filterTokens(array $tokens, TokenFilter ...$filters): array
     {
@@ -526,16 +536,16 @@ class Token extends PhpToken implements JsonSerializable
         }
     }
 
-    private function load(): void
+    protected function load(): void
     {
-        $callbacks = [
+        $passes = [
             fn(Token $t) => !$t->IsCode || $t->maybeApplyStatement(),
-            fn(Token $t) => !$t->IsCode || $t->hydrate(),
+            fn(Token $t) => !$t->IsCode || $t->maybeApplyExpression(),
         ];
-        foreach ($callbacks as $callback) {
+        foreach ($passes as $pass) {
             $current = $this;
             do {
-                $callback($current);
+                $pass($current);
                 $current = $current->_next;
             } while ($current);
         }
@@ -548,11 +558,22 @@ class Token extends PhpToken implements JsonSerializable
      */
     private function maybeApplyStatement(): void
     {
-        if ($this->is(T[';']) ||
-                $this->IsCloseTagStatementTerminator ||
-                ($this->is(T['}']) && $this->isStructuralBrace()) ||
+        if ((($this->is(T[';']) ||
+                            $this->IsCloseTagStatementTerminator ||
+                            ($this->is(T['}']) && $this->isStructuralBrace())) &&
+            !$this->nextCode()->is([T_ELSEIF, T_ELSE]) &&
+            !($this->nextCode()->is(T_WHILE) &&
+                    $this->prevSiblingsUntil(
+                        fn(Token $t, TokenCollection $tc): bool =>
+                            $t->is([T[';'], T_CLOSE_TAG]) ||
+                                ($t->is(T[':']) && ($t->inSwitchCase() || $t->inLabel() || !$t->prevSiblingOf(T[':'], T[';'], T['?'], T_CLOSE_TAG)->is([T['?'], T[':']]))) ||
+                                ($t->is(T['?']) && count($tc->filter(fn(Token $t) => $t->is(T[':']))) - count($tc->filter(fn(Token $t) => $t->is(T['?']))) <= 0)
+                    )->hasOneOf(T_DO))) ||
                 $this->startsAlternativeSyntax() ||
                 ($this->is(T[':']) && ($this->inSwitchCase() || $this->inLabel()))) {
+            $this->applyStatement();
+        } elseif ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE)) {
+            $this->_prevCode->applyStatement();
             $this->applyStatement();
         } elseif ($this->is([T[')'], T[']']])) {
             $this->_prevCode->applyStatement();
@@ -571,9 +592,6 @@ class Token extends PhpToken implements JsonSerializable
                     ($parent->prevSibling(2)->is(T_MATCH) || !$parent->isStructuralBrace()))) {
                 $this->applyStatement();
             }
-        } elseif ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE)) {
-            $this->_prevCode->applyStatement();
-            $this->applyStatement();
         }
     }
 
@@ -616,41 +634,34 @@ class Token extends PhpToken implements JsonSerializable
         } while ($current && $current->EndStatement === $this);
     }
 
-    private function hydrate(): void
-    {
-        switch ($this->id) {
-            case T['?']:
-                $current = $this;
-                while (($current = $current->_nextSibling) &&
-                        $this->EndStatement !== ($current->ClosedBy ?: $current)) {
-                    if ($current->is(T[':'])) {
-                        $this->IsTernaryOperator = true;
-                        break 2;
-                    }
-                }
-                break;
-
-            case T[':']:
-                $current = $this;
-                while (($current = $current->_prevSibling) &&
-                        $this->Statement !== $current) {
-                    if ($current->is(T['?'])) {
-                        $this->IsTernaryOperator = true;
-                        break 2;
-                    }
-                }
-                break;
-        }
-
-        $this->maybeApplyExpression();
-    }
-
     /**
      * Similar to maybeApplyStatement() (but not the same)
      *
      */
     private function maybeApplyExpression(): void
     {
+        if ($this->is(T['?'])) {
+            $current = $this;
+            $count   = 0;
+            while (($current = $current->_nextSibling) &&
+                    $this->EndStatement !== ($current->ClosedBy ?: $current)) {
+                if ($current->IsTernaryOperator) {
+                    continue;
+                }
+                if ($current->is(T['?'])) {
+                    $count++;
+                    continue;
+                }
+                if (!$current->is(T[':']) || $count--) {
+                    continue;
+                }
+                $current->IsTernaryOperator = $this->IsTernaryOperator = true;
+                $current->TernaryOperator1  = $this->TernaryOperator1 = $this;
+                $current->TernaryOperator2  = $this->TernaryOperator2 = $current;
+                break;
+            }
+        }
+
         if (($this->is(T['}']) && $this->isStructuralBrace()) ||
                 ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE))) {
             $this->_prevCode->applyExpression();
@@ -720,14 +731,18 @@ class Token extends PhpToken implements JsonSerializable
      */
     public function jsonSerialize(): array
     {
-        $a = get_object_vars($this);
+        $a                 = get_object_vars($this);
+        $_prevSibling      = (string) $a['_prevSibling'];
+        $_nextSibling      = (string) $a['_nextSibling'];
+        $a['_prevSibling'] = &$_prevSibling;
+        $a['_nextSibling'] = &$_nextSibling;
         unset(
             $a['_prev'],
             $a['_next'],
             $a['_prevCode'],
             $a['_nextCode'],
-            $a['_prevSibling'],
-            $a['_nextSibling'],
+            //$a['_prevSibling'],
+            //$a['_nextSibling'],
             $a['Index'],
             $a['BracketStack'],
             $a['OpenTag'],
@@ -754,6 +769,9 @@ class Token extends PhpToken implements JsonSerializable
         $a['id']               = $this->getTokenName();
         $a['WhitespaceBefore'] = WhitespaceType::toWhitespace($a['WhitespaceBefore']);
         $a['WhitespaceAfter']  = WhitespaceType::toWhitespace($a['WhitespaceAfter']);
+        if ($this->Expression === $this || $this->Expression === false) {
+            $a['PragmaticEndExpression'] = $this->pragmaticEndOfExpression();
+        }
         if (empty($a['Log'])) {
             unset($a['Log']);
         } else {
@@ -1137,6 +1155,18 @@ class Token extends PhpToken implements JsonSerializable
         return $tokens;
     }
 
+    public function prevSiblingsUntil(callable $callback): TokenCollection
+    {
+        $tokens  = new TokenCollection();
+        $current = $this;
+        while ($current->_prevSibling && !$callback($current->_prevSibling, $tokens)) {
+            $current  = $current->_prevSibling;
+            $tokens[] = $current;
+        }
+
+        return $tokens;
+    }
+
     public function parent(): Token
     {
         $current = $this->OpenedBy ?: $this;
@@ -1276,30 +1306,46 @@ class Token extends PhpToken implements JsonSerializable
      */
     public function pragmaticEndOfExpression(): Token
     {
-        $current = $this;
-        // If the token is an expression terminator, the most pragmatic thing to
-        // do is to return the end of statement
-        if ($current->Expression === false) {
-            $current = $current->EndStatement ?: $current;
-
-            return $current->withoutTerminator();
+        // If the token is a ternary operator, return the last token in the
+        // third expression
+        if ($this->IsTernaryOperator) {
+            return $this->TernaryOperator2->EndExpression ?: $this;
         }
-        $current = $current->OpenedBy ?: $current;
-        // If the token is between `?` and `:` in ternary expression, return the
-        // last token before `:`
-        if (!$current->isTernaryOperator() &&
-                ($prev = $current->Expression->_prevCode ?? null) &&
+        // For other expression terminators, the most pragmatic thing to return
+        // is the end of the statement
+        if ($this->Expression === false) {
+            $end = $this->EndStatement ?: $this;
+
+            return $end === $this
+                ? $end
+                : $end->withoutTerminator();
+        }
+        // If the token is between `?` and `:` in a ternary expression, return
+        // the last token before `:`
+        $current = $this->OpenedBy ?: $this;
+        if (($prev = $current->Expression->_prevCode ?? null) &&
                 $prev->is(T['?']) &&
-                $prev->isTernaryOperator()) {
+                $prev->IsTernaryOperator) {
             return $prev->_nextCode->EndExpression;
         }
+        $inCase = $current->inSwitchCase();
         while ($current->EndExpression) {
             $current    = $current->EndExpression;
-            $terminator = $current->_nextSibling;
+            $terminator = ($current->_nextSibling->Expression ?? null) === false
+                ? $current->_nextSibling
+                : $current;
             if (!($terminator->_nextSibling ?? null) ||
-                (!$terminator->is([T_DOUBLE_ARROW, ...TokenType::OPERATOR_ASSIGNMENT]) &&
-                    // TODO: continue until the next `case` or `default`
-                    !$terminator->inSwitchCase() &&
+                (!$terminator->_nextSibling->is([T_ELSEIF, T_ELSE]) &&
+                    !($terminator->_nextSibling->is(T_WHILE) &&
+                        $terminator->prevSiblingsUntil(
+                            fn(Token $t, TokenCollection $tc): bool =>
+                                $t->is([T[';'], T_CLOSE_TAG]) ||
+                                    ($t->is(T[':']) && ($t->inSwitchCase() || $t->inLabel() || !$t->prevSiblingOf(T[':'], T[';'], T['?'], T_CLOSE_TAG)->is([T['?'], T[':']]))) ||
+                                    ($t->is(T['?']) && count($tc->filter(fn(Token $t) => $t->is(T[':']))) - count($tc->filter(fn(Token $t) => $t->is(T['?']))) <= 0)
+                        )->hasOneOf(T_DO)) &&
+                    !$terminator->is([T_DOUBLE_ARROW, ...TokenType::OPERATOR_ASSIGNMENT]) &&
+                    !($inCase &&
+                        !$terminator->_nextSibling->is([T_CASE, T_DEFAULT])) &&
                     !$terminator->isTernaryOperator())) {
                 break;
             }

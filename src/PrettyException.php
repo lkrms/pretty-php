@@ -40,7 +40,7 @@ class PrettyException extends Exception
     {
         return [
             'output' => $this->Output,
-            'tokens' => json_encode($this->Tokens, JSON_PRETTY_PRINT),
+            'tokens' => json_encode($this->Tokens, JSON_PRETTY_PRINT | JSON_FORCE_OBJECT),
             'data'   => json_encode($this->Data, JSON_PRETTY_PRINT),
         ];
     }

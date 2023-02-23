@@ -59,9 +59,27 @@ final class BreakBeforeControlStructureBody implements TokenRule
         $body->WhitespaceMaskPrev         &= ~WhitespaceType::BLANK;
         $body->prev()->WhitespaceMaskNext |= WhitespaceType::LINE;
 
-        $body->collect($end = $body->endOfStatement())
+        $continues = true;
+        if ($token->is(T_DO)) {
+            $end = $body->nextSiblingOf(T_WHILE)->prevCode();
+        } elseif ($token->is([T_IF, T_ELSEIF])) {
+            $end = $body->nextSiblingOf(T_ELSEIF, T_ELSE)->prevCode();
+        }
+        if (!($end ?? null) || $end->isNull()) {
+            $end       = $body->endOfStatement();
+            $continues = false;
+        }
+
+        $body->collect($end)
              // Use PreIndent because AddIndentation clobbers Indent
              ->forEach(fn(Token $t) => $t->PreIndent++);
+
+        $end->WhitespaceAfter    |= WhitespaceType::LINE | WhitespaceType::SPACE;
+        $end->WhitespaceMaskNext |= WhitespaceType::LINE;
+        if ($continues) {
+            $end->WhitespaceMaskNext         &= ~WhitespaceType::BLANK;
+            $end->next()->WhitespaceMaskPrev |= WhitespaceType::LINE;
+        }
 
         $this->Formatter->reportProblem('Braces not used in %s control structure',
                                         $token,

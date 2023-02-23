@@ -8,7 +8,7 @@ use Lkrms\Pretty\Php\NullToken;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 
-use const Lkrms\Pretty\Php\T_ID_MAP;
+use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
 /**
  * Sort consecutive alias/import statements
@@ -100,7 +100,6 @@ final class SortImports implements TokenFilter
         $current    = [];
         $terminated = false;
         $terminator = null;
-        $next       = null;
         foreach ($this->Tokens as $i => $token) {
             if ($current) {
                 if ($terminated) {
@@ -109,13 +108,12 @@ final class SortImports implements TokenFilter
                         continue;
                     } else {
                         $sort[]     = $current;
-                        $next       = $token;
                         $current    = [];
                         $terminated = false;
                     }
                 } else {
                     $current[$i] = $token;
-                    if ($token->is(T_ID_MAP[';'])) {
+                    if ($token->is(T[';'])) {
                         $terminated = true;
                         $terminator = $token;
                     }
@@ -129,7 +127,7 @@ final class SortImports implements TokenFilter
 
                 if (count($sort) > 1) {
                     /** @var Token $terminator */
-                    $this->sortImports($this->Tokens, $sort, $terminator, $next);
+                    $this->sortImports($this->Tokens, $sort, $terminator);
                 }
 
                 $sort = [];
@@ -140,8 +138,8 @@ final class SortImports implements TokenFilter
                 // - `class <class> { use <trait> ...`
                 // - `function() use (<variable> ...`
                 $prev = $this->prevCode($i, $prev_i);
-                if ($prev->is(T_ID_MAP[')']) ||
-                    ($prev->is(T_ID_MAP['{']) &&
+                if ($prev->is(T[')']) ||
+                    ($prev->is(T['{']) &&
                         !$this->prevDeclarationOf($prev_i, T_CLASS, T_TRAIT)->isNull())) {
                     continue;
                 }
@@ -156,12 +154,12 @@ final class SortImports implements TokenFilter
      * @param Token[] $tokens
      * @param non-empty-array<Token[]> $sort
      */
-    private function sortImports(array &$tokens, array $sort, Token $terminator, Token $next): void
+    private function sortImports(array &$tokens, array $sort, Token $terminator): void
     {
         // Remove tokens after the last ';' unless they were on the same line
         $last = array_pop($sort);
         while (end($last)->line > $terminator->line) {
-            $next = array_pop($last);
+            array_pop($last);
         }
         $sort[] = $last;
 
@@ -180,7 +178,7 @@ final class SortImports implements TokenFilter
             $prev   = $import;
             $prev_i = $i;
         }
-        $lineDeltas[$prev_i] = $next->line - reset($prev)->line;
+        $lineDeltas[$prev_i] = $terminator->line - reset($prev)->line;
 
         // Sort the alias/import statements
         uasort(
@@ -190,7 +188,7 @@ final class SortImports implements TokenFilter
                 $b = $this->sortableImport(array_values($b));
 
                 return $a[0] <=> $b[0]
-                    ?: $a[1] <=> $b[1];
+                    ?: strcasecmp($a[1], $b[1]);
             }
         );
 
