@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Pretty\Tests\Php\Rule\Extra;
+namespace Lkrms\Pretty\Tests\Php\Rule;
 
 use Lkrms\Pretty\Php\Rule\AlignLists;
 use Lkrms\Pretty\Php\Rule\BreakBeforeMultiLineList;

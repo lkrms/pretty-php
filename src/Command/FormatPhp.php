@@ -335,7 +335,7 @@ class FormatPhp extends CliCommand
                         $file,
                         is_string($contents)
                             ? $contents
-                            : json_encode($contents, JSON_PRETTY_PRINT)
+                            : json_encode($contents, JSON_PRETTY_PRINT | JSON_FORCE_OBJECT)
                     );
                 }
             }
