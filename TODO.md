@@ -76,7 +76,7 @@
 - [ ] Allow anonymous `function` arguments to break over multiple lines
 - [ ] Match indentation of `?>` tags with their respective `<?php` tags
 - [x] Sort `use <FQCN>` blocks
-- [ ] Extend one-line statement checks to the end of multi-block control structures, e.g.
+- [x] Extend one-line statement checks to the end of multi-block control structures, e.g.
 
       ```php
       // No newline after `c();`
