@@ -39,7 +39,6 @@ use Lkrms\Pretty\Php\Rule\MatchPosition;
 use Lkrms\Pretty\Php\Rule\PlaceAttributes;
 use Lkrms\Pretty\Php\Rule\PlaceComments;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
-use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
 use Lkrms\Pretty\Php\Rule\ProtectStrings;
 use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
 use Lkrms\Pretty\Php\Rule\ReportUnnecessaryParentheses;
@@ -145,7 +144,6 @@ final class Formatter implements IReadable
                                   // `WhitespaceAfter`(+SPACE|=NONE)
 
         CommaCommaComma::class,
-        PreserveOneLineStatements::class,
         PlaceComments::class,
         PreserveNewlines::class,             // Must be after PlaceComments
         DeclareArgumentsOnOneLine::class,

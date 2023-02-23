@@ -51,7 +51,6 @@ class FormatPhp extends CliCommand
         'space-around-operators'   => SpaceOperators::class,
         'space-after-commas'       => CommaCommaComma::class,
         'preserve-newlines'        => PreserveNewlines::class,
-        'preserve-one-line'        => PreserveOneLineStatements::class,
         'one-line-arguments'       => DeclareArgumentsOnOneLine::class,
         'blank-before-return'      => AddBlankLineBeforeReturn::class,
         'blank-before-declaration' => AddBlankLineBeforeDeclaration::class,
@@ -70,6 +69,7 @@ class FormatPhp extends CliCommand
         'align-assignments'  => AlignAssignments::class,
         'break-before-lists' => BreakBeforeMultiLineList::class,
         'no-concat-spaces'   => SuppressSpaceAroundStringOperator::class,
+        'preserve-one-line'  => PreserveOneLineStatements::class,
         'space-after-fn'     => AddSpaceAfterFn::class,
         'space-after-not'    => AddSpaceAfterNot::class,
     ];

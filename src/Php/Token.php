@@ -743,7 +743,7 @@ class Token extends PhpToken implements JsonSerializable
             $a['_nextCode'],
             //$a['_prevSibling'],
             //$a['_nextSibling'],
-            $a['Index'],
+            //$a['Index'],
             $a['BracketStack'],
             $a['OpenTag'],
             $a['CloseTag'],
