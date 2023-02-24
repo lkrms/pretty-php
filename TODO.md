@@ -124,7 +124,7 @@
 - [ ] PlaceAttributes
 - [ ] PlaceComments
 - [ ] PreserveNewlines
-- [ ] PreserveOneLineStatements
+- [x] PreserveOneLineStatements
 - [x] ProtectStrings
 - [x] ReindentHeredocs
 - [ ] ReportUnnecessaryParentheses
