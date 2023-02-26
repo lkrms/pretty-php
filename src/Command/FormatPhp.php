@@ -121,7 +121,9 @@ class FormatPhp extends CliCommand
                 ->description('Skip one or more rules')
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys($this->SkipMap))
-                ->multipleAllowed(),
+                ->multipleAllowed()
+                ->envVariable('PRETTY_PHP_SKIP')
+                ->keepEnv(),
             CliOption::build()
                 ->long('rule')
                 ->short('r')
@@ -129,7 +131,9 @@ class FormatPhp extends CliCommand
                 ->description('Add one or more non-standard rules')
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys($this->RuleMap))
-                ->multipleAllowed(),
+                ->multipleAllowed()
+                ->envVariable('PRETTY_PHP_RULE')
+                ->keepEnv(),
             CliOption::build()
                 ->long('ignore-newlines')
                 ->short('N')
