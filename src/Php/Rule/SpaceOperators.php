@@ -85,8 +85,9 @@ final class SpaceOperators implements TokenRule
 
         // Suppress whitespace after unary operators
         if ($token->isUnaryOperator() &&
-                $token->next()->isCode() &&
-                !$token->nextCode()->isOperator()) {
+            $token->next()->isCode() &&
+            (!$token->nextCode()->isOperator() ||
+                $token->nextCode()->isUnaryOperator())) {
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
 
             return;

@@ -220,7 +220,7 @@ class FormatPhp extends CliCommand
                 ->valueName('DIR')
                 ->description('Create debug output in DIR')
                 ->optionType(CliOptionType::VALUE_OPTIONAL)
-                ->defaultValue($this->app()->TempPath . '/debug'),
+                ->defaultValue($this->app()->getTempPath() . '/debug'),
             CliOption::build()
                 ->long('verbose')
                 ->short('v')

@@ -27,24 +27,32 @@ final class TokenType
         T_END_HEREDOC,
     ];
 
-    public const PRESERVE_NEWLINE_AFTER = [
-        T['('],
+    public const PRESERVE_BLANK_AFTER = [
         T[','],
         T[':'],
         T[';'],
-        T['['],
-        T['{'],
         T['}'],
         T_OPEN_TAG,
         T_OPEN_TAG_WITH_ECHO,
+        ...self::COMMENT,
+    ];
+
+    public const PRESERVE_NEWLINE_AFTER = [
+        T['('],
+        T['['],
+        T['{'],
         T_RETURN,
         T_YIELD,
         T_YIELD_FROM,
-        ...self::COMMENT,
+        ...self::PRESERVE_BLANK_AFTER,
         ...self::OPERATOR_ASSIGNMENT,
         ...self::OPERATOR_COMPARISON_EXCEPT_COALESCE,
         ...self::OPERATOR_DOUBLE_ARROW,
         ...self::OPERATOR_LOGICAL_EXCEPT_NOT,
+    ];
+
+    public const PRESERVE_BLANK_BEFORE = [
+        T_CLOSE_TAG,
     ];
 
     public const PRESERVE_NEWLINE_BEFORE = [
@@ -53,10 +61,10 @@ final class TokenType
         T[']'],
         T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
         T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
-        T_CLOSE_TAG,
         T_COALESCE,
         T_NULLSAFE_OBJECT_OPERATOR,
         T_OBJECT_OPERATOR,
+        ...self::PRESERVE_BLANK_BEFORE,
         ...self::OPERATOR_ARITHMETIC,
         ...self::OPERATOR_BITWISE,
         ...self::OPERATOR_STRING,
