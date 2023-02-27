@@ -2,6 +2,7 @@
 
 namespace Lkrms\Pretty\Command;
 
+use FilesystemIterator as FS;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Cli\Concept\CliCommand;
@@ -34,10 +35,35 @@ use Lkrms\Pretty\Php\Rule\SimplifyStrings;
 use Lkrms\Pretty\Php\Rule\SpaceOperators;
 use Lkrms\Pretty\PrettyBadSyntaxException;
 use Lkrms\Pretty\PrettyException;
+use RecursiveCallbackFilterIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use RuntimeException;
+use SplFileInfo;
 use Throwable;
 
 class FormatPhp extends CliCommand
 {
+    /**
+     * @var string
+     */
+    private $Include;
+
+    /**
+     * @var string
+     */
+    private $Exclude;
+
+    /**
+     * @var bool
+     */
+    private $Verbose;
+
+    /**
+     * @var int
+     */
+    private $Quiet;
+
     /**
      * @var string|null
      */
@@ -84,15 +110,39 @@ class FormatPhp extends CliCommand
         return [
             CliOption::build()
                 ->long('file')
+                ->valueName('PATH')
                 ->description(<<<EOF
-                    One or more PHP files to format
+                    Files and directories to format
 
-                    If no files are named on the command line, __{{command}}__
-                    reads the standard input and writes formatted code to the
-                    standard output.
+                    If the only path is a dash ('-'), or no paths are given,
+                    __{{command}}__ reads from the standard input and writes
+                    formatted code to the standard output.
+
+                    If PATH is a directory, __{{command}}__ searches for files
+                    to format in the directory tree below PATH.
                     EOF)
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->multipleAllowed(),
+            CliOption::build()
+                ->long('include')
+                ->short('I')
+                ->valueName('REGEX')
+                ->description(<<<EOF
+                    A regex that matches files to include when searching a PATH
+                    EOF)
+                ->optionType(CliOptionType::VALUE)
+                ->defaultValue('/\.php$/')
+                ->bindTo($this->Include),
+            CliOption::build()
+                ->long('exclude')
+                ->short('X')
+                ->valueName('REGEX')
+                ->description(<<<EOF
+                    A regex that matches files to exclude when searching a PATH
+                    EOF)
+                ->optionType(CliOptionType::VALUE)
+                ->defaultValue('/\/(\.git|\.hg|\.svn|_?build|dist|vendor)\/$/')
+                ->bindTo($this->Exclude),
             CliOption::build()
                 ->long('tab')
                 ->short('t')
@@ -122,7 +172,7 @@ class FormatPhp extends CliCommand
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys($this->SkipMap))
                 ->multipleAllowed()
-                ->envVariable('PRETTY_PHP_SKIP')
+                ->envVariable('pretty_php_skip')
                 ->keepEnv(),
             CliOption::build()
                 ->long('rule')
@@ -132,7 +182,7 @@ class FormatPhp extends CliCommand
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys($this->RuleMap))
                 ->multipleAllowed()
-                ->envVariable('PRETTY_PHP_RULE')
+                ->envVariable('pretty_php_rule')
                 ->keepEnv(),
             CliOption::build()
                 ->long('ignore-newlines')
@@ -158,7 +208,7 @@ class FormatPhp extends CliCommand
                 ->description(<<<EOF
                     Write output to FILE instead of replacing the input file
 
-                    If FILE is '-' (a single dash), __{{command}}__ writes to the
+                    If FILE is a dash ('-'), __{{command}}__ writes to the
                     standard output.
 
                     May be used once per input file.
@@ -172,10 +222,22 @@ class FormatPhp extends CliCommand
                 ->optionType(CliOptionType::VALUE_OPTIONAL)
                 ->defaultValue($this->app()->TempPath . '/debug'),
             CliOption::build()
+                ->long('verbose')
+                ->short('v')
+                ->description('Report unchanged files')
+                ->bindTo($this->Verbose),
+            CliOption::build()
                 ->long('quiet')
                 ->short('q')
-                ->description('Suppress unnecessary output (may be given multiple times)')
+                ->description(<<<EOF
+                    Only report errors
+
+                      -q = Don't report changed files  
+                     -qq = Don't report code problems  
+                    -qqq = Don't report progress
+                    EOF)
                 ->multipleAllowed()
+                ->bindTo($this->Quiet),
         ];
     }
 
@@ -211,7 +273,6 @@ class FormatPhp extends CliCommand
 
         $skip  = $this->getOptionValue('skip');
         $rules = $this->getOptionValue('rule');
-        $quiet = (int) $this->getOptionValue('quiet');
         if ($this->getOptionValue('ignore-newlines')) {
             $skip[] = 'preserve-newlines';
         }
@@ -226,21 +287,22 @@ class FormatPhp extends CliCommand
             $rules[] = 'space-after-fn';
             $rules[] = 'space-after-not';
         }
-        if ($quiet > 1) {
+        if ($this->Quiet > 1) {
             $skip[] = 'report-brackets';
         }
         $skip  = array_values(array_intersect_key($this->SkipMap, array_flip($skip)));
         $rules = array_values(array_intersect_key($this->RuleMap, array_flip($rules)));
 
-        $in  = $this->getOptionValue('file');
+        $in  = $this->expandPaths($this->getOptionValue('file'), $directoryCount);
         $out = $this->getOptionValue('output');
         if (!$in && stream_isatty(STDIN)) {
             throw new CliArgumentsInvalidException('FILE required when input is a TTY');
         } elseif (!$in || $in === ['-']) {
             $in  = ['php://stdin'];
             $out = ['-'];
-        } elseif ($out && count($out) !== count($in) && $out !== ['-']) {
-            throw new CliArgumentsInvalidException('--output is required once per input file');
+        } elseif ($out && $out !== ['-'] && ($directoryCount || count($out) !== count($in))) {
+            throw new CliArgumentsInvalidException('--output is required once per input file'
+                . ($directoryCount ? ' and cannot be used with directories' : ''));
         } elseif (!$out) {
             $out = $in;
         }
@@ -260,13 +322,13 @@ class FormatPhp extends CliCommand
         $count  = count($in);
         $errors = [];
         foreach ($in as $key => $file) {
-            $quiet > 2 || Console::info(sprintf('Formatting %d of %d:', ++$i, $count), $file);
+            $this->Quiet > 2 || Console::logProgress(sprintf('Formatting %d of %d:', ++$i, $count), $file);
             $input = file_get_contents($file);
             Sys::startTimer($file, 'file');
             try {
                 $output = $formatter->format(
                     $input,
-                    $quiet,
+                    $this->Quiet,
                     $file === 'php://stdin'
                         ? null
                         : $file,
@@ -298,11 +360,11 @@ class FormatPhp extends CliCommand
             }
 
             if (!is_null($input) && $input === $output) {
-                $quiet || Console::log('Already formatted:', $outFile);
+                !$this->Verbose || Console::log('Already formatted:', $outFile);
                 continue;
             }
 
-            $quiet > 1 || Console::log('Replacing', $outFile);
+            $this->Quiet || Console::log('Replacing', $outFile);
             file_put_contents($outFile, $output);
         }
 
@@ -315,7 +377,65 @@ class FormatPhp extends CliCommand
             );
         }
 
-        $quiet > 2 || Console::summary();
+        $this->Quiet || Console::summary();
+    }
+
+    /**
+     * @param string[] $paths
+     * @return string[]
+     */
+    private function expandPaths(array $paths, ?int &$directoryCount): array
+    {
+        $directoryCount = 0;
+
+        if ($paths === ['-']) {
+            return $paths;
+        }
+
+        $files = [];
+        foreach ($paths as $path) {
+            if (is_file($path)) {
+                $files[] = $path;
+                continue;
+            }
+            if (!is_dir($path)) {
+                throw new CliArgumentsInvalidException('file not found: ' . $path);
+            }
+            $directoryCount++;
+
+            $iterator = new RecursiveDirectoryIterator(
+                $path,
+                FS::KEY_AS_PATHNAME | FS::CURRENT_AS_FILEINFO | FS::SKIP_DOTS
+            );
+            $iterator = new RecursiveCallbackFilterIterator(
+                $iterator,
+                function (SplFileInfo $current, string $key): bool {
+                    if (preg_match($this->Exclude, $key)) {
+                        return false;
+                    }
+                    if ($current->isDir()) {
+                        return !preg_match($this->Exclude, "$key/");
+                    }
+
+                    return (bool) preg_match($this->Include, $key);
+                }
+            );
+            $iterator = new RecursiveIteratorIterator($iterator);
+            /** @var SplFileInfo $file */
+            foreach ($iterator as $file) {
+                $realpath = $file->getRealPath();
+                if ($realpath === false) {
+                    throw new RuntimeException('file not found: ' . $file);
+                }
+                $files[] = $realpath;
+            }
+        }
+
+        if ($directoryCount) {
+            ksort($files);
+        }
+
+        return $files;
     }
 
     /**
