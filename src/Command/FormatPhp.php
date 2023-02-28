@@ -141,7 +141,7 @@ class FormatPhp extends CliCommand
                     A regex that matches files to exclude when searching a PATH
                     EOF)
                 ->optionType(CliOptionType::VALUE)
-                ->defaultValue('/\/(\.git|\.hg|\.svn|_?build|dist|vendor)\/$/')
+                ->defaultValue('/\/(\.git|\.hg|\.svn|_?build|dist|tests|var|vendor)\/$/')
                 ->bindTo($this->Exclude),
             CliOption::build()
                 ->long('tab')
