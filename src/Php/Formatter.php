@@ -20,7 +20,6 @@ use Lkrms\Pretty\Php\Filter\SortImports;
 use Lkrms\Pretty\Php\Filter\StripHeredocIndents;
 use Lkrms\Pretty\Php\Filter\TrimInsideCasts;
 use Lkrms\Pretty\Php\Filter\TrimOpenTags;
-use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeDeclaration;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
 use Lkrms\Pretty\Php\Rule\AddEssentialWhitespace;
 use Lkrms\Pretty\Php\Rule\AddHangingIndentation;
@@ -33,7 +32,6 @@ use Lkrms\Pretty\Php\Rule\BracePosition;
 use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
 use Lkrms\Pretty\Php\Rule\BreakBeforeControlStructureBody;
 use Lkrms\Pretty\Php\Rule\BreakBetweenMultiLineItems;
-use Lkrms\Pretty\Php\Rule\CommaCommaComma;
 use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\MatchPosition;
 use Lkrms\Pretty\Php\Rule\PlaceAttributes;
@@ -43,6 +41,7 @@ use Lkrms\Pretty\Php\Rule\ProtectStrings;
 use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
 use Lkrms\Pretty\Php\Rule\ReportUnnecessaryParentheses;
 use Lkrms\Pretty\Php\Rule\SimplifyStrings;
+use Lkrms\Pretty\Php\Rule\SpaceDeclarations;
 use Lkrms\Pretty\Php\Rule\SpaceOperators;
 use Lkrms\Pretty\Php\Rule\SwitchPosition;
 use Lkrms\Pretty\PrettyBadSyntaxException;
@@ -143,7 +142,6 @@ final class Formatter implements IReadable
                                   // `WhitespaceMaskPrev`=NONE
                                   // `WhitespaceAfter`(+SPACE|=NONE)
 
-        CommaCommaComma::class,
         PlaceComments::class,
         PreserveNewlines::class,             // Must be after PlaceComments
         DeclareArgumentsOnOneLine::class,
@@ -177,9 +175,9 @@ final class Formatter implements IReadable
         MatchPosition::class,    // processToken (600):
                                  // - `WhitespaceAfter`+LINE
 
-        AddBlankLineBeforeDeclaration::class,    // processToken (620):
-                                                 // - `WhitespaceMaskPrev`-BLANK
-                                                 // - `WhitespaceBefore`+BLANK
+        SpaceDeclarations::class,    // processToken (620):
+                                     // - `WhitespaceMaskPrev`-BLANK
+                                     // - `WhitespaceBefore`+BLANK
 
         AddHangingIndentation::class,    // processToken (800):
                                          // - `IsHangingParent`=true

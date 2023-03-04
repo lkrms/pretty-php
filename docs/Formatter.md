@@ -37,10 +37,6 @@ function op(_c) {
 
 Sample output:
 
-`AddBlankLineBeforeDeclaration`:
-- `Before`+BLANK
-- `MaskPrev`-BLANK
-
 `AddBlankLineBeforeReturn`:
 - `Before`+BLANK+SPACE
 
@@ -94,10 +90,6 @@ Sample output:
 - `MaskNext`+LINE
 - `MaskPrev`+LINE
 
-`CommaCommaComma`:
-- `After`+SPACE
-- `MaskPrev`=NONE
-
 `DeclareArgumentsOnOneLine`:
 - `MaskNext`-$mask
 - `MaskPrev`-$mask
@@ -139,6 +131,10 @@ Sample output:
 `ProtectStrings`:
 - `MaskNext`=NONE
 - `MaskPrev`=NONE
+
+`SpaceDeclarations`:
+- `Before`+BLANK
+- `MaskPrev`-BLANK
 
 `SpaceOperators`:
 - `After`(+SPACE|=NONE)

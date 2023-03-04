@@ -24,6 +24,7 @@ use const Lkrms\Pretty\Php\T_ID_MAP as T;
  * - If `<?php` is followed by `declare`, collapse them to `<?php declare`
  * - Add LINE after labels
  * - Suppress whitespace inside `declare()`
+ *
  */
 final class AddStandardWhitespace implements TokenRule
 {
@@ -34,20 +35,30 @@ final class AddStandardWhitespace implements TokenRule
     /**
      * @var array<int|string>
      */
-    private $AddSpaceAround;
+    private $AddSpaceAround = TokenType::ADD_SPACE_AROUND;
 
     public function __construct(Formatter $formatter)
     {
         $this->construct($formatter);
-        $this->AddSpaceAround =
-            array_diff(array_intersect(TokenType::ADD_SPACE_BEFORE,
-                                       TokenType::ADD_SPACE_AFTER),
-                       TokenType::ADD_SPACE_AROUND);
+
+        // Add tokens in ADD_SPACE_BEFORE and ADD_SPACE_AFTER, but not in
+        // ADD_SPACE_AROUND, to $this->AddSpaceAround
+        array_push(
+            $this->AddSpaceAround,
+            ...array_diff(
+                array_intersect(
+                    TokenType::ADD_SPACE_BEFORE,
+                    TokenType::ADD_SPACE_AFTER
+                ),
+                TokenType::ADD_SPACE_AROUND
+            )
+        );
     }
 
     public function getTokenTypes(): ?array
     {
         return [
+            T[','],
             T[':'],
             T_OPEN_TAG,
             T_OPEN_TAG_WITH_ECHO,
@@ -74,7 +85,7 @@ final class AddStandardWhitespace implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->is([...TokenType::ADD_SPACE_AROUND, ...$this->AddSpaceAround])) {
+        if ($token->is($this->AddSpaceAround)) {
             $token->WhitespaceBefore |= WhitespaceType::SPACE;
             $token->WhitespaceAfter  |= WhitespaceType::SPACE;
         } elseif ($token->is(TokenType::ADD_SPACE_BEFORE)) {
@@ -109,6 +120,13 @@ final class AddStandardWhitespace implements TokenRule
 
         if ($token->is(T_CLOSE_TAG)) {
             $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
+
+            return;
+        }
+
+        if ($token->is(T[','])) {
+            $token->WhitespaceMaskPrev = WhitespaceType::NONE;
+            $token->WhitespaceAfter   |= WhitespaceType::SPACE;
 
             return;
         }

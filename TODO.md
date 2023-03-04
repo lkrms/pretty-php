@@ -134,7 +134,6 @@
 
 ## Review rules
 
-- [x] AddBlankLineBeforeDeclaration
 - [ ] AddBlankLineBeforeReturn
 - [ ] AddEssentialWhitespace
 - [ ] AddHangingIndentation
@@ -149,7 +148,6 @@
 - [x] BreakBeforeControlStructureBody
 - [x] BreakBeforeMultiLineList
 - [x] BreakBetweenMultiLineItems
-- [ ] CommaCommaComma
 - [ ] DeclareArgumentsOnOneLine
 - [ ] MatchPosition
 - [ ] PlaceAttributes
@@ -160,6 +158,7 @@
 - [x] ReindentHeredocs
 - [ ] ReportUnnecessaryParentheses
 - [x] SimplifyStrings
+- [x] SpaceDeclarations
 - [x] SpaceOperators
 - [ ] SwitchPosition
 - Extra

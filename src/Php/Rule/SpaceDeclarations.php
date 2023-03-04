@@ -23,7 +23,7 @@ use const Lkrms\Pretty\Php\T_NULL;
  *   gap between the first and second statements to subsequent statements
  *
  */
-final class AddBlankLineBeforeDeclaration implements TokenRule
+final class SpaceDeclarations implements TokenRule
 {
     use TokenRuleTrait;
 

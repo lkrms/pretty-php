@@ -5,11 +5,11 @@ namespace Lkrms\Pretty\Tests\Php;
 use FilesystemIterator as FS;
 use Lkrms\Facade\File;
 use Lkrms\Pretty\Php\Formatter;
-use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeDeclaration;
 use Lkrms\Pretty\Php\Rule\AlignAssignments;
 use Lkrms\Pretty\Php\Rule\BreakBetweenMultiLineItems;
 use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\SimplifyStrings;
+use Lkrms\Pretty\Php\Rule\SpaceDeclarations;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
@@ -92,7 +92,7 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
                             SimplifyStrings::class,
                             DeclareArgumentsOnOneLine::class,
                             BreakBetweenMultiLineItems::class,
-                            AddBlankLineBeforeDeclaration::class,
+                            SpaceDeclarations::class,
                             AlignAssignments::class,
                         ];
                         break;

@@ -14,7 +14,6 @@ use Lkrms\Facade\File;
 use Lkrms\Facade\Sys;
 use Lkrms\Facade\Test;
 use Lkrms\Pretty\Php\Formatter;
-use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeDeclaration;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
 use Lkrms\Pretty\Php\Rule\AlignAssignments;
 use Lkrms\Pretty\Php\Rule\AlignChainedCalls;
@@ -22,7 +21,6 @@ use Lkrms\Pretty\Php\Rule\AlignComments;
 use Lkrms\Pretty\Php\Rule\AlignLists;
 use Lkrms\Pretty\Php\Rule\BreakBeforeMultiLineList;
 use Lkrms\Pretty\Php\Rule\BreakBetweenMultiLineItems;
-use Lkrms\Pretty\Php\Rule\CommaCommaComma;
 use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterFn;
 use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterNot;
@@ -32,6 +30,7 @@ use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
 use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
 use Lkrms\Pretty\Php\Rule\ReportUnnecessaryParentheses;
 use Lkrms\Pretty\Php\Rule\SimplifyStrings;
+use Lkrms\Pretty\Php\Rule\SpaceDeclarations;
 use Lkrms\Pretty\Php\Rule\SpaceOperators;
 use Lkrms\Pretty\PrettyBadSyntaxException;
 use Lkrms\Pretty\PrettyException;
@@ -75,11 +74,10 @@ class FormatPhp extends CliCommand
     private $SkipMap = [
         'simplify-strings'         => SimplifyStrings::class,
         'space-around-operators'   => SpaceOperators::class,
-        'space-after-commas'       => CommaCommaComma::class,
         'preserve-newlines'        => PreserveNewlines::class,
         'one-line-arguments'       => DeclareArgumentsOnOneLine::class,
         'blank-before-return'      => AddBlankLineBeforeReturn::class,
-        'blank-before-declaration' => AddBlankLineBeforeDeclaration::class,
+        'blank-before-declaration' => SpaceDeclarations::class,
         'break-between-items'      => BreakBetweenMultiLineItems::class,
         'align-chains'             => AlignChainedCalls::class,
         'align-lists'              => AlignLists::class,
