@@ -58,7 +58,7 @@ class AddHangingIndentation implements TokenRule
         //             FilesystemIterator::SKIP_DOTS);
         //
         // Similarly, differentiate between ternary operators and earlier lines
-        // with the same bracket stack by adding the first indented operator to
+        // with the same bracket stack by adding `$token->TernaryOperator1` to
         // `$stack`, e.g.:
         //
         //     return is_string($contents)
@@ -77,7 +77,7 @@ class AddHangingIndentation implements TokenRule
         if ($token->isTernaryOperator()) {
             $stack[] = $token->TernaryOperator1;
         } elseif ($latest && $latest->BracketStack === $token->BracketStack) {
-            if (!$token->isStartOfExpression() &&
+            if ($token->isStartOfExpression() ||
                     $latest->isStartOfExpression()) {
                 $stack[] = $latest;
             } elseif (!$prev->isStatementPrecursor() &&
