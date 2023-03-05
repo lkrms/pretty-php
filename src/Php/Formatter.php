@@ -213,7 +213,7 @@ final class Formatter implements IReadable
     /**
      * @var TokenFilter[]
      */
-    private $Filters;
+    private $MandatoryFilters;
 
     /**
      * @var TokenFilter[]
@@ -228,8 +228,9 @@ final class Formatter implements IReadable
     /**
      * @param string[] $skipRules
      * @param string[] $addRules
+     * @param string[] $skipFilters
      */
-    public function __construct(bool $insertSpaces = true, int $tabSize = 4, array $skipRules = [], array $addRules = [])
+    public function __construct(bool $insertSpaces = true, int $tabSize = 4, array $skipRules = [], array $addRules = [], array $skipFilters = [])
     {
         $this->Tab     = $insertSpaces ? str_repeat(' ', $tabSize) : "\t";
         $this->TabSize = $tabSize;
@@ -250,20 +251,27 @@ final class Formatter implements IReadable
             array_push($this->Rules, ...$addRules);
         }
 
-        $this->Filters = [
-            new RemoveWhitespaceTokens(),
-            new StripHeredocIndents(),
-            new TrimInsideCasts(),
-            new SortImports(),
+        $mandatory = [
+            RemoveWhitespaceTokens::class,
+            StripHeredocIndents::class,
+            TrimInsideCasts::class,
+            SortImports::class,
         ];
-
-        $this->ComparisonFilters = [
-            ...$this->Filters,
-            new NormaliseStrings(),
-            new RemoveCommentTokens(),
-            new RemoveEmptyTokens(),
-            new TrimOpenTags(),
+        $comparison = [
+            NormaliseStrings::class,
+            RemoveCommentTokens::class,
+            RemoveEmptyTokens::class,
+            TrimOpenTags::class,
         ];
+        if ($skipFilters) {
+            $mandatory  = array_diff($mandatory, $skipFilters);
+            $comparison = array_diff($comparison, $skipFilters);
+        }
+        $this->MandatoryFilters  = array_map(fn(string $filter) => new $filter(), $mandatory);
+        $this->ComparisonFilters = array_merge(
+            $this->MandatoryFilters,
+            array_map(fn(string $filter) => new $filter(), $comparison)
+        );
 
         $this->Debug = Env::debug();
     }
@@ -297,7 +305,7 @@ final class Formatter implements IReadable
         try {
             $this->Tokens = Token::tokenize($code,
                                             TOKEN_PARSE,
-                                            ...$this->Filters);
+                                            ...$this->MandatoryFilters);
 
             if (!$this->Tokens) {
                 return '';

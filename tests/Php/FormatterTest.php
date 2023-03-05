@@ -4,10 +4,12 @@ namespace Lkrms\Pretty\Tests\Php;
 
 use FilesystemIterator as FS;
 use Lkrms\Facade\File;
+use Lkrms\Pretty\Php\Filter\SortImports;
 use Lkrms\Pretty\Php\Formatter;
-use Lkrms\Pretty\Php\Rule\AlignAssignments;
+use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
 use Lkrms\Pretty\Php\Rule\BreakBetweenMultiLineItems;
 use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
+use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
 use Lkrms\Pretty\Php\Rule\SimplifyStrings;
 use Lkrms\Pretty\Php\Rule\SpaceDeclarations;
 use RecursiveDirectoryIterator;
@@ -83,17 +85,33 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
                 $tabSize      = 4;
                 $skipRules    = [];
                 $addRules     = [];
+                $skipFilters  = [];
                 switch (explode(DIRECTORY_SEPARATOR, $relPath)[0]) {
                     case 'phpfmt':
                         $insertSpaces = false;
+                        $addRules     = [
+                            PreserveOneLineStatements::class,
+                        ];
+                        $skipRules = [
+                            AddBlankLineBeforeReturn::class,
+                            BreakBetweenMultiLineItems::class,
+                            DeclareArgumentsOnOneLine::class,
+                            SpaceDeclarations::class,
+                        ];
                         break;
                     case 'php-doc':
+                        $addRules = [
+                            PreserveOneLineStatements::class,
+                        ];
                         $skipRules = [
-                            SimplifyStrings::class,
-                            DeclareArgumentsOnOneLine::class,
+                            AddBlankLineBeforeReturn::class,
                             BreakBetweenMultiLineItems::class,
+                            DeclareArgumentsOnOneLine::class,
+                            SimplifyStrings::class,
                             SpaceDeclarations::class,
-                            AlignAssignments::class,
+                        ];
+                        $skipFilters = [
+                            SortImports::class,
                         ];
                         break;
                 }
@@ -103,7 +121,8 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
                     $formatter = new Formatter($insertSpaces,
                                                $tabSize,
                                                $skipRules,
-                                               $addRules);
+                                               $addRules,
+                                               $skipFilters);
                     file_put_contents(
                         $outFile,
                         $out = $formatter->format($in, 3, $relPath)
@@ -115,6 +134,7 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
                                                $out,
                                                $skipRules,
                                                $addRules,
+                                               $skipFilters,
                                                $insertSpaces,
                                                $tabSize,
                                                $relPath);
