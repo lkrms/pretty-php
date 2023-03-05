@@ -305,11 +305,6 @@ class Token extends PhpToken implements JsonSerializable
     /**
      * @var bool
      */
-    public $IsStartOfDeclaration = false;
-
-    /**
-     * @var bool
-     */
     public $IsCloseTagStatementTerminator = false;
 
     /**
@@ -763,7 +758,6 @@ class Token extends PhpToken implements JsonSerializable
             $a['IsNull'],
             $a['IsVirtual'],
             $a['Formatter'],
-            $a['IsStartOfDeclaration'],
             $a['IsCloseTagStatementTerminator'],
         );
         $a['id']               = $this->getTokenName();

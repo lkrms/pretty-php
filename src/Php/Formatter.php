@@ -178,7 +178,6 @@ final class Formatter implements IReadable
                                  // - `WhitespaceAfter`+LINE
 
         AddBlankLineBeforeDeclaration::class,    // processToken (620):
-                                                 // - `IsStartOfDeclaration`=true
                                                  // - `WhitespaceMaskPrev`-BLANK
                                                  // - `WhitespaceBefore`+BLANK
 
