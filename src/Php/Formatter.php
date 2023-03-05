@@ -20,7 +20,6 @@ use Lkrms\Pretty\Php\Filter\SortImports;
 use Lkrms\Pretty\Php\Filter\StripHeredocIndents;
 use Lkrms\Pretty\Php\Filter\TrimInsideCasts;
 use Lkrms\Pretty\Php\Filter\TrimOpenTags;
-use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeDeclaration;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
 use Lkrms\Pretty\Php\Rule\AddEssentialWhitespace;
 use Lkrms\Pretty\Php\Rule\AddHangingIndentation;
@@ -33,7 +32,6 @@ use Lkrms\Pretty\Php\Rule\BracePosition;
 use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
 use Lkrms\Pretty\Php\Rule\BreakBeforeControlStructureBody;
 use Lkrms\Pretty\Php\Rule\BreakBetweenMultiLineItems;
-use Lkrms\Pretty\Php\Rule\CommaCommaComma;
 use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\MatchPosition;
 use Lkrms\Pretty\Php\Rule\PlaceAttributes;
@@ -43,6 +41,7 @@ use Lkrms\Pretty\Php\Rule\ProtectStrings;
 use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
 use Lkrms\Pretty\Php\Rule\ReportUnnecessaryParentheses;
 use Lkrms\Pretty\Php\Rule\SimplifyStrings;
+use Lkrms\Pretty\Php\Rule\SpaceDeclarations;
 use Lkrms\Pretty\Php\Rule\SpaceOperators;
 use Lkrms\Pretty\Php\Rule\SwitchPosition;
 use Lkrms\Pretty\PrettyBadSyntaxException;
@@ -143,7 +142,6 @@ final class Formatter implements IReadable
                                   // `WhitespaceMaskPrev`=NONE
                                   // `WhitespaceAfter`(+SPACE|=NONE)
 
-        CommaCommaComma::class,
         PlaceComments::class,
         PreserveNewlines::class,             // Must be after PlaceComments
         DeclareArgumentsOnOneLine::class,
@@ -177,10 +175,9 @@ final class Formatter implements IReadable
         MatchPosition::class,    // processToken (600):
                                  // - `WhitespaceAfter`+LINE
 
-        AddBlankLineBeforeDeclaration::class,    // processToken (620):
-                                                 // - `IsStartOfDeclaration`=true
-                                                 // - `WhitespaceMaskPrev`-BLANK
-                                                 // - `WhitespaceBefore`+BLANK
+        SpaceDeclarations::class,    // processToken (620):
+                                     // - `WhitespaceMaskPrev`-BLANK
+                                     // - `WhitespaceBefore`+BLANK
 
         AddHangingIndentation::class,    // processToken (800):
                                          // - `IsHangingParent`=true
@@ -216,7 +213,7 @@ final class Formatter implements IReadable
     /**
      * @var TokenFilter[]
      */
-    private $Filters;
+    private $MandatoryFilters;
 
     /**
      * @var TokenFilter[]
@@ -231,8 +228,9 @@ final class Formatter implements IReadable
     /**
      * @param string[] $skipRules
      * @param string[] $addRules
+     * @param string[] $skipFilters
      */
-    public function __construct(bool $insertSpaces = true, int $tabSize = 4, array $skipRules = [], array $addRules = [])
+    public function __construct(bool $insertSpaces = true, int $tabSize = 4, array $skipRules = [], array $addRules = [], array $skipFilters = [])
     {
         $this->Tab     = $insertSpaces ? str_repeat(' ', $tabSize) : "\t";
         $this->TabSize = $tabSize;
@@ -253,20 +251,27 @@ final class Formatter implements IReadable
             array_push($this->Rules, ...$addRules);
         }
 
-        $this->Filters = [
-            new RemoveWhitespaceTokens(),
-            new StripHeredocIndents(),
-            new TrimInsideCasts(),
-            new SortImports(),
+        $mandatory = [
+            RemoveWhitespaceTokens::class,
+            StripHeredocIndents::class,
+            TrimInsideCasts::class,
+            SortImports::class,
         ];
-
-        $this->ComparisonFilters = [
-            ...$this->Filters,
-            new NormaliseStrings(),
-            new RemoveCommentTokens(),
-            new RemoveEmptyTokens(),
-            new TrimOpenTags(),
+        $comparison = [
+            NormaliseStrings::class,
+            RemoveCommentTokens::class,
+            RemoveEmptyTokens::class,
+            TrimOpenTags::class,
         ];
+        if ($skipFilters) {
+            $mandatory  = array_diff($mandatory, $skipFilters);
+            $comparison = array_diff($comparison, $skipFilters);
+        }
+        $this->MandatoryFilters  = array_map(fn(string $filter) => new $filter(), $mandatory);
+        $this->ComparisonFilters = array_merge(
+            $this->MandatoryFilters,
+            array_map(fn(string $filter) => new $filter(), $comparison)
+        );
 
         $this->Debug = Env::debug();
     }
@@ -300,7 +305,7 @@ final class Formatter implements IReadable
         try {
             $this->Tokens = Token::tokenize($code,
                                             TOKEN_PARSE,
-                                            ...$this->Filters);
+                                            ...$this->MandatoryFilters);
 
             if (!$this->Tokens) {
                 return '';
@@ -515,9 +520,9 @@ final class Formatter implements IReadable
         return $tokens;
     }
 
-    public function registerCallback(Rule $rule, Token $first, callable $callback, int $priority = 100): void
+    public function registerCallback(Rule $rule, Token $first, callable $callback, int $priority = 100, bool $reverse = false): void
     {
-        $this->Callbacks[$priority][$first->Index][] = [$rule, $callback];
+        $this->Callbacks[$priority][($reverse ? -1 : 1) * $first->Index][] = [$rule, $callback];
     }
 
     private function processCallbacks(): void

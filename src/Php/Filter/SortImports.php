@@ -3,8 +3,8 @@
 namespace Lkrms\Pretty\Php\Filter;
 
 use Lkrms\Facade\Convert;
+use Lkrms\Pretty\Php\Concern\FilterTrait;
 use Lkrms\Pretty\Php\Contract\TokenFilter;
-use Lkrms\Pretty\Php\NullToken;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 
@@ -16,46 +16,7 @@ use const Lkrms\Pretty\Php\T_ID_MAP as T;
  */
 final class SortImports implements TokenFilter
 {
-    /**
-     * @var Token[]
-     */
-    private $Tokens;
-
-    private function prevCode(int $i, ?int &$prev_i = null): Token
-    {
-        while ($i--) {
-            $token = $this->Tokens[$i];
-            if ($token->is(TokenType::NOT_CODE)) {
-                continue;
-            }
-            $prev_i = $i;
-
-            return $token;
-        }
-
-        return NullToken::create();
-    }
-
-    /**
-     * @param int|string ...$types
-     */
-    private function prevDeclarationOf(int $i, ...$types): Token
-    {
-        while ($i--) {
-            $token = $this->Tokens[$i];
-            if ($token->is(TokenType::NOT_CODE)) {
-                continue;
-            }
-            if (!$token->is(TokenType::DECLARATION_PART)) {
-                break;
-            }
-            if ($token->is($types)) {
-                return $token;
-            }
-        }
-
-        return NullToken::create();
-    }
+    use FilterTrait;
 
     /**
      * @param Token[] $tokens
@@ -98,39 +59,59 @@ final class SortImports implements TokenFilter
         $sort       = [];
         /** @var Token[] */
         $current    = [];
-        $terminated = false;
+        /** @var Token|null */
         $terminator = null;
+
+        $maybeEndCurrent = function () use (&$sort, &$current, &$terminator) {
+            if (!$current) {
+                return;
+            }
+            $sort[]     = $current;
+            $current    = [];
+            $terminator = null;
+        };
+
+        $maybeSort = function () use (&$sort) {
+            if (!$sort) {
+                return;
+            }
+            if (count($sort) > 1) {
+                $this->sortImports($sort);
+            }
+            $sort = [];
+        };
+
         foreach ($this->Tokens as $i => $token) {
             if ($current) {
-                if ($terminated) {
-                    if ($token->is(TokenType::COMMENT)) {
+                if ($terminator) {
+                    // Collect comments that appear beside code, allowing other
+                    // comments to break the sequence of statements
+                    if ($token->is(TokenType::COMMENT) &&
+                        ($token->line === $terminator->line ||
+                            ($token->isOneLineComment() &&
+                                ($last = end($current))->isOneLineComment() &&
+                                $token->line - $last->line === 1))) {
                         $current[$i] = $token;
                         continue;
                     } else {
-                        $sort[]     = $current;
-                        $current    = [];
-                        $terminated = false;
+                        $maybeEndCurrent();
                     }
+                } elseif ($token->is(T_CLOSE_TAG)) {
+                    /**
+                     * Don't add improbable but technically legal statements
+                     * like `use A\B\C ?>` to $sort
+                     */
+                    $current = [];
                 } else {
                     $current[$i] = $token;
                     if ($token->is(T[';'])) {
-                        $terminated = true;
                         $terminator = $token;
                     }
                     continue;
                 }
             }
             if (!$token->is(T_USE)) {
-                if (!$sort) {
-                    continue;
-                }
-
-                if (count($sort) > 1) {
-                    /** @var Token $terminator */
-                    $this->sortImports($this->Tokens, $sort, $terminator);
-                }
-
-                $sort = [];
+                $maybeSort();
                 continue;
             }
             if (!$sort) {
@@ -146,23 +127,17 @@ final class SortImports implements TokenFilter
             }
             $current[$i] = $token;
         }
+        $maybeEndCurrent();
+        $maybeSort();
 
         return $this->Tokens;
     }
 
     /**
-     * @param Token[] $tokens
-     * @param non-empty-array<Token[]> $sort
+     * @param array<Token[]> $sort
      */
-    private function sortImports(array &$tokens, array $sort, Token $terminator): void
+    private function sortImports(array $sort): void
     {
-        // Remove tokens after the last ';' unless they were on the same line
-        $last = array_pop($sort);
-        while (end($last)->line > $terminator->line) {
-            array_pop($last);
-        }
-        $sort[] = $last;
-
         // Store changes in line number from each import statement to the next
         $lineDeltas = [];
         /** @var Token[]|null */
@@ -173,12 +148,12 @@ final class SortImports implements TokenFilter
                 $lineDeltas[$prev_i] = reset($import)->line - reset($prev)->line;
             } else {
                 $nextLine = reset($import)->line;
-                $firstKey = key($import);
+                $nextKey  = $firstKey = key($import);
             }
             $prev   = $import;
             $prev_i = $i;
         }
-        $lineDeltas[$prev_i] = $terminator->line - reset($prev)->line;
+        $lineDeltas[$prev_i] = end($prev)->line - reset($prev)->line + 1;
 
         // Sort the alias/import statements
         uasort(
@@ -192,22 +167,17 @@ final class SortImports implements TokenFilter
             }
         );
 
-        // Regenerate line numbers
+        // Flatten, reindex, and update line numbers
+        $sorted = [];
         foreach ($sort as $i => $import) {
             $delta = $nextLine - reset($import)->line;
-            array_walk($import, fn(Token $t) => $t->line += $delta);
+            foreach ($import as $t) {
+                $sorted[$nextKey++] = $t;
+                $t->line           += $delta;
+            }
             $nextLine += $lineDeltas[$i];
         }
 
-        // Flatten $sort into an array of token objects
-        $sort =
-            array_reduce(
-                $sort,
-                fn(array $tokens, array $import) =>
-                    $tokens + $import,
-                []
-            );
-
-        Convert::arraySpliceAtKey($tokens, $firstKey, count($sort), $sort);
+        Convert::arraySpliceAtKey($this->Tokens, $firstKey, count($sorted), $sorted);
     }
 }

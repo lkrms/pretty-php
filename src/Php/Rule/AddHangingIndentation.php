@@ -58,7 +58,7 @@ class AddHangingIndentation implements TokenRule
         //             FilesystemIterator::SKIP_DOTS);
         //
         // Similarly, differentiate between ternary operators and earlier lines
-        // with the same bracket stack by adding the first indented operator to
+        // with the same bracket stack by adding `$token->TernaryOperator1` to
         // `$stack`, e.g.:
         //
         //     return is_string($contents)
@@ -77,7 +77,7 @@ class AddHangingIndentation implements TokenRule
         if ($token->isTernaryOperator()) {
             $stack[] = $token->TernaryOperator1;
         } elseif ($latest && $latest->BracketStack === $token->BracketStack) {
-            if (!$token->isStartOfExpression() &&
+            if ($token->isStartOfExpression() ||
                     $latest->isStartOfExpression()) {
                 $stack[] = $latest;
             } elseif (!$prev->isStatementPrecursor() &&
@@ -138,7 +138,8 @@ class AddHangingIndentation implements TokenRule
                 $this,
                 $token,
                 fn() => $this->maybeCollapseOverhanging($token, $until, $hanging),
-                800
+                800,
+                true
             );
         }
 
@@ -243,7 +244,7 @@ class AddHangingIndentation implements TokenRule
         //   is inherited from enclosing tokens
         $prev = $token->prevCode();
         if (!($prev->hasNewlineAfterCode() ||
-                    ($prev->is(T_START_HEREDOC) && !$token->prevCode(2)->hasNewlineAfterCode())) ||
+                ($prev->is(T_START_HEREDOC) && !$token->prevCode(2)->hasNewlineAfterCode())) ||
             $token->isBrace() ||
             (!$ignoreIndent &&
                 $this->indent($prev) !== $this->indent($token)) ||

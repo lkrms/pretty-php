@@ -9,14 +9,16 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     /**
      * @param string[] $skipRules
      * @param string[] $addRules
+     * @param string[] $skipFilters
      */
-    public function assertFormatterOutputIs(string $code, string $expected, array $skipRules = [], array $addRules = [], bool $insertSpaces = true, int $tabSize = 4, ?string $filename = null): void
+    public function assertFormatterOutputIs(string $code, string $expected, array $skipRules = [], array $addRules = [], array $skipFilters = [], bool $insertSpaces = true, int $tabSize = 4, ?string $filename = null): void
     {
         $formatter = new Formatter(
             $insertSpaces,
             $tabSize,
             $skipRules,
-            $addRules
+            $addRules,
+            $skipFilters
         );
 
         $this->assertSame(

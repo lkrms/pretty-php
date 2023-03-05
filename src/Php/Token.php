@@ -305,11 +305,6 @@ class Token extends PhpToken implements JsonSerializable
     /**
      * @var bool
      */
-    public $IsStartOfDeclaration = false;
-
-    /**
-     * @var bool
-     */
     public $IsCloseTagStatementTerminator = false;
 
     /**
@@ -559,10 +554,10 @@ class Token extends PhpToken implements JsonSerializable
     private function maybeApplyStatement(): void
     {
         if ((($this->is(T[';']) ||
-                            $this->IsCloseTagStatementTerminator ||
-                            ($this->is(T['}']) && $this->isStructuralBrace())) &&
-            !$this->nextCode()->is([T_ELSEIF, T_ELSE]) &&
-            !($this->nextCode()->is(T_WHILE) &&
+                    $this->IsCloseTagStatementTerminator ||
+                    ($this->is(T['}']) && $this->isStructuralBrace())) &&
+                !$this->nextCode()->is([T_ELSEIF, T_ELSE]) &&
+                !($this->nextCode()->is(T_WHILE) &&
                     $this->prevSiblingsUntil(
                         fn(Token $t, TokenCollection $tc): bool =>
                             $t->is([T[';'], T_CLOSE_TAG]) ||
@@ -763,7 +758,6 @@ class Token extends PhpToken implements JsonSerializable
             $a['IsNull'],
             $a['IsVirtual'],
             $a['Formatter'],
-            $a['IsStartOfDeclaration'],
             $a['IsCloseTagStatementTerminator'],
         );
         $a['id']               = $this->getTokenName();

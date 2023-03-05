@@ -25,31 +25,7 @@ class PreserveNewlines implements TokenRule
             return;
         }
 
-        // Treat `?:` as one operator
-        if ($token->isTernaryOperator()) {
-            if ($token->is(T[':']) && $prev->is(T['?'])) {
-                return;
-            }
-            $next = $token->next();
-            if ($token->is(T['?']) && $next->is(T[':'])) {
-                $tokenEnd = $next;
-            }
-        } elseif ($prev->isTernaryOperator() &&
-                $prev->is(T[':']) && ($prevPrev = $prev->prev())->is(T['?'])) {
-            $prevStart = $prevPrev;
-        }
-
-        // Don't replace non-consecutive newlines with a blank line
-        if ($tokenEnd ?? $prevStart ?? null) {
-            $lines = max(
-                ($tokenEnd ?? null) ? $tokenEnd->line - $token->line - substr_count($token->text, "\n") : 0,
-                $token->line - $prev->line - substr_count($prev->text, "\n"),
-                ($prevStart ?? null) ? $prev->line - $prevStart->line - substr_count($prevStart->text, "\n") : 0
-            );
-        } else {
-            $lines = $token->line - $prev->line - substr_count($prev->text, "\n");
-        }
-
+        $lines = $token->line - $prev->line - substr_count($prev->text, "\n");
         if (!$lines) {
             return;
         }
@@ -58,7 +34,7 @@ class PreserveNewlines implements TokenRule
             if ($effective & WhitespaceType::BLANK) {
                 return;
             }
-            $type = WhitespaceType::BLANK;
+            $type = WhitespaceType::BLANK | WhitespaceType::LINE;
         } else {
             if ($effective & (WhitespaceType::LINE | WhitespaceType::BLANK)) {
                 return;
@@ -66,13 +42,13 @@ class PreserveNewlines implements TokenRule
             $type = WhitespaceType::LINE;
         }
 
-        $min = ($prevStart ?? $prev)->line;
-        $max = ($tokenEnd ?? $token)->line;
+        $min = $prev->line;
+        $max = $token->line;
         foreach ([true, false] as $noBrackets) {
             if ($this->maybePreserveNewlineAfter($prev, $token, $type, $min, $max, $noBrackets) ||
                     $this->maybePreserveNewlineBefore($token, $prev, $type, $min, $max, $noBrackets) ||
-                    $this->maybePreserveNewlineBefore($prev, $prevPrev ?? $prev->prev(), $type, $min, $max, $noBrackets) ||
-                    $this->maybePreserveNewlineAfter($token, $next ?? $token->next(), $type, $min, $max, $noBrackets)) {
+                    $this->maybePreserveNewlineBefore($prev, $prev->prev(), $type, $min, $max, $noBrackets) ||
+                    $this->maybePreserveNewlineAfter($token, $token->next(), $type, $min, $max, $noBrackets)) {
                 return;
             }
         }
@@ -86,7 +62,12 @@ class PreserveNewlines implements TokenRule
         if (Test::isBetween($token->line, $min, $max) &&
                 $token->is(TokenType::PRESERVE_NEWLINE_BEFORE) &&
                 ($noBrackets || !($token->isCloseBracket() && $prev->isOpenBracket())) &&
+                // Treat `?:` as one operator
+                (!$token->isTernaryOperator() || $token->TernaryOperator1 !== $prev) &&
                 (!$token->is(T[':']) || $token->isTernaryOperator())) {
+            if (!$token->is(TokenType::PRESERVE_BLANK_BEFORE)) {
+                $type = WhitespaceType::LINE;
+            }
             $token->WhitespaceBefore |= $type;
 
             return true;
@@ -103,7 +84,12 @@ class PreserveNewlines implements TokenRule
         if (Test::isBetween($next->line, $min, $max) &&
                 $token->is(TokenType::PRESERVE_NEWLINE_AFTER) &&
                 ($noBrackets || !($token->isOpenBracket() && $next->isCloseBracket())) &&
+                // Treat `?:` as one operator
+                (!$token->isTernaryOperator() || $token->TernaryOperator2 !== $next) &&
                 (!$token->is(T[':']) || $token->inSwitchCase() || $token->inLabel())) {
+            if (!$token->is(TokenType::PRESERVE_BLANK_AFTER)) {
+                $type = WhitespaceType::LINE;
+            }
             $token->WhitespaceAfter |= $type;
             $token->PinToCode        = $token->PinToCode && ($type === WhitespaceType::LINE);
 
