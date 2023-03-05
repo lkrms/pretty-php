@@ -9,7 +9,11 @@ use Lkrms\Pretty\Php\TokenType;
 
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
-class ReportUnnecessaryParentheses implements TokenRule
+/**
+ * Detect and report superfluous parentheses
+ *
+ */
+final class ReportUnnecessaryParentheses implements TokenRule
 {
     use TokenRuleTrait;
 
@@ -22,10 +26,14 @@ class ReportUnnecessaryParentheses implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if (!($token->isStartOfExpression() ||
-            (($start = $token->prevCode())->isStartOfExpression() &&
-                    $start->is(TokenType::HAS_EXPRESSION_WITH_OPTIONAL_PARENTHESES))) ||
-                $token->pragmaticEndOfExpression() !== $token->ClosedBy) {
+        if (!$token->isStartOfExpression()) {
+            $start = $token->prevCode();
+            if (!($start->isStartOfExpression() &&
+                    $start->is(TokenType::HAS_EXPRESSION_WITH_OPTIONAL_PARENTHESES))) {
+                return;
+            }
+        }
+        if ($token->pragmaticEndOfExpression() !== $token->ClosedBy) {
             return;
         }
         $start = $start ?? $token;
@@ -35,16 +43,17 @@ class ReportUnnecessaryParentheses implements TokenRule
         }
         $first = $inner->first();
         $last  = $inner->last();
-        if (!$first->isStartOfExpression() ||
-                $first->pragmaticEndOfExpression() !== $last) {
+        if ($first->EndStatement !== $last) {
             return;
         }
         $prev = $start->prevCode();
         $next = $token->ClosedBy->nextCode();
-        if (!(($prev->isStatementPrecursor() || $prev->is(TokenType::OPERATOR_ASSIGNMENT)) &&
-                ($prev->ClosedBy === $next || $next->isStatementPrecursor()))) {
-            return;
+        if (($prev->isStatementPrecursor() ||
+                $prev->is([T_DOUBLE_ARROW, ...TokenType::OPERATOR_ASSIGNMENT])) &&
+            ($prev->ClosedBy === $next ||
+                $next->Statement === $next ||
+                $next->EndStatement === $next)) {
+            $this->Formatter->reportProblem('Unnecessary parentheses', $first, $last);
         }
-        $this->Formatter->reportProblem('Unnecessary parentheses', $first, $last);
     }
 }

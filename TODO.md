@@ -156,7 +156,7 @@
 - [x] PreserveOneLineStatements
 - [x] ProtectStrings
 - [x] ReindentHeredocs
-- [ ] ReportUnnecessaryParentheses
+- [x] ReportUnnecessaryParentheses
 - [x] SimplifyStrings
 - [x] SpaceDeclarations
 - [x] SpaceOperators

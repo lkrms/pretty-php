@@ -512,9 +512,9 @@ final class Formatter implements IReadable
         return $tokens;
     }
 
-    public function registerCallback(Rule $rule, Token $first, callable $callback, int $priority = 100): void
+    public function registerCallback(Rule $rule, Token $first, callable $callback, int $priority = 100, bool $reverse = false): void
     {
-        $this->Callbacks[$priority][$first->Index][] = [$rule, $callback];
+        $this->Callbacks[$priority][($reverse ? -1 : 1) * $first->Index][] = [$rule, $callback];
     }
 
     private function processCallbacks(): void

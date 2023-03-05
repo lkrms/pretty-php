@@ -138,7 +138,8 @@ class AddHangingIndentation implements TokenRule
                 $this,
                 $token,
                 fn() => $this->maybeCollapseOverhanging($token, $until, $hanging),
-                800
+                800,
+                true
             );
         }
 
