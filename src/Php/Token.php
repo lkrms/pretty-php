@@ -554,10 +554,10 @@ class Token extends PhpToken implements JsonSerializable
     private function maybeApplyStatement(): void
     {
         if ((($this->is(T[';']) ||
-                            $this->IsCloseTagStatementTerminator ||
-                            ($this->is(T['}']) && $this->isStructuralBrace())) &&
-            !$this->nextCode()->is([T_ELSEIF, T_ELSE]) &&
-            !($this->nextCode()->is(T_WHILE) &&
+                    $this->IsCloseTagStatementTerminator ||
+                    ($this->is(T['}']) && $this->isStructuralBrace())) &&
+                !$this->nextCode()->is([T_ELSEIF, T_ELSE]) &&
+                !($this->nextCode()->is(T_WHILE) &&
                     $this->prevSiblingsUntil(
                         fn(Token $t, TokenCollection $tc): bool =>
                             $t->is([T[';'], T_CLOSE_TAG]) ||

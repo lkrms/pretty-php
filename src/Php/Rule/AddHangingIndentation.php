@@ -244,7 +244,7 @@ class AddHangingIndentation implements TokenRule
         //   is inherited from enclosing tokens
         $prev = $token->prevCode();
         if (!($prev->hasNewlineAfterCode() ||
-                    ($prev->is(T_START_HEREDOC) && !$token->prevCode(2)->hasNewlineAfterCode())) ||
+                ($prev->is(T_START_HEREDOC) && !$token->prevCode(2)->hasNewlineAfterCode())) ||
             $token->isBrace() ||
             (!$ignoreIndent &&
                 $this->indent($prev) !== $this->indent($token)) ||
