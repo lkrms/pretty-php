@@ -15,7 +15,7 @@ s/Whitespace//g
 s/\|=?/+/g
 s/(&=?|~)+/-/g
 s/[;)]+$//' |
-  sort -u |
+  LC_ALL=C sort -u |
   awk -F'[ =+-]' '
               { o = $0 }
 $1 $2 != l p  { op(); n = 0; p = $2 }
@@ -133,6 +133,7 @@ Sample output:
 - `MaskPrev`=NONE
 
 `SpaceDeclarations`:
+- `After`+BLANK
 - `Before`+BLANK
 - `MaskPrev`-BLANK
 
