@@ -81,13 +81,17 @@ final class TokenType
         T_DOC_COMMENT,
     ];
 
+    public const WHITESPACE_OR_COMMENT = [
+        ...self::WHITESPACE,
+        ...self::COMMENT,
+    ];
+
     public const NOT_CODE = [
         T_INLINE_HTML,
         T_OPEN_TAG,
         T_OPEN_TAG_WITH_ECHO,
         T_CLOSE_TAG,
-        ...self::WHITESPACE,
-        ...self::COMMENT,
+        ...self::WHITESPACE_OR_COMMENT,
     ];
 
     public const AMPERSAND = [

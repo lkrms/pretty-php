@@ -110,9 +110,6 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
                             SimplifyStrings::class,
                             SpaceDeclarations::class,
                         ];
-                        $skipFilters = [
-                            SortImports::class,
-                        ];
                         break;
                 }
                 if (!file_exists($outFile)) {

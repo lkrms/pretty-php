@@ -166,3 +166,14 @@
   - [x] AddSpaceAfterNot
   - [x] SuppressSpaceAroundStringOperator
 
+## Review filters
+
+- [ ] NormaliseStrings
+- [ ] RemoveCommentTokens
+- [ ] RemoveEmptyTokens
+- [ ] RemoveWhitespaceTokens
+- [x] SortImports
+- [ ] StripHeredocIndents
+- [ ] TrimInsideCasts
+- [ ] TrimOpenTags
+
