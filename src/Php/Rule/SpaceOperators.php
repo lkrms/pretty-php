@@ -44,10 +44,10 @@ final class SpaceOperators implements TokenRule
         // or passing by reference
         if ($token->is(TokenType::AMPERSAND) &&
             $token->next()->isCode() &&
-            ($token->prevCode()->is(T_FUNCTION) ||                             // - `function &getValue()`
-                $token->inUnaryContext() ||                                    // - `[&$variable]`, `$a = &getValue()`
-                ($token->next()->is(T_VARIABLE) &&                             // - `function getValue(&$param)`, but not
-                    $token->inFunctionDeclaration() &&                         //   `function getValue($param = $a & $b)`
+            ($token->prevCode()->is(T_FUNCTION) ||      // - `function &getValue()`
+                $token->inUnaryContext() ||             // - `[&$variable]`, `$a = &getValue()`
+                ($token->next()->is(T_VARIABLE) &&      // - `function getValue(&$param)`, but not
+                    $token->inFunctionDeclaration() &&  //   `function getValue($param = $a & $b)`
                     !$token->sinceStartOfStatement()->hasOneOf(T['='])))) {
             $token->WhitespaceBefore  |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext = WhitespaceType::NONE;

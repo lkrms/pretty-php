@@ -141,7 +141,7 @@
 - [x] AddStandardWhitespace
 - [x] AlignAssignments
 - [ ] AlignChainedCalls
-- [ ] AlignComments
+- [x] AlignComments
 - [ ] AlignLists
 - [ ] BracePosition
 - [x] BreakAfterSeparators

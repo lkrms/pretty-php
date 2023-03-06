@@ -26,7 +26,6 @@ use Lkrms\Pretty\Php\Rule\AddHangingIndentation;
 use Lkrms\Pretty\Php\Rule\AddIndentation;
 use Lkrms\Pretty\Php\Rule\AddStandardWhitespace;
 use Lkrms\Pretty\Php\Rule\AlignChainedCalls;
-use Lkrms\Pretty\Php\Rule\AlignComments;
 use Lkrms\Pretty\Php\Rule\AlignLists;
 use Lkrms\Pretty\Php\Rule\BracePosition;
 use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
@@ -104,102 +103,99 @@ final class Formatter implements IReadable
      * @var string[]
      */
     protected $Rules = [
-        ProtectStrings::class,    // processToken:
-                                  // - `WhitespaceMaskPrev`=NONE
-                                  // - `WhitespaceMaskNext`=NONE
+        ProtectStrings::class,  // processToken:
+                                // - `WhitespaceMaskPrev`=NONE
+                                // - `WhitespaceMaskNext`=NONE
 
-        SimplifyStrings::class,    // processToken:
-                                   // - `text`=<value>
+        SimplifyStrings::class,  // processToken:
+                                 // - `text`=<value>
 
-        AddStandardWhitespace::class,    // processToken:
-                                         // - WhitespaceBefore+SPACE[+LINE]
-                                         // - WhitespaceAfter(+SPACE[+LINE]|+LINE)
-                                         // - WhitespaceMaskNext(-SPACE|=SPACE|+LINE|=NONE)
-                                         // - WhitespaceMaskPrev(-SPACE|=NONE)
+        AddStandardWhitespace::class,  // processToken:
+                                       // - WhitespaceBefore+SPACE[+LINE]
+                                       // - WhitespaceAfter(+SPACE[+LINE]|+LINE)
+                                       // - WhitespaceMaskNext(-SPACE|=SPACE|+LINE|=NONE)
+                                       // - WhitespaceMaskPrev(-SPACE|=NONE)
 
-        BreakAfterSeparators::class,    // processToken:
-                                        // - `WhitespaceAfter`+SPACE[+LINE]
-                                        // - `WhitespaceMaskNext`+SPACE
-                                        // - `WhitespaceMaskPrev`(+SPACE|=NONE)
-                                        // - `WhitespaceBefore`=NONE
+        BreakAfterSeparators::class,  // processToken:
+                                      // - `WhitespaceAfter`+SPACE[+LINE]
+                                      // - `WhitespaceMaskNext`+SPACE
+                                      // - `WhitespaceMaskPrev`(+SPACE|=NONE)
+                                      // - `WhitespaceBefore`=NONE
 
-        BreakBeforeControlStructureBody::class,    // processToken:
-                                                   // - `WhitespaceBefore`+LINE+SPACE
-                                                   // - `WhitespaceMaskPrev`+LINE-BREAK
-                                                   // - `WhitespaceMaskNext`+LINE
-                                                   // - `PreIndent`++
+        BreakBeforeControlStructureBody::class,  // processToken:
+                                                 // - `WhitespaceBefore`+LINE+SPACE
+                                                 // - `WhitespaceMaskPrev`+LINE-BREAK
+                                                 // - `WhitespaceMaskNext`+LINE
+                                                 // - `PreIndent`++
 
-        PlaceAttributes::class,    // processToken:
-                                   // - `WhitespaceBefore`+LINE
-                                   // - `WhitespaceAfter`+LINE
-                                   // - `WhitespaceMaskNext`-BLANK
+        PlaceAttributes::class,  // processToken:
+                                 // - `WhitespaceBefore`+LINE
+                                 // - `WhitespaceAfter`+LINE
+                                 // - `WhitespaceMaskNext`-BLANK
 
         BracePosition::class,
 
-        SpaceOperators::class,    // processToken:
-                                  // `WhitespaceBefore`(+SPACE|=NONE)
-                                  // `WhitespaceMaskNext`=NONE
-                                  // `WhitespaceMaskPrev`=NONE
-                                  // `WhitespaceAfter`(+SPACE|=NONE)
+        SpaceOperators::class,  // processToken:
+                                // `WhitespaceBefore`(+SPACE|=NONE)
+                                // `WhitespaceMaskNext`=NONE
+                                // `WhitespaceMaskPrev`=NONE
+                                // `WhitespaceAfter`(+SPACE|=NONE)
 
         PlaceComments::class,
-        PreserveNewlines::class,             // Must be after PlaceComments
+        PreserveNewlines::class,          // Must be after PlaceComments
         DeclareArgumentsOnOneLine::class,
-        AddBlankLineBeforeReturn::class,     // Must be after PlaceComments
+        AddBlankLineBeforeReturn::class,  // Must be after PlaceComments
 
-        BreakBetweenMultiLineItems::class,    // processToken:
-                                              // - `WhitespaceBefore`+LINE
-                                              // - `WhitespaceMaskPrev`+LINE
-                                              // - `WhitespaceMaskNext`+LINE
+        BreakBetweenMultiLineItems::class,  // processToken:
+                                            // - `WhitespaceBefore`+LINE
+                                            // - `WhitespaceMaskPrev`+LINE
+                                            // - `WhitespaceMaskNext`+LINE
 
         AlignChainedCalls::class,
 
-        AlignLists::class,    // processToken (400):
-                              // - `WhitespaceBefore`+LINE    (via BreakBetweenMultiLineItems)
-                              // - `WhitespaceMaskPrev`+LINE  (via BreakBetweenMultiLineItems)
-                              // - `WhitespaceMaskNext`+LINE  (via BreakBetweenMultiLineItems)
-                              // - `AlignedWith`=<value>
-                              //
-                              // callback (710):
-                              // - `LinePadding`+=<value>
+        AlignLists::class,  // processToken (400):
+                            // - `WhitespaceBefore`+LINE    (via BreakBetweenMultiLineItems)
+                            // - `WhitespaceMaskPrev`+LINE  (via BreakBetweenMultiLineItems)
+                            // - `WhitespaceMaskNext`+LINE  (via BreakBetweenMultiLineItems)
+                            // - `AlignedWith`=<value>
+                            //
+                            // callback (710):
+                            // - `LinePadding`+=<value>
 
-        AddIndentation::class,    // processToken (600):
-                                  // - `Indent`=<value>
-                                  // - `WhitespaceBefore`+LINE
-                                  // - `WhitespaceMaskPrev`-BLANK-LINE
+        AddIndentation::class,  // processToken (600):
+                                // - `Indent`=<value>
+                                // - `WhitespaceBefore`+LINE
+                                // - `WhitespaceMaskPrev`-BLANK-LINE
 
-        SwitchPosition::class,    // processToken (600):
-                                  // - `PreIndent`++
-                                  // - `Deindent`++
+        SwitchPosition::class,  // processToken (600):
+                                // - `PreIndent`++
+                                // - `Deindent`++
 
-        MatchPosition::class,    // processToken (600):
-                                 // - `WhitespaceAfter`+LINE
+        MatchPosition::class,  // processToken (600):
+                               // - `WhitespaceAfter`+LINE
 
-        SpaceDeclarations::class,    // processToken (620):
-                                     // - `WhitespaceMaskPrev`-BLANK
-                                     // - `WhitespaceBefore`+BLANK
+        SpaceDeclarations::class,  // processToken (620):
+                                   // - `WhitespaceMaskPrev`-BLANK
+                                   // - `WhitespaceBefore`+BLANK
 
-        AddHangingIndentation::class,    // processToken (800):
-                                         // - `IsHangingParent`=true
-                                         // - `IsOverhangingParent`=true|false
-                                         // - `HangingIndent`+=<value>
-                                         // - `OverhangingParents[]`=<value>
-                                         // - `IndentBracketStack[]`=<value>
-                                         // - `IndentStack[]`=<value>
-                                         // - `IndentParentStack[]`=<value>
-                                         //
-                                         // callback (800):
-                                         // - `HangingIndent`--
-                                         // - `OverhangingParents[]`--
+        AddHangingIndentation::class,  // processToken (800):
+                                       // - `IsHangingParent`=true
+                                       // - `IsOverhangingParent`=true|false
+                                       // - `HangingIndent`+=<value>
+                                       // - `OverhangingParents[]`=<value>
+                                       // - `IndentBracketStack[]`=<value>
+                                       // - `IndentStack[]`=<value>
+                                       // - `IndentParentStack[]`=<value>
+                                       //
+                                       // callback (800):
+                                       // - `HangingIndent`--
+                                       // - `OverhangingParents[]`--
 
-        ReindentHeredocs::class,    // beforeRender:
-                                    // - `HeredocIndent`=<value>
-                                    // - `text`=<value>
+        ReindentHeredocs::class,  // beforeRender:
+                                  // - `HeredocIndent`=<value>
+                                  // - `text`=<value>
 
         AddEssentialWhitespace::class,
-
-        // BlockRules
-        AlignComments::class,
 
         // Read-only rules
         ReportUnnecessaryParentheses::class,

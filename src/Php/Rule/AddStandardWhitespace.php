@@ -64,11 +64,11 @@ final class AddStandardWhitespace implements TokenRule
             T_OPEN_TAG_WITH_ECHO,
             T_CLOSE_TAG,
 
-            T[')'],    // isCloseBracket()
+            T[')'],  // isCloseBracket()
             T[']'],
             T['}'],
 
-            T['('],    // isOpenBracket()
+            T['('],  // isOpenBracket()
             T['['],
             T['{'],
             T_ATTRIBUTE,

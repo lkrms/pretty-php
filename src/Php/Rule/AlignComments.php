@@ -9,7 +9,11 @@ use Lkrms\Pretty\Php\TokenCollection;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
-class AlignComments implements BlockRule
+/**
+ * Align comments beside code
+ *
+ */
+final class AlignComments implements BlockRule
 {
     use BlockRuleTrait;
 
@@ -18,23 +22,38 @@ class AlignComments implements BlockRule
         if (count($block) < 2) {
             return;
         }
+
         // Collect comments that appear beside code
-        $comments             = [];
-        $firstLineWithComment = null;
-        $lastLineWithComment  = null;
+        $comments = [];
         foreach ($block as $i => $line) {
             /** @var Token|null $lastComment */
             $lastComment = $prevComment ?? null;
             $prevComment = null;
-            $comment     = $line->getLastOf(...TokenType::COMMENT);
+
+            $comment = $line->getLastOf(...TokenType::COMMENT);
             if (!$comment || !$comment->hasNewlineAfter()) {
                 continue;
             }
+
             if ($comment->hasNewlineBefore()) {
+                /**
+                 * A comment on its own line is considered standalone if it
+                 * doesn't continue a comment on the preceding line:
+                 *
+                 * ```php
+                 * $a = 1;
+                 * $b = 2;  // Comment 1
+                 *          // Comment 2 continues comment 1
+                 * $c = 3;  // Comment 3
+                 *
+                 * // Comment 4 is a standalone comment
+                 * ```
+                 */
                 $prev = $comment->prev();
                 $standalone = $prev !== $lastComment ||
                     $comment->isMultiLineComment() ||
                     $lastComment->isMultiLineComment();
+
                 if ($standalone || $comment->line - $prev->line > 1) {
                     /**
                      * Preserve blank lines so comments don't merge on
@@ -42,10 +61,10 @@ class AlignComments implements BlockRule
                      *
                      * ```php
                      * $a = 1;
-                     * $b = 2;    // Comment
+                     * $b = 2;  // Comment 1
                      *
                      * // If the blank line were removed, this would become part
-                     * // of the comment beside `$b = 2;` on the next run
+                     * // of comment 1 on the next run
                      * $c = 3;
                      * ```
                      */
@@ -56,58 +75,50 @@ class AlignComments implements BlockRule
                 }
             }
 
-            $comments[$i]         = $comment;
-            /** @var Token $firstLineWithComment */
-            $firstLineWithComment = $firstLineWithComment ?: $line[0];
-            /** @var Token $lastLineWithComment */
-            $lastLineWithComment  = $line[0];
-            $prevComment          = $comment;
+            $prevComment = $comments[$i] = $comment;
         }
+
         if (count($comments) < 2) {
             return;
         }
-        $this->Formatter->registerCallback($this, reset($comments), fn() =>
-            $this->alignComments($block, $comments, $firstLineWithComment, $lastLineWithComment), 999);
+
+        $block = array_intersect_key($block, $comments);
+
+        $this->Formatter->registerCallback(
+            $this,
+            reset($comments),
+            fn() => $this->alignComments($block, $comments),
+            999
+        );
     }
 
     /**
      * @param TokenCollection[] $block
      * @param Token[] $comments
      */
-    private function alignComments(array $block, array $comments, Token $first, Token $last): void
+    private function alignComments(array $block, array $comments): void
     {
         $lengths = [];
         $max     = 0;
         foreach ($block as $i => $line) {
-            /** @var Token $token */
-            $token = $line[0];
-            // Ignore lines before $first and after $last unless their bracket
-            // stacks match $first and $last respectively
-            if (!$lengths && $token->BracketStack !== $first->BracketStack ||
-                    ($token->Index > $last->Index && $token->BracketStack !== $last->BracketStack)) {
+            $token   = $line[0];
+            $comment = $comments[$i];
+            // If $comment is the first token on the line, there won't be
+            // anything to collect between $token and $comment->prev(), so use
+            // $comment's leading whitespace for calculations
+            if ($token === $comment) {
+                $length      = strlen(ltrim($comment->renderWhitespaceBefore(true), "\n"));
+                $lengths[$i] = $length;
+                $max         = max($max, $length);
                 continue;
             }
-            if ($comment = $comments[$i] ?? null) {
-                // If $comment is the first token on the line, there won't be
-                // anything to collect between $token and $comment->prev(), so
-                // use $comment's leading whitespace instead
-                if ($token === $comment) {
-                    $length      = strlen(ltrim($comment->renderWhitespaceBefore(true), "\n"));
-                    $lengths[$i] = $length;
-                    $max         = max($max, $length);
-                    continue;
-                }
-                $line = $token->collect($comment->prev());
-            } elseif ($token->is(TokenType::COMMENT)) {
-                continue;
-            }
+            $line = $token->collect($comment->prev());
             foreach (explode("\n", ltrim($line->render(true, false), "\n")) as $line) {
                 $length      = mb_strlen(trim($line, "\r"));
                 $lengths[$i] = $length;
                 $max         = max($max, $length);
             }
         }
-        /** @var Token $comment */
         foreach ($comments as $i => $comment) {
             $comment->Padding = $max - $lengths[$i]
                 + ($comment->hasNewlineBefore()
