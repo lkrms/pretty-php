@@ -7,6 +7,7 @@ use Lkrms\Facade\File;
 use Lkrms\Pretty\Php\Filter\SortImports;
 use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
+use Lkrms\Pretty\Php\Rule\AlignComments;
 use Lkrms\Pretty\Php\Rule\BreakBetweenMultiLineItems;
 use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
@@ -90,6 +91,7 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
                     case 'phpfmt':
                         $insertSpaces = false;
                         $addRules     = [
+                            AlignComments::class,
                             PreserveOneLineStatements::class,
                         ];
                         $skipRules = [
@@ -101,6 +103,7 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
                         break;
                     case 'php-doc':
                         $addRules = [
+                            AlignComments::class,
                             PreserveOneLineStatements::class,
                         ];
                         $skipRules = [

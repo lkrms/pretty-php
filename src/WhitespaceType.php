@@ -18,7 +18,7 @@ final class WhitespaceType extends Enumeration
     public const SPACE = 1;
 
     /**
-     * Four or more horizontal spaces
+     * Two or more horizontal spaces
      */
     public const TAB = 2;
 
@@ -42,7 +42,7 @@ final class WhitespaceType extends Enumeration
         if (!$value) {
             return '';
         }
-        $tab = ($value & self::TAB) ? '    ' : '';
+        $tab = ($value & self::TAB) ? '  ' : '';
         if ($value & self::BLANK) {
             return "\n\n$tab";
         }

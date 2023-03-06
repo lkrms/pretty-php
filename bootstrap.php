@@ -5,7 +5,7 @@ namespace Lkrms\Pretty\Php;
 defined('T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG') || define('T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG', 10001);
 defined('T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG') || define('T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG', 10002);
 defined('T_ATTRIBUTE') || define('T_ATTRIBUTE', 10003);
-defined('T_BAD_CHARACTER') || define('T_BAD_CHARACTER', 10004);    // Silence Intelephense
+defined('T_BAD_CHARACTER') || define('T_BAD_CHARACTER', 10004);  // Silence Intelephense
 defined('T_ENUM') || define('T_ENUM', 10005);
 defined('T_MATCH') || define('T_MATCH', 10006);
 defined('T_NAME_FULLY_QUALIFIED') || define('T_NAME_FULLY_QUALIFIED', 10007);

@@ -82,7 +82,6 @@ class FormatPhp extends CliCommand
         'align-chains'             => AlignChainedCalls::class,
         'align-lists'              => AlignLists::class,
         'indent-heredocs'          => ReindentHeredocs::class,
-        'align-comments'           => AlignComments::class,
         'report-brackets'          => ReportUnnecessaryParentheses::class,
     ];
 
@@ -91,6 +90,7 @@ class FormatPhp extends CliCommand
      */
     private $RuleMap = [
         'align-assignments'  => AlignAssignments::class,
+        'align-comments'     => AlignComments::class,
         'break-before-lists' => BreakBeforeMultiLineList::class,
         'no-concat-spaces'   => SuppressSpaceAroundStringOperator::class,
         'preserve-one-line'  => PreserveOneLineStatements::class,
@@ -276,6 +276,7 @@ class FormatPhp extends CliCommand
         }
         if ($this->getOptionValue('align-all')) {
             $rules[] = 'align-assignments';
+            $rules[] = 'align-comments';
         }
         if ($this->getOptionValue('laravel')) {
             $skip[]  = 'one-line-arguments';
@@ -337,9 +338,11 @@ class FormatPhp extends CliCommand
                 $errors[] = $file;
                 continue;
             } catch (PrettyException $ex) {
+                Console::error('Unable to format:', $file);
                 $this->maybeDumpDebugOutput($input, $ex->getOutput(), $ex->getTokens(), $ex->getData());
                 throw $ex;
             } catch (Throwable $ex) {
+                Console::error('Unable to format:', $file);
                 $this->maybeDumpDebugOutput($input, null, $formatter->Tokens, (string) $ex);
                 throw $ex;
             } finally {

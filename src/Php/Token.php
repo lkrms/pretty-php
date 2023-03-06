@@ -1599,10 +1599,10 @@ class Token extends PhpToken implements JsonSerializable
         $lastInner = $_this->ClosedBy->prevCode();
         $parent    = $_this->parent();
 
-        return ($lastInner === $_this ||                                           // `{}`
-                $lastInner->is([T[':'], T[';']]) ||                                // `{ statement; }`
-                $lastInner->IsCloseTagStatementTerminator ||                       /* `{ statement ?>...<?php }` */
-                ($lastInner->is(T['}']) && $lastInner->isStructuralBrace())) &&    // `{ { statement; } }`
+        return ($lastInner === $_this ||                                         // `{}`
+                $lastInner->is([T[':'], T[';']]) ||                              // `{ statement; }`
+                $lastInner->IsCloseTagStatementTerminator ||                     /* `{ statement ?>...<?php }` */
+                ($lastInner->is(T['}']) && $lastInner->isStructuralBrace())) &&  // `{ { statement; } }`
             !(($parent->isNull() ||
                     $parent->prevSiblingsWhile(...TokenType::DECLARATION_PART)->hasOneOf(T_NAMESPACE)) &&
                 $parent->prevSiblingsWhile(...TokenType::DECLARATION_PART)->hasOneOf(T_USE));
