@@ -351,7 +351,9 @@ class FormatPhp extends CliCommand
             if ($outFile === '-') {
                 Console::maybeClearLine();
                 print $output;
-                Console::tty('');
+                if (stream_isatty(STDOUT)) {
+                    Console::tty('');
+                }
                 continue;
             }
 
