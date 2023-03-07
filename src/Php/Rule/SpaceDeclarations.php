@@ -5,7 +5,6 @@ namespace Lkrms\Pretty\Php\Rule;
 use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
-use Lkrms\Pretty\Php\TokenCollection;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
@@ -27,6 +26,26 @@ final class SpaceDeclarations implements TokenRule
 {
     use TokenRuleTrait;
 
+    /**
+     * @var Token[]
+     */
+    private $Prev = [];
+
+    /**
+     * @var int[]
+     */
+    private $PrevTypes = [];
+
+    /**
+     * @var bool
+     */
+    private $PrevCondense = false;
+
+    /**
+     * @var bool
+     */
+    private $PrevExpand = false;
+
     public function getPriority(string $method): ?int
     {
         return $method === self::PROCESS_TOKEN
@@ -46,8 +65,7 @@ final class SpaceDeclarations implements TokenRule
         if ($token->Statement !== $token ||
                 // For formatting purposes, promoted constructor parameters
                 // aren't declarations
-                ($token->is(TokenType::VISIBILITY) && $token->inFunctionDeclaration()) ||
-                $token->OpenTag->nextCode() === $token) {
+                ($token->is(TokenType::VISIBILITY) && $token->inFunctionDeclaration())) {
             return;
         }
 
@@ -63,66 +81,102 @@ final class SpaceDeclarations implements TokenRule
             $token->EndStatement->WhitespaceAfter |= WhitespaceType::BLANK;
         }
 
+        // Don't add blank lines between `<?php` and declarations
+        $lineType = $token->OpenTag->nextCode() === $token
+            ? WhitespaceType::LINE
+            : WhitespaceType::BLANK;
+
         // If the same DECLARATION_UNIQUE tokens appear in consecutive one-line
         // statements, propagate the gap between statements 1 and 2 to
         // subsequent statements
         $types = $parts->getAnyOf(...TokenType::DECLARATION_UNIQUE)
                        ->getTypes();
-        if ($types) {
-            $prev = $this->maybeGetPrevDeclaration($token, $prevTypes, $prevParts);
-            if ($types === $prevTypes) {
-                // Suppress blank lines between DECLARATION_CONDENSE statements,
-                // multi-line or otherwise
-                if ($parts->hasOneOf(...TokenType::DECLARATION_CONDENSE)) {
-                    $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
+        if (!$types) {
+            $token->WhitespaceBefore |= $lineType;
 
-                    return;
-                }
-                if (!$token->collect($token->endOfStatement())->hasOuterNewline() &&
-                        !$prev->collect($token->prev())->hasOuterNewline()) {
-                    $prev2 = $this->maybeGetPrevDeclaration($prev, $prev2Types);
-                    if ($types === $prev2Types &&
-                            !$prev2->collect($prev->prev())->hasOuterNewline()) {
-                        // Always propagate blank lines to the third statement
-                        // and beyond, but don't suppress them if there's a
-                        // change of visibility, e.g. preserve the blank line
-                        // before the `private const` here:
-                        //
-                        // ```php
-                        // public const A = 0;
-                        // public const B = 1;
-                        //
-                        // private const C = 2;
-                        // ```
-                        if ($prev->hasBlankLineBefore()) {
-                            $token->WhitespaceBefore |= WhitespaceType::BLANK;
-                        } elseif (($parts->getFirstOf(...TokenType::VISIBILITY)->id ?? null) ===
-                                ($prevParts->getFirstOf(...TokenType::VISIBILITY)->id ?? null)) {
-                            $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
-                        }
-                    }
+            return;
+        }
+        $prev = end($this->Prev);
+        if (!($types === $this->PrevTypes &&
+                $token->prevCode()->startOfStatement() === $prev)) {
+            $this->Prev       = [];
+            $this->PrevTypes  = $types;
+            $this->PrevExpand = $this->hasComment($token);
+        }
+        $this->Prev[] = $token;
+        $count        = count($this->Prev);
+        // Always add a blank line above the first declaration of each type
+        if ($count < 2) {
+            $token->WhitespaceBefore |= $lineType;
 
-                    return;
-                }
-            }
+            return;
         }
 
-        $token->WhitespaceBefore |= WhitespaceType::BLANK;
+        // Suppress blank lines between DECLARATION_CONDENSE statements,
+        // multi-line or otherwise
+        if ($count < 3) {
+            $this->PrevCondense = $parts->hasOneOf(...TokenType::DECLARATION_CONDENSE);
+        }
+        if ($this->PrevCondense) {
+            $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
+
+            return;
+        }
+
+        // Always propagate blank lines to the third statement and beyond, but
+        // don't suppress them if there's a change of visibility, e.g. preserve
+        // the blank line before the `private const` here:
+        //
+        // ```php
+        // public const A = 0;
+        // public const B = 1;
+        //
+        // private const C = 2;
+        // ```
+        if ($count > 2 &&
+            !$this->PrevExpand &&
+            ($parts->getFirstOf(...TokenType::VISIBILITY)->id ?? null) !==
+                ($prev->withNextSiblingsWhile(...TokenType::DECLARATION_PART)
+                      ->getFirstOf(...TokenType::VISIBILITY)
+                      ->id ?? null)) {
+            $this->Prev = [$token];
+            $count      = 1;
+        }
+
+        $expand = $this->PrevExpand ||
+            $this->hasComment($token) ||
+            $token->collect($token->endOfStatement())->hasOuterNewline() ||
+            ($count > 1 &&
+                ($prev->collect($token->prev())->hasOuterNewline() ||
+                    ($count < 3 && $token->hasBlankLineBefore())));
+        if ($expand) {
+            if (!$this->PrevExpand) {
+                if (!$this->hasComment($token)) {
+                    array_walk(
+                        $this->Prev,
+                        function (Token $t) {
+                            $t->WhitespaceBefore   |= WhitespaceType::BLANK;
+                            $t->WhitespaceMaskPrev |= WhitespaceType::BLANK;
+                        }
+                    );
+                }
+                $this->PrevExpand = true;
+            } else {
+                $token->WhitespaceBefore   |= WhitespaceType::BLANK;
+                $token->WhitespaceMaskPrev |= WhitespaceType::BLANK;
+            }
+
+            return;
+        }
+
+        if ($count > 2) {
+            $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
+        }
     }
 
-    /**
-     * @param array<int|string>|null $types
-     */
-    private function maybeGetPrevDeclaration(Token $token, ?array &$types = null, ?TokenCollection &$parts = null): ?Token
+    private function hasComment(Token $token): bool
     {
-        $prev  = $token->prevCode()->startOfStatement();
-        $parts = $prev->withNextSiblingsWhile(...TokenType::DECLARATION_PART);
-        if ($prev->IsNull || !count($parts)) {
-            return $types = null;
-        }
-        $types = $parts->getAnyOf(...TokenType::DECLARATION_UNIQUE)
-                       ->getTypes();
-
-        return $prev;
+        return ($comment = $token->prev())->is(TokenType::COMMENT) &&
+            $comment->PinToCode;
     }
 }

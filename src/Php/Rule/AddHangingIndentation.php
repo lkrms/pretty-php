@@ -75,7 +75,15 @@ class AddHangingIndentation implements TokenRule
         //                 $b;
         //
         if ($token->isTernaryOperator()) {
-            $stack[] = $token->TernaryOperator1;
+            $prevTernary =
+                $token->prevSiblings()
+                      ->filter(
+                          fn(Token $t) =>
+                              $t->isTernaryOperator() &&
+                                  $t->TernaryOperator2->Index < $token->TernaryOperator1->Index
+                      )
+                      ->last();
+            $stack[] = ($prevTernary ?: $token)->TernaryOperator1;
         } elseif ($latest && $latest->BracketStack === $token->BracketStack) {
             if ($token->isStartOfExpression() ||
                     $latest->isStartOfExpression()) {
