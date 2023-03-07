@@ -136,9 +136,9 @@ final class SpaceDeclarations implements TokenRule
         if ($count > 2 &&
             !$this->PrevExpand &&
             ($parts->getFirstOf(...TokenType::VISIBILITY)->id ?? null) !==
-            ($prev->withNextSiblingsWhile(...TokenType::DECLARATION_PART)
-                  ->getFirstOf(...TokenType::VISIBILITY)
-                  ->id ?? null)) {
+                ($prev->withNextSiblingsWhile(...TokenType::DECLARATION_PART)
+                      ->getFirstOf(...TokenType::VISIBILITY)
+                      ->id ?? null)) {
             $this->Prev = [$token];
             $count      = 1;
         }

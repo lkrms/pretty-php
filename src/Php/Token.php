@@ -37,6 +37,7 @@ class Token extends PhpToken implements JsonSerializable
         T[';'],
         T[']'],
         ...TokenType::OPERATOR_ASSIGNMENT,
+        ...TokenType::OPERATOR_COMPARISON_EXCEPT_COALESCE,
         ...TokenType::OPERATOR_DOUBLE_ARROW,
     ];
 
@@ -1072,6 +1073,38 @@ class Token extends PhpToken implements JsonSerializable
     }
 
     /**
+     * Collect the token's previous siblings in order from closest to farthest
+     *
+     * The token itself is not collected.
+     *
+     * If set, `$until` must be a previous sibling of the token. It will be
+     * collected.
+     */
+    final public function prevSiblings(Token $until = null): TokenCollection
+    {
+        $tokens  = new TokenCollection();
+        $current = $this->OpenedBy ?: $this;
+        if ($until) {
+            $until = $until->OpenedBy ?: $until;
+            if ($current->Index < $until->Index || $until->IsNull) {
+                return $tokens;
+            }
+            if ($current->BracketStack !== $until->BracketStack) {
+                throw new RuntimeException('Argument #1 ($until) is not a sibling');
+            }
+        }
+
+        while ($current = $current->_prevSibling) {
+            $tokens[] = $current;
+            if ($until && $current === $until) {
+                break;
+            }
+        }
+
+        return $tokens;
+    }
+
+    /**
      * Collect the token's siblings up to but not including the last that isn't
      * one of the listed types
      *
@@ -1301,9 +1334,16 @@ class Token extends PhpToken implements JsonSerializable
     public function pragmaticEndOfExpression(): Token
     {
         // If the token is a ternary operator, return the last token in the
-        // third expression
+        // third expression of the last ternary expression in the statement
         if ($this->IsTernaryOperator) {
-            return $this->TernaryOperator2->EndExpression ?: $this;
+            $current = $this;
+            do {
+                $end = $current->TernaryOperator2->EndExpression ?: $current;
+            } while ($end !== $current &&
+                ($current = $end->nextSibling())->isTernaryOperator() &&
+                $current->TernaryOperator1 === $current);
+
+            return $end;
         }
         // For other expression terminators, the most pragmatic thing to return
         // is the end of the statement
@@ -1337,7 +1377,7 @@ class Token extends PhpToken implements JsonSerializable
                                     ($t->is(T[':']) && ($t->inSwitchCase() || $t->inLabel() || !$t->prevSiblingOf(T[':'], T[';'], T['?'], T_CLOSE_TAG)->is([T['?'], T[':']]))) ||
                                     ($t->is(T['?']) && count($tc->filter(fn(Token $t) => $t->is(T[':']))) - count($tc->filter(fn(Token $t) => $t->is(T['?']))) <= 0)
                         )->hasOneOf(T_DO)) &&
-                    !$terminator->is([T_DOUBLE_ARROW, ...TokenType::OPERATOR_ASSIGNMENT]) &&
+                    !$terminator->is([T_DOUBLE_ARROW, ...TokenType::OPERATOR_ASSIGNMENT, ...TokenType::OPERATOR_COMPARISON_EXCEPT_COALESCE]) &&
                     !($inCase &&
                         !$terminator->_nextSibling->is([T_CASE, T_DEFAULT])) &&
                     !$terminator->isTernaryOperator())) {
@@ -1843,21 +1883,24 @@ class Token extends PhpToken implements JsonSerializable
 
     public function collectSiblings(Token $to = null): TokenCollection
     {
-        $tokens = new TokenCollection();
-        if ($to && ($this->Index > $to->Index || $to->isNull())) {
-            return $tokens;
+        $tokens  = new TokenCollection();
+        $current = $this->OpenedBy ?: $this;
+        if ($to) {
+            if ($this->Index > $to->Index || $to->IsNull) {
+                return $tokens;
+            }
+            $to = $to->OpenedBy ?: $to;
+            if ($current->BracketStack !== $to->BracketStack) {
+                throw new RuntimeException('Argument #1 ($to) is not a sibling');
+            }
         }
-        $from = $this->OpenedBy ?: $this;
-        if ($to && !$from->isSibling($to)) {
-            throw new RuntimeException('Argument #1 ($to) is not a sibling');
-        }
-        while (!$from->isNull()) {
-            $tokens[] = $from;
-            if ($to && ($from === $to || $from === $to->OpenedBy)) {
+
+        do {
+            $tokens[] = $current;
+            if ($to && $current === $to) {
                 break;
             }
-            $from = $from->nextSibling();
-        }
+        } while ($current = $current->_nextSibling);
 
         return $tokens;
     }
@@ -1909,12 +1952,5 @@ class Token extends PhpToken implements JsonSerializable
         return $this->id === $token->id &&
             (!$this->is(TokenType::COMMENT) ||
                 $this->isMultiLineComment() === $token->isMultiLineComment());
-    }
-
-    private function isSibling(Token $token): bool
-    {
-        $token = $token->canonical();
-
-        return $token->BracketStack === $this->BracketStack;
     }
 }
