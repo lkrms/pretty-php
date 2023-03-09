@@ -31,7 +31,7 @@ use Lkrms\Pretty\Php\Rule\BracePosition;
 use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
 use Lkrms\Pretty\Php\Rule\BreakBeforeControlStructureBody;
 use Lkrms\Pretty\Php\Rule\BreakBetweenMultiLineItems;
-use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
+use Lkrms\Pretty\Php\Rule\Extra\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\MatchPosition;
 use Lkrms\Pretty\Php\Rule\PlaceAttributes;
 use Lkrms\Pretty\Php\Rule\PlaceComments;

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Pretty\Php\Rule;
+namespace Lkrms\Pretty\Php\Rule\Extra;
 
 use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
@@ -9,7 +9,11 @@ use Lkrms\Pretty\WhitespaceType;
 
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
-class DeclareArgumentsOnOneLine implements TokenRule
+/**
+ * Suppress newlines between arguments in function declarations
+ *
+ */
+final class DeclareArgumentsOnOneLine implements TokenRule
 {
     use TokenRuleTrait;
 
