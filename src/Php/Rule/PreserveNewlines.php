@@ -44,14 +44,12 @@ class PreserveNewlines implements TokenRule
 
         $min = $prev->line;
         $max = $token->line;
-        foreach ([true, false] as $noBrackets) {
-            if ($this->maybePreserveNewlineAfter($prev, $token, $type, $min, $max, $noBrackets) ||
-                    $this->maybePreserveNewlineBefore($token, $prev, $type, $min, $max, $noBrackets) ||
-                    $this->maybePreserveNewlineBefore($prev, $prev->prev(), $type, $min, $max, $noBrackets) ||
-                    $this->maybePreserveNewlineAfter($token, $token->next(), $type, $min, $max, $noBrackets)) {
-                return;
-            }
-        }
+        $this->maybePreserveNewlineAfter($prev, $token, $type, $min, $max, false) ||
+            $this->maybePreserveNewlineBefore($token, $prev, $type, $min, $max, false) ||
+            $this->maybePreserveNewlineBefore($prev, $prev->prev(), $type, $min, $max, true) ||
+            $this->maybePreserveNewlineBefore($prev, $prev->prev(), $type, $min, $max, false) ||
+            $this->maybePreserveNewlineAfter($token, $token->next(), $type, $min, $max, true) ||
+            $this->maybePreserveNewlineAfter($token, $token->next(), $type, $min, $max, false);
     }
 
     private function maybePreserveNewlineBefore(Token $token, Token $prev, int $type, int $min, int $max, bool $noBrackets): bool

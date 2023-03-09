@@ -20,9 +20,7 @@ class AddHangingIndentation implements TokenRule
 
     public function getPriority(string $method): ?int
     {
-        return $method === self::PROCESS_TOKEN
-            ? 800
-            : null;
+        return 800;
     }
 
     public function processToken(Token $token): void
@@ -84,9 +82,18 @@ class AddHangingIndentation implements TokenRule
                       )
                       ->last();
             $stack[] = ($prevTernary ?: $token)->TernaryOperator1;
+            // Find the last token in the third expression of the last ternary
+            // expression in the statement
+            $current = $token;
+            do {
+                $until = $current->TernaryOperator2->EndExpression ?: $current;
+            } while ($until !== $current &&
+                ($current = $until->nextSibling())->isTernaryOperator() &&
+                $current->TernaryOperator1 === $current);
         } elseif ($latest && $latest->BracketStack === $token->BracketStack) {
-            if ($token->isStartOfExpression() ||
-                    $latest->isStartOfExpression()) {
+            if ($token->isStartOfExpression()) {
+                $stack[] = $token;
+            } elseif ($latest->isStartOfExpression()) {
                 $stack[] = $latest;
             } elseif (!$prev->isStatementPrecursor() &&
                     $latest->prevCode()->isStatementPrecursor()) {
@@ -107,7 +114,7 @@ class AddHangingIndentation implements TokenRule
         //                 $comment->hasNewlineAfter()) ||
         //             $comment->hasNewline())
         //
-        $until   = $token->pragmaticEndOfExpression();
+        $until   = $until ?? $token->pragmaticEndOfExpression();
         $indent  = 0;
         $hanging = [];
         $parents = in_array($parent, $token->IndentParentStack, true)
@@ -247,7 +254,7 @@ class AddHangingIndentation implements TokenRule
 
         // $token is regarded as a continuation of $prev if:
         // - $token and $prev both have the same level of indentation
-        // - $token is not an opening brace (`{`) on its own line
+        // - $token is not an open brace (`{`) on its own line
         // - $prev is not a statement delimiter in a context where indentation
         //   is inherited from enclosing tokens
         $prev = $token->prevCode();

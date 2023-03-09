@@ -16,9 +16,7 @@ final class AlignLists implements TokenRule
 
     public function getPriority(string $method): ?int
     {
-        return $method === self::PROCESS_TOKEN
-            ? 400
-            : null;
+        return 400;
     }
 
     public function getTokenTypes(): ?array

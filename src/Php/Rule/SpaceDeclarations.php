@@ -48,9 +48,7 @@ final class SpaceDeclarations implements TokenRule
 
     public function getPriority(string $method): ?int
     {
-        return $method === self::PROCESS_TOKEN
-            ? 620
-            : null;
+        return 620;
     }
 
     public function getTokenTypes(): ?array

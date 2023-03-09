@@ -58,6 +58,7 @@ use Throwable;
  * @property-read string $Tab
  * @property-read int $TabSize
  * @property-read string $SoftTab
+ * @property-read bool $MirrorBrackets
  * @property-read string[] $Rules
  */
 final class Formatter implements IReadable
@@ -98,6 +99,11 @@ final class Formatter implements IReadable
      * @var string
      */
     protected $SoftTab;
+
+    /**
+     * @var bool
+     */
+    protected $MirrorBrackets = true;
 
     /**
      * @var string[]

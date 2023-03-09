@@ -230,6 +230,11 @@ final class TokenType
     ];
 
     public const DECLARATION_PART = [
+        T[','],
+        T_NAME_FULLY_QUALIFIED,
+        T_NAME_QUALIFIED,
+        T_NAME_RELATIVE,
+        T_NS_SEPARATOR,
         T_STATIC,
         T_STRING,
         ...self::DECLARATION,
@@ -261,6 +266,24 @@ final class TokenType
         T_FOREACH,
         T_IF,
         T_WHILE,
+    ];
+
+    public const HAS_STATEMENT_WITH_BRACES = [
+        T_CATCH,
+        T_FINALLY,
+    ];
+
+    public const HAS_EXPRESSION_AND_STATEMENT_WITH_BRACES = [
+        T_DECLARE,
+        T_SWITCH,
+        T_TRY,
+    ];
+
+    public const HAS_STATEMENT = [
+        ...self::HAS_STATEMENT_WITH_OPTIONAL_BRACES,
+        ...self::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES,
+        ...self::HAS_STATEMENT_WITH_BRACES,
+        ...self::HAS_EXPRESSION_AND_STATEMENT_WITH_BRACES,
     ];
 
     public const HAS_EXPRESSION_WITH_OPTIONAL_PARENTHESES = [
