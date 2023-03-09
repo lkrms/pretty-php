@@ -34,25 +34,25 @@ class PreserveNewlines implements TokenRule
             if ($effective & WhitespaceType::BLANK) {
                 return;
             }
-            $type = WhitespaceType::BLANK | WhitespaceType::LINE;
+            $line = WhitespaceType::BLANK | WhitespaceType::LINE;
         } else {
             if ($effective & (WhitespaceType::LINE | WhitespaceType::BLANK)) {
                 return;
             }
-            $type = WhitespaceType::LINE;
+            $line = WhitespaceType::LINE;
         }
 
         $min = $prev->line;
         $max = $token->line;
-        $this->maybePreserveNewlineAfter($prev, $token, $type, $min, $max, false) ||
-            $this->maybePreserveNewlineBefore($token, $prev, $type, $min, $max, false) ||
-            $this->maybePreserveNewlineBefore($prev, $prev->prev(), $type, $min, $max, true) ||
-            $this->maybePreserveNewlineBefore($prev, $prev->prev(), $type, $min, $max, false) ||
-            $this->maybePreserveNewlineAfter($token, $token->next(), $type, $min, $max, true) ||
-            $this->maybePreserveNewlineAfter($token, $token->next(), $type, $min, $max, false);
+        $this->maybePreserveNewlineAfter($prev, $token, $line, $min, $max, false) ||
+            $this->maybePreserveNewlineBefore($token, $prev, $line, $min, $max, false) ||
+            $this->maybePreserveNewlineBefore($prev, $prev->prev(), $line, $min, $max, true) ||
+            $this->maybePreserveNewlineBefore($prev, $prev->prev(), $line, $min, $max, false) ||
+            $this->maybePreserveNewlineAfter($token, $token->next(), $line, $min, $max, true) ||
+            $this->maybePreserveNewlineAfter($token, $token->next(), $line, $min, $max, false);
     }
 
-    private function maybePreserveNewlineBefore(Token $token, Token $prev, int $type, int $min, int $max, bool $noBrackets): bool
+    private function maybePreserveNewlineBefore(Token $token, Token $prev, int $line, int $min, int $max, bool $noBrackets): bool
     {
         if ($noBrackets && $token->isCloseBracket()) {
             return false;
@@ -64,9 +64,9 @@ class PreserveNewlines implements TokenRule
                 (!$token->isTernaryOperator() || $token->TernaryOperator1 !== $prev) &&
                 (!$token->is(T[':']) || $token->isTernaryOperator())) {
             if (!$token->is(TokenType::PRESERVE_BLANK_BEFORE)) {
-                $type = WhitespaceType::LINE;
+                $line = WhitespaceType::LINE;
             }
-            $token->WhitespaceBefore |= $type;
+            $token->WhitespaceBefore |= $line;
 
             return true;
         }
@@ -74,7 +74,7 @@ class PreserveNewlines implements TokenRule
         return false;
     }
 
-    private function maybePreserveNewlineAfter(Token $token, Token $next, int $type, int $min, int $max, bool $noBrackets): bool
+    private function maybePreserveNewlineAfter(Token $token, Token $next, int $line, int $min, int $max, bool $noBrackets): bool
     {
         if ($noBrackets && $token->isOpenBracket()) {
             return false;
@@ -86,10 +86,10 @@ class PreserveNewlines implements TokenRule
                 (!$token->isTernaryOperator() || $token->TernaryOperator2 !== $next) &&
                 (!$token->is(T[':']) || $token->inSwitchCase() || $token->inLabel())) {
             if (!$token->is(TokenType::PRESERVE_BLANK_AFTER)) {
-                $type = WhitespaceType::LINE;
+                $line = WhitespaceType::LINE;
             }
-            $token->WhitespaceAfter |= $type;
-            $token->PinToCode        = $token->PinToCode && ($type === WhitespaceType::LINE);
+            $token->WhitespaceAfter |= $line;
+            $token->PinToCode        = $token->PinToCode && ($line === WhitespaceType::LINE);
 
             return true;
         }

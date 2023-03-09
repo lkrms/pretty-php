@@ -5,8 +5,9 @@ relevant directory:
 
 ```bash
 find . -type f -name '*.php' -print0 |
-  xargs -0 \
-    grep -EoHe '->Whitespace(Before|After|Mask(Prev|Next)) +[^ =]*= +.*' |
+  xargs -0 grep -EoH \
+    -e '->Whitespace(Before|After|Mask(Prev|Next)) +[^ =]*= +.*' \
+    -e '->(addWhitespaceBefore|applyInnerMask)\([^)]*\)' |
   tr -d ' ' |
   sed -E '
 s/\.php:->/ /
@@ -14,7 +15,16 @@ s/WhitespaceType:://g
 s/Whitespace//g
 s/\|=?/+/g
 s/(&=?|~)+/-/g
-s/[;)]+$//' |
+s/[;)]+$//
+/addBefore/ {
+  s/addBefore\(/Before+/; p
+  s/Before/MaskPrev/; p
+  s/MaskPrev/MaskNext/
+}
+/applyInnerMask/ {
+  s/applyInnerMask\(-?/MaskPrev-/; p
+  s/MaskPrev/MaskNext/
+}' |
   LC_ALL=C sort -u |
   awk -F'[ =+-]' '
               { o = $0 }
@@ -62,9 +72,14 @@ Sample output:
 `AlignComments`:
 - `Before`+BLANK
 
+`AlignLists`:
+- `Before`+LINE
+- `MaskNext`+LINE
+- `MaskPrev`+LINE
+
 `BracePosition`:
 - `After`(+LINE+SPACE|+SPACE)
-- `Before`(+LINE+SPACE|+SPACE|+SPACE+$lineBefore)
+- `Before`(+LINE+SPACE|+SPACE|+SPACE+$line)
 - `MaskNext`(-BLANK|-BLANK-LINE|-SPACE)
 - `MaskPrev`(-BLANK|=SPACE)
 
@@ -85,6 +100,11 @@ Sample output:
 - `MaskNext`+LINE
 - `MaskPrev`+LINE
 
+`BreakBetweenMultiLineItems`:
+- `Before`+LINE
+- `MaskNext`+LINE
+- `MaskPrev`+LINE
+
 `AddSpaceAfterFn`:
 - `After`+SPACE
 - `MaskNext`+SPACE
@@ -94,8 +114,8 @@ Sample output:
 - `MaskNext`+SPACE
 
 `DeclareArgumentsOnOneLine`:
-- `MaskNext`-$mask
-- `MaskPrev`-$mask
+- `MaskNext`-$allLines
+- `MaskPrev`-$allLines
 
 `SuppressSpaceAroundStringOperator`:
 - `MaskNext`-SPACE
@@ -111,17 +131,17 @@ Sample output:
 
 `PlaceComments`:
 - `After`(+BLANK|+LINE|+SPACE)
-- `Before`(+LINE+SPACE|+SPACE|+SPACE+$type|+TAB)
+- `Before`(+LINE+SPACE|+SPACE|+SPACE+$line|+TAB)
 - `MaskNext`-BLANK
 - `MaskPrev`-BLANK-LINE
 
 `PreserveNewlines`:
-- `After`+$type
-- `Before`+$type
+- `After`+$line
+- `Before`+$line
 
 `PreserveOneLineStatements`:
-- `MaskNext`-$mask
-- `MaskPrev`-$mask
+- `MaskNext`-BLANK-LINE
+- `MaskPrev`-BLANK-LINE
 
 `ProtectStrings`:
 - `MaskNext`=NONE
@@ -129,7 +149,7 @@ Sample output:
 
 `SpaceDeclarations`:
 - `After`+BLANK
-- `Before`(+$lineType|+BLANK)
+- `Before`(+$line|+BLANK)
 - `MaskPrev`(+BLANK|-BLANK)
 
 `SpaceOperators`:

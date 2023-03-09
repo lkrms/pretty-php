@@ -58,11 +58,11 @@ final class BracePosition implements TokenRule
             if ($prev->is(T[')'])) {
                 $this->BracketBracePairs[] = [$prev, $token];
             }
-            $lineBefore = WhitespaceType::NONE;
+            $line  = WhitespaceType::NONE;
             // Add a newline before this open brace if:
             // 1. it's part of a declaration
             // 2. it isn't part of an anonymous function
-            $parts      = $token->declarationParts();
+            $parts = $token->declarationParts();
             if ($parts->hasOneOf(...TokenType::DECLARATION) &&
                     !$parts->last()->is(T_FUNCTION)) {
                 // 3. it isn't part of a `use` statement
@@ -78,11 +78,11 @@ final class BracePosition implements TokenRule
                     $prevCode = $start->prevCode();
                     if ($prevCode->is([T[';'], T['{'], T['}'], T_CLOSE_TAG, T_NULL]) ||
                             ($prevCode->OpenedBy && $prevCode->OpenedBy->is(T_ATTRIBUTE))) {
-                        $lineBefore = WhitespaceType::LINE;
+                        $line = WhitespaceType::LINE;
                     }
                 }
             }
-            $token->WhitespaceBefore   |= WhitespaceType::SPACE | $lineBefore;
+            $token->WhitespaceBefore   |= WhitespaceType::SPACE | $line;
             $token->WhitespaceAfter    |= WhitespaceType::LINE | WhitespaceType::SPACE;
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
             if ($next->is(T['}'])) {

@@ -32,15 +32,15 @@ final class DeclareArgumentsOnOneLine implements TokenRule
             return;
         }
 
-        $mask = ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
+        $allLines = ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
 
-        $token->WhitespaceMaskNext           &= $mask;
-        $token->ClosedBy->WhitespaceMaskPrev &= $mask;
+        $token->WhitespaceMaskNext           &= $allLines;
+        $token->ClosedBy->WhitespaceMaskPrev &= $allLines;
 
         $token->inner()->forEach(
-            function (Token $t) use ($mask) {
-                $t->WhitespaceMaskPrev &= $mask;
-                $t->WhitespaceMaskNext &= $mask;
+            function (Token $t) use ($allLines) {
+                $t->WhitespaceMaskPrev &= $allLines;
+                $t->WhitespaceMaskNext &= $allLines;
             }
         );
     }
