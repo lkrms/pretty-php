@@ -21,9 +21,9 @@ use Lkrms\Pretty\Php\Rule\AlignComments;
 use Lkrms\Pretty\Php\Rule\AlignLists;
 use Lkrms\Pretty\Php\Rule\BreakBeforeMultiLineList;
 use Lkrms\Pretty\Php\Rule\BreakBetweenMultiLineItems;
-use Lkrms\Pretty\Php\Rule\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterFn;
 use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterNot;
+use Lkrms\Pretty\Php\Rule\Extra\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\Extra\SuppressSpaceAroundStringOperator;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
 use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
@@ -75,7 +75,6 @@ class FormatPhp extends CliCommand
         'simplify-strings'         => SimplifyStrings::class,
         'space-around-operators'   => SpaceOperators::class,
         'preserve-newlines'        => PreserveNewlines::class,
-        'one-line-arguments'       => DeclareArgumentsOnOneLine::class,
         'blank-before-return'      => AddBlankLineBeforeReturn::class,
         'blank-before-declaration' => SpaceDeclarations::class,
         'break-between-items'      => BreakBetweenMultiLineItems::class,
@@ -93,6 +92,7 @@ class FormatPhp extends CliCommand
         'align-comments'     => AlignComments::class,
         'break-before-lists' => BreakBeforeMultiLineList::class,
         'no-concat-spaces'   => SuppressSpaceAroundStringOperator::class,
+        'one-line-arguments' => DeclareArgumentsOnOneLine::class,
         'preserve-one-line'  => PreserveOneLineStatements::class,
         'space-after-fn'     => AddSpaceAfterFn::class,
         'space-after-not'    => AddSpaceAfterNot::class,

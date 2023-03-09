@@ -62,6 +62,7 @@ class PlaceComments implements TokenRule
         $type = WhitespaceType::LINE;
         if ($token->hasNewline() &&
             !($prev = $token->prev())->isNull() &&
+            !($prev === $token->parent()) &&
             !($prev->is(T[',']) ||
                 ($prev->is([T[':'], T[';']]) &&
                     ($prev->inSwitchCase() || $prev->inLabel())))) {

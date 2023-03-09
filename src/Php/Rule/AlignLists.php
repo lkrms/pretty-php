@@ -4,7 +4,6 @@ namespace Lkrms\Pretty\Php\Rule;
 
 use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
-use Lkrms\Pretty\Php\Rule\BreakBetweenMultiLineItems;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenCollection;
 
@@ -16,9 +15,7 @@ final class AlignLists implements TokenRule
 
     public function getPriority(string $method): ?int
     {
-        return $method === self::PROCESS_TOKEN
-            ? 400
-            : null;
+        return 400;
     }
 
     public function getTokenTypes(): ?array
@@ -45,7 +42,7 @@ final class AlignLists implements TokenRule
                     $root->prevCode()->is(T_AS) &&
                     $root->parent()->prevCode()->is(T_FOREACH)))) {
             $align[] = $token->ClosedBy;
-            BreakBetweenMultiLineItems::applyTo($align);
+            $align->addWhitespaceBefore();
 
             return;
         }

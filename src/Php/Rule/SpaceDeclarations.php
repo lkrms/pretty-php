@@ -48,9 +48,7 @@ final class SpaceDeclarations implements TokenRule
 
     public function getPriority(string $method): ?int
     {
-        return $method === self::PROCESS_TOKEN
-            ? 620
-            : null;
+        return 620;
     }
 
     public function getTokenTypes(): ?array
@@ -145,9 +143,9 @@ final class SpaceDeclarations implements TokenRule
 
         $expand = $this->PrevExpand ||
             $this->hasComment($token) ||
-            $token->collect($token->endOfStatement())->hasOuterNewline() ||
+            $token->collect($token->endOfStatement())->hasNewline() ||
             ($count > 1 &&
-                ($prev->collect($token->prev())->hasOuterNewline() ||
+                ($prev->collect($token->prev())->hasNewline() ||
                     ($count < 3 && $token->hasBlankLineBefore())));
         if ($expand) {
             if (!$this->PrevExpand) {

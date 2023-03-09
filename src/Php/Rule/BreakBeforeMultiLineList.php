@@ -10,7 +10,7 @@ use Lkrms\Pretty\WhitespaceType;
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
 /**
- * Add a newline after the opening bracket of a multi-line delimited list
+ * Add a newline after the open bracket of a multi-line delimited list
  *
  */
 final class BreakBeforeMultiLineList implements TokenRule

@@ -15,9 +15,7 @@ class MatchPosition implements TokenRule
 
     public function getPriority(string $method): ?int
     {
-        return $method === self::PROCESS_TOKEN
-            ? 600
-            : null;
+        return 600;
     }
 
     public function getTokenTypes(): ?array

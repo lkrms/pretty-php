@@ -555,8 +555,9 @@ class Token extends PhpToken implements JsonSerializable
     private function maybeApplyStatement(): void
     {
         if ((($this->is(T[';']) ||
-                    $this->IsCloseTagStatementTerminator ||
-                    ($this->is(T['}']) && $this->isStructuralBrace())) &&
+                $this->IsCloseTagStatementTerminator ||
+                ($this->is(T['}']) &&
+                    $this->isCloseBraceStatementTerminator())) &&
                 !$this->nextCode()->is([T_ELSEIF, T_ELSE]) &&
                 !($this->nextCode()->is(T_WHILE) &&
                     $this->prevSiblingsUntil(
@@ -628,6 +629,58 @@ class Token extends PhpToken implements JsonSerializable
             }
             $current = $current->_nextSibling;
         } while ($current && $current->EndStatement === $this);
+    }
+
+    private function isCloseBraceStatementTerminator(): bool
+    {
+        if (!$this->is(T['}']) || !$this->isStructuralBrace()) {
+            return false;
+        }
+
+        if (!($start = $this->Statement)) {
+            // Find the end of the last statement for the start of this one
+            $current = $this->OpenedBy->_prevSibling;
+            while ($current && !$current->EndStatement) {
+                $start   = $current;
+                $current = $current->_prevSibling;
+            }
+        }
+        // If the open brace is the start, the close brace is the end
+        if (!$start || $start === $this->OpenedBy) {
+            return true;
+        }
+
+        // Control structure bodies are terminated with `}`
+        if ($start->is(TokenType::HAS_STATEMENT)) {
+            return true;
+        }
+
+        if ($start->is(T_USE)) {
+            $parent = $start->parent();
+            // - Alias/import statements (e.g. `use const <FQCN>`) end with `;`
+            // - `use <trait> { ... }` ends with `}`
+            if ($parent->isNull() ||
+                $parent->prevSiblingsWhile(...TokenType::DECLARATION_PART)
+                       ->hasOneOf(T_NAMESPACE)) {
+                return false;
+            }
+
+            return true;
+        }
+
+        // - Anonymous functions and classes are unterminated
+        // - Other declarations end with `}`
+        $parts = $start->withNextSiblingsWhile(...[
+            T_NEW,
+            ...TokenType::DECLARATION_PART
+        ]);
+        if ($parts->hasOneOf(...TokenType::DECLARATION) &&
+                !$parts->last()->is(T_FUNCTION) &&
+                !($parts->first()->is(T_NEW) && $parts->nth(2)->is(T_CLASS))) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -1333,20 +1386,8 @@ class Token extends PhpToken implements JsonSerializable
      */
     public function pragmaticEndOfExpression(): Token
     {
-        // If the token is a ternary operator, return the last token in the
-        // third expression of the last ternary expression in the statement
-        if ($this->IsTernaryOperator) {
-            $current = $this;
-            do {
-                $end = $current->TernaryOperator2->EndExpression ?: $current;
-            } while ($end !== $current &&
-                ($current = $end->nextSibling())->isTernaryOperator() &&
-                $current->TernaryOperator1 === $current);
-
-            return $end;
-        }
-        // For other expression terminators, the most pragmatic thing to return
-        // is the end of the statement
+        // For expression terminators, the most pragmatic thing to return is the
+        // end of the statement
         if ($this->Expression === false) {
             $end = $this->EndStatement ?: $this;
 

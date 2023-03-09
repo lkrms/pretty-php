@@ -13,9 +13,7 @@ class AddEssentialWhitespace implements Rule
 
     public function getPriority(string $method): ?int
     {
-        return $method === self::BEFORE_RENDER
-            ? 999
-            : null;
+        return 999;
     }
 
     public function beforeRender(array $tokens): void

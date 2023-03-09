@@ -10,7 +10,7 @@
       - [ ] Arguments in `function` calls
       - [ ] Statements in `for` loops
     - [ ] Force newlines after parentheses (5.1)
-    - [ ] Place the opening brace of an anonymous class on its own line only if interfaces are wrapped
+    - [ ] Place the open brace of an anonymous class on its own line only if interfaces are wrapped
 - [ ] Audit calls to `Token::prev()` vs. `Token::prevCode()` and `Token::next()` vs. `Token::nextCode()`
 - [ ] Audit calls to `Token` methods that throw an exception if not called on a code token
 - [ ] Improve performance
@@ -37,7 +37,7 @@
 
   > `.OH.` is applied if:
   >
-  > - the opening bracket of the block is not followed by a newline, AND
+  > - the open bracket of the block is not followed by a newline, AND
   > - either:
   >   - the block contains `,`- or `;`- delimited items, OR
   >   - the block forms part of a structure that continues, e.g.
@@ -137,18 +137,17 @@
 - [ ] AddBlankLineBeforeReturn
 - [ ] AddEssentialWhitespace
 - [ ] AddHangingIndentation
-- [ ] AddIndentation
+- [x] AddIndentation
 - [x] AddStandardWhitespace
 - [x] AlignAssignments
 - [ ] AlignChainedCalls
 - [x] AlignComments
 - [ ] AlignLists
-- [ ] BracePosition
+- [x] BracePosition
 - [x] BreakAfterSeparators
 - [x] BreakBeforeControlStructureBody
 - [x] BreakBeforeMultiLineList
 - [x] BreakBetweenMultiLineItems
-- [ ] DeclareArgumentsOnOneLine
 - [ ] MatchPosition
 - [ ] PlaceAttributes
 - [ ] PlaceComments
@@ -164,6 +163,7 @@
 - Extra
   - [x] AddSpaceAfterFn
   - [x] AddSpaceAfterNot
+  - [x] DeclareArgumentsOnOneLine
   - [x] SuppressSpaceAroundStringOperator
 
 ## Review filters
