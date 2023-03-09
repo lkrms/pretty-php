@@ -82,7 +82,7 @@ class AlignChainedCalls implements TokenRule
             // instead of `::`
             if ($alignWith) {
                 $prev = $alignWith->prevCode()->canonical()->collect($alignWith);
-                if (!$prev->hasInnerNewline() &&
+                if (!$prev->hasNewline() &&
                         ($length = mb_strlen($prev->render(true))) > 7 + 2) {
                     $adjust = $this->Formatter->TabSize + 2 - $length;
                 }

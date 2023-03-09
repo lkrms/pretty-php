@@ -237,6 +237,7 @@ final class TokenType
         T_NS_SEPARATOR,
         T_STATIC,
         T_STRING,
+        ...self::AMPERSAND,
         ...self::DECLARATION,
     ];
 

@@ -148,7 +148,6 @@
 - [x] BreakBeforeControlStructureBody
 - [x] BreakBeforeMultiLineList
 - [x] BreakBetweenMultiLineItems
-- [ ] DeclareArgumentsOnOneLine
 - [ ] MatchPosition
 - [ ] PlaceAttributes
 - [ ] PlaceComments
@@ -164,6 +163,7 @@
 - Extra
   - [x] AddSpaceAfterFn
   - [x] AddSpaceAfterNot
+  - [x] DeclareArgumentsOnOneLine
   - [x] SuppressSpaceAroundStringOperator
 
 ## Review filters

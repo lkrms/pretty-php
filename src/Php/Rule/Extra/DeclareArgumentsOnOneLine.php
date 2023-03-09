@@ -26,17 +26,22 @@ final class DeclareArgumentsOnOneLine implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->prevCode()->is([T_FN, T_FUNCTION]) ||
-                $token->prevCode(2)->is(T_FUNCTION)) {
-            $mask                                 = ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
-            $token->WhitespaceMaskNext           &= $mask;
-            $token->ClosedBy->WhitespaceMaskPrev &= $mask;
-            $token->inner()->forEach(
-                static function (Token $t) use ($mask) {
-                    $t->WhitespaceMaskPrev &= $mask;
-                    $t->WhitespaceMaskNext &= $mask;
-                }
-            );
+        if (!($token->isDeclaration(T_FUNCTION) ||
+            ($this->Formatter->ClosuresAreDeclarations &&
+                $token->prevCode()->is([T_FN, T_FUNCTION])))) {
+            return;
         }
+
+        $mask = ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
+
+        $token->WhitespaceMaskNext           &= $mask;
+        $token->ClosedBy->WhitespaceMaskPrev &= $mask;
+
+        $token->inner()->forEach(
+            function (Token $t) use ($mask) {
+                $t->WhitespaceMaskPrev &= $mask;
+                $t->WhitespaceMaskNext &= $mask;
+            }
+        );
     }
 }

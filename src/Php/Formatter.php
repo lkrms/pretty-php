@@ -31,7 +31,6 @@ use Lkrms\Pretty\Php\Rule\BracePosition;
 use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
 use Lkrms\Pretty\Php\Rule\BreakBeforeControlStructureBody;
 use Lkrms\Pretty\Php\Rule\BreakBetweenMultiLineItems;
-use Lkrms\Pretty\Php\Rule\Extra\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\MatchPosition;
 use Lkrms\Pretty\Php\Rule\PlaceAttributes;
 use Lkrms\Pretty\Php\Rule\PlaceComments;
@@ -55,10 +54,6 @@ use Throwable;
  * @property-read int $QuietLevel
  * @property-read string|null $Filename
  * @property-read string|null $RunningService
- * @property-read string $Tab
- * @property-read int $TabSize
- * @property-read string $SoftTab
- * @property-read bool $MirrorBrackets
  * @property-read string[] $Rules
  */
 final class Formatter implements IReadable
@@ -88,22 +83,27 @@ final class Formatter implements IReadable
     /**
      * @var string
      */
-    protected $Tab;
+    public $Tab;
 
     /**
      * @var int
      */
-    protected $TabSize;
+    public $TabSize;
 
     /**
      * @var string
      */
-    protected $SoftTab;
+    public $SoftTab;
 
     /**
      * @var bool
      */
-    protected $MirrorBrackets = true;
+    public $ClosuresAreDeclarations = true;
+
+    /**
+     * @var bool
+     */
+    public $MirrorBrackets = true;
 
     /**
      * @var string[]
@@ -149,7 +149,6 @@ final class Formatter implements IReadable
 
         PlaceComments::class,
         PreserveNewlines::class,          // Must be after PlaceComments
-        DeclareArgumentsOnOneLine::class,
         AddBlankLineBeforeReturn::class,  // Must be after PlaceComments
 
         BreakBetweenMultiLineItems::class,  // processToken:

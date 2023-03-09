@@ -64,7 +64,7 @@ Sample output:
 
 `BracePosition`:
 - `After`(+LINE+SPACE|+SPACE)
-- `Before`(+$before|+LINE+SPACE|+SPACE)
+- `Before`(+LINE+SPACE|+SPACE|+SPACE+$lineBefore)
 - `MaskNext`(-BLANK|-BLANK-LINE|-SPACE)
 - `MaskPrev`(-BLANK|=SPACE)
 
@@ -85,15 +85,6 @@ Sample output:
 - `MaskNext`+LINE
 - `MaskPrev`+LINE
 
-`BreakBetweenMultiLineItems`:
-- `Before`+LINE
-- `MaskNext`+LINE
-- `MaskPrev`+LINE
-
-`DeclareArgumentsOnOneLine`:
-- `MaskNext`-$mask
-- `MaskPrev`-$mask
-
 `AddSpaceAfterFn`:
 - `After`+SPACE
 - `MaskNext`+SPACE
@@ -101,6 +92,10 @@ Sample output:
 `AddSpaceAfterNot`:
 - `After`+SPACE
 - `MaskNext`+SPACE
+
+`DeclareArgumentsOnOneLine`:
+- `MaskNext`-$mask
+- `MaskPrev`-$mask
 
 `SuppressSpaceAroundStringOperator`:
 - `MaskNext`-SPACE
@@ -134,8 +129,8 @@ Sample output:
 
 `SpaceDeclarations`:
 - `After`+BLANK
-- `Before`+BLANK
-- `MaskPrev`-BLANK
+- `Before`(+$lineType|+BLANK)
+- `MaskPrev`(+BLANK|-BLANK)
 
 `SpaceOperators`:
 - `After`(+SPACE|=NONE)
