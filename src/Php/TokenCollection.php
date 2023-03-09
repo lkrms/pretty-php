@@ -149,4 +149,31 @@ final class TokenCollection extends TypedCollection
             }
         );
     }
+
+    /**
+     * @return $this
+     */
+    public function applyInnerMask(int $mask = ~WhitespaceType::BLANK & ~WhitespaceType::LINE)
+    {
+        switch ($this->count()) {
+            case 0:
+            case 1:
+                return $this;
+
+            default:
+                $this->nth(2)
+                     ->collect($this->nth(-2))
+                     ->forEach(
+                         function (Token $t) use ($mask) {
+                             $t->WhitespaceMaskPrev &= $mask;
+                             $t->WhitespaceMaskNext &= $mask;
+                         }
+                     );
+            case 2:
+                $this->first()->WhitespaceMaskNext &= $mask;
+                $this->last()->WhitespaceMaskPrev  &= $mask;
+
+                return $this;
+        }
+    }
 }
