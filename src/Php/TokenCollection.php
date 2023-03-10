@@ -139,7 +139,7 @@ final class TokenCollection extends TypedCollection
     /**
      * @return $this
      */
-    public function addWhitespaceBefore(int $type = WhitespaceType::LINE)
+    public function addWhitespaceBefore(int $type)
     {
         return $this->forEach(
             function (Token $t) use ($type) {
@@ -153,7 +153,7 @@ final class TokenCollection extends TypedCollection
     /**
      * @return $this
      */
-    public function applyInnerMask(int $mask = ~WhitespaceType::BLANK & ~WhitespaceType::LINE)
+    public function applyInnerMask(int $mask)
     {
         switch ($this->count()) {
             case 0:

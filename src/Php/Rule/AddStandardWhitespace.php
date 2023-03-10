@@ -91,7 +91,7 @@ final class AddStandardWhitespace implements TokenRule
         } elseif ($token->is(TokenType::ADD_SPACE_BEFORE)) {
             $token->WhitespaceBefore |= WhitespaceType::SPACE;
         } elseif ($token->is(TokenType::ADD_SPACE_AFTER)) {
-            $token->WhitespaceAfter |= WhitespaceType::SPACE;
+            $token->WhitespaceAfter  |= WhitespaceType::SPACE;
         }
 
         if (($token->isOpenBracket() && !$token->isStructuralBrace()) ||

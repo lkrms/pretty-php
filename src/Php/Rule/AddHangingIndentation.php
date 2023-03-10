@@ -26,7 +26,7 @@ class AddHangingIndentation implements TokenRule
     public function processToken(Token $token): void
     {
         if ($token->is([T['('], T['['], T['{']]) && !$token->hasNewlineAfterCode()) {
-            $token->IsHangingParent     = true;
+            $token->IsHangingParent = true;
             $token->IsOverhangingParent =
                 // Does it have delimited values? (e.g. `list(var, var)`)
                 $token->innerSiblings()->hasOneOf(T[',']) ||
@@ -128,8 +128,8 @@ class AddHangingIndentation implements TokenRule
             $parents[] = $current;
             // Don't add indentation for this parent if it doesn't have any
             // hanging children
-            $children  = $current->innerSiblings()
-                                 ->filter(fn(Token $t) => $this->isHanging($t, true));
+            $children = $current->innerSiblings()
+                                ->filter(fn(Token $t) => $this->isHanging($t, true));
             if (!count($children)) {
                 continue;
             }
@@ -205,7 +205,7 @@ class AddHangingIndentation implements TokenRule
                 // if a level is removed
                 $current = $token;
                 do {
-                    $indent     = $this->effectiveIndent($current);
+                    $indent = $this->effectiveIndent($current);
                     // Find the next line with an indentation level that differs
                     // from the current line
                     $next       = $current;

@@ -6,6 +6,7 @@ use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenCollection;
+use Lkrms\Pretty\WhitespaceType;
 
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
@@ -42,7 +43,7 @@ final class AlignLists implements TokenRule
                     $root->prevCode()->is(T_AS) &&
                     $root->parent()->prevCode()->is(T_FOREACH)))) {
             $align[] = $token->ClosedBy;
-            $align->addWhitespaceBefore();
+            $align->addWhitespaceBefore(WhitespaceType::LINE);
 
             return;
         }

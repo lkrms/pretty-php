@@ -80,7 +80,7 @@ final class SpaceDeclarations implements TokenRule
         }
 
         // Don't add blank lines between `<?php` and declarations
-        $lineType = $token->OpenTag->nextCode() === $token
+        $line = $token->OpenTag->nextCode() === $token
             ? WhitespaceType::LINE
             : WhitespaceType::BLANK;
 
@@ -90,7 +90,7 @@ final class SpaceDeclarations implements TokenRule
         $types = $parts->getAnyOf(...TokenType::DECLARATION_UNIQUE)
                        ->getTypes();
         if (!$types) {
-            $token->WhitespaceBefore |= $lineType;
+            $token->WhitespaceBefore |= $line;
 
             return;
         }
@@ -105,7 +105,7 @@ final class SpaceDeclarations implements TokenRule
         $count        = count($this->Prev);
         // Always add a blank line above the first declaration of each type
         if ($count < 2) {
-            $token->WhitespaceBefore |= $lineType;
+            $token->WhitespaceBefore |= $line;
 
             return;
         }

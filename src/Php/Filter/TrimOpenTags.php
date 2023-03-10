@@ -13,16 +13,16 @@ final class TrimOpenTags implements TokenFilter
 {
     public function __invoke(array $tokens): array
     {
-        return array_map(
-            function (Token $t) {
-                if (!$t->is([T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO])) {
-                    return $t;
-                }
-                $t->text = rtrim($t->text);
-
-                return $t;
-            },
-            $tokens
+        $openTags = array_filter(
+            $tokens,
+            fn(Token $t) =>
+                $t->is([T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO])
         );
+
+        foreach ($openTags as $t) {
+            $t->text = rtrim($t->text);
+        }
+
+        return $tokens;
     }
 }

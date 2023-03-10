@@ -7,6 +7,8 @@ use Lkrms\Pretty\Php\Contract\BlockRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 
+use const Lkrms\Pretty\Php\T_ID_MAP as T;
+
 /**
  * Align consecutive assignment operators and double arrows when they have the
  * same context
@@ -23,47 +25,71 @@ final class AlignAssignments implements BlockRule
         }
         $group        = [];
         $stack        = null;
+        $parent       = null;
         $indent       = null;
         $alignedWith  = null;
         $isAssignment = null;
-        $startGroup   =
-            function (Token $t1, Token $t2) use (&$group, &$stack, &$indent, &$alignedWith, &$isAssignment) {
+        $lastToken2   = null;
+        $startGroup =
+            function (Token $t1, Token $t2) use (&$group, &$stack, &$parent, &$indent, &$alignedWith, &$isAssignment, &$lastToken2) {
                 $stack        = $t2->BracketStack;
+                $parent       = null;
                 $indent       = $t2->indent();
                 $alignedWith  = $this->getAlignedWith($t1, $t2);
                 $isAssignment = $t2->is(TokenType::OPERATOR_ASSIGNMENT);
+                $lastToken2   = $t2;
                 $group[]      = [$t1, $t2];
             };
+        $skipped = 0;
         while ($block) {
             $line   = array_shift($block);
             /** @var Token $token1 */
             $token1 = $line[0];
             // Don't allow comments to disrupt alignment
-            if (count($line) === 1 && $token1->is(TokenType::COMMENT)) {
+            if (count($line) === 1 &&
+                    $token1->isOneLineComment(true) &&
+                    !$skipped++) {
+                $lastToken2 = $token1;
                 continue;
             }
-            if (($token2 = $line->getFirstOf(
-                ...TokenType::OPERATOR_ASSIGNMENT,
-                ...TokenType::OPERATOR_DOUBLE_ARROW
-            )) && !$this->codeSinceLastAssignmentHasNewline(end($group), $token1)) {
+            // Ditto for 1-line `else`/`elseif`/`catch`/`finally` constructs
+            if (count($group) > 1 &&
+                    $token1->is(T['}']) && ($last = $line->last())->is(T['{']) &&
+                    $token1->Statement === $last->Statement &&
+                    !$skipped++) {
+                $parent     = ['depth' => array_key_last($token1->BracketStack), 'statement' => $token1->Statement];
+                $lastToken2 = $last;
+                continue;
+            }
+            $skipped = 0;
+            if (($token2 = $line->getFirstOf(...TokenType::OPERATOR_ASSIGNMENT,
+                                             ...TokenType::OPERATOR_DOUBLE_ARROW)) &&
+                    !$token2->hasNewlineAfterCode() &&
+                    !$this->codeSinceLastAssignmentHasNewline($lastToken2, $token1)) {
                 if (is_null($stack)) {
                     $startGroup($token1, $token2);
                     continue;
                 }
-                if ($stack === $token2->BracketStack &&
+                if (($stack === $token2->BracketStack ||
+                        ($parent &&
+                            count($stack) === count($token2->BracketStack) &&
+                            ($token2->BracketStack[$parent['depth']]->Statement ?? null) === $parent['statement'])) &&
                         ($indent === $token2->indent() ||
                             ($alignedWith && $alignedWith === $this->getAlignedWith($token1, $token2))) &&
                         !($isAssignment xor $token2->is(TokenType::OPERATOR_ASSIGNMENT))) {
-                    $group[] = [$token1, $token2];
+                    $group[]    = [$token1, $token2];
+                    $lastToken2 = $token2;
                     continue;
                 }
             }
             $this->maybeRegisterGroup($group);
             $group        = [];
             $stack        = null;
+            $parent       = null;
             $indent       = null;
             $alignedWith  = null;
             $isAssignment = null;
+            $lastToken2   = null;
             if ($token2) {
                 $startGroup($token1, $token2);
             }
@@ -84,16 +110,11 @@ final class AlignAssignments implements BlockRule
         return $parent->nextCode()->AlignedWith;
     }
 
-    /**
-     * @param array{0:Token,1:Token}|false $last
-     */
-    private function codeSinceLastAssignmentHasNewline($last, Token $token1): bool
+    private function codeSinceLastAssignmentHasNewline(?Token $lastToken2, Token $token1): bool
     {
-        if (!$last) {
+        if (!$lastToken2) {
             return false;
         }
-        /** @var Token $lastToken2 */
-        [, $lastToken2] = $last;
 
         return $lastToken2->collect($token1->prevCode())
                           ->filter(fn(Token $t) => $t->isCode())

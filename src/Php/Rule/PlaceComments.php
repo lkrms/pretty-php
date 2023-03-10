@@ -59,16 +59,16 @@ class PlaceComments implements TokenRule
 
             return;
         }
-        $type = WhitespaceType::LINE;
+        $line = WhitespaceType::LINE;
         if ($token->hasNewline() &&
             !($prev = $token->prev())->isNull() &&
             !($prev === $token->parent()) &&
             !($prev->is(T[',']) ||
                 ($prev->is([T[':'], T[';']]) &&
                     ($prev->inSwitchCase() || $prev->inLabel())))) {
-            $type = WhitespaceType::BLANK;
+            $line = WhitespaceType::BLANK;
         }
-        $token->WhitespaceBefore |= WhitespaceType::SPACE | $type;
+        $token->WhitespaceBefore |= WhitespaceType::SPACE | $line;
         // PHPDoc comments immediately before namespace declarations are
         // generally associated with the file, not the namespace
         if ($token->next()->isDeclaration(T_NAMESPACE)) {
