@@ -58,7 +58,7 @@ final class BracePosition implements TokenRule
             if ($prev->is(T[')'])) {
                 $this->BracketBracePairs[] = [$prev, $token];
             }
-            $line  = WhitespaceType::NONE;
+            $line = WhitespaceType::NONE;
             // Add a newline before this open brace if:
             // 1. it's part of a declaration
             // 2. it isn't part of an anonymous function

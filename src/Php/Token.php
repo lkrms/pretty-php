@@ -1351,7 +1351,7 @@ class Token extends PhpToken implements JsonSerializable
             $newLinePadding = $offset - $newline - 1;
             $offset         = $newLinePadding - ($this->LinePadding - $this->LineUnpadding);
         } else {
-            $offset -= $start->hasNewlineBefore() ? $start->LineUnpadding : 0;
+            $offset        -= $start->hasNewlineBefore() ? $start->LineUnpadding : 0;
         }
 
         return $offset;
@@ -1893,7 +1893,7 @@ class Token extends PhpToken implements JsonSerializable
                     return $code;
                 }
             case T_DOC_COMMENT:
-                $start  = $this->startOfLine();
+                $start = $this->startOfLine();
                 $indent =
                     "\n" . ($start === $this
                         ? $this->renderIndent($softTabs)

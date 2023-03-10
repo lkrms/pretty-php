@@ -104,7 +104,7 @@
       if ($a) c(); else b();
       ```
 
-- [ ] Don't align assignments with subsequent newlines
+- [x] Don't align assignments with subsequent newlines
 - [ ] Align some assignments that break over multiple lines? e.g.
 
       ```php
@@ -175,5 +175,5 @@
 - [x] SortImports
 - [ ] StripHeredocIndents
 - [ ] TrimInsideCasts
-- [ ] TrimOpenTags
+- [x] TrimOpenTags
 
