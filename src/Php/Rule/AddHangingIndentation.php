@@ -46,25 +46,25 @@ class AddHangingIndentation implements TokenRule
         $prev   = $token->prevCode();
         $parent = $token->parent();
 
-        // Add `$latest` to `$stack` to differentiate between lines that
-        // coincide with the start of a new expression and lines that continue
-        // an expression started earlier, e.g. lines 2 and 3 here:
+        // Add an appropriate token to `$stack` to establish a context for this
+        // level of hanging indentation. If `$stack` matches a context already
+        // applied on behalf of a previous token, return without doing anything.
+        //
+        // The aim is to differentiate between, say, lines where a new
+        // expression starts, and lines where an expression continues:
         //
         //     $iterator = new RecursiveDirectoryIterator($dir,
         //         FilesystemIterator::KEY_AS_PATHNAME |
         //             FilesystemIterator::CURRENT_AS_FILEINFO |
         //             FilesystemIterator::SKIP_DOTS);
         //
-        // Similarly, differentiate between ternary operators and earlier lines
-        // with the same bracket stack by adding `$token->TernaryOperator1` to
-        // `$stack`, e.g.:
+        // Or between ternary operators and their predecessors:
         //
         //     return is_string($contents)
         //         ? $contents
         //         : json_encode($contents, JSON_PRETTY_PRINT);
         //
-        // In the same way, differentiate between the start of a ternary
-        // expression and a continued one, e.g. lines 4 and 5 here:
+        // Or between the start of a ternary expression and a continued one:
         //
         //     fn($a, $b) =>
         //         $a === $b
@@ -73,6 +73,14 @@ class AddHangingIndentation implements TokenRule
         //                 $b;
         //
         if ($token->isTernaryOperator()) {
+            // Avoid outcomes like this by adding the earliest possible ternary
+            // operator to the stack:
+            //
+            //     $a
+            //       ?: $b
+            //         ?: $c
+            //           ?: $d
+            //
             $prevTernary =
                 $token->prevSiblings()
                       ->filter(
@@ -82,14 +90,23 @@ class AddHangingIndentation implements TokenRule
                       )
                       ->last();
             $stack[] = ($prevTernary ?: $token)->TernaryOperator1;
-            // Find the last token in the third expression of the last ternary
-            // expression in the statement
+
+            // Then, find
+            // - the last token
+            // - in the third expression
+            // - of the last ternary expression
+            // - encountered in this scope
             $current = $token;
             do {
                 $until = $current->TernaryOperator2->EndExpression ?: $current;
             } while ($until !== $current &&
                 ($current = $until->nextSibling())->isTernaryOperator() &&
                 $current->TernaryOperator1 === $current);
+            // And without breaking out of an unenclosed control structure body,
+            // proceed to the end of the expression
+            if (!$until->nextSibling()->isTernaryOperator()) {
+                $until = $until->pragmaticEndOfExpression(true);
+            }
         } elseif ($latest && $latest->BracketStack === $token->BracketStack) {
             if ($token->isStartOfExpression()) {
                 $stack[] = $token;
