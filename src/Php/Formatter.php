@@ -312,7 +312,10 @@ final class Formatter implements IReadable
                 return '';
             }
         } catch (ParseError $ex) {
-            throw new PrettyBadSyntaxException('Formatting failed: input cannot be parsed', $ex);
+            throw new PrettyBadSyntaxException(
+                sprintf('Formatting failed: %s cannot be parsed', $filename ?: 'input'),
+                $ex
+            );
         } finally {
             Sys::stopTimer(__METHOD__ . '#tokenize-input');
         }

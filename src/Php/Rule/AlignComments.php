@@ -17,6 +17,21 @@ final class AlignComments implements BlockRule
 {
     use BlockRuleTrait;
 
+    /**
+     * @var array<array{TokenCollection[],Token[]}>
+     */
+    private $BlockComments = [];
+
+    public function getPriority(string $method): ?int
+    {
+        switch ($method) {
+            case self::BEFORE_RENDER:
+                return 998;
+        }
+
+        return null;
+    }
+
     public function processBlock(array $block): void
     {
         if (count($block) < 2) {
@@ -84,46 +99,39 @@ final class AlignComments implements BlockRule
 
         $block = array_intersect_key($block, $comments);
 
-        $this->Formatter->registerCallback(
-            $this,
-            reset($comments),
-            fn() => $this->alignComments($block, $comments),
-            999
-        );
+        $this->BlockComments[] = [$block, $comments];
     }
 
-    /**
-     * @param TokenCollection[] $block
-     * @param Token[] $comments
-     */
-    private function alignComments(array $block, array $comments): void
+    public function beforeRender(array $tokens): void
     {
-        $lengths = [];
-        $max     = 0;
-        foreach ($block as $i => $line) {
-            $token   = $line[0];
-            $comment = $comments[$i];
-            // If $comment is the first token on the line, there won't be
-            // anything to collect between $token and $comment->prev(), so use
-            // $comment's leading whitespace for calculations
-            if ($token === $comment) {
-                $length      = strlen(ltrim($comment->renderWhitespaceBefore(true), "\n"));
-                $lengths[$i] = $length;
-                $max         = max($max, $length);
-                continue;
+        foreach ($this->BlockComments as [$block, $comments]) {
+            $lengths = [];
+            $max     = 0;
+            foreach ($block as $i => $line) {
+                $token   = $line[0];
+                $comment = $comments[$i];
+                // If $comment is the first token on the line, there won't be
+                // anything to collect between $token and $comment->prev(), so use
+                // $comment's leading whitespace for calculations
+                if ($token === $comment) {
+                    $length      = strlen(ltrim($comment->renderWhitespaceBefore(true), "\n"));
+                    $lengths[$i] = $length;
+                    $max         = max($max, $length);
+                    continue;
+                }
+                $line = $token->collect($comment->prev());
+                foreach (explode("\n", ltrim($line->render(true, false), "\n")) as $line) {
+                    $length      = mb_strlen(trim($line, "\r"));
+                    $lengths[$i] = $length;
+                    $max         = max($max, $length);
+                }
             }
-            $line = $token->collect($comment->prev());
-            foreach (explode("\n", ltrim($line->render(true, false), "\n")) as $line) {
-                $length      = mb_strlen(trim($line, "\r"));
-                $lengths[$i] = $length;
-                $max         = max($max, $length);
+            foreach ($comments as $i => $comment) {
+                $comment->Padding = $max - $lengths[$i]
+                    + ($comment->hasNewlineBefore()
+                        ? ($tabWidth ?? ($tabWidth = strlen(WhitespaceType::toWhitespace(WhitespaceType::TAB))))
+                        : 0);
             }
-        }
-        foreach ($comments as $i => $comment) {
-            $comment->Padding = $max - $lengths[$i]
-                + ($comment->hasNewlineBefore()
-                    ? ($tabWidth ?? ($tabWidth = strlen(WhitespaceType::toWhitespace(WhitespaceType::TAB))))
-                    : 0);
         }
     }
 }

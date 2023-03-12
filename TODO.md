@@ -150,7 +150,7 @@
 - [x] BreakBetweenMultiLineItems
 - [ ] MatchPosition
 - [ ] PlaceAttributes
-- [ ] PlaceComments
+- [x] PlaceComments
 - [ ] PreserveNewlines
 - [x] PreserveOneLineStatements
 - [x] ProtectStrings

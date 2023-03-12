@@ -1743,10 +1743,10 @@ class Token extends PhpToken implements JsonSerializable
         $current   = $this->OpenedBy ?: $this;
         $lastInner = $current->ClosedBy->_prevCode;
 
-        return ($lastInner === $current ||                                    // `{}`
-            $lastInner->is([T[':'], T[';']]) ||                               // `{ statement; }`
-            $lastInner->IsCloseTagStatementTerminator ||                      /* `{ statement ?>...<?php }` */
-            ($lastInner->id === T['}'] && $lastInner->isStructuralBrace()));  // `{ { statement; } }`
+        return $lastInner === $current ||                                    // `{}`
+            $lastInner->is([T[':'], T[';']]) ||                              // `{ statement; }`
+            $lastInner->IsCloseTagStatementTerminator ||                     /* `{ statement ?>...<?php }` */
+            ($lastInner->id === T['}'] && $lastInner->isStructuralBrace());  // `{ { statement; } }`
     }
 
     public function isOpenBracket(): bool

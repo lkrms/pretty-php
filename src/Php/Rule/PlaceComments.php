@@ -10,7 +10,11 @@ use Lkrms\Pretty\WhitespaceType;
 
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
-class PlaceComments implements TokenRule
+/**
+ * Place comments beside code, above code, or inside code
+ *
+ */
+final class PlaceComments implements TokenRule
 {
     use TokenRuleTrait;
 
@@ -20,6 +24,16 @@ class PlaceComments implements TokenRule
      * @var array<array{Token,Token}>
      */
     private $Comments = [];
+
+    public function getPriority(string $method): ?int
+    {
+        switch ($method) {
+            case self::BEFORE_RENDER:
+                return 997;
+        }
+
+        return null;
+    }
 
     public function getTokenTypes(): ?array
     {
