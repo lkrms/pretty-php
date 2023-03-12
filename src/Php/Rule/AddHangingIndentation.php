@@ -72,7 +72,7 @@ class AddHangingIndentation implements TokenRule
         //             : $a <=>
         //                 $b;
         //
-        if ($token->isTernaryOperator()) {
+        if ($token->IsTernaryOperator) {
             // Avoid outcomes like this by adding the earliest possible ternary
             // operator to the stack:
             //
@@ -85,7 +85,7 @@ class AddHangingIndentation implements TokenRule
                 $token->prevSiblings()
                       ->filter(
                           fn(Token $t) =>
-                              $t->isTernaryOperator() &&
+                              $t->IsTernaryOperator &&
                                   $t->TernaryOperator2->Index < $token->TernaryOperator1->Index
                       )
                       ->last();
@@ -100,11 +100,11 @@ class AddHangingIndentation implements TokenRule
             do {
                 $until = $current->TernaryOperator2->EndExpression ?: $current;
             } while ($until !== $current &&
-                ($current = $until->nextSibling())->isTernaryOperator() &&
+                ($current = $until->nextSibling())->IsTernaryOperator &&
                 $current->TernaryOperator1 === $current);
             // And without breaking out of an unenclosed control structure body,
             // proceed to the end of the expression
-            if (!$until->nextSibling()->isTernaryOperator()) {
+            if (!$until->nextSibling()->IsTernaryOperator) {
                 $until = $until->pragmaticEndOfExpression(true);
             }
         } elseif ($latest && $latest->BracketStack === $token->BracketStack) {
@@ -138,7 +138,7 @@ class AddHangingIndentation implements TokenRule
             ? []
             : [$parent];
         $current = $parent;
-        while (!($current = $current->parent())->isNull() && $current->IsHangingParent) {
+        while (!($current = $current->parent())->IsNull && $current->IsHangingParent) {
             if (in_array($current, $token->IndentParentStack, true)) {
                 continue;
             }
@@ -204,7 +204,7 @@ class AddHangingIndentation implements TokenRule
                 break;
             }
             $current = $current->next();
-        } while (!$current->isNull());
+        } while (!$current->IsNull);
     }
 
     /**
@@ -229,7 +229,7 @@ class AddHangingIndentation implements TokenRule
                     $nextIndent = 0;
                     do {
                         $next = $next->endOfLine()->next();
-                        if ($next->isNull()) {
+                        if ($next->IsNull) {
                             break;
                         }
                         $nextIndent = $this->effectiveIndent($next);
@@ -239,16 +239,16 @@ class AddHangingIndentation implements TokenRule
                     // $token and $until and this hanging indent hasn't already
                     // been collapsed) for comparison
                     $indent    -= $this->Formatter->TabSize;
-                    $nextIndent = $next->isNull() ||
+                    $nextIndent = $next->IsNull ||
                         $next->Index > $until->Index ||
                         !($next->OverhangingParents[$index] ?? 0)
                             ? $nextIndent
                             : $nextIndent - $this->Formatter->TabSize;
-                    if ($nextIndent === $indent && !$next->isNull()) {
+                    if ($nextIndent === $indent && !$next->IsNull) {
                         break 3;
                     }
                     $current = $next;
-                } while (!$current->isNull() && $current->Index <= $until->Index);
+                } while (!$current->IsNull && $current->Index <= $until->Index);
                 $tokens->forEach(
                     function (Token $t) use ($index) {
                         if ($t->OverhangingParents[$index] ?? 0) {

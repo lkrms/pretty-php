@@ -39,7 +39,7 @@ final class AlignLists implements TokenRule
         if ($token->ClosedBy->prevCode()->is(T[',']) &&
             !($token->prevCode()->is(T_LIST) ||
                 (($adjacent = $token->adjacent(T[','], T[']'])) && $adjacent->is(T['='])) ||
-                (($root = $token->parentsWhile(true, T['['])->last()) &&
+                (($root = $token->withParentsWhile(T['['])->last()) &&
                     $root->prevCode()->is(T_AS) &&
                     $root->parent()->prevCode()->is(T_FOREACH)))) {
             $align[] = $token->ClosedBy;

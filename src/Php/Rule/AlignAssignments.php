@@ -117,14 +117,14 @@ final class AlignAssignments implements BlockRule
         }
 
         return $lastToken2->collect($token1->prevCode())
-                          ->filter(fn(Token $t) => $t->isCode())
+                          ->filter(fn(Token $t) => $t->IsCode)
                           ->hasNewline();
     }
 
     private function assignmentHasInnerNewline(Token $token2): bool
     {
         return $token2->collect($token2->pragmaticEndOfExpression())
-                      ->filter(fn(Token $t) => $t->isCode())
+                      ->filter(fn(Token $t) => $t->IsCode)
                       ->hasNewline();
     }
 

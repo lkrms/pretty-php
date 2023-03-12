@@ -21,7 +21,7 @@ class PreserveNewlines implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if (($prev = $token->prev())->isNull()) {
+        if (($prev = $token->prev())->IsNull) {
             return;
         }
 
@@ -61,8 +61,8 @@ class PreserveNewlines implements TokenRule
                 $token->is(TokenType::PRESERVE_NEWLINE_BEFORE) &&
                 ($noBrackets || !($token->isCloseBracket() && $prev->isOpenBracket())) &&
                 // Treat `?:` as one operator
-                (!$token->isTernaryOperator() || $token->TernaryOperator1 !== $prev) &&
-                (!$token->is(T[':']) || $token->isTernaryOperator())) {
+                (!$token->IsTernaryOperator || $token->TernaryOperator1 !== $prev) &&
+                (!$token->is(T[':']) || $token->IsTernaryOperator)) {
             if (!$token->is(TokenType::PRESERVE_BLANK_BEFORE)) {
                 $line = WhitespaceType::LINE;
             }
@@ -83,7 +83,7 @@ class PreserveNewlines implements TokenRule
                 $token->is(TokenType::PRESERVE_NEWLINE_AFTER) &&
                 ($noBrackets || !($token->isOpenBracket() && $next->isCloseBracket())) &&
                 // Treat `?:` as one operator
-                (!$token->isTernaryOperator() || $token->TernaryOperator2 !== $next) &&
+                (!$token->IsTernaryOperator || $token->TernaryOperator2 !== $next) &&
                 (!$token->is(T[':']) || $token->inSwitchCase() || $token->inLabel())) {
             if (!$token->is(TokenType::PRESERVE_BLANK_AFTER)) {
                 $line = WhitespaceType::LINE;

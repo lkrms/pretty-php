@@ -327,7 +327,7 @@ final class Formatter implements IReadable
                 return '';
             }
 
-            if ($last->isCode() && !$last->startOfStatement()->is(T_HALT_COMPILER)) {
+            if ($last->IsCode && !$last->startOfStatement()->is(T_HALT_COMPILER)) {
                 $last->WhitespaceAfter |= WhitespaceType::LINE;
             }
         } finally {
@@ -390,7 +390,7 @@ final class Formatter implements IReadable
         $token  = reset($this->Tokens);
         $line[] = $token;
 
-        while (!($token = $token->next())->isNull()) {
+        while (!($token = $token->next())->IsNull) {
             $before = $token->effectiveWhitespaceBefore() & (WhitespaceType::BLANK | WhitespaceType::LINE);
             if (!$before) {
                 $line[] = $token;

@@ -31,7 +31,7 @@ class AddEssentialWhitespace implements Rule
                 continue;
             }
 
-            if ($token->hasWhitespaceAfter() ||
+            if ($token->effectiveWhitespaceAfter() ||
                     $token->is(TokenType::SUPPRESS_SPACE_AFTER) ||
                     $token->next()->is(TokenType::SUPPRESS_SPACE_BEFORE)) {
                 continue;

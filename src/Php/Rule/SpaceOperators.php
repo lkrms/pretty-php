@@ -43,7 +43,7 @@ final class SpaceOperators implements TokenRule
         // Suppress whitespace after ampersands related to returning, assigning
         // or passing by reference
         if ($token->is(TokenType::AMPERSAND) &&
-            $token->next()->isCode() &&
+            $token->next()->IsCode &&
             ($token->prevCode()->is(T_FUNCTION) ||      // - `function &getValue()`
                 $token->inUnaryContext() ||             // - `[&$variable]`, `$a = &getValue()`
                 ($token->next()->is(T_VARIABLE) &&      // - `function getValue(&$param)`, but not
@@ -66,7 +66,7 @@ final class SpaceOperators implements TokenRule
         }
 
         // Suppress whitespace after `?` in nullable types
-        if ($token->is(T['?']) && !$token->isTernaryOperator()) {
+        if ($token->is(T['?']) && !$token->IsTernaryOperator) {
             $token->WhitespaceBefore  |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
 
@@ -85,7 +85,7 @@ final class SpaceOperators implements TokenRule
 
         // Suppress whitespace after unary operators
         if ($token->isUnaryOperator() &&
-            $token->next()->isCode() &&
+            $token->next()->IsCode &&
             (!$token->nextCode()->isOperator() ||
                 $token->nextCode()->isUnaryOperator())) {
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
@@ -95,12 +95,12 @@ final class SpaceOperators implements TokenRule
 
         $token->WhitespaceAfter |= WhitespaceType::SPACE;
 
-        if ($token->is(T[':']) && !$token->isTernaryOperator()) {
+        if ($token->is(T[':']) && !$token->IsTernaryOperator) {
             return;
         }
 
         // Collapse ternary operators if there is nothing between `?` and `:`
-        if ($token->isTernaryOperator() && $token->prev()->isTernaryOperator()) {
+        if ($token->IsTernaryOperator && $token->prev()->IsTernaryOperator) {
             $token->WhitespaceBefore        = WhitespaceType::NONE;
             $token->prev()->WhitespaceAfter = WhitespaceType::NONE;
 
