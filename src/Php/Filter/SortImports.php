@@ -63,7 +63,7 @@ final class SortImports implements TokenFilter
             fn(Token $t, int $i) => $t->id === T_USE &&
                 !(($prev = $this->prevCode($i, $prev_i))->id === T[')'] ||
                     ($prev->id === T['{'] &&
-                        !$this->prevDeclarationOf($prev_i, T_CLASS, T_TRAIT)->isNull())),
+                        !$this->prevDeclarationOf($prev_i, T_CLASS, T_TRAIT)->IsNull)),
             ARRAY_FILTER_USE_BOTH
         ));
         if (!$tokens) {

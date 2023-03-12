@@ -34,7 +34,7 @@ BUILD_TAR=${BUILD_DIR%/*}/$BUILD.tar.gz
 BUILD_PHAR=${BUILD_DIR%/*}/$BUILD.phar
 rm -rf "$BUILD_DIR" "$BUILD_TAR" "$BUILD_PHAR" &&
     mkdir -pv "$BUILD_DIR" &&
-    cp -Rv !(build*|docs|phpdoc*|phpstan*|phpunit*|tests*|var|vendor|LICENSE*|README*|*.md|*.txt|*.code-workspace) "$BUILD_DIR/" &&
+    cp -Rv !(build*|docs|phpdoc*|phpstan*|phpunit*|tests*|var|vendor|LICENSE*|README*|*.md|*.txt|*.code-workspace|test*.php) "$BUILD_DIR/" &&
     #  Remove --classmap-authoritative if support for classes generated at runtime is required
     composer install -d "$BUILD_DIR" --no-dev --no-plugins --optimize-autoloader --classmap-authoritative &&
     rm -fv "$BUILD_DIR"/**/.DS_Store &&

@@ -56,7 +56,7 @@ final class ReindentHeredocs implements TokenRule
                     break;
                 }
                 $token = $token->next();
-            } while (!$token->isNull());
+            } while (!$token->IsNull);
         }
     }
 }

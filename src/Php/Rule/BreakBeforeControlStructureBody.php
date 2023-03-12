@@ -49,7 +49,7 @@ final class BreakBeforeControlStructureBody implements TokenRule
          * ```
          */
         $body = $token->nextSibling($offset);
-        if ($body->isNull() ||
+        if ($body->IsNull ||
                 $body->is([T[':'], T[';'], T['{'], T_CLOSE_TAG])) {
             return;
         }
@@ -65,7 +65,7 @@ final class BreakBeforeControlStructureBody implements TokenRule
         } elseif ($token->is([T_IF, T_ELSEIF])) {
             $end = $body->nextSiblingOf(T_ELSEIF, T_ELSE)->prevCode();
         }
-        if (!($end ?? null) || $end->isNull()) {
+        if (!($end ?? null) || $end->IsNull) {
             $end       = $body->endOfStatement();
             $continues = false;
         }

@@ -137,20 +137,13 @@ class Token extends PhpToken implements JsonSerializable
      */
     public $EndExpression;
 
-    /**
-     * @var bool
-     */
-    public $IsTernaryOperator = false;
+    public bool $IsTernaryOperator = false;
 
-    /**
-     * @var Token|null
-     */
-    public $TernaryOperator1;
+    public ?Token $TernaryOperator1 = null;
 
-    /**
-     * @var Token|null
-     */
-    public $TernaryOperator2;
+    public ?Token $TernaryOperator2 = null;
+
+    public ?string $CommentType = null;
 
     /**
      * @var array<array<string,mixed>>
@@ -274,6 +267,8 @@ class Token extends PhpToken implements JsonSerializable
     public bool $IsNull = false;
 
     /**
+     * True if the token is a VirtualToken, NullToken or some other impostor
+     *
      * @var bool
      */
     public bool $IsVirtual = false;
@@ -304,6 +299,8 @@ class Token extends PhpToken implements JsonSerializable
     protected $Formatter;
 
     /**
+     * True if the token is a T_CLOSE_TAG that terminates a statement
+     *
      * @var bool
      */
     public $IsCloseTagStatementTerminator = false;
@@ -418,6 +415,12 @@ class Token extends PhpToken implements JsonSerializable
 
             if ($this->is(TokenType::NOT_CODE)) {
                 $this->IsCode = false;
+                if ($this->id === T_COMMENT) {
+                    preg_match('/^(\/\/|\/\*|#)/', $this->text, $matches);
+                    $this->CommentType = $matches[1];
+                } elseif ($this->id === T_DOC_COMMENT) {
+                    $this->CommentType = '/**';
+                }
             }
 
             if ($this->is([T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO])) {
@@ -558,14 +561,11 @@ class Token extends PhpToken implements JsonSerializable
                 $this->IsCloseTagStatementTerminator ||
                 ($this->is(T['}']) &&
                     $this->isCloseBraceStatementTerminator())) &&
+                !$this->nextCode()->is([T_CATCH, T_FINALLY]) &&
                 !$this->nextCode()->is([T_ELSEIF, T_ELSE]) &&
                 !($this->nextCode()->is(T_WHILE) &&
-                    $this->prevSiblingsUntil(
-                        fn(Token $t, TokenCollection $tc): bool =>
-                            $t->is([T[';'], T_CLOSE_TAG]) ||
-                                ($t->is(T[':']) && ($t->inSwitchCase() || $t->inLabel() || !$t->prevSiblingOf(T[':'], T[';'], T['?'], T_CLOSE_TAG)->is([T['?'], T[':']]))) ||
-                                ($t->is(T['?']) && count($tc->filter(fn(Token $t) => $t->is(T[':']))) - count($tc->filter(fn(Token $t) => $t->is(T['?']))) <= 0)
-                    )->hasOneOf(T_DO))) ||
+                    !($do = $this->prevSiblingOf(T_DO))->IsNull &&
+                    $do->nextSibling()->nextSiblingOf(T_WHILE) === $this->nextCode())) ||
                 $this->startsAlternativeSyntax() ||
                 ($this->is(T[':']) && ($this->inSwitchCase() || $this->inLabel()))) {
             $this->applyStatement();
@@ -638,7 +638,7 @@ class Token extends PhpToken implements JsonSerializable
         }
 
         if (!($start = $this->Statement)) {
-            // Find the end of the last statement for the start of this one
+            // Find the end of the last statement to find the start of this one
             $current = $this->OpenedBy->_prevSibling;
             while ($current && !$current->EndStatement) {
                 $start   = $current;
@@ -659,7 +659,7 @@ class Token extends PhpToken implements JsonSerializable
             $parent = $start->parent();
             // - Alias/import statements (e.g. `use const <FQCN>`) end with `;`
             // - `use <trait> { ... }` ends with `}`
-            if ($parent->isNull() ||
+            if ($parent->IsNull ||
                 $parent->prevSiblingsWhile(...TokenType::DECLARATION_PART)
                        ->hasOneOf(T_NAMESPACE)) {
                 return false;
@@ -719,7 +719,7 @@ class Token extends PhpToken implements JsonSerializable
                 $this->IsCloseTagStatementTerminator ||
                 $this->startsAlternativeSyntax() ||
                 ($this->is(T[':']) && ($this->inSwitchCase() || $this->inLabel())) ||
-                $this->isTernaryOperator()) {
+                $this->IsTernaryOperator) {
             // Expression terminators don't form part of the expression
             $this->Expression = false;
             $this->_prevCode->applyExpression();
@@ -846,8 +846,8 @@ class Token extends PhpToken implements JsonSerializable
             return false;
         }
         do {
-            $prev = $this->prev();
-            if ($prev->IsNull) {
+            $prev = $this->_prev;
+            if (!$prev) {
                 return true;
             }
         } while ($prev->IsVirtual);
@@ -864,8 +864,8 @@ class Token extends PhpToken implements JsonSerializable
             return false;
         }
         do {
-            $next = $this->next();
-            if ($next->IsNull) {
+            $next = $this->_next;
+            if (!$next) {
                 return true;
             }
         } while ($next->IsVirtual);
@@ -1130,18 +1130,20 @@ class Token extends PhpToken implements JsonSerializable
      *
      * The token itself is not collected.
      *
-     * If set, `$until` must be a previous sibling of the token. It will be
-     * collected.
+     * If set, `$until` must be a previous sibling of the token. It will be the
+     * last token collected.
+     *
+     * @see Token::collectSiblings()
      */
     final public function prevSiblings(Token $until = null): TokenCollection
     {
         $tokens  = new TokenCollection();
         $current = $this->OpenedBy ?: $this;
         if ($until) {
-            $until = $until->OpenedBy ?: $until;
-            if ($current->Index < $until->Index || $until->IsNull) {
+            if ($this->Index < $until->Index || $until->IsNull) {
                 return $tokens;
             }
+            $until = $until->OpenedBy ?: $until;
             if ($current->BracketStack !== $until->BracketStack) {
                 throw new RuntimeException('Argument #1 ($until) is not a sibling');
             }
@@ -1161,11 +1163,11 @@ class Token extends PhpToken implements JsonSerializable
      * Collect the token's siblings up to but not including the last that isn't
      * one of the listed types
      *
-     * Tokens are collected in order from the closest sibling to the farthest.
+     * Tokens are collected in order from closest to farthest.
      *
      * @param int|string ...$types
      */
-    public function prevSiblingsWhile(...$types): TokenCollection
+    final public function prevSiblingsWhile(...$types): TokenCollection
     {
         return $this->_prevSiblingsWhile(false, ...$types);
     }
@@ -1174,11 +1176,11 @@ class Token extends PhpToken implements JsonSerializable
      * Collect the token and its siblings up to but not including the last that
      * isn't one of the listed types
      *
-     * Tokens are collected in order from the closest sibling to the farthest.
+     * Tokens are collected in order from closest to farthest.
      *
      * @param int|string ...$types
      */
-    public function withPrevSiblingsWhile(...$types): TokenCollection
+    final public function withPrevSiblingsWhile(...$types): TokenCollection
     {
         return $this->_prevSiblingsWhile(true, ...$types);
     }
@@ -1189,10 +1191,10 @@ class Token extends PhpToken implements JsonSerializable
     private function _prevSiblingsWhile(bool $includeToken = false, ...$types): TokenCollection
     {
         $tokens = new TokenCollection();
-        $prev   = $includeToken ? $this : $this->prevSibling();
-        while ($prev->is($types)) {
+        $prev   = $includeToken ? $this : $this->_prevSibling;
+        while ($prev && $prev->is($types)) {
             $tokens[] = $prev;
-            $prev     = $prev->prevSibling();
+            $prev     = $prev->_prevSibling;
         }
 
         return $tokens;
@@ -1204,7 +1206,7 @@ class Token extends PhpToken implements JsonSerializable
      *
      * @param int|string ...$types
      */
-    public function nextSiblingsWhile(...$types): TokenCollection
+    final public function nextSiblingsWhile(...$types): TokenCollection
     {
         return $this->_nextSiblingsWhile(false, ...$types);
     }
@@ -1215,7 +1217,7 @@ class Token extends PhpToken implements JsonSerializable
      *
      * @param int|string ...$types
      */
-    public function withNextSiblingsWhile(...$types): TokenCollection
+    final public function withNextSiblingsWhile(...$types): TokenCollection
     {
         return $this->_nextSiblingsWhile(true, ...$types);
     }
@@ -1226,16 +1228,16 @@ class Token extends PhpToken implements JsonSerializable
     private function _nextSiblingsWhile(bool $includeToken = false, ...$types): TokenCollection
     {
         $tokens = new TokenCollection();
-        $next   = $includeToken ? $this : $this->nextSibling();
-        while ($next->is($types)) {
+        $next   = $includeToken ? $this : $this->_nextSibling;
+        while ($next && $next->is($types)) {
             $tokens[] = $next;
-            $next     = $next->nextSibling();
+            $next     = $next->_nextSibling;
         }
 
         return $tokens;
     }
 
-    public function prevSiblingsUntil(callable $callback): TokenCollection
+    final public function prevSiblingsUntil(callable $callback): TokenCollection
     {
         $tokens  = new TokenCollection();
         $current = $this;
@@ -1247,7 +1249,19 @@ class Token extends PhpToken implements JsonSerializable
         return $tokens;
     }
 
-    public function parent(): Token
+    final public function nextSiblingsUntil(callable $callback): TokenCollection
+    {
+        $tokens  = new TokenCollection();
+        $current = $this;
+        while ($current->_nextSibling && !$callback($current->_nextSibling, $tokens)) {
+            $current  = $current->_nextSibling;
+            $tokens[] = $current;
+        }
+
+        return $tokens;
+    }
+
+    final public function parent(): Token
     {
         $current = $this->OpenedBy ?: $this;
 
@@ -1258,18 +1272,35 @@ class Token extends PhpToken implements JsonSerializable
      * Collect the token's parents up to but not including the first that isn't
      * one of the listed types
      *
-     * @param bool $includeToken If `true`, collect the token itself. If it
-     * isn't one of the listed types, an empty collection is returned.
      * @param int|string ...$types
      */
-    public function parentsWhile(bool $includeToken = false, ...$types): TokenCollection
+    final public function parentsWhile(...$types): TokenCollection
     {
-        $tokens = new TokenCollection();
-        $next   = $this->OpenedBy ?: $this;
-        $next   = $includeToken ? $next : $next->parent();
-        while ($next->is($types)) {
-            $tokens[] = $next;
-            $next     = $next->parent();
+        return $this->_parentsWhile(false, ...$types);
+    }
+
+    /**
+     * Collect the token and its parents up to but not including the first that
+     * isn't one of the listed types
+     *
+     * @param int|string ...$types
+     */
+    final public function withParentsWhile(...$types): TokenCollection
+    {
+        return $this->_parentsWhile(true, ...$types);
+    }
+
+    /**
+     * @param int|string ...$types
+     */
+    private function _parentsWhile(bool $includeToken = false, ...$types): TokenCollection
+    {
+        $tokens  = new TokenCollection();
+        $current = $this->OpenedBy ?: $this;
+        $current = $includeToken ? $current : end($current->BracketStack);
+        while ($current && $current->is($types)) {
+            $tokens[] = $current;
+            $current  = end($current->BracketStack);
         }
 
         return $tokens;
@@ -1290,36 +1321,21 @@ class Token extends PhpToken implements JsonSerializable
         return $this->canonical()->nextCode()->collectSiblings(($this->ClosedBy ?: $this)->prevCode());
     }
 
-    public function isCode(): bool
-    {
-        return $this->IsCode;
-    }
-
-    public function isNull(): bool
-    {
-        return $this->IsNull;
-    }
-
-    public function isVirtual(): bool
-    {
-        return $this->IsVirtual;
-    }
-
-    public function startOfLine(): Token
+    final public function startOfLine(): Token
     {
         $current = $this;
-        while (!$current->hasNewlineBefore() && !($prev = $current->prev())->isNull()) {
-            $current = $prev;
+        while (!$current->hasNewlineBefore() && $current->_prev) {
+            $current = $current->_prev;
         }
 
         return $current;
     }
 
-    public function endOfLine(): Token
+    final public function endOfLine(): Token
     {
         $current = $this;
-        while (!$current->hasNewlineAfter() && !($next = $current->next())->isNull()) {
-            $current = $next;
+        while (!$current->hasNewlineAfter() && $current->_next) {
+            $current = $current->_next;
         }
 
         return $current;
@@ -1378,23 +1394,26 @@ class Token extends PhpToken implements JsonSerializable
     }
 
     /**
-     * Get the sibling at the end of the expression to which the token belongs
+     * Get the last sibling in the token's expression
      *
-     * Statement separators do not form part of expressions and are not returned
-     * by this method.
+     * Statement separators (e.g. `,` and `;`) are not part of expressions and
+     * are not returned by this method.
      *
+     * @param bool $containUnenclosed If `true`, braces are imagined around
+     * control structures with unenclosed bodies. The default is `false`.
      */
-    public function pragmaticEndOfExpression(): Token
+    public function pragmaticEndOfExpression(bool $containUnenclosed = false): Token
     {
-        // For expression terminators, the most pragmatic thing to return is the
-        // end of the statement
-        if ($this->Expression === false) {
+        // If the token is an expression boundary, return the last token in the
+        // statement
+        if (!$containUnenclosed && $this->Expression === false) {
             $end = $this->EndStatement ?: $this;
 
             return $end === $this
                 ? $end
                 : $end->withoutTerminator();
         }
+
         // If the token is between `?` and `:` in a ternary expression, return
         // the last token before `:`
         $current = $this->OpenedBy ?: $this;
@@ -1403,28 +1422,59 @@ class Token extends PhpToken implements JsonSerializable
                 $prev->IsTernaryOperator) {
             return $prev->_nextCode->EndExpression;
         }
+
+        // Otherwise, traverse expressions until an appropriate terminator is
+        // reached
         $inCase = $current->inSwitchCase();
         while ($current->EndExpression) {
             $current    = $current->EndExpression;
             $terminator = ($current->_nextSibling->Expression ?? null) === false
                 ? $current->_nextSibling
                 : $current;
-            if (!($terminator->_nextSibling ?? null) ||
-                (!$terminator->_nextSibling->is([T_ELSEIF, T_ELSE]) &&
-                    !($terminator->_nextSibling->is(T_WHILE) &&
-                        $terminator->prevSiblingsUntil(
-                            fn(Token $t, TokenCollection $tc): bool =>
-                                $t->is([T[';'], T_CLOSE_TAG]) ||
-                                    ($t->is(T[':']) && ($t->inSwitchCase() || $t->inLabel() || !$t->prevSiblingOf(T[':'], T[';'], T['?'], T_CLOSE_TAG)->is([T['?'], T[':']]))) ||
-                                    ($t->is(T['?']) && count($tc->filter(fn(Token $t) => $t->is(T[':']))) - count($tc->filter(fn(Token $t) => $t->is(T['?']))) <= 0)
-                        )->hasOneOf(T_DO)) &&
-                    !$terminator->is([T_DOUBLE_ARROW, ...TokenType::OPERATOR_ASSIGNMENT, ...TokenType::OPERATOR_COMPARISON_EXCEPT_COALESCE]) &&
-                    !($inCase &&
-                        !$terminator->_nextSibling->is([T_CASE, T_DEFAULT])) &&
-                    !$terminator->isTernaryOperator())) {
-                break;
+            $next = $terminator->_nextSibling ?? null;
+            if (!$next) {
+                return $current;
             }
-            $current = $terminator->_nextSibling;
+            [$last, $current] = [$current, $next];
+
+            // Ignore most expression boundaries
+            if ($terminator->IsTernaryOperator ||
+                    $terminator->is([
+                        T_DOUBLE_ARROW,
+                        ...TokenType::OPERATOR_ASSIGNMENT,
+                        ...TokenType::OPERATOR_COMPARISON_EXCEPT_COALESCE,
+                    ])) {
+                continue;
+            }
+
+            // Don't terminate `case` and `default` statements until the next
+            // `case` or `default` is reached
+            if ($inCase && !$next->is([T_CASE, T_DEFAULT])) {
+                continue;
+            }
+
+            // Don't terminate if the next token continues a control structure
+            if ($next->is([T_CATCH, T_FINALLY])) {
+                continue;
+            }
+            if ($next->is([T_ELSEIF, T_ELSE]) && (
+                !$containUnenclosed ||
+                    $terminator->is(T['}']) ||
+                    $terminator->prevSiblingOf(T_IF, T_ELSEIF)->Index >= $this->Index
+            )) {
+                continue;
+            }
+            if ($next->is(T_WHILE) &&
+                    !($do = $terminator->prevSiblingOf(T_DO))->IsNull &&
+                    $do->nextSibling()->nextSiblingOf(T_WHILE) === $next && (
+                        !$containUnenclosed ||
+                            $terminator->is(T['}']) ||
+                            $do->Index >= $this->Index
+                    )) {
+                continue;
+            }
+
+            return $last;
         }
 
         return $current;
@@ -1435,11 +1485,11 @@ class Token extends PhpToken implements JsonSerializable
      */
     final public function adjacent(...$types): ?Token
     {
-        $_this = $this->ClosedBy ?: $this;
-        if (!$_this->is($types ?: ($types = [T[')'], T[','], T[']'], T['}']]))) {
+        $current = $this->ClosedBy ?: $this;
+        if (!$current->is($types ?: ($types = [T[')'], T[','], T[']'], T['}']]))) {
             return null;
         }
-        $outer = $_this->withNextCodeWhile(...$types)->last();
+        $outer = $current->withNextCodeWhile(...$types)->last();
         if (!$outer->EndStatement || !$outer->_nextCode ||
                 ($outer->EndStatement->Index <= $outer->_nextCode->Index)) {
             return null;
@@ -1507,25 +1557,35 @@ class Token extends PhpToken implements JsonSerializable
         return $this->startOfStatement()->collect($this);
     }
 
-    public function effectiveWhitespaceBefore(): int
+    final public function effectiveWhitespaceBefore(): int
     {
-        // If this is a comment pinned to the code below it ...
+        // If:
+        // - this token is a comment pinned to the code below it, and
+        // - the previous token isn't a pinned comment (or if it is, it has a
+        //   different type and is therefore distinct), and
+        // - there are no unpinned comments, or comments with a different type,
+        //   between this and the next code token
+        //
+        // Then:
+        // - combine this token's effective whitespace with the next code
+        //   token's effective whitespace
         if ($this->PinToCode &&
-            // and the previous token isn't a pinned comment (or if it is, it
-            // has a different type and is therefore distinct) ...
-            (!$this->prev()->PinToCode || !$this->isSameTypeAs($this->prev())) &&
-            // and there are no comments between this and the next code token
-            // that aren't pinned or have a different type, then ...
-            !count($this->next()
-                        ->collect(($next = $this->nextCode())->prev())
-                        ->filter(fn(Token $t) => !$t->PinToCode || !$this->isSameTypeAs($t)))) {
-            // Combine this token's effective whitespace with the next code
-            // token's effective whitespace
-            return ($this->_effectiveWhitespaceBefore()
-                    | $next->_effectiveWhitespaceBefore())
-                & $this->prev()->WhitespaceMaskNext & $this->WhitespaceMaskPrev;
+                $this->_nextCode &&
+                (!$this->_prev->PinToCode || $this->_prev->CommentType !== $this->CommentType)) {
+            $current = $this;
+            while (true) {
+                $current = $current->_next;
+                if ($current->Index >= $this->_nextCode->Index) {
+                    return ($this->_effectiveWhitespaceBefore()
+                            | $this->_nextCode->_effectiveWhitespaceBefore())
+                        & $this->_prev->WhitespaceMaskNext & $this->WhitespaceMaskPrev;
+                }
+                if (!$current->PinToCode || $current->CommentType !== $this->CommentType) {
+                    break;
+                }
+            }
         }
-        if (!$this->PinToCode && $this->prev()->PinToCode && $this->IsCode) {
+        if (!$this->PinToCode && ($this->_prev->PinToCode ?? false) && $this->IsCode) {
             return ($this->_effectiveWhitespaceBefore() | WhitespaceType::LINE) & ~WhitespaceType::BLANK;
         }
 
@@ -1534,13 +1594,13 @@ class Token extends PhpToken implements JsonSerializable
 
     private function _effectiveWhitespaceBefore(): int
     {
-        return ($this->WhitespaceBefore | $this->prev()->WhitespaceAfter)
-            & $this->prev()->WhitespaceMaskNext & $this->WhitespaceMaskPrev;
+        return ($this->WhitespaceBefore | ($this->_prev->WhitespaceAfter ?? 0))
+            & ($this->_prev->WhitespaceMaskNext ?? WhitespaceType::ALL) & $this->WhitespaceMaskPrev;
     }
 
-    public function effectiveWhitespaceAfter(): int
+    final public function effectiveWhitespaceAfter(): int
     {
-        if ($this->PinToCode && ($next = $this->next())->IsCode && !$next->PinToCode) {
+        if ($this->PinToCode && ($this->_next->IsCode ?? false)) {
             return ($this->_effectiveWhitespaceAfter() | WhitespaceType::LINE) & ~WhitespaceType::BLANK;
         }
 
@@ -1549,61 +1609,66 @@ class Token extends PhpToken implements JsonSerializable
 
     private function _effectiveWhitespaceAfter(): int
     {
-        return ($this->WhitespaceAfter | $this->next()->WhitespaceBefore)
-            & $this->next()->WhitespaceMaskPrev & $this->WhitespaceMaskNext;
+        return ($this->WhitespaceAfter | ($this->_next->WhitespaceBefore ?? 0))
+            & ($this->_next->WhitespaceMaskPrev ?? WhitespaceType::ALL) & $this->WhitespaceMaskNext;
     }
 
-    public function hasNewlineBefore(): bool
+    final public function hasNewlineBefore(): bool
     {
-        return (bool) ($this->effectiveWhitespaceBefore()
+        return !!($this->effectiveWhitespaceBefore()
             & (WhitespaceType::LINE | WhitespaceType::BLANK));
     }
 
-    public function hasNewlineAfter(): bool
+    final public function hasNewlineAfter(): bool
     {
-        return (bool) ($this->effectiveWhitespaceAfter()
+        return !!($this->effectiveWhitespaceAfter()
             & (WhitespaceType::LINE | WhitespaceType::BLANK));
     }
 
-    public function hasBlankLineBefore(): bool
+    final public function hasBlankLineBefore(): bool
     {
-        return (bool) ($this->effectiveWhitespaceBefore()
-            & WhitespaceType::BLANK);
+        return !!($this->effectiveWhitespaceBefore() & WhitespaceType::BLANK);
     }
 
-    public function hasBlankLineAfter(): bool
+    final public function hasBlankLineAfter(): bool
     {
-        return (bool) ($this->effectiveWhitespaceAfter()
-            & WhitespaceType::BLANK);
+        return !!($this->effectiveWhitespaceAfter() & WhitespaceType::BLANK);
     }
 
-    public function hasWhitespaceBefore(): bool
-    {
-        return (bool) $this->effectiveWhitespaceBefore();
-    }
-
-    public function hasWhitespaceAfter(): bool
-    {
-        return (bool) $this->effectiveWhitespaceAfter();
-    }
-
-    public function hasNewline(): bool
+    /**
+     * True if the token contains a newline
+     *
+     */
+    final public function hasNewline(): bool
     {
         return strpos($this->text, "\n") !== false;
     }
 
     /**
-     * There's a newline between this token and the next code token
+     * True if, between the token and the next code token, there's a newline
+     * between tokens
      *
      */
-    public function hasNewlineAfterCode(): bool
+    final public function hasNewlineAfterCode(): bool
     {
-        return $this->hasNewlineAfter() ||
-            (!$this->next()->IsCode &&
-                $this->next()
-                     ->collect($this->nextCode())
-                     ->find(fn(Token $t) =>
-                         $t->hasNewlineBefore()));
+        if ($this->hasNewlineAfter()) {
+            return true;
+        }
+        if (!$this->_nextCode || $this->_nextCode === $this->_next) {
+            return false;
+        }
+        $current = $this;
+        while (true) {
+            $current = $current->_next;
+            if ($current === $this->_nextCode) {
+                break;
+            }
+            if ($current->hasNewlineAfter()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function prevStatementStart(): Token
@@ -1616,28 +1681,21 @@ class Token extends PhpToken implements JsonSerializable
         return $prev->startOfStatement();
     }
 
-    final public function isStatementTerminator(): bool
-    {
-        return $this->is(T[';']) ||
-            $this->IsCloseTagStatementTerminator ||
-            ($this->is(T['}']) && $this->isStructuralBrace()) ||
-            ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE));
-    }
-
     public function isStatementPrecursor(): bool
     {
         return $this->_nextCode && $this->_nextCode->Statement === $this->_nextCode;
     }
 
     /**
-     * Token is a T_CLOSE_TAG that may also be a statement terminator
+     * True if the token is part of a case or default statement
+     *
+     * Specifically, the token may be:
+     * - `T_CASE` or `T_DEFAULT`
+     * - the `:` or `;` after `T_CASE` or `T_DEFAULT`, or
+     * - part of the expression between `T_CASE` and its terminator
+     *
      */
-    public function isCloseTagStatementTerminator(): bool
-    {
-        return $this->IsCloseTagStatementTerminator;
-    }
-
-    public function inSwitchCase(): bool
+    final public function inSwitchCase(): bool
     {
         return $this->is([T_CASE, T_DEFAULT]) ||
             ($this->parent()->prevSibling(2)->is(T_SWITCH) &&
@@ -1645,11 +1703,17 @@ class Token extends PhpToken implements JsonSerializable
                      ->is([T_CASE, T_DEFAULT]));
     }
 
-    public function inLabel(): bool
+    /**
+     * True if the token is part of a label
+     *
+     * The token may be the label itself (`T_STRING`) or its terminator (`:`).
+     *
+     */
+    final public function inLabel(): bool
     {
         if ($this->is(T[':'])) {
             return $this->prevCode()->is(T_STRING) &&
-                (($prev = $this->prevCode(2))->is([T['('], T[';'], T_CLOSE_TAG]) ||
+                (($prev = $this->prevCode(2))->is([T[';'], T_CLOSE_TAG]) ||
                     $prev->isStructuralBrace() ||
                     $prev->startsAlternativeSyntax() ||
                     ($prev->is(T[':']) && ($prev->inSwitchCase() || $prev->inLabel())));
@@ -1666,27 +1730,23 @@ class Token extends PhpToken implements JsonSerializable
             ($this->is(T['(']) && $this->prevCode()->is(T_ARRAY));
     }
 
-    public function isBrace(): bool
+    final public function isBrace(): bool
     {
-        return $this->is(T['{']) || ($this->is(T['}']) && $this->OpenedBy->is(T['{']));
+        return $this->id === T['{'] || ($this->id === T['}'] && $this->OpenedBy->id === T['{']);
     }
 
-    public function isStructuralBrace(): bool
+    final public function isStructuralBrace(): bool
     {
-        if (!$this->isBrace()) {
+        if (!($this->id === T['{'] || ($this->id === T['}'] && $this->OpenedBy->id === T['{']))) {
             return false;
         }
-        $_this     = $this->OpenedBy ?: $this;
-        $lastInner = $_this->ClosedBy->prevCode();
-        $parent    = $_this->parent();
+        $current   = $this->OpenedBy ?: $this;
+        $lastInner = $current->ClosedBy->_prevCode;
 
-        return ($lastInner === $_this ||                                         // `{}`
-                $lastInner->is([T[':'], T[';']]) ||                              // `{ statement; }`
-                $lastInner->IsCloseTagStatementTerminator ||                     /* `{ statement ?>...<?php }` */
-                ($lastInner->is(T['}']) && $lastInner->isStructuralBrace())) &&  // `{ { statement; } }`
-            !(($parent->isNull() ||
-                    $parent->prevSiblingsWhile(...TokenType::DECLARATION_PART)->hasOneOf(T_NAMESPACE)) &&
-                $parent->prevSiblingsWhile(...TokenType::DECLARATION_PART)->hasOneOf(T_USE));
+        return ($lastInner === $current ||                                    // `{}`
+            $lastInner->is([T[':'], T[';']]) ||                               // `{ statement; }`
+            $lastInner->IsCloseTagStatementTerminator ||                      /* `{ statement ?>...<?php }` */
+            ($lastInner->id === T['}'] && $lastInner->isStructuralBrace()));  // `{ { statement; } }`
     }
 
     public function isOpenBracket(): bool
@@ -1737,11 +1797,6 @@ class Token extends PhpToken implements JsonSerializable
         return $this->is(TokenType::ALL_OPERATOR);
     }
 
-    public function isTernaryOperator(): bool
-    {
-        return $this->IsTernaryOperator;
-    }
-
     public function isBinaryOrTernaryOperator(): bool
     {
         return $this->isOperator() && !$this->isUnaryOperator();
@@ -1762,27 +1817,26 @@ class Token extends PhpToken implements JsonSerializable
 
     final public function inUnaryContext(): bool
     {
-        $prev = $this->prevCode();
-
-        return $prev->is([
-            T['('],
-            T[','],
-            T[';'],
-            T['['],
-            T['{'],
-            T['}'],
-            ...TokenType::OPERATOR_ARITHMETIC,
-            ...TokenType::OPERATOR_ASSIGNMENT,
-            ...TokenType::OPERATOR_BITWISE,
-            ...TokenType::OPERATOR_COMPARISON,
-            ...TokenType::OPERATOR_LOGICAL,
-            ...TokenType::OPERATOR_STRING,
-            ...TokenType::OPERATOR_DOUBLE_ARROW,
-            ...TokenType::CAST,
-            ...TokenType::KEYWORD,
-        ]) ||
-            $prev->IsCloseTagStatementTerminator ||
-            $prev->isTernaryOperator();
+        return $this->_prevCode &&
+            ($this->_prevCode->IsTernaryOperator ||
+                $this->_prevCode->IsCloseTagStatementTerminator ||
+                $this->_prevCode->is([
+                    T['('],
+                    T[','],
+                    T[';'],
+                    T['['],
+                    T['{'],
+                    T['}'],
+                    ...TokenType::OPERATOR_ARITHMETIC,
+                    ...TokenType::OPERATOR_ASSIGNMENT,
+                    ...TokenType::OPERATOR_BITWISE,
+                    ...TokenType::OPERATOR_COMPARISON,
+                    ...TokenType::OPERATOR_LOGICAL,
+                    ...TokenType::OPERATOR_STRING,
+                    ...TokenType::OPERATOR_DOUBLE_ARROW,
+                    ...TokenType::CAST,
+                    ...TokenType::KEYWORD,
+                ]));
     }
 
     /**
@@ -1922,23 +1976,23 @@ class Token extends PhpToken implements JsonSerializable
         return TokenCollection::collect($this, $to);
     }
 
-    public function collectSiblings(Token $to = null): TokenCollection
+    final public function collectSiblings(Token $until = null): TokenCollection
     {
         $tokens  = new TokenCollection();
         $current = $this->OpenedBy ?: $this;
-        if ($to) {
-            if ($this->Index > $to->Index || $to->IsNull) {
+        if ($until) {
+            if ($this->Index > $until->Index || $until->IsNull) {
                 return $tokens;
             }
-            $to = $to->OpenedBy ?: $to;
-            if ($current->BracketStack !== $to->BracketStack) {
-                throw new RuntimeException('Argument #1 ($to) is not a sibling');
+            $until = $until->OpenedBy ?: $until;
+            if ($current->BracketStack !== $until->BracketStack) {
+                throw new RuntimeException('Argument #1 ($until) is not a sibling');
             }
         }
 
         do {
             $tokens[] = $current;
-            if ($to && $current === $to) {
+            if ($until && $current === $until) {
                 break;
             }
         } while ($current = $current->_nextSibling);
@@ -1986,12 +2040,5 @@ class Token extends PhpToken implements JsonSerializable
                        $this->Index,
                        $this->line,
                        Convert::ellipsize(var_export($this->text, true), 20));
-    }
-
-    private function isSameTypeAs(Token $token): bool
-    {
-        return $this->id === $token->id &&
-            (!$this->is(TokenType::COMMENT) ||
-                $this->isMultiLineComment() === $token->isMultiLineComment());
     }
 }

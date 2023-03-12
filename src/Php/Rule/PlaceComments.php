@@ -14,6 +14,13 @@ class PlaceComments implements TokenRule
 {
     use TokenRuleTrait;
 
+    /**
+     * [Comment token, subsequent code token]
+     *
+     * @var array<array{Token,Token}>
+     */
+    private $Comments = [];
+
     public function getTokenTypes(): ?array
     {
         return TokenType::COMMENT;
@@ -38,18 +45,14 @@ class PlaceComments implements TokenRule
             return;
         }
 
-        // Just before rendering, copy indentation and padding values to
-        // comments from code below them
+        // Just before rendering, indentation and padding values are copied from
+        // `$next` to `$token` for each comment in `$this->Comments`. Add this
+        // comment unless `$next` is a close bracket.
         $next = $token->nextCode();
-        if (!$next->isNull() &&
+        if (!$next->IsNull &&
                 !$next->isCloseBracket() &&
                 !$next->endsAlternativeSyntax()) {
-            $this->Formatter->registerCallback(
-                $this,
-                $token,
-                fn() => $this->alignComment($token, $next),
-                998
-            );
+            $this->Comments[] = [$token, $next];
         }
 
         $token->WhitespaceAfter |= WhitespaceType::LINE;
@@ -59,9 +62,10 @@ class PlaceComments implements TokenRule
 
             return;
         }
+
         $line = WhitespaceType::LINE;
         if ($token->hasNewline() &&
-            !($prev = $token->prev())->isNull() &&
+            !($prev = $token->prev())->IsNull &&
             !($prev === $token->parent()) &&
             !($prev->is(T[',']) ||
                 ($prev->is([T[':'], T[';']]) &&
@@ -69,6 +73,7 @@ class PlaceComments implements TokenRule
             $line = WhitespaceType::BLANK;
         }
         $token->WhitespaceBefore |= WhitespaceType::SPACE | $line;
+
         // PHPDoc comments immediately before namespace declarations are
         // generally associated with the file, not the namespace
         if ($token->next()->isDeclaration(T_NAMESPACE)) {
@@ -76,64 +81,68 @@ class PlaceComments implements TokenRule
 
             return;
         }
-        if ($token->next()->isCode()) {
+
+        if ($token->next()->IsCode) {
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
             $token->PinToCode           = !$next->isCloseBracket() && !$next->endsAlternativeSyntax();
         }
     }
 
-    private function alignComment(Token $token, Token $next): void
+    public function beforeRender(array $tokens): void
     {
-        // Comments are usually aligned to the code below them, but switch
-        // blocks are a special case, e.g.:
-        //
-        // ```
-        // switch ($a) {
-        //     //
-        //     case 0:
-        //     case 1:
-        //         //
-        //         func();
-        //         // Aligns with previous statement
-        //     case 2:
-        //     //
-        //     case 3:
-        //         func2();
-        //         break;
-        //
-        //         // Aligns with previous statement
-        //
-        //     case 4:
-        //         func();
-        //         break;
-        //
-        //     //
-        //     default:
-        //         break;
-        // }
-        // ```
-        $prev = $token->prevCode();
-        if ($next->is([T_CASE, T_DEFAULT]) &&
-                $prev !== $next->parent() &&
-                ($next->hasBlankLineBefore() || !$prev->hasBlankLineAfter()) &&
-                !($prev->is(T[':']) && $prev->prevSibling(2)->is([T_CASE, T_DEFAULT]))) {
-            return;
-        }
+        foreach ($this->Comments as [$token, $next]) {
+            // Comments are usually aligned to the code below them, but switch
+            // blocks are a special case, e.g.:
+            //
+            // ```
+            // switch ($a) {
+            //     //
+            //     case 0:
+            //     case 1:
+            //         //
+            //         func();
+            //         // Aligns with previous statement
+            //     case 2:
+            //     //
+            //     case 3:
+            //         func2();
+            //         break;
+            //
+            //         // Aligns with previous statement
+            //
+            //     case 4:
+            //         func();
+            //         break;
+            //
+            //     //
+            //     default:
+            //         break;
+            // }
+            // ```
+            if ($next->is([T_CASE, T_DEFAULT])) {
+                $prev = $token->prevCode();
+                if ($prev !== $next->parent() &&
+                        ($next->hasBlankLineBefore() || !$prev->hasBlankLineAfter()) &&
+                        !($prev->is(T[':']) && $prev->prevSibling(2)->is([T_CASE, T_DEFAULT]))) {
+                    continue;
+                }
+            }
 
-        [$token->PreIndent,
-         $token->Indent,
-         $token->Deindent,
-         $token->HangingIndent,
-         $token->LinePadding,
-         $token->LineUnpadding] = [$next->PreIndent,
-                                   $next->Indent,
-                                   $next->Deindent,
-                                   $next->HangingIndent,
-                                   $next->LinePadding,
-                                   $next->LineUnpadding];
+            [$token->PreIndent,
+             $token->Indent,
+             $token->Deindent,
+             $token->HangingIndent,
+             $token->LinePadding,
+             $token->LineUnpadding] = [$next->PreIndent,
+                                       $next->Indent,
+                                       $next->Deindent,
+                                       $next->HangingIndent,
+                                       $next->LinePadding,
+                                       $next->LineUnpadding];
 
-        if ($token->hasNewlineAfter()) {
-            $token->Padding = $next->Padding;
+            if ($token->hasNewlineAfter()) {
+                $token->Padding = $next->Padding;
+            }
         }
     }
 }
