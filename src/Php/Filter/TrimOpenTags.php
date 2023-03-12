@@ -2,14 +2,14 @@
 
 namespace Lkrms\Pretty\Php\Filter;
 
-use Lkrms\Pretty\Php\Contract\TokenFilter;
+use Lkrms\Pretty\Php\Contract\Filter;
 use Lkrms\Pretty\Php\Token;
 
 /**
  * Remove whitespace after T_OPEN_TAG and T_OPEN_TAG_WITH_ECHO for comparison
  *
  */
-final class TrimOpenTags implements TokenFilter
+final class TrimOpenTags implements Filter
 {
     public function __invoke(array $tokens): array
     {

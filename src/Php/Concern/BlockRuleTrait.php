@@ -5,4 +5,8 @@ namespace Lkrms\Pretty\Php\Concern;
 trait BlockRuleTrait
 {
     use RuleTrait;
+
+    public function beforeRender(array $tokens): void
+    {
+    }
 }

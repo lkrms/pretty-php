@@ -9,8 +9,8 @@ use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\Sys;
 use Lkrms\Pretty\Php\Contract\BlockRule;
+use Lkrms\Pretty\Php\Contract\Filter;
 use Lkrms\Pretty\Php\Contract\Rule;
-use Lkrms\Pretty\Php\Contract\TokenFilter;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Filter\NormaliseStrings;
 use Lkrms\Pretty\Php\Filter\RemoveCommentTokens;
@@ -109,12 +109,9 @@ final class Formatter implements IReadable
      * @var string[]
      */
     protected $Rules = [
-        ProtectStrings::class,  // processToken:
-                                // - `WhitespaceMaskPrev`=NONE
-                                // - `WhitespaceMaskNext`=NONE
+        ProtectStrings::class,
 
-        SimplifyStrings::class,  // processToken:
-                                 // - `text`=<value>
+        SimplifyStrings::class,
 
         AddStandardWhitespace::class,  // processToken:
                                        // - WhitespaceBefore+SPACE[+LINE]
@@ -212,12 +209,12 @@ final class Formatter implements IReadable
     public $Tokens;
 
     /**
-     * @var TokenFilter[]
+     * @var Filter[]
      */
     private $MandatoryFilters;
 
     /**
-     * @var TokenFilter[]
+     * @var Filter[]
      */
     private $ComparisonFilters;
 

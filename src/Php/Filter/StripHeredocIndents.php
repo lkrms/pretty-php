@@ -2,13 +2,13 @@
 
 namespace Lkrms\Pretty\Php\Filter;
 
-use Lkrms\Pretty\Php\Contract\TokenFilter;
+use Lkrms\Pretty\Php\Contract\Filter;
 
 /**
  * Remove indentation from heredocs
  *
  */
-final class StripHeredocIndents implements TokenFilter
+final class StripHeredocIndents implements Filter
 {
     public function __invoke(array $tokens): array
     {

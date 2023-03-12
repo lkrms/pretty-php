@@ -2,14 +2,14 @@
 
 namespace Lkrms\Pretty\Php\Filter;
 
-use Lkrms\Pretty\Php\Contract\TokenFilter;
+use Lkrms\Pretty\Php\Contract\Filter;
 use Lkrms\Pretty\Php\Token;
 
 /**
  * Use var_export() to normalise string constants for comparison
  *
  */
-final class NormaliseStrings implements TokenFilter
+final class NormaliseStrings implements Filter
 {
     public function __invoke(array $tokens): array
     {

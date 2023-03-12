@@ -2,7 +2,7 @@
 
 namespace Lkrms\Pretty\Php\Filter;
 
-use Lkrms\Pretty\Php\Contract\TokenFilter;
+use Lkrms\Pretty\Php\Contract\Filter;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 
@@ -10,7 +10,7 @@ use Lkrms\Pretty\Php\TokenType;
  * Remove whitespace inside cast operators
  *
  */
-final class TrimInsideCasts implements TokenFilter
+final class TrimInsideCasts implements Filter
 {
     public function __invoke(array $tokens): array
     {

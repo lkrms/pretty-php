@@ -4,7 +4,7 @@ namespace Lkrms\Pretty\Php;
 
 use JsonSerializable;
 use Lkrms\Facade\Convert;
-use Lkrms\Pretty\Php\Contract\TokenFilter;
+use Lkrms\Pretty\Php\Contract\Filter;
 use Lkrms\Pretty\PrettyException;
 use Lkrms\Pretty\WhitespaceType;
 use PhpToken;
@@ -284,14 +284,38 @@ class Token extends PhpToken implements JsonSerializable
     public $WhitespaceAfter = WhitespaceType::NONE;
 
     /**
+     * Bitmask applied to whitespace between the token and its predecessor
+     *
      * @var int
      */
     public $WhitespaceMaskPrev = WhitespaceType::ALL;
 
     /**
+     * Bitmask applied to whitespace between the token and its successor
+     *
      * @var int
      */
     public $WhitespaceMaskNext = WhitespaceType::ALL;
+
+    /**
+     * Secondary bitmask applied to whitespace between the token and its
+     * predecessor
+     *
+     * Values removed from this bitmask MUST NOT BE RESTORED.
+     *
+     * @var int
+     */
+    public $CriticalWhitespaceMaskPrev = WhitespaceType::ALL;
+
+    /**
+     * Secondary bitmask applied to whitespace between the token and its
+     * successor
+     *
+     * Values removed from this bitmask MUST NOT BE RESTORED.
+     *
+     * @var int
+     */
+    public $CriticalWhitespaceMaskNext = WhitespaceType::ALL;
 
     /**
      * @var Formatter|null
@@ -308,7 +332,7 @@ class Token extends PhpToken implements JsonSerializable
     /**
      * @return static[]
      */
-    public static function tokenize(string $code, int $flags = 0, TokenFilter ...$filters): array
+    public static function tokenize(string $code, int $flags = 0, Filter ...$filters): array
     {
         $tokens = parent::tokenize($code, $flags);
         if ($filters) {
@@ -323,7 +347,7 @@ class Token extends PhpToken implements JsonSerializable
      * @param T0[] $tokens
      * @return T0[]
      */
-    public static function filterTokens(array $tokens, TokenFilter ...$filters): array
+    public static function filterTokens(array $tokens, Filter ...$filters): array
     {
         try {
             foreach ($filters as $filter) {
@@ -1578,7 +1602,8 @@ class Token extends PhpToken implements JsonSerializable
                 if ($current->Index >= $this->_nextCode->Index) {
                     return ($this->_effectiveWhitespaceBefore()
                             | $this->_nextCode->_effectiveWhitespaceBefore())
-                        & $this->_prev->WhitespaceMaskNext & $this->WhitespaceMaskPrev;
+                        & $this->_prev->WhitespaceMaskNext & $this->_prev->CriticalWhitespaceMaskNext
+                        & $this->WhitespaceMaskPrev & $this->CriticalWhitespaceMaskPrev;
                 }
                 if (!$current->PinToCode || $current->CommentType !== $this->CommentType) {
                     break;
@@ -1595,7 +1620,10 @@ class Token extends PhpToken implements JsonSerializable
     private function _effectiveWhitespaceBefore(): int
     {
         return ($this->WhitespaceBefore | ($this->_prev->WhitespaceAfter ?? 0))
-            & ($this->_prev->WhitespaceMaskNext ?? WhitespaceType::ALL) & $this->WhitespaceMaskPrev;
+            & ($this->_prev->WhitespaceMaskNext ?? WhitespaceType::ALL)
+            & ($this->_prev->CriticalWhitespaceMaskNext ?? WhitespaceType::ALL)
+            & $this->WhitespaceMaskPrev
+            & $this->CriticalWhitespaceMaskPrev;
     }
 
     final public function effectiveWhitespaceAfter(): int
@@ -1610,7 +1638,10 @@ class Token extends PhpToken implements JsonSerializable
     private function _effectiveWhitespaceAfter(): int
     {
         return ($this->WhitespaceAfter | ($this->_next->WhitespaceBefore ?? 0))
-            & ($this->_next->WhitespaceMaskPrev ?? WhitespaceType::ALL) & $this->WhitespaceMaskNext;
+            & ($this->_next->WhitespaceMaskPrev ?? WhitespaceType::ALL)
+            & ($this->_next->CriticalWhitespaceMaskPrev ?? WhitespaceType::ALL)
+            & $this->WhitespaceMaskNext
+            & $this->CriticalWhitespaceMaskNext;
     }
 
     final public function hasNewlineBefore(): bool
