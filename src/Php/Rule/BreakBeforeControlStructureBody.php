@@ -54,20 +54,31 @@ final class BreakBeforeControlStructureBody implements TokenRule
             return;
         }
 
+        $token->WhitespaceBefore           |= WhitespaceType::LINE;
+        $token->WhitespaceMaskPrev         |= WhitespaceType::LINE;
+        $token->prev()->WhitespaceMaskNext |= WhitespaceType::LINE;
+
         $body->WhitespaceBefore           |= WhitespaceType::LINE | WhitespaceType::SPACE;
         $body->WhitespaceMaskPrev         |= WhitespaceType::LINE;
         $body->WhitespaceMaskPrev         &= ~WhitespaceType::BLANK;
         $body->prev()->WhitespaceMaskNext |= WhitespaceType::LINE;
 
-        $continues = true;
+        $end       = null;
+        $continues = false;
         if ($token->is(T_DO)) {
-            $end = $body->nextSiblingOf(T_WHILE)->prevCode();
+            $continues = true;
         } elseif ($token->is([T_IF, T_ELSEIF])) {
-            $end = $body->nextSiblingOf(T_ELSEIF, T_ELSE)->prevCode();
+            $end = $token->nextSiblingOf(T_IF, T_ELSEIF, T_ELSE);
+            if ($end->is(T_IF)) {
+                $end = $body->EndStatement;
+            } elseif (!$end->IsNull) {
+                $end       = $end->prevCode();
+                $continues = true;
+            }
         }
-        if (!($end ?? null) || $end->IsNull) {
-            $end       = $body->endOfStatement();
-            $continues = false;
+
+        if (!$end || $end->IsNull || $end->Index > $body->EndStatement->Index) {
+            $end = $body->pragmaticEndOfExpression(true)->withTerminator();
         }
 
         $body->collect($end)

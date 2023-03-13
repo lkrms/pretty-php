@@ -265,7 +265,11 @@ class AddHangingIndentation implements TokenRule
     {
         // Ignore tokens aligned by other rules
         if ($token->AlignedWith ||
-                $token->is(TokenType::NOT_CODE)) {
+                $token->is([
+                    ...TokenType::HAS_STATEMENT_WITH_OPTIONAL_BRACES,
+                    ...TokenType::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES,
+                    ...TokenType::NOT_CODE
+                ])) {
             return false;
         }
 

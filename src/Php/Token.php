@@ -583,13 +583,15 @@ class Token extends PhpToken implements JsonSerializable
     {
         if ((($this->is(T[';']) ||
                 $this->IsCloseTagStatementTerminator ||
-                ($this->is(T['}']) &&
-                    $this->isCloseBraceStatementTerminator())) &&
-                !$this->nextCode()->is([T_CATCH, T_FINALLY]) &&
-                !$this->nextCode()->is([T_ELSEIF, T_ELSE]) &&
-                !($this->nextCode()->is(T_WHILE) &&
-                    !($do = $this->prevSiblingOf(T_DO))->IsNull &&
-                    $do->nextSibling()->nextSiblingOf(T_WHILE) === $this->nextCode())) ||
+                $this->isCloseBraceStatementTerminator()) &&
+            !$this->nextCode()->is([T_ELSEIF, T_ELSE, T_CATCH, T_FINALLY]) &&
+            !($this->nextCode()->is(T_WHILE) &&
+                ($this->nextCode()->prevSibling(2)->is(T_DO) ||      // Body enclosed: `do { ... } while ();`
+                    (!($do = $this->prevSiblingOf(T_DO))->IsNull &&  // Body unenclosed +/- nesting:
+                        $do->nextSibling(2)                          // - `do statement; while ();`
+                           ->collectSiblings($this->nextCode())      // - `do while () while (); while ();`
+                           ->filter(fn(Token $t) => $t->is(T_WHILE) && !$t->prevSibling(2)->is(T_WHILE))
+                           ->first() === $this->nextCode())))) ||
                 $this->startsAlternativeSyntax() ||
                 ($this->is(T[':']) && ($this->inSwitchCase() || $this->inLabel()))) {
             $this->applyStatement();
@@ -870,7 +872,7 @@ class Token extends PhpToken implements JsonSerializable
             return false;
         }
         do {
-            $prev = $this->_prev;
+            $prev = ($prev ?? $this)->_prev;
             if (!$prev) {
                 return true;
             }
@@ -888,7 +890,7 @@ class Token extends PhpToken implements JsonSerializable
             return false;
         }
         do {
-            $next = $this->_next;
+            $next = ($next ?? $this)->_next;
             if (!$next) {
                 return true;
             }
@@ -1489,11 +1491,10 @@ class Token extends PhpToken implements JsonSerializable
                 continue;
             }
             if ($next->is(T_WHILE) &&
-                    !($do = $terminator->prevSiblingOf(T_DO))->IsNull &&
-                    $do->nextSibling()->nextSiblingOf(T_WHILE) === $next && (
+                    $next->Statement !== $next && (
                         !$containUnenclosed ||
                             $terminator->is(T['}']) ||
-                            $do->Index >= $this->Index
+                            $next->Statement->Index >= $this->Index
                     )) {
                 continue;
             }
@@ -1560,12 +1561,25 @@ class Token extends PhpToken implements JsonSerializable
         return ($from ?: $this)->collect($until ?? $this);
     }
 
-    public function withoutTerminator(): Token
+    final public function withoutTerminator(): Token
     {
         if ($this->_prevCode &&
             ($this->is([T[';'], T[','], T[':']]) ||
                 $this->IsCloseTagStatementTerminator)) {
             return $this->_prevCode;
+        }
+
+        return $this;
+    }
+
+    final public function withTerminator(): Token
+    {
+        if ($this->_nextCode &&
+            !($this->is([T[';'], T[','], T[':']]) ||
+                $this->IsCloseTagStatementTerminator) &&
+            ($this->_nextCode->is([T[';'], T[','], T[':']]) ||
+                $this->_nextCode->IsCloseTagStatementTerminator)) {
+            return $this->_nextCode;
         }
 
         return $this;

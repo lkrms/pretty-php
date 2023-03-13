@@ -125,6 +125,8 @@ final class Formatter implements IReadable
                                       // - `WhitespaceMaskPrev`(+SPACE|=NONE)
                                       // - `WhitespaceBefore`=NONE
 
+        BracePosition::class,  // Must be before BreakBeforeControlStructureBody
+
         BreakBeforeControlStructureBody::class,  // processToken:
                                                  // - `WhitespaceBefore`+LINE+SPACE
                                                  // - `WhitespaceMaskPrev`+LINE-BREAK
@@ -135,8 +137,6 @@ final class Formatter implements IReadable
                                  // - `WhitespaceBefore`+LINE
                                  // - `WhitespaceAfter`+LINE
                                  // - `WhitespaceMaskNext`-BLANK
-
-        BracePosition::class,
 
         SpaceOperators::class,  // processToken:
                                 // `WhitespaceBefore`(+SPACE|=NONE)
