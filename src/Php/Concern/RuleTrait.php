@@ -20,4 +20,9 @@ trait RuleTrait
     {
         return null;
     }
+
+    public function destroy(): void
+    {
+        unset($this->Formatter);
+    }
 }

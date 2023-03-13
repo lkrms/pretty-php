@@ -48,4 +48,9 @@ trait FilterTrait
 
         return NullToken::create();
     }
+
+    public function destroy(): void
+    {
+        unset($this->Tokens);
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace Lkrms\Pretty\Php\Filter;
 
+use Lkrms\Pretty\Php\Concern\FilterTrait;
 use Lkrms\Pretty\Php\Contract\Filter;
 
 /**
@@ -10,6 +11,8 @@ use Lkrms\Pretty\Php\Contract\Filter;
  */
 final class StripHeredocIndents implements Filter
 {
+    use FilterTrait;
+
     public function __invoke(array $tokens): array
     {
         $heredoc = null;

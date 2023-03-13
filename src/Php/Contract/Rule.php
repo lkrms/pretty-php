@@ -25,4 +25,10 @@ interface Rule
      * @param \Lkrms\Pretty\Php\Token[] $tokens
      */
     public function beforeRender(array $tokens): void;
+
+    /**
+     * Close resources and remove circular references
+     *
+     */
+    public function destroy(): void;
 }

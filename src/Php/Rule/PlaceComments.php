@@ -16,7 +16,9 @@ use const Lkrms\Pretty\Php\T_ID_MAP as T;
  */
 final class PlaceComments implements TokenRule
 {
-    use TokenRuleTrait;
+    use TokenRuleTrait {
+        destroy as private _destroy;
+    }
 
     /**
      * [Comment token, subsequent code token]
@@ -158,5 +160,11 @@ final class PlaceComments implements TokenRule
                 $token->Padding = $next->Padding;
             }
         }
+    }
+
+    public function destroy(): void
+    {
+        unset($this->Comments);
+        $this->_destroy();
     }
 }

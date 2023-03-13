@@ -14,4 +14,10 @@ interface Filter
      * @return T0[]
      */
     public function __invoke(array $tokens): array;
+
+    /**
+     * Close resources and remove circular references
+     *
+     */
+    public function destroy(): void;
 }

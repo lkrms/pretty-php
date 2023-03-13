@@ -24,7 +24,9 @@ use const Lkrms\Pretty\Php\T_NULL;
  */
 final class SpaceDeclarations implements TokenRule
 {
-    use TokenRuleTrait;
+    use TokenRuleTrait {
+        destroy as private _destroy;
+    }
 
     /**
      * @var Token[]
@@ -176,5 +178,11 @@ final class SpaceDeclarations implements TokenRule
     {
         return ($comment = $token->prev())->is(TokenType::COMMENT) &&
             $comment->PinToCode;
+    }
+
+    public function destroy(): void
+    {
+        unset($this->Prev);
+        $this->_destroy();
     }
 }

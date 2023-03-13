@@ -417,6 +417,16 @@ class Token extends PhpToken implements JsonSerializable
         }
     }
 
+    /**
+     * @param static[] $tokens
+     */
+    public static function destroyTokens(array $tokens): void
+    {
+        foreach ($tokens as $token) {
+            $token->destroy();
+        }
+    }
+
     public function getTokenName(): ?string
     {
         return TokenType::NAME_MAP[$this->id] ?? parent::getTokenName();
@@ -2085,5 +2095,36 @@ class Token extends PhpToken implements JsonSerializable
                        $this->Index,
                        $this->line,
                        Convert::ellipsize(var_export($this->text, true), 20));
+    }
+
+    public function destroy(): void
+    {
+        unset(
+            $this->_prev,
+            $this->_next,
+            $this->_prevCode,
+            $this->_nextCode,
+            $this->_prevSibling,
+            $this->_nextSibling,
+            $this->BracketStack,
+            $this->OpenTag,
+            $this->CloseTag,
+            $this->OpenedBy,
+            $this->ClosedBy,
+            $this->Statement,
+            $this->EndStatement,
+            $this->Expression,
+            $this->EndExpression,
+            $this->TernaryOperator1,
+            $this->TernaryOperator2,
+            $this->IndentStack,
+            $this->IndentParentStack,
+            $this->IndentBracketStack,
+            $this->AlignedWith,
+            $this->ChainOpenedBy,
+            $this->HeredocOpenedBy,
+            $this->StringOpenedBy,
+            $this->Formatter,
+        );
     }
 }

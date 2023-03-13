@@ -2,6 +2,7 @@
 
 namespace Lkrms\Pretty\Php\Filter;
 
+use Lkrms\Pretty\Php\Concern\FilterTrait;
 use Lkrms\Pretty\Php\Contract\Filter;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
@@ -12,6 +13,8 @@ use Lkrms\Pretty\Php\TokenType;
  */
 final class TrimInsideCasts implements Filter
 {
+    use FilterTrait;
+
     public function __invoke(array $tokens): array
     {
         return array_map(
