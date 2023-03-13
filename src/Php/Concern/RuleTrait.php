@@ -20,8 +20,4 @@ trait RuleTrait
     {
         return null;
     }
-
-    public function beforeRender(array $tokens): void
-    {
-    }
 }

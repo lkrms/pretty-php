@@ -4,7 +4,7 @@ namespace Lkrms\Pretty\Php\Filter;
 
 use Lkrms\Facade\Convert;
 use Lkrms\Pretty\Php\Concern\FilterTrait;
-use Lkrms\Pretty\Php\Contract\TokenFilter;
+use Lkrms\Pretty\Php\Contract\Filter;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 
@@ -14,7 +14,7 @@ use const Lkrms\Pretty\Php\T_ID_MAP as T;
  * Sort consecutive alias/import statements
  *
  */
-final class SortImports implements TokenFilter
+final class SortImports implements Filter
 {
     use FilterTrait;
 

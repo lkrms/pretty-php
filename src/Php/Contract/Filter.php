@@ -4,7 +4,7 @@ namespace Lkrms\Pretty\Php\Contract;
 
 use Lkrms\Pretty\Php\Token;
 
-interface TokenFilter
+interface Filter
 {
     /**
      * Apply the filter to an array of tokens

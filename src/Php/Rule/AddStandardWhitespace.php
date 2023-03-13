@@ -22,6 +22,7 @@ use const Lkrms\Pretty\Php\T_ID_MAP as T;
  * - Suppress SPACE between brackets and their contents
  * - Add LINE|SPACE after `<?php` and before `?>`
  * - If `<?php` is followed by `declare`, collapse them to `<?php declare`
+ * - Add SPACE after and suppress SPACE before commas
  * - Add LINE after labels
  * - Suppress whitespace inside `declare()`
  *

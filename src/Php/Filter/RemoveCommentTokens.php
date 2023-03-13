@@ -2,7 +2,7 @@
 
 namespace Lkrms\Pretty\Php\Filter;
 
-use Lkrms\Pretty\Php\Contract\TokenFilter;
+use Lkrms\Pretty\Php\Contract\Filter;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 
@@ -10,7 +10,7 @@ use Lkrms\Pretty\Php\TokenType;
  * Remove comments for comparison
  *
  */
-final class RemoveCommentTokens implements TokenFilter
+final class RemoveCommentTokens implements Filter
 {
     public function __invoke(array $tokens): array
     {

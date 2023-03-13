@@ -21,6 +21,11 @@ final class SimplifyStrings implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getPriority(string $method): ?int
+    {
+        return 60;
+    }
+
     public function getTokenTypes(): ?array
     {
         return [

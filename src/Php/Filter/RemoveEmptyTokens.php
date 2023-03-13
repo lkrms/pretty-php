@@ -2,14 +2,14 @@
 
 namespace Lkrms\Pretty\Php\Filter;
 
-use Lkrms\Pretty\Php\Contract\TokenFilter;
+use Lkrms\Pretty\Php\Contract\Filter;
 use Lkrms\Pretty\Php\Token;
 
 /**
  * Remove tokens with no content
  *
  */
-final class RemoveEmptyTokens implements TokenFilter
+final class RemoveEmptyTokens implements Filter
 {
     public function __invoke(array $tokens): array
     {

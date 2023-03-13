@@ -9,8 +9,8 @@ use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\Sys;
 use Lkrms\Pretty\Php\Contract\BlockRule;
+use Lkrms\Pretty\Php\Contract\Filter;
 use Lkrms\Pretty\Php\Contract\Rule;
-use Lkrms\Pretty\Php\Contract\TokenFilter;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Filter\NormaliseStrings;
 use Lkrms\Pretty\Php\Filter\RemoveCommentTokens;
@@ -109,12 +109,9 @@ final class Formatter implements IReadable
      * @var string[]
      */
     protected $Rules = [
-        ProtectStrings::class,  // processToken:
-                                // - `WhitespaceMaskPrev`=NONE
-                                // - `WhitespaceMaskNext`=NONE
+        ProtectStrings::class,
 
-        SimplifyStrings::class,  // processToken:
-                                 // - `text`=<value>
+        SimplifyStrings::class,
 
         AddStandardWhitespace::class,  // processToken:
                                        // - WhitespaceBefore+SPACE[+LINE]
@@ -128,6 +125,8 @@ final class Formatter implements IReadable
                                       // - `WhitespaceMaskPrev`(+SPACE|=NONE)
                                       // - `WhitespaceBefore`=NONE
 
+        BracePosition::class,  // Must be before BreakBeforeControlStructureBody
+
         BreakBeforeControlStructureBody::class,  // processToken:
                                                  // - `WhitespaceBefore`+LINE+SPACE
                                                  // - `WhitespaceMaskPrev`+LINE-BREAK
@@ -138,8 +137,6 @@ final class Formatter implements IReadable
                                  // - `WhitespaceBefore`+LINE
                                  // - `WhitespaceAfter`+LINE
                                  // - `WhitespaceMaskNext`-BLANK
-
-        BracePosition::class,
 
         SpaceOperators::class,  // processToken:
                                 // `WhitespaceBefore`(+SPACE|=NONE)
@@ -212,12 +209,12 @@ final class Formatter implements IReadable
     public $Tokens;
 
     /**
-     * @var TokenFilter[]
+     * @var Filter[]
      */
     private $MandatoryFilters;
 
     /**
-     * @var TokenFilter[]
+     * @var Filter[]
      */
     private $ComparisonFilters;
 
@@ -312,7 +309,10 @@ final class Formatter implements IReadable
                 return '';
             }
         } catch (ParseError $ex) {
-            throw new PrettyBadSyntaxException('Formatting failed: input cannot be parsed', $ex);
+            throw new PrettyBadSyntaxException(
+                sprintf('Formatting failed: %s cannot be parsed', $filename ?: 'input'),
+                $ex
+            );
         } finally {
             Sys::stopTimer(__METHOD__ . '#tokenize-input');
         }

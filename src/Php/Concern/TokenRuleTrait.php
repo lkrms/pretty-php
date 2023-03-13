@@ -10,4 +10,8 @@ trait TokenRuleTrait
     {
         return null;
     }
+
+    public function beforeRender(array $tokens): void
+    {
+    }
 }

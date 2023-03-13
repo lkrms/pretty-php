@@ -11,9 +11,9 @@ interface TokenRule extends Rule
     /**
      * Return token types the rule is interested in
      *
-     * Tokens of these types, and these types only, are passed to
-     * {@see TokenRule::processToken()}. To receive all tokens, return `null`,
-     * or for no tokens, return an empty array.
+     * Tokens of these types are passed to {@see TokenRule::processToken()}. To
+     * receive all tokens, return `null`, or for no tokens, return an empty
+     * array.
      *
      * @return array<int|string>|null
      */
