@@ -29,7 +29,9 @@ use const Lkrms\Pretty\Php\T_NULL;
  */
 final class BracePosition implements TokenRule
 {
-    use TokenRuleTrait;
+    use TokenRuleTrait {
+        destroy as private _destroy;
+    }
 
     /**
      * @var array<Token[]>
@@ -114,5 +116,11 @@ final class BracePosition implements TokenRule
                 $brace->WhitespaceMaskPrev = WhitespaceType::SPACE;
             }
         }
+    }
+
+    public function destroy(): void
+    {
+        unset($this->BracketBracePairs);
+        $this->_destroy();
     }
 }

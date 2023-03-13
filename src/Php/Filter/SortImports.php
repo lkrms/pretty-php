@@ -139,6 +139,7 @@ final class SortImports implements Filter
         $import   = reset($sort);
         $nextLine = reset($import)->line;
         $nextKey  = $firstKey = key($import);
+        $unsorted = $sort;
 
         // Sort the alias/import statements
         uasort(
@@ -151,6 +152,10 @@ final class SortImports implements Filter
                     ?: strcasecmp($a[1], $b[1]);
             }
         );
+
+        if ($sort === $unsorted) {
+            return;
+        }
 
         // Flatten, reindex, and update line numbers
         $sorted = [];

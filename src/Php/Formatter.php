@@ -298,6 +298,9 @@ final class Formatter implements IReadable
     {
         $this->QuietLevel = $quietLevel;
         $this->Filename   = $filename;
+        if ($this->Tokens) {
+            Token::destroyTokens($this->Tokens);
+        }
 
         Sys::startTimer(__METHOD__ . '#tokenize-input');
         try {
@@ -469,10 +472,12 @@ final class Formatter implements IReadable
             Sys::stopTimer(__METHOD__ . '#parse-output');
         }
 
-        $before = $this->simplifyTokens(Token::tokenize($code,
-                                                        TOKEN_PARSE,
-                                                        ...$this->ComparisonFilters));
-        $after = $this->simplifyTokens($tokensOut);
+        $tokensIn = Token::tokenize($code,
+                                    TOKEN_PARSE,
+                                    ...$this->ComparisonFilters);
+
+        $before = $this->simplifyTokens($tokensIn);
+        $after  = $this->simplifyTokens($tokensOut);
         if ($before !== $after) {
             throw new PrettyException(
                 "Formatting check failed: parsed output doesn't match input",
@@ -480,6 +485,12 @@ final class Formatter implements IReadable
                 $this->Tokens,
                 [$before, $after]
             );
+        }
+
+        Token::destroyTokens($tokensOut);
+        Token::destroyTokens($tokensIn);
+        foreach ($beforeRender as $rule) {
+            $rule->destroy();
         }
 
         return $out;
