@@ -1391,7 +1391,7 @@ class Token extends PhpToken implements JsonSerializable
         $start = $this->startOfLine();
         $start = $start->collect($this)
                        ->reverse()
-                       ->find(fn(Token $t, ?Token $prev, ?Token $next) =>
+                       ->find(fn(Token $t, ?Token $next) =>
                            ($t->AlignedWith && $t->AlignedWith !== $this) ||
                                ($next && $next === $this->AlignedWith))
                            ?: $start;

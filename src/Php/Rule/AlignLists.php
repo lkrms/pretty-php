@@ -30,7 +30,7 @@ final class AlignLists implements TokenRule
     public function processToken(Token $token): void
     {
         $align = $token->innerSiblings()->filter(
-            fn(Token $t, ?Token $prev) =>
+            fn(Token $t, ?Token $next, ?Token $prev) =>
                 !$prev || $t->prevCode()
                             ->is(T[','])
         );
@@ -60,7 +60,7 @@ final class AlignLists implements TokenRule
     private function alignList(TokenCollection $align, Token $token): void
     {
         $delta = $token->alignmentOffset();
-        $align->forEach(function (Token $t, ?Token $prev, ?Token $next) use ($delta) {
+        $align->forEach(function (Token $t, ?Token $next, ?Token $prev) use ($delta) {
             if ($next) {
                 $until = $next->prev(2);
             } else {

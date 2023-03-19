@@ -50,7 +50,7 @@ class AlignChainedCalls implements TokenRule
         // Find the $first `->` with a leading newline in the chain and assign
         // its predecessor (if any) to $alignWith
         $first = $chain->find(
-            function (Token $token, ?Token $prev) use (&$alignWith): bool {
+            function (Token $token, ?Token $next, ?Token $prev) use (&$alignWith): bool {
                 if (!$token->hasNewlineBefore()) {
                     return false;
                 }
@@ -96,7 +96,7 @@ class AlignChainedCalls implements TokenRule
 
         // Apply a leading newline to the remaining tokens
         $chain->forEach(
-            function (Token $t, ?Token $prev) use ($first, $alignWith) {
+            function (Token $t, ?Token $next, ?Token $prev) use ($first, $alignWith) {
                 if ($prev) {
                     $t->WhitespaceBefore |= WhitespaceType::LINE;
                 }
@@ -128,7 +128,7 @@ class AlignChainedCalls implements TokenRule
             $delta  = $this->Formatter->TabSize;
         }
 
-        $callback = function (Token $t, ?Token $prev, ?Token $next) use ($length, $delta) {
+        $callback = function (Token $t, ?Token $next, ?Token $prev) use ($length, $delta) {
             $t->collect($next ? $next->prev() : $t->pragmaticEndOfExpression())
               ->forEach(
                   function (Token $_t) use ($length, $delta, $t) {
@@ -141,7 +141,7 @@ class AlignChainedCalls implements TokenRule
         };
         if ($alignWith) {
             // Apply $delta to code between $alignWith and $first
-            $callback($alignWith, null, $first);
+            $callback($alignWith, $first, null);
         }
         $chain->forEach($callback);
     }
