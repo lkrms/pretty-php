@@ -11,7 +11,7 @@ use Lkrms\Pretty\Php\TokenType;
  * Remove comments for comparison
  *
  */
-final class RemoveCommentTokens implements Filter
+final class RemoveComments implements Filter
 {
     use FilterTrait;
 

@@ -9,7 +9,7 @@ use Lkrms\Pretty\Php\Contract\Filter;
  * Remove indentation from heredocs
  *
  */
-final class StripHeredocIndents implements Filter
+final class NormaliseHeredocs implements Filter
 {
     use FilterTrait;
 

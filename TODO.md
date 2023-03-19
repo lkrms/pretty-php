@@ -168,12 +168,12 @@
 
 ## Review filters
 
+- [x] NormaliseHeredocs
 - [x] NormaliseStrings
-- [x] RemoveCommentTokens
+- [x] RemoveComments
 - [x] RemoveEmptyTokens
-- [x] RemoveWhitespaceTokens
+- [x] RemoveWhitespace
 - [x] SortImports
-- [x] StripHeredocIndents
-- [x] TrimInsideCasts
+- [x] TrimCasts
 - [x] TrimOpenTags
 

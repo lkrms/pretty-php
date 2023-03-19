@@ -12,13 +12,13 @@ use Lkrms\Pretty\Php\Contract\BlockRule;
 use Lkrms\Pretty\Php\Contract\Filter;
 use Lkrms\Pretty\Php\Contract\Rule;
 use Lkrms\Pretty\Php\Contract\TokenRule;
+use Lkrms\Pretty\Php\Filter\NormaliseHeredocs;
 use Lkrms\Pretty\Php\Filter\NormaliseStrings;
-use Lkrms\Pretty\Php\Filter\RemoveCommentTokens;
+use Lkrms\Pretty\Php\Filter\RemoveComments;
 use Lkrms\Pretty\Php\Filter\RemoveEmptyTokens;
-use Lkrms\Pretty\Php\Filter\RemoveWhitespaceTokens;
+use Lkrms\Pretty\Php\Filter\RemoveWhitespace;
 use Lkrms\Pretty\Php\Filter\SortImports;
-use Lkrms\Pretty\Php\Filter\StripHeredocIndents;
-use Lkrms\Pretty\Php\Filter\TrimInsideCasts;
+use Lkrms\Pretty\Php\Filter\TrimCasts;
 use Lkrms\Pretty\Php\Filter\TrimOpenTags;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
 use Lkrms\Pretty\Php\Rule\AddEssentialWhitespace;
@@ -250,14 +250,14 @@ final class Formatter implements IReadable
         }
 
         $mandatory = [
-            RemoveWhitespaceTokens::class,
-            StripHeredocIndents::class,
-            TrimInsideCasts::class,
+            RemoveWhitespace::class,
+            NormaliseHeredocs::class,
+            TrimCasts::class,
             SortImports::class,
         ];
         $comparison = [
             NormaliseStrings::class,
-            RemoveCommentTokens::class,
+            RemoveComments::class,
             RemoveEmptyTokens::class,
             TrimOpenTags::class,
         ];

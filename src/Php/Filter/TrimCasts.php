@@ -11,7 +11,7 @@ use Lkrms\Pretty\Php\TokenType;
  * Remove whitespace inside cast operators
  *
  */
-final class TrimInsideCasts implements Filter
+final class TrimCasts implements Filter
 {
     use FilterTrait;
 
