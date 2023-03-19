@@ -13,6 +13,7 @@ use Lkrms\Facade\Env;
 use Lkrms\Facade\File;
 use Lkrms\Facade\Sys;
 use Lkrms\Facade\Test;
+use Lkrms\Pretty\Php\Filter\SortImports;
 use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
 use Lkrms\Pretty\Php\Rule\AlignAssignments;
@@ -71,7 +72,7 @@ class FormatPhp extends CliCommand
     /**
      * @var array<string,string>
      */
-    private $SkipMap = [
+    private $SkipRuleMap = [
         'simplify-strings'         => SimplifyStrings::class,
         'space-around-operators'   => SpaceOperators::class,
         'preserve-newlines'        => PreserveNewlines::class,
@@ -87,7 +88,7 @@ class FormatPhp extends CliCommand
     /**
      * @var array<string,string>
      */
-    private $RuleMap = [
+    private $AddRuleMap = [
         'align-assignments'  => AlignAssignments::class,
         'align-comments'     => AlignComments::class,
         'break-before-lists' => BreakBeforeMultiLineList::class,
@@ -149,7 +150,7 @@ class FormatPhp extends CliCommand
                     Indent using tabs
 
                     Implies:
-                        --skip align-chains,align-lists
+                        --skip-rule align-chains,align-lists
                     EOF)
                 ->optionType(CliOptionType::ONE_OF_OPTIONAL)
                 ->allowedValues(['2', '4', '8'])
@@ -163,12 +164,12 @@ class FormatPhp extends CliCommand
                 ->allowedValues(['2', '4', '8'])
                 ->defaultValue('4'),
             CliOption::build()
-                ->long('skip')
+                ->long('skip-rule')
                 ->short('i')
                 ->valueName('RULE')
                 ->description('Skip one or more rules')
                 ->optionType(CliOptionType::ONE_OF)
-                ->allowedValues(array_keys($this->SkipMap))
+                ->allowedValues(array_keys($this->SkipRuleMap))
                 ->multipleAllowed()
                 ->envVariable('pretty_php_skip')
                 ->keepEnv(),
@@ -178,7 +179,7 @@ class FormatPhp extends CliCommand
                 ->valueName('RULE')
                 ->description('Add one or more non-standard rules')
                 ->optionType(CliOptionType::ONE_OF)
-                ->allowedValues(array_keys($this->RuleMap))
+                ->allowedValues(array_keys($this->AddRuleMap))
                 ->multipleAllowed()
                 ->envVariable('pretty_php_rule')
                 ->keepEnv(),
@@ -189,8 +190,21 @@ class FormatPhp extends CliCommand
                     Do not add line breaks at the position of newlines in the input
 
                     Equivalent to:
-                        --skip preserve-newlines
+                        --skip-rule preserve-newlines
                     EOF),
+            CliOption::build()
+                ->long('no-simplify-strings')
+                ->short('S')
+                ->description(<<<EOF
+                    Do not replace single- or double-quoted strings
+
+                    Equivalent to:
+                        --skip-rule simplify-strings
+                    EOF),
+            CliOption::build()
+                ->long('no-sort-imports')
+                ->short('M')
+                ->description('Do not sort alias/import statements'),
             CliOption::build()
                 ->long('align-all')
                 ->short('a')
@@ -269,28 +283,35 @@ class FormatPhp extends CliCommand
             throw new CliArgumentsInvalidException('--tab and --space cannot be used together');
         }
 
-        $skip  = $this->getOptionValue('skip');
-        $rules = $this->getOptionValue('rule');
+        $skipRules   = $this->getOptionValue('skip-rule');
+        $addRules    = $this->getOptionValue('rule');
+        $skipFilters = [];
         if ($this->getOptionValue('ignore-newlines')) {
-            $skip[] = 'preserve-newlines';
+            $skipRules[] = 'preserve-newlines';
+        }
+        if ($this->getOptionValue('no-simplify-strings')) {
+            $skipRules[] = 'simplify-strings';
+        }
+        if ($this->getOptionValue('no-sort-imports')) {
+            $skipFilters[] = SortImports::class;
         }
         if ($this->getOptionValue('align-all')) {
-            $rules[] = 'align-assignments';
-            $rules[] = 'align-comments';
+            $addRules[] = 'align-assignments';
+            $addRules[] = 'align-comments';
         }
         if ($this->getOptionValue('laravel')) {
-            $skip[]  = 'one-line-arguments';
-            $skip[]  = 'break-between-items';
-            $skip[]  = 'align-chains';
-            $rules[] = 'no-concat-spaces';
-            $rules[] = 'space-after-fn';
-            $rules[] = 'space-after-not';
+            $skipRules[] = 'one-line-arguments';
+            $skipRules[] = 'break-between-items';
+            $skipRules[] = 'align-chains';
+            $addRules[]  = 'no-concat-spaces';
+            $addRules[]  = 'space-after-fn';
+            $addRules[]  = 'space-after-not';
         }
         if ($this->Quiet > 1) {
-            $skip[] = 'report-brackets';
+            $skipRules[] = 'report-brackets';
         }
-        $skip  = array_values(array_intersect_key($this->SkipMap, array_flip($skip)));
-        $rules = array_values(array_intersect_key($this->RuleMap, array_flip($rules)));
+        $skipRules = array_values(array_intersect_key($this->SkipRuleMap, array_flip($skipRules)));
+        $addRules  = array_values(array_intersect_key($this->AddRuleMap, array_flip($addRules)));
 
         $in  = $this->expandPaths($this->getOptionValue('file'), $directoryCount);
         $out = $this->getOptionValue('output');
@@ -314,8 +335,9 @@ class FormatPhp extends CliCommand
         $formatter = new Formatter(
             !$tab,
             $tab ?: $space ?: 4,
-            $skip,
-            $rules
+            $skipRules,
+            $addRules,
+            $skipFilters
         );
         $i      = 0;
         $count  = count($in);

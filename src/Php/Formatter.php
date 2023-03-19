@@ -211,7 +211,7 @@ final class Formatter implements IReadable
     /**
      * @var Filter[]
      */
-    private $MandatoryFilters;
+    private $FormatFilters;
 
     /**
      * @var Filter[]
@@ -241,17 +241,19 @@ final class Formatter implements IReadable
             ];
         }
 
-        if ($skipRules || ($skip ?? null)) {
-            $this->Rules = array_diff($this->Rules, $skipRules, $skip ?? []);
-        }
-
         if ($addRules) {
             array_push($this->Rules, ...$addRules);
+        }
+
+        if ($skipRules || ($skip ?? null)) {
+            $this->Rules = array_diff($this->Rules, $skipRules, $skip ?? []);
         }
 
         $mandatory = [
             RemoveWhitespace::class,
             NormaliseHeredocs::class,
+        ];
+        $optional = [
             TrimCasts::class,
             SortImports::class,
         ];
@@ -262,13 +264,18 @@ final class Formatter implements IReadable
             TrimOpenTags::class,
         ];
         if ($skipFilters) {
-            $mandatory  = array_diff($mandatory, $skipFilters);
-            $comparison = array_diff($comparison, $skipFilters);
+            $optional = array_diff($optional, $skipFilters);
         }
-        $this->MandatoryFilters  = array_map(fn(string $filter) => new $filter(), $mandatory);
+        $this->FormatFilters = array_map(
+            fn(string $filter) => new $filter(),
+            array_merge($mandatory, $optional)
+        );
         $this->ComparisonFilters = array_merge(
-            $this->MandatoryFilters,
-            array_map(fn(string $filter) => new $filter(), $comparison)
+            $this->FormatFilters,
+            array_map(
+                fn(string $filter) => new $filter(),
+                $comparison
+            )
         );
 
         $this->Debug = Env::debug();
@@ -306,7 +313,7 @@ final class Formatter implements IReadable
         try {
             $this->Tokens = Token::tokenize($code,
                                             TOKEN_PARSE,
-                                            ...$this->MandatoryFilters);
+                                            ...$this->FormatFilters);
 
             if (!$this->Tokens) {
                 return '';
