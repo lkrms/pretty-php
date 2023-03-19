@@ -16,16 +16,19 @@ final class StripHeredocIndents implements Filter
     public function __invoke(array $tokens): array
     {
         $heredoc = null;
+        $og      = null;
         foreach ($tokens as $token) {
             if (is_null($heredoc)) {
                 if ($token->id === T_START_HEREDOC) {
                     $heredoc = [];
+                    $og      = [];
                 }
                 continue;
             }
 
             // Collect references to the content of tokens in the heredoc
             $heredoc[] = &$token->text;
+            $og[]      = &$token->OriginalText;
             if ($token->id !== T_END_HEREDOC) {
                 continue;
             }
@@ -33,29 +36,41 @@ final class StripHeredocIndents implements Filter
             // Check for indentation to remove
             if (!preg_match('/^\h+/', $token->text, $matches)) {
                 $heredoc = null;
+                $og      = null;
                 continue;
             }
 
-            // The pattern below won't match the first line or closing
-            // identifier unless newlines are added temporarily
-            $keys = [0];
-            if (count($heredoc) > 1) {
-                $keys[] = count($heredoc) - 1;
-            }
-            foreach ($keys as $key) {
-                $heredoc[$key] = "\n" . $heredoc[$key];
-            }
-            // TODO: replace temporary newlines with a better pattern?
+            // Remove it from the collected tokens
             $stripped = preg_replace("/\\n{$matches[0]}/", "\n", $heredoc);
-            foreach ($keys as $key) {
-                $stripped[$key] = substr($stripped[$key], 1);
+
+            // And from the start of the first token and closing identifier,
+            // where there is no leading newline
+            switch ($count = count($heredoc)) {
+                case 1:
+                    $stripped[0] =
+                        preg_replace("/^{$matches[0]}/",
+                                     '',
+                                     $stripped[0]);
+                    break;
+
+                default:
+                    $i = $count - 1;
+                    [$stripped[0], $stripped[$i]] =
+                        preg_replace("/^{$matches[0]}/",
+                                     '',
+                                     [$stripped[0], $stripped[$i]]);
+                    break;
             }
+
+            // Finally, update each token
             foreach ($heredoc as $i => &$code) {
-                $code = $stripped[$i];
+                $og[$i] = $og[$i] ?: $code;
+                $code   = $stripped[$i];
             }
             unset($code);
 
             $heredoc = null;
+            $og      = null;
         }
 
         return $tokens;

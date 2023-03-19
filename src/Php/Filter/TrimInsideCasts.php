@@ -17,20 +17,22 @@ final class TrimInsideCasts implements Filter
 
     public function __invoke(array $tokens): array
     {
-        return array_map(
+        $casts = array_filter(
+            $tokens,
+            fn(Token $t) => $t->is(TokenType::CAST)
+        );
+
+        array_walk(
+            $casts,
             function (Token $t) {
-                if (!$t->is(TokenType::CAST)) {
-                    return $t;
-                }
                 $text    = $t->text;
                 $t->text = '(' . trim(substr($t->text, 1, -1)) . ')';
                 if ($text !== $t->text) {
                     $t->OriginalText = $t->OriginalText ?: $text;
                 }
-
-                return $t;
-            },
-            $tokens
+            }
         );
+
+        return $tokens;
     }
 }
