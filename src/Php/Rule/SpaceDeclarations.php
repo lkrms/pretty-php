@@ -65,6 +65,7 @@ final class SpaceDeclarations implements TokenRule
         if ($token->Statement !== $token ||
                 // For formatting purposes, promoted constructor parameters
                 // aren't declarations
+                ($token->id === T_STATIC && $token->nextCode()->id !== T_VARIABLE) ||
                 ($token->is(TokenType::VISIBILITY) && $token->inFunctionDeclaration())) {
             return;
         }
