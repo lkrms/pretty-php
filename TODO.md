@@ -1,6 +1,8 @@
 # TODO
 
-- [ ] Add `-d, --diff` option to fail with a diff when formatting differs
+- [ ] Enforce a maximum line length
+- [ ] Add `--check` option to fail when formatting differs
+- [ ] Add `--diff` option to fail with a diff when formatting differs
 - [ ] Formalise support for PSR-1, PSR-12 and PSR-4
   - PSR-12:
     - [x] Separate different import types (`use function` etc.) with blank lines
@@ -26,7 +28,7 @@
 
       ```json
       {
-        "skip": [],
+        "skipRule": [],
         "rule": [],
         "include": null,
         "exclude": null
@@ -94,17 +96,31 @@
 
 ## Formatting
 
-- [ ] Allow anonymous `function` arguments to break over multiple lines
+- [ ] Refactor list formatting
+  - [x] Create `ListRule` and `ListRuleTrait`
+  - [ ] Process `ListRule` instances before `TokenRule` instances
+  - [ ] Run callbacks from `ListRule` and `TokenRule` instances together after processing both
+  - [ ] Create new rules:
+    - [ ] `ApplyMagicComma` (enabled by default)
+    - [ ] `NoMixedLists` (arrange all items vertically or horizontally based on first two)
+    - [ ] `BreakBetweenInterfaces`
+  - [ ] Update `AlignLists`
+    - [ ] Align one-item lists
 - [ ] Match indentation of `?>` tags with their respective `<?php` tags
-- [x] Sort `use <FQCN>` blocks
-- [x] Extend one-line statement checks to the end of multi-block control structures, e.g.
+- [ ] Align arrow function bodies inside `fn()`, e.g.
 
       ```php
-      // No newline after `c();`
-      if ($a) c(); else b();
+      $callback = fn($value) =>
+                      $value->check();
       ```
 
-- [x] Don't align assignments with subsequent newlines
+- [ ] Align comments that were previously aligned, e.g.
+
+      ```php
+      /* line 1
+         line 2 */
+      ```
+
 - [ ] Align some assignments that break over multiple lines? e.g.
 
       ```php
