@@ -11,26 +11,30 @@ use Lkrms\Pretty\WhitespaceType;
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
 /**
- * Add a newline after the open bracket of a multi-line delimited list
+ * Arrange items in lists horizontally or vertically by replicating the
+ * arrangement of the first and second items
  *
  */
-final class BreakBeforeMultiLineList implements ListRule
+final class NoMixedLists implements ListRule
 {
     use ListRuleTrait;
 
     public function getPriority(string $method): ?int
     {
-        return 380;
+        return 370;
     }
 
     public function processList(Token $owner, TokenCollection $items): void
     {
-        if (!$items->find(fn(Token $t) => $t->hasNewlineBefore())) {
+        if ($items->count() < 3) {
             return;
         }
-
-        $owner->WhitespaceAfter            |= WhitespaceType::LINE;
-        $owner->WhitespaceMaskNext         |= WhitespaceType::LINE;
-        $owner->next()->WhitespaceMaskPrev |= WhitespaceType::LINE;
+        if ($items->nth(2)->hasNewlineBefore()) {
+            $items->shift();
+            $items->addWhitespaceBefore(WhitespaceType::LINE);
+        } else {
+            $items->shift();
+            $items->maskWhitespaceBefore(~WhitespaceType::BLANK & ~WhitespaceType::LINE);
+        }
     }
 }

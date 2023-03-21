@@ -98,11 +98,11 @@
 
 - [ ] Refactor list formatting
   - [x] Create `ListRule` and `ListRuleTrait`
-  - [ ] Process `ListRule` instances before `TokenRule` instances
-  - [ ] Run callbacks from `ListRule` and `TokenRule` instances together after processing both
+  - [x] Process `ListRule` instances ~~before~~ in the same loop as `TokenRule` instances
+  - [x] Run `ListRule` and `TokenRule` callbacks together
   - [ ] Create new rules:
-    - [ ] `ApplyMagicComma` (enabled by default)
-    - [ ] `NoMixedLists` (arrange all items vertically or horizontally based on first two)
+    - [x] `ApplyMagicComma` (enabled by default)
+    - [x] `NoMixedLists` (arrange all items vertically or horizontally based on first two)
     - [ ] `BreakBetweenInterfaces`
   - [ ] Update `AlignLists`
     - [ ] Align one-item lists
@@ -150,24 +150,22 @@
 
 ## Review rules
 
-- [ ] AddBlankLineBeforeReturn
-- [ ] AddEssentialWhitespace
-- [ ] AddHangingIndentation
+- [x] AddBlankLineBeforeReturn
+- [x] AddEssentialWhitespace
+- [x] AddHangingIndentation
 - [x] AddIndentation
 - [x] AddStandardWhitespace
 - [x] AlignAssignments
-- [ ] AlignChainedCalls
+- [x] AlignChainedCalls
 - [x] AlignComments
 - [ ] AlignLists
 - [x] BracePosition
 - [x] BreakAfterSeparators
 - [x] BreakBeforeControlStructureBody
 - [x] BreakBeforeMultiLineList
-- [x] BreakBetweenMultiLineItems
 - [ ] MatchPosition
-- [ ] PlaceAttributes
 - [x] PlaceComments
-- [ ] PreserveNewlines
+- [x] PreserveNewlines
 - [x] PreserveOneLineStatements
 - [x] ProtectStrings
 - [x] ReindentHeredocs

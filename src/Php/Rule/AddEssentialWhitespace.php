@@ -7,7 +7,11 @@ use Lkrms\Pretty\Php\Contract\Rule;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
-class AddEssentialWhitespace implements Rule
+/**
+ * Add whitespace after tokens that would otherwise fail to parse
+ *
+ */
+final class AddEssentialWhitespace implements Rule
 {
     use RuleTrait;
 

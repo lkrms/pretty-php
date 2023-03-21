@@ -6,7 +6,6 @@ use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenCollection;
-use Lkrms\Pretty\WhitespaceType;
 
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
@@ -34,19 +33,6 @@ final class AlignLists implements TokenRule
                 !$prev || $t->prevCode()
                             ->is(T[','])
         );
-        // Apply BreakBetweenMultiLineItems if there's a trailing delimiter and
-        // this is not a destructuring construct
-        if ($token->ClosedBy->prevCode()->is(T[',']) &&
-            !($token->prevCode()->is(T_LIST) ||
-                (($adjacent = $token->adjacent(T[','], T[']'])) && $adjacent->is(T['='])) ||
-                (($root = $token->withParentsWhile(T['['])->last()) &&
-                    $root->prevCode()->is(T_AS) &&
-                    $root->parent()->prevCode()->is(T_FOREACH)))) {
-            $align[] = $token->ClosedBy;
-            $align->addWhitespaceBefore(WhitespaceType::LINE);
-
-            return;
-        }
         // Leave one-line lists alone
         if (!$align->find(fn(Token $t) => $t->hasNewlineBefore())) {
             return;

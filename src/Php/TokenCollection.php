@@ -139,8 +139,18 @@ final class TokenCollection extends TypedCollection
     /**
      * @return $this
      */
-    public function addWhitespaceBefore(int $type)
+    public function addWhitespaceBefore(int $type, bool $critical = false)
     {
+        if ($critical) {
+            return $this->forEach(
+                function (Token $t) use ($type) {
+                    $t->CriticalWhitespaceBefore   |= $type;
+                    $t->WhitespaceMaskPrev         |= $type;
+                    $t->prev()->WhitespaceMaskNext |= $type;
+                }
+            );
+        }
+
         return $this->forEach(
             function (Token $t) use ($type) {
                 $t->WhitespaceBefore           |= $type;
@@ -153,8 +163,24 @@ final class TokenCollection extends TypedCollection
     /**
      * @return $this
      */
-    public function applyInnerMask(int $mask)
+    public function maskWhitespaceBefore(int $mask)
     {
+        return $this->forEach(
+            function (Token $t) use ($mask) {
+                $t->WhitespaceMaskPrev         &= $mask;
+                $t->prev()->WhitespaceMaskNext &= $mask;
+            }
+        );
+    }
+
+    /**
+     * @return $this
+     */
+    public function maskInnerWhitespace(int $mask)
+    {
+        if (!$this->Collected) {
+            throw new RuntimeException('Collection not created by ' . static::class . '::collect()');
+        }
         switch ($this->count()) {
             case 0:
             case 1:

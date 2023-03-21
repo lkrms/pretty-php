@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6a7098f993451335c9c4a23d5c537e02",
+    "content-hash": "e12256dcfbc8d3df487f9a7adb837493",
     "packages": [
         {
             "name": "filp/whoops",
@@ -122,16 +122,16 @@
         },
         {
             "name": "lkrms/util",
-            "version": "v0.19.27",
+            "version": "v0.19.28",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/php-util.git",
-                "reference": "23943f0e7596c7cc6424ffbac1429933689aa724"
+                "reference": "823fd671e8c339abb6e9877aadb507be2a422260"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/php-util/zipball/23943f0e7596c7cc6424ffbac1429933689aa724",
-                "reference": "23943f0e7596c7cc6424ffbac1429933689aa724",
+                "url": "https://api.github.com/repos/lkrms/php-util/zipball/823fd671e8c339abb6e9877aadb507be2a422260",
+                "reference": "823fd671e8c339abb6e9877aadb507be2a422260",
                 "shasum": ""
             },
             "require": {
@@ -175,9 +175,9 @@
             "description": "A lightweight PHP toolkit for expressive backend/CLI apps",
             "support": {
                 "issues": "https://github.com/lkrms/php-util/issues",
-                "source": "https://github.com/lkrms/php-util/tree/v0.19.27"
+                "source": "https://github.com/lkrms/php-util/tree/v0.19.28"
             },
-            "time": "2023-03-19T13:21:58+00:00"
+            "time": "2023-03-22T04:36:55+00:00"
         },
         {
             "name": "psr/container",
@@ -1531,16 +1531,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "10.0.16",
+            "version": "10.0.17",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "07d386a11ac7094032900f07cada1c8975d16607"
+                "reference": "b75eddcabca052312ae38c8a2bc69ff1a7b89b77"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/07d386a11ac7094032900f07cada1c8975d16607",
-                "reference": "07d386a11ac7094032900f07cada1c8975d16607",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/b75eddcabca052312ae38c8a2bc69ff1a7b89b77",
+                "reference": "b75eddcabca052312ae38c8a2bc69ff1a7b89b77",
                 "shasum": ""
             },
             "require": {
@@ -1611,7 +1611,8 @@
             ],
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/10.0.16"
+                "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/10.0.17"
             },
             "funding": [
                 {
@@ -1627,7 +1628,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-03-13T09:02:40+00:00"
+            "time": "2023-03-20T14:42:33+00:00"
         },
         {
             "name": "psr/http-client",

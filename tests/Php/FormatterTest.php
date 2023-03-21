@@ -8,8 +8,8 @@ use Lkrms\Pretty\Php\Filter\SortImports;
 use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
 use Lkrms\Pretty\Php\Rule\AlignComments;
-use Lkrms\Pretty\Php\Rule\BreakBetweenMultiLineItems;
 use Lkrms\Pretty\Php\Rule\Extra\DeclareArgumentsOnOneLine;
+use Lkrms\Pretty\Php\Rule\NoMixedLists;
 use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
 use Lkrms\Pretty\Php\Rule\SimplifyStrings;
 use Lkrms\Pretty\Php\Rule\SpaceDeclarations;
@@ -96,8 +96,8 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
                         ];
                         $skipRules = [
                             AddBlankLineBeforeReturn::class,
-                            BreakBetweenMultiLineItems::class,
                             DeclareArgumentsOnOneLine::class,
+                            NoMixedLists::class,
                             SpaceDeclarations::class,
                         ];
                         break;
@@ -108,8 +108,8 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
                         ];
                         $skipRules = [
                             AddBlankLineBeforeReturn::class,
-                            BreakBetweenMultiLineItems::class,
                             DeclareArgumentsOnOneLine::class,
+                            NoMixedLists::class,
                             SimplifyStrings::class,
                             SpaceDeclarations::class,
                         ];

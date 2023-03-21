@@ -4,23 +4,23 @@ namespace Lkrms\Pretty\Tests\Php\Rule;
 
 use Lkrms\Pretty\Php\Rule\AlignLists;
 use Lkrms\Pretty\Php\Rule\BreakBeforeMultiLineList;
-use Lkrms\Pretty\Php\Rule\BreakBetweenMultiLineItems;
+use Lkrms\Pretty\Php\Rule\NoMixedLists;
 use Lkrms\Pretty\Tests\Php\TestCase;
 
-final class BreakBetweenMultiLineItemsTest extends TestCase
+final class NoMixedListsTest extends TestCase
 {
     /**
-     * @dataProvider processTokenProvider
+     * @dataProvider processListProvider
      */
-    public function testProcessToken(string $code, string $expected)
+    public function testProcessList(string $code, string $expected)
     {
         $this->assertFormatterOutputIs($code,
                                        $expected,
                                        [AlignLists::class],
-                                       [BreakBetweenMultiLineItems::class]);
+                                       [NoMixedLists::class]);
     }
 
-    public static function processTokenProvider(): array
+    public static function processListProvider(): array
     {
         return [
             'multi-line array' => [
@@ -50,9 +50,7 @@ final class BreakBetweenMultiLineItemsTest extends TestCase
                 <?php
 
                 $a = [
-                    $b,
-                    $c,
-                    $d
+                    $b, $c, $d
                 ];
 
                 PHP,
@@ -69,10 +67,7 @@ final class BreakBetweenMultiLineItemsTest extends TestCase
                 <?php
 
                 $a = [($b ||
-                        $c),
-                    $d,
-                    $e,
-                    $f];
+                    $c), $d, $e, $f];
 
                 PHP,
             ],
@@ -115,7 +110,7 @@ final class BreakBetweenMultiLineItemsTest extends TestCase
         $this->assertFormatterOutputIs($code,
                                        $expected,
                                        [AlignLists::class],
-                                       [BreakBetweenMultiLineItems::class,
+                                       [NoMixedLists::class,
                                         BreakBeforeMultiLineList::class]);
     }
 
@@ -151,9 +146,7 @@ final class BreakBetweenMultiLineItemsTest extends TestCase
                 <?php
 
                 $a = [
-                    $b,
-                    $c,
-                    $d
+                    $b, $c, $d
                 ];
 
                 PHP,
@@ -163,7 +156,8 @@ final class BreakBetweenMultiLineItemsTest extends TestCase
                 <?php
 
                 $a = [($b ||
-                $c), $d,
+                $c),
+                $d,
                 $e, $f];
                 PHP,
                 <<<'PHP'

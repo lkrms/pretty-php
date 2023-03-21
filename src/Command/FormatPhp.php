@@ -5,6 +5,7 @@ namespace Lkrms\Pretty\Command;
 use FilesystemIterator as FS;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
+use Lkrms\Cli\CliUsageSectionName;
 use Lkrms\Cli\Concept\CliCommand;
 use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Facade\Console;
@@ -21,11 +22,11 @@ use Lkrms\Pretty\Php\Rule\AlignChainedCalls;
 use Lkrms\Pretty\Php\Rule\AlignComments;
 use Lkrms\Pretty\Php\Rule\AlignLists;
 use Lkrms\Pretty\Php\Rule\BreakBeforeMultiLineList;
-use Lkrms\Pretty\Php\Rule\BreakBetweenMultiLineItems;
 use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterFn;
 use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterNot;
 use Lkrms\Pretty\Php\Rule\Extra\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\Extra\SuppressSpaceAroundStringOperator;
+use Lkrms\Pretty\Php\Rule\NoMixedLists;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
 use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
 use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
@@ -78,7 +79,6 @@ class FormatPhp extends CliCommand
         'preserve-newlines'        => PreserveNewlines::class,
         'blank-before-return'      => AddBlankLineBeforeReturn::class,
         'blank-before-declaration' => SpaceDeclarations::class,
-        'break-between-items'      => BreakBetweenMultiLineItems::class,
         'align-chains'             => AlignChainedCalls::class,
         'align-lists'              => AlignLists::class,
         'indent-heredocs'          => ReindentHeredocs::class,
@@ -93,6 +93,7 @@ class FormatPhp extends CliCommand
         'align-comments'     => AlignComments::class,
         'break-before-lists' => BreakBeforeMultiLineList::class,
         'no-concat-spaces'   => SuppressSpaceAroundStringOperator::class,
+        'no-mixed-lists'     => NoMixedLists::class,
         'one-line-arguments' => DeclareArgumentsOnOneLine::class,
         'preserve-one-line'  => PreserveOneLineStatements::class,
         'space-after-fn'     => AddSpaceAfterFn::class,
@@ -244,9 +245,11 @@ class FormatPhp extends CliCommand
                 ->description(<<<EOF
                     Only report errors
 
-                      -q = Don't report changed files  
-                     -qq = Don't report code problems  
-                    -qqq = Don't report progress
+                    May be given multiple times to suppress more output.
+
+                    _-q_ = Don't report changed files  
+                    _-qq_ = Don't report code problems  
+                    _-qqq_ = Don't report progress
                     EOF)
                 ->multipleAllowed()
                 ->bindTo($this->Quiet),
@@ -260,7 +263,14 @@ class FormatPhp extends CliCommand
 
     public function getUsageSections(): ?array
     {
-        return null;
+        return [
+            CliUsageSectionName::EXIT_STATUS => <<<EOF
+                - _0_ if formatting succeeded  
+                - _1_ if arguments were invalid  
+                - _2_ if input was invalid (e.g. code has syntax errors)  
+                - _3_ or above if an error occurred
+                EOF,
+        ];
     }
 
     protected function run(...$params)
@@ -301,7 +311,6 @@ class FormatPhp extends CliCommand
         }
         if ($this->getOptionValue('laravel')) {
             $skipRules[] = 'one-line-arguments';
-            $skipRules[] = 'break-between-items';
             $skipRules[] = 'align-chains';
             $addRules[]  = 'no-concat-spaces';
             $addRules[]  = 'space-after-fn';
@@ -361,16 +370,16 @@ class FormatPhp extends CliCommand
                 continue;
             } catch (PrettyException $ex) {
                 Console::error('Unable to format:', $file);
-                $this->maybeDumpDebugOutput($input, $ex->getOutput(), $ex->getTokens(), $ex->getData());
+                $this->maybeDumpDebugOutput($input, $ex->getOutput(), $ex->getTokens(), $ex->getLog(), $ex->getData());
                 throw $ex;
             } catch (Throwable $ex) {
                 Console::error('Unable to format:', $file);
-                $this->maybeDumpDebugOutput($input, null, $formatter->Tokens, (string) $ex);
+                $this->maybeDumpDebugOutput($input, null, $formatter->Tokens, $formatter->Log, (string) $ex);
                 throw $ex;
             } finally {
                 Sys::stopTimer($file, 'file');
             }
-            $this->maybeDumpDebugOutput($input, $output, $formatter->Tokens, null);
+            $this->maybeDumpDebugOutput($input, $output, $formatter->Tokens, $formatter->Log, null);
 
             $outFile = $out[$key] ?? '-';
             if ($outFile === '-') {
@@ -467,28 +476,47 @@ class FormatPhp extends CliCommand
 
     /**
      * @param \Lkrms\Pretty\Php\Token[] $tokens
+     * @param array<string,string>|null $log
      * @param mixed $data
      */
-    private function maybeDumpDebugOutput(string $input, ?string $output, ?array $tokens, $data): void
+    private function maybeDumpDebugOutput(string $input, ?string $output, ?array $tokens, ?array $log, $data): void
     {
-        if (!is_null($this->DebugDirectory)) {
-            foreach ([
-                'input.php'   => $input,
-                'output.php'  => $output,
-                'tokens.json' => $tokens,
-                'data.json'   => is_string($data) ? null : $data,
-                'data.out'    => is_string($data) ? $data : null,
-            ] as $file => $contents) {
-                $file = "{$this->DebugDirectory}/{$file}";
-                File::maybeDelete($file);
-                if (!is_null($contents)) {
-                    file_put_contents(
-                        $file,
-                        is_string($contents)
-                            ? $contents
-                            : json_encode($contents, JSON_PRETTY_PRINT | JSON_FORCE_OBJECT)
-                    );
-                }
+        if (is_null($this->DebugDirectory)) {
+            return;
+        }
+
+        $logDir = "{$this->DebugDirectory}/render-log";
+        File::maybeCreateDirectory($logDir);
+        File::find($logDir, null, null, false)
+            ->forEach(fn(SplFileInfo $file) => unlink($file->getPathname()));
+
+        $i    = 0;
+        $last = null;
+        foreach ($log ?: [] as $after => $out) {
+            if ($i++ && $out === $last) {
+                continue;
+            }
+            $logFile = sprintf('render-log/%03d-%s.php', $i, $after);
+            $last    = $logFiles[$logFile] = $out;
+        }
+
+        foreach ([
+            'input.php'   => $input,
+            'output.php'  => $output,
+            'tokens.json' => $tokens,
+            'data.json'   => is_string($data) ? null : $data,
+            'data.out'    => is_string($data) ? $data : null,
+            ...($logFiles ?? []),
+        ] as $file => $contents) {
+            $file = "{$this->DebugDirectory}/{$file}";
+            File::maybeDelete($file);
+            if (!is_null($contents)) {
+                file_put_contents(
+                    $file,
+                    is_string($contents)
+                        ? $contents
+                        : json_encode($contents, JSON_PRETTY_PRINT | JSON_FORCE_OBJECT)
+                );
             }
         }
     }

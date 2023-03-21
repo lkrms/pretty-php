@@ -14,7 +14,7 @@ use const Lkrms\Pretty\Php\T_ID_MAP as T;
  * add a hanging indent
  *
  */
-class AddHangingIndentation implements TokenRule
+final class AddHangingIndentation implements TokenRule
 {
     use TokenRuleTrait;
 

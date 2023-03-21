@@ -24,6 +24,11 @@ final class ReindentHeredocs implements TokenRule
      */
     private $Heredocs = [];
 
+    public function getPriority(string $method): ?int
+    {
+        return 900;
+    }
+
     public function getTokenTypes(): ?array
     {
         return [
