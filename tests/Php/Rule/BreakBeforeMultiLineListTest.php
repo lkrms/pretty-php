@@ -4,7 +4,7 @@ namespace Lkrms\Pretty\Tests\Php\Rule;
 
 use Lkrms\Pretty\Php\Rule\AlignLists;
 use Lkrms\Pretty\Php\Rule\BreakBeforeMultiLineList;
-use Lkrms\Pretty\Php\Rule\BreakBetweenMultiLineItems;
+use Lkrms\Pretty\Php\Rule\NoMixedLists;
 use Lkrms\Pretty\Tests\Php\TestCase;
 
 final class BreakBeforeMultiLineListTest extends TestCase
@@ -17,7 +17,7 @@ final class BreakBeforeMultiLineListTest extends TestCase
         $this->assertFormatterOutputIs($code,
                                        $expected,
                                        [AlignLists::class,
-                                        BreakBetweenMultiLineItems::class],
+                                        NoMixedLists::class],
                                        [BreakBeforeMultiLineList::class]);
     }
 

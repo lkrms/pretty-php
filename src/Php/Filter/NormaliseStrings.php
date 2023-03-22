@@ -16,18 +16,20 @@ final class NormaliseStrings implements Filter
 
     public function __invoke(array $tokens): array
     {
-        return array_map(
-            function (Token $t) {
-                if ($t->id !== T_CONSTANT_ENCAPSED_STRING) {
-                    return $t;
-                }
-                $string = '';
+        $strings = array_filter(
+            $tokens,
+            fn(Token $t) => $t->id === T_CONSTANT_ENCAPSED_STRING
+        );
+
+        $string = '';
+        array_walk(
+            $strings,
+            function (Token $t) use ($string) {
                 eval("\$string = {$t->text};");
                 $t->text = var_export($string, true);
-
-                return $t;
-            },
-            $tokens
+            }
         );
+
+        return $tokens;
     }
 }

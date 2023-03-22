@@ -19,20 +19,27 @@ class PrettyException extends Exception
     protected $Tokens;
 
     /**
+     * @var array<string,string>|null
+     */
+    protected $Log;
+
+    /**
      * @var mixed[]|object|null
      */
     protected $Data;
 
     /**
      * @param Token[]|null $tokens
+     * @param array<string,string>|null $log
      * @param mixed[]|object|null $data
      */
-    public function __construct(string $message = '', ?string $output = null, ?array $tokens = null, $data = null, ?Throwable $previous = null)
+    public function __construct(string $message = '', ?string $output = null, ?array $tokens = null, ?array $log = null, $data = null, ?Throwable $previous = null)
     {
         parent::__construct($message, $previous);
 
         $this->Output = $output;
         $this->Tokens = $tokens;
+        $this->Log    = $log;
         $this->Data   = $data;
     }
 
@@ -56,6 +63,14 @@ class PrettyException extends Exception
     public function getTokens(): ?array
     {
         return $this->Tokens;
+    }
+
+    /**
+     * @return array<string,string>|null
+     */
+    public function getLog(): ?array
+    {
+        return $this->Log;
     }
 
     /**

@@ -8,9 +8,19 @@ use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
-class AddBlankLineBeforeReturn implements TokenRule
+/**
+ * Add a blank line before return and yield statements unless they appear
+ * consecutively or at the beginning of a statement group
+ *
+ */
+final class AddBlankLineBeforeReturn implements TokenRule
 {
     use TokenRuleTrait;
+
+    public function getPriority(string $method): ?int
+    {
+        return 97;
+    }
 
     public function getTokenTypes(): ?array
     {

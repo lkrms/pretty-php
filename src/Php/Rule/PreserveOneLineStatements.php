@@ -31,6 +31,11 @@ final class PreserveOneLineStatements implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getPriority(string $method): ?int
+    {
+        return 95;
+    }
+
     public function processToken(Token $token): void
     {
         // We can't use EndStatement here because the `case <value>:`
@@ -70,7 +75,7 @@ final class PreserveOneLineStatements implements TokenRule
             return false;
         }
         $start->collect($end)
-              ->applyInnerMask(~WhitespaceType::BLANK & ~WhitespaceType::LINE);
+              ->maskInnerWhitespace(~WhitespaceType::BLANK & ~WhitespaceType::LINE);
 
         return true;
     }

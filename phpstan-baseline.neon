@@ -19,8 +19,3 @@ parameters:
 			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$Verbose is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
-
-		-
-			message: "#^Lkrms\\\\Pretty\\\\Php\\\\TokenCollection does not accept Lkrms\\\\Pretty\\\\Php\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Php/Rule/AlignLists.php

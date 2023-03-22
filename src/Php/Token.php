@@ -145,6 +145,8 @@ class Token extends PhpToken implements JsonSerializable
 
     public ?string $CommentType = null;
 
+    public bool $CommentPlaced = false;
+
     /**
      * @var array<array<string,mixed>>
      */
@@ -274,11 +276,15 @@ class Token extends PhpToken implements JsonSerializable
     public bool $IsVirtual = false;
 
     /**
+     * Bitmask representing whitespace between the token and its predecessor
+     *
      * @var int
      */
     public $WhitespaceBefore = WhitespaceType::NONE;
 
     /**
+     * Bitmask representing whitespace between the token and its successor
+     *
      * @var int
      */
     public $WhitespaceAfter = WhitespaceType::NONE;
@@ -296,6 +302,26 @@ class Token extends PhpToken implements JsonSerializable
      * @var int
      */
     public $WhitespaceMaskNext = WhitespaceType::ALL;
+
+    /**
+     * Secondary bitmask representing whitespace between the token and its
+     * predecessor
+     *
+     * Values added to this bitmask MUST NOT BE REMOVED.
+     *
+     * @var int
+     */
+    public $CriticalWhitespaceBefore = WhitespaceType::NONE;
+
+    /**
+     * Secondary bitmask representing whitespace between the token and its
+     * successor
+     *
+     * Values added to this bitmask MUST NOT BE REMOVED.
+     *
+     * @var int
+     */
+    public $CriticalWhitespaceAfter = WhitespaceType::NONE;
 
     /**
      * Secondary bitmask applied to whitespace between the token and its
@@ -361,6 +387,7 @@ class Token extends PhpToken implements JsonSerializable
                 null,
                 $tokens,
                 null,
+                null,
                 $ex
             );
         }
@@ -411,6 +438,7 @@ class Token extends PhpToken implements JsonSerializable
                 'prepareTokens failed',
                 null,
                 $prepared,
+                null,
                 null,
                 $ex
             );
@@ -874,6 +902,11 @@ class Token extends PhpToken implements JsonSerializable
     final public function canonical(): Token
     {
         return $this->OpenedBy ?: $this;
+    }
+
+    final public function canonicalClose(): Token
+    {
+        return $this->ClosedBy ?: $this;
     }
 
     final public function wasFirstOnLine(): bool
@@ -1391,7 +1424,7 @@ class Token extends PhpToken implements JsonSerializable
         $start = $this->startOfLine();
         $start = $start->collect($this)
                        ->reverse()
-                       ->find(fn(Token $t, ?Token $prev, ?Token $next) =>
+                       ->find(fn(Token $t, ?Token $next) =>
                            ($t->AlignedWith && $t->AlignedWith !== $this) ||
                                ($next && $next === $this->AlignedWith))
                            ?: $start;
@@ -1643,11 +1676,14 @@ class Token extends PhpToken implements JsonSerializable
 
     private function _effectiveWhitespaceBefore(): int
     {
-        return ($this->WhitespaceBefore | ($this->_prev->WhitespaceAfter ?? 0))
-            & ($this->_prev->WhitespaceMaskNext ?? WhitespaceType::ALL)
-            & ($this->_prev->CriticalWhitespaceMaskNext ?? WhitespaceType::ALL)
-            & $this->WhitespaceMaskPrev
-            & $this->CriticalWhitespaceMaskPrev;
+        return $this->CriticalWhitespaceBefore
+            | ($this->_prev->CriticalWhitespaceAfter ?? 0)
+            | (($this->WhitespaceBefore
+                    | ($this->_prev->WhitespaceAfter ?? 0))
+                & ($this->_prev->WhitespaceMaskNext ?? WhitespaceType::ALL)
+                & ($this->_prev->CriticalWhitespaceMaskNext ?? WhitespaceType::ALL)
+                & $this->WhitespaceMaskPrev
+                & $this->CriticalWhitespaceMaskPrev);
     }
 
     final public function effectiveWhitespaceAfter(): int
@@ -1661,11 +1697,14 @@ class Token extends PhpToken implements JsonSerializable
 
     private function _effectiveWhitespaceAfter(): int
     {
-        return ($this->WhitespaceAfter | ($this->_next->WhitespaceBefore ?? 0))
-            & ($this->_next->WhitespaceMaskPrev ?? WhitespaceType::ALL)
-            & ($this->_next->CriticalWhitespaceMaskPrev ?? WhitespaceType::ALL)
-            & $this->WhitespaceMaskNext
-            & $this->CriticalWhitespaceMaskNext;
+        return $this->CriticalWhitespaceAfter
+            | ($this->_next->CriticalWhitespaceBefore ?? 0)
+            | (($this->WhitespaceAfter
+                    | ($this->_next->WhitespaceBefore ?? 0))
+                & ($this->_next->WhitespaceMaskPrev ?? WhitespaceType::ALL)
+                & ($this->_next->CriticalWhitespaceMaskPrev ?? WhitespaceType::ALL)
+                & $this->WhitespaceMaskNext
+                & $this->CriticalWhitespaceMaskNext);
     }
 
     final public function hasNewlineBefore(): bool
@@ -2004,7 +2043,7 @@ class Token extends PhpToken implements JsonSerializable
             case T_DOC_COMMENT:
                 $start = $this->startOfLine();
                 $indent =
-                    "\n" . ($start === $this
+                    "\n" . ($start === $this || !$this->CommentPlaced
                         ? $this->renderIndent($softTabs)
                             . str_repeat(' ', $this->LinePadding - $this->LineUnpadding + $this->Padding)
                         : ltrim($start->renderWhitespaceBefore(), "\n")
@@ -2013,9 +2052,9 @@ class Token extends PhpToken implements JsonSerializable
                                 + $this->Padding));
 
                 return preg_replace([
-                    '/\n\h*(?:\* |\*(?!\/)(?=[\h\S])|(?=[^\s*]))/',
-                    '/\n\h*\*?$/m',
-                    '/\n\h*\*\//',
+                    '/\n\h*+(?:\* |\*(?!\/)(?=[\h\S])|(?=[^\s*]))/',
+                    '/\n\h*+\*?$/m',
+                    '/\n\h*+\*\//',
                 ], [
                     $indent . ' * ',
                     $indent . ' *',

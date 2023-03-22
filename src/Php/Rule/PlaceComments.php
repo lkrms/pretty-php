@@ -29,12 +29,11 @@ final class PlaceComments implements TokenRule
 
     public function getPriority(string $method): ?int
     {
-        switch ($method) {
-            case self::BEFORE_RENDER:
-                return 997;
+        if ($method === self::BEFORE_RENDER) {
+            return 997;
         }
 
-        return null;
+        return 90;
     }
 
     public function getTokenTypes(): ?array
@@ -44,6 +43,10 @@ final class PlaceComments implements TokenRule
 
     public function processToken(Token $token): void
     {
+        // Prevent recursion in `Token->renderComment()` when tokens are
+        // rendered early, e.g. by `Formatter->logProgress()`
+        $token->CommentPlaced = true;
+
         // Leave embedded comments alone
         if ($token->wasBetweenTokensOnLine(true)) {
             $token->WhitespaceBefore |= WhitespaceType::SPACE;

@@ -1,6 +1,8 @@
 # TODO
 
-- [ ] Add `-d, --diff` option to fail with a diff when formatting differs
+- [ ] Enforce a maximum line length
+- [ ] Add `--check` option to fail when formatting differs
+- [ ] Add `--diff` option to fail with a diff when formatting differs
 - [ ] Formalise support for PSR-1, PSR-12 and PSR-4
   - PSR-12:
     - [x] Separate different import types (`use function` etc.) with blank lines
@@ -26,7 +28,7 @@
 
       ```json
       {
-        "skip": [],
+        "skipRule": [],
         "rule": [],
         "include": null,
         "exclude": null
@@ -94,17 +96,31 @@
 
 ## Formatting
 
-- [ ] Allow anonymous `function` arguments to break over multiple lines
+- [ ] Refactor list formatting
+  - [x] Create `ListRule` and `ListRuleTrait`
+  - [x] Process `ListRule` instances ~~before~~ in the same loop as `TokenRule` instances
+  - [x] Run `ListRule` and `TokenRule` callbacks together
+  - [ ] Create new rules:
+    - [x] `ApplyMagicComma` (enabled by default)
+    - [x] `NoMixedLists` (arrange all items vertically or horizontally based on first two)
+    - [ ] `BreakBetweenInterfaces`
+  - [ ] Update `AlignLists`
+    - [ ] Align one-item lists
 - [ ] Match indentation of `?>` tags with their respective `<?php` tags
-- [x] Sort `use <FQCN>` blocks
-- [x] Extend one-line statement checks to the end of multi-block control structures, e.g.
+- [ ] Align arrow function bodies inside `fn()`, e.g.
 
       ```php
-      // No newline after `c();`
-      if ($a) c(); else b();
+      $callback = fn($value) =>
+                      $value->check();
       ```
 
-- [x] Don't align assignments with subsequent newlines
+- [ ] Align comments that were previously aligned, e.g.
+
+      ```php
+      /* line 1
+         line 2 */
+      ```
+
 - [ ] Align some assignments that break over multiple lines? e.g.
 
       ```php
@@ -134,24 +150,22 @@
 
 ## Review rules
 
-- [ ] AddBlankLineBeforeReturn
-- [ ] AddEssentialWhitespace
-- [ ] AddHangingIndentation
+- [x] AddBlankLineBeforeReturn
+- [x] AddEssentialWhitespace
+- [x] AddHangingIndentation
 - [x] AddIndentation
 - [x] AddStandardWhitespace
 - [x] AlignAssignments
-- [ ] AlignChainedCalls
+- [x] AlignChainedCalls
 - [x] AlignComments
 - [ ] AlignLists
 - [x] BracePosition
 - [x] BreakAfterSeparators
 - [x] BreakBeforeControlStructureBody
 - [x] BreakBeforeMultiLineList
-- [x] BreakBetweenMultiLineItems
 - [ ] MatchPosition
-- [ ] PlaceAttributes
 - [x] PlaceComments
-- [ ] PreserveNewlines
+- [x] PreserveNewlines
 - [x] PreserveOneLineStatements
 - [x] ProtectStrings
 - [x] ReindentHeredocs
@@ -168,12 +182,12 @@
 
 ## Review filters
 
-- [ ] NormaliseStrings
-- [ ] RemoveCommentTokens
-- [ ] RemoveEmptyTokens
-- [ ] RemoveWhitespaceTokens
+- [x] NormaliseHeredocs
+- [x] NormaliseStrings
+- [x] RemoveComments
+- [x] RemoveEmptyTokens
+- [x] RemoveWhitespace
 - [x] SortImports
-- [ ] StripHeredocIndents
-- [ ] TrimInsideCasts
+- [x] TrimCasts
 - [x] TrimOpenTags
 

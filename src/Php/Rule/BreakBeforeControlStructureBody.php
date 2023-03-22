@@ -20,6 +20,11 @@ final class BreakBeforeControlStructureBody implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getPriority(string $method): ?int
+    {
+        return 83;
+    }
+
     public function getTokenTypes(): ?array
     {
         return [

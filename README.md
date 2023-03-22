@@ -60,7 +60,7 @@ Exceptions to these rules are made sparingly and are documented below.
 Tokens listed in [`TokenType::PRESERVE_NEWLINE_AFTER`][] and
 [`TokenType::PRESERVE_NEWLINE_BEFORE`][] are checked for adjacent newlines.
 
-> Use `--ignore-newlines` to disable this feature.
+> Use `-N` or `--ignore-newlines` to disable this feature.
 
 </details>
 
@@ -70,7 +70,7 @@ Tokens listed in [`TokenType::PRESERVE_NEWLINE_AFTER`][] and
 Single- and double-quoted strings are replaced with whichever is clearer and
 more efficient.
 
-> Use `--skip simplify-strings` to disable this feature.
+> Use `-S` or `--no-simplify-strings` to disable this feature.
 
 </details>
 

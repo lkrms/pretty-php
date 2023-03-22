@@ -18,6 +18,11 @@ final class AlignAssignments implements BlockRule
 {
     use BlockRuleTrait;
 
+    public function getPriority(string $method): ?int
+    {
+        return 340;
+    }
+
     public function processBlock(array $block): void
     {
         if (count($block) < 2) {

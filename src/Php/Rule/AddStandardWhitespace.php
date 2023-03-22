@@ -25,6 +25,7 @@ use const Lkrms\Pretty\Php\T_ID_MAP as T;
  * - Add SPACE after and suppress SPACE before commas
  * - Add LINE after labels
  * - Suppress whitespace inside `declare()`
+ * - Add LINE before and after attributes, suppress BLANK after
  *
  */
 final class AddStandardWhitespace implements TokenRule
@@ -54,6 +55,11 @@ final class AddStandardWhitespace implements TokenRule
                 TokenType::ADD_SPACE_AROUND
             )
         );
+    }
+
+    public function getPriority(string $method): ?int
+    {
+        return 80;
     }
 
     public function getTokenTypes(): ?array
@@ -139,13 +145,18 @@ final class AddStandardWhitespace implements TokenRule
             return;
         }
 
+        if ($token->is(T_ATTRIBUTE)) {
+            $token->WhitespaceBefore             |= WhitespaceType::LINE;
+            $token->ClosedBy->WhitespaceAfter    |= WhitespaceType::LINE;
+            $token->ClosedBy->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
+
+            return;
+        }
+
         // Suppress whitespace in the directive section of `declare` blocks
         if ($token->is(T['(']) && $token->prevCode()->is(T_DECLARE)) {
-            $first = $token->inner()
-                           ->forEach(fn(Token $t) =>
-                               $t->WhitespaceMaskNext = WhitespaceType::NONE)
-                           ->first();
-            !$first || $first->WhitespaceMaskPrev = WhitespaceType::NONE;
+            $first = $token->outer()
+                           ->maskInnerWhitespace(WhitespaceType::NONE);
         }
     }
 }

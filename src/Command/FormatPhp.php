@@ -5,6 +5,7 @@ namespace Lkrms\Pretty\Command;
 use FilesystemIterator as FS;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
+use Lkrms\Cli\CliUsageSectionName;
 use Lkrms\Cli\Concept\CliCommand;
 use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Facade\Console;
@@ -13,6 +14,7 @@ use Lkrms\Facade\Env;
 use Lkrms\Facade\File;
 use Lkrms\Facade\Sys;
 use Lkrms\Facade\Test;
+use Lkrms\Pretty\Php\Filter\SortImports;
 use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
 use Lkrms\Pretty\Php\Rule\AlignAssignments;
@@ -20,11 +22,11 @@ use Lkrms\Pretty\Php\Rule\AlignChainedCalls;
 use Lkrms\Pretty\Php\Rule\AlignComments;
 use Lkrms\Pretty\Php\Rule\AlignLists;
 use Lkrms\Pretty\Php\Rule\BreakBeforeMultiLineList;
-use Lkrms\Pretty\Php\Rule\BreakBetweenMultiLineItems;
 use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterFn;
 use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterNot;
 use Lkrms\Pretty\Php\Rule\Extra\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\Extra\SuppressSpaceAroundStringOperator;
+use Lkrms\Pretty\Php\Rule\NoMixedLists;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
 use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
 use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
@@ -71,13 +73,12 @@ class FormatPhp extends CliCommand
     /**
      * @var array<string,string>
      */
-    private $SkipMap = [
+    private $SkipRuleMap = [
         'simplify-strings'         => SimplifyStrings::class,
         'space-around-operators'   => SpaceOperators::class,
         'preserve-newlines'        => PreserveNewlines::class,
         'blank-before-return'      => AddBlankLineBeforeReturn::class,
         'blank-before-declaration' => SpaceDeclarations::class,
-        'break-between-items'      => BreakBetweenMultiLineItems::class,
         'align-chains'             => AlignChainedCalls::class,
         'align-lists'              => AlignLists::class,
         'indent-heredocs'          => ReindentHeredocs::class,
@@ -87,11 +88,12 @@ class FormatPhp extends CliCommand
     /**
      * @var array<string,string>
      */
-    private $RuleMap = [
+    private $AddRuleMap = [
         'align-assignments'  => AlignAssignments::class,
         'align-comments'     => AlignComments::class,
         'break-before-lists' => BreakBeforeMultiLineList::class,
         'no-concat-spaces'   => SuppressSpaceAroundStringOperator::class,
+        'no-mixed-lists'     => NoMixedLists::class,
         'one-line-arguments' => DeclareArgumentsOnOneLine::class,
         'preserve-one-line'  => PreserveOneLineStatements::class,
         'space-after-fn'     => AddSpaceAfterFn::class,
@@ -149,7 +151,7 @@ class FormatPhp extends CliCommand
                     Indent using tabs
 
                     Implies:
-                        --skip align-chains,align-lists
+                        --skip-rule align-chains,align-lists
                     EOF)
                 ->optionType(CliOptionType::ONE_OF_OPTIONAL)
                 ->allowedValues(['2', '4', '8'])
@@ -163,12 +165,12 @@ class FormatPhp extends CliCommand
                 ->allowedValues(['2', '4', '8'])
                 ->defaultValue('4'),
             CliOption::build()
-                ->long('skip')
+                ->long('skip-rule')
                 ->short('i')
                 ->valueName('RULE')
                 ->description('Skip one or more rules')
                 ->optionType(CliOptionType::ONE_OF)
-                ->allowedValues(array_keys($this->SkipMap))
+                ->allowedValues(array_keys($this->SkipRuleMap))
                 ->multipleAllowed()
                 ->envVariable('pretty_php_skip')
                 ->keepEnv(),
@@ -178,7 +180,7 @@ class FormatPhp extends CliCommand
                 ->valueName('RULE')
                 ->description('Add one or more non-standard rules')
                 ->optionType(CliOptionType::ONE_OF)
-                ->allowedValues(array_keys($this->RuleMap))
+                ->allowedValues(array_keys($this->AddRuleMap))
                 ->multipleAllowed()
                 ->envVariable('pretty_php_rule')
                 ->keepEnv(),
@@ -189,8 +191,21 @@ class FormatPhp extends CliCommand
                     Do not add line breaks at the position of newlines in the input
 
                     Equivalent to:
-                        --skip preserve-newlines
+                        --skip-rule preserve-newlines
                     EOF),
+            CliOption::build()
+                ->long('no-simplify-strings')
+                ->short('S')
+                ->description(<<<EOF
+                    Do not replace single- or double-quoted strings
+
+                    Equivalent to:
+                        --skip-rule simplify-strings
+                    EOF),
+            CliOption::build()
+                ->long('no-sort-imports')
+                ->short('M')
+                ->description('Do not sort alias/import statements'),
             CliOption::build()
                 ->long('align-all')
                 ->short('a')
@@ -230,9 +245,11 @@ class FormatPhp extends CliCommand
                 ->description(<<<EOF
                     Only report errors
 
-                      -q = Don't report changed files  
-                     -qq = Don't report code problems  
-                    -qqq = Don't report progress
+                    May be given multiple times to suppress more output.
+
+                    _-q_ = Don't report changed files  
+                    _-qq_ = Don't report code problems  
+                    _-qqq_ = Don't report progress
                     EOF)
                 ->multipleAllowed()
                 ->bindTo($this->Quiet),
@@ -246,7 +263,14 @@ class FormatPhp extends CliCommand
 
     public function getUsageSections(): ?array
     {
-        return null;
+        return [
+            CliUsageSectionName::EXIT_STATUS => <<<EOF
+                - _0_ if formatting succeeded  
+                - _1_ if arguments were invalid  
+                - _2_ if input was invalid (e.g. code has syntax errors)  
+                - _3_ or above if an error occurred
+                EOF,
+        ];
     }
 
     protected function run(...$params)
@@ -269,28 +293,34 @@ class FormatPhp extends CliCommand
             throw new CliArgumentsInvalidException('--tab and --space cannot be used together');
         }
 
-        $skip  = $this->getOptionValue('skip');
-        $rules = $this->getOptionValue('rule');
+        $skipRules   = $this->getOptionValue('skip-rule');
+        $addRules    = $this->getOptionValue('rule');
+        $skipFilters = [];
         if ($this->getOptionValue('ignore-newlines')) {
-            $skip[] = 'preserve-newlines';
+            $skipRules[] = 'preserve-newlines';
+        }
+        if ($this->getOptionValue('no-simplify-strings')) {
+            $skipRules[] = 'simplify-strings';
+        }
+        if ($this->getOptionValue('no-sort-imports')) {
+            $skipFilters[] = SortImports::class;
         }
         if ($this->getOptionValue('align-all')) {
-            $rules[] = 'align-assignments';
-            $rules[] = 'align-comments';
+            $addRules[] = 'align-assignments';
+            $addRules[] = 'align-comments';
         }
         if ($this->getOptionValue('laravel')) {
-            $skip[]  = 'one-line-arguments';
-            $skip[]  = 'break-between-items';
-            $skip[]  = 'align-chains';
-            $rules[] = 'no-concat-spaces';
-            $rules[] = 'space-after-fn';
-            $rules[] = 'space-after-not';
+            $skipRules[] = 'one-line-arguments';
+            $skipRules[] = 'align-chains';
+            $addRules[]  = 'no-concat-spaces';
+            $addRules[]  = 'space-after-fn';
+            $addRules[]  = 'space-after-not';
         }
         if ($this->Quiet > 1) {
-            $skip[] = 'report-brackets';
+            $skipRules[] = 'report-brackets';
         }
-        $skip  = array_values(array_intersect_key($this->SkipMap, array_flip($skip)));
-        $rules = array_values(array_intersect_key($this->RuleMap, array_flip($rules)));
+        $skipRules = array_values(array_intersect_key($this->SkipRuleMap, array_flip($skipRules)));
+        $addRules  = array_values(array_intersect_key($this->AddRuleMap, array_flip($addRules)));
 
         $in  = $this->expandPaths($this->getOptionValue('file'), $directoryCount);
         $out = $this->getOptionValue('output');
@@ -314,8 +344,9 @@ class FormatPhp extends CliCommand
         $formatter = new Formatter(
             !$tab,
             $tab ?: $space ?: 4,
-            $skip,
-            $rules
+            $skipRules,
+            $addRules,
+            $skipFilters
         );
         $i      = 0;
         $count  = count($in);
@@ -339,16 +370,16 @@ class FormatPhp extends CliCommand
                 continue;
             } catch (PrettyException $ex) {
                 Console::error('Unable to format:', $file);
-                $this->maybeDumpDebugOutput($input, $ex->getOutput(), $ex->getTokens(), $ex->getData());
+                $this->maybeDumpDebugOutput($input, $ex->getOutput(), $ex->getTokens(), $ex->getLog(), $ex->getData());
                 throw $ex;
             } catch (Throwable $ex) {
                 Console::error('Unable to format:', $file);
-                $this->maybeDumpDebugOutput($input, null, $formatter->Tokens, (string) $ex);
+                $this->maybeDumpDebugOutput($input, null, $formatter->Tokens, $formatter->Log, (string) $ex);
                 throw $ex;
             } finally {
                 Sys::stopTimer($file, 'file');
             }
-            $this->maybeDumpDebugOutput($input, $output, $formatter->Tokens, null);
+            $this->maybeDumpDebugOutput($input, $output, $formatter->Tokens, $formatter->Log, null);
 
             $outFile = $out[$key] ?? '-';
             if ($outFile === '-') {
@@ -445,28 +476,47 @@ class FormatPhp extends CliCommand
 
     /**
      * @param \Lkrms\Pretty\Php\Token[] $tokens
+     * @param array<string,string>|null $log
      * @param mixed $data
      */
-    private function maybeDumpDebugOutput(string $input, ?string $output, ?array $tokens, $data): void
+    private function maybeDumpDebugOutput(string $input, ?string $output, ?array $tokens, ?array $log, $data): void
     {
-        if (!is_null($this->DebugDirectory)) {
-            foreach ([
-                'input.php'   => $input,
-                'output.php'  => $output,
-                'tokens.json' => $tokens,
-                'data.json'   => is_string($data) ? null : $data,
-                'data.out'    => is_string($data) ? $data : null,
-            ] as $file => $contents) {
-                $file = "{$this->DebugDirectory}/{$file}";
-                File::maybeDelete($file);
-                if (!is_null($contents)) {
-                    file_put_contents(
-                        $file,
-                        is_string($contents)
-                            ? $contents
-                            : json_encode($contents, JSON_PRETTY_PRINT | JSON_FORCE_OBJECT)
-                    );
-                }
+        if (is_null($this->DebugDirectory)) {
+            return;
+        }
+
+        $logDir = "{$this->DebugDirectory}/render-log";
+        File::maybeCreateDirectory($logDir);
+        File::find($logDir, null, null, false)
+            ->forEach(fn(SplFileInfo $file) => unlink($file->getPathname()));
+
+        $i    = 0;
+        $last = null;
+        foreach ($log ?: [] as $after => $out) {
+            if ($i++ && $out === $last) {
+                continue;
+            }
+            $logFile = sprintf('render-log/%03d-%s.php', $i, $after);
+            $last    = $logFiles[$logFile] = $out;
+        }
+
+        foreach ([
+            'input.php'   => $input,
+            'output.php'  => $output,
+            'tokens.json' => $tokens,
+            'data.json'   => is_string($data) ? null : $data,
+            'data.out'    => is_string($data) ? $data : null,
+            ...($logFiles ?? []),
+        ] as $file => $contents) {
+            $file = "{$this->DebugDirectory}/{$file}";
+            File::maybeDelete($file);
+            if (!is_null($contents)) {
+                file_put_contents(
+                    $file,
+                    is_string($contents)
+                        ? $contents
+                        : json_encode($contents, JSON_PRETTY_PRINT | JSON_FORCE_OBJECT)
+                );
             }
         }
     }

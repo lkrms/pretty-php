@@ -6,13 +6,13 @@ relevant directory:
 ```bash
 find . -type f -name '*.php' -print0 |
   xargs -0 grep -EoH \
-    -e '->Whitespace(Before|After|Mask(Prev|Next)) +[^ =]*= +.*' \
-    -e '->(addWhitespaceBefore|applyInnerMask)\([^)]*\)' |
+    -e '->(Critical)?Whitespace(Before|After|Mask(Prev|Next)) +[^ =]*= +.*' \
+    -e '->(addWhitespaceBefore|maskWhitespaceBefore|maskInnerWhitespace)\([^)]*\)' |
   tr -d ' ' |
   sed -E '
 s/\.php:->/ /
 s/WhitespaceType:://g
-s/Whitespace//g
+s/(Critical)?Whitespace//g
 s/\|=?/+/g
 s/(&=?|~)+/-/g
 s/[;)]+$//
@@ -21,10 +21,15 @@ s/[;)]+$//
   s/Before/MaskPrev/; p
   s/MaskPrev/MaskNext/
 }
-/applyInnerMask/ {
-  s/applyInnerMask\(-?/MaskPrev-/; p
+/maskBefore/ {
+  s/maskBefore\(-?/MaskPrev-/; p
+  s/MaskPrev/MaskNext/
+}
+/maskInner/ {
+  s/maskInner\(-?/MaskPrev-/; p
   s/MaskPrev/MaskNext/
 }' |
+  sed -E 's/-NONE/=NONE/' |
   LC_ALL=C sort -u |
   awk -F'[ =+-]' '
               { o = $0 }
@@ -62,8 +67,8 @@ Sample output:
 
 `AddStandard`:
 - `After`(+LINE|+LINE+SPACE|+SPACE)
-- `Before`(+LINE+SPACE|+SPACE)
-- `MaskNext`(+LINE|-BLANK-SPACE|=NONE|=SPACE)
+- `Before`(+LINE|+LINE+SPACE|+SPACE)
+- `MaskNext`(+LINE|-BLANK|-BLANK-SPACE|=NONE|=SPACE)
 - `MaskPrev`(-BLANK-SPACE|=NONE)
 
 `AlignChainedCalls`:
@@ -72,10 +77,10 @@ Sample output:
 `AlignComments`:
 - `Before`+BLANK
 
-`AlignLists`:
-- `Before`+LINE
-- `MaskNext`+LINE
-- `MaskPrev`+LINE
+`ApplyMagicComma`:
+- `Before`+LINE,true
+- `MaskNext`+LINE,true
+- `MaskPrev`+LINE,true
 
 `BracePosition`:
 - `After`(+LINE+SPACE|+SPACE)
@@ -91,17 +96,12 @@ Sample output:
 
 `BreakBeforeControlStructureBody`:
 - `After`+LINE+SPACE
-- `Before`+LINE+SPACE
+- `Before`(+LINE|+LINE+SPACE)
 - `MaskNext`(+LINE|-BLANK)
 - `MaskPrev`(+LINE|-BLANK)
 
 `BreakBeforeMultiLineList`:
 - `After`+LINE
-- `MaskNext`+LINE
-- `MaskPrev`+LINE
-
-`BreakBetweenMultiLineItems`:
-- `Before`+LINE
 - `MaskNext`+LINE
 - `MaskPrev`+LINE
 
@@ -124,10 +124,10 @@ Sample output:
 `MatchPosition`:
 - `After`+LINE
 
-`PlaceAttributes`:
-- `After`+LINE
+`NoMixedLists`:
 - `Before`+LINE
-- `MaskNext`-BLANK
+- `MaskNext`(+LINE|-BLANK-LINE)
+- `MaskPrev`(+LINE|-BLANK-LINE)
 
 `PlaceComments`:
 - `After`(+BLANK|+LINE|+SPACE)

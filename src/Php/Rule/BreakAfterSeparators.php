@@ -18,6 +18,11 @@ final class BreakAfterSeparators implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getPriority(string $method): ?int
+    {
+        return 80;
+    }
+
     public function getTokenTypes(): ?array
     {
         return [

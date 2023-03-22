@@ -26,12 +26,11 @@ final class AlignComments implements BlockRule
 
     public function getPriority(string $method): ?int
     {
-        switch ($method) {
-            case self::BEFORE_RENDER:
-                return 998;
+        if ($method === self::BEFORE_RENDER) {
+            return 998;
         }
 
-        return null;
+        return 340;
     }
 
     public function processBlock(array $block): void

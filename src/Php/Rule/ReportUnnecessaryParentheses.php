@@ -17,6 +17,11 @@ final class ReportUnnecessaryParentheses implements TokenRule
 {
     use TokenRuleTrait;
 
+    public function getPriority(string $method): ?int
+    {
+        return 990;
+    }
+
     public function getTokenTypes(): ?array
     {
         return [

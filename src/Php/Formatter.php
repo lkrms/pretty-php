@@ -10,31 +10,40 @@ use Lkrms\Facade\Env;
 use Lkrms\Facade\Sys;
 use Lkrms\Pretty\Php\Contract\BlockRule;
 use Lkrms\Pretty\Php\Contract\Filter;
+use Lkrms\Pretty\Php\Contract\ListRule;
 use Lkrms\Pretty\Php\Contract\Rule;
 use Lkrms\Pretty\Php\Contract\TokenRule;
+use Lkrms\Pretty\Php\Filter\NormaliseHeredocs;
 use Lkrms\Pretty\Php\Filter\NormaliseStrings;
-use Lkrms\Pretty\Php\Filter\RemoveCommentTokens;
+use Lkrms\Pretty\Php\Filter\RemoveComments;
 use Lkrms\Pretty\Php\Filter\RemoveEmptyTokens;
-use Lkrms\Pretty\Php\Filter\RemoveWhitespaceTokens;
+use Lkrms\Pretty\Php\Filter\RemoveWhitespace;
 use Lkrms\Pretty\Php\Filter\SortImports;
-use Lkrms\Pretty\Php\Filter\StripHeredocIndents;
-use Lkrms\Pretty\Php\Filter\TrimInsideCasts;
+use Lkrms\Pretty\Php\Filter\TrimCasts;
 use Lkrms\Pretty\Php\Filter\TrimOpenTags;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
 use Lkrms\Pretty\Php\Rule\AddEssentialWhitespace;
 use Lkrms\Pretty\Php\Rule\AddHangingIndentation;
 use Lkrms\Pretty\Php\Rule\AddIndentation;
 use Lkrms\Pretty\Php\Rule\AddStandardWhitespace;
+use Lkrms\Pretty\Php\Rule\AlignAssignments;
 use Lkrms\Pretty\Php\Rule\AlignChainedCalls;
+use Lkrms\Pretty\Php\Rule\AlignComments;
 use Lkrms\Pretty\Php\Rule\AlignLists;
+use Lkrms\Pretty\Php\Rule\ApplyMagicComma;
 use Lkrms\Pretty\Php\Rule\BracePosition;
 use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
 use Lkrms\Pretty\Php\Rule\BreakBeforeControlStructureBody;
-use Lkrms\Pretty\Php\Rule\BreakBetweenMultiLineItems;
+use Lkrms\Pretty\Php\Rule\BreakBeforeMultiLineList;
+use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterFn;
+use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterNot;
+use Lkrms\Pretty\Php\Rule\Extra\DeclareArgumentsOnOneLine;
+use Lkrms\Pretty\Php\Rule\Extra\SuppressSpaceAroundStringOperator;
 use Lkrms\Pretty\Php\Rule\MatchPosition;
-use Lkrms\Pretty\Php\Rule\PlaceAttributes;
+use Lkrms\Pretty\Php\Rule\NoMixedLists;
 use Lkrms\Pretty\Php\Rule\PlaceComments;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
+use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
 use Lkrms\Pretty\Php\Rule\ProtectStrings;
 use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
 use Lkrms\Pretty\Php\Rule\ReportUnnecessaryParentheses;
@@ -49,11 +58,14 @@ use ParseError;
 use RuntimeException;
 use Throwable;
 
+use const Lkrms\Pretty\Php\T_ID_MAP as T;
+
 /**
  * @property-read bool $Debug
  * @property-read int $QuietLevel
  * @property-read string|null $Filename
  * @property-read string|null $RunningService
+ * @property-read array<string,string> $Log
  * @property-read string[] $Rules
  */
 final class Formatter implements IReadable
@@ -81,6 +93,11 @@ final class Formatter implements IReadable
     protected $RunningService;
 
     /**
+     * @var array<string,string>
+     */
+    protected $Log = [];
+
+    /**
      * @var string
      */
     public $Tab;
@@ -106,101 +123,50 @@ final class Formatter implements IReadable
     public $MirrorBrackets = true;
 
     /**
+     * @var bool
+     */
+    public $OneTrueBraceStyle = false;
+
+    /**
      * @var string[]
      */
     protected $Rules = [
-        ProtectStrings::class,
+        ProtectStrings::class,                   // processToken  (40)
+        SimplifyStrings::class,                  // processToken  (60)
+        AddStandardWhitespace::class,            // processToken  (80)
+        BreakAfterSeparators::class,             // processToken  (80)
+        SpaceOperators::class,                   // processToken  (80)
+        BracePosition::class,                    // processToken  (80), beforeRender (80)
+        BreakBeforeControlStructureBody::class,  // processToken  (83)
+        PlaceComments::class,                    // processToken  (90), beforeRender (997)
+        PreserveNewlines::class,                 // processToken  (93)
+        AddBlankLineBeforeReturn::class,         // processToken  (97)
+        AlignChainedCalls::class,                // processToken (340), callback (710)
+        ApplyMagicComma::class,                  // processList  (360)
+        AlignLists::class,                       // processToken (400), callback (710)
+        AddIndentation::class,                   // processToken (600)
+        SwitchPosition::class,                   // processToken (600)
+        MatchPosition::class,                    // processToken (600)
+        SpaceDeclarations::class,                // processToken (620)
+        AddHangingIndentation::class,            // processToken (800), callback (800)
+        ReindentHeredocs::class,                 // processToken (900), beforeRender (900)
+        ReportUnnecessaryParentheses::class,     // processToken (990)
+        AddEssentialWhitespace::class,           // beforeRender (999)
+    ];
 
-        SimplifyStrings::class,
-
-        AddStandardWhitespace::class,  // processToken:
-                                       // - WhitespaceBefore+SPACE[+LINE]
-                                       // - WhitespaceAfter(+SPACE[+LINE]|+LINE)
-                                       // - WhitespaceMaskNext(-SPACE|=SPACE|+LINE|=NONE)
-                                       // - WhitespaceMaskPrev(-SPACE|=NONE)
-
-        BreakAfterSeparators::class,  // processToken:
-                                      // - `WhitespaceAfter`+SPACE[+LINE]
-                                      // - `WhitespaceMaskNext`+SPACE
-                                      // - `WhitespaceMaskPrev`(+SPACE|=NONE)
-                                      // - `WhitespaceBefore`=NONE
-
-        BracePosition::class,  // Must be before BreakBeforeControlStructureBody
-
-        BreakBeforeControlStructureBody::class,  // processToken:
-                                                 // - `WhitespaceBefore`+LINE+SPACE
-                                                 // - `WhitespaceMaskPrev`+LINE-BREAK
-                                                 // - `WhitespaceMaskNext`+LINE
-                                                 // - `PreIndent`++
-
-        PlaceAttributes::class,  // processToken:
-                                 // - `WhitespaceBefore`+LINE
-                                 // - `WhitespaceAfter`+LINE
-                                 // - `WhitespaceMaskNext`-BLANK
-
-        SpaceOperators::class,  // processToken:
-                                // `WhitespaceBefore`(+SPACE|=NONE)
-                                // `WhitespaceMaskNext`=NONE
-                                // `WhitespaceMaskPrev`=NONE
-                                // `WhitespaceAfter`(+SPACE|=NONE)
-
-        PlaceComments::class,
-        PreserveNewlines::class,          // Must be after PlaceComments
-        AddBlankLineBeforeReturn::class,  // Must be after PlaceComments
-
-        BreakBetweenMultiLineItems::class,  // processToken:
-                                            // - `WhitespaceBefore`+LINE
-                                            // - `WhitespaceMaskPrev`+LINE
-                                            // - `WhitespaceMaskNext`+LINE
-
-        AlignChainedCalls::class,
-
-        AlignLists::class,  // processToken (400):
-                            // - `WhitespaceBefore`+LINE    (via BreakBetweenMultiLineItems)
-                            // - `WhitespaceMaskPrev`+LINE  (via BreakBetweenMultiLineItems)
-                            // - `WhitespaceMaskNext`+LINE  (via BreakBetweenMultiLineItems)
-                            // - `AlignedWith`=<value>
-                            //
-                            // callback (710):
-                            // - `LinePadding`+=<value>
-
-        AddIndentation::class,  // processToken (600):
-                                // - `Indent`=<value>
-                                // - `WhitespaceBefore`+LINE
-                                // - `WhitespaceMaskPrev`-BLANK-LINE
-
-        SwitchPosition::class,  // processToken (600):
-                                // - `PreIndent`++
-                                // - `Deindent`++
-
-        MatchPosition::class,  // processToken (600):
-                               // - `WhitespaceAfter`+LINE
-
-        SpaceDeclarations::class,  // processToken (620):
-                                   // - `WhitespaceMaskPrev`-BLANK
-                                   // - `WhitespaceBefore`+BLANK
-
-        AddHangingIndentation::class,  // processToken (800):
-                                       // - `IsHangingParent`=true
-                                       // - `IsOverhangingParent`=true|false
-                                       // - `HangingIndent`+=<value>
-                                       // - `OverhangingParents[]`=<value>
-                                       // - `IndentBracketStack[]`=<value>
-                                       // - `IndentStack[]`=<value>
-                                       // - `IndentParentStack[]`=<value>
-                                       //
-                                       // callback (800):
-                                       // - `HangingIndent`--
-                                       // - `OverhangingParents[]`--
-
-        ReindentHeredocs::class,  // beforeRender:
-                                  // - `HeredocIndent`=<value>
-                                  // - `text`=<value>
-
-        AddEssentialWhitespace::class,
-
-        // Read-only rules
-        ReportUnnecessaryParentheses::class,
+    /**
+     * @var string[]
+     */
+    protected $AvailableRules = [
+        PreserveOneLineStatements::class,          // processToken  (95)
+        AlignAssignments::class,                   // processBlock (340), callback (710)
+        AlignComments::class,                      // processBlock (340), beforeRender (998)
+        NoMixedLists::class,                       // processList  (370)
+        BreakBeforeMultiLineList::class,           // processToken (380)
+        AddSpaceAfterFn::class,                    // processToken
+        AddSpaceAfterNot::class,                   // processToken
+        DeclareArgumentsOnOneLine::class,          // processToken
+        SuppressSpaceAroundStringOperator::class,  // processToken
     ];
 
     /**
@@ -211,7 +177,7 @@ final class Formatter implements IReadable
     /**
      * @var Filter[]
      */
-    private $MandatoryFilters;
+    private $FormatFilters;
 
     /**
      * @var Filter[]
@@ -241,34 +207,41 @@ final class Formatter implements IReadable
             ];
         }
 
-        if ($skipRules || ($skip ?? null)) {
-            $this->Rules = array_diff($this->Rules, $skipRules, $skip ?? []);
-        }
-
         if ($addRules) {
             array_push($this->Rules, ...$addRules);
         }
 
+        if ($skipRules || ($skip ?? null)) {
+            $this->Rules = array_diff($this->Rules, $skipRules, $skip ?? []);
+        }
+
         $mandatory = [
-            RemoveWhitespaceTokens::class,
-            StripHeredocIndents::class,
-            TrimInsideCasts::class,
+            RemoveWhitespace::class,
+            NormaliseHeredocs::class,
+        ];
+        $optional = [
+            TrimCasts::class,
             SortImports::class,
         ];
         $comparison = [
             NormaliseStrings::class,
-            RemoveCommentTokens::class,
+            RemoveComments::class,
             RemoveEmptyTokens::class,
             TrimOpenTags::class,
         ];
         if ($skipFilters) {
-            $mandatory  = array_diff($mandatory, $skipFilters);
-            $comparison = array_diff($comparison, $skipFilters);
+            $optional = array_diff($optional, $skipFilters);
         }
-        $this->MandatoryFilters  = array_map(fn(string $filter) => new $filter(), $mandatory);
+        $this->FormatFilters = array_map(
+            fn(string $filter) => new $filter(),
+            array_merge($mandatory, $optional)
+        );
         $this->ComparisonFilters = array_merge(
-            $this->MandatoryFilters,
-            array_map(fn(string $filter) => new $filter(), $comparison)
+            $this->FormatFilters,
+            array_map(
+                fn(string $filter) => new $filter(),
+                $comparison
+            )
         );
 
         $this->Debug = Env::debug();
@@ -306,7 +279,7 @@ final class Formatter implements IReadable
         try {
             $this->Tokens = Token::tokenize($code,
                                             TOKEN_PARSE,
-                                            ...$this->MandatoryFilters);
+                                            ...$this->FormatFilters);
 
             if (!$this->Tokens) {
                 return '';
@@ -338,7 +311,7 @@ final class Formatter implements IReadable
         }
 
         Sys::startTimer(__METHOD__ . '#sort-rules');
-        $tokenLoop    = [];
+        $mainLoop     = [];
         $blockLoop    = [];
         $beforeRender = [];
         $index        = 0;
@@ -349,7 +322,10 @@ final class Formatter implements IReadable
             /** @var Rule $rule */
             $rule = new $_rule($this);
             if ($rule instanceof TokenRule) {
-                $tokenLoop[] = [$this->getPriority($rule, TokenRule::PROCESS_TOKEN), $index, $rule];
+                $mainLoop[] = [$this->getPriority($rule, TokenRule::PROCESS_TOKEN), $index, $rule, TokenRule::class];
+            }
+            if ($rule instanceof ListRule) {
+                $mainLoop[] = [$this->getPriority($rule, ListRule::PROCESS_LIST), $index, $rule, ListRule::class];
             }
             if ($rule instanceof BlockRule) {
                 $blockLoop[] = [$this->getPriority($rule, BlockRule::PROCESS_BLOCK), $index, $rule];
@@ -357,29 +333,59 @@ final class Formatter implements IReadable
             $beforeRender[] = [$this->getPriority($rule, Rule::BEFORE_RENDER), $index, $rule];
             $index++;
         }
-        $tokenLoop    = $this->sortRules($tokenLoop);
+        $mainLoop     = $this->sortRules($mainLoop);
         $blockLoop    = $this->sortRules($blockLoop);
         $beforeRender = $this->sortRules($beforeRender);
         Sys::stopTimer(__METHOD__ . '#sort-rules');
 
-        /** @var TokenRule $rule */
-        foreach ($tokenLoop as $rule) {
+        Sys::startTimer(__METHOD__ . '#find-lists');
+        // Get non-empty open brackets
+        $listParents =
+            array_filter(
+                $this->Tokens,
+                fn(Token $t) =>
+                    $t->is([T['('], T['[']]) && $t->ClosedBy !== $t->nextCode()
+            );
+        $lists = [];
+        foreach ($listParents as $i => $parent) {
+            $lists[$i] = $parent->innerSiblings()->filter(
+                fn(Token $t, ?Token $next, ?Token $prev) =>
+                    !$prev || $t->prevCode()
+                                ->is(T[','])
+            );
+        }
+        Sys::stopTimer(__METHOD__ . '#find-lists');
+
+        foreach ($mainLoop as [$rule, $ruleType]) {
+            $this->RunningService = $_rule = Convert::classToBasename(get_class($rule));
+            Sys::startTimer($_rule, 'rule');
+
+            if ($ruleType === ListRule::class) {
+                foreach ($listParents as $i => $parent) {
+                    /** @var ListRule $rule */
+                    $rule->processList($parent, $lists[$i]);
+                }
+                Sys::stopTimer($_rule, 'rule');
+                !$this->Debug || $this->logProgress(ListRule::PROCESS_LIST);
+                continue;
+            }
+
             // Prepare to filter the tokens as efficiently as possible
+            /** @var TokenRule $rule */
             $types = $rule->getTokenTypes();
             if ($types === []) {
                 continue;
             }
             $types = $types ? TokenType::getIndex(...$types) : null;
 
-            $this->RunningService = $_rule = get_class($rule);
-            Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
             /** @var Token $token */
             foreach ($this->Tokens as $token) {
                 if (!$types || ($types[$token->id] ?? false) !== false) {
                     $rule->processToken($token);
                 }
             }
-            Sys::stopTimer($timer, 'rule');
+            Sys::stopTimer($_rule, 'rule');
+            !$this->Debug || $this->logProgress(TokenRule::PROCESS_TOKEN);
         }
         $this->RunningService = null;
 
@@ -417,12 +423,13 @@ final class Formatter implements IReadable
 
         /** @var BlockRule $rule */
         foreach ($blockLoop as $rule) {
-            $this->RunningService = $_rule = get_class($rule);
-            Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
+            $this->RunningService = $_rule = Convert::classToBasename(get_class($rule));
+            Sys::startTimer($_rule, 'rule');
             foreach ($blocks as $block) {
                 $rule->processBlock($block);
             }
-            Sys::stopTimer($timer, 'rule');
+            Sys::stopTimer($_rule, 'rule');
+            !$this->Debug || $this->logProgress(BlockRule::PROCESS_BLOCK);
         }
         $this->RunningService = null;
 
@@ -430,10 +437,11 @@ final class Formatter implements IReadable
 
         /** @var Rule $rule */
         foreach ($beforeRender as $rule) {
-            $this->RunningService = $_rule = get_class($rule);
-            Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
+            $this->RunningService = $_rule = Convert::classToBasename(get_class($rule));
+            Sys::startTimer($_rule, 'rule');
             $rule->beforeRender($this->Tokens);
-            Sys::stopTimer($timer, 'rule');
+            Sys::stopTimer($_rule, 'rule');
+            !$this->Debug || $this->logProgress(Rule::BEFORE_RENDER);
         }
         $this->RunningService = null;
 
@@ -448,6 +456,7 @@ final class Formatter implements IReadable
                 'Formatting failed: output cannot be rendered',
                 $out,
                 $this->Tokens,
+                $this->Log,
                 null,
                 $ex
             );
@@ -465,6 +474,7 @@ final class Formatter implements IReadable
                 'Formatting check failed: output cannot be parsed',
                 $out,
                 $this->Tokens,
+                $this->Log,
                 null,
                 $ex
             );
@@ -483,7 +493,8 @@ final class Formatter implements IReadable
                 "Formatting check failed: parsed output doesn't match input",
                 $out,
                 $this->Tokens,
-                [$before, $after]
+                $this->Log,
+                ['before' => $before, 'after' => $after]
             );
         }
 
@@ -508,14 +519,22 @@ final class Formatter implements IReadable
     /**
      * Sort rules by priority
      *
-     * @param array<array{0:int,1:int,2:Rule}> $rules
-     * @return Rule[]
+     * @param array<array{0:int,1:int,2:Rule,3?:class-string<Rule>}> $rules
+     * @return array<Rule|array{0:Rule,1:class-string<Rule>}>
      */
     private function sortRules(array $rules): array
     {
-        usort($rules, fn(array $a, array $b) => ($a[0] <=> $b[0]) ?: $a[1] <=> $b[1]);
+        usort(
+            $rules,
+            fn(array $a, array $b) =>
+                ($a[0] <=> $b[0]) ?: $a[1] <=> $b[1]
+        );
 
-        return array_map(fn(array $rule) => $rule[2], $rules);
+        return array_map(
+            fn(array $rule) =>
+                ($rule[3] ?? null) ? [$rule[2], $rule[3]] : $rule[2],
+            $rules
+        );
     }
 
     /**
@@ -544,10 +563,11 @@ final class Formatter implements IReadable
             ksort($tokenCallbacks);
             foreach ($tokenCallbacks as $index => $callbacks) {
                 foreach ($callbacks as [$rule, $callback]) {
-                    $this->RunningService = $_rule = get_class($rule);
-                    Sys::startTimer($timer = Convert::classToBasename($_rule), 'rule');
+                    $this->RunningService = $_rule = Convert::classToBasename(get_class($rule));
+                    Sys::startTimer($_rule, 'rule');
                     $callback();
-                    Sys::stopTimer($timer, 'rule');
+                    Sys::stopTimer($_rule, 'rule');
+                    !$this->Debug || $this->logProgress('{closure}');
                 }
                 unset($tokenCallbacks[$index]);
             }
@@ -577,5 +597,27 @@ final class Formatter implements IReadable
                                          $end ? $end->line : $start->line,
                                          'line');
         Console::warn(sprintf($message . ' %s', ...$values));
+    }
+
+    private function logProgress(string $after): void
+    {
+        Sys::startTimer(__METHOD__ . '#render');
+        try {
+            $out = '';
+            foreach ($this->Tokens as $token) {
+                $out .= $token->render();
+            }
+        } catch (Throwable $ex) {
+            throw new PrettyException(
+                'Formatting failed: unable to render unresolved output',
+                $out,
+                $this->Tokens,
+                $this->Log,
+                $ex
+            );
+        } finally {
+            Sys::stopTimer(__METHOD__ . '#render');
+        }
+        $this->Log[$this->RunningService . '-' . $after] = $out;
     }
 }

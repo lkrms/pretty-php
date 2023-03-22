@@ -11,7 +11,7 @@ use Lkrms\Pretty\Php\TokenType;
  * Remove whitespace tokens
  *
  */
-final class RemoveWhitespaceTokens implements Filter
+final class RemoveWhitespace implements Filter
 {
     use FilterTrait;
 

@@ -15,9 +15,14 @@ use const Lkrms\Pretty\Php\T_ID_MAP as T;
  * Preserve newlines adjacent to operators, delimiters and comments
  *
  */
-class PreserveNewlines implements TokenRule
+final class PreserveNewlines implements TokenRule
 {
     use TokenRuleTrait;
+
+    public function getPriority(string $method): ?int
+    {
+        return 93;
+    }
 
     public function processToken(Token $token): void
     {

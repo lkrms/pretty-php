@@ -39,6 +39,11 @@ final class BracePosition implements TokenRule
      */
     private $BracketBracePairs = [];
 
+    public function getPriority(string $method): ?int
+    {
+        return 80;
+    }
+
     public function getTokenTypes(): ?array
     {
         return [
@@ -55,17 +60,14 @@ final class BracePosition implements TokenRule
         }
 
         $next = $token->next();
-        if ($token->is(T['{'])) {
-            $prev = $token->prev();
-            if ($prev->is(T[')'])) {
-                $this->BracketBracePairs[] = [$prev, $token];
-            }
+        if ($token->id === T['{']) {
             $line = WhitespaceType::NONE;
             // Add a newline before this open brace if:
             // 1. it's part of a declaration
             // 2. it isn't part of an anonymous function
             $parts = $token->declarationParts();
-            if ($parts->hasOneOf(...TokenType::DECLARATION) &&
+            if (!$this->Formatter->OneTrueBraceStyle &&
+                    $parts->hasOneOf(...TokenType::DECLARATION) &&
                     !$parts->last()->is(T_FUNCTION)) {
                 // 3. it isn't part of a `use` statement
                 $start = $parts->first();
@@ -84,10 +86,16 @@ final class BracePosition implements TokenRule
                     }
                 }
             }
+            $prev = $parts->hasOneOf(T_FUNCTION)
+                ? $parts->last()->nextSibling()->canonicalClose()
+                : $token->prevCode();
+            if ($prev->id === T[')']) {
+                $this->BracketBracePairs[] = [$prev, $token];
+            }
             $token->WhitespaceBefore   |= WhitespaceType::SPACE | $line;
             $token->WhitespaceAfter    |= WhitespaceType::LINE | WhitespaceType::SPACE;
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
-            if ($next->is(T['}'])) {
+            if ($next->id === T['}']) {
                 $token->WhitespaceMaskNext &= ~WhitespaceType::SPACE;
             }
 
