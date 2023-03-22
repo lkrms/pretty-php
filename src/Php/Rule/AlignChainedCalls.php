@@ -6,9 +6,8 @@ use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenCollection;
+use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
-
-use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
 /**
  * Align consecutive object operators with the first in a chain of calls
@@ -18,15 +17,6 @@ final class AlignChainedCalls implements TokenRule
 {
     use TokenRuleTrait;
 
-    private const CHAIN_TOKEN_TYPE = [
-        T['('],
-        T['['],
-        T['{'],
-        T_OBJECT_OPERATOR,
-        T_NULLSAFE_OBJECT_OPERATOR,
-        T_STRING,
-    ];
-
     public function getPriority(string $method): ?int
     {
         return 340;
@@ -34,24 +24,17 @@ final class AlignChainedCalls implements TokenRule
 
     public function getTokenTypes(): ?array
     {
-        return [
-            T_OBJECT_OPERATOR,
-            T_NULLSAFE_OBJECT_OPERATOR,
-        ];
+        return TokenType::CHAIN;
     }
 
     public function processToken(Token $token): void
     {
-        if ($token->ChainOpenedBy) {
+        if ($token !== $token->ChainOpenedBy) {
             return;
         }
 
-        $chain = $token->withNextSiblingsWhile(...self::CHAIN_TOKEN_TYPE)
-                       ->filter(fn(Token $t) =>
-                           $t->is([T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR]));
-
-        // Don't process tokens in the chain multiple times
-        $chain->forEach(fn(Token $t) => $t->ChainOpenedBy = $token);
+        $chain = $token->withNextSiblingsWhile(...TokenType::CHAIN_PART)
+                       ->filter(fn(Token $t) => $t->is(TokenType::CHAIN));
 
         /** @var ?Token $alignWith */
         $alignWith = null;
@@ -69,11 +52,28 @@ final class AlignChainedCalls implements TokenRule
             }
         );
 
-        // If there's no `->` in the chain with a leading newline, or the first
-        // `->` in the chain has a leading newline ($alignWith would be set
-        // otherwise), do nothing
-        if (!$first || !$alignWith) {
+        // If there's no `->` in the chain with a leading newline, do nothing
+        if (!$first) {
             return;
+        }
+
+        // If the first `->` in the chain has a leading newline ($alignWith
+        // would be set otherwise), align with the start of the chain
+        if ($alignWith) {
+            $alignWith->AlignedWith = $alignWith;
+            $adjust                 = 0;
+        } else {
+            if (!($alignWith = $first->prevSiblingsWhile(
+                T_DOUBLE_COLON,
+                T_NAME_FULLY_QUALIFIED,
+                T_NAME_QUALIFIED,
+                T_NAME_RELATIVE,
+                T_VARIABLE,
+                ...TokenType::CHAIN_PART
+            )->last())) {
+                return;
+            }
+            $adjust = $this->Formatter->TabSize + 2 - mb_strlen($alignWith->text);
         }
 
         // Remove tokens before $first from the chain
@@ -90,17 +90,16 @@ final class AlignChainedCalls implements TokenRule
                 $t->AlignedWith = $alignWith;
             }
         );
-        $alignWith->AlignedWith = $alignWith;
 
         $this->Formatter->registerCallback(
             $this,
             $alignWith,
-            fn() => $this->alignChain($chain, $first, $alignWith),
+            fn() => $this->alignChain($chain, $first, $alignWith, $adjust),
             710
         );
     }
 
-    private function alignChain(TokenCollection $chain, Token $first, Token $alignWith): void
+    private function alignChain(TokenCollection $chain, Token $first, Token $alignWith, int $adjust): void
     {
         // Don't proceed if operators have been moved by other rules
         if ($chain->find(fn(Token $t) => !$t->hasNewlineBefore())) {
@@ -108,7 +107,7 @@ final class AlignChainedCalls implements TokenRule
         }
 
         $length = mb_strlen($alignWith->text);
-        $delta  = $alignWith->alignmentOffset() - $length;
+        $delta  = $alignWith->alignmentOffset() - $length + $adjust;
         $callback =
             function (Token $t, ?Token $next) use ($length, $delta) {
                 $t->collect($next ? $next->prev() : $t->pragmaticEndOfExpression())
@@ -122,7 +121,7 @@ final class AlignChainedCalls implements TokenRule
                   );
             };
         // Apply $delta to code between $alignWith and $first
-        $callback($alignWith, $first);
+        $callback($alignWith->next(), $first);
         $chain->forEach($callback);
     }
 }

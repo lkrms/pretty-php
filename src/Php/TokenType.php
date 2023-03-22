@@ -257,6 +257,19 @@ final class TokenType
         T_USE,
     ];
 
+    public const CHAIN = [
+        T_OBJECT_OPERATOR,
+        T_NULLSAFE_OBJECT_OPERATOR,
+    ];
+
+    public const CHAIN_PART = [
+        T['('],
+        T['['],
+        T['{'],
+        T_STRING,
+        ...self::CHAIN,
+    ];
+
     public const HAS_STATEMENT_WITH_OPTIONAL_BRACES = [
         T_DO,
         T_ELSE,

@@ -599,14 +599,15 @@ class Token extends PhpToken implements JsonSerializable
 
     protected function load(): void
     {
-        $passes = [
-            fn(Token $t) => !$t->IsCode || $t->maybeApplyStatement(),
-            fn(Token $t) => !$t->IsCode || $t->maybeApplyExpression(),
-        ];
-        foreach ($passes as $pass) {
+        foreach ([
+            'maybeApplyStatement',
+            'maybeApplyExpression',
+        ] as $pass) {
             $current = $this;
             do {
-                $pass($current);
+                if ($current->IsCode) {
+                    $current->$pass();
+                }
                 $current = $current->_next;
             } while ($current);
         }
@@ -772,6 +773,15 @@ class Token extends PhpToken implements JsonSerializable
                 $current->TernaryOperator1  = $this->TernaryOperator1 = $this;
                 $current->TernaryOperator2  = $this->TernaryOperator2 = $current;
                 break;
+            }
+        }
+
+        if ($this->is(TokenType::CHAIN) && !$this->ChainOpenedBy) {
+            $this->ChainOpenedBy = $current = $this;
+            while (($current = $current->_nextSibling) && $current->is(TokenType::CHAIN_PART)) {
+                if ($current->is(TokenType::CHAIN)) {
+                    $current->ChainOpenedBy = $this;
+                }
             }
         }
 

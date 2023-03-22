@@ -107,6 +107,8 @@ final class AddHangingIndentation implements TokenRule
             if (!$until->nextSibling()->IsTernaryOperator) {
                 $until = $until->pragmaticEndOfExpression(true);
             }
+        } elseif ($token->ChainOpenedBy) {
+            $stack[] = $token->ChainOpenedBy;
         } elseif ($latest && $latest->BracketStack === $token->BracketStack) {
             if ($token->isStartOfExpression()) {
                 $stack[] = $token;
