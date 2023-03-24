@@ -4,10 +4,12 @@ namespace Lkrms\Pretty\Tests\Php;
 
 use FilesystemIterator as FS;
 use Lkrms\Facade\File;
-use Lkrms\Pretty\Php\Filter\SortImports;
 use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
 use Lkrms\Pretty\Php\Rule\AlignComments;
+use Lkrms\Pretty\Php\Rule\AlignLists;
+use Lkrms\Pretty\Php\Rule\AlignTernaryOperators;
+use Lkrms\Pretty\Php\Rule\ApplyMagicComma;
 use Lkrms\Pretty\Php\Rule\Extra\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\NoMixedLists;
 use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
@@ -96,9 +98,10 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
                         ];
                         $skipRules = [
                             AddBlankLineBeforeReturn::class,
+                            AlignTernaryOperators::class,
+                            ApplyMagicComma::class,
                             DeclareArgumentsOnOneLine::class,
                             NoMixedLists::class,
-                            SpaceDeclarations::class,
                         ];
                         break;
                     case 'php-doc':
@@ -108,6 +111,7 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
                         ];
                         $skipRules = [
                             AddBlankLineBeforeReturn::class,
+                            AlignLists::class,
                             DeclareArgumentsOnOneLine::class,
                             NoMixedLists::class,
                             SimplifyStrings::class,

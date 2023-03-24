@@ -30,6 +30,7 @@ use Lkrms\Pretty\Php\Rule\AlignAssignments;
 use Lkrms\Pretty\Php\Rule\AlignChainedCalls;
 use Lkrms\Pretty\Php\Rule\AlignComments;
 use Lkrms\Pretty\Php\Rule\AlignLists;
+use Lkrms\Pretty\Php\Rule\AlignTernaryOperators;
 use Lkrms\Pretty\Php\Rule\ApplyMagicComma;
 use Lkrms\Pretty\Php\Rule\BracePosition;
 use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
@@ -143,6 +144,7 @@ final class Formatter implements IReadable
         AddBlankLineBeforeReturn::class,         // processToken  (97)
         AlignChainedCalls::class,                // processToken (340), callback (710)
         ApplyMagicComma::class,                  // processList  (360)
+        AlignTernaryOperators::class,            // processToken (383), callback (710)
         AlignLists::class,                       // processToken (400), callback (710)
         AddIndentation::class,                   // processToken (600)
         SwitchPosition::class,                   // processToken (600)
@@ -513,8 +515,8 @@ final class Formatter implements IReadable
         $priority = $rule->getPriority($method);
 
         return is_null($priority)
-            ? 100
-            : $priority;
+                   ? 100
+                   : $priority;
     }
 
     /**

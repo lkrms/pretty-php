@@ -25,7 +25,7 @@ final class AddHangingIndentation implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->is([T['('], T['['], T['{']]) && !$token->hasNewlineAfterCode()) {
+        if ($token->isOpenBracket(false) && !$token->hasNewlineAfterCode()) {
             $token->IsHangingParent = true;
             $token->IsOverhangingParent =
                 // Does it have delimited values? (e.g. `list(var, var)`)
@@ -82,14 +82,18 @@ final class AddHangingIndentation implements TokenRule
             //           ?: $d
             //
             $prevTernary =
-                $token->prevSiblings()
+                $token->prevSiblingsUntil(
+                          fn(Token $t) =>
+                              $t->Statement !== $token->Statement
+                      )
                       ->filter(
                           fn(Token $t) =>
                               $t->IsTernaryOperator &&
+                                  $t->TernaryOperator1 === $t &&
                                   $t->TernaryOperator2->Index < $token->TernaryOperator1->Index
                       )
                       ->last();
-            $stack[] = ($prevTernary ?: $token)->TernaryOperator1;
+            $stack[] = $prevTernary ?: $token->TernaryOperator1;
 
             // Then, find
             // - the last token
@@ -137,8 +141,8 @@ final class AddHangingIndentation implements TokenRule
         $indent  = 0;
         $hanging = [];
         $parents = in_array($parent, $token->IndentParentStack, true)
-            ? []
-            : [$parent];
+                       ? []
+                       : [$parent];
         $current = $parent;
         while (!($current = $current->parent())->IsNull && $current->IsHangingParent) {
             if (in_array($current, $token->IndentParentStack, true)) {
@@ -245,8 +249,8 @@ final class AddHangingIndentation implements TokenRule
                     $nextIndent = $next->IsNull ||
                         $next->Index > $until->Index ||
                         !($next->OverhangingParents[$index] ?? 0)
-                            ? $nextIndent
-                            : $nextIndent - $unit;
+                                          ? $nextIndent
+                                          : $nextIndent - $unit;
                     if ($nextIndent === $indent && !$next->IsNull) {
                         break 3;
                     }

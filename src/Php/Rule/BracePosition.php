@@ -87,8 +87,8 @@ final class BracePosition implements TokenRule
                 }
             }
             $prev = $parts->hasOneOf(T_FUNCTION)
-                ? $parts->last()->nextSibling()->canonicalClose()
-                : $token->prevCode();
+                        ? $parts->last()->nextSibling()->canonicalClose()
+                        : $token->prevCode();
             if ($prev->id === T[')']) {
                 $this->BracketBracePairs[] = [$prev, $token];
             }

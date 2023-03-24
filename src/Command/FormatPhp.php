@@ -330,8 +330,10 @@ class FormatPhp extends CliCommand
             $in  = ['php://stdin'];
             $out = ['-'];
         } elseif ($out && $out !== ['-'] && ($directoryCount || count($out) !== count($in))) {
-            throw new CliArgumentsInvalidException('--output is required once per input file'
-                . ($directoryCount ? ' and cannot be used with directories' : ''));
+            throw new CliArgumentsInvalidException(
+                '--output is required once per input file'
+                    . ($directoryCount ? ' and cannot be used with directories' : '')
+            );
         } elseif (!$out) {
             $out = $in;
         }

@@ -55,7 +55,7 @@ final class AlignLists implements ListRule
                 fn(Token $t, ?Token $next) =>
                     $t->collect($next ? $next->prevCode() : $t->pragmaticEndOfExpression())
                       ->find(fn(Token $t, ?Token $next, ?Token $prev) =>
-                          $prev && $t->IsCode && $t->hasNewlineBefore())
+                                 $prev && $t->IsCode && $t->hasNewlineBefore())
             );
 
         if ($count = $multiLineItems->count()) {
@@ -128,8 +128,8 @@ final class AlignLists implements ListRule
                     $until = $next->prevCode()->prev();
                 } else {
                     $until = $owner->ClosedBy
-                        ? $owner->ClosedBy->prev()
-                        : $t->pragmaticEndOfExpression();
+                                 ? $owner->ClosedBy->prev()
+                                 : $t->pragmaticEndOfExpression();
                     if (($adjacent = $until->adjacentBeforeNewline()?->pragmaticEndOfExpression()) &&
                             // Don't propagate line padding to adjacent code if
                             // it's only been applied to a one-line block

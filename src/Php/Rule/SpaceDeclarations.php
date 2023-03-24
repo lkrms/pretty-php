@@ -63,9 +63,10 @@ final class SpaceDeclarations implements TokenRule
         // Checking for `use` after `function ()` is unnecessary because it
         // never appears mid-statement
         if ($token->Statement !== $token ||
+                ($token->id === T_STATIC &&
+                    !$token->nextCode()->is([T_VARIABLE, ...TokenType::DECLARATION])) ||
                 // For formatting purposes, promoted constructor parameters
                 // aren't declarations
-                ($token->id === T_STATIC && $token->nextCode()->id !== T_VARIABLE) ||
                 ($token->is(TokenType::VISIBILITY) && $token->inFunctionDeclaration())) {
             return;
         }
@@ -78,21 +79,23 @@ final class SpaceDeclarations implements TokenRule
         }
 
         // Add a blank line between declarations and other code
-        if (!$token->EndStatement->nextCode()->is([T_NULL, ...TokenType::DECLARATION])) {
+        if (!$token->EndStatement->nextCode()->is([T_NULL, ...TokenType::DECLARATION]) &&
+                !$token->EndStatement->next()->is(T_CLOSE_TAG)) {
             $token->EndStatement->WhitespaceAfter |= WhitespaceType::BLANK;
         }
 
         // Don't add blank lines between `<?php` and declarations
         $line = $token->OpenTag->nextCode() === $token
-            ? WhitespaceType::LINE
-            : WhitespaceType::BLANK;
+                    ? WhitespaceType::LINE
+                    : WhitespaceType::BLANK;
 
         // If the same DECLARATION_UNIQUE tokens appear in consecutive one-line
         // statements, propagate the gap between statements 1 and 2 to
         // subsequent statements
         $types = $parts->getAnyOf(...TokenType::DECLARATION_UNIQUE)
                        ->getTypes();
-        if (!$types) {
+        // Allow `$types` to be empty if this is a property declaration
+        if (!$types && !$parts->hasOneOf(...TokenType::VISIBILITY)) {
             $token->WhitespaceBefore |= $line;
 
             return;
@@ -134,8 +137,7 @@ final class SpaceDeclarations implements TokenRule
         //
         // private const C = 2;
         // ```
-        if ($count > 2 &&
-            !$this->PrevExpand &&
+        if (!$this->PrevExpand &&
             ($parts->getFirstOf(...TokenType::VISIBILITY)->id ?? null) !==
                 ($prev->withNextSiblingsWhile(...TokenType::DECLARATION_PART)
                       ->getFirstOf(...TokenType::VISIBILITY)

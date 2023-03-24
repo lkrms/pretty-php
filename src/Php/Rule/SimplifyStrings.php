@@ -76,9 +76,9 @@ final class SimplifyStrings implements TokenRule
             $single = preg_replace('/(?<!\\\\)\\\\(?!\\\\)/', '\\\\$0', $single);
         }
         $token->text = (mb_strlen($single) <= mb_strlen($double) &&
-                ($this->checkConsistency($single) || !$this->checkConsistency($double)))
-            ? $single
-            : $double;
+            ($this->checkConsistency($single) || !$this->checkConsistency($double)))
+                           ? $single
+                           : $double;
         if ($text !== $token->text) {
             $token->OriginalText = $token->OriginalText ?: $text;
         }
@@ -100,8 +100,8 @@ final class SimplifyStrings implements TokenRule
             fn(array $matches) =>
                 ($matches['octal'] ?? null)
                     ? (($dec = octdec($matches['octal']))
-                        ? sprintf('\x%02x', $dec)
-                        : '\0')
+                           ? sprintf('\x%02x', $dec)
+                           : '\0')
                     : $matches[0],
             addcslashes($string, $escape)
         ) . '"';
