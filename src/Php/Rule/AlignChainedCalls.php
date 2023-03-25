@@ -42,8 +42,8 @@ final class AlignChainedCalls implements TokenRule
         // Find the $first `->` with a leading newline in the chain and assign
         // its predecessor (if any) to $alignWith
         $first = $chain->find(
-            function (Token $token, ?Token $next, ?Token $prev) use (&$alignWith): bool {
-                if (!$token->hasNewlineBefore()) {
+            function (Token $t, ?Token $next, ?Token $prev) use (&$alignWith): bool {
+                if (!$t->hasNewlineBefore()) {
                     return false;
                 }
                 $alignWith = $prev;
@@ -57,23 +57,27 @@ final class AlignChainedCalls implements TokenRule
             return;
         }
 
-        // If the first `->` in the chain has a leading newline ($alignWith
-        // would be set otherwise), align with the start of the chain
         if ($alignWith) {
             $alignWith->AlignedWith = $alignWith;
-            $adjust                 = 0;
+            $adjust                 = 2;
         } else {
-            if (!($alignWith = $first->prevSiblingsWhile(
-                T_DOUBLE_COLON,
-                T_NAME_FULLY_QUALIFIED,
-                T_NAME_QUALIFIED,
-                T_NAME_RELATIVE,
-                T_VARIABLE,
-                ...TokenType::CHAIN_PART
-            )->last())) {
+            // If the first `->` in the chain has a leading newline ($alignWith
+            // would be set otherwise), align with the start of the chain
+            $current = $first;
+            while (!($current = $current->prevSibling())->IsNull &&
+                $first->Expression === $current->Expression &&
+                $current->is([T_DOUBLE_COLON,
+                              T_NAME_FULLY_QUALIFIED,
+                              T_NAME_QUALIFIED,
+                              T_NAME_RELATIVE,
+                              T_VARIABLE,
+                              ...TokenType::CHAIN_PART])) {
+                $alignWith = $current;
+            }
+            if (!$alignWith) {
                 return;
             }
-            $adjust = $this->Formatter->TabSize + 2 - mb_strlen($alignWith->text);
+            $adjust = mb_strlen($alignWith->text) - $this->Formatter->TabSize;
         }
 
         // Remove tokens before $first from the chain
@@ -106,22 +110,31 @@ final class AlignChainedCalls implements TokenRule
             return;
         }
 
-        $length = mb_strlen($alignWith->text);
-        $delta  = $alignWith->alignmentOffset() - $length + $adjust;
+        $delta = $alignWith->alignmentOffset() - $adjust;
         $callback =
-            function (Token $t, ?Token $next) use ($length, $delta) {
-                $t->collect($next ? $next->prev() : $t->pragmaticEndOfExpression())
+            function (Token $t, ?Token $next) use ($delta) {
+                if ($next) {
+                    $until = $next->prev();
+                } else {
+                    $until = $t->pragmaticEndOfExpression();
+                    if ($adjacent = $until->adjacentBeforeNewline()) {
+                        $until = $adjacent->pragmaticEndOfExpression();
+                    }
+                }
+                $t->collect($until)
                   ->forEach(
-                      function (Token $_t) use ($length, $delta, $t) {
+                      function (Token $_t) use ($delta, $t) {
                           $_t->LinePadding += $delta;
                           if ($_t === $t) {
-                              $_t->LineUnpadding += mb_strlen($_t->text) - $length;
+                              $_t->LineUnpadding += mb_strlen($_t->text) - 2;
                           }
                       }
                   );
             };
         // Apply $delta to code between $alignWith and $first
-        $callback($alignWith->next(), $first);
+        if ($alignWith->is(TokenType::CHAIN)) {
+            $callback($alignWith->next(), $first);
+        }
         $chain->forEach($callback);
     }
 }

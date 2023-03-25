@@ -158,7 +158,7 @@
 - [x] AlignAssignments
 - [x] AlignChainedCalls
 - [x] AlignComments
-- [ ] AlignLists
+- [x] AlignLists
 - [x] BracePosition
 - [x] BreakAfterSeparators
 - [x] BreakBeforeControlStructureBody

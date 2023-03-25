@@ -26,9 +26,10 @@ final class NormaliseHeredocs implements Filter
                 continue;
             }
 
-            // Collect references to the content of tokens in the heredoc
-            $heredoc[] = &$token->text;
-            $og[]      = &$token->OriginalText;
+            // Collect the content of tokens in the heredoc
+            $heredoc[] = $token->text;
+            $og[]      = $token;
+
             if ($token->id !== T_END_HEREDOC) {
                 continue;
             }
@@ -63,11 +64,9 @@ final class NormaliseHeredocs implements Filter
             }
 
             // Finally, update each token
-            foreach ($heredoc as $i => &$code) {
-                $og[$i] = $og[$i] ?: $code;
-                $code   = $stripped[$i];
+            foreach ($stripped as $i => $code) {
+                $og[$i]->setText($code);
             }
-            unset($code);
 
             $heredoc = null;
             $og      = null;

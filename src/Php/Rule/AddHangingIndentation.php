@@ -240,12 +240,13 @@ final class AddHangingIndentation implements TokenRule
                     // Drop $indent and $nextIndent (if $next falls between
                     // $token and $until and this hanging indent hasn't already
                     // been collapsed) for comparison
-                    $indent    -= $this->Formatter->TabSize;
+                    $unit       = 1;
+                    $indent    -= $unit;
                     $nextIndent = $next->IsNull ||
                         $next->Index > $until->Index ||
                         !($next->OverhangingParents[$index] ?? 0)
                             ? $nextIndent
-                            : $nextIndent - $this->Formatter->TabSize;
+                            : $nextIndent - $unit;
                     if ($nextIndent === $indent && !$next->IsNull) {
                         break 3;
                     }
@@ -282,7 +283,9 @@ final class AddHangingIndentation implements TokenRule
         //   is inherited from enclosing tokens
         $prev = $token->prevCode();
         if (!($prev->hasNewlineAfterCode() ||
-                ($prev->is(T_START_HEREDOC) && !$token->prevCode(2)->hasNewlineAfterCode())) ||
+            ($prev->is(T_START_HEREDOC) &&
+                !$prev->AlignedWith &&
+                !$token->prevCode(2)->hasNewlineAfterCode())) ||
             $token->isBrace() ||
             (!$ignoreIndent &&
                 $this->indent($prev) !== $this->indent($token)) ||
@@ -302,8 +305,8 @@ final class AddHangingIndentation implements TokenRule
     private function effectiveIndent(Token $token): int
     {
         // Ignore $token->LineUnpadding given its role in alignment
-        return $token->indent() * $this->Formatter->TabSize
+        return (int) (($token->indent() * $this->Formatter->TabSize
             + $token->LinePadding
-            + $token->Padding;
+            + $token->Padding) / $this->Formatter->TabSize);
     }
 }

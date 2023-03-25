@@ -362,8 +362,9 @@ final class Formatter implements IReadable
 
             if ($ruleType === ListRule::class) {
                 foreach ($listParents as $i => $parent) {
+                    $list = clone $lists[$i];
                     /** @var ListRule $rule */
-                    $rule->processList($parent, $lists[$i]);
+                    $rule->processList($parent, $list);
                 }
                 Sys::stopTimer($_rule, 'rule');
                 !$this->Debug || $this->logProgress(ListRule::PROCESS_LIST);

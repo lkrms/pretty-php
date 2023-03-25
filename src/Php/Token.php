@@ -7,13 +7,12 @@ use Lkrms\Facade\Convert;
 use Lkrms\Pretty\Php\Contract\Filter;
 use Lkrms\Pretty\PrettyException;
 use Lkrms\Pretty\WhitespaceType;
-use PhpToken;
 use RuntimeException;
 use Throwable;
 
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
-class Token extends PhpToken implements JsonSerializable
+class Token extends NavigableToken implements JsonSerializable
 {
     /**
      * @var string[]
@@ -47,45 +46,11 @@ class Token extends PhpToken implements JsonSerializable
         ...TokenType::CAN_CONTINUE_ALTERNATIVE_SYNTAX_WITHOUT_EXPRESSION,
     ];
 
-    // Declare these first for ease of debugging
-
-    /**
-     * @var Token|null
-     */
-    private $_prev;
-
-    /**
-     * @var Token|null
-     */
-    private $_next;
-
-    /**
-     * @var Token|null
-     */
-    private $_prevCode;
-
-    /**
-     * @var Token|null
-     */
-    private $_nextCode;
-
-    /**
-     * @var Token|null
-     */
-    private $_prevSibling;
-
-    /**
-     * @var Token|null
-     */
-    private $_nextSibling;
-
     /**
      * The token's position (0-based) in the array returned by tokenize()
      *
      */
     public ?int $Index = null;
-
-    public ?string $OriginalText = null;
 
     /**
      * @var Token[]
@@ -463,16 +428,12 @@ class Token extends PhpToken implements JsonSerializable
     protected function prepare(?Token $prev): void
     {
         if (!$this->IsVirtual) {
-            $text = $this->text;
             if ($this->is(TokenType::DO_NOT_MODIFY_LHS)) {
-                $this->text = rtrim($this->text);
+                $this->setText(rtrim($this->text));
             } elseif ($this->is(TokenType::DO_NOT_MODIFY_RHS)) {
-                $this->text = ltrim($this->text);
+                $this->setText(ltrim($this->text));
             } elseif (!$this->is(TokenType::DO_NOT_MODIFY)) {
-                $this->text = trim($this->text);
-            }
-            if ($text !== $this->text) {
-                $this->OriginalText = $text;
+                $this->setText(trim($this->text));
             }
 
             if ($this->is(TokenType::NOT_CODE)) {
@@ -1493,6 +1454,18 @@ class Token extends PhpToken implements JsonSerializable
                 : $end->withoutTerminator();
         }
 
+        if ($this->is(TokenType::CHAIN)) {
+            $current = $this;
+            $last    = null;
+            while (($current = $current->_nextSibling) &&
+                    $this->Expression === $current->Expression &&
+                    $current->is(TokenType::CHAIN_PART)) {
+                $last = $current;
+            }
+
+            return $last->ClosedBy ?: $last;
+        }
+
         // If the token is between `?` and `:` in a ternary expression, return
         // the last token before `:`
         $current = $this->OpenedBy ?: $this;
@@ -1568,37 +1541,38 @@ class Token extends PhpToken implements JsonSerializable
             return null;
         }
         $outer = $current->withNextCodeWhile(...$types)->last();
-        if (!$outer->EndStatement || !$outer->_nextCode ||
-                ($outer->EndStatement->Index <= $outer->_nextCode->Index)) {
+        if (!$outer->_nextCode ||
+                !$outer->EndStatement ||
+                $outer->EndStatement->Index <= $outer->_nextCode->Index) {
             return null;
         }
 
         return $outer->_nextCode;
     }
 
-    public function adjacentBeforeNewline(bool $requireAlignedWith = true): ?Token
+    final public function adjacentBeforeNewline(bool $requireAlignedWith = true): ?Token
     {
-        $current =
-            $this->is([T['('], T[')'], T['['], T[']'], T['{'], T['}']])
-                ? ($this->ClosedBy ?: $this)
-                : $this->parent()->ClosedBy;
+        $current = $this->ClosedBy ?: $this;
+        if (!$current->OpenedBy) {
+            $current = $this->parent()->ClosedBy;
+        }
         if (!$current) {
             return null;
         }
         $eol   = $this->endOfLine();
-        $outer = $current->withNextCodeWhile(T[')'], T[']'], T['}'])
+        $outer = $current->withNextCodeWhile(T[')'], T[','], T[']'], T['}'])
                          ->filter(fn(Token $t) => $t->Index <= $eol->Index)
                          ->last();
         if (!$outer || !$outer->_nextCode ||
-                ($outer->_nextCode->Index > $eol->Index) ||
+                $outer->_nextCode->Index > $eol->Index ||
                 !$outer->EndStatement ||
-                ($outer->EndStatement->Index <= $outer->_nextCode->Index)) {
+                $outer->EndStatement->Index <= $outer->_nextCode->Index) {
             return null;
         }
 
         if ($requireAlignedWith &&
             !$outer->_nextCode->collect($eol)
-                              ->find(fn(Token $item) => (bool) $item->AlignedWith)) {
+                              ->find(fn(Token $t) => (bool) $t->AlignedWith)) {
             return null;
         }
 
@@ -1853,12 +1827,25 @@ class Token extends PhpToken implements JsonSerializable
             ($lastInner->id === T['}'] && $lastInner->isStructuralBrace());  // `{ { statement; } }`
     }
 
-    public function isOpenBracket(): bool
+    /**
+     * True if the token is '(', '[' or '{'
+     *
+     * @param bool $allTypes If `true` (the default), `T_ATTRIBUTE`,
+     * `T_CURLY_OPEN` and `T_DOLLAR_OPEN_CURLY_BRACES` tokens are matched in
+     * addition to `(`, `[` and `{`.
+     */
+    final public function isOpenBracket(bool $allTypes = true): bool
     {
-        return $this->is([T['('], T['['], T['{'], T_ATTRIBUTE, T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES]);
+        return $allTypes
+            ? $this->is([T['('], T['['], T['{'], T_ATTRIBUTE, T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES])
+            : $this->is([T['('], T['['], T['{']]);
     }
 
-    public function isCloseBracket(): bool
+    /**
+     * True if the token is ')', ']' or '}'
+     *
+     */
+    final public function isCloseBracket(): bool
     {
         return $this->is([T[')'], T[']'], T['}']]);
     }

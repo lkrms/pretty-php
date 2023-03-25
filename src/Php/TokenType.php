@@ -267,6 +267,7 @@ final class TokenType
         T['['],
         T['{'],
         T_STRING,
+        T_VARIABLE,
         ...self::CHAIN,
     ];
 
@@ -284,14 +285,14 @@ final class TokenType
     ];
 
     public const HAS_STATEMENT_WITH_BRACES = [
-        T_CATCH,
         T_FINALLY,
+        T_TRY,
     ];
 
     public const HAS_EXPRESSION_AND_STATEMENT_WITH_BRACES = [
+        T_CATCH,
         T_DECLARE,
         T_SWITCH,
-        T_TRY,
     ];
 
     public const HAS_STATEMENT = [
