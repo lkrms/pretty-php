@@ -109,6 +109,10 @@ final class PlaceComments implements TokenRule
 
     public function beforeRender(array $tokens): void
     {
+        /**
+         * @var Token $token
+         * @var Token $next
+         */
         foreach ($this->Comments as [$token, $next]) {
             // Comments are usually aligned to the code below them, but switch
             // blocks are a special case, e.g.:
@@ -138,11 +142,12 @@ final class PlaceComments implements TokenRule
             //         break;
             // }
             // ```
-            if ($next->is([T_CASE, T_DEFAULT])) {
+            if ($next->id === T_CASE ||
+                    ($next->id === T_DEFAULT && $next->parent()->prevSibling(2)->id === T_SWITCH)) {
                 $prev = $token->prevCode();
                 if ($prev !== $next->parent() &&
                         ($next->hasBlankLineBefore() || !$prev->hasBlankLineAfter()) &&
-                        !($prev->is(T[':']) && $prev->prevSibling(2)->is([T_CASE, T_DEFAULT]))) {
+                        !($prev->is([T[':'], T[';']]) && $prev->inSwitchCase())) {
                     continue;
                 }
             }

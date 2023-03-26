@@ -21,7 +21,7 @@ final class AlignTernaryOperators implements TokenRule
 
     public function getPriority(string $method): ?int
     {
-        return 383;
+        return 380;
     }
 
     public function getTokenTypes(): ?array

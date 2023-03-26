@@ -97,7 +97,7 @@ final class AlignChainedCalls implements TokenRule
 
         $this->Formatter->registerCallback(
             $this,
-            $alignWith,
+            $first,
             fn() => $this->alignChain($chain, $first, $alignWith, $adjust),
             710
         );

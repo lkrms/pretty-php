@@ -2,7 +2,7 @@
 
 namespace Lkrms\Pretty\Tests\Php\Rule;
 
-use Lkrms\Pretty\Php\Rule\AlignTernaryOperators;
+use Lkrms\Pretty\Php\Rule\AlignChainedCalls;
 
 final class AddHangingIndentationTest extends \Lkrms\Pretty\Tests\Php\TestCase
 {
@@ -11,7 +11,7 @@ final class AddHangingIndentationTest extends \Lkrms\Pretty\Tests\Php\TestCase
      */
     public function testTernaryOperators(string $code, string $expected)
     {
-        $this->assertFormatterOutputIs($code, $expected, [AlignTernaryOperators::class]);
+        $this->assertFormatterOutputIs($code, $expected, [AlignChainedCalls::class]);
     }
 
     public static function ternaryOperatorsProvider(): array

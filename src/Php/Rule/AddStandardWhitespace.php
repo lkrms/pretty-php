@@ -70,23 +70,25 @@ final class AddStandardWhitespace implements TokenRule
             T_OPEN_TAG,
             T_OPEN_TAG_WITH_ECHO,
             T_CLOSE_TAG,
-
-            T[')'],  // isCloseBracket()
-            T[']'],
-            T['}'],
-
-            T['('],  // isOpenBracket()
-            T['['],
-            T['{'],
-            T_ATTRIBUTE,
-            T_CURLY_OPEN,
-            T_DOLLAR_OPEN_CURLY_BRACES,
-
+            T_MATCH,
             ...TokenType::ADD_SPACE_AROUND,
             ...TokenType::ADD_SPACE_BEFORE,
             ...TokenType::ADD_SPACE_AFTER,
             ...TokenType::SUPPRESS_SPACE_AFTER,
             ...TokenType::SUPPRESS_SPACE_BEFORE,
+
+            // isCloseBracket()
+            T[')'],
+            T[']'],
+            T['}'],
+
+            // isOpenBracket()
+            T['('],
+            T['['],
+            T['{'],
+            T_ATTRIBUTE,
+            T_CURLY_OPEN,
+            T_DOLLAR_OPEN_CURLY_BRACES,
         ];
     }
 
@@ -141,6 +143,24 @@ final class AddStandardWhitespace implements TokenRule
         if ($token->is(T[':']) && $token->inLabel()) {
             $token->WhitespaceAfter    |= WhitespaceType::LINE;
             $token->WhitespaceMaskNext |= WhitespaceType::LINE;
+
+            return;
+        }
+
+        if ($token->is(T_MATCH)) {
+            $arms    = $token->nextSibling(2);
+            $current = $arms->nextCode();
+            if ($current === $arms->ClosedBy) {
+                return;
+            }
+            $i = 0;
+            do {
+                if ($i++) {
+                    $current->WhitespaceAfter |= WhitespaceType::LINE;
+                }
+                $current = $current->nextSiblingOf(...TokenType::OPERATOR_DOUBLE_ARROW)
+                                   ->nextSiblingOf(T[',']);
+            } while (!$current->IsNull);
 
             return;
         }

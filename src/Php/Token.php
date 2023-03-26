@@ -598,7 +598,7 @@ class Token extends NavigableToken implements JsonSerializable
         } elseif ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE)) {
             $this->_prevCode->applyStatement();
             $this->applyStatement();
-        } elseif ($this->is([T[')'], T[']']])) {
+        } elseif ($this->is([T[')'], T[']']]) || ($this->id === T['}'] && !$this->isStructuralBrace())) {
             $this->_prevCode->applyStatement();
         } elseif ($this->is(T[','])) {
             // For formatting purposes, commas are statement delimiters:
@@ -754,6 +754,7 @@ class Token extends NavigableToken implements JsonSerializable
                 $this->IsCloseTagStatementTerminator ||
                 $this->startsAlternativeSyntax() ||
                 ($this->is(T[':']) && ($this->inSwitchCase() || $this->inLabel())) ||
+                ($this->is(T['}']) && ($this->prevSibling(2)->is(T_MATCH) || !$this->isStructuralBrace())) ||
                 $this->IsTernaryOperator) {
             // Expression terminators don't form part of the expression
             $this->Expression = false;
@@ -1571,7 +1572,7 @@ class Token extends NavigableToken implements JsonSerializable
             // Ignore most expression boundaries
             if ($terminator->IsTernaryOperator ||
                     $terminator->is([
-                        T_DOUBLE_ARROW,
+                        ...TokenType::OPERATOR_DOUBLE_ARROW,
                         ...TokenType::OPERATOR_ASSIGNMENT,
                         ...TokenType::OPERATOR_COMPARISON_EXCEPT_COALESCE,
                     ])) {
@@ -1854,10 +1855,11 @@ class Token extends NavigableToken implements JsonSerializable
      */
     final public function inSwitchCase(): bool
     {
-        return $this->is([T_CASE, T_DEFAULT]) ||
-            ($this->parent()->prevSibling(2)->is(T_SWITCH) &&
-                $this->prevSiblingOf(T[':'], T[';'], T_CLOSE_TAG, T_CASE, T_DEFAULT)
-                     ->is([T_CASE, T_DEFAULT]));
+        return $this->id === T_CASE ||
+            ($this->parent()->prevSibling(2)->id === T_SWITCH &&
+                ($this->id === T_DEFAULT ||
+                    $this->prevSiblingOf(T[':'], T[';'], T_CLOSE_TAG, T_CASE, T_DEFAULT)
+                         ->is([T_CASE, T_DEFAULT])));
     }
 
     /**

@@ -54,7 +54,7 @@ final class ReportUnnecessaryParentheses implements TokenRule
         $prev = $start->prevCode();
         $next = $token->ClosedBy->nextCode();
         if (($prev->isStatementPrecursor() ||
-                $prev->is([T_DOUBLE_ARROW, ...TokenType::OPERATOR_ASSIGNMENT])) &&
+                $prev->is([...TokenType::OPERATOR_DOUBLE_ARROW, ...TokenType::OPERATOR_ASSIGNMENT])) &&
             ($prev->ClosedBy === $next ||
                 $next->Statement === $next ||
                 $next->EndStatement === $next)) {

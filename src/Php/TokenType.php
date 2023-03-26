@@ -29,7 +29,6 @@ final class TokenType
 
     public const PRESERVE_BLANK_AFTER = [
         T[','],
-        T[':'],
         T[';'],
         T['}'],
         T_OPEN_TAG,
@@ -38,6 +37,7 @@ final class TokenType
     ];
 
     public const PRESERVE_NEWLINE_AFTER = [
+        T[':'],
         T['('],
         T['['],
         T['{'],

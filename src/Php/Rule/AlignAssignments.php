@@ -141,7 +141,12 @@ final class AlignAssignments implements BlockRule
         if (count($group) < 2) {
             return;
         }
-        $this->Formatter->registerCallback($this, $group[0][1], fn() => $this->alignGroup($group), 710);
+        $this->Formatter->registerCallback(
+            $this,
+            $group[0][1],
+            fn() => $this->alignGroup($group),
+            710
+        );
     }
 
     /**
