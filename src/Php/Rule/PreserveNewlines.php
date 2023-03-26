@@ -90,7 +90,9 @@ final class PreserveNewlines implements TokenRule
                 // Treat `?:` as one operator
                 (!$token->IsTernaryOperator || $token->TernaryOperator2 !== $next) &&
                 (!$token->is(T[':']) || $token->inSwitchCase() || $token->inLabel())) {
-            if (!$token->is(TokenType::PRESERVE_BLANK_AFTER)) {
+            if (!$token->is(TokenType::PRESERVE_BLANK_AFTER) ||
+                    ($token->id === T[','] && !$next->is(TokenType::COMMENT)) ||
+                    ($token->is(TokenType::COMMENT) && $token->prevCode()->id === T[','])) {
                 $line = WhitespaceType::LINE;
             }
             $token->WhitespaceAfter |= $line;

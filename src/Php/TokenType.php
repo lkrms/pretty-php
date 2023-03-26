@@ -29,7 +29,6 @@ final class TokenType
 
     public const PRESERVE_BLANK_AFTER = [
         T[','],
-        T[':'],
         T[';'],
         T['}'],
         T_OPEN_TAG,
@@ -38,6 +37,7 @@ final class TokenType
     ];
 
     public const PRESERVE_NEWLINE_AFTER = [
+        T[':'],
         T['('],
         T['['],
         T['{'],
@@ -257,6 +257,20 @@ final class TokenType
         T_USE,
     ];
 
+    public const CHAIN = [
+        T_OBJECT_OPERATOR,
+        T_NULLSAFE_OBJECT_OPERATOR,
+    ];
+
+    public const CHAIN_PART = [
+        T['('],
+        T['['],
+        T['{'],
+        T_STRING,
+        T_VARIABLE,
+        ...self::CHAIN,
+    ];
+
     public const HAS_STATEMENT_WITH_OPTIONAL_BRACES = [
         T_DO,
         T_ELSE,
@@ -271,14 +285,14 @@ final class TokenType
     ];
 
     public const HAS_STATEMENT_WITH_BRACES = [
-        T_CATCH,
         T_FINALLY,
+        T_TRY,
     ];
 
     public const HAS_EXPRESSION_AND_STATEMENT_WITH_BRACES = [
+        T_CATCH,
         T_DECLARE,
         T_SWITCH,
-        T_TRY,
     ];
 
     public const HAS_STATEMENT = [

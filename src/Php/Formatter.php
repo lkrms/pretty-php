@@ -26,20 +26,20 @@ use Lkrms\Pretty\Php\Rule\AddEssentialWhitespace;
 use Lkrms\Pretty\Php\Rule\AddHangingIndentation;
 use Lkrms\Pretty\Php\Rule\AddIndentation;
 use Lkrms\Pretty\Php\Rule\AddStandardWhitespace;
+use Lkrms\Pretty\Php\Rule\AlignArrowFunctions;
 use Lkrms\Pretty\Php\Rule\AlignAssignments;
 use Lkrms\Pretty\Php\Rule\AlignChainedCalls;
 use Lkrms\Pretty\Php\Rule\AlignComments;
 use Lkrms\Pretty\Php\Rule\AlignLists;
+use Lkrms\Pretty\Php\Rule\AlignTernaryOperators;
 use Lkrms\Pretty\Php\Rule\ApplyMagicComma;
 use Lkrms\Pretty\Php\Rule\BracePosition;
 use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
 use Lkrms\Pretty\Php\Rule\BreakBeforeControlStructureBody;
-use Lkrms\Pretty\Php\Rule\BreakBeforeMultiLineList;
 use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterFn;
 use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterNot;
 use Lkrms\Pretty\Php\Rule\Extra\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\Extra\SuppressSpaceAroundStringOperator;
-use Lkrms\Pretty\Php\Rule\MatchPosition;
 use Lkrms\Pretty\Php\Rule\NoMixedLists;
 use Lkrms\Pretty\Php\Rule\PlaceComments;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
@@ -132,25 +132,21 @@ final class Formatter implements IReadable
      */
     protected $Rules = [
         ProtectStrings::class,                   // processToken  (40)
-        SimplifyStrings::class,                  // processToken  (60)
+        SimplifyStrings::class,                  // processToken  (60)                      [OPTIONAL]
         AddStandardWhitespace::class,            // processToken  (80)
         BreakAfterSeparators::class,             // processToken  (80)
         SpaceOperators::class,                   // processToken  (80)
         BracePosition::class,                    // processToken  (80), beforeRender (80)
         BreakBeforeControlStructureBody::class,  // processToken  (83)
         PlaceComments::class,                    // processToken  (90), beforeRender (997)
-        PreserveNewlines::class,                 // processToken  (93)
-        AddBlankLineBeforeReturn::class,         // processToken  (97)
-        AlignChainedCalls::class,                // processToken (340), callback (710)
-        ApplyMagicComma::class,                  // processList  (360)
-        AlignLists::class,                       // processToken (400), callback (710)
+        PreserveNewlines::class,                 // processToken  (93)                      [OPTIONAL]
+        ApplyMagicComma::class,                  // processList  (360)                      [OPTIONAL]
         AddIndentation::class,                   // processToken (600)
         SwitchPosition::class,                   // processToken (600)
-        MatchPosition::class,                    // processToken (600)
-        SpaceDeclarations::class,                // processToken (620)
+        SpaceDeclarations::class,                // processToken (620)                      [OPTIONAL]
         AddHangingIndentation::class,            // processToken (800), callback (800)
-        ReindentHeredocs::class,                 // processToken (900), beforeRender (900)
-        ReportUnnecessaryParentheses::class,     // processToken (990)
+        ReindentHeredocs::class,                 // processToken (900), beforeRender (900)  [OPTIONAL]
+        ReportUnnecessaryParentheses::class,     // processToken (990)                      [OPTIONAL]
         AddEssentialWhitespace::class,           // beforeRender (999)
     ];
 
@@ -159,10 +155,14 @@ final class Formatter implements IReadable
      */
     protected $AvailableRules = [
         PreserveOneLineStatements::class,          // processToken  (95)
+        AddBlankLineBeforeReturn::class,           // processToken  (97)
         AlignAssignments::class,                   // processBlock (340), callback (710)
+        AlignChainedCalls::class,                  // processToken (340), callback (710)
         AlignComments::class,                      // processBlock (340), beforeRender (998)
         NoMixedLists::class,                       // processList  (370)
-        BreakBeforeMultiLineList::class,           // processToken (380)
+        AlignArrowFunctions::class,                // processToken (380), callback (710)
+        AlignTernaryOperators::class,              // processToken (380), callback (710)
+        AlignLists::class,                         // processList  (400), callback (710)
         AddSpaceAfterFn::class,                    // processToken
         AddSpaceAfterNot::class,                   // processToken
         DeclareArgumentsOnOneLine::class,          // processToken
@@ -202,8 +202,10 @@ final class Formatter implements IReadable
 
         if (!$insertSpaces) {
             $skip = [
+                AlignArrowFunctions::class,
                 AlignChainedCalls::class,
                 AlignLists::class,
+                AlignTernaryOperators::class,
             ];
         }
 
@@ -344,14 +346,19 @@ final class Formatter implements IReadable
             array_filter(
                 $this->Tokens,
                 fn(Token $t) =>
-                    $t->is([T['('], T['[']]) && $t->ClosedBy !== $t->nextCode()
+                    ($t->is([T['('], T['[']]) ||
+                        ($t->id === T['{'] &&
+                            $t->prevSibling(2)->id === T_MATCH)) &&
+                        $t->ClosedBy !== $t->nextCode()
             );
         $lists = [];
         foreach ($listParents as $i => $parent) {
             $lists[$i] = $parent->innerSiblings()->filter(
                 fn(Token $t, ?Token $next, ?Token $prev) =>
-                    !$prev || $t->prevCode()
-                                ->is(T[','])
+                    !$prev || ($t->prevCode()->is(T[',']) &&
+                        ($parent->id !== T['{'] ||
+                            $t->prevSiblingOf(T[','], ...TokenType::OPERATOR_DOUBLE_ARROW)
+                              ->is(TokenType::OPERATOR_DOUBLE_ARROW)))
             );
         }
         Sys::stopTimer(__METHOD__ . '#find-lists');
@@ -362,8 +369,9 @@ final class Formatter implements IReadable
 
             if ($ruleType === ListRule::class) {
                 foreach ($listParents as $i => $parent) {
+                    $list = clone $lists[$i];
                     /** @var ListRule $rule */
-                    $rule->processList($parent, $lists[$i]);
+                    $rule->processList($parent, $list);
                 }
                 Sys::stopTimer($_rule, 'rule');
                 !$this->Debug || $this->logProgress(ListRule::PROCESS_LIST);
@@ -512,8 +520,8 @@ final class Formatter implements IReadable
         $priority = $rule->getPriority($method);
 
         return is_null($priority)
-            ? 100
-            : $priority;
+                   ? 100
+                   : $priority;
     }
 
     /**

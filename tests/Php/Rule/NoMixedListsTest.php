@@ -2,8 +2,6 @@
 
 namespace Lkrms\Pretty\Tests\Php\Rule;
 
-use Lkrms\Pretty\Php\Rule\AlignLists;
-use Lkrms\Pretty\Php\Rule\BreakBeforeMultiLineList;
 use Lkrms\Pretty\Php\Rule\NoMixedLists;
 use Lkrms\Pretty\Tests\Php\TestCase;
 
@@ -16,7 +14,6 @@ final class NoMixedListsTest extends TestCase
     {
         $this->assertFormatterOutputIs($code,
                                        $expected,
-                                       [AlignLists::class],
                                        [NoMixedLists::class]);
     }
 
@@ -33,9 +30,11 @@ final class NoMixedListsTest extends TestCase
                 <<<'PHP'
                 <?php
 
-                $a = [$b,
+                $a = [
+                    $b,
                     $c,
-                    $d];
+                    $d
+                ];
 
                 PHP,
             ],
@@ -99,108 +98,52 @@ final class NoMixedListsTest extends TestCase
 
                 PHP,
             ],
-        ];
-    }
-
-    /**
-     * @dataProvider withBreakBeforeMultiLineListProvider
-     */
-    public function testWithBreakBeforeMultiLineList(string $code, string $expected)
-    {
-        $this->assertFormatterOutputIs($code,
-                                       $expected,
-                                       [AlignLists::class],
-                                       [NoMixedLists::class,
-                                        BreakBeforeMultiLineList::class]);
-    }
-
-    public static function withBreakBeforeMultiLineListProvider(): array
-    {
-        return [
-            'multi-line array' => [
+            'argument variations' => [
                 <<<'PHP'
                 <?php
 
-                $a = [$b,
-                $c, $d];
+                F($a, $b, $c, $d);
+                F(
+                    $a, $b, $c, $d
+                );
+                F($a,
+                    $b, $c, $d);
+                F($a, $b,
+                    $c, $d);
+                F(
+                    $a,
+                    $b, $c, $d
+                );
+                F(
+                    $a, $b,
+                    $c,
+                    $d
+                );
                 PHP,
                 <<<'PHP'
                 <?php
 
-                $a = [
+                F($a, $b, $c, $d);
+                F(
+                    $a, $b, $c, $d
+                );
+                F(
+                    $a,
                     $b,
                     $c,
                     $d
-                ];
+                );
+                F($a, $b, $c, $d);
+                F(
+                    $a,
+                    $b,
+                    $c,
+                    $d
+                );
+                F($a, $b, $c, $d);
 
                 PHP,
-            ],
-            'multi-line array with opening newline' => [
-                <<<'PHP'
-                <?php
-
-                $a = [
-                $b, $c, $d];
-                PHP,
-                <<<'PHP'
-                <?php
-
-                $a = [
-                    $b, $c, $d
-                ];
-
-                PHP,
-            ],
-            'multi-line array with multi-line element' => [
-                <<<'PHP'
-                <?php
-
-                $a = [($b ||
-                $c),
-                $d,
-                $e, $f];
-                PHP,
-                <<<'PHP'
-                <?php
-
-                $a = [
-                    ($b ||
-                        $c),
-                    $d,
-                    $e,
-                    $f
-                ];
-
-                PHP,
-            ],
-            'one-line array' => [
-                <<<'PHP'
-                <?php
-
-                $a = [$b, $c];
-                PHP,
-                <<<'PHP'
-                <?php
-
-                $a = [$b, $c];
-
-                PHP,
-            ],
-            'one-line array with multi-line element' => [
-                <<<'PHP'
-                <?php
-
-                $a = [($b ||
-                $c), $d];
-                PHP,
-                <<<'PHP'
-                <?php
-
-                $a = [($b ||
-                    $c), $d];
-
-                PHP,
-            ],
+            ]
         ];
     }
 }

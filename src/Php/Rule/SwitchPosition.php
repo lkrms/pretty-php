@@ -9,7 +9,11 @@ use Lkrms\Pretty\WhitespaceType;
 
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
-class SwitchPosition implements TokenRule
+/**
+ * Apply sensible indentation to switch statements
+ *
+ */
+final class SwitchPosition implements TokenRule
 {
     use TokenRuleTrait;
 

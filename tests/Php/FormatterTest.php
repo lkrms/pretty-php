@@ -2,19 +2,18 @@
 
 namespace Lkrms\Pretty\Tests\Php;
 
-use FilesystemIterator as FS;
 use Lkrms\Facade\File;
-use Lkrms\Pretty\Php\Filter\SortImports;
 use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
 use Lkrms\Pretty\Php\Rule\AlignComments;
+use Lkrms\Pretty\Php\Rule\AlignLists;
+use Lkrms\Pretty\Php\Rule\AlignTernaryOperators;
+use Lkrms\Pretty\Php\Rule\ApplyMagicComma;
 use Lkrms\Pretty\Php\Rule\Extra\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\NoMixedLists;
 use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
 use Lkrms\Pretty\Php\Rule\SimplifyStrings;
 use Lkrms\Pretty\Php\Rule\SpaceDeclarations;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 use SplFileInfo;
 
 final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
@@ -73,8 +72,7 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
 
             return;
         }
-        $dir   = new RecursiveDirectoryIterator($inDir, FS::KEY_AS_PATHNAME | FS::CURRENT_AS_FILEINFO | FS::SKIP_DOTS);
-        $files = new RecursiveIteratorIterator($dir);
+        $files = File::find($inDir);
         /** @var SplFileInfo $file */
         foreach ($files as $file) {
             if ($file->isFile() && in_array($file->getExtension(), ['php', 'in', ''], true)) {
@@ -89,17 +87,14 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
                 $skipFilters  = [];
                 switch (explode(DIRECTORY_SEPARATOR, $relPath)[0]) {
                     case 'phpfmt':
-                        $insertSpaces = false;
-                        $addRules     = [
+                        $addRules = [
                             AlignComments::class,
                             PreserveOneLineStatements::class,
                         ];
                         $skipRules = [
-                            AddBlankLineBeforeReturn::class,
-                            DeclareArgumentsOnOneLine::class,
-                            NoMixedLists::class,
-                            SpaceDeclarations::class,
+                            ApplyMagicComma::class,
                         ];
+                        $insertSpaces = false;
                         break;
                     case 'php-doc':
                         $addRules = [
@@ -107,9 +102,6 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
                             PreserveOneLineStatements::class,
                         ];
                         $skipRules = [
-                            AddBlankLineBeforeReturn::class,
-                            DeclareArgumentsOnOneLine::class,
-                            NoMixedLists::class,
                             SimplifyStrings::class,
                             SpaceDeclarations::class,
                         ];
@@ -132,8 +124,8 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
                 }
                 $this->assertFormatterOutputIs($in,
                                                $out,
-                                               $skipRules,
                                                $addRules,
+                                               $skipRules,
                                                $skipFilters,
                                                $insertSpaces,
                                                $tabSize,

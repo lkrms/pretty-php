@@ -2,7 +2,6 @@
 
 namespace Lkrms\Pretty\Command;
 
-use FilesystemIterator as FS;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Cli\CliUsageSectionName;
@@ -17,11 +16,13 @@ use Lkrms\Facade\Test;
 use Lkrms\Pretty\Php\Filter\SortImports;
 use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
+use Lkrms\Pretty\Php\Rule\AlignArrowFunctions;
 use Lkrms\Pretty\Php\Rule\AlignAssignments;
 use Lkrms\Pretty\Php\Rule\AlignChainedCalls;
 use Lkrms\Pretty\Php\Rule\AlignComments;
 use Lkrms\Pretty\Php\Rule\AlignLists;
-use Lkrms\Pretty\Php\Rule\BreakBeforeMultiLineList;
+use Lkrms\Pretty\Php\Rule\AlignTernaryOperators;
+use Lkrms\Pretty\Php\Rule\ApplyMagicComma;
 use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterFn;
 use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterNot;
 use Lkrms\Pretty\Php\Rule\Extra\DeclareArgumentsOnOneLine;
@@ -33,12 +34,8 @@ use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
 use Lkrms\Pretty\Php\Rule\ReportUnnecessaryParentheses;
 use Lkrms\Pretty\Php\Rule\SimplifyStrings;
 use Lkrms\Pretty\Php\Rule\SpaceDeclarations;
-use Lkrms\Pretty\Php\Rule\SpaceOperators;
 use Lkrms\Pretty\PrettyBadSyntaxException;
 use Lkrms\Pretty\PrettyException;
-use RecursiveCallbackFilterIterator;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 use RuntimeException;
 use SplFileInfo;
 use Throwable;
@@ -54,6 +51,11 @@ class FormatPhp extends CliCommand
      * @var string
      */
     private $Exclude;
+
+    /**
+     * @var bool
+     */
+    private $OneTrueBraceStyle;
 
     /**
      * @var bool
@@ -74,30 +76,33 @@ class FormatPhp extends CliCommand
      * @var array<string,string>
      */
     private $SkipRuleMap = [
-        'simplify-strings'         => SimplifyStrings::class,
-        'space-around-operators'   => SpaceOperators::class,
-        'preserve-newlines'        => PreserveNewlines::class,
-        'blank-before-return'      => AddBlankLineBeforeReturn::class,
-        'blank-before-declaration' => SpaceDeclarations::class,
-        'align-chains'             => AlignChainedCalls::class,
-        'align-lists'              => AlignLists::class,
-        'indent-heredocs'          => ReindentHeredocs::class,
-        'report-brackets'          => ReportUnnecessaryParentheses::class,
+        'simplify-strings'    => SimplifyStrings::class,
+        'preserve-newlines'   => PreserveNewlines::class,
+        'magic-commas'        => ApplyMagicComma::class,
+        'declaration-spacing' => SpaceDeclarations::class,
+        'indent-heredocs'     => ReindentHeredocs::class,
+        'report-brackets'     => ReportUnnecessaryParentheses::class,
     ];
 
     /**
      * @var array<string,string>
      */
     private $AddRuleMap = [
-        'align-assignments'  => AlignAssignments::class,
-        'align-comments'     => AlignComments::class,
-        'break-before-lists' => BreakBeforeMultiLineList::class,
-        'no-concat-spaces'   => SuppressSpaceAroundStringOperator::class,
-        'no-mixed-lists'     => NoMixedLists::class,
-        'one-line-arguments' => DeclareArgumentsOnOneLine::class,
-        'preserve-one-line'  => PreserveOneLineStatements::class,
+        'align-assignments'   => AlignAssignments::class,
+        'align-chains'        => AlignChainedCalls::class,
+        'align-comments'      => AlignComments::class,
+        'align-fn'            => AlignArrowFunctions::class,
+        'align-lists'         => AlignLists::class,
+        'align-ternary'       => AlignTernaryOperators::class,
+        'blank-before-return' => AddBlankLineBeforeReturn::class,
+        'strict-lists'        => NoMixedLists::class,
+        'preserve-one-line'   => PreserveOneLineStatements::class,
+
+        // In the `Extra` namespace
         'space-after-fn'     => AddSpaceAfterFn::class,
         'space-after-not'    => AddSpaceAfterNot::class,
+        'one-line-arguments' => DeclareArgumentsOnOneLine::class,
+        'no-concat-spaces'   => SuppressSpaceAroundStringOperator::class,
     ];
 
     public function getShortDescription(): string
@@ -129,6 +134,8 @@ class FormatPhp extends CliCommand
                 ->valueName('REGEX')
                 ->description(<<<EOF
                     A regex that matches files to include when searching a PATH
+
+                    Exclusions (_--exclude_) are applied first.
                     EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->defaultValue('/\.php$/')
@@ -139,6 +146,8 @@ class FormatPhp extends CliCommand
                 ->valueName('REGEX')
                 ->description(<<<EOF
                     A regex that matches files to exclude when searching a PATH
+
+                    Exclusions are applied before inclusions (_--include_).
                     EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->defaultValue('/\/(\.git|\.hg|\.svn|_?build|dist|tests|var|vendor)\/$/')
@@ -150,8 +159,9 @@ class FormatPhp extends CliCommand
                 ->description(<<<EOF
                     Indent using tabs
 
-                    Implies:
-                        --skip-rule align-chains,align-lists
+                    The _--rule_ values __align-chains__, __align-fn__,
+                    __align-lists__, and __align-ternary__ have no effect when
+                    using tabs for indentation.
                     EOF)
                 ->optionType(CliOptionType::ONE_OF_OPTIONAL)
                 ->allowedValues(['2', '4', '8'])
@@ -185,13 +195,18 @@ class FormatPhp extends CliCommand
                 ->envVariable('pretty_php_rule')
                 ->keepEnv(),
             CliOption::build()
+                ->long('one-true-brace-style')
+                ->short('1')
+                ->description('Use the One True Brace Style when formatting braces')
+                ->bindTo($this->OneTrueBraceStyle),
+            CliOption::build()
                 ->long('ignore-newlines')
                 ->short('N')
                 ->description(<<<EOF
                     Do not add line breaks at the position of newlines in the input
 
                     Equivalent to:
-                        --skip-rule preserve-newlines
+                        _--skip-rule_ preserve-newlines
                     EOF),
             CliOption::build()
                 ->long('no-simplify-strings')
@@ -200,7 +215,7 @@ class FormatPhp extends CliCommand
                     Do not replace single- or double-quoted strings
 
                     Equivalent to:
-                        --skip-rule simplify-strings
+                        _--skip-rule_ simplify-strings
                     EOF),
             CliOption::build()
                 ->long('no-sort-imports')
@@ -265,10 +280,10 @@ class FormatPhp extends CliCommand
     {
         return [
             CliUsageSectionName::EXIT_STATUS => <<<EOF
-                - _0_ if formatting succeeded  
-                - _1_ if arguments were invalid  
-                - _2_ if input was invalid (e.g. code has syntax errors)  
-                - _3_ or above if an error occurred
+                  _0_ if formatting succeeded  
+                  _1_ if arguments were invalid  
+                  _2_ if input was invalid (e.g. code has syntax errors)  
+                  _3_ or above if an error occurred
                 EOF,
         ];
     }
@@ -307,14 +322,16 @@ class FormatPhp extends CliCommand
         }
         if ($this->getOptionValue('align-all')) {
             $addRules[] = 'align-assignments';
+            $addRules[] = 'align-chains';
             $addRules[] = 'align-comments';
+            $addRules[] = 'align-fn';
+            $addRules[] = 'align-lists';
+            $addRules[] = 'align-ternary';
         }
         if ($this->getOptionValue('laravel')) {
-            $skipRules[] = 'one-line-arguments';
-            $skipRules[] = 'align-chains';
-            $addRules[]  = 'no-concat-spaces';
-            $addRules[]  = 'space-after-fn';
-            $addRules[]  = 'space-after-not';
+            $addRules[] = 'space-after-fn';
+            $addRules[] = 'space-after-not';
+            $addRules[] = 'no-concat-spaces';
         }
         if ($this->Quiet > 1) {
             $skipRules[] = 'report-brackets';
@@ -330,8 +347,10 @@ class FormatPhp extends CliCommand
             $in  = ['php://stdin'];
             $out = ['-'];
         } elseif ($out && $out !== ['-'] && ($directoryCount || count($out) !== count($in))) {
-            throw new CliArgumentsInvalidException('--output is required once per input file'
-                . ($directoryCount ? ' and cannot be used with directories' : ''));
+            throw new CliArgumentsInvalidException(
+                '--output is required once per input file'
+                    . ($directoryCount ? ' and cannot be used with directories' : '')
+            );
         } elseif (!$out) {
             $out = $in;
         }
@@ -348,6 +367,8 @@ class FormatPhp extends CliCommand
             $addRules,
             $skipFilters
         );
+        $formatter->OneTrueBraceStyle = $this->OneTrueBraceStyle;
+
         $i      = 0;
         $count  = count($in);
         $errors = [];
@@ -438,25 +459,8 @@ class FormatPhp extends CliCommand
                 throw new CliArgumentsInvalidException('file not found: ' . $path);
             }
             $directoryCount++;
+            $iterator = File::find($path, $this->Exclude, $this->Include);
 
-            $iterator = new RecursiveDirectoryIterator(
-                $path,
-                FS::KEY_AS_PATHNAME | FS::CURRENT_AS_FILEINFO | FS::SKIP_DOTS
-            );
-            $iterator = new RecursiveCallbackFilterIterator(
-                $iterator,
-                function (SplFileInfo $current, string $key): bool {
-                    if (preg_match($this->Exclude, $key)) {
-                        return false;
-                    }
-                    if ($current->isDir()) {
-                        return !preg_match($this->Exclude, "$key/");
-                    }
-
-                    return (bool) preg_match($this->Include, $key);
-                }
-            );
-            $iterator = new RecursiveIteratorIterator($iterator);
             /** @var SplFileInfo $file */
             foreach ($iterator as $file) {
                 $realpath = $file->getRealPath();

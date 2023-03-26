@@ -8,11 +8,14 @@ use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenCollection;
 use Lkrms\Pretty\WhitespaceType;
 
-use const Lkrms\Pretty\Php\T_ID_MAP as T;
-
 /**
  * Arrange items in lists horizontally or vertically by replicating the
  * arrangement of the first and second items
+ *
+ * This rule also:
+ * - adds line breaks before the first item in vertical lists
+ * - removes line breaks before the first item in horizontal lists when
+ *   converting from a mixed list
  *
  */
 final class NoMixedLists implements ListRule
@@ -26,14 +29,17 @@ final class NoMixedLists implements ListRule
 
     public function processList(Token $owner, TokenCollection $items): void
     {
-        if ($items->count() < 3) {
+        if ($items->count() < ($owner->isOpenBracket() ? 3 : 2)) {
             return;
         }
         if ($items->nth(2)->hasNewlineBefore()) {
-            $items->shift();
             $items->addWhitespaceBefore(WhitespaceType::LINE);
         } else {
-            $items->shift();
+            // Leave the first item alone if the list is already completely
+            // horizontal
+            if (!$items->find(fn(Token $t, ?Token $next, ?Token $prev) => $prev && $t->hasNewlineBefore())) {
+                $items->shift();
+            }
             $items->maskWhitespaceBefore(~WhitespaceType::BLANK & ~WhitespaceType::LINE);
         }
     }

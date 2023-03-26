@@ -158,12 +158,10 @@
 - [x] AlignAssignments
 - [x] AlignChainedCalls
 - [x] AlignComments
-- [ ] AlignLists
+- [x] AlignLists
 - [x] BracePosition
 - [x] BreakAfterSeparators
 - [x] BreakBeforeControlStructureBody
-- [x] BreakBeforeMultiLineList
-- [ ] MatchPosition
 - [x] PlaceComments
 - [x] PreserveNewlines
 - [x] PreserveOneLineStatements
@@ -173,7 +171,7 @@
 - [x] SimplifyStrings
 - [x] SpaceDeclarations
 - [x] SpaceOperators
-- [ ] SwitchPosition
+- [x] SwitchPosition
 - Extra
   - [x] AddSpaceAfterFn
   - [x] AddSpaceAfterNot

@@ -149,7 +149,7 @@ final class SortImports implements Filter
                 $b = $this->sortableImport(array_values($b));
 
                 return $a[0] <=> $b[0]
-                    ?: strcasecmp($a[1], $b[1]);
+                           ?: strcasecmp($a[1], $b[1]);
             }
         );
 

@@ -130,8 +130,8 @@ final class AlignComments implements BlockRule
             foreach ($comments as $i => $comment) {
                 $comment->Padding = $max - $lengths[$i]
                     + ($comment->hasNewlineBefore()
-                        ? ($tabWidth ?? ($tabWidth = strlen(WhitespaceType::toWhitespace(WhitespaceType::TAB))))
-                        : 0);
+                           ? ($tabWidth ?? ($tabWidth = strlen(WhitespaceType::toWhitespace(WhitespaceType::TAB))))
+                           : 0);
             }
         }
     }
