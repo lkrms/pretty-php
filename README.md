@@ -2,89 +2,98 @@
 
 ## The opinionated formatter for modern, expressive PHP
 
-*PrettyPHP* is a code formatter made in the likeness of [Black][].
+*PrettyPHP* is a code formatter made in the likeness of [Black].
 
-Like *Black*, *PrettyPHP* runs with sensible defaults and doesn't need to be
-configured. It's also deterministic ([with a few exceptions](#pragmatism)), so
-no matter how the input is formatted, it should always produce the same output.
+Like Black, *PrettyPHP* runs with sensible defaults and doesn't need to be
+configured. It's also deterministic (with some [pragmatic exceptions]), so no
+matter how the input is formatted, it produces the same output.
 
-*PrettyPHP* is the culmination of many attempts to find a suitable alternative.
-You could say it's something that happened while I was busy making other
-plans...
+*PrettyPHP* is the culmination of many attempts to find a suitable alternative,
+i.e. something that happened while its developer was busy making other plans.
+
+## Editor integrations
+
+- [Visual Studio Code] / [Open VSX]
 
 ## FAQ
 
-<details>
-<summary><strong>How is <em>PrettyPHP</em> different to other formatters?</strong></summary>
+### How is *PrettyPHP* different to other formatters?
 
-- It's opinionated
+> Features still under development are temporarily ~~crossed out~~.
 
-  - No configuration is required
-  - Formatting options are deliberately limited
-  - Readable code, small diffs, and fast processing are the main priorities
+#### It's opinionated
 
-- It ignores previous formatting ([with some exceptions](#pragmatism))
+- No configuration is required
+- Formatting options are deliberately limited
+- Readable code, small diffs, and high throughput are the main priorities
 
-  - Whitespace is discarded before formatting
-  - Entire files are formatted in place
+#### It's a formatter, not a fixer
 
-- It doesn't make any changes to code ([with some exceptions](#pragmatism))
+- Previous formatting is ignored[^1]
+- Whitespace is changed, code is not[^1]
+- Entire files are formatted in place
 
-- It's CI-friendly
+[^1]: Some [pragmatic exceptions] are made.
 
-  - Installs via `composer require --dev` or direct download
-  - Runs on Linux, macOS and Windows
-  - MIT-licensed
+#### It's CI-friendly
 
-- It's written in PHP
+- Installs via `composer require --dev lkrms/pretty-php` ~~or direct download~~
+- Runs on Linux, macOS and Windows
+- MIT-licensed
 
-  - Uses PHP to safely tokenize and validate code
-  - Compares tokens before and after formatting for equivalence
+#### It's safe
 
-- It's optionally compliant with PSR-12 and other coding standards
+- Written in PHP
+- Uses PHP's tokenizer to parse input and validate output
+- Checks formatted and original code for equivalence by comparing language
+  tokens returned by [`PhpToken::tokenize()`][tokenize].
 
-</details>
+#### ~~It's optionally compliant with PSR-12 and other coding standards~~
+
+*PrettyPHP* has partial support for [PSR-12]. An upcoming release will offer
+full support.
 
 ## Pragmatism
 
-As a deterministic code formatter, *PrettyPHP* follows two simple rules:
+In theory, *PrettyPHP* completely ignores previous formatting and doesn't change
+anything that isn't whitespace.
 
-1. Ignore previous formatting
-2. Don't make any changes to code
+In practice, strict adherence to these rules would make it difficult to work
+with, so the following pragmatic exceptions have been made. They can be disabled
+for strictly deterministic behaviour.
 
-Exceptions to these rules are made sparingly and are documented below.
+### Newlines are preserved
 
-<details>
-<summary><strong>Newlines are preserved by default</strong></summary>
+Unless suppressed by other rules, newlines in the input are applied to the
+output if they appear:
 
-Tokens listed in [`TokenType::PRESERVE_NEWLINE_AFTER`][] and
-[`TokenType::PRESERVE_NEWLINE_BEFORE`][] are checked for adjacent newlines.
+- before `!`, `.`, `??`, `->`, `?->`, `)`, `]`, `?>`, arithmetic operators,
+  bitwise operators, and ternary operators, or
+- after `(`, `[`, `=>`, `return`, `yield from`, `yield`, `:` (if not a ternary
+  operator), assignment operators, and comparison operators
 
-> Use `-N` or `--ignore-newlines` to disable this feature.
+> Use `-N, --ignore-newlines` to disable this behaviour.
 
-</details>
+### Scalar strings are normalised
 
-<details>
-<summary><strong>Constant strings are simplified by default</strong></summary>
+Single-quoted strings are preferred unless one or more characters require a
+backslash escape, or the double-quoted equivalent is shorter.
 
-Single- and double-quoted strings are replaced with whichever is clearer and
-more efficient.
+> Use `-S, --no-simplify-strings` to disable this behaviour.
 
-> Use `-S` or `--no-simplify-strings` to disable this feature.
+### Alias/import statements are grouped and sorted alphabetically
 
-</details>
+> Use `-M, --no-sort-imports` to disable this behaviour.
 
-<details>
-<summary><strong>Multi-line comments are cleaned up and aligned</strong></summary>
+### Comments are trimmed and aligned
 
-The second and subsequent lines of PHPDoc comments, and standard multi-line
-comments with a leading asterisk on each line, are aligned below the first
-line's opening asterisk.
-
-</details>
+This behaviour cannot be disabled.
 
 
 [Black]: https://github.com/psf/black
-[`TokenType::PRESERVE_NEWLINE_AFTER`]: https://github.com/lkrms/pretty-php/blob/92cc5ae52eab9b88de122174f70c93ae6e58ba3a/src/Php/TokenType.php#L30
-[`TokenType::PRESERVE_NEWLINE_BEFORE`]: https://github.com/lkrms/pretty-php/blob/92cc5ae52eab9b88de122174f70c93ae6e58ba3a/src/Php/TokenType.php#L50
+[Open VSX]: https://open-vsx.org/extension/lkrms/pretty-php
+[pragmatic exceptions]: #Pragmatism
+[PSR-12]: https://www.php-fig.org/psr/psr-12/
+[tokenize]: https://www.php.net/manual/en/phptoken.tokenize.php
+[Visual Studio Code]: https://marketplace.visualstudio.com/items?itemName=lkrms.pretty-php
 
