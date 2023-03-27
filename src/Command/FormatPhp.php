@@ -329,9 +329,14 @@ class FormatPhp extends CliCommand
             $addRules[] = 'align-ternary';
         }
         if ($this->getOptionValue('laravel')) {
+            $skipRules   = [];
+            $skipRules[] = 'magic-commas';
+
+            $addRules   = [];
             $addRules[] = 'space-after-fn';
             $addRules[] = 'space-after-not';
             $addRules[] = 'no-concat-spaces';
+            $addRules[] = 'align-ternary';
         }
         if ($this->Quiet > 1) {
             $skipRules[] = 'report-brackets';
