@@ -1393,7 +1393,7 @@ class Token extends NavigableToken implements JsonSerializable
      * is included.
      *
      */
-    public function alignmentOffset(): int
+    public function alignmentOffset(bool $includeText = true): int
     {
         $start = $this->startOfLine();
         $start = $start->collect($this)
@@ -1409,8 +1409,14 @@ class Token extends NavigableToken implements JsonSerializable
         if (($newline = mb_strrpos($code, "\n")) !== false) {
             $newLinePadding = $offset - $newline - 1;
             $offset         = $newLinePadding - ($this->LinePadding - $this->LineUnpadding);
+            if (!$includeText) {
+                $offset -= mb_strlen($this->text) - mb_strrpos("\n" . $this->text, "\n");
+            }
         } else {
-            $offset        -= $start->hasNewlineBefore() ? $start->LineUnpadding : 0;
+            $offset -= $start->hasNewlineBefore() ? $start->LineUnpadding : 0;
+            if (!$includeText) {
+                $offset -= mb_strlen($this->text);
+            }
         }
 
         return $offset;
@@ -2031,6 +2037,34 @@ class Token extends NavigableToken implements JsonSerializable
 
         return $parent->is(T['(']) &&
             ($parent->isDeclaration(T_FUNCTION) || $parent->prevCode()->is(T_FN));
+    }
+
+    /**
+     * @return array{PreIndent:int,Indent:int,Deindent:int,HangingIndent:int,LinePadding:int,LineUnpadding:int}
+     */
+    final public function getIndentDiff(Token $target): array
+    {
+        return [
+            'PreIndent'     => $target->PreIndent - $this->PreIndent,
+            'Indent'        => $target->Indent - $this->Indent,
+            'Deindent'      => $target->Deindent - $this->Deindent,
+            'HangingIndent' => $target->HangingIndent - $this->HangingIndent,
+            'LinePadding'   => $target->LinePadding - $this->LinePadding,
+            'LineUnpadding' => $target->LineUnpadding - $this->LineUnpadding,
+        ];
+    }
+
+    /**
+     * @param array{PreIndent:int,Indent:int,Deindent:int,HangingIndent:int,LinePadding:int,LineUnpadding:int} $diff
+     */
+    final public function applyIndentDiff(array $diff): void
+    {
+        $this->PreIndent     += $diff['PreIndent'];
+        $this->Indent        += $diff['Indent'];
+        $this->Deindent      += $diff['Deindent'];
+        $this->HangingIndent += $diff['HangingIndent'];
+        $this->LinePadding   += $diff['LinePadding'];
+        $this->LineUnpadding += $diff['LineUnpadding'];
     }
 
     public function indent(): int

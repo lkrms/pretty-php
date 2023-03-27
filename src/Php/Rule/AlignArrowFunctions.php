@@ -8,7 +8,7 @@ use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 
 /**
- * Align arrow functions with their bodies
+ * Align arrow function expressions with their definitions
  *
  */
 final class AlignArrowFunctions implements TokenRule
@@ -33,22 +33,30 @@ final class AlignArrowFunctions implements TokenRule
             return;
         }
 
-        $body->AlignedWith = $token;
+        // If the arrow function's arguments break over multiple lines, align
+        // with the start of the previous line
+        $alignWith =
+            $token->next()
+                  ->collect($body->prev())
+                  ->reverse()
+                  ->find(fn(Token $t) => $t->IsCode && $t->hasNewlineBefore());
+
+        $body->AlignedWith = $alignWith ?: $token;
         $this->Formatter->registerCallback(
             $this,
             $body,
-            fn() => $this->alignBody($body, $token),
+            fn() => $this->alignBody($body, $alignWith ?: $token, $token->EndStatement),
             710
         );
     }
 
-    private function alignBody(Token $body, Token $alignWith): void
+    private function alignBody(Token $body, Token $alignWith, Token $until): void
     {
-        $delta = $alignWith->alignmentOffset() - mb_strlen($alignWith->text) + $this->Formatter->TabSize;
-        $until = $alignWith->EndStatement;
-
+        $diff = $body->getIndentDiff($alignWith);
+        $diff['LinePadding'] +=
+            $alignWith->alignmentOffset(false) + $this->Formatter->TabSize;
         $body->collect($until)
              ->forEach(fn(Token $t) =>
-                           $t->LinePadding += $delta);
+                           $t->applyIndentDiff($diff));
     }
 }

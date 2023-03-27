@@ -11,7 +11,7 @@ use Lkrms\Pretty\WhitespaceType;
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
 /**
- * Align list items below the first item in each list
+ * Align arguments and array elements with their enclosing brackets
  *
  * For example:
  *
@@ -30,6 +30,8 @@ final class AlignLists implements ListRule
     }
 
     private const BEFORE_ALIGNABLE_LIST = [
+        T_FN,
+        T_FUNCTION,
         T_NAME_FULLY_QUALIFIED,
         T_NAME_QUALIFIED,
         T_NAME_RELATIVE,

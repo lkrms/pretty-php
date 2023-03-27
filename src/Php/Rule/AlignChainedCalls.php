@@ -10,7 +10,7 @@ use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
 /**
- * Align consecutive object operators with the first in a chain of calls
+ * Align consecutive object operators in the same chain of method calls
  *
  */
 final class AlignChainedCalls implements TokenRule
@@ -77,6 +77,7 @@ final class AlignChainedCalls implements TokenRule
             if (!$alignWith) {
                 return;
             }
+            // This is safe because $alignWith->text will never contain newlines
             $adjust = mb_strlen($alignWith->text) - $this->Formatter->TabSize;
         }
 

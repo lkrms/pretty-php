@@ -197,7 +197,7 @@ class FormatPhp extends CliCommand
             CliOption::build()
                 ->long('one-true-brace-style')
                 ->short('1')
-                ->description('Use the One True Brace Style when formatting braces')
+                ->description('Format braces using the One True Brace Style')
                 ->bindTo($this->OneTrueBraceStyle),
             CliOption::build()
                 ->long('ignore-newlines')
@@ -329,9 +329,14 @@ class FormatPhp extends CliCommand
             $addRules[] = 'align-ternary';
         }
         if ($this->getOptionValue('laravel')) {
+            $skipRules   = [];
+            $skipRules[] = 'magic-commas';
+
+            $addRules   = [];
             $addRules[] = 'space-after-fn';
             $addRules[] = 'space-after-not';
             $addRules[] = 'no-concat-spaces';
+            $addRules[] = 'align-ternary';
         }
         if ($this->Quiet > 1) {
             $skipRules[] = 'report-brackets';
