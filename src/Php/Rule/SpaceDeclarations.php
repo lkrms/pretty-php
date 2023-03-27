@@ -12,7 +12,7 @@ use const Lkrms\Pretty\Php\T_ID_MAP as T;
 use const Lkrms\Pretty\Php\T_NULL;
 
 /**
- * Add, suppress or normalise blank lines before declarations
+ * Normalise whitespace between declarations
  *
  * With sensible exceptions:
  * - Add blank lines before declarations that span multiple lines

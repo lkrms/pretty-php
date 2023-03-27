@@ -197,7 +197,7 @@ class FormatPhp extends CliCommand
             CliOption::build()
                 ->long('one-true-brace-style')
                 ->short('1')
-                ->description('Use the One True Brace Style when formatting braces')
+                ->description('Format braces using the One True Brace Style')
                 ->bindTo($this->OneTrueBraceStyle),
             CliOption::build()
                 ->long('ignore-newlines')

@@ -11,8 +11,7 @@ use Lkrms\Pretty\WhitespaceType;
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
 /**
- * Add a newline before every item in lists with magic (trailing) delimiters
- * that aren't destructuring constructs
+ * Explode arrays and arguments with a trailing comma into one item per line
  *
  */
 final class ApplyMagicComma implements ListRule

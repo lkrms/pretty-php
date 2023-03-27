@@ -10,7 +10,7 @@ use Lkrms\Pretty\WhitespaceType;
 
 /**
  * Add a blank line before return and yield statements unless they appear
- * consecutively or at the beginning of a statement group
+ * consecutively or at the beginning of a compound statement
  *
  */
 final class AddBlankLineBeforeReturn implements TokenRule

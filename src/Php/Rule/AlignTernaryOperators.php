@@ -101,7 +101,7 @@ final class AlignTernaryOperators implements TokenRule
 
     private function alignOperators(Token $token, Token $alignWith): void
     {
-        $delta = $alignWith->alignmentOffset() - mb_strlen($alignWith->text) + $this->Formatter->TabSize;
+        $delta = $alignWith->alignmentOffset(false) + $this->Formatter->TabSize;
         // Find
         // - the last token
         // - in the third expression
