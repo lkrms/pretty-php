@@ -1,0 +1,56 @@
+<?php
+do {
+    while (true) {
+    }
+    while (true) {
+    }
+} while (true);
+
+do {
+    while (true) {
+    }
+
+    while (true) {
+    }
+} while (true);
+
+do {
+    while (true) {
+    }
+    echo 'foo';
+    while (true) {
+    }
+} while (true);
+
+while (true) {
+}
+while (true) {
+}
+
+do {
+    while (true) {
+    while (true) {
+    }
+    while (true) {
+    }
+        do {
+        }
+        while (true);
+        do {
+        }
+        //lll
+        while (true);
+        do {
+        }/*lll*/
+        while (true);
+
+    while (true) {
+    }
+    while (true) {
+    }
+
+    }
+    while (true) {
+    }
+}
+while (true);

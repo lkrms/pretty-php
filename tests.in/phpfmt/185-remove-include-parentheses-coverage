@@ -1,0 +1,4 @@
+<?php
+include $config['path'].'views/'.$name.'.php';
+include (($config['path'].'views/'.$name.'.php'));
+?>

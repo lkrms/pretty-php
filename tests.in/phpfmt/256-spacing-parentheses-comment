@@ -1,0 +1,11 @@
+<?php
+$a = $b->foo()
+       ->bar() // comment
+       ->baz()
+;
+
+$c = $d
+    ->asdf() /* hello */
+    ->fdsa();
+
+$x = 1234; // sup

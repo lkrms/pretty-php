@@ -1,0 +1,3 @@
+<?php
+//passes:MergeNamespaceWithOpenTag,NoSpaceAfterPHPDocBlocks,StripNewlineAfterCurlyOpen,StripNewlineAfterClassOpen,PrettyPrintDocBlocks,AlignTypehint,AlignDoubleSlashComments,GeneratePHPDoc,OrderMethod,DocBlockToComment,StrictComparison,WordWrap,PSR2EmptyFunction
+$a . $b;

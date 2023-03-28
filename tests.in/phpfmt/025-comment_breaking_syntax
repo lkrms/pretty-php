@@ -1,0 +1,8 @@
+<?php
+if ($a)// Comment 1
+	$r = 1;
+elseif ($b)// Comment 2
+	$r = 2;
+elseif ($c)// Comment 3
+	$r = 3;
+else continue;

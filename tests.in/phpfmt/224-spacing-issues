@@ -1,0 +1,12 @@
+<?php
+function func($type, $shells,  &$shellList) {}
+
+call_user_func_array(array(& $obj, $action), $args);
+
+$insert = substr($insert, 0, (int)$var['key']-2);
+
+$obj->property['key']+$obj->property2;
+
+$ascii = chr(200+(($var-($var % 32)) / 32));
+
+$var[$key[0]] = $var[$key[0]]-1;

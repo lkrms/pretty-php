@@ -1,0 +1,20 @@
+<?php
+//passes:EncapsulateNamespaces,Default
+namespace A;
+
+class A
+{
+}
+
+namespace B;
+
+class C
+{
+}
+
+namespace C
+{
+	class D
+	{
+	}
+}

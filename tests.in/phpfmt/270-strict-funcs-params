@@ -1,0 +1,57 @@
+<?php
+//passes:Default,StrictBehavior
+array_search($needle, $haystack);
+base64_decode($str);
+in_array($needle, $haystack);
+
+array_keys($arr);
+mb_detect_encoding($arr);
+
+array_keys($arr, [1]);
+mb_detect_encoding($arr, 'UTF8');
+
+//-----
+
+array_search($needle, $haystack, true);
+base64_decode($str, true);
+in_array($needle, $haystack, true);
+
+array_keys($arr, null, true);
+mb_detect_encoding($arr, null, true);
+
+array_keys($arr, [1], true);
+mb_detect_encoding($arr, 'UTF8', true);
+
+//-----
+
+array_search/*Comment*/($needle, $haystack);
+base64_decode//Comment
+($str);
+in_array($needle, $haystack /*Comment*/);
+
+array_keys($arr);
+mb_detect_encoding($arr);
+
+array_keys($arr, [1]);
+mb_detect_encoding($arr, 'UTF8');
+
+//-----
+
+array_keys($arr, func($a, $b));
+array_keys($arr, [$a, $b]);
+array_keys($arr, $a->{$v});
+array_keys($arr, "{$v}");
+array_keys($arr, "${$v}");
+array_keys($arr, ${$v});
+
+//-----
+
+SomeStaticClass::array_keys($arr, func($a, $b));
+$someObject->array_keys($arr, func($a, $b));
+
+SomeStaticClass::array_keys;
+$someObject->array_keys;
+
+//------
+
+array_keys;

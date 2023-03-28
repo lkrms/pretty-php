@@ -1,0 +1,23 @@
+<?php
+while(true)
+echo "aa $a ";
+
+if (true)
+echo "aa $a ";
+
+if (true)
+echo "aa $a ";
+else
+echo "aa $a ";
+
+if (true)
+echo "aa $a ";
+else
+$a = function (){
+	noop();
+};
+
+if (true)
+echo "aa $a ";
+else
+echo $a[123];

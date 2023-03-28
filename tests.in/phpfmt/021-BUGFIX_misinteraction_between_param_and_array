@@ -1,0 +1,15 @@
+<?php
+function func($a, $b, $c) {
+	$cm = new ClassB();
+	$mtd = new ClassA($cm);
+	// Comment
+	$req = new ClassC('20151', '20154', array(1),'8.8.8.8','USD');
+	// Comment 2
+	$cm->method(array('a' => $a));
+	$res = $mtd->run($b, array($req),0,'en');
+	if (!empty($a)&&!empty($b)) {
+		$this->assertArrayHasKey(1, $res);
+	} else {
+		$this->assertEquals($c, $res);
+	}
+}

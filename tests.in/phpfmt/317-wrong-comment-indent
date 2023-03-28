@@ -1,0 +1,8 @@
+<?php
+
+//passes:AlignDoubleSlashComments
+//FormatterPass holds all data structures necessary to traverse a stream of
+	//tokens, following the concept of bottom-up it works as a platform on which
+		//other passes can be built on.
+abstract class FormatterPass {
+}

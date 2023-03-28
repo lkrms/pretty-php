@@ -1,0 +1,30 @@
+<?php
+//passes:GeneratePHPDoc, Default
+
+class Abc{
+
+	/**
+	 * @param ClassA $a
+	 * @param integer $b
+	 * @param array $c
+	 * @return mixed
+	 */
+	function a(ClassA $a, \Lll\llll\ppp $b = 10, $c = array()){
+
+		return $c;
+	}
+
+	public static function b(ClassA $a, \Lll\llll\ppp $b = 10, $c = array()){
+
+		return $c;
+	}
+
+	static private function c(ClassA $a, \Lll\llll\ppp $b = 10, $c = array()){
+
+		return $c;
+	}
+
+	function d(){
+
+	}
+}

@@ -1,0 +1,38 @@
+<?php
+$request = new ClassObject();
+$request->cmd1([1,2,3,4,5,6,7])
+   ->cmd2('a')
+   ->cm3('b')
+   ->cmd4(['2,0'])
+   ->cmd5('a')
+   ->cmd6('a')
+   ->cmd7('c');
+
+
+
+$request = new ClassObject();
+$request->cmd1([1,2,3,4,5,6,7])->cmd2('a')
+   ->cm3('b')
+   ->cmd4(['2,0'])
+   ->cmd5('a')
+   ->cmd6('a')
+   ->cmd7('c');
+
+function aa(){
+$request = new ClassObject();
+$request->cmd1([1,2,3,4,5,6,7])
+   ->cmd2('a')
+   ->cm3('b')
+   ->cmd4(['2,0'])
+   ->cmd5('a')
+   ->cmd6('a')
+   ->cmd7('c');
+
+$request = new ClassObject();
+$request->cmd1([1,2,3,4,5,6,7])->cmd2('a')
+   ->cm3('b')
+   ->cmd4(['2,0'])
+   ->cmd5('a')
+   ->cmd6('a')
+   ->cmd7('c');
+}

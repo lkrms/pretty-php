@@ -1,0 +1,12 @@
+<table>
+  <tr>
+    <td>
+      <h1>
+      <?php echo 'somethin'?>
+      </h1>
+    </td>
+    <td>
+    <?= 'another' ?>
+    </td>
+  </tr>
+</table>

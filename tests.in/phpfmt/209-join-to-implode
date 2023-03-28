@@ -1,0 +1,8 @@
+<?php
+//passes:Default,JoinToImplode
+
+class A {
+	protected function join(){
+		return join('',[]);
+	}
+}

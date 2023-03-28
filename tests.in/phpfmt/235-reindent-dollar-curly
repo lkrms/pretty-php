@@ -1,0 +1,32 @@
+<?php
+
+function a(){
+$b = '1';
+$a = 'b';
+echo ${$a};
+echo "${$a}";
+echo "{$a}";
+}
+
+echo a();
+
+$a = array_map(function($a){
+$b = '1';
+$a = 'b';
+echo ${$a};
+echo "${$a}";
+echo "{$a}";
+echo "{$a }";
+}, $arr);
+
+$b = array_map(
+function($a){
+$b = '1';
+$a = 'b';
+echo ${
+$a
+};
+echo "${$a}";
+echo "{$a}";
+}, $arr
+);

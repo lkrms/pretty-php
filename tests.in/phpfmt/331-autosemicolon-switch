@@ -1,0 +1,15 @@
+<?php
+//passes:Default,AutoSemicolon
+switch ($object) {
+case "song":
+echo "sounds cool";
+break;
+case "artist":
+echo "sounds nice";
+break;
+case "cd":
+echo "sounds awful";
+break;
+default:
+break;
+}

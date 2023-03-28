@@ -1,0 +1,9 @@
+<?php
+//passes:AllmanStyleBraces,PSR2IndentWithSpace
+class A {
+	public function a() {
+		if ($a) {
+			$b;
+		}
+	}
+}

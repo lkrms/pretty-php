@@ -1,0 +1,7 @@
+<?php
+use Endroid\QrCode\QrCode;
+
+if (isset($_GET['text']))
+{
+	new QrCode();
+}

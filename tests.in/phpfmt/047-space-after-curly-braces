@@ -1,0 +1,25 @@
+<?php
+include_once ('inc.php');
+function a($a) {
+return $a;
+}
+function b($c) {
+print_r($c);
+return true;
+}
+error_reporting(E_ALL);
+
+include_once ('inc.php');
+function c($a) {
+return $a;
+}
+
+function d($c) {
+print_r($c);
+return true;
+}
+
+
+
+
+error_reporting(E_ALL);

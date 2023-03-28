@@ -1,0 +1,4 @@
+<?php
+//passes:AddMissingParentheses
+$e = e(new E, new E);
+$f = f(new F(new F, new F), new F, new F);

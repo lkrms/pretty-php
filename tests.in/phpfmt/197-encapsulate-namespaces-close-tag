@@ -1,0 +1,9 @@
+<?php
+//passes:EncapsulateNamespaces,Default
+namespace A;
+
+class A {
+	function name(){
+		?><?php
+	}
+}

@@ -1,0 +1,22 @@
+<?php
+// int|string
+42    --> 42          // exact type
+"42"  --> "42"        // exact type
+new ObjectWithToString --> "Result of __toString()"
+                      // object never compatible with int, fall back to string
+42.0  --> 42          // float compatible with int
+42.1  --> 42          // float compatible with int
+1e100 --> "1.0E+100"  // float too large for int type, fall back to string
+INF   --> "INF"       // float too large for int type, fall back to string
+true  --> 1           // bool compatible with int
+[]    --> TypeError   // array not compatible with int or string
+
+// int|float|bool
+"45"    --> 45        // int numeric string
+"45.0"  --> 45.0      // float numeric string
+
+"45X"   --> true      // not numeric string, fall back to bool
+""      --> false     // not numeric string, fall back to bool
+"X"     --> true      // not numeric string, fall back to bool
+[]      --> TypeError // array not compatible with int, float or bool
+?>

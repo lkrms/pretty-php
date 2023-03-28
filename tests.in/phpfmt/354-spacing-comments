@@ -1,0 +1,15 @@
+<?php
+$a = [
+	'k1' => false, // COMMENT
+
+	'k2' => [// COMMENT
+	],
+];
+
+
+$a = array(
+	'k1' => false, // COMMENT
+
+	'k2' => array(// COMMENT
+	),
+);

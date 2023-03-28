@@ -1,0 +1,6 @@
+<?php
+//passes:Default,RemoveUseLeadingSlash
+
+use \PDO;
+
+new PDO();

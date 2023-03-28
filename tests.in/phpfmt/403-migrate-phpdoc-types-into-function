@@ -1,0 +1,12 @@
+<?php
+//passes:PHPDocTypesToFunctionTypehint
+
+
+/**
+ * @param int $a
+ * @param int $b
+ * @return int
+ */
+function abc($a = 10, $b = 20, $c) {
+
+}

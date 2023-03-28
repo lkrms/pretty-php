@@ -34,7 +34,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
             $formatter->format(
                 $code,
                 3,
-                $filename
+                $filename,
+                true
             ),
             $filename ?: ''
         );

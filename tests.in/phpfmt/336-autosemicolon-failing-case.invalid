@@ -1,0 +1,11 @@
+<?php
+//passes:AutoSemicolon
+
+return new Object('foo', function ($a,  $b) {
+	$obj = new StdClass();
+
+	$gaApi->aaa = 'bbbb'
+	$gaApi->ccc = 'ddddd';
+	$gaApi->eee = 'fffff';
+	$gaApi->ggg = 'hhhh'
+});

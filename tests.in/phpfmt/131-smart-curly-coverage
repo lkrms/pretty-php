@@ -1,0 +1,21 @@
+<?php
+//passes:OrderAndRemoveUseClauses,AddMissingCurlyBraces,SmartLnAfterCurlyOpen,NormalizeLnAndLtrimLines,MergeParenCloseWithCurlyOpen,MergeCurlyCloseAndDoWhile,MergeDoubleArrowAndArray,ExtraCommaInArray,ResizeSpaces,Reindent,ReindentColonBlocks,ReindentObjOps,EliminateDuplicatedEmptyLines,AlignEquals,AlignDoubleArrow,LeftAlignComment,RTrim
+
+
+if ($a) { "$a";
+
+}
+
+if ($a) { "${a}";
+
+}
+
+if ($a) {{ "$a";
+
+}
+}
+
+if ($a) {{ "${a}";
+
+}
+}

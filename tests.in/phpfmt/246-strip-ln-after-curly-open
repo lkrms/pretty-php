@@ -1,0 +1,9 @@
+<?php
+//passes:Default,StripNewlineAfterCurlyOpen
+for ($a = 0; $a < 10; $a++) {
+
+	if ($a) {
+
+		// do something
+	}
+}

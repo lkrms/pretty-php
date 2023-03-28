@@ -1,0 +1,17 @@
+<?php
+//version:5.5.0
+//skipHHVM
+// comment
+// comment
+// comment
+// comment
+// comment
+// comment
+
+try {
+	doSomething();
+} catch (Exception $exc) {
+	//caught me!
+} finally {
+	// yeah... finally.
+}

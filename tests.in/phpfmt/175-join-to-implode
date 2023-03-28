@@ -1,0 +1,8 @@
+<?php
+//passes:JoinToImplode,Default
+$str = join(',', $arr);
+
+$a = new stdClass();
+$a->join(',');
+
+SomeClass::join(',');

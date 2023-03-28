@@ -1,0 +1,20 @@
+<table><tr>
+	<td><?php
+	    	foreach ($param2_arr as $key) {
+	    		echo $key . '
+	    		a
+	    		';
+	    	}
+	    ?>
+	</td>
+	<td><?php
+	    	foreach ($param2_arr as $key) {
+	    		echo $key . "
+	    		a$b
+	    		";
+	    	}
+	    ?>
+	</td>
+</tr></table>
+<?php
+//passes:AlignPHPCode

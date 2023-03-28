@@ -1,0 +1,12 @@
+<?php
+//passes:Default,CakePHPStyle
+class SomeClass {
+	public function methodA() {
+		foreach ($options as $i => $option) {
+			printf("%${len}", 1);
+		}
+	}
+
+	protected function _interactive() {
+	}
+}

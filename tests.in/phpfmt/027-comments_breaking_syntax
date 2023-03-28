@@ -1,0 +1,15 @@
+<?php
+$res = new ClassObject(
+	$arr['N'],
+	$arr['p'],
+	$arr['s'],
+	$t, $a,
+	$arr['pr'],
+	$arr['lo'],
+	$arr['li'],
+	//comment 1
+	(int) preg_replace('/[^0-9]|,[0-9]*$/', '', $arr['tr']),
+	$arr['pc'],
+	''//comment 2
+);
+?>

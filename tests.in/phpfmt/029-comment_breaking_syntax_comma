@@ -1,0 +1,19 @@
+<?php
+$expect = array(
+	// comment 1
+	0 => new ClassObject('b')
+	,1 => new ClassObject('comment 1')
+	,2 => new ClassObject('b')
+	,3 => new ClassObject("\n")
+	// comment 2
+	,4 => new ClassObject('i')
+	,5 => new ClassObject('comment 2')
+	,6 => new ClassObject('i')
+	,7 => new ClassObject("still comment 2")
+	// comment 3
+	,8 => new ClassObject('b')
+	// comment 4
+	,9 => new ClassObject("Now comment 4\n\n")
+	// comment SIX
+	,10 => new ClassObject('b')
+);

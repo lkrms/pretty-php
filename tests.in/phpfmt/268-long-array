@@ -1,0 +1,12 @@
+<?php
+//passes:Default, LongArray
+
+$a = [1, 2];
+
+a([1,2])['deference'];
+
+$a = array(1,2);
+
+$b = array();
+
+$c = (array(1,2));

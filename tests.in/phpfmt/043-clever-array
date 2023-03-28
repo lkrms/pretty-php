@@ -1,0 +1,16 @@
+<?php
+$a = array(1,2);
+$a = array(
+1,
+2
+);
+$a = array(array());
+$a = array(
+array('k' => 'v')
+);
+$a = array(
+array(
+'k' => 'v',
+'k' => 'v'
+)
+);

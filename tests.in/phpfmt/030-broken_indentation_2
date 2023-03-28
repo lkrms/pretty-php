@@ -1,0 +1,9 @@
+<?php
+function func($t, $vt, $v = null) {
+    if (is_null($v)) {
+        if (is_int($vt))return is_array($t) && $t[0] === $vt;
+        else return $t === $vt;
+    } else {
+        return is_array($t) && $t[0] === $vt && $t[1] === $v;
+    }
+}

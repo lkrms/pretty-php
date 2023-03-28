@@ -1,0 +1,6 @@
+<?php
+//comment
+function func(array $var) {
+return StaticClass::get()->execute(CONSTANT_NAME, 8, //comment2
+array($this/*->*/, 'do'), $var);
+}

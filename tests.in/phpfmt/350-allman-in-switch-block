@@ -1,0 +1,23 @@
+<?php
+//passes:Default,AllmanStyleBraces
+
+switch (1)
+{
+	case 1:
+		$log_id = "";
+		if (1) {
+			# code...
+		}
+		break;
+}
+
+
+switch (1)
+{
+	case 1:
+		$log_id = "{$a}";
+		if (1) {
+			# code...
+		}
+		break;
+}

@@ -1,0 +1,14 @@
+<?php
+class A
+{
+	public function __construct()
+	{
+		$this->thing;
+	}
+
+	/**
+	 */
+	public function action()
+	{
+	}
+}

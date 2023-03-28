@@ -1,0 +1,14 @@
+<?php
+class Object{
+	const INCLUDE_A = 'a';
+	const INCLUDE_C = 'c';
+	const INCLUDE_D = 'd';
+	const INCLUDE_F = 'f';
+	const INCLUDE_G = 'g'; // Remark
+	const INCLUDE_H = 'h';
+	const INCLUDE_M = 'm';
+	const INCLUDE_N = 'n';
+	const INCLUDE_P = 'p';
+	const INCLUDE_R = 'r';
+}
+?>

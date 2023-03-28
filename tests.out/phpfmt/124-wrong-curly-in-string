@@ -1,0 +1,8 @@
+<?php
+
+switch ($id) {
+	default:
+		if ('*' === $v{0}) {
+			$v = ' ' . $v;
+		}
+}

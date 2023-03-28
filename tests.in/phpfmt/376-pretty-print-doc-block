@@ -1,0 +1,26 @@
+<?php
+//passes:PrettyPrintDocBlocks
+
+/**
+ * This is a test
+ *
+ * <dl>
+ * <dt>$apage</dt>
+ * <dt>$apage</dt>
+ * <dt>$apage</dt>
+ * <dt>$apage</dt>
+ * <dd>
+ *     The page object. (mandatory)
+ *     The page content can be retrieved using <tt>$apage->getContent()</tt>.
+ * </dd>
+ * </dl>
+ *
+ * @subpackage Portal\Modules\Page\Functions\Block
+ *
+ * @author Name
+ *
+ * @see Page
+ *
+ * @param  array  $args The block function parameters in array format
+ * @return string The rendered html content
+ */

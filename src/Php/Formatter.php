@@ -269,7 +269,7 @@ final class Formatter implements IReadable
      * @param string|null $filename Advisory only. No file operations are
      * performed on `$filename`.
      */
-    public function format(string $code, int $quietLevel = 0, ?string $filename = null): string
+    public function format(string $code, int $quietLevel = 0, ?string $filename = null, bool $fast = false): string
     {
         $this->QuietLevel = $quietLevel;
         $this->Filename   = $filename;
@@ -470,6 +470,10 @@ final class Formatter implements IReadable
             );
         } finally {
             Sys::stopTimer(__METHOD__ . '#render');
+        }
+
+        if ($fast) {
+            return $out;
         }
 
         Sys::startTimer(__METHOD__ . '#parse-output');

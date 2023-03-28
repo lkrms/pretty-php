@@ -1,0 +1,2 @@
+<?php if (true) echo 's' ?>x<?php
+echo '1';

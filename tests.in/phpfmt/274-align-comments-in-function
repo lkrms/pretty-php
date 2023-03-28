@@ -1,0 +1,15 @@
+<?php
+//passes:Default,AlignTypehint,AlignDoubleSlashComments
+class A {
+
+	public function __construct(
+		aaaaaaa           $aaaa, // test 1
+		Bbbbbbbb          $bbbbbbbb, // test 2
+		cccccccc          $cccccccccccc, // test 3
+		                  $ddddd, // test 4
+		                  $eee, // test 5
+		                  $fffffff, // test 6
+	){
+
+	}
+}

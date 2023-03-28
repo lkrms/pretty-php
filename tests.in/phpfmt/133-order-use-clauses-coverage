@@ -1,0 +1,20 @@
+<?php
+namespace NS {
+use C, A, B;
+{
+
+new A();
+new B();
+new C();
+}
+}
+
+namespace NS2 {
+use D, E, F;
+{
+
+new E();
+new F();
+new D();
+}
+}

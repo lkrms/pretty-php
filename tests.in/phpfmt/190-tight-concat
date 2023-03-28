@@ -1,0 +1,6 @@
+<?php
+//passes:Default,TightConcat
+echo $a . $b;
+echo $a . $b . $c;
+echo $a . 1 + 1 . $c;
+echo $dir.DIRECTORY_SEPARATOR;

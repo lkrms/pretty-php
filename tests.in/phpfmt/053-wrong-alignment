@@ -1,0 +1,4 @@
+<?php
+$obj = new StdClass();
+!$obj->LL || $obj->LL->l(__CLASS__, sprintf("Msg [%d] : %s", $obj2->gs(), $obj2->ge()));
+!$llll_ttt || $obj->ssss_ttttt($obj3->gv(), $ttttt_ppppppp, ConstantBAG::CONSTANT, $obj2, $dddd_rrr);

@@ -1,0 +1,54 @@
+<?php
+$a   = 1;
+/*
+ Others alignments
+*/
+class Object {
+	/**
+	 * Doc block
+	 */
+	public function a()
+	{
+		doSomething();
+	}
+
+
+
+
+	/**
+	 * Doc block2
+	 */
+	public function b()
+	{
+		doSomethingElse();
+	}
+	/**
+	 * Doc block3
+	 */
+	public function c()
+	{
+		doSomethingElse();
+	}
+}
+
+class Object2 {
+	// comment
+	public function a()
+	{
+		doSomething();
+	}
+
+
+
+
+	// comment
+	public function b()
+	{
+		doSomethingElse();
+	}
+	// comment
+	public function c()
+	{
+		doSomethingElse();
+	}
+}

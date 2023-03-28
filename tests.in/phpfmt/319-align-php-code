@@ -1,0 +1,30 @@
+<div>
+	<?php
+	//passes:AlignPHPCode
+	echo 'a';
+	if($a){
+		echo $b;
+	}
+	?>
+</div>
+
+<div>
+	<?php
+		//passes:AlignPHPCode
+		echo 'a';
+		if($a){
+			echo $b;
+		}
+	?>
+</div>
+
+
+<div>
+a	<?php
+		//passes:AlignPHPCode
+		echo 'a';
+		if($a){
+			echo $b;
+		}
+	?>
+</div>

@@ -1,0 +1,8 @@
+<?php
+//passes:AlignEquals,AlignDoubleArrow,AlignDoubleSlashComments,AlignGroupDoubleArrow,LongArray,OrderMethod,ReindentAndAlignObjOps,ReindentSwitchBlocks
+switch($a) {
+case 'a':
+$query = " select a from b
+inner join c on b.id = c.id";
+break;
+}

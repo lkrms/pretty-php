@@ -1,0 +1,11 @@
+<?php
+//passes:JoinToImplode,Default
+
+/* comment */ join /** doc comment */ ();
+
+Somclass\join();
+Join\do();
+
+new Join\ClassName();
+new \join();
+new NS\join();

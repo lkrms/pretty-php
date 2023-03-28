@@ -1,0 +1,4 @@
+<?php
+class C {}
+$c =& new C;
+?>

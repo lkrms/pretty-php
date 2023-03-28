@@ -1,0 +1,20 @@
+<?php
+if($aaaaa->doSomething()){
+	return StaticClass::staticMethod('param')->with($somethingElse);
+}
+
+while($aaaaa->doSomething()){
+	return StaticClass::staticMethod('param')->with($somethingElse);
+}
+
+do{
+	return StaticClass::staticMethod('param')->with($somethingElse);
+}while($aaaaa->doSomething());
+
+foreach($aaaaa->doSomething() as $k => $v){
+	return StaticClass::staticMethod('param')->with($somethingElse);
+}
+
+for($aaaaa->doSomething(); $aaaa->count() < 10; $aaaaa->count(+1)){
+	return StaticClass::staticMethod('param')->with($somethingElse);
+}

@@ -1,0 +1,22 @@
+<?php
+//passes:Default,UpgradeToPreg
+$var = $obj->split("[A-Z]", $var);
+$var = SomeClass::split("[A-Z]", $var);
+
+$var = ereg("[A-Z]"."foo", $var);
+
+$var = ereg("##[A!!]//", $var);
+$var = ereg("##[A!!]///", $var);
+$var = ereg("##[A!]//", $var);
+$var = ereg("#[A]/", $var);
+$var = ereg("/[AZ]", $var);
+$var = ereg("[A-Z]", $var);
+$var = ereg("[AZ]/", $var);
+$var = ereg("^*broken", $var);
+$var = ereg('[A-Z]');
+$var = ereg('[A-Z]', $var);
+$var = ereg_replace("[A-Z]", "", $var);
+$var = eregi("[A-Z]", $var);
+$var = eregi_replace("[A-Z]", "", $var);
+$var = split("[A-Z]", $var);
+$var = spliti("[A-Z]", $var);

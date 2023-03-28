@@ -1,0 +1,8 @@
+<?php
+$app['iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiv'] = function (A $app) {
+	$aaaaaaaaaaaa = str_replace('231312312331', $app['12321312312321']->aaa(), $app['12321312312321']->aaavvv());
+	$bbbbbbbbbbbb = str_replace('231312312331', $app['12321312312321']->aaa(), $app['12321312312321']->aaaqqqq());
+	$api = new A($this->app['111111'], $app['12321312312321']->qqqqq(), $aaaaaaaaaaaa, $bbbbbbbbbbbb);
+	$memcache = new M($this->app['111111'], $app['12321312312321']->qqqqwwww(), $app['12321312312321']->qqqqq());
+	return new C($this->app['111111'], [$memcache, $api]);
+};

@@ -1,0 +1,6 @@
+<?php
+
+array(
+'conditions' => array("{$type}0.alias"=> $start)
+);
+?>

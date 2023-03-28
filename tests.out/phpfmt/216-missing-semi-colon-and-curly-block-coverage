@@ -1,0 +1,5 @@
+<?php if (true) {
+	$a;
+}
+else
+	echo 's' ?>x

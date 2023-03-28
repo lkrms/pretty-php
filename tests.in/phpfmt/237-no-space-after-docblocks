@@ -1,0 +1,32 @@
+<?php
+//passes: Default,NoSpaceAfterPHPDocBlocks
+
+/**
+ * Some Dcc
+ */
+
+class SomeClass {
+
+	/**
+	 * @param mixed $a
+	 * @return mixed
+	 */
+
+	function a($a){
+		return $a;
+	}
+
+	function b(){
+
+		/**
+		 * @var SomeType
+		 */
+
+		$var &= $var;
+
+		$var &= $var;
+		/**
+		 * @var SomeType
+		 */
+	}
+}

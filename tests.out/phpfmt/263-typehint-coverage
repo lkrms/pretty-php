@@ -1,0 +1,6 @@
+<?php
+//passes:Default,AlignTypehint
+function a(
+	TypeA $a
+) {
+}

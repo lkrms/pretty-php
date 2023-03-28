@@ -1,0 +1,17 @@
+<?php
+// comment #1
+if ($f) {
+}
+// comment #2
+else {
+}
+
+switch ($f) {
+	// comment #1
+	case '1':
+		break;
+
+	// comment #2
+	default:
+		break;
+}

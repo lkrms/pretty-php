@@ -1,0 +1,3 @@
+<?="Hello World"?>
+<?php
+//passes:Default,ConvertOpenTagWithEcho

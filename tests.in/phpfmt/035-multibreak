@@ -1,0 +1,148 @@
+<?php
+switch($a){
+	case -1:
+	case -2:
+	case 0:
+		$a;
+		$b;
+		break;
+	default:
+		$a;
+		$b;
+		break;
+
+}
+switch($a){
+	case -1:
+	case -2:
+	case 0:
+		$a;
+		$b;
+		break;
+	case 1:
+		if($a){
+			$b;
+			$d;
+			$d;
+			break;
+		}
+		break;
+	case 2:
+		if($a){
+			$b;
+			$d;
+			$d;
+			break;
+		}else{
+			$c;
+			$d;
+			$d;
+			break;
+		}
+		break;
+	case 3:
+		if($a){
+			$b;
+			$d;
+			$d;
+			break;
+		}elseif($b){
+			$c;
+			$d;
+			$d;
+			break;
+		}else{
+			$c;
+			$d;
+			$d;
+			break;
+		}
+		break;
+	case 4:
+		if($a){
+			if($b){
+				$c;
+			}elseif($d){
+				$e;
+			}else{
+				$f;
+			}
+		}
+	case 5:
+		for($i = 0; $i < 10; $i++){
+			$a;
+		}
+	case 6:
+		if($a){
+			for($i = 0; $i < 10; $i++){
+				$a;
+			}
+		}elseif($b){
+			for($i = 0; $i < 10; $i++){
+				$a;
+			}
+		}else{
+			for($i = 0; $i < 10; $i++){
+				$a;
+			}
+		}
+	case 7:
+		while(false){
+			$a;
+		}
+	case 8:
+		if($a){
+			while(false){
+				$a;
+			}
+		}elseif($b){
+			while(false){
+				$a;
+			}
+		}else{
+			while(false){
+				$a;
+			}
+		}
+	case 9:
+		foreach($vs as $v){
+			$a;
+		}
+	case 10:
+		if($a){
+			foreach($vs as $v){
+				$a;
+			}
+		}elseif($b){
+			foreach($vs as $v){
+				$a;
+			}
+		}else{
+			foreach($vs as $v){
+				$a;
+			}
+		}
+	case 10:
+		do{
+			$a;
+		}while(false);
+	case 11:
+		if($a){
+			do{
+				$a;
+			}while(false);
+		}elseif($b){
+			do{
+				$a;
+			}while(false);
+		}else{
+			do{
+				$a;
+			}while(false);
+		}
+	default:
+		$a;
+		$b;
+		if($a){$a;}elseif($b){$b;}else{$c;break;}
+		break;
+}

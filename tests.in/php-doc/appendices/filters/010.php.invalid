@@ -1,0 +1,20 @@
+<?php
+//$key assumed to be previously generated
+$iv_size = mcrypt_get_iv_size(MCRYPT_BLOWFISH, MCRYPT_MODE_CBC);
+$iv = mcrypt_create_iv($iv_size, MCRYPT_DEV_URANDOM);
+$fp = fopen('encrypted-file.enc', 'wb');
+fwrite($fp, $iv);
+$opts = array('mode'=>'cbc','iv'=>$iv, 'key'=>$key);
+stream_filter_append($fp, 'mcrypt.blowfish', STREAM_FILTER_WRITE, $opts);
+fwrite($fp, 'message to encrypt');
+fclose($fp);
+
+//decrypt...
+$fp = fopen('encrypted-file.enc', 'rb');
+$iv = fread($fp, $iv_size = mcrypt_get_iv_size(MCRYPT_BLOWFISH, MCRYPT_MODE_CBC));
+$opts = array('mode'=>'cbc','iv'=>$iv, 'key'=>$key)
+stream_filter_append($fp, 'mdecrypt.blowfish', STREAM_FILTER_READ, $opts);
+$data = rtrim(stream_get_contents($fp));//trims off null padding
+fclose($fp);
+echo $data;
+?>

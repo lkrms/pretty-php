@@ -1,0 +1,8 @@
+<?php
+$a = array(1,2);
+func(array(1,2));
+$a = array(
+	1,
+	2
+);
+?>

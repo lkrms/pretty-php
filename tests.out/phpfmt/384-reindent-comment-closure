@@ -1,0 +1,14 @@
+<?php
+//passes: ReindentObjOps
+$self = $this;
+$this->locker->lock($self->id, function () use ($self) {
+	// comment a
+	// comment b
+	$self->method();
+});
+
+$this->locker->lock($selfid, function () use ($self) {
+	// comment c
+	// comment d
+	$self->method();
+});

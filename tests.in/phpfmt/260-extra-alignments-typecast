@@ -1,0 +1,11 @@
+<?php
+//passes:Default,AlignTypehint
+function a(
+	TypeA $a,
+	TypeBB $bb,
+	TypeCCC $ccc = array(),
+	TypeDDDD $dddd,
+	TypeEEEEE $eeeee
+){
+	noop();
+}

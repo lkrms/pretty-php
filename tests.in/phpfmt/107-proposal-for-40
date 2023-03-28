@@ -1,0 +1,13 @@
+<?php
+//passes: TwoCommandsInSameLine, AddMissingCurlyBraces, SmartLnAfterCurlyOpen, NormalizeLnAndLtrimLines, MergeParenCloseWithCurlyOpen, MergeCurlyCloseAndDoWhile, MergeDoubleArrowAndArray, ExtraCommaInArray, ResizeSpaces, Reindent, ReindentColonBlocks,   ReindentObjOps, OrderAndRemoveUseClauses, EliminateDuplicatedEmptyLines, AlignEquals, AlignDoubleArrow, LeftAlignComment, RTrim
+
+if (!defined('PROOT_LOG_PATH')) define('PROOT_LOG_PATH', '/dev/null');
+
+if (!defined('PROOT_LOG_PATH')) {define('PROOT_LOG_PATH', '/dev/null');}
+
+if ($a) {
+	function a($a, $b) {
+		$a;
+		$b;
+	};
+}
