@@ -1,0 +1,46 @@
+<?php
+
+if ($x) {
+	//body
+}
+
+//skipShortTag1
+
+	/*
+	aif(){
+		keep me intact
+	}
+*/
+	/*
+		bif(){
+			keep me intact
+		}
+*/
+
+if (true) {
+	/*
+	cif(){
+		keep me intact
+	}
+	*/
+	/*
+		dif(){
+			keep me intact
+		}
+	*/
+}
+if (true) {
+	if (false) {
+	/*
+	eif(){
+		keep me intact
+	}
+	*/
+	/*
+		fif(){
+			keep me intact
+		}
+	*/
+	}
+}
+

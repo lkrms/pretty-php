@@ -1,0 +1,59 @@
+<?php
+echo "OK";
+do{
+	$cmd = cmd();
+}while(true);
+if (true){
+do{
+	$cmd = cmd();
+}while(true);
+}
+
+if($a)
+return false;
+else
+$a;
+do{
+	$cmd = cmd();
+}while(true);
+
+if($a)return false;
+do{
+	$cmd = cmd();
+}while(true);
+
+if ($count_spaces > 0)
+	$a;
+if (true){
+do{
+	$cmd = cmd();
+}while(true);
+}
+
+//This case is IF without the curly brace + do...while
+if (true)
+do{
+	$cmd = cmd();
+}while(true);
+
+//This case is IF without the curly brace + do...while + if
+if (true)
+do{
+	if($a){
+	$cmd = cmd();
+	}
+}while(true);
+
+if ($count_spaces > 0)
+	for($i = 1; $i <= $count_spaces; $i ++)
+		$new_txt .= "&nbsp;1";
+
+if (true){
+do{
+	$cmd = cmd();
+}while(true);
+}
+
+if ($count_spaces > 0)
+	for($i = 1; $i <= $count_spaces; $i ++)
+		$new_txt .= "&nbsp;2";

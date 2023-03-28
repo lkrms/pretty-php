@@ -1,0 +1,23 @@
+<?php
+//passes:Default,AutoPreincrement
+${$var}->{$v}->attr[$c]->$dynattr++;
+
+
+$var[$v]++;
+
+${$var}->{$v."string"}->attr[$c]->$dynattr++;
+
+
+$var = $v++;
+
+$var + $v++;
+
+$var++ + $v;
+
+func($v++);
+
+func($var, $v++);
+
+$var[$v++];
+
+echo $var++;

@@ -1,0 +1,22 @@
+<?php
+//passes:Default,PSR2ModifierVisibilityStaticOrder
+class MyClass
+{
+    static function whatever($things)
+    {
+        $stuff = array(1, 2, 3, 4, 5);
+
+        function fancyCalculation($a, $b) {
+            return $a + $b;
+        }
+
+        $memo = 0;
+        foreach ($things as $i => $thing) {
+            $memo += fancyCalculation($thing, $stuff[$i]);
+        }
+
+        return $memo;
+    }
+}
+
+echo MyClass::whatever(array(6, 7, 8, 9, 10)) . PHP_EOL;

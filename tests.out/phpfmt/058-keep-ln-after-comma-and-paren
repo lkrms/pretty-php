@@ -1,0 +1,75 @@
+<?php
+$o = new ClassOBj(
+(string) $obj->Hn, // comment
+'',                                     // comment
+0,                                      // comment
+0,                                      // comment
+(string) $obj->Ha,                      // comment
+'',                                     // comment
+0,                                      // comment
+0,                                      // comment
+0,                                      // comment
+.0,                                     // comment
+'',                                      // comment
+'',
+'', //Comment
+''
+);
+
+$o = new ClassOBj(
+$obj->Hn, // comment
+'',                                     // comment
+0,                                      // comment
+0,                                      // comment
+(string) $obj->Ha,                      // comment
+'',                                     // comment
+0,                                      // comment
+0,                                      // comment
+0,                                      // comment
+.0,                                     // comment
+'',                                      // comment
+'',
+'', //Comment
+''
+);
+
+
+
+$o = new ClassOBj(
+func(), // comment
+'',                                     // comment
+0,                                      // comment
+0,                                      // comment
+(string) $obj->Ha,                      // comment
+'',                                     // comment
+0,                                      // comment
+0,                                      // comment
+0,                                      // comment
+.0,                                     // comment
+'',                                      // comment
+'',
+'', //Comment
+''
+);
+
+$o = new ClassOBj(
+CONSTANT_NAME, // comment
+'',                                     // comment
+0,                                      // comment
+0,                                      // comment
+(string) $obj->Ha,                      // comment
+'',                                     // comment
+0,                                      // comment
+0,                                      // comment
+0,                                      // comment
+.0,                                     // comment
+'',                                      // comment
+'',
+'', //Comment
+''
+);
+
+$o = new ClassOBj((string) $obj->Hn, '', 0, 0, (string) $obj->Ha, '', 0, 0, 0, .0, '', '', '', '');
+$o = new ClassOBj($obj->Hn, '', 0, 0, (string) $obj->Ha, '', 0, 0, 0, .0, '', '', '', '');
+$o = new ClassOBj(func(), '', 0, 0, (string) $obj->Ha, '', 0, 0, 0, .0, '', '', '', '');
+$o = new ClassOBj(CONSTANT_NAME, '', 0, 0, (string) $obj->Ha, '', 0, 0, 0, .0, '', '', '', '');

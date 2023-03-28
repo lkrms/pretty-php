@@ -1,0 +1,19 @@
+<?php
+//passes: AlignEquals
+
+$a = 0;
+$bb = 0;
+$ccc = 0;
+
+function a() {
+	$a = 0;
+	$bb = 0;
+	$ccc = 0;
+}
+
+$self = $this;
+$this->locker->lock($self->id, function () use ($self) {
+	$a = 0;
+	$bb = 0;
+	$ccc = 0;
+});

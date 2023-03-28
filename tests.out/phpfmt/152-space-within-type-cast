@@ -1,0 +1,3 @@
+<?php
+$bar = (  string 	 )Foo::bar();
+$bar = $query["params"] = (array)$query["params"];

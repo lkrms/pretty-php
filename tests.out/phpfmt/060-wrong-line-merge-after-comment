@@ -1,0 +1,5 @@
+<?php
+$rq = StaticClass::cr($r, $pr);
+$rs = $this->l($vhi, $rq, ConstantBag::D); // comment
+
+$vhi = $this->v($arr);

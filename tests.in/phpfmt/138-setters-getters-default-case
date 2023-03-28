@@ -1,0 +1,13 @@
+<?php
+//passes:TwoCommandsInSameLine,SettersAndGettersPass|invalid,ConstructorPass|invalid,OrderAndRemoveUseClauses,AddMissingCurlyBraces,SmartLnAfterCurlyOpen,NormalizeLnAndLtrimLines,MergeParenCloseWithCurlyOpen,MergeCurlyCloseAndDoWhile,MergeDoubleArrowAndArray,ExtraCommaInArray,ResizeSpaces,Reindent,ReindentColonBlocks,ReindentObjOps,EliminateDuplicatedEmptyLines,AlignEquals,AlignDoubleArrow,LeftAlignComment,OrderMethod,NormalizeLnAndLtrimLines,Reindent,RTrim
+
+
+class A {
+	private $a;
+	public $b;
+	protected $c;
+
+	public function setA($a){
+		$this->a = $a;
+	}
+}

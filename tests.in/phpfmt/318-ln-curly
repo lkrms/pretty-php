@@ -1,0 +1,25 @@
+<?php
+
+if ($a) {
+}return $a;
+
+
+if ($a) {
+}echo $a;
+
+if ($a) {
+	function ($a, $b) {$a;
+	$b;};
+}echo $a;
+
+while ($a) {
+}echo $a;
+
+do {
+}while($b);
+
+for ($a;$b;$c) {
+}echo $a;
+
+foreach ($a as $c) {
+}echo $a;

@@ -1,0 +1,60 @@
+<?php
+//passes:Default,ExtraCommaInArray
+$x = "literal"[
+	$x
+];
+
+// Illegal
+// $x = "$a"[$x];
+
+[];
+
+[
+$a
+];
+
+[
+1,
+"literal"
+];
+
+[
+[],
+[]
+];
+
+(array) [
+100,
+22
+];
+
+[
+2,
+32
+][$var];
+
+[
+2,
+32
+][
+	$var
+];
+
+${"x"}[
+	1
+];
+
+literal[
+	1
+];
+
+
+array("literal")[
+	1
+];
+
+somefunc()[
+	1
+];
+
+'literal'[1];

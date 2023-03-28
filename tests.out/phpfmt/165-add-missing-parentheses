@@ -1,0 +1,13 @@
+<?php
+//passes:AddMissingParentheses,Default
+$obj = new SomeClass;
+$obj = new SomeClass /*Comment */;
+$obj = new SomeClass //Comment
+;
+
+function factory(){
+	return new SomeClass;
+	return new SomeClass /*Comment */;
+	return new SomeClass //Comment
+	;
+}

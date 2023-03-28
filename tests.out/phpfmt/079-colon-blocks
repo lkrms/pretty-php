@@ -1,0 +1,69 @@
+<?php
+for ($i = 0; $i < 10; $i++):
+	echo $i;
+	echo $i+1;
+endfor;
+
+
+for ($i = 0; $i < 10; $i++):
+for($j = 0; $j < 10; $j++){
+	echo $i;
+	echo $i+1;
+?>content<?php
+}
+endfor;
+
+foreach ($arr as $k => $v):
+	echo $k;
+	echo $v;
+endforeach;
+
+
+$i = 0;
+while ($i < 10):
+	$i++;
+	echo $i;
+	if($i % 2== 0)
+		echo "even";
+	else
+		echo "odds";
+endwhile;
+
+
+if($a != $b):
+echo "it is different";
+echo "so so different";
+endif;
+
+if($a != $b):
+echo "it is different";
+echo "it is so so different";
+else:
+echo "it is equal";
+echo "it is so so equal";
+endif;
+
+if($a == $b):
+echo "it is the equals";
+echo "it is the equals, yeah!";
+elseif($a > $b):
+echo "it is bigger than";
+echo "bigger for sure";
+else:
+echo "it is less than";
+echo "less than for sure...";
+endif;
+
+
+
+if($a != $b):
+echo "it is different";
+echo "so so different";
+	if($c != $b):
+echo "if in a bottle";
+echo "if in an if";
+else:
+echo "no... the else is not in a bottle";
+echo "or is it?";
+endif;
+endif;

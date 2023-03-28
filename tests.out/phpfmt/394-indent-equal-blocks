@@ -1,0 +1,136 @@
+<?php
+
+$a = $b .
+	$c .
+	$d;
+
+$a =
+	$b .
+	$c .
+	$d;
+
+
+function a(){
+	$a =
+	$b .
+	$c .
+	$d;
+}
+
+$a =
+$b =
+	$c .
+	$d;
+
+
+$string = function(){
+	$c .
+	$d;
+
+	$a[
+	$c .
+	$d
+	] = 0;
+};
+
+$x = (
+	$a .
+	$b .
+	$c
+);
+
+$x = [
+	$a .
+	$b .
+	$c
+];
+
+$string = 'a' . 'b';
+
+$string = 'a' .
+	'b' .
+	'c' .
+	'd';
+
+$x = ($x = $a);
+$x = ($x = $a);
+
+$x = (
+	$x = $a
+);
+
+$x = $x = $a = $b;
+
+$x = ($x = $a = $b);
+
+if (
+	$x = 1
+) {
+	great();
+}
+
+if (
+	$x = 1
+) {
+	great();
+}
+
+$string =
+	'a' .
+	'b' .
+	'c' .
+	'd';
+
+$x = 1;
+
+$string = [
+	"x" => [
+		"t" => "1" . $x,
+	],
+];
+
+if ($x == 1) {
+	$string = 'a' .
+		'b' .
+		'c' .
+		'd';
+
+	if ($x = 1) {
+		doSomething();
+	}
+
+	doSomething($a = 1);
+}
+
+while ($row = $percent->fetchObject()) {
+	$answers[] = $row;
+}
+
+class Test {
+
+	public function abc($x) {
+		if (1 == $x) {
+			echo "${abc}";
+		}
+	}
+
+}
+
+Event::trigger('this',
+	function() {
+		while ($row = $percent->fetchObject()) {
+			$answers[] = $row;
+		}
+	}
+);
+
+echo '' .
+implode(
+",\n",
+array_map(
+	function ($k, $v) {
+		return '`' . $k . '` = ' . $db->quote($v);
+	}, array_keys($row), $row
+)
+)
+. '';

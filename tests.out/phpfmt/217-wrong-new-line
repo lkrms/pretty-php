@@ -1,0 +1,8 @@
+<?php
+
+interface Package {
+    public function path(); 
+    public function name(); 
+    public function version(); 
+    public function testsPath(); 
+}

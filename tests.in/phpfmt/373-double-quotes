@@ -1,0 +1,4 @@
+<?php
+//passes:DoubleToSingleQuote
+$var = "string \$escaped";
+$var2 = "string \$escaped string";

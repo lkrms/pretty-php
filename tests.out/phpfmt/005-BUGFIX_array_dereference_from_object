@@ -1,0 +1,5 @@
+<?php
+$var[] = array(
+'k' => (string) $obj->prop->prop2->prop3[$i]->prop4[$j]->prop5,
+'k2' => $v
+);

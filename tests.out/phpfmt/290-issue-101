@@ -1,0 +1,27 @@
+<?php
+
+// from sublime-phpfmt#101
+$console
+    ->register('cms:setup')
+    ->setDescription("Sets up the CMS environment.")
+    ->setCode(
+        function (InputInterface $input, OutputInterface $output) use ($app) {
+            $public = __DIR__.'/some/class/path';
+
+            // symlink the bundle public folder
+		echo "- Setting up bundle public symlinks...\n";
+            $link = __DIR__.'/../web/bundles/cms';
+
+            if (is_link($link)) {
+                echo "-- Symlink to public bundle folder has already been created.\n";
+            } else {
+                @symlink($public, $link);
+                echo "-- SUCCESS! Symlink to bundle public folder created.\n";
+            }
+
+            // install or update bower
+        echo "- Setting up CMS Bower components...\n";
+            chdir($public);
+            passthru('bower install');
+        }
+    );

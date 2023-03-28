@@ -1,0 +1,23 @@
+<?php
+$a = 1;
+$bbbb = '
+$cccccccc = 3;
+';
+
+
+$c = 0;
+
+$a = array(
+	$a => 1,
+	$ccc => 10,
+);
+$bbbb = array(
+	$b => 0,
+	$cccc => '
+$a = array(
+	0 => 1,
+	10 => 10,
+);
+'
+);
+

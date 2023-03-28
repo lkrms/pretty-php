@@ -1,0 +1,66 @@
+<?php
+//passes:SettersAndGettersPass,Default
+
+namespace Spinen\ConnectWiseApi\Wrappers\ActivityApi;
+
+class Activity
+{
+
+    /**
+     * @var string $CompanyIdentifier
+     */
+    protected $CompanyIdentifier = null;
+
+    /**
+     * @var int $Id
+     */
+    protected $Id;
+
+    /**
+     * @var string $Subject
+     */
+    protected $Subject = null;
+
+}
+
+
+class Activity2
+{
+
+    /**
+     * @var string $CompanyIdentifier
+     */
+    public $CompanyIdentifier = null;
+
+    /**
+     * @var int $Id
+     */
+    public $Id;
+
+    /**
+     * @var string $Subject
+     */
+    public $Subject = null;
+
+}
+
+
+class Activity3
+{
+
+    /**
+     * @var string $CompanyIdentifier
+     */
+    private $CompanyIdentifier = null;
+
+    /**
+     * @var int $Id
+     */
+    private $Id;
+
+    /**
+     * @var string $Subject
+     */
+    private $Subject = null;
+
+}

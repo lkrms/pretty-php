@@ -1,0 +1,21 @@
+<?php
+class SomeClass {
+	private static $var = [
+		'xx' => ['yyyyaas' => 'aaaa', 'code' => 'VA'],
+		'xx' => ['yyyy' => 'aaaa', 'code' => 'ME'],
+		'xx' => ['yyyy' => 'aaaa dddd', 'code' => 'AX'],
+		'xx' => ['yyyy' => 'aaaa dddd', 'code' => 'DN'],
+		'xx' => ['yyyy' => 'aaaa', 'code' => 'DIQ'],
+		'xx' => ['yyyy' => 'aaaa', 'code' => 'JQC'],
+		'xx' => ['yyyy' => 'aaaa dqewq', 'code' => 'LAD'],
+		'xxxx' => ['yyyy' => 'aaaa', 'code' => 'VQQD'],
+		'xx' => ['yyyy' => 'aaaa', 'code' => 'CB'],
+		'xxx' => ['yyyy' => 'aaaa', 'code' => 'CUP'],
+		'x' => ['yyyy' => 'aaaa', 'code' => 'S'],
+		'xx' => ['yyyy' => 'aaaa', 'code' => 'TO'],
+		'x' => ['yyyy' => 'aaaa', 'code' => 'L'],
+		'x' => ['yyyy' => 'aaaa', 'code' => 'N'],
+		'x' => ['yyyy' => 'aaaa', 'code' => 'T'],
+		'xx' => ['yyyy' => 'aaaa', 'code' => 'CBL'],
+	];
+}

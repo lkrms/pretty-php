@@ -1,0 +1,16 @@
+<?php
+$class = new ClassObject('Constant');
+$method = $class->getMethod($name);
+$method->setAccessible(true);
+
+$m->setAccessible(true)
+       ->setName($name);
+;
+
+$m
+->setAccessible(true)
+       ->setName($name);
+;
+?>
+<!-- <script type="text/javascript" src="js.js"></script> -->
+<!-- <script type="text/javascript" src="js/js/js.js"></script> -->

@@ -1,0 +1,26 @@
+<?php
+$var = [
+	'xx' => [
+		'yyyyaas' => 'aaaa',
+		'code' => $arr[0],
+		'yyyyaasa' => 'aaaa',
+	],
+	'xx' => [
+		'yyyyaas' => 'aaaa',
+		'code' => func($arr[0]),
+		'yyyyaasa' => 'aaaa',
+	],
+	'xx' => [
+		'yyyyaas' => 'aaaa',
+		'code' => $arr->{$a},
+		'yyyyaasa' => 'aaaa',
+	],
+	'xx' => [
+		'yyyyaas' => 'aaaa',
+		'code' => func([
+			"aaa" => 1,
+			"aaaaaa" => 1,
+			"aaaaaaaaa" => 1,
+		]),
+	],
+];

@@ -1,0 +1,3 @@
+<?php if (3 > 2) {?>
+    <a href="http://example.com">a link</a>
+<?php }?>

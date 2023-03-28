@@ -1,0 +1,7 @@
+<?php
+include_once('aa');
+require_once('aa');
+include('aa');
+require('aa');
+
+dallala(include("bb"));

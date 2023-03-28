@@ -1,0 +1,29 @@
+<table width="100%" border="1" cellspacing="1" cellpadding="10">
+    <thead>
+        <tr>
+            <td><?=Yii::t('app', 'Param1')?></td>
+            <td><?=Yii::t('app', 'Param2')?></td>
+            <td><?=Yii::t('app', 'Param3')?></td>
+            <td><?=Yii::t('app', 'Param4')?></td>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><?php echo $name?></td>
+            <td><?php foreach ($param2_arr as $key) {
+    echo $key . ' ';
+}
+?></td>
+            <td><?php foreach ($param3_arr as $key) {
+    echo $key . ' ';
+}
+?></td>
+            <td><?php foreach ($param4_arr as $v) {
+    echo CHtml::link($v['name'], array('file', 'id' => $v['id'], 'typ' => '1')) . '<br>';
+}
+?></td>
+        </tr>
+    </tbody>
+</table>
+<?php
+//passes:AlignPHPCode

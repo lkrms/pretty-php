@@ -1,0 +1,14 @@
+<?php
+while(true){}
+while(true){}
+try{}catch(Exception $e){}
+try{$a;}catch(Exception $e){$c;func();$c=array(1,2);}
+while(true){}
+for($i=0;$i<1;$i++){}
+while(true){}
+while(true){
+	while(true){$a;}
+	while(true){$b;}
+	do{$c;}while(true);
+}
+?>

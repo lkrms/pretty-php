@@ -1,0 +1,32 @@
+<?php
+//passes:Default,StripExtraCommaInArray
+$arr = array(
+	1,
+	2,);
+$arr = [
+	1,
+	2,];
+
+$arr = array(
+	1,
+	2,// Comment
+);
+$arr = [
+	1,
+	2,// Comment
+];
+
+$arr = array(
+	1,
+	2,/*Comment*/);
+$arr = [
+	1,
+	2,/*Comment*/];
+
+$a[0][0];
+
+func();
+
+array();
+
+();

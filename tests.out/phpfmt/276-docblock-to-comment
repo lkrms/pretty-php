@@ -1,0 +1,109 @@
+<?php
+//passes: Default,DocBlockToComment
+
+/**
+ * Don't touch this
+ */
+ namespace NS;
+
+/**
+ * Don't touch this
+ */
+class SomeClass {
+	/**
+	 * Don't touch this
+	 */
+	const SOME_CONST = true;
+
+	/**
+	 * Don't touch this
+	 */
+	protected $some_attr = false;
+
+	/**
+	 * Don't touch this
+	 */
+	public function some_public_method() {}
+
+	/**
+	 * Don't touch this
+	 */
+	private function some_private_method() {}
+
+	/**
+	 * Don't touch this
+	 */
+	private function some_protected_method() {}
+
+	/**
+	 * Don't touch this
+	 */
+	function some_method() {}
+
+	/**
+	 * Don't touch this
+	 */
+	static function some_static_method() {}
+
+	/**
+	 * Don't touch this
+	 */
+	public static function some_public_static_method() {}
+
+	/**
+	 * Don't touch this
+	 */
+	static public function some_static_public_method() {}
+
+	function lets_see_some_magic(){
+		/**
+		 * Touch this
+		 */
+		some_func();
+
+		/**
+		 * @var $a SomeType
+		 */
+		$a = 10;
+
+		/**
+		 * @var $b SomeType
+		 */
+		$b;
+
+		/**
+		 * @var $c SomeType
+		 * @var $d SomeType
+		 */
+		list($c, $d) = something();
+
+		/**
+		 * @var $e int
+		 * @var $f SomeType
+		 */
+		foreach($arr as $e => $f){}
+
+		/**
+		 * Touch this
+		 */
+		list($c, $d) = something();
+
+		/**
+		 * Touch this
+		 */
+		foreach($arr as $e => $f){}
+
+		/**
+		 * @var $e int
+		 * @var $f SomeType
+		 */
+		foreach(($arr) as $e => $f){}
+
+		/**
+		 * Touch this
+		 */
+	}
+}
+/**
+ * Touch this
+ */

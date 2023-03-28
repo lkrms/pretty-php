@@ -1,0 +1,137 @@
+<?php
+function a() {
+	if ('foo' == 'bar')
+		foreach ($array as $item => $value) {
+			echo 'Test Code.';
+		}
+}
+
+function b(){
+	echo 'c';
+}
+
+
+function c() {
+	if ('foo' == 'bar'){
+		$a;
+	}else
+		foreach ($array as $item => $value) {
+			echo 'Test Code.';
+		}
+}
+
+function d(){
+	echo 'c';
+}
+
+
+function e() {
+	if ('foo' == 'bar'){
+		$a;
+	}elseif(false)
+		foreach ($array as $item => $value) {
+			echo 'Test Code.';
+		}
+	else
+		foreach ($array as $item => $value) {
+			echo 'Test Code.';
+		}
+}
+
+function f(){
+	echo 'c';
+}
+
+
+function a() {
+	if ('foo' == 'bar')
+		foreach ($array as $item => $value)
+			echo 'Test Code.';
+
+}
+
+
+if($a)
+$a;
+elseif($b)
+$b;
+else
+foreach ($array as $item => $value) // Comment
+// Comment
+	echo 'Test Code.';
+
+if($a)
+	do{$a;}while(true);
+
+if($a):
+	do{$a;}while(true);
+endif;
+
+// while cases
+while($a);
+
+while($a):
+$b;
+endwhile;
+
+while(false)
+do{$a;}while(true);
+
+if($a) function ($a, $b){ $a; $b; };
+
+
+for($i = 0; $i < 10; $i)
+    try{
+        echo 1;
+    }catch(Exception $e){
+        echo 2;
+    }catch(Exception $e){
+        echo 3;
+    }
+
+while(false)
+    try{
+        echo 1;
+    }catch(Exception $e){
+        echo 2;
+    }catch(Exception $e){
+        echo 3;
+    }
+
+function g() {
+	foreach ($array as $item => $value)
+		if ('foo' == 'bar'){
+			$a;
+		}elseif(false)
+			foreach ($array as $item => $value) {
+				echo 'Test Code.';
+			}
+		else
+			foreach ($array as $item => $value) {
+				echo 'Test Code.';
+			}
+}
+
+function h(){
+	echo 'c';
+}
+
+
+while(false)
+do{$a;}while(true);
+
+while(false)
+do{$a;}while(true)/*la*/;
+
+if (true)
+	if (false)
+		echo 1;
+	elseif (false)
+		if (false)
+			echo 2;
+		else
+			echo 3;
+	else
+		echo 3;
+
+foreach (getParameters() as $param)$paramClasses[] = getClass() ? getClass()->name : null;

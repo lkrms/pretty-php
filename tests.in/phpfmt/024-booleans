@@ -1,0 +1,4 @@
+<?php
+if($a or $b){}
+if($a and $b){}
+if($a xor $b){}

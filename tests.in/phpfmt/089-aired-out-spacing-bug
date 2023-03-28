@@ -1,0 +1,4 @@
+<?php
+
+echo inspect_token(+1);
+

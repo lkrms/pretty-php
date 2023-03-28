@@ -1,0 +1,9 @@
+<?php
+//passes:OrderAndRemoveUseClauses,AddMissingCurlyBraces,SmartLnAfterCurlyOpen,NormalizeLnAndLtrimLines,MergeParenCloseWithCurlyOpen,MergeCurlyCloseAndDoWhile,MergeDoubleArrowAndArray,ExtraCommaInArray,ResizeSpaces,Reindent,ReindentColonBlocks,ReindentObjOps,EliminateDuplicatedEmptyLines,AlignEquals,AlignDoubleArrow,LeftAlignComment,RTrim,SettersAndGettersPass|golang,ConstructorPass|golang,NormalizeLnAndLtrimLines,Reindent,RTrim
+
+
+class A {
+	private $a;
+	public $b;
+	protected $c;
+}

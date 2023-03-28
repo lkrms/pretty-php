@@ -1,0 +1,54 @@
+<?php
+//passes:OrderAndRemoveUseClauses,AddMissingCurlyBraces,SmartLnAfterCurlyOpen,NormalizeLnAndLtrimLines,MergeParenCloseWithCurlyOpen,MergeCurlyCloseAndDoWhile,MergeDoubleArrowAndArray,ExtraCommaInArray,ResizeSpaces,Reindent,ReindentColonBlocks,ReindentObjOps,EliminateDuplicatedEmptyLines,AlignEquals,AlignDoubleArrow,LeftAlignComment,RTrim
+$str = <<<EOT
+	sdf
+EOT
+;
+
+$str =<<<EOT
+	sdf
+	{$keywords}abcd"
+EOT;
+
+if ($a) {
+	$str = <<<EOT
+		{$keywords}abcd"
+EOT;
+}
+
+if ($a) {
+	$str = <<<EOT
+		{$keywords}abcd"
+EOT;
+}
+
+if ($a) {
+$str = <<<EOT
+
+		{$keywords}abcd"
+EOT;
+}
+
+if ($a) {
+$str = "
+
+		{$keywords}abcd
+";
+}
+
+
+if($aa){
+
+$str =<<<EOT
+	sdf
+	{$keywords}abcd"
+EOT;
+
+}
+
+if($aa){$str =<<<EOT
+	sdf
+	{$keywords}abcd"
+EOT;
+
+}

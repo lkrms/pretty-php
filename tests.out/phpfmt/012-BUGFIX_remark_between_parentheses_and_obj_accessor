@@ -1,0 +1,14 @@
+<?php
+$obj->get()
+	->set(ConstantBag::NEED_A)
+	->set(ConstantBag::NEED_B)
+	->set(ConstantBag::NEED_C)
+	->set(ConstantBag::NEED_D)
+	->set(ConstantBag::NEED_E)
+	->set(ConstantBag::NEED_F)
+	->set(ConstantBag::NEED_G)
+	->set(ConstantBag::NEED_H)
+	->set(ConstantBag::NEED_J)
+	->set(ConstantBag::NEED_K) //COMMENT
+	->set(ConstantBag::NEED_L)
+;

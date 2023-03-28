@@ -1,0 +1,38 @@
+<?php
+//passes:OrderAndRemoveUseClauses,AddMissingCurlyBraces,SmartLnAfterCurlyOpen,NormalizeLnAndLtrimLines,MergeParenCloseWithCurlyOpen,MergeCurlyCloseAndDoWhile,MergeDoubleArrowAndArray,ExtraCommaInArray,ResizeSpaces,Reindent,ReindentColonBlocks,ReindentObjOps,EliminateDuplicatedEmptyLines,AlignEquals,AlignDoubleArrow,LeftAlignComment,RTrim
+
+if($a == 1) $x = $i;
+while ($ten != 0) {
+    $ten = intval($ten / 26);
+}
+
+if($a == 1) $x = $i;
+elseif($b == 1)
+while ($ten != 0) {
+    $ten = intval($ten / 26);
+}
+
+if($a == 1) $x = $i;
+elseif($b == 1)
+while ($ten != 0) {
+    $ten = intval($ten / 26);
+}
+else
+while ($ten != 0) {
+    $ten = intval($ten / 26);
+}
+
+for ($i; $i< 10; $i++) $x = $i;
+while ($ten != 0) {
+	$ten = intval($ten / 26);
+}
+
+foreach ($arr as $i) $x = $i;
+while ($ten != 0) {
+	$ten = intval($ten / 26);
+}
+
+while(false) $x = $i;
+while ($ten != 0) {
+	$ten = intval($ten / 26);
+}

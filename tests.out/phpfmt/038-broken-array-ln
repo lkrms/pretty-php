@@ -1,0 +1,8 @@
+<?php
+$opts = array(
+	'k' =>
+	array(
+		'k' => 0,
+		'l' => 1
+	)
+);

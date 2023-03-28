@@ -1,0 +1,11 @@
+<?php
+
+if (true):
+	if (true):
+		echo 'Testing HereDoc';
+	endif;
+
+$html_out = <<<HtmlOutput
+    <div>Some text</div>
+HtmlOutput;
+endif;

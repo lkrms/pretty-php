@@ -1,0 +1,28 @@
+<?php
+namespace MyProject;
+
+use Project\Connection;
+use A;
+use C;
+
+class A {
+	function bc(){
+		new B();
+		new Connection();
+	}
+}
+
+class B{}
+
+namespace AnotherProject;
+
+use MyProject\C;
+use MyProject\B;
+use MyProject\A;
+
+class Connection {
+	function bcc(){
+		new A();
+		new C();
+	}
+}

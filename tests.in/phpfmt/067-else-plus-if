@@ -1,0 +1,15 @@
+<?php
+if($a == $b && $a==$c){
+$v = $a;
+}else{
+$r = func($af);
+$bo = func2($af, $r[0]['a']);
+if ($bo<=$r[0]['b']) {
+	$v = $a;
+} else if ($bo<=$r[1]['b']) {
+	$v = $b;
+} else {
+	$v = $c;
+}
+unset($bo);
+}

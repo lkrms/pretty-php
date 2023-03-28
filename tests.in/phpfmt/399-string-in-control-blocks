@@ -1,0 +1,34 @@
+<?php
+//passes: SpaceAroundControlStructures
+
+if (true) {
+	$label = "{$foo}{$bar}";
+}
+
+echo <<<EOT
+{$foo}{$bar}
+EOT;
+
+//comment that explain the if
+if ($x) {
+	//body
+}
+
+$someothercode;
+
+//comment that explain the if
+while ($x) {
+	//body
+}
+
+$someothercode;
+
+$someothercode;
+//comment that explain the if
+while ($x) {
+	//body
+}
+
+?>
+
+<?php //comment should stay

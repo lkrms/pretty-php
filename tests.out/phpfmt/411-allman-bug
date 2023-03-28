@@ -1,0 +1,31 @@
+<?php
+//passes:AllmanStyleBraces
+function lazyload_replace($content)
+{
+    $content = preg_replace_callback('/<img(.+)src=[\'"]([^\'"]+)[\'"](.*)>/i',
+        function ($matches)
+        {
+            $tpl_url = Helper::options()->themeUrl;
+            if (strpos($matches[0], 'data-nolazyload') === false)
+        {
+                return "<img{$matches[1]}data-original=\"{$matches[2]}\" rel=\"lazyload\" src=\"{$tpl_url}/img/lazy_loading.gif\"{$matches[3]}>";
+            }
+            return $matches[0];
+
+        }, $content);
+
+    $content = preg_replace_callback(
+        '/<img(.+)src=[\'"]([^\'"]+)[\'"](.*)>/i',
+        function ($matches)
+        {
+            $tpl_url = Helper::options()->themeUrl;
+            if (strpos($matches[0], 'data-nolazyload') === false)
+        {
+                return "<img{$matches[1]}data-original=\"{$matches[2]}\" rel=\"lazyload\" src=\"{$tpl_url}/img/lazy_loading.gif\"{$matches[3]}>";
+            }
+            return $matches[0];
+
+        }, $content);
+
+    return $content;
+}

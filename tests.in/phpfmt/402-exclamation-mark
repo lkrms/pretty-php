@@ -1,0 +1,3 @@
+<?php
+//passes: SpaceAroundExclamationMark
+if (!true) foo();

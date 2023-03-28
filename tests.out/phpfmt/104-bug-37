@@ -1,0 +1,26 @@
+<?php
+if($a)
+throw new OrderException("Order №{$orderId} not found", 100);
+
+if($a)
+throw new OrderException("Order №{$orderId} not found", 100);
+else
+throw new OrderException("Order №{$orderId} not found", 100);
+
+if($a)
+throw new OrderException("Order №{$orderId} not found", 100);
+elseif(!$a)
+throw new OrderException("Order №{$orderId} not found", 100);
+
+if($a)
+throw new OrderException("Order №{$orderId} not found", 100);
+elseif(!$b)
+throw new OrderException("Order №{$orderId} not found", 100);
+else
+throw new OrderException("Order №{$orderId} not found", 100);
+
+for($a = 0; $a < 10; $a++)
+throw new OrderException("Order №{$orderId} not found", 100);
+
+foreach($a as $v)
+throw new OrderException("Order №{$orderId} not found", 100);

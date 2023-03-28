@@ -1,0 +1,6 @@
+<?php
+$arr += func();
+
+if ($obj instanceof ClassObject && $kk = $obj->get()) {
+$arr["k"] = $kk;
+}

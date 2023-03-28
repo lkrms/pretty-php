@@ -1,0 +1,8 @@
+<?php
+//version:7.0.0
+
+function a(float $a, float $b):float{
+	return $a + $c;
+}
+
+$result = null !== $b ? (null !== $a ? 0 : 0 !== $a->{$b}->c): 0 !== $b->{$a}->c;

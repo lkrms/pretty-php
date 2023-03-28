@@ -1,0 +1,36 @@
+<?php
+//passes:Default,RemoveUseLeadingSlash
+namespace NS{
+
+use \A\B;
+
+trait SomeTrait {
+	use \Something;
+}
+class C {
+	use \SomeTrait;
+	function a(){
+		$a = function($a) use ($c){
+
+		};
+	}
+}
+new B();
+}
+namespace NS2 {
+use \A\B;
+
+trait SomeTrait {
+	use \Something;
+}
+class C {
+	use \SomeTrait;
+	function a(){
+		$a = function($a) use ($c){
+
+		};
+	}
+}
+new B();
+
+}

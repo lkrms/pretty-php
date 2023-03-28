@@ -1,0 +1,91 @@
+<?php
+function dataState() {
+if($a === 1 && ($cm === 'PCDATA' || $cm === 'RCDATA')) {
+/*
+Multiline comment
+Comment */
+$state = 'eD';
+
+} elseif($ch === '-') {
+/*
+Multiline comment
+Comment 2 */
+if(($cm === 'RCDATA' || $cm ===
+'CDATA') && $es === false &&
+$tch >= 3 && charfunc($tch - 4, 4) === '<!--') {
+$es = true;
+}
+
+/*
+Multiline comment
+Comment 3 */
+func(array(
+'type' => 'CHAR',
+'data' => $ch
+));
+
+/*
+Multiline comment
+Comment 4 */
+} elseif($ch === '<' && ($cm === 'PCDATA' ||
+(($cm === 'RCDATA' ||
+$cm === 'CDATA') && $es === false))) {
+/*
+Multiline comment
+Comment 5 */
+$state = 'tO';
+
+/*
+Multiline comment
+Comment 6 */
+} elseif($ch === '>') {
+/*
+Multiline comment
+Comment 7 */
+if(($cm === 'RCDATA' ||
+$cm === 'CDATA') && $es === true &&
+charfunc($tch, 3) === '-->') {
+$es = false;
+}
+
+/*
+Multiline comment
+Comment 8 */
+func(array(
+'type' => 'CHAR',
+'data' => $ch
+));
+
+} elseif($tch === $this->EOF) {
+/*
+Multiline comment
+Comment 8 */
+funcE();
+
+} elseif($cm === 'PT') {
+/*
+Multiline comment
+Comment 9 */
+func(array(
+'type' => 'CHAR',
+'data' => substr($dt, $tch)
+));
+
+$this->EOF();
+
+} else {
+/*
+Multiline comment
+Comment 10 */
+$len  = strcspn($dt, '<&', $tch);
+$ch = substr($dt, $tch, $len);
+$tch += $len - 1;
+
+func(array(
+'type' => 'CHAR',
+'data' => $ch
+));
+
+$state = 'd';
+}
+}

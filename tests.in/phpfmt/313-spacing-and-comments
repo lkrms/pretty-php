@@ -1,0 +1,12 @@
+<?php
+new TwitterOAuth(// Test comment
+    '012', // Consumer key
+    '345', // Consumer secret
+    '678', // OAuth token
+    '901'// OAuth token secret
+); // Test comment
+
+if (true) {// Test comment
+    echo 'hi'; // Test comment
+}// Test comment
+

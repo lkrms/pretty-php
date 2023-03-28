@@ -1,0 +1,10 @@
+<?php
+//passes: AutoSemicolon
+
+echo $a
+
+if ($a) {
+	echo $b
+}
+
+$a = new SomeClass()

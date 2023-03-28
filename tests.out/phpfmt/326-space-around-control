@@ -1,0 +1,45 @@
+<?php
+//passes:SpaceAroundControlStructures
+
+if($a){
+
+}
+do {
+
+}while($a);
+if($b){
+
+}
+
+echo "${a}";
+
+echo "{$a}";
+
+echo "${a}aaa";
+
+echo "{$a}bbb";
+
+$a = 10;
+if($b){
+
+}
+
+
+function a($a){
+$a = 10;
+if($b){
+}
+}
+
+function b($a){
+$a = 10;
+if($b){
+}
+$a = 10;
+}
+
+function c($a){
+if($b){
+}
+$a = 10;
+}

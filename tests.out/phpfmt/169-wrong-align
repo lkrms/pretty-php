@@ -1,0 +1,37 @@
+<?php
+
+array(
+"aaaa"  => 1,
+"bbbb"    => 2,
+"ccccc"  => 1,
+"ddddbbbb"    => 3,
+"eeee"  => 1,
+"dd"    => [
+	1 => 2,
+	3111 => 2,
+	1 => 2
+],
+);
+
+array(
+"aaaa"  => 1,    "bbbb"    => 2,
+"ccccc"  => 1,    "ddddbbbb"    => 3,
+"eeee"  => 1,    "dd"    => 3,
+);
+
+[
+"aaaa"  => 1,    "bbbb"    => 2,
+"ccccc"  => 1,    "ddddbbbb"    => 3,
+"eeee"  => 1,    "dd"    => 3,
+];
+
+
+array(
+"aaaa"  => 1,    "bbbb"    => 2,"ccccc"  => 1,
+"ddddbbbb"    => 3,"eeee"  => 1,    "dd"    => 3,
+);
+
+[
+"aaaa"  => 1,    "bbbb"    => 2,"ccccc"  => 1,
+"ddddbbbb"    => 3,"eeee"  => 1,    "dd"    => 3,
+];

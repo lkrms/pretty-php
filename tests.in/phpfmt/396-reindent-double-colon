@@ -1,0 +1,4 @@
+<?php
+Foobar
+    ::bar()
+    ->baz;

@@ -1,0 +1,15 @@
+<?php
+function& aFunc() {}
+
+class aClass {
+function& aMethod() {}
+}
+
+$a = &implode($a, $b);
+
+$var = function &() {}
+$var2 = function& ()use($anotherVar){}
+
+array_map(function &($a) use ($someVar) {
+return 1;
+}, $arr);

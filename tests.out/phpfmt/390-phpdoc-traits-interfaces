@@ -1,0 +1,40 @@
+<?php
+//passes: GeneratePHPDoc
+
+trait SomeTrait {
+	private $x = [];
+
+	private $t = 1;
+
+	public function doSomething($a) {
+		$this->x[$this->$t] = $a;
+	}
+}
+
+interface Database {
+	public function find(array $params);
+
+	public function fetchBy($id, array $options = []);
+}
+
+class MySQL implements Database {
+	use SomeTrait;
+	use SomeOtherTrait;
+
+	private $a = 1;
+
+	private $b = [];
+
+	public function __construct($a, array $b) {
+		$this->a = $a;
+		$this->b = $b;
+	}
+
+	public function find(array $params) {
+
+	}
+
+	public function fetchBy($id, array $options = []) {
+
+	}
+}

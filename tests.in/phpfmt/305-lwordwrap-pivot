@@ -1,0 +1,19 @@
+<?php
+//passes:Default,PSR2IndentWithSpace,LeftWordWrap
+echo 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15;
+
+if (true) {
+	echo 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13;
+}
+
+echo '                                                                             ';
+
+$obj->prop->prop->prop->prop->prop->prop->prop->prop->prop->prop->prop->prop->prop->f();
+$obj->prop->prop->prop->prop->prop->prop->prop->prop->prop->prop->prop->prop->f::aa();
+
+$obj::prop::prop::prop::prop::prop::prop::prop::prop::prop::prop::prop::prop::f::aa();
+
+function a($a, $b, $c, $d, $e, $f, $g, $h, $i, $j, $k, $l, $m, $n, $o, $p, $q, $t){
+	a($a, $b, $c, $d, $e, $f, $g, $h, $i, $j, $k, $l, $m, $n, $o, $p, $q, $t);
+	$amazingly_long_variable_name_which_is_big_enough_to_force_wordwrap_wow_how_big;
+}

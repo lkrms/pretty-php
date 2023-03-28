@@ -1,0 +1,8 @@
+<?php
+//passes:AutoSemicolon
+
+$url = (
+    isset($array['url'])
+    ? $array['url']
+    : 'myurl123'
+);

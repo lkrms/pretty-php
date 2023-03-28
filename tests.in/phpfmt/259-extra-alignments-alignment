@@ -1,0 +1,12 @@
+<?php
+//passes:Default, AlignDoubleSlashComments
+function a(
+	TypeA $a // Comment 1
+	TypeBB $b // Comment 2
+	TypeCCC $c // Comment 3
+){
+	noop(); // Comment 4
+	// Comment 5
+
+	// Comment 6
+}

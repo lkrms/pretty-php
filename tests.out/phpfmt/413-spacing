@@ -1,0 +1,6 @@
+<?php
+//passes:default,EliminateDuplicatedEmptyLines,RTrim,ShortArray,SortUseNameSpace,SpaceAroundExclamationMark,LeftAlignComment,PSR2ModifierVisibilityStaticOrder,ReindentEqual,Reindent,ReindentObjOps,AlignDoubleArrow,AlignEquals,ReindentColonBlocks,SplitCurlyCloseAndTokens,ResizeSpaces,StripExtraCommaInList,YodaComparisons,MergeDoubleArrowAndArray,MergeCurlyCloseAndDoWhile,MergeParenCloseWithCurlyOpen,NormalizeLnAndLtrimLines,ExtraCommaInArray,SmartLnAfterCurlyOpen,AddMissingCurlyBraces,OrderAndRemoveUseClauses,NormalizeIsNotEquals,RemoveIncludeParentheses,TwoCommandsInSameLine,SpaceBetweenMethods,ReturnNull,DoubleToSingleQuote
+
+if (!$ugly && !$dumb) {
+
+}

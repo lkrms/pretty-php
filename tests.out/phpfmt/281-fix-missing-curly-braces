@@ -1,0 +1,32 @@
+<?php
+if (true)
+	if (false)
+		echo 1;
+	elseif (false)
+		echo 2;
+	else
+		echo 3;
+
+if(true)
+	if(true)
+		echo 1;
+	else
+		echo 2;
+	else
+		echo 3;
+
+
+if(true)
+	for($i = 0; $i < 10; $i++)
+		echo $i;
+
+if (true)
+	if (false)
+		echo 1;
+	elseif (false)
+		if (false)
+			echo 2;
+		else
+			echo 3;
+	else
+		echo 3;

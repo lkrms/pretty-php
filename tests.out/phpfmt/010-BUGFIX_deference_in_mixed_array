@@ -1,0 +1,6 @@
+<?php
+$var = array(
+ConstantBag::NAME => $a[$b[self::KEY_NAME]],
+ConstantBag::TEXT_1 => isset($a['text1']) ? $a['text1']:'',
+ConstantBag::TEXT_2 => isset($a['text2']) ? $a['text2']:'',
+);

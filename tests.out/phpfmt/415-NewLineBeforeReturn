@@ -1,0 +1,21 @@
+<?php
+//passes:NewLineBeforeReturn
+function a(){
+	$a = 1;
+	return $a;
+}
+
+function b() {
+	return 1;
+}
+
+switch ($mode) {
+    case 'day':
+        return $date;
+    case 'week':
+        return static::getLastOfWeek($date);
+    case 'month':
+        return static::getLastOfMonth($date);
+    case 'year':
+        return static::getLastOfYear($date);
+}

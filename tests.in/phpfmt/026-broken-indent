@@ -1,0 +1,21 @@
+<?php
+function func($a) {
+if ($detailed) {
+	if (isset($obj, $obj->ID, $obj->DN)) {
+		$res['o'] = array(
+			'id' => (string) $obj->ID,
+			'name' => (string) $obj->N,
+		);
+	}
+	$res['b'] = array();
+	foreach ($obj->Buckets->Bucket as $b) {
+		$res['b'][] = array(
+			'name' => (string) $b->N,
+			'time' => strtotime((string) $b->CD)
+		);
+	}
+} else foreach ($obj->Buckets->Bucket as $b) {
+	$res[] = (string) $b->N;
+}
+return $res;
+}

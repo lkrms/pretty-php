@@ -1,0 +1,55 @@
+<?php
+//passes:GeneratePHPDoc, Default
+function a($c = array()){
+
+}
+
+class Abc{
+	function a(ClassA $a, \Lll\llll\ppp $b = 10, $c = array()){
+
+		return $c;
+	}
+
+	public static function b(ClassA $a, \Lll\llll\ppp $b = 10, $c = array()){
+
+		return $c;
+	}
+
+
+	static private function c(ClassA $a, \Lll\llll\ppp $b = 10, $c){
+
+		return $c;
+	}
+
+	static private function d(ClassA $a, \Lll\llll\ppp $b = 10, $c = array(), $d){
+
+		$a = function ($d){
+			echo 1;
+		};
+		return;
+	}
+
+	static private function e(ClassA $a, \Lll\llll\ppp $b = 10, $c = array(), $d){
+		$a = function ($d){
+			echo 1;
+		};
+		return 1;
+	}
+
+	static private function f(ClassA $a, \Lll\llll\ppp $b = 10, $c = array(), $d){
+		$a = function ($d){
+			echo 1;
+		};
+		return 1.0;
+	}
+	static private function g(ClassA $a, \Lll\llll\ppp $b = 10, $c = array(), $d){
+		$a = function ($d){
+			echo 1;
+		};
+		return $a;
+	}
+}
+
+abstract class B {
+	static private function g(ClassA $a, \Lll\llll\ppp $b = 10, $c = array(), $d);
+}

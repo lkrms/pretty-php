@@ -1,0 +1,12 @@
+<?php
+//passes:AutoSemicolon
+
+echo ($a)
+
+foreach($a as $v)
+{
+
+}
+
+echo [$a]
+

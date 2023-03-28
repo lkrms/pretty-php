@@ -1,0 +1,16 @@
+<?php
+//passes:PrettyPrintDocBlocks,Default
+
+/**
+ * description
+ *
+ * @param  array       $v1 long descriptions but all differ a bit
+ * @param  array       $v2 long descriptions  but all differ a bit
+ * @param  \NS\NS2\NS3 $v3 long  descriptions but all  differ a bit
+ * @param  int         $v4 long descriptions but all differ a  bit
+ * @param  string      $v51 long descriptions but all  differ a bit
+ * @return string
+ */
+function SomeFunc(array $v1, array $v2, NS3 $v3, $v4, $v51) {
+	return 'string';
+}

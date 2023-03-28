@@ -1,0 +1,9 @@
+<?php
+//passes:Default,CakePHPStyle
+class SomeClass {
+	protected function method() {
+		$ord = $var{$i};
+		$var{ $i} . $var{ $i + 1} . $var{ $i + 2} . $var{ $i + 3} . $var{ $i + 4} . $var{ $i + 5};
+		$this->property{$i} = 10;
+	}
+}

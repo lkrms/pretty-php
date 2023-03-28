@@ -1,0 +1,63 @@
+<?php
+$x = array(
+	array(1)
+);
+
+$x = array(
+ // Comment
+);
+$x = array(
+ /* Comment */
+);
+
+$x = array(1, 2, 3,
+  4, 5, 6);
+
+$x = array(1, 2, 3,
+  4, 5, 6
+  );
+
+$x = array(
+	3,
+	array(
+		4,
+		($var ? 1 : 0),
+		($var ? array($b) : !($c)),
+		array(
+			5,
+			array(
+				(2),
+			)
+		)
+	)
+);
+$x = [
+	3,
+	[
+		4,
+		($var ? 1 : 0),
+		($var ? [$b] : !($c)),
+		[
+			5,
+			[
+				(2),
+			]
+		]
+	]
+];
+$x = [
+ /* Comment */
+ ];
+$x = [
+ // Comment
+ ];
+
+$var = array(
+        "supercalifral"
+        // line comment
+    );
+
+$var = array(
+        "supercalifral"
+        /* comment */
+    );

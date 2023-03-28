@@ -1,0 +1,11 @@
+<?php
+//passes:TightConcat
+throw new \InvalidArgumentException('a '.
+    'b. '.
+    'c '.
+    'd.');
+
+throw new \InvalidArgumentException('a '
+    . 'b. '
+    . 'c '
+    . 'd.');

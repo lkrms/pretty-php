@@ -1,0 +1,23 @@
+<?php
+//passes:PSR2MultilineFunctionParams
+
+function a($a){
+	return false;
+}
+
+function b($a, $b){
+	return true;
+}
+
+function c(Test $a, Foo $b, $c = array(), array $d = []){
+	return true;
+}
+
+function d(
+	Test $a,
+	Foo $b,
+	$c = array(),
+	array $d = []
+) {
+	return true;
+}

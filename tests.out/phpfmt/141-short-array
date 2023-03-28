@@ -1,0 +1,22 @@
+<?php
+//passes:OrderAndRemoveUseClauses,AddMissingCurlyBraces,SmartLnAfterCurlyOpen,NormalizeLnAndLtrimLines,MergeParenCloseWithCurlyOpen,MergeCurlyCloseAndDoWhile,MergeDoubleArrowAndArray,ExtraCommaInArray,ResizeSpaces,Reindent,ReindentColonBlocks,ReindentObjOps,EliminateDuplicatedEmptyLines,AlignEquals,AlignDoubleArrow,LeftAlignComment,RTrim,ShortArray
+
+$x = array();
+ $x = array(); $y = array();
+ $x = array( );
+ $x = array('foo');
+ $x = array( 'foo' );
+ $x = array(($y ? true : false));
+ $x = array(($y ? array(true) : array(false)));
+ $x = array(($y ? array(true) : array( false )));
+ $x = array(($y ? array("t" => true) : array("f" => false)));
+ print_r(array(($y ? true : false)));
+ $x = array(array(array()));
+ $x = array(array(array()));
+ $y = array(array(array()));
+ function a($foo = array()) {
+
+ }
+ function b(array $foo = array()) {
+
+ }

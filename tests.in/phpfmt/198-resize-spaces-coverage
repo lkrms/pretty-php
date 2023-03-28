@@ -1,0 +1,14 @@
+<?php
+
+do
+//Comment
+{
+
+
+}while(false);
+
+while
+//Comment
+(false){
+
+}

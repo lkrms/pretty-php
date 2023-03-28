@@ -1,0 +1,36 @@
+<?php
+// comment #1
+if ($f) {
+}
+// comment #2
+else {
+}
+
+switch ($f) {
+	// comment #1
+	case '1':
+	if($a){
+		// comment #1 inside case;
+	}
+		break;
+
+	// comment #2
+	default:
+		// comment #2 inside case;
+		break;
+}
+
+
+switch ($f) {
+	// comment #1
+	case '1':
+	if($a){
+		// comment #1 inside case;
+	}
+
+	// comment #2
+	// comment #3
+	/* comment #4 */
+	default:
+		// comment #2 inside case;
+}

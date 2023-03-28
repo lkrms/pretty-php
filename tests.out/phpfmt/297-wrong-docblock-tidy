@@ -1,0 +1,33 @@
+<?php
+//passes:Default,PrettyPrintDocBlocks
+
+/**
+ * Original code modified.
+ * Some long text.
+ *
+ * @author tizio@author.com
+ * @author caio@author.com
+ * @author sempronio@author.com
+ * @license https://home.com/license
+ *
+ * @see     https://home.com/something
+ */
+class A {
+
+}
+
+/**
+ * Original code modified.
+ * Some long text.
+ *
+ *
+ * @author tizio@author.com
+ * @author caio@author.com
+ * @author sempronio@author.com
+ * @license https://home.com/license
+ *
+ * @see     https://home.com/something
+ */
+class A {
+
+}

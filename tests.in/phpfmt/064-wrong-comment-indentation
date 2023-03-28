@@ -1,0 +1,10 @@
+<?php
+class ClassObject {
+
+	/**
+	 * TBD
+	 */
+	function func(){
+
+	}
+}

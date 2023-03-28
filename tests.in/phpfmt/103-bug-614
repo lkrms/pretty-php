@@ -1,0 +1,4 @@
+<?php
+$foo = 5;
+$bar = $foo + 1 . 'foo';
+echo $bar.PHP_EOL;

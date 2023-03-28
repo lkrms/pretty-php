@@ -1,0 +1,24 @@
+<?php
+$varArray = array(
+"a" => "b",
+);
+
+$var3 = <<<EOA
+data
+data
+data
+EOA;
+
+$varArray = array(
+"a" => "b",
+);
+
+$varArray = [
+"c" => "d",
+];
+
+$var4 = "";
+
+$varArray = [
+"c" => "d",
+];

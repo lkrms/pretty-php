@@ -1,0 +1,48 @@
+<?php
+//passes: TwoCommandsInSameLine, AddMissingCurlyBraces, NormalizeLnAndLtrimLines, MergeParenCloseWithCurlyOpen, MergeCurlyCloseAndDoWhile, MergeDoubleArrowAndArray, ExtraCommaInArray, ResizeSpaces, Reindent, ReindentColonBlocks,   ReindentObjOps, OrderAndRemoveUseClauses, EliminateDuplicatedEmptyLines, AlignEquals, AlignDoubleArrow, LeftAlignComment, RTrim, MildAutoPreincrement
+
+$a++;
+
+if($a++){
+
+}
+
+$a++;
+$this->a[$a++];
+$this->a{$b++}($a++);
+$this->a($a++);
+$this->a{$b++}();
+
+echo "a".$i++;
+
+
+$a--;
+
+if($a--){
+
+}
+
+$a--;
+$this->a[$a--];
+$this->a{$b--}($a--);
+$this->a($a--);
+$this->a{$b--}();
+
+echo "a".$i--;
+
+++$i;
+--$i;
+
+
+$a[] = 10;
+
+"$a";
+
+stdClass::$a;
+
+$var{ ClassName2 };
+
+$a[[10]] = 10;
+
+
+\ClassName\CS::constName;

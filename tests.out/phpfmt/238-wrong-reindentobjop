@@ -1,0 +1,15 @@
+<?php
+//passes: Default,CakePHPStyle
+
+class SomeClass {
+	public function theMethod() {
+		$this->methodA()
+			->methodB();
+	}
+
+	public function theMethod2() {
+		$this->methodA()
+			->methodB($this->nestedMethodC(
+			));
+	}
+}

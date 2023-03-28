@@ -1,0 +1,8 @@
+<?php
+//passes: Default,PSR2CurlyOpenNextLine,AllmanStyleBraces
+
+function a()
+
+{
+
+}

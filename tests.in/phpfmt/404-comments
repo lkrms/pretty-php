@@ -1,0 +1,16 @@
+<?php
+/*
+if (true) {
+    echo 'Hi' . PHP_EOL;
+    if (false) {
+        echo 'Oh noes!' . PHP_EOL;
+    }
+}
+*/
+
+/*if (true) {
+    echo 'Hi' . PHP_EOL;
+    if (false) {
+        echo 'Oh noes!' . PHP_EOL;
+    }
+}*/

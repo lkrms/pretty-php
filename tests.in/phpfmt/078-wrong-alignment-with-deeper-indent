@@ -1,0 +1,40 @@
+<?php
+
+class StdObj{
+	/**
+	 * return array
+	 */
+	public function execute() {
+		return [
+		        '',
+			'aaaaaaaaaaaaaaaaaaaa' => [
+				'aaaaaaaaaaaaa' => '',
+				'aaaaaaaaaaa' => 200,
+				'aaaaaaaa' => [
+					'aaaaaaaaaaaaaa' => false,
+					'aaaaaaaaaaaaa' => true,
+					'aaaaaaaaaa' => true,
+				]
+			],
+			'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' => [
+				'aaaaaaaaaaaaa' => [
+					'qqqqqqqqqq' => [
+						'qqqqqq' => [
+							0 => [
+								'cccccc' => '123123',
+								'aaaa' => '321312',
+								'bbbb' => '423423'
+							]
+						]
+					]
+				],
+				'aaaaaaaaaaa' => 200,
+				'aaaaaaaa' => [
+					'aaaaaaaaaaaaaa' => false,
+					'aaaaaaaaaaaaa' => true,
+					'aaaaaaaaaa' => true,
+				]
+			]
+		];
+	}
+}

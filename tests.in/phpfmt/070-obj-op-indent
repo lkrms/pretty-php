@@ -1,0 +1,16 @@
+<?php
+$object = $this
+->Method1()
+->Method2()
+->Method3($data)
+;
+
+$object = $this->Method1()
+->Method2()
+->Method3($data)
+;
+
+$this->Method1()
+->Method2()
+->Method3($data)
+;

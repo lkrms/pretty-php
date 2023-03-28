@@ -1,0 +1,8 @@
+<?php
+namespace NS\SNS;
+use \LL\AA as Sp;
+interface LLLL {
+	public function fn();
+	public function fn2(Sp $id);
+	public function fn3($id, $term);
+}

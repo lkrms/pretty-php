@@ -1,0 +1,18 @@
+<?php
+//passes:Default,WrongConstructorName
+
+namespace NS1;
+
+class WrongConstructorName {
+	function wrongconstructorname(){
+
+	}
+}
+
+function a(){
+
+}
+
+echo WrongConstructorName::class;
+
+echo 'a';

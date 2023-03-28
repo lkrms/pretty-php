@@ -1,0 +1,5 @@
+<?php function hi() {?>
+	<!DOCTYPE HTML><html><head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<link href=img/icn/<?php echo 'icon'?>rel=icon>
+<?php }?>

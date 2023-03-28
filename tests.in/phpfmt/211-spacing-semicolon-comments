@@ -1,0 +1,2 @@
+<?php
+$obj = $obj2->action()->action2(); /** @var Someclass $obj2 */

@@ -1,0 +1,100 @@
+<?php
+
+if($a == 1) $x = $i; else;
+if($a == 1) /* hw */ $x = $i; else;
+
+if (isset($var))
+if (0 == $var) {
+$a;
+} elseif ($var > 1) {
+$b;
+}
+
+if (isset($var))
+if (0 == $var) {
+$a;
+}elseif($a) $b;
+
+
+if (isset($var))
+if (0 == $var) {
+$a;
+}elseif($a)
+while($a) $c;
+
+if (isset($var))
+if (0 == $var) {
+$a;
+} else {
+$b;
+}
+
+if (isset($var))
+if (0 == $var) {
+$a;
+} else
+$b;
+
+if ($a) do {$a;} while (true);
+
+if ($a) $a = function ($a, $b) {
+	if($a) $b;
+};
+
+//----
+
+// A
+// if($a == 1) $x = $i;
+// elseif($b == 1)
+// while ($ten != 0) {
+//     $ten = intval($ten / 26);
+// }
+// else
+// while ($ten != 0) {
+//     $ten = intval($ten / 26);
+// }
+if($a == 1) $x = $i;
+elseif($b == 1)
+while ($ten != 0) {
+    $ten = intval($ten / 26);
+}
+else
+while ($ten != 0) {
+    $ten = intval($ten / 26);
+}
+
+// B
+// if($a == 1) $x = $i;
+// elseif($b == 1)
+// while ($ten != 0) $ten = intval($ten / 26);
+// else
+// while ($ten != 0) $ten = intval($ten / 26);
+if($a == 1) $x = $i;
+elseif($b == 1)
+while ($ten != 0) $ten = intval($ten / 26);
+else
+while ($ten != 0) $ten = intval($ten / 26);
+
+// C
+// if($a == 1) $x = $i;
+// elseif($b == 1)
+// while ($ten != 0) { $ten = intval($ten / 26); }
+// else
+// while ($ten != 0) $ten = intval($ten / 26);
+if($a == 1) $x = $i;
+elseif($b == 1)
+while ($ten != 0) { $ten = intval($ten / 26); }
+else
+while ($ten != 0) $ten = intval($ten / 26);
+
+// D
+// if($a == 1) $x = $i;
+// elseif($b == 1)
+// while ($ten != 0) $ten = intval($ten / 26);
+// else
+// while ($ten != 0) { $ten = intval($ten / 26); }
+if($a == 1) $x = $i;
+elseif($b == 1)
+while ($ten != 0) $ten = intval($ten / 26);
+else
+while ($ten != 0) { $ten = intval($ten / 26); }

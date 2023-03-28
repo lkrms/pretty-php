@@ -1,0 +1,28 @@
+<?php
+//passes:Default,AllmanStyleBraces
+function A()
+{
+    switch ($K)
+    {
+        case 1:
+            if ($con)
+            {//when there is a '{',all format will be wrong
+                //do ...
+            }
+            if ($con)
+            {//when there is a '{',all format will be wrong
+                //do ...
+            }
+            break;
+        default:
+            //do
+            if(true){
+
+            }
+    }
+}
+
+function B()
+{
+    //do
+}

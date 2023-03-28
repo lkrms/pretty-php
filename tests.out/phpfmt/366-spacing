@@ -1,0 +1,3 @@
+<?php
+for ($i = 0; ($i < $PER_PAGE) && ($i < count($users)); ++$i) {
+}

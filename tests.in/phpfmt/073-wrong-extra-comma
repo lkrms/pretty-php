@@ -1,0 +1,5 @@
+<?php
+function a(
+	array $a, $b = null
+) {
+}

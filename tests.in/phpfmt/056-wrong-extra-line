@@ -1,0 +1,3 @@
+<?php
+class SubException extends Exception implements InterfaceName {
+}

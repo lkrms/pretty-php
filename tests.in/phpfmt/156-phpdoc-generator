@@ -1,0 +1,20 @@
+<?php
+//passes:GeneratePHPDoc, Default
+
+class Abc{
+
+	function a(ClassA $a, \Lll\llll\ppp $b = 10, $c = array()){
+
+		return $c;
+	}
+
+	public static function b(ClassA $a, \Lll\llll\ppp $b = 10, $c = array()){
+
+		return $c;
+	}
+
+	static private function b(ClassA $a, \Lll\llll\ppp $b = 10, $c = array()){
+
+		return $c;
+	}
+}

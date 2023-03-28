@@ -1,0 +1,10 @@
+<?php
+$exclude_dirs = array(
+	'a/',
+	'b/',
+	'c/',
+	'd/',
+	/* comment
+
+	 */
+);

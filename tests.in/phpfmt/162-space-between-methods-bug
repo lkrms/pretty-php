@@ -1,0 +1,17 @@
+<?php
+//passes:SpaceBetweenMethods,Default
+$optPasses = array_map(function ($v) {
+ 			return trim($v);
+}, explode(',', $opts['passes']));
+
+array_filter($arr,
+	function ($v) {
+		return '--smart_linebreak_after_curly' !== $v;
+	}
+);
+
+function b(){
+	return function ($v) {
+		return '--smart_linebreak_after_curly' !== $v;
+	};
+}

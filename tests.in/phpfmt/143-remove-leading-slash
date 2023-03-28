@@ -1,0 +1,7 @@
+<?php
+//passes:Default,RemoveUseLeadingSlash
+namespace NS;
+
+use \A\B;
+
+new B();

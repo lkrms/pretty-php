@@ -1,0 +1,3 @@
+<?php
+set($var.static::CONSTANTNAME);
+?>

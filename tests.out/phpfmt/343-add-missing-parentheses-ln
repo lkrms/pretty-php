@@ -1,0 +1,6 @@
+<?php
+//passes:AddMissingParentheses
+$g = new G(
+    new G,
+    new G
+);

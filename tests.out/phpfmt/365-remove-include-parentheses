@@ -1,0 +1,3 @@
+<?php
+require_once(Config()->include_path);
+require_once(App::Config()->Config->include_path);

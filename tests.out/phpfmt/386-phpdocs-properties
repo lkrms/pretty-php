@@ -1,0 +1,26 @@
+<?php
+//passes: GeneratePHPDoc
+
+class Test {
+	/**
+	 * @var mixed
+	 */
+	private $a;
+	/**
+	 * @var int
+	 */
+	private $b = 1;
+
+	public function __construct(array $a, $b) {
+		$this->a = $a;
+		$this->b = $b;
+	}
+
+	public function getA(){
+		return $this->a;
+	}
+
+	public function getB(){
+		return $this->b;
+	}
+}

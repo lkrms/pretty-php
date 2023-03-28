@@ -1,0 +1,18 @@
+<?php
+
+function a(&$b){
+
+}
+$c = &$a;
+
+if( ($a & self::MY_BITMASK) === $a){
+
+}
+
+if( (self::MY_BITMASK & self::MY_BITMASK_B) === $a){
+
+}
+
+if( ($a & $b) === $a){
+
+}

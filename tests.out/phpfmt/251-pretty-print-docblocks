@@ -1,0 +1,16 @@
+<?php
+//passes:PrettyPrintDocBlocks,Default
+
+/**
+ * description
+ *
+ * @param array $v1
+ * @param array $v2
+ * @param \NS\NS2\NS3 $v3
+ * @param int $v4
+ * @param string $v5
+ * @return string
+ */
+function SomeFunc(array $v1, array $v2, NS3 $v3, $v4, $v5){
+	return 'string';
+}

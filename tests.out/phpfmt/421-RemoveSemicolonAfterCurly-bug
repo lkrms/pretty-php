@@ -1,0 +1,20 @@
+<?php
+//passes:RemoveSemicolonAfterCurly
+
+namespace Tests\Acceptance\Api{
+}
+
+namespace Tests\Acceptance\Api {
+class RoleTest extends TestCase
+{
+
+}
+
+trait TheTrait {
+
+}
+
+interface SomeINterface{
+    public function a();
+}
+}

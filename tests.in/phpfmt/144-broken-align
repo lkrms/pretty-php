@@ -1,0 +1,19 @@
+<?php
+
+$arr = array(
+	'options' => array(
+		'object_repository' => $serviceLocator->getServiceLocator()
+		->get('Doctrine\ORM\EntityManager')
+		->getRepository('Appointment\Entity\Appointment')
+		->getRepository('Appointment\Entity\Appointment')
+		->getRepository('Appointment\Entity\Appointment')
+		->getRepository('Appointment\Entity\Appointment'),
+
+		'object_repository2' => $serviceLocator->getServiceLocator()
+		->get('Doctrine\ORM\EntityManager')
+		->getRepository('Appointment\Entity\Appointment')
+		->getRepository('Appointment\Entity\Appointment')
+		->getRepository('Appointment\Entity\Appointment')
+		->getRepository('Appointment\Entity\Appointment'),
+	)
+);

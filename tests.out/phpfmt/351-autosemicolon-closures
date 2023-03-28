@@ -1,0 +1,12 @@
+<?php
+//passes: AutoSemicolon
+
+
+$a = function($a){
+	echo 'foo'
+}
+
+
+apply(function($a){
+	echo 'bar'
+}, $b)

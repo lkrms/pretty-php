@@ -1,0 +1,53 @@
+<?php
+//passes:Default,PSR2ModifierVisibilityStaticOrder
+class Foo {
+    public $var;
+    protected $var_foo;
+    private $FooBar;
+    static public $var3;
+    static protected $var_foo2;
+    static private $FooBar2;
+    public static $var4;
+    protected static $var_foo3;
+    private static $FooBar3;
+    private static
+    $FooBar5;
+    var $old = 'foo';
+}
+
+abstract class Foo2 {
+    public function foo1() {}
+    function foo2() {}
+    protected function foo3() {}
+    protected
+    abstract function foo4();
+    private function foo5() {}
+    final public function foo6() {}
+    abstract public function foo7();
+    public final function foo8() {}
+    public abstract function foo9();
+    public static function fooA() {}
+    public static
+    function fooD() {}
+    final static function fooE() {}
+    abstract function fooF();
+        function fooG ($foo) {}
+        function fooH() {
+            static $foo;
+            $bar = function($baz) {};
+        }
+}
+
+function foo4() {
+    static $class;
+    $interface = 'foo';
+    $trait = 'bar';
+}
+
+class Foo3
+{
+    public $foo;
+    private $foo2;
+    protected $bar1, $bar2;
+    public $baz1 = null, $baz2, $baz3 = false;
+}

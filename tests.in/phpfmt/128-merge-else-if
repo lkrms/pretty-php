@@ -1,0 +1,8 @@
+<?php
+//passes:OrderAndRemoveUseClauses,AddMissingCurlyBraces,NormalizeLnAndLtrimLines,MergeParenCloseWithCurlyOpen,MergeCurlyCloseAndDoWhile,MergeDoubleArrowAndArray,ExtraCommaInArray,ResizeSpaces,Reindent,ReindentColonBlocks,ReindentObjOps,EliminateDuplicatedEmptyLines,AlignEquals,AlignDoubleArrow,LeftAlignComment,RTrim,MergeElseIf
+
+if($a){
+	$b;
+}else if($b){
+	$c;
+}

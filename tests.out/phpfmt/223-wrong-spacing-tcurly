@@ -1,0 +1,8 @@
+<?php
+function __get($name) {
+switch ($name) {
+case 1:
+return $obj->property->{$var};
+break;
+}
+}

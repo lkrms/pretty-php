@@ -1,0 +1,76 @@
+<?php
+
+$query = (new Query)->select(['id', 'username'])
+                    ->from('user')
+                    ->where(['pk_id' => $aaa->organization])
+    ->all();
+
+
+function hello() {
+	$aaaa
+		->foo('one')
+		->foo(
+			$thisNameLengthChangesIndent->bar(
+				'asdf',
+				'fdsajhfasdjfhgasjhdgf',
+				[
+					'opt'  => true,
+					'opt2' => true,
+					'opt3' => 'gfhdjsgdkfhgskdfghjk',
+				]
+			)->chainedMethod(new Whatever)
+		)
+		->foo(
+			'moreFoos'
+		)
+	;
+}
+
+function dataState() {
+	if ($a) {
+
+	} elseif ($tch === $this->EOF) {
+/*
+Multiline comment
+Comment 8 */
+		funcE();
+
+	}
+}
+
+class SomeClass {
+	public function save() {
+		VeryLongCall($this)->save($this)
+		                   ->widen(600)
+		                   ->greyscale()
+		                   ->save($this);
+
+		VeryLongCall($this)
+			->save($this)
+			->widen(600)
+			->greyscale()
+			->save($this);
+
+		VeryLongCall($this->temp_path)
+			->save($this->save_path)
+			->widen(600)
+			->greyscale()
+			->save($this->save_path);
+
+		VeryLongCall($this->temp_path)
+			->save($this->save_path . $this->save_name)
+			->widen(600)
+			->greyscale()
+			->save($this->save_path . $this->resize);
+
+		VeryLongCall($this->temp_path)
+			->save(
+				$this->save_path .
+				$this->save_name
+			)
+			->widen(600)
+			->greyscale()
+			->save($this->save_path . $this->resize);
+
+	}
+}

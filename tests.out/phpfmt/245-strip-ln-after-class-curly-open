@@ -1,0 +1,15 @@
+<?php
+//passes:Default,StripNewlineAfterClassOpen
+class A {
+
+
+	protected $a;
+}
+
+trait B {
+
+
+	// Comment
+}
+
+A::class;

@@ -1,0 +1,8 @@
+<?php
+($obj->get()&$var);
+($obj->get()&($var));
+($obj->property &$var);
+$b = &$a;
+function a(Typehint &$var){
+
+}

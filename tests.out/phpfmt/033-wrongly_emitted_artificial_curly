@@ -1,0 +1,7 @@
+<?php
+function func($n) {
+	if (in_array($n, $sp)) return self::S;
+	elseif (in_array($n, $sc)) return self::SC;
+	elseif (in_array($n, $fo)) return self::FO;
+	else return self::PH;
+}

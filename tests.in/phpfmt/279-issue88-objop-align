@@ -1,0 +1,37 @@
+<?php
+class SomeClass {
+public function save() {
+VeryLongCall($this)->save($this)
+->widen(600)
+->greyscale()
+->save($this);
+
+VeryLongCall($this)
+->save($this)
+->widen(600)
+->greyscale()
+->save($this);
+
+VeryLongCall($this->temp_path)
+->save($this->save_path)
+->widen(600)
+->greyscale()
+->save($this->save_path);
+
+VeryLongCall($this->temp_path)
+->save($this->save_path. $this->save_name)
+->widen(600)
+->greyscale()
+->save($this->save_path.$this->resize);
+
+VeryLongCall($this->temp_path)
+->save(
+$this->save_path.
+$this->save_name
+)
+->widen(600)
+->greyscale()
+->save($this->save_path.$this->resize);
+
+}
+}

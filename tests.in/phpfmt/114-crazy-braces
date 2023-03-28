@@ -1,0 +1,30 @@
+<?php
+if($a)
+	$a = ${"b{$foo}"}->{"a{$bar->{'string'}()}d"}();
+
+while($a)
+	$a = ${"b{$foo}"}->{"a{$bar->{'string'}()}d"}();
+
+for($i = 0; $i<1; $i++)
+	$a = ${"b{$foo}"}->{"a{$bar->{'string'}()}d"}();
+
+foreach($arr as $i)
+	$a = ${"b{$foo}"}->{"a{$bar->{'string'}()}d"}();
+
+
+if($a)
+	$a = ${"b{$foo}"}->{"a{$bar->{'string'}()}d"}();
+else
+	$a = ${"b{$foo}"}->{"a{$bar->{'string'}()}d"}();
+
+if($a)
+	$a = ${"b{$foo}"}->{"a{$bar->{'string'}()}d"}();
+elseif($b)
+	$a = ${"b{$foo}"}->{"a{$bar->{'string'}()}d"}();
+
+if($a)
+	$a = ${"b{$foo}"}->{"a{$bar->{'string'}()}d"}();
+elseif($b)
+	$a = ${"b{$foo}"}->{"a{$bar->{'string'}()}d"}();
+else
+	$a = ${"b{$foo}"}->{"a{$bar->{'string'}()}d"}();

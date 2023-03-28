@@ -1,0 +1,41 @@
+<?php
+//passes:StripNewlineAfterClassOpen,StripNewlineAfterCurlyOpen,StripSpaceWithinControlStructures
+
+namespace Test;
+
+class PhpFmtTest
+{
+    public function functionTest()
+    {
+
+        return 'FunctionTest';
+    }
+
+    public function ifTest()
+    {
+        if ($this->name == 'name') {
+
+            return 'ifTestName';
+        }
+
+        return 'ifTest';
+    }
+
+    public function switchTest()
+    {
+        switch ($this->name) {
+            case 'name':
+
+                return 'switchTestName';
+                break;
+        }
+
+        return 'switchTest';
+    }
+
+    public function doWhileBlock(){
+        do{
+
+        }while(true);
+    }
+}

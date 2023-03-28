@@ -1,0 +1,59 @@
+<?php
+//version:5.5.0
+//skipHHVM
+while ($a)
+{
+
+
+}
+
+foreach ($arr as $v)
+{
+
+}
+for ($i = 0; $i < 10; $i)
+{
+
+
+}
+
+do
+{
+
+
+}
+while
+($a);
+
+
+if ($a){
+
+
+}
+elseif($b)
+{
+
+}
+else
+{
+
+
+}
+
+
+try
+{
+
+	throw new Exception('');
+}
+catch
+(Exception $e)
+{
+	echo 'Caught';
+}
+finally
+{
+	echo 'Finally';
+}
+
+

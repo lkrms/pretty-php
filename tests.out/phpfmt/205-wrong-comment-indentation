@@ -1,0 +1,20 @@
+<?php
+class MyClass {
+	public function method($object, $request) {
+		$thing = $this->createThing(new OtherClass);
+		$thing->doStuff($request);
+
+		if ($thing->isValid()) {
+			// hello
+		}
+	}
+	public function method2($object, $request) {
+		$thing = $this->createThing(new OtherClass, $object);
+		$thing->doStuff($request);
+
+		if ($thing->isValid()) {
+			// hello
+		}
+	}
+}
+

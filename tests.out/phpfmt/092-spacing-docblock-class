@@ -1,0 +1,18 @@
+<?php
+
+namespace NS\SNS;
+
+use ONS\A\B;
+use ONS\A;
+
+
+/**
+ * Comment
+ * @author XXX
+ */
+class StdClassForTesting {
+	function a(){
+		new A();
+		new B();
+	}
+}

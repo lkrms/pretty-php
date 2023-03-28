@@ -1,0 +1,23 @@
+<?php
+//passes: StripSpaceWithinControlStructures
+// From
+for ($a = 0; $a < 10; $a++){
+
+	if($a){
+
+		// do something
+	}
+
+}
+// To
+for ($a = 0; $a < 10; $a++){
+	if($a){
+		// do something
+	}
+}
+
+while($a) {
+
+	$a;
+
+}

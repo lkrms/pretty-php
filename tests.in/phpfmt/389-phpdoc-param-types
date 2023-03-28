@@ -1,0 +1,27 @@
+<?php
+//passes: GeneratePHPDoc
+class Tools {
+	/**
+	 * Create a new command instance.
+	 *
+	 * @return void
+	 */
+	public function __construct($x) {
+	}
+}
+
+class Test {
+	/**
+	 * @var float
+	 */
+	private $f = 1.25;
+
+	public function __construct(\Traversable $t, Tools $k, array $a, $b, $c = [], $d = array()) {
+		$this->a = $a;
+		$this->b = $b;
+	}
+
+	public function getF($t) {
+		return $this->f . $t;
+	}
+}

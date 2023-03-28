@@ -1,0 +1,44 @@
+<?php
+//passes:Default,CakePHPStyle
+class A {
+
+	public $__a;
+	private $__b;
+	protected $__c;
+
+	public $_a;
+	private $_b;
+	protected $_c;
+
+	public $a;
+	private $b;
+	protected $c;
+
+	function a(){
+	}
+
+	private function b(){
+	}
+
+	protected function __c(){
+	}
+
+	static function __d(){
+	}
+
+	private static function b(){
+	}
+
+	protected static function c(){
+	}
+
+	static function d(){
+	}
+
+	static private function b(){
+	}
+
+	static protected function c(){
+	}
+
+}

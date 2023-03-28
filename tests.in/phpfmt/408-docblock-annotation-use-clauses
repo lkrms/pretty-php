@@ -1,0 +1,11 @@
+<?php
+use Gedmo\Mapping\Annotation AS Gedmo;
+use Doctrine\ORM\Mapping AS ORM;
+
+/**
+ * @ORM\Entity
+ * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
+ * @ORM\Table(name="entity")
+ */
+Class Entity {
+}

@@ -1,0 +1,31 @@
+<?php
+$b = ['a' => $v['b']];
+$b = ['a' => $v['b']['c']];
+$b = ['a' => $v['b']['c']['d'], 'e' => $f];
+$c['a'] = 1;
+$c['a']['b'] = 1;
+$c['a']['b']['c'] = 1;
+$a = ['a' => getId(), 'b' => getId('a')];
+$a = ['a' => getId(), 'b' => getId(['a'])];
+$a = ['a' => getId(), 'b' => getId(['a','b'])];
+
+function a(){
+	return[$a];
+}
+
+$a = [];
+$a = [[]];
+$a = array(array());
+
+$c = [[1],[2]];
+$d = array(array(1), array(2));
+$c = [array(1),array(2)];
+$d = array([1], [2]);
+
+$a = [1,2];
+func([1,2]);
+$b = array(1,2);
+func(array(1,2));
+
+
+?>

@@ -1,0 +1,10 @@
+<?php
+$obj = new ClassObjects();
+$arr = [
+	ConstangBag::ConstantName => ConstangBag::ConstantName,
+];
+
+$obj = new ClassObjects();
+$arr = array(
+	ConstangBag::ConstantName => ConstangBag::ConstantName,
+);

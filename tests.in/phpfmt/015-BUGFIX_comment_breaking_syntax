@@ -1,0 +1,35 @@
+<?php
+class Test
+{
+        protected function func($id, $flag = false)
+        {
+                $loader->get_needs()
+                       ->set_needed(CONSTANT_BAG::O)
+                       ->set_needed(CONSTANT_BAG::V)
+                       ->set_needed(CONSTANT_BAG::D)
+                       ->set_needed(CONSTANT_BAG::F)
+                       ->set_needed(CONSTANT_BAG::P)
+                       ->set_needed(CONSTANT_BAG::I)
+                       ->set_needed(CONSTANT_BAG::R)
+                       ->set_needed(CONSTANT_BAG::R)
+                       ->set_needed(CONSTANT_BAG::E)
+                       ->set_needed(CONSTANT_BAG::L)
+                       ->set_needed(CONSTANT_BAG::G, StaticCLass::group_content());
+
+                $loader->get_needs()
+                ->set_needed(CONSTANT_BAG::O)
+                ->set_needed(CONSTANT_BAG::V)
+                ->set_needed(CONSTANT_BAG::D)
+                ->set_needed(CONSTANT_BAG::F)
+                ->set_needed(CONSTANT_BAG::P)
+                ->set_needed(CONSTANT_BAG::I)
+                ->set_needed(CONSTANT_BAG::R)
+                ->set_needed(CONSTANT_BAG::R)
+                ->set_needed(CONSTANT_BAG::E)
+                ->set_needed(CONSTANT_BAG::L) //TODO: Remove this need
+                ->set_needed(CONSTANT_BAG::G, StaticCLass::group_content())
+                ;
+                return $loader;
+        }
+
+}

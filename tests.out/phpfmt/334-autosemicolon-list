@@ -1,0 +1,5 @@
+<?php
+//passes:AutoSemicolon
+
+list($a, $b) = $v
+list($a, $b) = $v;

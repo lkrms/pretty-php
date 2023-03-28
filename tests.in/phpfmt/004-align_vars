@@ -1,0 +1,49 @@
+<?php
+$ccc = 1;
+$bb = 1;
+$a = 1;
+/*
+Others alignments
+*/
+$a[$b = 1] = 1;
+$ab[$bc = 1] = 1;
+$abc[$bcd = 1] = 1;
+$a[$b] = 1;
+$ab[$bc] = 1;
+$abc[$bcd] = 1;
+
+if($a = 1){
+	$ccc = 1;
+	$bb = 1;
+	$a = 1;
+}
+
+function a($a = 1, $b = 2, $c = 3){
+	$a[$b = 1] = 1;
+	$ab[$bc = 1] = 1;
+	$abc[$bcd = 1] = 1;
+}
+function b(
+	$a = 1,
+	$b = 2,
+	$c = 3
+){
+	$a[$b = 1] = 1;
+	$ab[$bc = 1] = 1;
+	$abc[$bcd = 1] = 1;
+}
+while(false){
+	$aa = 2;
+	$a[$b] = array(
+		'a' => 1,
+		'ba' => 1,
+	);
+}
+for ($i =0; $i < 10; $i++) {
+	$aa    = 2;
+	$a[$b] = array(
+		'a' => 1,
+		'ba' => 1,
+		'bca' => 1
+	);
+}

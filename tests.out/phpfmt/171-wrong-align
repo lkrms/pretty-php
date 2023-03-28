@@ -1,0 +1,23 @@
+<?php
+array(
+"aaaa"  => 1,    "bbbb"    => 2, // Comment
+"ccccc"  => 1,    "ddddbbbb"    => 3, // Comment
+"eeee"  => 1,    "dd"    => 3, // Comment
+);
+
+[
+"aaaa"  => 1,    "bbbb"    => 2, // Comment
+"ccccc"  => 1,    "ddddbbbb"    => 3, // Comment
+"eeee"  => 1,    "dd"    => 3, // Comment
+];
+
+
+array(
+"aaaa"  => 1,    "bbbb"    => 2,"ccccc"  => 1, // Comment
+"ddddbbbb"    => 3,"eeee"  => 1,    "dd"    => 3, // Comment
+);
+
+[
+"aaaa"  => 1,    "bbbb"    => 2,"ccccc"  => 1, // Comment
+"ddddbbbb"    => 3,"eeee"  => 1,    "dd"    => 3, // Comment
+];
