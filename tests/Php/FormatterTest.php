@@ -75,62 +75,70 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
         $files = File::find($inDir);
         /** @var SplFileInfo $file */
         foreach ($files as $file) {
-            if ($file->isFile() && in_array($file->getExtension(), ['php', 'in', ''], true)) {
-                $in      = file_get_contents((string) $file);
-                $outFile = preg_replace('/\.in$/', '.out', $outDir . substr((string) $file, strlen($inDir)));
-                $relPath = substr((string) $file, strlen($inDir) + 1);
-
-                $insertSpaces = true;
-                $tabSize      = 4;
-                $skipRules    = [];
-                $addRules     = [];
-                $skipFilters  = [];
-                switch (explode(DIRECTORY_SEPARATOR, $relPath)[0]) {
-                    case 'phpfmt':
-                        $addRules = [
-                            AlignComments::class,
-                            PreserveOneLineStatements::class,
-                        ];
-                        $skipRules = [
-                            ApplyMagicComma::class,
-                        ];
-                        $insertSpaces = false;
-                        break;
-                    case 'php-doc':
-                        $addRules = [
-                            AlignComments::class,
-                            PreserveOneLineStatements::class,
-                        ];
-                        $skipRules = [
-                            SimplifyStrings::class,
-                            SpaceDeclarations::class,
-                        ];
-                        break;
-                }
-                if (!file_exists($outFile)) {
-                    printf("Formatting %s\n", $relPath);
-                    File::maybeCreateDirectory(dirname($outFile));
-                    $formatter = new Formatter($insertSpaces,
-                                               $tabSize,
-                                               $skipRules,
-                                               $addRules,
-                                               $skipFilters);
-                    file_put_contents(
-                        $outFile,
-                        $out = $formatter->format($in, 3, $relPath)
-                    );
-                } else {
-                    $out = file_get_contents($outFile);
-                }
-                $this->assertFormatterOutputIs($in,
-                                               $out,
-                                               $addRules,
-                                               $skipRules,
-                                               $skipFilters,
-                                               $insertSpaces,
-                                               $tabSize,
-                                               $relPath);
+            $ext = $file->getExtension();
+            if (!in_array($ext, ['php', 'in', '', 'fails'], true)) {
+                continue;
             }
+            $in = file_get_contents((string) $file);
+            $outFile = preg_replace(
+                ['/\.fails$/', '/\.in$/'],
+                ['', '.out'],
+                $outDir . substr((string) $file, strlen($inDir))
+            );
+            $relPath = substr((string) $file, strlen($inDir) + 1);
+
+            $insertSpaces = true;
+            $tabSize      = 4;
+            $skipRules    = [];
+            $addRules     = [];
+            $skipFilters  = [];
+            switch (explode(DIRECTORY_SEPARATOR, $relPath)[0]) {
+                case 'phpfmt':
+                    $addRules = [
+                        AlignComments::class,
+                        PreserveOneLineStatements::class,
+                    ];
+                    $skipRules = [
+                        ApplyMagicComma::class,
+                    ];
+                    $insertSpaces = false;
+                    break;
+                case 'php-doc':
+                    $addRules = [
+                        AlignComments::class,
+                        PreserveOneLineStatements::class,
+                    ];
+                    $skipRules = [
+                        SimplifyStrings::class,
+                        SpaceDeclarations::class,
+                    ];
+                    break;
+            }
+            if (!file_exists($outFile)) {
+                printf("Formatting %s\n", $relPath);
+                File::maybeCreateDirectory(dirname($outFile));
+                $formatter = new Formatter($insertSpaces,
+                                           $tabSize,
+                                           $skipRules,
+                                           $addRules,
+                                           $skipFilters);
+                file_put_contents(
+                    $outFile,
+                    $out = $formatter->format($in, 3, $relPath)
+                );
+            } elseif ($ext === 'fails') {
+                continue;
+            } else {
+                $out = file_get_contents($outFile);
+            }
+            $this->assertFormatterOutputIs($in,
+                                           $out,
+                                           $addRules,
+                                           $skipRules,
+                                           $skipFilters,
+                                           $insertSpaces,
+                                           $tabSize,
+                                           $relPath);
         }
     }
 }
