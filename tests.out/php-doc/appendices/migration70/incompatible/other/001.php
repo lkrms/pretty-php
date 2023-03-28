@@ -1,10 +1,12 @@
 <?php
-class A {
+class A
+{
     public function test() { var_dump($this); }
 }
 
 // Note: Does NOT extend A
-class B {
+class B
+{
     public function callNonStaticMethodOfA() { A::test(); }
 }
 

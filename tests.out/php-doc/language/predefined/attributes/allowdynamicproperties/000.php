@@ -1,8 +1,8 @@
 <?php
-class DefaultBehaviour { }
+class DefaultBehaviour {}
 
 #[\AllowDynamicProperties]
-class ClassAllowsDynamicProperties { }
+class ClassAllowsDynamicProperties {}
 
 $o1 = new DefaultBehaviour();
 $o2 = new ClassAllowsDynamicProperties();

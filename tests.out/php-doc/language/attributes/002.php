@@ -16,13 +16,14 @@ class Thing
 {
 }
 
-function dumpAttributeData($reflection) {
+function dumpAttributeData($reflection)
+{
     $attributes = $reflection->getAttributes();
 
     foreach ($attributes as $attribute) {
-       var_dump($attribute->getName());
-       var_dump($attribute->getArguments());
-       var_dump($attribute->newInstance());
+        var_dump($attribute->getName());
+        var_dump($attribute->getArguments());
+        var_dump($attribute->newInstance());
     }
 }
 

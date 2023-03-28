@@ -1,13 +1,17 @@
 <?php
-trait HelloWorld {
-    public function sayHello() {
+trait HelloWorld
+{
+    public function sayHello()
+    {
         echo 'Hello World!';
     }
 }
 
-class TheWorldIsNotEnough {
+class TheWorldIsNotEnough
+{
     use HelloWorld;
-    public function sayHello() {
+    public function sayHello()
+    {
         echo 'Hello Universe!';
     }
 }

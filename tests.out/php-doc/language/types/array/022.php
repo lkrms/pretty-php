@@ -1,6 +1,7 @@
 <?php
 
-class A {
+class A
+{
     private $B;
     protected $C;
     public $D;

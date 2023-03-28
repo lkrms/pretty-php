@@ -10,7 +10,7 @@ $unset_str .= 'abc';
 var_dump($unset_str);
 
 // Integer usage; outputs 'int(25)'
-$unset_int += 25; // 0 + 25 => 25
+$unset_int += 25;  // 0 + 25 => 25
 var_dump($unset_int);
 
 // Float usage; outputs 'float(1.25)'
@@ -18,7 +18,7 @@ $unset_float += 1.25;
 var_dump($unset_float);
 
 // Array usage; outputs array(1) {  [3]=>  string(3) "def" }
-$unset_arr[3] = "def"; // array() + array(3 => "def") => array(3 => "def")
+$unset_arr[3] = "def";  // array() + array(3 => "def") => array(3 => "def")
 var_dump($unset_arr);
 
 // Object usage; creates new stdClass object (see http://www.php.net/manual/en/reserved.classes.php)

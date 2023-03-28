@@ -12,9 +12,9 @@ class Foo
 }
 
 $func = array("Foo", "bar");
-$func(); // prints "bar"
+$func();  // prints "bar"
 $func = array(new Foo, "baz");
-$func(); // prints "baz"
+$func();  // prints "baz"
 $func = "Foo::bar";
-$func(); // prints "bar"
+$func();  // prints "bar"
 ?>

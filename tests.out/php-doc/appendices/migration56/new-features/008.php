@@ -1,12 +1,15 @@
 <?php
-class C {
+class C
+{
     private $prop;
 
-    public function __construct($val) {
+    public function __construct($val)
+    {
         $this->prop = $val;
     }
 
-    public function __debugInfo() {
+    public function __debugInfo()
+    {
         return [
             'propSquared' => $this->prop ** 2,
         ];

@@ -1,5 +1,5 @@
 <?php
-function foo ()
+function foo()
 {
     return 5;
 }

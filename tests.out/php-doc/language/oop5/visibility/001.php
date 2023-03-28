@@ -1,20 +1,21 @@
 <?php
+
 /**
  * Define MyClass
  */
 class MyClass
 {
     // Declare a public constructor
-    public function __construct() { }
+    public function __construct() {}
 
     // Declare a public method
-    public function MyPublic() { }
+    public function MyPublic() {}
 
     // Declare a protected method
-    protected function MyProtected() { }
+    protected function MyProtected() {}
 
     // Declare a private method
-    private function MyPrivate() { }
+    private function MyPrivate() {}
 
     // This is public
     function Foo()
@@ -26,11 +27,10 @@ class MyClass
 }
 
 $myclass = new MyClass;
-$myclass->MyPublic(); // Works
-$myclass->MyProtected(); // Fatal Error
-$myclass->MyPrivate(); // Fatal Error
-$myclass->Foo(); // Public, Protected and Private work
-
+$myclass->MyPublic();     // Works
+$myclass->MyProtected();  // Fatal Error
+$myclass->MyPrivate();    // Fatal Error
+$myclass->Foo();          // Public, Protected and Private work
 
 /**
  * Define MyClass2
@@ -42,42 +42,47 @@ class MyClass2 extends MyClass
     {
         $this->MyPublic();
         $this->MyProtected();
-        $this->MyPrivate(); // Fatal Error
+        $this->MyPrivate();  // Fatal Error
     }
 }
 
 $myclass2 = new MyClass2;
-$myclass2->MyPublic(); // Works
-$myclass2->Foo2(); // Public and Protected work, not Private
+$myclass2->MyPublic();  // Works
+$myclass2->Foo2();      // Public and Protected work, not Private
 
-class Bar 
+class Bar
 {
-    public function test() {
+    public function test()
+    {
         $this->testPrivate();
         $this->testPublic();
     }
 
-    public function testPublic() {
+    public function testPublic()
+    {
         echo "Bar::testPublic\n";
     }
-    
-    private function testPrivate() {
+
+    private function testPrivate()
+    {
         echo "Bar::testPrivate\n";
     }
 }
 
-class Foo extends Bar 
+class Foo extends Bar
 {
-    public function testPublic() {
+    public function testPublic()
+    {
         echo "Foo::testPublic\n";
     }
-    
-    private function testPrivate() {
+
+    private function testPrivate()
+    {
         echo "Foo::testPrivate\n";
     }
 }
 
 $myFoo = new Foo();
-$myFoo->test(); // Bar::testPrivate 
-                // Foo::testPublic
+$myFoo->test();  // Bar::testPrivate
+                 // Foo::testPublic
 ?>

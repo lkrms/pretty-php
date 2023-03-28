@@ -6,7 +6,8 @@ interface Colorful
 
 trait Rectangle
 {
-    public function shape(): string {
+    public function shape(): string
+    {
         return "Rectangle";
     }
 }
@@ -22,7 +23,7 @@ enum Suit implements Colorful
 
     public function color(): string
     {
-        return match($this) {
+        return match ($this) {
             Suit::Hearts, Suit::Diamonds => 'Red',
             Suit::Clubs, Suit::Spades => 'Black',
         };

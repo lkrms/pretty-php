@@ -2,9 +2,10 @@
 class Foo
 {
     public $bar;
-    
-    public function __construct() {
-        $this->bar = function() {
+
+    public function __construct()
+    {
+        $this->bar = function () {
             return 42;
         };
     }

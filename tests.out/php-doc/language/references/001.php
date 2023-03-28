@@ -1,3 +1,3 @@
 <?php
-$foo =& find_var($bar);
+$foo = &find_var($bar);
 ?>

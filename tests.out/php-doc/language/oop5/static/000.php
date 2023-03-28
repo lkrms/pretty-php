@@ -1,6 +1,8 @@
 <?php
-class Foo {
-    public static function aStaticMethod() {
+class Foo
+{
+    public static function aStaticMethod()
+    {
         // ...
     }
 }

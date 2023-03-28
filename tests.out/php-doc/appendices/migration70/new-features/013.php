@@ -12,8 +12,7 @@ function gen2()
     yield 4;
 }
 
-foreach (gen() as $val)
-{
+foreach (gen() as $val) {
     echo $val, PHP_EOL;
 }
 ?>

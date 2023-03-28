@@ -1,5 +1,6 @@
 <?php
-function test() {
+function test()
+{
     $foo = "local variable";
 
     echo '$foo in global scope: ' . $GLOBALS["foo"] . "\n";

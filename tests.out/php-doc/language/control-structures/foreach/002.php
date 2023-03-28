@@ -11,7 +11,7 @@ foreach ($a as $v) {
 
 $a = array(1, 2, 3, 17);
 
-$i = 0; /* for illustrative purposes only */
+$i = 0;  /* for illustrative purposes only */
 
 foreach ($a as $v) {
     echo "\$a[$i] => $v.\n";

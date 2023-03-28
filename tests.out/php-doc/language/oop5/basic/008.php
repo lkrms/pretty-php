@@ -8,7 +8,8 @@ class Test
 }
 
 class Child extends Test
-{}
+{
+}
 
 $obj1 = new Test();
 $obj2 = new $obj1;

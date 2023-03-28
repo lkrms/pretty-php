@@ -20,7 +20,8 @@ class Flag
 {
     public $flag;
 
-    function __construct($flag = true) {
+    function __construct($flag = true)
+    {
         $this->flag = $flag;
     }
 }
@@ -29,7 +30,8 @@ class OtherFlag
 {
     public $flag;
 
-    function __construct($flag = true) {
+    function __construct($flag = true)
+    {
         $this->flag = $flag;
     }
 }

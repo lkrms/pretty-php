@@ -20,9 +20,9 @@ class Connection
     public function __serialize(): array
     {
         return [
-          'dsn' => $this->dsn,
-          'user' => $this->username,
-          'pass' => $this->password,
+            'dsn' => $this->dsn,
+            'user' => $this->username,
+            'pass' => $this->password,
         ];
     }
 
@@ -34,4 +34,5 @@ class Connection
 
         $this->connect();
     }
-}?>
+}
+?>

@@ -1,9 +1,11 @@
 <?php
-trait StaticExample {
+trait StaticExample
+{
     public static $static = 'foo';
 }
 
-class Example {
+class Example
+{
     use StaticExample;
 }
 

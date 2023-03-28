@@ -1,3 +1,3 @@
 <?php
-function test($param){}
+function test($param) {}
 test();

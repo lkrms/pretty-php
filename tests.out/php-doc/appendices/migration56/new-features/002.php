@@ -1,8 +1,9 @@
 <?php
-function f($req, $opt = null, ...$params) {
+function f($req, $opt = null, ...$params)
+{
     // $params is an array containing the remaining arguments.
-    printf('$req: %d; $opt: %d; number of params: %d'."\n",
-           $req, $opt, count($params));
+    printf('$req: %d; $opt: %d; number of params: %d' . "\n",
+        $req, $opt, count($params));
 }
 
 f(1);

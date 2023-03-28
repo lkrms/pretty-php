@@ -1,4 +1,4 @@
 <?php
 
-echo '"', __NAMESPACE__, '"'; // outputs ""
+echo '"', __NAMESPACE__, '"';  // outputs ""
 ?>

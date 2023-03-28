@@ -4,7 +4,7 @@ class Test
 {
     public function testing()
     {
-        return function() {
+        return function () {
             var_dump($this);
         };
     }
@@ -13,5 +13,5 @@ class Test
 $object = new Test;
 $function = $object->testing();
 $function();
-    
+
 ?>

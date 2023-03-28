@@ -1,5 +1,6 @@
 <?php
-function &gen_reference() {
+function &gen_reference()
+{
     $value = 3;
 
     while ($value > 0) {
@@ -13,6 +14,6 @@ function &gen_reference() {
  * within gen_reference() changes.
  */
 foreach (gen_reference() as &$number) {
-    echo (--$number).'... ';
+    echo (--$number) . '... ';
 }
 ?>

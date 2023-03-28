@@ -5,8 +5,9 @@ class D extends C {}
 // This doesn't extend C.
 class E {}
 
-function f(C $c) {
-    echo get_class($c)."\n";
+function f(C $c)
+{
+    echo get_class($c) . "\n";
 }
 
 f(new C);

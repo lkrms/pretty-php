@@ -3,8 +3,10 @@ $wm = new WeakMap();
 
 $o = new stdClass;
 
-class A {
-    public function __destruct() {
+class A
+{
+    public function __destruct()
+    {
         echo "Dead!\n";
     }
 }

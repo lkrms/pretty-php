@@ -1,10 +1,10 @@
 <?php
-function foo() 
+function foo()
 {
-  function bar() 
-  {
-    echo "I don't exist until foo() is called.\n";
-  }
+    function bar()
+    {
+        echo "I don't exist until foo() is called.\n";
+    }
 }
 
 /* We can't call bar() yet

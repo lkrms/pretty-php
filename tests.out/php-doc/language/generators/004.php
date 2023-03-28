@@ -1,5 +1,6 @@
 <?php
-function gen_three_nulls() {
+function gen_three_nulls()
+{
     foreach (range(1, 3) as $i) {
         yield;
     }

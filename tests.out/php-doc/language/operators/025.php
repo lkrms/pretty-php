@@ -4,9 +4,9 @@
 // foo() will never get called as those operators are short-circuit
 
 $a = (false && foo());
-$b = (true  || foo());
+$b = (true || foo());
 $c = (false and foo());
-$d = (true  or  foo());
+$d = (true or foo());
 
 // --------------------
 // "||" has a greater precedence than "or"

@@ -7,9 +7,9 @@ $obj = new class {
         $this->{0} = 1;
     }
 };
-$arr = (array)$obj;
+$arr = (array) $obj;
 var_dump(
     $arr,
-    $arr[0], // now accessible
-    $arr['0'] // now accessible
+    $arr[0],   // now accessible
+    $arr['0']  // now accessible
 );

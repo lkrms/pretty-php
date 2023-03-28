@@ -1,7 +1,8 @@
 <?php
 class C {}
 
-function getC(): C {
+function getC(): C
+{
     return new C;
 }
 

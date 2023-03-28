@@ -2,7 +2,8 @@
 
 class SpecificException extends Exception {}
 
-function test() {
+function test()
+{
     throw new SpecificException('Oopsie');
 }
 

@@ -1,9 +1,11 @@
 <?php
-trait PropertiesTrait {
+trait PropertiesTrait
+{
     public $x = 1;
 }
 
-class PropertiesExample {
+class PropertiesExample
+{
     use PropertiesTrait;
 }
 

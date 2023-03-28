@@ -1,4 +1,4 @@
 <?php
-    function test(boolean $param) {}
-    test(true);
+function test(boolean $param) {}
+test(true);
 ?>

@@ -7,7 +7,7 @@ function Sum()
     global $a, $b;
 
     $b = $a + $b;
-} 
+}
 
 Sum();
 echo $b;

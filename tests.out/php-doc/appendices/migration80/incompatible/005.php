@@ -1,9 +1,11 @@
 <?php
-trait MyTrait {
+trait MyTrait
+{
     abstract private function neededByTrait(): string;
 }
 
-class MyClass {
+class MyClass
+{
     use MyTrait;
 
     // Error, because of return type mismatch.

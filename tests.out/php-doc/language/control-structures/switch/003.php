@@ -10,6 +10,6 @@ switch ($i) {
         echo "i equals 2";
         break;
     default:
-       echo "i is not equal to 0, 1 or 2";
+        echo "i is not equal to 0, 1 or 2";
 }
 ?>

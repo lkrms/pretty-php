@@ -1,9 +1,11 @@
 <?php
-enum Foo {
+enum Foo
+{
     case Bar;
 }
 
-enum Baz: int {
+enum Baz: int
+{
     case Beep = 5;
 }
 

@@ -5,5 +5,5 @@ define('ANIMALS', [
     'bird'
 ]);
 
-echo ANIMALS[1]; // outputs "cat"
+echo ANIMALS[1];  // outputs "cat"
 ?>

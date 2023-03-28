@@ -4,7 +4,7 @@ class Foo
 {
     function __construct()
     {
-        $func = static function() {
+        $func = static function () {
             var_dump($this);
         };
         $func();

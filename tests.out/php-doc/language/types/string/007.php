@@ -3,19 +3,19 @@
 function foo()
 {
     static $bar = <<<LABEL
-Nothing in here...
-LABEL;
+        Nothing in here...
+        LABEL;
 }
 
 // Class properties/constants
 class foo
 {
     const BAR = <<<FOOBAR
-Constant example
-FOOBAR;
+        Constant example
+        FOOBAR;
 
     public $baz = <<<FOOBAR
-Property example
-FOOBAR;
+        Property example
+        FOOBAR;
 }
 ?>

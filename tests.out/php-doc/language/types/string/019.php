@@ -1,5 +1,6 @@
 <?php
-class foo {
+class foo
+{
     var $bar = 'I am bar.';
 }
 

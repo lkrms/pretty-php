@@ -1,6 +1,6 @@
 <?php
 // Our closure
-$double = function($a) {
+$double = function ($a) {
     return $a * 2;
 };
 

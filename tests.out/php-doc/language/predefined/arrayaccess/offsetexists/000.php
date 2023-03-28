@@ -1,20 +1,25 @@
 <?php
-class obj implements arrayaccess {
-    public function offsetSet($offset, $value): void {
+class obj implements arrayaccess
+{
+    public function offsetSet($offset, $value): void
+    {
         var_dump(__METHOD__);
     }
-    public function offsetExists($var): bool {
+    public function offsetExists($var): bool
+    {
         var_dump(__METHOD__);
         if ($var == "foobar") {
             return true;
         }
         return false;
     }
-    public function offsetUnset($var): void {
+    public function offsetUnset($var): void
+    {
         var_dump(__METHOD__);
     }
     #[\ReturnTypeWillChange]
-    public function offsetGet($var) {
+    public function offsetGet($var)
+    {
         var_dump(__METHOD__);
         return "value";
     }

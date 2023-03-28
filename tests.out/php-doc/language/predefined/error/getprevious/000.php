@@ -1,20 +1,20 @@
 <?php
 class MyCustomError extends Error {}
 
-function doStuff() {
+function doStuff()
+{
     try {
         throw new InvalidArgumentError("You are doing it wrong!", 112);
-    } catch(Error $e) {
+    } catch (Error $e) {
         throw new MyCustomError("Something happened", 911, $e);
     }
 }
 
-
 try {
     doStuff();
-} catch(Error $e) {
+} catch (Error $e) {
     do {
         printf("%s:%d %s (%d) [%s]\n", $e->getFile(), $e->getLine(), $e->getMessage(), $e->getCode(), get_class($e));
-    } while($e = $e->getPrevious());
+    } while ($e = $e->getPrevious());
 }
 ?>

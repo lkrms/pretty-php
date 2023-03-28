@@ -5,12 +5,13 @@
  */
 
 $input = <<<'EOF'
-1;PHP;Likes dollar signs
-2;Python;Likes whitespace
-3;Ruby;Likes blocks
-EOF;
+    1;PHP;Likes dollar signs
+    2;Python;Likes whitespace
+    3;Ruby;Likes blocks
+    EOF;
 
-function input_parser($input) {
+function input_parser($input)
+{
     foreach (explode("\n", $input) as $line) {
         $fields = explode(';', $line);
         $id = array_shift($fields);

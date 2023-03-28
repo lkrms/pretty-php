@@ -1,5 +1,6 @@
 <?php
-function &get_instance_ref() {
+function &get_instance_ref()
+{
     static $obj;
 
     echo 'Static object: ';
@@ -17,7 +18,8 @@ function &get_instance_ref() {
     return $obj;
 }
 
-function &get_instance_noref() {
+function &get_instance_noref()
+{
     static $obj;
 
     echo 'Static object: ';

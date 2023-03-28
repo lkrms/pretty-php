@@ -1,9 +1,11 @@
 <?php
-class Point {
+class Point
+{
     protected int $x;
     protected int $y;
 
-    public function __construct(int $x, int $y = 0) {
+    public function __construct(int $x, int $y = 0)
+    {
         $this->x = $x;
         $this->y = $y;
     }

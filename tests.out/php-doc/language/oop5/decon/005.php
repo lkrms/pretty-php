@@ -1,12 +1,14 @@
 <?php
 
-class MyDestructableClass 
+class MyDestructableClass
 {
-    function __construct() {
+    function __construct()
+    {
         print "In constructor\n";
     }
 
-    function __destruct() {
+    function __destruct()
+    {
         print "Destroying " . __CLASS__ . "\n";
     }
 }

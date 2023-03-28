@@ -3,7 +3,7 @@ class foo
 {
     function do_foo()
     {
-        echo "Doing foo."; 
+        echo "Doing foo.";
     }
 }
 

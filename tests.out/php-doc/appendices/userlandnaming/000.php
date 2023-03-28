@@ -2,7 +2,8 @@
 
 namespace MyProject;
 
-function my_function() {
+function my_function()
+{
     return true;
 }
 

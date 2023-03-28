@@ -1,5 +1,6 @@
 <?php
-function sum(...$numbers) {
+function sum(...$numbers)
+{
     $acc = 0;
     foreach ($numbers as $n) {
         $acc += $n;

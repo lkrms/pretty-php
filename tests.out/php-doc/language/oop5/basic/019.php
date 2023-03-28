@@ -1,6 +1,8 @@
 <?php
-namespace NS {
-    class ClassName {
+namespace NS
+{
+    class ClassName
+    {
     }
 }
 $c = new ClassName();

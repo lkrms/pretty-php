@@ -1,11 +1,12 @@
 <?php
-function test() {
+function test()
+{
     throw new Exception;
 }
 
 try {
     test();
-} catch(Exception $e) {
+} catch (Exception $e) {
     echo $e->getTraceAsString();
 }
 ?>

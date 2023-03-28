@@ -15,7 +15,7 @@ final class Suit implements UnitEnum, Colorful
 
     public function color(): string
     {
-        return match($this) {
+        return match ($this) {
             Suit::Hearts, Suit::Diamonds => 'Red',
             Suit::Clubs, Suit::Spades => 'Black',
         };

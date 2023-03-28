@@ -1,13 +1,16 @@
 <?php
 
-class A {
+class A
+{
     private $val;
-    function __construct($val) {
+    function __construct($val)
+    {
         $this->val = $val;
     }
-    function getClosure() {
+    function getClosure()
+    {
         //returns closure bound to this object and scope
-        return function() { return $this->val; };
+        return function () { return $this->val; };
     }
 }
 

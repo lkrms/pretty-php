@@ -14,8 +14,10 @@ if (empty($empty)) {
     var_dump($post);
 } else {
     print "We have " . count($empty) . " empty values\n";
-    print "Posted:\n"; var_dump($post);
-    print "Empty:\n";  var_dump($empty);
+    print "Posted:\n";
+    var_dump($post);
+    print "Empty:\n";
+    var_dump($empty);
     exit;
 }
 ?>

@@ -1,6 +1,8 @@
 <?php
-namespace my\stuff {
-    namespace nested {
+namespace my\stuff
+{
+    namespace nested
+    {
         class foo {}
     }
 }

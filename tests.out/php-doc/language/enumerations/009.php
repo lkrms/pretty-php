@@ -14,7 +14,7 @@ enum Suit: string implements Colorful
     // Fulfills the interface contract.
     public function color(): string
     {
-        return match($this) {
+        return match ($this) {
             Suit::Hearts, Suit::Diamonds => 'Red',
             Suit::Clubs, Suit::Spades => 'Black',
         };

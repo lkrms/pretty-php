@@ -1,7 +1,8 @@
 <?php
 class MyClass
 {
-    protected function myFunc() {
+    protected function myFunc()
+    {
         echo "MyClass::myFunc()\n";
     }
 }

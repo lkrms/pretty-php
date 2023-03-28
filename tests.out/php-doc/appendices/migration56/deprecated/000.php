@@ -1,9 +1,11 @@
 <?php
-class A {
+class A
+{
     function f() { echo get_class($this); }
 }
 
-class B {
+class B
+{
     function f() { A::f(); }
 }
 

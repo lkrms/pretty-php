@@ -9,10 +9,10 @@ $fruit = 'apple';
 test.php
 <?php
 
-echo "A $color $fruit"; // A
+echo "A $color $fruit";  // A
 
 include 'vars.php';
 
-echo "A $color $fruit"; // A green apple
+echo "A $color $fruit";  // A green apple
 
 ?>

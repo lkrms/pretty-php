@@ -8,9 +8,8 @@ do {
     if ($i < $minimum_limit) {
         break;
     }
-   echo "i is ok";
+    echo "i is ok";
 
     /* process i */
-
 } while (0);
 ?>

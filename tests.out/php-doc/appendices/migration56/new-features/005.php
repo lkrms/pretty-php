@@ -1,14 +1,16 @@
 <?php
-namespace Name\Space {
+namespace Name\Space
+{
     const FOO = 42;
-    function f() { echo __FUNCTION__."\n"; }
+    function f() { echo __FUNCTION__ . "\n"; }
 }
 
-namespace {
+namespace
+{
     use const Name\Space\FOO;
     use function Name\Space\f;
 
-    echo FOO."\n";
+    echo FOO . "\n";
     f();
 }
 ?>

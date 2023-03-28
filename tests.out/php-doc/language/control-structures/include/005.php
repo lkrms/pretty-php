@@ -1,7 +1,8 @@
 <?php
 $string = get_include_contents('somefile.php');
 
-function get_include_contents($filename) {
+function get_include_contents($filename)
+{
     if (is_file($filename)) {
         ob_start();
         include $filename;

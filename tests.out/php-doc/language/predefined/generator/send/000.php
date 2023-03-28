@@ -1,9 +1,10 @@
 <?php
-function printer() {
-    echo "I'm printer!".PHP_EOL;
+function printer()
+{
+    echo "I'm printer!" . PHP_EOL;
     while (true) {
         $string = yield;
-        echo $string.PHP_EOL;
+        echo $string . PHP_EOL;
     }
 }
 

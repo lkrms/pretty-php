@@ -2,8 +2,9 @@
 class Foo
 {
     public $bar = 'property';
-    
-    public function bar() {
+
+    public function bar()
+    {
         return 'method';
     }
 }

@@ -1,9 +1,11 @@
 <?php
 
-class MyException extends Exception { }
+class MyException extends Exception {}
 
-class Test {
-    public function testing() {
+class Test
+{
+    public function testing()
+    {
         try {
             try {
                 throw new MyException('foo!');

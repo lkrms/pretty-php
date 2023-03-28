@@ -1,5 +1,6 @@
 <?php
-function gen() {
+function gen()
+{
     echo "Foo\n";
     try {
         yield;
@@ -8,7 +9,7 @@ function gen() {
     }
     echo "Bar\n";
 }
- 
+
 $gen = gen();
 $gen->rewind();
 $gen->throw(new Exception('Test'));

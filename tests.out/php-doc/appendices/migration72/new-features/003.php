@@ -7,5 +7,5 @@ interface A
 
 class B implements A
 {
-    public function Test($input){} // type omitted for $input
+    public function Test($input) {}  // type omitted for $input
 }

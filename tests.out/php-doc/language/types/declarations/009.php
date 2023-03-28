@@ -1,7 +1,8 @@
 <?php
 class C {}
 
-function f(?C $c) {
+function f(?C $c)
+{
     var_dump($c);
 }
 

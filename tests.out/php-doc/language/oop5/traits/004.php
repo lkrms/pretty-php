@@ -1,30 +1,38 @@
 <?php
-trait A {
-    public function smallTalk() {
+trait A
+{
+    public function smallTalk()
+    {
         echo 'a';
     }
-    public function bigTalk() {
+    public function bigTalk()
+    {
         echo 'A';
     }
 }
 
-trait B {
-    public function smallTalk() {
+trait B
+{
+    public function smallTalk()
+    {
         echo 'b';
     }
-    public function bigTalk() {
+    public function bigTalk()
+    {
         echo 'B';
     }
 }
 
-class Talker {
+class Talker
+{
     use A, B {
         B::smallTalk insteadof A;
         A::bigTalk insteadof B;
     }
 }
 
-class Aliased_Talker {
+class Aliased_Talker
+{
     use A, B {
         B::smallTalk insteadof A;
         A::bigTalk insteadof B;

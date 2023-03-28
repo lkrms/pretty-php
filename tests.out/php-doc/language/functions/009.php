@@ -1,11 +1,15 @@
 <?php
-class DefaultCoffeeMaker {
-    public function brew() {
+class DefaultCoffeeMaker
+{
+    public function brew()
+    {
         return 'Making coffee.';
     }
 }
-class FancyCoffeeMaker {
-    public function brew() {
+class FancyCoffeeMaker
+{
+    public function brew()
+    {
         return 'Crafting a beautiful coffee just for you.';
     }
 }

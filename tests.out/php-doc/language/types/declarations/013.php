@@ -1,7 +1,7 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
-function sum($a, $b): int {
+function sum($a, $b): int
+{
     return $a + $b;
 }
 

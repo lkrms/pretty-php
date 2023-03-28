@@ -1,6 +1,8 @@
 <?php
-class foo {
-    function foo() {
+class foo
+{
+    function foo()
+    {
         echo 'I am the constructor';
     }
 }

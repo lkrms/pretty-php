@@ -1,5 +1,6 @@
 <?php
-function get_item(): ?string {
+function get_item(): ?string
+{
     if (isset($_GET['item'])) {
         return $_GET['item'];
     } else {

@@ -7,7 +7,7 @@ interface AnimalShelter
 
 class CatShelter implements AnimalShelter
 {
-    public function adopt(string $name): Cat // instead of returning class type Animal, it can return class type Cat
+    public function adopt(string $name): Cat  // instead of returning class type Animal, it can return class type Cat
     {
         return new Cat($name);
     }
@@ -15,7 +15,7 @@ class CatShelter implements AnimalShelter
 
 class DogShelter implements AnimalShelter
 {
-    public function adopt(string $name): Dog // instead of returning class type Animal, it can return class type Dog
+    public function adopt(string $name): Dog  // instead of returning class type Animal, it can return class type Dog
     {
         return new Dog($name);
     }

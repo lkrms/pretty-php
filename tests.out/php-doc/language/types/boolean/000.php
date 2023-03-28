@@ -1,3 +1,3 @@
 <?php
-$foo = True; // assign the value TRUE to $foo
+$foo = True;  // assign the value TRUE to $foo
 ?>

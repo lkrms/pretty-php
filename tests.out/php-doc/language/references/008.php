@@ -1,7 +1,7 @@
 <?php
 function foo(&$var)
 {
-    $var =& $GLOBALS["baz"];
+    $var = &$GLOBALS["baz"];
 }
-foo($bar); 
+foo($bar);
 ?>

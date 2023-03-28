@@ -1,8 +1,10 @@
 <?php
-namespace foo {
-    class bar {
+namespace foo
+{
+    class bar
+    {
     }
 
-    echo bar::class; // foo\bar
+    echo bar::class;  // foo\bar
 }
 ?>

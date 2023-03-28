@@ -1,6 +1,6 @@
 <?php
 $a_bool = true;   // a bool
-$a_str  = "foo";  // a string
+$a_str = "foo";   // a string
 $a_str2 = 'foo';  // a string
 $an_int = 12;     // an int
 

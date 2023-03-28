@@ -5,7 +5,8 @@ class SimpleClass
     public $var = 'a default value';
 
     // method declaration
-    public function displayVar() {
+    public function displayVar()
+    {
         echo $this->var;
     }
 }

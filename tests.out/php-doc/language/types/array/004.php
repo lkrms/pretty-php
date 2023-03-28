@@ -1,9 +1,9 @@
 <?php
 $array = array(
-         "a",
-         "b",
+    "a",
+    "b",
     6 => "c",
-         "d",
+    "d",
 );
 var_dump($array);
 ?>

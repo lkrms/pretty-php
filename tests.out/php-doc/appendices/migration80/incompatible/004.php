@@ -1,5 +1,6 @@
 <?php
-class X {
+class X
+{
     use T1, T2 {
         func as otherFunc;
     }

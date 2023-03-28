@@ -8,7 +8,7 @@ enum UserStatus: string
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             static::Pending => 'Pending',
             static::Active => 'Active',
             static::Suspended => 'Suspended',

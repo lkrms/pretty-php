@@ -1,5 +1,5 @@
 <?php
 echo <<<"FOOBAR"
-Hello World!
-FOOBAR;
+    Hello World!
+    FOOBAR;
 ?>

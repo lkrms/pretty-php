@@ -1,7 +1,7 @@
 <?php
 try {
     throw new Exception;
-} catch(Exception $e) {
+} catch (Exception $e) {
     echo $e->getFile();
 }
 ?>

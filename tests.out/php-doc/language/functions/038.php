@@ -1,6 +1,6 @@
 <?php
 
-$func = static function() {
+$func = static function () {
     // function body
 };
 $func = $func->bindTo(new stdClass);

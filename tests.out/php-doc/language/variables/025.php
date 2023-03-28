@@ -1,3 +1,3 @@
 <?php
-$varname.ext;  /* invalid variable name */
+$varname . ext;  /* invalid variable name */
 ?>

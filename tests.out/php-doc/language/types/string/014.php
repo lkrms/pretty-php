@@ -1,7 +1,8 @@
 <?php
-class foo {
+class foo
+{
     public $bar = <<<'EOT'
-bar
-EOT;
+        bar
+        EOT;
 }
 ?>

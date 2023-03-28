@@ -7,7 +7,6 @@ interface A
 // Prints: Interface constant
 echo A::B;
 
-
 class B implements A
 {
     const B = 'Class constant';

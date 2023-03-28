@@ -1,10 +1,10 @@
 <?php
-$a = 1; /* global scope */ 
+$a = 1;  /* global scope */
 
 function test()
-{ 
-    echo $a; /* reference to local scope variable */ 
-} 
+{
+    echo $a;  /* reference to local scope variable */
+}
 
 test();
 ?>

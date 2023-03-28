@@ -9,11 +9,10 @@ $postdata = http_build_query(
 
 $opts = array('http' =>
     array(
-        'method'  => 'POST',
-        'header'  => 'Content-type: application/x-www-form-urlencoded',
+        'method' => 'POST',
+        'header' => 'Content-type: application/x-www-form-urlencoded',
         'content' => $postdata
-    )
-);
+    ));
 
 $context = stream_context_create($opts);
 

@@ -7,6 +7,6 @@ class MyDateTime extends DateTime
     #[\ReturnTypeWillChange]
     public function modify(string $modifier) { return false; }
 }
- 
-// No notice is triggered 
+
+// No notice is triggered
 ?>

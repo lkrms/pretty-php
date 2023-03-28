@@ -1,5 +1,6 @@
 <?php
-function exceptions_error_handler($severity, $message, $filename, $lineno) {
+function exceptions_error_handler($severity, $message, $filename, $lineno)
+{
     throw new ErrorException($message, 0, $severity, $filename, $lineno);
 }
 

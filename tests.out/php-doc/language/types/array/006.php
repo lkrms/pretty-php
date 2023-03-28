@@ -1,11 +1,11 @@
 <?php
 $array = array(
     "foo" => "bar",
-    42    => 24,
+    42 => 24,
     "multi" => array(
-         "dimensional" => array(
-             "array" => "foo"
-         )
+        "dimensional" => array(
+            "array" => "foo"
+        )
     )
 );
 

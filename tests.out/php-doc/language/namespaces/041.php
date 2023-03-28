@@ -1,5 +1,6 @@
 <?php
-namespace my\stuff\nested {
+namespace my\stuff\nested
+{
     class foo {}
 }
 ?>

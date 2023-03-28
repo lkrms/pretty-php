@@ -1,6 +1,5 @@
 <?php
-switch($beer)
-{
+switch ($beer) {
     case 'tuborg';
     case 'carlsberg';
     case 'stella';

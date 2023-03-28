@@ -7,7 +7,7 @@ enum Size
 
     public static function fromLength(int $cm): static
     {
-        return match(true) {
+        return match (true) {
             $cm < 50 => static::Small,
             $cm < 100 => static::Medium,
             default => static::Large,

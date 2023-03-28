@@ -1,5 +1,6 @@
 <?php
-function foo() {
+function foo()
+{
     echo "In foo()<br />\n";
 }
 
@@ -15,7 +16,7 @@ function echoit($string)
 }
 
 $func = 'foo';
-$func();        // This calls foo()
+$func();  // This calls foo()
 
 $func = 'bar';
 $func('test');  // This calls bar()

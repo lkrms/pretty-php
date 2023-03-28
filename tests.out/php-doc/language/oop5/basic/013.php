@@ -2,7 +2,8 @@
 
 class Base
 {
-    public function foo(int $a) {
+    public function foo(int $a)
+    {
         echo "Valid\n";
     }
 }

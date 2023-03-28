@@ -1,5 +1,6 @@
 <?php
-class Test1 {
+class Test1
+{
     public readonly string $prop;
 }
 

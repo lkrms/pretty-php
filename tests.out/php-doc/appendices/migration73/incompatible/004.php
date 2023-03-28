@@ -1,8 +1,10 @@
 <?php
-function foo(...$args) {
+function foo(...$args)
+{
     var_dump($args);
 }
-function gen() {
+function gen()
+{
     yield 1.23 => 123;
 }
 foo(...gen());

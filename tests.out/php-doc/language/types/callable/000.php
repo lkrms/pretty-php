@@ -1,13 +1,16 @@
 <?php
 
 // An example callback function
-function my_callback_function() {
+function my_callback_function()
+{
     echo 'hello world!';
 }
 
 // An example callback method
-class MyClass {
-    static function myCallbackMethod() {
+class MyClass
+{
+    static function myCallbackMethod()
+    {
         echo 'Hello World!';
     }
 }
@@ -26,23 +29,29 @@ call_user_func(array($obj, 'myCallbackMethod'));
 call_user_func('MyClass::myCallbackMethod');
 
 // Type 5: Relative static class method call
-class A {
-    public static function who() {
+class A
+{
+    public static function who()
+    {
         echo "A\n";
     }
 }
 
-class B extends A {
-    public static function who() {
+class B extends A
+{
+    public static function who()
+    {
         echo "B\n";
     }
 }
 
-call_user_func(array('B', 'parent::who')); // A, deprecated as of PHP 8.2.0
+call_user_func(array('B', 'parent::who'));  // A, deprecated as of PHP 8.2.0
 
 // Type 6: Objects implementing __invoke can be used as callables
-class C {
-    public function __invoke($name) {
+class C
+{
+    public function __invoke($name)
+    {
         echo 'Hello ', $name, "\n";
     }
 }

@@ -1,5 +1,6 @@
 <?php
-function sum($a, $b): float {
+function sum($a, $b): float
+{
     return $a + $b;
 }
 

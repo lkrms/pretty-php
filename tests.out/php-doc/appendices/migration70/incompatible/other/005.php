@@ -1,8 +1,8 @@
 <?php
 switch (1) {
     default:
-    break;
+        break;
     default:
-    break;
+        break;
 }
 ?>

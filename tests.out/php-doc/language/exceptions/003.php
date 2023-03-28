@@ -1,6 +1,7 @@
 <?php
 
-function test() {
+function test()
+{
     try {
         throw new Exception('foo');
     } catch (Exception $e) {

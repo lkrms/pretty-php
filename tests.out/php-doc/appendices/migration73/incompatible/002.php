@@ -1,8 +1,9 @@
 <?php
-class Test {
+class Test
+{
     public static $x = 0;
 }
-class Test2 extends Test { }
+class Test2 extends Test {}
 
 Test2::$x = &$x;
 $x = 1;

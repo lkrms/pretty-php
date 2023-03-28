@@ -1,5 +1,6 @@
 <?php
-class MyClass {
+class MyClass
+{
     const CONST_VALUE = 'A constant value';
 }
 

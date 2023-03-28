@@ -1,6 +1,6 @@
 <?php
 
-function test(object $obj) : object
+function test(object $obj): object
 {
     return new SplQueue();
 }

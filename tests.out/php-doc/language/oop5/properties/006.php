@@ -1,6 +1,7 @@
 <?php
 
-class Test {
+class Test
+{
     public function __construct(public readonly object $obj) {}
 }
 

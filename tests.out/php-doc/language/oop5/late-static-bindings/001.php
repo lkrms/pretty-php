@@ -1,15 +1,20 @@
 <?php
-class A {
-    public static function who() {
+class A
+{
+    public static function who()
+    {
         echo __CLASS__;
     }
-    public static function test() {
-        static::who(); // Here comes Late Static Bindings
+    public static function test()
+    {
+        static::who();  // Here comes Late Static Bindings
     }
 }
 
-class B extends A {
-    public static function who() {
+class B extends A
+{
+    public static function who()
+    {
         echo __CLASS__;
     }
 }

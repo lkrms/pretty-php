@@ -2,11 +2,13 @@
 class Foo {}
 class Bar extends Foo {}
 
-interface A {
+interface A
+{
     public function myfunc(Foo $arg): Foo;
 }
 
-interface B {
+interface B
+{
     public function myfunc(Bar $arg): Bar;
 }
 

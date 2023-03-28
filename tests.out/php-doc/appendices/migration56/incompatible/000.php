@@ -1,5 +1,6 @@
 <?php
-class C {
+class C
+{
     const ONE = 1;
     public $array = [
         self::ONE => 'foo',
