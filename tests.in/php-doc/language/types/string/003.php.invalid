@@ -1,0 +1,23 @@
+<?php
+// All the following code do not work.
+
+// different indentation for body (spaces) ending marker (tabs)
+{
+	echo <<<END
+	 a
+		END;
+}
+
+// mixing spaces and tabs in body
+{
+    echo <<<END
+    	a
+     END;
+}
+
+// mixing spaces and tabs in ending marker
+{
+	echo <<<END
+		  a
+		 END;
+}

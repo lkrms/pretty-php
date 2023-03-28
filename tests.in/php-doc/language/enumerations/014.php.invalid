@@ -1,0 +1,26 @@
+<?php
+// This is an entirely legal Enum definition.
+enum Direction implements ArrayAccess
+{
+    case Up;
+    case Down;
+
+    public function offsetGet($val) { ... }
+    public function offsetExists($val) { ... }
+    public function offsetSet($val) { throw new Exception(); }
+    public function offsetUnset($val) { throw new Exception(); }
+}
+
+class Foo
+{
+    // This is allowed.
+    const Bar = Direction::Down;
+
+    // This is disallowed, as it may not be deterministic.
+    const Bar = Direction::Up['short'];
+    // Fatal error: Cannot use [] on enums in constant expression
+}
+
+// This is entirely legal, because it's not a constant expression.
+$x = Direction::Up['short'];
+?>

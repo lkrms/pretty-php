@@ -1,0 +1,7 @@
+<?php
+myFunction(paramName: $value);
+array_foobar(array: $value);
+
+// NOT supported.
+function_name($variableStoringParamName: $value);
+?>

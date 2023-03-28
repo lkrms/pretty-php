@@ -1,0 +1,6 @@
+<?php
+$values = [<<<END
+a
+b
+END ING
+END, 'd e f'];

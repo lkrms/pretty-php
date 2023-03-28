@@ -1,0 +1,8 @@
+<?php
+class foo {
+    public $bar = <<<EOT
+bar
+    EOT;
+}
+// Identifier must not be indented
+?>
