@@ -9,9 +9,9 @@ else {
 switch ($f) {
 	// comment #1
 	case '1':
-	if($a){
-		// comment #1 inside case;
-	}
+		if ($a) {
+			// comment #1 inside case;
+		}
 		break;
 
 	// comment #2
@@ -20,13 +20,12 @@ switch ($f) {
 		break;
 }
 
-
 switch ($f) {
 	// comment #1
 	case '1':
-	if($a){
-		// comment #1 inside case;
-	}
+		if ($a) {
+			// comment #1 inside case;
+		}
 
 	// comment #2
 	// comment #3

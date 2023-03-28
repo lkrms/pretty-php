@@ -1,8 +1,7 @@
 <?php
 //passes:TrimSpaceBeforeSemicolon
-echo 1
-;
+echo 1;
 
 echo 1
-//comment
-;
+	//comment
+	;

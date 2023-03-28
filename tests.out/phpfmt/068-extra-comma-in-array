@@ -5,6 +5,6 @@ $exclude_dirs = array(
 	'c/',
 	'd/',
 	/* comment
-
+	 *
 	 */
 );

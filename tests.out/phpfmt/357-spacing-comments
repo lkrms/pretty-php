@@ -1,5 +1,5 @@
 <?php
 switch ($a) {
-	case 1: // comment
-	break;
+	case 1:  // comment
+		break;
 }

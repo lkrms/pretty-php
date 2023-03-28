@@ -1,22 +1,21 @@
 <?php
 
-
-function hello() {
-		$aaaa
+function hello()
+{
+	$aaaa
 		->foo('one')
 		->foo(
-$thisNameLengthChangesIndent->bar(
+			$thisNameLengthChangesIndent->bar(
 				'asdf',
 				'fdsajhfasdjfhgasjhdgf',
 				[
-				'opt' => true,
-				'opt2' => true,
-				'opt3' => 'gfhdjsgdkfhgskdfghjk',
+					'opt' => true,
+					'opt2' => true,
+					'opt3' => 'gfhdjsgdkfhgskdfghjk',
 				]
-				)->chainedMethod(new Whatever)
-			)
+			)->chainedMethod(new Whatever)
+		)
 		->foo(
 			'moreFoos'
-			)
-		;
-	}
+		);
+}

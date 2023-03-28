@@ -1,11 +1,11 @@
 <?php
 $positions = Position::with(['something' => function ($query) {
-	$query->with(['something'         => function ($query) {
-		$query->where('date', '=',  'something');
+	$query->with(['something' => function ($query) {
+		$query->where('date', '=', 'something');
 	}]);
 
-	$query->with(['something'   => function ($query)  {
-		$query->with(['something' => function ($query)  {
+	$query->with(['something' => function ($query) {
+		$query->with(['something' => function ($query) {
 			$query->where('date', '=', 'something');
 		}]);
 	}]);
@@ -15,11 +15,13 @@ $positions = Position::with(['something' => function ($query) {
 	}]);
 }])->get();
 
-function aaa($query) {
+function aaa($query)
+{
 	$a;
 }
 
-function bbb($query) { $a;
+function bbb($query)
+{
+	$a;
 	$b;
 }
-

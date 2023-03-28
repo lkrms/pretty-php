@@ -1,18 +1,19 @@
 <?php
-class Object {
+class Object
+{
 	/**
 	 * Comment
 	 */
-	public function a() {
+	public function a()
+	{
 		return true;
 	}
-
-
 
 	/**
 	 * Comment 2
 	 */
-	public function b() {
+	public function b()
+	{
 		return false;
 	}
 }

@@ -1,37 +1,28 @@
 <?php
 while (false):
-	while($a){
-
+	while ($a) {
 	}
 
-	do{
-
-	}while(false);
+	do {
+	} while (false);
 endwhile;
 
-
 foreach ($a as $v):
-
-	foreach ($a as $v){
-
+	foreach ($a as $v) {
 	}
 
 	foreach ($a as $v);
-
 endforeach;
 
-for($i = 0; $i < 10; $i):
-
-	for($i = 0; $i < 10; $i){
-
+for ($i = 0; $i < 10; $i):
+	for ($i = 0; $i < 10; $i) {
 	}
 
-	for($i = 0; $i < 10; $i);
-
+	for ($i = 0; $i < 10; $i);
 endfor;
 
-for($i = 0; $i < 10; $i):
-?>
+for ($i = 0; $i < 10; $i):
+	?>
 
 <?php
-endfor;
+	endfor;

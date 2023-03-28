@@ -2,7 +2,7 @@
   <tr>
     <td>
       <h1>
-      <?php echo 'somethin'?>
+      <?php echo 'somethin' ?>
       </h1>
     </td>
     <td>

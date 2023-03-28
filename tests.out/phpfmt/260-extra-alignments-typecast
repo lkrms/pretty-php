@@ -6,6 +6,6 @@ function a(
 	TypeCCC $ccc = array(),
 	TypeDDDD $dddd,
 	TypeEEEEE $eeeee
-){
+) {
 	noop();
 }

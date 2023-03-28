@@ -1,7 +1,9 @@
 <?php
 //passes:AutoSemicolon
-class A{
-	protected function tokenIs($direction, $token, $ignoreList = []) {
+class A
+{
+	protected function tokenIs($direction, $token, $ignoreList = [])
+	{
 		if ('left' != $direction) {
 			$direction = 'right';
 		}
@@ -19,4 +21,4 @@ class A{
 
 		return $ret;
 	}
-	}
+}

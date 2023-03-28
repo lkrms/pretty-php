@@ -2,7 +2,7 @@
 //passes:AutoSemicolon
 
 $url = (
-    isset($array['url'])
-    ? $array['url']
-    : 'myurl123'
+	isset($array['url'])
+		? $array['url']
+		: 'myurl123'
 );

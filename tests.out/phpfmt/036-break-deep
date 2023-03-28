@@ -1,7 +1,7 @@
 <?php
-if($a){
+if ($a) {
 	break;
 }
-if($a){
+if ($a) {
 	break 2;
 }

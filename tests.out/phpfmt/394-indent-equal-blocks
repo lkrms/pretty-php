@@ -1,56 +1,55 @@
 <?php
 
-$a = $b .
-	$c .
-	$d;
+$a = $b
+	. $c
+	. $d;
 
 $a =
-	$b .
-	$c .
-	$d;
+	$b
+		. $c
+		. $d;
 
-
-function a(){
+function a()
+{
 	$a =
-	$b .
-	$c .
-	$d;
+		$b
+			. $c
+			. $d;
 }
 
 $a =
-$b =
-	$c .
-	$d;
+	$b =
+		$c
+		. $d;
 
-
-$string = function(){
-	$c .
-	$d;
+$string = function () {
+	$c
+		. $d;
 
 	$a[
-	$c .
-	$d
+		$c
+			. $d
 	] = 0;
 };
 
 $x = (
-	$a .
-	$b .
-	$c
+	$a
+		. $b
+		. $c
 );
 
 $x = [
-	$a .
-	$b .
-	$c
+	$a
+		. $b
+		. $c
 ];
 
 $string = 'a' . 'b';
 
-$string = 'a' .
-	'b' .
-	'c' .
-	'd';
+$string = 'a'
+	. 'b'
+	. 'c'
+	. 'd';
 
 $x = ($x = $a);
 $x = ($x = $a);
@@ -76,24 +75,24 @@ if (
 }
 
 $string =
-	'a' .
-	'b' .
-	'c' .
-	'd';
+	'a'
+		. 'b'
+		. 'c'
+		. 'd';
 
 $x = 1;
 
 $string = [
-	"x" => [
-		"t" => "1" . $x,
+	'x' => [
+		't' => '1' . $x,
 	],
 ];
 
 if ($x == 1) {
-	$string = 'a' .
-		'b' .
-		'c' .
-		'd';
+	$string = 'a'
+		. 'b'
+		. 'c'
+		. 'd';
 
 	if ($x = 1) {
 		doSomething();
@@ -106,31 +105,30 @@ while ($row = $percent->fetchObject()) {
 	$answers[] = $row;
 }
 
-class Test {
-
-	public function abc($x) {
+class Test
+{
+	public function abc($x)
+	{
 		if (1 == $x) {
 			echo "${abc}";
 		}
 	}
-
 }
 
 Event::trigger('this',
-	function() {
+	function () {
 		while ($row = $percent->fetchObject()) {
 			$answers[] = $row;
 		}
-	}
-);
+	});
 
-echo '' .
-implode(
-",\n",
-array_map(
-	function ($k, $v) {
-		return '`' . $k . '` = ' . $db->quote($v);
-	}, array_keys($row), $row
-)
-)
-. '';
+echo ''
+	. implode(
+		",\n",
+		array_map(
+			function ($k, $v) {
+				return '`' . $k . '` = ' . $db->quote($v);
+			}, array_keys($row), $row
+		)
+	)
+	. '';

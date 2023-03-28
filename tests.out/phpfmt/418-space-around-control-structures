@@ -3,20 +3,26 @@
 
 namespace Test;
 
-class Test {
-	public function a() {
+class Test
+{
+	public function a()
+	{
 		for ($x = 0; $x < 100; $x++) {
 			for ($y = 0; $y < 100; $y++) {
 				echo $x * $y;
 			}
 		}
 	}
-	public function b() {
+
+	public function b()
+	{
 		echo array_filter(['a', 'b', 'c'], function ($value) {
 			return 'b' == $value;
 		});
 	}
-	public function c() {
+
+	public function c()
+	{
 		echo 'c';
 	}
 }

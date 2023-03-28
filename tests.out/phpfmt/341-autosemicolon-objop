@@ -1,7 +1,7 @@
 <?php
 //passes:Default,AutoSemicolon
 $one = a->b
-          ->c;
+	->c;
 
 $two = a->b($x->y)
 	->c;

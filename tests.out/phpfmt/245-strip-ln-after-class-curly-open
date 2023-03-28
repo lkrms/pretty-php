@@ -1,14 +1,12 @@
 <?php
 //passes:Default,StripNewlineAfterClassOpen
-class A {
-
-
+class A
+{
 	protected $a;
 }
 
-trait B {
-
-
+trait B
+{
 	// Comment
 }
 

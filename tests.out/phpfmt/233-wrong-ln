@@ -1,7 +1,9 @@
 <?php
 //Passes:SpaceBetweenMethods,Default
-class test {
-    public function upload() {
-        header("Location:http://{$host}/onethink.php?key={$key}");
-    }
+class test
+{
+	public function upload()
+	{
+		header("Location:http://{$host}/onethink.php?key={$key}");
+	}
 }

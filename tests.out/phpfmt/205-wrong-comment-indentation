@@ -1,6 +1,8 @@
 <?php
-class MyClass {
-	public function method($object, $request) {
+class MyClass
+{
+	public function method($object, $request)
+	{
 		$thing = $this->createThing(new OtherClass);
 		$thing->doStuff($request);
 
@@ -8,7 +10,9 @@ class MyClass {
 			// hello
 		}
 	}
-	public function method2($object, $request) {
+
+	public function method2($object, $request)
+	{
 		$thing = $this->createThing(new OtherClass, $object);
 		$thing->doStuff($request);
 
@@ -17,4 +21,3 @@ class MyClass {
 		}
 	}
 }
-

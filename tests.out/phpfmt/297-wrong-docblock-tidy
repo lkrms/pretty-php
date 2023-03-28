@@ -12,8 +12,8 @@
  *
  * @see     https://home.com/something
  */
-class A {
-
+class A
+{
 }
 
 /**
@@ -28,6 +28,6 @@ class A {
  *
  * @see     https://home.com/something
  */
-class A {
-
+class A
+{
 }

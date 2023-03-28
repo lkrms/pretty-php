@@ -3,12 +3,9 @@
 do
 //Comment
 {
-
-
-}while(false);
+} while (false);
 
 while
-//Comment
-(false){
-
-}
+	//Comment
+	(false) {
+	}

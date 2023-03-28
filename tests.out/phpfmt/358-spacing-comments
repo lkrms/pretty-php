@@ -1,7 +1,7 @@
 <?php
 $a = [
-    'a' => 'hey',
-    'hey' => 'hey',
-    PHP_VERSION => 'hey',
-    DateTime::class => 'hey',
+	'a' => 'hey',
+	'hey' => 'hey',
+	PHP_VERSION => 'hey',
+	DateTime::class => 'hey',
 ];

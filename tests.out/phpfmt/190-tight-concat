@@ -3,4 +3,4 @@
 echo $a . $b;
 echo $a . $b . $c;
 echo $a . 1 + 1 . $c;
-echo $dir.DIRECTORY_SEPARATOR;
+echo $dir . DIRECTORY_SEPARATOR;

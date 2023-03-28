@@ -1,7 +1,8 @@
 <?php
 //passes:SettersAndGettersPass,Default
 
-class A {
+class A
+{
 	private $a;
 	public $c;
 	private $b;

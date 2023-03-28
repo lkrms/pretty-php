@@ -4,18 +4,17 @@ $x = array(
 );
 
 $x = array(
- // Comment
-);
+	// Comment
+	);
 $x = array(
- /* Comment */
-);
+	/* Comment */
+	);
 
 $x = array(1, 2, 3,
-  4, 5, 6);
+	4, 5, 6);
 
 $x = array(1, 2, 3,
-  4, 5, 6
-  );
+	4, 5, 6);
 
 $x = array(
 	3,
@@ -46,18 +45,18 @@ $x = [
 	]
 ];
 $x = [
- /* Comment */
- ];
+	/* Comment */
+	];
 $x = [
- // Comment
- ];
+	// Comment
+	];
 
 $var = array(
-        "supercalifral"
-        // line comment
-    );
+	'supercalifral'
+	// line comment
+);
 
 $var = array(
-        "supercalifral"
-        /* comment */
-    );
+	'supercalifral'
+	/* comment */
+);

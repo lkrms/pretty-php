@@ -6,10 +6,10 @@ $obj->get()->set_none()
 	->set(ConstantBag::D)
 	->set(ConstantBag::E)
 	->set(ConstantBag::F)
-	->set(ConstantBag::G) // Comment
+	->set(ConstantBag::G)  // Comment
 	->set(ConstantBag::I)
 	->set(ConstantBag::P)
 	->set(ConstantBag::R)
 	->set(ConstantBag::S)
-	->set(ConstantBag::U) // Comment
+	->set(ConstantBag::U)  // Comment
 ;

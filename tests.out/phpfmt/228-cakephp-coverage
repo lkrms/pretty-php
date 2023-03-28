@@ -1,11 +1,11 @@
 <?php
 //passes:Default,CakePHPStyle
-if($a){
+if ($a) {
 	array(
-		/*comment*/'key' => 'value',
+		/*comment*/
+		'key' => 'value',
 	);
-}else{// comment
-
+} else {  // comment
 }
 ?>
-<?php exit()?>
+<?php exit () ?>

@@ -3,14 +3,15 @@
 
 namespace NS1;
 
-class WrongConstructorName {
-	function wrongconstructorname(){
-
+class WrongConstructorName
+{
+	function wrongconstructorname()
+	{
 	}
 }
 
-function a(){
-
+function a()
+{
 }
 
 echo WrongConstructorName::class;

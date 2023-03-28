@@ -10,9 +10,8 @@
 
 try {
 	doSomething();
-}catch (Exception $exc) {
+} catch (Exception $exc) {
 	//caught me!
-}finally {
+} finally {
 	// yeah... finally.
 }
-

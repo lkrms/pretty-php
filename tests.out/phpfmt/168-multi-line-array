@@ -1,10 +1,7 @@
 <?php
 $x = array('foo'
-/* boo */
-);
-$x = array('foo' /* boo */
-);
+/* boo */);
+$x = array('foo'  /* boo */);
 $x = array(
-array('foo'
-)
+	array('foo')
 );

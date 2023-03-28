@@ -1,6 +1,7 @@
 <?php
 //passes:AlignConstVisibilityEquals
-class A {
+class A
+{
 	const B = 0;
 	const CC = 1;
 	const DDD = 2;

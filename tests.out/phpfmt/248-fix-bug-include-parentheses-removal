@@ -1,2 +1,2 @@
 <?php
-$foo = (true === include($var."constant"));
+$foo = (true === include ($var . 'constant'));

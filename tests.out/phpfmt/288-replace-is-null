@@ -1,10 +1,9 @@
 <?php
 //passes:Default,ReplaceIsNull
 
-if(is_null($a)){
-
+if (is_null($a)) {
 }
 
-if(is_null/*aaa*/(/*aaa*/$a
+if (is_null /*aaa*/ (/*aaa*/ $a
 // hello world
-));
+	));

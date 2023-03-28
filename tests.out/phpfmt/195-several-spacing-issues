@@ -1,14 +1,15 @@
 <?php
 
-function b(){
+function b()
+{
 	return new static();
 }
 
-for ($index = 10;0 <= $index; --$index) {
+for ($index = 10; 0 <= $index; --$index) {
 }
 
 if (
-!$conditions
-|| !($anotherCondition || $someCondition)
+	!$conditions ||
+		!($anotherCondition || $someCondition)
 ) {
 }

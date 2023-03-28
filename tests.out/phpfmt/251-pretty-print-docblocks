@@ -11,6 +11,7 @@
  * @param string $v5
  * @return string
  */
-function SomeFunc(array $v1, array $v2, NS3 $v3, $v4, $v5){
+function SomeFunc(array $v1, array $v2, NS3 $v3, $v4, $v5)
+{
 	return 'string';
 }

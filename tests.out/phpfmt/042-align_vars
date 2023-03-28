@@ -20,4 +20,4 @@ $abcdefghij <= $b;
 $abcdefghijk <<= $b;
 $abcdefghijkl >>= $b;
 $abcdefghijklm ^= $b;
-$abcdefghijklmn %=$b;
+$abcdefghijklmn %= $b;

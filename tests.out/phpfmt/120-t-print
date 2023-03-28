@@ -1,4 +1,4 @@
 <?php
 print time();
-print(time());
+print (time());
 echo time();

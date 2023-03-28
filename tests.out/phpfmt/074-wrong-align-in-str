@@ -4,7 +4,6 @@ $bbbb = '
 $cccccccc = 3;
 ';
 
-
 $c = 0;
 
 $a = array(
@@ -13,11 +12,10 @@ $a = array(
 );
 $bbbb = array(
 	$b => 0,
-	$cccc => '
-$a = array(
-	0 => 1,
-	10 => 10,
+	$cccc => "
+\$a = array(
+\t0 => 1,
+\t10 => 10,
 );
-'
+"
 );
-

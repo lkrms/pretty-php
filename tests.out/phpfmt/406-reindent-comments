@@ -6,12 +6,12 @@ if ($x) {
 
 //skipShortTag1
 
-	/*
+/*
 	aif(){
 		keep me intact
 	}
 */
-	/*
+/*
 		bif(){
 			keep me intact
 		}
@@ -31,16 +31,15 @@ if (true) {
 }
 if (true) {
 	if (false) {
-	/*
+		/*
 	eif(){
 		keep me intact
 	}
 	*/
-	/*
+		/*
 		fif(){
 			keep me intact
 		}
 	*/
 	}
 }
-

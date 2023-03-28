@@ -2,8 +2,7 @@
 
 namespace A;
 
-class A {
-
-
+class A
+{
 }
 ?>

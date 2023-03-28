@@ -1,9 +1,11 @@
 <?php
-$a   = 1;
+$a = 1;
+
 /*
  Others alignments
 */
-class Object {
+class Object
+{
 	/**
 	 * Doc block
 	 */
@@ -12,9 +14,6 @@ class Object {
 		doSomething();
 	}
 
-
-
-
 	/**
 	 * Doc block2
 	 */
@@ -22,6 +21,7 @@ class Object {
 	{
 		doSomethingElse();
 	}
+
 	/**
 	 * Doc block3
 	 */
@@ -31,21 +31,20 @@ class Object {
 	}
 }
 
-class Object2 {
+class Object2
+{
 	// comment
 	public function a()
 	{
 		doSomething();
 	}
 
-
-
-
 	// comment
 	public function b()
 	{
 		doSomethingElse();
 	}
+
 	// comment
 	public function c()
 	{

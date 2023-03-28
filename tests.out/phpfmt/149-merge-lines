@@ -1,59 +1,30 @@
 <?php
 //version:5.5.0
 //skipHHVM
-while ($a)
-{
-
-
+while ($a) {
 }
 
-foreach ($arr as $v)
-{
-
+foreach ($arr as $v) {
 }
-for ($i = 0; $i < 10; $i)
-{
-
-
+for ($i = 0; $i < 10; $i) {
 }
 
-do
-{
+do {
+} while (
+	$a
+);
 
-
-}
-while
-($a);
-
-
-if ($a){
-
-
-}
-elseif($b)
-{
-
-}
-else
-{
-
-
+if ($a) {
+} elseif ($b) {
+} else {
 }
 
-
-try
-{
-
+try {
 	throw new Exception('');
-}
-catch
-(Exception $e)
-{
+} catch (
+	Exception $e
+) {
 	echo 'Caught';
-}
-finally
-{
+} finally {
 	echo 'Finally';
 }
-
-

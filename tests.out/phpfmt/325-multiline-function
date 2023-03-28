@@ -1,15 +1,18 @@
 <?php
 //passes:PSR2MultilineFunctionParams
 
-function a($a){
+function a($a)
+{
 	return false;
 }
 
-function b($a, $b){
+function b($a, $b)
+{
 	return true;
 }
 
-function c(Test $a, Foo $b, $c = array(), array $d = []){
+function c(Test $a, Foo $b, $c = array(), array $d = [])
+{
 	return true;
 }
 

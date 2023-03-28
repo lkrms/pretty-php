@@ -1,12 +1,14 @@
 <?php
 
-class StdObj{
+class StdObj
+{
 	/**
 	 * return array
 	 */
-	public function execute() {
+	public function execute()
+	{
 		return [
-		        '',
+			'',
 			'aaaaaaaaaaaaaaaaaaaa' => [
 				'aaaaaaaaaaaaa' => '',
 				'aaaaaaaaaaa' => 200,

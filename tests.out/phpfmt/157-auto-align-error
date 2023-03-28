@@ -1,5 +1,6 @@
 <?php
-class SomeClass {
+class SomeClass
+{
 	private static $var = [
 		'xx' => ['yyyyaas' => 'aaaa', 'code' => 'VA'],
 		'xx' => ['yyyy' => 'aaaa', 'code' => 'ME'],

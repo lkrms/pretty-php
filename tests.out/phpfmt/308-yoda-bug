@@ -1,6 +1,7 @@
 <?php
 //passes:Default,YodaComparisons
-function hereItComes() {
+function hereItComes()
+{
 	if ($obj !== null) {
 	}
 

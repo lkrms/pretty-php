@@ -4,12 +4,14 @@
 /**
  * Don't touch this
  */
- namespace NS;
+
+namespace NS;
 
 /**
  * Don't touch this
  */
-class SomeClass {
+class SomeClass
+{
 	/**
 	 * Don't touch this
 	 */
@@ -55,7 +57,8 @@ class SomeClass {
 	 */
 	static public function some_static_public_method() {}
 
-	function lets_see_some_magic(){
+	function lets_see_some_magic()
+	{
 		/**
 		 * Touch this
 		 */
@@ -81,7 +84,7 @@ class SomeClass {
 		 * @var $e int
 		 * @var $f SomeType
 		 */
-		foreach($arr as $e => $f){}
+		foreach ($arr as $e => $f) {}
 
 		/**
 		 * Touch this
@@ -91,19 +94,20 @@ class SomeClass {
 		/**
 		 * Touch this
 		 */
-		foreach($arr as $e => $f){}
+		foreach ($arr as $e => $f) {}
 
 		/**
 		 * @var $e int
 		 * @var $f SomeType
 		 */
-		foreach(($arr) as $e => $f){}
+		foreach (($arr) as $e => $f) {}
 
 		/**
 		 * Touch this
 		 */
 	}
 }
+
 /**
  * Touch this
  */

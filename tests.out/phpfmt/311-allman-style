@@ -5,9 +5,9 @@ switch (1) {
 		if (1) {
 			op();
 			$a = 10;
-		}elseif (2){
+		} elseif (2) {
 			op2();
-		}else{
+		} else {
 			op3();
 		}
 

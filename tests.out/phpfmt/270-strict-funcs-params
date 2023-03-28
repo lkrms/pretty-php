@@ -24,9 +24,9 @@ mb_detect_encoding($arr, 'UTF8', true);
 
 //-----
 
-array_search/*Comment*/($needle, $haystack);
-base64_decode//Comment
-($str);
+array_search /*Comment*/ ($needle, $haystack);
+base64_decode  //Comment
+	($str);
 in_array($needle, $haystack /*Comment*/);
 
 array_keys($arr);

@@ -1,10 +1,10 @@
 <?php
-class ClassObject {
-
+class ClassObject
+{
 	/**
 	 * TBD
 	 */
-	function func(){
-
+	function func()
+	{
 	}
 }

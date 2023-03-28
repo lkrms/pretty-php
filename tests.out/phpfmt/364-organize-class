@@ -1,19 +1,21 @@
 <?php
 //passes:OrganizeClass
 
-class A {
+class A
+{
 	/* comment 3 */
+
 	/**
 	 * b func
 	 */
-	function b(){
-
+	function b()
+	{
 	}
 
 	/**
 	 * something about this constant
 	 */
-	const SOMECONST = "a";
+	const SOMECONST = 'a';
 
 	/**
 	 * some attribute
@@ -23,7 +25,7 @@ class A {
 	/**
 	 * something about this other constant
 	 */
-	const OTHERCONST = "b";
+	const OTHERCONST = 'b';
 
 	// comment 1
 
@@ -32,16 +34,15 @@ class A {
 	 */
 	private $a = '';
 
-
-	function b(){
-
+	function b()
+	{
 	}
 
 	/**
 	 * some func
 	 */
-	private function a(){
-
+	private function a()
+	{
 	}
 
 	// comment 2
@@ -49,31 +50,27 @@ class A {
 	/**
 	 * z func
 	 */
-	function z(){
-		$a = function($a){
-
+	function z()
+	{
+		$a = function ($a) {
 		};
-		$b = function($a){
-
+		$b = function ($a) {
 		};
 	}
 
-
-		/**
+	/**
 	 * some other attribute
 	 */
-	public  $b = '';
+	public $b = '';
 
 	/**
 	 * j func
 	 */
-	static public function j(){
-		$a = function($a){
-
+	static public function j()
+	{
+		$a = function ($a) {
 		};
-		$b = function($a){
-
+		$b = function ($a) {
 		};
 	}
-
 }

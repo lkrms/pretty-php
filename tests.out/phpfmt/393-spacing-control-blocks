@@ -5,37 +5,34 @@ namespace Test;
 
 class PhpFmtTest
 {
-    public function functionTest()
-    {
+	public function functionTest()
+	{
+		return 'FunctionTest';
+	}
 
-        return 'FunctionTest';
-    }
+	public function ifTest()
+	{
+		if ($this->name == 'name') {
+			return 'ifTestName';
+		}
 
-    public function ifTest()
-    {
-        if ($this->name == 'name') {
+		return 'ifTest';
+	}
 
-            return 'ifTestName';
-        }
+	public function switchTest()
+	{
+		switch ($this->name) {
+			case 'name':
+				return 'switchTestName';
+				break;
+		}
 
-        return 'ifTest';
-    }
+		return 'switchTest';
+	}
 
-    public function switchTest()
-    {
-        switch ($this->name) {
-            case 'name':
-
-                return 'switchTestName';
-                break;
-        }
-
-        return 'switchTest';
-    }
-
-    public function doWhileBlock(){
-        do{
-
-        }while(true);
-    }
+	public function doWhileBlock()
+	{
+		do {
+		} while (true);
+	}
 }

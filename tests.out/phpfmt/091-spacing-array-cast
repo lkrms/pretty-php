@@ -1,3 +1,4 @@
 <?php
-function act(Type1 $lll, array&$var) {
+function act(Type1 $lll, array &$var)
+{
 }

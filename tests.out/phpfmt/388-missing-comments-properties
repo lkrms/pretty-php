@@ -1,15 +1,20 @@
 <?php
 //passes: GeneratePHPDoc
 
-class Test {
+class Test
+{
 	private $a;
+
 	private $b = 1;
-	private $c = "c";
+
+	private $c = 'c';
+
 	private $d = [
 		1,
 		2,
 		3,
 	];
+
 	/**
 	 * @var float
 	 */
@@ -17,16 +22,19 @@ class Test {
 
 	var $e = 10;
 
-	public function __construct(array $a, $b) {
+	public function __construct(array $a, $b)
+	{
 		$this->a = $a;
 		$this->b = $b;
 	}
 
-	public function getA(){
+	public function getA()
+	{
 		return $this->a;
 	}
 
-	public function getB(){
+	public function getB()
+	{
 		return $this->b;
 	}
 }

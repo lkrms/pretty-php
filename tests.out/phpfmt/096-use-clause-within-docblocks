@@ -5,20 +5,21 @@ namespace NS1;
 use AA\BB;
 use AA\BB\CC as CC;
 
-class SomeClass{
-
+class SomeClass
+{
 	/**
 	 * @return AA\BB
 	 */
-	function abc(){
+	function abc()
+	{
 		// do something
 	}
 
 	/**
 	 * @return CC
 	 */
-	function abcd(){
+	function abcd()
+	{
 		// do something
 	}
-
 }

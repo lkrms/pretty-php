@@ -1,10 +1,11 @@
 <?php
 //passes: RemoveSemicolonAfterCurly
 
-function xxx() {
-    // code
+function xxx()
+{
+	// code
 };
 
 $a = function () {
-    // code
+	// code
 };

@@ -1,6 +1,8 @@
 <?php
 //passes:GeneratePHPDoc
-class A {
-public function b($a){
-}
+class A
+{
+	public function b($a)
+	{
+	}
 }

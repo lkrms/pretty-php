@@ -3,6 +3,4 @@
 
 use \PDO;
 
-
 new PDO();
-

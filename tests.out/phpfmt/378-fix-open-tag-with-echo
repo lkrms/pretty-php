@@ -3,14 +3,14 @@ use yii\widgets\DetailView;
 ?>
                         <div class="body">
 
-<?=DetailView::widget([
-'model' => $model,
-'attributes' => [
-'id',
-[
-'label' => 'name',
-'value' => $model->name,
-],
-],
-]);?>
+<?= DetailView::widget([
+	'model' => $model,
+	'attributes' => [
+		'id',
+		[
+			'label' => 'name',
+			'value' => $model->name,
+		],
+	],
+]); ?>
 </div>

@@ -1,7 +1,7 @@
 <?php
 return array(
-        new SomeClass(
-            new \ThirdClass(array()),
-            'render'
-        )
+	new SomeClass(
+		new \ThirdClass(array()),
+		'render'
+	)
 );

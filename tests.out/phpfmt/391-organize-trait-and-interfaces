@@ -1,14 +1,16 @@
 <?php
 //passes:OrganizeClass
 
-interface Foo {
+interface Foo
+{
 	public function d();
 	function a();
 	function b();
 	function c();
 }
 
-trait FooTrait {
+trait FooTrait
+{
 	/**
 	 * comment for a
 	 */

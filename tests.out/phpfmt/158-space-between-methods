@@ -1,27 +1,24 @@
 <?php
 //passes:SpaceBetweenMethods,Default
-class A {
-
-	function a(){
-
+class A
+{
+	function a()
+	{
 	}
-	function b(){
 
+	function b()
+	{
 	}
+
 	//adsa
-	function c(){
-
+	function c()
+	{
 	}
+
 	/**
 	 * @return something
 	 */
-	function d(){
-
+	function d()
+	{
 	}
-
-
-
-
-
 }
-

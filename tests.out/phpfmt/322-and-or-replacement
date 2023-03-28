@@ -1,5 +1,4 @@
 <?php
 //passes: ReplaceBooleanAndOr
-if($a and $b or $c){
-
+if ($a and $b or $c) {
 }

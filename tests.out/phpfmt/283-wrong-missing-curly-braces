@@ -1,34 +1,40 @@
 <?php
-function a() {
+
+function a()
+{
 	if ('foo' == 'bar')
 		foreach ($array as $item => $value) {
 			echo 'Test Code.';
 		}
 }
 
-function b(){
+function b()
+{
 	echo 'c';
 }
 
-
-function c() {
-	if ('foo' == 'bar'){
+function c()
+{
+	if ('foo' == 'bar') {
 		$a;
-	}else
+	}
+	else
 		foreach ($array as $item => $value) {
 			echo 'Test Code.';
 		}
 }
 
-function d(){
+function d()
+{
 	echo 'c';
 }
 
-
-function e() {
-	if ('foo' == 'bar'){
+function e()
+{
+	if ('foo' == 'bar') {
 		$a;
-	}elseif(false)
+	}
+	elseif (false)
 		foreach ($array as $item => $value) {
 			echo 'Test Code.';
 		}
@@ -38,71 +44,75 @@ function e() {
 		}
 }
 
-function f(){
+function f()
+{
 	echo 'c';
 }
 
-
-function a() {
+function a()
+{
 	if ('foo' == 'bar')
 		foreach ($array as $item => $value)
 			echo 'Test Code.';
-
 }
 
-
-if($a)
-$a;
-elseif($b)
-$b;
+if ($a)
+	$a;
+elseif ($b)
+	$b;
 else
-foreach ($array as $item => $value) // Comment
-// Comment
-	echo 'Test Code.';
+	foreach ($array as $item => $value)  // Comment
+		                                 // Comment
+		echo 'Test Code.';
 
-if($a)
-	do{$a;}while(true);
+if ($a)
+	do {
+		$a;
+	} while (true);
 
-if($a):
-	do{$a;}while(true);
+if ($a):
+	do { $a; } while (true);
 endif;
 
 // while cases
-while($a);
+while ($a);
 
-while($a):
-$b;
+while ($a):
+	$b;
 endwhile;
 
-while(false)
-do{$a;}while(true);
+while (false)
+	do {
+		$a;
+	} while (true);
 
-if($a) function ($a, $b){ $a; $b; };
+if ($a) function ($a, $b) { $a; $b; };
 
+for ($i = 0; $i < 10; $i)
+	try {
+		echo 1;
+	} catch (Exception $e) {
+		echo 2;
+	} catch (Exception $e) {
+		echo 3;
+	}
 
-for($i = 0; $i < 10; $i)
-    try{
-        echo 1;
-    }catch(Exception $e){
-        echo 2;
-    }catch(Exception $e){
-        echo 3;
-    }
+while (false)
+	try {
+		echo 1;
+	} catch (Exception $e) {
+		echo 2;
+	} catch (Exception $e) {
+		echo 3;
+	}
 
-while(false)
-    try{
-        echo 1;
-    }catch(Exception $e){
-        echo 2;
-    }catch(Exception $e){
-        echo 3;
-    }
-
-function g() {
+function g()
+{
 	foreach ($array as $item => $value)
-		if ('foo' == 'bar'){
+		if ('foo' == 'bar') {
 			$a;
-		}elseif(false)
+		}
+		elseif (false)
 			foreach ($array as $item => $value) {
 				echo 'Test Code.';
 			}
@@ -112,16 +122,20 @@ function g() {
 			}
 }
 
-function h(){
+function h()
+{
 	echo 'c';
 }
 
+while (false)
+	do {
+		$a;
+	} while (true);
 
-while(false)
-do{$a;}while(true);
-
-while(false)
-do{$a;}while(true)/*la*/;
+while (false)
+	do {
+		$a;
+	} while (true) /*la*/;
 
 if (true)
 	if (false)
@@ -131,7 +145,7 @@ if (true)
 			echo 2;
 		else
 			echo 3;
-	else
-		echo 3;
+		else
+			echo 3;
 
-foreach (getParameters() as $param)$paramClasses[] = getClass() ? getClass()->name : null;
+foreach (getParameters() as $param) $paramClasses[] = getClass() ? getClass()->name : null;

@@ -1,5 +1,6 @@
 <?php
-function func(){
+function func()
+{
 	$qry = "SELECT * FROM {$Table_Name}";
 	$result = mysql_query($query);
 }

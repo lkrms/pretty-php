@@ -3,10 +3,11 @@
 
 if (!defined('PROOT_LOG_PATH')) define('PROOT_LOG_PATH', '/dev/null');
 
-if (!defined('PROOT_LOG_PATH')) {define('PROOT_LOG_PATH', '/dev/null');}
+if (!defined('PROOT_LOG_PATH')) { define('PROOT_LOG_PATH', '/dev/null'); }
 
 if ($a) {
-	function a($a, $b) {
+	function a($a, $b)
+	{
 		$a;
 		$b;
 	};

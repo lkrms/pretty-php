@@ -1,5 +1,5 @@
 <?php
-switch($a){
+switch ($a) {
 	case -1:
 	case -2:
 	case 0:
@@ -10,9 +10,8 @@ switch($a){
 		$a;
 		$b;
 		break;
-
 }
-switch($a){
+switch ($a) {
 	case -1:
 	case -2:
 	case 0:
@@ -20,7 +19,7 @@ switch($a){
 		$b;
 		break;
 	case 1:
-		if($a){
+		if ($a) {
 			$b;
 			$d;
 			$d;
@@ -28,12 +27,12 @@ switch($a){
 		}
 		break;
 	case 2:
-		if($a){
+		if ($a) {
 			$b;
 			$d;
 			$d;
 			break;
-		}else{
+		} else {
 			$c;
 			$d;
 			$d;
@@ -41,17 +40,17 @@ switch($a){
 		}
 		break;
 	case 3:
-		if($a){
+		if ($a) {
 			$b;
 			$d;
 			$d;
 			break;
-		}elseif($b){
+		} elseif ($b) {
 			$c;
 			$d;
 			$d;
 			break;
-		}else{
+		} else {
 			$c;
 			$d;
 			$d;
@@ -59,90 +58,90 @@ switch($a){
 		}
 		break;
 	case 4:
-		if($a){
-			if($b){
+		if ($a) {
+			if ($b) {
 				$c;
-			}elseif($d){
+			} elseif ($d) {
 				$e;
-			}else{
+			} else {
 				$f;
 			}
 		}
 	case 5:
-		for($i = 0; $i < 10; $i++){
+		for ($i = 0; $i < 10; $i++) {
 			$a;
 		}
 	case 6:
-		if($a){
-			for($i = 0; $i < 10; $i++){
+		if ($a) {
+			for ($i = 0; $i < 10; $i++) {
 				$a;
 			}
-		}elseif($b){
-			for($i = 0; $i < 10; $i++){
+		} elseif ($b) {
+			for ($i = 0; $i < 10; $i++) {
 				$a;
 			}
-		}else{
-			for($i = 0; $i < 10; $i++){
+		} else {
+			for ($i = 0; $i < 10; $i++) {
 				$a;
 			}
 		}
 	case 7:
-		while(false){
+		while (false) {
 			$a;
 		}
 	case 8:
-		if($a){
-			while(false){
+		if ($a) {
+			while (false) {
 				$a;
 			}
-		}elseif($b){
-			while(false){
+		} elseif ($b) {
+			while (false) {
 				$a;
 			}
-		}else{
-			while(false){
+		} else {
+			while (false) {
 				$a;
 			}
 		}
 	case 9:
-		foreach($vs as $v){
+		foreach ($vs as $v) {
 			$a;
 		}
 	case 10:
-		if($a){
-			foreach($vs as $v){
+		if ($a) {
+			foreach ($vs as $v) {
 				$a;
 			}
-		}elseif($b){
-			foreach($vs as $v){
+		} elseif ($b) {
+			foreach ($vs as $v) {
 				$a;
 			}
-		}else{
-			foreach($vs as $v){
+		} else {
+			foreach ($vs as $v) {
 				$a;
 			}
 		}
 	case 10:
-		do{
+		do {
 			$a;
-		}while(false);
+		} while (false);
 	case 11:
-		if($a){
-			do{
+		if ($a) {
+			do {
 				$a;
-			}while(false);
-		}elseif($b){
-			do{
+			} while (false);
+		} elseif ($b) {
+			do {
 				$a;
-			}while(false);
-		}else{
-			do{
+			} while (false);
+		} else {
+			do {
 				$a;
-			}while(false);
+			} while (false);
 		}
 	default:
 		$a;
 		$b;
-		if($a){$a;}elseif($b){$b;}else{$c;break;}
+		if ($a) { $a; } elseif ($b) { $b; } else { $c; break; }
 		break;
 }

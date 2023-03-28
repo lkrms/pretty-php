@@ -6,14 +6,13 @@ switch ($id) {
 			// comment
 			$a = $b;
 			$c = $d;
-		}else{
+		} else {
 			// comment
 			// comment
 			$a = $b;
 			$c = $d;
 		}
 }
-
 
 switch ($id) {
 	case 1:

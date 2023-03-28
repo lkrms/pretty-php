@@ -3,14 +3,14 @@ namespace NS\NS2;
 
 use A;
 use B;
-
 use C;
 
-class D{
-function A(){
-new A();
-new B();
-new C();
+class D
+{
+	function A()
+	{
+		new A();
+		new B();
+		new C();
+	}
 }
-}
-

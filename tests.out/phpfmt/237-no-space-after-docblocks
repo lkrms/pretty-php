@@ -4,27 +4,26 @@
 /**
  * Some Dcc
  */
-
-class SomeClass {
-
+class SomeClass
+{
 	/**
 	 * @param mixed $a
 	 * @return mixed
 	 */
-
-	function a($a){
+	function a($a)
+	{
 		return $a;
 	}
 
-	function b(){
-
+	function b()
+	{
 		/**
 		 * @var SomeType
 		 */
-
 		$var &= $var;
 
 		$var &= $var;
+
 		/**
 		 * @var SomeType
 		 */

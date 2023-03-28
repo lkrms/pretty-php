@@ -1,20 +1,22 @@
 <?php
 //passes:RemoveSemicolonAfterCurly
 
-namespace Tests\Acceptance\Api{
-}
-
-namespace Tests\Acceptance\Api {
-class RoleTest extends TestCase
+namespace Tests\Acceptance\Api
 {
-
 }
 
-trait TheTrait {
+namespace Tests\Acceptance\Api
+{
+	class RoleTest extends TestCase
+	{
+	}
 
-}
+	trait TheTrait
+	{
+	}
 
-interface SomeINterface{
-    public function a();
-}
+	interface SomeINterface
+	{
+		public function a();
+	}
 }

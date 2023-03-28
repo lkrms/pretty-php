@@ -6,8 +6,8 @@ if (true) {
 }
 
 echo <<<EOT
-{$foo}{$bar}
-EOT;
+	{$foo}{$bar}
+	EOT;
 
 //comment that explain the if
 if ($x) {
@@ -31,4 +31,4 @@ while ($x) {
 
 ?>
 
-<?php //comment should stay
+<?php  //comment should stay

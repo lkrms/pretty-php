@@ -1,3 +1,2 @@
 <?php
-foreach (getParameters() as $param)$paramClasses[] = getClass() ? getClass()->name : null;
-
+foreach (getParameters() as $param) $paramClasses[] = getClass() ? getClass()->name : null;

@@ -2,8 +2,10 @@
 //passes:EncapsulateNamespaces,Default
 namespace A;
 
-class A {
-	function name(){
+class A
+{
+	function name()
+	{
 		?><?php
 	}
 }

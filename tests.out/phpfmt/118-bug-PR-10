@@ -1,8 +1,8 @@
 <?php
 $related_others = array("${keywords}abc",
-                                "${keywords}abcd",
-                                );
+	"${keywords}abcd",);
 
-function a(){
-	echo "a";
+function a()
+{
+	echo 'a';
 }

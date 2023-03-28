@@ -1,6 +1,8 @@
 <?php
-class Standard {
-	public function __construct(TypeHint &$app) {
+class Standard
+{
+	public function __construct(TypeHint &$app)
+	{
 		// ...
 	}
 }

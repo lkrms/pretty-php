@@ -11,13 +11,13 @@ use Laravel\Spark\Spark;
 
 class Foo
 {
-    public function bar()
-    {
-        new Carbon;
-        new DB;
-        new Request;
-        new Contract;
-        new InteractsWithSparkHooks;
-        new Spark;
-    }
+	public function bar()
+	{
+		new Carbon;
+		new DB;
+		new Request;
+		new Contract;
+		new InteractsWithSparkHooks;
+		new Spark;
+	}
 }

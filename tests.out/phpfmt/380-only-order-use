@@ -2,11 +2,13 @@
 //passes:OnlyOrderUseClauses
 namespace A;
 
-use C;
 use B;
+use C;
 
-class D {
-	function f() {
+class D
+{
+	function f()
+	{
 		new B();
 	}
 }

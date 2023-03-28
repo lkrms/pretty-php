@@ -1,2 +1,2 @@
 <?php
-$params = $givenParams+[$parentParam => $parentIds];
+$params = $givenParams + [$parentParam => $parentIds];

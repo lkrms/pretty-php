@@ -2,16 +2,17 @@
 
 namespace NS\SNS;
 
-use ONS\A\B;
 use ONS\A;
-
+use ONS\A\B;
 
 /**
  * Comment
  * @author XXX
  */
-class StdClassForTesting {
-	function a(){
+class StdClassForTesting
+{
+	function a()
+	{
 		new A();
 		new B();
 	}

@@ -3,8 +3,7 @@
 
 $a++;
 
-if($a++){
-
+if ($a++) {
 }
 
 $a++;
@@ -13,13 +12,11 @@ $this->a{$b++}($a++);
 $this->a($a++);
 $this->a{$b++}();
 
-echo "a".$i++;
-
+echo 'a' . $i++;
 
 $a--;
 
-if($a--){
-
+if ($a--) {
 }
 
 $a--;
@@ -28,11 +25,10 @@ $this->a{$b--}($a--);
 $this->a($a--);
 $this->a{$b--}();
 
-echo "a".$i--;
+echo 'a' . $i--;
 
 ++$i;
 --$i;
-
 
 $a[] = 10;
 
@@ -40,9 +36,8 @@ $a[] = 10;
 
 stdClass::$a;
 
-$var{ ClassName2 };
+$var{ClassName2};
 
 $a[[10]] = 10;
-
 
 \ClassName\CS::constName;

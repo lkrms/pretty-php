@@ -1,69 +1,90 @@
 <?php
 //passes:Default,ClassToSelf
 
-class SomeClass {
+class SomeClass
+{
 	const AConstant = SomeClass::constant;
 }
 
-class SomeClass2 {
+class SomeClass2
+{
 	public $bar = SomeClass2::constant;
 }
 
-class SomeClass3 {
+class SomeClass3
+{
 	public function a($a = SomeClass3::AnotherConstant) {}
 }
 
-class SomeClass4 {
-	public function b() {
+class SomeClass4
+{
+	public function b()
+	{
 		SomeClass4::func();
 	}
 }
 
-class SomeClass5 {
-	public function c() {
+class SomeClass5
+{
+	public function c()
+	{
 		SomeClass5::class;
 	}
 }
 
-class SomeClass6 {
-	public function d() {
+class SomeClass6
+{
+	public function d()
+	{
 		$x instanceof SomeClass6;
 	}
 }
 
-class SomeClass7 {
-	public function e() {
+class SomeClass7
+{
+	public function e()
+	{
 		new SomeClass7();
 	}
 }
 
-interface SomeInterface {
+interface SomeInterface
+{
 	const AnotherConstant = SomeClass::constant;
+
 	public function f($a = SomeInterface::AnotherConstant);
 }
 
-class SomeClass8 {
+class SomeClass8
+{
 	const SomeClass8 = 1;
 }
 
-class SomeClass9 {
+class SomeClass9
+{
 	public function SomeClass9() {}
 }
 
-class SomeClass10 {
-	public function h() {
+class SomeClass10
+{
+	public function h()
+	{
 		new \NS\SomeClass10();
 	}
 }
 
-class SomeClass11 {
-	public function i() {
+class SomeClass11
+{
+	public function i()
+	{
 		new SomeClass11\SNS();
 	}
 }
 
-trait SomeTrait {
-	public function j() {
+trait SomeTrait
+{
+	public function j()
+	{
 		SomeTrait::func();
 	}
 }

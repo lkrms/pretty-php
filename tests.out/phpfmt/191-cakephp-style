@@ -1,7 +1,7 @@
 <?php
 //passes:Default,CakePHPStyle
-class A {
-
+class A
+{
 	public $__a;
 	private $__b;
 	protected $__c;
@@ -14,31 +14,39 @@ class A {
 	private $b;
 	protected $c;
 
-	function a(){
+	function a()
+	{
 	}
 
-	private function b(){
+	private function b()
+	{
 	}
 
-	protected function __c(){
+	protected function __c()
+	{
 	}
 
-	static function __d(){
+	static function __d()
+	{
 	}
 
-	private static function b(){
+	private static function b()
+	{
 	}
 
-	protected static function c(){
+	protected static function c()
+	{
 	}
 
-	static function d(){
+	static function d()
+	{
 	}
 
-	static private function b(){
+	static private function b()
+	{
 	}
 
-	static protected function c(){
+	static protected function c()
+	{
 	}
-
 }

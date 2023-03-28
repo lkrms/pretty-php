@@ -1,9 +1,8 @@
 <?php
 //passes: TwoCommandsInSameLine, AddMissingCurlyBraces, NormalizeLnAndLtrimLines, MergeParenCloseWithCurlyOpen, MergeCurlyCloseAndDoWhile, MergeDoubleArrowAndArray, ExtraCommaInArray, ResizeSpaces, Reindent, ReindentColonBlocks,   ReindentObjOps, OrderAndRemoveUseClauses, EliminateDuplicatedEmptyLines, AlignEquals, AlignDoubleArrow, LeftAlignComment, RTrim, AutoPreincrement
 
-
 ${$a}++;
-${"a"}++;
+${'a'}++;
 ++${$a};
 "{$a}++";
 "${a1}++";
