@@ -4,7 +4,7 @@ class A{
 	function funcName($parameter) {
 		try
 		{
-			doSomething()
+			doSomething();
 		}
 
 		// comment

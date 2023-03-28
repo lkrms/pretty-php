@@ -1,7 +1,0 @@
-<?php
-//passes:AutoSemicolon
-if ($a < 0)
-echo 200
-else{
-echo 300
-}

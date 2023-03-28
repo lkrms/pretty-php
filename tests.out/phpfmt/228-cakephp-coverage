@@ -3,7 +3,7 @@
 if($a){
 	array(
 		/*comment*/'key' => 'value',
-	)
+	);
 }else{// comment
 
 }

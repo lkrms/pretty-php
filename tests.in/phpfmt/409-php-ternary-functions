@@ -8,7 +8,7 @@
 function stripslashes_deep($value) {
     $value = is_array($value) ?
         array_map('stripslashes_deep', $value) :
-        stripslashes($value)
+        stripslashes($value);
     return $value;
 }
 
@@ -19,7 +19,7 @@ function stripslashes_deep($value) {
 function stripslashes_deep($value) {
     $value = is_array($value) ?
         array_map('stripslashes_deep', $value) :
-        stripslashes($value)
+        stripslashes($value);
     return $value;
 }
 
@@ -33,7 +33,7 @@ function stripslashes_deep($value) {
 		hey();
 		break;
 	case "F":
-		return ($x == 1) ? shalom() : hello()
+		return ($x == 1) ? shalom() : hello();
 		break;
 	}
 
@@ -48,6 +48,6 @@ function stripslashes_deep($value) {
 
 	$value = is_array($value) ?
 	array_map('stripslashes_deep', $value) :
-	explode($value)
+	explode($value);
 	return $value;
 }
