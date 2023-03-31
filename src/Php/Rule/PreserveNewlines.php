@@ -64,6 +64,7 @@ final class PreserveNewlines implements TokenRule
         }
         if (Test::isBetween($token->line, $min, $max) &&
                 $token->is(TokenType::PRESERVE_NEWLINE_BEFORE) &&
+                // Don't preserve newlines between empty brackets
                 ($noBrackets || !($token->isCloseBracket() && $prev->isOpenBracket())) &&
                 // Treat `?:` as one operator
                 (!$token->IsTernaryOperator || $token->TernaryOperator1 !== $prev) &&
@@ -86,10 +87,14 @@ final class PreserveNewlines implements TokenRule
         }
         if (Test::isBetween($next->line, $min, $max) &&
                 $token->is(TokenType::PRESERVE_NEWLINE_AFTER) &&
+                // Don't preserve newlines between empty brackets
                 ($noBrackets || !($token->isOpenBracket() && $next->isCloseBracket())) &&
                 // Treat `?:` as one operator
                 (!$token->IsTernaryOperator || $token->TernaryOperator2 !== $next) &&
-                (!$token->is(T[':']) || $token->inSwitchCase() || $token->inLabel())) {
+                (!$token->is(T[':']) || $token->inSwitchCase() || $token->inLabel()) &&
+                // Only preserve newlines after `implements` and `extends` if
+                // they are followed by a list of interfaces
+                (!$token->is([T_IMPLEMENTS, T_EXTENDS]) || $token->nextSiblingsWhile(...TokenType::DECLARATION_LIST)->hasOneOf(T[',']))) {
             if (!$token->is(TokenType::PRESERVE_BLANK_AFTER) ||
                     ($token->id === T[','] && !$next->is(TokenType::COMMENT)) ||
                     ($token->is(TokenType::COMMENT) && $token->prevCode()->id === T[','])) {

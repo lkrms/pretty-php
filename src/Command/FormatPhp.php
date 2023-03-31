@@ -150,7 +150,7 @@ class FormatPhp extends CliCommand
                     Exclusions are applied before inclusions (_--include_).
                     EOF)
                 ->optionType(CliOptionType::VALUE)
-                ->defaultValue('/\/(\.git|\.hg|\.svn|_?build|dist|tests|var|vendor)\/$/')
+                ->defaultValue('/\/(\.git|\.hg|\.svn|_?build|dist|tests[-._0-9a-z]*|var|vendor)\/$/i')
                 ->bindTo($this->Exclude),
             CliOption::build()
                 ->long('tab')

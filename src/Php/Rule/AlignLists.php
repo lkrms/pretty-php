@@ -30,8 +30,10 @@ final class AlignLists implements ListRule
     }
 
     private const BEFORE_ALIGNABLE_LIST = [
+        T_EXTENDS,
         T_FN,
         T_FUNCTION,
+        T_IMPLEMENTS,
         T_NAME_FULLY_QUALIFIED,
         T_NAME_QUALIFIED,
         T_NAME_RELATIVE,
@@ -42,13 +44,14 @@ final class AlignLists implements ListRule
     public function processList(Token $owner, TokenCollection $items): void
     {
         if ($owner->hasNewlineAfterCode() ||
-            !$owner->withParentsWhile(T['('], T['['])
-                   ->find(
-                       fn(Token $t): bool =>
-                           ($t->prevCode()->is(self::BEFORE_ALIGNABLE_LIST) &&
-                                   ($t === $owner || $t->nextCode()->AlignedWith === $t)) ||
-                               $t->isArrayOpenBracket()
-                   )) {
+            ($owner->ClosedBy &&
+                !$owner->withParentsWhile(T['('], T['['])
+                       ->find(
+                           fn(Token $t): bool =>
+                               ($t->prevCode()->is(self::BEFORE_ALIGNABLE_LIST) &&
+                                       ($t === $owner || $t->nextCode()->AlignedWith === $t)) ||
+                                   $t->isArrayOpenBracket()
+                       ))) {
             return;
         }
 
@@ -117,7 +120,7 @@ final class AlignLists implements ListRule
 
     private function alignList(Token $owner, TokenCollection $items): void
     {
-        $delta = $owner->alignmentOffset();
+        $delta = $owner->alignmentOffset() + ($owner->ClosedBy ? 0 : 1);
         $first = $items->first();
         $items->forEach(
             function (Token $t, ?Token $next) use ($owner, $delta, $first) {
@@ -132,7 +135,8 @@ final class AlignLists implements ListRule
                     $until = $owner->ClosedBy
                                  ? $owner->ClosedBy->prev()
                                  : $t->pragmaticEndOfExpression();
-                    if (($adjacent = $until->adjacentBeforeNewline()?->pragmaticEndOfExpression()) &&
+                    if ($owner->ClosedBy &&
+                            ($adjacent = $until->adjacentBeforeNewline()?->pragmaticEndOfExpression()) &&
                             // Don't propagate line padding to adjacent code if
                             // it's only been applied to a one-line block
                             $first->collect($until)->hasNewline()) {

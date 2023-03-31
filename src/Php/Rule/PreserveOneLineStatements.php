@@ -43,7 +43,7 @@ final class PreserveOneLineStatements implements TokenRule
         if ($token->Statement &&
             $token->Statement === $token &&
             $this->maybePreserveOneLine($token,
-                                        $token->pragmaticEndOfExpression())) {
+                                        $token->pragmaticEndOfExpression(false, false))) {
             return;
         }
 

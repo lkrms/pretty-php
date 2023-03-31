@@ -29,7 +29,7 @@ final class NoMixedLists implements ListRule
 
     public function processList(Token $owner, TokenCollection $items): void
     {
-        if ($items->count() < ($owner->isOpenBracket() ? 3 : 2)) {
+        if ($items->count() < ($owner->ClosedBy ? 3 : 2)) {
             return;
         }
         if ($items->nth(2)->hasNewlineBefore()) {
@@ -37,7 +37,9 @@ final class NoMixedLists implements ListRule
         } else {
             // Leave the first item alone if the list is already completely
             // horizontal
-            if (!$items->find(fn(Token $t, ?Token $next, ?Token $prev) => $prev && $t->hasNewlineBefore())) {
+            if ($owner->ClosedBy &&
+                !$items->find(fn(Token $t, ?Token $next, ?Token $prev) =>
+                                  $prev && $t->hasNewlineBefore())) {
                 $items->shift();
             }
             $items->maskWhitespaceBefore(~WhitespaceType::BLANK & ~WhitespaceType::LINE);

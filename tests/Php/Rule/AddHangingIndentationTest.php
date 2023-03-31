@@ -62,31 +62,57 @@ final class AddHangingIndentationTest extends \Lkrms\Pretty\Tests\Php\TestCase
         ];
     }
 
-    public function testMaybeCollapseOverhanging()
+    /**
+     * @dataProvider processTokenProvider
+     */
+    public function testProcessToken(string $code, string $expected)
     {
-        [$in, $out] = [
-            <<<'PHP'
-            <?php
+        $this->assertFormatterOutputIs($code, $expected);
+    }
 
-            if ($a &&
-            ($b ||
-            $c) &&
-            $d) {
-            $e;
-            }
-            PHP,
-            <<<'PHP'
-            <?php
+    public static function processTokenProvider(): array
+    {
+        return [
+            [
+                <<<'PHP'
+                <?php
+                $a = $b->c(fn() =>
+                $d &&
+                $e)
+                ?: $start;
+                PHP,
+                <<<'PHP'
+                <?php
+                $a = $b->c(fn() =>
+                    $d &&
+                        $e)
+                    ?: $start;
 
-            if ($a &&
-                    ($b ||
-                        $c) &&
-                    $d) {
+                PHP,
+            ],
+            [
+                <<<'PHP'
+                <?php
+
+                if ($a &&
+                ($b ||
+                $c) &&
+                $d) {
                 $e;
-            }
+                }
+                PHP,
+                <<<'PHP'
+                <?php
 
-            PHP,
+                if ($a &&
+                        ($b ||
+                            $c) &&
+                        $d) {
+                    $e;
+                }
+
+                PHP,
+            ],
         ];
-        $this->assertFormatterOutputIs($in, $out);
     }
 }

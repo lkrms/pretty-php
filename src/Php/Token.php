@@ -1526,8 +1526,21 @@ class Token extends NavigableToken implements JsonSerializable
      * @param bool $containUnenclosed If `true`, braces are imagined around
      * control structures with unenclosed bodies. The default is `false`.
      */
-    public function pragmaticEndOfExpression(bool $containUnenclosed = false): Token
+    public function pragmaticEndOfExpression(bool $containUnenclosed = false, bool $containTopLevelDeclaration = true): Token
     {
+        // If the token is part of a top-level declaration (namespace, class,
+        // function, trait, etc.), return the token before its opening brace
+        if ($containTopLevelDeclaration && $this->Statement &&
+                ($parts = $this->Statement->withNextSiblingsWhile(
+                    ...TokenType::DECLARATION_PART
+                ))->has($this, true) &&
+                $parts->hasOneOf(...TokenType::DECLARATION_TOP_LEVEL) &&
+                // Anonymous classes and functions aren't top-level declarations
+                !($last = $parts->last())->is([T_CLASS, T_FUNCTION]) &&
+                ($end = $last->nextSiblingOf(T['{']))->Index < $this->EndStatement->Index) {
+            return $end->prevCode();
+        }
+
         // If the token is an expression boundary, return the last token in the
         // statement
         if (!$containUnenclosed && $this->Expression === false) {

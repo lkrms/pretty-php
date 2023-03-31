@@ -347,12 +347,26 @@ final class Formatter implements IReadable
                 $this->Tokens,
                 fn(Token $t) =>
                     ($t->is([T['('], T['[']]) ||
-                        ($t->id === T['{'] &&
-                            $t->prevSibling(2)->id === T_MATCH)) &&
+                            ($t->id === T['{'] &&
+                                $t->prevSibling(2)->id === T_MATCH) ||
+                            $t->is([T_IMPLEMENTS]) ||
+                            ($t->is([T_EXTENDS]) && $t->isDeclaration(T_INTERFACE))) &&
                         $t->ClosedBy !== $t->nextCode()
             );
         $lists = [];
         foreach ($listParents as $i => $parent) {
+            if ($parent->is([T_IMPLEMENTS, T_EXTENDS])) {
+                $items = $parent->nextSiblingsWhile(
+                    ...TokenType::DECLARATION_LIST
+                )->filter(
+                    fn(Token $t, ?Token $next, ?Token $prev) =>
+                        !$prev || $t->prevCode()->is(T[','])
+                );
+                if ($items->count() > 1) {
+                    $lists[$i] = $items;
+                }
+                continue;
+            }
             $lists[$i] = $parent->innerSiblings()->filter(
                 fn(Token $t, ?Token $next, ?Token $prev) =>
                     !$prev || ($t->prevCode()->is(T[',']) &&
@@ -368,10 +382,10 @@ final class Formatter implements IReadable
             Sys::startTimer($_rule, 'rule');
 
             if ($ruleType === ListRule::class) {
-                foreach ($listParents as $i => $parent) {
-                    $list = clone $lists[$i];
+                foreach ($lists as $i => $list) {
+                    $list = clone $list;
                     /** @var ListRule $rule */
-                    $rule->processList($parent, $list);
+                    $rule->processList($listParents[$i], $list);
                 }
                 Sys::stopTimer($_rule, 'rule');
                 !$this->Debug || $this->logProgress(ListRule::PROCESS_LIST);
