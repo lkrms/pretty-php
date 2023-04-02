@@ -23,7 +23,7 @@ final class TrimOpenTags implements Filter
         );
 
         foreach ($openTags as $t) {
-            $t->text = rtrim($t->text);
+            $t->setText(rtrim($t->text));
         }
 
         return $tokens;

@@ -113,6 +113,31 @@ final class AddHangingIndentationTest extends \Lkrms\Pretty\Tests\Php\TestCase
 
                 PHP,
             ],
+            [
+                <<<'PHP'
+                <?php
+                function a($b, bool $c = false): bool
+                {
+                return is_array($b) &&
+                ($b
+                ? count(array_filter($b, fn($i) => is_string($i))) === count($b) ||
+                count(array_filter($b, fn($i) => is_int($i))) === count($b)
+                : $c);
+                }
+                PHP,
+                <<<'PHP'
+                <?php
+                function a($b, bool $c = false): bool
+                {
+                    return is_array($b) &&
+                        ($b
+                            ? count(array_filter($b, fn($i) => is_string($i))) === count($b) ||
+                                count(array_filter($b, fn($i) => is_int($i))) === count($b)
+                            : $c);
+                }
+
+                PHP,
+            ],
         ];
     }
 }

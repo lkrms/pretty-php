@@ -125,6 +125,48 @@ final class Formatter implements IReadable
     /**
      * @var bool
      */
+    public $HangingHeredocIndents = true;
+
+    /**
+     * If the first object operator in a chain of method calls has a leading
+     * newline, align with the start of the chain?
+     *
+     * ```php
+     * // If `false`:
+     * $result = $object
+     *     ->method1();
+     * // If `true`:
+     * $result = $object
+     *               ->method1();
+     * ```
+     *
+     * @var bool
+     */
+    public $AlignFirstCallInChain = false;
+
+    /**
+     * Only align method chains that start at the beginning of a statement?
+     *
+     * ```php
+     * // If `false`:
+     * $result = $object->method1()
+     *                  ->method2();
+     * $object->action1()
+     *        ->action2();
+     * // If `true`:
+     * $result = $object->method1()
+     *     ->method2();
+     * $object->action1()
+     *        ->action2();
+     * ```
+     *
+     * @var bool
+     */
+    public $OnlyAlignChainedStatements = false;
+
+    /**
+     * @var bool
+     */
     public $OneTrueBraceStyle = false;
 
     /**
@@ -469,10 +511,11 @@ final class Formatter implements IReadable
 
         Sys::startTimer(__METHOD__ . '#render');
         try {
-            $out = '';
-            foreach ($this->Tokens as $token) {
-                $out .= $token->render();
-            }
+            $out     = '';
+            $current = reset($this->Tokens);
+            do {
+                $out .= $current->render(false, $current);
+            } while ($current = $current->_next);
         } catch (Throwable $ex) {
             throw new PrettyException(
                 'Formatting failed: output cannot be rendered',
@@ -629,10 +672,11 @@ final class Formatter implements IReadable
     {
         Sys::startTimer(__METHOD__ . '#render');
         try {
-            $out = '';
-            foreach ($this->Tokens as $token) {
-                $out .= $token->render();
-            }
+            $out     = '';
+            $current = reset($this->Tokens);
+            do {
+                $out .= $current->render(false, $current);
+            } while ($current = $current->_next);
         } catch (Throwable $ex) {
             throw new PrettyException(
                 'Formatting failed: unable to render unresolved output',

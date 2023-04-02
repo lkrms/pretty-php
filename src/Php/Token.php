@@ -1442,20 +1442,49 @@ class Token extends NavigableToken implements JsonSerializable
         return $this->Expression ?: $this;
     }
 
+    /**
+     * Get the first sibling in the token's expression
+     *
+     * @param bool $containUnenclosed If `true`, braces are imagined around
+     * control structures with unenclosed bodies. The default is `false`.
+     */
     final public function pragmaticStartOfExpression(bool $containUnenclosed = false): Token
     {
-        $current = $this->OpenedBy ?: $this;
+        // If the token is an object operator, return the first token in the
+        // chain
+        if ($this->is(TokenType::CHAIN)) {
+            $current = $this;
+            $first   = null;
+            while (($current = $current->_prevSibling) &&
+                $this->Expression === $current->Expression &&
+                $current->is([T_DOUBLE_COLON,
+                              T_NAME_FULLY_QUALIFIED,
+                              T_NAME_QUALIFIED,
+                              T_NAME_RELATIVE,
+                              T_VARIABLE,
+                              ...TokenType::CHAIN_PART])) {
+                $first = $current;
+            }
+
+            return $first->_pragmaticStartOfExpression($this);
+        }
 
         // If the token is between `?` and `:` in a ternary expression, return
         // the first token after `?`
-        if (($prev = $current->Expression->_prevCode ?? null) &&
-                $prev->is(T['?']) &&
-                $prev->IsTernaryOperator) {
-            return $current->Expression->_pragmaticStartOfExpression($this);
+        $ternary1 =
+            $this->prevSiblings()
+                 ->find(fn(Token $t) =>
+                            $t->IsTernaryOperator &&
+                                $t === $t->TernaryOperator1);
+        if ($ternary1 && $ternary1->TernaryOperator2->Index > $this->Index) {
+            return $ternary1->_nextCode->_pragmaticStartOfExpression($this);
         }
 
-        $last = $current;
-        $i    = -1;
+        // Otherwise, traverse expressions until an appropriate terminator is
+        // reached
+        $current = $this->OpenedBy ?: $this;
+        $last    = $current;
+        $i       = -1;
         while (true) {
             $i++;
             // If this is the first iteration, or `$current` is an ignored
@@ -1526,7 +1555,7 @@ class Token extends NavigableToken implements JsonSerializable
      * @param bool $containUnenclosed If `true`, braces are imagined around
      * control structures with unenclosed bodies. The default is `false`.
      */
-    public function pragmaticEndOfExpression(bool $containUnenclosed = false, bool $containTopLevelDeclaration = true): Token
+    final public function pragmaticEndOfExpression(bool $containUnenclosed = false, bool $containTopLevelDeclaration = true): Token
     {
         // If the token is part of a top-level declaration (namespace, class,
         // function, trait, etc.), return the token before its opening brace
@@ -1567,16 +1596,19 @@ class Token extends NavigableToken implements JsonSerializable
 
         // If the token is between `?` and `:` in a ternary expression, return
         // the last token before `:`
-        $current = $this->OpenedBy ?: $this;
-        if (($prev = $current->Expression->_prevCode ?? null) &&
-                $prev->is(T['?']) &&
-                $prev->IsTernaryOperator) {
-            return $prev->_nextCode->EndExpression;
+        $ternary1 =
+            $this->prevSiblings()
+                 ->find(fn(Token $t) =>
+                            $t->IsTernaryOperator &&
+                                $t === $t->TernaryOperator1);
+        if ($ternary1 && $ternary1->TernaryOperator2->Index > $this->Index) {
+            return $ternary1->TernaryOperator2->_prevCode;
         }
 
         // Otherwise, traverse expressions until an appropriate terminator is
         // reached
-        $inCase = $current->inSwitchCase();
+        $current = $this->OpenedBy ?: $this;
+        $inCase  = $current->inSwitchCase();
         while ($current->EndExpression) {
             $current    = $current->EndExpression;
             $terminator = ($current->_nextSibling->Expression ?? null) === false
@@ -2107,19 +2139,19 @@ class Token extends NavigableToken implements JsonSerializable
                    : ($this->Padding ? str_repeat(' ', $this->Padding) : ''));
     }
 
-    public function render(bool $softTabs = false): string
+    public function render(bool $softTabs = false, ?Token &$last = null): string
     {
-        if ($this->HeredocOpenedBy) {
-            // Render heredocs in one go so we can safely trim empty lines
-            if ($this->HeredocOpenedBy !== $this) {
-                return '';
-            }
-            $heredoc = '';
+        if ($this->id === T_START_HEREDOC) {
+            // Render heredocs (including any nested heredocs) in one go so we
+            // can safely trim empty lines
+            $current = &$last;
+            $heredoc = $this->text;
             $current = $this;
             do {
-                $heredoc .= $current->text;
-                $current  = $current->next();
-            } while ($current->HeredocOpenedBy === $this);
+                $current  = $current->_next;
+                $heredoc .= $current->render($softTabs, $current);
+            } while ($current->id !== T_END_HEREDOC ||
+                $current->HeredocOpenedBy !== $this);
             if ($this->HeredocIndent) {
                 $regex   = preg_quote($this->HeredocIndent, '/');
                 $heredoc = preg_replace("/\\n$regex\$/m", "\n", $heredoc);

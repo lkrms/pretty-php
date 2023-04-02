@@ -4,6 +4,7 @@ namespace Lkrms\Pretty\Php\Filter;
 
 use Lkrms\Pretty\Php\Concern\FilterTrait;
 use Lkrms\Pretty\Php\Contract\Filter;
+use Lkrms\Pretty\Php\Token;
 
 /**
  * Remove indentation from heredocs
@@ -15,29 +16,32 @@ final class NormaliseHeredocs implements Filter
 
     public function __invoke(array $tokens): array
     {
-        $heredoc = null;
-        $og      = null;
-        foreach ($tokens as $token) {
-            if (is_null($heredoc)) {
-                if ($token->id === T_START_HEREDOC) {
-                    $heredoc = [];
-                    $og      = [];
+        /** @var array<int,Token[]> */
+        $heredocTokens = [];
+        /** @var array<int,string[]> */
+        $heredocText   = [];
+        /** @var array<int,Token> */
+        $stack         = [];
+        foreach ($tokens as $i => $token) {
+            if ($stack) {
+                foreach ($stack as $j => $heredoc) {
+                    $heredocTokens[$j][] = $token;
+                    $heredocText[$j][]   = $token->text;
                 }
+            }
+            if ($token->id === T_START_HEREDOC) {
+                $stack[$i] = $token;
                 continue;
             }
-
-            // Collect the content of tokens in the heredoc
-            $heredoc[] = $token->text;
-            $og[]      = $token;
-
-            if ($token->id !== T_END_HEREDOC) {
-                continue;
+            if ($token->id === T_END_HEREDOC) {
+                array_pop($stack);
             }
+        }
 
+        /** @var array<int,string[]> $heredocText */
+        foreach ($heredocText as $i => $heredoc) {
             // Check for indentation to remove
-            if (!preg_match('/^\h+/', $token->text, $matches)) {
-                $heredoc = null;
-                $og      = null;
+            if (!preg_match('/^\h+/', end($heredoc), $matches)) {
                 continue;
             }
 
@@ -55,21 +59,18 @@ final class NormaliseHeredocs implements Filter
                     break;
 
                 default:
-                    $i = $count - 1;
-                    [$stripped[0], $stripped[$i]] =
+                    $j = $count - 1;
+                    [$stripped[0], $stripped[$j]] =
                         preg_replace("/^{$matches[0]}/",
                                      '',
-                                     [$stripped[0], $stripped[$i]]);
+                                     [$stripped[0], $stripped[$j]]);
                     break;
             }
 
             // Finally, update each token
-            foreach ($stripped as $i => $code) {
-                $og[$i]->setText($code);
+            foreach ($stripped as $j => $code) {
+                $heredocTokens[$i][$j]->setText($code);
             }
-
-            $heredoc = null;
-            $og      = null;
         }
 
         return $tokens;

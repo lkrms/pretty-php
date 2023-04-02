@@ -23,29 +23,30 @@ final class AddEssentialWhitespace implements Rule
     public function beforeRender(array $tokens): void
     {
         foreach ($tokens as $token) {
-            if ($token->hasNewlineAfter() || $token->StringOpenedBy || $token->HeredocOpenedBy) {
+            if ($token->hasNewlineAfter() || $token->StringOpenedBy || $token->HeredocOpenedBy ||
+                    ($next = $token->next())->StringOpenedBy || $next->HeredocOpenedBy) {
                 continue;
             }
 
-            if ($token->isOneLineComment() && !$token->next()->is(T_CLOSE_TAG)) {
-                $token->WhitespaceAfter            |= WhitespaceType::LINE;
-                $token->WhitespaceMaskNext         |= WhitespaceType::LINE;
-                $token->next()->WhitespaceMaskPrev |= WhitespaceType::LINE;
+            if ($token->isOneLineComment() && !$next->is(T_CLOSE_TAG)) {
+                $token->WhitespaceAfter    |= WhitespaceType::LINE;
+                $token->WhitespaceMaskNext |= WhitespaceType::LINE;
+                $next->WhitespaceMaskPrev  |= WhitespaceType::LINE;
 
                 continue;
             }
 
             if ($token->effectiveWhitespaceAfter() ||
                     $token->is(TokenType::SUPPRESS_SPACE_AFTER) ||
-                    $token->next()->is(TokenType::SUPPRESS_SPACE_BEFORE)) {
+                    $next->is(TokenType::SUPPRESS_SPACE_BEFORE)) {
                 continue;
             }
 
             if ($token->is(T_OPEN_TAG) ||
-                    preg_match('/^[a-zA-Z0-9\\\\_\x80-\xff]{2}$/', substr($token->text, -1) . substr($token->next()->text, 0, 1))) {
-                $token->WhitespaceAfter            |= WhitespaceType::SPACE;
-                $token->WhitespaceMaskNext         |= WhitespaceType::SPACE;
-                $token->next()->WhitespaceMaskPrev |= WhitespaceType::SPACE;
+                    preg_match('/^[a-zA-Z0-9\\\\_\x80-\xff]{2}$/', substr($token->text, -1) . substr($next->text, 0, 1))) {
+                $token->WhitespaceAfter    |= WhitespaceType::SPACE;
+                $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
+                $next->WhitespaceMaskPrev  |= WhitespaceType::SPACE;
             }
         }
     }

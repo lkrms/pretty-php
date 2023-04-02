@@ -288,6 +288,7 @@ final class AddHangingIndentation implements TokenRule
         $prev = $token->prevCode();
         if (!($prev->hasNewlineAfterCode() ||
             ($prev->is(T_START_HEREDOC) &&
+                $this->Formatter->HangingHeredocIndents &&
                 !$prev->AlignedWith &&
                 !$token->prevCode(2)->hasNewlineAfterCode())) ||
             $token->isBrace() ||

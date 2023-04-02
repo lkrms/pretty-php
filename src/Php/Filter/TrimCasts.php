@@ -25,11 +25,7 @@ final class TrimCasts implements Filter
         array_walk(
             $casts,
             function (Token $t) {
-                $text    = $t->text;
-                $t->text = '(' . trim(substr($t->text, 1, -1)) . ')';
-                if ($text !== $t->text) {
-                    $t->OriginalText = $t->OriginalText ?: $text;
-                }
+                $t->setText('(' . trim(substr($t->text, 1, -1)) . ')');
             }
         );
 

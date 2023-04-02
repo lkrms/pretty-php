@@ -53,6 +53,16 @@ class FormatPhp extends CliCommand
     private $Exclude;
 
     /**
+     * @var bool|null
+     */
+    private $HangingHeredocIndents;
+
+    /**
+     * @var bool|null
+     */
+    private $OnlyAlignChainedStatements;
+
+    /**
      * @var bool
      */
     private $OneTrueBraceStyle;
@@ -336,7 +346,11 @@ class FormatPhp extends CliCommand
             $addRules[] = 'space-after-fn';
             $addRules[] = 'space-after-not';
             $addRules[] = 'no-concat-spaces';
+            $addRules[] = 'align-chains';
             $addRules[] = 'align-ternary';
+
+            $this->HangingHeredocIndents      = true;
+            $this->OnlyAlignChainedStatements = true;
         }
         if ($this->Quiet > 1) {
             $skipRules[] = 'report-brackets';
@@ -373,6 +387,12 @@ class FormatPhp extends CliCommand
             $skipFilters
         );
         $formatter->OneTrueBraceStyle = $this->OneTrueBraceStyle;
+        if (!is_null($this->OnlyAlignChainedStatements)) {
+            $formatter->OnlyAlignChainedStatements = $this->OnlyAlignChainedStatements;
+        }
+        if (!is_null($this->HangingHeredocIndents)) {
+            $formatter->HangingHeredocIndents = $this->HangingHeredocIndents;
+        }
 
         $i      = 0;
         $count  = count($in);

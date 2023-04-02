@@ -44,26 +44,36 @@ final class ReindentHeredocs implements TokenRule
     public function beforeRender(array $tokens): void
     {
         foreach ($this->Heredocs as $heredoc) {
+            $inherited = '';
+            $current   = $heredoc->HeredocOpenedBy;
+            while ($current) {
+                $inherited .= $current->HeredocIndent;
+                $current    = $current->HeredocOpenedBy;
+            }
+
             $next    = $heredoc->next();
             $indent  = $next->renderIndent();
             $padding = str_repeat(' ', $next->LinePadding - $next->LineUnpadding);
             if (($indent[0] ?? null) === "\t" && $padding) {
                 $indent = $next->renderIndent(true);
             }
+            if (($inherited[0] ?? null) === "\t" && ($indent[0] ?? null) !== "\t") {
+                $inherited = str_replace("\t", $this->Formatter->SoftTab, $inherited);
+            }
             $indent .= $padding;
+            $indent  = substr($indent, strlen($inherited));
             if (!$indent) {
                 continue;
             }
             $heredoc->HeredocIndent = $indent;
 
-            $token = $heredoc;
+            $current = $heredoc;
             do {
-                $token->text = str_replace("\n", "\n" . $indent, $token->text);
-                if ($token->is(T_END_HEREDOC)) {
+                $current->setText(str_replace("\n", "\n" . $indent, $current->text));
+                if ($current->is(T_END_HEREDOC) && $current->HeredocOpenedBy === $heredoc) {
                     break;
                 }
-                $token = $token->next();
-            } while (!$token->IsNull);
+            } while ($current = $current->_next);
         }
     }
 
