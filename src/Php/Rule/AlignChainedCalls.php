@@ -29,7 +29,9 @@ final class AlignChainedCalls implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token !== $token->ChainOpenedBy) {
+        if ($token !== $token->ChainOpenedBy ||
+            ($this->Formatter->OnlyAlignChainedStatements &&
+                $token->Statement !== $token->pragmaticStartOfExpression())) {
             return;
         }
 
@@ -57,12 +59,13 @@ final class AlignChainedCalls implements TokenRule
             return;
         }
 
-        if ($alignWith) {
-            $alignWith->AlignedWith = $alignWith;
-            $adjust                 = 2;
-        } else {
-            // If the first `->` in the chain has a leading newline ($alignWith
-            // would be set otherwise), align with the start of the chain
+        // If the first `->` in the chain has a leading newline ($alignWith
+        // would be set otherwise), align with the start of the chain
+        if (!$alignWith) {
+            // (unless disabled by the formatter)
+            if (!$this->Formatter->AlignFirstCallInChain) {
+                return;
+            }
             $current = $first;
             while (!($current = $current->prevSibling())->IsNull &&
                 $first->Expression === $current->Expression &&
@@ -79,6 +82,9 @@ final class AlignChainedCalls implements TokenRule
             }
             // This is safe because $alignWith->text will never contain newlines
             $adjust = mb_strlen($alignWith->text) - $this->Formatter->TabSize;
+        } else {
+            $alignWith->AlignedWith = $alignWith;
+            $adjust                 = 2;
         }
 
         // Remove tokens before $first from the chain

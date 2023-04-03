@@ -26,7 +26,7 @@ final class NormaliseStrings implements Filter
             $strings,
             function (Token $t) use ($string) {
                 eval("\$string = {$t->text};");
-                $t->text = var_export($string, true);
+                $t->setText(var_export($string, true));
             }
         );
 

@@ -25,13 +25,17 @@ final class ApplyMagicComma implements ListRule
 
     public function processList(Token $owner, TokenCollection $items): void
     {
+        if (!$owner->ClosedBy) {
+            return;
+        }
+
         if ($owner->ClosedBy->prevCode()->is(T[',']) &&
             !($owner->prevCode()->is(T_LIST) ||
                 (($adjacent = $owner->adjacent(T[','], T[']'])) && $adjacent->is(T['='])) ||
                 (($root = $owner->withParentsWhile(T['['])->last()) &&
                     $root->prevCode()->is(T_AS) &&
                     $root->parent()->prevCode()->is(T_FOREACH)))) {
-            $items[] = $owner->ClosedBy ?: $owner;
+            $items[] = $owner->ClosedBy;
             $items->addWhitespaceBefore(WhitespaceType::LINE, true);
         }
     }

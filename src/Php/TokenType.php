@@ -41,6 +41,8 @@ final class TokenType
         T['('],
         T['['],
         T['{'],
+        T_EXTENDS,
+        T_IMPLEMENTS,
         T_RETURN,
         T_YIELD,
         T_YIELD_FROM,
@@ -231,15 +233,28 @@ final class TokenType
         ...self::VISIBILITY,
     ];
 
-    public const DECLARATION_PART = [
+    public const DECLARATION_LIST = [
         T[','],
         T_NAME_FULLY_QUALIFIED,
         T_NAME_QUALIFIED,
         T_NAME_RELATIVE,
         T_NS_SEPARATOR,
         T_STRING,
+    ];
+
+    public const DECLARATION_PART = [
+        ...self::DECLARATION_LIST,
         ...self::AMPERSAND,
         ...self::DECLARATION,
+    ];
+
+    public const DECLARATION_TOP_LEVEL = [
+        T_CLASS,
+        T_ENUM,
+        T_FUNCTION,
+        T_INTERFACE,
+        T_NAMESPACE,
+        T_TRAIT,
     ];
 
     public const DECLARATION_UNIQUE = [

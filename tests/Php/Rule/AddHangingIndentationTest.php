@@ -62,31 +62,82 @@ final class AddHangingIndentationTest extends \Lkrms\Pretty\Tests\Php\TestCase
         ];
     }
 
-    public function testMaybeCollapseOverhanging()
+    /**
+     * @dataProvider processTokenProvider
+     */
+    public function testProcessToken(string $code, string $expected)
     {
-        [$in, $out] = [
-            <<<'PHP'
-            <?php
+        $this->assertFormatterOutputIs($code, $expected);
+    }
 
-            if ($a &&
-            ($b ||
-            $c) &&
-            $d) {
-            $e;
-            }
-            PHP,
-            <<<'PHP'
-            <?php
+    public static function processTokenProvider(): array
+    {
+        return [
+            [
+                <<<'PHP'
+                <?php
+                $a = $b->c(fn() =>
+                $d &&
+                $e)
+                ?: $start;
+                PHP,
+                <<<'PHP'
+                <?php
+                $a = $b->c(fn() =>
+                    $d &&
+                        $e)
+                    ?: $start;
 
-            if ($a &&
-                    ($b ||
-                        $c) &&
-                    $d) {
+                PHP,
+            ],
+            [
+                <<<'PHP'
+                <?php
+
+                if ($a &&
+                ($b ||
+                $c) &&
+                $d) {
                 $e;
-            }
+                }
+                PHP,
+                <<<'PHP'
+                <?php
 
-            PHP,
+                if ($a &&
+                        ($b ||
+                            $c) &&
+                        $d) {
+                    $e;
+                }
+
+                PHP,
+            ],
+            [
+                <<<'PHP'
+                <?php
+                function a($b, bool $c = false): bool
+                {
+                return is_array($b) &&
+                ($b
+                ? count(array_filter($b, fn($i) => is_string($i))) === count($b) ||
+                count(array_filter($b, fn($i) => is_int($i))) === count($b)
+                : $c);
+                }
+                PHP,
+                <<<'PHP'
+                <?php
+                function a($b, bool $c = false): bool
+                {
+                    return is_array($b) &&
+                        ($b
+                            ? count(array_filter($b, fn($i) => is_string($i))) === count($b) ||
+                                count(array_filter($b, fn($i) => is_int($i))) === count($b)
+                            : $c);
+                }
+
+                PHP,
+            ],
         ];
-        $this->assertFormatterOutputIs($in, $out);
     }
 }

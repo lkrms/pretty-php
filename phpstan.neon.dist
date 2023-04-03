@@ -5,6 +5,8 @@ parameters:
   level: 6
   paths:
     - bin
+    - bin/pretty-php
+    - bootstrap.php
     - src
     - tests
   excludePaths:

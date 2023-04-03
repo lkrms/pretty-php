@@ -9,32 +9,32 @@ class NavigableToken extends PhpToken
     /**
      * @var Token|null
      */
-    protected $_prev;
+    public $_prev;
 
     /**
      * @var Token|null
      */
-    protected $_next;
+    public $_next;
 
     /**
      * @var Token|null
      */
-    protected $_prevCode;
+    public $_prevCode;
 
     /**
      * @var Token|null
      */
-    protected $_nextCode;
+    public $_nextCode;
 
     /**
      * @var Token|null
      */
-    protected $_prevSibling;
+    public $_prevSibling;
 
     /**
      * @var Token|null
      */
-    protected $_nextSibling;
+    public $_nextSibling;
 
     public ?string $OriginalText = null;
 

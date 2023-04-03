@@ -35,9 +35,6 @@ final class SimplifyStrings implements TokenRule
 
     public function processToken(Token $token): void
     {
-        // For later comparison
-        $text = $token->text;
-
         // \x00 -> \t, \v, \f, \x0e -> \x1f is effectively \x00 -> \x1f without
         // LF (\n) or CR (\r), which aren't escaped unless already escaped
         $escape = "\0..\t\v\f\x0e..\x1f\"\$\\";
@@ -62,10 +59,7 @@ final class SimplifyStrings implements TokenRule
         eval("\$string = {$token->text};");
         $double = $this->doubleQuote($string, $escape);
         if (preg_match("/[\\x00-\\x09\\x0b\\x0c\\x0e-\\x1f{$match}]/", $string)) {
-            $token->text = $double;
-            if ($text !== $token->text) {
-                $token->OriginalText = $token->OriginalText ?: $text;
-            }
+            $token->setText($double);
 
             return;
         }
@@ -75,13 +69,10 @@ final class SimplifyStrings implements TokenRule
         if (!$this->checkConsistency($single) && $this->checkConsistency($double)) {
             $single = preg_replace('/(?<!\\\\)\\\\(?!\\\\)/', '\\\\$0', $single);
         }
-        $token->text = (mb_strlen($single) <= mb_strlen($double) &&
-            ($this->checkConsistency($single) || !$this->checkConsistency($double)))
-                           ? $single
-                           : $double;
-        if ($text !== $token->text) {
-            $token->OriginalText = $token->OriginalText ?: $text;
-        }
+        $token->setText((mb_strlen($single) <= mb_strlen($double) &&
+                                 ($this->checkConsistency($single) || !$this->checkConsistency($double)))
+                            ? $single
+                            : $double);
     }
 
     private function singleQuote(string $string): string

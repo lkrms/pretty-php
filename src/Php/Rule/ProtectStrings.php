@@ -18,14 +18,14 @@ final class ProtectStrings implements TokenRule
     use TokenRuleTrait;
 
     /**
-     * @var bool|null
+     * @var Token[]
      */
-    private $InString;
+    private $Strings = [];
 
     /**
-     * @var bool|null
+     * @var Token[]
      */
-    private $InHeredoc;
+    private $Heredocs = [];
 
     public function getPriority(string $method): ?int
     {
@@ -34,43 +34,63 @@ final class ProtectStrings implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($this->InHeredoc || $token->is(T_START_HEREDOC)) {
-            $token->HeredocOpenedBy = $token->prev()->HeredocOpenedBy ?: $token;
+        if ($string = end($this->Strings)) {
+            $token->StringOpenedBy = $string;
+        }
 
-            if (!$this->InHeredoc) {
-                $token->CriticalWhitespaceMaskNext = WhitespaceType::NONE;
-                $this->InHeredoc                   = true;
+        if ($heredoc = end($this->Heredocs)) {
+            $token->HeredocOpenedBy = $heredoc;
+        }
 
-                return;
-            }
+        if ($token->id === T['"'] &&
+                (!$string || $string->BracketStack !== $token->BracketStack)) {
+            $token->CriticalWhitespaceMaskNext = WhitespaceType::NONE;
+            $this->Strings[]                   = $token;
 
-            if ($token->is(T_END_HEREDOC)) {
-                $token->CriticalWhitespaceMaskPrev = WhitespaceType::NONE;
-                $this->InHeredoc                   = false;
-
-                return;
-            }
-        } elseif ($this->InString || $token->is(T['"'])) {
-            $token->StringOpenedBy = $token->prev()->StringOpenedBy ?: $token;
-
-            if (!$this->InString) {
-                $token->CriticalWhitespaceMaskNext = WhitespaceType::NONE;
-                $this->InString                    = true;
-
-                return;
-            }
-
-            if ($token->is(T['"'])) {
-                $token->CriticalWhitespaceMaskPrev = WhitespaceType::NONE;
-                $this->InString                    = false;
-
-                return;
-            }
-        } else {
             return;
         }
 
-        $token->CriticalWhitespaceMaskPrev = WhitespaceType::NONE;
-        $token->CriticalWhitespaceMaskNext = WhitespaceType::NONE;
+        if ($token->id === T_START_HEREDOC) {
+            $token->CriticalWhitespaceMaskNext = WhitespaceType::NONE;
+            $this->Heredocs[]                  = $token;
+
+            return;
+        }
+
+        if (!($string || $heredoc)) {
+            return;
+        }
+
+        if ($token->id === T['"']) {
+            $token->CriticalWhitespaceMaskPrev = WhitespaceType::NONE;
+            array_pop($this->Strings);
+
+            return;
+        }
+
+        if ($token->id === T_END_HEREDOC) {
+            $token->CriticalWhitespaceMaskPrev = WhitespaceType::NONE;
+            array_pop($this->Heredocs);
+
+            return;
+        }
+
+        if ($token->is([
+            T_CURLY_OPEN,                       // "{$...}"
+            T_DOLLAR_OPEN_CURLY_BRACES,         // "${...}"
+            T_STRING_VARNAME,                   // `varname` in "${varname}"
+            T_ENCAPSED_AND_WHITESPACE,
+            T['}'],
+        ]) || ($token->is(T_VARIABLE) &&
+                $token->prev()->is([
+                    T['"'],                     // "$variable"
+                    T_START_HEREDOC,            // <<<EOF
+                                                // $variable
+                                                // EOF
+                    T_ENCAPSED_AND_WHITESPACE,  // "Value: $variable"
+                ]))) {
+            $token->CriticalWhitespaceMaskPrev = WhitespaceType::NONE;
+            $token->CriticalWhitespaceMaskNext = WhitespaceType::NONE;
+        }
     }
 }
