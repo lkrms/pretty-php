@@ -6,8 +6,8 @@
         "bin/pretty-php"
     ],
     "require": {
-        "php": ">=8,<8.3",
-        "lkrms/util": "^0.19.28"
+        "php": ">=8 <8.3",
+        "lkrms/util": "^0.19.30"
     },
     "autoload": {
         "psr-4": {
@@ -28,6 +28,6 @@
         "phpstan/extension-installer": "^1",
         "phpstan/phpstan": "^1",
         "phpstan/phpstan-deprecation-rules": "^1",
-        "phpunit/phpunit": "^10"
+        "phpunit/phpunit": "^9 || ^10"
     }
 }
