@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e12256dcfbc8d3df487f9a7adb837493",
+    "content-hash": "2838f8ac3abbe9986b18a6c38a5c1de7",
     "packages": [
         {
             "name": "filp/whoops",
@@ -122,16 +122,16 @@
         },
         {
             "name": "lkrms/util",
-            "version": "v0.19.28",
+            "version": "v0.19.30",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/php-util.git",
-                "reference": "823fd671e8c339abb6e9877aadb507be2a422260"
+                "reference": "3218f5b761433fbc6e3fccdb9c535bf4f6aaac1d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/php-util/zipball/823fd671e8c339abb6e9877aadb507be2a422260",
-                "reference": "823fd671e8c339abb6e9877aadb507be2a422260",
+                "url": "https://api.github.com/repos/lkrms/php-util/zipball/3218f5b761433fbc6e3fccdb9c535bf4f6aaac1d",
+                "reference": "3218f5b761433fbc6e3fccdb9c535bf4f6aaac1d",
                 "shasum": ""
             },
             "require": {
@@ -146,6 +146,8 @@
                 "adodb/adodb-php": "^5.22",
                 "analog/analog": "^1",
                 "clue/phar-composer": "^1",
+                "firebase/php-jwt": "^6",
+                "league/oauth2-client": "^2",
                 "phpstan/extension-installer": "^1",
                 "phpstan/phpstan": "^1",
                 "phpstan/phpstan-deprecation-rules": "^1",
@@ -154,7 +156,9 @@
             "suggest": {
                 "adodb/adodb-php": "Required for access to databases",
                 "analog/analog": "Allows Analog handlers to be used as Lkrms\\Console\\Console message targets",
-                "clue/phar-composer": "Simplifies creation of phar archives"
+                "clue/phar-composer": "Simplifies creation of phar archives",
+                "firebase/php-jwt": "Required for validation of OAuth 2.0 access tokens",
+                "league/oauth2-client": "Required for integration with OAuth 2.0 service providers"
             },
             "bin": [
                 "bin/lk-util"
@@ -175,9 +179,9 @@
             "description": "A lightweight PHP toolkit for expressive backend/CLI apps",
             "support": {
                 "issues": "https://github.com/lkrms/php-util/issues",
-                "source": "https://github.com/lkrms/php-util/tree/v0.19.28"
+                "source": "https://github.com/lkrms/php-util/tree/v0.19.30"
             },
-            "time": "2023-03-22T04:36:55+00:00"
+            "time": "2023-03-31T05:14:34+00:00"
         },
         {
             "name": "psr/container",
@@ -1103,16 +1107,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.10.8",
+            "version": "1.10.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "0166aef76e066f0dd2adc2799bdadfa1635711e9"
+                "reference": "f1e22c9b17a879987f8743d81533250a5fff47f9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/0166aef76e066f0dd2adc2799bdadfa1635711e9",
-                "reference": "0166aef76e066f0dd2adc2799bdadfa1635711e9",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/f1e22c9b17a879987f8743d81533250a5fff47f9",
+                "reference": "f1e22c9b17a879987f8743d81533250a5fff47f9",
                 "shasum": ""
             },
             "require": {
@@ -1161,7 +1165,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-03-24T10:28:16+00:00"
+            "time": "2023-04-01T17:06:15+00:00"
         },
         {
             "name": "phpstan/phpstan-deprecation-rules",
@@ -2745,16 +2749,16 @@
         },
         {
             "name": "symfony/console",
-            "version": "v6.2.7",
+            "version": "v6.2.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "cbad09eb8925b6ad4fb721c7a179344dc4a19d45"
+                "reference": "3582d68a64a86ec25240aaa521ec8bc2342b369b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/cbad09eb8925b6ad4fb721c7a179344dc4a19d45",
-                "reference": "cbad09eb8925b6ad4fb721c7a179344dc4a19d45",
+                "url": "https://api.github.com/repos/symfony/console/zipball/3582d68a64a86ec25240aaa521ec8bc2342b369b",
+                "reference": "3582d68a64a86ec25240aaa521ec8bc2342b369b",
                 "shasum": ""
             },
             "require": {
@@ -2816,12 +2820,12 @@
             "homepage": "https://symfony.com",
             "keywords": [
                 "cli",
-                "command line",
+                "command-line",
                 "console",
                 "terminal"
             ],
             "support": {
-                "source": "https://github.com/symfony/console/tree/v6.2.7"
+                "source": "https://github.com/symfony/console/tree/v6.2.8"
             },
             "funding": [
                 {
@@ -2837,7 +2841,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-02-25T17:00:03+00:00"
+            "time": "2023-03-29T21:42:15+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
@@ -3302,16 +3306,16 @@
         },
         {
             "name": "symfony/process",
-            "version": "v6.2.7",
+            "version": "v6.2.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
-                "reference": "680e8a2ea6b3f87aecc07a6a65a203ae573d1902"
+                "reference": "75ed64103df4f6615e15a7fe38b8111099f47416"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/process/zipball/680e8a2ea6b3f87aecc07a6a65a203ae573d1902",
-                "reference": "680e8a2ea6b3f87aecc07a6a65a203ae573d1902",
+                "url": "https://api.github.com/repos/symfony/process/zipball/75ed64103df4f6615e15a7fe38b8111099f47416",
+                "reference": "75ed64103df4f6615e15a7fe38b8111099f47416",
                 "shasum": ""
             },
             "require": {
@@ -3343,7 +3347,7 @@
             "description": "Executes commands in sub-processes",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/process/tree/v6.2.7"
+                "source": "https://github.com/symfony/process/tree/v6.2.8"
             },
             "funding": [
                 {
@@ -3359,7 +3363,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-02-24T10:42:00+00:00"
+            "time": "2023-03-09T16:20:02+00:00"
         },
         {
             "name": "symfony/service-contracts",
@@ -3448,16 +3452,16 @@
         },
         {
             "name": "symfony/string",
-            "version": "v6.2.7",
+            "version": "v6.2.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/string.git",
-                "reference": "67b8c1eec78296b85dc1c7d9743830160218993d"
+                "reference": "193e83bbd6617d6b2151c37fff10fa7168ebddef"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/string/zipball/67b8c1eec78296b85dc1c7d9743830160218993d",
-                "reference": "67b8c1eec78296b85dc1c7d9743830160218993d",
+                "url": "https://api.github.com/repos/symfony/string/zipball/193e83bbd6617d6b2151c37fff10fa7168ebddef",
+                "reference": "193e83bbd6617d6b2151c37fff10fa7168ebddef",
                 "shasum": ""
             },
             "require": {
@@ -3514,7 +3518,7 @@
                 "utf8"
             ],
             "support": {
-                "source": "https://github.com/symfony/string/tree/v6.2.7"
+                "source": "https://github.com/symfony/string/tree/v6.2.8"
             },
             "funding": [
                 {
@@ -3530,7 +3534,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-02-24T10:42:00+00:00"
+            "time": "2023-03-20T16:06:02+00:00"
         },
         {
             "name": "theseer/tokenizer",
@@ -3589,7 +3593,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=8,<8.3"
+        "php": ">=8 <8.3"
     },
     "platform-dev": [],
     "plugin-api-version": "2.3.0"

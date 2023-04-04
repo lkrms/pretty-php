@@ -18,7 +18,8 @@ class Cart
 
     public function getQuantity($product)
     {
-        return isset($this->products[$product]) ? $this->products[$product]
+        return isset($this->products[$product])
+            ? $this->products[$product]
             : FALSE;
     }
 

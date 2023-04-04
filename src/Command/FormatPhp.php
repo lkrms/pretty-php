@@ -346,10 +346,16 @@ class FormatPhp extends CliCommand
             $addRules[] = 'space-after-fn';
             $addRules[] = 'space-after-not';
             $addRules[] = 'no-concat-spaces';
-            $addRules[] = 'align-chains';
-            $addRules[] = 'align-ternary';
+            $addRules[] = 'align-lists';
 
-            $this->HangingHeredocIndents      = true;
+            // Laravel chains and ternary operators don't seem to follow any
+            // alignment rules, so these can be enabled or disabled with little
+            // effect on the size of diffs:
+            //
+            //     $addRules[] = 'align-chains';
+            //     $addRules[] = 'align-ternary';
+
+            $this->HangingHeredocIndents      = false;
             $this->OnlyAlignChainedStatements = true;
         }
         if ($this->Quiet > 1) {

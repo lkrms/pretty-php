@@ -105,8 +105,7 @@ final class BracePosition implements TokenRule
         $token->WhitespaceBefore   |= WhitespaceType::LINE | WhitespaceType::SPACE;
         $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
 
-        if ($next->is([T_ELSE, T_ELSEIF, T_CATCH, T_FINALLY]) ||
-                ($next->is(T_WHILE) && $token->prevSibling()->is(T_DO))) {
+        if ($next->continuesControlStructure()) {
             $token->WhitespaceAfter    |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
 

@@ -8,11 +8,11 @@ class A
 			doSomething();
 		}
 
-			// comment
-			// comment
-			// comment
-			catch (Exception $e) {
-				throw $e;
-			}
+		// comment
+		// comment
+		// comment
+		catch (Exception $e) {
+			throw $e;
+		}
 	}
 }

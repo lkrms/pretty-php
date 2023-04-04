@@ -11,7 +11,7 @@ use Lkrms\Pretty\WhitespaceType;
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
 /**
- * Apply whitespace to operators
+ * Apply horizontal whitespace to operators
  *
  * Specifically:
  * - Suppress whitespace after ampersands related to returning, assigning or
@@ -105,9 +105,9 @@ final class SpaceOperators implements TokenRule
         }
 
         // Collapse ternary operators if there is nothing between `?` and `:`
-        if ($token->IsTernaryOperator && $token->prev()->IsTernaryOperator) {
-            $token->WhitespaceBefore        = WhitespaceType::NONE;
-            $token->prev()->WhitespaceAfter = WhitespaceType::NONE;
+        if ($token->IsTernaryOperator && $token->TernaryOperator1 === $token->_prev) {
+            $token->WhitespaceBefore       = WhitespaceType::NONE;
+            $token->_prev->WhitespaceAfter = WhitespaceType::NONE;
 
             return;
         }
