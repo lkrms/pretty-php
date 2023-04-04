@@ -1442,6 +1442,12 @@ class Token extends NavigableToken implements JsonSerializable
         return $this->Expression ?: $this;
     }
 
+    final public function continuesControlStructure(): bool
+    {
+        return $this->is([T_CATCH, T_FINALLY, T_ELSEIF, T_ELSE]) ||
+            ($this->is(T_WHILE) && $this->Statement !== $this);
+    }
+
     /**
      * Get the first sibling in the token's expression
      *
@@ -1526,8 +1532,7 @@ class Token extends NavigableToken implements JsonSerializable
 
             // Don't terminate if the current token continues a control
             // structure
-            if ($last->is([T_CATCH, T_FINALLY, T_ELSEIF, T_ELSE]) ||
-                    ($last->is(T_WHILE) && $last->Statement !== $last)) {
+            if ($last->continuesControlStructure()) {
                 continue;
             }
 
@@ -1873,6 +1878,33 @@ class Token extends NavigableToken implements JsonSerializable
                 break;
             }
             if ($current->hasNewlineAfter()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * True if, between the previous code token and the token, there's a newline
+     * between tokens
+     *
+     */
+    final public function hasNewlineBeforeCode(): bool
+    {
+        if ($this->hasNewlineBefore()) {
+            return true;
+        }
+        if (!$this->_prevCode || $this->_prevCode === $this->_prev) {
+            return false;
+        }
+        $current = $this;
+        while (true) {
+            $current = $current->_prev;
+            if ($current === $this->_prevCode) {
+                break;
+            }
+            if ($current->hasNewlineBefore()) {
                 return true;
             }
         }

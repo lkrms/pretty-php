@@ -88,6 +88,7 @@ final class ProtectStrings implements TokenRule
                                                 // $variable
                                                 // EOF
                     T_ENCAPSED_AND_WHITESPACE,  // "Value: $variable"
+                    T_VARIABLE,                 // "$var1$var2"
                 ]))) {
             $token->CriticalWhitespaceMaskPrev = WhitespaceType::NONE;
             $token->CriticalWhitespaceMaskNext = WhitespaceType::NONE;

@@ -65,7 +65,8 @@ final class AlignLists implements ListRule
 
         if ($count = $multiLineItems->count()) {
             // Do nothing if
-            // - multi-line items all open with `BRACKET* LINE`
+            // - the token at the end of the first line of every multi-line item
+            //   is an open bracket or has a subsequent ternary operator
             // - there are no line breaks between items
             //
             // ```php
@@ -74,9 +75,12 @@ final class AlignLists implements ListRule
             // ], $d);
             // ```
             $eolBracketItems = $multiLineItems->filter(
-                fn(Token $t) =>
-                    $t->withNextCodeWhile(T['('], T['['], T['{'], T_ELLIPSIS, ...self::BEFORE_ALIGNABLE_LIST)
-                      ->has($t->endOfLine())
+                fn(Token $t, ?Token $next) =>
+                    (($eol = $t->endOfLine())->is([T['('], T['['], T['{']]) ||
+                            ($eol = $eol->nextCode())->IsTernaryOperator) &&
+                        ($next
+                             ? $next->prevCode()
+                             : $t->pragmaticEndOfExpression())->Index >= $eol->Index
             );
             if ($eolBracketItems->count() === $count &&
                     !$items->find(fn(Token $t) => $t->hasNewlineBefore())) {

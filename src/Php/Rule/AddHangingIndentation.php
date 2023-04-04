@@ -137,7 +137,7 @@ final class AddHangingIndentation implements TokenRule
         //                 $comment->hasNewlineAfter()) ||
         //             $comment->hasNewline())
         //
-        $until   = $until ?? $token->pragmaticEndOfExpression();
+        $until   = $until ?? $token->pragmaticEndOfExpression(true);
         $indent  = 0;
         $hanging = [];
         $parents = in_array($parent, $token->IndentParentStack, true)
@@ -271,31 +271,32 @@ final class AddHangingIndentation implements TokenRule
     private function isHanging(Token $token, bool $ignoreIndent = false): bool
     {
         // Ignore tokens aligned by other rules
-        if ($token->AlignedWith ||
-                $token->is([
-                    ...TokenType::HAS_STATEMENT_WITH_OPTIONAL_BRACES,
-                    ...TokenType::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES,
-                    ...TokenType::NOT_CODE
-                ])) {
+        if (!$token->IsCode ||
+                !$token->_prevCode ||
+                $token->AlignedWith ||
+                $token->is([...TokenType::HAS_STATEMENT, ...TokenType::NOT_CODE])) {
             return false;
         }
 
-        // $token is regarded as a continuation of $prev if:
-        // - $token and $prev both have the same level of indentation
-        // - $token is not an open brace (`{`) on its own line
-        // - $prev is not a statement delimiter in a context where indentation
-        //   is inherited from enclosing tokens
-        $prev = $token->prevCode();
-        if (!($prev->hasNewlineAfterCode() ||
-            ($prev->is(T_START_HEREDOC) &&
-                $this->Formatter->HangingHeredocIndents &&
-                !$prev->AlignedWith &&
-                !$token->prevCode(2)->hasNewlineAfterCode())) ||
-            $token->isBrace() ||
+        // Ignore tokens that don't have a leading newline
+        if (!$token->hasNewlineBeforeCode() &&
+            !($this->Formatter->HangingHeredocIndents &&
+                $token->_prevCode->id === T_START_HEREDOC &&
+                !$token->_prevCode->AlignedWith &&
+                !$token->_prevCode->hasNewlineBeforeCode())) {
+            return false;
+        }
+
+        // Regard `$token` as a continuation of `$token->_prevCode` if:
+        // - `$token` is not an open brace (`{`) on its own line
+        // - both have the same level of indentation
+        // - `$token->_prevCode` is not a statement delimiter in a context where
+        //   indentation is inherited from enclosing tokens
+        if ($token->isBrace() ||
             (!$ignoreIndent &&
-                $this->indent($prev) !== $this->indent($token)) ||
-            ($prev->isStatementPrecursor() &&
-                !$prev->parent()->IsHangingParent)) {
+                $this->indent($token->_prevCode) !== $this->indent($token)) ||
+            ($token->_prevCode->isStatementPrecursor() &&
+                !$token->_prevCode->parent()->IsHangingParent)) {
             return false;
         }
 

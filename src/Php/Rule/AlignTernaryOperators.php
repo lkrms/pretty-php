@@ -35,23 +35,10 @@ final class AlignTernaryOperators implements TokenRule
             return;
         }
 
-        $op1Newline = $token->TernaryOperator1->hasNewlineBefore();
-        $op2Newline = $token->TernaryOperator2->hasNewlineBefore();
-
         // If neither operator is at the start of a line, do nothing
-        if (!($op1Newline || $op2Newline)) {
+        if (!($token->hasNewlineBefore() ||
+                $token->TernaryOperator2->hasNewlineBefore())) {
             return;
-        }
-
-        $short = $token->nextCode() === $token->TernaryOperator2;
-        if (!$short) {
-            // If one operator is at the start of a line, add a newline before
-            // the other
-            if ($op1Newline && !$op2Newline) {
-                $token->TernaryOperator2->WhitespaceBefore |= WhitespaceType::LINE;
-            } elseif (!$op1Newline && $op2Newline) {
-                $token->TernaryOperator1->WhitespaceBefore |= WhitespaceType::LINE;
-            }
         }
 
         // Similar code in `AddHangingIndentation` also prevents this:

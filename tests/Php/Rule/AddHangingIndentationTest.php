@@ -138,6 +138,75 @@ final class AddHangingIndentationTest extends \Lkrms\Pretty\Tests\Php\TestCase
 
                 PHP,
             ],
+            [
+                <<<'PHP'
+                <?php
+                try {}
+                // comment
+                catch (Throwable $ex) {}
+
+                do {}
+                // comment
+                while (true);
+
+                do
+                a();
+                // comment
+                while (true);
+
+                if (true) {}
+                // comment
+                elseif (false) {}
+                // comment
+                else {}
+
+                if (true)
+                a();
+                // comment
+                elseif (false)
+                b();
+                // comment
+                else
+                c();
+                PHP,
+                <<<'PHP'
+                <?php
+                try {
+                }
+                // comment
+                catch (Throwable $ex) {
+                }
+
+                do {
+                }
+                // comment
+                while (true);
+
+                do
+                    a();
+                // comment
+                while (true);
+
+                if (true) {
+                }
+                // comment
+                elseif (false) {
+                }
+                // comment
+                else {
+                }
+
+                if (true)
+                    a();
+                // comment
+                elseif (false)
+                    b();
+                // comment
+                else
+                    c();
+
+                PHP,
+            ],
         ];
     }
 }
