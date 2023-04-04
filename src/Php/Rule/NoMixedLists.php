@@ -29,7 +29,7 @@ final class NoMixedLists implements ListRule
 
     public function processList(Token $owner, TokenCollection $items): void
     {
-        if ($items->count() < ($owner->ClosedBy ? 3 : 2)) {
+        if ($items->count() < 2) {
             return;
         }
         if ($items->nth(2)->hasNewlineBefore()) {
