@@ -52,8 +52,8 @@ final class PreserveNewlines implements TokenRule
         $this->maybePreserveNewlineAfter($prev, $token, $line, $min, $max, false) ||
             $this->maybePreserveNewlineBefore($token, $prev, $line, $min, $max, false) ||
             $this->maybePreserveNewlineBefore($prev, $prev->prev(), $line, $min, $max, true) ||
-            $this->maybePreserveNewlineBefore($prev, $prev->prev(), $line, $min, $max, false) ||
             $this->maybePreserveNewlineAfter($token, $token->next(), $line, $min, $max, true) ||
+            $this->maybePreserveNewlineBefore($prev, $prev->prev(), $line, $min, $max, false) ||
             $this->maybePreserveNewlineAfter($token, $token->next(), $line, $min, $max, false);
     }
 
