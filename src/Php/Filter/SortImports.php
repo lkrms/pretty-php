@@ -54,7 +54,7 @@ final class SortImports implements Filter
     public function __invoke(array $tokens): array
     {
         $this->Tokens = array_values($tokens);
-        $count        = count($this->Tokens);
+        $count = count($this->Tokens);
 
         // Minimise unnecessary iterations by identifying relevant T_USE tokens
         // in advance and exiting early if possible
@@ -74,9 +74,9 @@ final class SortImports implements Filter
             $i = array_shift($tokens);
 
             /** @var array<array<Token>> */
-            $sort       = [];
+            $sort = [];
             /** @var array<Token> */
-            $current    = [];
+            $current = [];
             /** @var Token|null */
             $terminator = null;
             while ($i < $count) {
@@ -93,8 +93,8 @@ final class SortImports implements Filter
                             $current[$i++] = $token;
                             continue;
                         } else {
-                            $sort[]     = $current;
-                            $current    = [];
+                            $sort[] = $current;
+                            $current = [];
                             $terminator = null;
                         }
                     } elseif ($token->id === T_CLOSE_TAG) {
@@ -136,9 +136,9 @@ final class SortImports implements Filter
      */
     private function sortImports(array $sort): void
     {
-        $import   = reset($sort);
+        $import = reset($sort);
         $nextLine = reset($import)->line;
-        $nextKey  = $firstKey = key($import);
+        $nextKey = $firstKey = key($import);
         $unsorted = $sort;
 
         // Sort the alias/import statements
@@ -149,7 +149,7 @@ final class SortImports implements Filter
                 $b = $this->sortableImport(array_values($b));
 
                 return $a[0] <=> $b[0]
-                           ?: strcasecmp($a[1], $b[1]);
+                    ?: strcasecmp($a[1], $b[1]);
             }
         );
 
@@ -163,7 +163,7 @@ final class SortImports implements Filter
             $delta = $nextLine - reset($import)->line;
             foreach ($import as $t) {
                 $sorted[$nextKey++] = $t;
-                $t->line           += $delta;
+                $t->line += $delta;
             }
             $nextLine += substr_count($t->text, "\n") + 1;
         }

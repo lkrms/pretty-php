@@ -49,12 +49,12 @@ final class SpaceOperators implements TokenRule
         // or passing by reference
         if ($token->is(TokenType::AMPERSAND) &&
             $token->next()->IsCode &&
-            ($token->prevCode()->is(T_FUNCTION) ||      // - `function &getValue()`
-                $token->inUnaryContext() ||             // - `[&$variable]`, `$a = &getValue()`
-                ($token->next()->is(T_VARIABLE) &&      // - `function getValue(&$param)`, but not
+            ($token->prevCode()->is(T_FUNCTION) ||  // - `function &getValue()`
+                $token->inUnaryContext() ||  // - `[&$variable]`, `$a = &getValue()`
+                ($token->next()->is(T_VARIABLE) &&  // - `function getValue(&$param)`, but not
                     $token->inFunctionDeclaration() &&  //   `function getValue($param = $a & $b)`
                     !$token->sinceStartOfStatement()->hasOneOf(T['='])))) {
-            $token->WhitespaceBefore  |= WhitespaceType::SPACE;
+            $token->WhitespaceBefore |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
 
             return;
@@ -72,7 +72,7 @@ final class SpaceOperators implements TokenRule
 
         // Suppress whitespace after `?` in nullable types
         if ($token->is(T['?']) && !$token->IsTernaryOperator) {
-            $token->WhitespaceBefore  |= WhitespaceType::SPACE;
+            $token->WhitespaceBefore |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
 
             return;
@@ -106,7 +106,7 @@ final class SpaceOperators implements TokenRule
 
         // Collapse ternary operators if there is nothing between `?` and `:`
         if ($token->IsTernaryOperator && $token->TernaryOperator1 === $token->_prev) {
-            $token->WhitespaceBefore       = WhitespaceType::NONE;
+            $token->WhitespaceBefore = WhitespaceType::NONE;
             $token->_prev->WhitespaceAfter = WhitespaceType::NONE;
 
             return;

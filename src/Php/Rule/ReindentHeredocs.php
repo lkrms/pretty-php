@@ -45,14 +45,14 @@ final class ReindentHeredocs implements TokenRule
     {
         foreach ($this->Heredocs as $heredoc) {
             $inherited = '';
-            $current   = $heredoc->HeredocOpenedBy;
+            $current = $heredoc->HeredocOpenedBy;
             while ($current) {
                 $inherited .= $current->HeredocIndent;
-                $current    = $current->HeredocOpenedBy;
+                $current = $current->HeredocOpenedBy;
             }
 
-            $next    = $heredoc->next();
-            $indent  = $next->renderIndent();
+            $next = $heredoc->next();
+            $indent = $next->renderIndent();
             $padding = str_repeat(' ', $next->LinePadding - $next->LineUnpadding);
             if (($indent[0] ?? null) === "\t" && $padding) {
                 $indent = $next->renderIndent(true);
@@ -61,7 +61,7 @@ final class ReindentHeredocs implements TokenRule
                 $inherited = str_replace("\t", $this->Formatter->SoftTab, $inherited);
             }
             $indent .= $padding;
-            $indent  = substr($indent, strlen($inherited));
+            $indent = substr($indent, strlen($inherited));
             if (!$indent) {
                 continue;
             }

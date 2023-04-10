@@ -370,27 +370,27 @@ class Token extends NavigableToken implements JsonSerializable
         /** @var static[] */
         $prepared = [];
         /** @var static */
-        $prev     = null;
-        $nextKey  = (int) array_key_last($tokens) + 1;
+        $prev = null;
+        $nextKey = (int) array_key_last($tokens) + 1;
         try {
             foreach ($tokens as $index => $token) {
                 // PHP's alternative syntax has no `}` equivalent, so insert a
                 // virtual token where it should be
                 if ($token->is(self::ALT_SYNTAX_TERMINATOR)) {
-                    $stack  = $prev->BracketStack;
+                    $stack = $prev->BracketStack;
                     $opener = array_pop($stack);
                     if (($opener && $opener->is(T[':']) && $opener->BracketStack === $stack) ||
                             $prev->startsAlternativeSyntax()) {
-                        $virtual            = VirtualToken::create(T_END_ALT_SYNTAX);
+                        $virtual = VirtualToken::create(T_END_ALT_SYNTAX);
                         $prepared[$nextKey] = $virtual;
-                        $virtual->Index     = $nextKey++;
+                        $virtual->Index = $nextKey++;
                         $virtual->Formatter = $formatter;
                         $virtual->prepare($prev);
                         $prev = $virtual;
                     }
                 }
                 $prepared[$index] = $token;
-                $token->Index     = $index;
+                $token->Index = $index;
                 $token->Formatter = $formatter;
                 $token->prepare($prev);
                 $prev = $token;
@@ -459,18 +459,18 @@ class Token extends NavigableToken implements JsonSerializable
         $prev->_next = $this;
 
         $this->_prevCode = $prev->IsCode
-                               ? $prev
-                               : $prev->_prevCode;
+            ? $prev
+            : $prev->_prevCode;
         if ($this->IsCode) {
             $t = $prev;
             do {
                 $t->_nextCode = $this;
-                $t            = $t->_prev;
+                $t = $t->_prev;
             } while ($t && !$t->_nextCode);
         }
 
         $this->BracketStack = $prev->BracketStack;
-        $stackDelta         = 0;
+        $stackDelta = 0;
         if ($prev->isOpenBracket() || $prev->startsAlternativeSyntax()) {
             $this->BracketStack[] = $prev;
             $stackDelta++;
@@ -480,9 +480,9 @@ class Token extends NavigableToken implements JsonSerializable
         }
 
         if ($this->isCloseBracket() || $this->endsAlternativeSyntax()) {
-            $opener             = end($this->BracketStack);
-            $opener->ClosedBy   = $this;
-            $this->OpenedBy     = $opener;
+            $opener = end($this->BracketStack);
+            $opener->ClosedBy = $this;
+            $this->OpenedBy = $opener;
             $this->_prevSibling = &$opener->_prevSibling;
             $this->_nextSibling = &$opener->_nextSibling;
         } else {
@@ -511,14 +511,14 @@ class Token extends NavigableToken implements JsonSerializable
                         !$this->_prevSibling->_nextSibling) {
                     $t = $this;
                     do {
-                        $t               = $t->_prev->OpenedBy ?: $t->_prev;
+                        $t = $t->_prev->OpenedBy ?: $t->_prev;
                         $t->_nextSibling = $this;
                     } while ($t->_prev && $t !== $this->_prevSibling);
                 } elseif (!$this->_prevSibling) {
                     $t = $this->_prev;
                     while ($t && $t->BracketStack === $this->BracketStack) {
                         $t->_nextSibling = $this;
-                        $t               = $t->_prev;
+                        $t = $t->_prev;
                     }
                 }
             }
@@ -541,7 +541,7 @@ class Token extends NavigableToken implements JsonSerializable
                 $t = $this;
                 do {
                     $t->CloseTag = $this;
-                    $t           = $t->_prev;
+                    $t = $t->_prev;
                 } while ($t && $t->OpenTag === $this->OpenTag);
 
                 // TODO: use BracketStack for a more robust assessment?
@@ -551,7 +551,7 @@ class Token extends NavigableToken implements JsonSerializable
                 }
                 if ($t->Index > $this->OpenTag->Index &&
                         !$t->is([T['('], T[','], T[':'], T[';'], T['['], T['{']])) {
-                    $this->IsCode                        = true;
+                    $this->IsCode = true;
                     $this->IsCloseTagStatementTerminator = true;
                 }
             }
@@ -586,10 +586,10 @@ class Token extends NavigableToken implements JsonSerializable
                 $this->isCloseBraceStatementTerminator()) &&
             !$this->nextCode()->is([T_ELSEIF, T_ELSE, T_CATCH, T_FINALLY]) &&
             !($this->nextCode()->is(T_WHILE) &&
-                ($this->nextCode()->prevSibling(2)->is(T_DO) ||      // Body enclosed: `do { ... } while ();`
+                ($this->nextCode()->prevSibling(2)->is(T_DO) ||  // Body enclosed: `do { ... } while ();`
                     (!($do = $this->prevSiblingOf(T_DO))->IsNull &&  // Body unenclosed +/- nesting:
-                        $do->nextSibling(2)                          // - `do statement; while ();`
-                           ->collectSiblings($this->nextCode())      // - `do while () while (); while ();`
+                        $do->nextSibling(2)  // - `do statement; while ();`
+                           ->collectSiblings($this->nextCode())  // - `do while () while (); while ();`
                            ->filter(fn(Token $t) => $t->is(T_WHILE) && !$t->prevSibling(2)->is(T_WHILE))
                            ->first() === $this->nextCode())))) ||
                 $this->startsAlternativeSyntax() ||
@@ -642,7 +642,7 @@ class Token extends NavigableToken implements JsonSerializable
             if ($current->ClosedBy) {
                 $current->ClosedBy->EndStatement = $this;
             }
-            $latest  = $current;
+            $latest = $current;
             $current = $current->_prevSibling;
         } while ($current && !$current->EndStatement);
 
@@ -667,7 +667,7 @@ class Token extends NavigableToken implements JsonSerializable
             // Find the end of the last statement to find the start of this one
             $current = $this->OpenedBy->_prevSibling;
             while ($current && !$current->EndStatement) {
-                $start   = $current;
+                $start = $current;
                 $current = $current->_prevSibling;
             }
         }
@@ -717,7 +717,7 @@ class Token extends NavigableToken implements JsonSerializable
     {
         if ($this->is(T['?'])) {
             $current = $this;
-            $count   = 0;
+            $count = 0;
             while (($current = $current->_nextSibling) &&
                     $this->EndStatement !== ($current->ClosedBy ?: $current)) {
                 if ($current->IsTernaryOperator) {
@@ -731,8 +731,8 @@ class Token extends NavigableToken implements JsonSerializable
                     continue;
                 }
                 $current->IsTernaryOperator = $this->IsTernaryOperator = true;
-                $current->TernaryOperator1  = $this->TernaryOperator1 = $this;
-                $current->TernaryOperator2  = $this->TernaryOperator2 = $current;
+                $current->TernaryOperator1 = $this->TernaryOperator1 = $this;
+                $current->TernaryOperator2 = $this->TernaryOperator2 = $current;
                 break;
             }
         }
@@ -794,7 +794,7 @@ class Token extends NavigableToken implements JsonSerializable
             if ($current->Expression === false) {
                 break;
             }
-            $latest  = $current;
+            $latest = $current;
             $current = $current->_prevSibling;
         }
         if (!($latest ?? null)) {
@@ -816,9 +816,9 @@ class Token extends NavigableToken implements JsonSerializable
      */
     public function jsonSerialize(): array
     {
-        $a                 = get_object_vars($this);
-        $_prevSibling      = (string) $a['_prevSibling'];
-        $_nextSibling      = (string) $a['_nextSibling'];
+        $a = get_object_vars($this);
+        $_prevSibling = (string) $a['_prevSibling'];
+        $_nextSibling = (string) $a['_nextSibling'];
         $a['_prevSibling'] = &$_prevSibling;
         $a['_nextSibling'] = &$_nextSibling;
         unset(
@@ -850,25 +850,29 @@ class Token extends NavigableToken implements JsonSerializable
             $a['Formatter'],
             $a['IsCloseTagStatementTerminator'],
         );
-        $a['id']               = $this->getTokenName();
+        $a['id'] = $this->getTokenName();
         $a['WhitespaceBefore'] = WhitespaceType::toWhitespace($a['WhitespaceBefore']);
-        $a['WhitespaceAfter']  = WhitespaceType::toWhitespace($a['WhitespaceAfter']);
+        $a['WhitespaceAfter'] = WhitespaceType::toWhitespace($a['WhitespaceAfter']);
         if ($this->Expression === $this || $this->EndExpression === $this || $this->Expression === false) {
             $a['PragmaticStartExpression'] = $this->pragmaticStartOfExpression();
-            $a['PragmaticEndExpression']   = $this->pragmaticEndOfExpression();
+            $a['PragmaticEndExpression'] = $this->pragmaticEndOfExpression();
         }
         if (empty($a['Log'])) {
             unset($a['Log']);
         } else {
-            $a['Log'] = array_map(fn(array $entry) => json_encode($entry),
-                                  $a['Log']);
+            $a['Log'] = array_map(
+                fn(array $entry) => json_encode($entry),
+                $a['Log']
+            );
         }
-        array_walk_recursive($a,
-                             function (&$value) {
-                                 if ($value instanceof Token) {
-                                     $value = (string) $value;
-                                 }
-                             });
+        array_walk_recursive(
+            $a,
+            function (&$value) {
+                if ($value instanceof Token) {
+                    $value = (string) $value;
+                }
+            }
+        );
 
         return $a;
     }
@@ -894,7 +898,7 @@ class Token extends NavigableToken implements JsonSerializable
                 return true;
             }
         } while ($prev->IsVirtual);
-        $prevCode     = $prev->OriginalText ?: $prev->text;
+        $prevCode = $prev->OriginalText ?: $prev->text;
         $prevNewlines = substr_count($prevCode, "\n");
 
         return $this->line > ($prev->line + $prevNewlines) ||
@@ -912,7 +916,7 @@ class Token extends NavigableToken implements JsonSerializable
                 return true;
             }
         } while ($next->IsVirtual);
-        $code     = $this->OriginalText ?: $this->text;
+        $code = $this->OriginalText ?: $this->text;
         $newlines = substr_count($code, "\n");
 
         return ($this->line + $newlines) < $next->line ||
@@ -987,7 +991,7 @@ class Token extends NavigableToken implements JsonSerializable
         $p = $with ? $this : $this->prev();
         while ($p->is($types)) {
             $c[] = $p;
-            $p   = $p->prev();
+            $p = $p->prev();
         }
 
         return $c;
@@ -1018,7 +1022,7 @@ class Token extends NavigableToken implements JsonSerializable
         $n = $with ? $this : $this->next();
         while ($n->is($types)) {
             $c[] = $n;
-            $n   = $n->next();
+            $n = $n->next();
         }
 
         return $c;
@@ -1075,7 +1079,7 @@ class Token extends NavigableToken implements JsonSerializable
         $p = $with ? $this : $this->prevCode();
         while ($p->is($types)) {
             $c[] = $p;
-            $p   = $p->prevCode();
+            $p = $p->prevCode();
         }
 
         return $c;
@@ -1106,7 +1110,7 @@ class Token extends NavigableToken implements JsonSerializable
         $n = $with ? $this : $this->nextCode();
         while ($n->is($types)) {
             $c[] = $n;
-            $n   = $n->nextCode();
+            $n = $n->nextCode();
         }
 
         return $c;
@@ -1180,7 +1184,7 @@ class Token extends NavigableToken implements JsonSerializable
      */
     final public function prevSiblings(Token $until = null): TokenCollection
     {
-        $tokens  = new TokenCollection();
+        $tokens = new TokenCollection();
         $current = $this->OpenedBy ?: $this;
         if ($until) {
             if ($this->Index < $until->Index || $until->IsNull) {
@@ -1234,10 +1238,10 @@ class Token extends NavigableToken implements JsonSerializable
     private function _prevSiblingsWhile(bool $includeToken = false, ...$types): TokenCollection
     {
         $tokens = new TokenCollection();
-        $prev   = $includeToken ? $this : $this->_prevSibling;
+        $prev = $includeToken ? $this : $this->_prevSibling;
         while ($prev && $prev->is($types)) {
             $tokens[] = $prev;
-            $prev     = $prev->_prevSibling;
+            $prev = $prev->_prevSibling;
         }
 
         return $tokens;
@@ -1271,10 +1275,10 @@ class Token extends NavigableToken implements JsonSerializable
     private function _nextSiblingsWhile(bool $includeToken = false, ...$types): TokenCollection
     {
         $tokens = new TokenCollection();
-        $next   = $includeToken ? $this : $this->_nextSibling;
+        $next = $includeToken ? $this : $this->_nextSibling;
         while ($next && $next->is($types)) {
             $tokens[] = $next;
-            $next     = $next->_nextSibling;
+            $next = $next->_nextSibling;
         }
 
         return $tokens;
@@ -1282,10 +1286,10 @@ class Token extends NavigableToken implements JsonSerializable
 
     final public function prevSiblingsUntil(callable $callback): TokenCollection
     {
-        $tokens  = new TokenCollection();
+        $tokens = new TokenCollection();
         $current = $this;
         while ($current->_prevSibling && !$callback($current->_prevSibling, $tokens)) {
-            $current  = $current->_prevSibling;
+            $current = $current->_prevSibling;
             $tokens[] = $current;
         }
 
@@ -1294,10 +1298,10 @@ class Token extends NavigableToken implements JsonSerializable
 
     final public function nextSiblingsUntil(callable $callback): TokenCollection
     {
-        $tokens  = new TokenCollection();
+        $tokens = new TokenCollection();
         $current = $this;
         while ($current->_nextSibling && !$callback($current->_nextSibling, $tokens)) {
-            $current  = $current->_nextSibling;
+            $current = $current->_nextSibling;
             $tokens[] = $current;
         }
 
@@ -1338,12 +1342,12 @@ class Token extends NavigableToken implements JsonSerializable
      */
     private function _parentsWhile(bool $includeToken = false, ...$types): TokenCollection
     {
-        $tokens  = new TokenCollection();
+        $tokens = new TokenCollection();
         $current = $this->OpenedBy ?: $this;
         $current = $includeToken ? $current : end($current->BracketStack);
         while ($current && $current->is($types)) {
             $tokens[] = $current;
-            $current  = end($current->BracketStack);
+            $current = end($current->BracketStack);
         }
 
         return $tokens;
@@ -1401,14 +1405,14 @@ class Token extends NavigableToken implements JsonSerializable
                        ->find(fn(Token $t, ?Token $next) =>
                                   ($t->AlignedWith && $t->AlignedWith !== $this) ||
                                       ($next && $next === $this->AlignedWith))
-                     ?: $start;
+            ?: $start;
 
-        $code   = $start->collect($this)->render(true);
+        $code = $start->collect($this)->render(true);
         $offset = mb_strlen($code);
         // Handle strings with embedded newlines
         if (($newline = mb_strrpos($code, "\n")) !== false) {
             $newLinePadding = $offset - $newline - 1;
-            $offset         = $newLinePadding - ($this->LinePadding - $this->LineUnpadding);
+            $offset = $newLinePadding - ($this->LinePadding - $this->LineUnpadding);
             if (!$includeText) {
                 $offset -= mb_strlen($this->text) - mb_strrpos("\n" . $this->text, "\n");
             }
@@ -1460,15 +1464,17 @@ class Token extends NavigableToken implements JsonSerializable
         // chain
         if ($this->is(TokenType::CHAIN)) {
             $current = $this;
-            $first   = null;
+            $first = null;
             while (($current = $current->_prevSibling) &&
-                $this->Expression === $current->Expression &&
-                $current->is([T_DOUBLE_COLON,
-                              T_NAME_FULLY_QUALIFIED,
-                              T_NAME_QUALIFIED,
-                              T_NAME_RELATIVE,
-                              T_VARIABLE,
-                              ...TokenType::CHAIN_PART])) {
+                    $this->Expression === $current->Expression &&
+                    $current->is([
+                        T_DOUBLE_COLON,
+                        T_NAME_FULLY_QUALIFIED,
+                        T_NAME_QUALIFIED,
+                        T_NAME_RELATIVE,
+                        T_VARIABLE,
+                        ...TokenType::CHAIN_PART
+                    ])) {
                 $first = $current;
             }
 
@@ -1489,8 +1495,8 @@ class Token extends NavigableToken implements JsonSerializable
         // Otherwise, traverse expressions until an appropriate terminator is
         // reached
         $current = $this->OpenedBy ?: $this;
-        $last    = $current;
-        $i       = -1;
+        $last = $current;
+        $i = -1;
         while (true) {
             $i++;
             // If this is the first iteration, or `$current` is an ignored
@@ -1581,15 +1587,15 @@ class Token extends NavigableToken implements JsonSerializable
             $end = $this->EndStatement ?: $this;
 
             return $end === $this
-                       ? $end
-                       : $end->withoutTerminator();
+                ? $end
+                : $end->withoutTerminator();
         }
 
         // If the token is an object operator, return the last token in the
         // chain
         if ($this->is(TokenType::CHAIN)) {
             $current = $this;
-            $last    = null;
+            $last = null;
             while (($current = $current->_nextSibling) &&
                     $this->Expression === $current->Expression &&
                     $current->is(TokenType::CHAIN_PART)) {
@@ -1613,12 +1619,12 @@ class Token extends NavigableToken implements JsonSerializable
         // Otherwise, traverse expressions until an appropriate terminator is
         // reached
         $current = $this->OpenedBy ?: $this;
-        $inCase  = $current->inSwitchCase();
+        $inCase = $current->inSwitchCase();
         while ($current->EndExpression) {
-            $current    = $current->EndExpression;
+            $current = $current->EndExpression;
             $terminator = ($current->_nextSibling->Expression ?? null) === false
-                              ? $current->_nextSibling
-                              : $current;
+                ? $current->_nextSibling
+                : $current;
             $next = $terminator->_nextSibling ?? null;
             if (!$next) {
                 return $current;
@@ -1695,7 +1701,7 @@ class Token extends NavigableToken implements JsonSerializable
         if (!$current) {
             return null;
         }
-        $eol   = $this->endOfLine();
+        $eol = $this->endOfLine();
         $outer = $current->withNextCodeWhile(T[')'], T[','], T[']'], T['}'])
                          ->filter(fn(Token $t) => $t->Index <= $eol->Index)
                          ->last();
@@ -1982,12 +1988,12 @@ class Token extends NavigableToken implements JsonSerializable
         if (!($this->id === T['{'] || ($this->id === T['}'] && $this->OpenedBy->id === T['{']))) {
             return false;
         }
-        $current   = $this->OpenedBy ?: $this;
+        $current = $this->OpenedBy ?: $this;
         $lastInner = $current->ClosedBy->_prevCode;
 
-        return $lastInner === $current ||                                    // `{}`
-            $lastInner->is([T[':'], T[';']]) ||                              // `{ statement; }`
-            $lastInner->IsCloseTagStatementTerminator ||                     /* `{ statement ?>...<?php }` */
+        return $lastInner === $current ||  // `{}`
+            $lastInner->is([T[':'], T[';']]) ||  // `{ statement; }`
+            $lastInner->IsCloseTagStatementTerminator ||  /* `{ statement ?>...<?php }` */
             ($lastInner->id === T['}'] && $lastInner->isStructuralBrace());  // `{ { statement; } }`
     }
 
@@ -2001,8 +2007,8 @@ class Token extends NavigableToken implements JsonSerializable
     final public function isOpenBracket(bool $allTypes = true): bool
     {
         return $allTypes
-                   ? $this->is([T['('], T['['], T['{'], T_ATTRIBUTE, T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES])
-                   : $this->is([T['('], T['['], T['{']]);
+            ? $this->is([T['('], T['['], T['{'], T_ATTRIBUTE, T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES])
+            : $this->is([T['('], T['['], T['{']]);
     }
 
     /**
@@ -2035,16 +2041,16 @@ class Token extends NavigableToken implements JsonSerializable
     public function isOneLineComment(bool $anyType = false): bool
     {
         return $anyType
-                   ? $this->is(TokenType::COMMENT) && !$this->hasNewline()
-                   : $this->is(T_COMMENT) && preg_match('@^(//|#)@', $this->text);
+            ? $this->is(TokenType::COMMENT) && !$this->hasNewline()
+            : $this->is(T_COMMENT) && preg_match('@^(//|#)@', $this->text);
     }
 
     public function isMultiLineComment(bool $anyType = false): bool
     {
         return $anyType
-                   ? $this->is(TokenType::COMMENT) && $this->hasNewline()
-                   : ($this->is(T_DOC_COMMENT) ||
-                       ($this->is(T_COMMENT) && preg_match('@^/\*@', $this->text)));
+            ? $this->is(TokenType::COMMENT) && $this->hasNewline()
+            : ($this->is(T_DOC_COMMENT) ||
+                ($this->is(T_COMMENT) && preg_match('@^/\*@', $this->text)));
     }
 
     public function isOperator(): bool
@@ -2122,11 +2128,11 @@ class Token extends NavigableToken implements JsonSerializable
     final public function getIndentDiff(Token $target): array
     {
         return [
-            'PreIndent'     => $target->PreIndent - $this->PreIndent,
-            'Indent'        => $target->Indent - $this->Indent,
-            'Deindent'      => $target->Deindent - $this->Deindent,
+            'PreIndent' => $target->PreIndent - $this->PreIndent,
+            'Indent' => $target->Indent - $this->Indent,
+            'Deindent' => $target->Deindent - $this->Deindent,
             'HangingIndent' => $target->HangingIndent - $this->HangingIndent,
-            'LinePadding'   => $target->LinePadding - $this->LinePadding,
+            'LinePadding' => $target->LinePadding - $this->LinePadding,
             'LineUnpadding' => $target->LineUnpadding - $this->LineUnpadding,
         ];
     }
@@ -2136,11 +2142,11 @@ class Token extends NavigableToken implements JsonSerializable
      */
     final public function applyIndentDiff(array $diff): void
     {
-        $this->PreIndent     += $diff['PreIndent'];
-        $this->Indent        += $diff['Indent'];
-        $this->Deindent      += $diff['Deindent'];
+        $this->PreIndent += $diff['PreIndent'];
+        $this->Indent += $diff['Indent'];
+        $this->Deindent += $diff['Deindent'];
         $this->HangingIndent += $diff['HangingIndent'];
-        $this->LinePadding   += $diff['LinePadding'];
+        $this->LinePadding += $diff['LinePadding'];
         $this->LineUnpadding += $diff['LineUnpadding'];
     }
 
@@ -2152,8 +2158,8 @@ class Token extends NavigableToken implements JsonSerializable
     public function renderIndent(bool $softTabs = false): string
     {
         return ($indent = $this->PreIndent + $this->Indent + $this->HangingIndent - $this->Deindent)
-                   ? str_repeat($softTabs ? $this->Formatter->SoftTab : $this->Formatter->Tab, $indent)
-                   : '';
+            ? str_repeat($softTabs ? $this->Formatter->SoftTab : $this->Formatter->Tab, $indent)
+            : '';
     }
 
     public function renderWhitespaceBefore(bool $softTabs = false): string
@@ -2162,13 +2168,13 @@ class Token extends NavigableToken implements JsonSerializable
 
         return WhitespaceType::toWhitespace($whitespaceBefore)
             . ($whitespaceBefore & (WhitespaceType::LINE | WhitespaceType::BLANK)
-                   ? (($indent = $this->PreIndent + $this->Indent + $this->HangingIndent - $this->Deindent)
-                          ? str_repeat($softTabs ? $this->Formatter->SoftTab : $this->Formatter->Tab, $indent)
-                          : '')
-                       . (($padding = $this->LinePadding - $this->LineUnpadding + $this->Padding)
-                              ? str_repeat(' ', $padding)
-                              : '')
-                   : ($this->Padding ? str_repeat(' ', $this->Padding) : ''));
+                ? (($indent = $this->PreIndent + $this->Indent + $this->HangingIndent - $this->Deindent)
+                        ? str_repeat($softTabs ? $this->Formatter->SoftTab : $this->Formatter->Tab, $indent)
+                        : '')
+                    . (($padding = $this->LinePadding - $this->LineUnpadding + $this->Padding)
+                        ? str_repeat(' ', $padding)
+                        : '')
+                : ($this->Padding ? str_repeat(' ', $this->Padding) : ''));
     }
 
     public function render(bool $softTabs = false, ?Token &$last = null): string
@@ -2180,12 +2186,12 @@ class Token extends NavigableToken implements JsonSerializable
             $heredoc = $this->text;
             $current = $this;
             do {
-                $current  = $current->_next;
+                $current = $current->_next;
                 $heredoc .= $current->render($softTabs, $current);
             } while ($current->id !== T_END_HEREDOC ||
                 $current->HeredocOpenedBy !== $this);
             if ($this->HeredocIndent) {
-                $regex   = preg_quote($this->HeredocIndent, '/');
+                $regex = preg_quote($this->HeredocIndent, '/');
                 $heredoc = preg_replace("/\\n$regex\$/m", "\n", $heredoc);
             }
         } elseif ($this->is(TokenType::DO_NOT_MODIFY)) {
@@ -2233,14 +2239,18 @@ class Token extends NavigableToken implements JsonSerializable
                 $start = $this->startOfLine();
                 $indent =
                     "\n" . ($start === $this || !$this->CommentPlaced
-                                ? $this->renderIndent($softTabs)
-                                    . str_repeat(' ',
-                                                 $this->LinePadding - $this->LineUnpadding + $this->Padding)
-                                : ltrim($start->renderWhitespaceBefore(), "\n")
-                                    . str_repeat(' ',
-                                                 mb_strlen($start->collect($this->prev())->render($softTabs))
-                                                     + strlen(WhitespaceType::toWhitespace($this->effectiveWhitespaceBefore()))
-                                                     + $this->Padding));
+                        ? $this->renderIndent($softTabs)
+                            . str_repeat(
+                                ' ',
+                                $this->LinePadding - $this->LineUnpadding + $this->Padding
+                            )
+                        : ltrim($start->renderWhitespaceBefore(), "\n")
+                            . str_repeat(
+                                ' ',
+                                mb_strlen($start->collect($this->prev())->render($softTabs))
+                                    + strlen(WhitespaceType::toWhitespace($this->effectiveWhitespaceBefore()))
+                                    + $this->Padding
+                            ));
 
                 return preg_replace([
                     '/\n\h*+(?:\* |\*(?!\/)(?=[\h\S])|(?=[^\s*]))/',
@@ -2263,7 +2273,7 @@ class Token extends NavigableToken implements JsonSerializable
 
     final public function collectSiblings(Token $until = null): TokenCollection
     {
-        $tokens  = new TokenCollection();
+        $tokens = new TokenCollection();
         $current = $this->OpenedBy ?: $this;
         if ($until) {
             if ($this->Index > $until->Index || $until->IsNull) {
@@ -2311,9 +2321,9 @@ class Token extends NavigableToken implements JsonSerializable
         if ($this->Formatter->Debug && ($service = $this->Formatter->RunningService)) {
             $this->Log[] = [
                 'service' => $service,
-                'value'   => $name,
-                'from'    => $this->$name,
-                'to'      => $value,
+                'value' => $name,
+                'from' => $this->$name,
+                'to' => $value,
             ];
         }
         $this->$name = $value;
@@ -2321,10 +2331,12 @@ class Token extends NavigableToken implements JsonSerializable
 
     public function __toString(): string
     {
-        return sprintf('T%d:L%d:%s',
-                       $this->Index,
-                       $this->line,
-                       Convert::ellipsize(var_export($this->text, true), 20));
+        return sprintf(
+            'T%d:L%d:%s',
+            $this->Index,
+            $this->line,
+            Convert::ellipsize(var_export($this->text, true), 20)
+        );
     }
 
     public function destroy(): void

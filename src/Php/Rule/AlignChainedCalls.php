@@ -68,13 +68,15 @@ final class AlignChainedCalls implements TokenRule
             }
             $current = $first;
             while (!($current = $current->prevSibling())->IsNull &&
-                $first->Expression === $current->Expression &&
-                $current->is([T_DOUBLE_COLON,
-                              T_NAME_FULLY_QUALIFIED,
-                              T_NAME_QUALIFIED,
-                              T_NAME_RELATIVE,
-                              T_VARIABLE,
-                              ...TokenType::CHAIN_PART])) {
+                    $first->Expression === $current->Expression &&
+                    $current->is([
+                        T_DOUBLE_COLON,
+                        T_NAME_FULLY_QUALIFIED,
+                        T_NAME_QUALIFIED,
+                        T_NAME_RELATIVE,
+                        T_VARIABLE,
+                        ...TokenType::CHAIN_PART
+                    ])) {
                 $alignWith = $current;
             }
             if (!$alignWith) {
@@ -84,7 +86,7 @@ final class AlignChainedCalls implements TokenRule
             $adjust = mb_strlen($alignWith->text) - $this->Formatter->TabSize;
         } else {
             $alignWith->AlignedWith = $alignWith;
-            $adjust                 = 2;
+            $adjust = 2;
         }
 
         // Remove tokens before $first from the chain

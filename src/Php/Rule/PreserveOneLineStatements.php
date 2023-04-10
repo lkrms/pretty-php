@@ -41,24 +41,30 @@ final class PreserveOneLineStatements implements TokenRule
         // We can't use EndStatement here because the `case <value>:`
         // statement ends at `:`
         if ($token->Statement &&
-            $token->Statement === $token &&
-            $this->maybePreserveOneLine($token,
-                                        $token->pragmaticEndOfExpression(false, false))) {
+                $token->Statement === $token &&
+                $this->maybePreserveOneLine(
+                    $token,
+                    $token->pragmaticEndOfExpression(false, false)
+                )) {
             return;
         }
 
         if (!$token->is([T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO]) ||
-            !$token->CloseTag ||
-            $this->maybePreserveOneLine($token,
-                                        $token->CloseTag)) {
+                !$token->CloseTag ||
+                $this->maybePreserveOneLine(
+                    $token,
+                    $token->CloseTag
+                )) {
             return;
         }
 
         $firstCode = $token->nextCode();
         if ($firstCode->IsNull ||
-            !Test::isBetween($firstCode->Index,
-                             $token->Index,
-                             $token->CloseTag->Index)) {
+                !Test::isBetween(
+                    $firstCode->Index,
+                    $token->Index,
+                    $token->CloseTag->Index
+                )) {
             return;
         }
         $lastCode = $token->CloseTag->prevCode();

@@ -47,7 +47,7 @@ final class ReportUnnecessaryParentheses implements TokenRule
             return;
         }
         $first = $inner->first();
-        $last  = $inner->last();
+        $last = $inner->last();
         if ($first->EndStatement !== $last) {
             return;
         }

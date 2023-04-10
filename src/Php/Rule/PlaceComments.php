@@ -50,16 +50,16 @@ final class PlaceComments implements TokenRule
         // Leave embedded comments alone
         if ($token->wasBetweenTokensOnLine(true)) {
             $token->WhitespaceBefore |= WhitespaceType::SPACE;
-            $token->WhitespaceAfter  |= WhitespaceType::SPACE;
+            $token->WhitespaceAfter |= WhitespaceType::SPACE;
 
             return;
         }
 
         // Don't move comments beside code to the next line
         if (!$token->wasFirstOnLine() && $token->wasLastOnLine()) {
-            $token->WhitespaceBefore   |= WhitespaceType::TAB;
+            $token->WhitespaceBefore |= WhitespaceType::TAB;
             $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
-            $token->WhitespaceAfter    |= WhitespaceType::LINE;
+            $token->WhitespaceAfter |= WhitespaceType::LINE;
 
             return;
         }
@@ -77,7 +77,7 @@ final class PlaceComments implements TokenRule
         $token->WhitespaceAfter |= WhitespaceType::LINE;
         if (!$token->is(T_DOC_COMMENT)) {
             $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
-            $token->PinToCode         = !$next->isCloseBracket() && !$next->endsAlternativeSyntax();
+            $token->PinToCode = !$next->isCloseBracket() && !$next->endsAlternativeSyntax();
 
             return;
         }
@@ -103,7 +103,7 @@ final class PlaceComments implements TokenRule
 
         if ($token->next()->IsCode) {
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
-            $token->PinToCode           = !$next->isCloseBracket() && !$next->endsAlternativeSyntax();
+            $token->PinToCode = !$next->isCloseBracket() && !$next->endsAlternativeSyntax();
         }
     }
 
@@ -152,17 +152,21 @@ final class PlaceComments implements TokenRule
                 }
             }
 
-            [$token->PreIndent,
-             $token->Indent,
-             $token->Deindent,
-             $token->HangingIndent,
-             $token->LinePadding,
-             $token->LineUnpadding] = [$next->PreIndent,
-                                       $next->Indent,
-                                       $next->Deindent,
-                                       $next->HangingIndent,
-                                       $next->LinePadding,
-                                       $next->LineUnpadding];
+            [
+                $token->PreIndent,
+                $token->Indent,
+                $token->Deindent,
+                $token->HangingIndent,
+                $token->LinePadding,
+                $token->LineUnpadding
+            ] = [
+                $next->PreIndent,
+                $next->Indent,
+                $next->Deindent,
+                $next->HangingIndent,
+                $next->LinePadding,
+                $next->LineUnpadding
+            ];
 
             if ($token->hasNewlineAfter()) {
                 $token->Padding = $next->Padding;

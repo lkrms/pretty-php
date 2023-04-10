@@ -39,8 +39,8 @@ class PrettyException extends Exception
 
         $this->Output = $output;
         $this->Tokens = $tokens;
-        $this->Log    = $log;
-        $this->Data   = $data;
+        $this->Log = $log;
+        $this->Data = $data;
     }
 
     public function getDetail(): array
@@ -48,7 +48,7 @@ class PrettyException extends Exception
         return [
             'output' => $this->Output,
             'tokens' => json_encode($this->Tokens, JSON_PRETTY_PRINT | JSON_FORCE_OBJECT),
-            'data'   => json_encode($this->Data, JSON_PRETTY_PRINT),
+            'data' => json_encode($this->Data, JSON_PRETTY_PRINT),
         ];
     }
 

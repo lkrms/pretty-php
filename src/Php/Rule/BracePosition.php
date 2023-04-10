@@ -87,13 +87,13 @@ final class BracePosition implements TokenRule
                 }
             }
             $prev = $parts->hasOneOf(T_FUNCTION)
-                        ? $parts->last()->nextSibling()->canonicalClose()
-                        : $token->prevCode();
+                ? $parts->last()->nextSibling()->canonicalClose()
+                : $token->prevCode();
             if ($prev->id === T[')']) {
                 $this->BracketBracePairs[] = [$prev, $token];
             }
-            $token->WhitespaceBefore   |= WhitespaceType::SPACE | $line;
-            $token->WhitespaceAfter    |= WhitespaceType::LINE | WhitespaceType::SPACE;
+            $token->WhitespaceBefore |= WhitespaceType::SPACE | $line;
+            $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
             if ($next->id === T['}']) {
                 $token->WhitespaceMaskNext &= ~WhitespaceType::SPACE;
@@ -102,11 +102,11 @@ final class BracePosition implements TokenRule
             return;
         }
 
-        $token->WhitespaceBefore   |= WhitespaceType::LINE | WhitespaceType::SPACE;
+        $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
         $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
 
         if ($next->continuesControlStructure()) {
-            $token->WhitespaceAfter    |= WhitespaceType::SPACE;
+            $token->WhitespaceAfter |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
 
             return;
@@ -119,7 +119,7 @@ final class BracePosition implements TokenRule
     {
         foreach ($this->BracketBracePairs as [$bracket, $brace]) {
             if ($bracket->hasNewlineBefore() && $brace->hasNewlineBefore()) {
-                $brace->WhitespaceBefore  |= WhitespaceType::SPACE;
+                $brace->WhitespaceBefore |= WhitespaceType::SPACE;
                 $brace->WhitespaceMaskPrev = WhitespaceType::SPACE;
             }
         }

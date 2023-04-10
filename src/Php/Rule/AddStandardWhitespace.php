@@ -96,11 +96,11 @@ final class AddStandardWhitespace implements TokenRule
     {
         if ($token->is($this->AddSpaceAround)) {
             $token->WhitespaceBefore |= WhitespaceType::SPACE;
-            $token->WhitespaceAfter  |= WhitespaceType::SPACE;
+            $token->WhitespaceAfter |= WhitespaceType::SPACE;
         } elseif ($token->is(TokenType::ADD_SPACE_BEFORE)) {
             $token->WhitespaceBefore |= WhitespaceType::SPACE;
         } elseif ($token->is(TokenType::ADD_SPACE_AFTER)) {
-            $token->WhitespaceAfter  |= WhitespaceType::SPACE;
+            $token->WhitespaceAfter |= WhitespaceType::SPACE;
         }
 
         if (($token->isOpenBracket() && !$token->isStructuralBrace()) ||
@@ -118,9 +118,9 @@ final class AddStandardWhitespace implements TokenRule
             if ($token->is(T_OPEN_TAG) &&
                     ($declare = $token->next())->is(T_DECLARE) &&
                     ($end = $declare->nextSibling(2)) === $declare->endOfStatement()) {
-                $token->WhitespaceAfter   |= WhitespaceType::SPACE;
+                $token->WhitespaceAfter |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskNext = WhitespaceType::SPACE;
-                $token                     = $end;
+                $token = $end;
             }
             $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
 
@@ -135,20 +135,20 @@ final class AddStandardWhitespace implements TokenRule
 
         if ($token->is(T[','])) {
             $token->WhitespaceMaskPrev = WhitespaceType::NONE;
-            $token->WhitespaceAfter   |= WhitespaceType::SPACE;
+            $token->WhitespaceAfter |= WhitespaceType::SPACE;
 
             return;
         }
 
         if ($token->is(T[':']) && $token->inLabel()) {
-            $token->WhitespaceAfter    |= WhitespaceType::LINE;
+            $token->WhitespaceAfter |= WhitespaceType::LINE;
             $token->WhitespaceMaskNext |= WhitespaceType::LINE;
 
             return;
         }
 
         if ($token->is(T_MATCH)) {
-            $arms    = $token->nextSibling(2);
+            $arms = $token->nextSibling(2);
             $current = $arms->nextCode();
             if ($current === $arms->ClosedBy) {
                 return;
@@ -166,8 +166,8 @@ final class AddStandardWhitespace implements TokenRule
         }
 
         if ($token->is(T_ATTRIBUTE)) {
-            $token->WhitespaceBefore             |= WhitespaceType::LINE;
-            $token->ClosedBy->WhitespaceAfter    |= WhitespaceType::LINE;
+            $token->WhitespaceBefore |= WhitespaceType::LINE;
+            $token->ClosedBy->WhitespaceAfter |= WhitespaceType::LINE;
             $token->ClosedBy->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
 
             return;

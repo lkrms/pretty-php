@@ -19,21 +19,21 @@ final class BreakBeforeControlStructureBodyTest extends TestCase
         return [
             'suppress empty line before closing while' => [
                 <<<'PHP'
-                <?php
+<?php
 
-                do
-                something();
+do
+something();
 
-                while (false);
-                PHP,
+while (false);
+PHP,
                 <<<'PHP'
-                <?php
+<?php
 
-                do
-                    something();
-                while (false);
+do
+    something();
+while (false);
 
-                PHP,
+PHP,
             ],
         ];
     }

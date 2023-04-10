@@ -39,7 +39,7 @@ final class AddBlankLineBeforeReturn implements TokenRule
         $prev = $token->prev();
         while ($prev->is(TokenType::COMMENT) && $prev->hasNewlineBefore()) {
             $prev->PinToCode = true;
-            $prev            = $prev->prev();
+            $prev = $prev->prev();
         }
         $token->WhitespaceBefore |= WhitespaceType::BLANK | WhitespaceType::SPACE;
     }

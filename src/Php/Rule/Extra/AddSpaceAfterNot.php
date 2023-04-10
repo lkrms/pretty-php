@@ -30,7 +30,7 @@ final class AddSpaceAfterNot implements TokenRule
             return;
         }
 
-        $token->WhitespaceAfter    |= WhitespaceType::SPACE;
+        $token->WhitespaceAfter |= WhitespaceType::SPACE;
         $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
     }
 }

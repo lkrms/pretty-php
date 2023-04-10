@@ -7,7 +7,7 @@ use const Lkrms\Pretty\Php\T_ID_MAP as T;
 final class TokenType
 {
     public const NAME_MAP = [
-        T_NULL           => 'T_NULL',
+        T_NULL => 'T_NULL',
         T_END_ALT_SYNTAX => 'T_END_ALT_SYNTAX',
     ];
 
@@ -108,23 +108,23 @@ final class TokenType
         T['*'],
         T['/'],
         T['%'],
-        T_POW,   // **
+        T_POW,  // **
     ];
 
     public const OPERATOR_ASSIGNMENT = [
         T['='],
-        T_PLUS_EQUAL,      // +=
-        T_MINUS_EQUAL,     // -=
-        T_MUL_EQUAL,       // *=
-        T_DIV_EQUAL,       // /=
-        T_MOD_EQUAL,       // %=
-        T_POW_EQUAL,       // **=
-        T_AND_EQUAL,       // &=
-        T_OR_EQUAL,        // |=
-        T_XOR_EQUAL,       // ^=
-        T_SL_EQUAL,        // <<=
-        T_SR_EQUAL,        // >>=
-        T_CONCAT_EQUAL,    // .=
+        T_PLUS_EQUAL,  // +=
+        T_MINUS_EQUAL,  // -=
+        T_MUL_EQUAL,  // *=
+        T_DIV_EQUAL,  // /=
+        T_MOD_EQUAL,  // %=
+        T_POW_EQUAL,  // **=
+        T_AND_EQUAL,  // &=
+        T_OR_EQUAL,  // |=
+        T_XOR_EQUAL,  // ^=
+        T_SL_EQUAL,  // <<=
+        T_SR_EQUAL,  // >>=
+        T_CONCAT_EQUAL,  // .=
         T_COALESCE_EQUAL,  // ??=
     ];
 
@@ -140,13 +140,13 @@ final class TokenType
     public const OPERATOR_COMPARISON_EXCEPT_COALESCE = [
         T['<'],
         T['>'],
-        T_IS_EQUAL,             // ==
-        T_IS_IDENTICAL,         // ===
-        T_IS_NOT_EQUAL,         // != or <>
-        T_IS_NOT_IDENTICAL,     // !==
+        T_IS_EQUAL,  // ==
+        T_IS_IDENTICAL,  // ===
+        T_IS_NOT_EQUAL,  // != or <>
+        T_IS_NOT_IDENTICAL,  // !==
         T_IS_SMALLER_OR_EQUAL,  // <=
         T_IS_GREATER_OR_EQUAL,  // >=
-        T_SPACESHIP,            // <=>
+        T_SPACESHIP,  // <=>
     ];
 
     public const OPERATOR_COMPARISON = [
@@ -174,10 +174,10 @@ final class TokenType
 
     public const OPERATOR_LOGICAL_EXCEPT_NOT = [
         T_LOGICAL_AND,  // and
-        T_LOGICAL_OR,   // or
+        T_LOGICAL_OR,  // or
         T_LOGICAL_XOR,  // xor
         T_BOOLEAN_AND,  // &&
-        T_BOOLEAN_OR,   // ||
+        T_BOOLEAN_OR,  // ||
     ];
 
     public const OPERATOR_LOGICAL = [
@@ -198,13 +198,13 @@ final class TokenType
     ];
 
     public const CAST = [
-        T_INT_CAST,     // (int) or (integer)
-        T_BOOL_CAST,    // (bool) or (boolean)
+        T_INT_CAST,  // (int) or (integer)
+        T_BOOL_CAST,  // (bool) or (boolean)
         T_DOUBLE_CAST,  // (float) or (double) or (real)
         T_STRING_CAST,  // (string)
-        T_ARRAY_CAST,   // (array)
+        T_ARRAY_CAST,  // (array)
         T_OBJECT_CAST,  // (object)
-        T_UNSET_CAST,   // (unset)
+        T_UNSET_CAST,  // (unset)
     ];
 
     public const VISIBILITY = [
@@ -521,10 +521,16 @@ final class TokenType
      */
     public static function getIndex(...$types): array
     {
-        return array_combine(array_map(fn($type) => is_int($type) ? $type : ord($type),
-                                       $types),
-                             array_fill(0,
-                                        count($types),
-                                        true));
+        return array_combine(
+            array_map(
+                fn($type) => is_int($type) ? $type : ord($type),
+                $types
+            ),
+            array_fill(
+                0,
+                count($types),
+                true
+            )
+        );
     }
 }

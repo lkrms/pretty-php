@@ -17,16 +17,16 @@ final class PreserveNewlinesTest extends \Lkrms\Pretty\Tests\Php\TestCase
         return [
             'logical operator after bracket' => [
                 <<<'PHP'
-                <?php
-                return a($b) && a($c)
-                    && strcmp((string) $b, (string) $c) === 0;
-                PHP,
+<?php
+return a($b) && a($c)
+    && strcmp((string) $b, (string) $c) === 0;
+PHP,
                 <<<'PHP'
-                <?php
-                return a($b) && a($c) &&
-                    strcmp((string) $b, (string) $c) === 0;
+<?php
+return a($b) && a($c) &&
+    strcmp((string) $b, (string) $c) === 0;
 
-                PHP,
+PHP,
             ],
         ];
     }

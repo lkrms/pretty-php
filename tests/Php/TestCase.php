@@ -14,12 +14,12 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     public function assertFormatterOutputIs(
         string $code,
         string $expected,
-        array $addRules    = [],
-        array $skipRules   = [],
+        array $addRules = [],
+        array $skipRules = [],
         array $skipFilters = [],
         bool $insertSpaces = true,
-        int $tabSize       = 4,
-        ?string $filename  = null
+        int $tabSize = 4,
+        ?string $filename = null
     ): void {
         $formatter = new Formatter(
             $insertSpaces,

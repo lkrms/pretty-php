@@ -59,16 +59,16 @@ final class BreakBeforeControlStructureBody implements TokenRule
             return;
         }
 
-        $token->WhitespaceBefore           |= WhitespaceType::LINE;
-        $token->WhitespaceMaskPrev         |= WhitespaceType::LINE;
+        $token->WhitespaceBefore |= WhitespaceType::LINE;
+        $token->WhitespaceMaskPrev |= WhitespaceType::LINE;
         $token->prev()->WhitespaceMaskNext |= WhitespaceType::LINE;
 
-        $body->WhitespaceBefore           |= WhitespaceType::LINE | WhitespaceType::SPACE;
-        $body->WhitespaceMaskPrev         |= WhitespaceType::LINE;
-        $body->WhitespaceMaskPrev         &= ~WhitespaceType::BLANK;
+        $body->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
+        $body->WhitespaceMaskPrev |= WhitespaceType::LINE;
+        $body->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
         $body->prev()->WhitespaceMaskNext |= WhitespaceType::LINE;
 
-        $end       = null;
+        $end = null;
         $continues = false;
         if ($token->is(T_DO)) {
             $continues = true;
@@ -77,7 +77,7 @@ final class BreakBeforeControlStructureBody implements TokenRule
             if ($end->is(T_IF)) {
                 $end = $body->EndStatement;
             } elseif (!$end->IsNull) {
-                $end       = $end->prevCode();
+                $end = $end->prevCode();
                 $continues = true;
             }
         }
@@ -90,16 +90,18 @@ final class BreakBeforeControlStructureBody implements TokenRule
              // Use PreIndent because AddIndentation clobbers Indent
              ->forEach(fn(Token $t) => $t->PreIndent++);
 
-        $end->WhitespaceAfter    |= WhitespaceType::LINE | WhitespaceType::SPACE;
+        $end->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
         $end->WhitespaceMaskNext |= WhitespaceType::LINE;
         if ($continues) {
-            $end->WhitespaceMaskNext         &= ~WhitespaceType::BLANK;
+            $end->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
             $end->next()->WhitespaceMaskPrev |= WhitespaceType::LINE;
         }
 
-        $this->Formatter->reportProblem('Braces not used in %s control structure',
-                                        $token,
-                                        $end,
-                                        $token->getTokenName());
+        $this->Formatter->reportProblem(
+            'Braces not used in %s control structure',
+            $token,
+            $end,
+            $token->getTokenName()
+        );
     }
 }

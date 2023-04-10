@@ -28,26 +28,26 @@ final class AlignAssignments implements BlockRule
         if (count($block) < 2) {
             return;
         }
-        $group        = [];
-        $stack        = null;
-        $parent       = null;
-        $indent       = null;
-        $alignedWith  = null;
+        $group = [];
+        $stack = null;
+        $parent = null;
+        $indent = null;
+        $alignedWith = null;
         $isAssignment = null;
-        $lastToken2   = null;
+        $lastToken2 = null;
         $startGroup =
             function (Token $t1, Token $t2) use (&$group, &$stack, &$parent, &$indent, &$alignedWith, &$isAssignment, &$lastToken2) {
-                $stack        = $t2->BracketStack;
-                $parent       = null;
-                $indent       = $t2->indent();
-                $alignedWith  = $this->getAlignedWith($t1, $t2);
+                $stack = $t2->BracketStack;
+                $parent = null;
+                $indent = $t2->indent();
+                $alignedWith = $this->getAlignedWith($t1, $t2);
                 $isAssignment = $t2->is(TokenType::OPERATOR_ASSIGNMENT);
-                $lastToken2   = $t2;
-                $group[]      = [$t1, $t2];
+                $lastToken2 = $t2;
+                $group[] = [$t1, $t2];
             };
         $skipped = 0;
         while ($block) {
-            $line   = array_shift($block);
+            $line = array_shift($block);
             /** @var Token $token1 */
             $token1 = $line[0];
             // Don't allow comments to disrupt alignment
@@ -62,13 +62,15 @@ final class AlignAssignments implements BlockRule
                     $token1->is(T['}']) && ($last = $line->last())->is(T['{']) &&
                     $token1->Statement === $last->Statement &&
                     !$skipped++) {
-                $parent     = ['depth' => array_key_last($token1->BracketStack), 'statement' => $token1->Statement];
+                $parent = ['depth' => array_key_last($token1->BracketStack), 'statement' => $token1->Statement];
                 $lastToken2 = $last;
                 continue;
             }
             $skipped = 0;
-            if (($token2 = $line->getFirstOf(...TokenType::OPERATOR_ASSIGNMENT,
-                                             ...TokenType::OPERATOR_DOUBLE_ARROW)) &&
+            if (($token2 = $line->getFirstOf(
+                ...TokenType::OPERATOR_ASSIGNMENT,
+                ...TokenType::OPERATOR_DOUBLE_ARROW
+            )) &&
                     !$token2->hasNewlineAfterCode() &&
                     !$this->codeSinceLastAssignmentHasNewline($lastToken2, $token1)) {
                 if (is_null($stack)) {
@@ -82,19 +84,19 @@ final class AlignAssignments implements BlockRule
                         ($indent === $token2->indent() ||
                             ($alignedWith && $alignedWith === $this->getAlignedWith($token1, $token2))) &&
                         !($isAssignment xor $token2->is(TokenType::OPERATOR_ASSIGNMENT))) {
-                    $group[]    = [$token1, $token2];
+                    $group[] = [$token1, $token2];
                     $lastToken2 = $token2;
                     continue;
                 }
             }
             $this->maybeRegisterGroup($group);
-            $group        = [];
-            $stack        = null;
-            $parent       = null;
-            $indent       = null;
-            $alignedWith  = null;
+            $group = [];
+            $stack = null;
+            $parent = null;
+            $indent = null;
+            $alignedWith = null;
             $isAssignment = null;
-            $lastToken2   = null;
+            $lastToken2 = null;
             if ($token2) {
                 $startGroup($token1, $token2);
             }
@@ -155,8 +157,8 @@ final class AlignAssignments implements BlockRule
     private function alignGroup(array $group): void
     {
         $lengths = [];
-        $max     = 0;
-        $count   = count($group);
+        $max = 0;
+        $count = count($group);
 
         /** @var Token $token1 */
         foreach ($group as $i => [$token1, $token2]) {
@@ -183,7 +185,7 @@ final class AlignAssignments implements BlockRule
                 break;
             }
             $lengths[] = $length;
-            $max       = max($max, $length);
+            $max = max($max, $length);
         }
 
         /** @var Token $token2 */

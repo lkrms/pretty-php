@@ -12,9 +12,11 @@ final class NoMixedListsTest extends TestCase
      */
     public function testProcessList(string $code, string $expected)
     {
-        $this->assertFormatterOutputIs($code,
-                                       $expected,
-                                       [NoMixedLists::class]);
+        $this->assertFormatterOutputIs(
+            $code,
+            $expected,
+            [NoMixedLists::class]
+        );
     }
 
     public static function processListProvider(): array
@@ -22,127 +24,127 @@ final class NoMixedListsTest extends TestCase
         return [
             'multi-line array' => [
                 <<<'PHP'
-                <?php
+<?php
 
-                $a = [$b,
-                $c, $d];
-                PHP,
+$a = [$b,
+$c, $d];
+PHP,
                 <<<'PHP'
-                <?php
+<?php
 
-                $a = [
-                    $b,
-                    $c,
-                    $d
-                ];
+$a = [
+    $b,
+    $c,
+    $d
+];
 
-                PHP,
+PHP,
             ],
             'multi-line array with opening newline' => [
                 <<<'PHP'
-                <?php
+<?php
 
-                $a = [
-                $b, $c, $d];
-                PHP,
+$a = [
+$b, $c, $d];
+PHP,
                 <<<'PHP'
-                <?php
+<?php
 
-                $a = [
-                    $b, $c, $d
-                ];
+$a = [
+    $b, $c, $d
+];
 
-                PHP,
+PHP,
             ],
             'multi-line array with multi-line element' => [
                 <<<'PHP'
-                <?php
+<?php
 
-                $a = [($b ||
-                $c), $d,
-                $e, $f];
-                PHP,
+$a = [($b ||
+$c), $d,
+$e, $f];
+PHP,
                 <<<'PHP'
-                <?php
+<?php
 
-                $a = [($b ||
-                    $c), $d, $e, $f];
+$a = [($b ||
+    $c), $d, $e, $f];
 
-                PHP,
+PHP,
             ],
             'one-line array' => [
                 <<<'PHP'
-                <?php
+<?php
 
-                $a = [$b, $c];
-                PHP,
+$a = [$b, $c];
+PHP,
                 <<<'PHP'
-                <?php
+<?php
 
-                $a = [$b, $c];
+$a = [$b, $c];
 
-                PHP,
+PHP,
             ],
             'one-line array with multi-line element' => [
                 <<<'PHP'
-                <?php
+<?php
 
-                $a = [($b ||
-                $c), $d];
-                PHP,
+$a = [($b ||
+$c), $d];
+PHP,
                 <<<'PHP'
-                <?php
+<?php
 
-                $a = [($b ||
-                    $c), $d];
+$a = [($b ||
+    $c), $d];
 
-                PHP,
+PHP,
             ],
             'argument variations' => [
                 <<<'PHP'
-                <?php
+<?php
 
-                F($a, $b, $c, $d);
-                F(
-                    $a, $b, $c, $d
-                );
-                F($a,
-                    $b, $c, $d);
-                F($a, $b,
-                    $c, $d);
-                F(
-                    $a,
-                    $b, $c, $d
-                );
-                F(
-                    $a, $b,
-                    $c,
-                    $d
-                );
-                PHP,
+F($a, $b, $c, $d);
+F(
+    $a, $b, $c, $d
+);
+F($a,
+    $b, $c, $d);
+F($a, $b,
+    $c, $d);
+F(
+    $a,
+    $b, $c, $d
+);
+F(
+    $a, $b,
+    $c,
+    $d
+);
+PHP,
                 <<<'PHP'
-                <?php
+<?php
 
-                F($a, $b, $c, $d);
-                F(
-                    $a, $b, $c, $d
-                );
-                F(
-                    $a,
-                    $b,
-                    $c,
-                    $d
-                );
-                F($a, $b, $c, $d);
-                F(
-                    $a,
-                    $b,
-                    $c,
-                    $d
-                );
-                F($a, $b, $c, $d);
+F($a, $b, $c, $d);
+F(
+    $a, $b, $c, $d
+);
+F(
+    $a,
+    $b,
+    $c,
+    $d
+);
+F($a, $b, $c, $d);
+F(
+    $a,
+    $b,
+    $c,
+    $d
+);
+F($a, $b, $c, $d);
 
-                PHP,
+PHP,
             ]
         ];
     }
