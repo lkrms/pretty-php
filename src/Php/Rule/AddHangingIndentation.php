@@ -41,9 +41,9 @@ final class AddHangingIndentation implements TokenRule
             return;
         }
 
-        $stack  = [$token->BracketStack];
+        $stack = [$token->BracketStack];
         $latest = end($token->IndentStack);
-        $prev   = $token->prevCode();
+        $prev = $token->prevCode();
         $parent = $token->parent();
 
         // Add an appropriate token to `$stack` to establish a context for this
@@ -137,12 +137,12 @@ final class AddHangingIndentation implements TokenRule
         //                 $comment->hasNewlineAfter()) ||
         //             $comment->hasNewline())
         //
-        $until   = $until ?? $token->pragmaticEndOfExpression(true);
-        $indent  = 0;
+        $until = $until ?? $token->pragmaticEndOfExpression(true);
+        $indent = 0;
         $hanging = [];
         $parents = in_array($parent, $token->IndentParentStack, true)
-                       ? []
-                       : [$parent];
+            ? []
+            : [$parent];
         $current = $parent;
         while (!($current = $current->parent())->IsNull && $current->IsHangingParent) {
             if (in_array($current, $token->IndentParentStack, true)) {
@@ -199,11 +199,11 @@ final class AddHangingIndentation implements TokenRule
                     ($hanging[$parent->Index] ?? null)) {
                 $current->OverhangingParents[$parent->Index] += $hanging[$parent->Index];
             }
-            $current->HangingIndent      += $indent;
+            $current->HangingIndent += $indent;
             $current->OverhangingParents += $hanging;
             if ($current !== $token) {
                 $current->IndentBracketStack[] = $stack;
-                $current->IndentStack[]        = $token;
+                $current->IndentStack[] = $token;
                 array_push($current->IndentParentStack, ...$parents);
             }
             if ($current === $until) {
@@ -231,7 +231,7 @@ final class AddHangingIndentation implements TokenRule
                     $indent = $this->effectiveIndent($current);
                     // Find the next line with an indentation level that differs
                     // from the current line
-                    $next       = $current;
+                    $next = $current;
                     $nextIndent = 0;
                     do {
                         $next = $next->endOfLine()->next();
@@ -244,13 +244,13 @@ final class AddHangingIndentation implements TokenRule
                     // Drop $indent and $nextIndent (if $next falls between
                     // $token and $until and this hanging indent hasn't already
                     // been collapsed) for comparison
-                    $unit       = 1;
-                    $indent    -= $unit;
+                    $unit = 1;
+                    $indent -= $unit;
                     $nextIndent = $next->IsNull ||
                         $next->Index > $until->Index ||
                         !($next->OverhangingParents[$index] ?? 0)
-                                          ? $nextIndent
-                                          : $nextIndent - $unit;
+                            ? $nextIndent
+                            : $nextIndent - $unit;
                     if ($nextIndent === $indent && !$next->IsNull) {
                         break 3;
                     }

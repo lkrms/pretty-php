@@ -29,7 +29,7 @@ final class AddIndentation implements TokenRule
             return;
         }
 
-        $prev          = $token->prev();
+        $prev = $token->prev();
         $token->Indent = $prev->Indent;
         if (!$prev->isOpenBracket() && !$prev->startsAlternativeSyntax()) {
             return;
@@ -39,10 +39,10 @@ final class AddIndentation implements TokenRule
             if (!$this->Formatter->MirrorBrackets) {
                 return;
             }
-            $close                    = $prev->ClosedBy;
+            $close = $prev->ClosedBy;
             $close->WhitespaceBefore |= WhitespaceType::LINE;
             if (!$close->hasNewlineBefore()) {
-                $close->WhitespaceMaskPrev         |= WhitespaceType::LINE;
+                $close->WhitespaceMaskPrev |= WhitespaceType::LINE;
                 $close->prev()->WhitespaceMaskNext |= WhitespaceType::LINE;
             }
 

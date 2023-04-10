@@ -19,14 +19,14 @@ final class NormaliseHeredocs implements Filter
         /** @var array<int,Token[]> */
         $heredocTokens = [];
         /** @var array<int,string[]> */
-        $heredocText   = [];
+        $heredocText = [];
         /** @var array<int,Token> */
-        $stack         = [];
+        $stack = [];
         foreach ($tokens as $i => $token) {
             if ($stack) {
                 foreach ($stack as $j => $heredoc) {
                     $heredocTokens[$j][] = $token;
-                    $heredocText[$j][]   = $token->text;
+                    $heredocText[$j][] = $token->text;
                 }
             }
             if ($token->id === T_START_HEREDOC) {
@@ -53,17 +53,21 @@ final class NormaliseHeredocs implements Filter
             switch ($count = count($heredoc)) {
                 case 1:
                     $stripped[0] =
-                        preg_replace("/^{$matches[0]}/",
-                                     '',
-                                     $stripped[0]);
+                        preg_replace(
+                            "/^{$matches[0]}/",
+                            '',
+                            $stripped[0]
+                        );
                     break;
 
                 default:
                     $j = $count - 1;
                     [$stripped[0], $stripped[$j]] =
-                        preg_replace("/^{$matches[0]}/",
-                                     '',
-                                     [$stripped[0], $stripped[$j]]);
+                        preg_replace(
+                            "/^{$matches[0]}/",
+                            '',
+                            [$stripped[0], $stripped[$j]]
+                        );
                     break;
             }
 

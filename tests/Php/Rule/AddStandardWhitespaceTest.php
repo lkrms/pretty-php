@@ -22,43 +22,43 @@ final class AddStandardWhitespaceTest extends \Lkrms\Pretty\Tests\Php\TestCase
         return [
             'match expressions' => [
                 <<<'PHP'
-                <?php
-                $out = match ($in) {0 => 'no items', 1 => "$i item", default => "$in items"};
-                $out = match ($in) {0, 1 => 'less than 2 items', default => "$in items"};
-                PHP,
+<?php
+$out = match ($in) {0 => 'no items', 1 => "$i item", default => "$in items"};
+$out = match ($in) {0, 1 => 'less than 2 items', default => "$in items"};
+PHP,
                 <<<'PHP'
-                <?php
-                $out = match ($in) {
-                    0 => 'no items',
-                    1 => "$i item",
-                    default => "$in items"
-                };
-                $out = match ($in) {
-                    0, 1 => 'less than 2 items',
-                    default => "$in items"
-                };
+<?php
+$out = match ($in) {
+    0 => 'no items',
+    1 => "$i item",
+    default => "$in items"
+};
+$out = match ($in) {
+    0, 1 => 'less than 2 items',
+    default => "$in items"
+};
 
-                PHP,
+PHP,
             ],
             "match expressions with 'align-assignments'" => [
                 <<<'PHP'
-                <?php
-                $out = match ($in) {0 => 'no items', 1 => "$i item", default => "$in items"};
-                $out = match ($in) {0, 1 => 'less than 2 items', default => "$in items"};
-                PHP,
+<?php
+$out = match ($in) {0 => 'no items', 1 => "$i item", default => "$in items"};
+$out = match ($in) {0, 1 => 'less than 2 items', default => "$in items"};
+PHP,
                 <<<'PHP'
-                <?php
-                $out = match ($in) {
-                    0       => 'no items',
-                    1       => "$i item",
-                    default => "$in items"
-                };
-                $out = match ($in) {
-                    0, 1    => 'less than 2 items',
-                    default => "$in items"
-                };
+<?php
+$out = match ($in) {
+    0       => 'no items',
+    1       => "$i item",
+    default => "$in items"
+};
+$out = match ($in) {
+    0, 1    => 'less than 2 items',
+    default => "$in items"
+};
 
-                PHP,
+PHP,
                 [AlignAssignments::class]
             ],
         ];

@@ -107,31 +107,31 @@ final class AlignComments implements BlockRule
     {
         foreach ($this->BlockComments as [$block, $comments]) {
             $lengths = [];
-            $max     = 0;
+            $max = 0;
             foreach ($block as $i => $line) {
-                $token   = $line[0];
+                $token = $line[0];
                 $comment = $comments[$i];
                 // If $comment is the first token on the line, there won't be
                 // anything to collect between $token and $comment->prev(), so use
                 // $comment's leading whitespace for calculations
                 if ($token === $comment) {
-                    $length      = strlen(ltrim($comment->renderWhitespaceBefore(true), "\n"));
+                    $length = strlen(ltrim($comment->renderWhitespaceBefore(true), "\n"));
                     $lengths[$i] = $length;
-                    $max         = max($max, $length);
+                    $max = max($max, $length);
                     continue;
                 }
                 $line = $token->collect($comment->prev());
                 foreach (explode("\n", ltrim($line->render(true, false), "\n")) as $line) {
-                    $length      = mb_strlen(trim($line, "\r"));
+                    $length = mb_strlen(trim($line, "\r"));
                     $lengths[$i] = $length;
-                    $max         = max($max, $length);
+                    $max = max($max, $length);
                 }
             }
             foreach ($comments as $i => $comment) {
                 $comment->Padding = $max - $lengths[$i]
                     + ($comment->hasNewlineBefore()
-                           ? ($tabWidth ?? ($tabWidth = strlen(WhitespaceType::toWhitespace(WhitespaceType::TAB))))
-                           : 0);
+                        ? ($tabWidth ?? ($tabWidth = strlen(WhitespaceType::toWhitespace(WhitespaceType::TAB))))
+                        : 0);
             }
         }
     }

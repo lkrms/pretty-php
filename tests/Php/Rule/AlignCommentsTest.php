@@ -17,44 +17,44 @@ final class AlignCommentsTest extends \Lkrms\Pretty\Tests\Php\TestCase
         return [
             'standalone comments' => [
                 <<<'PHP'
-                <?php
+<?php
 
-                $a = 1;
-                $b = 2;  //
+$a = 1;
+$b = 2;  //
 
-                //
-                $c = 3;
-                PHP,
+//
+$c = 3;
+PHP,
                 <<<'PHP'
-                <?php
+<?php
 
-                $a = 1;
-                $b = 2;  //
+$a = 1;
+$b = 2;  //
 
-                //
-                $c = 3;
+//
+$c = 3;
 
-                PHP,
+PHP,
             ],
             [
                 <<<'PHP'
-                <?php
-                echo 'This is a test'; // This is a one-line c++ style comment
-                /* This is a multi line comment
-                   yet another line of comment */
-                echo 'This is yet another test';
-                echo 'One Final Test'; # This is a one-line shell-style comment
-                ?>
-                PHP,
+<?php
+echo 'This is a test'; // This is a one-line c++ style comment
+/* This is a multi line comment
+   yet another line of comment */
+echo 'This is yet another test';
+echo 'One Final Test'; # This is a one-line shell-style comment
+?>
+PHP,
                 <<<'PHP'
-                <?php
-                echo 'This is a test';  // This is a one-line c++ style comment
-                /* This is a multi line comment
-                   yet another line of comment */
-                echo 'This is yet another test';
-                echo 'One Final Test';  # This is a one-line shell-style comment
-                ?>
-                PHP,
+<?php
+echo 'This is a test';  // This is a one-line c++ style comment
+/* This is a multi line comment
+   yet another line of comment */
+echo 'This is yet another test';
+echo 'One Final Test';  # This is a one-line shell-style comment
+?>
+PHP,
             ]
         ];
     }

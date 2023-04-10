@@ -25,7 +25,7 @@ final class TokenCollection extends TypedCollection
 
     public static function collect(Token $from, Token $to): TokenCollection
     {
-        $tokens            = new TokenCollection();
+        $tokens = new TokenCollection();
         $tokens->Collected = true;
         if ($from->Index > $to->Index || $from->IsNull || $to->IsNull) {
             return $tokens;
@@ -144,8 +144,8 @@ final class TokenCollection extends TypedCollection
         if ($critical) {
             return $this->forEach(
                 function (Token $t) use ($type) {
-                    $t->CriticalWhitespaceBefore   |= $type;
-                    $t->WhitespaceMaskPrev         |= $type;
+                    $t->CriticalWhitespaceBefore |= $type;
+                    $t->WhitespaceMaskPrev |= $type;
                     $t->prev()->WhitespaceMaskNext |= $type;
                 }
             );
@@ -153,8 +153,8 @@ final class TokenCollection extends TypedCollection
 
         return $this->forEach(
             function (Token $t) use ($type) {
-                $t->WhitespaceBefore           |= $type;
-                $t->WhitespaceMaskPrev         |= $type;
+                $t->WhitespaceBefore |= $type;
+                $t->WhitespaceMaskPrev |= $type;
                 $t->prev()->WhitespaceMaskNext |= $type;
             }
         );
@@ -167,7 +167,7 @@ final class TokenCollection extends TypedCollection
     {
         return $this->forEach(
             function (Token $t) use ($mask) {
-                $t->WhitespaceMaskPrev         &= $mask;
+                $t->WhitespaceMaskPrev &= $mask;
                 $t->prev()->WhitespaceMaskNext &= $mask;
             }
         );
@@ -197,7 +197,7 @@ final class TokenCollection extends TypedCollection
                      );
             case 2:
                 $this->first()->WhitespaceMaskNext &= $mask;
-                $this->last()->WhitespaceMaskPrev  &= $mask;
+                $this->last()->WhitespaceMaskPrev &= $mask;
 
                 return $this;
         }

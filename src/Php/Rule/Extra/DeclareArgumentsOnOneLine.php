@@ -34,7 +34,7 @@ final class DeclareArgumentsOnOneLine implements TokenRule
 
         $allLines = ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
 
-        $token->WhitespaceMaskNext           &= $allLines;
+        $token->WhitespaceMaskNext &= $allLines;
         $token->ClosedBy->WhitespaceMaskPrev &= $allLines;
 
         $token->inner()->forEach(

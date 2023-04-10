@@ -17,60 +17,60 @@ final class PlaceCommentsTest extends \Lkrms\Pretty\Tests\Php\TestCase
         return [
             'switch comments' => [
                 <<<'PHP'
-                <?php
+<?php
 
-                switch ($a) {
-                //
-                case 0:
-                case 1:
-                //
-                func();
-                // Aligns with previous statement
-                case 2:
-                //
-                case 3:
-                func2();
-                break;
+switch ($a) {
+//
+case 0:
+case 1:
+//
+func();
+// Aligns with previous statement
+case 2:
+//
+case 3:
+func2();
+break;
 
-                // Aligns with previous statement
+// Aligns with previous statement
 
-                case 4:
-                func();
-                break;
+case 4:
+func();
+break;
 
-                //
-                default:
-                break;
-                }
-                PHP,
+//
+default:
+break;
+}
+PHP,
                 <<<'PHP'
-                <?php
+<?php
 
-                switch ($a) {
-                    //
-                    case 0:
-                    case 1:
-                        //
-                        func();
-                        // Aligns with previous statement
-                    case 2:
-                    //
-                    case 3:
-                        func2();
-                        break;
+switch ($a) {
+    //
+    case 0:
+    case 1:
+        //
+        func();
+        // Aligns with previous statement
+    case 2:
+    //
+    case 3:
+        func2();
+        break;
 
-                        // Aligns with previous statement
+        // Aligns with previous statement
 
-                    case 4:
-                        func();
-                        break;
+    case 4:
+        func();
+        break;
 
-                    //
-                    default:
-                        break;
-                }
+    //
+    default:
+        break;
+}
 
-                PHP,
+PHP,
             ]
         ];
     }

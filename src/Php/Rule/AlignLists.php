@@ -79,8 +79,8 @@ final class AlignLists implements ListRule
                     (($eol = $t->endOfLine())->is([T['('], T['['], T['{']]) ||
                             ($eol = $eol->nextCode())->IsTernaryOperator) &&
                         ($next
-                             ? $next->prevCode()
-                             : $t->pragmaticEndOfExpression())->Index >= $eol->Index
+                            ? $next->prevCode()
+                            : $t->pragmaticEndOfExpression())->Index >= $eol->Index
             );
             if ($eolBracketItems->count() === $count &&
                     !$items->find(fn(Token $t) => $t->hasNewlineBefore())) {
@@ -137,8 +137,8 @@ final class AlignLists implements ListRule
                     $until = $next->prevCode()->prev();
                 } else {
                     $until = $owner->ClosedBy
-                                 ? $owner->ClosedBy->prev()
-                                 : $t->pragmaticEndOfExpression();
+                        ? $owner->ClosedBy->prev()
+                        : $t->pragmaticEndOfExpression();
                     if ($owner->ClosedBy &&
                             ($adjacent = $until->adjacentBeforeNewline()?->pragmaticEndOfExpression()) &&
                             // Don't propagate line padding to adjacent code if

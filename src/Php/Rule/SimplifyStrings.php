@@ -38,21 +38,21 @@ final class SimplifyStrings implements TokenRule
         // \x00 -> \t, \v, \f, \x0e -> \x1f is effectively \x00 -> \x1f without
         // LF (\n) or CR (\r), which aren't escaped unless already escaped
         $escape = "\0..\t\v\f\x0e..\x1f\"\$\\";
-        $match  = '';
+        $match = '';
 
         if (!$token->hasNewline()) {
             $escape .= "\n\r";
-            $match  .= '\n\r';
+            $match .= '\n\r';
         }
 
         if (Env::isLocaleUtf8()) {
             // Don't escape UTF-8 leading bytes (\xc2 -> \xf4) or continuation
             // bytes (\x80 -> \xbf)
             $escape .= "\x7f\xc0\xc1\xf5..\xff";
-            $match  .= '\x7f\xc0\xc1\xf5-\xff';
+            $match .= '\x7f\xc0\xc1\xf5-\xff';
         } else {
             $escape .= "\x7f..\xff";
-            $match  .= '\x7f-\xff';
+            $match .= '\x7f-\xff';
         }
 
         $string = '';
@@ -70,9 +70,9 @@ final class SimplifyStrings implements TokenRule
             $single = preg_replace('/(?<!\\\\)\\\\(?!\\\\)/', '\\\\$0', $single);
         }
         $token->setText((mb_strlen($single) <= mb_strlen($double) &&
-                                 ($this->checkConsistency($single) || !$this->checkConsistency($double)))
-                            ? $single
-                            : $double);
+                ($this->checkConsistency($single) || !$this->checkConsistency($double)))
+            ? $single
+            : $double);
     }
 
     private function singleQuote(string $string): string
@@ -91,8 +91,8 @@ final class SimplifyStrings implements TokenRule
             fn(array $matches) =>
                 ($matches['octal'] ?? null)
                     ? (($dec = octdec($matches['octal']))
-                           ? sprintf('\x%02x', $dec)
-                           : '\0')
+                        ? sprintf('\x%02x', $dec)
+                        : '\0')
                     : $matches[0],
             addcslashes($string, $escape)
         ) . '"';

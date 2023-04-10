@@ -82,7 +82,7 @@ final class AlignTernaryOperators implements TokenRule
 
     private function setAlignedWith(Token $token, Token $alignWith): void
     {
-        $token->AlignedWith                   = $alignWith;
+        $token->AlignedWith = $alignWith;
         $token->TernaryOperator2->AlignedWith = $alignWith;
     }
 

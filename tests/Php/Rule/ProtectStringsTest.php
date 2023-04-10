@@ -17,61 +17,61 @@ final class ProtectStringsTest extends \Lkrms\Pretty\Tests\Php\TestCase
         return [
             'nested heredocs' => [
                 <<<'PHP'
-                <?php
-                $docBlock = <<<EOF
-                /**
-                 {$this->getLines(
-                $this->desc
-                ? <<<EOF
+<?php
+$docBlock = <<<EOF
+/**
+ {$this->getLines(
+$this->desc
+? <<<EOF
+ * $desc
+ *
+EOF
+: ''
+)}
+ */
+EOF;
+PHP,
+                <<<'PHP'
+<?php
+$docBlock = <<<EOF
+    /**
+     {$this->getLines(
+        $this->desc
+            ? <<<EOF
                  * $desc
                  *
                 EOF
-                : ''
-                )}
-                 */
-                EOF;
-                PHP,
-                <<<'PHP'
-                <?php
-                $docBlock = <<<EOF
-                    /**
-                     {$this->getLines(
-                        $this->desc
-                            ? <<<EOF
-                                 * $desc
-                                 *
-                                EOF
-                            : ''
-                    )}
-                     */
-                    EOF;
+            : ''
+    )}
+     */
+    EOF;
 
-                PHP,
+PHP,
             ],
             'nested strings' => [
                 <<<'PHP'
-                <?php
-                $docBlock = "/**
-                 {$this->getLines(
-                $this->desc
-                ? " * $desc
-                 *"
-                : ''
-                )}
-                 */";
-                PHP,
+<?php
+$docBlock = "/**
+ {$this->getLines(
+$this->desc
+? " * $desc
+ *"
+: ''
+)}
+ */";
+PHP,
                 <<<'PHP'
-                <?php
-                $docBlock = "/**
-                 {$this->getLines(
-                    $this->desc
-                        ? " * $desc
-                 *"
-                        : ''
-                )}
-                 */";
+<?php
+$docBlock = "/**
+ {$this->getLines(
+    $this->desc
+        ? " * $desc
+ *"
+        : ''
+)}
+ */";
 
-                PHP,
+PHP,
             ],
         ];
     }

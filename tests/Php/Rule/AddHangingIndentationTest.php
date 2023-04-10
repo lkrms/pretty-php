@@ -19,45 +19,45 @@ final class AddHangingIndentationTest extends \Lkrms\Pretty\Tests\Php\TestCase
         return [
             [
                 <<<'PHP'
-                <?php
+<?php
 
-                $abc = $def->ghi()
-                ->klm()
-                ?: $abc;
-                PHP,
+$abc = $def->ghi()
+->klm()
+?: $abc;
+PHP,
                 <<<'PHP'
-                <?php
+<?php
 
-                $abc = $def->ghi()
-                           ->klm()
-                    ?: $abc;
+$abc = $def->ghi()
+           ->klm()
+    ?: $abc;
 
-                PHP,
+PHP,
             ],
             [
                 <<<'PHP'
-                <?php
+<?php
 
-                do
-                $result = true
-                ? 'true'
-                ? 't'
-                : false
-                : 'f';
-                while (false);
-                PHP,
+do
+$result = true
+? 'true'
+? 't'
+: false
+: 'f';
+while (false);
+PHP,
                 <<<'PHP'
-                <?php
+<?php
 
-                do
-                    $result = true
-                        ? 'true'
-                            ? 't'
-                            : false
-                        : 'f';
-                while (false);
+do
+    $result = true
+        ? 'true'
+            ? 't'
+            : false
+        : 'f';
+while (false);
 
-                PHP,
+PHP,
             ],
         ];
     }
@@ -75,137 +75,137 @@ final class AddHangingIndentationTest extends \Lkrms\Pretty\Tests\Php\TestCase
         return [
             [
                 <<<'PHP'
-                <?php
-                $a = $b->c(fn() =>
-                $d &&
-                $e)
-                ?: $start;
-                PHP,
+<?php
+$a = $b->c(fn() =>
+$d &&
+$e)
+?: $start;
+PHP,
                 <<<'PHP'
-                <?php
-                $a = $b->c(fn() =>
-                    $d &&
-                        $e)
-                    ?: $start;
+<?php
+$a = $b->c(fn() =>
+    $d &&
+        $e)
+    ?: $start;
 
-                PHP,
+PHP,
             ],
             [
                 <<<'PHP'
-                <?php
+<?php
 
-                if ($a &&
-                ($b ||
-                $c) &&
-                $d) {
-                $e;
-                }
-                PHP,
+if ($a &&
+($b ||
+$c) &&
+$d) {
+$e;
+}
+PHP,
                 <<<'PHP'
-                <?php
+<?php
 
-                if ($a &&
-                        ($b ||
-                            $c) &&
-                        $d) {
-                    $e;
-                }
+if ($a &&
+        ($b ||
+            $c) &&
+        $d) {
+    $e;
+}
 
-                PHP,
+PHP,
             ],
             [
                 <<<'PHP'
-                <?php
-                function a($b, bool $c = false): bool
-                {
-                return is_array($b) &&
-                ($b
-                ? count(array_filter($b, fn($i) => is_string($i))) === count($b) ||
+<?php
+function a($b, bool $c = false): bool
+{
+return is_array($b) &&
+($b
+? count(array_filter($b, fn($i) => is_string($i))) === count($b) ||
+count(array_filter($b, fn($i) => is_int($i))) === count($b)
+: $c);
+}
+PHP,
+                <<<'PHP'
+<?php
+function a($b, bool $c = false): bool
+{
+    return is_array($b) &&
+        ($b
+            ? count(array_filter($b, fn($i) => is_string($i))) === count($b) ||
                 count(array_filter($b, fn($i) => is_int($i))) === count($b)
-                : $c);
-                }
-                PHP,
-                <<<'PHP'
-                <?php
-                function a($b, bool $c = false): bool
-                {
-                    return is_array($b) &&
-                        ($b
-                            ? count(array_filter($b, fn($i) => is_string($i))) === count($b) ||
-                                count(array_filter($b, fn($i) => is_int($i))) === count($b)
-                            : $c);
-                }
+            : $c);
+}
 
-                PHP,
+PHP,
             ],
             [
                 <<<'PHP'
-                <?php
-                try {}
-                // comment
-                catch (Throwable $ex) {}
+<?php
+try {}
+// comment
+catch (Throwable $ex) {}
 
-                do {}
-                // comment
-                while (true);
+do {}
+// comment
+while (true);
 
-                do
-                a();
-                // comment
-                while (true);
+do
+a();
+// comment
+while (true);
 
-                if (true) {}
-                // comment
-                elseif (false) {}
-                // comment
-                else {}
+if (true) {}
+// comment
+elseif (false) {}
+// comment
+else {}
 
-                if (true)
-                a();
-                // comment
-                elseif (false)
-                b();
-                // comment
-                else
-                c();
-                PHP,
+if (true)
+a();
+// comment
+elseif (false)
+b();
+// comment
+else
+c();
+PHP,
                 <<<'PHP'
-                <?php
-                try {
-                }
-                // comment
-                catch (Throwable $ex) {
-                }
+<?php
+try {
+}
+// comment
+catch (Throwable $ex) {
+}
 
-                do {
-                }
-                // comment
-                while (true);
+do {
+}
+// comment
+while (true);
 
-                do
-                    a();
-                // comment
-                while (true);
+do
+    a();
+// comment
+while (true);
 
-                if (true) {
-                }
-                // comment
-                elseif (false) {
-                }
-                // comment
-                else {
-                }
+if (true) {
+}
+// comment
+elseif (false) {
+}
+// comment
+else {
+}
 
-                if (true)
-                    a();
-                // comment
-                elseif (false)
-                    b();
-                // comment
-                else
-                    c();
+if (true)
+    a();
+// comment
+elseif (false)
+    b();
+// comment
+else
+    c();
 
-                PHP,
+PHP,
             ],
         ];
     }

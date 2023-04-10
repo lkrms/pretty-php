@@ -72,7 +72,7 @@ final class SpaceDeclarations implements TokenRule
         }
 
         $parts = $token->withNextSiblingsWhile(...TokenType::DECLARATION_PART);
-        $last  = $parts->last();
+        $last = $parts->last();
         // Leave anonymous and arrow functions alone
         if ($last->is([T_FN, T_FUNCTION]) && $last->nextCode()->is(T['('])) {
             return;
@@ -86,8 +86,8 @@ final class SpaceDeclarations implements TokenRule
 
         // Don't add blank lines between `<?php` and declarations
         $line = $token->OpenTag->nextCode() === $token
-                    ? WhitespaceType::LINE
-                    : WhitespaceType::BLANK;
+            ? WhitespaceType::LINE
+            : WhitespaceType::BLANK;
 
         // If the same DECLARATION_UNIQUE tokens appear in consecutive one-line
         // statements, propagate the gap between statements 1 and 2 to
@@ -103,12 +103,12 @@ final class SpaceDeclarations implements TokenRule
         $prev = end($this->Prev);
         if (!($types === $this->PrevTypes &&
                 $token->prevCode()->startOfStatement() === $prev)) {
-            $this->Prev       = [];
-            $this->PrevTypes  = $types;
+            $this->Prev = [];
+            $this->PrevTypes = $types;
             $this->PrevExpand = $this->hasComment($token);
         }
         $this->Prev[] = $token;
-        $count        = count($this->Prev);
+        $count = count($this->Prev);
         // Always add a blank line above the first declaration of each type
         if ($count < 2) {
             $token->WhitespaceBefore |= $line;
@@ -143,7 +143,7 @@ final class SpaceDeclarations implements TokenRule
                       ->getFirstOf(...TokenType::VISIBILITY)
                       ->id ?? null)) {
             $this->Prev = [$token];
-            $count      = 1;
+            $count = 1;
         }
 
         $expand = $this->PrevExpand ||
@@ -158,14 +158,14 @@ final class SpaceDeclarations implements TokenRule
                     array_walk(
                         $this->Prev,
                         function (Token $t) {
-                            $t->WhitespaceBefore   |= WhitespaceType::BLANK;
+                            $t->WhitespaceBefore |= WhitespaceType::BLANK;
                             $t->WhitespaceMaskPrev |= WhitespaceType::BLANK;
                         }
                     );
                 }
                 $this->PrevExpand = true;
             } else {
-                $token->WhitespaceBefore   |= WhitespaceType::BLANK;
+                $token->WhitespaceBefore |= WhitespaceType::BLANK;
                 $token->WhitespaceMaskPrev |= WhitespaceType::BLANK;
             }
 

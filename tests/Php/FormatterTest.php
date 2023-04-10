@@ -20,7 +20,7 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
 {
     public function testEmptyString()
     {
-        $in  = '';
+        $in = '';
         $out = '';
         $this->assertFormatterOutputIs($in, $out);
     }
@@ -28,36 +28,36 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
     public function testRenderComment()
     {
         $in = <<<PHP
-            <?php
+<?php
 
-            /**
-            * leading asterisk and space
-            *leading asterisk
-            *	leading asterisk and tab
-            * 	leading asterisk, space and tab
-            * 
-            *
-            no leading asterisk
-            	leading tab and no leading asterisk
+/**
+* leading asterisk and space
+*leading asterisk
+*	leading asterisk and tab
+* 	leading asterisk, space and tab
+* 
+*
+no leading asterisk
+	leading tab and no leading asterisk
 
-              */
-            PHP;
+  */
+PHP;
         $out = <<<PHP
-            <?php
+<?php
 
-            /**
-             * leading asterisk and space
-             * leading asterisk
-             * 	leading asterisk and tab
-             * 	leading asterisk, space and tab
-             *
-             *
-             * no leading asterisk
-             * leading tab and no leading asterisk
-             *
-             */
+/**
+ * leading asterisk and space
+ * leading asterisk
+ * 	leading asterisk and tab
+ * 	leading asterisk, space and tab
+ *
+ *
+ * no leading asterisk
+ * leading tab and no leading asterisk
+ *
+ */
 
-            PHP;
+PHP;
         $this->assertFormatterOutputIs($in, $out);
     }
 
@@ -88,10 +88,10 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
             $relPath = substr((string) $file, strlen($inDir) + 1);
 
             $insertSpaces = true;
-            $tabSize      = 4;
-            $skipRules    = [];
-            $addRules     = [];
-            $skipFilters  = [];
+            $tabSize = 4;
+            $skipRules = [];
+            $addRules = [];
+            $skipFilters = [];
             switch (explode(DIRECTORY_SEPARATOR, $relPath)[0]) {
                 case 'phpfmt':
                     $addRules = [
@@ -117,11 +117,13 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
             if (!file_exists($outFile)) {
                 printf("Formatting %s\n", $relPath);
                 File::maybeCreateDirectory(dirname($outFile));
-                $formatter = new Formatter($insertSpaces,
-                                           $tabSize,
-                                           $skipRules,
-                                           $addRules,
-                                           $skipFilters);
+                $formatter = new Formatter(
+                    $insertSpaces,
+                    $tabSize,
+                    $skipRules,
+                    $addRules,
+                    $skipFilters
+                );
                 file_put_contents(
                     $outFile,
                     $out = $formatter->format($in, 3, $relPath)
@@ -131,14 +133,16 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
             } else {
                 $out = file_get_contents($outFile);
             }
-            $this->assertFormatterOutputIs($in,
-                                           $out,
-                                           $addRules,
-                                           $skipRules,
-                                           $skipFilters,
-                                           $insertSpaces,
-                                           $tabSize,
-                                           $relPath);
+            $this->assertFormatterOutputIs(
+                $in,
+                $out,
+                $addRules,
+                $skipRules,
+                $skipFilters,
+                $insertSpaces,
+                $tabSize,
+                $relPath
+            );
         }
     }
 }

@@ -91,33 +91,33 @@ class FormatPhp extends CliCommand
      * @var array<string,string>
      */
     private $SkipRuleMap = [
-        'simplify-strings'    => SimplifyStrings::class,
-        'preserve-newlines'   => PreserveNewlines::class,
-        'magic-commas'        => ApplyMagicComma::class,
+        'simplify-strings' => SimplifyStrings::class,
+        'preserve-newlines' => PreserveNewlines::class,
+        'magic-commas' => ApplyMagicComma::class,
         'declaration-spacing' => SpaceDeclarations::class,
-        'indent-heredocs'     => ReindentHeredocs::class,
-        'report-brackets'     => ReportUnnecessaryParentheses::class,
+        'indent-heredocs' => ReindentHeredocs::class,
+        'report-brackets' => ReportUnnecessaryParentheses::class,
     ];
 
     /**
      * @var array<string,string>
      */
     private $AddRuleMap = [
-        'align-assignments'   => AlignAssignments::class,
-        'align-chains'        => AlignChainedCalls::class,
-        'align-comments'      => AlignComments::class,
-        'align-fn'            => AlignArrowFunctions::class,
-        'align-lists'         => AlignLists::class,
-        'align-ternary'       => AlignTernaryOperators::class,
+        'align-assignments' => AlignAssignments::class,
+        'align-chains' => AlignChainedCalls::class,
+        'align-comments' => AlignComments::class,
+        'align-fn' => AlignArrowFunctions::class,
+        'align-lists' => AlignLists::class,
+        'align-ternary' => AlignTernaryOperators::class,
         'blank-before-return' => AddBlankLineBeforeReturn::class,
-        'strict-lists'        => NoMixedLists::class,
-        'preserve-one-line'   => PreserveOneLineStatements::class,
+        'strict-lists' => NoMixedLists::class,
+        'preserve-one-line' => PreserveOneLineStatements::class,
 
         // In the `Extra` namespace
-        'space-after-fn'     => AddSpaceAfterFn::class,
-        'space-after-not'    => AddSpaceAfterNot::class,
+        'space-after-fn' => AddSpaceAfterFn::class,
+        'space-after-not' => AddSpaceAfterNot::class,
         'one-line-arguments' => DeclareArgumentsOnOneLine::class,
-        'no-concat-spaces'   => SuppressSpaceAroundStringOperator::class,
+        'no-concat-spaces' => SuppressSpaceAroundStringOperator::class,
     ];
 
     public function getShortDescription(): string
@@ -132,15 +132,15 @@ class FormatPhp extends CliCommand
                 ->long('file')
                 ->valueName('PATH')
                 ->description(<<<EOF
-                    Files and directories to format
+Files and directories to format
 
-                    If the only path is a dash ('-'), or no paths are given,
-                    __{{command}}__ reads from the standard input and writes
-                    formatted code to the standard output.
+If the only path is a dash ('-'), or no paths are given,
+__{{command}}__ reads from the standard input and writes
+formatted code to the standard output.
 
-                    If PATH is a directory, __{{command}}__ searches for files
-                    to format in the directory tree below PATH.
-                    EOF)
+If PATH is a directory, __{{command}}__ searches for files
+to format in the directory tree below PATH.
+EOF)
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->multipleAllowed(),
             CliOption::build()
@@ -148,10 +148,10 @@ class FormatPhp extends CliCommand
                 ->short('I')
                 ->valueName('REGEX')
                 ->description(<<<EOF
-                    A regex that matches files to include when searching a PATH
+A regex that matches files to include when searching a PATH
 
-                    Exclusions (_--exclude_) are applied first.
-                    EOF)
+Exclusions (_--exclude_) are applied first.
+EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->defaultValue('/\.php$/')
                 ->bindTo($this->Include),
@@ -160,17 +160,17 @@ class FormatPhp extends CliCommand
                 ->short('P')
                 ->valueName('REGEX')
                 ->description(<<<'EOF'
-                    Include files that contain PHP code when searching a PATH
+Include files that contain PHP code when searching a PATH
 
-                    Use this option to format files not matched by _--include_
-                    if they have a PHP open tag on line 1. In files with a
-                    shebang (`#!`), line 2 is checked instead.
+Use this option to format files not matched by _--include_
+if they have a PHP open tag on line 1. In files with a
+shebang (`#!`), line 2 is checked instead.
 
-                    The default regex matches files with no extension. Use
-                    _--include-if-php_=. to check the first line of all files.
+The default regex matches files with no extension. Use
+_--include-if-php_=. to check the first line of all files.
 
-                    Exclusions (_--exclude_) are applied first.
-                    EOF)
+Exclusions (_--exclude_) are applied first.
+EOF)
                 ->optionType(CliOptionType::VALUE_OPTIONAL)
                 ->defaultValue('/(\/|^)[^.]+$/')
                 ->bindTo($this->IncludeIfPhp),
@@ -179,10 +179,10 @@ class FormatPhp extends CliCommand
                 ->short('X')
                 ->valueName('REGEX')
                 ->description(<<<EOF
-                    A regex that matches files to exclude when searching a PATH
+A regex that matches files to exclude when searching a PATH
 
-                    Exclusions are applied before inclusions (_--include_).
-                    EOF)
+Exclusions are applied before inclusions (_--include_).
+EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->defaultValue('/\/(\.git|\.hg|\.svn|_?build|dist|tests[-._0-9a-z]*|var|vendor)\/$/i')
                 ->bindTo($this->Exclude),
@@ -191,12 +191,12 @@ class FormatPhp extends CliCommand
                 ->short('t')
                 ->valueName('SIZE')
                 ->description(<<<EOF
-                    Indent using tabs
+Indent using tabs
 
-                    The _--rule_ values __align-chains__, __align-fn__,
-                    __align-lists__, and __align-ternary__ have no effect when
-                    using tabs for indentation.
-                    EOF)
+The _--rule_ values __align-chains__, __align-fn__,
+__align-lists__, and __align-ternary__ have no effect when
+using tabs for indentation.
+EOF)
                 ->optionType(CliOptionType::ONE_OF_OPTIONAL)
                 ->allowedValues(['2', '4', '8'])
                 ->defaultValue('4'),
@@ -240,20 +240,20 @@ class FormatPhp extends CliCommand
                 ->long('ignore-newlines')
                 ->short('N')
                 ->description(<<<EOF
-                    Do not add line breaks at the position of newlines in the input
+Do not add line breaks at the position of newlines in the input
 
-                    Equivalent to:
-                        _--skip-rule_ preserve-newlines
-                    EOF),
+Equivalent to:
+    _--skip-rule_ preserve-newlines
+EOF),
             CliOption::build()
                 ->long('no-simplify-strings')
                 ->short('S')
                 ->description(<<<EOF
-                    Do not replace single- or double-quoted strings
+Do not replace single- or double-quoted strings
 
-                    Equivalent to:
-                        _--skip-rule_ simplify-strings
-                    EOF),
+Equivalent to:
+    _--skip-rule_ simplify-strings
+EOF),
             CliOption::build()
                 ->long('no-sort-imports')
                 ->short('M')
@@ -271,13 +271,13 @@ class FormatPhp extends CliCommand
                 ->short('o')
                 ->valueName('FILE')
                 ->description(<<<EOF
-                    Write output to FILE instead of replacing the input file
+Write output to FILE instead of replacing the input file
 
-                    If FILE is a dash ('-'), __{{command}}__ writes to the
-                    standard output.
+If FILE is a dash ('-'), __{{command}}__ writes to the
+standard output.
 
-                    May be used once per input file.
-                    EOF)
+May be used once per input file.
+EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->multipleAllowed(),
             CliOption::build()
@@ -295,14 +295,14 @@ class FormatPhp extends CliCommand
                 ->long('quiet')
                 ->short('q')
                 ->description(<<<EOF
-                    Only report errors
+Only report errors
 
-                    May be given multiple times to suppress more output.
+May be given multiple times to suppress more output.
 
-                    _-q_ = Don't report changed files  
-                    _-qq_ = Don't report code problems  
-                    _-qqq_ = Don't report progress
-                    EOF)
+_-q_ = Don't report changed files  
+_-qq_ = Don't report code problems  
+_-qqq_ = Don't report progress
+EOF)
                 ->multipleAllowed()
                 ->bindTo($this->Quiet),
         ];
@@ -317,17 +317,17 @@ class FormatPhp extends CliCommand
     {
         return [
             CliUsageSectionName::EXIT_STATUS => <<<EOF
-                  _0_ if formatting succeeded  
-                  _1_ if arguments were invalid  
-                  _2_ if input was invalid (e.g. code has syntax errors)  
-                  _3_ or above if an error occurred
-                EOF,
+  _0_ if formatting succeeded  
+  _1_ if arguments were invalid  
+  _2_ if input was invalid (e.g. code has syntax errors)  
+  _3_ or above if an error occurred
+EOF,
         ];
     }
 
     protected function run(...$params)
     {
-        $debug        = $this->getOptionValue('debug');
+        $debug = $this->getOptionValue('debug');
         $updateStderr = false;
         if (!is_null($debug)) {
             File::maybeCreateDirectory($debug);
@@ -339,14 +339,14 @@ class FormatPhp extends CliCommand
             $this->app()->logConsoleMessages();
         }
 
-        $tab   = Convert::toIntOrNull($this->getOptionValue('tab'));
+        $tab = Convert::toIntOrNull($this->getOptionValue('tab'));
         $space = Convert::toIntOrNull($this->getOptionValue('space'));
         if ($tab && $space) {
             throw new CliArgumentsInvalidException('--tab and --space cannot be used together');
         }
 
-        $skipRules   = $this->getOptionValue('skip-rule');
-        $addRules    = $this->getOptionValue('rule');
+        $skipRules = $this->getOptionValue('skip-rule');
+        $addRules = $this->getOptionValue('rule');
         $skipFilters = [];
         if ($this->getOptionValue('ignore-newlines')) {
             $skipRules[] = 'preserve-newlines';
@@ -366,10 +366,10 @@ class FormatPhp extends CliCommand
             $addRules[] = 'align-ternary';
         }
         if ($this->getOptionValue('laravel')) {
-            $skipRules   = [];
+            $skipRules = [];
             $skipRules[] = 'magic-commas';
 
-            $addRules   = [];
+            $addRules = [];
             $addRules[] = 'space-after-fn';
             $addRules[] = 'space-after-not';
             $addRules[] = 'no-concat-spaces';
@@ -382,21 +382,21 @@ class FormatPhp extends CliCommand
             //     $addRules[] = 'align-chains';
             //     $addRules[] = 'align-ternary';
 
-            $this->HangingHeredocIndents      = false;
+            $this->HangingHeredocIndents = false;
             $this->OnlyAlignChainedStatements = true;
         }
         if ($this->Quiet > 1) {
             $skipRules[] = 'report-brackets';
         }
         $skipRules = array_values(array_intersect_key($this->SkipRuleMap, array_flip($skipRules)));
-        $addRules  = array_values(array_intersect_key($this->AddRuleMap, array_flip($addRules)));
+        $addRules = array_values(array_intersect_key($this->AddRuleMap, array_flip($addRules)));
 
-        $in  = $this->expandPaths($this->getOptionValue('file'), $directoryCount);
+        $in = $this->expandPaths($this->getOptionValue('file'), $directoryCount);
         $out = $this->getOptionValue('output');
         if (!$in && stream_isatty(STDIN)) {
             throw new CliArgumentsInvalidException('FILE required when input is a TTY');
         } elseif (!$in || $in === ['-']) {
-            $in  = ['php://stdin'];
+            $in = ['php://stdin'];
             $out = ['-'];
         } elseif ($out && $out !== ['-'] && ($directoryCount || count($out) !== count($in))) {
             throw new CliArgumentsInvalidException(
@@ -427,8 +427,8 @@ class FormatPhp extends CliCommand
             $formatter->HangingHeredocIndents = $this->HangingHeredocIndents;
         }
 
-        $i      = 0;
-        $count  = count($in);
+        $i = 0;
+        $count = count($in);
         $errors = [];
         foreach ($in as $key => $file) {
             $this->Quiet > 2 || Console::logProgress(sprintf('Formatting %d of %d:', ++$i, $count), $file);
@@ -561,22 +561,22 @@ class FormatPhp extends CliCommand
         File::find($logDir, null, null, null, null, false)
             ->forEach(fn(SplFileInfo $file) => unlink($file->getPathname()));
 
-        $i    = 0;
+        $i = 0;
         $last = null;
         foreach ($log ?: [] as $after => $out) {
             if ($i++ && $out === $last) {
                 continue;
             }
             $logFile = sprintf('render-log/%03d-%s.php', $i, $after);
-            $last    = $logFiles[$logFile] = $out;
+            $last = $logFiles[$logFile] = $out;
         }
 
         foreach ([
-            'input.php'   => $input,
-            'output.php'  => $output,
+            'input.php' => $input,
+            'output.php' => $output,
             'tokens.json' => $tokens,
-            'data.json'   => is_string($data) ? null : $data,
-            'data.out'    => is_string($data) ? $data : null,
+            'data.json' => is_string($data) ? null : $data,
+            'data.out' => is_string($data) ? $data : null,
             ...($logFiles ?? []),
         ] as $file => $contents) {
             $file = "{$this->DebugDirectory}/{$file}";

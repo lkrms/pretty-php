@@ -24,7 +24,7 @@ final class AddSpaceAfterFn implements TokenRule
 
     public function processToken(Token $token): void
     {
-        $token->WhitespaceAfter    |= WhitespaceType::SPACE;
+        $token->WhitespaceAfter |= WhitespaceType::SPACE;
         $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
     }
 }

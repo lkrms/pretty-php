@@ -45,14 +45,14 @@ final class ProtectStrings implements TokenRule
         if ($token->id === T['"'] &&
                 (!$string || $string->BracketStack !== $token->BracketStack)) {
             $token->CriticalWhitespaceMaskNext = WhitespaceType::NONE;
-            $this->Strings[]                   = $token;
+            $this->Strings[] = $token;
 
             return;
         }
 
         if ($token->id === T_START_HEREDOC) {
             $token->CriticalWhitespaceMaskNext = WhitespaceType::NONE;
-            $this->Heredocs[]                  = $token;
+            $this->Heredocs[] = $token;
 
             return;
         }
@@ -76,19 +76,19 @@ final class ProtectStrings implements TokenRule
         }
 
         if ($token->is([
-            T_CURLY_OPEN,                       // "{$...}"
-            T_DOLLAR_OPEN_CURLY_BRACES,         // "${...}"
-            T_STRING_VARNAME,                   // `varname` in "${varname}"
+            T_CURLY_OPEN,  // "{$...}"
+            T_DOLLAR_OPEN_CURLY_BRACES,  // "${...}"
+            T_STRING_VARNAME,  // `varname` in "${varname}"
             T_ENCAPSED_AND_WHITESPACE,
             T['}'],
         ]) || ($token->is(T_VARIABLE) &&
                 $token->prev()->is([
-                    T['"'],                     // "$variable"
-                    T_START_HEREDOC,            // <<<EOF
-                                                // $variable
-                                                // EOF
+                    T['"'],  // "$variable"
+                    T_START_HEREDOC,  // <<<EOF
+                    // $variable
+                    // EOF
                     T_ENCAPSED_AND_WHITESPACE,  // "Value: $variable"
-                    T_VARIABLE,                 // "$var1$var2"
+                    T_VARIABLE,  // "$var1$var2"
                 ]))) {
             $token->CriticalWhitespaceMaskPrev = WhitespaceType::NONE;
             $token->CriticalWhitespaceMaskNext = WhitespaceType::NONE;

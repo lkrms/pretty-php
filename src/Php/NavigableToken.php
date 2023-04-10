@@ -47,7 +47,7 @@ class NavigableToken extends PhpToken
     {
         if ($this->text !== $text) {
             $this->OriginalText = $this->OriginalText ?: $this->text;
-            $this->text         = $text;
+            $this->text = $text;
         }
 
         return $this;
