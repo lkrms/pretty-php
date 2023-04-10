@@ -7,7 +7,7 @@
     ],
     "require": {
         "php": ">=8 <8.3",
-        "lkrms/util": "^0.19.30"
+        "lkrms/util": "^0.19.33"
     },
     "autoload": {
         "psr-4": {

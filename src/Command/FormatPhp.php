@@ -6,6 +6,7 @@ use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Cli\CliUsageSectionName;
 use Lkrms\Cli\Concept\CliCommand;
+use Lkrms\Cli\Enumeration\CliOptionUnknownValuePolicy;
 use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
@@ -36,7 +37,6 @@ use Lkrms\Pretty\Php\Rule\SimplifyStrings;
 use Lkrms\Pretty\Php\Rule\SpaceDeclarations;
 use Lkrms\Pretty\PrettyBadSyntaxException;
 use Lkrms\Pretty\PrettyException;
-use RuntimeException;
 use SplFileInfo;
 use Throwable;
 
@@ -46,6 +46,11 @@ class FormatPhp extends CliCommand
      * @var string
      */
     private $Include;
+
+    /**
+     * @var string|null
+     */
+    private $IncludeIfPhp;
 
     /**
      * @var string
@@ -151,6 +156,25 @@ class FormatPhp extends CliCommand
                 ->defaultValue('/\.php$/')
                 ->bindTo($this->Include),
             CliOption::build()
+                ->long('include-if-php')
+                ->short('P')
+                ->valueName('REGEX')
+                ->description(<<<'EOF'
+                    Include files that contain PHP code when searching a PATH
+
+                    Use this option to format files not matched by _--include_
+                    if they have a PHP open tag on line 1. In files with a
+                    shebang (`#!`), line 2 is checked instead.
+
+                    The default regex matches files with no extension. Use
+                    _--include-if-php_=. to check the first line of all files.
+
+                    Exclusions (_--exclude_) are applied first.
+                    EOF)
+                ->optionType(CliOptionType::VALUE_OPTIONAL)
+                ->defaultValue('/(\/|^)[^.]+$/')
+                ->bindTo($this->IncludeIfPhp),
+            CliOption::build()
                 ->long('exclude')
                 ->short('X')
                 ->valueName('REGEX')
@@ -191,6 +215,7 @@ class FormatPhp extends CliCommand
                 ->description('Skip one or more rules')
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys($this->SkipRuleMap))
+                ->unknownValuePolicy(CliOptionUnknownValuePolicy::DISCARD)
                 ->multipleAllowed()
                 ->envVariable('pretty_php_skip')
                 ->keepEnv(),
@@ -201,6 +226,7 @@ class FormatPhp extends CliCommand
                 ->description('Add one or more non-standard rules')
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys($this->AddRuleMap))
+                ->unknownValuePolicy(CliOptionUnknownValuePolicy::DISCARD)
                 ->multipleAllowed()
                 ->envVariable('pretty_php_rule')
                 ->keepEnv(),
@@ -208,6 +234,7 @@ class FormatPhp extends CliCommand
                 ->long('one-true-brace-style')
                 ->short('1')
                 ->description('Format braces using the One True Brace Style')
+                ->hide()
                 ->bindTo($this->OneTrueBraceStyle),
             CliOption::build()
                 ->long('ignore-newlines')
@@ -465,7 +492,15 @@ class FormatPhp extends CliCommand
             );
         }
 
-        $this->Quiet || Console::summary();
+        $this->Quiet || Console::summary(
+            sprintf(
+                $errors ? 'Formatted %1$d of %2$d %3$s' : 'Formatted %2$d %3$s',
+                $count - count($errors),
+                $count,
+                Convert::plural($count, 'file')
+            ),
+            'successfully'
+        );
     }
 
     /**
@@ -483,30 +518,31 @@ class FormatPhp extends CliCommand
         $files = [];
         foreach ($paths as $path) {
             if (is_file($path)) {
-                $files[] = $path;
+                $files[fileinode($path)] = $path;
                 continue;
             }
             if (!is_dir($path)) {
                 throw new CliArgumentsInvalidException('file not found: ' . $path);
             }
             $directoryCount++;
-            $iterator = File::find($path, $this->Exclude, $this->Include);
+            $iterator = File::find(
+                $path,
+                $this->Exclude,
+                $this->Include,
+                null,
+                $this->IncludeIfPhp ? [
+                    $this->IncludeIfPhp =>
+                        fn(SplFileInfo $file) => File::isPhp((string) $file)
+                ] : null
+            );
 
             /** @var SplFileInfo $file */
             foreach ($iterator as $file) {
-                $realpath = $file->getRealPath();
-                if ($realpath === false) {
-                    throw new RuntimeException('file not found: ' . $file);
-                }
-                $files[] = $realpath;
+                $files[$file->getInode()] = (string) $file;
             }
         }
 
-        if ($directoryCount) {
-            ksort($files);
-        }
-
-        return $files;
+        return array_values($files);
     }
 
     /**
@@ -522,7 +558,7 @@ class FormatPhp extends CliCommand
 
         $logDir = "{$this->DebugDirectory}/render-log";
         File::maybeCreateDirectory($logDir);
-        File::find($logDir, null, null, false)
+        File::find($logDir, null, null, null, null, false)
             ->forEach(fn(SplFileInfo $file) => unlink($file->getPathname()));
 
         $i    = 0;
