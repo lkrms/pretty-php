@@ -3,7 +3,9 @@
 namespace Lkrms\Pretty\Php;
 
 use Lkrms\Concern\TFullyReadable;
+use Lkrms\Concern\TWritable;
 use Lkrms\Contract\IReadable;
+use Lkrms\Contract\IWritable;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
@@ -68,10 +70,11 @@ use const Lkrms\Pretty\Php\T_ID_MAP as T;
  * @property-read string|null $RunningService
  * @property-read array<string,string> $Log
  * @property-read string[] $Rules
+ * @property int[] $PreserveTrailingSpaces
  */
-final class Formatter implements IReadable
+final class Formatter implements IReadable, IWritable
 {
-    use TFullyReadable;
+    use TFullyReadable, TWritable;
 
     /**
      * @var bool
@@ -97,6 +100,16 @@ final class Formatter implements IReadable
      * @var array<string,string>
      */
     protected $Log = [];
+
+    /**
+     * @var int[]
+     */
+    protected $PreserveTrailingSpaces = [];
+
+    /**
+     * @var string
+     */
+    public $PreserveTrailingSpacesRegex = '';
 
     /**
      * @var string
@@ -175,22 +188,21 @@ final class Formatter implements IReadable
      */
     protected $Rules = [
         ProtectStrings::class,  // processToken  (40)
-        SimplifyStrings::class,  // processToken  (60)                      [OPTIONAL]
+        SimplifyStrings::class,  // processToken  (60)  [OPTIONAL]
         AddStandardWhitespace::class,  // processToken  (80)
         BreakAfterSeparators::class,  // processToken  (80)
         SpaceOperators::class,  // processToken  (80)
         BracePosition::class,  // processToken  (80), beforeRender (80)
         BreakBeforeControlStructureBody::class,  // processToken  (83)
         PlaceComments::class,  // processToken  (90), beforeRender (997)
-        PreserveNewlines::class,  // processToken  (93)                      [OPTIONAL]
+        PreserveNewlines::class,  // processToken  (93)  [OPTIONAL]
         BreakOperators::class,  // processToken  (98)
-        ApplyMagicComma::class,  // processList  (360)                      [OPTIONAL]
+        ApplyMagicComma::class,  // processList  (360)  [OPTIONAL]
         AddIndentation::class,  // processToken (600)
         SwitchPosition::class,  // processToken (600)
-        SpaceDeclarations::class,  // processToken (620)                      [OPTIONAL]
+        SpaceDeclarations::class,  // processToken (620)  [OPTIONAL]
         AddHangingIndentation::class,  // processToken (800), callback (800)
-        ReindentHeredocs::class,  // processToken (900), beforeRender (900)  [OPTIONAL]
-        ReportUnnecessaryParentheses::class,  // processToken (990)                      [OPTIONAL]
+        ReportUnnecessaryParentheses::class,  // processToken (990)  [OPTIONAL]
         AddEssentialWhitespace::class,  // beforeRender (999)
     ];
 
@@ -207,6 +219,7 @@ final class Formatter implements IReadable
         AlignArrowFunctions::class,  // processToken (380), callback (710)
         AlignTernaryOperators::class,  // processToken (380), callback (710)
         AlignLists::class,  // processList  (400), callback (710)
+        ReindentHeredocs::class,  // processToken (900), beforeRender (900)  [OPTIONAL]
         AddSpaceAfterFn::class,  // processToken
         AddSpaceAfterNot::class,  // processToken
         DeclareArgumentsOnOneLine::class,  // processToken
@@ -293,6 +306,11 @@ final class Formatter implements IReadable
         $this->Debug = Env::debug();
     }
 
+    public static function getWritable(): array
+    {
+        return [];
+    }
+
     /**
      * Get formatted code
      *
@@ -315,11 +333,11 @@ final class Formatter implements IReadable
      */
     public function format(string $code, int $quietLevel = 0, ?string $filename = null, bool $fast = false): string
     {
-        $this->QuietLevel = $quietLevel;
-        $this->Filename = $filename;
         if ($this->Tokens) {
             Token::destroyTokens($this->Tokens);
         }
+        $this->QuietLevel = $quietLevel;
+        $this->Filename = $filename;
 
         Sys::startTimer(__METHOD__ . '#tokenize-input');
         try {
@@ -584,6 +602,30 @@ final class Formatter implements IReadable
         }
 
         return $out;
+    }
+
+    /**
+     * @param int[] $spaces
+     */
+    protected function _setPreserveTrailingSpaces(array $spaces): void
+    {
+        if (!($this->PreserveTrailingSpaces = $spaces)) {
+            $this->PreserveTrailingSpacesRegex = '';
+
+            return;
+        }
+
+        $seen = [];
+        $regex = [];
+        foreach ($spaces as $count) {
+            if ($seen[$count] ?? false) {
+                continue;
+            }
+            $seen[$count] = true;
+            $regex[] = str_repeat(' ', $count);
+        }
+        $this->PreserveTrailingSpacesRegex =
+            sprintf('(?<!%s)', '\S' . implode('|\S', $regex));
     }
 
     private function getPriority(Rule $rule, string $method): int
