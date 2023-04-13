@@ -7,6 +7,7 @@ use Lkrms\Cli\CliOptionType;
 use Lkrms\Cli\CliUsageSectionName;
 use Lkrms\Cli\Concept\CliCommand;
 use Lkrms\Cli\Enumeration\CliOptionUnknownValuePolicy;
+use Lkrms\Cli\Enumeration\CliOptionValueType;
 use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
@@ -73,6 +74,11 @@ class FormatPhp extends CliCommand
     private $OneTrueBraceStyle;
 
     /**
+     * @var int[]|null
+     */
+    private $PreserveTrailingSpaces;
+
+    /**
      * @var bool
      */
     private $Verbose;
@@ -95,7 +101,6 @@ class FormatPhp extends CliCommand
         'preserve-newlines' => PreserveNewlines::class,
         'magic-commas' => ApplyMagicComma::class,
         'declaration-spacing' => SpaceDeclarations::class,
-        'indent-heredocs' => ReindentHeredocs::class,
         'report-brackets' => ReportUnnecessaryParentheses::class,
     ];
 
@@ -112,6 +117,7 @@ class FormatPhp extends CliCommand
         'blank-before-return' => AddBlankLineBeforeReturn::class,
         'strict-lists' => NoMixedLists::class,
         'preserve-one-line' => PreserveOneLineStatements::class,
+        'indent-heredocs' => ReindentHeredocs::class,
 
         // In the `Extra` namespace
         'space-after-fn' => AddSpaceAfterFn::class,
@@ -134,12 +140,11 @@ class FormatPhp extends CliCommand
                 ->description(<<<EOF
 Files and directories to format
 
-If the only path is a dash ('-'), or no paths are given,
-__{{command}}__ reads from the standard input and writes
-formatted code to the standard output.
+If the only path is a dash ('-'), or no paths are given, __{{command}}__ reads
+from the standard input and writes formatted code to the standard output.
 
-If PATH is a directory, __{{command}}__ searches for files
-to format in the directory tree below PATH.
+If <PATH> is a directory, __{{command}}__ searches for files to format in the
+directory tree below it.
 EOF)
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->multipleAllowed(),
@@ -148,9 +153,9 @@ EOF)
                 ->short('I')
                 ->valueName('REGEX')
                 ->description(<<<EOF
-A regex that matches files to include when searching a PATH
+A regex that matches files to include when searching a path
 
-Exclusions (_--exclude_) are applied first.
+Exclusions (__--exclude__) are applied first.
 EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->defaultValue('/\.php$/')
@@ -159,17 +164,16 @@ EOF)
                 ->long('include-if-php')
                 ->short('P')
                 ->valueName('REGEX')
-                ->description(<<<'EOF'
-Include files that contain PHP code when searching a PATH
+                ->description(<<<EOF
+Include files that contain PHP code when searching a path
 
-Use this option to format files not matched by _--include_
-if they have a PHP open tag on line 1. In files with a
-shebang (`#!`), line 2 is checked instead.
+Use this option to format files not matched by __--include__ if they have a PHP
+open tag at the beginning of line 1, or on line 2 if they have a shebang ('#!').
 
-The default regex matches files with no extension. Use
-_--include-if-php_=. to check the first line of all files.
+The default <REGEX> matches files with no extension. Use
+__--include-if-php__=_._ to check the first line of all files.
 
-Exclusions (_--exclude_) are applied first.
+Exclusions (__--exclude__) are applied first.
 EOF)
                 ->optionType(CliOptionType::VALUE_OPTIONAL)
                 ->defaultValue('/(\/|^)[^.]+$/')
@@ -179,9 +183,9 @@ EOF)
                 ->short('X')
                 ->valueName('REGEX')
                 ->description(<<<EOF
-A regex that matches files to exclude when searching a PATH
+A regex that matches files to exclude when searching a path
 
-Exclusions are applied before inclusions (_--include_).
+Exclusions are applied before inclusions (__--include__).
 EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->defaultValue('/\/(\.git|\.hg|\.svn|_?build|dist|tests[-._0-9a-z]*|var|vendor)\/$/i')
@@ -193,9 +197,8 @@ EOF)
                 ->description(<<<EOF
 Indent using tabs
 
-The _--rule_ values __align-chains__, __align-fn__,
-__align-lists__, and __align-ternary__ have no effect when
-using tabs for indentation.
+The __--rule__ values _align-chains_, _align-fn_, _align-lists_, and
+_align-ternary_ have no effect when using tabs for indentation.
 EOF)
                 ->optionType(CliOptionType::ONE_OF_OPTIONAL)
                 ->allowedValues(['2', '4', '8'])
@@ -237,13 +240,24 @@ EOF)
                 ->hide()
                 ->bindTo($this->OneTrueBraceStyle),
             CliOption::build()
+                ->long('preserve-trailing-spaces')
+                ->short('T')
+                ->valueName('COUNT')
+                ->description(<<<EOF
+Preserve exactly <COUNT> trailing spaces in comments
+EOF)
+                ->optionType(CliOptionType::VALUE_OPTIONAL)
+                ->valueType(CliOptionValueType::INTEGER)
+                ->multipleAllowed()
+                ->defaultValue(['2'])
+                ->bindTo($this->PreserveTrailingSpaces),
+            CliOption::build()
                 ->long('ignore-newlines')
                 ->short('N')
                 ->description(<<<EOF
 Do not add line breaks at the position of newlines in the input
 
-Equivalent to:
-    _--skip-rule_ preserve-newlines
+Equivalent to:  __--skip-rule__ _preserve-newlines_
 EOF),
             CliOption::build()
                 ->long('no-simplify-strings')
@@ -251,8 +265,7 @@ EOF),
                 ->description(<<<EOF
 Do not replace single- or double-quoted strings
 
-Equivalent to:
-    _--skip-rule_ simplify-strings
+Equivalent to:  __--skip-rule__ _simplify-strings_
 EOF),
             CliOption::build()
                 ->long('no-sort-imports')
@@ -271,19 +284,18 @@ EOF),
                 ->short('o')
                 ->valueName('FILE')
                 ->description(<<<EOF
-Write output to FILE instead of replacing the input file
+Write output to a file other than the input file
 
-If FILE is a dash ('-'), __{{command}}__ writes to the
-standard output.
+If <FILE> is a dash ('-'), __{{command}}__ writes to the standard output.
 
-May be used once per input file.
+May be given once per input file.
 EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->multipleAllowed(),
             CliOption::build()
                 ->long('debug')
                 ->valueName('DIR')
-                ->description('Create debug output in DIR')
+                ->description('Create debug output in <DIR>')
                 ->optionType(CliOptionType::VALUE_OPTIONAL)
                 ->defaultValue($this->app()->getTempPath() . '/debug'),
             CliOption::build()
@@ -297,11 +309,10 @@ EOF)
                 ->description(<<<EOF
 Only report errors
 
-May be given multiple times to suppress more output.
-
-_-q_ = Don't report changed files  
-_-qq_ = Don't report code problems  
-_-qqq_ = Don't report progress
+May be given multiple times:  
+__-q__ suppresses file replacement reports  
+__-qq__ also suppresses code problem reports  
+__-qqq__ also suppresses TTY-only progress reports
 EOF)
                 ->multipleAllowed()
                 ->bindTo($this->Quiet),
@@ -317,10 +328,10 @@ EOF)
     {
         return [
             CliUsageSectionName::EXIT_STATUS => <<<EOF
-  _0_ if formatting succeeded  
-  _1_ if arguments were invalid  
-  _2_ if input was invalid (e.g. code has syntax errors)  
-  _3_ or above if an error occurred
+_0_   Formatting succeeded / input already formatted  
+_1_   Invalid arguments / input requires formatting  
+_2_   Invalid input (code could not be parsed)  
+_15_  Operational error
 EOF,
         ];
     }
@@ -342,7 +353,7 @@ EOF,
         $tab = Convert::toIntOrNull($this->getOptionValue('tab'));
         $space = Convert::toIntOrNull($this->getOptionValue('space'));
         if ($tab && $space) {
-            throw new CliArgumentsInvalidException('--tab and --space cannot be used together');
+            throw new CliArgumentsInvalidException('--tab and --space cannot be given together');
         }
 
         $skipRules = $this->getOptionValue('skip-rule');
@@ -374,6 +385,7 @@ EOF,
             $addRules[] = 'space-after-not';
             $addRules[] = 'no-concat-spaces';
             $addRules[] = 'align-lists';
+            $addRules[] = 'indent-heredocs';
 
             // Laravel chains and ternary operators don't seem to follow any
             // alignment rules, so these can be enabled or disabled with little
@@ -394,14 +406,14 @@ EOF,
         $in = $this->expandPaths($this->getOptionValue('file'), $directoryCount);
         $out = $this->getOptionValue('output');
         if (!$in && stream_isatty(STDIN)) {
-            throw new CliArgumentsInvalidException('FILE required when input is a TTY');
+            throw new CliArgumentsInvalidException('<PATH> required when input is a TTY');
         } elseif (!$in || $in === ['-']) {
             $in = ['php://stdin'];
             $out = ['-'];
         } elseif ($out && $out !== ['-'] && ($directoryCount || count($out) !== count($in))) {
             throw new CliArgumentsInvalidException(
                 '--output is required once per input file'
-                    . ($directoryCount ? ' and cannot be used with directories' : '')
+                    . ($directoryCount ? ' and cannot be given with directories' : '')
             );
         } elseif (!$out) {
             $out = $in;
@@ -420,6 +432,9 @@ EOF,
             $skipFilters
         );
         $formatter->OneTrueBraceStyle = $this->OneTrueBraceStyle;
+        if (!is_null($this->PreserveTrailingSpaces)) {
+            $formatter->PreserveTrailingSpaces = $this->PreserveTrailingSpaces;
+        }
         if (!is_null($this->OnlyAlignChainedStatements)) {
             $formatter->OnlyAlignChainedStatements = $this->OnlyAlignChainedStatements;
         }
@@ -429,6 +444,7 @@ EOF,
 
         $i = 0;
         $count = count($in);
+        $replaced = 0;
         $errors = [];
         foreach ($in as $key => $file) {
             $this->Quiet > 2 || Console::logProgress(sprintf('Formatting %d of %d:', ++$i, $count), $file);
@@ -481,6 +497,7 @@ EOF,
 
             $this->Quiet || Console::log('Replacing', $outFile);
             file_put_contents($outFile, $output);
+            $replaced++;
         }
 
         if ($errors) {
@@ -494,8 +511,8 @@ EOF,
 
         $this->Quiet || Console::summary(
             sprintf(
-                $errors ? 'Formatted %1$d of %2$d %3$s' : 'Formatted %2$d %3$s',
-                $count - count($errors),
+                $replaced ? 'Replaced %1$d of %2$d %3$s' : 'Formatted %2$d %3$s',
+                $replaced,
                 $count,
                 Convert::plural($count, 'file')
             ),

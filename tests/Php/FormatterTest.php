@@ -12,6 +12,7 @@ use Lkrms\Pretty\Php\Rule\ApplyMagicComma;
 use Lkrms\Pretty\Php\Rule\Extra\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\NoMixedLists;
 use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
+use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
 use Lkrms\Pretty\Php\Rule\SimplifyStrings;
 use Lkrms\Pretty\Php\Rule\SpaceDeclarations;
 use SplFileInfo;
@@ -97,6 +98,7 @@ PHP;
                     $addRules = [
                         AlignComments::class,
                         PreserveOneLineStatements::class,
+                        ReindentHeredocs::class,
                     ];
                     $skipRules = [
                         ApplyMagicComma::class,
@@ -107,6 +109,7 @@ PHP;
                     $addRules = [
                         AlignComments::class,
                         PreserveOneLineStatements::class,
+                        ReindentHeredocs::class,
                     ];
                     $skipRules = [
                         SimplifyStrings::class,

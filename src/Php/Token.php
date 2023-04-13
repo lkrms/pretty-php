@@ -2227,12 +2227,13 @@ class Token extends NavigableToken implements JsonSerializable
 
     private function renderComment(bool $softTabs = false): string
     {
-        // Remove trailing whitespace from each line
-        $code = preg_replace('/\h+$/m', '', $this->text);
+        // Remove trailing whitespace from each line, preserving Markdown-style
+        // line breaks if requested
+        $code = preg_replace("/\\h++{$this->Formatter->PreserveTrailingSpacesRegex}\$/m", '', $this->text);
         switch ($this->id) {
             case T_COMMENT:
                 if (!$this->isMultiLineComment() ||
-                        preg_match('/\n\h*(?!\*)(\S|$)/', $code)) {
+                        preg_match('/\n\h*+(?!\*)(\S|$)/', $code)) {
                     return $code;
                 }
             case T_DOC_COMMENT:
@@ -2254,7 +2255,7 @@ class Token extends NavigableToken implements JsonSerializable
 
                 return preg_replace([
                     '/\n\h*+(?:\* |\*(?!\/)(?=[\h\S])|(?=[^\s*]))/',
-                    '/\n\h*+\*?$/m',
+                    '/\n\h*+\*?\h*+$/m',
                     '/\n\h*+\*\//',
                 ], [
                     $indent . ' * ',
