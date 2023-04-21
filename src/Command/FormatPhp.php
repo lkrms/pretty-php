@@ -2,13 +2,13 @@
 
 namespace Lkrms\Pretty\Command;
 
+use Lkrms\Cli\Catalog\CliOptionType;
+use Lkrms\Cli\Catalog\CliOptionValueType;
+use Lkrms\Cli\Catalog\CliOptionValueUnknownPolicy;
+use Lkrms\Cli\Catalog\CliUsageSectionName;
+use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOption;
-use Lkrms\Cli\CliOptionType;
-use Lkrms\Cli\CliUsageSectionName;
-use Lkrms\Cli\Concept\CliCommand;
-use Lkrms\Cli\Enumeration\CliOptionUnknownValuePolicy;
-use Lkrms\Cli\Enumeration\CliOptionValueType;
-use Lkrms\Cli\Exception\CliArgumentsInvalidException;
+use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
@@ -218,7 +218,7 @@ EOF)
                 ->description('Skip one or more rules')
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys($this->SkipRuleMap))
-                ->unknownValuePolicy(CliOptionUnknownValuePolicy::DISCARD)
+                ->unknownValuePolicy(CliOptionValueUnknownPolicy::DISCARD)
                 ->multipleAllowed()
                 ->envVariable('pretty_php_skip')
                 ->keepEnv(),
@@ -229,7 +229,7 @@ EOF)
                 ->description('Add one or more non-standard rules')
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys($this->AddRuleMap))
-                ->unknownValuePolicy(CliOptionUnknownValuePolicy::DISCARD)
+                ->unknownValuePolicy(CliOptionValueUnknownPolicy::DISCARD)
                 ->multipleAllowed()
                 ->envVariable('pretty_php_rule')
                 ->keepEnv(),
@@ -353,7 +353,7 @@ EOF,
         $tab = Convert::toIntOrNull($this->getOptionValue('tab'));
         $space = Convert::toIntOrNull($this->getOptionValue('space'));
         if ($tab && $space) {
-            throw new CliArgumentsInvalidException('--tab and --space cannot be given together');
+            throw new CliInvalidArgumentsException('--tab and --space cannot be given together');
         }
 
         $skipRules = $this->getOptionValue('skip-rule');
@@ -406,12 +406,12 @@ EOF,
         $in = $this->expandPaths($this->getOptionValue('file'), $directoryCount);
         $out = $this->getOptionValue('output');
         if (!$in && stream_isatty(STDIN)) {
-            throw new CliArgumentsInvalidException('<PATH> required when input is a TTY');
+            throw new CliInvalidArgumentsException('<PATH> required when input is a TTY');
         } elseif (!$in || $in === ['-']) {
             $in = ['php://stdin'];
             $out = ['-'];
         } elseif ($out && $out !== ['-'] && ($directoryCount || count($out) !== count($in))) {
-            throw new CliArgumentsInvalidException(
+            throw new CliInvalidArgumentsException(
                 '--output is required once per input file'
                     . ($directoryCount ? ' and cannot be given with directories' : '')
             );
@@ -539,7 +539,7 @@ EOF,
                 continue;
             }
             if (!is_dir($path)) {
-                throw new CliArgumentsInvalidException('file not found: ' . $path);
+                throw new CliInvalidArgumentsException('file not found: ' . $path);
             }
             $directoryCount++;
             $iterator = File::find(
