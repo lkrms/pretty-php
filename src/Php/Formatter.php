@@ -52,6 +52,7 @@ use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
 use Lkrms\Pretty\Php\Rule\ReportUnnecessaryParentheses;
 use Lkrms\Pretty\Php\Rule\SimplifyStrings;
 use Lkrms\Pretty\Php\Rule\SpaceDeclarations;
+use Lkrms\Pretty\Php\Rule\SpaceMatch;
 use Lkrms\Pretty\Php\Rule\SpaceOperators;
 use Lkrms\Pretty\Php\Rule\SwitchPosition;
 use Lkrms\Pretty\PrettyBadSyntaxException;
@@ -134,12 +135,22 @@ final class Formatter implements IReadable, IWritable
     /**
      * @var bool
      */
+    public $MatchesAreLists = false;
+
+    /**
+     * @var bool
+     */
     public $MirrorBrackets = true;
 
     /**
      * @var bool
      */
     public $HangingHeredocIndents = true;
+
+    /**
+     * @var bool
+     */
+    public $HangingMatchIndents = true;
 
     /**
      * If the first object operator in a chain of method calls has a leading
@@ -197,6 +208,7 @@ final class Formatter implements IReadable, IWritable
         PlaceComments::class,  // processToken  (90), beforeRender (997)
         PreserveNewlines::class,  // processToken  (93)  [OPTIONAL]
         BreakOperators::class,  // processToken  (98)
+        SpaceMatch::class,  // processToken (300)  [OPTIONAL]
         ApplyMagicComma::class,  // processList  (360)  [OPTIONAL]
         AddIndentation::class,  // processToken (600)
         SwitchPosition::class,  // processToken (600)
@@ -413,8 +425,7 @@ final class Formatter implements IReadable, IWritable
                 $this->Tokens,
                 fn(Token $t) =>
                     ($t->is([T['('], T['[']]) ||
-                            ($t->id === T['{'] &&
-                                $t->prevSibling(2)->id === T_MATCH) ||
+                            ($this->MatchesAreLists && $t->id === T['{'] && $t->prevSibling(2)->id === T_MATCH) ||
                             $t->is([T_IMPLEMENTS]) ||
                             ($t->is([T_EXTENDS]) && $t->isDeclaration(T_INTERFACE))) &&
                         $t->ClosedBy !== $t->nextCode()
@@ -435,10 +446,10 @@ final class Formatter implements IReadable, IWritable
             }
             $lists[$i] = $parent->innerSiblings()->filter(
                 fn(Token $t, ?Token $next, ?Token $prev) =>
-                    !$prev || ($t->prevCode()->is(T[',']) &&
+                    !$prev || (($prevCode = $t->prevCode())->is(T[',']) &&
                         ($parent->id !== T['{'] ||
-                            $t->prevSiblingOf(T[','], ...TokenType::OPERATOR_DOUBLE_ARROW)
-                              ->is(TokenType::OPERATOR_DOUBLE_ARROW)))
+                            $prevCode->prevSiblingOf(T[','], ...TokenType::OPERATOR_DOUBLE_ARROW)
+                                     ->is(TokenType::OPERATOR_DOUBLE_ARROW)))
             );
         }
         Sys::stopTimer(__METHOD__ . '#find-lists');

@@ -18,26 +18,21 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         array $skipRules = [],
         array $skipFilters = [],
         bool $insertSpaces = true,
-        int $tabSize = 4,
-        ?string $filename = null
+        int $tabSize = 4
     ): void {
-        $formatter = new Formatter(
+        $formatter = $this->prepareFormatter(new Formatter(
             $insertSpaces,
             $tabSize,
             $skipRules,
             $addRules,
             $skipFilters
-        );
+        ));
 
-        $this->assertSame(
-            $expected,
-            $formatter->format(
-                $code,
-                3,
-                $filename,
-                true
-            ),
-            $filename ?: ''
-        );
+        $this->assertSame($expected, $formatter->format($code, 3));
+    }
+
+    protected function prepareFormatter(Formatter $formatter): Formatter
+    {
+        return $formatter;
     }
 }

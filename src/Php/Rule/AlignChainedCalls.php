@@ -31,7 +31,8 @@ final class AlignChainedCalls implements TokenRule
     {
         if ($token !== $token->ChainOpenedBy ||
             ($this->Formatter->OnlyAlignChainedStatements &&
-                $token->Statement !== $token->pragmaticStartOfExpression())) {
+                ($start = $token->pragmaticStartOfExpression()) !== $token->Statement &&
+                !$start->prevCode()->is([T_RETURN, T_YIELD]))) {
             return;
         }
 

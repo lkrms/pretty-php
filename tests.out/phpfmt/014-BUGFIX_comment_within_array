@@ -15,7 +15,7 @@ $array = [
 
 func($a
 // comment
-	);
+);
 
 $a->m1()
 	->m2()  // comment

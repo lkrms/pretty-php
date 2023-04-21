@@ -34,11 +34,25 @@ final class AddIndentation implements TokenRule
         if (!$prev->isOpenBracket() && !$prev->startsAlternativeSyntax()) {
             return;
         }
+
+        // If MirrorBrackets are disabled, allow this:
+        //
+        // ```php
+        // [$a,
+        //     $b
+        // ];
+        // ```
+        //
+        // but not this:
+        //
+        // ```php
+        // [
+        //     $a,
+        //     $b];
+        // ```
+        //
         if ($prev->hasNewlineAfterCode()) {
             $token->Indent++;
-            if (!$this->Formatter->MirrorBrackets) {
-                return;
-            }
             $close = $prev->ClosedBy;
             $close->WhitespaceBefore |= WhitespaceType::LINE;
             if (!$close->hasNewlineBefore()) {
@@ -46,6 +60,9 @@ final class AddIndentation implements TokenRule
                 $close->prev()->WhitespaceMaskNext |= WhitespaceType::LINE;
             }
 
+            return;
+        }
+        if (!$this->Formatter->MirrorBrackets) {
             return;
         }
         $prev->ClosedBy->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;

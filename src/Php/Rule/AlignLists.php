@@ -43,15 +43,24 @@ final class AlignLists implements ListRule
 
     public function processList(Token $owner, TokenCollection $items): void
     {
+        // Do nothing if:
+        // - there's a newline after $owner
+        // - there's a newline before $owner's close bracket (if applicable), or
+        // - $owner is `(` or `[`, and neither $owner nor any of its `(` or `[`
+        //   parents open an array or have a predecessor listed in
+        //   self::BEFORE_ALIGNABLE_LIST
         if ($owner->hasNewlineAfterCode() ||
             ($owner->ClosedBy &&
-                !$owner->withParentsWhile(T['('], T['['])
-                       ->find(
-                           fn(Token $t): bool =>
-                               ($t->prevCode()->is(self::BEFORE_ALIGNABLE_LIST) &&
-                                       ($t === $owner || $t->nextCode()->AlignedWith === $t)) ||
-                                   $t->isArrayOpenBracket()
-                       ))) {
+                ((!$this->Formatter->MirrorBrackets &&
+                        $owner->ClosedBy->hasNewlineBeforeCode()) ||
+                    ($owner->is([T['('], T['[']]) &&
+                        !$owner->withParentsWhile(T['('], T['['])
+                               ->find(
+                                   fn(Token $t): bool =>
+                                       ($t->prevCode()->is(self::BEFORE_ALIGNABLE_LIST) &&
+                                               ($t === $owner || $t->nextCode()->AlignedWith === $t)) ||
+                                           $t->isArrayOpenBracket()
+                               ))))) {
             return;
         }
 

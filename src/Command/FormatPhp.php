@@ -61,6 +61,11 @@ class FormatPhp extends CliCommand
     /**
      * @var bool|null
      */
+    private $MirrorBrackets;
+
+    /**
+     * @var bool|null
+     */
     private $HangingHeredocIndents;
 
     /**
@@ -384,16 +389,17 @@ EOF,
             $addRules[] = 'space-after-fn';
             $addRules[] = 'space-after-not';
             $addRules[] = 'no-concat-spaces';
+            $addRules[] = 'align-chains';
             $addRules[] = 'align-lists';
             $addRules[] = 'indent-heredocs';
 
-            // Laravel chains and ternary operators don't seem to follow any
-            // alignment rules, so these can be enabled or disabled with little
-            // effect on the size of diffs:
+            // Laravel ternary operators (and chains, for that matter) don't
+            // seem to follow any alignment rules, so this can be enabled or
+            // disabled with little effect on the size of diffs:
             //
-            //     $addRules[] = 'align-chains';
             //     $addRules[] = 'align-ternary';
 
+            $this->MirrorBrackets = false;
             $this->HangingHeredocIndents = false;
             $this->OnlyAlignChainedStatements = true;
         }
@@ -432,6 +438,9 @@ EOF,
             $skipFilters
         );
         $formatter->OneTrueBraceStyle = $this->OneTrueBraceStyle;
+        if (!is_null($this->MirrorBrackets)) {
+            $formatter->MirrorBrackets = $this->MirrorBrackets;
+        }
         if (!is_null($this->PreserveTrailingSpaces)) {
             $formatter->PreserveTrailingSpaces = $this->PreserveTrailingSpaces;
         }

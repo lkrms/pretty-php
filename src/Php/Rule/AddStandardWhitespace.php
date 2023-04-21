@@ -147,7 +147,7 @@ final class AddStandardWhitespace implements TokenRule
             return;
         }
 
-        if ($token->is(T_MATCH)) {
+        if ($token->is(T_MATCH) && !$this->Formatter->MatchesAreLists) {
             $arms = $token->nextSibling(2);
             $current = $arms->nextCode();
             if ($current === $arms->ClosedBy) {

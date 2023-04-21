@@ -4,13 +4,8 @@ namespace Lkrms\Pretty\Tests\Php;
 
 use Lkrms\Facade\File;
 use Lkrms\Pretty\Php\Formatter;
-use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
 use Lkrms\Pretty\Php\Rule\AlignComments;
-use Lkrms\Pretty\Php\Rule\AlignLists;
-use Lkrms\Pretty\Php\Rule\AlignTernaryOperators;
 use Lkrms\Pretty\Php\Rule\ApplyMagicComma;
-use Lkrms\Pretty\Php\Rule\Extra\DeclareArgumentsOnOneLine;
-use Lkrms\Pretty\Php\Rule\NoMixedLists;
 use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
 use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
 use Lkrms\Pretty\Php\Rule\SimplifyStrings;
@@ -19,16 +14,79 @@ use SplFileInfo;
 
 final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
 {
-    public function testEmptyString()
+    /**
+     * @dataProvider formatProvider
+     *
+     * @param array{insertSpaces?:bool,tabSize?:int,skipRules?:string[],addRules?:string[],skipFilters?:string[],callback?:(callable(Formatter): Formatter)} $options
+     */
+    public function testFormat(string $code, string $expected, array $options = [])
     {
-        $in = '';
-        $out = '';
-        $this->assertFormatterOutputIs($in, $out);
+        $formatter = $this->getFormatter($options);
+        $this->assertSame($expected, $formatter->format($code, 3));
     }
 
-    public function testRenderComment()
+    public static function formatProvider()
     {
-        $in = <<<PHP
+        return [
+            'empty string' => [
+                '',
+                '',
+            ],
+            'no symmetrical bracket' => [
+                <<<'PHP'
+<?php
+[$a,
+$b
+];
+[
+$a,
+$b];
+PHP,
+                <<<'PHP'
+<?php
+[$a,
+    $b
+];
+[
+    $a,
+    $b
+];
+
+PHP,
+                ['callback' =>
+                    function (Formatter $formatter): Formatter {
+                        $formatter->MirrorBrackets = false;
+
+                        return $formatter;
+                    }],
+            ],
+            'empty heredoc' => [
+                <<<'PHP'
+<?php
+$a = <<<EOF
+EOF;
+PHP,
+                <<<'PHP'
+<?php
+$a = <<<EOF
+    EOF;
+
+PHP,
+                ['addRules' => [ReindentHeredocs::class]]
+            ],
+            'import with close tag terminator' => [
+                <<<'PHP'
+<?php
+use A ?>
+PHP,
+                <<<'PHP'
+<?php
+use A
+?>
+PHP,
+            ],
+            'PHPDoc comment' => [
+                <<<PHP
 <?php
 
 /**
@@ -42,8 +100,8 @@ no leading asterisk
 	leading tab and no leading asterisk
 
   */
-PHP;
-        $out = <<<PHP
+PHP,
+                <<<PHP
 <?php
 
 /**
@@ -58,94 +116,107 @@ PHP;
  *
  */
 
-PHP;
-        $this->assertFormatterOutputIs($in, $out);
+PHP,
+            ],
+        ];
     }
 
-    public function testFormatter()
+    /**
+     * @dataProvider filesProvider
+     *
+     * @param array{insertSpaces?:bool,tabSize?:int,skipRules?:string[],addRules?:string[],skipFilters?:string[],callback?:(callable(Formatter): Formatter)} $options
+     */
+    public function testFiles(string $code, string $expected, array $options)
     {
-        [$inDir, $outDir] = [
-            dirname(__DIR__) . '.in',
-            dirname(__DIR__) . '.out',
-        ];
-        if (!is_dir($inDir)) {
-            $this->expectNotToPerformAssertions();
+        $formatter = $this->getFormatter($options);
+        $this->assertSame($expected, $formatter->format($code, 3, null, true));
+    }
 
-            return;
-        }
-        $files = File::find($inDir);
+    public static function filesProvider()
+    {
+        $inDir = dirname(__DIR__) . '.in';
+        $outDir = dirname(__DIR__) . '.out';
+        $pathOptions = [
+            '#^phpfmt/.*#' => [
+                'addRules' => [
+                    AlignComments::class,
+                    PreserveOneLineStatements::class,
+                    ReindentHeredocs::class,
+                ],
+                'skipRules' => [
+                    ApplyMagicComma::class,
+                ],
+                'insertSpaces' => false,
+            ],
+            '#^php-doc/.*#' => [
+                'addRules' => [
+                    AlignComments::class,
+                    PreserveOneLineStatements::class,
+                    ReindentHeredocs::class,
+                ],
+                'skipRules' => [
+                    SimplifyStrings::class,
+                    SpaceDeclarations::class,
+                ],
+            ],
+        ];
+
+        // Include:
+        // - .php files
+        // - files with no extension, and
+        // - either of the above with a .fails extension (these are not tested,
+        //   but if their tests.out counterpart doesn't exist, it is generated)
+        $files = File::find($inDir, null, '/(\.php|\/[^.\/]+)(\.fails)?$/');
         /** @var SplFileInfo $file */
         foreach ($files as $file) {
-            $ext = $file->getExtension();
-            if (!in_array($ext, ['php', 'in', '', 'fails'], true)) {
-                continue;
-            }
-            $in = file_get_contents((string) $file);
-            $outFile = preg_replace(
-                ['/\.fails$/', '/\.in$/'],
-                ['', '.out'],
-                $outDir . substr((string) $file, strlen($inDir))
-            );
-            $relPath = substr((string) $file, strlen($inDir) + 1);
+            $inFile = (string) $file;
+            $path = substr($inFile, strlen($inDir));
+            $outFile = preg_replace('/\.fails$/', '', $outDir . $path);
+            $path = ltrim($path, DIRECTORY_SEPARATOR);
 
-            $insertSpaces = true;
-            $tabSize = 4;
-            $skipRules = [];
-            $addRules = [];
-            $skipFilters = [];
-            switch (explode(DIRECTORY_SEPARATOR, $relPath)[0]) {
-                case 'phpfmt':
-                    $addRules = [
-                        AlignComments::class,
-                        PreserveOneLineStatements::class,
-                        ReindentHeredocs::class,
-                    ];
-                    $skipRules = [
-                        ApplyMagicComma::class,
-                    ];
-                    $insertSpaces = false;
+            $fileOptions = [];
+            foreach ($pathOptions as $regex => $options) {
+                if (preg_match($regex, $path)) {
+                    $fileOptions = $options;
                     break;
-                case 'php-doc':
-                    $addRules = [
-                        AlignComments::class,
-                        PreserveOneLineStatements::class,
-                        ReindentHeredocs::class,
-                    ];
-                    $skipRules = [
-                        SimplifyStrings::class,
-                        SpaceDeclarations::class,
-                    ];
-                    break;
+                }
             }
+
+            $input = file_get_contents($inFile);
+
+            // Generate a baseline if the output file doesn't exist
             if (!file_exists($outFile)) {
-                printf("Formatting %s\n", $relPath);
+                fprintf(STDERR, "Formatting %s\n", $path);
                 File::maybeCreateDirectory(dirname($outFile));
-                $formatter = new Formatter(
-                    $insertSpaces,
-                    $tabSize,
-                    $skipRules,
-                    $addRules,
-                    $skipFilters
-                );
-                file_put_contents(
-                    $outFile,
-                    $out = $formatter->format($in, 3, $relPath)
-                );
-            } elseif ($ext === 'fails') {
+                $formatter = self::getFormatter($fileOptions);
+                file_put_contents($outFile, $output = $formatter->format($input, 3, null, true));
+            } elseif ($file->getExtension() === 'fails') {
+                // Don't test if the file is expected to fail
                 continue;
             } else {
-                $out = file_get_contents($outFile);
+                $output = file_get_contents($outFile);
             }
-            $this->assertFormatterOutputIs(
-                $in,
-                $out,
-                $addRules,
-                $skipRules,
-                $skipFilters,
-                $insertSpaces,
-                $tabSize,
-                $relPath
-            );
+
+            yield $path => [$input, $output, $fileOptions];
         }
+    }
+
+    /**
+     * @param array{insertSpaces?:bool,tabSize?:int,skipRules?:string[],addRules?:string[],skipFilters?:string[],callback?:(callable(Formatter): Formatter)} $options
+     */
+    private static function getFormatter(array $options): Formatter
+    {
+        $formatter = new Formatter(
+            $options['insertSpaces'] ?? true,
+            $options['tabSize'] ?? 4,
+            $options['skipRules'] ?? [],
+            $options['addRules'] ?? [],
+            $options['skipFilters'] ?? [],
+        );
+        if ($callback = ($options['callback'] ?? null)) {
+            return $callback($formatter);
+        }
+
+        return $formatter;
     }
 }
