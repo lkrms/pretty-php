@@ -137,7 +137,7 @@ PHP,
         $inDir = dirname(__DIR__) . '.in';
         $outDir = dirname(__DIR__) . '.out';
         $pathOptions = [
-            '#^phpfmt/.*#' => [
+            '#^3rdparty/phpfmt/.*#' => [
                 'addRules' => [
                     AlignComments::class,
                     PreserveOneLineStatements::class,
@@ -148,7 +148,7 @@ PHP,
                 ],
                 'insertSpaces' => false,
             ],
-            '#^php-doc/.*#' => [
+            '#^3rdparty/php-doc/.*#' => [
                 'addRules' => [
                     AlignComments::class,
                     PreserveOneLineStatements::class,
