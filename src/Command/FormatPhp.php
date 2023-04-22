@@ -33,7 +33,6 @@ use Lkrms\Pretty\Php\Rule\NoMixedLists;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
 use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
 use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
-use Lkrms\Pretty\Php\Rule\ReportUnnecessaryParentheses;
 use Lkrms\Pretty\Php\Rule\SimplifyStrings;
 use Lkrms\Pretty\Php\Rule\SpaceDeclarations;
 use Lkrms\Pretty\PrettyBadSyntaxException;
@@ -44,19 +43,111 @@ use Throwable;
 class FormatPhp extends CliCommand
 {
     /**
+     * @var string[]|null
+     */
+    private $InputFiles;
+
+    /**
      * @var string
      */
-    private $Include;
+    private $IncludeRegex;
 
     /**
      * @var string|null
      */
-    private $IncludeIfPhp;
+    private $IncludeIfPhpRegex;
 
     /**
      * @var string
      */
-    private $Exclude;
+    private $ExcludeRegex;
+
+    /**
+     * @var int|null
+     */
+    private $Tabs;
+
+    /**
+     * @var int|null
+     */
+    private $Spaces;
+
+    /**
+     * @var string[]|null
+     */
+    private $SkipRules;
+
+    /**
+     * @var string[]|null
+     */
+    private $AddRules;
+
+    /**
+     * @var bool
+     */
+    private $OneTrueBraceStyle;
+
+    /**
+     * @var int[]|null
+     */
+    private $PreserveTrailingSpaces;
+
+    /**
+     * @var bool
+     */
+    private $IgnoreNewlines;
+
+    /**
+     * @var bool
+     */
+    private $NoSimplifyStrings;
+
+    /**
+     * @var bool
+     */
+    private $NoMagicCommas;
+
+    /**
+     * @var bool
+     */
+    private $NoSortImports;
+
+    /**
+     * @var bool
+     */
+    private $AlignAll;
+
+    /**
+     * @var bool
+     */
+    private $Laravel;
+
+    /**
+     * @var string[]|null
+     */
+    private $OutputFiles;
+
+    /**
+     * @var string|null
+     */
+    private $StdinFilename;
+
+    /**
+     * @var string|null
+     */
+    private $DebugDirectory;
+
+    /**
+     * @var bool
+     */
+    private $Verbose;
+
+    /**
+     * @var int
+     */
+    private $Quiet;
+
+    // --
 
     /**
      * @var bool|null
@@ -74,31 +165,6 @@ class FormatPhp extends CliCommand
     private $OnlyAlignChainedStatements;
 
     /**
-     * @var bool
-     */
-    private $OneTrueBraceStyle;
-
-    /**
-     * @var int[]|null
-     */
-    private $PreserveTrailingSpaces;
-
-    /**
-     * @var bool
-     */
-    private $Verbose;
-
-    /**
-     * @var int
-     */
-    private $Quiet;
-
-    /**
-     * @var string|null
-     */
-    private $DebugDirectory;
-
-    /**
      * @var array<string,string>
      */
     private $SkipRuleMap = [
@@ -106,7 +172,7 @@ class FormatPhp extends CliCommand
         'preserve-newlines' => PreserveNewlines::class,
         'magic-commas' => ApplyMagicComma::class,
         'declaration-spacing' => SpaceDeclarations::class,
-        'report-brackets' => ReportUnnecessaryParentheses::class,
+        'indent-heredocs' => ReindentHeredocs::class,
     ];
 
     /**
@@ -122,7 +188,6 @@ class FormatPhp extends CliCommand
         'blank-before-return' => AddBlankLineBeforeReturn::class,
         'strict-lists' => NoMixedLists::class,
         'preserve-one-line' => PreserveOneLineStatements::class,
-        'indent-heredocs' => ReindentHeredocs::class,
 
         // In the `Extra` namespace
         'space-after-fn' => AddSpaceAfterFn::class,
@@ -146,13 +211,13 @@ class FormatPhp extends CliCommand
 Files and directories to format
 
 If the only path is a dash ('-'), or no paths are given, __{{command}}__ reads
-from the standard input and writes formatted code to the standard output.
+from the standard input and writes to the standard output.
 
-If <PATH> is a directory, __{{command}}__ searches for files to format in the
-directory tree below it.
+Directories are searched recursively for files to format.
 EOF)
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
-                ->multipleAllowed(),
+                ->multipleAllowed()
+                ->bindTo($this->InputFiles),
             CliOption::build()
                 ->long('include')
                 ->short('I')
@@ -164,7 +229,7 @@ Exclusions (__--exclude__) are applied first.
 EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->defaultValue('/\.php$/')
-                ->bindTo($this->Include),
+                ->bindTo($this->IncludeRegex),
             CliOption::build()
                 ->long('include-if-php')
                 ->short('P')
@@ -182,7 +247,7 @@ Exclusions (__--exclude__) are applied first.
 EOF)
                 ->optionType(CliOptionType::VALUE_OPTIONAL)
                 ->defaultValue('/(\/|^)[^.]+$/')
-                ->bindTo($this->IncludeIfPhp),
+                ->bindTo($this->IncludeIfPhpRegex),
             CliOption::build()
                 ->long('exclude')
                 ->short('X')
@@ -194,7 +259,7 @@ Exclusions are applied before inclusions (__--include__).
 EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->defaultValue('/\/(\.git|\.hg|\.svn|_?build|dist|tests[-._0-9a-z]*|var|vendor)\/$/i')
-                ->bindTo($this->Exclude),
+                ->bindTo($this->ExcludeRegex),
             CliOption::build()
                 ->long('tab')
                 ->short('t')
@@ -202,47 +267,60 @@ EOF)
                 ->description(<<<EOF
 Indent using tabs
 
-The __--rule__ values _align-chains_, _align-fn_, _align-lists_, and
+The __--enable__ values _align-chains_, _align-fn_, _align-lists_, and
 _align-ternary_ have no effect when using tabs for indentation.
 EOF)
                 ->optionType(CliOptionType::ONE_OF_OPTIONAL)
+                ->valueType(CliOptionValueType::INTEGER)
                 ->allowedValues(['2', '4', '8'])
-                ->defaultValue('4'),
+                ->defaultValue('4')
+                ->bindTo($this->Tabs),
             CliOption::build()
                 ->long('space')
                 ->short('s')
                 ->valueName('SIZE')
-                ->description('Indent using spaces')
+                ->description(<<<EOF
+Indent using spaces
+EOF)
                 ->optionType(CliOptionType::ONE_OF_OPTIONAL)
+                ->valueType(CliOptionValueType::INTEGER)
                 ->allowedValues(['2', '4', '8'])
-                ->defaultValue('4'),
+                ->defaultValue('4')
+                ->bindTo($this->Spaces),
             CliOption::build()
-                ->long('skip-rule')
+                ->long('disable')
                 ->short('i')
                 ->valueName('RULE')
-                ->description('Skip one or more rules')
+                ->description(<<<EOF
+Disable a standard formatting rule
+EOF)
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys($this->SkipRuleMap))
                 ->unknownValuePolicy(CliOptionValueUnknownPolicy::DISCARD)
                 ->multipleAllowed()
-                ->envVariable('pretty_php_skip')
-                ->keepEnv(),
+                ->envVariable('pretty_php_disable')
+                ->keepEnv()
+                ->bindTo($this->SkipRules),
             CliOption::build()
-                ->long('rule')
+                ->long('enable')
                 ->short('r')
                 ->valueName('RULE')
-                ->description('Add one or more non-standard rules')
+                ->description(<<<EOF
+Enable a non-standard formatting rule
+EOF)
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys($this->AddRuleMap))
                 ->unknownValuePolicy(CliOptionValueUnknownPolicy::DISCARD)
                 ->multipleAllowed()
-                ->envVariable('pretty_php_rule')
-                ->keepEnv(),
+                ->envVariable('pretty_php_enable')
+                ->keepEnv()
+                ->bindTo($this->AddRules),
             CliOption::build()
                 ->long('one-true-brace-style')
                 ->short('1')
-                ->description('Format braces using the One True Brace Style')
-                ->hide()
+                ->description(<<<EOF
+Format braces using the One True Brace Style
+EOF)
                 ->bindTo($this->OneTrueBraceStyle),
             CliOption::build()
                 ->long('preserve-trailing-spaces')
@@ -260,53 +338,91 @@ EOF)
                 ->long('ignore-newlines')
                 ->short('N')
                 ->description(<<<EOF
-Do not add line breaks at the position of newlines in the input
+Ignore the position of newlines in the input
 
-Equivalent to:  __--skip-rule__ _preserve-newlines_
-EOF),
+Equivalent to:  __--disable__ _preserve-newlines_
+EOF)
+                ->bindTo($this->IgnoreNewlines),
             CliOption::build()
                 ->long('no-simplify-strings')
                 ->short('S')
                 ->description(<<<EOF
-Do not replace single- or double-quoted strings
+Don't normalise single- and double-quoted strings
 
-Equivalent to:  __--skip-rule__ _simplify-strings_
-EOF),
+Equivalent to:  __--disable__ _simplify-strings_
+EOF)
+                ->bindTo($this->NoSimplifyStrings),
+            CliOption::build()
+                ->long('no-magic-commas')
+                ->short('C')
+                ->description(<<<EOF
+Don't split lists with trailing commas into one item per line
+
+Equivalent to:  __--disable__ _magic-commas_
+EOF)
+                ->bindTo($this->NoMagicCommas),
             CliOption::build()
                 ->long('no-sort-imports')
                 ->short('M')
-                ->description('Do not sort alias/import statements'),
+                ->description(<<<EOF
+Don't sort alias/import statements
+EOF)
+                ->bindTo($this->NoSortImports),
             CliOption::build()
                 ->long('align-all')
                 ->short('a')
-                ->description('Enable all alignment rules'),
+                ->description(<<<EOF
+Enable all alignment rules
+EOF)
+                ->bindTo($this->AlignAll),
             CliOption::build()
                 ->long('laravel')
                 ->short('l')
-                ->description('Enable Laravel-friendly rules'),
+                ->description(<<<EOF
+Apply Laravel-friendly formatting
+EOF)
+                ->bindTo($this->Laravel),
             CliOption::build()
                 ->long('output')
                 ->short('o')
                 ->valueName('FILE')
                 ->description(<<<EOF
-Write output to a file other than the input file
+Write output to a different file
 
 If <FILE> is a dash ('-'), __{{command}}__ writes to the standard output.
 
 May be given once per input file.
 EOF)
                 ->optionType(CliOptionType::VALUE)
-                ->multipleAllowed(),
+                ->multipleAllowed()
+                ->bindTo($this->OutputFiles),
+            CliOption::build()
+                ->long('stdin-filename')
+                ->short('F')
+                ->valueName('PATH')
+                ->description(<<<EOF
+The path of the file passed to the standard input
+
+Allows discovery of configuration files. Useful for editor integrations.
+EOF)
+                ->optionType(CliOptionType::VALUE)
+                ->bindTo($this->StdinFilename),
             CliOption::build()
                 ->long('debug')
                 ->valueName('DIR')
-                ->description('Create debug output in <DIR>')
+                ->description(<<<EOF
+Create debug output in <DIR>
+EOF)
                 ->optionType(CliOptionType::VALUE_OPTIONAL)
-                ->defaultValue($this->app()->getTempPath() . '/debug'),
+                ->hide(!Env::debug())
+                ->defaultValue($this->app()->getTempPath() . '/debug')
+                ->bindTo($this->DebugDirectory),
             CliOption::build()
                 ->long('verbose')
                 ->short('v')
-                ->description('Report unchanged files')
+                ->description(<<<EOF
+Report unchanged files
+EOF)
                 ->bindTo($this->Verbose),
             CliOption::build()
                 ->long('quiet')
@@ -314,7 +430,8 @@ EOF)
                 ->description(<<<EOF
 Only report errors
 
-May be given multiple times:  
+May be given multiple times:
+
 __-q__ suppresses file replacement reports  
 __-qq__ also suppresses code problem reports  
 __-qqq__ also suppresses TTY-only progress reports
@@ -343,11 +460,10 @@ EOF,
 
     protected function run(...$params)
     {
-        $debug = $this->getOptionValue('debug');
         $updateStderr = false;
-        if (!is_null($debug)) {
-            File::maybeCreateDirectory($debug);
-            $debug = $this->DebugDirectory = realpath($debug) ?: null;
+        if (!is_null($this->DebugDirectory)) {
+            File::maybeCreateDirectory($this->DebugDirectory);
+            $this->DebugDirectory = realpath($this->DebugDirectory) ?: null;
             if (!Env::debug()) {
                 Env::debug(true);
                 $updateStderr = true;
@@ -355,25 +471,26 @@ EOF,
             $this->app()->logConsoleMessages();
         }
 
-        $tab = Convert::toIntOrNull($this->getOptionValue('tab'));
-        $space = Convert::toIntOrNull($this->getOptionValue('space'));
-        if ($tab && $space) {
+        if ($this->Tabs && $this->Spaces) {
             throw new CliInvalidArgumentsException('--tab and --space cannot be given together');
         }
 
-        $skipRules = $this->getOptionValue('skip-rule');
-        $addRules = $this->getOptionValue('rule');
+        $skipRules = $this->SkipRules;
+        $addRules = $this->AddRules;
         $skipFilters = [];
-        if ($this->getOptionValue('ignore-newlines')) {
+        if ($this->IgnoreNewlines) {
             $skipRules[] = 'preserve-newlines';
         }
-        if ($this->getOptionValue('no-simplify-strings')) {
+        if ($this->NoSimplifyStrings) {
             $skipRules[] = 'simplify-strings';
         }
-        if ($this->getOptionValue('no-sort-imports')) {
+        if ($this->NoMagicCommas) {
+            $skipRules[] = 'magic-commas';
+        }
+        if ($this->NoSortImports) {
             $skipFilters[] = SortImports::class;
         }
-        if ($this->getOptionValue('align-all')) {
+        if ($this->AlignAll) {
             $addRules[] = 'align-assignments';
             $addRules[] = 'align-chains';
             $addRules[] = 'align-comments';
@@ -381,7 +498,7 @@ EOF,
             $addRules[] = 'align-lists';
             $addRules[] = 'align-ternary';
         }
-        if ($this->getOptionValue('laravel')) {
+        if ($this->Laravel) {
             $skipRules = [];
             $skipRules[] = 'magic-commas';
 
@@ -409,8 +526,8 @@ EOF,
         $skipRules = array_values(array_intersect_key($this->SkipRuleMap, array_flip($skipRules)));
         $addRules = array_values(array_intersect_key($this->AddRuleMap, array_flip($addRules)));
 
-        $in = $this->expandPaths($this->getOptionValue('file'), $directoryCount);
-        $out = $this->getOptionValue('output');
+        $in = $this->expandPaths($this->InputFiles, $directoryCount);
+        $out = $this->OutputFiles;
         if (!$in && stream_isatty(STDIN)) {
             throw new CliInvalidArgumentsException('<PATH> required when input is a TTY');
         } elseif (!$in || $in === ['-']) {
@@ -431,8 +548,8 @@ EOF,
         }
 
         $formatter = new Formatter(
-            !$tab,
-            $tab ?: $space ?: 4,
+            !$this->Tabs,
+            $this->Tabs ?: $this->Spaces ?: 4,
             $skipRules,
             $addRules,
             $skipFilters
@@ -456,32 +573,31 @@ EOF,
         $replaced = 0;
         $errors = [];
         foreach ($in as $key => $file) {
-            $this->Quiet > 2 || Console::logProgress(sprintf('Formatting %d of %d:', ++$i, $count), $file);
+            $displayFile = ($file === 'php://stdin' ? $this->StdinFilename : null) ?: $file;
+            $this->Quiet > 2 || Console::logProgress(sprintf('Formatting %d of %d:', ++$i, $count), $displayFile);
             $input = file_get_contents($file);
-            Sys::startTimer($file, 'file');
+            Sys::startTimer($displayFile, 'file');
             try {
                 $output = $formatter->format(
                     $input,
                     $this->Quiet,
-                    $file === 'php://stdin'
-                        ? null
-                        : $file,
+                    $displayFile
                 );
             } catch (PrettyBadSyntaxException $ex) {
                 Console::exception($ex);
                 $this->setExitStatus(2);
-                $errors[] = $file;
+                $errors[] = $displayFile;
                 continue;
             } catch (PrettyException $ex) {
-                Console::error('Unable to format:', $file);
+                Console::error('Unable to format:', $displayFile);
                 $this->maybeDumpDebugOutput($input, $ex->getOutput(), $ex->getTokens(), $ex->getLog(), $ex->getData());
                 throw $ex;
             } catch (Throwable $ex) {
-                Console::error('Unable to format:', $file);
+                Console::error('Unable to format:', $displayFile);
                 $this->maybeDumpDebugOutput($input, null, $formatter->Tokens, $formatter->Log, (string) $ex);
                 throw $ex;
             } finally {
-                Sys::stopTimer($file, 'file');
+                Sys::stopTimer($displayFile, 'file');
             }
             $this->maybeDumpDebugOutput($input, $output, $formatter->Tokens, $formatter->Log, null);
 
@@ -553,11 +669,11 @@ EOF,
             $directoryCount++;
             $iterator = File::find(
                 $path,
-                $this->Exclude,
-                $this->Include,
+                $this->ExcludeRegex,
+                $this->IncludeRegex,
                 null,
-                $this->IncludeIfPhp ? [
-                    $this->IncludeIfPhp =>
+                $this->IncludeIfPhpRegex ? [
+                    $this->IncludeIfPhpRegex =>
                         fn(SplFileInfo $file) => File::isPhp((string) $file)
                 ] : null
             );

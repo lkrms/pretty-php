@@ -7,7 +7,6 @@ use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Rule\AlignComments;
 use Lkrms\Pretty\Php\Rule\ApplyMagicComma;
 use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
-use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
 use Lkrms\Pretty\Php\Rule\SimplifyStrings;
 use Lkrms\Pretty\Php\Rule\SpaceDeclarations;
 use SplFileInfo;
@@ -72,7 +71,6 @@ $a = <<<EOF
     EOF;
 
 PHP,
-                ['addRules' => [ReindentHeredocs::class]]
             ],
             'import with close tag terminator' => [
                 <<<'PHP'
@@ -141,7 +139,6 @@ PHP,
                 'addRules' => [
                     AlignComments::class,
                     PreserveOneLineStatements::class,
-                    ReindentHeredocs::class,
                 ],
                 'skipRules' => [
                     ApplyMagicComma::class,
@@ -152,7 +149,6 @@ PHP,
                 'addRules' => [
                     AlignComments::class,
                     PreserveOneLineStatements::class,
-                    ReindentHeredocs::class,
                 ],
                 'skipRules' => [
                     SimplifyStrings::class,

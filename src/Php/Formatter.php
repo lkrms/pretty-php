@@ -214,6 +214,7 @@ final class Formatter implements IReadable, IWritable
         SwitchPosition::class,  // processToken (600)
         SpaceDeclarations::class,  // processToken (620)  [OPTIONAL]
         AddHangingIndentation::class,  // processToken (800), callback (800)
+        ReindentHeredocs::class,  // processToken (900), beforeRender (900)  [OPTIONAL]
         ReportUnnecessaryParentheses::class,  // processToken (990)  [OPTIONAL]
         AddEssentialWhitespace::class,  // beforeRender (999)
     ];
@@ -231,7 +232,6 @@ final class Formatter implements IReadable, IWritable
         AlignArrowFunctions::class,  // processToken (380), callback (710)
         AlignTernaryOperators::class,  // processToken (380), callback (710)
         AlignLists::class,  // processList  (400), callback (710)
-        ReindentHeredocs::class,  // processToken (900), beforeRender (900)  [OPTIONAL]
         AddSpaceAfterFn::class,  // processToken
         AddSpaceAfterNot::class,  // processToken
         DeclareArgumentsOnOneLine::class,  // processToken
