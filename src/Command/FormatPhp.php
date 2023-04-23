@@ -9,6 +9,7 @@ use Lkrms\Cli\Catalog\CliUsageSectionName;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
+use Lkrms\Console\ConsoleLevel;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
@@ -37,6 +38,8 @@ use Lkrms\Pretty\Php\Rule\SimplifyStrings;
 use Lkrms\Pretty\Php\Rule\SpaceDeclarations;
 use Lkrms\Pretty\PrettyBadSyntaxException;
 use Lkrms\Pretty\PrettyException;
+use SebastianBergmann\Diff\Differ;
+use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
 use SplFileInfo;
 use Throwable;
 
@@ -126,6 +129,16 @@ class FormatPhp extends CliCommand
      * @var string[]|null
      */
     private $OutputFiles;
+
+    /**
+     * @var string|null
+     */
+    private $Diff;
+
+    /**
+     * @var bool
+     */
+    private $Check;
 
     /**
      * @var string|null
@@ -223,7 +236,7 @@ EOF)
                 ->short('I')
                 ->valueName('REGEX')
                 ->description(<<<EOF
-A regex that matches files to include when searching a path
+A regex that matches files to include when searching a <PATH>
 
 Exclusions (__--exclude__) are applied first.
 EOF)
@@ -235,7 +248,7 @@ EOF)
                 ->short('P')
                 ->valueName('REGEX')
                 ->description(<<<EOF
-Include files that contain PHP code when searching a path
+Include files that contain PHP code when searching a <PATH>
 
 Use this option to format files not matched by __--include__ if they have a PHP
 open tag at the beginning of line 1, or on line 2 if they have a shebang ('#!').
@@ -253,7 +266,7 @@ EOF)
                 ->short('X')
                 ->valueName('REGEX')
                 ->description(<<<EOF
-A regex that matches files to exclude when searching a path
+A regex that matches files to exclude when searching a <PATH>
 
 Exclusions are applied before inclusions (__--include__).
 EOF)
@@ -370,14 +383,12 @@ EOF)
                 ->bindTo($this->NoSortImports),
             CliOption::build()
                 ->long('align-all')
-                ->short('a')
                 ->description(<<<EOF
 Enable all alignment rules
 EOF)
                 ->bindTo($this->AlignAll),
             CliOption::build()
                 ->long('laravel')
-                ->short('l')
                 ->description(<<<EOF
 Apply Laravel-friendly formatting
 EOF)
@@ -396,6 +407,24 @@ EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->multipleAllowed()
                 ->bindTo($this->OutputFiles),
+            CliOption::build()
+                ->long('diff')
+                ->short('d')
+                ->valueName('TYPE')
+                ->description(<<<EOF
+Fail with a diff when the input is not already formatted
+EOF)
+                ->optionType(CliOptionType::ONE_OF_OPTIONAL)
+                ->allowedValues(['unified', 'name-only'])
+                ->defaultValue('unified')
+                ->bindTo($this->Diff),
+            CliOption::build()
+                ->long('check')
+                ->short('c')
+                ->description(<<<EOF
+Fail silently when the input is not already formatted
+EOF)
+                ->bindTo($this->Check),
             CliOption::build()
                 ->long('stdin-filename')
                 ->short('F')
@@ -428,13 +457,12 @@ EOF)
                 ->long('quiet')
                 ->short('q')
                 ->description(<<<EOF
-Only report errors
+Only report warnings and errors
 
-May be given multiple times:
+If given twice, suppress warnings. If given three or more times, also suppress
+TTY-only progress updates.
 
-__-q__ suppresses file replacement reports  
-__-qq__ also suppresses code problem reports  
-__-qqq__ also suppresses TTY-only progress reports
+Errors are always reported.
 EOF)
                 ->multipleAllowed()
                 ->bindTo($this->Quiet),
@@ -541,7 +569,7 @@ EOF,
         } elseif (!$out) {
             $out = $in;
         }
-        if ($out === ['-']) {
+        if ($out === ['-'] || $this->Diff || $this->Check) {
             Console::registerStderrTarget(true);
         } elseif ($updateStderr) {
             Console::registerStdioTargets(true);
@@ -599,7 +627,39 @@ EOF,
             } finally {
                 Sys::stopTimer($displayFile, 'file');
             }
-            $this->maybeDumpDebugOutput($input, $output, $formatter->Tokens, $formatter->Log, null);
+            if ($i === $count) {
+                $this->maybeDumpDebugOutput($input, $output, $formatter->Tokens, $formatter->Log, null);
+            }
+
+            if ($this->Check) {
+                if ($input === $output) {
+                    continue;
+                }
+                $this->Quiet || Console::error('Input requires formatting');
+
+                return 1;
+            }
+
+            if ($this->Diff) {
+                if ($input === $output) {
+                    !$this->Verbose || Console::log('Already formatted:', $displayFile);
+                    continue;
+                }
+                Console::maybeClearLine();
+                switch ($this->Diff) {
+                    case 'name-only':
+                        printf("%s\n", $displayFile);
+                        break;
+                    case 'unified':
+                        print (new Differ(new StrictUnifiedDiffOutputBuilder([
+                            'fromFile' => "a/$displayFile",
+                            'toFile' => "b/$displayFile",
+                        ])))->diff($input, $output);
+                        $this->Quiet || Console::log('Would replace', $displayFile);
+                }
+                $replaced++;
+                continue;
+            }
 
             $outFile = $out[$key] ?? '-';
             if ($outFile === '-') {
@@ -634,15 +694,37 @@ EOF,
             );
         }
 
-        $this->Quiet || Console::summary(
-            sprintf(
-                $replaced ? 'Replaced %1$d of %2$d %3$s' : 'Formatted %2$d %3$s',
-                $replaced,
+        if ($this->Check) {
+            $this->Quiet || Console::log(sprintf(
+                '%d %s would be left unchanged',
                 $count,
                 Convert::plural($count, 'file')
-            ),
-            'successfully'
-        );
+            ));
+
+            return;
+        }
+
+        if ($this->Diff) {
+            $this->Quiet || !$replaced || Console::out('', ConsoleLevel::INFO);
+            $this->Quiet || Console::log(sprintf(
+                $replaced
+                    ? '%1$d of %2$d %3$s %4$s formatting'
+                    : '%2$d %3$s would be left unchanged',
+                $replaced,
+                $count,
+                Convert::plural($count, 'file'),
+                Convert::plural($count, 'requires', 'require')
+            ));
+
+            return $replaced ? 1 : 0;
+        }
+
+        $this->Quiet || Console::summary(sprintf(
+            $replaced ? 'Replaced %1$d of %2$d %3$s' : 'Formatted %2$d %3$s',
+            $replaced,
+            $count,
+            Convert::plural($count, 'file')
+        ), 'successfully');
     }
 
     /**
