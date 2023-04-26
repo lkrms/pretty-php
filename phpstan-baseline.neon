@@ -1,11 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$AddRules is never written, only read\\.$#"
-			count: 1
-			path: src/Command/FormatPhp.php
-
-		-
 			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$AlignAll is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
@@ -16,12 +11,22 @@ parameters:
 			path: src/Command/FormatPhp.php
 
 		-
+			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$ConfigFile is never written, only read\\.$#"
+			count: 1
+			path: src/Command/FormatPhp.php
+
+		-
 			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$Diff is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
 		-
 			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$ExcludeRegex is never written, only read\\.$#"
+			count: 1
+			path: src/Command/FormatPhp.php
+
+		-
+			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$IgnoreConfigFiles is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
@@ -81,12 +86,12 @@ parameters:
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$Quiet is never written, only read\\.$#"
+			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$PrintConfig is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$SkipRules is never written, only read\\.$#"
+			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$Quiet is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 

@@ -1,0 +1,19 @@
+{
+    "src": [
+        "bin",
+        "src",
+        "tests",
+        "bootstrap.php"
+    ],
+    "includeIfPhp": null,
+    "disable": [
+        "indent-heredocs"
+    ],
+    "enable": [
+        "align-chains",
+        "align-fn",
+        "blank-before-return",
+        "preserve-one-line",
+        "strict-lists"
+    ]
+}

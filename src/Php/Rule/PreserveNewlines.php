@@ -2,12 +2,12 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Facade\Test;
 use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
+use Lkrms\Utility\Test;
 
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
