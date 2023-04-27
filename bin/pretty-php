@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
-use Lkrms\Facade\Cli;
+use Lkrms\Cli\Facade\Cli;
 use Lkrms\Pretty\Command\FormatPhp;
 
 require dirname(__DIR__) . '/vendor/autoload.php';

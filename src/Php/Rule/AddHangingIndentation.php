@@ -274,6 +274,7 @@ final class AddHangingIndentation implements TokenRule
         if (!$token->IsCode ||
                 !$token->_prevCode ||
                 $token->AlignedWith ||
+                $token->isCloseBracket() ||
                 $token->is([...TokenType::HAS_STATEMENT, ...TokenType::NOT_CODE])) {
             return false;
         }
@@ -284,6 +285,13 @@ final class AddHangingIndentation implements TokenRule
                 $token->_prevCode->id === T_START_HEREDOC &&
                 !$token->_prevCode->AlignedWith &&
                 !$token->_prevCode->hasNewlineBeforeCode())) {
+            return false;
+        }
+
+        // Optionally suppress hanging indentation between conditional
+        // expressions in `match`
+        if (!$this->Formatter->HangingMatchIndents &&
+                $token->_prevCode->isMatchDelimiter(false)) {
             return false;
         }
 

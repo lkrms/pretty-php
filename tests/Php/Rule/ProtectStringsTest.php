@@ -2,8 +2,6 @@
 
 namespace Lkrms\Pretty\Tests\Php\Rule;
 
-use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
-
 final class ProtectStringsTest extends \Lkrms\Pretty\Tests\Php\TestCase
 {
     /**
@@ -11,7 +9,7 @@ final class ProtectStringsTest extends \Lkrms\Pretty\Tests\Php\TestCase
      */
     public function testProcessToken(string $code, string $expected)
     {
-        $this->assertFormatterOutputIs($code, $expected, [ReindentHeredocs::class]);
+        $this->assertFormatterOutputIs($code, $expected);
     }
 
     public static function processTokenProvider()

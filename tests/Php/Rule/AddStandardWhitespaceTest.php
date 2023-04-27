@@ -2,6 +2,7 @@
 
 namespace Lkrms\Pretty\Tests\Php\Rule;
 
+use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Rule\AlignAssignments;
 use Lkrms\Pretty\Php\Rule\ApplyMagicComma;
 
@@ -62,5 +63,12 @@ PHP,
                 [AlignAssignments::class]
             ],
         ];
+    }
+
+    protected function prepareFormatter(Formatter $formatter): Formatter
+    {
+        $formatter->MatchesAreLists = false;
+
+        return $formatter;
     }
 }

@@ -163,6 +163,30 @@ final class TokenCollection extends TypedCollection
     /**
      * @return $this
      */
+    public function addWhitespaceAfter(int $type, bool $critical = false)
+    {
+        if ($critical) {
+            return $this->forEach(
+                function (Token $t) use ($type) {
+                    $t->CriticalWhitespaceAfter |= $type;
+                    $t->WhitespaceMaskNext |= $type;
+                    $t->next()->WhitespaceMaskPrev |= $type;
+                }
+            );
+        }
+
+        return $this->forEach(
+            function (Token $t) use ($type) {
+                $t->WhitespaceAfter |= $type;
+                $t->WhitespaceMaskNext |= $type;
+                $t->next()->WhitespaceMaskPrev |= $type;
+            }
+        );
+    }
+
+    /**
+     * @return $this
+     */
     public function maskWhitespaceBefore(int $mask)
     {
         return $this->forEach(

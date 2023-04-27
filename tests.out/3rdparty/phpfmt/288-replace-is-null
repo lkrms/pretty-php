@@ -6,4 +6,4 @@ if (is_null($a)) {
 
 if (is_null /*aaa*/ (/*aaa*/ $a
 // hello world
-	));
+));

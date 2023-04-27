@@ -54,11 +54,12 @@ final class BracePosition implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if (!$token->isStructuralBrace() &&
-                !$token->prevSibling(2)->is(T_MATCH)) {
+        if (!($match = $token->prevSibling(2)->is(T_MATCH)) &&
+                !$token->isStructuralBrace()) {
             return;
         }
 
+        $matchList = $match && $this->Formatter->MatchesAreLists;
         $next = $token->next();
         if ($token->id === T['{']) {
             $line = WhitespaceType::NONE;
@@ -93,7 +94,7 @@ final class BracePosition implements TokenRule
                 $this->BracketBracePairs[] = [$prev, $token];
             }
             $token->WhitespaceBefore |= WhitespaceType::SPACE | $line;
-            $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
+            $token->WhitespaceAfter |= ($matchList ? 0 : WhitespaceType::LINE) | WhitespaceType::SPACE;
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
             if ($next->id === T['}']) {
                 $token->WhitespaceMaskNext &= ~WhitespaceType::SPACE;
@@ -102,8 +103,14 @@ final class BracePosition implements TokenRule
             return;
         }
 
-        $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
+        $token->WhitespaceBefore |= ($matchList ? 0 : WhitespaceType::LINE) | WhitespaceType::SPACE;
         $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
+
+        if ($match ||
+                ($nextCode = $token->nextCode())->is([T[')'], T[']']]) ||
+                $nextCode === $token->EndStatement) {
+            return;
+        }
 
         if ($next->continuesControlStructure()) {
             $token->WhitespaceAfter |= WhitespaceType::SPACE;

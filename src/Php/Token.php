@@ -598,7 +598,9 @@ class Token extends NavigableToken implements JsonSerializable
         } elseif ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE)) {
             $this->_prevCode->applyStatement();
             $this->applyStatement();
-        } elseif ($this->is([T[')'], T[']']]) || ($this->id === T['}'] && !$this->isStructuralBrace())) {
+        } elseif ($this->is([T[')'], T[']']]) ||
+            ($this->id === T['}'] &&
+                (!$this->isStructuralBrace() || $this->isMatchBrace()))) {
             $this->_prevCode->applyStatement();
         } elseif ($this->is(T[','])) {
             // For formatting purposes, commas are statement delimiters:
@@ -611,8 +613,8 @@ class Token extends NavigableToken implements JsonSerializable
             // - in `use` statements, e.g. `use my_trait { a as b; c as d; }`
             $parent = $this->parent();
             if ($parent->is([T['('], T['[']]) ||
-                ($parent->is(T['{']) &&
-                    ($parent->prevSibling(2)->is(T_MATCH) || !$parent->isStructuralBrace()))) {
+                ($parent->id === T['{'] &&
+                    (!$parent->isStructuralBrace() || $this->isMatchDelimiter()))) {
                 $this->applyStatement();
             }
         }
@@ -754,7 +756,8 @@ class Token extends NavigableToken implements JsonSerializable
                 $this->IsCloseTagStatementTerminator ||
                 $this->startsAlternativeSyntax() ||
                 ($this->is(T[':']) && ($this->inSwitchCase() || $this->inLabel())) ||
-                ($this->is(T['}']) && ($this->prevSibling(2)->is(T_MATCH) || !$this->isStructuralBrace())) ||
+                ($this->is(T['}']) &&
+                    (!$this->isStructuralBrace() || $this->isMatchBrace())) ||
                 $this->IsTernaryOperator) {
             // Expression terminators don't form part of the expression
             $this->Expression = false;
@@ -762,8 +765,8 @@ class Token extends NavigableToken implements JsonSerializable
         } elseif ($this->is(T[','])) {
             $parent = $this->parent();
             if ($parent->is([T['('], T['[']]) ||
-                ($parent->is(T['{']) &&
-                    ($parent->prevSibling(2)->is(T_MATCH) || !$parent->isStructuralBrace()))) {
+                ($parent->id === T['{'] &&
+                    (!$parent->isStructuralBrace() || $this->isMatchDelimiter(false)))) {
                 $this->Expression = false;
                 $this->_prevCode->applyExpression();
             }
@@ -809,6 +812,24 @@ class Token extends NavigableToken implements JsonSerializable
             }
             $current = $current->_nextSibling;
         } while ($current && $current->EndExpression === $this);
+    }
+
+    final public function isMatchBrace(): bool
+    {
+        $current = $this->OpenedBy ?: $this;
+
+        return $current->id === T['{'] &&
+            $current->prevSibling(2)->id === T_MATCH;
+    }
+
+    final public function isMatchDelimiter(bool $betweenArms = true): bool
+    {
+        return $this->id === T[','] &&
+            $this->parent()->isMatchBrace() &&
+            (!$betweenArms ||
+                !($this->prevSiblingOf(
+                    T[','], ...TokenType::OPERATOR_DOUBLE_ARROW
+                )->is([T[','], T_NULL])));
     }
 
     /**
@@ -1985,10 +2006,13 @@ class Token extends NavigableToken implements JsonSerializable
 
     final public function isStructuralBrace(): bool
     {
-        if (!($this->id === T['{'] || ($this->id === T['}'] && $this->OpenedBy->id === T['{']))) {
+        $current = $this->OpenedBy ?: $this;
+        if ($current->id !== T['{']) {
             return false;
         }
-        $current = $this->OpenedBy ?: $this;
+        if ($current->prevSibling(2)->id === T_MATCH) {
+            return true;
+        }
         $lastInner = $current->ClosedBy->_prevCode;
 
         return $lastInner === $current ||  // `{}`
