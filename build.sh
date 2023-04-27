@@ -40,7 +40,8 @@ rm -rf "$BUILD_DIR" "$BUILD_TAR" "$BUILD_PHAR" &&
     rm -fv "$BUILD_DIR"/**/.DS_Store &&
     rm -fv "$BUILD_DIR"/vendor/**/.gitignore &&
     rm -rfv "$BUILD_DIR"/vendor/bin &&
-    rm -rfv "$BUILD_DIR"/vendor/*/*/{docs,phpdoc*,phpstan*,phpunit*,tests*,LICENSE*,README*,*.md,*.txt,composer.json,.github} ||
+    rm -rfv "$BUILD_DIR"/vendor/*/*/{docs,phpdoc*,phpstan*,phpunit*,tests*,LICENSE*,README*,*.md,*.txt,composer.json,.git?*} &&
+    rm -rfv "$BUILD_DIR"/vendor/lkrms/util/{bin,lib,src/Sync} ||
     _die "error preparing $PWD/$BUILD_DIR"
 echo
 
