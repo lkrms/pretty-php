@@ -2,24 +2,27 @@
 
 ## The opinionated formatter for modern, expressive PHP
 
-*PrettyPHP* is a code formatter made in the likeness of [Black].
+*PrettyPHP* is a code formatter made in the likeness of *Black*, the
+[uncompromising Python formatter][Black].
 
-Like Black, *PrettyPHP* runs with sensible defaults and doesn't need to be
+Like *Black*, *PrettyPHP* runs with sensible defaults and doesn't need to be
 configured. It's also deterministic (with some [pragmatic exceptions]), so no
 matter how the input is formatted, it produces the same output.
 
-*PrettyPHP* is the culmination of many attempts to find a suitable alternative,
-i.e. something that happened while its developer was busy making other plans.
+> *PrettyPHP* is still in development and is yet to reach a stable release. Its
+> code style is unlikely to change significantly before v1, and breaking changes
+> to command line options are kept to a minimum. *PrettyPHP* v0.x releases are
+> safe to use in production scenarios that accommodate these limitations.
 
 ## Editor integrations
 
-- [Visual Studio Code] / [Open VSX]
+- Visual Studio Code
+  - [Visual Studio Marketplace]
+  - [Open VSX]
 
 ## FAQ
 
 ### How is *PrettyPHP* different to other formatters?
-
-> Features still under development are temporarily ~~crossed out~~.
 
 #### It's opinionated
 
@@ -29,15 +32,15 @@ i.e. something that happened while its developer was busy making other plans.
 
 #### It's a formatter, not a fixer
 
-- Previous formatting is ignored[^1]
-- Whitespace is changed, code is not[^1]
+- Previous formatting is ignored
+- Whitespace is changed, code is not
 - Entire files are formatted in place
 
-[^1]: Some [pragmatic exceptions] are made.
+(Some [pragmatic exceptions] are made.)
 
 #### It's CI-friendly
 
-- Installs via `composer require --dev lkrms/pretty-php` ~~or direct download~~
+- Installs via `composer require --dev lkrms/pretty-php`
 - Runs on Linux, macOS and Windows
 - MIT-licensed
 
@@ -48,10 +51,23 @@ i.e. something that happened while its developer was busy making other plans.
 - Checks formatted and original code for equivalence by comparing language
   tokens returned by [`PhpToken::tokenize()`][tokenize].
 
-#### ~~It's optionally compliant with PSR-12 and other coding standards~~
+#### It's optionally compatible with coding standards
 
 *PrettyPHP* has partial support for [PSR-12]. An upcoming release will offer
 full support.
+
+### Why are there so many options?
+
+Because *PrettyPHP* is in initial development, PHP formatting is complicated,
+and testing is easier when settings can be changed at runtime.
+
+It may also have something to do with our collective resistance--as PHP
+developers--to reaching a consensus about anything. There's a lot to juggle when
+you're writing an opinionated formatter you hope will appeal to other PHP
+developers!
+
+Over time, *PrettyPHP* will become more opinionated and have fewer options, so
+reliance on formatting options is discouraged.
 
 ## Pragmatism
 
@@ -87,7 +103,8 @@ backslash escape, or the double-quoted equivalent is shorter.
 
 ### Comments are trimmed and aligned
 
-This behaviour cannot be disabled.
+> This behaviour cannot be disabled, but Markdown-style trailing spaces can be
+> preserved with `-T, --preserve-trailing-spaces[=COUNT,...]`.
 
 
 [Black]: https://github.com/psf/black
@@ -95,5 +112,5 @@ This behaviour cannot be disabled.
 [pragmatic exceptions]: #Pragmatism
 [PSR-12]: https://www.php-fig.org/psr/psr-12/
 [tokenize]: https://www.php.net/manual/en/phptoken.tokenize.php
-[Visual Studio Code]: https://marketplace.visualstudio.com/items?itemName=lkrms.pretty-php
+[Visual Studio Marketplace]: https://marketplace.visualstudio.com/items?itemName=lkrms.pretty-php
 
