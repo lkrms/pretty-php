@@ -45,15 +45,10 @@ final class SimplifyStrings implements TokenRule
             $match .= '\n\r';
         }
 
-        if (Env::isLocaleUtf8()) {
-            // Don't escape UTF-8 leading bytes (\xc2 -> \xf4) or continuation
-            // bytes (\x80 -> \xbf)
-            $escape .= "\x7f\xc0\xc1\xf5..\xff";
-            $match .= '\x7f\xc0\xc1\xf5-\xff';
-        } else {
-            $escape .= "\x7f..\xff";
-            $match .= '\x7f-\xff';
-        }
+        // Don't escape UTF-8 leading bytes (\xc2 -> \xf4) or continuation bytes
+        // (\x80 -> \xbf)
+        $escape .= "\x7f\xc0\xc1\xf5..\xff";
+        $match .= '\x7f\xc0\xc1\xf5-\xff';
 
         $string = '';
         eval("\$string = {$token->text};");
