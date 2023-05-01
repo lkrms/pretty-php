@@ -1,17 +1,17 @@
-/vendor/
+/vendor
 composer.phar
+
+.env
+*.generated.php
+*.log
+/var
+
+/build
+/docs/api
+
+/.ci
 
 phpstan.neon
 
 phpunit.xml
 .phpunit.*
-
-.env
-*.generated.php
-*.log
-/var/
-
-/build/
-
-/docs/api/
-phpdoc.xml

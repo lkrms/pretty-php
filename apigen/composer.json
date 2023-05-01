@@ -1,0 +1,13 @@
+{
+    "require": {
+        "php": "^8.1"
+    },
+    "require-dev": {
+        "apigen/apigen": "^7@alpha"
+    },
+    "autoload": {
+        "psr-4": {
+            "Lkrms\\ApiGen\\": "src/"
+        }
+    }
+}

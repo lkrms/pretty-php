@@ -1,0 +1,15 @@
+parameters:
+	paths: [%workingDir%/src]
+	excludeProtected: false
+	excludePrivate: true
+	excludeTagged: [internal]
+	outputDir: %workingDir%/docs/api
+	themeDir: theme
+	title: lkrms/pretty-php
+
+services:
+	analyzer.filter:
+		factory: Lkrms\ApiGen\AnalyzerFilter(excludeProtected: %excludeProtected%, excludePrivate: %excludePrivate%, excludeTagged: %excludeTagged%)
+
+	renderer.filter:
+		factory: Lkrms\ApiGen\RendererFilter
