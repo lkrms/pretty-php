@@ -64,8 +64,8 @@ DIST_DIR=build/dist
 DIST_MANIFEST=$DIST_DIR/manifest.json
 
 if ((LATEST)); then
-    # Get the closest annotated version tag reachable from 'main'
-    VERSION=$(git describe --match "v[0-9]*" --abbrev=0 main) ||
+    # Get the closest annotated version tag reachable from HEAD
+    VERSION=$(git describe --match "v[0-9]*" --abbrev=0) ||
         die "error finding latest version of $PACKAGE"
     # Clone the repo into a temporary directory and check out $VERSION
     TEMP_DIR=$(mktemp -d)/$PACKAGE &&
