@@ -1,42 +1,28 @@
-name: documentation
+name: Documentation
 
 on:
   push:
     branches:
       - main
 
-  # Allow running the workflow manually from the Actions tab
-  #workflow_dispatch:
-
-# Allow GITHUB_TOKEN to deploy to GitHub Pages
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-# Allow one concurrent deployment
 concurrency:
-  group: pages
+  group: ${{ github.workflow }}
   cancel-in-progress: true
 
 jobs:
   build:
+    name: Build
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v3
-
       - name: Setup PHP and Composer
         uses: shivammathur/setup-php@v2
         with:
           php-version: "8.2"
           coverage: none
-        env:
-          fail-fast: true
 
       - name: Install dependencies
         run: composer install --no-interaction --no-progress
@@ -45,16 +31,21 @@ jobs:
         working-directory: apigen
         run: composer install --no-interaction --no-progress
 
-      - name: Build API documentation
+      - name: Run ApiGen
         run: apigen/vendor/bin/apigen -c apigen/apigen.neon --output .ci/docs/api
 
-      - name: Upload artifact to GitHub Pages
+      - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v1
         with:
           path: .ci/docs/api
 
   deploy:
+    name: Deploy
     needs: build
+
+    permissions:
+      pages: write
+      id-token: write
 
     environment:
       name: github-pages
@@ -65,4 +56,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v2
