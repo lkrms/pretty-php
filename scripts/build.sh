@@ -1,60 +1,121 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
-shopt -s extglob globstar nullglob
+shopt -s extglob nullglob globstar
 
-function _die() {
-    local STATUS=$?
-    echo "${0##*/}: ${1-command failed}" >&2
-    (exit "$STATUS") && false || exit
+# fail [<status>]
+function fail() {
+    local s
+    ((s = ${1-})) && return "$s" || return 1
 }
 
-function _realpath() {
-    local FILE=$1 DIR
-    while [[ -L $FILE ]]; do
-        DIR=$(dirname "$FILE") &&
-            FILE=$(readlink "$FILE") || return
-        [[ $FILE == /* ]] || FILE=$DIR/$FILE
-    done
-    DIR=$(dirname "$FILE") &&
-        DIR=$(cd -P "$DIR" &>/dev/null && pwd) &&
-        echo "$DIR/${FILE##*/}"
+# die [<message>]
+function die() {
+    local s=$?
+    printf '%s: %s\n' "${0##*/}" "${1-command failed}" >&2
+    fail "$s" || exit
 }
 
-FILE=$(_realpath "${BASH_SOURCE[0]}") &&
-    cd "${FILE%/*}" || _die "error resolving ${BASH_SOURCE[0]}"
+type -P realpath >/dev/null ||
+    # realpath <filename>
+    function realpath() {
+        local file=$1 dir
+        while [[ -L $file ]]; do
+            dir=$(dirname "$file") &&
+                file=$(readlink "$file") || return
+            [[ $file == /* ]] || file=$dir/$file
+        done
+        dir=$(dirname "$file") &&
+            dir=$(cd -P "$dir" &>/dev/null && pwd) &&
+            printf '%s/%s' "$dir" "${file##*/}"
+    }
 
-PACKAGE=${PWD##*/}
-VERSION=$(git describe --long 2>/dev/null |
-    awk '/^v?[0-9]+(\.[0-9]+){0,3}-[0-9]+-g[0-9a-f]+$/ { sub(/-0-/, "-"); sub(/g/, ""); print }') ||
-    VERSION=
-BUILD=$PACKAGE${VERSION:+-$VERSION}
+REPO=$(realpath "${BASH_SOURCE[0]}") &&
+    REPO=${REPO%/*/*} &&
+    [[ ${BASH_SOURCE[0]} -ef $REPO/scripts/build.sh ]] &&
+    cd "$REPO" || die "error resolving ${BASH_SOURCE[0]}"
+
+PACKAGE=${REPO##*/}
+LATEST=0
+PHAR=0
+TAR=0
+while (($#)); do
+    case "$1" in
+    --latest)
+        LATEST=1
+        ;;
+    --phar)
+        PHAR=1
+        ;;
+    --tar)
+        TAR=1
+        ;;
+    esac
+    shift
+done
+((PHAR || TAR)) || PHAR=1
+
+SRC_DIR=$REPO
 BUILD_DIR=build/$PACKAGE
-BUILD_TAR=${BUILD_DIR%/*}/$BUILD.tar.gz
-BUILD_PHAR=${BUILD_DIR%/*}/$BUILD.phar
-rm -rf "$BUILD_DIR" "$BUILD_TAR" "$BUILD_PHAR" &&
-    mkdir -pv "$BUILD_DIR" &&
-    cp -Rv !(build*|docs|phpdoc*|phpstan*|phpunit*|tests*|var|vendor|LICENSE*|README*|*.md|*.txt|*.code-workspace|test*.php) "$BUILD_DIR/" &&
+DIST_DIR=build/dist
+DIST_MANIFEST=$DIST_DIR/manifest.json
+
+if ((LATEST)); then
+    # Get the closest annotated version tag reachable from 'main'
+    VERSION=$(git describe --match "v[0-9]*" --abbrev=0 main) ||
+        die "error finding latest version of $PACKAGE"
+    # Clone the repo into a temporary directory and check out $VERSION
+    TEMP_DIR=$(mktemp -d)/$PACKAGE &&
+        trap 'rm -rf "${TEMP_DIR%/*}"' EXIT &&
+        git clone --progress "$REPO" "$TEMP_DIR" &&
+        git -C "$TEMP_DIR" -c advice.detachedHead=false checkout --progress "$VERSION" &&
+        composer install -d "$TEMP_DIR" --no-plugins --no-interaction &&
+        SRC_DIR=$TEMP_DIR &&
+        # We need to complete the build here because composer won't pick up the
+        # root package version from Git otherwise
+        BUILD_DIR=$SRC_DIR/build/$PACKAGE ||
+        die "error checking out $PACKAGE $VERSION"
+else
+    VERSION=$(git describe --dirty --match "v[0-9]*" --long 2>/dev/null |
+        awk '/^v?[0-9]+(\.[0-9]+){0,3}-[0-9]+-g[0-9a-f]+(-dirty)?$/ { sub(/-0-/, "-"); sub(/g/, ""); print }') ||
+        VERSION=
+fi
+
+rm -rf "$BUILD_DIR" "$DIST_MANIFEST"
+mkdir -pv "$BUILD_DIR" "$DIST_DIR"
+
+cp -Rv "$SRC_DIR"/!(apigen|build|docs|phpstan*|phpunit*|scripts|tests*|var|vendor|LICENSE*|README*|*.md|*.code-workspace) "$BUILD_DIR/" &&
     #  Remove --classmap-authoritative if support for classes generated at runtime is required
-    composer install -d "$BUILD_DIR" --no-dev --no-plugins --optimize-autoloader --classmap-authoritative &&
+    composer install -d "$BUILD_DIR" --no-plugins --no-interaction --no-dev --optimize-autoloader --classmap-authoritative &&
     rm -fv "$BUILD_DIR"/**/.DS_Store &&
     rm -fv "$BUILD_DIR"/vendor/**/.gitignore &&
     rm -rfv "$BUILD_DIR"/vendor/bin &&
-    rm -rfv "$BUILD_DIR"/vendor/*/*/{docs,phpdoc*,phpstan*,phpunit*,tests*,LICENSE*,README*,*.md,*.txt,composer.json,.git?*} &&
+    rm -rfv "$BUILD_DIR"/vendor/*/*/{docs,phpstan*,phpunit*,tests*,LICENSE*,README*,*.md,composer.json,.git?*} &&
     rm -rfv "$BUILD_DIR"/vendor/lkrms/util/{bin,lib,src/Sync} ||
-    _die "error preparing $PWD/$BUILD_DIR"
+    die "error preparing $REPO/$BUILD_DIR"
 echo
 
-echo "==> Creating $BUILD_TAR"
-tar -czvf "$BUILD_TAR" -C "${BUILD_DIR%/*}" "${BUILD_DIR##*/}" &&
-    { [[ -z $VERSION ]] ||
-        { rm -fv "${BUILD_TAR%-"$VERSION".tar.gz}.tar.gz" &&
-            ln -sv "${BUILD_TAR##*/}" "${BUILD_TAR%-"$VERSION".tar.gz}.tar.gz"; }; }
-echo
-echo "==> Successfully created $BUILD_TAR"
-echo
+BUILD=$PACKAGE${VERSION:+-$VERSION}
+MANIFEST=(package "$PACKAGE" version "$VERSION")
 
-php -d phar.readonly=off vendor/bin/phar-composer build "$BUILD_DIR/" "$BUILD_PHAR" &&
-    { [[ -z $VERSION ]] ||
-        { rm -fv "${BUILD_PHAR%-"$VERSION".phar}.phar" &&
-            ln -sv "${BUILD_PHAR##*/}" "${BUILD_PHAR%-"$VERSION".phar}.phar"; }; }
+if ((TAR)); then
+    BUILD_TAR=$DIST_DIR/$BUILD.tar.gz
+    rm -f "$BUILD_TAR"
+    echo "==> Creating $BUILD_TAR"
+    tar -czvf "$BUILD_TAR" -C "${BUILD_DIR%/*}" "${BUILD_DIR##*/}"
+    MANIFEST+=(assets tar "${BUILD_TAR#"$DIST_DIR/"}")
+    echo
+    echo "==> Successfully created $BUILD_TAR"
+    echo
+fi
+
+if ((PHAR)); then
+    BUILD_PHAR=$DIST_DIR/$BUILD.phar
+    rm -f "$BUILD_PHAR"
+    php -d phar.readonly=off "$SRC_DIR"/vendor/bin/phar-composer build "$BUILD_DIR/" "$BUILD_PHAR"
+    MANIFEST+=(assets phar "${BUILD_PHAR#"$DIST_DIR/"}")
+    echo
+fi
+
+./scripts/create-manifest "${MANIFEST[@]}" >"$DIST_MANIFEST"
+echo "==> Build manifest created at $REPO/$DIST_MANIFEST"
