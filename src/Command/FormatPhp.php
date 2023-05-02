@@ -11,7 +11,7 @@ use Lkrms\Cli\CliApplication;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
-use Lkrms\Console\ConsoleLevel;
+use Lkrms\Console\Catalog\ConsoleLevel;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
