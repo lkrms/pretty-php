@@ -50,6 +50,9 @@ while (($#)); do
     --tar)
         TAR=1
         ;;
+    *)
+        die "invalid argument: $1"
+        ;;
     esac
     shift
 done
@@ -76,9 +79,12 @@ if ((LATEST)); then
         BUILD_DIR=$SRC_DIR/build/$PACKAGE ||
         die "error checking out $PACKAGE $VERSION"
 else
-    VERSION=$(git describe --dirty --match "v[0-9]*" --long 2>/dev/null |
+    printf '==> Getting %s version from repository\n' "$PACKAGE"
+    VERSION=$(git describe --dirty --match "v[0-9]*" --long |
+        tee /dev/stderr |
         awk '/^v?[0-9]+(\.[0-9]+){0,3}-[0-9]+-g[0-9a-f]+(-dirty)?$/ { sub(/-0-/, "-"); sub(/g/, ""); print }') ||
         VERSION=
+    printf ' -> %s version: %s\n' "$PACKAGE" "${VERSION:-<none>}"
 fi
 
 rm -rf "$BUILD_DIR" "$DIST_MANIFEST"
