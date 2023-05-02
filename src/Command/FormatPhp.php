@@ -80,6 +80,11 @@ class FormatPhp extends CliCommand
     private $Spaces;
 
     /**
+     * @var string
+     */
+    private $Eol;
+
+    /**
      * @var string[]|null
      */
     private $SkipRules;
@@ -375,6 +380,24 @@ EOF)
                 ->defaultValue('4')
                 ->visibility($noSynopsis)
                 ->bindTo($this->Spaces),
+            CliOption::build()
+                ->long('eol')
+                ->short('l')
+                ->valueName('SEQUENCE')
+                ->description(<<<'EOF'
+Set the output file's end-of-line sequence
+
+In _platform_ mode, __{{command}}__ uses CRLF ("\r\n") line endings on Windows
+and LF ("\n") on other platforms.
+
+In _auto_ mode (the default), the input file's line endings are preserved, and
+_platform_ mode is used as a fallback if there are no line breaks in the input.
+EOF)
+                ->optionType(CliOptionType::ONE_OF)
+                ->allowedValues(['auto', 'platform', 'lf', 'crlf'])
+                ->defaultValue('auto')
+                ->visibility($noSynopsis)
+                ->bindTo($this->Eol),
             CliOption::build()
                 ->long('disable')
                 ->short('i')
@@ -808,6 +831,10 @@ EOF,
                     $this->AddRules,
                     $this->SkipFilters
                 );
+                $f->PreferredEol = $this->Eol === 'auto' || $this->Eol === 'platform'
+                    ? PHP_EOL
+                    : ($this->Eol === 'lf' ? "\n" : "\r\n");
+                $f->PreserveEol = $this->Eol === 'auto';
                 $f->OneTrueBraceStyle = $this->OneTrueBraceStyle;
                 $f->PreserveTrailingSpaces = $this->PreserveTrailingSpaces ?: [];
                 foreach (self::INTERNAL_OPTION_MAP as $property) {
@@ -1077,6 +1104,7 @@ EOF,
             : [];
         $names = [
             ...$names,
+            'eol',
             'disable',
             'enable',
             'oneTrueBraceStyle',
