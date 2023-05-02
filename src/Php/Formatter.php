@@ -128,6 +128,16 @@ final class Formatter implements IReadable, IWritable
     public $SoftTab;
 
     /**
+     * @var string
+     */
+    public $PreferredEol = PHP_EOL;
+
+    /**
+     * @var bool
+     */
+    public $PreserveEol = true;
+
+    /**
      * @var bool
      */
     public $ClosuresAreDeclarations = true;
@@ -351,6 +361,12 @@ final class Formatter implements IReadable, IWritable
         $this->QuietLevel = $quietLevel;
         $this->Filename = $filename;
 
+        $eol = $this->getEol($code);
+        if ($eol !== "\n") {
+            $code = str_replace($eol, "\n", $code);
+        }
+        $eol = $this->PreserveEol ? $eol : $this->PreferredEol;
+
         Sys::startTimer(__METHOD__ . '#tokenize-input');
         try {
             $this->Tokens = Token::tokenize(
@@ -565,7 +581,9 @@ final class Formatter implements IReadable, IWritable
         }
 
         if ($fast) {
-            return $out;
+            return $eol === "\n"
+                ? $out
+                : str_replace("\n", $eol, $out);
         }
 
         Sys::startTimer(__METHOD__ . '#parse-output');
@@ -612,7 +630,9 @@ final class Formatter implements IReadable, IWritable
             $rule->destroy();
         }
 
-        return $out;
+        return $eol === "\n"
+            ? $out
+            : str_replace("\n", $eol, $out);
     }
 
     /**
@@ -637,6 +657,24 @@ final class Formatter implements IReadable, IWritable
         }
         $this->PreserveTrailingSpacesRegex =
             sprintf('(?<!%s)', '\S' . implode('|\S', $regex));
+    }
+
+    private function getEol(string $string): string
+    {
+        $lfPos = strpos($string, "\n");
+        if ($lfPos === false) {
+            return strpos($string, "\r") === false
+                ? $this->PreferredEol
+                : "\r";
+        }
+        if ($lfPos && $string[$lfPos - 1] === "\r") {
+            return "\r\n";
+        }
+        if (($string[$lfPos + 1] ?? null) === "\r") {
+            return "\n\r";
+        }
+
+        return "\n";
     }
 
     private function getPriority(Rule $rule, string $method): int

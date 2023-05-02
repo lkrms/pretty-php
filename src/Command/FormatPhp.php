@@ -11,7 +11,7 @@ use Lkrms\Cli\CliApplication;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
-use Lkrms\Console\ConsoleLevel;
+use Lkrms\Console\Catalog\ConsoleLevel;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
@@ -78,6 +78,11 @@ class FormatPhp extends CliCommand
      * @var int|null
      */
     private $Spaces;
+
+    /**
+     * @var string
+     */
+    private $Eol;
 
     /**
      * @var string[]|null
@@ -375,6 +380,24 @@ EOF)
                 ->defaultValue('4')
                 ->visibility($noSynopsis)
                 ->bindTo($this->Spaces),
+            CliOption::build()
+                ->long('eol')
+                ->short('l')
+                ->valueName('SEQUENCE')
+                ->description(<<<'EOF'
+Set the output file's end-of-line sequence
+
+In _platform_ mode, __{{command}}__ uses CRLF ("\r\n") line endings on Windows
+and LF ("\n") on other platforms.
+
+In _auto_ mode (the default), the input file's line endings are preserved, and
+_platform_ mode is used as a fallback if there are no line breaks in the input.
+EOF)
+                ->optionType(CliOptionType::ONE_OF)
+                ->allowedValues(['auto', 'platform', 'lf', 'crlf'])
+                ->defaultValue('auto')
+                ->visibility($noSynopsis)
+                ->bindTo($this->Eol),
             CliOption::build()
                 ->long('disable')
                 ->short('i')
@@ -702,7 +725,7 @@ EOF,
                     if (Test::isAbsolutePath($file)) {
                         continue;
                     }
-                    $file = $dir . DIRECTORY_SEPARATOR . $file;
+                    $file = $dir . '/' . $file;
                 }
                 unset($file);
             }
@@ -808,6 +831,10 @@ EOF,
                     $this->AddRules,
                     $this->SkipFilters
                 );
+                $f->PreferredEol = $this->Eol === 'auto' || $this->Eol === 'platform'
+                    ? PHP_EOL
+                    : ($this->Eol === 'lf' ? "\n" : "\r\n");
+                $f->PreserveEol = $this->Eol === 'auto';
                 $f->OneTrueBraceStyle = $this->OneTrueBraceStyle;
                 $f->PreserveTrailingSpaces = $this->PreserveTrailingSpaces ?: [];
                 foreach (self::INTERNAL_OPTION_MAP as $property) {
@@ -954,7 +981,7 @@ EOF,
 
     private function maybeGetConfigFile(string $dir): ?string
     {
-        $dir = rtrim($dir, DIRECTORY_SEPARATOR);
+        $dir = rtrim($dir, '/\\');
         foreach ([
             '.prettyphp',
             'prettyphp.json',
@@ -962,7 +989,7 @@ EOF,
             'prettyphp.json.dist',
             'prettyphp.dist.json',
         ] as $file) {
-            $file = $dir . DIRECTORY_SEPARATOR . $file;
+            $file = $dir . '/' . $file;
             if (is_file($file)) {
                 return $file;
             }
@@ -1077,6 +1104,7 @@ EOF,
             : [];
         $names = [
             ...$names,
+            'eol',
             'disable',
             'enable',
             'oneTrueBraceStyle',

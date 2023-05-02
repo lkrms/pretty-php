@@ -134,6 +134,30 @@ PHP,
     {
         $inDir = dirname(__DIR__) . '.in';
         $outDir = dirname(__DIR__) . '.out';
+
+        $minVersionPatterns = [
+            80100 => [
+                '#^3rdparty/php-doc/appendices/migration81/new-features/.*#',
+                // Enumerations
+                '#^3rdparty/php-doc/language/((types/)?enumerations|predefined/(backedenum|unitenum))/.*#',
+                // First class callable syntax
+                '#^3rdparty/php-doc/language/(functions/04[345]|namespaces/024)\.php#',
+                // `readonly` properties
+                '#^3rdparty/php-doc/language/oop5/(inheritance/000|properties/00[034567]|traits/012)\.php#',
+                // Octal integer prefix
+                '#^3rdparty/php-doc/language/types/integer/000\.php#',
+            ],
+            80200 => [
+                // `readonly` classes
+                '#^3rdparty/php-doc/language/oop5/basic/00[234]\.php#',
+            ],
+        ];
+        $minVersionPatterns = array_merge(...array_filter(
+            $minVersionPatterns,
+            fn(int $key) => PHP_VERSION_ID < $key,
+            ARRAY_FILTER_USE_KEY
+        ));
+
         $pathOptions = [
             '#^3rdparty/phpfmt/.*#' => [
                 'addRules' => [
@@ -168,7 +192,16 @@ PHP,
             $inFile = (string) $file;
             $path = substr($inFile, strlen($inDir));
             $outFile = preg_replace('/\.fails$/', '', $outDir . $path);
-            $path = ltrim($path, DIRECTORY_SEPARATOR);
+            $path = ltrim($path, '/\\');
+
+            // @phpstan-ignore-next-line
+            if ($minVersionPatterns) {
+                foreach ($minVersionPatterns as $regex) {
+                    if (preg_match($regex, $path)) {
+                        continue 2;
+                    }
+                }
+            }
 
             $fileOptions = [];
             foreach ($pathOptions as $regex => $options) {
