@@ -725,7 +725,7 @@ EOF,
                     if (Test::isAbsolutePath($file)) {
                         continue;
                     }
-                    $file = $dir . DIRECTORY_SEPARATOR . $file;
+                    $file = $dir . '/' . $file;
                 }
                 unset($file);
             }
@@ -981,7 +981,7 @@ EOF,
 
     private function maybeGetConfigFile(string $dir): ?string
     {
-        $dir = rtrim($dir, DIRECTORY_SEPARATOR);
+        $dir = rtrim($dir, '/\\');
         foreach ([
             '.prettyphp',
             'prettyphp.json',
@@ -989,7 +989,7 @@ EOF,
             'prettyphp.json.dist',
             'prettyphp.dist.json',
         ] as $file) {
-            $file = $dir . DIRECTORY_SEPARATOR . $file;
+            $file = $dir . '/' . $file;
             if (is_file($file)) {
                 return $file;
             }

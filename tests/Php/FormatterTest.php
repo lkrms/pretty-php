@@ -192,7 +192,7 @@ PHP,
             $inFile = (string) $file;
             $path = substr($inFile, strlen($inDir));
             $outFile = preg_replace('/\.fails$/', '', $outDir . $path);
-            $path = ltrim($path, DIRECTORY_SEPARATOR);
+            $path = ltrim($path, '/\\');
 
             // @phpstan-ignore-next-line
             if ($minVersionPatterns) {
