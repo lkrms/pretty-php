@@ -600,12 +600,12 @@ EOF)
         ];
     }
 
-    public function getLongDescription(): ?string
+    protected function getLongDescription(): ?string
     {
         return null;
     }
 
-    public function getUsageSections(): ?array
+    protected function getHelpSections(): ?array
     {
         return [
             CliUsageSectionName::CONFIGURATION => <<<'EOF'
