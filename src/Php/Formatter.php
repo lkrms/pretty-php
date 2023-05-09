@@ -205,6 +205,11 @@ final class Formatter implements IReadable, IWritable
     public $OneTrueBraceStyle = false;
 
     /**
+     * @var bool
+     */
+    public $LogProgress = false;
+
+    /**
      * @var string[]
      */
     protected $Rules = [
@@ -481,7 +486,8 @@ final class Formatter implements IReadable, IWritable
                     $rule->processList($listParents[$i], $list);
                 }
                 Sys::stopTimer($_rule, 'rule');
-                !$this->Debug || $this->logProgress(ListRule::PROCESS_LIST);
+                !$this->Debug || !$this->LogProgress ||
+                    $this->logProgress(ListRule::PROCESS_LIST);
                 continue;
             }
 
@@ -500,7 +506,8 @@ final class Formatter implements IReadable, IWritable
                 }
             }
             Sys::stopTimer($_rule, 'rule');
-            !$this->Debug || $this->logProgress(TokenRule::PROCESS_TOKEN);
+            !$this->Debug || !$this->LogProgress ||
+                $this->logProgress(TokenRule::PROCESS_TOKEN);
         }
         $this->RunningService = null;
 
@@ -544,7 +551,8 @@ final class Formatter implements IReadable, IWritable
                 $rule->processBlock($block);
             }
             Sys::stopTimer($_rule, 'rule');
-            !$this->Debug || $this->logProgress(BlockRule::PROCESS_BLOCK);
+            !$this->Debug || !$this->LogProgress ||
+                $this->logProgress(BlockRule::PROCESS_BLOCK);
         }
         $this->RunningService = null;
 
@@ -556,7 +564,8 @@ final class Formatter implements IReadable, IWritable
             Sys::startTimer($_rule, 'rule');
             $rule->beforeRender($this->Tokens);
             Sys::stopTimer($_rule, 'rule');
-            !$this->Debug || $this->logProgress(Rule::BEFORE_RENDER);
+            !$this->Debug || !$this->LogProgress ||
+                $this->logProgress(Rule::BEFORE_RENDER);
         }
         $this->RunningService = null;
 
@@ -737,7 +746,8 @@ final class Formatter implements IReadable, IWritable
                     Sys::startTimer($_rule, 'rule');
                     $callback();
                     Sys::stopTimer($_rule, 'rule');
-                    !$this->Debug || $this->logProgress('{closure}');
+                    !$this->Debug || !$this->LogProgress ||
+                        $this->logProgress('{closure}');
                 }
                 unset($tokenCallbacks[$index]);
             }

@@ -41,6 +41,7 @@ use Lkrms\Pretty\Php\Rule\SpaceDeclarations;
 use Lkrms\Pretty\PrettyBadSyntaxException;
 use Lkrms\Pretty\PrettyException;
 use Lkrms\Utility\Test;
+use RuntimeException;
 use SebastianBergmann\Diff\Differ;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
 use SplFileInfo;
@@ -60,14 +61,14 @@ class FormatPhp extends CliCommand
     private $IncludeRegex;
 
     /**
-     * @var string|null
-     */
-    private $IncludeIfPhpRegex;
-
-    /**
      * @var string
      */
     private $ExcludeRegex;
+
+    /**
+     * @var string|null
+     */
+    private $IncludeIfPhpRegex;
 
     /**
      * @var int|null
@@ -125,14 +126,9 @@ class FormatPhp extends CliCommand
     private $NoSortImports;
 
     /**
-     * @var bool
+     * @var string|null
      */
-    private $AlignAll;
-
-    /**
-     * @var bool
-     */
-    private $Laravel;
+    private $Preset;
 
     /**
      * @var string|null
@@ -269,6 +265,33 @@ class FormatPhp extends CliCommand
         'only-align-chained-statements' => 'OnlyAlignChainedStatements',
     ];
 
+    private const PRESET_MAP = [
+        'laravel' => [
+            'disable' => [
+                'magic-commas',
+            ],
+            'enable' => [
+                'space-after-fn',
+                'space-after-not',
+                'no-concat-spaces',
+                'align-lists',
+                'indent-heredocs',
+
+                // Laravel chains and ternary operators don't seem to follow any
+                // alignment rules, so these can be enabled or disabled with
+                // little effect on the size of diffs:
+                //
+                'align-chains',
+                //'align-ternary',
+            ],
+            '@internal' => [
+                'mirror-brackets' => false,
+                'hanging-heredoc-indents' => false,
+                'only-align-chained-statements' => true,
+            ],
+        ],
+    ];
+
     public function __construct(CliApplication $container)
     {
         parent::__construct($container);
@@ -313,13 +336,25 @@ EOF)
                 ->short('I')
                 ->valueName('REGEX')
                 ->description(<<<EOF
-A regex that matches files to include when searching a <PATH>
+A regular expression for pathnames to include when searching a <PATH>
 
-Exclusions ([__-X__, __--exclude__]) are applied first.
+Exclusions (__-X__, __--exclude__) are applied first.
 EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->defaultValue('/\.php$/')
                 ->bindTo($this->IncludeRegex),
+            CliOption::build()
+                ->long('exclude')
+                ->short('X')
+                ->valueName('REGEX')
+                ->description(<<<EOF
+A regular expression for pathnames to exclude when searching a <PATH>
+
+Exclusions are applied before inclusions (__-I__, __--include__).
+EOF)
+                ->optionType(CliOptionType::VALUE)
+                ->defaultValue('/\/(\.git|\.hg|\.svn|_?build|dist|tests[-._0-9a-z]*|var|vendor)\/$/i')
+                ->bindTo($this->ExcludeRegex),
             CliOption::build()
                 ->long('include-if-php')
                 ->short('P')
@@ -327,30 +362,18 @@ EOF)
                 ->description(<<<EOF
 Include files that contain PHP code when searching a <PATH>
 
-Use this option to format files not matched by [__-I__, __--include__] if they
-have a PHP open tag at the beginning of line 1, or on line 2 if a shebang ('#!')
-is found on line 1.
+Use this option to format files not matched by __-I__, __--include__ if they
+have a pathname that matches <REGEX> and a PHP open tag ('<?php') at the start
+of the first line that is not a shebang ('#!').
 
-The default regex matches files with no extension. Use __--include-if-php=/./__
-to check the first line of all files.
+The default regular expression matches files with no extension. Use
+__--include-if-php=/./__ to check the first line of all files.
 
-Exclusions ([__-X__, __--exclude__]) are applied first.
+Exclusions (__-X__, __--exclude__) are applied first.
 EOF)
                 ->optionType(CliOptionType::VALUE_OPTIONAL)
                 ->defaultValue('/(\/|^)[^.]+$/')
                 ->bindTo($this->IncludeIfPhpRegex),
-            CliOption::build()
-                ->long('exclude')
-                ->short('X')
-                ->valueName('REGEX')
-                ->description(<<<EOF
-A regex that matches files to exclude when searching a <PATH>
-
-Exclusions are applied before inclusions ([__-I__, __--include__]).
-EOF)
-                ->optionType(CliOptionType::VALUE)
-                ->defaultValue('/\/(\.git|\.hg|\.svn|_?build|dist|tests[-._0-9a-z]*|var|vendor)\/$/i')
-                ->bindTo($this->ExcludeRegex),
             CliOption::build()
                 ->long('tab')
                 ->short('t')
@@ -373,6 +396,9 @@ EOF)
                 ->valueName('SIZE')
                 ->description(<<<EOF
 Indent using spaces
+
+This is the default if neither __-t__, __--tab__ or __-s__, __--space__ are
+given.
 EOF)
                 ->optionType(CliOptionType::ONE_OF_OPTIONAL)
                 ->valueType(CliOptionValueType::INTEGER)
@@ -409,8 +435,6 @@ EOF)
                 ->allowedValues(array_keys(self::SKIP_RULE_MAP))
                 ->unknownValuePolicy(CliOptionValueUnknownPolicy::DISCARD)
                 ->multipleAllowed()
-                ->envVariable('pretty_php_disable')
-                ->keepEnv()
                 ->bindTo($this->SkipRules),
             CliOption::build()
                 ->long('enable')
@@ -423,8 +447,6 @@ EOF)
                 ->allowedValues(array_keys(self::ADD_RULE_MAP))
                 ->unknownValuePolicy(CliOptionValueUnknownPolicy::DISCARD)
                 ->multipleAllowed()
-                ->envVariable('pretty_php_enable')
-                ->keepEnv()
                 ->bindTo($this->AddRules),
             CliOption::build()
                 ->long('one-true-brace-style')
@@ -452,7 +474,9 @@ EOF)
                 ->description(<<<EOF
 Ignore the position of newlines in the input
 
-Equivalent to:  __--disable__ _preserve-newlines_
+This option cannot be overridden by configuration file settings (see
+___CONFIGURATION___ below). Use __--disable__ _preserve-newlines_ to apply the
+same formatting without overriding settings in any configuration files.
 EOF)
                 ->bindTo($this->IgnoreNewlines),
             CliOption::build()
@@ -461,7 +485,7 @@ EOF)
                 ->description(<<<EOF
 Don't normalise single- and double-quoted strings
 
-Equivalent to:  __--disable__ _simplify-strings_
+Equivalent to __--disable__ _simplify-strings_
 EOF)
                 ->bindTo($this->NoSimplifyStrings),
             CliOption::build()
@@ -470,7 +494,7 @@ EOF)
                 ->description(<<<EOF
 Don't split lists with trailing commas into one item per line
 
-Equivalent to:  __--disable__ _magic-commas_
+Equivalent to __--disable__ _magic-commas_
 EOF)
                 ->bindTo($this->NoMagicCommas),
             CliOption::build()
@@ -481,19 +505,19 @@ Don't sort alias/import statements
 EOF)
                 ->bindTo($this->NoSortImports),
             CliOption::build()
-                ->long('align-all')
+                ->long('preset')
+                ->short('p')
+                ->valueName('PRESET')
                 ->description(<<<EOF
-Enable all alignment rules
+Apply a formatting preset
+
+Formatting options other than __-N__, __--ignore-newlines__ are ignored when a
+preset is applied.
 EOF)
+                ->optionType(CliOptionType::ONE_OF)
+                ->allowedValues(array_keys(self::PRESET_MAP))
                 ->visibility($noSynopsis)
-                ->bindTo($this->AlignAll),
-            CliOption::build()
-                ->long('laravel')
-                ->description(<<<EOF
-Apply Laravel-friendly formatting
-EOF)
-                ->visibility($noSynopsis)
-                ->bindTo($this->Laravel),
+                ->bindTo($this->Preset),
             CliOption::build()
                 ->long('config')
                 ->short('c')
@@ -504,8 +528,7 @@ Read formatting options from a JSON configuration file
 Settings in <FILE> override formatting options given on the command line, and
 any configuration files that would usually apply to the input are ignored.
 
-If no files or directories to format are given, they are taken from the
-configuration file. Input paths in <FILE> are ignored otherwise.
+See ___CONFIGURATION___ below.
 EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->valueType(CliOptionValueType::FILE)
@@ -517,6 +540,8 @@ Ignore configuration files
 
 Skip detection of configuration files that would otherwise take precedence over
 formatting options given on the command line.
+
+See ___CONFIGURATION___ below.
 EOF)
                 ->bindTo($this->IgnoreConfigFiles),
             CliOption::build()
@@ -527,8 +552,7 @@ EOF)
 Write output to a different file
 
 If <FILE> is a dash ('-'), __{{command}}__ writes to the standard output.
-
-May be given once per input file.
+Otherwise, __-o__, __--output__ must be given once per input file, or not at all.
 EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->multipleAllowed()
@@ -553,6 +577,8 @@ EOF)
                 ->long('print-config')
                 ->description(<<<EOF
 Print a configuration file instead of formatting the input
+
+See ___CONFIGURATION___ below.
 EOF)
                 ->bindTo($this->PrintConfig),
             CliOption::build()
@@ -560,9 +586,10 @@ EOF)
                 ->short('F')
                 ->valueName('PATH')
                 ->description(<<<EOF
-The path of the file passed to the standard input
+The pathname of the file passed to the standard input
 
-Allows discovery of configuration files. Useful for editor integrations.
+Allows discovery of configuration files and improves reporting. Useful for
+editor integrations.
 EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->visibility($noSynopsis)
@@ -590,8 +617,8 @@ EOF)
                 ->description(<<<EOF
 Only report warnings and errors
 
-If given twice, suppress warnings. If given three or more times, also suppress
-TTY-only progress updates.
+If given twice, suppress warnings as well. If given three or more times, also
+suppress TTY-only progress updates.
 
 Errors are always reported.
 EOF)
@@ -609,21 +636,18 @@ EOF)
     {
         return [
             CliUsageSectionName::CONFIGURATION => <<<'EOF'
-__{{command}}__ looks for a JSON configuration file in the same directory as
-each input file, then in each of its parent directories, stopping as soon as it
-finds one.
+__{{command}}__ looks for a JSON configuration file named _.prettyphp_ or
+_prettyphp.json_ in the same directory as each input file, then in each of its
+parent directories. It stops looking when it finds a configuration file, a
+_.git_ directory, a _.hg_ directory, or the root of the filesystem, whichever
+comes first.
 
-In order of precedence, files with the following names are recognised as
-configuration files:
+If a directory contains more than one configuration file, __{{command}}__
+reports an error and exits without formatting anything.
 
-1. __.prettyphp__  
-2. __prettyphp.json__  
-3. __.prettyphp.dist__  
-4. __prettyphp.json.dist__  
-5. __prettyphp.dist.json__
-
-If found, formatting options are taken from the configuration file, replacing
-any provided on the command line or via environment variables.
+For input files where an applicable configuration file is found, command-line
+formatting options other than __-N__, __--ignore-newlines__ are replaced with
+settings from the configuration file.
 
 The __--print-config__ option can be used to generate a configuration file, for
 example:
@@ -640,10 +664,10 @@ example:
         "noSortImports": true
     }
 
-The optional _src_ array specifies files and directories to format when no
-<PATH> arguments are given on the command line, and either __{{command}}__ has
-the same working directory as the configuration file, or the file is passed to
-[__-c__, __--config__].
+The optional _src_ array specifies files and directories to format. If
+__{{command}}__ is started with no <PATH> arguments in a directory where _src_
+is configured, or the directory is passed to __{{command}}__ for formatting,
+paths in _src_ are formatted. It is ignored otherwise.
 EOF,
             CliUsageSectionName::EXIT_STATUS => <<<EOF
 _0_   Formatting succeeded / input already formatted  
@@ -656,7 +680,7 @@ EOF,
 
     protected function run(...$params)
     {
-        if (!is_null($this->DebugDirectory)) {
+        if ($this->DebugDirectory !== null) {
             File::maybeCreateDirectory($this->DebugDirectory);
             $this->DebugDirectory = realpath($this->DebugDirectory) ?: null;
             if (!Env::debug()) {
@@ -666,61 +690,65 @@ EOF,
         }
 
         if ($this->Tabs && $this->Spaces) {
-            throw new CliInvalidArgumentsException('--tab and --space cannot be given together');
+            throw new CliInvalidArgumentsException('--tab and --space cannot both be given');
         }
-        if ($this->AlignAll) {
-            $this->AddRules[] = 'align-assignments';
-            $this->AddRules[] = 'align-chains';
-            $this->AddRules[] = 'align-comments';
-            $this->AddRules[] = 'align-fn';
-            $this->AddRules[] = 'align-lists';
-            $this->AddRules[] = 'align-ternary';
+
+        if ($this->Preset) {
+            $this->applyFormattingOptionValues(self::PRESET_MAP[$this->Preset]);
         }
-        if ($this->Laravel) {
-            $this->SkipRules = [];
-            $this->SkipRules[] = 'magic-commas';
-
-            $this->AddRules = [];
-            $this->AddRules[] = 'space-after-fn';
-            $this->AddRules[] = 'space-after-not';
-            $this->AddRules[] = 'no-concat-spaces';
-            $this->AddRules[] = 'align-chains';
-            $this->AddRules[] = 'align-lists';
-            $this->AddRules[] = 'indent-heredocs';
-
-            // Laravel ternary operators (and chains, for that matter) don't
-            // seem to follow any alignment rules, so this can be enabled or
-            // disabled with little effect on the size of diffs:
-            //
-            //     $this->AddRules[] = 'align-ternary';
-
-            $this->MirrorBrackets = false;
-            $this->HangingHeredocIndents = false;
-            $this->OnlyAlignChainedStatements = true;
-        }
-        $this->applyOptionValues([
-            'disable' => $this->SkipRules,
-            'enable' => $this->AddRules,
-        ], false);
 
         if ($this->ConfigFile) {
-            // If there are no paths on the command line, allow them to be taken
-            // from the config file, otherwise only take formatting options
-            $global = !$this->InputFiles &&
-                !$this->StdinFilename &&
-                !$this->PrintConfig;
-            Console::debug($global
-                ? 'Reading settings:'
-                : 'Reading formatting options:', $this->ConfigFile);
+            $this->IgnoreConfigFiles = true;
+            Console::debug('Reading formatting options:', $this->ConfigFile);
+            $json = json_decode(file_get_contents($this->ConfigFile), true);
             $this->applyFormattingOptionValues(
-                $this->normaliseFormattingOptionValues(
-                    json_decode(file_get_contents($this->ConfigFile), true), $global
-                )
+                $this->normaliseFormattingOptionValues($json, false, false, false),
+                true
             );
-            // Update any relative paths loaded from the config file
-            if ($global &&
-                    $this->InputFiles &&
-                    !Test::areSameFile($dir = dirname($this->ConfigFile), getcwd())) {
+            $this->applyFormattingOptionValues(
+                $this->normaliseFormattingOptionValues($json),
+            );
+        }
+
+        $in = [];
+        $dirs = [];
+        $dirCount = 0;
+        if (!$this->IgnoreConfigFiles &&
+                ($this->InputFiles || !$this->StdinFilename) &&
+                // Get files and directories to format from the current
+                // directory's configuration file (if there are no paths on the
+                // command line and a configuration file exists), or from the
+                // configuration files of any directories on the command line
+                // (if they exist)
+                ($configFiles = array_filter(array_map(
+                    fn(string $path) => is_dir($path) ? $this->maybeGetConfigFile($path) : null,
+                    $this->InputFiles ?: ['.']
+                )))) {
+            // Take a backup of $this->InputFiles etc.
+            $cliOptionValues = $this->normaliseFormattingOptionValues(
+                $this->getFormattingOptionValues(true), true
+            );
+            $cliInputFiles = $this->InputFiles;
+            foreach ($configFiles as $i => $configFile) {
+                Console::debug('Reading settings:', $configFile);
+                $json = json_decode(file_get_contents($configFile), true);
+                if (Test::areSameFile($dir = dirname($configFile), getcwd())) {
+                    $this->applyFormattingOptionValues(
+                        $this->normaliseFormattingOptionValues($json, true, false, false),
+                        true
+                    );
+                }
+                $this->applyFormattingOptionValues(
+                    $this->normaliseFormattingOptionValues($json, true)
+                );
+                $this->DirFormattingOptionValues[$dir] =
+                    $this->normaliseFormattingOptionValues($json);
+                if (!$this->InputFiles) {
+                    continue;
+                }
+                $dirCount++;
+                unset($cliInputFiles[$i]);
+                // Update any relative paths loaded from the configuration file
                 foreach ($this->InputFiles as &$file) {
                     if (Test::isAbsolutePath($file)) {
                         continue;
@@ -728,39 +756,26 @@ EOF,
                     $file = $dir . '/' . $file;
                 }
                 unset($file);
+                $this->expandPaths($this->InputFiles, $in, $dirs);
             }
-        } elseif (
-            // If there are no paths on the command line (e.g. "pretty-php") or
-            // one path that resolves to the script's current working directory
-            // (e.g. "pretty-php ."), take files and directories to format from
-            // the current directory's configuration file (if it exists)
-            (!$this->InputFiles ||
-                (count($this->InputFiles) === 1 &&
-                    Test::areSameFile($this->InputFiles[0], getcwd()))) &&
-                !$this->IgnoreConfigFiles &&
-                !$this->StdinFilename &&
-                !$this->PrintConfig &&
-                $file = $this->maybeGetConfigFile(getcwd())
-        ) {
-            Console::debug('Reading settings:', $file);
-            $this->applyFormattingOptionValues(
-                $this->normaliseFormattingOptionValues(
-                    json_decode(file_get_contents($file), true), true
-                )
-            );
+            // Restore $this->InputFiles etc.
+            $dir === '.' ||
+                $this->applyFormattingOptionValues($cliOptionValues);
+            // Remove directories that have already been expanded
+            $this->InputFiles = $cliInputFiles;
         }
-        Console::debug('Input paths:', '`' . (implode('` `', $this->InputFiles) ?: '<none>') . '`');
 
-        // Save this configuration to restore as needed
+        // Save formatting options to restore as needed
         $this->CliFormattingOptionValues = $this->normaliseFormattingOptionValues(
             $this->getFormattingOptionValues(false, true), false, true
         );
 
-        $in = $this->expandPaths($this->InputFiles, $dirCount, $dirs);
+        $this->expandPaths($this->InputFiles, $in, $dirs, $dirCount);
         $out = $this->OutputFiles;
-        if (!$in && stream_isatty(STDIN) && !$this->StdinFilename && !$this->PrintConfig) {
+        if (!$in && !$this->StdinFilename && !$this->PrintConfig && stream_isatty(STDIN)) {
             throw new CliInvalidArgumentsException('<PATH> required when input is a TTY');
-        } elseif (!$in || $in === ['-']) {
+        }
+        if (!$in || $in === ['-']) {
             $in = ['php://stdin'];
             $out = ['-'];
             if ($this->StdinFilename && !$this->IgnoreConfigFiles) {
@@ -802,6 +817,9 @@ EOF,
                     );
                     break;
                 }
+                if (is_dir($dir . '/.git') || is_dir($dir . '/.hg')) {
+                    break;
+                }
                 $dir = dirname($dir);
                 if (array_key_exists($dir, $this->DirFormattingOptionValues)) {
                     $options = $this->DirFormattingOptionValues[$dir];
@@ -838,7 +856,7 @@ EOF,
                 $f->OneTrueBraceStyle = $this->OneTrueBraceStyle;
                 $f->PreserveTrailingSpaces = $this->PreserveTrailingSpaces ?: [];
                 foreach (self::INTERNAL_OPTION_MAP as $property) {
-                    if (!is_null($this->{$property})) {
+                    if ($this->{$property} !== null) {
                         $f->{$property} = $this->{$property};
                     }
                 }
@@ -927,7 +945,7 @@ EOF,
                 $input = is_file($outFile) ? file_get_contents($outFile) : null;
             }
 
-            if (!is_null($input) && $input === $output) {
+            if ($input !== null && $input === $output) {
                 !$this->Verbose || Console::log('Already formatted:', $outFile);
                 continue;
             }
@@ -981,21 +999,21 @@ EOF,
 
     private function maybeGetConfigFile(string $dir): ?string
     {
-        $dir = rtrim($dir, '/\\');
+        $dir = dirname(($dir ?: '.') . '/.');
         foreach ([
             '.prettyphp',
             'prettyphp.json',
-            '.prettyphp.dist',
-            'prettyphp.json.dist',
-            'prettyphp.dist.json',
         ] as $file) {
             $file = $dir . '/' . $file;
             if (is_file($file)) {
-                return $file;
+                if ($found ?? null) {
+                    throw new RuntimeException(sprintf('Too many configuration files: %s', $dir));
+                }
+                $found = $file;
             }
         }
 
-        return null;
+        return $found ?? null;
     }
 
     /**
@@ -1028,7 +1046,7 @@ EOF,
      * @param array<string,string|string[]|bool|int|null> $values
      * @return array<string,string|string[]|bool|int|null>
      */
-    private function normaliseFormattingOptionValues(array $values, bool $global = false, bool $internal = false): array
+    private function normaliseFormattingOptionValues(array $values, bool $global = false, bool $internal = false, bool $expand = true): array
     {
         unset($values['tab'], $values['space']);
         if (array_key_exists('insertSpaces', $values)) {
@@ -1041,13 +1059,13 @@ EOF,
             $values['space'] = $values['tabSize'];
         }
         unset($values['insertSpaces'], $values['tabSize']);
-        $values = $this->normaliseOptionValues($values, true, [Convert::class, 'toKebabCase']);
+        $values = $this->normaliseOptionValues($values, $expand, [Convert::class, 'toKebabCase']);
         // If `$internal` is false, ignore `$values['@internal']` without
         // suppressing `$this->DefaultFormattingOptionValues['@internal']`
         $values = array_diff_key($values, $internal ? [] : ['@internal' => null]);
 
         return array_intersect_key(
-            array_merge($this->DefaultFormattingOptionValues, $values),
+            $expand ? array_merge($this->DefaultFormattingOptionValues, $values) : $values,
             ($global ? $this->GlobalFormattingOptionNames : $this->FormattingOptionNames)
                 + ['@internal' => null]
         );
@@ -1057,10 +1075,10 @@ EOF,
      * @param array<string,string|string[]|bool|int|null>|null $values
      * @return $this
      */
-    private function applyFormattingOptionValues(?array $values = null)
+    private function applyFormattingOptionValues(?array $values = null, bool $asArguments = false)
     {
         if ($values !== null) {
-            $this->applyOptionValues($values, false);
+            $this->applyOptionValues($values, false, false, $asArguments);
             if ($internal = $values['@internal'] ?? null) {
                 foreach ($internal as $name => $value) {
                     $property = self::INTERNAL_OPTION_MAP[$name] ?? null;
@@ -1109,7 +1127,7 @@ EOF,
             'enable',
             'oneTrueBraceStyle',
             'preserveTrailingSpaces',
-            'ignoreNewlines',
+            //'ignoreNewlines',
             'noSimplifyStrings',
             'noMagicCommas',
             'noSortImports',
@@ -1127,21 +1145,22 @@ EOF,
 
     /**
      * @param string[] $paths
+     * @param string[] $files
      * @param string[] $dirs
-     * @return string[]
      */
-    private function expandPaths(array $paths, ?int &$directoryCount, ?array &$dirs): array
+    private function expandPaths(array $paths, ?array &$files, ?array &$dirs, ?int &$dirCount = null): void
     {
-        $directoryCount = 0;
-        $dirs = [];
+        Console::debug('Expanding paths:', '`' . (implode('` `', $paths) ?: '<none>') . '`');
 
         if ($paths === ['-']) {
-            return $paths;
+            $files[] = '-';
+
+            return;
         }
 
-        $addFile = function (SplFileInfo $file) use (&$files, &$_dirs): void {
+        $addFile = function (SplFileInfo $file) use (&$files, &$dirs): void {
             // Don't format the same file multiple times
-            if (($files[$inode = $file->getInode()] ?? null) !== null) {
+            if ($files[$inode = $file->getInode()] ?? null) {
                 return;
             }
             $files[$inode] = (string) $file;
@@ -1149,11 +1168,9 @@ EOF,
                 return;
             }
             $dir = (string) $file->getPathInfo();
-            $_dirs[$dir] = $dir;
+            $dirs[$dir] = $dir;
         };
 
-        $files = [];
-        $_dirs = [];
         foreach ($paths as $path) {
             if (is_file($path)) {
                 $addFile(new SplFileInfo($path));
@@ -1162,7 +1179,7 @@ EOF,
             if (!is_dir($path)) {
                 throw new CliInvalidArgumentsException('file not found: ' . $path);
             }
-            $directoryCount++;
+            $dirCount++;
             $iterator = File::find(
                 $path,
                 $this->ExcludeRegex,
@@ -1179,20 +1196,16 @@ EOF,
                 $addFile($file);
             }
         }
-
-        $dirs = array_values($_dirs);
-
-        return array_values($files);
     }
 
     /**
-     * @param \Lkrms\Pretty\Php\Token[] $tokens
+     * @param \Lkrms\Pretty\Php\Token[]|null $tokens
      * @param array<string,string>|null $log
      * @param mixed $data
      */
     private function maybeDumpDebugOutput(string $input, ?string $output, ?array $tokens, ?array $log, $data): void
     {
-        if (is_null($this->DebugDirectory)) {
+        if ($this->DebugDirectory === null) {
             return;
         }
 
@@ -1222,7 +1235,7 @@ EOF,
         ] as $file => $contents) {
             $file = "{$this->DebugDirectory}/{$file}";
             File::maybeDelete($file);
-            if (!is_null($contents)) {
+            if ($contents !== null) {
                 file_put_contents(
                     $file,
                     is_string($contents)
