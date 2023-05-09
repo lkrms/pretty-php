@@ -53,7 +53,7 @@ final class SpaceDeclarations implements TokenRule
         return 620;
     }
 
-    public function getTokenTypes(): ?array
+    public function getTokenTypes(): array
     {
         return TokenType::DECLARATION;
     }

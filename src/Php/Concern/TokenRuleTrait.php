@@ -6,9 +6,9 @@ trait TokenRuleTrait
 {
     use RuleTrait;
 
-    public function getTokenTypes(): ?array
+    public function getTokenTypes(): array
     {
-        return null;
+        return ['*'];
     }
 
     public function beforeRender(array $tokens): void

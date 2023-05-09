@@ -25,7 +25,7 @@ final class BreakBeforeControlStructureBody implements TokenRule
         return 83;
     }
 
-    public function getTokenTypes(): ?array
+    public function getTokenTypes(): array
     {
         return [
             ...TokenType::HAS_STATEMENT_WITH_OPTIONAL_BRACES,

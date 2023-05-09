@@ -14,7 +14,7 @@ final class TrimOpenTags implements Filter
 {
     use FilterTrait;
 
-    public function __invoke(array $tokens): array
+    public function filterTokens(array $tokens): array
     {
         $openTags = array_filter(
             $tokens,

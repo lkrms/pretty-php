@@ -29,7 +29,7 @@ final class ReindentHeredocs implements TokenRule
         return 900;
     }
 
-    public function getTokenTypes(): ?array
+    public function getTokenTypes(): array
     {
         return [
             T_START_HEREDOC,

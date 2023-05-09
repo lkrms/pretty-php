@@ -16,7 +16,12 @@ final class SuppressSpaceAroundStringOperator implements TokenRule
 {
     use TokenRuleTrait;
 
-    public function getTokenTypes(): ?array
+    public function getPriority(string $method): ?int
+    {
+        return 100;
+    }
+
+    public function getTokenTypes(): array
     {
         return TokenType::OPERATOR_STRING;
     }

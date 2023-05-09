@@ -342,7 +342,7 @@ class Token extends NavigableToken implements JsonSerializable
     {
         try {
             foreach ($filters as $filter) {
-                $tokens = $filter($tokens);
+                $tokens = $filter->filterTokens($tokens);
             }
 
             return $tokens;

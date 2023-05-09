@@ -14,7 +14,7 @@ final class NormaliseHeredocs implements Filter
 {
     use FilterTrait;
 
-    public function __invoke(array $tokens): array
+    public function filterTokens(array $tokens): array
     {
         /** @var array<int,Token[]> */
         $heredocTokens = [];

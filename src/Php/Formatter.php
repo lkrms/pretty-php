@@ -423,15 +423,15 @@ final class Formatter implements IReadable, IWritable
             /** @var Rule $rule */
             $rule = new $_rule($this);
             if ($rule instanceof TokenRule) {
-                $mainLoop[] = [$this->getPriority($rule, TokenRule::PROCESS_TOKEN), $index, $rule, TokenRule::class];
+                $mainLoop[] = [$rule->getPriority(TokenRule::PROCESS_TOKEN), $index, $rule, TokenRule::class];
             }
             if ($rule instanceof ListRule) {
-                $mainLoop[] = [$this->getPriority($rule, ListRule::PROCESS_LIST), $index, $rule, ListRule::class];
+                $mainLoop[] = [$rule->getPriority(ListRule::PROCESS_LIST), $index, $rule, ListRule::class];
             }
             if ($rule instanceof BlockRule) {
-                $blockLoop[] = [$this->getPriority($rule, BlockRule::PROCESS_BLOCK), $index, $rule];
+                $blockLoop[] = [$rule->getPriority(BlockRule::PROCESS_BLOCK), $index, $rule];
             }
-            $beforeRender[] = [$this->getPriority($rule, Rule::BEFORE_RENDER), $index, $rule];
+            $beforeRender[] = [$rule->getPriority(Rule::BEFORE_RENDER), $index, $rule];
             $index++;
         }
         $mainLoop = $this->sortRules($mainLoop);
@@ -497,7 +497,7 @@ final class Formatter implements IReadable, IWritable
             if ($types === []) {
                 continue;
             }
-            $types = $types ? TokenType::getIndex(...$types) : null;
+            $types = $types !== ['*'] ? TokenType::getIndex(...$types) : null;
 
             /** @var Token $token */
             foreach ($this->Tokens as $token) {
@@ -686,23 +686,18 @@ final class Formatter implements IReadable, IWritable
         return "\n";
     }
 
-    private function getPriority(Rule $rule, string $method): int
-    {
-        $priority = $rule->getPriority($method);
-
-        return is_null($priority)
-            ? 100
-            : $priority;
-    }
-
     /**
      * Sort rules by priority
      *
-     * @param array<array{0:int,1:int,2:Rule,3?:class-string<Rule>}> $rules
+     * @param array<array{0:int|null,1:int,2:Rule,3?:class-string<Rule>}> $rules
      * @return array<Rule|array{0:Rule,1:class-string<Rule>}>
      */
     private function sortRules(array $rules): array
     {
+        $rules = array_filter(
+            $rules,
+            fn(array $rule) => $rule[0] !== null
+        );
         usort(
             $rules,
             fn(array $a, array $b) =>

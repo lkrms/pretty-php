@@ -22,7 +22,7 @@ final class AlignChainedCalls implements TokenRule
         return 340;
     }
 
-    public function getTokenTypes(): ?array
+    public function getTokenTypes(): array
     {
         return TokenType::CHAIN;
     }

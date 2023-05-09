@@ -26,7 +26,7 @@ final class SimplifyStrings implements TokenRule
         return 60;
     }
 
-    public function getTokenTypes(): ?array
+    public function getTokenTypes(): array
     {
         return [
             T_CONSTANT_ENCAPSED_STRING,

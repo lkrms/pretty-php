@@ -13,7 +13,7 @@ interface Filter
      * @param T0[] $tokens
      * @return T0[]
      */
-    public function __invoke(array $tokens): array;
+    public function filterTokens(array $tokens): array;
 
     /**
      * Close resources and remove circular references

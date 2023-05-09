@@ -23,7 +23,7 @@ final class BreakAfterSeparators implements TokenRule
         return 80;
     }
 
-    public function getTokenTypes(): ?array
+    public function getTokenTypes(): array
     {
         return [
             T[';'],

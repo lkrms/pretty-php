@@ -22,7 +22,7 @@ final class SwitchPosition implements TokenRule
         return 600;
     }
 
-    public function getTokenTypes(): ?array
+    public function getTokenTypes(): array
     {
         return [
             T_SWITCH,

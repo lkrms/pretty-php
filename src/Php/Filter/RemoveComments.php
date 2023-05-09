@@ -15,7 +15,7 @@ final class RemoveComments implements Filter
 {
     use FilterTrait;
 
-    public function __invoke(array $tokens): array
+    public function filterTokens(array $tokens): array
     {
         return array_filter(
             $tokens,

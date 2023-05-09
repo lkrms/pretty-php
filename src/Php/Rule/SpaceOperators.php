@@ -34,7 +34,7 @@ final class SpaceOperators implements TokenRule
         return 80;
     }
 
-    public function getTokenTypes(): ?array
+    public function getTokenTypes(): array
     {
         return TokenType::ALL_OPERATOR;
     }

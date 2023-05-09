@@ -36,7 +36,7 @@ final class PlaceComments implements TokenRule
         return 90;
     }
 
-    public function getTokenTypes(): ?array
+    public function getTokenTypes(): array
     {
         return TokenType::COMMENT;
     }

@@ -51,7 +51,7 @@ final class SortImports implements Filter
         ];
     }
 
-    public function __invoke(array $tokens): array
+    public function filterTokens(array $tokens): array
     {
         $this->Tokens = array_values($tokens);
         $count = count($this->Tokens);
