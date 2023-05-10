@@ -12,6 +12,9 @@ use Throwable;
 
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
+/**
+ * @extends NavigableToken<Token>
+ */
 class Token extends NavigableToken implements JsonSerializable
 {
     /**
@@ -51,11 +54,6 @@ class Token extends NavigableToken implements JsonSerializable
      *
      */
     public ?int $Index = null;
-
-    /**
-     * @var Token[]
-     */
-    public $BracketStack = [];
 
     /**
      * @var Token|null
@@ -334,9 +332,9 @@ class Token extends NavigableToken implements JsonSerializable
     }
 
     /**
-     * @template T0 of Token
-     * @param T0[] $tokens
-     * @return T0[]
+     * @template TToken of Token
+     * @param TToken[] $tokens
+     * @return TToken[]
      */
     public static function filterTokens(array $tokens, Filter ...$filters): array
     {

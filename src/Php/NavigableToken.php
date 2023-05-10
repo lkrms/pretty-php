@@ -4,37 +4,45 @@ namespace Lkrms\Pretty\Php;
 
 use PhpToken;
 
+/**
+ * @template TToken of NavigableToken
+ */
 class NavigableToken extends PhpToken
 {
     /**
-     * @var Token|null
+     * @var TToken|null
      */
     public $_prev;
 
     /**
-     * @var Token|null
+     * @var TToken|null
      */
     public $_next;
 
     /**
-     * @var Token|null
+     * @var TToken|null
      */
     public $_prevCode;
 
     /**
-     * @var Token|null
+     * @var TToken|null
      */
     public $_nextCode;
 
     /**
-     * @var Token|null
+     * @var TToken|null
      */
     public $_prevSibling;
 
     /**
-     * @var Token|null
+     * @var TToken|null
      */
     public $_nextSibling;
+
+    /**
+     * @var TToken[]
+     */
+    public $BracketStack = [];
 
     public ?string $OriginalText = null;
 
@@ -46,10 +54,27 @@ class NavigableToken extends PhpToken
     final public function setText(string $text)
     {
         if ($this->text !== $text) {
-            $this->OriginalText = $this->OriginalText ?: $this->text;
+            if ($this->OriginalText === null) {
+                $this->OriginalText = $this->text;
+            }
             $this->text = $text;
         }
 
         return $this;
+    }
+
+    /**
+     * Get the last reachable token
+     *
+     * @return TToken
+     */
+    final public function last()
+    {
+        $current = reset($this->BracketStack) ?: $this;
+        while ($current->_nextSibling) {
+            $current = $current->_nextSibling;
+        }
+
+        return $current;
     }
 }
