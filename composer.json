@@ -7,7 +7,7 @@
     ],
     "require": {
         "php": ">=8 <8.3",
-        "lkrms/util": "^0.20.9",
+        "lkrms/util": "^0.20.10",
         "sebastian/diff": "^4 || ^5"
     },
     "autoload": {
