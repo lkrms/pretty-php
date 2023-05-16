@@ -7,7 +7,7 @@
     ],
     "require": {
         "php": ">=8 <8.3",
-        "lkrms/util": "^0.20.3",
+        "lkrms/util": "^0.20.10",
         "sebastian/diff": "^4 || ^5"
     },
     "autoload": {
@@ -18,10 +18,18 @@
             "bootstrap.php"
         ]
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Lkrms\\Pretty\\Tests\\": "tests/"
+        }
+    },
     "config": {
         "sort-packages": true,
         "allow-plugins": {
             "phpstan/extension-installer": true
+        },
+        "platform": {
+            "php": "8.0.28"
         }
     },
     "require-dev": {
@@ -29,6 +37,6 @@
         "phpstan/extension-installer": "^1",
         "phpstan/phpstan": "^1",
         "phpstan/phpstan-deprecation-rules": "^1",
-        "phpunit/phpunit": "^9 || ^10"
+        "phpunit/phpunit": "^9"
     }
 }

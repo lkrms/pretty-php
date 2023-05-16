@@ -213,24 +213,28 @@ final class TokenType
         T_PUBLIC,
     ];
 
-    public const DECLARATION = [
+    public const DECLARATION_EXCEPT_MULTI_PURPOSE = [
         T_ABSTRACT,
         T_CLASS,
         T_CONST,
         T_ENUM,
         T_EXTENDS,
         T_FINAL,
-        T_FUNCTION,
         T_GLOBAL,
         T_IMPLEMENTS,
         T_INTERFACE,
         T_NAMESPACE,
         T_READONLY,
-        T_STATIC,
         T_TRAIT,
-        T_USE,
         T_VAR,
         ...self::VISIBILITY,
+    ];
+
+    public const DECLARATION = [
+        T_FUNCTION,
+        T_STATIC,
+        T_USE,
+        ...self::DECLARATION_EXCEPT_MULTI_PURPOSE,
     ];
 
     public const DECLARATION_LIST = [
@@ -336,6 +340,7 @@ final class TokenType
 
     public const ADD_SPACE_AROUND = [
         T_AS,
+        T_FUNCTION,
         T_INSTEADOF,
         T_USE,
     ];
@@ -350,7 +355,7 @@ final class TokenType
         T_STATIC,
         T_STRING,
         T_VARIABLE,
-        ...self::DECLARATION,
+        ...self::DECLARATION_EXCEPT_MULTI_PURPOSE,
     ];
 
     public const ADD_SPACE_AFTER = [
@@ -364,7 +369,6 @@ final class TokenType
         T_EXIT,
         T_FOR,
         T_FOREACH,
-        T_FUNCTION,
         T_GOTO,
         T_IF,
         T_INCLUDE,

@@ -1,11 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$AlignAll is never written, only read\\.$#"
-			count: 1
-			path: src/Command/FormatPhp.php
-
-		-
 			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$Check is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
@@ -31,11 +26,6 @@ parameters:
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$IgnoreConfigFiles is never written, only read\\.$#"
-			count: 1
-			path: src/Command/FormatPhp.php
-
-		-
 			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$IgnoreNewlines is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
@@ -47,16 +37,6 @@ parameters:
 
 		-
 			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$IncludeRegex is never written, only read\\.$#"
-			count: 1
-			path: src/Command/FormatPhp.php
-
-		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$InputFiles is never written, only read\\.$#"
-			count: 1
-			path: src/Command/FormatPhp.php
-
-		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$Laravel is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
@@ -87,6 +67,11 @@ parameters:
 
 		-
 			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$PreserveTrailingSpaces is never written, only read\\.$#"
+			count: 1
+			path: src/Command/FormatPhp.php
+
+		-
+			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$Preset is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 

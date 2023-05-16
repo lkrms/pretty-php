@@ -33,7 +33,7 @@ final class SpaceMatch implements TokenRule
         return 300;
     }
 
-    public function getTokenTypes(): ?array
+    public function getTokenTypes(): array
     {
         return [T_MATCH];
     }

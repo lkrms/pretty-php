@@ -12,12 +12,11 @@ interface TokenRule extends Rule
      * Return token types the rule is interested in
      *
      * Tokens of these types are passed to {@see TokenRule::processToken()}. To
-     * receive all tokens, return `null`, or for no tokens, return an empty
-     * array.
+     * receive all tokens, return `['*']`.
      *
-     * @return array<int|string>|null
+     * @return array<int|string>
      */
-    public function getTokenTypes(): ?array;
+    public function getTokenTypes(): array;
 
     /**
      * Apply the rule to a token

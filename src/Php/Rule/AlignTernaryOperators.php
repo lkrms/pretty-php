@@ -24,7 +24,7 @@ final class AlignTernaryOperators implements TokenRule
         return 380;
     }
 
-    public function getTokenTypes(): ?array
+    public function getTokenTypes(): array
     {
         return [T['?']];
     }

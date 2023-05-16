@@ -15,7 +15,7 @@ final class TrimCasts implements Filter
 {
     use FilterTrait;
 
-    public function __invoke(array $tokens): array
+    public function filterTokens(array $tokens): array
     {
         $casts = array_filter(
             $tokens,

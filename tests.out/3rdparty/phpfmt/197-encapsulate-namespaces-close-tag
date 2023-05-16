@@ -6,6 +6,6 @@ class A
 {
 	function name()
 	{
-		?><?php
+?><?php
 	}
 }

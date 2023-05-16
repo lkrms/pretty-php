@@ -22,7 +22,7 @@ final class AddBlankLineBeforeReturn implements TokenRule
         return 97;
     }
 
-    public function getTokenTypes(): ?array
+    public function getTokenTypes(): array
     {
         return [
             T_RETURN,

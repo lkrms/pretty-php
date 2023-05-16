@@ -14,7 +14,7 @@ final class NormaliseStrings implements Filter
 {
     use FilterTrait;
 
-    public function __invoke(array $tokens): array
+    public function filterTokens(array $tokens): array
     {
         $strings = array_filter(
             $tokens,

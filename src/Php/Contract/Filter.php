@@ -9,11 +9,11 @@ interface Filter
     /**
      * Apply the filter to an array of tokens
      *
-     * @template T0 of Token
-     * @param T0[] $tokens
-     * @return T0[]
+     * @template TToken of Token
+     * @param TToken[] $tokens
+     * @return TToken[]
      */
-    public function __invoke(array $tokens): array;
+    public function filterTokens(array $tokens): array;
 
     /**
      * Close resources and remove circular references

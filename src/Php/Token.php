@@ -5,6 +5,7 @@ namespace Lkrms\Pretty\Php;
 use JsonSerializable;
 use Lkrms\Facade\Convert;
 use Lkrms\Pretty\Php\Contract\Filter;
+use Lkrms\Pretty\Php\Rule\AddHangingIndentation;
 use Lkrms\Pretty\PrettyException;
 use Lkrms\Pretty\WhitespaceType;
 use RuntimeException;
@@ -12,6 +13,9 @@ use Throwable;
 
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
+/**
+ * @extends NavigableToken<Token>
+ */
 class Token extends NavigableToken implements JsonSerializable
 {
     /**
@@ -51,11 +55,6 @@ class Token extends NavigableToken implements JsonSerializable
      *
      */
     public ?int $Index = null;
-
-    /**
-     * @var Token[]
-     */
-    public $BracketStack = [];
 
     /**
      * @var Token|null
@@ -120,6 +119,11 @@ class Token extends NavigableToken implements JsonSerializable
     /**
      * @var int
      */
+    public $TagIndent = 0;
+
+    /**
+     * @var int
+     */
     public $PreIndent = 0;
 
     /**
@@ -166,8 +170,7 @@ class Token extends NavigableToken implements JsonSerializable
     /**
      * The context of each level of hanging indentation applied to the token
      *
-     * Only used by
-     * {@see \Lkrms\Pretty\Php\Rule\AddHangingIndentation::processToken()}.
+     * Only used by {@see AddHangingIndentation::processToken()}.
      *
      * @var array<array<Token[]|Token>>
      */
@@ -334,15 +337,15 @@ class Token extends NavigableToken implements JsonSerializable
     }
 
     /**
-     * @template T0 of Token
-     * @param T0[] $tokens
-     * @return T0[]
+     * @template TToken of Token
+     * @param TToken[] $tokens
+     * @return TToken[]
      */
     public static function filterTokens(array $tokens, Filter ...$filters): array
     {
         try {
             foreach ($filters as $filter) {
-                $tokens = $filter($tokens);
+                $tokens = $filter->filterTokens($tokens);
             }
 
             return $tokens;
@@ -2176,12 +2179,12 @@ class Token extends NavigableToken implements JsonSerializable
 
     public function indent(): int
     {
-        return $this->PreIndent + $this->Indent + $this->HangingIndent - $this->Deindent;
+        return $this->TagIndent + $this->PreIndent + $this->Indent + $this->HangingIndent - $this->Deindent;
     }
 
     public function renderIndent(bool $softTabs = false): string
     {
-        return ($indent = $this->PreIndent + $this->Indent + $this->HangingIndent - $this->Deindent)
+        return ($indent = $this->TagIndent + $this->PreIndent + $this->Indent + $this->HangingIndent - $this->Deindent)
             ? str_repeat($softTabs ? $this->Formatter->SoftTab : $this->Formatter->Tab, $indent)
             : '';
     }
@@ -2192,7 +2195,7 @@ class Token extends NavigableToken implements JsonSerializable
 
         return WhitespaceType::toWhitespace($whitespaceBefore)
             . ($whitespaceBefore & (WhitespaceType::LINE | WhitespaceType::BLANK)
-                ? (($indent = $this->PreIndent + $this->Indent + $this->HangingIndent - $this->Deindent)
+                ? (($indent = $this->TagIndent + $this->PreIndent + $this->Indent + $this->HangingIndent - $this->Deindent)
                         ? str_repeat($softTabs ? $this->Formatter->SoftTab : $this->Formatter->Tab, $indent)
                         : '')
                     . (($padding = $this->LinePadding - $this->LineUnpadding + $this->Padding)
@@ -2227,11 +2230,17 @@ class Token extends NavigableToken implements JsonSerializable
         if (!$this->is(TokenType::DO_NOT_MODIFY_LHS)) {
             $code = WhitespaceType::toWhitespace($this->effectiveWhitespaceBefore());
             if (($code[0] ?? null) === "\n") {
-                if ($this->PreIndent + $this->Indent + $this->HangingIndent - $this->Deindent) {
-                    $code .= $this->renderIndent($softTabs);
-                }
-                if ($this->LinePadding - $this->LineUnpadding) {
-                    $code .= str_repeat(' ', $this->LinePadding - $this->LineUnpadding);
+                if ($this->id === T_CLOSE_TAG) {
+                    if ($this->TagIndent) {
+                        $code .= str_repeat($softTabs ? $this->Formatter->SoftTab : $this->Formatter->Tab, $this->TagIndent);
+                    }
+                } else {
+                    if ($this->TagIndent + $this->PreIndent + $this->Indent + $this->HangingIndent - $this->Deindent) {
+                        $code .= $this->renderIndent($softTabs);
+                    }
+                    if ($this->LinePadding - $this->LineUnpadding) {
+                        $code .= str_repeat(' ', $this->LinePadding - $this->LineUnpadding);
+                    }
                 }
             }
             if ($this->Padding) {

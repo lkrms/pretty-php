@@ -4,7 +4,6 @@ includes:
 parameters:
   level: 6
   paths:
-    - bin
     - bin/pretty-php
     - bootstrap.php
     - src
@@ -12,6 +11,5 @@ parameters:
   excludePaths:
     - tests/temp.php
   bootstrapFiles:
-    - tests/bootstrap.php
   ignoreErrors:
     - "#^Method Lkrms\\\\Pretty\\\\Tests\\\\.+ (has no return type specified|return type has no value type specified in iterable type array)\\.$#"

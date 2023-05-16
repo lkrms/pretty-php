@@ -25,7 +25,7 @@ final class BreakOperators implements TokenRule
         return 98;
     }
 
-    public function getTokenTypes(): ?array
+    public function getTokenTypes(): array
     {
         return [T['?']];
     }

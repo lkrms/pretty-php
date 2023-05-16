@@ -3,6 +3,7 @@
 namespace Lkrms\Pretty\Php\Contract;
 
 use Lkrms\Pretty\Php\Formatter;
+use Lkrms\Pretty\Php\Token;
 
 interface Rule
 {
@@ -11,10 +12,10 @@ interface Rule
     public function __construct(Formatter $formatter);
 
     /**
-     * Return the priority of a method implemented by the rule
+     * Get the priority of a method implemented by the rule
      *
-     * Higher priorities (bigger numbers) correspond to later invocation. Return
-     * `null` to use the default priority (100).
+     * Higher priorities (bigger numbers) correspond to later invocation. To
+     * suppress calls to the method, return `null`.
      *
      * @param string $method One of the rule's public constants, e.g.
      * {@see Rule::BEFORE_RENDER}
@@ -22,7 +23,7 @@ interface Rule
     public function getPriority(string $method): ?int;
 
     /**
-     * @param \Lkrms\Pretty\Php\Token[] $tokens
+     * @param Token[] $tokens
      */
     public function beforeRender(array $tokens): void;
 

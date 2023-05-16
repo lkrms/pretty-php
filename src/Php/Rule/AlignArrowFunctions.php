@@ -20,7 +20,7 @@ final class AlignArrowFunctions implements TokenRule
         return 380;
     }
 
-    public function getTokenTypes(): ?array
+    public function getTokenTypes(): array
     {
         return [T_FN];
     }

@@ -3,8 +3,7 @@
 namespace Lkrms\Pretty\Php;
 
 use Lkrms\Concept\TypedCollection;
-use Lkrms\Pretty\WhitespaceType;
-use RuntimeException;
+use LogicException;
 
 /**
  * A collection of Tokens
@@ -23,16 +22,16 @@ final class TokenCollection extends TypedCollection
         return Token::class;
     }
 
-    public static function collect(Token $from, Token $to): TokenCollection
+    public static function collect(Token $from, Token $to): self
     {
-        $tokens = new TokenCollection();
+        $tokens = new self();
         $tokens->Collected = true;
         if ($from->Index > $to->Index || $from->IsNull || $to->IsNull) {
             return $tokens;
         }
         $tokens[] = $from;
-        while ($from !== $to) {
-            $tokens[] = $from = $from->next();
+        while ($from !== $to && $from->_next) {
+            $tokens[] = $from = $from->_next;
         }
 
         return $tokens;
@@ -51,7 +50,7 @@ final class TokenCollection extends TypedCollection
     /**
      * @param int|string ...$types
      */
-    public function getAnyOf(...$types): TokenCollection
+    public function getAnyOf(...$types): self
     {
         return $this->filter(
             fn(Token $t) => $t->is($types)
@@ -90,15 +89,32 @@ final class TokenCollection extends TypedCollection
     }
 
     /**
-     * Return true if the collection will render over multiple lines, not
-     * including leading or trailing whitespace
+     * True if any tokens in the collection are separated by one or more line
+     * breaks
+     *
+     */
+    public function hasNewlineBetweenTokens(): bool
+    {
+        $i = 0;
+        /** @var Token $token */
+        foreach ($this as $token) {
+            if ($i++ && $token->hasNewlineBefore()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * True if the collection will render over multiple lines, not including
+     * leading or trailing whitespace
      *
      */
     public function hasNewline(): bool
     {
-        if (!$this->Collected) {
-            throw new RuntimeException('Collection not created by ' . static::class . '::collect()');
-        }
+        $this->assertCollected();
+
         $i = 0;
         /** @var Token $token */
         foreach ($this as $token) {
@@ -120,9 +136,8 @@ final class TokenCollection extends TypedCollection
      */
     public function render(bool $softTabs = false, bool $trim = true): string
     {
-        if (!$this->Collected) {
-            throw new RuntimeException('Collection not created by ' . static::class . '::collect()');
-        }
+        $this->assertCollected();
+
         $code = '';
         /** @var Token $token */
         foreach ($this as $token) {
@@ -185,10 +200,26 @@ final class TokenCollection extends TypedCollection
     }
 
     /**
+     * Use T_AND_EQUAL ('&=') to apply a mask to all WhitespaceMaskPrev and
+     * WhitespaceMaskNext values that cover whitespace before tokens in the
+     * collection
+     *
+     * If `$critical` is set, operate on CriticalWhitespaceMaskPrev and
+     * CriticalWhitespaceMaskNext instead.
+     *
      * @return $this
      */
-    public function maskWhitespaceBefore(int $mask)
+    public function maskWhitespaceBefore(int $mask, bool $critical = false)
     {
+        if ($critical) {
+            return $this->forEach(
+                function (Token $t) use ($mask) {
+                    $t->CriticalWhitespaceMaskPrev &= $mask;
+                    $t->prev()->CriticalWhitespaceMaskNext &= $mask;
+                }
+            );
+        }
+
         return $this->forEach(
             function (Token $t) use ($mask) {
                 $t->WhitespaceMaskPrev &= $mask;
@@ -198,13 +229,18 @@ final class TokenCollection extends TypedCollection
     }
 
     /**
+     * Use T_AND_EQUAL ('&=') to apply a mask to all inward-facing
+     * WhitespaceMaskPrev and WhitespaceMaskNext values in the collection
+     *
+     * If `$critical` is set, operate on CriticalWhitespaceMaskPrev and
+     * CriticalWhitespaceMaskNext instead.
+     *
      * @return $this
      */
-    public function maskInnerWhitespace(int $mask)
+    public function maskInnerWhitespace(int $mask, bool $critical = false)
     {
-        if (!$this->Collected) {
-            throw new RuntimeException('Collection not created by ' . static::class . '::collect()');
-        }
+        $this->assertCollected();
+
         switch ($this->count()) {
             case 0:
             case 1:
@@ -214,16 +250,37 @@ final class TokenCollection extends TypedCollection
                 $this->nth(2)
                      ->collect($this->nth(-2))
                      ->forEach(
-                         function (Token $t) use ($mask) {
-                             $t->WhitespaceMaskPrev &= $mask;
-                             $t->WhitespaceMaskNext &= $mask;
-                         }
+                         $critical
+                             ? function (Token $t) use ($mask) {
+                                 $t->CriticalWhitespaceMaskPrev &= $mask;
+                                 $t->CriticalWhitespaceMaskNext &= $mask;
+                             }
+                             : function (Token $t) use ($mask) {
+                                 $t->WhitespaceMaskPrev &= $mask;
+                                 $t->WhitespaceMaskNext &= $mask;
+                             }
                      );
+                // No break
             case 2:
-                $this->first()->WhitespaceMaskNext &= $mask;
-                $this->last()->WhitespaceMaskPrev &= $mask;
+                if ($critical) {
+                    $this->first()->CriticalWhitespaceMaskNext &= $mask;
+                    $this->last()->CriticalWhitespaceMaskPrev &= $mask;
+                } else {
+                    $this->first()->WhitespaceMaskNext &= $mask;
+                    $this->last()->WhitespaceMaskPrev &= $mask;
+                }
 
                 return $this;
+        }
+    }
+
+    private function assertCollected(): void
+    {
+        if (!$this->Collected) {
+            throw new LogicException(sprintf('Not collected by %s::collect()', static::class));
+        }
+        if ($this->isMutant()) {
+            throw new LogicException(sprintf('Modified since collection by %s::collect()', static::class));
         }
     }
 }

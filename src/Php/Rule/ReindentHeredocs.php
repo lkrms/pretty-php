@@ -4,14 +4,15 @@ namespace Lkrms\Pretty\Php\Rule;
 
 use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
+use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Token;
 
 /**
  * Apply indentation to heredocs
  *
- * {@see \Lkrms\Pretty\Php\Formatter} normalises heredocs by removing
- * indentation prior to formatting. At the expense of compatibility with PHP
- * prior to 7.3, this rule [re]applies it.
+ * {@see Formatter} normalises heredocs by removing indentation prior to
+ * formatting. At the expense of compatibility with PHP prior to 7.3, this rule
+ * [re]applies it.
  */
 final class ReindentHeredocs implements TokenRule
 {
@@ -29,7 +30,7 @@ final class ReindentHeredocs implements TokenRule
         return 900;
     }
 
-    public function getTokenTypes(): ?array
+    public function getTokenTypes(): array
     {
         return [
             T_START_HEREDOC,

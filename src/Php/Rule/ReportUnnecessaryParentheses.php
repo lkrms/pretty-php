@@ -22,7 +22,7 @@ final class ReportUnnecessaryParentheses implements TokenRule
         return 990;
     }
 
-    public function getTokenTypes(): ?array
+    public function getTokenTypes(): array
     {
         return [
             T['('],

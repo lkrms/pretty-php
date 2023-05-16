@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "eb34adc93265b629cb566b48248e08c2",
+    "content-hash": "ed3698511f220ab1c0bf65ddc357cf0d",
     "packages": [
         {
             "name": "filp/whoops",
@@ -122,23 +122,23 @@
         },
         {
             "name": "lkrms/util",
-            "version": "v0.20.3",
+            "version": "v0.20.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/php-util.git",
-                "reference": "4b7f9c2ed700d5513293e3d65415277c158a0754"
+                "reference": "83a6d5954c356298f01eeb5dc3669d71ef80bcc4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/php-util/zipball/4b7f9c2ed700d5513293e3d65415277c158a0754",
-                "reference": "4b7f9c2ed700d5513293e3d65415277c158a0754",
+                "url": "https://api.github.com/repos/lkrms/php-util/zipball/83a6d5954c356298f01eeb5dc3669d71ef80bcc4",
+                "reference": "83a6d5954c356298f01eeb5dc3669d71ef80bcc4",
                 "shasum": ""
             },
             "require": {
                 "composer-runtime-api": "^2.2",
                 "filp/whoops": "^2",
                 "lkrms/dice": "^4.1.4",
-                "php": ">=7.4,<8.3",
+                "php": ">=7.4 <8.3",
                 "psr/container": "^2",
                 "psr/log": "^1"
             },
@@ -179,9 +179,9 @@
             "description": "A lightweight PHP toolkit for expressive backend/CLI apps",
             "support": {
                 "issues": "https://github.com/lkrms/php-util/issues",
-                "source": "https://github.com/lkrms/php-util/tree/v0.20.3"
+                "source": "https://github.com/lkrms/php-util/tree/v0.20.10"
             },
-            "time": "2023-05-02T02:16:16+00:00"
+            "time": "2023-05-10T04:28:25+00:00"
         },
         {
             "name": "psr/container",
@@ -288,16 +288,16 @@
         },
         {
             "name": "sebastian/diff",
-            "version": "4.0.4",
+            "version": "4.0.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/diff.git",
-                "reference": "3461e3fccc7cfdfc2720be910d3bd73c69be590d"
+                "reference": "74be17022044ebaaecfdf0c5cd504fc9cd5a7131"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/diff/zipball/3461e3fccc7cfdfc2720be910d3bd73c69be590d",
-                "reference": "3461e3fccc7cfdfc2720be910d3bd73c69be590d",
+                "url": "https://api.github.com/repos/sebastianbergmann/diff/zipball/74be17022044ebaaecfdf0c5cd504fc9cd5a7131",
+                "reference": "74be17022044ebaaecfdf0c5cd504fc9cd5a7131",
                 "shasum": ""
             },
             "require": {
@@ -342,7 +342,7 @@
             ],
             "support": {
                 "issues": "https://github.com/sebastianbergmann/diff/issues",
-                "source": "https://github.com/sebastianbergmann/diff/tree/4.0.4"
+                "source": "https://github.com/sebastianbergmann/diff/tree/4.0.5"
             },
             "funding": [
                 {
@@ -350,7 +350,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2020-10-26T13:10:38+00:00"
+            "time": "2023-05-07T05:35:17+00:00"
         }
     ],
     "packages-dev": [
@@ -3717,5 +3717,8 @@
         "php": ">=8 <8.3"
     },
     "platform-dev": [],
+    "platform-overrides": {
+        "php": "8.0.28"
+    },
     "plugin-api-version": "2.3.0"
 }

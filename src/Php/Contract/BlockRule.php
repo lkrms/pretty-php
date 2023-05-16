@@ -2,6 +2,7 @@
 
 namespace Lkrms\Pretty\Php\Contract;
 
+use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenCollection;
 
 interface BlockRule extends Rule
@@ -12,7 +13,7 @@ interface BlockRule extends Rule
      * Apply the rule to a code block
      *
      * An array of one or more {@see TokenCollection}s, each representing a line
-     * with one or more {@see \Lkrms\Pretty\Php\Token}s, is passed to
+     * with one or more {@see Token}s, is passed to
      * {@see BlockRule::processBlock()} for every block of consecutive non-empty
      * lines in the output file.
      *
