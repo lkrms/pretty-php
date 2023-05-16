@@ -5,6 +5,7 @@ namespace Lkrms\Pretty\Php;
 use JsonSerializable;
 use Lkrms\Facade\Convert;
 use Lkrms\Pretty\Php\Contract\Filter;
+use Lkrms\Pretty\Php\Rule\AddHangingIndentation;
 use Lkrms\Pretty\PrettyException;
 use Lkrms\Pretty\WhitespaceType;
 use RuntimeException;
@@ -169,8 +170,7 @@ class Token extends NavigableToken implements JsonSerializable
     /**
      * The context of each level of hanging indentation applied to the token
      *
-     * Only used by
-     * {@see \Lkrms\Pretty\Php\Rule\AddHangingIndentation::processToken()}.
+     * Only used by {@see AddHangingIndentation::processToken()}.
      *
      * @var array<array<Token[]|Token>>
      */

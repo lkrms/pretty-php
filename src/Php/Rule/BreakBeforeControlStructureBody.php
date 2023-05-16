@@ -4,6 +4,7 @@ namespace Lkrms\Pretty\Php\Rule;
 
 use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
+use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
@@ -14,7 +15,7 @@ use const Lkrms\Pretty\Php\T_ID_MAP as T;
  * Add newlines after control structures where the body has no enclosing braces
  *
  * Control structures meeting this criteria are also reported to the user via
- * {@see \Lkrms\Pretty\Php\Formatter::reportProblem()}.
+ * {@see Formatter::reportProblem()}.
  */
 final class BreakBeforeControlStructureBody implements TokenRule
 {

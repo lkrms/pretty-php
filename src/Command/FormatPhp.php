@@ -38,6 +38,7 @@ use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
 use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
 use Lkrms\Pretty\Php\Rule\SimplifyStrings;
 use Lkrms\Pretty\Php\Rule\SpaceDeclarations;
+use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\PrettyBadSyntaxException;
 use Lkrms\Pretty\PrettyException;
 use Lkrms\Utility\Test;
@@ -1199,7 +1200,7 @@ EOF,
     }
 
     /**
-     * @param \Lkrms\Pretty\Php\Token[]|null $tokens
+     * @param Token[]|null $tokens
      * @param array<string,string>|null $log
      * @param mixed $data
      */

@@ -3,6 +3,7 @@
 namespace Lkrms\Pretty\Php\Contract;
 
 use Lkrms\Pretty\Php\Formatter;
+use Lkrms\Pretty\Php\Token;
 
 interface Rule
 {
@@ -22,7 +23,7 @@ interface Rule
     public function getPriority(string $method): ?int;
 
     /**
-     * @param \Lkrms\Pretty\Php\Token[] $tokens
+     * @param Token[] $tokens
      */
     public function beforeRender(array $tokens): void;
 
