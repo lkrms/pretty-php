@@ -18,6 +18,7 @@ use const Lkrms\Pretty\Php\T_ID_MAP as T;
  * - Add SPACE as per {@see TokenType}::`ADD_SPACE_*`
  * - Suppress SPACE and BLANK as per {@see TokenType}::`SUPPRESS_SPACE_*`
  * - Suppress SPACE and BLANK after open brackets and before close brackets
+ * - Propagate indent from `<?php` to tokens between it and `?>`
  * - Apply SPACE between `<?php` and a subsequent `declare` construct in the
  *   global scope
  * - Add LINE|SPACE after `<?php` and before `?>`
@@ -94,6 +95,21 @@ final class AddStandardWhitespace implements TokenRule
         }
 
         if ($token->is([T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO])) {
+            /* - Propagate indent from `<?php` to tokens between it and `?>` */
+            $tagIndent = 0;
+            if ($token->_prev && preg_match('/\n(?P<indent>\h+)$/', $token->_prev->text, $matches)) {
+                $indent = strlen(str_replace("\t", $this->Formatter->SoftTab, $matches['indent']));
+                if ($indent % $this->Formatter->TabSize === 0) {
+                    $tagIndent = $indent / $this->Formatter->TabSize;
+                    /* ...until the next `?>` */
+                    if ($token->CloseTag) {
+                        $token->CloseTag->TagIndent = $tagIndent;
+                    }
+                    // Increase the indentation level for tokens between tags
+                    $tagIndent++;
+                }
+            }
+
             // - Apply SPACE between `<?php` and a subsequent `declare`
             //   construct in the global scope
             // - Add LINE|SPACE after `<?php`
@@ -108,8 +124,8 @@ final class AddStandardWhitespace implements TokenRule
             $current->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
 
             /* - Preserve one-line `<?php` ... `?>` */
-            $current = $token->CloseTag ?: $token->last();
-            if ($token !== $current && $this->preserveOneLine($token, $current)) {
+            $close = $token->CloseTag ?: $token->last();
+            if ($token !== $close && $this->preserveOneLine($token, $close)) {
                 return;
             }
             // - Suppress inner LINE if both ends have adjacent code
@@ -121,7 +137,18 @@ final class AddStandardWhitespace implements TokenRule
                         $lastCode->line === $token->CloseTag->line) {
                     $this->preserveOneLine($token, $nextCode, true);
                     $this->preserveOneLine($lastCode, $token->CloseTag, true);
+                    // Remove a level of indentation if tokens between tags
+                    // don't start on a new line
+                    if ($tagIndent) {
+                        $tagIndent--;
+                    }
                 }
+            }
+
+            if ($tagIndent) {
+                $close = $token->CloseTag ? $token->CloseTag->_prev : $close;
+                $token->collect($close)
+                      ->forEach(fn(Token $t) => $t->TagIndent += $tagIndent);
             }
 
             return;
