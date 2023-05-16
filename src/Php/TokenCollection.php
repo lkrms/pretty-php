@@ -204,10 +204,22 @@ final class TokenCollection extends TypedCollection
      * WhitespaceMaskNext values that cover whitespace before tokens in the
      * collection
      *
+     * If `$critical` is set, operate on CriticalWhitespaceMaskPrev and
+     * CriticalWhitespaceMaskNext instead.
+     *
      * @return $this
      */
-    public function maskWhitespaceBefore(int $mask)
+    public function maskWhitespaceBefore(int $mask, bool $critical = false)
     {
+        if ($critical) {
+            return $this->forEach(
+                function (Token $t) use ($mask) {
+                    $t->CriticalWhitespaceMaskPrev &= $mask;
+                    $t->prev()->CriticalWhitespaceMaskNext &= $mask;
+                }
+            );
+        }
+
         return $this->forEach(
             function (Token $t) use ($mask) {
                 $t->WhitespaceMaskPrev &= $mask;
@@ -220,9 +232,12 @@ final class TokenCollection extends TypedCollection
      * Use T_AND_EQUAL ('&=') to apply a mask to all inward-facing
      * WhitespaceMaskPrev and WhitespaceMaskNext values in the collection
      *
+     * If `$critical` is set, operate on CriticalWhitespaceMaskPrev and
+     * CriticalWhitespaceMaskNext instead.
+     *
      * @return $this
      */
-    public function maskInnerWhitespace(int $mask)
+    public function maskInnerWhitespace(int $mask, bool $critical = false)
     {
         $this->assertCollected();
 
@@ -235,15 +250,25 @@ final class TokenCollection extends TypedCollection
                 $this->nth(2)
                      ->collect($this->nth(-2))
                      ->forEach(
-                         function (Token $t) use ($mask) {
-                             $t->WhitespaceMaskPrev &= $mask;
-                             $t->WhitespaceMaskNext &= $mask;
-                         }
+                         $critical
+                             ? function (Token $t) use ($mask) {
+                                 $t->CriticalWhitespaceMaskPrev &= $mask;
+                                 $t->CriticalWhitespaceMaskNext &= $mask;
+                             }
+                             : function (Token $t) use ($mask) {
+                                 $t->WhitespaceMaskPrev &= $mask;
+                                 $t->WhitespaceMaskNext &= $mask;
+                             }
                      );
                 // No break
             case 2:
-                $this->first()->WhitespaceMaskNext &= $mask;
-                $this->last()->WhitespaceMaskPrev &= $mask;
+                if ($critical) {
+                    $this->first()->CriticalWhitespaceMaskNext &= $mask;
+                    $this->last()->CriticalWhitespaceMaskPrev &= $mask;
+                } else {
+                    $this->first()->WhitespaceMaskNext &= $mask;
+                    $this->last()->WhitespaceMaskPrev &= $mask;
+                }
 
                 return $this;
         }

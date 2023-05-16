@@ -12,7 +12,6 @@
     "enable": [
         "align-chains",
         "align-fn",
-        "blank-before-return",
         "preserve-one-line",
         "strict-lists"
     ]

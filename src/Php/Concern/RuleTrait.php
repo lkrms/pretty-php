@@ -3,6 +3,8 @@
 namespace Lkrms\Pretty\Php\Concern;
 
 use Lkrms\Pretty\Php\Formatter;
+use Lkrms\Pretty\Php\Token;
+use Lkrms\Pretty\WhitespaceType;
 
 trait RuleTrait
 {
@@ -16,9 +18,16 @@ trait RuleTrait
         $this->Formatter = $formatter;
     }
 
-    public function getPriority(string $method): ?int
+    protected function preserveOneLine(Token $start, Token $end, bool $force = false): bool
     {
-        return null;
+        if (!$force && $start->line !== $end->line) {
+            return false;
+        }
+
+        $start->collect($end)
+              ->maskInnerWhitespace(~WhitespaceType::BLANK & ~WhitespaceType::LINE, true);
+
+        return true;
     }
 
     public function destroy(): void

@@ -15,47 +15,24 @@ use const Lkrms\Pretty\Php\T_ID_MAP as T;
  * Apply sensible default spacing
  *
  * Specifically:
- * - Apply {@see TokenType::ADD_SPACE_AROUND},
- *   {@see TokenType::ADD_SPACE_BEFORE}, {@see TokenType::ADD_SPACE_AFTER},
- *   {@see TokenType::SUPPRESS_SPACE_AFTER},
- *   {@see TokenType::SUPPRESS_SPACE_BEFORE}
- * - Suppress SPACE between brackets and their contents
+ * - Add SPACE as per {@see TokenType}::`ADD_SPACE_*`
+ * - Suppress SPACE and BLANK as per {@see TokenType}::`SUPPRESS_SPACE_*`
+ * - Suppress SPACE and BLANK after open brackets and before close brackets
+ * - Apply SPACE between `<?php` and a subsequent `declare` construct in the
+ *   global scope
  * - Add LINE|SPACE after `<?php` and before `?>`
- * - If `<?php` is followed by `declare`, collapse them to `<?php declare`
+ * - Preserve one-line `<?php` ... `?>`, or suppress inner LINE if both ends
+ *   have adjacent code
  * - Add SPACE after and suppress SPACE before commas
  * - Add LINE after labels
- * - Suppress whitespace inside `declare()`
+ * - Add LINE between arms of match expressions
  * - Add LINE before and after attributes, suppress BLANK after
+ * - Suppress whitespace inside `declare()`
  *
  */
 final class AddStandardWhitespace implements TokenRule
 {
-    use TokenRuleTrait {
-        __construct as private construct;
-    }
-
-    /**
-     * @var array<int|string>
-     */
-    private $AddSpaceAround = TokenType::ADD_SPACE_AROUND;
-
-    public function __construct(Formatter $formatter)
-    {
-        $this->construct($formatter);
-
-        // Add tokens in ADD_SPACE_BEFORE and ADD_SPACE_AFTER, but not in
-        // ADD_SPACE_AROUND, to $this->AddSpaceAround
-        array_push(
-            $this->AddSpaceAround,
-            ...array_diff(
-                array_intersect(
-                    TokenType::ADD_SPACE_BEFORE,
-                    TokenType::ADD_SPACE_AFTER
-                ),
-                TokenType::ADD_SPACE_AROUND
-            )
-        );
-    }
+    use TokenRuleTrait;
 
     public function getPriority(string $method): ?int
     {
@@ -94,7 +71,8 @@ final class AddStandardWhitespace implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->is($this->AddSpaceAround)) {
+        // - Add SPACE as per TokenType::ADD_SPACE_*
+        if ($token->is(TokenType::ADD_SPACE_AROUND)) {
             $token->WhitespaceBefore |= WhitespaceType::SPACE;
             $token->WhitespaceAfter |= WhitespaceType::SPACE;
         } elseif ($token->is(TokenType::ADD_SPACE_BEFORE)) {
@@ -103,51 +81,76 @@ final class AddStandardWhitespace implements TokenRule
             $token->WhitespaceAfter |= WhitespaceType::SPACE;
         }
 
+        // - Suppress SPACE and BLANK
+        //   - as per TokenType::SUPPRESS_SPACE_*
+        //   - after open brackets and before close brackets
         if (($token->isOpenBracket() && !$token->isStructuralBrace()) ||
                 $token->is(TokenType::SUPPRESS_SPACE_AFTER)) {
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK & ~WhitespaceType::SPACE;
         }
-
         if (($token->isCloseBracket() && !$token->isStructuralBrace()) ||
                 $token->is(TokenType::SUPPRESS_SPACE_BEFORE)) {
             $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::SPACE;
         }
 
         if ($token->is([T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO])) {
-            // Place `declare` beside `<?php`
-            if ($token->is(T_OPEN_TAG) &&
-                    ($declare = $token->next())->is(T_DECLARE) &&
-                    ($end = $declare->nextSibling(2)) === $declare->endOfStatement()) {
+            // - Apply SPACE between `<?php` and a subsequent `declare`
+            //   construct in the global scope
+            // - Add LINE|SPACE after `<?php`
+            $current = $token;
+            if ($token->id === T_OPEN_TAG &&
+                    ($declare = $token->next())->id === T_DECLARE &&
+                    ($end = $declare->nextSibling(2)) === $declare->EndStatement) {
                 $token->WhitespaceAfter |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskNext = WhitespaceType::SPACE;
-                $token = $end;
+                $current = $end;
             }
-            $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
+            $current->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
+
+            /* - Preserve one-line `<?php` ... `?>` */
+            $current = $token->CloseTag ?: $token->last();
+            if ($token !== $current && $this->preserveOneLine($token, $current)) {
+                return;
+            }
+            // - Suppress inner LINE if both ends have adjacent code
+            if ($token->CloseTag &&
+                    !($nextCode = $token->nextCode())->IsNull &&
+                    $nextCode->Index < $token->CloseTag->Index) {
+                $lastCode = $token->CloseTag->prevCode();
+                if ($nextCode->line === $token->line &&
+                        $lastCode->line === $token->CloseTag->line) {
+                    $this->preserveOneLine($token, $nextCode, true);
+                    $this->preserveOneLine($lastCode, $token->CloseTag, true);
+                }
+            }
 
             return;
         }
 
-        if ($token->is(T_CLOSE_TAG)) {
+        /* - Add LINE|SPACE before `?>` */
+        if ($token->id === T_CLOSE_TAG) {
             $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
 
             return;
         }
 
-        if ($token->is(T[','])) {
+        // - Add SPACE after and suppress SPACE before commas
+        if ($token->id === T[',']) {
             $token->WhitespaceMaskPrev = WhitespaceType::NONE;
             $token->WhitespaceAfter |= WhitespaceType::SPACE;
 
             return;
         }
 
-        if ($token->is(T[':']) && $token->inLabel()) {
+        // - Add LINE after labels
+        if ($token->id === T[':'] && $token->inLabel()) {
             $token->WhitespaceAfter |= WhitespaceType::LINE;
-            $token->WhitespaceMaskNext |= WhitespaceType::LINE;
 
             return;
         }
 
-        if ($token->is(T_MATCH) && !$this->Formatter->MatchesAreLists) {
+        // - Add LINE between arms of match expressions
+        if ($token->id === T_MATCH && !$this->Formatter->MatchesAreLists) {
             $arms = $token->nextSibling(2);
             $current = $arms->nextCode();
             if ($current === $arms->ClosedBy) {
@@ -165,7 +168,8 @@ final class AddStandardWhitespace implements TokenRule
             return;
         }
 
-        if ($token->is(T_ATTRIBUTE)) {
+        // - Add LINE before and after attributes, suppress BLANK after
+        if ($token->id === T_ATTRIBUTE) {
             $token->WhitespaceBefore |= WhitespaceType::LINE;
             $token->ClosedBy->WhitespaceAfter |= WhitespaceType::LINE;
             $token->ClosedBy->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
@@ -173,10 +177,10 @@ final class AddStandardWhitespace implements TokenRule
             return;
         }
 
-        // Suppress whitespace in the directive section of `declare` blocks
-        if ($token->is(T['(']) && $token->prevCode()->is(T_DECLARE)) {
-            $first = $token->outer()
-                           ->maskInnerWhitespace(WhitespaceType::NONE);
+        // - Suppress whitespace inside `declare()`
+        if ($token->id === T['('] && $token->prevCode()->id === T_DECLARE) {
+            $token->outer()
+                  ->maskInnerWhitespace(WhitespaceType::NONE);
         }
     }
 }
