@@ -10,20 +10,19 @@ for ($i = 0; $i < 10; $i++):
 		echo $i + 1;
 ?>content<?php
 	}
-	endfor;
+endfor;
 
-	foreach ($arr as $k => $v):
-		echo $k;
-		echo $v;
-	endforeach;
+foreach ($arr as $k => $v):
+	echo $k;
+	echo $v;
+endforeach;
 
-	$i = 0;
-	while ($i < 10):
-		$i++;
-		echo $i;
-		if ($i % 2 == 0)
-			echo 'even';
-	
+$i = 0;
+while ($i < 10):
+	$i++;
+	echo $i;
+	if ($i % 2 == 0)
+		echo 'even';
 	else
 		echo 'odds';
 endwhile;

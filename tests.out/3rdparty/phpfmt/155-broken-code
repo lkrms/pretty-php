@@ -6,7 +6,7 @@ function loadView($name, $data = array())
 
 	if (!empty($data)) {
 		foreach ($data as $key => $d) {
-			$ $key = $d;
+			$$key = $d;
 		}
 	}
 	include $config['path'] . 'views/' . $name . '.php';

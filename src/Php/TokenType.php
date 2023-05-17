@@ -237,13 +237,17 @@ final class TokenType
         ...self::DECLARATION_EXCEPT_MULTI_PURPOSE,
     ];
 
-    public const DECLARATION_LIST = [
-        T[','],
+    public const DECLARATION_TYPE = [
         T_NAME_FULLY_QUALIFIED,
         T_NAME_QUALIFIED,
         T_NAME_RELATIVE,
         T_NS_SEPARATOR,
         T_STRING,
+    ];
+
+    public const DECLARATION_LIST = [
+        T[','],
+        ...self::DECLARATION_TYPE,
     ];
 
     public const DECLARATION_PART = [
@@ -274,6 +278,14 @@ final class TokenType
 
     public const DECLARATION_CONDENSE = [
         T_USE,
+    ];
+
+    public const VALUE_TYPE = [
+        T['&'],
+        T['('],
+        T[')'],
+        T['|'],
+        ...self::DECLARATION_TYPE,
     ];
 
     public const CHAIN = [
@@ -399,7 +411,7 @@ final class TokenType
         T_OBJECT_OPERATOR,
     ];
 
-    public const CAN_START_ALTERNATIVE_SYNTAX = [
+    public const ALT_SYNTAX_START = [
         T_DECLARE,
         T_FOR,
         T_FOREACH,
@@ -408,15 +420,20 @@ final class TokenType
         T_WHILE,
     ];
 
-    public const CAN_CONTINUE_ALTERNATIVE_SYNTAX_WITHOUT_EXPRESSION = [
+    public const ALT_SYNTAX_CONT_NO_EXPR = [
         T_ELSE,
     ];
 
-    public const CAN_CONTINUE_ALTERNATIVE_SYNTAX_WITH_EXPRESSION = [
+    public const ALT_SYNTAX_CONT_WITH_EXPR = [
         T_ELSEIF,
     ];
 
-    public const ENDS_ALTERNATIVE_SYNTAX = [
+    public const ALT_SYNTAX_CONT = [
+        ...self::ALT_SYNTAX_CONT_NO_EXPR,
+        ...self::ALT_SYNTAX_CONT_WITH_EXPR,
+    ];
+
+    public const ALT_SYNTAX_END = [
         T_ENDDECLARE,
         T_ENDFOR,
         T_ENDFOREACH,
@@ -481,7 +498,7 @@ final class TokenType
         T_YIELD_FROM,
         T_YIELD,
         ...self::DECLARATION,
-        ...self::ENDS_ALTERNATIVE_SYNTAX,
+        ...self::ALT_SYNTAX_END,
     ];
 
     public const OTHER = [

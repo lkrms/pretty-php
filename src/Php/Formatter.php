@@ -215,7 +215,7 @@ final class Formatter implements IReadable, IWritable
     protected $Rules = [
         ProtectStrings::class,  // processToken  (40)
         SimplifyStrings::class,  // processToken  (60)  [OPTIONAL]
-        AddStandardWhitespace::class,  // processToken  (80)
+        AddStandardWhitespace::class,  // processToken  (80), callback (820)
         BreakAfterSeparators::class,  // processToken  (80)
         SpaceOperators::class,  // processToken  (80)
         BracePosition::class,  // processToken  (80), beforeRender (80)
