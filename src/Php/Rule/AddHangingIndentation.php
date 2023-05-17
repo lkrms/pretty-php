@@ -275,6 +275,7 @@ final class AddHangingIndentation implements TokenRule
                 !$token->_prevCode ||
                 $token->AlignedWith ||
                 $token->isCloseBracket() ||
+                $token->endsAlternativeSyntax() ||
                 $token->is([...TokenType::HAS_STATEMENT, ...TokenType::NOT_CODE])) {
             return false;
         }

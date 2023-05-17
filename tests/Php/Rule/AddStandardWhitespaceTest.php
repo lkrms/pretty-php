@@ -21,6 +21,71 @@ final class AddStandardWhitespaceTest extends \Lkrms\Pretty\Tests\Php\TestCase
     public static function processTokenProvider()
     {
         return [
+            'indented tags #1' => [
+                <<<'PHP'
+<html>
+<body>
+    <?php
+echo $a;
+    ?>
+</body>
+</html>
+PHP,
+                <<<'PHP'
+<html>
+<body>
+    <?php
+        echo $a;
+    ?>
+</body>
+</html>
+PHP,
+            ],
+            'indented tags #2' => [
+                <<<'PHP'
+<?php
+if ($a):
+    function f() {
+        ?>
+        <div id="content">
+            <?php
+                $b = c();
+                if (d()) {
+                    $b = '<span>' . $b . '</span>';
+                }
+            ?>
+            <h1><?php echo $b; ?></h1>
+            <?php if (e()): ?>
+                <img />
+            <?php endif; ?>
+        </div>
+<?php
+    }
+endif;
+PHP,
+                <<<'PHP'
+<?php
+if ($a):
+    function f() {
+        ?>
+        <div id="content">
+            <?php
+            $b = c();
+            if (d()) {
+                $b = '<span>' . $b . '</span>';
+            }
+            ?>
+            <h1><?php echo $b; ?></h1>
+            <?php if (e()): ?>
+                <img />
+            <?php endif; ?>
+        </div>
+<?php
+    }
+endif;
+
+PHP,
+            ],
             'match expressions' => [
                 <<<'PHP'
 <?php

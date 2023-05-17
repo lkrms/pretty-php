@@ -64,6 +64,42 @@ class NavigableToken extends PhpToken
     }
 
     /**
+     * Get the previous token that is one of the listed types
+     *
+     * @param int|string ...$types
+     * @return TToken
+     */
+    final public function prevOf(...$types)
+    {
+        $t = $this;
+        while ($t = $t->_prev) {
+            if ($t->is($types)) {
+                return $t;
+            }
+        }
+
+        return NullToken::create();
+    }
+
+    /**
+     * Get the next token that is one of the listed types
+     *
+     * @param int|string ...$types
+     * @return TToken
+     */
+    final public function nextOf(...$types)
+    {
+        $t = $this;
+        while ($t = $t->_next) {
+            if ($t->is($types)) {
+                return $t;
+            }
+        }
+
+        return NullToken::create();
+    }
+
+    /**
      * Get the last reachable token
      *
      * @return TToken
