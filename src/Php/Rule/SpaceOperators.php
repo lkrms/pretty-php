@@ -68,13 +68,17 @@ final class SpaceOperators implements TokenRule
         }
 
         // Suppress whitespace between operators in union and intersection types
-        if ($token->is([T['|'], ...TokenType::AMPERSAND]) &&
+        if (($token->is([T['|'], ...TokenType::AMPERSAND]) &&
             ($token->isDeclaration() ||
                 ($token->inFunctionDeclaration() &&
                     !$token->sinceStartOfStatement()->hasOneOf(T['='])) ||
                 (($prev = $token->prevCodeWhile(...TokenType::VALUE_TYPE)->last()) &&
                     ($prev = $prev->prevCode())->id === T[':'] &&
-                    $prev->prevSibling(2)->id === T_FN))) {
+                    $prev->prevSibling(2)->id === T_FN))) ||
+            ($token->id === T['|'] &&
+                ($prev = $token->prevCodeWhile(T['|'], ...TokenType::DECLARATION_TYPE)->last()) &&
+                ($prev = $prev->prevCode())->id === T['('] &&
+                $prev->prevCode()->id === T_CATCH)) {
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
             $token->WhitespaceMaskPrev = WhitespaceType::NONE;
 

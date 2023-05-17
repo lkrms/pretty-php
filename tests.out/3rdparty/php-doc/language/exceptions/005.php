@@ -10,7 +10,7 @@ class Test
     {
         try {
             throw new MyException();
-        } catch (MyException | MyOtherException $e) {
+        } catch (MyException|MyOtherException $e) {
             var_dump(get_class($e));
         }
     }
