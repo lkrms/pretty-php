@@ -138,6 +138,8 @@ PHP,
         $minVersionPatterns = [
             80100 => [
                 '#^3rdparty/php-doc/appendices/migration81/new-features/.*#',
+                // Intersection types
+                '#^3rdparty/php-doc/language/types/declarations/004\.php#',
                 // Enumerations
                 '#^3rdparty/php-doc/language/((types/)?enumerations|predefined/(backedenum|unitenum))/.*#',
                 // First class callable syntax
