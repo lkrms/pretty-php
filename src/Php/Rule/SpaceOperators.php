@@ -36,7 +36,10 @@ final class SpaceOperators implements TokenRule
 
     public function getTokenTypes(): array
     {
-        return TokenType::ALL_OPERATOR;
+        return [
+            T['$'],
+            ...TokenType::ALL_OPERATOR,
+        ];
     }
 
     public function processToken(Token $token): void
@@ -49,10 +52,14 @@ final class SpaceOperators implements TokenRule
         // or passing by reference
         if ($token->is(TokenType::AMPERSAND) &&
             $token->next()->IsCode &&
-            ($token->prevCode()->is(T_FUNCTION) ||  // - `function &getValue()`
-                $token->inUnaryContext() ||  // - `[&$variable]`, `$a = &getValue()`
-                ($token->next()->is(T_VARIABLE) &&  // - `function getValue(&$param)`, but not
-                    $token->inFunctionDeclaration() &&  //   `function getValue($param = $a & $b)`
+            // `function &getValue()`
+            ($token->prevCode()->is(T_FUNCTION) ||
+                // `[&$variable]`, `$a = &getValue()`
+                $token->inUnaryContext() ||
+                // `function getValue(&$param)`
+                ($token->next()->is(T_VARIABLE) &&
+                    $token->inFunctionDeclaration() &&
+                    // Not `function getValue($param = $a & $b)`
                     !$token->sinceStartOfStatement()->hasOneOf(T['='])))) {
             $token->WhitespaceBefore |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
@@ -62,8 +69,12 @@ final class SpaceOperators implements TokenRule
 
         // Suppress whitespace between operators in union and intersection types
         if ($token->is([T['|'], ...TokenType::AMPERSAND]) &&
-                $token->inFunctionDeclaration() &&
-                !$token->sinceStartOfStatement()->hasOneOf(T['='])) {
+            ($token->isDeclaration() ||
+                ($token->inFunctionDeclaration() &&
+                    !$token->sinceStartOfStatement()->hasOneOf(T['='])) ||
+                (($prev = $token->prevCodeWhile(...TokenType::VALUE_TYPE)->last()) &&
+                    ($prev = $prev->prevCode())->id === T[':'] &&
+                    $prev->prevSibling(2)->id === T_FN))) {
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
             $token->WhitespaceMaskPrev = WhitespaceType::NONE;
 

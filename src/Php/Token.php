@@ -2093,6 +2093,7 @@ class Token extends NavigableToken implements JsonSerializable
     {
         return $this->is([
             T['~'],
+            T['$'],
             T['!'],
             ...TokenType::OPERATOR_ERROR_CONTROL,
             ...TokenType::OPERATOR_INCREMENT_DECREMENT

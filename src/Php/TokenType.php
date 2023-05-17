@@ -237,13 +237,17 @@ final class TokenType
         ...self::DECLARATION_EXCEPT_MULTI_PURPOSE,
     ];
 
-    public const DECLARATION_LIST = [
-        T[','],
+    public const DECLARATION_TYPE = [
         T_NAME_FULLY_QUALIFIED,
         T_NAME_QUALIFIED,
         T_NAME_RELATIVE,
         T_NS_SEPARATOR,
         T_STRING,
+    ];
+
+    public const DECLARATION_LIST = [
+        T[','],
+        ...self::DECLARATION_TYPE,
     ];
 
     public const DECLARATION_PART = [
@@ -274,6 +278,14 @@ final class TokenType
 
     public const DECLARATION_CONDENSE = [
         T_USE,
+    ];
+
+    public const VALUE_TYPE = [
+        T['&'],
+        T['('],
+        T[')'],
+        T['|'],
+        ...self::DECLARATION_TYPE,
     ];
 
     public const CHAIN = [
