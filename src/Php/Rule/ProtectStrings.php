@@ -42,7 +42,7 @@ final class ProtectStrings implements TokenRule
             $token->HeredocOpenedBy = $heredoc;
         }
 
-        if ($token->id === T['"'] &&
+        if ($token->is([T['"'], T['`']]) &&
                 (!$string || $string->BracketStack !== $token->BracketStack)) {
             $token->CriticalWhitespaceMaskNext = WhitespaceType::NONE;
             $this->Strings[] = $token;
@@ -61,7 +61,7 @@ final class ProtectStrings implements TokenRule
             return;
         }
 
-        if ($token->id === T['"']) {
+        if ($token->is([T['"'], T['`']])) {
             $token->CriticalWhitespaceMaskPrev = WhitespaceType::NONE;
             array_pop($this->Strings);
 
@@ -75,23 +75,12 @@ final class ProtectStrings implements TokenRule
             return;
         }
 
-        if ($token->is([
-            T_CURLY_OPEN,  // "{$...}"
-            T_DOLLAR_OPEN_CURLY_BRACES,  // "${...}"
-            T_STRING_VARNAME,  // `varname` in "${varname}"
-            T_ENCAPSED_AND_WHITESPACE,
-            T['}'],
-        ]) || ($token->is(T_VARIABLE) &&
-                $token->prev()->is([
-                    T['"'],  // "$variable"
-                    T_START_HEREDOC,  // <<<EOF
-                    // $variable
-                    // EOF
-                    T_ENCAPSED_AND_WHITESPACE,  // "Value: $variable"
-                    T_VARIABLE,  // "$var1$var2"
-                ]))) {
+        if (($string && $token->BracketStack === $string->BracketStack) ||
+                ($heredoc && $token->BracketStack === $heredoc->BracketStack)) {
             $token->CriticalWhitespaceMaskPrev = WhitespaceType::NONE;
-            $token->CriticalWhitespaceMaskNext = WhitespaceType::NONE;
+            if (!$token->isOpenBracket()) {
+                $token->CriticalWhitespaceMaskNext = WhitespaceType::NONE;
+            }
         }
     }
 }

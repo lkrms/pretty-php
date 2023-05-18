@@ -5,7 +5,6 @@ namespace Lkrms\Pretty\Php;
 use JsonSerializable;
 use Lkrms\Facade\Convert;
 use Lkrms\Pretty\Php\Contract\Filter;
-use Lkrms\Pretty\Php\Rule\AddHangingIndentation;
 use Lkrms\Pretty\PrettyException;
 use Lkrms\Pretty\WhitespaceType;
 use RuntimeException;
@@ -18,16 +17,6 @@ use const Lkrms\Pretty\Php\T_ID_MAP as T;
  */
 class Token extends NavigableToken implements JsonSerializable
 {
-    /**
-     * @var string[]
-     */
-    protected const ALLOW_READ = [];
-
-    /**
-     * @var string[]
-     */
-    protected const ALLOW_WRITE = [];
-
     /**
      * Tokens regarded as expression terminators
      *
@@ -104,11 +93,6 @@ class Token extends NavigableToken implements JsonSerializable
     public ?string $CommentType = null;
 
     public bool $CommentPlaced = false;
-
-    /**
-     * @var array<array<string,mixed>>
-     */
-    public $Log = [];
 
     /**
      * @var int
@@ -306,11 +290,6 @@ class Token extends NavigableToken implements JsonSerializable
     public $CriticalWhitespaceMaskNext = WhitespaceType::ALL;
 
     /**
-     * @var Formatter|null
-     */
-    protected $Formatter;
-
-    /**
      * True if the token is a T_CLOSE_TAG that terminates a statement
      *
      * @var bool
@@ -361,6 +340,8 @@ class Token extends NavigableToken implements JsonSerializable
      */
     public static function prepareTokens(array $tokens, Formatter $formatter): array
     {
+        $tokens = parent::prepareTokens($tokens, $formatter);
+
         if (!$tokens) {
             return $tokens;
         }
@@ -374,8 +355,8 @@ class Token extends NavigableToken implements JsonSerializable
                 // PHP's alternative syntax has no `}` equivalent, so insert a
                 // virtual token where it would be
                 if ($token->is([
+                    ...TokenType::ALT_SYNTAX_CONTINUE,
                     ...TokenType::ALT_SYNTAX_END,
-                    ...TokenType::ALT_SYNTAX_CONT,
                 ])) {
                     $stack = $prev->BracketStack;
                     // If the previous token is a close bracket, remove its
@@ -384,25 +365,31 @@ class Token extends NavigableToken implements JsonSerializable
                         array_pop($stack);
                     }
                     $opener = array_pop($stack);
-                    if (($opener && $opener->is(T[':']) && $opener->BracketStack === $stack &&
-                            // Check the token actually closes the opener;
-                            // T_ELSE and T_ELSEIF may belong to another control
-                            // structure
-                            (!$token->is([T_ELSE, T_ELSEIF]) ||
-                                $prev->prevSiblingOf(T_IF, T_ELSEIF)->IsNull)) ||
+                    if (($opener &&
+                        $opener->id === T[':'] &&
+                        $opener->BracketStack === $stack &&
+                        ($token->is(TokenType::ALT_SYNTAX_END) ||
+                            ($token->is(TokenType::ALT_SYNTAX_CONTINUE_WITH_EXPRESSION) &&
+                                $token->nextSimpleSibling(2)->id === T[':']) ||
+                            ($token->is(TokenType::ALT_SYNTAX_CONTINUE_WITHOUT_EXPRESSION) &&
+                                $token->nextSimpleSibling()->id === T[':']))) ||
                             $prev->startsAlternativeSyntax()) {
                         $virtual = VirtualToken::create(T_END_ALT_SYNTAX);
                         $prepared[$nextKey] = $virtual;
                         $virtual->Index = $nextKey++;
+                        $virtual->_prev = $prev;
+                        $virtual->_next = $token;
+                        $prev->_next = $virtual;
+                        $token->_prev = $virtual;
                         $virtual->Formatter = $formatter;
-                        $virtual->prepare($prev);
+                        $virtual->prepare();
                         $prev = $virtual;
                     }
                 }
                 $prepared[$index] = $token;
                 $token->Index = $index;
                 $token->Formatter = $formatter;
-                $token->prepare($prev);
+                $token->prepare();
                 $prev = $token;
             }
             reset($prepared)->load();
@@ -435,7 +422,7 @@ class Token extends NavigableToken implements JsonSerializable
         return TokenType::NAME_MAP[$this->id] ?? parent::getTokenName();
     }
 
-    protected function prepare(?Token $prev): void
+    protected function prepare(): void
     {
         if (!$this->IsVirtual) {
             if ($this->is(TokenType::DO_NOT_MODIFY_LHS)) {
@@ -461,12 +448,9 @@ class Token extends NavigableToken implements JsonSerializable
             }
         }
 
-        if (!$prev) {
+        if (!($prev = $this->_prev)) {
             return;
         }
-
-        $this->_prev = $prev;
-        $prev->_next = $this;
 
         /**
          * Intended outcome:
@@ -879,14 +863,6 @@ class Token extends NavigableToken implements JsonSerializable
         if ($this->Expression === $this || $this->EndExpression === $this || $this->Expression === false) {
             $a['PragmaticStartExpression'] = $this->pragmaticStartOfExpression();
             $a['PragmaticEndExpression'] = $this->pragmaticEndOfExpression();
-        }
-        if (empty($a['Log'])) {
-            unset($a['Log']);
-        } else {
-            $a['Log'] = array_map(
-                fn(array $entry) => json_encode($entry),
-                $a['Log']
-            );
         }
         array_walk_recursive(
             $a,
@@ -2023,39 +1999,16 @@ class Token extends NavigableToken implements JsonSerializable
             ($lastInner->id === T['}'] && $lastInner->isStructuralBrace());  // `{ { statement; } }`
     }
 
-    /**
-     * True if the token is '(', '[' or '{'
-     *
-     * @param bool $allTypes If `true` (the default), `T_ATTRIBUTE`,
-     * `T_CURLY_OPEN` and `T_DOLLAR_OPEN_CURLY_BRACES` tokens are matched in
-     * addition to `(`, `[` and `{`.
-     */
-    final public function isOpenBracket(bool $allTypes = true): bool
-    {
-        return $allTypes
-            ? $this->is([T['('], T['['], T['{'], T_ATTRIBUTE, T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES])
-            : $this->is([T['('], T['['], T['{']]);
-    }
-
-    /**
-     * True if the token is ')', ']' or '}'
-     *
-     */
-    final public function isCloseBracket(): bool
-    {
-        return $this->is([T[')'], T[']'], T['}']]);
-    }
-
     public function startsAlternativeSyntax(): bool
     {
         return $this->is(T[':']) && ($this->ClosedBy ||
             (($this->_prevCode->is(T[')']) &&
                     $this->_prevCode->_prevSibling->is([
                         ...TokenType::ALT_SYNTAX_START,
-                        ...TokenType::ALT_SYNTAX_CONT_WITH_EXPR
+                        ...TokenType::ALT_SYNTAX_CONTINUE_WITH_EXPRESSION
                     ])) ||
                 $this->_prevCode->is(
-                    TokenType::ALT_SYNTAX_CONT_NO_EXPR
+                    TokenType::ALT_SYNTAX_CONTINUE_WITHOUT_EXPRESSION
                 )));
     }
 
@@ -2345,40 +2298,6 @@ class Token extends NavigableToken implements JsonSerializable
         } while ($current = $current->_nextSibling);
 
         return $tokens;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function __get(string $name)
-    {
-        if (!in_array($name, [...static::ALLOW_READ, ...static::ALLOW_WRITE])) {
-            throw new RuntimeException('Cannot access property ' . static::class . '::$' . $name);
-        }
-
-        return $this->$name;
-    }
-
-    /**
-     * @param mixed $value
-     */
-    public function __set(string $name, $value): void
-    {
-        if (!in_array($name, static::ALLOW_WRITE)) {
-            throw new RuntimeException('Cannot access property ' . static::class . '::$' . $name);
-        }
-        if ($this->$name === $value) {
-            return;
-        }
-        if ($this->Formatter->Debug && ($service = $this->Formatter->RunningService)) {
-            $this->Log[] = [
-                'service' => $service,
-                'value' => $name,
-                'from' => $this->$name,
-                'to' => $value,
-            ];
-        }
-        $this->$name = $value;
     }
 
     public function __toString(): string

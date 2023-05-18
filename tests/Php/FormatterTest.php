@@ -116,6 +116,52 @@ PHP,
 
 PHP,
             ],
+            'alternative syntax #1' => [
+                <<<'PHP'
+<?php
+if ($a):
+b();
+while ($c):
+d();
+endwhile;
+else:
+e();
+endif;
+f();
+PHP,
+                <<<'PHP'
+<?php
+if ($a):
+    b();
+    while ($c):
+        d();
+    endwhile;
+else:
+    e();
+endif;
+f();
+
+PHP,
+            ],
+            'alternative syntax #2' => [
+                <<<'PHP'
+<?php
+if ($a):
+while ($b):
+endwhile;
+else:
+endif;
+PHP,
+                <<<'PHP'
+<?php
+if ($a):
+    while ($b):
+    endwhile;
+else:
+endif;
+
+PHP,
+            ],
         ];
     }
 

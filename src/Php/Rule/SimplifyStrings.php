@@ -2,7 +2,6 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Facade\Env;
 use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
@@ -45,13 +44,19 @@ final class SimplifyStrings implements TokenRule
             $match .= '\n\r';
         }
 
-        // Don't escape UTF-8 leading bytes (\xc2 -> \xf4) or continuation bytes
-        // (\x80 -> \xbf)
-        $escape .= "\x7f\xc0\xc1\xf5..\xff";
-        $match .= '\x7f\xc0\xc1\xf5-\xff';
-
         $string = '';
         eval("\$string = {$token->text};");
+
+        // If $string contains valid UTF-8 sequences, don't escape leading bytes
+        // (\xc2 -> \xf4) or continuation bytes (\x80 -> \xbf)
+        if (mb_check_encoding($string, 'UTF-8')) {
+            $escape .= "\x7f\xc0\xc1\xf5..\xff";
+            $match .= '\x7f\xc0\xc1\xf5-\xff';
+        } else {
+            $escape .= "\x7f..\xff";
+            $match .= '\x7f-\xff';
+        }
+
         $double = $this->doubleQuote($string, $escape);
         if (preg_match("/[\\x00-\\x09\\x0b\\x0c\\x0e-\\x1f{$match}]/", $string)) {
             $token->setText($double);
@@ -81,14 +86,18 @@ final class SimplifyStrings implements TokenRule
 
     private function doubleQuote(string $string, string $escape): string
     {
+        // - Recognised by PHP: \0 \e \f \n \r \t \v
+        // - Returned by addcslashes: \0 \a \b \f \n \r \t \v
         return '"' . preg_replace_callback(
-            '/\\\\(?:(?P<octal>[0-7]{3})|.)/',
+            '/\\\\(?:(?P<octal>[0-7]{3})|(?P<cslash>[ab])|.)/',
             fn(array $matches) =>
                 ($matches['octal'] ?? null)
                     ? (($dec = octdec($matches['octal']))
                         ? sprintf('\x%02x', $dec)
                         : '\0')
-                    : $matches[0],
+                    : (($matches['cslash'] ?? null)
+                        ? sprintf('\x%02x', ['a' => 7, 'b' => 8][$matches['cslash']])
+                        : $matches[0]),
             addcslashes($string, $escape)
         ) . '"';
     }

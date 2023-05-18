@@ -420,17 +420,17 @@ final class TokenType
         T_WHILE,
     ];
 
-    public const ALT_SYNTAX_CONT_NO_EXPR = [
+    public const ALT_SYNTAX_CONTINUE_WITHOUT_EXPRESSION = [
         T_ELSE,
     ];
 
-    public const ALT_SYNTAX_CONT_WITH_EXPR = [
+    public const ALT_SYNTAX_CONTINUE_WITH_EXPRESSION = [
         T_ELSEIF,
     ];
 
-    public const ALT_SYNTAX_CONT = [
-        ...self::ALT_SYNTAX_CONT_NO_EXPR,
-        ...self::ALT_SYNTAX_CONT_WITH_EXPR,
+    public const ALT_SYNTAX_CONTINUE = [
+        ...self::ALT_SYNTAX_CONTINUE_WITHOUT_EXPRESSION,
+        ...self::ALT_SYNTAX_CONTINUE_WITH_EXPRESSION,
     ];
 
     public const ALT_SYNTAX_END = [

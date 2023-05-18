@@ -163,7 +163,7 @@ final class AlignLists implements ListRule
                         return;
                     }
                     $current = $current->next();
-                    if ($current->isOpenBracket(false) &&
+                    if ($current->isStrictOpenBracket() &&
                             $current->hasNewlineAfterCode() &&
                             $current->Index > $until->Index) {
                         return;
