@@ -25,7 +25,7 @@ final class AddHangingIndentation implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->isOpenBracket(false) && !$token->hasNewlineAfterCode()) {
+        if ($token->isStrictOpenBracket() && !$token->hasNewlineAfterCode()) {
             $token->IsHangingParent = true;
             $token->IsOverhangingParent =
                 // Does it have delimited values? (e.g. `list(var, var)`)
