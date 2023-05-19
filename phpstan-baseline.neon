@@ -26,6 +26,11 @@ parameters:
 			path: src/Command/FormatPhp.php
 
 		-
+			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$Fast is never written, only read\\.$#"
+			count: 1
+			path: src/Command/FormatPhp.php
+
+		-
 			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$IgnoreNewlines is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
@@ -82,6 +87,11 @@ parameters:
 
 		-
 			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$Quiet is never written, only read\\.$#"
+			count: 1
+			path: src/Command/FormatPhp.php
+
+		-
+			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$ReportTimers is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 

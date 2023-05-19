@@ -174,6 +174,16 @@ class FormatPhp extends CliCommand
     /**
      * @var bool
      */
+    private $ReportTimers;
+
+    /**
+     * @var bool
+     */
+    private $Fast;
+
+    /**
+     * @var bool
+     */
     private $Verbose;
 
     /**
@@ -606,6 +616,20 @@ EOF)
                 ->visibility(Env::debug() ? $noSynopsis : $none)
                 ->bindTo($this->DebugDirectory),
             CliOption::build()
+                ->long('timers')
+                ->description(<<<EOF
+Report timers and resource usage on exit
+EOF)
+                ->visibility(Env::debug() ? $noSynopsis : $none)
+                ->bindTo($this->ReportTimers),
+            CliOption::build()
+                ->long('fast')
+                ->description(<<<EOF
+Skip equivalence checks
+EOF)
+                ->visibility($noSynopsis)
+                ->bindTo($this->Fast),
+            CliOption::build()
                 ->long('verbose')
                 ->short('v')
                 ->description(<<<EOF
@@ -688,6 +712,10 @@ EOF,
                 Env::debug(true);
             }
             $this->app()->logConsoleMessages();
+        }
+
+        if ($this->ReportTimers) {
+            $this->App->registerShutdownReport(ConsoleLevel::NOTICE);
         }
 
         if ($this->Tabs && $this->Spaces) {
@@ -880,7 +908,8 @@ EOF,
                 $output = $formatter->format(
                     $input,
                     $this->Quiet,
-                    $inputFile
+                    $inputFile,
+                    $this->Fast
                 );
             } catch (PrettyBadSyntaxException $ex) {
                 Console::exception($ex);
