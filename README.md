@@ -2,23 +2,29 @@
 
 ## The opinionated formatter for modern, expressive PHP
 
-*PrettyPHP* is a code formatter made in the likeness of *Black*, the
-[uncompromising Python formatter][Black].
+*PrettyPHP* is a code formatter inspired by *Black*, the [uncompromising Python
+formatter][Black].
 
 Like *Black*, *PrettyPHP* runs with sensible defaults and doesn't need to be
 configured. It's also deterministic (with some [pragmatic exceptions]), so no
 matter how the input is formatted, it produces the same output.
 
-> *PrettyPHP* is still in development and is yet to reach a stable release. Its
-> code style is unlikely to change significantly before v1, and breaking changes
-> to command line options are kept to a minimum. *PrettyPHP* v0.x releases are
-> safe to use in production scenarios that accommodate these limitations.
+> *PrettyPHP*'s default output is unlikely to change significantly before
+> [version 1.0.0] is released, but if you're already using it in production,
+> pinning `lkrms/pretty-php` to a specific version is recommended. For example:
+>
+> ```shell
+> composer create-project --no-interaction --no-progress --no-dev lkrms/pretty-php=0.4.6 build/pretty-php
+>
+> build/pretty-php/bin/pretty-php --diff
+> ```
 
 ## Editor integrations
 
-- Visual Studio Code
-  - [Visual Studio Marketplace]
-  - [Open VSX]
+### Visual Studio Code
+
+- **PrettyPHP for Visual Studio Code** — VS Code extension by the same author.  
+  [Visual Studio Marketplace] | [Open VSX Registry] | [GitHub][vscode]
 
 ## FAQ
 
@@ -61,11 +67,6 @@ full support.
 Because *PrettyPHP* is in initial development, PHP formatting is complicated,
 and testing is easier when settings can be changed at runtime.
 
-It may also have something to do with our collective resistance--as PHP
-developers--to reaching a consensus about anything. There's a lot to juggle when
-you're writing an opinionated formatter you hope will appeal to other PHP
-developers!
-
 Over time, *PrettyPHP* will become more opinionated and have fewer options, so
 reliance on formatting options is discouraged.
 
@@ -80,22 +81,25 @@ for strictly deterministic behaviour.
 
 ### Newlines are preserved
 
-Unless suppressed by other rules, newlines in the input are applied to the
-output if they appear:
-
-- before `!`, `.`, `??`, `->`, `?->`, `)`, `]`, `?>`, arithmetic operators,
-  bitwise operators, and ternary operators, or
-- after `(`, `[`, `=>`, `return`, `yield from`, `yield`, `:` (if not a ternary
-  operator), assignment operators, and comparison operators
-
 > Use `-N, --ignore-newlines` to disable this behaviour.
+
+Unless suppressed by other rules, line breaks at the following locations in the
+input are applied to the output.
+
+- **Before:** `!`, `.`, `??`, `->`, `?->`, `)`, `]`, `?>`, arithmetic operators,
+  bitwise operators, ternary operators
+
+- **After:** `(`, `[`, `{`, `,`, `;`, `=>`, `}`, `<?php`, `extends`,
+  `implements`, `return`, `yield`, `yield from`, `:` (if not a ternary
+  operator), assignment operators, comparison operators, logical operators,
+  comments
 
 ### Scalar strings are normalised
 
+> Use `-S, --no-simplify-strings` to disable this behaviour.
+
 Single-quoted strings are preferred unless one or more characters require a
 backslash escape, or the double-quoted equivalent is shorter.
-
-> Use `-S, --no-simplify-strings` to disable this behaviour.
 
 ### Alias/import statements are grouped and sorted alphabetically
 
@@ -103,14 +107,15 @@ backslash escape, or the double-quoted equivalent is shorter.
 
 ### Comments are trimmed and aligned
 
-> This behaviour cannot be disabled, but Markdown-style trailing spaces can be
-> preserved with `-T, --preserve-trailing-spaces[=COUNT,...]`.
+> This behaviour cannot be disabled.
 
 
 [Black]: https://github.com/psf/black
-[Open VSX]: https://open-vsx.org/extension/lkrms/pretty-php
+[Open VSX Registry]: https://open-vsx.org/extension/lkrms/pretty-php
 [pragmatic exceptions]: #Pragmatism
 [PSR-12]: https://www.php-fig.org/psr/psr-12/
 [tokenize]: https://www.php.net/manual/en/phptoken.tokenize.php
+[version 1.0.0]: https://semver.org/#spec-item-5
 [Visual Studio Marketplace]: https://marketplace.visualstudio.com/items?itemName=lkrms.pretty-php
+[vscode]: https://github.com/lkrms/vscode-pretty-php
 
