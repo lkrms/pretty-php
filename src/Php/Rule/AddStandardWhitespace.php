@@ -98,7 +98,9 @@ final class AddStandardWhitespace implements TokenRule
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
         }
         if (($token->isCloseBracket() && !$token->isStructuralBrace()) ||
-                $token->is(TokenType::SUPPRESS_SPACE_BEFORE)) {
+            ($token->is(TokenType::SUPPRESS_SPACE_BEFORE) &&
+                ($token->id !== T_NS_SEPARATOR ||
+                    $token->_prev->is([T_NAMESPACE, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE, T_STRING])))) {
             $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::SPACE;
         } elseif ($token->endsAlternativeSyntax()) {
             $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;

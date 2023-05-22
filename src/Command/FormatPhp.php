@@ -2,11 +2,11 @@
 
 namespace Lkrms\Pretty\Command;
 
+use Lkrms\Cli\Catalog\CliHelpSectionName;
 use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\Catalog\CliOptionValueType;
 use Lkrms\Cli\Catalog\CliOptionValueUnknownPolicy;
 use Lkrms\Cli\Catalog\CliOptionVisibility;
-use Lkrms\Cli\Catalog\CliUsageSectionName;
 use Lkrms\Cli\CliApplication;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOption;
@@ -660,7 +660,7 @@ EOF)
     protected function getHelpSections(): ?array
     {
         return [
-            CliUsageSectionName::CONFIGURATION => <<<'EOF'
+            CliHelpSectionName::CONFIGURATION => <<<'EOF'
 __{{command}}__ looks for a JSON configuration file named _.prettyphp_ or
 _prettyphp.json_ in the same directory as each input file, then in each of its
 parent directories. It stops looking when it finds a configuration file, a
@@ -694,7 +694,7 @@ __{{command}}__ is started with no <PATH> arguments in a directory where _src_
 is configured, or the directory is passed to __{{command}}__ for formatting,
 paths in _src_ are formatted. It is ignored otherwise.
 EOF,
-            CliUsageSectionName::EXIT_STATUS => <<<EOF
+            CliHelpSectionName::EXIT_STATUS => <<<EOF
 _0_   Formatting succeeded / input already formatted  
 _1_   Invalid arguments / input requires formatting  
 _2_   Invalid input (code could not be parsed)  
@@ -1255,14 +1255,13 @@ EOF,
             $last = $logFiles[$logFile] = $out;
         }
 
-        foreach ([
+        foreach (array_merge([
             'input.php' => $input,
             'output.php' => $output,
             'tokens.json' => $tokens,
             'data.json' => is_string($data) ? null : $data,
             'data.out' => is_string($data) ? $data : null,
-            ...($logFiles ?? []),
-        ] as $file => $contents) {
+        ], $logFiles ?? []) as $file => $contents) {
             $file = "{$this->DebugDirectory}/{$file}";
             File::maybeDelete($file);
             if ($contents !== null) {

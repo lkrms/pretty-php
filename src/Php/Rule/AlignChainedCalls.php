@@ -75,6 +75,7 @@ final class AlignChainedCalls implements TokenRule
                         T_NAME_FULLY_QUALIFIED,
                         T_NAME_QUALIFIED,
                         T_NAME_RELATIVE,
+                        T_NS_SEPARATOR,
                         T_VARIABLE,
                         ...TokenType::CHAIN_PART
                     ])) {
