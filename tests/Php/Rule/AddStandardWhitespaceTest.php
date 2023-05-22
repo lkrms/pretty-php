@@ -20,9 +20,10 @@ final class AddStandardWhitespaceTest extends \Lkrms\Pretty\Tests\Php\TestCase
 
     public static function processTokenProvider()
     {
-        return [
-            'indented tags #1' => [
-                <<<'PHP'
+        return array_merge(
+            [
+                'indented tags #1' => [
+                    <<<'PHP'
 <html>
 <body>
     <?php
@@ -31,7 +32,7 @@ echo $a;
 </body>
 </html>
 PHP,
-                <<<'PHP'
+                    <<<'PHP'
 <html>
 <body>
     <?php
@@ -40,9 +41,9 @@ PHP,
 </body>
 </html>
 PHP,
-            ],
-            'indented tags #2' => [
-                <<<'PHP'
+                ],
+                'indented tags #2' => [
+                    <<<'PHP'
 <?php
 if ($a):
     function f() {
@@ -63,7 +64,7 @@ if ($a):
     }
 endif;
 PHP,
-                <<<'PHP'
+                    <<<'PHP'
 <?php
 if ($a):
     function f() {
@@ -85,14 +86,16 @@ if ($a):
 endif;
 
 PHP,
+                ]
             ],
-            'match expressions' => [
-                <<<'PHP'
+            PHP_VERSION_ID < 80000 ? [] : [
+                'match expressions' => [
+                    <<<'PHP'
 <?php
 $out = match ($in) {0 => 'no items', 1 => "$i item", default => "$in items"};
 $out = match ($in) {0, 1 => 'less than 2 items', default => "$in items"};
 PHP,
-                <<<'PHP'
+                    <<<'PHP'
 <?php
 $out = match ($in) {
     0 => 'no items',
@@ -105,14 +108,14 @@ $out = match ($in) {
 };
 
 PHP,
-            ],
-            "match expressions with 'align-assignments'" => [
-                <<<'PHP'
+                ],
+                "match expressions with 'align-assignments'" => [
+                    <<<'PHP'
 <?php
 $out = match ($in) {0 => 'no items', 1 => "$i item", default => "$in items"};
 $out = match ($in) {0, 1 => 'less than 2 items', default => "$in items"};
 PHP,
-                <<<'PHP'
+                    <<<'PHP'
 <?php
 $out = match ($in) {
     0       => 'no items',
@@ -125,9 +128,10 @@ $out = match ($in) {
 };
 
 PHP,
-                [AlignAssignments::class]
-            ],
-        ];
+                    [AlignAssignments::class]
+                ],
+            ]
+        );
     }
 
     protected function prepareFormatter(Formatter $formatter): Formatter

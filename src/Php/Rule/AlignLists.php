@@ -37,6 +37,7 @@ final class AlignLists implements ListRule
         T_NAME_FULLY_QUALIFIED,
         T_NAME_QUALIFIED,
         T_NAME_RELATIVE,
+        T_NS_SEPARATOR,
         T_STRING,
         T_VARIABLE,
     ];
@@ -149,7 +150,9 @@ final class AlignLists implements ListRule
                         ? $owner->ClosedBy->prev()
                         : $t->pragmaticEndOfExpression();
                     if ($owner->ClosedBy &&
-                            ($adjacent = $until->adjacentBeforeNewline()?->pragmaticEndOfExpression()) &&
+                            ($adjacent = $until->adjacentBeforeNewline()) &&
+                            // @phpstan-ignore-next-line
+                            ($adjacent = $adjacent->pragmaticEndOfExpression()) &&
                             // Don't propagate line padding to adjacent code if
                             // it's only been applied to a one-line block
                             $first->collect($until)->hasNewline()) {

@@ -182,6 +182,35 @@ PHP,
         $outDir = dirname(__DIR__) . '.out';
 
         $minVersionPatterns = [
+            80000 => [
+                // - Arbitrary `new` and `instanceof` expressions
+                // - Constructor property promotion
+                // - `match`
+                // - Named arguments
+                // - Optional variable in `catch`
+                // - Nullsafe operator (`?->`),
+                // - Reserved keywords in namespaces
+                // - `static` return type
+                // - `Stringable`
+                // - `throw` in expressions
+                // - Trailing commas in argument lists
+                '#^3rdparty/php-doc/appendices/migration70/new-features/011\.php#',
+                '#^3rdparty/php-doc/appendices/migration80/new-features/00[123]\.php#',
+                '#^3rdparty/php-doc/appendices/migration81/incompatible/001\.php#',
+                '#^3rdparty/php-doc/language/control-structures/match/.*#',
+                '#^3rdparty/php-doc/language/exceptions/00[6-7]\.php#',
+                '#^3rdparty/php-doc/language/functions/0(05|12|19|20|21|23)\.php#',
+                '#^3rdparty/php-doc/language/namespaces/023\.php#',
+                '#^3rdparty/php-doc/language/oop5/basic/0(06|16|20)\.php#',
+                '#^3rdparty/php-doc/language/oop5/decon/00[1234]\.php#',
+                '#^3rdparty/php-doc/language/operators/036\.php#',
+                '#^3rdparty/php-doc/language/predefined/stringable/000\.php#',
+                '#^3rdparty/phpfmt/179-join-to-implode#',
+                '#^3rdparty/phpfmt/274-align-comments-in-function#',
+                '#^3rdparty/phpfmt/305-lwordwrap-pivot#',
+                '#^3rdparty/phpfmt/339-align-objop#',
+                '#^3rdparty/phpfmt/341-autosemicolon-objop#',
+            ],
             80100 => [
                 '#^3rdparty/php-doc/appendices/migration81/new-features/.*#',
                 // Intersection types
@@ -200,11 +229,16 @@ PHP,
                 '#^3rdparty/php-doc/language/oop5/basic/00[234]\.php#',
             ],
         ];
-        $minVersionPatterns = array_merge(...array_filter(
-            $minVersionPatterns,
-            fn(int $key) => PHP_VERSION_ID < $key,
-            ARRAY_FILTER_USE_KEY
-        ));
+        $minVersionPatterns = array_reduce(
+            array_filter(
+                $minVersionPatterns,
+                fn(int $key) => PHP_VERSION_ID < $key,
+                ARRAY_FILTER_USE_KEY
+            ),
+            fn(array $carry, array $patterns) =>
+                array_merge($carry, $patterns),
+            []
+        );
 
         $pathOptions = [
             '#^3rdparty/phpfmt/.*#' => [
@@ -242,7 +276,6 @@ PHP,
             $outFile = preg_replace('/\.fails$/', '', $outDir . $path);
             $path = ltrim($path, '/\\');
 
-            // @phpstan-ignore-next-line
             if ($minVersionPatterns) {
                 foreach ($minVersionPatterns as $regex) {
                     if (preg_match($regex, $path)) {

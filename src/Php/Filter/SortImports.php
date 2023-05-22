@@ -36,8 +36,19 @@ final class SortImports implements Filter
                 break;
         }
 
-        return [
-            $order,
+        // Strip comments and normalise to:
+        //
+        //     `use A \ B\{ D , E } ;`
+        //     `use A \ B \ C ;`
+        //
+        // For output like:
+        //
+        //     `use A\B\C;`
+        //     `use A\B\{D, E};`
+        //
+        $import = str_replace(
+            [' \ ', '\\', ' \ {'],
+            ['\\', ' \ ', '\{'],
             implode(
                 ' ',
                 array_map(
@@ -48,7 +59,9 @@ final class SortImports implements Filter
                     )
                 )
             )
-        ];
+        );
+
+        return [$order, $import];
     }
 
     public function filterTokens(array $tokens): array

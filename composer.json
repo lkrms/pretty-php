@@ -6,8 +6,8 @@
         "bin/pretty-php"
     ],
     "require": {
-        "php": ">=8 <8.3",
-        "lkrms/util": "^0.20.11",
+        "php": ">=7.4 <8.3",
+        "lkrms/util": "^0.20.12",
         "sebastian/diff": "^4 || ^5"
     },
     "autoload": {
@@ -29,7 +29,7 @@
             "phpstan/extension-installer": true
         },
         "platform": {
-            "php": "8.0.28"
+            "php": "7.4.33"
         }
     },
     "require-dev": {
