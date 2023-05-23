@@ -19,6 +19,14 @@ matter how the input is formatted, it produces the same output.
 > build/pretty-php/bin/pretty-php --diff
 > ```
 
+## Requirements
+
+- Linux, macOS or Windows
+- PHP 7.4, 8.0, 8.1 or 8.2 with a CLI runtime and the following extensions:
+  - `mbstring`
+  - `json`
+  - `tokenizer`
+
 ## Editor integrations
 
 ### Visual Studio Code
