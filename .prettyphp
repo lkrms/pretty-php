@@ -11,6 +11,7 @@
     ],
     "enable": [
         "align-chains",
+        "align-comments",
         "align-fn",
         "preserve-one-line",
         "strict-lists"
