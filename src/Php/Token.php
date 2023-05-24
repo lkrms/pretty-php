@@ -1569,6 +1569,10 @@ class Token extends NavigableToken implements JsonSerializable
      */
     final public function pragmaticEndOfExpression(bool $containUnenclosed = false, bool $containTopLevelDeclaration = true): Token
     {
+        if ($this->EndStatement === $this && $this->Expression === false) {
+            return $this;
+        }
+
         // If the token is part of a top-level declaration (namespace, class,
         // function, trait, etc.), return the token before its opening brace
         if ($containTopLevelDeclaration && $this->Statement &&

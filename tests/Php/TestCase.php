@@ -28,7 +28,10 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
             $skipFilters
         ));
 
-        $this->assertSame($expected, $formatter->format($code, 3));
+        $first = $formatter->format($code, 3, null, true);
+        $second = $formatter->format($first, 3, null, true);
+        $this->assertSame($expected, $first);
+        $this->assertSame($expected, $second, 'Output is not idempotent.');
     }
 
     protected function prepareFormatter(Formatter $formatter): Formatter

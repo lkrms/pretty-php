@@ -12,4 +12,4 @@ $obj->get()->set_none()
 	->set(ConstantBag::R)
 	->set(ConstantBag::S)
 	->set(ConstantBag::U)  // Comment
-;
+	;
