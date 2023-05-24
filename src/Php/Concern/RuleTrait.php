@@ -30,6 +30,21 @@ trait RuleTrait
         return true;
     }
 
+    protected function mirrorBracket(Token $openBracket, ?bool $hasNewlineAfterCode = null): void
+    {
+        if ($hasNewlineAfterCode === false || !$openBracket->hasNewlineAfterCode()) {
+            $openBracket->ClosedBy->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
+
+            return;
+        }
+
+        $openBracket->ClosedBy->WhitespaceBefore |= WhitespaceType::LINE;
+        if (!$openBracket->ClosedBy->hasNewlineBefore()) {
+            $openBracket->ClosedBy->WhitespaceMaskPrev |= WhitespaceType::LINE;
+            $openBracket->ClosedBy->prev()->WhitespaceMaskNext |= WhitespaceType::LINE;
+        }
+    }
+
     public function destroy(): void
     {
         unset($this->Formatter);

@@ -48,8 +48,7 @@ PHP,
 ];
 [
     $a,
-    $b
-];
+    $b];
 
 PHP,
                 ['callback' =>

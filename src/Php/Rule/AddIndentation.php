@@ -5,12 +5,13 @@ namespace Lkrms\Pretty\Php\Rule;
 use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
-use Lkrms\Pretty\WhitespaceType;
 
 /**
- * Increase the indentation level of tokens enclosed in brackets and apply
- * symmetrical spacing to the brackets themselves
+ * Increase the indentation level of tokens enclosed in brackets
  *
+ * Also, apply symmetrical vertical whitespace to brackets where inner newlines
+ * have been added or removed by rules other than {@see PreserveNewlines} and
+ * {@see PreserveOneLineStatements}.
  */
 final class AddIndentation implements TokenRule
 {
@@ -23,48 +24,34 @@ final class AddIndentation implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->isCloseBracket() || $token->endsAlternativeSyntax()) {
+        if ($token->OpenedBy) {
             $token->Indent = $token->OpenedBy->Indent;
 
             return;
         }
 
-        $prev = $token->prev();
-        $token->Indent = $prev->Indent;
-        if (!$prev->isOpenBracket() && !$prev->startsAlternativeSyntax()) {
+        if (!$token->_prev) {
             return;
         }
 
-        // If MirrorBrackets are disabled, allow this:
-        //
-        // ```php
-        // [$a,
-        //     $b
-        // ];
-        // ```
-        //
-        // but not this:
-        //
-        // ```php
-        // [
-        //     $a,
-        //     $b];
-        // ```
-        //
+        $prev = $token->_prev;
+        $token->Indent = $prev->Indent;
+
+        if (!$prev->ClosedBy) {
+            return;
+        }
+
         if ($prev->hasNewlineAfterCode()) {
             $token->Indent++;
-            $close = $prev->ClosedBy;
-            $close->WhitespaceBefore |= WhitespaceType::LINE;
-            if (!$close->hasNewlineBefore()) {
-                $close->WhitespaceMaskPrev |= WhitespaceType::LINE;
-                $close->prev()->WhitespaceMaskNext |= WhitespaceType::LINE;
+            if (!$prev->NewlineAfterPreserved) {
+                $this->mirrorBracket($prev, true);
             }
 
             return;
         }
-        if (!$this->Formatter->MirrorBrackets) {
-            return;
+
+        if ($prev->NewlineAfterPreserved) {
+            $this->mirrorBracket($prev, false);
         }
-        $prev->ClosedBy->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
     }
 }

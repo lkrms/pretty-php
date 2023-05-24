@@ -94,6 +94,8 @@ class Token extends NavigableToken implements JsonSerializable
 
     public bool $CommentPlaced = false;
 
+    public bool $NewlineAfterPreserved = false;
+
     /**
      * @var int
      */

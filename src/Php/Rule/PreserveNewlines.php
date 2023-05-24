@@ -102,6 +102,7 @@ final class PreserveNewlines implements TokenRule
             }
             $token->WhitespaceAfter |= $line;
             $token->PinToCode = $token->PinToCode && ($line === WhitespaceType::LINE);
+            $token->NewlineAfterPreserved = true;
 
             return true;
         }

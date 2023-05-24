@@ -43,6 +43,7 @@ use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterFn;
 use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterNot;
 use Lkrms\Pretty\Php\Rule\Extra\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\Extra\SuppressSpaceAroundStringOperator;
+use Lkrms\Pretty\Php\Rule\MirrorBrackets;
 use Lkrms\Pretty\Php\Rule\NoMixedLists;
 use Lkrms\Pretty\Php\Rule\PlaceComments;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
@@ -222,6 +223,7 @@ final class Formatter implements IReadable, IWritable
         BreakBeforeControlStructureBody::class,  // processToken  (83)
         PlaceComments::class,  // processToken  (90), beforeRender (997)
         PreserveNewlines::class,  // processToken  (93)  [OPTIONAL]
+        MirrorBrackets::class,  // processToken  (96)
         BreakOperators::class,  // processToken  (98)
         SpaceMatch::class,  // processToken (300)  [OPTIONAL]
         ApplyMagicComma::class,  // processList  (360)  [OPTIONAL]
