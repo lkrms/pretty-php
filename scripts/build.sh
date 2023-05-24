@@ -39,6 +39,7 @@ PACKAGE=${REPO##*/}
 LATEST=0
 PHAR=0
 TAR=0
+VERSION=
 while (($#)); do
     case "$1" in
     --latest)
@@ -49,6 +50,10 @@ while (($#)); do
         ;;
     --tar)
         TAR=1
+        ;;
+    v[0-9]*)
+        LATEST=1
+        VERSION=$1
         ;;
     *)
         die "invalid argument: $1"
@@ -65,7 +70,7 @@ DIST_MANIFEST=$DIST_DIR/manifest.json
 
 if ((LATEST)); then
     # Get the closest annotated version tag reachable from HEAD
-    VERSION=$(git describe --match "v[0-9]*" --abbrev=0) ||
+    VERSION=${VERSION:-$(git describe --match "v[0-9]*" --abbrev=0)} ||
         die "error finding latest version of $PACKAGE"
     # Clone the repo into a temporary directory and check out $VERSION
     TEMP_DIR=$(mktemp -d)/$PACKAGE &&
