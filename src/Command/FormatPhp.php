@@ -290,7 +290,7 @@ class FormatPhp extends CliCommand
                 'space-after-not',
                 'no-concat-spaces',
                 'align-lists',
-                'indent-heredocs',
+                'blank-before-return',
 
                 // Laravel chains and ternary operators don't seem to follow any
                 // alignment rules, so these can be enabled or disabled with
