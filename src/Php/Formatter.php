@@ -339,6 +339,16 @@ final class Formatter implements IReadable, IWritable
     }
 
     /**
+     * True if a formatting rule is enabled
+     *
+     * @param class-string<Rule> $rule
+     */
+    public function ruleIsEnabled(string $rule): bool
+    {
+        return in_array($rule, $this->Rules);
+    }
+
+    /**
      * Get formatted code
      *
      * Rules are processed from lowest to highest priority (smallest to biggest
