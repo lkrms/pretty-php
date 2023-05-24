@@ -5,6 +5,7 @@ namespace Lkrms\Pretty\Php\Rule;
 use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
+use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
@@ -13,6 +14,8 @@ use const Lkrms\Pretty\Php\T_ID_MAP as T;
  * Apply vertical whitespace to operators
  *
  * Specifically:
+ * - If an object operator (`->` or `?->`) is at the start of a line, add a
+ *   newline before other object operators in the same chain
  * - If one ternary operator is at the start of a line, add a newline before the
  *   other
  */
@@ -27,11 +30,38 @@ final class BreakOperators implements TokenRule
 
     public function getTokenTypes(): array
     {
-        return [T['?']];
+        return [
+            T['?'],
+            ...TokenType::CHAIN,
+        ];
     }
 
     public function processToken(Token $token): void
     {
+        if ($token->is(TokenType::CHAIN)) {
+            if ($token !== $token->ChainOpenedBy) {
+                return;
+            }
+            $chain = $token->withNextSiblingsWhile(...TokenType::CHAIN_PART)
+                           ->filter(fn(Token $t) => $t->is(TokenType::CHAIN));
+            // If an object operator (`->` or `?->`) is at the start of a line,
+            // add a newline before other object operators in the same chain
+            if ($chain->count() < 2 ||
+                    !($first = $chain->find(fn(Token $t) => $t->hasNewlineBefore()))) {
+                return;
+            }
+            // Add newlines starting from the first `->` with a preceding
+            // newline or close bracket (`)`)
+            $chain->shift();
+            while (($current = $chain->first())->Index < $first->Index &&
+                    $current->_prevCode->id !== T[')']) {
+                $chain->shift();
+            }
+            $chain->addWhitespaceBefore(WhitespaceType::LINE);
+
+            return;
+        }
+
         if (!$token->IsTernaryOperator ||
                 $token->TernaryOperator2 === $token->_next) {
             return;

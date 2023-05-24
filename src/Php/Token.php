@@ -2067,13 +2067,13 @@ class Token extends NavigableToken implements JsonSerializable
         return $this->_prevCode &&
             ($this->_prevCode->IsTernaryOperator ||
                 $this->_prevCode->IsCloseTagStatementTerminator ||
+                $this->_prevCode->isCloseBraceStatementTerminator() ||
                 $this->_prevCode->is([
                     T['('],
                     T[','],
                     T[';'],
                     T['['],
                     T['{'],
-                    T['}'],
                     ...TokenType::OPERATOR_ARITHMETIC,
                     ...TokenType::OPERATOR_ASSIGNMENT,
                     ...TokenType::OPERATOR_BITWISE,

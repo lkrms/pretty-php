@@ -187,16 +187,18 @@ PHP,
 fnA()->call1(fnB()->call2(fnC()->call3($a1 ||
                                            $b1,
                                        $c1 ||
-                                           $d1)->call4($a2 ||
-                                                           $b2,
-                                                       $c2)
-                                               ->call5(),
+                                           $d1)
+                               ->call4($a2 ||
+                                           $b2,
+                                       $c2)
+                               ->call5(),
                           fnD()->call6($a3 ||
                                            $b3,
-                                       $c3)->call7($a4 ||
-                                                       $b4,
-                                                   $c4)
-                                           ->call8(),
+                                       $c3)
+                               ->call7($a4 ||
+                                           $b4,
+                                       $c4)
+                               ->call8(),
                           $e1)
                   ->call9($a5 ||
                               $b5,
