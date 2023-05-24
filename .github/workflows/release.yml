@@ -27,10 +27,13 @@ jobs:
 
       - name: Run build script
         run: |
-          scripts/build.sh --latest --phar
-          jq -r '{"artifact_path":.assets[]|select(.type=="phar")|.path}|to_entries[]|"\(.key)=\(.value)"' build/dist/manifest.json >>$GITHUB_ENV
+          scripts/build.sh --phar ${{ github.ref_name }}
+          jq -r '{"artifact_name":.package,"artifact_path":.assets[]|select(.type=="phar")|.path}|to_entries[]|"\(.key)=\(.value)"' build/dist/manifest.json >>$GITHUB_ENV
 
       - name: Create draft release
-        run: gh release create ${{ github.ref_name }} build/dist/${{ env.artifact_path }} --draft --generate-notes --verify-tag
+        run: |
+          mv -f build/dist/${{ env.artifact_path }} build/dist/${{ env.artifact_name }}.phar
+          build/dist/${{ env.artifact_name }}.phar --version | grep -F '${{ env.artifact_name }} ${{ github.ref_name }}-'
+          gh release create ${{ github.ref_name }} build/dist/${{ env.artifact_name }}.phar --draft --generate-notes --verify-tag
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
