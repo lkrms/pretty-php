@@ -43,6 +43,7 @@ use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterFn;
 use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterNot;
 use Lkrms\Pretty\Php\Rule\Extra\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\Extra\SuppressSpaceAroundStringOperator;
+use Lkrms\Pretty\Php\Rule\MirrorBrackets;
 use Lkrms\Pretty\Php\Rule\NoMixedLists;
 use Lkrms\Pretty\Php\Rule\PlaceComments;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
@@ -213,43 +214,44 @@ final class Formatter implements IReadable, IWritable
      * @var string[]
      */
     protected $Rules = [
-        ProtectStrings::class,  // processToken  (40)
-        SimplifyStrings::class,  // processToken  (60)  [OPTIONAL]
-        AddStandardWhitespace::class,  // processToken  (80), callback (820)
-        BreakAfterSeparators::class,  // processToken  (80)
-        SpaceOperators::class,  // processToken  (80)
-        BracePosition::class,  // processToken  (80), beforeRender (80)
+        ProtectStrings::class,                   // processToken  (40)
+        SimplifyStrings::class,                  // processToken  (60)  [OPTIONAL]
+        AddStandardWhitespace::class,            // processToken  (80), callback (820)
+        BreakAfterSeparators::class,             // processToken  (80)
+        SpaceOperators::class,                   // processToken  (80)
+        BracePosition::class,                    // processToken  (80), beforeRender (80)
         BreakBeforeControlStructureBody::class,  // processToken  (83)
-        PlaceComments::class,  // processToken  (90), beforeRender (997)
-        PreserveNewlines::class,  // processToken  (93)  [OPTIONAL]
-        BreakOperators::class,  // processToken  (98)
-        SpaceMatch::class,  // processToken (300)  [OPTIONAL]
-        ApplyMagicComma::class,  // processList  (360)  [OPTIONAL]
-        AddIndentation::class,  // processToken (600)
-        SwitchPosition::class,  // processToken (600)
-        SpaceDeclarations::class,  // processToken (620)  [OPTIONAL]
-        AddHangingIndentation::class,  // processToken (800), callback (800)
-        ReindentHeredocs::class,  // processToken (900), beforeRender (900)  [OPTIONAL]
-        ReportUnnecessaryParentheses::class,  // processToken (990)  [OPTIONAL]
-        AddEssentialWhitespace::class,  // beforeRender (999)
+        PlaceComments::class,                    // processToken  (90), beforeRender (997)
+        PreserveNewlines::class,                 // processToken  (93)  [OPTIONAL]
+        MirrorBrackets::class,                   // processToken  (96)
+        BreakOperators::class,                   // processToken  (98)
+        SpaceMatch::class,                       // processToken (300)  [OPTIONAL]
+        ApplyMagicComma::class,                  // processList  (360)  [OPTIONAL]
+        AddIndentation::class,                   // processToken (600)
+        SwitchPosition::class,                   // processToken (600)
+        SpaceDeclarations::class,                // processToken (620)  [OPTIONAL]
+        AddHangingIndentation::class,            // processToken (800), callback (800)
+        ReindentHeredocs::class,                 // processToken (900), beforeRender (900)  [OPTIONAL]
+        ReportUnnecessaryParentheses::class,     // processToken (990)  [OPTIONAL]
+        AddEssentialWhitespace::class,           // beforeRender (999)
     ];
 
     /**
      * @var string[]
      */
     protected $AvailableRules = [
-        PreserveOneLineStatements::class,  // processToken  (95)
-        AddBlankLineBeforeReturn::class,  // processToken  (97)
-        AlignAssignments::class,  // processBlock (340), callback (710)
-        AlignChainedCalls::class,  // processToken (340), callback (710)
-        AlignComments::class,  // processBlock (340), beforeRender (998)
-        NoMixedLists::class,  // processList  (370)
-        AlignArrowFunctions::class,  // processToken (380), callback (710)
-        AlignTernaryOperators::class,  // processToken (380), callback (710)
-        AlignLists::class,  // processList  (400), callback (710)
-        AddSpaceAfterFn::class,  // processToken
-        AddSpaceAfterNot::class,  // processToken
-        DeclareArgumentsOnOneLine::class,  // processToken
+        PreserveOneLineStatements::class,          // processToken  (95)
+        AddBlankLineBeforeReturn::class,           // processToken  (97)
+        AlignAssignments::class,                   // processBlock (340), callback (710)
+        AlignChainedCalls::class,                  // processToken (340), callback (710)
+        AlignComments::class,                      // processBlock (340), beforeRender (998)
+        NoMixedLists::class,                       // processList  (370)
+        AlignArrowFunctions::class,                // processToken (380), callback (710)
+        AlignTernaryOperators::class,              // processToken (380), callback (710)
+        AlignLists::class,                         // processList  (400), callback (710)
+        AddSpaceAfterFn::class,                    // processToken
+        AddSpaceAfterNot::class,                   // processToken
+        DeclareArgumentsOnOneLine::class,          // processToken
         SuppressSpaceAroundStringOperator::class,  // processToken
     ];
 
@@ -336,6 +338,16 @@ final class Formatter implements IReadable, IWritable
     public static function getWritable(): array
     {
         return [];
+    }
+
+    /**
+     * True if a formatting rule is enabled
+     *
+     * @param class-string<Rule> $rule
+     */
+    public function ruleIsEnabled(string $rule): bool
+    {
+        return in_array($rule, $this->Rules);
     }
 
     /**

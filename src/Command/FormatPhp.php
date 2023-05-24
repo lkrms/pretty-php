@@ -270,6 +270,10 @@ class FormatPhp extends CliCommand
         'no-concat-spaces' => SuppressSpaceAroundStringOperator::class,
     ];
 
+    private const INCOMPATIBLE_RULES = [
+        ['align-lists', 'strict-lists'],
+    ];
+
     private const INTERNAL_OPTION_MAP = [
         'mirror-brackets' => 'MirrorBrackets',
         'hanging-heredoc-indents' => 'HangingHeredocIndents',
@@ -286,7 +290,7 @@ class FormatPhp extends CliCommand
                 'space-after-not',
                 'no-concat-spaces',
                 'align-lists',
-                'indent-heredocs',
+                'blank-before-return',
 
                 // Laravel chains and ternary operators don't seem to follow any
                 // alignment rules, so these can be enabled or disabled with
@@ -1136,6 +1140,16 @@ EOF,
         if ($this->Quiet > 1) {
             $this->SkipRules[] = 'report-brackets';
         }
+
+        foreach (self::INCOMPATIBLE_RULES as $rules) {
+            // If multiple rules from this group have been enabled, remove all
+            // but the last
+            if (count($rules = array_intersect($this->AddRules, $rules)) > 1) {
+                array_pop($rules);
+                $this->AddRules = array_diff_key($this->AddRules, $rules);
+            }
+        }
+
         $this->SkipRules = array_values(array_intersect_key(self::SKIP_RULE_MAP, array_flip($this->SkipRules)));
         $this->AddRules = array_values(array_intersect_key(self::ADD_RULE_MAP, array_flip($this->AddRules)));
 

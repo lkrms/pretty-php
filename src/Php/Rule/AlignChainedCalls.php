@@ -96,15 +96,7 @@ final class AlignChainedCalls implements TokenRule
             $chain->shift();
         }
 
-        // Apply a leading newline to the remaining tokens
-        $chain->forEach(
-            function (Token $t, ?Token $next, ?Token $prev) use ($alignWith) {
-                if ($prev) {
-                    $t->WhitespaceBefore |= WhitespaceType::LINE;
-                }
-                $t->AlignedWith = $alignWith;
-            }
-        );
+        $chain->forEach(fn(Token $t) => $t->AlignedWith = $alignWith);
 
         $this->Formatter->registerCallback(
             $this,

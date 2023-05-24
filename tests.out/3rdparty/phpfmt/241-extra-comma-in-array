@@ -29,9 +29,9 @@ $arr = [
 
 $arr = array(
 	1,
-	2, /*Comment*/
+	2,  /*Comment*/
 );
 $arr = [
 	1,
-	2, /*Comment*/
+	2,  /*Comment*/
 ];

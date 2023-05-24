@@ -21,7 +21,10 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
     public function testFormat(string $code, string $expected, array $options = [])
     {
         $formatter = $this->getFormatter($options);
-        $this->assertSame($expected, $formatter->format($code, 3));
+        $first = $formatter->format($code, 3, null, true);
+        $second = $formatter->format($first, 3, null, true);
+        $this->assertSame($expected, $first);
+        $this->assertSame($expected, $second, 'Output is not idempotent.');
     }
 
     public static function formatProvider()
@@ -48,8 +51,7 @@ PHP,
 ];
 [
     $a,
-    $b
-];
+    $b];
 
 PHP,
                 ['callback' =>
@@ -173,7 +175,10 @@ PHP,
     public function testFiles(string $code, string $expected, array $options)
     {
         $formatter = $this->getFormatter($options);
-        $this->assertSame($expected, $formatter->format($code, 3, null, true));
+        $first = $formatter->format($code, 3, null, true);
+        $second = $formatter->format($first, 3, null, true);
+        $this->assertSame($expected, $first);
+        $this->assertSame($expected, $second, 'Output is not idempotent.');
     }
 
     public static function filesProvider()
@@ -299,7 +304,7 @@ PHP,
                 fprintf(STDERR, "Formatting %s\n", $path);
                 File::maybeCreateDirectory(dirname($outFile));
                 $formatter = self::getFormatter($fileOptions);
-                file_put_contents($outFile, $output = $formatter->format($input, 3, null, true));
+                file_put_contents($outFile, $output = $formatter->format($input, 3));
             } elseif ($file->getExtension() === 'fails') {
                 // Don't test if the file is expected to fail
                 continue;

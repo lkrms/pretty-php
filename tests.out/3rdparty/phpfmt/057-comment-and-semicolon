@@ -1,6 +1,7 @@
 <?php
 $obj = new ClassObject();
-$obj->get()->set_none()
+$obj->get()
+	->set_none()
 	->set(ConstantBag::A)
 	->set(ConstantBag::C)
 	->set(ConstantBag::D)
@@ -12,4 +13,4 @@ $obj->get()->set_none()
 	->set(ConstantBag::R)
 	->set(ConstantBag::S)
 	->set(ConstantBag::U)  // Comment
-;
+	;

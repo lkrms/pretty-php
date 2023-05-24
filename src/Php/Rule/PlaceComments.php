@@ -21,6 +21,11 @@ final class PlaceComments implements TokenRule
     }
 
     /**
+     * @var Token[]
+     */
+    private $CommentsBesideCode = [];
+
+    /**
      * [Comment token, subsequent code token]
      *
      * @var array<array{Token,Token}>
@@ -47,8 +52,19 @@ final class PlaceComments implements TokenRule
         // rendered early, e.g. by `Formatter->logProgress()`
         $token->CommentPlaced = true;
 
+        if ($token->isOneLineComment() && $token->_next && $token->_next->id !== T_CLOSE_TAG) {
+            $token->CriticalWhitespaceAfter |= WhitespaceType::LINE;
+        }
+
         // Leave embedded comments alone
         if ($token->wasBetweenTokensOnLine(true)) {
+            if ($token->_prev->IsCode ||
+                    $token->_prev->is([T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO])) {
+                $this->CommentsBesideCode[] = $token;
+                $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
+
+                return;
+            }
             $token->WhitespaceBefore |= WhitespaceType::SPACE;
             $token->WhitespaceAfter |= WhitespaceType::SPACE;
 
@@ -57,9 +73,15 @@ final class PlaceComments implements TokenRule
 
         // Don't move comments beside code to the next line
         if (!$token->wasFirstOnLine() && $token->wasLastOnLine()) {
-            $token->WhitespaceBefore |= WhitespaceType::TAB;
-            $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
-            $token->WhitespaceAfter |= WhitespaceType::LINE;
+            $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
+            if ($token->_prev->IsCode ||
+                    $token->_prev->is([T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO])) {
+                $this->CommentsBesideCode[] = $token;
+                $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
+
+                return;
+            }
+            $token->WhitespaceBefore |= WhitespaceType::SPACE;
 
             return;
         }
@@ -109,6 +131,17 @@ final class PlaceComments implements TokenRule
 
     public function beforeRender(array $tokens): void
     {
+        foreach ($this->CommentsBesideCode as $token) {
+            if (!$token->hasNewlineBefore()) {
+                if ($token->hasNewlineAfter()) {
+                    $token->WhitespaceBefore |= WhitespaceType::TAB;
+                } else {
+                    $token->WhitespaceBefore |= WhitespaceType::SPACE;
+                    $token->WhitespaceAfter |= WhitespaceType::SPACE;
+                }
+            }
+        }
+
         /**
          * @var Token $token
          * @var Token $next

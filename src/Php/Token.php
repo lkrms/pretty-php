@@ -94,6 +94,8 @@ class Token extends NavigableToken implements JsonSerializable
 
     public bool $CommentPlaced = false;
 
+    public bool $NewlineAfterPreserved = false;
+
     /**
      * @var int
      */
@@ -1567,6 +1569,10 @@ class Token extends NavigableToken implements JsonSerializable
      */
     final public function pragmaticEndOfExpression(bool $containUnenclosed = false, bool $containTopLevelDeclaration = true): Token
     {
+        if ($this->EndStatement === $this && $this->Expression === false) {
+            return $this;
+        }
+
         // If the token is part of a top-level declaration (namespace, class,
         // function, trait, etc.), return the token before its opening brace
         if ($containTopLevelDeclaration && $this->Statement &&
@@ -1993,9 +1999,9 @@ class Token extends NavigableToken implements JsonSerializable
         }
         $lastInner = $current->ClosedBy->_prevCode;
 
-        return $lastInner === $current ||  // `{}`
-            $lastInner->is([T[':'], T[';']]) ||  // `{ statement; }`
-            $lastInner->IsCloseTagStatementTerminator ||  /* `{ statement ?>...<?php }` */
+        return $lastInner === $current ||                                    // `{}`
+            $lastInner->is([T[':'], T[';']]) ||                              // `{ statement; }`
+            $lastInner->IsCloseTagStatementTerminator ||                     /* `{ statement ?>...<?php }` */
             ($lastInner->id === T['}'] && $lastInner->isStructuralBrace());  // `{ { statement; } }`
     }
 
@@ -2061,13 +2067,13 @@ class Token extends NavigableToken implements JsonSerializable
         return $this->_prevCode &&
             ($this->_prevCode->IsTernaryOperator ||
                 $this->_prevCode->IsCloseTagStatementTerminator ||
+                $this->_prevCode->isCloseBraceStatementTerminator() ||
                 $this->_prevCode->is([
                     T['('],
                     T[','],
                     T[';'],
                     T['['],
                     T['{'],
-                    T['}'],
                     ...TokenType::OPERATOR_ARITHMETIC,
                     ...TokenType::OPERATOR_ASSIGNMENT,
                     ...TokenType::OPERATOR_BITWISE,

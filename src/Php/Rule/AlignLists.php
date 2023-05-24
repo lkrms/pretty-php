@@ -6,6 +6,7 @@ use Lkrms\Pretty\Php\Concern\ListRuleTrait;
 use Lkrms\Pretty\Php\Contract\ListRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenCollection;
+use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
@@ -76,7 +77,8 @@ final class AlignLists implements ListRule
         if ($count = $multiLineItems->count()) {
             // Do nothing if
             // - the token at the end of the first line of every multi-line item
-            //   is an open bracket or has a subsequent ternary operator
+            //   is an open bracket or has a subsequent token aligned by another
+            //   rule, and
             // - there are no line breaks between items
             //
             // ```php
@@ -84,13 +86,26 @@ final class AlignLists implements ListRule
             //     $c
             // ], $d);
             // ```
+            $chainAlignment = $this->Formatter->ruleIsEnabled(AlignChainedCalls::class);
+            $fnAlignment = $this->Formatter->ruleIsEnabled(AlignArrowFunctions::class);
+            $ternaryAlignment = $this->Formatter->ruleIsEnabled(AlignTernaryOperators::class);
             $eolBracketItems = $multiLineItems->filter(
-                fn(Token $t, ?Token $next) =>
-                    (($eol = $t->endOfLine())->is([T['('], T['['], T['{']]) ||
-                            ($eol = $eol->nextCode())->IsTernaryOperator) &&
-                        ($next
-                            ? $next->prevCode()
-                            : $t->pragmaticEndOfExpression())->Index >= $eol->Index
+                function (Token $t, ?Token $next) use ($chainAlignment, $fnAlignment, $ternaryAlignment) {
+                    $eol = $t->endOfLine();
+                    $nextCode = $eol->nextCode();
+                    $last = $next ? $next->prevCode() : $t->pragmaticEndOfExpression();
+
+                    return $last->Index >= $eol->Index &&
+                        (($ternaryAlignment &&
+                                $nextCode->IsTernaryOperator) ||
+                            ($chainAlignment &&
+                                $nextCode->is(TokenType::CHAIN) &&
+                                $nextCode->AlignedWith) ||
+                            $eol->isStrictOpenBracket() ||
+                            ($fnAlignment &&
+                                $eol->id === T_DOUBLE_ARROW &&
+                                $eol->withPrevCodeWhile(T[':'], ...TokenType::VALUE_TYPE)->last()->prevSibling(2)->id === T_FN));
+                }
             );
             if ($eolBracketItems->count() === $count &&
                     !$items->find(fn(Token $t) => $t->hasNewlineBefore())) {

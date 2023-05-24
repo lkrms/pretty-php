@@ -20,7 +20,7 @@ $switching = array(10,  // key = 0
     11,                 // key = 6 (maximum of integer-indices was 5)
     '8' => 2,           // key = 8 (integer!)
     '02' => 77,         // key = '02'
-    0 => 12  // the value 10 will be overwritten by 12
+    0 => 12             // the value 10 will be overwritten by 12
 );
 
 // empty array
