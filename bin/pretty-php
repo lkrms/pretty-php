@@ -1,11 +1,11 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
-use Lkrms\Cli\Facade\Cli;
+use Lkrms\Cli\CliApplication;
 use Lkrms\Pretty\Command\FormatPhp;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
-Cli::load(dirname(__DIR__))
+(new CliApplication(dirname(__DIR__)))
     ->oneCommand(FormatPhp::class)
     ->runAndExit();

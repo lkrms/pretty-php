@@ -321,7 +321,7 @@ class FormatPhp extends CliCommand
         }
     }
 
-    public function getShortDescription(): string
+    public function description(): string
     {
         return 'Format a PHP file';
     }
@@ -764,7 +764,17 @@ EOF,
             $cliInputFiles = $this->InputFiles;
             foreach ($configFiles as $i => $configFile) {
                 Console::debug('Reading settings:', $configFile);
-                $json = json_decode(file_get_contents($configFile), true);
+                $json = file_get_contents($configFile);
+                if (!$json) {
+                    Console::debug('Ignoring empty file:', $configFile);
+                    continue;
+                }
+                $json = json_decode($json, true);
+                if (!is_array($json)) {
+                    throw new CliInvalidArgumentsException(
+                        sprintf('invalid configuration file: %s', $configFile)
+                    );
+                }
                 if (Test::areSameFile($dir = dirname($configFile), getcwd())) {
                     $this->applyFormattingOptionValues(
                         $this->normaliseFormattingOptionValues($json, true, false, false),
@@ -792,7 +802,7 @@ EOF,
                 $this->expandPaths($this->InputFiles, $in, $dirs);
             }
             // Restore $this->InputFiles etc.
-            $dir === '.' ||
+            ($dir ?? null) === '.' ||
                 $this->applyFormattingOptionValues($cliOptionValues);
             // Remove directories that have already been expanded
             $this->InputFiles = $cliInputFiles;
@@ -852,6 +862,9 @@ EOF,
                 }
                 if (is_dir($dir . '/.git') || is_dir($dir . '/.hg')) {
                     break;
+                }
+                if ($dir === '.') {
+                    $dir = Sys::getCwd();
                 }
                 $dir = dirname($dir);
                 if (array_key_exists($dir, $this->DirFormattingOptionValues)) {
@@ -1221,7 +1234,7 @@ EOF,
                 continue;
             }
             if (!is_dir($path)) {
-                throw new CliInvalidArgumentsException('file not found: ' . $path);
+                throw new CliInvalidArgumentsException(sprintf('file not found: %s', $path));
             }
             $dirCount++;
             $iterator = File::find(
