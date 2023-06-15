@@ -335,11 +335,6 @@ final class Formatter implements IReadable, IWritable
         $this->Debug = Env::debug();
     }
 
-    public static function getWritable(): array
-    {
-        return [];
-    }
-
     /**
      * True if a formatting rule is enabled
      *
