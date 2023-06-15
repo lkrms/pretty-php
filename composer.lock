@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b79066862784203cf0038a6919ba9480",
+    "content-hash": "fcf09e4bc8ae9d25c68d3c20839f9614",
     "packages": [
         {
             "name": "filp/whoops",
@@ -79,16 +79,16 @@
         },
         {
             "name": "lkrms/dice",
-            "version": "v4.1.5",
+            "version": "v4.1.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/Dice.git",
-                "reference": "48361c619b7434bf91e6ab08a20e70074fdd4fe4"
+                "reference": "44e35d7cbd4a08d8eadf91c6d47c19cc0c8aaaf9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/Dice/zipball/48361c619b7434bf91e6ab08a20e70074fdd4fe4",
-                "reference": "48361c619b7434bf91e6ab08a20e70074fdd4fe4",
+                "url": "https://api.github.com/repos/lkrms/Dice/zipball/44e35d7cbd4a08d8eadf91c6d47c19cc0c8aaaf9",
+                "reference": "44e35d7cbd4a08d8eadf91c6d47c19cc0c8aaaf9",
                 "shasum": ""
             },
             "require": {
@@ -116,28 +116,28 @@
                 "ioc"
             ],
             "support": {
-                "source": "https://github.com/lkrms/Dice/tree/v4.1.5"
+                "source": "https://github.com/lkrms/Dice/tree/v4.1.6"
             },
-            "time": "2023-05-31T10:53:31+00:00"
+            "time": "2023-06-07T04:25:00+00:00"
         },
         {
             "name": "lkrms/util",
-            "version": "v0.20.14",
+            "version": "v0.20.26",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/php-util.git",
-                "reference": "b20e26bbbfc15b12edb7e397e45d7564c255f5ad"
+                "reference": "ca5d50e792cd19e485747f362fffcda180259989"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/php-util/zipball/b20e26bbbfc15b12edb7e397e45d7564c255f5ad",
-                "reference": "b20e26bbbfc15b12edb7e397e45d7564c255f5ad",
+                "url": "https://api.github.com/repos/lkrms/php-util/zipball/ca5d50e792cd19e485747f362fffcda180259989",
+                "reference": "ca5d50e792cd19e485747f362fffcda180259989",
                 "shasum": ""
             },
             "require": {
                 "composer-runtime-api": "^2.2",
                 "filp/whoops": "^2",
-                "lkrms/dice": "^4.1.5",
+                "lkrms/dice": "^4.1.6",
                 "php": ">=7.4 <8.3",
                 "psr/container": "^2",
                 "psr/log": "^1"
@@ -182,9 +182,9 @@
             "description": "A lightweight PHP toolkit for expressive backend/CLI apps",
             "support": {
                 "issues": "https://github.com/lkrms/php-util/issues",
-                "source": "https://github.com/lkrms/php-util/tree/v0.20.14"
+                "source": "https://github.com/lkrms/php-util/tree/v0.20.26"
             },
-            "time": "2023-06-06T08:07:58+00:00"
+            "time": "2023-06-15T01:49:30+00:00"
         },
         {
             "name": "psr/container",
@@ -1240,16 +1240,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.10.16",
+            "version": "1.10.19",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "352bdbb960bb523e3d71b834862589f910921c23"
+                "reference": "af5a296ff02610c1bfb4ddfac9fd4a08657b9046"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/352bdbb960bb523e3d71b834862589f910921c23",
-                "reference": "352bdbb960bb523e3d71b834862589f910921c23",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/af5a296ff02610c1bfb4ddfac9fd4a08657b9046",
+                "reference": "af5a296ff02610c1bfb4ddfac9fd4a08657b9046",
                 "shasum": ""
             },
             "require": {
@@ -1298,7 +1298,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-06-05T08:21:46+00:00"
+            "time": "2023-06-14T15:26:58+00:00"
         },
         {
             "name": "phpstan/phpstan-deprecation-rules",
@@ -1668,16 +1668,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "9.6.8",
+            "version": "9.6.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "17d621b3aff84d0c8b62539e269e87d8d5baa76e"
+                "reference": "a9aceaf20a682aeacf28d582654a1670d8826778"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/17d621b3aff84d0c8b62539e269e87d8d5baa76e",
-                "reference": "17d621b3aff84d0c8b62539e269e87d8d5baa76e",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/a9aceaf20a682aeacf28d582654a1670d8826778",
+                "reference": "a9aceaf20a682aeacf28d582654a1670d8826778",
                 "shasum": ""
             },
             "require": {
@@ -1751,7 +1751,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/9.6.8"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/9.6.9"
             },
             "funding": [
                 {
@@ -1767,7 +1767,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-05-11T05:14:45+00:00"
+            "time": "2023-06-11T06:13:56+00:00"
         },
         {
             "name": "psr/http-client",

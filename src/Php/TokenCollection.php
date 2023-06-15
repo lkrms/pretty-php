@@ -8,19 +8,16 @@ use LogicException;
 /**
  * A collection of Tokens
  *
- * @extends TypedCollection<Token>
+ * @extends TypedCollection<int,Token>
  */
 final class TokenCollection extends TypedCollection
 {
+    protected const ITEM_CLASS = Token::class;
+
     /**
      * @var bool
      */
     private $Collected = false;
-
-    protected function getItemClass(): string
-    {
-        return Token::class;
-    }
 
     public static function collect(Token $from, Token $to): self
     {

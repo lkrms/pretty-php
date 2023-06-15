@@ -5,6 +5,9 @@ namespace Lkrms\Pretty;
 use Lkrms\Concept\Enumeration;
 use UnexpectedValueException;
 
+/**
+ * @extends Enumeration<int>
+ */
 final class WhitespaceType extends Enumeration
 {
     /**
