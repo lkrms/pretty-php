@@ -104,7 +104,7 @@ final class AlignLists implements ListRule
                             $eol->isStrictOpenBracket() ||
                             ($fnAlignment &&
                                 $eol->id === T_DOUBLE_ARROW &&
-                                $eol->withPrevCodeWhile(T[':'], ...TokenType::VALUE_TYPE)->last()->prevSibling(2)->id === T_FN));
+                                $eol->prevSiblingOf(T_FN)->nextSiblingOf(T_DOUBLE_ARROW) === $eol));
                 }
             );
             if ($eolBracketItems->count() === $count &&
