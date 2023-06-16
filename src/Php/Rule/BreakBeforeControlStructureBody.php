@@ -60,9 +60,11 @@ final class BreakBeforeControlStructureBody implements TokenRule
             return;
         }
 
-        $token->WhitespaceBefore |= WhitespaceType::LINE;
-        $token->WhitespaceMaskPrev |= WhitespaceType::LINE;
-        $token->prev()->WhitespaceMaskNext |= WhitespaceType::LINE;
+        if ($token->prev()->id !== T['}'] || !$token->continuesControlStructure()) {
+            $token->WhitespaceBefore |= WhitespaceType::LINE;
+            $token->WhitespaceMaskPrev |= WhitespaceType::LINE;
+            $token->prev()->WhitespaceMaskNext |= WhitespaceType::LINE;
+        }
 
         $body->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
         $body->WhitespaceMaskPrev |= WhitespaceType::LINE;

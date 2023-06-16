@@ -15,8 +15,7 @@ function func($a)
 				'time' => strtotime((string) $b->CD)
 			);
 		}
-	}
-	else
+	} else
 		foreach ($obj->Buckets->Bucket as $b) {
 			$res[] = (string) $b->N;
 		}
