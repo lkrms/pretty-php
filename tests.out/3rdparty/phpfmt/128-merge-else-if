@@ -3,8 +3,7 @@
 
 if ($a) {
 	$b;
-}
-else
+} else
 	if ($b) {
 		$c;
 	}

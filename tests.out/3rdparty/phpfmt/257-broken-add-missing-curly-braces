@@ -13,15 +13,13 @@ if (isset($var))
 if (isset($var))
 	if (0 == $var) {
 		$a;
-	}
-	elseif ($a)
+	} elseif ($a)
 		$b;
 
 if (isset($var))
 	if (0 == $var) {
 		$a;
-	}
-	elseif ($a)
+	} elseif ($a)
 		while ($a)
 			$c;
 
@@ -35,8 +33,7 @@ if (isset($var))
 if (isset($var))
 	if (0 == $var) {
 		$a;
-	}
-	else
+	} else
 		$b;
 
 if ($a) do { $a; } while (true);

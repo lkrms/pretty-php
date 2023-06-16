@@ -1,5 +1,4 @@
 <?php if (true) {
 	$a;
-}
-else
+} else
 	echo 's' ?>x
