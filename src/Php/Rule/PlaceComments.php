@@ -115,9 +115,8 @@ final class PlaceComments implements TokenRule
         }
         $token->WhitespaceBefore |= WhitespaceType::SPACE | $line;
 
-        // PHPDoc comments immediately before namespace declarations are
-        // generally associated with the file, not the namespace
-        if ($token->next()->isDeclaration(T_NAMESPACE)) {
+        // Add a blank line after file-level docblocks
+        if ($token->next()->is([T_DECLARE, T_NAMESPACE])) {
             $token->WhitespaceAfter |= WhitespaceType::BLANK;
 
             return;
