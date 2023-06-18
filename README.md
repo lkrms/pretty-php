@@ -9,15 +9,9 @@ Like *Black*, *PrettyPHP* runs with sensible defaults and doesn't need to be
 configured. It's also deterministic (with some [pragmatic exceptions]), so no
 matter how the input is formatted, it produces the same output.
 
-> *PrettyPHP*'s default output is unlikely to change significantly before
-> [version 1.0.0] is released, but if you're already using it in production,
-> pinning `lkrms/pretty-php` to a specific version is recommended. For example:
->
-> ```shell
-> composer create-project --no-interaction --no-progress --no-dev lkrms/pretty-php=0.4.6 build/pretty-php
->
-> build/pretty-php/bin/pretty-php --diff
-> ```
+> *PrettyPHP*'s default output is unlikely to change significantly between now
+> and version 1.0, but if you're already using it in production, locking
+> `lkrms/pretty-php` to a specific version is recommended.
 
 ## Requirements
 
@@ -41,16 +35,20 @@ matter how the input is formatted, it produces the same output.
 #### It's opinionated
 
 - No configuration is required
-- Formatting options are deliberately limited
-- Readable code, small diffs, and high throughput are the main priorities
+- Formatting options are [deliberately limited][options]
+- Readable code, small diffs, and fast batch processing are the main priorities
 
-#### It's a formatter, not a fixer
+#### It's a formatter, not a fixer<sup>\*</sup>
 
-- Previous formatting is ignored
-- Whitespace is changed, code is not
+- Previous formatting is ignored<sup>\*\*</sup>
+- Whitespace is changed, code is not<sup>\*\*</sup>
 - Entire files are formatted in place
 
-(Some [pragmatic exceptions] are made.)
+<sup>\*</sup> No disrespect intended to excellent tools like [phpcbf] and
+[php-cs-fixer], which *PrettyPHP* will never replace. It augments these tools in
+much the same way as *Black* augments `pycodestyle`.
+
+<sup>\*\*</sup> Some [pragmatic exceptions] are made.
 
 #### It's CI-friendly
 
@@ -62,21 +60,26 @@ matter how the input is formatted, it produces the same output.
 
 - Written in PHP
 - Uses PHP's tokenizer to parse input and validate output
-- Checks formatted and original code for equivalence by comparing language
-  tokens returned by [`PhpToken::tokenize()`][tokenize].
+- Checks formatted and original code for equivalence
 
-#### It's optionally compatible with coding standards
+#### It's (mostly) PSR-12 compliant
 
-*PrettyPHP* has partial support for [PSR-12]. An upcoming release will offer
-full support.
+*PrettyPHP*'s compliance with the formatting-related requirements of [PSR-12] is
+almost complete. Progress is tracked [here][PSR-12 issue].
 
-### Why are there so many options?
+### If it's opinionated, why are there so many options?
 
-Because *PrettyPHP* is in initial development, PHP formatting is complicated,
-and testing is easier when settings can be changed at runtime.
+*PrettyPHP* currently has more formatting options than one might expect from an
+"opinionated" formatter. There are several reasons for this:
 
-Over time, *PrettyPHP* will become more opinionated and have fewer options, so
-reliance on formatting options is discouraged.
+- The project is in early development
+- PHP formatting is complicated
+- Attracting early adopters is important
+- Most people would prefer to pass an option to the formatter than wait for a
+  version that fixes their issue
+
+Over time, as *PrettyPHP*'s default output improves and uptake increases,
+formatting options deemed unnecessary will be removed.
 
 ## Pragmatism
 
@@ -84,34 +87,33 @@ In theory, *PrettyPHP* completely ignores previous formatting and doesn't change
 anything that isn't whitespace.
 
 In practice, strict adherence to these rules would make it difficult to work
-with, so the following pragmatic exceptions have been made. They can be disabled
-for strictly deterministic behaviour.
+with, so the following pragmatic exceptions have been made. Most of them can be
+disabled for strictly deterministic behaviour.
 
-### Newlines are preserved
+### Newline placement is preserved
+
+Unless suppressed by other rules, line breaks adjacent to most operators,
+separators and brackets are copied from the input to the output.
 
 > Use `-N, --ignore-newlines` to disable this behaviour.
 
-Unless suppressed by other rules, line breaks at the following locations in the
-input are applied to the output.
-
-- **Before:** `!`, `.`, `??`, `->`, `?->`, `)`, `]`, `?>`, arithmetic operators,
-  bitwise operators, ternary operators
-
-- **After:** `(`, `[`, `{`, `,`, `;`, `=>`, `}`, `<?php`, `extends`,
-  `implements`, `return`, `yield`, `yield from`, `:` (if not a ternary
-  operator), assignment operators, comparison operators, logical operators,
-  comments
-
 ### Scalar strings are normalised
-
-> Use `-S, --no-simplify-strings` to disable this behaviour.
 
 Single-quoted strings are preferred unless one or more characters require a
 backslash escape, or the double-quoted equivalent is shorter.
 
+> Use `-S, --no-simplify-strings` to disable this behaviour.
+
 ### Alias/import statements are grouped and sorted alphabetically
 
 > Use `-M, --no-sort-imports` to disable this behaviour.
+
+### Comments beside code are never moved to the next line
+
+It might seem obvious, but it wouldn't be possible if *PrettyPHP* completely
+ignored previous formatting.
+
+> This behaviour cannot be disabled.
 
 ### Comments are trimmed and aligned
 
@@ -120,10 +122,11 @@ backslash escape, or the double-quoted equivalent is shorter.
 
 [Black]: https://github.com/psf/black
 [Open VSX Registry]: https://open-vsx.org/extension/lkrms/pretty-php
-[pragmatic exceptions]: #Pragmatism
+[options]: #if-its-opinionated-why-are-there-so-many-options
+[php-cs-fixer]: https://github.com/PHP-CS-Fixer/PHP-CS-Fixer
+[phpcbf]: https://github.com/squizlabs/PHP_CodeSniffer
+[pragmatic exceptions]: #pragmatism
 [PSR-12]: https://www.php-fig.org/psr/psr-12/
-[tokenize]: https://www.php.net/manual/en/phptoken.tokenize.php
-[version 1.0.0]: https://semver.org/#spec-item-5
+[PSR-12 issue]: https://github.com/lkrms/pretty-php/issues/4
 [Visual Studio Marketplace]: https://marketplace.visualstudio.com/items?itemName=lkrms.pretty-php
 [vscode]: https://github.com/lkrms/vscode-pretty-php
-
