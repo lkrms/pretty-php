@@ -80,7 +80,7 @@ final class SpaceDeclarations implements TokenRule
 
         // Add a blank line between declarations and other code
         if (!$token->EndStatement->nextCode()->is([T_NULL, ...TokenType::DECLARATION]) &&
-                !$token->EndStatement->next()->is(T_CLOSE_TAG)) {
+                $token->EndStatement->next()->id !== T_CLOSE_TAG) {
             $token->EndStatement->WhitespaceAfter |= WhitespaceType::BLANK;
         }
 

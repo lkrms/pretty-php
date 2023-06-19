@@ -28,7 +28,7 @@ final class AddEssentialWhitespace implements Rule
                 continue;
             }
 
-            if ($token->isOneLineComment() && !$next->is(T_CLOSE_TAG)) {
+            if ($token->isOneLineComment() && $next->id !== T_CLOSE_TAG) {
                 $token->WhitespaceAfter |= WhitespaceType::LINE;
                 $token->WhitespaceMaskNext |= WhitespaceType::LINE;
                 $next->WhitespaceMaskPrev |= WhitespaceType::LINE;
@@ -42,7 +42,7 @@ final class AddEssentialWhitespace implements Rule
                 continue;
             }
 
-            if ($token->is(T_OPEN_TAG) ||
+            if ($token->id === T_OPEN_TAG ||
                     preg_match('/^[a-zA-Z0-9\\\\_\x80-\xff]{2}$/', substr($token->text, -1) . substr($next->text, 0, 1))) {
                 $token->WhitespaceAfter |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskNext |= WhitespaceType::SPACE;

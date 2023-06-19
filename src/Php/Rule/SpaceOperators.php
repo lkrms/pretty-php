@@ -44,7 +44,7 @@ final class SpaceOperators implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->parent()->prevCode()->is(T_DECLARE)) {
+        if ($token->parent()->prevCode()->id === T_DECLARE) {
             return;
         }
 
@@ -53,11 +53,11 @@ final class SpaceOperators implements TokenRule
         if ($token->is(TokenType::AMPERSAND) &&
             $token->next()->IsCode &&
             // `function &getValue()`
-            ($token->prevCode()->is(T_FUNCTION) ||
+            ($token->prevCode()->id === T_FUNCTION ||
                 // `[&$variable]`, `$a = &getValue()`
                 $token->inUnaryContext() ||
                 // `function getValue(&$param)`
-                ($token->next()->is(T_VARIABLE) &&
+                ($token->next()->id === T_VARIABLE &&
                     $token->inFunctionDeclaration() &&
                     // Not `function getValue($param = $a & $b)`
                     !$token->sinceStartOfStatement()->hasOneOf(T['='])))) {
@@ -96,9 +96,9 @@ final class SpaceOperators implements TokenRule
         // Suppress whitespace between `++` and `--` and the variables they
         // operate on
         if ($token->is(TokenType::OPERATOR_INCREMENT_DECREMENT)) {
-            if ($token->prev()->is(T_VARIABLE)) {
+            if ($token->prev()->id === T_VARIABLE) {
                 $token->WhitespaceMaskPrev = WhitespaceType::NONE;
-            } elseif ($token->next()->is(T_VARIABLE)) {
+            } elseif ($token->next()->id === T_VARIABLE) {
                 $token->WhitespaceMaskNext = WhitespaceType::NONE;
             }
         }

@@ -97,7 +97,7 @@ final class PlaceComments implements TokenRule
         }
 
         $token->WhitespaceAfter |= WhitespaceType::LINE;
-        if (!$token->is(T_DOC_COMMENT)) {
+        if ($token->id !== T_DOC_COMMENT) {
             $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
             $token->PinToCode = !$next->isCloseBracket() && !$next->endsAlternativeSyntax();
 

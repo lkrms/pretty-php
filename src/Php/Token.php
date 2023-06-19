@@ -567,22 +567,22 @@ class Token extends NavigableToken implements JsonSerializable
      */
     private function maybeApplyStatement(): void
     {
-        if ((($this->is(T[';']) ||
+        if ((($this->id === T[';'] ||
                 $this->IsCloseTagStatementTerminator ||
                 $this->isCloseBraceStatementTerminator()) &&
             !$this->nextCode()->is([T_ELSEIF, T_ELSE, T_CATCH, T_FINALLY]) &&
-            !($this->nextCode()->is(T_WHILE) &&
+            !($this->nextCode()->id === T_WHILE &&
                 // Body enclosed: `do { ... } while ();`
-                ($this->nextCode()->prevSibling(2)->is(T_DO) ||
+                ($this->nextCode()->prevSibling(2)->id === T_DO ||
                     // Body unenclosed +/- nesting:
                     // - `do statement; while ();`
                     // - `do while () while (); while ();`
                     (!($do = $this->prevSiblingOf(T_DO))->IsNull &&
                         $do->nextSibling(2)
                            ->collectSiblings($this->nextCode())
-                           ->filter(fn(Token $t) => $t->is(T_WHILE) && !$t->prevSibling(2)->is(T_WHILE))
+                           ->filter(fn(Token $t) => $t->id === T_WHILE && $t->prevSibling(2)->id !== T_WHILE)
                            ->first() === $this->nextCode())))) ||
-                ($this->is(T[':']) && ($this->inSwitchCase() || $this->inLabel()))) {
+                ($this->id === T[':'] && ($this->inSwitchCase() || $this->inLabel()))) {
             $this->applyStatement();
         } elseif ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE)) {
             $this->_prevCode->applyStatement();
@@ -591,7 +591,7 @@ class Token extends NavigableToken implements JsonSerializable
             ($this->id === T['}'] &&
                 (!$this->isStructuralBrace() || $this->isMatchBrace()))) {
             $this->_prevCode->applyStatement();
-        } elseif ($this->is(T[','])) {
+        } elseif ($this->id === T[',']) {
             // For formatting purposes, commas are statement delimiters:
             // - between parentheses and square brackets, e.g. in argument
             //   lists, arrays, `for` expressions
@@ -650,7 +650,7 @@ class Token extends NavigableToken implements JsonSerializable
 
     private function isCloseBraceStatementTerminator(): bool
     {
-        if (!$this->is(T['}']) || !$this->isStructuralBrace()) {
+        if ($this->id !== T['}'] || !$this->isStructuralBrace()) {
             return false;
         }
 
@@ -672,7 +672,7 @@ class Token extends NavigableToken implements JsonSerializable
             return true;
         }
 
-        if ($start->is(T_USE)) {
+        if ($start->id === T_USE) {
             $parent = $start->parent();
             // - Alias/import statements (e.g. `use const <FQCN>`) end with `;`
             // - `use <trait> { ... }` ends with `}`
@@ -692,8 +692,8 @@ class Token extends NavigableToken implements JsonSerializable
             ...TokenType::DECLARATION_PART
         ]);
         if ($parts->hasOneOf(...TokenType::DECLARATION) &&
-                !$parts->last()->is(T_FUNCTION) &&
-                !($parts->first()->is(T_NEW) && $parts->nth(2)->is(T_CLASS))) {
+                $parts->last()->id !== T_FUNCTION &&
+                !($parts->first()->id === T_NEW && $parts->nth(2)->id === T_CLASS)) {
             return true;
         }
 
@@ -706,7 +706,7 @@ class Token extends NavigableToken implements JsonSerializable
      */
     private function maybeApplyExpression(): void
     {
-        if ($this->is(T['?'])) {
+        if ($this->id === T['?']) {
             $current = $this;
             $count = 0;
             while (($current = $current->_nextSibling) &&
@@ -718,7 +718,7 @@ class Token extends NavigableToken implements JsonSerializable
                     $count++;
                     continue;
                 }
-                if (!$current->is(T[':']) || $count--) {
+                if ($current->id !== T[':'] || $count--) {
                     continue;
                 }
                 $current->IsTernaryOperator = $this->IsTernaryOperator = true;
@@ -737,20 +737,20 @@ class Token extends NavigableToken implements JsonSerializable
             }
         }
 
-        if (($this->is(T['}']) && $this->isStructuralBrace()) ||
+        if (($this->id === T['}'] && $this->isStructuralBrace()) ||
                 ($this->OpenedBy && $this->OpenedBy->is(T_ATTRIBUTE))) {
             $this->_prevCode->applyExpression();
             $this->applyExpression();
         } elseif ($this->is(self::EXPRESSION_TERMINATOR) ||
                 $this->IsCloseTagStatementTerminator ||
-                ($this->is(T[':']) && ($this->inSwitchCase() || $this->inLabel())) ||
-                ($this->is(T['}']) &&
+                ($this->id === T[':'] && ($this->inSwitchCase() || $this->inLabel())) ||
+                ($this->id === T['}'] &&
                     (!$this->isStructuralBrace() || $this->isMatchBrace())) ||
                 $this->IsTernaryOperator) {
             // Expression terminators don't form part of the expression
             $this->Expression = false;
             $this->_prevCode->applyExpression();
-        } elseif ($this->is(T[','])) {
+        } elseif ($this->id === T[',']) {
             $parent = $this->parent();
             if ($parent->is([T['('], T['[']]) ||
                 ($parent->id === T['{'] &&
@@ -1450,7 +1450,7 @@ class Token extends NavigableToken implements JsonSerializable
     final public function continuesControlStructure(): bool
     {
         return $this->is([T_CATCH, T_FINALLY, T_ELSEIF, T_ELSE]) ||
-            ($this->is(T_WHILE) && $this->Statement !== $this);
+            ($this->id === T_WHILE && $this->Statement !== $this);
     }
 
     /**
@@ -1521,12 +1521,12 @@ class Token extends NavigableToken implements JsonSerializable
             // bodies if needed
             if ($containUnenclosed) {
                 if ($current->is(TokenType::HAS_STATEMENT_WITH_OPTIONAL_BRACES) &&
-                        !($body = $current->nextSibling())->is(T['{']) &&
+                        ($body = $current->nextSibling())->id !== T['{'] &&
                         $current->EndExpression->withTerminator()->Index >= $this->Index) {
                     return $body->_pragmaticStartOfExpression($this);
                 }
                 if ($current->is(TokenType::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES) &&
-                        !($body = $current->nextSibling(2))->is(T['{']) &&
+                        ($body = $current->nextSibling(2))->id !== T['{'] &&
                         $current->EndExpression->withTerminator()->Index >= $this->Index) {
                     return $body->_pragmaticStartOfExpression($this);
                 }
@@ -1663,7 +1663,7 @@ class Token extends NavigableToken implements JsonSerializable
             )) {
                 continue;
             }
-            if ($next->is(T_WHILE) &&
+            if ($next->id === T_WHILE &&
                     $next->Statement !== $next && (
                         !$containUnenclosed ||
                             $terminator->is(T['}']) ||
@@ -1964,8 +1964,8 @@ class Token extends NavigableToken implements JsonSerializable
      */
     final public function inLabel(): bool
     {
-        if ($this->is(T[':'])) {
-            return $this->prevCode()->is(T_STRING) &&
+        if ($this->id === T[':']) {
+            return $this->prevCode()->id === T_STRING &&
                 (($prev = $this->prevCode(2))->is([T[';'], T_CLOSE_TAG]) ||
                     $prev->isStructuralBrace() ||
                     $prev->startsAlternativeSyntax() ||
@@ -1980,7 +1980,7 @@ class Token extends NavigableToken implements JsonSerializable
     public function isArrayOpenBracket(): bool
     {
         return $this->is(T['[']) ||
-            ($this->is(T['(']) && $this->prevCode()->is(T_ARRAY));
+            ($this->id === T['('] && $this->prevCode()->id === T_ARRAY);
     }
 
     final public function isBrace(): bool
@@ -2020,22 +2020,22 @@ class Token extends NavigableToken implements JsonSerializable
 
     public function endsAlternativeSyntax(): bool
     {
-        return $this->is(T_END_ALT_SYNTAX);
+        return $this->id === T_END_ALT_SYNTAX;
     }
 
     public function isOneLineComment(bool $anyType = false): bool
     {
         return $anyType
             ? $this->is(TokenType::COMMENT) && !$this->hasNewline()
-            : $this->is(T_COMMENT) && preg_match('@^(//|#)@', $this->text);
+            : $this->id === T_COMMENT && preg_match('@^(//|#)@', $this->text);
     }
 
     public function isMultiLineComment(bool $anyType = false): bool
     {
         return $anyType
             ? $this->is(TokenType::COMMENT) && $this->hasNewline()
-            : ($this->is(T_DOC_COMMENT) ||
-                ($this->is(T_COMMENT) && preg_match('@^/\*@', $this->text)));
+            : ($this->id === T_DOC_COMMENT ||
+                ($this->id === T_COMMENT && preg_match('@^/\*@', $this->text)));
     }
 
     public function isOperator(): bool
@@ -2105,7 +2105,7 @@ class Token extends NavigableToken implements JsonSerializable
         $parent = $this->parent();
 
         return $parent->is(T['(']) &&
-            ($parent->isDeclaration(T_FUNCTION) || $parent->prevCode()->is(T_FN));
+            ($parent->isDeclaration(T_FUNCTION) || $parent->prevCode()->id === T_FN);
     }
 
     /**

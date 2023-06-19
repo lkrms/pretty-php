@@ -54,7 +54,7 @@ final class BracePosition implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if (!($match = $token->prevSibling(2)->is(T_MATCH)) &&
+        if (!($match = $token->prevSibling(2)->id === T_MATCH) &&
                 !$token->isStructuralBrace()) {
             return;
         }
@@ -69,10 +69,10 @@ final class BracePosition implements TokenRule
             $parts = $token->declarationParts();
             if (!$this->Formatter->OneTrueBraceStyle &&
                     $parts->hasOneOf(...TokenType::DECLARATION) &&
-                    !$parts->last()->is(T_FUNCTION)) {
+                    $parts->last()->id !== T_FUNCTION) {
                 // 3. it isn't part of a `use` statement
                 $start = $parts->first();
-                if (!$start->is(T_USE)) {
+                if ($start->id !== T_USE) {
                     // 4. the token before the declaration is:
                     //    - `;`
                     //    - `{`

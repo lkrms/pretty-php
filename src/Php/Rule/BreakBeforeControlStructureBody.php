@@ -73,11 +73,11 @@ final class BreakBeforeControlStructureBody implements TokenRule
 
         $end = null;
         $continues = false;
-        if ($token->is(T_DO)) {
+        if ($token->id === T_DO) {
             $continues = true;
         } elseif ($token->is([T_IF, T_ELSEIF])) {
             $end = $token->nextSiblingOf(T_IF, T_ELSEIF, T_ELSE);
-            if ($end->is(T_IF)) {
+            if ($end->id === T_IF) {
                 $end = $body->EndStatement;
             } elseif (!$end->IsNull) {
                 $end = $end->prevCode();

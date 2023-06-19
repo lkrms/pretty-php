@@ -411,7 +411,7 @@ final class Formatter implements IReadable, IWritable
                 return '';
             }
 
-            if ($last->IsCode && !$last->startOfStatement()->is(T_HALT_COMPILER)) {
+            if ($last->IsCode && $last->startOfStatement()->id !== T_HALT_COMPILER) {
                 $last->WhitespaceAfter |= WhitespaceType::LINE;
             }
         } finally {
