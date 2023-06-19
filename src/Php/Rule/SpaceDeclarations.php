@@ -9,7 +9,6 @@ use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
-use const Lkrms\Pretty\Php\T_NULL;
 
 /**
  * Normalise whitespace between declarations

@@ -8,7 +8,6 @@ use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
-use const Lkrms\Pretty\Php\T_END_ALT_SYNTAX;
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
 /**

@@ -34,12 +34,6 @@ class Token extends NavigableToken implements JsonSerializable
     ];
 
     /**
-     * The token's position (0-based) in the array returned by tokenize()
-     *
-     */
-    public ?int $Index = null;
-
-    /**
      * @var Token|null
      */
     public $OpenTag;
@@ -48,21 +42,6 @@ class Token extends NavigableToken implements JsonSerializable
      * @var Token|null
      */
     public $CloseTag;
-
-    /**
-     * @var Token|null
-     */
-    public $OpenedBy;
-
-    /**
-     * @var Token|null
-     */
-    public $ClosedBy;
-
-    /**
-     * @var bool
-     */
-    public $IsCode = true;
 
     /**
      * @var Token|null
@@ -212,18 +191,6 @@ class Token extends NavigableToken implements JsonSerializable
     public $StringOpenedBy;
 
     /**
-     * @var bool
-     */
-    public bool $IsNull = false;
-
-    /**
-     * True if the token is a VirtualToken, NullToken or some other impostor
-     *
-     * @var bool
-     */
-    public bool $IsVirtual = false;
-
-    /**
      * Bitmask representing whitespace between the token and its predecessor
      *
      * @var int
@@ -299,42 +266,9 @@ class Token extends NavigableToken implements JsonSerializable
     public $IsCloseTagStatementTerminator = false;
 
     /**
-     * @return static[]
+     * @var Formatter|null
      */
-    public static function tokenize(string $code, int $flags = 0, Filter ...$filters): array
-    {
-        $tokens = parent::tokenize($code, $flags);
-        if ($filters) {
-            $tokens = self::filterTokens($tokens, ...$filters);
-        }
-
-        return $tokens;
-    }
-
-    /**
-     * @template TToken of Token
-     * @param TToken[] $tokens
-     * @return TToken[]
-     */
-    public static function filterTokens(array $tokens, Filter ...$filters): array
-    {
-        try {
-            foreach ($filters as $filter) {
-                $tokens = $filter->filterTokens($tokens);
-            }
-
-            return $tokens;
-        } catch (Throwable $ex) {
-            throw new PrettyException(
-                'filterTokens failed',
-                null,
-                $tokens,
-                null,
-                null,
-                $ex
-            );
-        }
-    }
+    public $Formatter;
 
     /**
      * @param static[] $tokens
@@ -342,71 +276,13 @@ class Token extends NavigableToken implements JsonSerializable
      */
     public static function prepareTokens(array $tokens, Formatter $formatter): array
     {
-        $tokens = parent::prepareTokens($tokens, $formatter);
-
-        if (!$tokens) {
-            return $tokens;
+        foreach ($tokens as $token) {
+            $token->Formatter = $formatter;
+            $token->prepare();
         }
-        /** @var static[] */
-        $prepared = [];
-        /** @var static */
-        $prev = null;
-        $nextKey = (int) array_key_last($tokens) + 1;
-        try {
-            foreach ($tokens as $index => $token) {
-                // PHP's alternative syntax has no `}` equivalent, so insert a
-                // virtual token where it would be
-                if ($token->is([
-                    ...TokenType::ALT_SYNTAX_CONTINUE,
-                    ...TokenType::ALT_SYNTAX_END,
-                ])) {
-                    $stack = $prev->BracketStack;
-                    // If the previous token is a close bracket, remove its
-                    // opener from the top of the stack
-                    if ($prev->isCloseBracket()) {
-                        array_pop($stack);
-                    }
-                    $opener = array_pop($stack);
-                    if (($opener &&
-                        $opener->id === T[':'] &&
-                        $opener->BracketStack === $stack &&
-                        ($token->is(TokenType::ALT_SYNTAX_END) ||
-                            ($token->is(TokenType::ALT_SYNTAX_CONTINUE_WITH_EXPRESSION) &&
-                                $token->nextSimpleSibling(2)->id === T[':']) ||
-                            ($token->is(TokenType::ALT_SYNTAX_CONTINUE_WITHOUT_EXPRESSION) &&
-                                $token->nextSimpleSibling()->id === T[':']))) ||
-                            $prev->startsAlternativeSyntax()) {
-                        $virtual = VirtualToken::create(T_END_ALT_SYNTAX);
-                        $prepared[$nextKey] = $virtual;
-                        $virtual->Index = $nextKey++;
-                        $virtual->_prev = $prev;
-                        $virtual->_next = $token;
-                        $prev->_next = $virtual;
-                        $token->_prev = $virtual;
-                        $virtual->Formatter = $formatter;
-                        $virtual->prepare();
-                        $prev = $virtual;
-                    }
-                }
-                $prepared[$index] = $token;
-                $token->Index = $index;
-                $token->Formatter = $formatter;
-                $token->prepare();
-                $prev = $token;
-            }
-            reset($prepared)->load();
+        reset($tokens)->load();
 
-            return $prepared;
-        } catch (Throwable $ex) {
-            throw new PrettyException(
-                'prepareTokens failed',
-                null,
-                $prepared,
-                null,
-                null,
-                $ex
-            );
-        }
+        return $tokens;
     }
 
     /**
@@ -435,14 +311,11 @@ class Token extends NavigableToken implements JsonSerializable
                 $this->setText(trim($this->text));
             }
 
-            if ($this->is(TokenType::NOT_CODE)) {
-                $this->IsCode = false;
-                if ($this->id === T_COMMENT) {
-                    preg_match('/^(\/\/|\/\*|#)/', $this->text, $matches);
-                    $this->CommentType = $matches[1];
-                } elseif ($this->id === T_DOC_COMMENT) {
-                    $this->CommentType = '/**';
-                }
+            if ($this->id === T_COMMENT) {
+                preg_match('/^(\/\/|\/\*|#)/', $this->text, $matches);
+                $this->CommentType = $matches[1];
+            } elseif ($this->id === T_DOC_COMMENT) {
+                $this->CommentType = '/**';
             }
 
             if ($this->is([T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO])) {
@@ -483,62 +356,6 @@ class Token extends NavigableToken implements JsonSerializable
                         !$t->is([T['('], T[','], T[':'], T[';'], T['['], T['{']])) {
                     $this->IsCode = true;
                     $this->IsCloseTagStatementTerminator = true;
-                }
-            }
-        }
-
-        $this->_prevCode = $prev->IsCode
-            ? $prev
-            : $prev->_prevCode;
-        if ($this->IsCode) {
-            $t = $prev;
-            do {
-                $t->_nextCode = $this;
-                $t = $t->_prev;
-            } while ($t && !$t->_nextCode);
-        }
-
-        $this->BracketStack = $prev->BracketStack;
-        $stackDelta = 0;
-        if ($prev->isOpenBracket() || $prev->startsAlternativeSyntax()) {
-            $this->BracketStack[] = $prev;
-            $stackDelta++;
-        } elseif ($prev->isCloseBracket() || $prev->endsAlternativeSyntax()) {
-            array_pop($this->BracketStack);
-            $stackDelta--;
-        }
-
-        if ($this->isCloseBracket() || $this->endsAlternativeSyntax()) {
-            $opener = end($this->BracketStack);
-            $opener->ClosedBy = $this;
-            $this->OpenedBy = $opener;
-            $this->_prevSibling = &$opener->_prevSibling;
-            $this->_nextSibling = &$opener->_nextSibling;
-        } else {
-            // If $this continues the previous context ($stackDelta == 0) or is
-            // the first token after a close bracket ($stackDelta < 0), set
-            // $this->_prevSibling
-            if ($stackDelta <= 0 &&
-                    ($prevCode = ($this->_prevCode->OpenedBy ?? null) ?: $this->_prevCode) &&
-                    $prevCode->BracketStack === $this->BracketStack) {
-                $this->_prevSibling = $prevCode;
-            }
-
-            // Then, if there are gaps between siblings, fill them in
-            if ($this->IsCode) {
-                if ($this->_prevSibling &&
-                        !$this->_prevSibling->_nextSibling) {
-                    $t = $this;
-                    do {
-                        $t = $t->_prev->OpenedBy ?: $t->_prev;
-                        $t->_nextSibling = $this;
-                    } while ($t->_prev && $t !== $this->_prevSibling);
-                } elseif (!$this->_prevSibling) {
-                    $t = $this->_prev;
-                    while ($t && $t->BracketStack === $this->BracketStack) {
-                        $t->_nextSibling = $this;
-                        $t = $t->_prev;
-                    }
                 }
             }
         }
@@ -938,17 +755,17 @@ class Token extends NavigableToken implements JsonSerializable
             $t = $t->{"_$name"} ?? null;
         }
 
-        return $t ?: NullToken::create();
+        return $t ?: $this->null();
     }
 
     public function prev(int $offset = 1): Token
     {
         switch ($offset) {
             case 1:
-                return $this->_prev ?: NullToken::create();
+                return $this->_prev ?: $this->null();
 
             case 2:
-                return ($this->_prev->_prev ?? null) ?: NullToken::create();
+                return ($this->_prev->_prev ?? null) ?: $this->null();
         }
 
         return $this->byOffset(__FUNCTION__, $offset);
@@ -958,10 +775,10 @@ class Token extends NavigableToken implements JsonSerializable
     {
         switch ($offset) {
             case 1:
-                return $this->_next ?: NullToken::create();
+                return $this->_next ?: $this->null();
 
             case 2:
-                return ($this->_next->_next ?? null) ?: NullToken::create();
+                return ($this->_next->_next ?? null) ?: $this->null();
         }
 
         return $this->byOffset(__FUNCTION__, $offset);
@@ -1033,10 +850,10 @@ class Token extends NavigableToken implements JsonSerializable
     {
         switch ($offset) {
             case 1:
-                return $this->_prevCode ?: NullToken::create();
+                return $this->_prevCode ?: $this->null();
 
             case 2:
-                return ($this->_prevCode->_prevCode ?? null) ?: NullToken::create();
+                return ($this->_prevCode->_prevCode ?? null) ?: $this->null();
         }
 
         return $this->byOffset(__FUNCTION__, $offset);
@@ -1046,10 +863,10 @@ class Token extends NavigableToken implements JsonSerializable
     {
         switch ($offset) {
             case 1:
-                return $this->_nextCode ?: NullToken::create();
+                return $this->_nextCode ?: $this->null();
 
             case 2:
-                return ($this->_nextCode->_nextCode ?? null) ?: NullToken::create();
+                return ($this->_nextCode->_nextCode ?? null) ?: $this->null();
         }
 
         return $this->byOffset(__FUNCTION__, $offset);
@@ -1121,10 +938,10 @@ class Token extends NavigableToken implements JsonSerializable
     {
         switch ($offset) {
             case 1:
-                return $this->_prevSibling ?: NullToken::create();
+                return $this->_prevSibling ?: $this->null();
 
             case 2:
-                return ($this->_prevSibling->_prevSibling ?? null) ?: NullToken::create();
+                return ($this->_prevSibling->_prevSibling ?? null) ?: $this->null();
         }
 
         return $this->byOffset(__FUNCTION__, $offset);
@@ -1134,10 +951,10 @@ class Token extends NavigableToken implements JsonSerializable
     {
         switch ($offset) {
             case 1:
-                return $this->_nextSibling ?: NullToken::create();
+                return $this->_nextSibling ?: $this->null();
 
             case 2:
-                return ($this->_nextSibling->_nextSibling ?? null) ?: NullToken::create();
+                return ($this->_nextSibling->_nextSibling ?? null) ?: $this->null();
         }
 
         return $this->byOffset(__FUNCTION__, $offset);
@@ -1155,7 +972,7 @@ class Token extends NavigableToken implements JsonSerializable
             $prev = $prev->_prevSibling;
         } while ($prev && !$prev->is($types));
 
-        return $prev ?: NullToken::create();
+        return $prev ?: $this->null();
     }
 
     /**
@@ -1170,7 +987,7 @@ class Token extends NavigableToken implements JsonSerializable
             $next = $next->_nextSibling;
         } while ($next && !$next->is($types));
 
-        return $next ?: NullToken::create();
+        return $next ?: $this->null();
     }
 
     /**
@@ -1313,7 +1130,7 @@ class Token extends NavigableToken implements JsonSerializable
     {
         $current = $this->OpenedBy ?: $this;
 
-        return end($current->BracketStack) ?: NullToken::create();
+        return end($current->BracketStack) ?: $this->null();
     }
 
     /**
@@ -2003,24 +1820,6 @@ class Token extends NavigableToken implements JsonSerializable
             $lastInner->is([T[':'], T[';']]) ||                              // `{ statement; }`
             $lastInner->IsCloseTagStatementTerminator ||                     /* `{ statement ?>...<?php }` */
             ($lastInner->id === T['}'] && $lastInner->isStructuralBrace());  // `{ { statement; } }`
-    }
-
-    public function startsAlternativeSyntax(): bool
-    {
-        return $this->is(T[':']) && ($this->ClosedBy ||
-            (($this->_prevCode->is(T[')']) &&
-                    $this->_prevCode->_prevSibling->is([
-                        ...TokenType::ALT_SYNTAX_START,
-                        ...TokenType::ALT_SYNTAX_CONTINUE_WITH_EXPRESSION
-                    ])) ||
-                $this->_prevCode->is(
-                    TokenType::ALT_SYNTAX_CONTINUE_WITHOUT_EXPRESSION
-                )));
-    }
-
-    public function endsAlternativeSyntax(): bool
-    {
-        return $this->id === T_END_ALT_SYNTAX;
     }
 
     public function isOneLineComment(bool $anyType = false): bool

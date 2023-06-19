@@ -2,8 +2,7 @@
 
 namespace Lkrms\Pretty\Php\Concern;
 
-use Lkrms\Pretty\Php\NullToken;
-use Lkrms\Pretty\Php\Token;
+use Lkrms\Pretty\Php\NavigableToken as Token;
 use Lkrms\Pretty\Php\TokenType;
 
 trait FilterTrait
@@ -11,9 +10,9 @@ trait FilterTrait
     /**
      * @var Token[]
      */
-    private $Tokens;
+    protected $Tokens;
 
-    private function prevCode(int $i, ?int &$prev_i = null): Token
+    protected function prevCode(int $i, ?int &$prev_i = null): Token
     {
         while ($i--) {
             $token = $this->Tokens[$i];
@@ -25,13 +24,13 @@ trait FilterTrait
             return $token;
         }
 
-        return NullToken::create();
+        return Token::null();
     }
 
     /**
      * @param int|string ...$types
      */
-    private function prevDeclarationOf(int $i, ...$types): Token
+    protected function prevDeclarationOf(int $i, ...$types): Token
     {
         while ($i--) {
             $token = $this->Tokens[$i];
@@ -46,7 +45,14 @@ trait FilterTrait
             }
         }
 
-        return NullToken::create();
+        return Token::null();
+    }
+
+    protected function isOneLineComment(int $i): bool
+    {
+        $token = $this->Tokens[$i];
+
+        return $token->id === T_COMMENT && preg_match('@^(//|#)@', $token->text);
     }
 
     public function destroy(): void

@@ -4,7 +4,7 @@ namespace Lkrms\Pretty\Php\Filter;
 
 use Lkrms\Pretty\Php\Concern\FilterTrait;
 use Lkrms\Pretty\Php\Contract\Filter;
-use Lkrms\Pretty\Php\Token;
+use Lkrms\Pretty\Php\NavigableToken as Token;
 use Lkrms\Pretty\Php\TokenType;
 
 /**
