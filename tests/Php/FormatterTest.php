@@ -215,6 +215,9 @@ PHP,
                 '#^3rdparty/phpfmt/305-lwordwrap-pivot#',
                 '#^3rdparty/phpfmt/339-align-objop#',
                 '#^3rdparty/phpfmt/341-autosemicolon-objop#',
+                // Attributes
+                '#^attributes-[^/]+\.php#',
+                '#^3rdparty/php-doc/language/predefined/attributes/sensitiveparameter/000\.php#',
             ],
             80100 => [
                 '#^3rdparty/php-doc/appendices/migration81/new-features/.*#',
