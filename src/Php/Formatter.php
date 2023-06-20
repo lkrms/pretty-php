@@ -467,7 +467,7 @@ final class Formatter implements IReadable, IWritable
                     ...TokenType::DECLARATION_LIST
                 )->filter(
                     fn(Token $t, ?Token $next, ?Token $prev) =>
-                        !$prev || $t->prevCode()->is(T[','])
+                        !$prev || $t->prevCode()->id === T[',']
                 );
                 if ($items->count() > 1) {
                     $lists[$i] = $items;
@@ -476,7 +476,7 @@ final class Formatter implements IReadable, IWritable
             }
             $lists[$i] = $parent->innerSiblings()->filter(
                 fn(Token $t, ?Token $next, ?Token $prev) =>
-                    !$prev || (($prevCode = $t->prevCode())->is(T[',']) &&
+                    !$prev || (($prevCode = $t->prevCode())->id === T[','] &&
                         ($parent->id !== T['{'] ||
                             $prevCode->prevSiblingOf(T[','], ...TokenType::OPERATOR_DOUBLE_ARROW)
                                      ->is(TokenType::OPERATOR_DOUBLE_ARROW)))

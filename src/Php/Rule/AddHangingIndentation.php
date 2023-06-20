@@ -31,7 +31,7 @@ final class AddHangingIndentation implements TokenRule
                 // Does it have delimited values? (e.g. `list(var, var)`)
                 $token->innerSiblings()->hasOneOf(T[',']) ||
                     // Delimited expressions? (e.g. `for (expr; expr; expr)`)
-                    ($token->is(T['(']) && $token->innerSiblings()->hasOneOf(T[';'])) ||
+                    ($token->id === T['('] && $token->innerSiblings()->hasOneOf(T[';'])) ||
                     // A subsequent statement or block? (e.g. `if (expr)
                     // statement`)
                     $token->adjacent();

@@ -39,9 +39,9 @@ final class BreakAfterSeparators implements TokenRule
 
             return;
         }
-        if ($token->is(T[';'])) {
+        if ($token->id === T[';']) {
             $parent = $token->parent();
-            if ($parent->is(T['(']) && $parent->prevCode()->id === T_FOR) {
+            if ($parent->id === T['('] && $parent->prevCode()->id === T_FOR) {
                 $token->WhitespaceAfter |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
                 $token->next()->WhitespaceMaskPrev |= WhitespaceType::SPACE;

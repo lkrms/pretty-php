@@ -86,7 +86,7 @@ final class SpaceOperators implements TokenRule
         }
 
         // Suppress whitespace after `?` in nullable types
-        if ($token->is(T['?']) && !$token->IsTernaryOperator) {
+        if ($token->id === T['?'] && !$token->IsTernaryOperator) {
             $token->WhitespaceBefore |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
 
@@ -115,7 +115,7 @@ final class SpaceOperators implements TokenRule
 
         $token->WhitespaceAfter |= WhitespaceType::SPACE;
 
-        if ($token->is(T[':']) && !$token->IsTernaryOperator) {
+        if ($token->id === T[':'] && !$token->IsTernaryOperator) {
             return;
         }
 

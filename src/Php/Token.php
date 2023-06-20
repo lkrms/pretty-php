@@ -535,7 +535,7 @@ class Token extends CollectibleToken implements JsonSerializable
                 if ($current->IsTernaryOperator) {
                     continue;
                 }
-                if ($current->is(T['?'])) {
+                if ($current->id === T['?']) {
                     $count++;
                     continue;
                 }
@@ -1450,7 +1450,7 @@ class Token extends CollectibleToken implements JsonSerializable
             }
             if ($next->is([T_ELSEIF, T_ELSE]) && (
                 !$containUnenclosed ||
-                    $terminator->is(T['}']) ||
+                    $terminator->id === T['}'] ||
                     $terminator->prevSiblingOf(T_IF, T_ELSEIF)->Index >= $this->Index
             )) {
                 continue;
@@ -1458,7 +1458,7 @@ class Token extends CollectibleToken implements JsonSerializable
             if ($next->id === T_WHILE &&
                     $next->Statement !== $next && (
                         !$containUnenclosed ||
-                            $terminator->is(T['}']) ||
+                            $terminator->id === T['}'] ||
                             $next->Statement->Index >= $this->Index
                     )) {
                 continue;
@@ -1724,7 +1724,7 @@ class Token extends CollectibleToken implements JsonSerializable
     public function prevStatementStart(): Token
     {
         $prev = $this->startOfStatement()->prevSibling();
-        while ($prev->is(T[';'])) {
+        while ($prev->id === T[';']) {
             $prev = $prev->prevSibling();
         }
 
@@ -1767,17 +1767,17 @@ class Token extends CollectibleToken implements JsonSerializable
                 (($prev = $this->prevCode(2))->is([T[';'], T_CLOSE_TAG]) ||
                     $prev->isStructuralBrace() ||
                     $prev->startsAlternativeSyntax() ||
-                    ($prev->is(T[':']) && ($prev->inSwitchCase() || $prev->inLabel())));
+                    ($prev->id === T[':'] && ($prev->inSwitchCase() || $prev->inLabel())));
         }
 
         return $this->_nextCode &&
-            $this->_nextCode->is(T[':']) &&
+            $this->_nextCode->id === T[':'] &&
             $this->_nextCode->inLabel();
     }
 
     public function isArrayOpenBracket(): bool
     {
-        return $this->is(T['[']) ||
+        return $this->id === T['['] ||
             ($this->id === T['('] && $this->prevCode()->id === T_ARRAY);
     }
 
@@ -1899,7 +1899,7 @@ class Token extends CollectibleToken implements JsonSerializable
     {
         $parent = $this->parent();
 
-        return $parent->is(T['(']) &&
+        return $parent->id === T['('] &&
             ($parent->isDeclaration(T_FUNCTION) || $parent->prevCode()->id === T_FN);
     }
 

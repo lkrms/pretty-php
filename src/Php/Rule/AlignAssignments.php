@@ -59,7 +59,7 @@ final class AlignAssignments implements BlockRule
             }
             // Ditto for 1-line `else`/`elseif`/`catch`/`finally` constructs
             if (count($group) > 1 &&
-                    $token1->is(T['}']) && ($last = $line->last())->is(T['{']) &&
+                    $token1->id === T['}'] && ($last = $line->last())->id === T['{'] &&
                     $token1->Statement === $last->Statement &&
                     !$skipped++) {
                 $parent = ['depth' => array_key_last($token1->BracketStack), 'statement' => $token1->Statement];

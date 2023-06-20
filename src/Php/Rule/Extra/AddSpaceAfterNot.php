@@ -31,7 +31,7 @@ final class AddSpaceAfterNot implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->next()->is(T['!'])) {
+        if ($token->next()->id === T['!']) {
             return;
         }
 
