@@ -104,19 +104,9 @@ final class TokenType
         ...self::OPERATOR_TERNARY,
     ];
 
-    public const WHITESPACE = [
-        T_WHITESPACE,
-        T_BAD_CHARACTER,
-    ];
-
     public const COMMENT = [
         T_COMMENT,
         T_DOC_COMMENT,
-    ];
-
-    public const WHITESPACE_OR_COMMENT = [
-        ...self::WHITESPACE,
-        ...self::COMMENT,
     ];
 
     public const NOT_CODE = [
@@ -124,7 +114,8 @@ final class TokenType
         T_OPEN_TAG,
         T_OPEN_TAG_WITH_ECHO,
         T_CLOSE_TAG,
-        ...self::WHITESPACE_OR_COMMENT,
+        T_WHITESPACE,
+        ...self::COMMENT,
     ];
 
     public const AMPERSAND = [
@@ -282,9 +273,15 @@ final class TokenType
     ];
 
     public const DECLARATION_PART = [
+        T_ATTRIBUTE,
         ...self::DECLARATION_LIST,
         ...self::AMPERSAND,
         ...self::DECLARATION,
+    ];
+
+    public const DECLARATION_PART_WITH_NEW = [
+        T_NEW,
+        ...self::DECLARATION_PART,
     ];
 
     public const DECLARATION_TOP_LEVEL = [

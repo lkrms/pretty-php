@@ -19,7 +19,7 @@ final class RemoveWhitespace implements Filter
     {
         return array_filter(
             $tokens,
-            fn(Token $t) => !$t->is(TokenType::WHITESPACE)
+            fn(Token $t) => $t->id !== T_WHITESPACE
         );
     }
 }

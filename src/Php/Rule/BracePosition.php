@@ -40,7 +40,7 @@ final class BracePosition implements TokenRule
 
     public function getPriority(string $method): ?int
     {
-        return 80;
+        return 94;
     }
 
     public function getTokenTypes(): array
@@ -54,7 +54,7 @@ final class BracePosition implements TokenRule
     public function processToken(Token $token): void
     {
         if (!($match = $token->prevSibling(2)->id === T_MATCH) &&
-                !$token->isStructuralBrace()) {
+                !$token->isStructuralBrace(false)) {
             return;
         }
 
@@ -81,7 +81,7 @@ final class BracePosition implements TokenRule
                     //    - the last token of an attribute
                     $prevCode = $start->prevCode();
                     if ($prevCode->is([T[';'], T['{'], T['}'], T_CLOSE_TAG, T_NULL]) ||
-                            ($prevCode->OpenedBy && $prevCode->OpenedBy->is(T_ATTRIBUTE))) {
+                            ($start->id === T_NEW && $parts->hasNewlineBetweenTokens())) {
                         $line = WhitespaceType::LINE;
                     }
                 }
@@ -113,7 +113,9 @@ final class BracePosition implements TokenRule
 
         if ($next->continuesControlStructure()) {
             $token->WhitespaceAfter |= WhitespaceType::SPACE;
-            $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
+            if (!$next->BodyIsUnenclosed) {
+                $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
+            }
 
             return;
         }

@@ -219,10 +219,10 @@ final class Formatter implements IReadable, IWritable
         AddStandardWhitespace::class,            // processToken  (80), callback (820)
         BreakAfterSeparators::class,             // processToken  (80)
         SpaceOperators::class,                   // processToken  (80)
-        BracePosition::class,                    // processToken  (80), beforeRender (80)
         BreakBeforeControlStructureBody::class,  // processToken  (83)
         PlaceComments::class,                    // processToken  (90), beforeRender (997)
         PreserveNewlines::class,                 // processToken  (93)  [OPTIONAL]
+        BracePosition::class,                    // processToken  (94), beforeRender (94)
         MirrorBrackets::class,                   // processToken  (96)
         BreakOperators::class,                   // processToken  (98)
         SpaceMatch::class,                       // processToken (300)  [OPTIONAL]

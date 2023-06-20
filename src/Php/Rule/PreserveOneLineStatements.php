@@ -38,14 +38,16 @@ final class PreserveOneLineStatements implements TokenRule
 
     public function processToken(Token $token): void
     {
-        // We can't use EndStatement here because `case <value>:` ends at `:`
-        if ($token->Statement &&
-                $token->Statement === $token &&
-                $this->preserveOneLine(
+        if ($token->Statement === $token &&
+                !$this->preserveOneLine(
                     $token,
-                    $token->pragmaticEndOfExpression(false, false)
-                )) {
-            return;
+                    $until = $token->pragmaticEndOfExpression(false, false)
+                ) &&
+                $token->id === T_ATTRIBUTE) {
+            $this->preserveOneLine(
+                $token->skipAnySiblingsOf(T_ATTRIBUTE),
+                $until
+            );
         }
     }
 }

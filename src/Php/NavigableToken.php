@@ -284,7 +284,7 @@ class NavigableToken extends PhpToken
      * True if the token is '(', '[' or '{'
      *
      */
-    final public function isStrictOpenBracket(): bool
+    final public function isStandardOpenBracket(): bool
     {
         return $this->is([
             T['('],
@@ -337,11 +337,13 @@ class NavigableToken extends PhpToken
     /**
      * Get the previous token that is one of the listed types
      *
+     * @param int|string $type
      * @param int|string ...$types
      * @return TToken
      */
-    final public function prevOf(...$types)
+    final public function prevOf($type, ...$types)
     {
+        array_unshift($types, $type);
         $t = $this;
         while ($t = $t->_prev) {
             if ($t->is($types)) {
@@ -355,11 +357,13 @@ class NavigableToken extends PhpToken
     /**
      * Get the next token that is one of the listed types
      *
+     * @param int|string $type
      * @param int|string ...$types
      * @return TToken
      */
-    final public function nextOf(...$types)
+    final public function nextOf($type, ...$types)
     {
+        array_unshift($types, $type);
         $t = $this;
         while ($t = $t->_next) {
             if ($t->is($types)) {
@@ -371,6 +375,26 @@ class NavigableToken extends PhpToken
     }
 
     /**
+     * Skip to the next sibling that is not one of the listed types
+     *
+     * The token returns itself if it satisfies the criteria.
+     *
+     * @param int|string $type
+     * @param int|string ...$types
+     * @return TToken
+     */
+    final public function skipAnySiblingsOf($type, ...$types)
+    {
+        array_unshift($types, $type);
+        $t = $this->IsCode ? $this : $this->_nextCode;
+        while ($t && $t->is($types)) {
+            $t = $t->_nextSibling;
+        }
+
+        return $t ?: $this->null();
+    }
+
+    /**
      * Get the last reachable token
      *
      * @return TToken
@@ -378,8 +402,8 @@ class NavigableToken extends PhpToken
     final public function last()
     {
         $current = reset($this->BracketStack) ?: $this;
-        while ($current->_nextSibling) {
-            $current = $current->_nextSibling;
+        while ($current->_next) {
+            $current = $current->_nextSibling ?: $current->_next;
         }
 
         return $current;
