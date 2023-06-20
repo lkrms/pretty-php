@@ -4,6 +4,4 @@ namespace Lkrms\Pretty;
 
 use Lkrms\Exception\Exception;
 
-class PrettyBadSyntaxException extends Exception
-{
-}
+class PrettyBadSyntaxException extends Exception {}
