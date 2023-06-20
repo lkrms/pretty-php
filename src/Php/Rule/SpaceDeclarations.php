@@ -9,7 +9,6 @@ use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
-use const Lkrms\Pretty\Php\T_NULL;
 
 /**
  * Normalise whitespace between declarations
@@ -62,7 +61,7 @@ final class SpaceDeclarations implements TokenRule
     {
         // Checking for `use` after `function ()` is unnecessary because it
         // never appears mid-statement
-        if ($token->Statement !== $token ||
+        if ($token->Statement->skipAnySiblingsOf(T_ATTRIBUTE) !== $token ||
                 ($token->id === T_STATIC &&
                     !$token->nextCode()->is([T_VARIABLE, ...TokenType::DECLARATION])) ||
                 // For formatting purposes, promoted constructor parameters
@@ -71,16 +70,19 @@ final class SpaceDeclarations implements TokenRule
             return;
         }
 
+        $token = $token->Statement;
         $parts = $token->withNextSiblingsWhile(...TokenType::DECLARATION_PART);
         $last = $parts->last();
-        // Leave anonymous and arrow functions alone
-        if ($last->is([T_FN, T_FUNCTION]) && $last->nextCode()->is(T['('])) {
+        // Leave anonymous functions alone
+        if ($last->id === T_FUNCTION) {
             return;
         }
 
         // Add a blank line between declarations and other code
-        if (!$token->EndStatement->nextCode()->is([T_NULL, ...TokenType::DECLARATION]) &&
-                !$token->EndStatement->next()->is(T_CLOSE_TAG)) {
+        if (!$token->EndStatement->nextCode()->skipAnySiblingsOf(
+            T_ATTRIBUTE
+        )->is([T_NULL, ...TokenType::DECLARATION]) &&
+                $token->EndStatement->next()->id !== T_CLOSE_TAG) {
             $token->EndStatement->WhitespaceAfter |= WhitespaceType::BLANK;
         }
 
@@ -148,10 +150,11 @@ final class SpaceDeclarations implements TokenRule
 
         $expand = $this->PrevExpand ||
             $this->hasComment($token) ||
-            $token->collect($token->endOfStatement())->hasNewline() ||
+            $token->collect($token->EndStatement)->hasNewline() ||
             ($count > 1 &&
                 ($prev->collect($token->prev())->hasNewline() ||
                     ($count < 3 && $token->hasBlankLineBefore())));
+
         if ($expand) {
             if (!$this->PrevExpand) {
                 if (!$this->hasComment($token)) {

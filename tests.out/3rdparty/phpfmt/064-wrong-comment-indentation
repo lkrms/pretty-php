@@ -4,7 +4,5 @@ class ClassObject
 	/**
 	 * TBD
 	 */
-	function func()
-	{
-	}
+	function func() {}
 }

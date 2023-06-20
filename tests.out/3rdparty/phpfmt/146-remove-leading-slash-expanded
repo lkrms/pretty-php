@@ -15,8 +15,7 @@ namespace NS
 
 		function a()
 		{
-			$a = function ($a) use ($c) {
-			};
+			$a = function ($a) use ($c) {};
 		}
 	}
 
@@ -38,8 +37,7 @@ namespace NS2
 
 		function a()
 		{
-			$a = function ($a) use ($c) {
-			};
+			$a = function ($a) use ($c) {};
 		}
 	}
 

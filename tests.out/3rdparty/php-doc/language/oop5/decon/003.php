@@ -12,8 +12,7 @@ class Test
 {
     public function __construct(
         public $prop = new Foo,
-    ) {
-    }
+    ) {}
 }
 
 // All not allowed (compile-time error):
@@ -22,6 +21,5 @@ function test(
     $b = new class {},                 // anonymous class
     $c = new A(...[]),                 // argument unpacking
     $d = new B($abc),                  // unsupported constant expression
-) {
-}
+) {}
 ?>

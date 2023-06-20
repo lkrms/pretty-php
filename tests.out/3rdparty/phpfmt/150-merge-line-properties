@@ -23,20 +23,12 @@ abstract class Foo2
 	protected function foo3() {}
 	protected abstract function foo4();
 	private function foo5() {}
-
 	final public function foo6() {}
-
 	abstract public function foo7();
-
 	public final function foo8() {}
-
 	public abstract function foo9();
-
 	public static function fooA() {}
-
-	public static function fooD()
-	{
-	}
+	public static function fooD() {}
 
 	final static function fooE() {}
 

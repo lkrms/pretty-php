@@ -15,11 +15,7 @@ class A
 		SomeTrait5::bigTalk insteadof SomeTrait6;
 	}
 
-	function c()
-	{
-	}
+	function c() {}
 
-	function b()
-	{
-	}
+	function b() {}
 }

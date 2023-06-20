@@ -1,4 +1,2 @@
 <?php
-class ClassObject extends BaseClass
-{
-}
+class ClassObject extends BaseClass {}

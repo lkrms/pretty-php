@@ -3,9 +3,7 @@ class ClassName
 {
 	/**
 	 */
-	public function a()
-	{
-	}
+	public function a() {}
 
 	/**
 	 */

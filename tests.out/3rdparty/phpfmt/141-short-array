@@ -16,10 +16,5 @@ $x = array(array(array()));
 $x = array(array(array()));
 $y = array(array(array()));
 
-function a($foo = array())
-{
-}
-
-function b(array $foo = array())
-{
-}
+function a($foo = array()) {}
+function b(array $foo = array()) {}

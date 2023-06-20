@@ -7,13 +7,9 @@ namespace Tests\Acceptance\Api
 
 namespace Tests\Acceptance\Api
 {
-	class RoleTest extends TestCase
-	{
-	}
+	class RoleTest extends TestCase {}
 
-	trait TheTrait
-	{
-	}
+	trait TheTrait {}
 
 	interface SomeINterface
 	{

@@ -11,5 +11,6 @@ parameters:
   excludePaths:
     - tests/temp.php
   bootstrapFiles:
+  checkGenericClassInNonGenericObjectType: false
   ignoreErrors:
     - "#^Method Lkrms\\\\Pretty\\\\Tests\\\\.+ (has no return type specified|return type has no value type specified in iterable type array)\\.$#"

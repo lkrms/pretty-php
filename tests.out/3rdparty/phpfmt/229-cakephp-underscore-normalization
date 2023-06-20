@@ -1,5 +1,3 @@
 <?php
 //passes:Default,CakePHPStyle
-function __()
-{
-}
+function __() {}

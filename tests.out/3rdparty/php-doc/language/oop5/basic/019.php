@@ -1,9 +1,7 @@
 <?php
 namespace NS
 {
-    class ClassName
-    {
-    }
+    class ClassName {}
 }
 $c = new ClassName();
 print $c::class;

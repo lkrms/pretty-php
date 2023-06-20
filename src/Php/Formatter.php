@@ -38,6 +38,7 @@ use Lkrms\Pretty\Php\Rule\ApplyMagicComma;
 use Lkrms\Pretty\Php\Rule\BracePosition;
 use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
 use Lkrms\Pretty\Php\Rule\BreakBeforeControlStructureBody;
+use Lkrms\Pretty\Php\Rule\BreakLists;
 use Lkrms\Pretty\Php\Rule\BreakOperators;
 use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterFn;
 use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterNot;
@@ -219,12 +220,13 @@ final class Formatter implements IReadable, IWritable
         AddStandardWhitespace::class,            // processToken  (80), callback (820)
         BreakAfterSeparators::class,             // processToken  (80)
         SpaceOperators::class,                   // processToken  (80)
-        BracePosition::class,                    // processToken  (80), beforeRender (80)
         BreakBeforeControlStructureBody::class,  // processToken  (83)
         PlaceComments::class,                    // processToken  (90), beforeRender (997)
         PreserveNewlines::class,                 // processToken  (93)  [OPTIONAL]
+        BracePosition::class,                    // processToken  (94), beforeRender (94)
         MirrorBrackets::class,                   // processToken  (96)
         BreakOperators::class,                   // processToken  (98)
+        BreakLists::class,                       // processList   (98)
         SpaceMatch::class,                       // processToken (300)  [OPTIONAL]
         ApplyMagicComma::class,                  // processList  (360)  [OPTIONAL]
         AddIndentation::class,                   // processToken (600)
@@ -411,7 +413,7 @@ final class Formatter implements IReadable, IWritable
                 return '';
             }
 
-            if ($last->IsCode && !$last->startOfStatement()->is(T_HALT_COMPILER)) {
+            if ($last->IsCode && $last->startOfStatement()->id !== T_HALT_COMPILER) {
                 $last->WhitespaceAfter |= WhitespaceType::LINE;
             }
         } finally {
@@ -465,7 +467,7 @@ final class Formatter implements IReadable, IWritable
                     ...TokenType::DECLARATION_LIST
                 )->filter(
                     fn(Token $t, ?Token $next, ?Token $prev) =>
-                        !$prev || $t->prevCode()->is(T[','])
+                        !$prev || $t->prevCode()->id === T[',']
                 );
                 if ($items->count() > 1) {
                     $lists[$i] = $items;
@@ -474,7 +476,7 @@ final class Formatter implements IReadable, IWritable
             }
             $lists[$i] = $parent->innerSiblings()->filter(
                 fn(Token $t, ?Token $next, ?Token $prev) =>
-                    !$prev || (($prevCode = $t->prevCode())->is(T[',']) &&
+                    !$prev || (($prevCode = $t->prevCode())->id === T[','] &&
                         ($parent->id !== T['{'] ||
                             $prevCode->prevSiblingOf(T[','], ...TokenType::OPERATOR_DOUBLE_ARROW)
                                      ->is(TokenType::OPERATOR_DOUBLE_ARROW)))
@@ -604,7 +606,7 @@ final class Formatter implements IReadable, IWritable
 
         Sys::startTimer(__METHOD__ . '#parse-output');
         try {
-            $tokensOut = Token::tokenize(
+            $tokensOut = Token::onlyTokenize(
                 $out,
                 TOKEN_PARSE,
                 ...$this->ComparisonFilters
@@ -622,7 +624,7 @@ final class Formatter implements IReadable, IWritable
             Sys::stopTimer(__METHOD__ . '#parse-output');
         }
 
-        $tokensIn = Token::tokenize(
+        $tokensIn = Token::onlyTokenize(
             $code,
             TOKEN_PARSE,
             ...$this->ComparisonFilters

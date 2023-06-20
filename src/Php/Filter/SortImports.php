@@ -5,7 +5,7 @@ namespace Lkrms\Pretty\Php\Filter;
 use Lkrms\Facade\Convert;
 use Lkrms\Pretty\Php\Concern\FilterTrait;
 use Lkrms\Pretty\Php\Contract\Filter;
-use Lkrms\Pretty\Php\Token;
+use Lkrms\Pretty\Php\NavigableToken as Token;
 use Lkrms\Pretty\Php\TokenType;
 
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
@@ -100,9 +100,9 @@ final class SortImports implements Filter
                         // other comments to break the sequence of statements
                         if ($token->is(TokenType::COMMENT) &&
                             ($token->line === $terminator->line ||
-                                ($token->isOneLineComment() &&
-                                    ($last = $this->Tokens[$i - 1])->isOneLineComment() &&
-                                    $token->line - $last->line === 1))) {
+                                ($this->isOneLineComment($i) &&
+                                    $this->isOneLineComment($i - 1) &&
+                                    $token->line - $this->Tokens[$i - 1]->line === 1))) {
                             $current[$i++] = $token;
                             continue;
                         } else {

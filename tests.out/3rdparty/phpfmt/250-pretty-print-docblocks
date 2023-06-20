@@ -17,6 +17,4 @@
  * @package OfAlivePeople
  * @subpackage OfThings
  */
-function a(type2 $a, LongType $b)
-{
-}
+function a(type2 $a, LongType $b) {}

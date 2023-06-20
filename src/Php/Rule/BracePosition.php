@@ -9,7 +9,6 @@ use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
-use const Lkrms\Pretty\Php\T_NULL;
 
 /**
  * Apply spacing to structural braces based on their context
@@ -41,7 +40,7 @@ final class BracePosition implements TokenRule
 
     public function getPriority(string $method): ?int
     {
-        return 80;
+        return 94;
     }
 
     public function getTokenTypes(): array
@@ -54,35 +53,48 @@ final class BracePosition implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if (!($match = $token->prevSibling(2)->is(T_MATCH)) &&
-                !$token->isStructuralBrace()) {
+        if (!($match = $token->prevSibling(2)->id === T_MATCH) &&
+                !$token->isStructuralBrace(false)) {
             return;
         }
 
         $matchList = $match && $this->Formatter->MatchesAreLists;
         $next = $token->next();
         if ($token->id === T['{']) {
-            $line = WhitespaceType::NONE;
-            // Add a newline before this open brace if:
+            // Move empty bodies to the end of the previous line
+            $parts = $token->declarationParts();
+            if ($next->id === T['}'] &&
+                    $parts->hasOneOf(T_CLASS, T_ENUM, T_FUNCTION, T_INTERFACE, T_TRAIT)) {
+                $token->WhitespaceBefore |= WhitespaceType::SPACE;
+                $token->WhitespaceMaskPrev = WhitespaceType::SPACE;
+                $token->WhitespaceMaskNext = WhitespaceType::NONE;
+
+                return;
+            }
+
+            // Otherwise, add a newline before this open brace if:
             // 1. it's part of a declaration
             // 2. it isn't part of an anonymous function
-            $parts = $token->declarationParts();
+            // 3. it isn't part of a `use` statement, and
+            // 4. either:
+            //    - it's part of an anonymous class declaration that
+            //      spans multiple lines, or
+            //    - the token before the declaration is:
+            //      - `;`
+            //      - `{`
+            //      - `}`
+            //      - a T_CLOSE_TAG statement terminator, or
+            //      - non-existent (no code precedes the declaration)
+            $line = WhitespaceType::NONE;
+
             if (!$this->Formatter->OneTrueBraceStyle &&
                     $parts->hasOneOf(...TokenType::DECLARATION) &&
-                    !$parts->last()->is(T_FUNCTION)) {
-                // 3. it isn't part of a `use` statement
+                    $parts->last()->id !== T_FUNCTION) {
                 $start = $parts->first();
-                if (!$start->is(T_USE)) {
-                    // 4. the token before the declaration is:
-                    //    - `;`
-                    //    - `{`
-                    //    - `}`
-                    //    - a T_CLOSE_TAG statement terminator
-                    //    - non-existent (no code precedes the declaration), or
-                    //    - the last token of an attribute
+                if ($start->id !== T_USE) {
                     $prevCode = $start->prevCode();
                     if ($prevCode->is([T[';'], T['{'], T['}'], T_CLOSE_TAG, T_NULL]) ||
-                            ($prevCode->OpenedBy && $prevCode->OpenedBy->is(T_ATTRIBUTE))) {
+                            ($start->id === T_NEW && $parts->hasNewlineBetweenTokens())) {
                         $line = WhitespaceType::LINE;
                     }
                 }
@@ -114,7 +126,9 @@ final class BracePosition implements TokenRule
 
         if ($next->continuesControlStructure()) {
             $token->WhitespaceAfter |= WhitespaceType::SPACE;
-            $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
+            if (!$next->BodyIsUnenclosed) {
+                $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
+            }
 
             return;
         }

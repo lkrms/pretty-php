@@ -97,7 +97,7 @@ final class PlaceComments implements TokenRule
         }
 
         $token->WhitespaceAfter |= WhitespaceType::LINE;
-        if (!$token->is(T_DOC_COMMENT)) {
+        if ($token->id !== T_DOC_COMMENT) {
             $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
             $token->PinToCode = !$next->isCloseBracket() && !$next->endsAlternativeSyntax();
 
@@ -108,16 +108,15 @@ final class PlaceComments implements TokenRule
         if ($token->hasNewline() &&
             !($prev = $token->prev())->IsNull &&
             !($prev === $token->parent()) &&
-            !($prev->is(T[',']) ||
+            !($prev->id === T[','] ||
                 ($prev->is([T[':'], T[';']]) &&
                     ($prev->inSwitchCase() || $prev->inLabel())))) {
             $line = WhitespaceType::BLANK;
         }
         $token->WhitespaceBefore |= WhitespaceType::SPACE | $line;
 
-        // PHPDoc comments immediately before namespace declarations are
-        // generally associated with the file, not the namespace
-        if ($token->next()->isDeclaration(T_NAMESPACE)) {
+        // Add a blank line after file-level docblocks
+        if ($token->next()->is([T_DECLARE, T_NAMESPACE])) {
             $token->WhitespaceAfter |= WhitespaceType::BLANK;
 
             return;

@@ -101,7 +101,7 @@ final class AlignLists implements ListRule
                             ($chainAlignment &&
                                 $nextCode->is(TokenType::CHAIN) &&
                                 $nextCode->AlignedWith) ||
-                            $eol->isStrictOpenBracket() ||
+                            $eol->isStandardOpenBracket() ||
                             ($fnAlignment &&
                                 $eol->id === T_DOUBLE_ARROW &&
                                 $eol->prevSiblingOf(T_FN)->nextSiblingOf(T_DOUBLE_ARROW) === $eol));
@@ -181,7 +181,7 @@ final class AlignLists implements ListRule
                         return;
                     }
                     $current = $current->next();
-                    if ($current->isStrictOpenBracket() &&
+                    if ($current->isStandardOpenBracket() &&
                             $current->hasNewlineAfterCode() &&
                             $current->Index > $until->Index) {
                         return;

@@ -11,7 +11,5 @@ trait TokenRuleTrait
         return ['*'];
     }
 
-    public function beforeRender(array $tokens): void
-    {
-    }
+    public function beforeRender(array $tokens): void {}
 }

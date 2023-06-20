@@ -9,7 +9,5 @@ class SomeClass
 		}
 	}
 
-	protected function _interactive()
-	{
-	}
+	protected function _interactive() {}
 }

@@ -68,7 +68,7 @@ final class PreserveNewlines implements TokenRule
                 ($noBrackets || !($token->isCloseBracket() && $prev->isOpenBracket())) &&
                 // Treat `?:` as one operator
                 (!$token->IsTernaryOperator || $token->TernaryOperator1 !== $prev) &&
-                (!$token->is(T[':']) || $token->IsTernaryOperator)) {
+                ($token->id !== T[':'] || $token->IsTernaryOperator)) {
             if (!$token->is(TokenType::PRESERVE_BLANK_BEFORE)) {
                 $line = WhitespaceType::LINE;
             }
@@ -91,7 +91,7 @@ final class PreserveNewlines implements TokenRule
                 ($noBrackets || !($token->isOpenBracket() && $next->isCloseBracket())) &&
                 // Treat `?:` as one operator
                 (!$token->IsTernaryOperator || $token->TernaryOperator2 !== $next) &&
-                (!$token->is(T[':']) || $token->inSwitchCase() || $token->inLabel()) &&
+                ($token->id !== T[':'] || $token->inSwitchCase() || $token->inLabel()) &&
                 // Only preserve newlines after `implements` and `extends` if
                 // they are followed by a list of interfaces
                 (!$token->is([T_IMPLEMENTS, T_EXTENDS]) || $token->nextSiblingsWhile(...TokenType::DECLARATION_LIST)->hasOneOf(T[',']))) {

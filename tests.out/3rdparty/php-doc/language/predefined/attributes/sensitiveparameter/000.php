@@ -10,6 +10,7 @@ function defaultBehavior(
 function sensitiveParametersWithAttribute(
     #[\SensitiveParameter]
     string $secret,
+
     string $normal
 ) {
     throw new Exception('Error!');

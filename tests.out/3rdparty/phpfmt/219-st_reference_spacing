@@ -4,6 +4,4 @@
 ($obj->property & $var);
 $b = &$a;
 
-function a(Typehint &$var)
-{
-}
+function a(Typehint &$var) {}

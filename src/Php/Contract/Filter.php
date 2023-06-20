@@ -2,14 +2,14 @@
 
 namespace Lkrms\Pretty\Php\Contract;
 
-use Lkrms\Pretty\Php\Token;
+use Lkrms\Pretty\Php\NavigableToken;
 
 interface Filter
 {
     /**
      * Apply the filter to an array of tokens
      *
-     * @template TToken of Token
+     * @template TToken of NavigableToken
      * @param TToken[] $tokens
      * @return TToken[]
      */

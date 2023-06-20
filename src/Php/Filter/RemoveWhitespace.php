@@ -4,7 +4,7 @@ namespace Lkrms\Pretty\Php\Filter;
 
 use Lkrms\Pretty\Php\Concern\FilterTrait;
 use Lkrms\Pretty\Php\Contract\Filter;
-use Lkrms\Pretty\Php\Token;
+use Lkrms\Pretty\Php\NavigableToken as Token;
 use Lkrms\Pretty\Php\TokenType;
 
 /**
@@ -19,7 +19,7 @@ final class RemoveWhitespace implements Filter
     {
         return array_filter(
             $tokens,
-            fn(Token $t) => !$t->is(TokenType::WHITESPACE)
+            fn(Token $t) => $t->id !== T_WHITESPACE
         );
     }
 }

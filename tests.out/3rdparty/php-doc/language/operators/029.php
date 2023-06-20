@@ -1,11 +1,7 @@
 <?php
-class MyClass
-{
-}
+class MyClass {}
 
-class NotMyClass
-{
-}
+class NotMyClass {}
 $a = new MyClass;
 
 var_dump($a instanceof MyClass);

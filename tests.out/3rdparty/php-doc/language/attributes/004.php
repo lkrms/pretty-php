@@ -5,6 +5,4 @@ namespace Example;
 use Attribute;
 
 #[Attribute]
-class MyAttribute
-{
-}
+class MyAttribute {}

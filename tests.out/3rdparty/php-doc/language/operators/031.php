@@ -1,7 +1,5 @@
 <?php
-class MyClass
-{
-}
+class MyClass {}
 
 $a = new MyClass;
 var_dump(!($a instanceof stdClass));

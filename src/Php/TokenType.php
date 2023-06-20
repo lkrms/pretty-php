@@ -7,8 +7,39 @@ use const Lkrms\Pretty\Php\T_ID_MAP as T;
 final class TokenType
 {
     public const NAME_MAP = [
+        // Custom
         T_NULL => 'T_NULL',
         T_END_ALT_SYNTAX => 'T_END_ALT_SYNTAX',
+
+        // Unofficial
+        T_LOGICAL_NOT => 'T_LOGICAL_NOT',              // '!'
+        T_DOUBLE_QUOTE => 'T_DOUBLE_QUOTE',            // '"'
+        T_DOLLAR => 'T_DOLLAR',                        // '$'
+        T_MOD => 'T_MOD',                              // '%'
+        T_AND => 'T_AND',                              // '&'
+        T_OPEN_PARENTHESIS => 'T_OPEN_PARENTHESIS',    // '('
+        T_CLOSE_PARENTHESIS => 'T_CLOSE_PARENTHESIS',  // ')'
+        T_MUL => 'T_MUL',                              // '*'
+        T_PLUS => 'T_PLUS',                            // '+'
+        T_COMMA => 'T_COMMA',                          // ','
+        T_MINUS => 'T_MINUS',                          // '-'
+        T_CONCAT => 'T_CONCAT',                        // '.'
+        T_DIV => 'T_DIV',                              // '/'
+        T_COLON => 'T_COLON',                          // ':'
+        T_SEMICOLON => 'T_SEMICOLON',                  // ';'
+        T_SMALLER => 'T_SMALLER',                      // '<'
+        T_EQUAL => 'T_EQUAL',                          // '='
+        T_GREATER => 'T_GREATER',                      // '>'
+        T_QUESTION => 'T_QUESTION',                    // '?'
+        T_AMPERSAND => 'T_AMPERSAND',                  // '@'
+        T_OPEN_BRACKET => 'T_OPEN_BRACKET',            // '['
+        T_CLOSE_BRACKET => 'T_CLOSE_BRACKET',          // ']'
+        T_XOR => 'T_XOR',                              // '^'
+        T_BACKTICK => 'T_BACKTICK',                    // '`'
+        T_OPEN_BRACE => 'T_OPEN_BRACE',                // '{'
+        T_OR => 'T_OR',                                // '|'
+        T_CLOSE_BRACE => 'T_CLOSE_BRACE',              // '}'
+        T_NOT => 'T_NOT',                              // '~'
     ];
 
     public const DO_NOT_MODIFY = [
@@ -73,19 +104,9 @@ final class TokenType
         ...self::OPERATOR_TERNARY,
     ];
 
-    public const WHITESPACE = [
-        T_WHITESPACE,
-        T_BAD_CHARACTER,
-    ];
-
     public const COMMENT = [
         T_COMMENT,
         T_DOC_COMMENT,
-    ];
-
-    public const WHITESPACE_OR_COMMENT = [
-        ...self::WHITESPACE,
-        ...self::COMMENT,
     ];
 
     public const NOT_CODE = [
@@ -93,7 +114,8 @@ final class TokenType
         T_OPEN_TAG,
         T_OPEN_TAG_WITH_ECHO,
         T_CLOSE_TAG,
-        ...self::WHITESPACE_OR_COMMENT,
+        T_WHITESPACE,
+        ...self::COMMENT,
     ];
 
     public const AMPERSAND = [
@@ -251,9 +273,15 @@ final class TokenType
     ];
 
     public const DECLARATION_PART = [
+        T_ATTRIBUTE,
         ...self::DECLARATION_LIST,
         ...self::AMPERSAND,
         ...self::DECLARATION,
+    ];
+
+    public const DECLARATION_PART_WITH_NEW = [
+        T_NEW,
+        ...self::DECLARATION_PART,
     ];
 
     public const DECLARATION_TOP_LEVEL = [

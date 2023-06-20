@@ -10,9 +10,7 @@ class A
 	/**
 	 * b func
 	 */
-	public function b()
-	{
-	}
+	public function b() {}
 
 	/* comment 2 */
 	/* comment 1 */

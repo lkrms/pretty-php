@@ -35,11 +35,7 @@ class MySQL implements Database
 		$this->b = $b;
 	}
 
-	public function find(array $params)
-	{
-	}
+	public function find(array $params) {}
 
-	public function fetchBy($id, array $options = [])
-	{
-	}
+	public function fetchBy($id, array $options = []) {}
 }

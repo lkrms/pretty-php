@@ -25,13 +25,13 @@ final class AddHangingIndentation implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->isStrictOpenBracket() && !$token->hasNewlineAfterCode()) {
+        if ($token->isStandardOpenBracket() && !$token->hasNewlineAfterCode()) {
             $token->IsHangingParent = true;
             $token->IsOverhangingParent =
                 // Does it have delimited values? (e.g. `list(var, var)`)
                 $token->innerSiblings()->hasOneOf(T[',']) ||
                     // Delimited expressions? (e.g. `for (expr; expr; expr)`)
-                    ($token->is(T['(']) && $token->innerSiblings()->hasOneOf(T[';'])) ||
+                    ($token->id === T['('] && $token->innerSiblings()->hasOneOf(T[';'])) ||
                     // A subsequent statement or block? (e.g. `if (expr)
                     // statement`)
                     $token->adjacent();
@@ -113,6 +113,9 @@ final class AddHangingIndentation implements TokenRule
             }
         } elseif ($token->ChainOpenedBy) {
             $stack[] = $token->ChainOpenedBy;
+        } elseif ($token->id === T_ATTRIBUTE ||
+                $token->prevSibling()->id === T_ATTRIBUTE) {
+            $stack[] = $token->Expression;
         } elseif ($latest && $latest->BracketStack === $token->BracketStack) {
             if ($token->isStartOfExpression()) {
                 $stack[] = $token;
@@ -286,6 +289,14 @@ final class AddHangingIndentation implements TokenRule
                 $token->_prevCode->id === T_START_HEREDOC &&
                 !$token->_prevCode->AlignedWith &&
                 !$token->_prevCode->hasNewlineBeforeCode())) {
+            return false;
+        }
+
+        // Ignore attributes and the declarations they describe unless they're
+        // part of an expression
+        if (($token->id === T_ATTRIBUTE ||
+                    $token->prevSibling()->id === T_ATTRIBUTE) &&
+                $token->Expression === $token->Statement) {
             return false;
         }
 

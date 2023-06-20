@@ -1,9 +1,7 @@
 <?php
 namespace NS
 {
-    class ClassName
-    {
-    }
+    class ClassName {}
 
     echo ClassName::class;
 }

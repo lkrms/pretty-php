@@ -6,7 +6,5 @@ trait BlockRuleTrait
 {
     use RuleTrait;
 
-    public function beforeRender(array $tokens): void
-    {
-    }
+    public function beforeRender(array $tokens): void {}
 }

@@ -2,19 +2,13 @@
 //passes:EncapsulateNamespaces,Default
 namespace A;
 
-class A
-{
-}
+class A {}
 
 namespace B;
 
-class C
-{
-}
+class C {}
 
 namespace C
 {
-	class D
-	{
-	}
+	class D {}
 }

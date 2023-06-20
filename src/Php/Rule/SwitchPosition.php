@@ -33,14 +33,14 @@ final class SwitchPosition implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->is(T_SWITCH)) {
+        if ($token->id === T_SWITCH) {
             $token->nextSibling(2)->inner()->forEach(fn(Token $t) => $t->PreIndent++);
 
             return;
         }
 
         if (!$token->is([T_CASE, T_DEFAULT]) ||
-                !$token->parent()->prevSibling(2)->is(T_SWITCH) ||
+                $token->parent()->prevSibling(2)->id !== T_SWITCH ||
                 ($separator = $token->nextSiblingOf(T[':'], T[';'], T_CLOSE_TAG))->IsNull) {
             return;
         }

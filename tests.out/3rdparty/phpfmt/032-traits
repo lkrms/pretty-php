@@ -1,4 +1,2 @@
 <?php
-trait ATrait
-{
-}
+trait ATrait {}

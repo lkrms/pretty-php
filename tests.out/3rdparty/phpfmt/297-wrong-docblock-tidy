@@ -12,9 +12,7 @@
  *
  * @see     https://home.com/something
  */
-class A
-{
-}
+class A {}
 
 /**
  * Original code modified.
@@ -28,6 +26,4 @@ class A
  *
  * @see     https://home.com/something
  */
-class A
-{
-}
+class A {}

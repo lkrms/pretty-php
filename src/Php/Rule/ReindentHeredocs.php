@@ -71,7 +71,7 @@ final class ReindentHeredocs implements TokenRule
             $current = $heredoc;
             do {
                 $current->setText(str_replace("\n", "\n" . $indent, $current->text));
-                if ($current->is(T_END_HEREDOC) && $current->HeredocOpenedBy === $heredoc) {
+                if ($current->id === T_END_HEREDOC && $current->HeredocOpenedBy === $heredoc) {
                     break;
                 }
             } while ($current = $current->_next);

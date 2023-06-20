@@ -29,12 +29,12 @@ final class ApplyMagicComma implements ListRule
             return;
         }
 
-        if ($owner->ClosedBy->prevCode()->is(T[',']) &&
-            !($owner->prevCode()->is(T_LIST) ||
-                (($adjacent = $owner->adjacent(T[','], T[']'])) && $adjacent->is(T['='])) ||
+        if ($owner->ClosedBy->prevCode()->id === T[','] &&
+            !($owner->prevCode()->id === T_LIST ||
+                (($adjacent = $owner->adjacent(T[','], T[']'])) && $adjacent->id === T['=']) ||
                 (($root = $owner->withParentsWhile(T['['])->last()) &&
-                    $root->prevCode()->is(T_AS) &&
-                    $root->parent()->prevCode()->is(T_FOREACH)))) {
+                    $root->prevCode()->id === T_AS &&
+                    $root->parent()->prevCode()->id === T_FOREACH))) {
             $items[] = $owner->ClosedBy;
             $items->addWhitespaceBefore(WhitespaceType::LINE, true);
         }
