@@ -92,6 +92,25 @@ class NavigableToken extends PhpToken
     /**
      * @return static[]
      */
+    public static function onlyTokenize(string $code, int $flags = 0, Filter ...$filters): array
+    {
+        $tokens = parent::tokenize($code, $flags);
+
+        if (!$tokens) {
+            return $tokens;
+        }
+
+        foreach ($filters as $filter) {
+            /** @var static[] */
+            $tokens = $filter->filterTokens($tokens);
+        }
+
+        return $tokens;
+    }
+
+    /**
+     * @return static[]
+     */
     public static function tokenize(string $code, int $flags = 0, Filter ...$filters): array
     {
         $tokens = parent::tokenize($code, $flags);

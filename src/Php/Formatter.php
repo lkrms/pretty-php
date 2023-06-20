@@ -606,7 +606,7 @@ final class Formatter implements IReadable, IWritable
 
         Sys::startTimer(__METHOD__ . '#parse-output');
         try {
-            $tokensOut = Token::tokenize(
+            $tokensOut = Token::onlyTokenize(
                 $out,
                 TOKEN_PARSE,
                 ...$this->ComparisonFilters
@@ -624,7 +624,7 @@ final class Formatter implements IReadable, IWritable
             Sys::stopTimer(__METHOD__ . '#parse-output');
         }
 
-        $tokensIn = Token::tokenize(
+        $tokensIn = Token::onlyTokenize(
             $code,
             TOKEN_PARSE,
             ...$this->ComparisonFilters
