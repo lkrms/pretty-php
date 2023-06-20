@@ -38,6 +38,7 @@ use Lkrms\Pretty\Php\Rule\ApplyMagicComma;
 use Lkrms\Pretty\Php\Rule\BracePosition;
 use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
 use Lkrms\Pretty\Php\Rule\BreakBeforeControlStructureBody;
+use Lkrms\Pretty\Php\Rule\BreakLists;
 use Lkrms\Pretty\Php\Rule\BreakOperators;
 use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterFn;
 use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterNot;
@@ -225,6 +226,7 @@ final class Formatter implements IReadable, IWritable
         BracePosition::class,                    // processToken  (94), beforeRender (94)
         MirrorBrackets::class,                   // processToken  (96)
         BreakOperators::class,                   // processToken  (98)
+        BreakLists::class,                       // processList   (98)
         SpaceMatch::class,                       // processToken (300)  [OPTIONAL]
         ApplyMagicComma::class,                  // processList  (360)  [OPTIONAL]
         AddIndentation::class,                   // processToken (600)
