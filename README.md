@@ -2,10 +2,10 @@
 
 ## The opinionated formatter for modern, expressive PHP
 
-*PrettyPHP* is a code formatter inspired by *Black*, the [uncompromising Python
-formatter][Black].
+*PrettyPHP* is a code formatter inspired by [Black], the "uncompromising Python
+formatter".
 
-Like *Black*, *PrettyPHP* runs with sensible defaults and doesn't need to be
+Like Black, *PrettyPHP* runs with sensible defaults and doesn't need to be
 configured. It's also deterministic (with some [pragmatic exceptions]), so no
 matter how the input is formatted, it produces the same output.
 
@@ -35,7 +35,7 @@ matter how the input is formatted, it produces the same output.
 #### It's opinionated
 
 - No configuration is required
-- Formatting options are [deliberately limited][options]
+- Formatting options are [deliberately limited][why-so-many-options]
 - Readable code, small diffs, and fast batch processing are the main priorities
 
 #### It's a formatter, not a fixer<sup>\*</sup>
@@ -44,15 +44,15 @@ matter how the input is formatted, it produces the same output.
 - Whitespace is changed, code is not<sup>\*\*</sup>
 - Entire files are formatted in place
 
-<sup>\*</sup> No disrespect intended to excellent tools like [phpcbf] and
-[php-cs-fixer], which *PrettyPHP* will never replace. It augments these tools in
-much the same way as *Black* augments `pycodestyle`.
+<sup>\*</sup> No disrespect is intended to excellent tools like [phpcbf] and
+[php-cs-fixer]. *PrettyPHP* augments these tools, much like Black augments
+`pycodestyle`.
 
 <sup>\*\*</sup> Some [pragmatic exceptions] are made.
 
 #### It's CI-friendly
 
-- Installs via `composer require --dev lkrms/pretty-php`
+- Installs via `composer require --dev lkrms/pretty-php` or [direct download]
 - Runs on Linux, macOS and Windows
 - MIT-licensed
 
@@ -62,24 +62,22 @@ much the same way as *Black* augments `pycodestyle`.
 - Uses PHP's tokenizer to parse input and validate output
 - Checks formatted and original code for equivalence
 
-#### It's (mostly) PSR-12 compliant
+#### It's (almost) PSR-12 compliant
 
-*PrettyPHP*'s compliance with the formatting-related requirements of [PSR-12] is
-almost complete. Progress is tracked [here][PSR-12 issue].
+Progress towards full compliance with the formatting-related requirements of
+[PSR-12] can be followed [here][PSR-12 issue].
 
-### If it's opinionated, why are there so many options?
+### If it's so opinionated, why does it have so many options?
 
-*PrettyPHP* currently has more formatting options than one might expect from an
-"opinionated" formatter. There are several reasons for this:
+*PrettyPHP*'s formatting options will be simplified before version 1.0 is
+released. Until then, feel free to experiment and provide [feedback][issues] on
+what you think should be enabled by default and/or remain available as an option
+in the stable release.
 
-- The project is in early development
-- PHP formatting is complicated
-- Attracting early adopters is important
-- Most people would prefer to pass an option to the formatter than wait for a
-  version that fixes their issue
+## Support
 
-Over time, as *PrettyPHP*'s default output improves and uptake increases,
-formatting options deemed unnecessary will be removed.
+Bug reports, feature requests and support questions are always welcome and
+should be submitted [here][issues].
 
 ## Pragmatism
 
@@ -121,8 +119,9 @@ ignored previous formatting.
 
 
 [Black]: https://github.com/psf/black
+[direct download]: https://github.com/lkrms/pretty-php/releases/latest/download/pretty-php.phar
+[issues]: https://github.com/lkrms/pretty-php/issues
 [Open VSX Registry]: https://open-vsx.org/extension/lkrms/pretty-php
-[options]: #if-its-opinionated-why-are-there-so-many-options
 [php-cs-fixer]: https://github.com/PHP-CS-Fixer/PHP-CS-Fixer
 [phpcbf]: https://github.com/squizlabs/PHP_CodeSniffer
 [pragmatic exceptions]: #pragmatism
@@ -130,3 +129,4 @@ ignored previous formatting.
 [PSR-12 issue]: https://github.com/lkrms/pretty-php/issues/4
 [Visual Studio Marketplace]: https://marketplace.visualstudio.com/items?itemName=lkrms.pretty-php
 [vscode]: https://github.com/lkrms/vscode-pretty-php
+[why-so-many-options]: #if-its-so-opinionated-why-does-it-have-so-many-options
