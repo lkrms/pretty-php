@@ -9,6 +9,5 @@ class A
 		$ddddd,                  // test 4
 		$eee,                    // test 5
 		$fffffff,                // test 6
-	) {
-	}
+	) {}
 }

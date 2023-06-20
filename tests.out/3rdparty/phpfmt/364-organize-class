@@ -8,9 +8,7 @@ class A
 	/**
 	 * b func
 	 */
-	function b()
-	{
-	}
+	function b() {}
 
 	/**
 	 * something about this constant
@@ -34,16 +32,12 @@ class A
 	 */
 	private $a = '';
 
-	function b()
-	{
-	}
+	function b() {}
 
 	/**
 	 * some func
 	 */
-	private function a()
-	{
-	}
+	private function a() {}
 
 	// comment 2
 
@@ -52,10 +46,8 @@ class A
 	 */
 	function z()
 	{
-		$a = function ($a) {
-		};
-		$b = function ($a) {
-		};
+		$a = function ($a) {};
+		$b = function ($a) {};
 	}
 
 	/**
@@ -68,9 +60,7 @@ class A
 	 */
 	static public function j()
 	{
-		$a = function ($a) {
-		};
-		$b = function ($a) {
-		};
+		$a = function ($a) {};
+		$b = function ($a) {};
 	}
 }

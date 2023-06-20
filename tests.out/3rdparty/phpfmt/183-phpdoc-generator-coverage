@@ -24,7 +24,5 @@ class Abc
 		return $c;
 	}
 
-	function d()
-	{
-	}
+	function d() {}
 }

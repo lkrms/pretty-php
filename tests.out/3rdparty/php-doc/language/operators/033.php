@@ -1,11 +1,7 @@
 <?php
-interface MyInterface
-{
-}
+interface MyInterface {}
 
-class MyClass implements MyInterface
-{
-}
+class MyClass implements MyInterface {}
 
 $a = new MyClass;
 $b = new MyClass;

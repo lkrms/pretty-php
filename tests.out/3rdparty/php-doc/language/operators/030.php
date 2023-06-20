@@ -1,11 +1,7 @@
 <?php
-class ParentClass
-{
-}
+class ParentClass {}
 
-class MyClass extends ParentClass
-{
-}
+class MyClass extends ParentClass {}
 
 $a = new MyClass;
 

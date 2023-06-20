@@ -1,9 +1,7 @@
 <?php
 namespace foo
 {
-    class bar
-    {
-    }
+    class bar {}
 
     echo bar::class;  // foo\bar
 }

@@ -1,4 +1,2 @@
 <?php
-class SubException extends Exception implements InterfaceName
-{
-}
+class SubException extends Exception implements InterfaceName {}

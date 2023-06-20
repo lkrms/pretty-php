@@ -12,9 +12,7 @@ class MyAttribute
 }
 
 #[MyAttribute(value: 1234)]
-class Thing
-{
-}
+class Thing {}
 
 function dumpAttributeData($reflection)
 {

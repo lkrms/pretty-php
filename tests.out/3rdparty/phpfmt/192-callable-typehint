@@ -1,4 +1,2 @@
 <?php
-function cofunc(callable $fn)
-{
-}
+function cofunc(callable $fn) {}

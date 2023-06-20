@@ -5,8 +5,7 @@ class Test
     public function __construct(
         public readonly int $i = 0,
         public readonly array $ary = [],
-    ) {
-    }
+    ) {}
 }
 
 $test = new Test;

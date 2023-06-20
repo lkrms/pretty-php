@@ -2,8 +2,6 @@
 //passes:EncapsulateNamespaces,Default
 namespace A;
 
-class A
-{
-}
+class A {}
 
 echo 'hello world';

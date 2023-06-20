@@ -7,7 +7,5 @@ class StdClassA
 		}
 	}
 
-	public function b()
-	{
-	}
+	public function b() {}
 }

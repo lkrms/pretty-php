@@ -12,24 +12,16 @@ interface B extends A
 // This will work
 class C implements B
 {
-    public function foo()
-    {
-    }
+    public function foo() {}
 
-    public function baz(Baz $baz)
-    {
-    }
+    public function baz(Baz $baz) {}
 }
 
 // This will not work and result in a fatal error
 class D implements B
 {
-    public function foo()
-    {
-    }
+    public function foo() {}
 
-    public function baz(Foo $foo)
-    {
-    }
+    public function baz(Foo $foo) {}
 }
 ?>

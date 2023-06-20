@@ -5,6 +5,4 @@
  * comment
  * @return string
  */
-function a()
-{
-}
+function a() {}

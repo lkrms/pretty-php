@@ -7,6 +7,4 @@ use Gedmo\Mapping\Annotation AS Gedmo;
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  * @ORM\Table(name="entity")
  */
-Class Entity
-{
-}
+Class Entity {}

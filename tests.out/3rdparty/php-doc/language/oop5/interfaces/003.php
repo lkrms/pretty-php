@@ -16,16 +16,10 @@ interface C extends A, B
 
 class D implements C
 {
-    public function foo()
-    {
-    }
+    public function foo() {}
 
-    public function bar()
-    {
-    }
+    public function bar() {}
 
-    public function baz()
-    {
-    }
+    public function baz() {}
 }
 ?>

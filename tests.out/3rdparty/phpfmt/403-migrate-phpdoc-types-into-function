@@ -6,6 +6,4 @@
  * @param int $b
  * @return int
  */
-function abc($a = 10, $b = 20, $c)
-{
-}
+function abc($a = 10, $b = 20, $c) {}

@@ -8,7 +8,5 @@ class A
 
 	/**
 	 */
-	public function action()
-	{
-	}
+	public function action() {}
 }

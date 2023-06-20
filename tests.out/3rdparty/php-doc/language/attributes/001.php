@@ -30,11 +30,7 @@ use MyExample\MyAttribute;
 #[MyAttribute(MyAttribute::VALUE)]
 #[MyAttribute(array("key" => "value"))]
 #[MyAttribute(100 + 200)]
-class Thing
-{
-}
+class Thing {}
 
 #[MyAttribute(1234), MyAttribute(5678)]
-class AnotherThing
-{
-}
+class AnotherThing {}
