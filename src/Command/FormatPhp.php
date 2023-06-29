@@ -676,7 +676,7 @@ example:
             "tests",
             "bootstrap.php"
         ],
-        "includeIfPhp": null,
+        "includeIfPhp": true,
         "noSimplifyStrings": true,
         "noSortImports": true
     }
@@ -731,6 +731,7 @@ EOF,
         $dirs = [];
         $dirCount = 0;
         if (!$this->IgnoreConfigFiles &&
+                !$this->PrintConfig &&
                 ($this->InputFiles || !$this->StdinFilename) &&
                 // Get files and directories to format from the current
                 // directory's configuration file (if there are no paths on the
