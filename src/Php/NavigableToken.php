@@ -220,9 +220,9 @@ class NavigableToken extends PhpToken
                 $token->_prevSibling = &$opener->_prevSibling;
                 $token->_nextSibling = &$opener->_nextSibling;
             } else {
-                // If $token continues the previous context ($stackDelta ==
-                // 0) or is the first token after a close bracket
-                // ($stackDelta < 0), set $token->_prevSibling
+                // If $token continues the previous context ($stackDelta == 0)
+                // or is the first token after a close bracket ($stackDelta <
+                // 0), set $token->_prevSibling
                 if ($stackDelta <= 0 &&
                         ($prevCode = ($token->_prevCode->OpenedBy ?? null) ?: $token->_prevCode) &&
                         $prevCode->BracketStack === $token->BracketStack) {
@@ -267,6 +267,42 @@ class NavigableToken extends PhpToken
         $token->IsVirtual = true;
 
         return $token;
+    }
+
+    /**
+     * True if the token is '(', ')', '[', ']', '{', '}', T_ATTRIBUTE,
+     * T_CURLY_OPEN or T_DOLLAR_OPEN_CURLY_BRACES
+     *
+     */
+    final public function isBracket(): bool
+    {
+        return $this->is([
+            T['('],
+            T[')'],
+            T['['],
+            T[']'],
+            T['{'],
+            T['}'],
+            T_ATTRIBUTE,
+            T_CURLY_OPEN,
+            T_DOLLAR_OPEN_CURLY_BRACES,
+        ]);
+    }
+
+    /**
+     * True if the token is '(', ')', '[', ']', '{' or '}'
+     *
+     */
+    final public function isStandardBracket(): bool
+    {
+        return $this->is([
+            T['('],
+            T[')'],
+            T['['],
+            T[']'],
+            T['{'],
+            T['}'],
+        ]);
     }
 
     /**

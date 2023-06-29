@@ -10,9 +10,7 @@ for ($i = 0; $i < 10; $i) {
 }
 
 do {
-} while (
-	$a
-);
+} while ($a);
 
 if ($a) {
 } elseif ($b) {
@@ -21,9 +19,7 @@ if ($a) {
 
 try {
 	throw new Exception('');
-} catch (
-	Exception $e
-) {
+} catch (Exception $e) {
 	echo 'Caught';
 } finally {
 	echo 'Finally';
