@@ -7,7 +7,6 @@ use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenCollection;
 use Lkrms\Pretty\Php\TokenType;
-use Lkrms\Pretty\WhitespaceType;
 
 /**
  * Align consecutive object operators in the same chain of method calls
@@ -29,10 +28,7 @@ final class AlignChainedCalls implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token !== $token->ChainOpenedBy ||
-            ($this->Formatter->OnlyAlignChainedStatements &&
-                ($start = $token->pragmaticStartOfExpression()) !== $token->Statement &&
-                !$start->prevCode()->is([T_RETURN, T_YIELD]))) {
+        if ($token !== $token->ChainOpenedBy) {
             return;
         }
 

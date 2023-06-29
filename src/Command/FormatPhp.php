@@ -18,6 +18,7 @@ use Lkrms\Facade\Env;
 use Lkrms\Facade\File;
 use Lkrms\Facade\Sys;
 use Lkrms\Pretty\Php\Contract\Filter;
+use Lkrms\Pretty\Php\Contract\Rule;
 use Lkrms\Pretty\Php\Filter\SortImports;
 use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
@@ -28,10 +29,8 @@ use Lkrms\Pretty\Php\Rule\AlignComments;
 use Lkrms\Pretty\Php\Rule\AlignLists;
 use Lkrms\Pretty\Php\Rule\AlignTernaryOperators;
 use Lkrms\Pretty\Php\Rule\ApplyMagicComma;
-use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterFn;
-use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterNot;
 use Lkrms\Pretty\Php\Rule\Extra\DeclareArgumentsOnOneLine;
-use Lkrms\Pretty\Php\Rule\Extra\SuppressSpaceAroundStringOperator;
+use Lkrms\Pretty\Php\Rule\Extra\Laravel;
 use Lkrms\Pretty\Php\Rule\NoMixedLists;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
 use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
@@ -209,9 +208,9 @@ class FormatPhp extends CliCommand
     private $HangingHeredocIndents;
 
     /**
-     * @var bool|null
+     * @var array<class-string<Rule>>|null
      */
-    private $OnlyAlignChainedStatements;
+    private $PresetRules;
 
     /**
      * [ Option name => null ]
@@ -264,10 +263,7 @@ class FormatPhp extends CliCommand
         'preserve-one-line' => PreserveOneLineStatements::class,
 
         // In the `Extra` namespace
-        'space-after-fn' => AddSpaceAfterFn::class,
-        'space-after-not' => AddSpaceAfterNot::class,
         'one-line-arguments' => DeclareArgumentsOnOneLine::class,
-        'no-concat-spaces' => SuppressSpaceAroundStringOperator::class,
     ];
 
     private const INCOMPATIBLE_RULES = [
@@ -277,7 +273,7 @@ class FormatPhp extends CliCommand
     private const INTERNAL_OPTION_MAP = [
         'mirror-brackets' => 'MirrorBrackets',
         'hanging-heredoc-indents' => 'HangingHeredocIndents',
-        'only-align-chained-statements' => 'OnlyAlignChainedStatements',
+        'preset-rules' => 'PresetRules',
     ];
 
     private const PRESET_MAP = [
@@ -286,23 +282,15 @@ class FormatPhp extends CliCommand
                 'magic-commas',
             ],
             'enable' => [
-                'space-after-fn',
-                'space-after-not',
-                'no-concat-spaces',
                 'align-lists',
                 'blank-before-return',
-
-                // Laravel chains and ternary operators don't seem to follow any
-                // alignment rules, so these can be enabled or disabled with
-                // little effect on the size of diffs:
-                //
-                'align-chains',
-                //'align-ternary',
             ],
             '@internal' => [
                 'mirror-brackets' => false,
                 'hanging-heredoc-indents' => false,
-                'only-align-chained-statements' => true,
+                'preset-rules' => [
+                    Laravel::class,
+                ],
             ],
         ],
     ];
@@ -726,10 +714,6 @@ EOF,
             throw new CliInvalidArgumentsException('--tab and --space cannot both be given');
         }
 
-        if ($this->Preset) {
-            $this->applyFormattingOptionValues(self::PRESET_MAP[$this->Preset]);
-        }
-
         if ($this->ConfigFile) {
             $this->IgnoreConfigFiles = true;
             Console::debug('Reading formatting options:', $this->ConfigFile);
@@ -776,6 +760,9 @@ EOF,
                     );
                 }
                 if (Test::areSameFile($dir = dirname($configFile), getcwd())) {
+                    // To prevent unintended inclusion of default values in
+                    // configuration files, apply options as if they were given
+                    // on the command line, without expanding optional values
                     $this->applyFormattingOptionValues(
                         $this->normaliseFormattingOptionValues($json, true, false, false),
                         true
@@ -901,11 +888,8 @@ EOF,
                 $f->PreserveEol = $this->Eol === 'auto';
                 $f->OneTrueBraceStyle = $this->OneTrueBraceStyle;
                 $f->PreserveTrailingSpaces = $this->PreserveTrailingSpaces ?: [];
-                foreach (self::INTERNAL_OPTION_MAP as $property) {
-                    if ($this->{$property} !== null) {
-                        $f->{$property} = $this->{$property};
-                    }
-                }
+                $this->MirrorBrackets === null || $f->MirrorBrackets = $this->MirrorBrackets;
+                $this->HangingHeredocIndents === null || $f->HangingHeredocIndents = $this->HangingHeredocIndents;
                 $lastOptions = $options;
 
                 return $f;
@@ -1069,17 +1053,24 @@ EOF,
     private function getFormattingOptionValues(bool $global, bool $internal = false): array
     {
         $options = $this->getOptionValues(true, [Convert::class, 'toCamelCase']);
-        if ($this->Tabs) {
-            $options['insertSpaces'] = false;
-        }
-        $tabSize = $this->Tabs ?: $this->Spaces ?: 4;
-        if ($tabSize !== 4) {
-            $options['tabSize'] = $tabSize;
+        if ($this->Tabs || $this->Spaces) {
+            $options['insertSpaces'] = !$this->Tabs;
+            $options['tabSize'] = $this->Tabs ?: $this->Spaces ?: 4;
         }
         $options = array_intersect_key(
             $options,
             $this->getFormattingOptionNames($global)
         );
+        // If a preset is enabled, remove every other formatting option
+        if ($this->Preset) {
+            $options = array_diff_key(
+                $options,
+                array_diff_key(
+                    $this->getFormattingOptionNames(false),
+                    ['preset' => null]
+                )
+            );
+        }
         if ($internal) {
             foreach (self::INTERNAL_OPTION_MAP as $name => $property) {
                 $options['@internal'][$name] = $this->{$property};
@@ -1137,6 +1128,10 @@ EOF,
             }
         }
 
+        if ($this->Preset && array_key_exists('preset', $values)) {
+            return $this->applyFormattingOptionValues(self::PRESET_MAP[$this->Preset]);
+        }
+
         $this->SkipFilters = [];
         if ($this->IgnoreNewlines) {
             $this->SkipRules[] = 'preserve-newlines';
@@ -1165,6 +1160,9 @@ EOF,
 
         $this->SkipRules = array_values(array_intersect_key(self::SKIP_RULE_MAP, array_flip($this->SkipRules)));
         $this->AddRules = array_values(array_intersect_key(self::ADD_RULE_MAP, array_flip($this->AddRules)));
+        if ($this->PresetRules) {
+            array_push($this->AddRules, ...$this->PresetRules);
+        }
 
         return $this;
     }
@@ -1188,6 +1186,14 @@ EOF,
             'noSimplifyStrings',
             'noMagicCommas',
             'noSortImports',
+            'preset',
+        ];
+        $names = $kebabCase ? [
+            ...$names,
+            'tab',
+            'space'
+        ] : [
+            ...$names,
             'insertSpaces',
             'tabSize',
         ];

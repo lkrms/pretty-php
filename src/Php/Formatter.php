@@ -40,10 +40,8 @@ use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
 use Lkrms\Pretty\Php\Rule\BreakBeforeControlStructureBody;
 use Lkrms\Pretty\Php\Rule\BreakLists;
 use Lkrms\Pretty\Php\Rule\BreakOperators;
-use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterFn;
-use Lkrms\Pretty\Php\Rule\Extra\AddSpaceAfterNot;
 use Lkrms\Pretty\Php\Rule\Extra\DeclareArgumentsOnOneLine;
-use Lkrms\Pretty\Php\Rule\Extra\SuppressSpaceAroundStringOperator;
+use Lkrms\Pretty\Php\Rule\Extra\Laravel;
 use Lkrms\Pretty\Php\Rule\MirrorBrackets;
 use Lkrms\Pretty\Php\Rule\NoMixedLists;
 use Lkrms\Pretty\Php\Rule\PlaceComments;
@@ -182,26 +180,6 @@ final class Formatter implements IReadable, IWritable
     public $AlignFirstCallInChain = false;
 
     /**
-     * Only align method chains that start at the beginning of a statement?
-     *
-     * ```php
-     * // If `false`:
-     * $result = $object->method1()
-     *                  ->method2();
-     * $object->action1()
-     *        ->action2();
-     * // If `true`:
-     * $result = $object->method1()
-     *     ->method2();
-     * $object->action1()
-     *        ->action2();
-     * ```
-     *
-     * @var bool
-     */
-    public $OnlyAlignChainedStatements = false;
-
-    /**
      * @var bool
      */
     public $OneTrueBraceStyle = false;
@@ -242,19 +220,17 @@ final class Formatter implements IReadable, IWritable
      * @var string[]
      */
     protected $AvailableRules = [
-        PreserveOneLineStatements::class,          // processToken  (95)
-        AddBlankLineBeforeReturn::class,           // processToken  (97)
-        AlignAssignments::class,                   // processBlock (340), callback (710)
-        AlignChainedCalls::class,                  // processToken (340), callback (710)
-        AlignComments::class,                      // processBlock (340), beforeRender (998)
-        NoMixedLists::class,                       // processList  (370)
-        AlignArrowFunctions::class,                // processToken (380), callback (710)
-        AlignTernaryOperators::class,              // processToken (380), callback (710)
-        AlignLists::class,                         // processList  (400), callback (710)
-        AddSpaceAfterFn::class,                    // processToken
-        AddSpaceAfterNot::class,                   // processToken
-        DeclareArgumentsOnOneLine::class,          // processToken
-        SuppressSpaceAroundStringOperator::class,  // processToken
+        PreserveOneLineStatements::class,  // processToken  (95)
+        AddBlankLineBeforeReturn::class,   // processToken  (97)
+        Laravel::class,                    // processToken (100)
+        AlignAssignments::class,           // processBlock (340), callback (710)
+        AlignChainedCalls::class,          // processToken (340), callback (710)
+        AlignComments::class,              // processBlock (340), beforeRender (998)
+        NoMixedLists::class,               // processList  (370)
+        AlignArrowFunctions::class,        // processToken (380), callback (710)
+        AlignTernaryOperators::class,      // processToken (380), callback (710)
+        AlignLists::class,                 // processList  (400), callback (710)
+        DeclareArgumentsOnOneLine::class,  // processToken
     ];
 
     /**

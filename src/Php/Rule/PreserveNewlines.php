@@ -26,7 +26,7 @@ final class PreserveNewlines implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if (($prev = $token->prev())->IsNull) {
+        if (!($prev = $token->_prev)) {
             return;
         }
 
@@ -49,23 +49,25 @@ final class PreserveNewlines implements TokenRule
 
         $min = $prev->line;
         $max = $token->line;
-        $this->maybePreserveNewlineAfter($prev, $token, $line, $min, $max, false) ||
-            $this->maybePreserveNewlineBefore($token, $prev, $line, $min, $max, false) ||
+        # 1. Is a newline after $prev OK?
+        $this->maybePreserveNewlineAfter($prev, $token, $line, $min, $max) ||
+            # 2. Is a newline before $token OK?
+            $this->maybePreserveNewlineBefore($token, $prev, $line, $min, $max) ||
+            # 3. If $prev moved to the next line, would a newline before it be OK?
             $this->maybePreserveNewlineBefore($prev, $prev->prev(), $line, $min, $max, true) ||
-            $this->maybePreserveNewlineAfter($token, $token->next(), $line, $min, $max, true) ||
-            $this->maybePreserveNewlineBefore($prev, $prev->prev(), $line, $min, $max, false) ||
-            $this->maybePreserveNewlineAfter($token, $token->next(), $line, $min, $max, false);
+            # 4. If $token moved to the previous line, would a newline after it be OK?
+            $this->maybePreserveNewlineAfter($token, $token->next(), $line, $min, $max, true);
     }
 
-    private function maybePreserveNewlineBefore(Token $token, Token $prev, int $line, int $min, int $max, bool $noBrackets): bool
+    private function maybePreserveNewlineBefore(Token $token, Token $prev, int $line, int $min, int $max, bool $ignoreBrackets = false): bool
     {
-        if ($noBrackets && $token->isCloseBracket()) {
+        if ($ignoreBrackets && $token->isBracket()) {
             return false;
         }
         if (Test::isBetween($token->line, $min, $max) &&
                 $token->is(TokenType::PRESERVE_NEWLINE_BEFORE) &&
                 // Don't preserve newlines between empty brackets
-                ($noBrackets || !($token->isCloseBracket() && $prev->isOpenBracket())) &&
+                ($ignoreBrackets || !($token->isCloseBracket() && $prev->isOpenBracket())) &&
                 // Treat `?:` as one operator
                 (!$token->IsTernaryOperator || $token->TernaryOperator1 !== $prev) &&
                 ($token->id !== T[':'] || $token->IsTernaryOperator)) {
@@ -80,15 +82,15 @@ final class PreserveNewlines implements TokenRule
         return false;
     }
 
-    private function maybePreserveNewlineAfter(Token $token, Token $next, int $line, int $min, int $max, bool $noBrackets): bool
+    private function maybePreserveNewlineAfter(Token $token, Token $next, int $line, int $min, int $max, bool $ignoreBrackets = false): bool
     {
-        if ($noBrackets && $token->isOpenBracket()) {
+        if ($ignoreBrackets && $token->isBracket()) {
             return false;
         }
         if (Test::isBetween($next->line, $min, $max) &&
                 $token->is(TokenType::PRESERVE_NEWLINE_AFTER) &&
                 // Don't preserve newlines between empty brackets
-                ($noBrackets || !($token->isOpenBracket() && $next->isCloseBracket())) &&
+                ($ignoreBrackets || !($token->isOpenBracket() && $next->isCloseBracket())) &&
                 // Treat `?:` as one operator
                 (!$token->IsTernaryOperator || $token->TernaryOperator2 !== $next) &&
                 ($token->id !== T[':'] || $token->inSwitchCase() || $token->inLabel()) &&
