@@ -61,17 +61,29 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
-          coverage: none
+          extensions: none, dom, json, mbstring, openssl, tokenizer, xml, xmlwriter
+          coverage: pcov
 
       - name: Install dependencies
         run: composer install --no-interaction --no-progress
 
-      - name: Run PHPUnit tests
-        run: vendor/bin/phpunit --no-coverage
+      - name: Run PHPUnit tests and generate code coverage report
+        run: vendor/bin/phpunit --coverage-clover=coverage.xml
+
+      - name: Upload code coverage report to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   build:
     name: Build phar
+    needs:
+      - phpstan
+      - tests
     runs-on: ubuntu-latest
+    outputs:
+      artifact_name: ${{ steps.run-build-script.outputs.artifact_name }}
+      artifact_path: ${{ steps.run-build-script.outputs.artifact_path }}
 
     steps:
       - name: Checkout
@@ -89,12 +101,49 @@ jobs:
         run: composer install --no-interaction --no-progress
 
       - name: Run build script
+        id: run-build-script
         run: |
           scripts/build.sh --phar
-          jq -r '{"artifact_name":.package,"artifact_path":.assets[]|select(.type=="phar")|.path}|to_entries[]|"\(.key)=\(.value)"' build/dist/manifest.json >>$GITHUB_ENV
+          jq -r '{"artifact_name":.package,"artifact_path":.assets[]|select(.type=="phar")|.path}|to_entries[]|"\(.key)=\(.value)"' build/dist/manifest.json | tee -a "$GITHUB_OUTPUT" >>"$GITHUB_ENV"
 
       - name: Upload phar artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ env.artifact_name }}-phar
+          name: ${{ env.artifact_name }}-snapshot-phar
           path: build/dist/${{ env.artifact_path }}
+
+  test-phar:
+    name: Test phar
+    needs:
+      - build
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version:
+          - "8.2"
+          - "8.1"
+          - "8.0"
+          - "7.4"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: none, json, mbstring, tokenizer
+          coverage: none
+
+      - name: Download phar artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ needs.build.outputs.artifact_name }}-snapshot-phar
+
+      - name: Run PrettyPHP
+        env:
+          artifact_path: ${{ needs.build.outputs.artifact_path }}
+        run: php "$artifact_path" --verbose
