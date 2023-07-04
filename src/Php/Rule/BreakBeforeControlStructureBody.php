@@ -36,7 +36,13 @@ final class BreakBeforeControlStructureBody implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->is(TokenType::HAS_STATEMENT_WITH_OPTIONAL_BRACES)) {
+        // Ignore the second half of `elseif` expressed as `else if`
+        if ($token->id === T_IF && ($token->_prevCode->id ?? null) === T_ELSE) {
+            return;
+        }
+        if ($token->id === T_ELSE && $token->_nextCode->id === T_IF) {
+            $offset = 3;
+        } elseif ($token->is(TokenType::HAS_STATEMENT_WITH_OPTIONAL_BRACES)) {
             $offset = 1;
         } else {
             $offset = 2;
@@ -78,7 +84,7 @@ final class BreakBeforeControlStructureBody implements TokenRule
         if ($token->id === T_DO) {
             $continues = true;
         } elseif ($token->is([T_IF, T_ELSEIF])) {
-            $end = $token->nextSiblingOf(T_IF, T_ELSEIF, T_ELSE);
+            $end = $body->prevSibling()->nextSiblingOf(T_IF, T_ELSEIF, T_ELSE);
             if ($end->id === T_IF) {
                 $end = $body->EndStatement;
             } elseif (!$end->IsNull) {
