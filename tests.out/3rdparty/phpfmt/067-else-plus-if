@@ -6,11 +6,10 @@ if ($a == $b && $a == $c) {
 	$bo = func2($af, $r[0]['a']);
 	if ($bo <= $r[0]['b']) {
 		$v = $a;
-	} else
-		if ($bo <= $r[1]['b']) {
-			$v = $b;
-		} else {
-			$v = $c;
-		}
+	} else if ($bo <= $r[1]['b']) {
+		$v = $b;
+	} else {
+		$v = $c;
+	}
 	unset($bo);
 }
