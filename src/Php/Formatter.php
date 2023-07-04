@@ -58,8 +58,8 @@ use Lkrms\Pretty\Php\Rule\SwitchPosition;
 use Lkrms\Pretty\PrettyBadSyntaxException;
 use Lkrms\Pretty\PrettyException;
 use Lkrms\Pretty\WhitespaceType;
+use LogicException;
 use ParseError;
-use RuntimeException;
 use Throwable;
 
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
@@ -70,7 +70,6 @@ use const Lkrms\Pretty\Php\T_ID_MAP as T;
  * @property-read string|null $Filename
  * @property-read string|null $RunningService
  * @property-read array<string,string> $Log
- * @property-read string[] $Rules
  * @property int[] $PreserveTrailingSpaces
  */
 final class Formatter implements IReadable, IWritable
@@ -126,6 +125,11 @@ final class Formatter implements IReadable, IWritable
      * @var string
      */
     public $SoftTab;
+
+    /**
+     * @var array<class-string<Rule>,true>
+     */
+    public $EnabledRules;
 
     /**
      * @var string
@@ -190,36 +194,43 @@ final class Formatter implements IReadable, IWritable
     public $LogProgress = false;
 
     /**
-     * @var string[]
+     * @var array<class-string<Rule>>
      */
-    protected $Rules = [
+    public const MANDATORY_RULES = [
         ProtectStrings::class,                   // processToken  (40)
-        SimplifyStrings::class,                  // processToken  (60)  [OPTIONAL]
         AddStandardWhitespace::class,            // processToken  (80), callback (820)
         BreakAfterSeparators::class,             // processToken  (80)
         SpaceOperators::class,                   // processToken  (80)
         BreakBeforeControlStructureBody::class,  // processToken  (83)
         PlaceComments::class,                    // processToken  (90), beforeRender (997)
-        PreserveNewlines::class,                 // processToken  (93)  [OPTIONAL]
         BracePosition::class,                    // processToken  (94), beforeRender (94)
         MirrorBrackets::class,                   // processToken  (96)
         BreakOperators::class,                   // processToken  (98)
         BreakLists::class,                       // processList   (98)
-        SpaceMatch::class,                       // processToken (300)  [OPTIONAL]
-        ApplyMagicComma::class,                  // processList  (360)  [OPTIONAL]
         AddIndentation::class,                   // processToken (600)
         SwitchPosition::class,                   // processToken (600)
-        SpaceDeclarations::class,                // processToken (620)  [OPTIONAL]
         AddHangingIndentation::class,            // processToken (800), callback (800)
-        ReindentHeredocs::class,                 // processToken (900), beforeRender (900)  [OPTIONAL]
-        ReportUnnecessaryParentheses::class,     // processToken (990)  [OPTIONAL]
         AddEssentialWhitespace::class,           // beforeRender (999)
     ];
 
     /**
-     * @var string[]
+     * @var array<class-string<Rule>>
      */
-    protected $AvailableRules = [
+    public const DEFAULT_RULES = [
+        ...self::MANDATORY_RULES,
+        SimplifyStrings::class,               // processToken  (60)  [OPTIONAL]
+        PreserveNewlines::class,              // processToken  (93)  [OPTIONAL]
+        SpaceMatch::class,                    // processToken (300)  [OPTIONAL]
+        ApplyMagicComma::class,               // processList  (360)  [OPTIONAL]
+        SpaceDeclarations::class,             // processToken (620)  [OPTIONAL]
+        ReindentHeredocs::class,              // processToken (900), beforeRender (900)  [OPTIONAL]
+        ReportUnnecessaryParentheses::class,  // processToken (990)  [OPTIONAL]
+    ];
+
+    /**
+     * @var array<class-string<Rule>>
+     */
+    public const ADDITIONAL_RULES = [
         PreserveOneLineStatements::class,  // processToken  (95)
         AddBlankLineBeforeReturn::class,   // processToken  (97)
         Laravel::class,                    // processToken (100)
@@ -249,64 +260,139 @@ final class Formatter implements IReadable, IWritable
     private $ComparisonFilters;
 
     /**
+     * [ [ Rule object, method name ], ... ]
+     *
+     * @var array<array{0:TokenRule|ListRule,1:string}>
+     */
+    private $MainLoop = [];
+
+    /**
+     * [ [ Rule object, method name ], ... ]
+     *
+     * @var array<array{0:BlockRule,1:string}>
+     */
+    private $BlockLoop = [];
+
+    /**
+     * [ [ Rule object, method name ], ... ]
+     *
+     * @var array<array{0:Rule,1:string}>
+     */
+    private $BeforeRender = [];
+
+    /**
+     * @var Rule[]
+     */
+    private $Rules = [];
+
+    /**
      * @var array<int,array<int,array<array{0:Rule,1:callable}>>>
      */
     private $Callbacks = [];
 
     /**
-     * @param string[] $skipRules
-     * @param string[] $addRules
-     * @param string[] $skipFilters
+     * @param array<class-string<Rule>> $skipRules
+     * @param array<class-string<Rule>> $addRules
+     * @param array<class-string<Filter>> $skipFilters
      */
-    public function __construct(bool $insertSpaces = true, int $tabSize = 4, array $skipRules = [], array $addRules = [], array $skipFilters = [])
-    {
+    public function __construct(
+        bool $insertSpaces = true,
+        int $tabSize = 4,
+        array $skipRules = [],
+        array $addRules = [],
+        array $skipFilters = []
+    ) {
         $this->Tab = $insertSpaces ? str_repeat(' ', $tabSize) : "\t";
         $this->TabSize = $tabSize;
         $this->SoftTab = str_repeat(' ', $tabSize);
 
+        // If using tabs for indentation, disable incompatible rules
         if (!$insertSpaces) {
-            $skip = [
+            array_push(
+                $skipRules,
                 AlignArrowFunctions::class,
                 AlignChainedCalls::class,
                 AlignLists::class,
                 AlignTernaryOperators::class,
-            ];
+            );
         }
 
-        if ($addRules) {
-            array_push($this->Rules, ...$addRules);
-        }
+        $rules = array_diff(
+            array_merge(
+                self::DEFAULT_RULES,
+                array_intersect(
+                    self::ADDITIONAL_RULES,
+                    $addRules
+                )
+            ),
+            // Remove mandatory rules from $skipRules
+            array_diff(
+                $skipRules,
+                self::MANDATORY_RULES
+            )
+        );
+        $this->EnabledRules = array_combine($rules, array_fill(0, count($rules), true));
 
-        if ($skipRules || ($skip ?? null)) {
-            $this->Rules = array_diff($this->Rules, $skipRules, $skip ?? []);
+        Sys::startTimer(__METHOD__ . '#sort-rules');
+        $mainLoop = [];
+        $blockLoop = [];
+        $beforeRender = [];
+        $index = 0;
+        foreach ($rules as $_rule) {
+            if (!is_a($_rule, Rule::class, true)) {
+                throw new LogicException(sprintf('Not a %s: %s', Rule::class, $_rule));
+            }
+            /** @var Rule $rule */
+            $rule = new $_rule($this);
+            $this->Rules[] = $rule;
+            if ($rule instanceof TokenRule) {
+                $mainLoop[] = [$rule, TokenRule::PROCESS_TOKEN, $index];
+            }
+            if ($rule instanceof ListRule) {
+                $mainLoop[] = [$rule, ListRule::PROCESS_LIST, $index];
+            }
+            if ($rule instanceof BlockRule) {
+                $blockLoop[] = [$rule, BlockRule::PROCESS_BLOCK, $index];
+            }
+            $beforeRender[] = [$rule, Rule::BEFORE_RENDER, $index];
+            $index++;
         }
+        $this->MainLoop = $this->sortRules($mainLoop);
+        $this->BlockLoop = $this->sortRules($blockLoop);
+        $this->BeforeRender = $this->sortRules($beforeRender);
+        Sys::stopTimer(__METHOD__ . '#sort-rules');
 
-        $mandatory = [
+        $mandatoryFilters = [
             RemoveWhitespace::class,
             NormaliseHeredocs::class,
         ];
-        $optional = [
+        $optionalFilters = [
             TrimCasts::class,
             SortImports::class,
         ];
-        $comparison = [
+        $comparisonFilters = [
             NormaliseStrings::class,
             RemoveComments::class,
             RemoveEmptyTokens::class,
             TrimOpenTags::class,
         ];
-        if ($skipFilters) {
-            $optional = array_diff($optional, $skipFilters);
-        }
+
         $this->FormatFilters = array_map(
             fn(string $filter) => new $filter(),
-            array_merge($mandatory, $optional)
+            array_merge(
+                $mandatoryFilters,
+                array_diff(
+                    $optionalFilters,
+                    $skipFilters
+                )
+            )
         );
+
         $this->ComparisonFilters = array_merge(
             $this->FormatFilters,
             array_map(
                 fn(string $filter) => new $filter(),
-                $comparison
+                $comparisonFilters
             )
         );
 
@@ -320,33 +406,25 @@ final class Formatter implements IReadable, IWritable
      */
     public function ruleIsEnabled(string $rule): bool
     {
-        return in_array($rule, $this->Rules);
+        return $this->EnabledRules[$rule] ?? false;
     }
 
     /**
      * Get formatted code
      *
      * Rules are processed from lowest to highest priority (smallest to biggest
-     * number). The default priority (applied if {@see Rule::getPriority()}
-     * returns `null`) is 100.
+     * number).
      *
-     * Order of operations:
-     *
-     * 1. {@see TokenRule::processToken()} is called on enabled rules that
-     *    implement {@see TokenRule}.
-     * 2. {@see BlockRule::processBlock()} is called on enabled rules that
-     *    implement {@see BlockRule}.
-     * 3. Callbacks registered via {@see Formatter::registerCallback()} are
-     *    called in order of priority and token offset.
-     * 4. {@see Rule::beforeRender()} is called on enabled rules.
-     *
-     * @param string|null $filename Advisory only. No file operations are
-     * performed on `$filename`.
+     * @param string|null $filename For reporting purposes only. No file
+     * operations are performed on `$filename`.
      */
     public function format(string $code, int $quietLevel = 0, ?string $filename = null, bool $fast = false): string
     {
-        if ($this->Tokens) {
-            Token::destroyTokens($this->Tokens);
+        foreach ($this->Rules as $rule) {
+            $rule->reset();
+        }
+        foreach ($this->ComparisonFilters as $filter) {
+            $filter->reset();
         }
         $this->QuietLevel = $quietLevel;
         $this->Filename = $filename;
@@ -396,34 +474,6 @@ final class Formatter implements IReadable, IWritable
             Sys::stopTimer(__METHOD__ . '#prepare-tokens');
         }
 
-        Sys::startTimer(__METHOD__ . '#sort-rules');
-        $mainLoop = [];
-        $blockLoop = [];
-        $beforeRender = [];
-        $index = 0;
-        foreach ($this->Rules as $_rule) {
-            if (!is_a($_rule, Rule::class, true)) {
-                throw new RuntimeException('Not a ' . Rule::class . ': ' . $_rule);
-            }
-            /** @var Rule $rule */
-            $rule = new $_rule($this);
-            if ($rule instanceof TokenRule) {
-                $mainLoop[] = [$rule->getPriority(TokenRule::PROCESS_TOKEN), $index, $rule, TokenRule::class];
-            }
-            if ($rule instanceof ListRule) {
-                $mainLoop[] = [$rule->getPriority(ListRule::PROCESS_LIST), $index, $rule, ListRule::class];
-            }
-            if ($rule instanceof BlockRule) {
-                $blockLoop[] = [$rule->getPriority(BlockRule::PROCESS_BLOCK), $index, $rule];
-            }
-            $beforeRender[] = [$rule->getPriority(Rule::BEFORE_RENDER), $index, $rule];
-            $index++;
-        }
-        $mainLoop = $this->sortRules($mainLoop);
-        $blockLoop = $this->sortRules($blockLoop);
-        $beforeRender = $this->sortRules($beforeRender);
-        Sys::stopTimer(__METHOD__ . '#sort-rules');
-
         Sys::startTimer(__METHOD__ . '#find-lists');
         // Get non-empty open brackets
         $listParents =
@@ -460,11 +510,11 @@ final class Formatter implements IReadable, IWritable
         }
         Sys::stopTimer(__METHOD__ . '#find-lists');
 
-        foreach ($mainLoop as [$rule, $ruleType]) {
+        foreach ($this->MainLoop as [$rule, $method]) {
             $this->RunningService = $_rule = Convert::classToBasename(get_class($rule));
             Sys::startTimer($_rule, 'rule');
 
-            if ($ruleType === ListRule::class) {
+            if ($method === ListRule::PROCESS_LIST) {
                 foreach ($lists as $i => $list) {
                     $list = clone $list;
                     /** @var ListRule $rule */
@@ -529,7 +579,7 @@ final class Formatter implements IReadable, IWritable
         Sys::stopTimer(__METHOD__ . '#find-blocks');
 
         /** @var BlockRule $rule */
-        foreach ($blockLoop as $rule) {
+        foreach ($this->BlockLoop as [$rule]) {
             $this->RunningService = $_rule = Convert::classToBasename(get_class($rule));
             Sys::startTimer($_rule, 'rule');
             foreach ($blocks as $block) {
@@ -544,7 +594,7 @@ final class Formatter implements IReadable, IWritable
         $this->processCallbacks();
 
         /** @var Rule $rule */
-        foreach ($beforeRender as $rule) {
+        foreach ($this->BeforeRender as [$rule]) {
             $this->RunningService = $_rule = Convert::classToBasename(get_class($rule));
             Sys::startTimer($_rule, 'rule');
             $rule->beforeRender($this->Tokens);
@@ -618,12 +668,6 @@ final class Formatter implements IReadable, IWritable
             );
         }
 
-        Token::destroyTokens($tokensOut);
-        Token::destroyTokens($tokensIn);
-        foreach ($beforeRender as $rule) {
-            $rule->destroy();
-        }
-
         return $eol === "\n"
             ? $out
             : str_replace("\n", $eol, $out);
@@ -674,24 +718,34 @@ final class Formatter implements IReadable, IWritable
     /**
      * Sort rules by priority
      *
-     * @param array<array{0:int|null,1:int,2:Rule,3?:class-string<Rule>}> $rules
-     * @return array<Rule|array{0:Rule,1:class-string<Rule>}>
+     * @template TRule of Rule
+     * @param array<array{0:TRule,1:string,2:int}> $rules
+     * @return array<array{0:TRule,1:string}>
      */
     private function sortRules(array $rules): array
     {
-        $rules = array_filter(
-            $rules,
-            fn(array $rule) => $rule[0] !== null
-        );
+        /**
+         * @var Rule $rule
+         * @var string $method
+         */
+        foreach ($rules as $key => [$rule, $method]) {
+            $priority = $rule->getPriority($method);
+            if ($priority === null) {
+                unset($rules[$key]);
+                continue;
+            }
+            $rules[$key][3] = $priority;
+        }
+
+        // Sort by priority, then index
         usort(
             $rules,
             fn(array $a, array $b) =>
-                ($a[0] <=> $b[0]) ?: $a[1] <=> $b[1]
+                ($a[3] <=> $b[3]) ?: $a[2] <=> $b[2]
         );
 
         return array_map(
-            fn(array $rule) =>
-                ($rule[3] ?? null) ? [$rule[2], $rule[3]] : $rule[2],
+            fn(array $rule) => [$rule[0], $rule[1]],
             $rules
         );
     }
