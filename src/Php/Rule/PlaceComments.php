@@ -16,9 +16,7 @@ use const Lkrms\Pretty\Php\T_ID_MAP as T;
  */
 final class PlaceComments implements TokenRule
 {
-    use TokenRuleTrait {
-        destroy as private _destroy;
-    }
+    use TokenRuleTrait;
 
     /**
      * @var Token[]
@@ -206,9 +204,9 @@ final class PlaceComments implements TokenRule
         }
     }
 
-    public function destroy(): void
+    public function reset(): void
     {
-        unset($this->Comments);
-        $this->_destroy();
+        $this->CommentsBesideCode = [];
+        $this->Comments = [];
     }
 }

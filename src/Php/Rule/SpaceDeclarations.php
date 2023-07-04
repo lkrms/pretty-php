@@ -23,9 +23,7 @@ use const Lkrms\Pretty\Php\T_ID_MAP as T;
  */
 final class SpaceDeclarations implements TokenRule
 {
-    use TokenRuleTrait {
-        destroy as private _destroy;
-    }
+    use TokenRuleTrait;
 
     /**
      * @var Token[]
@@ -186,9 +184,11 @@ final class SpaceDeclarations implements TokenRule
             $comment->PinToCode;
     }
 
-    public function destroy(): void
+    public function reset(): void
     {
-        unset($this->Prev);
-        $this->_destroy();
+        $this->Prev = [];
+        $this->PrevTypes = [];
+        $this->PrevCondense = false;
+        $this->PrevExpand = false;
     }
 }

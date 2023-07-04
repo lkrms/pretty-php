@@ -45,8 +45,12 @@ trait RuleTrait
         }
     }
 
+    public function reset(): void {}
+
     public function destroy(): void
     {
-        unset($this->Formatter);
+        $this->reset();
+        // @phpstan-ignore-next-line
+        $this->Formatter = null;
     }
 }

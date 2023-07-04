@@ -39,7 +39,7 @@ final class Laravel implements TokenRule
     {
         switch ($token->id) {
             case T['!']:
-                if ($token->next()->id === T['!']) {
+                if (($token->_next->id ?? null) === T['!']) {
                     return;
                 }
                 $token->WhitespaceAfter |= WhitespaceType::SPACE;

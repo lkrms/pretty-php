@@ -12,6 +12,8 @@ trait FilterTrait
      */
     protected $Tokens;
 
+    public function __construct() {}
+
     protected function prevCode(int $i, ?int &$prev_i = null): Token
     {
         while ($i--) {
@@ -55,8 +57,12 @@ trait FilterTrait
         return $token->id === T_COMMENT && preg_match('@^(//|#)@', $token->text);
     }
 
+    public function reset(): void {}
+
     public function destroy(): void
     {
-        unset($this->Tokens);
+        $this->reset();
+        // @phpstan-ignore-next-line
+        $this->Tokens = null;
     }
 }
