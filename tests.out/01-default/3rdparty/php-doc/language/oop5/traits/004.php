@@ -5,6 +5,7 @@ trait A
     {
         echo 'a';
     }
+
     public function bigTalk()
     {
         echo 'A';
@@ -17,6 +18,7 @@ trait B
     {
         echo 'b';
     }
+
     public function bigTalk()
     {
         echo 'B';

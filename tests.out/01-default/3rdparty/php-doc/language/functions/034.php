@@ -36,7 +36,7 @@ $example();
 $example = function ($arg) use ($message) {
     var_dump($arg . ' ' . $message);
 };
-$example("hello");
+$example('hello');
 
 // Return type declaration comes after the use clause
 $example = function () use ($message): string {

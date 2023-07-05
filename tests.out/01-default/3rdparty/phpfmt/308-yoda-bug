@@ -2,8 +2,8 @@
 //passes:Default,YodaComparisons
 function hereItComes()
 {
-	if ($obj !== null) {
-	}
+    if ($obj !== null) {
+    }
 
-	$obj->announce("{$obj->goodbye()}");
+    $obj->announce("{$obj->goodbye()}");
 }

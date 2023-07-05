@@ -1,52 +1,68 @@
 <?php
 if ($a) {
-	$a;
+    $a;
 } elseif ($b) {
-	$b;
+    $b;
 } else {
-	$c;
+    $c;
 }
 if ($a)
-	$a;
+    $a;
 elseif ($b)
-	$b;
+    $b;
 else
-	$c;
+    $c;
 
-if ($a) do { $a; } while (true);
-if ($a) for ($i; false; $i++) { $a; }
-if ($a) foreach ($a as $b) { $b; }
-if ($a) while (false) { $b; }
-if ($a) function ($a, $b) { $a; $b; };
+if ($a)
+    do {
+        $a;
+    } while (true);
+if ($a)
+    for ($i; false; $i++) {
+        $a;
+    }
+if ($a)
+    foreach ($a as $b) {
+        $b;
+    }
+if ($a)
+    while (false) {
+        $b;
+    }
+if ($a)
+    function ($a, $b) {
+        $a;
+        $b;
+    };
 if ($a) {
-	$b;
+    $b;
 }
 while (false) {
-	$b;
+    $b;
 }
 
 // Test
 function f2()
 {
-	if ($a) {
-		$a;
-	} elseif ($b) {
-		$b;
-	} else {
-		$c;
-	}
-	if ($a) {
-		$a;
-	} elseif ($b) {
-		$b;
-	} else {
-		$c;
-	}
-	if ($a)
-		$a;
-	elseif ($b)
-		$b;
-	else
-		$c;
-	f(1, 2);
+    if ($a) {
+        $a;
+    } elseif ($b) {
+        $b;
+    } else {
+        $c;
+    }
+    if ($a) {
+        $a;
+    } elseif ($b) {
+        $b;
+    } else {
+        $c;
+    }
+    if ($a)
+        $a;
+    elseif ($b)
+        $b;
+    else
+        $c;
+    f(1, 2);
 }

@@ -27,10 +27,10 @@ class MyClass
 }
 
 $myclass = new MyClass;
-$myclass->MyPublic();     // Works
+$myclass->MyPublic();  // Works
 $myclass->MyProtected();  // Fatal Error
-$myclass->MyPrivate();    // Fatal Error
-$myclass->Foo();          // Public, Protected and Private work
+$myclass->MyPrivate();  // Fatal Error
+$myclass->Foo();  // Public, Protected and Private work
 
 /**
  * Define MyClass2
@@ -48,7 +48,7 @@ class MyClass2 extends MyClass
 
 $myclass2 = new MyClass2;
 $myclass2->MyPublic();  // Works
-$myclass2->Foo2();      // Public and Protected work, not Private
+$myclass2->Foo2();  // Public and Protected work, not Private
 
 class Bar
 {
@@ -84,5 +84,5 @@ class Foo extends Bar
 
 $myFoo = new Foo();
 $myFoo->test();  // Bar::testPrivate
-                 // Foo::testPublic
+// Foo::testPublic
 ?>

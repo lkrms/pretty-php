@@ -27,13 +27,13 @@ class Shape
 }
 
 $triangle = new Shape();
-$triangle->setName("triangle");
+$triangle->setName('triangle');
 $triangle->setNumberofSides(3);
 var_dump($triangle->getName());
 var_dump($triangle->getNumberOfSides());
 
 $circle = new Shape();
-$circle->setName("circle");
+$circle->setName('circle');
 var_dump($circle->getName());
 var_dump($circle->getNumberOfSides());
 ?>

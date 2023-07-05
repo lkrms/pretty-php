@@ -1,24 +1,24 @@
 <?php
 $varArray = array(
-	'a' => 'b',
+    'a' => 'b',
 );
 
 $var3 = <<<EOA
-	data
-	data
-	data
-	EOA;
+    data
+    data
+    data
+    EOA;
 
 $varArray = array(
-	'a' => 'b',
+    'a' => 'b',
 );
 
 $varArray = [
-	'c' => 'd',
+    'c' => 'd',
 ];
 
 $var4 = '';
 
 $varArray = [
-	'c' => 'd',
+    'c' => 'd',
 ];

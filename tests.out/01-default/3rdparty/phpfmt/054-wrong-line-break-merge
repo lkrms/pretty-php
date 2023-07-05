@@ -7,7 +7,7 @@
 // comment
 
 try {
-	doSomething();
+    doSomething();
 } catch (Exception $exc) {
-	//caught me!
+    //caught me!
 }

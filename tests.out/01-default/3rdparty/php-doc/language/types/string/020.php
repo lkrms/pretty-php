@@ -5,11 +5,12 @@ error_reporting(E_ALL);
 class beers
 {
     const softdrink = 'rootbeer';
+
     public static $ale = 'ipa';
 }
 
 $rootbeer = 'A & W';
-$ipa = 'Alexander Keith\'s';
+$ipa = "Alexander Keith's";
 
 // This works; outputs: I'd like an A & W
 echo "I'd like an {${beers::softdrink}}\n";

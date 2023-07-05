@@ -1,7 +1,7 @@
 <?php
 
 if ($x) {
-	//body
+    //body
 }
 
 //skipShortTag1
@@ -18,28 +18,28 @@ if ($x) {
 */
 
 if (true) {
-	/*
+    /*
 	cif(){
 		keep me intact
 	}
 	*/
-	/*
+    /*
 		dif(){
 			keep me intact
 		}
 	*/
 }
 if (true) {
-	if (false) {
-		/*
+    if (false) {
+        /*
 	eif(){
 		keep me intact
 	}
 	*/
-		/*
+        /*
 		fif(){
 			keep me intact
 		}
 	*/
-	}
+    }
 }

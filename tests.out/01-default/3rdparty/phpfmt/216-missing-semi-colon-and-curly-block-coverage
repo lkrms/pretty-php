@@ -1,4 +1,4 @@
 <?php if (true) {
-	$a;
+    $a;
 } else
-	echo 's' ?>x
+    echo 's' ?>x

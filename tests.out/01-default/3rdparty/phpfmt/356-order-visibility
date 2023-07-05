@@ -2,8 +2,8 @@
 //passes:Default,OrderMethodAndVisibility
 class A
 {
-	public function d() {}
-	protected function b() {}
-	private function c() {}
-	public function a() {}
+    public function d() {}
+    protected function b() {}
+    private function c() {}
+    public function a() {}
 }

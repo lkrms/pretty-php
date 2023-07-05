@@ -3,9 +3,9 @@
 
 function xxx()
 {
-	// code
+    // code
 };
 
 $a = function () {
-	// code
+    // code
 };

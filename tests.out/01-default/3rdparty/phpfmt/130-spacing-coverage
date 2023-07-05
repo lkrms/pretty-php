@@ -7,13 +7,13 @@ $a + $b;
 $a * $b;
 
 $a
-	* $b;
+    * $b;
 
 $a
-	* $b;
+    * $b;
 
 $a
-	* $b;
+    * $b;
 
 $a = 10;
 
@@ -22,35 +22,36 @@ while (--$a > 0);
 $a . $b;
 
 $a
-	. $b;
+    . $b;
 
 $a
-	. $b;
+    . $b;
 
 $a
-	. $b;
+    . $b;
 
 $a{1} . $b{2};
 
 switch ($a) {
-	case 1: $b;
-	case 2:
-		$b;
-	case 2:
-		$b;
+    case 1:
+        $b;
+    case 2:
+        $b;
+    case 2:
+        $b;
 
-	case 2:
-		$b;
+    case 2:
+        $b;
 }
 
 $a ?: $b;
 $a
-	?: $b;
+    ?: $b;
 
 $a ?: $b;
 
 $a
-	?: $b;
+    ?: $b;
 
 ' ' . $a;
 "$b" . $a;

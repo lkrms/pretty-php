@@ -3,24 +3,24 @@
 
 function a($a)
 {
-	return false;
+    return false;
 }
 
 function b($a, $b)
 {
-	return true;
+    return true;
 }
 
 function c(Test $a, Foo $b, $c = array(), array $d = [])
 {
-	return true;
+    return true;
 }
 
 function d(
-	Test $a,
-	Foo $b,
-	$c = array(),
-	array $d = []
+    Test $a,
+    Foo $b,
+    $c = array(),
+    array $d = []
 ) {
-	return true;
+    return true;
 }

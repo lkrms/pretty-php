@@ -3,10 +3,10 @@
 
 abstract class A
 {
-	public function setA($a)
-	{
-		$this->a = $a;
-	}
+    public function setA($a)
+    {
+        $this->a = $a;
+    }
 
-	abstract public function b();
+    abstract public function b();
 }

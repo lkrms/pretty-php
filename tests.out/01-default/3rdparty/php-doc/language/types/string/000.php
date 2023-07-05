@@ -9,7 +9,7 @@ okay to do';
 echo 'Arnold once said: "I\'ll be back"';
 
 // Outputs: You deleted C:\*.*?
-echo 'You deleted C:\\*.*?';
+echo 'You deleted C:\*.*?';
 
 // Outputs: You deleted C:\*.*?
 echo 'You deleted C:\*.*?';

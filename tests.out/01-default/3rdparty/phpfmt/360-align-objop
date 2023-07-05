@@ -1,5 +1,5 @@
 <?php
 //passes:Default,ReindentAndAlignObjOps
 $this->list = (new Query)->select(['id', 'name'])
-	->where(['sex' => 1])
-	->all();
+    ->where(['sex' => 1])
+    ->all();

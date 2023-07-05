@@ -1,3 +1,3 @@
-<?php echo "Some text"; ?>
+<?php echo 'Some text'; ?>
 No newline
-<?= "But newline now" ?>
+<?= 'But newline now' ?>

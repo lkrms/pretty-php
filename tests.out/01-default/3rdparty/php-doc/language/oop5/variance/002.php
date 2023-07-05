@@ -15,6 +15,6 @@ abstract class Animal
 
     public function eat(AnimalFood $food)
     {
-        echo $this->name . " eats " . get_class($food);
+        echo $this->name . ' eats ' . get_class($food);
     }
 }

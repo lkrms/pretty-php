@@ -1,8 +1,8 @@
 <?php
 
 switch ($id) {
-	default:
-		if ('*' === $v{0}) {
-			$v = ' ' . $v;
-		}
+    default:
+        if ('*' === $v{0}) {
+            $v = ' ' . $v;
+        }
 }

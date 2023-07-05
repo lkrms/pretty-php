@@ -12,17 +12,17 @@
             <td><?php echo $name ?></td>
             <td><?php
 foreach ($param2_arr as $key) {
-	echo $key . ' ';
+    echo $key . ' ';
 }
 ?></td>
             <td><?php
 foreach ($param3_arr as $key) {
-	echo $key . ' ';
+    echo $key . ' ';
 }
 ?></td>
             <td><?php
 foreach ($param4_arr as $v) {
-	echo CHtml::link($v['name'], array('file', 'id' => $v['id'], 'typ' => '1')) . '<br>';
+    echo CHtml::link($v['name'], array('file', 'id' => $v['id'], 'typ' => '1')) . '<br>';
 }
 ?></td>
         </tr>

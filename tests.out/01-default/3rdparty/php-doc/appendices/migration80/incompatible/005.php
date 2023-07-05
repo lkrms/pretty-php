@@ -9,6 +9,9 @@ class MyClass
     use MyTrait;
 
     // Error, because of return type mismatch.
-    private function neededByTrait(): int { return 42; }
+    private function neededByTrait(): int
+    {
+        return 42;
+    }
 }
 ?>

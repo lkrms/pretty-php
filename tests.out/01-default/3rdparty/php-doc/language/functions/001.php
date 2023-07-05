@@ -18,7 +18,8 @@ if ($makefoo) {
 /* Now we can safely call foo()
    since $makefoo evaluated to true */
 
-if ($makefoo) foo();
+if ($makefoo)
+    foo();
 
 function bar()
 {

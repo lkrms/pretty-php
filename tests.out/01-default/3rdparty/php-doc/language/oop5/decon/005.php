@@ -9,7 +9,7 @@ class MyDestructableClass
 
     function __destruct()
     {
-        print "Destroying " . __CLASS__ . "\n";
+        print 'Destroying ' . __CLASS__ . "\n";
     }
 }
 

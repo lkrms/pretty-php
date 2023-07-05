@@ -8,7 +8,7 @@ trait Rectangle
 {
     public function shape(): string
     {
-        return "Rectangle";
+        return 'Rectangle';
     }
 }
 

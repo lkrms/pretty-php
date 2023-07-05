@@ -9,6 +9,7 @@ $str = <<<EOD
 class foo
 {
     var $foo;
+
     var $bar;
 
     function __construct()

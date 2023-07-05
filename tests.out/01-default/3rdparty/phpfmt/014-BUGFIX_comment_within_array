@@ -1,16 +1,16 @@
 <?php
 $array = array(
-	'a',
-	// TODO
-	'k' => 'v',  //TODO
-	'k' => 'v',  #TODO
+    'a',
+    // TODO
+    'k' => 'v',  //TODO
+    'k' => 'v',  #TODO
 );
 
 $array = [
-	'a',
-	// TODO
-	'k' => 'v',  //TODO
-	'k' => 'v',  #TODO
+    'a',
+    // TODO
+    'k' => 'v',  //TODO
+    'k' => 'v',  #TODO
 ];
 
 func($a
@@ -18,5 +18,5 @@ func($a
 );
 
 $a->m1()
-	->m2()  // comment
-	->m3();
+    ->m2()  // comment
+    ->m3();

@@ -2,13 +2,13 @@
 //passes:SpaceBetweenMethods,Default
 class A
 {
-	function a() {}
-	function b() {}
-	//adsa
-	function c() {}
+    function a() {}
+    function b() {}
+    //adsa
+    function c() {}
 
-	/**
-	 * @return something
-	 */
-	function d() {}
+    /**
+     * @return something
+     */
+    function d() {}
 }

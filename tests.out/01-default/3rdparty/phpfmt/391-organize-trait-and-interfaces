@@ -3,32 +3,32 @@
 
 interface Foo
 {
-	public function d();
-	function a();
-	function b();
-	function c();
+    public function d();
+    function a();
+    function b();
+    function c();
 }
 
 trait FooTrait
 {
-	/**
-	 * comment for a
-	 */
-	private function a();
+    /**
+     * comment for a
+     */
+    private function a();
 
-	// some comment somewhere3
+    // some comment somewhere3
 
-	/**
-	 * comment for b
-	 */
-	protected function b();
+    /**
+     * comment for b
+     */
+    protected function b();
 
-	// some comment somewhere
+    // some comment somewhere
 
-	/**
-	 * comment for c
-	 */
-	public function c();
+    /**
+     * comment for c
+     */
+    public function c();
 
-	// some comment somewhere2
+    // some comment somewhere2
 }

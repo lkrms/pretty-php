@@ -3,17 +3,17 @@
 
 class A
 {
-	/**
-	 * @param $b
-	 * @param $c
-	 */
-	public function b($b, $c) {}
+    /**
+     * @param $b
+     * @param $c
+     */
+    public function b($b, $c) {}
 
-	/* $a */
+    /* $a */
 
-	/**
-	 * @param $a
-	 * @param $b
-	 */
-	public function a($a, $b) {}
+    /**
+     * @param $a
+     * @param $b
+     */
+    public function a($a, $b) {}
 }

@@ -1,6 +1,13 @@
 <?php
-interface I { public function f(); }
-class C implements I { public function f() {} }
+interface I
+{
+    public function f();
+}
+
+class C implements I
+{
+    public function f() {}
+}
 
 // This doesn't implement I.
 class E {}

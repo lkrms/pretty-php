@@ -1,7 +1,7 @@
 <?php
 //passes:Default,IndentTernaryConditions
 $a = ($b)
-	? $c
-	: $d;
+    ? $c
+    : $d;
 
 $a = ($b) ? $c : $d;

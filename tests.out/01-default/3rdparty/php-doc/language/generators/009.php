@@ -19,6 +19,7 @@ class LineIterator implements Iterator
     protected $fileHandle;
 
     protected $line;
+
     protected $i;
 
     public function __construct($fileName)

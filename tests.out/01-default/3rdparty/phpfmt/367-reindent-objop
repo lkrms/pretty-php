@@ -1,23 +1,23 @@
 <?php
 //passes:Default,ReindentObjOps
 $foo->bar(
-	'aoeu'
+    'aoeu'
 )
-	->baz();
+    ->baz();
 
 $foo->bar(
-	'aoeu'
+    'aoeu'
 )
-	->baz();
+    ->baz();
 
 $foo->bar(
-	'aoeu'
+    'aoeu'
 )->
-	//comment1
-	baz();
+    //comment1
+    baz();
 
 $foo->bar(
-	'aoeu'
+    'aoeu'
 )
-	//comment2
-	->baz();
+    //comment2
+    ->baz();

@@ -17,7 +17,9 @@ class Value
 $three = new Value(3);
 $four = new Value(4);
 
-$closure = function ($delta) { var_dump($this->getValue() + $delta); };
+$closure = function ($delta) {
+    var_dump($this->getValue() + $delta);
+};
 $closure->call($three, 4);
 $closure->call($four, 4);
 ?>

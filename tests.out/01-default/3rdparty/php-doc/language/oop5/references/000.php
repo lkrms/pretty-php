@@ -6,13 +6,13 @@ class A
 
 $a = new A;
 $b = $a;  // $a and $b are copies of the same identifier
-          // ($a) = ($b) = <id>
+// ($a) = ($b) = <id>
 $b->foo = 2;
 echo $a->foo . "\n";
 
 $c = new A;
 $d = &$c;  // $c and $d are references
-           // ($c,$d) = <id>
+// ($c,$d) = <id>
 
 $d->foo = 2;
 echo $c->foo . "\n";

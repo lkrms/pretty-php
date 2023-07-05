@@ -12,7 +12,7 @@ if (file_exists($filepath) && unlink($filepath)) {
 } else {
     $logstring = "Failed to delete $filepath\n";
 }
-$fp = fopen("/home/logging/filedelete.log", "a");
+$fp = fopen('/home/logging/filedelete.log', 'a');
 fwrite($fp, $logstring);
 fclose($fp);
 

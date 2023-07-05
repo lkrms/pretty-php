@@ -5,19 +5,19 @@
  */
 class Obj
 {
-	/**
-	 * this should be indented.
-	 */
-	public function func()
-	{
-		return false;
-	}
+    /**
+     * this should be indented.
+     */
+    public function func()
+    {
+        return false;
+    }
 
-	/**
-	 * For some reason that's rather boring, this one should be in the first column too.
-	 */
-	public function func2()
-	{
-		return false;
-	}
+    /**
+     * For some reason that's rather boring, this one should be in the first column too.
+     */
+    public function func2()
+    {
+        return false;
+    }
 }

@@ -29,7 +29,7 @@ class Cart
 
         $callback =
             function ($quantity, $product) use ($tax, &$total) {
-                $pricePerItem = constant(__CLASS__ . "::PRICE_"
+                $pricePerItem = constant(__CLASS__ . '::PRICE_'
                     . strtoupper($product));
                 $total += ($pricePerItem * $quantity) * ($tax + 1.0);
             };

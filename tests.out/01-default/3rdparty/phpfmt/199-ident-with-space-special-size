@@ -2,5 +2,5 @@
 //passes:Default,PSR2IndentWithSpace|3
 function a()
 {
-	$a;
+    $a;
 }

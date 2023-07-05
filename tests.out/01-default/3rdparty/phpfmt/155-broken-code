@@ -2,27 +2,27 @@
 
 function loadView($name, $data = array())
 {
-	global $config, $params, $lw;
+    global $config, $params, $lw;
 
-	if (!empty($data)) {
-		foreach ($data as $key => $d) {
-			$$key = $d;
-		}
-	}
-	include $config['path'] . 'views/' . $name . '.php';
-	include ($config['path'] . 'views/' . $name . '.php');
+    if (!empty($data)) {
+        foreach ($data as $key => $d) {
+            $$key = $d;
+        }
+    }
+    include $config['path'] . 'views/' . $name . '.php';
+    include ($config['path'] . 'views/' . $name . '.php');
 }
 
 function loadController($name, $view = '')
 {
-	global $config, $params, $lw;
+    global $config, $params, $lw;
 
-	include $config['path'] . 'controllers/' . $name . '.php';
-	include ($config['path'] . 'controllers/' . $name . '.php');
-	if (isset($data)) {
-		loadView($view, $data);
-	} else {
-		loadView($view, array());
-	}
+    include $config['path'] . 'controllers/' . $name . '.php';
+    include ($config['path'] . 'controllers/' . $name . '.php');
+    if (isset($data)) {
+        loadView($view, $data);
+    } else {
+        loadView($view, array());
+    }
 }
 ?>

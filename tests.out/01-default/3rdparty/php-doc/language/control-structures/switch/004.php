@@ -4,16 +4,16 @@ $start = 3;
 
 switch ($target) {
     case $start - 1:
-        print "A";
+        print 'A';
         break;
     case $start - 2:
-        print "B";
+        print 'B';
         break;
     case $start - 3:
-        print "C";
+        print 'C';
         break;
     case $start - 4:
-        print "D";
+        print 'D';
         break;
 }
 

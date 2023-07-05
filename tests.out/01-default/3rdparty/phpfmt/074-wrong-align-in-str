@@ -7,12 +7,12 @@ $cccccccc = 3;
 $c = 0;
 
 $a = array(
-	$a => 1,
-	$ccc => 10,
+    $a => 1,
+    $ccc => 10,
 );
 $bbbb = array(
-	$b => 0,
-	$cccc => "
+    $b => 0,
+    $cccc => "
 \$a = array(
 \t0 => 1,
 \t10 => 10,

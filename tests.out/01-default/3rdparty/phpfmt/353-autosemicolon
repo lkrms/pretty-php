@@ -2,23 +2,23 @@
 //passes:AutoSemicolon
 class A
 {
-	protected function tokenIs($direction, $token, $ignoreList = [])
-	{
-		if ('left' != $direction) {
-			$direction = 'right';
-		}
-		if (!$this->useCache) {
-			return static::{$direction . 'tokenSubsetIsAtIdx'}($this->tkns, $this->ptr, $token, $ignoreList);
-		}
+    protected function tokenIs($direction, $token, $ignoreList = [])
+    {
+        if ('left' != $direction) {
+            $direction = 'right';
+        }
+        if (!$this->useCache) {
+            return static::{$direction . 'tokenSubsetIsAtIdx'}($this->tkns, $this->ptr, $token, $ignoreList);
+        }
 
-		$key = $this->calculateCacheKey($direction, $ignoreList, $token);
-		if (isset($this->cache[$key])) {
-			return $this->cache[$key];
-		}
+        $key = $this->calculateCacheKey($direction, $ignoreList, $token);
+        if (isset($this->cache[$key])) {
+            return $this->cache[$key];
+        }
 
-		$ret = static::{$direction . 'tokenSubsetIsAtIdx'}($this->tkns, $this->ptr, $token, $ignoreList);
-		$this->cache[$key] = $ret;
+        $ret = static::{$direction . 'tokenSubsetIsAtIdx'}($this->tkns, $this->ptr, $token, $ignoreList);
+        $this->cache[$key] = $ret;
 
-		return $ret;
-	}
+        return $ret;
+    }
 }

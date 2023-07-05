@@ -1,3 +1,3 @@
 <?php
-$a = "new string";
+$a = 'new string';
 ?>

@@ -2,12 +2,12 @@
 //passes:Default,StripNewlineAfterClassOpen
 class A
 {
-	protected $a;
+    protected $a;
 }
 
 trait B
 {
-	// Comment
+    // Comment
 }
 
 A::class;

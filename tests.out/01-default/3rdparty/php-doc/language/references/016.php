@@ -1,3 +1,3 @@
 <?php
-$var = &$GLOBALS["var"];
+$var = &$GLOBALS['var'];
 ?>

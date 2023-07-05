@@ -1,16 +1,16 @@
 <?php
 //passes:AlignGroupDoubleArrow
 $test = [
-	'shortkey' => [
-		'shortkey' => 'test',
-		'shortishkey' => 'test',
-		'reallylongkey' => 'test',
-		'anotherreallylongkey' => 'test',
-	],
-	'reallylongkey' => [
-		'shortkey' => 'test',
-		'shortishkey' => 'test',
-		'reallylongkey' => 'test',
-		'anotherreallylongkey' => 'test',
-	],
+    'shortkey' => [
+        'shortkey' => 'test',
+        'shortishkey' => 'test',
+        'reallylongkey' => 'test',
+        'anotherreallylongkey' => 'test',
+    ],
+    'reallylongkey' => [
+        'shortkey' => 'test',
+        'shortishkey' => 'test',
+        'reallylongkey' => 'test',
+        'anotherreallylongkey' => 'test',
+    ],
 ];

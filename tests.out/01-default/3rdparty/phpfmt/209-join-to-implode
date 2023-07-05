@@ -3,8 +3,8 @@
 
 class A
 {
-	protected function join()
-	{
-		return join('', []);
-	}
+    protected function join()
+    {
+        return join('', []);
+    }
 }

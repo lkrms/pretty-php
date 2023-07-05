@@ -10,9 +10,10 @@ trait PropertiesTrait
 class PropertiesExample
 {
     use PropertiesTrait;
+
     public $same = true;
-    public $different1 = true;         // Fatal error
-    public string $different2;         // Fatal error
+    public $different1 = true;  // Fatal error
+    public string $different2;  // Fatal error
     readonly public bool $different3;  // Fatal error
 }
 ?>

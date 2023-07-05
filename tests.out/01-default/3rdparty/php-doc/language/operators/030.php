@@ -1,4 +1,5 @@
 <?php
+
 class ParentClass {}
 
 class MyClass extends ParentClass {}

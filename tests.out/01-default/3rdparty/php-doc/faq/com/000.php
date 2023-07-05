@@ -1,3 +1,3 @@
 <?php
-$word = new COM("C:\docs\word.doc");
+$word = new COM('C:\docs\word.doc');
 ?>

@@ -8,20 +8,20 @@ abstract class AbstractClass
 class ConcreteClass extends AbstractClass
 {
     // Our child class may define optional arguments not in the parent's signature
-    public function prefixName($name, $separator = ".")
+    public function prefixName($name, $separator = '.')
     {
-        if ($name == "Pacman") {
-            $prefix = "Mr";
-        } elseif ($name == "Pacwoman") {
-            $prefix = "Mrs";
+        if ($name == 'Pacman') {
+            $prefix = 'Mr';
+        } elseif ($name == 'Pacwoman') {
+            $prefix = 'Mrs';
         } else {
-            $prefix = "";
+            $prefix = '';
         }
         return "{$prefix}{$separator} {$name}";
     }
 }
 
 $class = new ConcreteClass;
-echo $class->prefixName("Pacman"), "\n";
-echo $class->prefixName("Pacwoman"), "\n";
+echo $class->prefixName('Pacman'), "\n";
+echo $class->prefixName('Pacwoman'), "\n";
 ?>

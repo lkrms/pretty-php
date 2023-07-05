@@ -16,7 +16,7 @@ class CopyFile implements ActionHandler
     public function fileExists()
     {
         if (!file_exists($this->fileName)) {
-            throw new RuntimeException("File does not exist");
+            throw new RuntimeException('File does not exist');
         }
     }
 
@@ -54,7 +54,7 @@ function executeAction(ActionHandler $actionHandler)
 }
 
 $copyAction = new CopyFile();
-$copyAction->fileName = "/tmp/foo.jpg";
-$copyAction->targetDirectory = "/home/user";
+$copyAction->fileName = '/tmp/foo.jpg';
+$copyAction->targetDirectory = '/home/user';
 
 executeAction($copyAction);

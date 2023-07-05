@@ -2,11 +2,11 @@
 //passes:Default,CakePHPStyle
 class A
 {
-	public function method()
-	{
-		switch ($var) {
-			case 'option':
-				${$var};
-		}
-	}
+    public function method()
+    {
+        switch ($var) {
+            case 'option':
+                ${$var};
+        }
+    }
 }

@@ -7,11 +7,11 @@ else {
 }
 
 switch ($f) {
-	// comment #1
-	case '1':
-		break;
+    // comment #1
+    case '1':
+        break;
 
-	// comment #2
-	default:
-		break;
+    // comment #2
+    default:
+        break;
 }

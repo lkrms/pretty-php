@@ -2,5 +2,5 @@
 //passes:GeneratePHPDoc
 class A
 {
-	public function b($a) {}
+    public function b($a) {}
 }

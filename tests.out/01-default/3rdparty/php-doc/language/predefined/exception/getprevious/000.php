@@ -4,9 +4,9 @@ class MyCustomException extends Exception {}
 function doStuff()
 {
     try {
-        throw new InvalidArgumentException("You are doing it wrong!", 112);
+        throw new InvalidArgumentException('You are doing it wrong!', 112);
     } catch (Exception $e) {
-        throw new MyCustomException("Something happened", 911, $e);
+        throw new MyCustomException('Something happened', 911, $e);
     }
 }
 

@@ -1,7 +1,7 @@
 <?php
-$stream = fopen("rar://"
+$stream = fopen('rar://'
         . rawurlencode(dirname(__FILE__)) . DIRECTORY_SEPARATOR
-        . 'encrypted_headers.rar' . '#encfile1.txt', "r", false,
+        . 'encrypted_headers.rar' . '#encfile1.txt', 'r', false,
     stream_context_create(
         array(
             'rar' =>

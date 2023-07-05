@@ -5,16 +5,17 @@ class Foo
     {
         echo "bar\n";
     }
+
     function baz()
     {
         echo "baz\n";
     }
 }
 
-$func = array("Foo", "bar");
+$func = array('Foo', 'bar');
 $func();  // prints "bar"
-$func = array(new Foo, "baz");
+$func = array(new Foo, 'baz');
 $func();  // prints "baz"
-$func = "Foo::bar";
+$func = 'Foo::bar';
 $func();  // prints "bar"
 ?>

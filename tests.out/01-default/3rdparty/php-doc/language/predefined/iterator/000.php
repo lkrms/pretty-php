@@ -2,10 +2,11 @@
 class myIterator implements Iterator
 {
     private $position = 0;
+
     private $array = array(
-        "firstelement",
-        "secondelement",
-        "lastelement",
+        'firstelement',
+        'secondelement',
+        'lastelement',
     );
 
     public function __construct()

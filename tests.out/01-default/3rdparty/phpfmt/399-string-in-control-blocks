@@ -2,23 +2,23 @@
 //passes: SpaceAroundControlStructures
 
 if (true) {
-	$label = "{$foo}{$bar}";
+    $label = "{$foo}{$bar}";
 }
 
 echo <<<EOT
-	{$foo}{$bar}
-	EOT;
+    {$foo}{$bar}
+    EOT;
 
 //comment that explain the if
 if ($x) {
-	//body
+    //body
 }
 
 $someothercode;
 
 //comment that explain the if
 while ($x) {
-	//body
+    //body
 }
 
 $someothercode;
@@ -26,7 +26,7 @@ $someothercode;
 $someothercode;
 //comment that explain the if
 while ($x) {
-	//body
+    //body
 }
 
 ?>

@@ -26,6 +26,7 @@ class B extends A
         echo __CLASS__ . "\n";
     }
 }
+
 class C extends B
 {
     public static function who()

@@ -1,5 +1,5 @@
 <?php
-$juices = array("apple", "orange", "koolaid1" => "purple");
+$juices = array('apple', 'orange', 'koolaid1' => 'purple');
 
 echo "He drank some $juices[0] juice." . PHP_EOL;
 echo "He drank some $juices[1] juice." . PHP_EOL;
@@ -7,11 +7,10 @@ echo "He drank some $juices[koolaid1] juice." . PHP_EOL;
 
 class people
 {
-    public $john = "John Smith";
-    public $jane = "Jane Smith";
-    public $robert = "Robert Paulsen";
-
-    public $smith = "Smith";
+    public $john = 'John Smith';
+    public $jane = 'Jane Smith';
+    public $robert = 'Robert Paulsen';
+    public $smith = 'Smith';
 }
 
 $people = new people();

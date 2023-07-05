@@ -1,10 +1,10 @@
 <?php
 //passes:Default,CakePHPStyle
 if ($a) {
-	array(
-		/*comment*/
-		'key' => 'value',
-	);
+    array(
+        /*comment*/
+        'key' => 'value',
+    );
 } else {  // comment
 }
 ?>

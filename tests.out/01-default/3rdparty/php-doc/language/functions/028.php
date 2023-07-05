@@ -9,12 +9,12 @@ class Foo
 
     function Bar()
     {
-        echo "This is Bar";
+        echo 'This is Bar';
     }
 }
 
 $foo = new Foo();
-$funcname = "Variable";
+$funcname = 'Variable';
 $foo->$funcname();  // This calls $foo->Variable()
 
 ?>

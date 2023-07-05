@@ -8,12 +8,12 @@ foreach ($_POST as $varname => $varvalue) {
     }
 }
 
-print "<pre>";
+print '<pre>';
 if (empty($empty)) {
     print "None of the POSTed values are empty, posted:\n";
     var_dump($post);
 } else {
-    print "We have " . count($empty) . " empty values\n";
+    print 'We have ' . count($empty) . " empty values\n";
     print "Posted:\n";
     var_dump($post);
     print "Empty:\n";

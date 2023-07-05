@@ -1,7 +1,7 @@
 <?php
 //passes:Default,ExtraCommaInArray
 $x = 'literal'[
-	$x
+    $x
 ];
 
 // Illegal
@@ -10,50 +10,50 @@ $x = 'literal'[
 [];
 
 [
-	$a
+    $a
 ];
 
 [
-	1,
-	'literal'
+    1,
+    'literal'
 ];
 
 [
-	[],
-	[]
+    [],
+    []
 ];
 
 (array) [
-	100,
-	22
+    100,
+    22
 ];
 
 [
-	2,
-	32
+    2,
+    32
 ][$var];
 
 [
-	2,
-	32
+    2,
+    32
 ][
-	$var
+    $var
 ];
 
 ${'x'}[
-	1
+    1
 ];
 
 literal[
-	1
+    1
 ];
 
 array('literal')[
-	1
+    1
 ];
 
 somefunc()[
-	1
+    1
 ];
 
 'literal'[1];

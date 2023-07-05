@@ -1,29 +1,29 @@
 <?php
 //passes:Default, AllmanStyleBraces
 switch (1) {
-	case 'value':
-		if (1) {
-			op();
-			$a = 10;
-		} elseif (2) {
-			op2();
-		} else {
-			op3();
-		}
+    case 'value':
+        if (1) {
+            op();
+            $a = 10;
+        } elseif (2) {
+            op2();
+        } else {
+            op3();
+        }
 
-		foreach ($variable as $key => $value) {
-			# code...
-		}
+        foreach ($variable as $key => $value) {
+            # code...
+        }
 
-		while (false) {
-			# code...
-		}
+        while (false) {
+            # code...
+        }
 
-		do {
-			# code...
-		} while (false);
-		break;
+        do {
+            # code...
+        } while (false);
+        break;
 
-	default:
-		break;
+    default:
+        break;
 }

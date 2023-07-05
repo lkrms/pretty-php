@@ -3,7 +3,7 @@ function &aFunc() {}
 
 class aClass
 {
-	function &aMethod() {}
+    function &aMethod() {}
 }
 
 $a = &implode($a, $b);
@@ -12,5 +12,5 @@ $var = function &() {};
 $var2 = function &() use ($anotherVar) {};
 
 array_map(function &($a) use ($someVar) {
-	return 1;
+    return 1;
 }, $arr);

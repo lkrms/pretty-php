@@ -11,9 +11,9 @@ use ONS\A\B;
  */
 class StdClassForTesting
 {
-	function a()
-	{
-		new A();
-		new B();
-	}
+    function a()
+    {
+        new A();
+        new B();
+    }
 }

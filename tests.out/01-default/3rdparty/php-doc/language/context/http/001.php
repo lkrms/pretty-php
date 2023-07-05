@@ -1,6 +1,6 @@
 <?php
 
-$url = "http://www.example.org/header.php";
+$url = 'http://www.example.org/header.php';
 
 $opts = array('http' =>
     array(

@@ -1,15 +1,15 @@
 <?php
 class ClassObject
 {
-	protected $ccccd = null;
-	protected $eeee = false;
-	protected $uuu;
+    protected $ccccd = null;
+    protected $eeee = false;
+    protected $uuu;
 
-	private $real_long_name_variable = false;
+    private $real_long_name_variable = false;
 
-	private $ppppp = array();
+    private $ppppp = array();
 
-	private $gddddd = array();
+    private $gddddd = array();
 
-	public $a = 0;
+    public $a = 0;
 }

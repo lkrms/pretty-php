@@ -2,6 +2,7 @@
 class SubObject
 {
     static $instances = 0;
+
     public $instance;
 
     public function __construct()

@@ -3,6 +3,7 @@ function small_numbers()
 {
     return [0, 1, 2];
 }
+
 // Array destructuring will collect each member of the array individually
 [$zero, $one, $two] = small_numbers();
 

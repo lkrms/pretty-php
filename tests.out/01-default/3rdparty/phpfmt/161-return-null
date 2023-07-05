@@ -2,42 +2,42 @@
 //passes:ReturnNull,Default
 function a()
 {
-	return null;
+    return null;
 }
 
 function b()
 {
-	return /* comment */ null;
+    return /* comment */ null;
 }
 
 function c()
 {
-	return (null);
+    return (null);
 }
 
 function d()
 {
-	return ((null));
+    return ((null));
 }
 
 function e()
 {
-	return null ? 1 : 0;
+    return null ? 1 : 0;
 }
 
 function f()
 {
-	return ((null . null));
+    return ((null . null));
 }
 
 function g()
 {
-	return null . null;
+    return null . null;
 }
 
 function h()
 {
-	return array_map(function ($v) {
-		return null;
-	}, $arr);
+    return array_map(function ($v) {
+        return null;
+    }, $arr);
 }

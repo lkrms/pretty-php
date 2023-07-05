@@ -18,6 +18,7 @@ trait World
 class MyHelloWorld
 {
     use Hello, World;
+
     public function sayExclamationMark()
     {
         echo '!';

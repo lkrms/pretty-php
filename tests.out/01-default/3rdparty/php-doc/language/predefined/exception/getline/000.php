@@ -1,7 +1,7 @@
 <?php
 try {
-    throw new Exception("Some error message");
+    throw new Exception('Some error message');
 } catch (Exception $e) {
-    echo "The exception was created on line: " . $e->getLine();
+    echo 'The exception was created on line: ' . $e->getLine();
 }
 ?>

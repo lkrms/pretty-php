@@ -1,9 +1,9 @@
 <?php
 /* PUT data comes in on the stdin stream */
-$putdata = fopen("php://input", "r");
+$putdata = fopen('php://input', 'r');
 
 /* Open a file for writing */
-$fp = fopen("myputfile.ext", "w");
+$fp = fopen('myputfile.ext', 'w');
 
 /* Read the data 1 KB at a time
    and write to the file */

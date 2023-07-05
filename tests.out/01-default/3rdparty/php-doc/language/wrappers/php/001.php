@@ -3,5 +3,5 @@
   readfile("http://www.example.com");
   since no filters are actually specified */
 
-readfile("php://filter/resource=http://www.example.com");
+readfile('php://filter/resource=http://www.example.com');
 ?>

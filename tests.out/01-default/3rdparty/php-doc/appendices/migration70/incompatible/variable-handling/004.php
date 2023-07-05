@@ -1,4 +1,5 @@
 <?php
+
 function getArray()
 {
     return [1, 2, 3];

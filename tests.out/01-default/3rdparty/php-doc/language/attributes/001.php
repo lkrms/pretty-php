@@ -28,7 +28,7 @@ use MyExample\MyAttribute;
 #[MyAttribute(1234)]
 #[MyAttribute(value: 1234)]
 #[MyAttribute(MyAttribute::VALUE)]
-#[MyAttribute(array("key" => "value"))]
+#[MyAttribute(array('key' => 'value'))]
 #[MyAttribute(100 + 200)]
 class Thing {}
 

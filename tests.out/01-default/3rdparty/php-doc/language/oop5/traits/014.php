@@ -8,6 +8,7 @@ trait ConstantsTrait
 class ConstantsExample
 {
     use ConstantsTrait;
+
     public const FLAG_IMMUTABLE = 5;  // Fatal error
 }
 ?>

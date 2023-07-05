@@ -6,9 +6,9 @@ class Obj implements ArrayAccess
     public function __construct()
     {
         $this->container = array(
-            "one" => 1,
-            "two" => 2,
-            "three" => 3,
+            'one' => 1,
+            'two' => 2,
+            'three' => 3,
         );
     }
 
@@ -39,12 +39,12 @@ class Obj implements ArrayAccess
 
 $obj = new Obj;
 
-var_dump(isset($obj["two"]));
-var_dump($obj["two"]);
-unset($obj["two"]);
-var_dump(isset($obj["two"]));
-$obj["two"] = "A value";
-var_dump($obj["two"]);
+var_dump(isset($obj['two']));
+var_dump($obj['two']);
+unset($obj['two']);
+var_dump(isset($obj['two']));
+$obj['two'] = 'A value';
+var_dump($obj['two']);
 $obj[] = 'Append 1';
 $obj[] = 'Append 2';
 $obj[] = 'Append 3';

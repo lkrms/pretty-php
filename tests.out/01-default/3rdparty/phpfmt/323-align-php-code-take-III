@@ -1,7 +1,7 @@
 <table><tr>
 	<td><?php
 foreach ($param2_arr as $key) {
-	echo $key . "
+    echo $key . "
 \t    \t\ta
 \t    \t\t";
 }
@@ -9,7 +9,7 @@ foreach ($param2_arr as $key) {
 	</td>
 	<td><?php
 foreach ($param2_arr as $key) {
-	echo $key . "
+    echo $key . "
 	    		a$b
 	    		";
 }

@@ -12,5 +12,5 @@ class foo
 $obj = new foo;
 $myValue = &$obj->getValue();  // $myValue is a reference to $obj->value, which is 42.
 $obj->value = 2;
-echo $myValue;                 // prints the new value of $obj->value, i.e. 2.
+echo $myValue;  // prints the new value of $obj->value, i.e. 2.
 ?>

@@ -1,5 +1,6 @@
 <?php
 const ONE = 1;
+
 class foo
 {
     const TWO = ONE * 2;

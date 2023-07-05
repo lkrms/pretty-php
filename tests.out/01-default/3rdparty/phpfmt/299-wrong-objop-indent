@@ -2,20 +2,20 @@
 
 function hello()
 {
-	$aaaa
-		->foo('one')
-		->foo(
-			$thisNameLengthChangesIndent->bar(
-				'asdf',
-				'fdsajhfasdjfhgasjhdgf',
-				[
-					'opt' => true,
-					'opt2' => true,
-					'opt3' => 'gfhdjsgdkfhgskdfghjk',
-				]
-			)->chainedMethod(new Whatever)
-		)
-		->foo(
-			'moreFoos'
-		);
+    $aaaa
+        ->foo('one')
+        ->foo(
+            $thisNameLengthChangesIndent->bar(
+                'asdf',
+                'fdsajhfasdjfhgasjhdgf',
+                [
+                    'opt' => true,
+                    'opt2' => true,
+                    'opt3' => 'gfhdjsgdkfhgskdfghjk',
+                ]
+            )->chainedMethod(new Whatever)
+        )
+        ->foo(
+            'moreFoos'
+        );
 }

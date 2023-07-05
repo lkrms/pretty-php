@@ -1,4 +1,5 @@
 <?php
+
 function foo()
 {
     echo "In foo()<br />\n";

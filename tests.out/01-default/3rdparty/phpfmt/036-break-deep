@@ -1,7 +1,7 @@
 <?php
 if ($a) {
-	break;
+    break;
 }
 if ($a) {
-	break 2;
+    break 2;
 }

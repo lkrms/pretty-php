@@ -6,5 +6,5 @@ $homedir = "/home/$username";
 
 unlink("$homedir/$userfile");
 
-echo "The file has been deleted!";
+echo 'The file has been deleted!';
 ?>

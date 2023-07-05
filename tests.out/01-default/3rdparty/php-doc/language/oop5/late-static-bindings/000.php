@@ -5,6 +5,7 @@ class A
     {
         echo __CLASS__;
     }
+
     public static function test()
     {
         self::who();

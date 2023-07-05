@@ -1,4 +1,5 @@
 <?php
+
 function bool2str($bool)
 {
     if ($bool === false) {

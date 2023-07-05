@@ -1,8 +1,8 @@
 <?php
 class ClassObject
 {
-	/**
-	 * TBD
-	 */
-	function func() {}
+    /**
+     * TBD
+     */
+    function func() {}
 }

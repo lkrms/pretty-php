@@ -5,10 +5,10 @@
  */
 class BlogController
 {
-	public function reports($request)
-	{
-		return $request;
-	}
+    public function reports($request)
+    {
+        return $request;
+    }
 }
 
 //passes:GeneratePHPDoc

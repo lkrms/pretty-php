@@ -6,26 +6,26 @@
  */
 class SomeClass
 {
-	/**
-	 * @param mixed $a
-	 * @return mixed
-	 */
-	function a($a)
-	{
-		return $a;
-	}
+    /**
+     * @param mixed $a
+     * @return mixed
+     */
+    function a($a)
+    {
+        return $a;
+    }
 
-	function b()
-	{
-		/**
-		 * @var SomeType
-		 */
-		$var &= $var;
+    function b()
+    {
+        /**
+         * @var SomeType
+         */
+        $var &= $var;
 
-		$var &= $var;
+        $var &= $var;
 
-		/**
-		 * @var SomeType
-		 */
-	}
+        /**
+         * @var SomeType
+         */
+    }
 }

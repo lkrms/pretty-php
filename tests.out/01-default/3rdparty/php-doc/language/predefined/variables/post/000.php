@@ -1,3 +1,3 @@
 <?php
-echo 'Hello ' . htmlspecialchars($_POST["name"]) . '!';
+echo 'Hello ' . htmlspecialchars($_POST['name']) . '!';
 ?>

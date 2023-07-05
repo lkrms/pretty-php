@@ -13,5 +13,5 @@
  */
 function SomeFunc(array $v1, array $v2, NS3 $v3, $v4, $v51)
 {
-	return 'string';
+    return 'string';
 }

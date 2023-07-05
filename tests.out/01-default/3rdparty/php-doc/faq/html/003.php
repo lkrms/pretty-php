@@ -1,8 +1,8 @@
 <?php
 if (isset($_GET['width']) AND isset($_GET['height'])) {
     // output the geometry variables
-    echo "Screen width is: " . $_GET['width'] . "<br />\n";
-    echo "Screen height is: " . $_GET['height'] . "<br />\n";
+    echo 'Screen width is: ' . $_GET['width'] . "<br />\n";
+    echo 'Screen height is: ' . $_GET['height'] . "<br />\n";
 } else {
     // pass the geometry variables
     // (preserve the original query string

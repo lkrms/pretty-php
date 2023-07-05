@@ -4,9 +4,9 @@ class MyCustomError extends Error {}
 function doStuff()
 {
     try {
-        throw new InvalidArgumentError("You are doing it wrong!", 112);
+        throw new InvalidArgumentError('You are doing it wrong!', 112);
     } catch (Error $e) {
-        throw new MyCustomError("Something happened", 911, $e);
+        throw new MyCustomError('Something happened', 911, $e);
     }
 }
 

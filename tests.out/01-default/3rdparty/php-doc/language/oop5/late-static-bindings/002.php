@@ -5,6 +5,7 @@ class A
     {
         echo "success!\n";
     }
+
     public function test()
     {
         $this->foo();

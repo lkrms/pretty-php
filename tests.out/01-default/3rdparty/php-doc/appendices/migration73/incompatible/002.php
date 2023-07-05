@@ -3,6 +3,7 @@ class Test
 {
     public static $x = 0;
 }
+
 class Test2 extends Test {}
 
 Test2::$x = &$x;

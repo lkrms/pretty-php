@@ -7,8 +7,8 @@ use C;
 
 class D
 {
-	function f()
-	{
-		new B();
-	}
+    function f()
+    {
+        new B();
+    }
 }

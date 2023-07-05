@@ -16,7 +16,7 @@ class Dog extends Animal
 {
     public function speak()
     {
-        echo $this->name . " barks";
+        echo $this->name . ' barks';
     }
 }
 
@@ -24,6 +24,6 @@ class Cat extends Animal
 {
     public function speak()
     {
-        echo $this->name . " meows";
+        echo $this->name . ' meows';
     }
 }

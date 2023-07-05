@@ -11,7 +11,7 @@ class MyClass
 
 echo MyClass::CONSTANT . "\n";
 
-$classname = "MyClass";
+$classname = 'MyClass';
 echo $classname::CONSTANT . "\n";
 
 $class = new MyClass();

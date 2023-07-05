@@ -11,7 +11,7 @@ register_tick_function('tick_handler');  // causes a tick event
 $a = 1;  // causes a tick event
 
 if ($a > 0) {
-    $a += 2;     // causes a tick event
+    $a += 2;  // causes a tick event
     print ($a);  // causes a tick event
 }
 

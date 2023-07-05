@@ -4,8 +4,8 @@ namespace A;
 
 class A
 {
-	function name()
-	{
+    function name()
+    {
 ?><?php
-	}
+    }
 }

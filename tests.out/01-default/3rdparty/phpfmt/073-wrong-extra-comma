@@ -1,4 +1,4 @@
 <?php
 function a(
-	array $a, $b = null
+    array $a, $b = null
 ) {}

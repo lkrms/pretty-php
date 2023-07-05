@@ -7,19 +7,19 @@ use AA\BB\CC as CC;
 
 class SomeClass
 {
-	/**
-	 * @return AA\BB
-	 */
-	function abc()
-	{
-		// do something
-	}
+    /**
+     * @return AA\BB
+     */
+    function abc()
+    {
+        // do something
+    }
 
-	/**
-	 * @return CC
-	 */
-	function abcd()
-	{
-		// do something
-	}
+    /**
+     * @return CC
+     */
+    function abcd()
+    {
+        // do something
+    }
 }

@@ -1,8 +1,8 @@
 <?php
 // Instead of:
 $array{0};
-$array{"key"};
+$array{'key'};
 // Write:
 $array[0];
-$array["key"];
+$array['key'];
 ?>

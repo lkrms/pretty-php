@@ -1,6 +1,6 @@
 <?php
 try {
-    throw new Exception("Some error message");
+    throw new Exception('Some error message');
 } catch (Exception $e) {
     echo $e->getMessage();
 }

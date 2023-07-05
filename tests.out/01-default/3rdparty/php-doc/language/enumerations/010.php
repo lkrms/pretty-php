@@ -23,7 +23,7 @@ final class Suit implements UnitEnum, Colorful
 
     public function shape(): string
     {
-        return "Rectangle";
+        return 'Rectangle';
     }
 
     public static function cases(): array

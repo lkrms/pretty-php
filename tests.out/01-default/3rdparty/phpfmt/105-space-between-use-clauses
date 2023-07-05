@@ -7,10 +7,10 @@ use C;
 
 class D
 {
-	function A()
-	{
-		new A();
-		new B();
-		new C();
-	}
+    function A()
+    {
+        new A();
+        new B();
+        new C();
+    }
 }

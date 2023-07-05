@@ -21,9 +21,9 @@ class DogShelter implements AnimalShelter
     }
 }
 
-$kitty = (new CatShelter)->adopt("Ricky");
+$kitty = (new CatShelter)->adopt('Ricky');
 $kitty->speak();
 echo "\n";
 
-$doggy = (new DogShelter)->adopt("Mavrick");
+$doggy = (new DogShelter)->adopt('Mavrick');
 $doggy->speak();

@@ -1,14 +1,15 @@
 <?php
-$var1 = "Example variable";
-$var2 = "";
+$var1 = 'Example variable';
+$var2 = '';
 
 function global_references($use_globals)
 {
     global $var1, $var2;
+
     if (!$use_globals) {
-        $var2 = &$var1;             // visible only inside the function
+        $var2 = &$var1;  // visible only inside the function
     } else {
-        $GLOBALS["var2"] = &$var1;  // visible also in global context
+        $GLOBALS['var2'] = &$var1;  // visible also in global context
     }
 }
 

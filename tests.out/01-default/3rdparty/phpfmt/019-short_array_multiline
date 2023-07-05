@@ -11,7 +11,7 @@ $a = ['a' => getId(), 'b' => getId(['a', 'b'])];
 
 function a()
 {
-	return [$a];
+    return [$a];
 }
 
 $a = [];

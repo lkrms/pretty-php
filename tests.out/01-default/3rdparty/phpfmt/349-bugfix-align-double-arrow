@@ -2,5 +2,5 @@
 //passes:AlignDoubleArrow
 
 foreach ($facilities as $fac) {
-	yield $categoryId => $fac;
+    yield $categoryId => $fac;
 }

@@ -3,7 +3,7 @@
 
 class A
 {
-	private $a;
-	public $b;
-	protected $c;
+    private $a;
+    public $b;
+    protected $c;
 }

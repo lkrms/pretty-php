@@ -1,34 +1,34 @@
 <?php
 $o = new ClassOBj(
-	(string) $obj->Hn,
-	'',
-	(string) $obj->Ha,
-	.0,
-	0
+    (string) $obj->Hn,
+    '',
+    (string) $obj->Ha,
+    .0,
+    0
 );
 
 $o = new ClassOBj(
-	$obj->Hn,
-	'',
-	(string) $obj->Ha,
-	.0,
-	0
+    $obj->Hn,
+    '',
+    (string) $obj->Ha,
+    .0,
+    0
 );
 
 $o = new ClassOBj(
-	func(),
-	'',
-	(string) $obj->Ha,
-	.0,
-	0
+    func(),
+    '',
+    (string) $obj->Ha,
+    .0,
+    0
 );
 
 $o = new ClassOBj(
-	CONSTANT_NAME,
-	'',
-	(string) $obj->Ha,
-	.0,
-	0
+    CONSTANT_NAME,
+    '',
+    (string) $obj->Ha,
+    .0,
+    0
 );
 
 $o = new ClassOBj((string) $obj->Hn, '', (string) $obj->Ha, .0, 0);

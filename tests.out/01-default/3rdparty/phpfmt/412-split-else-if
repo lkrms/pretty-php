@@ -2,13 +2,13 @@
 //passes: SplitElseIf
 
 if ($a) {
-	$b;
+    $b;
 } elseif ($b) {
-	$c;
+    $c;
 }
 
 if ($a) {
-	$b;
+    $b;
 } else if ($b) {
-	$c;
+    $c;
 }

@@ -4,16 +4,16 @@ $start = 3;
 
 switch (true) {
     case $start - $offset === 1:
-        print "A";
+        print 'A';
         break;
     case $start - $offset === 2:
-        print "B";
+        print 'B';
         break;
     case $start - $offset === 3:
-        print "C";
+        print 'C';
         break;
     case $start - $offset === 4:
-        print "D";
+        print 'D';
         break;
 }
 

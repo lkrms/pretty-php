@@ -3,12 +3,12 @@
 
 class A
 {
-	private $a;
-	public $b;
-	protected $c;
+    private $a;
+    public $b;
+    protected $c;
 
-	public function setA($a)
-	{
-		$this->a = $a;
-	}
+    public function setA($a)
+    {
+        $this->a = $a;
+    }
 }

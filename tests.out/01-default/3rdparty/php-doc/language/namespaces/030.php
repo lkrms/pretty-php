@@ -1,5 +1,6 @@
 <?php
 namespace foo;
+
 $a = new \stdClass;
 
 function test(\ArrayObject $parameter_type_example = null) {}

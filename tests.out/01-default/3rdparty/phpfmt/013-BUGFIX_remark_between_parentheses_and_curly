@@ -1,8 +1,8 @@
 <?php
 if (true)  //comment
-           //comment
+//comment
 {
-	$a;
+    $a;
 } else {
-	$b;
+    $b;
 }

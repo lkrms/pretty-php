@@ -13,4 +13,4 @@ class B extends A
 $obj = new B;
 
 // Pass parameters according to A::test() contract
-$obj->test(foo: "foo", bar: "bar");  // ERROR!
+$obj->test(foo: 'foo', bar: 'bar');  // ERROR!

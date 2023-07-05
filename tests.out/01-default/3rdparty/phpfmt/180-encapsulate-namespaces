@@ -10,5 +10,5 @@ class C {}
 
 namespace C
 {
-	class D {}
+    class D {}
 }

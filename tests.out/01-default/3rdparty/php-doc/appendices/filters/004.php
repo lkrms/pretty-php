@@ -16,7 +16,7 @@ fclose($fp);
 
 $fp = fopen('php://output', 'w');
 stream_filter_append($fp, 'convert.base64-decode');
-fwrite($fp, "VGhpcyBpcyBhIHRlc3QuCg==");
+fwrite($fp, 'VGhpcyBpcyBhIHRlc3QuCg==');
 fclose($fp);
 /* Outputs:  This is a test.  */
 ?>

@@ -2,13 +2,13 @@
 //passes: OrganizeClass
 class SandboxedPass
 {
-	final protected function alignPlaceholders($origPlaceholder, $contextCounter)
-	{
-		return parent::alignPlaceholders($origPlaceholder, $contextCounter);
-	}
+    final protected function alignPlaceholders($origPlaceholder, $contextCounter)
+    {
+        return parent::alignPlaceholders($origPlaceholder, $contextCounter);
+    }
 
-	final protected function walkUntil($tknid)
-	{
-		return parent::walkUntil($tknid);
-	}
+    final protected function walkUntil($tknid)
+    {
+        return parent::walkUntil($tknid);
+    }
 }

@@ -1,4 +1,5 @@
 <?php
+
 function count_to_ten()
 {
     yield 1;

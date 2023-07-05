@@ -2,29 +2,29 @@
 //passes:Default,ReindentObjOps
 class Aa
 {
-	public function c()
-	{
-		$this->methodName()
-			->secondMethod()
-			->thirdMethod();
+    public function c()
+    {
+        $this->methodName()
+            ->secondMethod()
+            ->thirdMethod();
 
-		$a->app['scheduler'] = $this->getMockBuilder('somestring')
-			->setConstructorArgs(array($this->app))
-			->setMethods(array('getCurrentLongIp'))
-			->getMock();
-	}
+        $a->app['scheduler'] = $this->getMockBuilder('somestring')
+            ->setConstructorArgs(array($this->app))
+            ->setMethods(array('getCurrentLongIp'))
+            ->getMock();
+    }
 
-	public function d()
-	{
-		$this
-			->methodName()
-			->secondMethod()
-			->thirdMethod();
+    public function d()
+    {
+        $this
+            ->methodName()
+            ->secondMethod()
+            ->thirdMethod();
 
-		$a->app['scheduler'] = $this
-			->getMockBuilder('somestring')
-			->setConstructorArgs(array($this->app))
-			->setMethods(array('getCurrentLongIp'))
-			->getMock();
-	}
+        $a->app['scheduler'] = $this
+            ->getMockBuilder('somestring')
+            ->setConstructorArgs(array($this->app))
+            ->setMethods(array('getCurrentLongIp'))
+            ->getMock();
+    }
 }

@@ -3,14 +3,18 @@
 class A
 {
     private $val;
+
     function __construct($val)
     {
         $this->val = $val;
     }
+
     function getClosure()
     {
         //returns closure bound to this object and scope
-        return function () { return $this->val; };
+        return function () {
+            return $this->val;
+        };
     }
 }
 
