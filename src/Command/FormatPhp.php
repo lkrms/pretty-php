@@ -14,7 +14,6 @@ use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Console\Catalog\ConsoleLevel;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
-use Lkrms\Facade\Env;
 use Lkrms\Facade\File;
 use Lkrms\Facade\Sys;
 use Lkrms\Pretty\Php\Contract\Filter;
@@ -41,6 +40,7 @@ use Lkrms\Pretty\Php\Rule\SpaceDeclarations;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\PrettyBadSyntaxException;
 use Lkrms\Pretty\PrettyException;
+use Lkrms\Utility\Env;
 use Lkrms\Utility\Test;
 use RuntimeException;
 use SebastianBergmann\Diff\Differ;
@@ -1142,6 +1142,7 @@ EOF,
         if ($values !== null) {
             $this->applyOptionValues($values, false, false, $asArguments);
             if ($internal = $values['@internal'] ?? null) {
+                /** @var array<array<class-string<Rule>>|bool|null> $internal */
                 foreach ($internal as $name => $value) {
                     $property = self::INTERNAL_OPTION_MAP[$name] ?? null;
                     if (!$property) {
