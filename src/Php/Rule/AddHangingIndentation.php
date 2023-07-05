@@ -113,8 +113,8 @@ final class AddHangingIndentation implements TokenRule
             }
         } elseif ($token->ChainOpenedBy) {
             $stack[] = $token->ChainOpenedBy;
-        } elseif ($token->id === T_ATTRIBUTE ||
-                $token->prevSibling()->id === T_ATTRIBUTE) {
+        } elseif ($token->is([T_ATTRIBUTE, T_ATTRIBUTE_COMMENT]) ||
+                $token->prevSibling()->is([T_ATTRIBUTE, T_ATTRIBUTE_COMMENT])) {
             $stack[] = $token->Expression;
         } elseif ($latest && $latest->BracketStack === $token->BracketStack) {
             if ($token->isStartOfExpression()) {
@@ -294,8 +294,8 @@ final class AddHangingIndentation implements TokenRule
 
         // Ignore attributes and the declarations they describe unless they're
         // part of an expression
-        if (($token->id === T_ATTRIBUTE ||
-                    $token->prevSibling()->id === T_ATTRIBUTE) &&
+        if (($token->is([T_ATTRIBUTE, T_ATTRIBUTE_COMMENT]) ||
+                    $token->prevSibling()->is([T_ATTRIBUTE, T_ATTRIBUTE_COMMENT])) &&
                 $token->Expression === $token->Statement) {
             return false;
         }

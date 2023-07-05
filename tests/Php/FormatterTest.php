@@ -222,6 +222,9 @@ PHP,
                 array_merge($carry, $patterns),
             []
         );
+        $versionSuffix = PHP_VERSION_ID < 80000
+            ? '.PHP74'
+            : null;
 
         $formatOptions = [
             '01-default' => [
@@ -259,8 +262,12 @@ PHP,
 
                 $code = file_get_contents($inFile);
 
-                // Generate a baseline if the output file doesn't exist
-                if (!file_exists($outFile)) {
+                if ($versionSuffix && file_exists(
+                    $versionOutFile = preg_replace('/(\.php)?$/', $versionSuffix . '\1', $outFile, 1)
+                )) {
+                    $expected = file_get_contents($versionOutFile);
+                } elseif (!file_exists($outFile)) {
+                    // Generate a baseline if the output file doesn't exist
                     fprintf(STDERR, "Formatting %s\n", $path);
                     File::maybeCreateDirectory(dirname($outFile));
                     file_put_contents($outFile, $expected = $formatter->format($code, 3));

@@ -511,7 +511,7 @@ class Token extends CollectibleToken implements JsonSerializable
         // - Anonymous functions and classes are unterminated
         // - Other declarations end with `}`
         $parts = $start->withNextSiblingsWhile(...TokenType::DECLARATION_PART_WITH_NEW)
-                       ->filter(fn(Token $t) => $t->id !== T_ATTRIBUTE);
+                       ->filter(fn(Token $t) => !$t->is([T_ATTRIBUTE, T_ATTRIBUTE_COMMENT]));
         if ($parts->hasOneOf(...TokenType::DECLARATION) &&
                 $parts->last()->id !== T_FUNCTION &&
                 !($parts->first()->id === T_NEW && $parts->nth(2)->id === T_CLASS)) {
@@ -1369,7 +1369,7 @@ class Token extends CollectibleToken implements JsonSerializable
         // If the token is part of a top-level declaration (namespace, class,
         // function, trait, etc.), return the token before its opening brace
         if ($containTopLevelDeclaration && $this->Statement &&
-                $this->id !== T_ATTRIBUTE &&
+                !$this->is([T_ATTRIBUTE, T_ATTRIBUTE_COMMENT]) &&
                 ($parts = $this->declarationParts())->has($this, true) &&
                 $parts->hasOneOf(...TokenType::DECLARATION_TOP_LEVEL) &&
                 // Anonymous functions aren't top-level declarations

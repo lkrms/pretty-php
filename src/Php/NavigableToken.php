@@ -153,6 +153,9 @@ class NavigableToken extends PhpToken
         $count = count($keys);
         for ($i = 0; $i < $count; $i++) {
             $token = $tokens[$keys[$i]];
+            if ($token->id === T_COMMENT && substr($token->text, 0, 2) === '#[') {
+                $token->id = T_ATTRIBUTE_COMMENT;
+            }
             if ($token->is(TokenType::NOT_CODE)) {
                 $token->IsCode = false;
             }

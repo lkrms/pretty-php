@@ -10,6 +10,7 @@ final class TokenType
         // Custom
         T_NULL => 'T_NULL',
         T_END_ALT_SYNTAX => 'T_END_ALT_SYNTAX',
+        T_ATTRIBUTE_COMMENT => 'T_ATTRIBUTE_COMMENT',
 
         // Unofficial
         T_LOGICAL_NOT => 'T_LOGICAL_NOT',              // '!'
@@ -274,6 +275,7 @@ final class TokenType
 
     public const DECLARATION_PART = [
         T_ATTRIBUTE,
+        T_ATTRIBUTE_COMMENT,
         ...self::DECLARATION_LIST,
         ...self::AMPERSAND,
         ...self::DECLARATION,

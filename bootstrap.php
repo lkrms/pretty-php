@@ -28,6 +28,12 @@ define('T_NULL', 20001);
  */
 define('T_END_ALT_SYNTAX', 20002);
 
+/**
+ * Used when a T_COMMENT starts with `#[`
+ *
+ */
+define('T_ATTRIBUTE_COMMENT', 20003);
+
 // Not defined by PHP but arguably should be
 define('T_LOGICAL_NOT', 33);        // '!'
 define('T_DOUBLE_QUOTE', 34);       // '"'
