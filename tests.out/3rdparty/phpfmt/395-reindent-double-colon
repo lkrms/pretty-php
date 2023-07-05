@@ -1,4 +1,0 @@
-<?php
-//passes:ReindentObjOps
-Foobar::bar()
-	->baz;

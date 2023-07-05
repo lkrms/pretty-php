@@ -15,9 +15,7 @@ use Lkrms\Pretty\WhitespaceType;
  */
 final class AlignComments implements BlockRule
 {
-    use BlockRuleTrait {
-        destroy as private _destroy;
-    }
+    use BlockRuleTrait;
 
     /**
      * @var array<array{TokenCollection[],Token[]}>
@@ -136,9 +134,8 @@ final class AlignComments implements BlockRule
         }
     }
 
-    public function destroy(): void
+    public function reset(): void
     {
-        unset($this->BlockComments);
-        $this->_destroy();
+        $this->BlockComments = [];
     }
 }

@@ -1,8 +1,0 @@
-<?php
-$related_others = array("${keywords}abc",
-	"${keywords}abcd",);
-
-function a()
-{
-	echo 'a';
-}

@@ -16,9 +16,7 @@ use Lkrms\Pretty\Php\Token;
  */
 final class ReindentHeredocs implements TokenRule
 {
-    use TokenRuleTrait {
-        destroy as private _destroy;
-    }
+    use TokenRuleTrait;
 
     /**
      * @var Token[]
@@ -78,9 +76,8 @@ final class ReindentHeredocs implements TokenRule
         }
     }
 
-    public function destroy(): void
+    public function reset(): void
     {
-        unset($this->Heredocs);
-        $this->_destroy();
+        $this->Heredocs = [];
     }
 }

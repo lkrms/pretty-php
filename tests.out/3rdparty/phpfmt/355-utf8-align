@@ -1,7 +1,0 @@
-<?php
-$utf8 = array(
-	'aitė\b' => 'as',
-	'ytė\b' => 'is',
-	'iūtė\b' => 'ius',
-	'utė\b' => 'us',
-);

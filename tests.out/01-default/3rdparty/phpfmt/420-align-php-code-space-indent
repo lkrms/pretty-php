@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+        <?php
+            $foo = ['foo', 'bar', 'baz'];
+            foreach ($foo as $bar) {
+                echo $bar;
+            }
+        ?>
+</body>
+</html>
+<?php
+//passes:AlignPHPCode,PSR2IndentWithSpace

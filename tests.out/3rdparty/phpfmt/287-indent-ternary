@@ -1,7 +1,0 @@
-<?php
-//passes:Default,IndentTernaryConditions
-$a = ($b)
-	? $c
-	: $d;
-
-$a = ($b) ? $c : $d;

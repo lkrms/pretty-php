@@ -1,9 +1,0 @@
-<?php
-//passes: AutoSemicolon
-
-if (
-	f() &&
-		e()
-) {
-	//
-}

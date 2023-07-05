@@ -1,6 +1,0 @@
-<?php
-//passes:GeneratePHPDoc
-class A
-{
-	public function b($a) {}
-}

@@ -1,8 +1,0 @@
-<?php
-for ($i = 1; $i < count($arr); $i++) {
-	$a = 1;
-}
-
-while (function () { $a; $b; }) {
-	$a = 1;
-}

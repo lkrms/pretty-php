@@ -1,6 +1,0 @@
-<?php
-//version:7.0.0-final
-function a($a, $b)
-{
-	return $a <=> $b;
-}

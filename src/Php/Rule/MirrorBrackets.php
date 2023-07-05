@@ -18,7 +18,7 @@ final class MirrorBrackets implements TokenRule
 
     public function getPriority(string $method): ?int
     {
-        return $this->Formatter->MirrorBrackets ? 96 : null;
+        return 96;
     }
 
     public function getTokenTypes(): array
@@ -36,7 +36,8 @@ final class MirrorBrackets implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if (!$token->ClosedBy) {
+        if (!$this->Formatter->MirrorBrackets ||
+                !$token->ClosedBy) {
             return;
         }
 

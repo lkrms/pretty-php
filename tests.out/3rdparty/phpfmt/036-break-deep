@@ -1,7 +1,0 @@
-<?php
-if ($a) {
-	break;
-}
-if ($a) {
-	break 2;
-}

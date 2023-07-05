@@ -47,6 +47,7 @@ final class AddStandardWhitespace implements TokenRule
             T_OPEN_TAG,
             T_OPEN_TAG_WITH_ECHO,
             T_CLOSE_TAG,
+            T_ATTRIBUTE_COMMENT,
             T_MATCH,
             ...TokenType::ADD_SPACE_AROUND,
             ...TokenType::ADD_SPACE_BEFORE,
@@ -145,7 +146,8 @@ final class AddStandardWhitespace implements TokenRule
                         }
                         // Increase the indentation level for tokens between
                         // unenclosed tags
-                        if (!$token->BracketStack) {
+                        if (!$token->BracketStack &&
+                                $this->Formatter->IncreaseIndentBetweenUnenclosedTags) {
                             $tagIndent++;
                         }
                     }
@@ -183,7 +185,8 @@ final class AddStandardWhitespace implements TokenRule
                     $this->preserveOneLine($lastCode, $token->CloseTag, true);
                     // Remove a level of indentation if tokens between
                     // unenclosed tags don't start on a new line
-                    if ($tagIndent && !$token->BracketStack) {
+                    if ($tagIndent && !$token->BracketStack &&
+                            $this->Formatter->IncreaseIndentBetweenUnenclosedTags) {
                         $tagIndent--;
                     }
                 }
@@ -258,6 +261,13 @@ final class AddStandardWhitespace implements TokenRule
             $token->WhitespaceBefore |= WhitespaceType::LINE;
             $token->ClosedBy->WhitespaceAfter |= WhitespaceType::LINE;
             $token->ClosedBy->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
+
+            return;
+        }
+        if ($token->id === T_ATTRIBUTE_COMMENT) {
+            $token->WhitespaceBefore |= WhitespaceType::LINE;
+            $token->WhitespaceAfter |= WhitespaceType::LINE;
+            $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
 
             return;
         }

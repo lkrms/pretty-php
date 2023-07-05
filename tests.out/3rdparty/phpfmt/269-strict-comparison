@@ -1,4 +1,0 @@
-<?php
-//passes:Default,StrictComparison
-if ($a == $b) {}
-if ($a != $b) {}

@@ -6,6 +6,8 @@ use Lkrms\Pretty\Php\NavigableToken;
 
 interface Filter
 {
+    public function __construct();
+
     /**
      * Apply the filter to an array of tokens
      *
@@ -16,7 +18,13 @@ interface Filter
     public function filterTokens(array $tokens): array;
 
     /**
-     * Close resources and remove circular references
+     * Clear state for a new payload
+     *
+     */
+    public function reset(): void;
+
+    /**
+     * Prepare for garbage collection
      *
      */
     public function destroy(): void;

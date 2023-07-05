@@ -8,8 +8,6 @@ use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
-use const Lkrms\Pretty\Php\T_ID_MAP as T;
-
 /**
  * Normalise whitespace between declarations
  *
@@ -23,9 +21,7 @@ use const Lkrms\Pretty\Php\T_ID_MAP as T;
  */
 final class SpaceDeclarations implements TokenRule
 {
-    use TokenRuleTrait {
-        destroy as private _destroy;
-    }
+    use TokenRuleTrait;
 
     /**
      * @var Token[]
@@ -61,9 +57,10 @@ final class SpaceDeclarations implements TokenRule
     {
         // Checking for `use` after `function ()` is unnecessary because it
         // never appears mid-statement
-        if ($token->Statement->skipAnySiblingsOf(T_ATTRIBUTE) !== $token ||
+        if ($token->Statement->skipAnySiblingsOf(T_ATTRIBUTE, T_ATTRIBUTE_COMMENT) !== $token ||
                 ($token->id === T_STATIC &&
                     !$token->nextCode()->is([T_VARIABLE, ...TokenType::DECLARATION])) ||
+                ($token->id === T_NAMESPACE && $token->nextCode()->id === T_NS_SEPARATOR) ||
                 // For formatting purposes, promoted constructor parameters
                 // aren't declarations
                 ($token->is(TokenType::VISIBILITY) && $token->inFunctionDeclaration())) {
@@ -80,7 +77,7 @@ final class SpaceDeclarations implements TokenRule
 
         // Add a blank line between declarations and other code
         if (!$token->EndStatement->nextCode()->skipAnySiblingsOf(
-            T_ATTRIBUTE
+            T_ATTRIBUTE, T_ATTRIBUTE_COMMENT
         )->is([T_NULL, ...TokenType::DECLARATION]) &&
                 $token->EndStatement->next()->id !== T_CLOSE_TAG) {
             $token->EndStatement->WhitespaceAfter |= WhitespaceType::BLANK;
@@ -186,9 +183,11 @@ final class SpaceDeclarations implements TokenRule
             $comment->PinToCode;
     }
 
-    public function destroy(): void
+    public function reset(): void
     {
-        unset($this->Prev);
-        $this->_destroy();
+        $this->Prev = [];
+        $this->PrevTypes = [];
+        $this->PrevCondense = false;
+        $this->PrevExpand = false;
     }
 }

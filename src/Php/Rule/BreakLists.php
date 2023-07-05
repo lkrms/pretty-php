@@ -68,7 +68,7 @@ final class BreakLists implements ListRule
 
     private function hasAttribute(Token $token): bool
     {
-        return $token->id === T_ATTRIBUTE &&
+        return $token->is([T_ATTRIBUTE, T_ATTRIBUTE_COMMENT]) &&
             $token->hasNewlineBefore() &&
             $token->ClosedBy->hasNewlineAfter();
     }

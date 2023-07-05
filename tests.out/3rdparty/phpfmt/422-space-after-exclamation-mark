@@ -1,3 +1,0 @@
-<?php
-//passes: SpaceAfterExclamationMark
-if (!true) foo();

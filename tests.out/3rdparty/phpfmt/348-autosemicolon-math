@@ -1,8 +1,0 @@
-<?php
-//passes:AutoSemicolon
-
-$foo = round(
-	bcdiv($obj->get('a')
-		/ $obj->get('b')),
-	2
-);

@@ -42,7 +42,7 @@ final class ProtectStrings implements TokenRule
             $token->HeredocOpenedBy = $heredoc;
         }
 
-        if ($token->is([T['"'], T['`']]) &&
+        if (($isStringDelimiter = $token->is([T['"'], T['`']])) &&
                 (!$string || $string->BracketStack !== $token->BracketStack)) {
             $token->CriticalWhitespaceMaskNext = WhitespaceType::NONE;
             $this->Strings[] = $token;
@@ -61,7 +61,7 @@ final class ProtectStrings implements TokenRule
             return;
         }
 
-        if ($token->is([T['"'], T['`']])) {
+        if ($isStringDelimiter) {
             $token->CriticalWhitespaceMaskPrev = WhitespaceType::NONE;
             array_pop($this->Strings);
 
@@ -82,5 +82,11 @@ final class ProtectStrings implements TokenRule
                 $token->CriticalWhitespaceMaskNext = WhitespaceType::NONE;
             }
         }
+    }
+
+    public function reset(): void
+    {
+        $this->Strings = [];
+        $this->Heredocs = [];
     }
 }

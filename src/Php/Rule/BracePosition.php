@@ -28,9 +28,7 @@ use const Lkrms\Pretty\Php\T_ID_MAP as T;
  */
 final class BracePosition implements TokenRule
 {
-    use TokenRuleTrait {
-        destroy as private _destroy;
-    }
+    use TokenRuleTrait;
 
     /**
      * @var array<Token[]>
@@ -146,9 +144,8 @@ final class BracePosition implements TokenRule
         }
     }
 
-    public function destroy(): void
+    public function reset(): void
     {
-        unset($this->BracketBracePairs);
-        $this->_destroy();
+        $this->BracketBracePairs = [];
     }
 }

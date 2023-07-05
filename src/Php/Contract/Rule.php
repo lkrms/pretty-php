@@ -28,7 +28,13 @@ interface Rule
     public function beforeRender(array $tokens): void;
 
     /**
-     * Close resources and remove circular references
+     * Clear state for a new payload
+     *
+     */
+    public function reset(): void;
+
+    /**
+     * Prepare for garbage collection
      *
      */
     public function destroy(): void;

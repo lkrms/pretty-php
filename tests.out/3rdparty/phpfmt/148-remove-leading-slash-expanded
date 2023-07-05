@@ -1,6 +1,0 @@
-<?php
-//passes:Default,RemoveUseLeadingSlash
-class C
-{
-	use \SomeTrait;
-}
