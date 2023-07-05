@@ -31,6 +31,7 @@ use Lkrms\Pretty\Php\Rule\AlignTernaryOperators;
 use Lkrms\Pretty\Php\Rule\ApplyMagicComma;
 use Lkrms\Pretty\Php\Rule\Extra\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\Extra\Laravel;
+use Lkrms\Pretty\Php\Rule\Extra\WordPress;
 use Lkrms\Pretty\Php\Rule\NoMixedLists;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
 use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
@@ -208,6 +209,11 @@ class FormatPhp extends CliCommand
     private $HangingHeredocIndents;
 
     /**
+     * @var bool|null
+     */
+    private $IncreaseIndentBetweenUnenclosedTags;
+
+    /**
      * @var array<class-string<Rule>>|null
      */
     private $PresetRules;
@@ -273,6 +279,7 @@ class FormatPhp extends CliCommand
     private const INTERNAL_OPTION_MAP = [
         'mirror-brackets' => 'MirrorBrackets',
         'hanging-heredoc-indents' => 'HangingHeredocIndents',
+        'increase-indent-between-unenclosed-tags' => 'IncreaseIndentBetweenUnenclosedTags',
         'preset-rules' => 'PresetRules',
     ];
 
@@ -290,6 +297,21 @@ class FormatPhp extends CliCommand
                 'hanging-heredoc-indents' => false,
                 'preset-rules' => [
                     Laravel::class,
+                ],
+            ],
+        ],
+        'wordpress' => [
+            'tab' => 4,
+            'disable' => [],
+            'enable' => [
+                'align-assignments',
+            ],
+            'one-true-brace-style' => true,
+            '@internal' => [
+                'mirror-brackets' => false,
+                'increase-indent-between-unenclosed-tags' => false,
+                'preset-rules' => [
+                    WordPress::class,
                 ],
             ],
         ],
@@ -891,6 +913,7 @@ EOF,
                 $f->PreserveTrailingSpaces = $this->PreserveTrailingSpaces ?: [];
                 $this->MirrorBrackets === null || $f->MirrorBrackets = $this->MirrorBrackets;
                 $this->HangingHeredocIndents === null || $f->HangingHeredocIndents = $this->HangingHeredocIndents;
+                $this->IncreaseIndentBetweenUnenclosedTags === null || $f->IncreaseIndentBetweenUnenclosedTags = $this->IncreaseIndentBetweenUnenclosedTags;
                 $lastOptions = $options;
 
                 return $f;

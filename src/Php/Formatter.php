@@ -42,6 +42,7 @@ use Lkrms\Pretty\Php\Rule\BreakLists;
 use Lkrms\Pretty\Php\Rule\BreakOperators;
 use Lkrms\Pretty\Php\Rule\Extra\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\Extra\Laravel;
+use Lkrms\Pretty\Php\Rule\Extra\WordPress;
 use Lkrms\Pretty\Php\Rule\MirrorBrackets;
 use Lkrms\Pretty\Php\Rule\NoMixedLists;
 use Lkrms\Pretty\Php\Rule\PlaceComments;
@@ -167,6 +168,11 @@ final class Formatter implements IReadable, IWritable
     public $HangingMatchIndents = true;
 
     /**
+     * @var bool
+     */
+    public $IncreaseIndentBetweenUnenclosedTags = true;
+
+    /**
      * If the first object operator in a chain of method calls has a leading
      * newline, align with the start of the chain?
      *
@@ -234,6 +240,7 @@ final class Formatter implements IReadable, IWritable
         PreserveOneLineStatements::class,  // processToken  (95)
         AddBlankLineBeforeReturn::class,   // processToken  (97)
         Laravel::class,                    // processToken (100)
+        WordPress::class,                  // processToken (100)
         AlignAssignments::class,           // processBlock (340), callback (710)
         AlignChainedCalls::class,          // processToken (340), callback (710)
         AlignComments::class,              // processBlock (340), beforeRender (998)

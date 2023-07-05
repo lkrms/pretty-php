@@ -145,7 +145,8 @@ final class AddStandardWhitespace implements TokenRule
                         }
                         // Increase the indentation level for tokens between
                         // unenclosed tags
-                        if (!$token->BracketStack) {
+                        if (!$token->BracketStack &&
+                                $this->Formatter->IncreaseIndentBetweenUnenclosedTags) {
                             $tagIndent++;
                         }
                     }
@@ -183,7 +184,8 @@ final class AddStandardWhitespace implements TokenRule
                     $this->preserveOneLine($lastCode, $token->CloseTag, true);
                     // Remove a level of indentation if tokens between
                     // unenclosed tags don't start on a new line
-                    if ($tagIndent && !$token->BracketStack) {
+                    if ($tagIndent && !$token->BracketStack &&
+                            $this->Formatter->IncreaseIndentBetweenUnenclosedTags) {
                         $tagIndent--;
                     }
                 }
