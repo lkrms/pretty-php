@@ -281,7 +281,7 @@ PHP,
         foreach ($files as $file) {
             $inFile = (string) $file;
             $path = substr($inFile, strlen($inDir));
-            $outFile = preg_replace('/\.fails$/', '', $outDir . $path);
+            $outFile = preg_replace('/\.fails$/', '', $outDir . '/01-default' . $path);
             $path = ltrim($path, '/\\');
 
             if ($minVersionPatterns) {
