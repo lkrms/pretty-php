@@ -120,7 +120,7 @@ final class AlignLists implements ListRule
                     fn(Token $t) =>
                         $t !== $first &&
                             !$t->hasNewlineBefore() &&
-                            !$t->withNextCodeWhile(T['('], T['['], T['{'], T_ELLIPSIS, ...self::BEFORE_ALIGNABLE_LIST)
+                            !$t->withNextCodeWhile(false, T['('], T['['], T['{'], T_ELLIPSIS, ...self::BEFORE_ALIGNABLE_LIST)
                                ->has($t->endOfLine())
                 )
                 ->forEach(
