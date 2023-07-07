@@ -17,14 +17,14 @@ function funcname()
 const constname = 'namespaced';
 
 /* note that if using double quotes, "\\namespacename\\classname" must be used */
-$a = '\namespacename\classname';
-$obj = new $a;  // prints namespacename\classname::__construct
-$a = 'namespacename\classname';
-$obj = new $a;  // also prints namespacename\classname::__construct
-$b = 'namespacename\funcname';
-$b();  // prints namespacename\funcname
+$a   = '\namespacename\classname';
+$obj = new $a;                                    // prints namespacename\classname::__construct
+$a   = 'namespacename\classname';
+$obj = new $a;                                    // also prints namespacename\classname::__construct
+$b   = 'namespacename\funcname';
+$b();                                             // prints namespacename\funcname
 $b = '\namespacename\funcname';
-$b();  // also prints namespacename\funcname
+$b();                                             // also prints namespacename\funcname
 echo constant('\namespacename\constname'), "\n";  // prints namespaced
-echo constant('namespacename\constname'), "\n";  // also prints namespaced
+echo constant('namespacename\constname'), "\n";   // also prints namespaced
 ?>

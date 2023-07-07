@@ -15,7 +15,7 @@ echo $foo->$bar . "\n";
 echo $foo->{$baz[1]} . "\n";
 
 $start = 'b';
-$end = 'ar';
+$end   = 'ar';
 echo $foo->{$start . $end} . "\n";
 
 $arr = 'arr';

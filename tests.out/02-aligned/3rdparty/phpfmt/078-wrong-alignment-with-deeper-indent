@@ -11,11 +11,11 @@ class StdObj
             '',
             'aaaaaaaaaaaaaaaaaaaa' => [
                 'aaaaaaaaaaaaa' => '',
-                'aaaaaaaaaaa' => 200,
-                'aaaaaaaa' => [
+                'aaaaaaaaaaa'   => 200,
+                'aaaaaaaa'      => [
                     'aaaaaaaaaaaaaa' => false,
-                    'aaaaaaaaaaaaa' => true,
-                    'aaaaaaaaaa' => true,
+                    'aaaaaaaaaaaaa'  => true,
+                    'aaaaaaaaaa'     => true,
                 ]
             ],
             'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' => [
@@ -24,17 +24,17 @@ class StdObj
                         'qqqqqq' => [
                             0 => [
                                 'cccccc' => '123123',
-                                'aaaa' => '321312',
-                                'bbbb' => '423423'
+                                'aaaa'   => '321312',
+                                'bbbb'   => '423423'
                             ]
                         ]
                     ]
                 ],
                 'aaaaaaaaaaa' => 200,
-                'aaaaaaaa' => [
+                'aaaaaaaa'    => [
                     'aaaaaaaaaaaaaa' => false,
-                    'aaaaaaaaaaaaa' => true,
-                    'aaaaaaaaaa' => true,
+                    'aaaaaaaaaaaaa'  => true,
+                    'aaaaaaaaaa'     => true,
                 ]
             ]
         ];

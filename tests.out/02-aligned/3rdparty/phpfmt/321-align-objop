@@ -1,9 +1,9 @@
 <?php
 
 $query = (new Query)->select(['id', 'username'])
-    ->from('user')
-    ->where(['pk_id' => $aaa->organization])
-    ->all();
+                    ->from('user')
+                    ->where(['pk_id' => $aaa->organization])
+                    ->all();
 
 function hello()
 {
@@ -14,7 +14,7 @@ function hello()
                 'asdf',
                 'fdsajhfasdjfhgasjhdgf',
                 [
-                    'opt' => true,
+                    'opt'  => true,
                     'opt2' => true,
                     'opt3' => 'gfhdjsgdkfhgskdfghjk',
                 ]
@@ -41,9 +41,9 @@ class SomeClass
     public function save()
     {
         VeryLongCall($this)->save($this)
-            ->widen(600)
-            ->greyscale()
-            ->save($this);
+                           ->widen(600)
+                           ->greyscale()
+                           ->save($this);
 
         VeryLongCall($this)
             ->save($this)

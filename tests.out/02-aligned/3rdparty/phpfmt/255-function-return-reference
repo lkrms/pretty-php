@@ -8,9 +8,9 @@ class aClass
 
 $a = &implode($a, $b);
 
-$var = function &() {};
+$var  = function &() {};
 $var2 = function &() use ($anotherVar) {};
 
 array_map(function &($a) use ($someVar) {
-    return 1;
-}, $arr);
+              return 1;
+          }, $arr);

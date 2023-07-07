@@ -3,7 +3,7 @@
 // the PHP user has access to.
 $username = $_SERVER['REMOTE_USER'];  // using an authentication mechanism
 $userfile = basename($_POST['user_submitted_filename']);
-$homedir = "/home/$username";
+$homedir  = "/home/$username";
 
 $filepath = "$homedir/$userfile";
 

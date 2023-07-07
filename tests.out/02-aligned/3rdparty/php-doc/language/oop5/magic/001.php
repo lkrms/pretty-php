@@ -6,7 +6,7 @@ class Connection
 
     public function __construct($dsn, $username, $password)
     {
-        $this->dsn = $dsn;
+        $this->dsn      = $dsn;
         $this->username = $username;
         $this->password = $password;
         $this->connect();
@@ -20,7 +20,7 @@ class Connection
     public function __serialize(): array
     {
         return [
-            'dsn' => $this->dsn,
+            'dsn'  => $this->dsn,
             'user' => $this->username,
             'pass' => $this->password,
         ];
@@ -28,7 +28,7 @@ class Connection
 
     public function __unserialize(array $data): void
     {
-        $this->dsn = $data['dsn'];
+        $this->dsn      = $data['dsn'];
         $this->username = $data['user'];
         $this->password = $data['pass'];
 

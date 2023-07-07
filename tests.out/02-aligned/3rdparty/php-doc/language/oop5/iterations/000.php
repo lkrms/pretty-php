@@ -6,7 +6,7 @@ class MyClass
     public $var3 = 'value 3';
 
     protected $protected = 'protected var';
-    private $private = 'private var';
+    private $private     = 'private var';
 
     function iterateVisible()
     {

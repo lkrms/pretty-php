@@ -7,7 +7,7 @@ class Test
 class Test2 extends Test {}
 
 Test2::$x = &$x;
-$x = 1;
+$x        = 1;
 
 var_dump(Test::$x, Test2::$x);
 // Previously: int(0), int(1)

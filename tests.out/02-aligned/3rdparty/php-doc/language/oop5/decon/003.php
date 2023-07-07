@@ -18,8 +18,8 @@ class Test
 // All not allowed (compile-time error):
 function test(
     $a = new (CLASS_NAME_CONSTANT)(),  // dynamic class name
-    $b = new class {},  // anonymous class
-    $c = new A(...[]),  // argument unpacking
-    $d = new B($abc),  // unsupported constant expression
+    $b = new class {},                 // anonymous class
+    $c = new A(...[]),                 // argument unpacking
+    $d = new B($abc),                  // unsupported constant expression
 ) {}
 ?>

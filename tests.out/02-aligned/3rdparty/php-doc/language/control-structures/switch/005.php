@@ -1,6 +1,6 @@
 <?php
 $offset = 1;
-$start = 3;
+$start  = 3;
 
 switch (true) {
     case $start - $offset === 1:

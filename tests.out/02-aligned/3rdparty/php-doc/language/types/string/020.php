@@ -10,7 +10,7 @@ class beers
 }
 
 $rootbeer = 'A & W';
-$ipa = "Alexander Keith's";
+$ipa      = "Alexander Keith's";
 
 // This works; outputs: I'd like an A & W
 echo "I'd like an {${beers::softdrink}}\n";

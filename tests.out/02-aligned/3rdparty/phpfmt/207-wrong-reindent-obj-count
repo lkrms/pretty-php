@@ -4,8 +4,8 @@ class A
     public function method()
     {
         $form = $this->methodA()
-            ->methodB(CONSTANT_NAME, function ($a) {})
-            ->methodC(true)
-            ->methodD();
+                     ->methodB(CONSTANT_NAME, function ($a) {})
+                     ->methodC(true)
+                     ->methodD();
     }
 }

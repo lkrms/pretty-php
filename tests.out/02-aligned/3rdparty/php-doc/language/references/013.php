@@ -6,6 +6,6 @@ function &collector()
     return $collection;
 }
 
-$collection = &collector();
+$collection   = &collector();
 $collection[] = 'foo';
 ?>

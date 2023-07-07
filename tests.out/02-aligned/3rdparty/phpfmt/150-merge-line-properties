@@ -49,7 +49,7 @@ function foo4()
     static $class;
 
     $interface = 'foo';
-    $trait = 'bar';
+    $trait     = 'bar';
 }
 
 class Foo3

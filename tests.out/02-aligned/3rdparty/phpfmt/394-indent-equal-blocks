@@ -116,11 +116,11 @@ class Test
 }
 
 Event::trigger('this',
-    function () {
-        while ($row = $percent->fetchObject()) {
-            $answers[] = $row;
-        }
-    });
+               function () {
+                   while ($row = $percent->fetchObject()) {
+                       $answers[] = $row;
+                   }
+               });
 
 echo ''
     . implode(

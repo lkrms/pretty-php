@@ -5,7 +5,7 @@ class Foo
 }
 
 for ($i = 0; $i <= 1000000; $i++) {
-    $a = new Foo;
+    $a       = new Foo;
     $a->self = $a;
 }
 

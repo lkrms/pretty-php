@@ -23,10 +23,10 @@ class MyClass
 }
 
 $myclass = new MyClass();
-MyClass::MY_PUBLIC;  // Works
+MyClass::MY_PUBLIC;     // Works
 MyClass::MY_PROTECTED;  // Fatal Error
-MyClass::MY_PRIVATE;  // Fatal Error
-$myclass->foo();  // Public, Protected and Private work
+MyClass::MY_PRIVATE;    // Fatal Error
+$myclass->foo();        // Public, Protected and Private work
 
 /**
  * Define MyClass2
@@ -44,5 +44,5 @@ class MyClass2 extends MyClass
 
 $myclass2 = new MyClass2;
 echo MyClass2::MY_PUBLIC;  // Works
-$myclass2->foo2();  // Public and Protected work, not Private
+$myclass2->foo2();         // Public and Protected work, not Private
 ?>

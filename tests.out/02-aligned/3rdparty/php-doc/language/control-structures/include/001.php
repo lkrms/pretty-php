@@ -14,7 +14,7 @@ function foo()
  * scope.  $color is because we declared it *
  * as global.                               */
 
-foo();  // A green apple
+foo();                   // A green apple
 echo "A $color $fruit";  // A green
 
 ?>

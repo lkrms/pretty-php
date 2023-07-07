@@ -8,14 +8,14 @@ $ds = array(
     ],
     'dddddd' => array(
         'id' => array(
-            'dd' => 1,
-            'ddddddd' => 1,
-            'eeee' => '312321',
-            'eqweqweqweq' => '312',
-            'eqweqwda' => '312312',
+            'dd'                => 1,
+            'ddddddd'           => 1,
+            'eeee'              => '312321',
+            'eqweqweqweq'       => '312',
+            'eqweqwda'          => '312312',
             ';ldkasl;eiqwopieq' => '312',
-            'opieq' => '312',
-            'lkeoiwueqq' => 3,
+            'opieq'             => '312',
+            'lkeoiwueqq'        => 3,
         ),
     ),
 );

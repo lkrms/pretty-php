@@ -7,10 +7,10 @@ echo "He drank some $juices[koolaid1] juice." . PHP_EOL;
 
 class people
 {
-    public $john = 'John Smith';
-    public $jane = 'Jane Smith';
+    public $john   = 'John Smith';
+    public $jane   = 'Jane Smith';
     public $robert = 'Robert Paulsen';
-    public $smith = 'Smith';
+    public $smith  = 'Smith';
 }
 
 $people = new people();

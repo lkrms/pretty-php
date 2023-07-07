@@ -1,7 +1,7 @@
 <?php
 trait ConstantsTrait
 {
-    public const FLAG_MUTABLE = 1;
+    public const FLAG_MUTABLE         = 1;
     final public const FLAG_IMMUTABLE = 5;
 }
 

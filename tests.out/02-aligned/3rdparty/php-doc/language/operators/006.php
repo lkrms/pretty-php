@@ -9,5 +9,5 @@ $a = 4;  // change $a
 
 print "$a\n";  // prints 4
 print "$b\n";  // prints 4 as well, since $b is a reference to $a, which has
-// been changed
+               // been changed
 ?>

@@ -1,4 +1,4 @@
 <?php
-$arr = false;
+$arr   = false;
 $arr[] = 2;  // deprecated
 ?>

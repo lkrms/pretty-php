@@ -10,7 +10,7 @@ class Test
     }
 }
 
-$object = new Test;
+$object   = new Test;
 $function = $object->testing();
 $function();
 

@@ -5,80 +5,80 @@
 
 echo "\n--- BIT SHIFT RIGHT ON POSITIVE INTEGERS ---\n";
 
-$val = 4;
+$val    = 4;
 $places = 1;
-$res = $val >> $places;
+$res    = $val >> $places;
 p($res, $val, '>>', $places, 'copy of sign bit shifted into left side');
 
-$val = 4;
+$val    = 4;
 $places = 2;
-$res = $val >> $places;
+$res    = $val >> $places;
 p($res, $val, '>>', $places);
 
-$val = 4;
+$val    = 4;
 $places = 3;
-$res = $val >> $places;
+$res    = $val >> $places;
 p($res, $val, '>>', $places, 'bits shift out right side');
 
-$val = 4;
+$val    = 4;
 $places = 4;
-$res = $val >> $places;
+$res    = $val >> $places;
 p($res, $val, '>>', $places, 'same result as above; can not shift beyond 0');
 
 echo "\n--- BIT SHIFT RIGHT ON NEGATIVE INTEGERS ---\n";
 
-$val = -4;
+$val    = -4;
 $places = 1;
-$res = $val >> $places;
+$res    = $val >> $places;
 p($res, $val, '>>', $places, 'copy of sign bit shifted into left side');
 
-$val = -4;
+$val    = -4;
 $places = 2;
-$res = $val >> $places;
+$res    = $val >> $places;
 p($res, $val, '>>', $places, 'bits shift out right side');
 
-$val = -4;
+$val    = -4;
 $places = 3;
-$res = $val >> $places;
+$res    = $val >> $places;
 p($res, $val, '>>', $places, 'same result as above; can not shift beyond -1');
 
 echo "\n--- BIT SHIFT LEFT ON POSITIVE INTEGERS ---\n";
 
-$val = 4;
+$val    = 4;
 $places = 1;
-$res = $val << $places;
+$res    = $val << $places;
 p($res, $val, '<<', $places, 'zeros fill in right side');
 
-$val = 4;
+$val    = 4;
 $places = (PHP_INT_SIZE * 8) - 4;
-$res = $val << $places;
+$res    = $val << $places;
 p($res, $val, '<<', $places);
 
-$val = 4;
+$val    = 4;
 $places = (PHP_INT_SIZE * 8) - 3;
-$res = $val << $places;
+$res    = $val << $places;
 p($res, $val, '<<', $places, 'sign bits get shifted out');
 
-$val = 4;
+$val    = 4;
 $places = (PHP_INT_SIZE * 8) - 2;
-$res = $val << $places;
+$res    = $val << $places;
 p($res, $val, '<<', $places, 'bits shift out left side');
 
 echo "\n--- BIT SHIFT LEFT ON NEGATIVE INTEGERS ---\n";
 
-$val = -4;
+$val    = -4;
 $places = 1;
-$res = $val << $places;
+$res    = $val << $places;
 p($res, $val, '<<', $places, 'zeros fill in right side');
 
-$val = -4;
+$val    = -4;
 $places = (PHP_INT_SIZE * 8) - 3;
-$res = $val << $places;
+$res    = $val << $places;
 p($res, $val, '<<', $places);
 
-$val = -4;
+$val    = -4;
 $places = (PHP_INT_SIZE * 8) - 2;
-$res = $val << $places;
+$res    = $val << $places;
 p($res, $val, '<<', $places, 'bits shift out left side, including sign bit');
 
 /*

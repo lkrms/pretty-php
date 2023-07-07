@@ -6,7 +6,7 @@ class Connection
 
     public function __construct($dsn, $username, $password)
     {
-        $this->dsn = $dsn;
+        $this->dsn      = $dsn;
         $this->username = $username;
         $this->password = $password;
         $this->connect();

@@ -53,8 +53,8 @@ function executeAction(ActionHandler $actionHandler)
     $actionHandler->execute();
 }
 
-$copyAction = new CopyFile();
-$copyAction->fileName = '/tmp/foo.jpg';
+$copyAction                  = new CopyFile();
+$copyAction->fileName        = '/tmp/foo.jpg';
 $copyAction->targetDirectory = '/home/user';
 
 executeAction($copyAction);

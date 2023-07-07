@@ -1,6 +1,6 @@
 <?php
 $target = 1;
-$start = 3;
+$start  = 3;
 
 switch ($target) {
     case $start - 1:

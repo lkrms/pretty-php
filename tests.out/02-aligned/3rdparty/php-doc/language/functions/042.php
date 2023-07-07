@@ -1,8 +1,8 @@
 <?php
 
-$x = 1;
+$x  = 1;
 $fn = fn() => $x++;  // Has no effect
 $fn();
-var_export($x);  // Outputs 1
+var_export($x);      // Outputs 1
 
 ?>

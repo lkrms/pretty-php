@@ -13,7 +13,7 @@ class Foo
     }
 }
 
-$foo = new Foo();
+$foo      = new Foo();
 $funcname = 'Variable';
 $foo->$funcname();  // This calls $foo->Variable()
 

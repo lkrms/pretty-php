@@ -19,7 +19,7 @@ class foo
     }
 }
 
-$foo = new foo();
+$foo  = new foo();
 $name = 'MyName';
 
 echo <<<EOT

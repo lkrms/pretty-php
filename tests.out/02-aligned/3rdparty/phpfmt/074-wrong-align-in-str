@@ -1,5 +1,5 @@
 <?php
-$a = 1;
+$a    = 1;
 $bbbb = '
 $cccccccc = 3;
 ';
@@ -7,11 +7,11 @@ $cccccccc = 3;
 $c = 0;
 
 $a = array(
-    $a => 1,
+    $a   => 1,
     $ccc => 10,
 );
 $bbbb = array(
-    $b => 0,
+    $b    => 0,
     $cccc => "
 \$a = array(
 \t0 => 1,

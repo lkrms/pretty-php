@@ -2,5 +2,5 @@
 //passes:Default,IndentTernaryConditions,PSR2IndentWithSpace
 
 $a = $b
-    ? 'c'
-    : 'd';
+         ? 'c'
+         : 'd';

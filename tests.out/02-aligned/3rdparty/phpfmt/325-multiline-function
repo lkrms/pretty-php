@@ -19,7 +19,7 @@ function c(Test $a, Foo $b, $c = array(), array $d = [])
 function d(
     Test $a,
     Foo $b,
-    $c = array(),
+    $c       = array(),
     array $d = []
 ) {
     return true;

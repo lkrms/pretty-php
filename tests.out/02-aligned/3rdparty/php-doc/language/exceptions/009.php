@@ -33,8 +33,8 @@ class TestException
 {
     public $var;
 
-    const THROW_NONE = 0;
-    const THROW_CUSTOM = 1;
+    const THROW_NONE    = 0;
+    const THROW_CUSTOM  = 1;
     const THROW_DEFAULT = 2;
 
     function __construct($avalue = self::THROW_NONE)
@@ -64,7 +64,7 @@ try {
 } catch (MyException $e) {  // Will be caught
     echo "Caught my exception\n", $e;
     $e->customFunction();
-} catch (Exception $e) {  // Skipped
+} catch (Exception $e) {    // Skipped
     echo "Caught Default Exception\n", $e;
 }
 
@@ -78,7 +78,7 @@ try {
 } catch (MyException $e) {  // Doesn't match this type
     echo "Caught my exception\n", $e;
     $e->customFunction();
-} catch (Exception $e) {  // Will be caught
+} catch (Exception $e) {    // Will be caught
     echo "Caught Default Exception\n", $e;
 }
 

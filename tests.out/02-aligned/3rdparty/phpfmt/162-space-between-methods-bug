@@ -5,9 +5,9 @@ $optPasses = array_map(function ($v) {
 }, explode(',', $opts['passes']));
 
 array_filter($arr,
-    function ($v) {
-        return '--smart_linebreak_after_curly' !== $v;
-    });
+             function ($v) {
+                 return '--smart_linebreak_after_curly' !== $v;
+             });
 
 function b()
 {

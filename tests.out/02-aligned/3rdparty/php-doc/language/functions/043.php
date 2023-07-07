@@ -7,9 +7,9 @@ class Foo
     public function __invoke() {}
 }
 
-$obj = new Foo();
-$classStr = 'Foo';
-$methodStr = 'method';
+$obj             = new Foo();
+$classStr        = 'Foo';
+$methodStr       = 'method';
 $staticmethodStr = 'staticmethod';
 
 $f1 = strlen(...);

@@ -10,6 +10,6 @@ $obj = new class {
 $arr = (array) $obj;
 var_dump(
     $arr,
-    $arr[0],  // now accessible
+    $arr[0],   // now accessible
     $arr['0']  // now accessible
 );

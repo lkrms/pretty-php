@@ -6,10 +6,10 @@ interface Colorful
 
 final class Suit implements UnitEnum, Colorful
 {
-    public const Hearts = new self('Hearts');
+    public const Hearts   = new self('Hearts');
     public const Diamonds = new self('Diamonds');
-    public const Clubs = new self('Clubs');
-    public const Spades = new self('Spades');
+    public const Clubs    = new self('Clubs');
+    public const Spades   = new self('Spades');
 
     private function __construct(public readonly string $name) {}
 
@@ -17,7 +17,7 @@ final class Suit implements UnitEnum, Colorful
     {
         return match ($this) {
             Suit::Hearts, Suit::Diamonds => 'Red',
-            Suit::Clubs, Suit::Spades => 'Black',
+            Suit::Clubs, Suit::Spades    => 'Black',
         };
     }
 

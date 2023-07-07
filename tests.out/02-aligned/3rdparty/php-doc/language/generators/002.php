@@ -14,7 +14,7 @@ function input_parser($input)
 {
     foreach (explode("\n", $input) as $line) {
         $fields = explode(';', $line);
-        $id = array_shift($fields);
+        $id     = array_shift($fields);
 
         yield $id => $fields;
     }

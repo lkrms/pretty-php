@@ -1,6 +1,6 @@
 <?php
 $one = a->b
-    ->c;
+        ->c;
 
 $two = a->b($x->y)
-    ->c;
+        ->c;

@@ -5,8 +5,8 @@ function swap(&$left, &$right): void
         return;
     }
 
-    $tmp = $left;
-    $left = $right;
+    $tmp   = $left;
+    $left  = $right;
     $right = $tmp;
 }
 

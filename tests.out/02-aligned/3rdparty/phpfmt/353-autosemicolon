@@ -16,7 +16,7 @@ class A
             return $this->cache[$key];
         }
 
-        $ret = static::{$direction . 'tokenSubsetIsAtIdx'}($this->tkns, $this->ptr, $token, $ignoreList);
+        $ret               = static::{$direction . 'tokenSubsetIsAtIdx'}($this->tkns, $this->ptr, $token, $ignoreList);
         $this->cache[$key] = $ret;
 
         return $ret;

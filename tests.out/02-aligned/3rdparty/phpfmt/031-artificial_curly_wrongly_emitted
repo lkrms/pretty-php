@@ -74,8 +74,8 @@ Comment 9 */
         /*
 Multiline comment
 Comment 10 */
-        $len = strcspn($dt, '<&', $tch);
-        $ch = substr($dt, $tch, $len);
+        $len  = strcspn($dt, '<&', $tch);
+        $ch   = substr($dt, $tch, $len);
         $tch += $len - 1;
 
         func(array(

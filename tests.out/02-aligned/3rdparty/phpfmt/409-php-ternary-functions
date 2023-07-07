@@ -8,8 +8,8 @@
 function stripslashes_deep($value)
 {
     $value = is_array($value)
-        ? array_map('stripslashes_deep', $value)
-        : stripslashes($value);
+                 ? array_map('stripslashes_deep', $value)
+                 : stripslashes($value);
     return $value;
 }
 
@@ -20,8 +20,8 @@ function stripslashes_deep($value)
 function stripslashes_deep($value)
 {
     $value = is_array($value)
-        ? array_map('stripslashes_deep', $value)
-        : stripslashes($value);
+                 ? array_map('stripslashes_deep', $value)
+                 : stripslashes($value);
     return $value;
 }
 
@@ -50,7 +50,7 @@ function stripslashes_deep($value)
     }
 
     $value = is_array($value)
-        ? array_map('stripslashes_deep', $value)
-        : explode($value);
+                 ? array_map('stripslashes_deep', $value)
+                 : explode($value);
     return $value;
 }

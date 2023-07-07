@@ -6,8 +6,8 @@ class Obj implements ArrayAccess
     public function __construct()
     {
         $this->container = array(
-            'one' => 1,
-            'two' => 2,
+            'one'   => 1,
+            'two'   => 2,
             'three' => 3,
         );
     }

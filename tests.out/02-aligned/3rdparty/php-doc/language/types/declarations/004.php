@@ -1,7 +1,7 @@
 <?php
-function foo(): int|INT {}  // Disallowed
-function foo(): bool|false {}  // Disallowed
-function foo(): int&Traversable {}  // Disallowed
+function foo(): int|INT {}           // Disallowed
+function foo(): bool|false {}        // Disallowed
+function foo(): int&Traversable {}   // Disallowed
 function foo(): self&Traversable {}  // Disallowed
 
 use A as B;

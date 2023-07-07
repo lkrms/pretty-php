@@ -13,7 +13,7 @@ class Foo
     }
 }
 
-$foo = new Foo;
+$foo           = new Foo;
 $privateMethod = $foo->getPrivateMethod();
 $privateMethod();
 // Fatal error: Call to private method Foo::privateMethod() from global scope
@@ -33,7 +33,7 @@ class Foo1
     }
 }
 
-$foo1 = new Foo1;
+$foo1          = new Foo1;
 $privateMethod = $foo1->getPrivateMethod();
 $privateMethod();  // Foo1::privateMethod
 ?>

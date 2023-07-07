@@ -1,7 +1,7 @@
 <?php
 $a = [
     'k1' => false,  // COMMENT
-    'k2' => [  // COMMENT
+    'k2' => [       // COMMENT
     ],
 ];
 

@@ -2,7 +2,7 @@
 class ClassObject
 {
     protected $ccccd = null;
-    protected $eeee = false;
+    protected $eeee  = false;
     protected $uuu;
 
     private $real_long_name_variable = false;

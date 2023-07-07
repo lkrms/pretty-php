@@ -5,9 +5,9 @@
  */
 class MyClass
 {
-    public $public = 'Public';
+    public $public       = 'Public';
     protected $protected = 'Protected';
-    private $private = 'Private';
+    private $private     = 'Private';
 
     function printHello()
     {
@@ -18,10 +18,10 @@ class MyClass
 }
 
 $obj = new MyClass();
-echo $obj->public;  // Works
+echo $obj->public;     // Works
 echo $obj->protected;  // Fatal Error
-echo $obj->private;  // Fatal Error
-$obj->printHello();  // Shows Public, Protected and Private
+echo $obj->private;    // Fatal Error
+$obj->printHello();    // Shows Public, Protected and Private
 
 /**
  * Define MyClass2
@@ -42,9 +42,9 @@ class MyClass2 extends MyClass
 }
 
 $obj2 = new MyClass2();
-echo $obj2->public;  // Works
+echo $obj2->public;     // Works
 echo $obj2->protected;  // Fatal Error
-echo $obj2->private;  // Undefined
-$obj2->printHello();  // Shows Public2, Protected2, Undefined
+echo $obj2->private;    // Undefined
+$obj2->printHello();    // Shows Public2, Protected2, Undefined
 
 ?>

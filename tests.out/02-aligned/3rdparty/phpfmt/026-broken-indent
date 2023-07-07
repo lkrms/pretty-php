@@ -4,7 +4,7 @@ function func($a)
     if ($detailed) {
         if (isset($obj, $obj->ID, $obj->DN)) {
             $res['o'] = array(
-                'id' => (string) $obj->ID,
+                'id'   => (string) $obj->ID,
                 'name' => (string) $obj->N,
             );
         }

@@ -38,9 +38,9 @@ function &get_instance_noref()
     return $obj;
 }
 
-$obj1 = get_instance_ref();
+$obj1       = get_instance_ref();
 $still_obj1 = get_instance_ref();
 echo "\n";
-$obj2 = get_instance_noref();
+$obj2       = get_instance_noref();
 $still_obj2 = get_instance_noref();
 ?>

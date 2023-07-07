@@ -7,14 +7,14 @@ class A
 
     public static function __set_state($an_array)
     {
-        $obj = new A;
+        $obj       = new A;
         $obj->var1 = $an_array['var1'];
         $obj->var2 = $an_array['var2'];
         return $obj;
     }
 }
 
-$a = new A;
+$a       = new A;
 $a->var1 = 5;
 $a->var2 = 'foo';
 

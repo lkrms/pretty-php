@@ -8,8 +8,8 @@ $func = function () {
 
 $func = function () {
     return method($var1)->method($foo)
-        ->method($var2)
-        ->method($var3);
+                        ->method($var2)
+                        ->method($var3);
 };
 
 return method($var1)
@@ -17,5 +17,5 @@ return method($var1)
     ->method($var3);
 
 return method($var1)->method($foo)
-    ->method($var2)
-    ->method($var3);
+                    ->method($var2)
+                    ->method($var3);

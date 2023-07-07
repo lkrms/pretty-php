@@ -14,10 +14,10 @@ class AES_CBC
     public static function encryptFile($password, $input_stream, $aes_filename)
     {
         $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
-        $fin = fopen($input_stream, 'rb');
-        $fc = fopen($aes_filename, 'wb+');
+        $fin     = fopen($input_stream, 'rb');
+        $fc      = fopen($aes_filename, 'wb+');
         if (!empty($fin) && !empty($fc)) {
-            fwrite($fc, str_repeat('_', 32));  //placeholder, SHA256 HMAC will go here later
+            fwrite($fc, str_repeat('_', 32));                         //placeholder, SHA256 HMAC will go here later
             fwrite($fc, $hmac_salt = mcrypt_create_iv($iv_size, MCRYPT_DEV_URANDOM));
             fwrite($fc, $esalt = mcrypt_create_iv($iv_size, MCRYPT_DEV_URANDOM));
             fwrite($fc, $iv = mcrypt_create_iv($iv_size, MCRYPT_DEV_URANDOM));
@@ -26,42 +26,42 @@ class AES_CBC
             stream_filter_append($fc, 'mcrypt.rijndael-128', STREAM_FILTER_WRITE, $opts);
             $infilesize = 0;
             while (!feof($fin)) {
-                $block = fread($fin, 8192);
+                $block       = fread($fin, 8192);
                 $infilesize += strlen($block);
                 fwrite($fc, $block);
             }
             $block_size = mcrypt_get_block_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
-            $padding = $block_size - ($infilesize % $block_size);  //$padding is a number from 1-16
-            fwrite($fc, str_repeat(chr($padding), $padding));  //perform PKCS7 padding
+            $padding    = $block_size - ($infilesize % $block_size);  //$padding is a number from 1-16
+            fwrite($fc, str_repeat(chr($padding), $padding));         //perform PKCS7 padding
             fclose($fin);
             fclose($fc);
             $hmac_raw = self::calculate_hmac_after_32bytes($password, $hmac_salt, $aes_filename);
-            $fc = fopen($aes_filename, 'rb+');
-            fwrite($fc, $hmac_raw);  //overwrite placeholder
+            $fc       = fopen($aes_filename, 'rb+');
+            fwrite($fc, $hmac_raw);                                   //overwrite placeholder
             fclose($fc);
         }
     }
 
     public static function decryptFile($password, $aes_filename, $out_stream)
     {
-        $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
-        $hmac_raw = file_get_contents($aes_filename, false, NULL, 0, 32);
+        $iv_size   = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
+        $hmac_raw  = file_get_contents($aes_filename, false, NULL, 0, 32);
         $hmac_salt = file_get_contents($aes_filename, false, NULL, 32, $iv_size);
         $hmac_calc = self::calculate_hmac_after_32bytes($password, $hmac_salt, $aes_filename);
-        $fc = fopen($aes_filename, 'rb');
-        $fout = fopen($out_stream, 'wb');
+        $fc        = fopen($aes_filename, 'rb');
+        $fout      = fopen($out_stream, 'wb');
         if (!empty($fout) && !empty($fc) && self::hash_equals($hmac_raw, $hmac_calc)) {
-            fread($fc, 32 + $iv_size);  //skip sha256 hmac and salt
+            fread($fc, 32 + $iv_size);                           //skip sha256 hmac and salt
             $esalt = fread($fc, $iv_size);
-            $iv = fread($fc, $iv_size);
-            $ekey = hash_pbkdf2('sha256', $password, $esalt, $it = 1000, self::key_size(), $raw = true);
-            $opts = array('mode' => 'cbc', 'iv' => $iv, 'key' => $ekey);
+            $iv    = fread($fc, $iv_size);
+            $ekey  = hash_pbkdf2('sha256', $password, $esalt, $it = 1000, self::key_size(), $raw = true);
+            $opts  = array('mode' => 'cbc', 'iv' => $iv, 'key' => $ekey);
             stream_filter_append($fc, 'mdecrypt.rijndael-128', STREAM_FILTER_READ, $opts);
             while (!feof($fc)) {
                 $block = fread($fc, 8192);
                 if (feof($fc)) {
                     $padding = ord($block[strlen($block) - 1]);  //assume PKCS7 padding
-                    $block = substr($block, 0, 0 - $padding);
+                    $block   = substr($block, 0, 0 - $padding);
                 }
                 fwrite($fout, $block);
             }
@@ -86,8 +86,8 @@ class AES_CBC
         static $init = 0;
 
         $init or $init = stream_filter_register('user-filter.skipfirst32bytes', 'FileSkip32Bytes');
-        $stream = 'php://filter/read=user-filter.skipfirst32bytes/resource=' . $filename;
-        $hkey = hash_pbkdf2('sha256', $password, $hsalt, $iterations = 1000, 24, $raw = true);
+        $stream        = 'php://filter/read=user-filter.skipfirst32bytes/resource=' . $filename;
+        $hkey          = hash_pbkdf2('sha256', $password, $hsalt, $iterations = 1000, 24, $raw = true);
         return hash_hmac_file('sha256', $stream, $hkey, $raw = true);
     }
 }
@@ -101,10 +101,10 @@ class FileSkip32Bytes extends php_user_filter
         while ($bucket = stream_bucket_make_writeable($in)) {
             $outlen = $bucket->datalen;
             if ($this->skipped < 32) {
-                $outlen = min($bucket->datalen, 32 - $this->skipped);
-                $bucket->data = substr($bucket->data, $outlen);
+                $outlen          = min($bucket->datalen, 32 - $this->skipped);
+                $bucket->data    = substr($bucket->data, $outlen);
                 $bucket->datalen = $bucket->datalen - $outlen;
-                $this->skipped += $outlen;
+                $this->skipped  += $outlen;
             }
             $consumed += $outlen;
             stream_bucket_append($out, $bucket);

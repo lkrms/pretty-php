@@ -1,23 +1,23 @@
 <?php
 // This:
 $a = array('color' => 'red',
-    'taste' => 'sweet',
-    'shape' => 'round',
-    'name' => 'apple',
-    4  // key will be 0
+           'taste' => 'sweet',
+           'shape' => 'round',
+           'name'  => 'apple',
+           4  // key will be 0
 );
 
 $b = array('a', 'b', 'c');
 
 // . . .is completely equivalent with this:
-$a = array();
+$a          = array();
 $a['color'] = 'red';
 $a['taste'] = 'sweet';
 $a['shape'] = 'round';
-$a['name'] = 'apple';
-$a[] = 4;  // key will be 0
+$a['name']  = 'apple';
+$a[]        = 4;  // key will be 0
 
-$b = array();
+$b   = array();
 $b[] = 'a';
 $b[] = 'b';
 $b[] = 'c';

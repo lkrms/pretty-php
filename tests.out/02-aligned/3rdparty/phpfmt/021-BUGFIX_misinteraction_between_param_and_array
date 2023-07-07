@@ -1,7 +1,7 @@
 <?php
 function func($a, $b, $c)
 {
-    $cm = new ClassB();
+    $cm  = new ClassB();
     $mtd = new ClassA($cm);
     // Comment
     $req = new ClassC('20151', '20154', array(1), '8.8.8.8', 'USD');

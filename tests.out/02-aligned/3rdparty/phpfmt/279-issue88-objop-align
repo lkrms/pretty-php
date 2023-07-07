@@ -4,9 +4,9 @@ class SomeClass
     public function save()
     {
         VeryLongCall($this)->save($this)
-            ->widen(600)
-            ->greyscale()
-            ->save($this);
+                           ->widen(600)
+                           ->greyscale()
+                           ->save($this);
 
         VeryLongCall($this)
             ->save($this)

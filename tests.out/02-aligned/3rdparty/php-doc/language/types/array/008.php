@@ -14,7 +14,7 @@ $array[] = 6;
 print_r($array);
 
 // Re-index:
-$array = array_values($array);
+$array   = array_values($array);
 $array[] = 7;
 print_r($array);
 ?>

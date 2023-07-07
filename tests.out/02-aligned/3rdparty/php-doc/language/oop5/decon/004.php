@@ -6,7 +6,7 @@ class Product
 
     private function __construct(?int $id = null, ?string $name = null)
     {
-        $this->id = $id;
+        $this->id   = $id;
         $this->name = $name;
     }
 
@@ -25,9 +25,9 @@ class Product
     public static function fromXml(string $xml): static
     {
         // Custom logic here.
-        $data = convert_xml_to_array($xml);
-        $new = new static();
-        $new->id = $data['id'];
+        $data      = convert_xml_to_array($xml);
+        $new       = new static();
+        $new->id   = $data['id'];
         $new->name = $data['name'];
         return $new;
     }

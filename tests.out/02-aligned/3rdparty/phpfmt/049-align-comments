@@ -1,5 +1,5 @@
 <?php
 $arr = array(
-    $a,  // Comment
+    $a,    // Comment
     $bbb,  // Comment 2
 );

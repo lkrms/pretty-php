@@ -1,5 +1,5 @@
 <?php
-$uploaddir = '/var/www/uploads/';
+$uploaddir  = '/var/www/uploads/';
 $uploadfile = $uploaddir . basename($_FILES['userfile']['name']);
 
 echo '<pre>';

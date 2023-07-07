@@ -3,6 +3,6 @@
 
 $foo = round(
     bcdiv($obj->get('a')
-        / $obj->get('b')),
+              / $obj->get('b')),
     2
 );

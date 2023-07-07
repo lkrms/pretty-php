@@ -1,6 +1,6 @@
 <?php
 if (true)  //comment
-//comment
+           //comment
 {
     $a;
 } else {

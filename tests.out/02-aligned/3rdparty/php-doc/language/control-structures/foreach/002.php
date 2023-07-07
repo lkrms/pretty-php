@@ -21,9 +21,9 @@ foreach ($a as $v) {
 /* foreach example 3: key and value */
 
 $a = array(
-    'one' => 1,
-    'two' => 2,
-    'three' => 3,
+    'one'       => 1,
+    'two'       => 2,
+    'three'     => 3,
     'seventeen' => 17
 );
 
@@ -32,7 +32,7 @@ foreach ($a as $k => $v) {
 }
 
 /* foreach example 4: multi-dimensional arrays */
-$a = array();
+$a       = array();
 $a[0][0] = 'a';
 $a[0][1] = 'b';
 $a[1][0] = 'y';

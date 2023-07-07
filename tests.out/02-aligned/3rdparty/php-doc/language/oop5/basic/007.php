@@ -2,7 +2,7 @@
 
 $instance = new SimpleClass();
 
-$assigned = $instance;
+$assigned  = $instance;
 $reference = &$instance;
 
 $instance->var = '$assigned will have this value';

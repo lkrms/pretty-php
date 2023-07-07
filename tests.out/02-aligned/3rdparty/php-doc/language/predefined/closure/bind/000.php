@@ -2,7 +2,7 @@
 class A
 {
     private static $sfoo = 1;
-    private $ifoo = 2;
+    private $ifoo        = 2;
 }
 
 $cl1 = static function () {

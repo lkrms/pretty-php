@@ -33,7 +33,7 @@ class LineIterator implements Iterator
     {
         fseek($this->fileHandle, 0);
         $this->line = fgets($this->fileHandle);
-        $this->i = 0;
+        $this->i    = 0;
     }
 
     public function valid()

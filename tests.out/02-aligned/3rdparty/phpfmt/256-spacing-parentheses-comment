@@ -1,7 +1,7 @@
 <?php
 $a = $b->foo()
-    ->bar()  // comment
-    ->baz();
+       ->bar()  // comment
+       ->baz();
 
 $c = $d
     ->asdf()  /* hello */

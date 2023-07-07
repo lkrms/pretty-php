@@ -1,10 +1,10 @@
 <?php
-$class = new ClassObject('Constant');
+$class  = new ClassObject('Constant');
 $method = $class->getMethod($name);
 $method->setAccessible(true);
 
 $m->setAccessible(true)
-    ->setName($name);;
+  ->setName($name);;
 
 $m
     ->setAccessible(true)

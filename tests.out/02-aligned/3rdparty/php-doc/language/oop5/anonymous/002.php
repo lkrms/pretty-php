@@ -2,7 +2,7 @@
 
 class Outer
 {
-    private $prop = 1;
+    private $prop    = 1;
     protected $prop2 = 2;
 
     protected function func1()
