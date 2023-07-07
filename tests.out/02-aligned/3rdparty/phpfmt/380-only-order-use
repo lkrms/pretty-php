@@ -1,0 +1,14 @@
+<?php
+//passes:OnlyOrderUseClauses
+namespace A;
+
+use B;
+use C;
+
+class D
+{
+    function f()
+    {
+        new B();
+    }
+}

@@ -1,0 +1,3 @@
+<?php
+$first ? $second : $third
+?>

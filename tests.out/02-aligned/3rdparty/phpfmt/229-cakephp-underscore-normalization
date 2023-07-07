@@ -1,0 +1,3 @@
+<?php
+//passes:Default,CakePHPStyle
+function __() {}

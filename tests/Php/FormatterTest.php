@@ -4,6 +4,12 @@ namespace Lkrms\Pretty\Tests\Php;
 
 use Lkrms\Facade\File;
 use Lkrms\Pretty\Php\Formatter;
+use Lkrms\Pretty\Php\Rule\AlignArrowFunctions;
+use Lkrms\Pretty\Php\Rule\AlignAssignments;
+use Lkrms\Pretty\Php\Rule\AlignChainedCalls;
+use Lkrms\Pretty\Php\Rule\AlignComments;
+use Lkrms\Pretty\Php\Rule\AlignLists;
+use Lkrms\Pretty\Php\Rule\AlignTernaryOperators;
 use SplFileInfo;
 
 final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
@@ -235,6 +241,21 @@ PHP,
                 'skipFilters' => [],
                 'callback' => null,
             ],
+            '02-aligned' => [
+                'insertSpaces' => null,
+                'tabSize' => null,
+                'skipRules' => [],
+                'addRules' => [
+                    AlignAssignments::class,
+                    AlignChainedCalls::class,
+                    AlignComments::class,
+                    AlignArrowFunctions::class,
+                    AlignLists::class,
+                    AlignTernaryOperators::class,
+                ],
+                'skipFilters' => [],
+                'callback' => null,
+            ],
         ];
 
         // Include:
@@ -243,13 +264,14 @@ PHP,
         // - either of the above with a .fails extension (these are not tested,
         //   but if their tests.out counterpart doesn't exist, it is generated)
         $files = File::find($inDir, null, '/(\.php|\/[^.\/]+)(\.fails)?$/');
-        foreach ($formatOptions as $format => $options) {
+        foreach ($formatOptions as $dir => $options) {
+            $format = substr($dir, 3);
             $formatter = self::getFormatter($options);
             /** @var SplFileInfo $file */
             foreach ($files as $file) {
                 $inFile = (string) $file;
                 $path = substr($inFile, strlen($inDir));
-                $outFile = preg_replace('/\.fails$/', '', $outDir . '/' . $format . $path);
+                $outFile = preg_replace('/\.fails$/', '', $outDir . '/' . $dir . $path);
                 $path = ltrim($path, '/\\');
 
                 if ($minVersionPatterns) {
@@ -268,7 +290,7 @@ PHP,
                     $expected = file_get_contents($versionOutFile);
                 } elseif (!file_exists($outFile)) {
                     // Generate a baseline if the output file doesn't exist
-                    fprintf(STDERR, "Formatting %s\n", $path);
+                    fprintf(STDERR, "Formatting %s-%s\n", $path, $format);
                     File::maybeCreateDirectory(dirname($outFile));
                     file_put_contents($outFile, $expected = $formatter->format($code, 3));
                 } elseif ($file->getExtension() === 'fails') {
@@ -278,7 +300,7 @@ PHP,
                     $expected = file_get_contents($outFile);
                 }
 
-                yield $path => [$expected, $code, $formatter];
+                yield "{$path}-{$format}" => [$expected, $code, $formatter];
             }
         }
     }

@@ -1,0 +1,8 @@
+<?php
+//passes:OrderMethodAndVisibility
+class A {}
+
+class B
+{
+    public function b() {}
+}

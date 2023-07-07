@@ -1,0 +1,15 @@
+<?php
+use Acme\Vendor\C;
+use Acme\Vendor\{
+    A,
+    B
+};
+
+class Test
+{
+    public function __construct()
+    {
+        $c = new C;
+        $c = B::staticMethod();
+    }
+}

@@ -1,0 +1,10 @@
+<?php
+//passes:PrettyPrintDocBlocks,Default
+
+/**
+ * @param  \NamespaceA\Subnamespace\TypeA         $a     some long comment of type A
+ * @param  \NamespaceA\Subnamespace\TypeBB        $bb    another long comment of type B
+ * @param  \NamespaceA\Subnamespace\TypeCCC       $ccccc this should be even longer than previous types
+ * @throws \ExceptionNamespace\SomeWeirdException some long description for this exception too.
+ * @return string                                 which also has a description
+ */
