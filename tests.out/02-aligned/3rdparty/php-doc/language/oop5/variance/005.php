@@ -1,0 +1,1 @@
+$kitty->eat($banana);

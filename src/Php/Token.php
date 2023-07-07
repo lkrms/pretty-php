@@ -789,68 +789,6 @@ class Token extends CollectibleToken implements JsonSerializable
         return $this->byOffset(__FUNCTION__, $offset);
     }
 
-    /**
-     * @param int|string ...$types
-     */
-    public function prevWhile(...$types): TokenCollection
-    {
-        return $this->_prevWhile(false, ...$types);
-    }
-
-    /**
-     * @param int|string ...$types
-     */
-    public function withPrevWhile(...$types): TokenCollection
-    {
-        return $this->_prevWhile(true, ...$types);
-    }
-
-    /**
-     * @param int|string ...$types
-     */
-    private function _prevWhile(bool $with, ...$types): TokenCollection
-    {
-        $c = new TokenCollection();
-        $p = $with ? $this : $this->prev();
-        while ($p->is($types)) {
-            $c[] = $p;
-            $p = $p->prev();
-        }
-
-        return $c;
-    }
-
-    /**
-     * @param int|string ...$types
-     */
-    public function nextWhile(...$types): TokenCollection
-    {
-        return $this->_nextWhile(false, ...$types);
-    }
-
-    /**
-     * @param int|string ...$types
-     */
-    public function withNextWhile(...$types): TokenCollection
-    {
-        return $this->_nextWhile(true, ...$types);
-    }
-
-    /**
-     * @param int|string ...$types
-     */
-    private function _nextWhile(bool $with, ...$types): TokenCollection
-    {
-        $c = new TokenCollection();
-        $n = $with ? $this : $this->next();
-        while ($n->is($types)) {
-            $c[] = $n;
-            $n = $n->next();
-        }
-
-        return $c;
-    }
-
     public function prevCode(int $offset = 1): Token
     {
         switch ($offset) {
@@ -875,68 +813,6 @@ class Token extends CollectibleToken implements JsonSerializable
         }
 
         return $this->byOffset(__FUNCTION__, $offset);
-    }
-
-    /**
-     * @param int|string ...$types
-     */
-    public function prevCodeWhile(...$types): TokenCollection
-    {
-        return $this->_prevCodeWhile(false, ...$types);
-    }
-
-    /**
-     * @param int|string ...$types
-     */
-    public function withPrevCodeWhile(...$types): TokenCollection
-    {
-        return $this->_prevCodeWhile(true, ...$types);
-    }
-
-    /**
-     * @param int|string ...$types
-     */
-    private function _prevCodeWhile(bool $with, ...$types): TokenCollection
-    {
-        $c = new TokenCollection();
-        $p = $with ? $this : $this->prevCode();
-        while ($p->is($types)) {
-            $c[] = $p;
-            $p = $p->prevCode();
-        }
-
-        return $c;
-    }
-
-    /**
-     * @param int|string ...$types
-     */
-    public function nextCodeWhile(...$types): TokenCollection
-    {
-        return $this->_nextCodeWhile(false, ...$types);
-    }
-
-    /**
-     * @param int|string ...$types
-     */
-    public function withNextCodeWhile(...$types): TokenCollection
-    {
-        return $this->_nextCodeWhile(true, ...$types);
-    }
-
-    /**
-     * @param int|string ...$types
-     */
-    private function _nextCodeWhile(bool $with, ...$types): TokenCollection
-    {
-        $c = new TokenCollection();
-        $n = $with ? $this : $this->nextCode();
-        while ($n->is($types)) {
-            $c[] = $n;
-            $n = $n->nextCode();
-        }
-
-        return $c;
     }
 
     public function prevSibling(int $offset = 1): Token
@@ -1479,7 +1355,7 @@ class Token extends CollectibleToken implements JsonSerializable
         if (!$current->is($types ?: ($types = [T[')'], T[','], T[']'], T['}']]))) {
             return null;
         }
-        $outer = $current->withNextCodeWhile(...$types)->last();
+        $outer = $current->withNextCodeWhile(true, ...$types)->last();
         if (!$outer->_nextCode ||
                 !$outer->EndStatement ||
                 $outer->EndStatement->Index <= $outer->_nextCode->Index) {
@@ -1499,7 +1375,7 @@ class Token extends CollectibleToken implements JsonSerializable
             return null;
         }
         $eol = $this->endOfLine();
-        $outer = $current->withNextCodeWhile(T[')'], T[','], T[']'], T['}'])
+        $outer = $current->withNextCodeWhile(false, T[')'], T[','], T[']'], T['}'])
                          ->filter(fn(Token $t) => $t->Index <= $eol->Index)
                          ->last();
         if (!$outer || !$outer->_nextCode ||

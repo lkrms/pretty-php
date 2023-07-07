@@ -1,0 +1,13 @@
+<?php
+
+function doSomething()
+{
+    $app->method();
+    (new Obj())->connect();
+}
+
+function doSomething2()
+{
+    $app->method();
+    (new Obj())->connect();
+}

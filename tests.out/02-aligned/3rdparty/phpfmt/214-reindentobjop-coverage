@@ -1,0 +1,12 @@
+<?php
+echo $a
+    ->something;
+
+echo $a
+    ->firstThis
+    ->something;
+
+echo $a->firstThis
+       ->something;
+
+echo $a->firstThis;

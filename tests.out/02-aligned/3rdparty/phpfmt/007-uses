@@ -1,0 +1,8 @@
+<?php
+use Z\A;
+use Z\B;
+use Z\C;
+
+new B;
+new C;
+?>
