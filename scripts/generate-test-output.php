@@ -19,6 +19,7 @@ foreach (FormatterTest::getFileFormats() as $dir => $options) {
     foreach (FormatterTest::getFiles($dir) as $file => $outFile) {
         $inFile = (string) $file;
         $path = substr($outFile, strlen(dirname(__DIR__)) + 1);
+        $count++;
 
         Console::logProgress('Generating', $path);
 
@@ -30,17 +31,21 @@ foreach (FormatterTest::getFileFormats() as $dir => $options) {
             Console::error('Unable to generate:', $path);
             throw $ex;
         }
-        if (file_get_contents($outFile) !== $output) {
-            Console::log('Replacing', $path);
-            file_put_contents($outFile, $output);
-            $replaced++;
+        $message = 'Creating';
+        if (file_exists($outFile)) {
+            if (file_get_contents($outFile) === $output) {
+                continue;
+            }
+            $message = 'Replacing';
         }
-        $count++;
+        Console::log($message, $path);
+        file_put_contents($outFile, $output);
+        $replaced++;
     }
 }
 
 Console::summary(sprintf(
-    $replaced ? 'Replaced %1$d of %2$d %3$s' : 'Generated %2$d %3$s',
+    $replaced ? 'Updated %1$d of %2$d %3$s' : 'Generated %2$d %3$s',
     $replaced,
     $count,
     Convert::plural($count, 'file')

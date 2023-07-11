@@ -36,14 +36,15 @@ class CollectibleToken extends NavigableToken
         if ($this->IsNull) {
             return $tokens;
         }
+        !$to || !$to->IsNull || $to = null;
         $current = $this->OpenedBy ?: $this;
         if ($to) {
             $to = $to->OpenedBy ?: $to;
-            if ($to->IsNull || $this->Index > $to->Index) {
+            if ($this->Index > $to->Index) {
                 return $tokens;
             }
             if ($current->BracketStack !== $to->BracketStack) {
-                throw new LogicException('Argument #1 ($until) is not a sibling');
+                throw new LogicException('Argument #1 ($to) is not a sibling');
             }
         }
         do {
@@ -58,20 +59,37 @@ class CollectibleToken extends NavigableToken
     }
 
     /**
-     * Get the token and its preceding siblings in document order, optionally
-     * starting from a given sibling
+     * Get preceding siblings in reverse document order, optionally stopping at
+     * a given sibling
      *
-     * @param TToken|null $from
+     * @param TToken|null $to
      */
-    final public function collectPrevSiblings($from = null): TokenCollection
+    final public function prevSiblings($to = null): TokenCollection
     {
+        $tokens = new TokenCollection();
+        if ($this->IsNull) {
+            return $tokens;
+        }
+        !$to || !$to->IsNull || $to = null;
         $current = $this->OpenedBy ?: $this;
-        $from = $from
-            ?: ($current->BracketStack
-                ? end($current->BracketStack)->_nextCode
-                : $current->first()->_nextCode);
+        if ($to) {
+            if ($this->Index < $to->Index) {
+                return $tokens;
+            }
+            $to = $to->OpenedBy ?: $to;
+            if ($current->BracketStack !== $to->BracketStack) {
+                throw new LogicException('Argument #1 ($to) is not a sibling');
+            }
+        }
+        while ($current = $current->_prevSibling) {
+            /** @var Token $current */
+            $tokens[] = $current;
+            if ($to && $current === $to) {
+                break;
+            }
+        }
 
-        return $from->collectSiblings($current);
+        return $tokens;
     }
 
     /**

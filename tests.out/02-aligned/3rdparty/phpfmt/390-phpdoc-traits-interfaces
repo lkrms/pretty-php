@@ -22,8 +22,8 @@ interface Database
 
 class MySQL implements Database
 {
-    use SomeTrait;
     use SomeOtherTrait;
+    use SomeTrait;
 
     private $a = 1;
 

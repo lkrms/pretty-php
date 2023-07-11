@@ -8,8 +8,6 @@ use Lkrms\Pretty\Php\Contract\Filter;
 use Lkrms\Pretty\Php\NavigableToken as Token;
 use Lkrms\Pretty\Php\TokenType;
 
-use const Lkrms\Pretty\Php\T_ID_MAP as T;
-
 /**
  * Sort consecutive alias/import statements
  *
@@ -18,65 +16,16 @@ final class SortImports implements Filter
 {
     use FilterTrait;
 
-    /**
-     * @param Token[] $tokens
-     * @return array{0:int,1:string}
-     */
-    private function sortableImport(array $tokens): array
-    {
-        switch ($tokens[1]->id ?? T_STRING) {
-            case T_CONST:
-                $order = 1;
-                break;
-            case T_FUNCTION:
-                $order = 2;
-                break;
-            default:
-                $order = 0;
-                break;
-        }
-
-        // Strip comments and normalise to:
-        //
-        //     `use A \ B\{ D , E } ;`
-        //     `use A \ B \ C ;`
-        //
-        // For output like:
-        //
-        //     `use A\B\C;`
-        //     `use A\B\{D, E};`
-        //
-        $import = str_replace(
-            [' \ ', '\\', ' \ {'],
-            ['\\', ' \ ', '\{'],
-            implode(
-                ' ',
-                array_map(
-                    fn(Token $t) => $t->text,
-                    array_filter(
-                        $tokens,
-                        fn(Token $t) => !$t->is(TokenType::COMMENT)
-                    )
-                )
-            )
-        );
-
-        return [$order, $import];
-    }
-
     public function filterTokens(array $tokens): array
     {
         $this->Tokens = array_values($tokens);
         $count = count($this->Tokens);
 
-        // Minimise unnecessary iterations by identifying relevant T_USE tokens
-        // in advance and exiting early if possible
+        // Identify relevant T_USE tokens and exit early if possible
         $tokens = array_keys(array_filter(
             $this->Tokens,
             fn(Token $t, int $i) => $t->id === T_USE &&
-                !(($prev = $this->prevCode($i, $prev_i))->id === T[')'] ||
-                    ($prev->id === T['{'] &&
-                        !$this->prevDeclarationOf($prev_i, T_CLASS, T_TRAIT)->IsNull)),
+                $this->prevCode($i)->id !== T_CLOSE_PARENTHESIS,
             ARRAY_FILTER_USE_BOTH
         ));
         if (!$tokens) {
@@ -86,18 +35,23 @@ final class SortImports implements Filter
         while ($tokens) {
             $i = array_shift($tokens);
 
-            /** @var array<array<Token>> */
+            /** @var array<Token[]> */
             $sort = [];
-            /** @var array<Token> */
+            /** @var Token[] */
             $current = [];
             /** @var Token|null */
             $terminator = null;
+            $inTraitAdaptation = false;
             while ($i < $count) {
                 $token = $this->Tokens[$i];
+                // If `$current` is non-empty, `$token` may be part of a `use`
+                // statement that's being collected
                 if ($current) {
+                    // If `$terminator` is set, a `use` statement has been
+                    // terminated, and token collection will only continue if
+                    // `$token` is a subsequent comment on the same line, or a
+                    // continuation thereof
                     if ($terminator) {
-                        // Collect comments that appear beside code, allowing
-                        // other comments to break the sequence of statements
                         if ($token->is(TokenType::COMMENT) &&
                             ($token->line === $terminator->line ||
                                 ($this->isOneLineComment($i) &&
@@ -106,24 +60,36 @@ final class SortImports implements Filter
                             $current[$i++] = $token;
                             continue;
                         } else {
+                            // Otherwise, the `use` statement is finalised and
+                            // added to the sorting queue
                             $sort[] = $current;
                             $current = [];
                             $terminator = null;
                         }
                     } elseif ($token->id === T_CLOSE_TAG) {
-                        /**
-                         * Don't add improbable but technically legal statements
-                         * like `use A\B\C ?>` to $sort
-                         */
+                        /* Statements like `use A\B\C ?>` are discarded */
                         $current = [];
+                        break;
                     } else {
-                        $current[$i++] = $token;
-                        if ($token->id === T[';']) {
+                        if ($token->id === T_OPEN_BRACE) {
+                            if ($this->prevCode($i)->id !== T_NS_SEPARATOR) {
+                                $inTraitAdaptation = true;
+                            }
+                        } elseif ($token->id === T_CLOSE_BRACE) {
+                            if ($inTraitAdaptation) {
+                                $terminator = $token;
+                                $inTraitAdaptation = false;
+                            }
+                        } elseif ($token->id === T_SEMICOLON && !$inTraitAdaptation) {
                             $terminator = $token;
                         }
+                        $current[$i++] = $token;
                         continue;
                     }
                 }
+                // This point is only reached with the first token in a possible
+                // series of `use` statements, and with the first token after a
+                // `use` statement is finalised
                 if ($token->id !== T_USE) {
                     break;
                 }
@@ -182,5 +148,49 @@ final class SortImports implements Filter
         }
 
         Convert::arraySpliceAtKey($this->Tokens, $firstKey, count($sorted), $sorted);
+    }
+
+    /**
+     * @param Token[] $tokens
+     * @return array{0:int,1:string}
+     */
+    private function sortableImport(array $tokens): array
+    {
+        switch ($tokens[1]->id ?? T_STRING) {
+            case T_FUNCTION:
+                $order = 1;
+                break;
+            case T_CONST:
+                $order = 2;
+                break;
+            default:
+                $order = 0;
+                break;
+        }
+
+        // Strip comments and semicolons and normalise to:
+        //
+        //     `use A 0 B 1 {D, E}`
+        //     `use A 0 B 0 C`
+        //
+        // For output like:
+        //
+        //     `use A\B\C;`
+        //     `use A\B\{D, E};`
+        //
+        $import = str_replace(
+            ['\\', '0{'],
+            ['0', '1{'],
+            array_reduce(
+                array_filter(
+                    $tokens,
+                    fn(Token $t) => !$t->is(TokenType::COMMENT) &&
+                        $t->id !== T_SEMICOLON
+                ),
+                fn($carry, Token $t) => $carry . $t->text,
+            )
+        );
+
+        return [$order, $import];
     }
 }
