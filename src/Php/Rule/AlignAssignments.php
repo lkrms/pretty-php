@@ -120,8 +120,8 @@ final class AlignAssignments implements BlockRule
                         $token->BracketStack && end($token->BracketStack)->isArrayOpenBracket() &&
                         !$token->_next->isCloseBracket()) {
                     $data = [
-                        'prevTypes' => $token->_prev->collectPrevSiblings($token->prevSiblingOf(T_COMMA, T_OPEN_BRACKET, T_OPEN_PARENTHESIS)->_nextCode)->getTypes(),
-                        'nextTypes' => $token->_next->collectSiblings($token->nextSiblingOf(T_COMMA, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS)->_prevCode)->getTypes(),
+                        'prevTypes' => $token->prevSiblings($token->prevSiblingOf(T_COMMA)->nextCode())->getTypes(),
+                        'nextTypes' => $token->_next->collectSiblings($token->nextSiblingOf(T_COMMA)->prevCode())->getTypes(),
                     ];
                     $type = array_map(fn(array $types): string => implode(',', $this->simplifyTokenTypes($types)), $data);
                     array_unshift($type, ',');

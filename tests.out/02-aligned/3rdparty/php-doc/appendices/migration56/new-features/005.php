@@ -11,9 +11,9 @@ namespace Name\Space
 
 namespace
 {
-    use const Name\Space\FOO;
-
     use function Name\Space\f;
+
+    use const Name\Space\FOO;
 
     echo FOO . "\n";
     f();

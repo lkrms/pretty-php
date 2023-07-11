@@ -875,40 +875,6 @@ class Token extends CollectibleToken implements JsonSerializable
     }
 
     /**
-     * Collect the token's previous siblings in order from closest to farthest
-     *
-     * The token itself is not collected.
-     *
-     * If set, `$until` must be a previous sibling of the token. It will be the
-     * last token collected.
-     *
-     * @see Token::collectSiblings()
-     */
-    final public function prevSiblings(Token $until = null): TokenCollection
-    {
-        $tokens = new TokenCollection();
-        $current = $this->OpenedBy ?: $this;
-        if ($until) {
-            if ($this->Index < $until->Index || $until->IsNull) {
-                return $tokens;
-            }
-            $until = $until->OpenedBy ?: $until;
-            if ($current->BracketStack !== $until->BracketStack) {
-                throw new RuntimeException('Argument #1 ($until) is not a sibling');
-            }
-        }
-
-        while ($current = $current->_prevSibling) {
-            $tokens[] = $current;
-            if ($until && $current === $until) {
-                break;
-            }
-        }
-
-        return $tokens;
-    }
-
-    /**
      * Collect the token's siblings up to but not including the last that isn't
      * one of the listed types
      *
