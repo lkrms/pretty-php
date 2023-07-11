@@ -4,11 +4,8 @@ namespace Lkrms\Pretty\Php;
 
 use JsonSerializable;
 use Lkrms\Facade\Convert;
-use Lkrms\Pretty\Php\Contract\Filter;
-use Lkrms\Pretty\PrettyException;
 use Lkrms\Pretty\WhitespaceType;
 use RuntimeException;
-use Throwable;
 
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
@@ -1433,7 +1430,7 @@ class Token extends CollectibleToken implements JsonSerializable
             ->skipAnySiblingsOf(T_RETURN, T_YIELD, T_YIELD_FROM)
             ->withNextSiblingsUntil(
                 fn(Token $t) =>
-                    !$t->is(TokenType::DECLARATION_PART_WITH_NEW) &&
+                    !$t->is(TokenType::DECLARATION_PART) &&
                         !($t->id === T['('] && $t->_prevCode->id === T_CLASS)
             );
     }
@@ -1694,19 +1691,15 @@ class Token extends CollectibleToken implements JsonSerializable
             ($lastInner->id === T['}'] && $lastInner->isStructuralBrace());  // `{ { statement; } }`
     }
 
-    public function isOneLineComment(bool $anyType = false): bool
+    public function isOneLineComment(): bool
     {
-        return $anyType
-            ? $this->is(TokenType::COMMENT) && !$this->hasNewline()
-            : $this->id === T_COMMENT && preg_match('@^(//|#)@', $this->text);
+        return $this->CommentType &&
+            !(($this->CommentType[1] ?? null) === '*');
     }
 
-    public function isMultiLineComment(bool $anyType = false): bool
+    public function isMultiLineComment(): bool
     {
-        return $anyType
-            ? $this->is(TokenType::COMMENT) && $this->hasNewline()
-            : ($this->id === T_DOC_COMMENT ||
-                ($this->id === T_COMMENT && preg_match('@^/\*@', $this->text)));
+        return ($this->CommentType[1] ?? null) === '*';
     }
 
     public function isOperator(): bool
@@ -1773,10 +1766,10 @@ class Token extends CollectibleToken implements JsonSerializable
 
     public function inFunctionDeclaration(): bool
     {
-        $parent = $this->parent();
-
-        return $parent->id === T['('] &&
-            ($parent->isDeclaration(T_FUNCTION) || $parent->prevCode()->id === T_FN);
+        return ($parent = end($this->BracketStack)) &&
+            $parent->id === T['('] &&
+            (($parent->_prevCode->id ?? null) === T_FN ||
+                $parent->prevOf(T_FUNCTION)->nextOf(T['(']) === $parent);
     }
 
     /**
@@ -1946,35 +1939,6 @@ class Token extends CollectibleToken implements JsonSerializable
         }
 
         throw new RuntimeException('Not a T_COMMENT or T_DOC_COMMENT');
-    }
-
-    public function collect(Token $to): TokenCollection
-    {
-        return TokenCollection::collect($this, $to);
-    }
-
-    final public function collectSiblings(Token $until = null): TokenCollection
-    {
-        $tokens = new TokenCollection();
-        $current = $this->OpenedBy ?: $this;
-        if ($until) {
-            if ($this->Index > $until->Index || $until->IsNull) {
-                return $tokens;
-            }
-            $until = $until->OpenedBy ?: $until;
-            if ($current->BracketStack !== $until->BracketStack) {
-                throw new RuntimeException('Argument #1 ($until) is not a sibling');
-            }
-        }
-
-        do {
-            $tokens[] = $current;
-            if ($until && $current === $until) {
-                break;
-            }
-        } while ($current = $current->_nextSibling);
-
-        return $tokens;
     }
 
     public function __toString(): string
