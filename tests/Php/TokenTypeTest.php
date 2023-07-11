@@ -2,6 +2,7 @@
 
 namespace Lkrms\Pretty\Tests\Php;
 
+use Generator;
 use Lkrms\Pretty\Php\TokenType;
 use ReflectionClass;
 
@@ -10,9 +11,9 @@ final class TokenTypeTest extends \Lkrms\Pretty\Tests\Php\TestCase
     /**
      * @dataProvider uniquenessProvider
      *
-     * @param array<int|string> $array
+     * @param int[] $array
      */
-    public function testUniqueness(array $array)
+    public function testUniqueness(array $array): void
     {
         $this->assertSame(
             [],
@@ -20,7 +21,10 @@ final class TokenTypeTest extends \Lkrms\Pretty\Tests\Php\TestCase
         );
     }
 
-    public static function uniquenessProvider()
+    /**
+     * @return Generator<string,array<int[]>>
+     */
+    public static function uniquenessProvider(): Generator
     {
         foreach ((new ReflectionClass(TokenType::class))->getConstants() as $name => $value) {
             if (is_array($value)) {
@@ -32,14 +36,17 @@ final class TokenTypeTest extends \Lkrms\Pretty\Tests\Php\TestCase
     /**
      * @dataProvider addSpaceProvider
      *
-     * @param array<int|string> $array
+     * @param int[] $array
      */
-    public function testAddSpace(array $array)
+    public function testAddSpace(array $array): void
     {
         $this->assertSame([], $this->getTokenTypeNames($array));
     }
 
-    public static function addSpaceProvider()
+    /**
+     * @return array<string,array<int[]>>
+     */
+    public static function addSpaceProvider(): array
     {
         return [
             'Intersection of TokenType::ADD_SPACE_BEFORE and _AFTER' => [
@@ -61,21 +68,17 @@ final class TokenTypeTest extends \Lkrms\Pretty\Tests\Php\TestCase
     }
 
     /**
-     * @param array<int|string> $tokens
+     * @param int[] $tokens
      * @return string[]
      */
     private function getTokenTypeNames(array $tokens): array
     {
         return array_map(
-            function ($id) {
-                if (!is_int($id)) {
-                    return $id;
-                }
+            function (int $id) {
                 $name = TokenType::NAME_MAP[$id] ?? token_name($id);
                 if ($name === 'UNKNOWN') {
                     return chr($id);
                 }
-
                 return $name;
             },
             $tokens

@@ -5,47 +5,39 @@ namespace Lkrms\Pretty\Tests\Php\Rule;
 final class AlignCommentsTest extends \Lkrms\Pretty\Tests\Php\TestCase
 {
     /**
-     * @dataProvider alignCommentsProvider
+     * @dataProvider processBlockProvider
      */
-    public function testAlignComments(string $code, string $expected)
+    public function testProcessBlock(string $expected, string $code): void
     {
-        $this->assertFormatterOutputIs($code, $expected);
+        $this->assertCodeFormatIs($expected, $code);
     }
 
-    public static function alignCommentsProvider()
+    /**
+     * @return array<string,array{string,string}>
+     */
+    public static function processBlockProvider(): array
     {
         return [
             'standalone comments' => [
                 <<<'PHP'
 <?php
-
 $a = 1;
 $b = 2;  //
 
 //
 $c = 3;
+
 PHP,
                 <<<'PHP'
 <?php
-
 $a = 1;
 $b = 2;  //
 
 //
 $c = 3;
-
 PHP,
             ],
-            [
-                <<<'PHP'
-<?php
-echo 'This is a test'; // This is a one-line c++ style comment
-/* This is a multi line comment
-   yet another line of comment */
-echo 'This is yet another test';
-echo 'One Final Test'; # This is a one-line shell-style comment
-?>
-PHP,
+            'mixed comment types' => [
                 <<<'PHP'
 <?php
 echo 'This is a test';  // This is a one-line c++ style comment
@@ -55,7 +47,16 @@ echo 'This is yet another test';
 echo 'One Final Test';  # This is a one-line shell-style comment
 ?>
 PHP,
-            ]
+                <<<'PHP'
+<?php
+echo 'This is a test'; // This is a one-line c++ style comment
+/* This is a multi line comment
+   yet another line of comment */
+echo 'This is yet another test';
+echo 'One Final Test'; # This is a one-line shell-style comment
+?>
+PHP,
+            ],
         ];
     }
 }

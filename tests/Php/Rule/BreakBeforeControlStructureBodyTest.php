@@ -2,37 +2,36 @@
 
 namespace Lkrms\Pretty\Tests\Php\Rule;
 
-use Lkrms\Pretty\Tests\Php\TestCase;
-
-final class BreakBeforeControlStructureBodyTest extends TestCase
+final class BreakBeforeControlStructureBodyTest extends \Lkrms\Pretty\Tests\Php\TestCase
 {
     /**
      * @dataProvider processTokenProvider
      */
-    public function testProcessToken(string $code, string $expected)
+    public function testProcessToken(string $expected, string $code): void
     {
-        $this->assertFormatterOutputIs($code, $expected);
+        $this->assertCodeFormatIs($expected, $code);
     }
 
+    /**
+     * @return array<string,array{string,string}>
+     */
     public static function processTokenProvider(): array
     {
         return [
             'suppress empty line before closing while' => [
                 <<<'PHP'
 <?php
-
-do
-something();
-
-while (false);
-PHP,
-                <<<'PHP'
-<?php
-
 do
     something();
 while (false);
 
+PHP,
+                <<<'PHP'
+<?php
+do
+something();
+
+while (false);
 PHP,
             ],
         ];

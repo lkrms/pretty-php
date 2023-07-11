@@ -9,46 +9,35 @@ final class AddHangingIndentationTest extends \Lkrms\Pretty\Tests\Php\TestCase
     /**
      * @dataProvider ternaryOperatorsProvider
      */
-    public function testTernaryOperators(string $code, string $expected)
+    public function testTernaryOperators(string $expected, string $code): void
     {
-        $this->assertFormatterOutputIs($code, $expected, [AlignChainedCalls::class]);
+        $this->assertCodeFormatIs($expected, $code, [AlignChainedCalls::class]);
     }
 
+    /**
+     * @return array<array{string,string}>
+     */
     public static function ternaryOperatorsProvider(): array
     {
         return [
             [
                 <<<'PHP'
 <?php
-
-$abc = $def->ghi()
-->klm()
-?: $abc;
-PHP,
-                <<<'PHP'
-<?php
-
 $abc = $def->ghi()
            ->klm()
     ?: $abc;
 
 PHP,
+                <<<'PHP'
+<?php
+$abc = $def->ghi()
+->klm()
+?: $abc;
+PHP,
             ],
             [
                 <<<'PHP'
 <?php
-
-do
-$result = true
-? 'true'
-? 't'
-: false
-: 'f';
-while (false);
-PHP,
-                <<<'PHP'
-<?php
-
 do
     $result = true
         ? 'true'
@@ -58,6 +47,16 @@ do
 while (false);
 
 PHP,
+                <<<'PHP'
+<?php
+do
+$result = true
+? 'true'
+? 't'
+: false
+: 'f';
+while (false);
+PHP,
             ],
         ];
     }
@@ -65,22 +64,18 @@ PHP,
     /**
      * @dataProvider processTokenProvider
      */
-    public function testProcessToken(string $code, string $expected)
+    public function testProcessToken(string $expected, string $code): void
     {
-        $this->assertFormatterOutputIs($code, $expected);
+        $this->assertCodeFormatIs($expected, $code);
     }
 
+    /**
+     * @return array<array{string,string}>
+     */
     public static function processTokenProvider(): array
     {
         return [
             [
-                <<<'PHP'
-<?php
-$a = $b->c(fn() =>
-$d &&
-$e)
-?: $start;
-PHP,
                 <<<'PHP'
 <?php
 $a = $b->c(fn() =>
@@ -89,21 +84,17 @@ $a = $b->c(fn() =>
     ?: $start;
 
 PHP,
+                <<<'PHP'
+<?php
+$a = $b->c(fn() =>
+$d &&
+$e)
+?: $start;
+PHP,
             ],
             [
                 <<<'PHP'
 <?php
-
-if ($a &&
-($b ||
-$c) &&
-$d) {
-$e;
-}
-PHP,
-                <<<'PHP'
-<?php
-
 if ($a &&
         ($b ||
             $c) &&
@@ -112,19 +103,17 @@ if ($a &&
 }
 
 PHP,
-            ],
-            [
                 <<<'PHP'
 <?php
-function a($b, bool $c = false): bool
-{
-return is_array($b) &&
-($b
-? count(array_filter($b, fn($i) => is_string($i))) === count($b) ||
-count(array_filter($b, fn($i) => is_int($i))) === count($b)
-: $c);
+if ($a &&
+($b ||
+$c) &&
+$d) {
+$e;
 }
 PHP,
+            ],
+            [
                 <<<'PHP'
 <?php
 function a($b, bool $c = false): bool
@@ -137,38 +126,19 @@ function a($b, bool $c = false): bool
 }
 
 PHP,
-            ],
-            [
                 <<<'PHP'
 <?php
-try {}
-// comment
-catch (Throwable $ex) {}
-
-do {}
-// comment
-while (true);
-
-do
-a();
-// comment
-while (true);
-
-if (true) {}
-// comment
-elseif (false) {}
-// comment
-else {}
-
-if (true)
-a();
-// comment
-elseif (false)
-b();
-// comment
-else
-c();
+function a($b, bool $c = false): bool
+{
+return is_array($b) &&
+($b
+? count(array_filter($b, fn($i) => is_string($i))) === count($b) ||
+count(array_filter($b, fn($i) => is_int($i))) === count($b)
+: $c);
+}
 PHP,
+            ],
+            [
                 <<<'PHP'
 <?php
 try {
@@ -205,6 +175,36 @@ elseif (false)
 else
     c();
 
+PHP,
+                <<<'PHP'
+<?php
+try {}
+// comment
+catch (Throwable $ex) {}
+
+do {}
+// comment
+while (true);
+
+do
+a();
+// comment
+while (true);
+
+if (true) {}
+// comment
+elseif (false) {}
+// comment
+else {}
+
+if (true)
+a();
+// comment
+elseif (false)
+b();
+// comment
+else
+c();
 PHP,
             ],
         ];

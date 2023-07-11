@@ -6,32 +6,59 @@ use Lkrms\Pretty\Php\Formatter;
 
 abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
+    final public static function assertFormatterOutputIs(string $expected, string $code, Formatter $formatter): void
+    {
+        $first = $formatter->format($code);
+        $second = $formatter->format($first, null, true);
+        self::assertSame($expected, $first, 'Output is not formatted correctly.');
+        self::assertSame($expected, $second, 'Output is not idempotent.');
+        if ($code) {
+            $last = end($formatter->Tokens);
+            self::assertSame($last->pos, $last->OutputPos, 'pos and OutputPos do not match.');
+        }
+    }
+
     /**
-     * @param string[] $skipRules
+     * @param array{insertSpaces?:bool|null,tabSize?:int|null,skipRules?:string[],addRules?:string[],skipFilters?:string[],callback?:(callable(Formatter): Formatter)|null} $options
+     */
+    final public static function getFormatter(array $options): Formatter
+    {
+        $formatter = new Formatter(
+            $options['insertSpaces'] ?? true,
+            $options['tabSize'] ?? 4,
+            $options['skipRules'] ?? [],
+            $options['addRules'] ?? [],
+            $options['skipFilters'] ?? []
+        );
+        if ($callback = ($options['callback'] ?? null)) {
+            return $callback($formatter);
+        }
+        return $formatter;
+    }
+
+    /**
      * @param string[] $addRules
+     * @param string[] $skipRules
      * @param string[] $skipFilters
      */
-    public function assertFormatterOutputIs(
-        string $code,
+    final public function assertCodeFormatIs(
         string $expected,
+        string $code,
         array $addRules = [],
         array $skipRules = [],
         array $skipFilters = [],
         bool $insertSpaces = true,
         int $tabSize = 4
     ): void {
-        $formatter = $this->prepareFormatter(new Formatter(
-            $insertSpaces,
-            $tabSize,
-            $skipRules,
-            $addRules,
-            $skipFilters
+        self::assertFormatterOutputIs($expected, $code, $this->prepareFormatter(
+            new Formatter(
+                $insertSpaces,
+                $tabSize,
+                $skipRules,
+                $addRules,
+                $skipFilters
+            )
         ));
-
-        $first = $formatter->format($code, 3, null, true);
-        $second = $formatter->format($first, 3, null, true);
-        $this->assertSame($expected, $first);
-        $this->assertSame($expected, $second, 'Output is not idempotent.');
     }
 
     protected function prepareFormatter(Formatter $formatter): Formatter
