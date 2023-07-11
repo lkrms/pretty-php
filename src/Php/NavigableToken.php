@@ -453,6 +453,21 @@ class NavigableToken extends PhpToken
     }
 
     /**
+     * Get the first reachable token
+     *
+     * @return TToken
+     */
+    final public function first()
+    {
+        $current = reset($this->BracketStack) ?: $this;
+        while ($current->_prev) {
+            $current = $current->_prevSibling ?: $current->_prev;
+        }
+
+        return $current;
+    }
+
+    /**
      * Get the last reachable token
      *
      * @return TToken

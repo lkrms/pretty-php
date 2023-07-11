@@ -391,6 +391,7 @@ final class TokenType
         T_ARRAY,
         T_CALLABLE,
         T_ELLIPSIS,
+        T_FN,
         T_NAME_FULLY_QUALIFIED,
         T_NAME_QUALIFIED,
         T_NAME_RELATIVE,

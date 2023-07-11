@@ -71,11 +71,6 @@ parameters:
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$PreserveTrailingSpaces is never written, only read\\.$#"
-			count: 1
-			path: src/Command/FormatPhp.php
-
-		-
 			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$Preset is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php

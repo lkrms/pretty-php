@@ -16,6 +16,7 @@ use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\File;
 use Lkrms\Facade\Sys;
+use Lkrms\Pretty\Php\Catalog\FormatterFlag;
 use Lkrms\Pretty\Php\Contract\Filter;
 use Lkrms\Pretty\Php\Contract\Rule;
 use Lkrms\Pretty\Php\Filter\SortImports;
@@ -100,11 +101,6 @@ class FormatPhp extends CliCommand
      * @var bool
      */
     private $OneTrueBraceStyle;
-
-    /**
-     * @var int[]|null
-     */
-    private $PreserveTrailingSpaces;
 
     /**
      * @var bool
@@ -361,7 +357,7 @@ EOF)
                 ->short('I')
                 ->valueName('REGEX')
                 ->description(<<<EOF
-A regular expression for pathnames to include when searching a <PATH>
+A regular expression for pathnames to include when searching a directory
 
 Exclusions (__-X__, __--exclude__) are applied first.
 EOF)
@@ -373,7 +369,7 @@ EOF)
                 ->short('X')
                 ->valueName('REGEX')
                 ->description(<<<EOF
-A regular expression for pathnames to exclude when searching a <PATH>
+A regular expression for pathnames to exclude when searching a directory
 
 Exclusions are applied before inclusions (__-I__, __--include__).
 EOF)
@@ -385,7 +381,7 @@ EOF)
                 ->short('P')
                 ->valueName('REGEX')
                 ->description(<<<EOF
-Include files that contain PHP code when searching a <PATH>
+Include files that contain PHP code when searching a directory
 
 Use this option to format files not matched by __-I__, __--include__ if they
 have a pathname that matches <REGEX> and a PHP open tag ('<?php') at the start
@@ -481,27 +477,14 @@ Format braces using the One True Brace Style
 EOF)
                 ->bindTo($this->OneTrueBraceStyle),
             CliOption::build()
-                ->long('preserve-trailing-spaces')
-                ->short('T')
-                ->valueName('COUNT')
-                ->description(<<<EOF
-Preserve exactly <COUNT> trailing spaces in comments
-EOF)
-                ->optionType(CliOptionType::VALUE_OPTIONAL)
-                ->valueType(CliOptionValueType::INTEGER)
-                ->multipleAllowed()
-                ->defaultValue(['2'])
-                ->visibility($noSynopsis)
-                ->bindTo($this->PreserveTrailingSpaces),
-            CliOption::build()
                 ->long('ignore-newlines')
                 ->short('N')
                 ->description(<<<EOF
 Ignore the position of newlines in the input
 
 This option cannot be overridden by configuration file settings (see
-___CONFIGURATION___ below). Use __--disable__ _preserve-newlines_ to apply the
-same formatting without overriding settings in any configuration files.
+___CONFIGURATION___ below). Use __--disable preserve-newlines__ for the same
+effect without overriding configuration files.
 EOF)
                 ->bindTo($this->IgnoreNewlines),
             CliOption::build()
@@ -510,7 +493,7 @@ EOF)
                 ->description(<<<EOF
 Don't normalise single- and double-quoted strings
 
-Equivalent to __--disable__ _simplify-strings_
+Equivalent to __--disable simplify-strings__
 EOF)
                 ->bindTo($this->NoSimplifyStrings),
             CliOption::build()
@@ -519,7 +502,7 @@ EOF)
                 ->description(<<<EOF
 Don't split lists with trailing commas into one item per line
 
-Equivalent to __--disable__ _magic-commas_
+Equivalent to __--disable magic-commas__
 EOF)
                 ->bindTo($this->NoMagicCommas),
             CliOption::build()
@@ -624,6 +607,9 @@ EOF)
                 ->valueName('DIR')
                 ->description(<<<EOF
 Create debug output in <DIR>
+
+Combine with __-v__, __--verbose__ to render output to a subdirectory of <DIR>
+after processing each pass of each rule.
 EOF)
                 ->optionType(CliOptionType::VALUE_OPTIONAL)
                 ->defaultValue($this->app()->getTempPath() . '/debug')
@@ -684,14 +670,14 @@ comes first.
 If a directory contains more than one configuration file, __{{command}}__
 reports an error and exits without formatting anything.
 
-For input files where an applicable configuration file is found, command-line
-formatting options other than __-N__, __--ignore-newlines__ are replaced with
-settings from the configuration file.
+For input files with an applicable configuration file, command-line formatting
+options other than __-N__, __--ignore-newlines__ are replaced with settings from
+the configuration file.
 
 The __--print-config__ option can be used to generate a configuration file, for
 example:
 
-    $ __{{command}}__ -P -S -M --print-config src tests bootstrap.php
+    $ {{command}} -P -S -M --print-config src tests bootstrap.php
     {
         "src": [
             "src",
@@ -903,14 +889,15 @@ EOF,
                     $this->Tabs ?: $this->Spaces ?: 4,
                     $this->SkipRules,
                     $this->AddRules,
-                    $this->SkipFilters
+                    $this->SkipFilters,
+                    FormatterFlag::REPORT_PROBLEMS
+                        | ($this->Verbose ? FormatterFlag::LOG_PROGRESS : 0)
                 );
                 $f->PreferredEol = $this->Eol === 'auto' || $this->Eol === 'platform'
                     ? PHP_EOL
                     : ($this->Eol === 'lf' ? "\n" : "\r\n");
                 $f->PreserveEol = $this->Eol === 'auto';
                 $f->OneTrueBraceStyle = $this->OneTrueBraceStyle;
-                $f->PreserveTrailingSpaces = $this->PreserveTrailingSpaces ?: [];
                 $this->MirrorBrackets === null || $f->MirrorBrackets = $this->MirrorBrackets;
                 $this->HangingHeredocIndents === null || $f->HangingHeredocIndents = $this->HangingHeredocIndents;
                 $this->IncreaseIndentBetweenUnenclosedTags === null || $f->IncreaseIndentBetweenUnenclosedTags = $this->IncreaseIndentBetweenUnenclosedTags;
@@ -932,7 +919,6 @@ EOF,
             try {
                 $output = $formatter->format(
                     $input,
-                    $this->Quiet,
                     $inputFile,
                     $this->Fast
                 );
@@ -1297,7 +1283,7 @@ EOF,
             return;
         }
 
-        $logDir = "{$this->DebugDirectory}/render-log";
+        $logDir = "{$this->DebugDirectory}/progress-log";
         File::maybeCreateDirectory($logDir);
         File::find($logDir, null, null, null, null, false)
             ->forEach(fn(SplFileInfo $file) => unlink((string) $file));
@@ -1309,7 +1295,7 @@ EOF,
             if ($i++ && $out === $last) {
                 continue;
             }
-            $logFile = sprintf('render-log/%03d-%s.php', $i, $after);
+            $logFile = sprintf('progress-log/%03d-%s.php', $i, $after);
             $last = $logFiles[$logFile] = $out;
         }
 

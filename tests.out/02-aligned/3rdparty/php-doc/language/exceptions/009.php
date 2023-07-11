@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Define a custom exception class
  */

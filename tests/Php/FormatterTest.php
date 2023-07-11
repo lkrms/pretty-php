@@ -2,6 +2,7 @@
 
 namespace Lkrms\Pretty\Tests\Php;
 
+use Generator;
 use Lkrms\Facade\File;
 use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Rule\AlignArrowFunctions;
@@ -19,16 +20,15 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
      *
      * @param array{insertSpaces?:bool|null,tabSize?:int|null,skipRules?:string[],addRules?:string[],skipFilters?:string[],callback?:(callable(Formatter): Formatter)|null} $options
      */
-    public function testFormat(string $code, string $expected, array $options = [])
+    public function testFormat(string $expected, string $code, array $options = []): void
     {
-        $formatter = $this->getFormatter($options);
-        $first = $formatter->format($code, 3);
-        $second = $formatter->format($first, 3, null, true);
-        $this->assertSame($expected, $first);
-        $this->assertSame($expected, $second, 'Output is not idempotent.');
+        $this->assertFormatterOutputIs($expected, $code, $this->getFormatter($options));
     }
 
-    public static function formatProvider()
+    /**
+     * @return array<string,array{string,string,array{insertSpaces?:bool|null,tabSize?:int|null,skipRules?:string[],addRules?:string[],skipFilters?:string[],callback?:(callable(Formatter): Formatter)|null}}>
+     */
+    public static function formatProvider(): array
     {
         return [
             'empty string' => [
@@ -39,15 +39,6 @@ final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
                 <<<'PHP'
 <?php
 [$a,
-$b
-];
-[
-$a,
-$b];
-PHP,
-                <<<'PHP'
-<?php
-[$a,
     $b
 ];
 [
@@ -55,10 +46,18 @@ PHP,
     $b];
 
 PHP,
+                <<<'PHP'
+<?php
+[$a,
+$b
+];
+[
+$a,
+$b];
+PHP,
                 ['callback' =>
                     function (Formatter $formatter): Formatter {
                         $formatter->MirrorBrackets = false;
-
                         return $formatter;
                     }],
             ],
@@ -66,45 +65,29 @@ PHP,
                 <<<'PHP'
 <?php
 $a = <<<EOF
-EOF;
+    EOF;
+
 PHP,
                 <<<'PHP'
 <?php
 $a = <<<EOF
-    EOF;
-
+EOF;
 PHP,
             ],
             'import with close tag terminator' => [
                 <<<'PHP'
 <?php
-use A ?>
-PHP,
-                <<<'PHP'
-<?php
 use A
 ?>
 PHP,
+                <<<'PHP'
+<?php
+use A ?>
+PHP,
             ],
             'PHPDoc comment' => [
-                <<<PHP
+                <<<'PHP'
 <?php
-
-/**
-* leading asterisk and space
-*leading asterisk
-*	leading asterisk and tab
-* 	leading asterisk, space and tab
-* 
-*
-no leading asterisk
-	leading tab and no leading asterisk
-
-  */
-PHP,
-                <<<PHP
-<?php
-
 /**
  * leading asterisk and space
  * leading asterisk
@@ -118,20 +101,22 @@ PHP,
  */
 
 PHP,
-            ],
-            'alternative syntax #1' => [
                 <<<'PHP'
 <?php
-if ($a):
-b();
-while ($c):
-d();
-endwhile;
-else:
-e();
-endif;
-f();
+/**
+* leading asterisk and space
+*leading asterisk
+*	leading asterisk and tab
+* 	leading asterisk, space and tab
+* 
+*
+no leading asterisk
+	leading tab and no leading asterisk
+
+  */
 PHP,
+            ],
+            'alternative syntax #1' => [
                 <<<'PHP'
 <?php
 if ($a):
@@ -145,16 +130,20 @@ endif;
 f();
 
 PHP,
-            ],
-            'alternative syntax #2' => [
                 <<<'PHP'
 <?php
 if ($a):
-while ($b):
+b();
+while ($c):
+d();
 endwhile;
 else:
+e();
 endif;
+f();
 PHP,
+            ],
+            'alternative syntax #2' => [
                 <<<'PHP'
 <?php
 if ($a):
@@ -164,23 +153,34 @@ else:
 endif;
 
 PHP,
+                <<<'PHP'
+<?php
+if ($a):
+while ($b):
+endwhile;
+else:
+endif;
+PHP,
             ],
         ];
     }
 
     /**
      * @dataProvider filesProvider
-     *
      */
-    public function testFiles(string $expected, string $code, Formatter $formatter)
+    public function testFiles(string $expected, string $code, Formatter $formatter): void
     {
-        $first = $formatter->format($code, 3);
-        $second = $formatter->format($first, 3, null, true);
-        $this->assertSame($expected, $first);
-        $this->assertSame($expected, $second, 'Output is not idempotent.');
+        $this->assertFormatterOutputIs($expected, $code, $formatter);
     }
 
-    public static function filesProvider()
+    /**
+     * Iterate over files in "tests.in" and map them to pathnames in "tests.out"
+     *
+     * @param string $format The format under test, i.e. one of the keys in
+     * {@see FormatterTest::getFileFormats()}'s return value.
+     * @return Generator<SplFileInfo,string>
+     */
+    public static function getFiles(string $format): Generator
     {
         $inDir = dirname(__DIR__) . '.in';
         $outDir = dirname(__DIR__) . '.out';
@@ -218,6 +218,7 @@ PHP,
                 '#^3rdparty/php-doc/language/oop5/basic/00[234]\.php#',
             ],
         ];
+
         $minVersionPatterns = array_reduce(
             array_filter(
                 $minVersionPatterns,
@@ -228,11 +229,49 @@ PHP,
                 array_merge($carry, $patterns),
             []
         );
+
         $versionSuffix = PHP_VERSION_ID < 80000
             ? '.PHP74'
             : null;
 
-        $formatOptions = [
+        // Include:
+        // - .php files
+        // - files with no extension, and
+        // - either of the above with a .fails extension
+        $files = File::find($inDir, null, '/(\.php|\/[^.\/]+)(\.fails)?$/');
+        /** @var SplFileInfo $file */
+        foreach ($files as $file) {
+            $inFile = (string) $file;
+            $path = substr($inFile, strlen($inDir));
+            $outFile = preg_replace('/\.fails$/', '', $outDir . '/' . $format . $path);
+
+            if ($minVersionPatterns) {
+                $path = ltrim($path, '/\\');
+                foreach ($minVersionPatterns as $regex) {
+                    if (preg_match($regex, $path)) {
+                        continue 2;
+                    }
+                }
+            }
+
+            if ($versionSuffix && file_exists(
+                $versionOutFile = preg_replace('/(\.php)?$/', $versionSuffix . '\1', $outFile, 1)
+            )) {
+                $outFile = $versionOutFile;
+            }
+
+            yield $file => $outFile;
+        }
+    }
+
+    /**
+     * Get the formats applied to files in "tests.in" during testing
+     *
+     * @return array<string,array{insertSpaces?:bool|null,tabSize?:int|null,skipRules?:string[],addRules?:string[],skipFilters?:string[],callback?:(callable(Formatter): Formatter)|null}>
+     */
+    public static function getFileFormats(): array
+    {
+        return [
             '01-default' => [
                 'insertSpaces' => null,
                 'tabSize' => null,
@@ -257,70 +296,28 @@ PHP,
                 'callback' => null,
             ],
         ];
-
-        // Include:
-        // - .php files
-        // - files with no extension, and
-        // - either of the above with a .fails extension (these are not tested,
-        //   but if their tests.out counterpart doesn't exist, it is generated)
-        $files = File::find($inDir, null, '/(\.php|\/[^.\/]+)(\.fails)?$/');
-        foreach ($formatOptions as $dir => $options) {
-            $format = substr($dir, 3);
-            $formatter = self::getFormatter($options);
-            /** @var SplFileInfo $file */
-            foreach ($files as $file) {
-                $inFile = (string) $file;
-                $path = substr($inFile, strlen($inDir));
-                $outFile = preg_replace('/\.fails$/', '', $outDir . '/' . $dir . $path);
-                $path = ltrim($path, '/\\');
-
-                if ($minVersionPatterns) {
-                    foreach ($minVersionPatterns as $regex) {
-                        if (preg_match($regex, $path)) {
-                            continue 2;
-                        }
-                    }
-                }
-
-                $code = file_get_contents($inFile);
-
-                if ($versionSuffix && file_exists(
-                    $versionOutFile = preg_replace('/(\.php)?$/', $versionSuffix . '\1', $outFile, 1)
-                )) {
-                    $expected = file_get_contents($versionOutFile);
-                } elseif (!file_exists($outFile)) {
-                    // Generate a baseline if the output file doesn't exist
-                    fprintf(STDERR, "Formatting %s-%s\n", $path, $format);
-                    File::maybeCreateDirectory(dirname($outFile));
-                    file_put_contents($outFile, $expected = $formatter->format($code, 3));
-                } elseif ($file->getExtension() === 'fails') {
-                    // Don't test if the file is expected to fail
-                    continue;
-                } else {
-                    $expected = file_get_contents($outFile);
-                }
-
-                yield "{$path}-{$format}" => [$expected, $code, $formatter];
-            }
-        }
     }
 
     /**
-     * @param array{insertSpaces?:bool|null,tabSize?:int|null,skipRules?:string[],addRules?:string[],skipFilters?:string[],callback?:(callable(Formatter): Formatter)|null} $options
+     * @return Generator<string,array{string,string,Formatter}>
      */
-    private static function getFormatter(array $options): Formatter
+    public static function filesProvider(): Generator
     {
-        $formatter = new Formatter(
-            $options['insertSpaces'] ?? true,
-            $options['tabSize'] ?? 4,
-            $options['skipRules'] ?? [],
-            $options['addRules'] ?? [],
-            $options['skipFilters'] ?? [],
-        );
-        if ($callback = ($options['callback'] ?? null)) {
-            return $callback($formatter);
+        $inDir = dirname(__DIR__) . '.in';
+        foreach (self::getFileFormats() as $dir => $options) {
+            $format = substr($dir, 3);
+            $formatter = self::getFormatter($options);
+            foreach (self::getFiles($dir) as $file => $outFile) {
+                $inFile = (string) $file;
+                if ($file->getExtension() === 'fails') {
+                    // Don't test if the file is expected to fail
+                    continue;
+                }
+                $path = substr($inFile, strlen($inDir) + 1);
+                $code = file_get_contents($inFile);
+                $expected = file_get_contents($outFile);
+                yield "[{$format}] {$path}" => [$expected, $code, $formatter];
+            }
         }
-
-        return $formatter;
     }
 }

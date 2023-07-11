@@ -4,11 +4,8 @@ namespace Lkrms\Pretty\Php;
 
 use JsonSerializable;
 use Lkrms\Facade\Convert;
-use Lkrms\Pretty\Php\Contract\Filter;
-use Lkrms\Pretty\PrettyException;
 use Lkrms\Pretty\WhitespaceType;
 use RuntimeException;
-use Throwable;
 
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
@@ -266,6 +263,12 @@ class Token extends CollectibleToken implements JsonSerializable
      * @var bool
      */
     public $IsCloseTagStatementTerminator = false;
+
+    public ?int $OutputLine = null;
+
+    public ?int $OutputPos = null;
+
+    public ?int $OutputColumn = null;
 
     /**
      * @var Formatter|null
@@ -1433,7 +1436,7 @@ class Token extends CollectibleToken implements JsonSerializable
             ->skipAnySiblingsOf(T_RETURN, T_YIELD, T_YIELD_FROM)
             ->withNextSiblingsUntil(
                 fn(Token $t) =>
-                    !$t->is(TokenType::DECLARATION_PART_WITH_NEW) &&
+                    !$t->is(TokenType::DECLARATION_PART) &&
                         !($t->id === T['('] && $t->_prevCode->id === T_CLASS)
             );
     }
@@ -1694,19 +1697,15 @@ class Token extends CollectibleToken implements JsonSerializable
             ($lastInner->id === T['}'] && $lastInner->isStructuralBrace());  // `{ { statement; } }`
     }
 
-    public function isOneLineComment(bool $anyType = false): bool
+    public function isOneLineComment(): bool
     {
-        return $anyType
-            ? $this->is(TokenType::COMMENT) && !$this->hasNewline()
-            : $this->id === T_COMMENT && preg_match('@^(//|#)@', $this->text);
+        return $this->CommentType &&
+            !(($this->CommentType[1] ?? null) === '*');
     }
 
-    public function isMultiLineComment(bool $anyType = false): bool
+    public function isMultiLineComment(): bool
     {
-        return $anyType
-            ? $this->is(TokenType::COMMENT) && $this->hasNewline()
-            : ($this->id === T_DOC_COMMENT ||
-                ($this->id === T_COMMENT && preg_match('@^/\*@', $this->text)));
+        return ($this->CommentType[1] ?? null) === '*';
     }
 
     public function isOperator(): bool
@@ -1773,10 +1772,10 @@ class Token extends CollectibleToken implements JsonSerializable
 
     public function inFunctionDeclaration(): bool
     {
-        $parent = $this->parent();
-
-        return $parent->id === T['('] &&
-            ($parent->isDeclaration(T_FUNCTION) || $parent->prevCode()->id === T_FN);
+        return ($parent = end($this->BracketStack)) &&
+            $parent->id === T['('] &&
+            (($parent->_prevCode->id ?? null) === T_FN ||
+                $parent->prevOf(T_FUNCTION)->nextOf(T['(']) === $parent);
     }
 
     /**
@@ -1850,67 +1849,114 @@ class Token extends CollectibleToken implements JsonSerializable
                 : ($this->Padding ? str_repeat(' ', $this->Padding) : ''));
     }
 
-    public function render(bool $softTabs = false, ?Token &$last = null): string
+    public function render(bool $softTabs = false, bool $setPosition = false, ?Token &$last = null): string
     {
-        if ($this->id === T_START_HEREDOC) {
-            // Render heredocs (including any nested heredocs) in one go so we
-            // can safely trim empty lines
-            $current = &$last;
-            $heredoc = $this->text;
-            $current = $this;
-            do {
-                $current = $current->_next;
-                $heredoc .= $current->render($softTabs, $current);
-            } while ($current->id !== T_END_HEREDOC ||
-                $current->HeredocOpenedBy !== $this);
-            if ($this->HeredocIndent) {
-                $regex = preg_quote($this->HeredocIndent, '/');
-                $heredoc = preg_replace("/\\n$regex\$/m", "\n", $heredoc);
-            }
-        } elseif ($this->is(TokenType::DO_NOT_MODIFY)) {
-            return $this->text;
-        } elseif ($this->isMultiLineComment(true)) {
-            $comment = $this->renderComment($softTabs);
-        }
-
-        if (!$this->is(TokenType::DO_NOT_MODIFY_LHS)) {
-            $code = WhitespaceType::toWhitespace($this->effectiveWhitespaceBefore());
-            if (($code[0] ?? null) === "\n") {
+        if (!$this->is([
+            ...TokenType::DO_NOT_MODIFY,
+            ...TokenType::DO_NOT_MODIFY_LHS,
+        ])) {
+            $before = WhitespaceType::toWhitespace($this->effectiveWhitespaceBefore());
+            if ($before && $before[0] === "\n") {
                 // Don't indent close tags unless subsequent text is indented by
                 // at least the same amount
                 if ($this->id === T_CLOSE_TAG &&
                         $this->_next &&
                         $this->_next->getIndentSpacesFromText() < $this->getIndentSpaces()) {
-                    $code .= str_repeat($this->Formatter->Tab, $this->OpenTag->TagIndent);
+                    $before .= str_repeat(
+                        $softTabs
+                            ? $this->Formatter->SoftTab
+                            : $this->Formatter->Tab,
+                        $this->OpenTag->TagIndent
+                    );
                 } else {
-                    if ($this->TagIndent + $this->PreIndent + $this->Indent + $this->HangingIndent - $this->Deindent) {
-                        $code .= $this->renderIndent($softTabs);
+                    if ($indent = $this->indent()) {
+                        $before .= str_repeat(
+                            $softTabs
+                                ? $this->Formatter->SoftTab
+                                : $this->Formatter->Tab,
+                            $indent
+                        );
                     }
-                    if ($this->LinePadding - $this->LineUnpadding) {
-                        $code .= str_repeat(' ', $this->LinePadding - $this->LineUnpadding);
+                    if ($padding = $this->LinePadding - $this->LineUnpadding) {
+                        $before .= str_repeat(' ', $padding);
                     }
                 }
             }
             if ($this->Padding) {
-                $code .= str_repeat(' ', $this->Padding);
+                $before .= str_repeat(' ', $this->Padding);
             }
         }
 
-        $code = ($code ?? '') . ($heredoc ?? $comment ?? $this->text);
-
-        if ((is_null($this->_next) || $this->next()->is(TokenType::DO_NOT_MODIFY)) &&
-                !$this->is(TokenType::DO_NOT_MODIFY_RHS)) {
-            $code .= WhitespaceType::toWhitespace($this->effectiveWhitespaceAfter());
+        if ((!$this->_next || $this->_next->is([
+            ...TokenType::DO_NOT_MODIFY,
+            ...TokenType::DO_NOT_MODIFY_LHS,
+        ])) && !$this->is([
+            ...TokenType::DO_NOT_MODIFY,
+            ...TokenType::DO_NOT_MODIFY_RHS,
+        ])) {
+            $after = WhitespaceType::toWhitespace($this->effectiveWhitespaceAfter());
         }
 
-        return $code;
+        if ($setPosition) {
+            if (!$this->_prev) {
+                $this->OutputLine = 1;
+                $this->OutputColumn = 1;
+                $this->OutputPos = 0;
+            }
+
+            // Adjust the token's position to account for any leading whitespace
+            $this->movePosition($before ?? '');
+
+            // And use it as the baseline for the next token's position
+            if ($this->_next) {
+                $this->_next->OutputLine = $this->OutputLine;
+                $this->_next->OutputColumn = $this->OutputColumn;
+                $this->_next->OutputPos = $this->OutputPos;
+            }
+        }
+
+        if ($this->CommentType &&
+                strpos($this->text, "\n") !== false) {
+            $text = $this->renderComment($softTabs);
+        }
+
+        if ($this->id === T_START_HEREDOC ||
+                ($this->HeredocOpenedBy && $this->id !== T_END_HEREDOC)) {
+            $heredoc = $this->HeredocOpenedBy ?: $this;
+            if ($heredoc->HeredocIndent) {
+                $text = preg_replace(
+                    ($this->_next->text[0] ?? null) === "\n"
+                        ? "/\\n{$heredoc->HeredocIndent}\$/m"
+                        : "/\\n{$heredoc->HeredocIndent}(?=\\n)/",
+                    "\n",
+                    $text ?? $this->text
+                );
+            }
+        }
+
+        if ($setPosition && $this->_next) {
+            $this->_next->movePosition(($text ?? $this->text) . ($after ?? ''));
+        }
+
+        return ($before ?? '') . ($text ?? $this->text) . ($after ?? '');
+    }
+
+    private function movePosition(string $code): void
+    {
+        if ($code === '') {
+            return;
+        }
+        $this->OutputLine += ($newlines = substr_count($code, "\n"));
+        $this->OutputColumn = $newlines
+            ? mb_strlen($code) - mb_strrpos($code, "\n") - 1
+            : $this->OutputColumn + mb_strlen($code);
+        $this->OutputPos += strlen($code);
     }
 
     private function renderComment(bool $softTabs = false): string
     {
-        // Remove trailing whitespace from each line, preserving Markdown-style
-        // line breaks if requested
-        $code = preg_replace("/\\h++{$this->Formatter->PreserveTrailingSpacesRegex}\$/m", '', $this->text);
+        // Remove trailing whitespace from each line
+        $code = preg_replace('/\h++$/m', '', $this->text);
         switch ($this->id) {
             case T_COMMENT:
                 if (!$this->isMultiLineComment() ||
@@ -1946,35 +1992,6 @@ class Token extends CollectibleToken implements JsonSerializable
         }
 
         throw new RuntimeException('Not a T_COMMENT or T_DOC_COMMENT');
-    }
-
-    public function collect(Token $to): TokenCollection
-    {
-        return TokenCollection::collect($this, $to);
-    }
-
-    final public function collectSiblings(Token $until = null): TokenCollection
-    {
-        $tokens = new TokenCollection();
-        $current = $this->OpenedBy ?: $this;
-        if ($until) {
-            if ($this->Index > $until->Index || $until->IsNull) {
-                return $tokens;
-            }
-            $until = $until->OpenedBy ?: $until;
-            if ($current->BracketStack !== $until->BracketStack) {
-                throw new RuntimeException('Argument #1 ($until) is not a sibling');
-            }
-        }
-
-        do {
-            $tokens[] = $current;
-            if ($until && $current === $until) {
-                break;
-            }
-        } while ($current = $current->_nextSibling);
-
-        return $tokens;
     }
 
     public function __toString(): string

@@ -10,8 +10,7 @@ function index()
         ->into($var);
 }
 
-$obj
-    ->with(['a' => 'b'])
+$obj->with(['a' => 'b'])
     ->into($var);
 
 $obj->attribute

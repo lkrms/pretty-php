@@ -7,25 +7,28 @@ final class PreserveNewlinesTest extends \Lkrms\Pretty\Tests\Php\TestCase
     /**
      * @dataProvider processTokenProvider
      */
-    public function testProcessToken(string $code, string $expected)
+    public function testProcessToken(string $expected, string $code): void
     {
-        $this->assertFormatterOutputIs($code, $expected);
+        $this->assertCodeFormatIs($expected, $code);
     }
 
-    public static function processTokenProvider()
+    /**
+     * @return array<string,array{string,string}>
+     */
+    public static function processTokenProvider(): array
     {
         return [
             'logical operator after bracket' => [
                 <<<'PHP'
 <?php
-return a($b) && a($c)
-    && strcmp((string) $b, (string) $c) === 0;
-PHP,
-                <<<'PHP'
-<?php
 return a($b) && a($c) &&
     strcmp((string) $b, (string) $c) === 0;
 
+PHP,
+                <<<'PHP'
+<?php
+return a($b) && a($c)
+    && strcmp((string) $b, (string) $c) === 0;
 PHP,
             ],
         ];

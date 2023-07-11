@@ -119,7 +119,7 @@ final class AlignComments implements BlockRule
                     continue;
                 }
                 $line = $token->collect($comment->prev());
-                foreach (explode("\n", ltrim($line->render(true, false), "\n")) as $line) {
+                foreach (explode("\n", $line->render(true, false)) as $line) {
                     $length = mb_strlen(trim($line, "\r"));
                     $lengths[$i] = $length;
                     $max = max($max, $length);

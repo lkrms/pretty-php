@@ -22,9 +22,9 @@ class Aa
             ->thirdMethod();
 
         $a->app['scheduler'] = $this
-            ->getMockBuilder('somestring')
-            ->setConstructorArgs(array($this->app))
-            ->setMethods(array('getCurrentLongIp'))
-            ->getMock();
+                                   ->getMockBuilder('somestring')
+                                   ->setConstructorArgs(array($this->app))
+                                   ->setMethods(array('getCurrentLongIp'))
+                                   ->getMock();
     }
 }

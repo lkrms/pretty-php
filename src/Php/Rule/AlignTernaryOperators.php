@@ -12,8 +12,6 @@ use const Lkrms\Pretty\Php\T_ID_MAP as T;
 /**
  * Align ternary operators with their expressions
  *
- * This rule also moves ternary operators to the start of a new line if they
- * have a counterpart with a leading newline.
  */
 final class AlignTernaryOperators implements TokenRule
 {
@@ -64,11 +62,12 @@ final class AlignTernaryOperators implements TokenRule
         // aligned, do nothing
         if ($prevTernary && $prevTernary->AlignedWith) {
             $this->setAlignedWith($token, $prevTernary->AlignedWith);
-
             return;
         }
-        $alignWith = ($prevTernary ?: $token)->prevCode()
-                                             ->pragmaticStartOfExpression(true);
+        $alignWith =
+            ($prevTernary ?: $token)
+                ->prevCode()
+                ->pragmaticStartOfExpression(true);
 
         $this->setAlignedWith($token, $alignWith);
 
@@ -93,7 +92,7 @@ final class AlignTernaryOperators implements TokenRule
         // - the last token
         // - in the third expression
         // - of the last ternary expression
-        // - encountered in this scope
+        // - in this scope
         $current = $token;
         do {
             $until = $current->TernaryOperator2->EndExpression ?: $current;
@@ -107,7 +106,6 @@ final class AlignTernaryOperators implements TokenRule
         }
 
         $token->collect($until)
-              ->forEach(fn(Token $t) =>
-                            $t->LinePadding += $delta);
+              ->forEach(fn(Token $t) => $t->LinePadding += $delta);
     }
 }

@@ -7,8 +7,6 @@ use Lkrms\Pretty\Php\Contract\BlockRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 
-use const Lkrms\Pretty\Php\T_ID_MAP as T;
-
 /**
  * Align consecutive assignment operators and double arrows when they have the
  * same context
@@ -18,6 +16,28 @@ final class AlignAssignments implements BlockRule
 {
     use BlockRuleTrait;
 
+    private const ALIGN_TOKEN = 0;
+
+    private const ALIGN_DATA = 1;
+
+    private const ALIGN_PREV = 2;
+
+    private const ALIGN_NEXT = 3;
+
+    private const TOKEN_COMPARISON_MAP = [
+        T_CONSTANT_ENCAPSED_STRING => T_STRING,
+        T_DNUMBER => T_STRING,
+        T_LNUMBER => T_STRING,
+        T_VARIABLE => T_STRING,
+    ];
+
+    /**
+     * [ tokenIndex => data ]
+     *
+     * @var array<int,mixed[]>
+     */
+    private $TokenData = [];
+
     public function getPriority(string $method): ?int
     {
         return 340;
@@ -25,172 +45,291 @@ final class AlignAssignments implements BlockRule
 
     public function processBlock(array $block): void
     {
-        if (count($block) < 2) {
+        if (($blockLines = count($block)) < 2) {
             return;
         }
-        $group = [];
-        $stack = null;
-        $parent = null;
-        $indent = null;
-        $alignedWith = null;
-        $isAssignment = null;
-        $lastToken2 = null;
-        $startGroup =
-            function (Token $t1, Token $t2) use (&$group, &$stack, &$parent, &$indent, &$alignedWith, &$isAssignment, &$lastToken2) {
-                $stack = $t2->BracketStack;
-                $parent = null;
-                $indent = $t2->indent();
-                $alignedWith = $this->getAlignedWith($t1, $t2);
-                $isAssignment = $t2->is(TokenType::OPERATOR_ASSIGNMENT);
-                $lastToken2 = $t2;
-                $group[] = [$t1, $t2];
+
+        // 1. Identify alignable tokens and index them by:
+        //    - type + brackets + indent
+        //    - order of appearance on each line
+
+        /**
+         * [ index => [ lineIndex => [ token, ... ] ] ]
+         *
+         * @var array<string,array<int,Token[]>>
+         */
+        $ctxIdx = [];
+
+        /**
+         * [ index => maxTokensPerLine ]
+         *
+         * @var array<string,int>
+         */
+        $ctxCounts = [];
+
+        /**
+         * [ lineIndex => [ brackets => [ tokenIndex => [ type, ... ] ] ] ]
+         *
+         * @var array<int,array<string,array<int,string[]>>>
+         */
+        $lineIdx = [];
+
+        $addToIndex =
+            function (string $type, array $data = []) use (&$ctxIdx, &$ctxCounts, &$lineIdx, &$line, &$token) {
+                /** @var Token $token */
+                $brackets = '';
+                foreach ($token->BracketStack as $t) {
+                    $brackets .= $t->text;
+                }
+                $index = "$type\0$brackets\0{$token->indent()}";
+                $ctxIdx[$index][$line][] = $token;
+                $ctxCounts[$index] = max($ctxCounts[$index] ?? 0, count($ctxIdx[$index][$line]));
+                isset($lineIdx[$line][$brackets]) || $lineIdx[$line][$brackets] = [];
+                $prevTypes = end($lineIdx[$line][$brackets]) ?: [];
+                $prevTypes[] = $type;
+                $lineIdx[$line][$brackets][$token->Index] = $prevTypes;
+                $this->TokenData[$token->Index] = $data;
             };
-        $skipped = 0;
-        while ($block) {
-            $line = array_shift($block);
-            /** @var Token $token1 */
-            $token1 = $line[0];
-            // Don't allow comments to disrupt alignment
-            if (count($line) === 1 &&
-                    $token1->isOneLineComment(true) &&
-                    !$skipped++) {
-                $lastToken2 = $token1;
-                continue;
-            }
-            // Ditto for 1-line `else`/`elseif`/`catch`/`finally` constructs
-            if (count($group) > 1 &&
-                    $token1->id === T['}'] && ($last = $line->last())->id === T['{'] &&
-                    $token1->Statement === $last->Statement &&
-                    !$skipped++) {
-                $parent = ['depth' => array_key_last($token1->BracketStack), 'statement' => $token1->Statement];
-                $lastToken2 = $last;
-                continue;
-            }
-            $skipped = 0;
-            if (($token2 = $line->getFirstOf(
-                ...TokenType::OPERATOR_ASSIGNMENT,
-                ...TokenType::OPERATOR_DOUBLE_ARROW
-            )) &&
-                    !$token2->hasNewlineAfterCode() &&
-                    !$this->codeSinceLastAssignmentHasNewline($lastToken2, $token1)) {
-                if (is_null($stack)) {
-                    $startGroup($token1, $token2);
+
+        foreach ($block as $line => $tokens) {
+            foreach ($tokens as $token) {
+                if ($token->hasNewlineBefore()) {
                     continue;
                 }
-                if (($stack === $token2->BracketStack ||
-                        ($parent &&
-                            count($stack) === count($token2->BracketStack) &&
-                            ($token2->BracketStack[$parent['depth']]->Statement ?? null) === $parent['statement'])) &&
-                        ($indent === $token2->indent() ||
-                            ($alignedWith && $alignedWith === $this->getAlignedWith($token1, $token2))) &&
-                        !($isAssignment xor $token2->is(TokenType::OPERATOR_ASSIGNMENT))) {
-                    $group[] = [$token1, $token2];
-                    $lastToken2 = $token2;
+                if ($token->is(TokenType::OPERATOR_ASSIGNMENT)) {
+                    if (!$token->BracketStack ||
+                            end($token->BracketStack)->isStructuralBrace(false)) {
+                        $addToIndex('=');
+                    } elseif ($token->inFunctionDeclaration()) {
+                        // Only align default value definitions within the same
+                        // declaration
+                        $addToIndex(implode(':', ['fn', end($token->BracketStack)->Index]));
+                    }
                     continue;
                 }
+                if ($token->id === T_COLON && $token->inSwitchCase()) {
+                    $addToIndex('case');
+                    continue;
+                }
+                if ($token->id === T_DOUBLE_ARROW) {
+                    $addToIndex('=>');
+                    continue;
+                }
+                if ($token->id === T_COMMA &&
+                        !$token->hasNewlineAfter() &&
+                        $token->BracketStack && end($token->BracketStack)->isArrayOpenBracket() &&
+                        !$token->_next->isCloseBracket()) {
+                    $data = [
+                        'prevTypes' => $token->_prev->collectPrevSiblings($token->prevSiblingOf(T_COMMA, T_OPEN_BRACKET, T_OPEN_PARENTHESIS)->_nextCode)->getTypes(),
+                        'nextTypes' => $token->_next->collectSiblings($token->nextSiblingOf(T_COMMA, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS)->_prevCode)->getTypes(),
+                    ];
+                    $type = array_map(fn(array $types): string => implode(',', $this->simplifyTokenTypes($types)), $data);
+                    array_unshift($type, ',');
+                    $addToIndex(implode(':', $type), $data);
+                }
             }
-            $this->maybeRegisterGroup($group);
+        }
+
+        // 2. Find sequences of consecutive tokens with the same context and
+        //    line position
+
+        /**
+         * [ [ "type", [ lineIndex => token, ... ] ], ... ]
+         *
+         * @var array<array{string,non-empty-array<int,Token>}>
+         */
+        $runs = [];
+
+        $collectRun =
+            function () use (&$type, &$run, &$runs) {
+                if (count($run) > 1) {
+                    $runs[] = [$type, $run];
+                }
+                $run = [];
+            };
+
+        /** @var string[] */
+        $runPrevTypes = null;
+        foreach ($ctxIdx as $context => $lines) {
+            if (count($lines) < 2) {
+                continue;
+            }
+            [$type, $brackets] = explode("\0", $context, 3);
+            [$type] = explode(':', $type, 2);
+            for ($i = 0; $i < $ctxCounts[$context]; $i++) {
+                /** @var array<int,Token> */
+                $run = [];
+                foreach ($lines as $line => $tokens) {
+                    if (!($token = $tokens[$i] ?? null)) {
+                        $collectRun();
+                        continue;
+                    }
+                    // If the alignable tokens that have appeared on the line in
+                    // this context so far have changed, start a new run
+                    $prevTypes = $lineIdx[$line][$brackets][$token->Index];
+                    if (!$run) {
+                        $runPrevTypes = $prevTypes;
+                    } elseif ($prevTypes !== $runPrevTypes) {
+                        $collectRun();
+                        $run[$line] = $token;
+                        $runPrevTypes = $prevTypes;
+                        continue;
+                    }
+                    if ($lastToken = end($run)) {
+                        $prev = key($run);
+                        // Tokens must appear on consecutive lines
+                        if ($line - $prev === 1 ||
+                            // Loophole: the expression they precede may span
+                            // multiple lines, as long as inner lines have a
+                            // higher effective indentation level than the
+                            // aligned tokens (enforced in callback)
+                            ($type !== '=' &&
+                                $block[$line - 1][0]->Index <=
+                                    $lastToken->_nextCode->pragmaticEndOfExpression()->Index)) {
+                            $run[$line] = $token;
+                            continue;
+                        }
+                        $collectRun();
+                    }
+                    $run[$line] = $token;
+                }
+                $collectRun();
+            }
+        }
+
+        // 3. Create a group of token pairs from each run and register them for
+        //    alignment via callback
+        //
+        //    A token pair contains:
+        //    - the first token on the same line as the token being aligned
+        //    - the token being aligned
+
+        foreach ($runs as [$type, $run]) {
+            $first = null;
+            $prev = null;
+            /** @var array<int,array{Token,Token}> */
             $group = [];
-            $stack = null;
-            $parent = null;
-            $indent = null;
-            $alignedWith = null;
-            $isAssignment = null;
-            $lastToken2 = null;
-            if ($token2) {
-                $startGroup($token1, $token2);
+            /** @var array<int,Token[]> */
+            $innerLines = [];
+            /** @var Token $token2 */
+            foreach ($run as $line => $token2) {
+                if (!$first) {
+                    $first = $token2;
+                }
+                if ($prev && $line - $prev > 1) {
+                    for ($i = $prev + 1; $i < $line; $i++) {
+                        $innerLines[$prev][] = $block[$i][0];
+                    }
+                }
+                $token1 = $block[$line][0];
+                $group[$line] = [$token1, $token2];
+                $prev = $line;
             }
+            $end = $token2->_nextCode->pragmaticEndOfExpression();
+            $current = $token2;
+            while (++$line < $blockLines &&
+                    ($current = $current->endOfLine()->_next) &&
+                    $current->Index <= $end->Index) {
+                $innerLines[$prev][] = $block[$line][0];
+            }
+            $action = $type === ','
+                ? self::ALIGN_DATA
+                : ($type === 'case'
+                    ? self::ALIGN_NEXT
+                    : self::ALIGN_TOKEN);
+            $this->Formatter->registerCallback(
+                $this,
+                $first,
+                fn() => $this->alignGroup($action, $group, $innerLines),
+                720
+            );
         }
-        $this->maybeRegisterGroup($group);
-    }
-
-    private function getAlignedWith(Token $token1, Token $token2): ?Token
-    {
-        if ($token1->AlignedWith) {
-            return $token1->AlignedWith;
-        }
-        $parent = $token2->parent();
-        if ($parent->Index < $token1->Index) {
-            return null;
-        }
-
-        return $parent->nextCode()->AlignedWith;
-    }
-
-    private function codeSinceLastAssignmentHasNewline(?Token $lastToken2, Token $token1): bool
-    {
-        if (!$lastToken2) {
-            return false;
-        }
-
-        return $lastToken2->collect($token1->prevCode())
-                          ->filter(fn(Token $t) => $t->IsCode)
-                          ->hasNewlineBetweenTokens();
-    }
-
-    private function assignmentHasInnerNewline(Token $token2): bool
-    {
-        return $token2->collect($token2->pragmaticEndOfExpression())
-                      ->filter(fn(Token $t) => $t->IsCode)
-                      ->hasNewlineBetweenTokens();
     }
 
     /**
-     * @param array<array{0:Token,1:Token}> $group
+     * @param int[] $types
+     * @return int[]
      */
-    private function maybeRegisterGroup(array $group): void
+    private function simplifyTokenTypes(array $types): array
     {
-        if (count($group) < 2) {
-            return;
-        }
-        $this->Formatter->registerCallback(
-            $this,
-            $group[0][1],
-            fn() => $this->alignGroup($group),
-            710
+        return array_map(
+            fn(int $type): int =>
+                self::TOKEN_COMPARISON_MAP[$type] ?? $type,
+            $types
         );
     }
 
     /**
-     * @param array<array{0:Token,1:Token}> $group
+     * @param self::ALIGN_* $action
+     * @param array<int,array{Token,Token}> $group
+     * @param array<int,Token[]> $innerLines
      */
-    private function alignGroup(array $group): void
+    private function alignGroup(int $action, array $group, array $innerLines): void
     {
         $lengths = [];
-        $max = 0;
-        $count = count($group);
+        $deltas = [];
+        $maxLength = 0;
+        $prevTypes = [];
 
-        /** @var Token $token1 */
+        /**
+         * @var Token $token1
+         * @var Token $token2
+         */
         foreach ($group as $i => [$token1, $token2]) {
-            $length = mb_strlen(ltrim($token1->collect($token2)->render(true, false), "\n"));
+            $length = mb_strlen($token1->collect($token2)->render(true, false));
+            $lengths[$i] = $length;
+            $maxLength = max($maxLength, $length);
+            if ($action === self::ALIGN_DATA &&
+                    ($types = $this->TokenData[$token2->Index]['prevTypes'] ?? null) &&
+                    // Exclude `null` from type detection heuristic
+                    !($types === [T_STRING] && strcasecmp($token2->_prev->text, 'null'))) {
+                $prevTypes[] = $types;
+            }
+        }
 
-            // If the last assignment in the group breaks over multiple lines
-            // and can't be accommodated without increasing $max, ignore it to
-            // avoid output like:
-            //
-            //     $a               = $b;
-            //     $cc              = $dd;
-            //     [$e, $f, $g, $h] = [
-            //         $i,
-            //         $j,
-            //         $k,
-            //         $l,
-            //     ];
-            if ($i + 1 === $count && $length - $max > 4 &&
-                    $this->assignmentHasInnerNewline($token2)) {
-                if ($count < 3) {
+        foreach ($lengths as $i => $length) {
+            $deltas[$i] = $maxLength - $length;
+        }
+
+        foreach ($innerLines as $i => $lines) {
+            /** @var Token $token1 */
+            foreach ($lines as $token1) {
+                $indent = mb_strlen(ltrim($token1->renderWhitespaceBefore(true), "\n"));
+                if ($indent + $deltas[$i] < $maxLength) {
                     return;
                 }
-                array_pop($group);
-                break;
             }
-            $lengths[] = $length;
-            $max = max($max, $length);
+        }
+
+        if ($action === self::ALIGN_DATA) {
+            if ($prevTypes && array_uintersect(
+                $prevTypes,
+                [[T_LNUMBER], [T_DNUMBER], [T_VARIABLE]],
+                fn($a, $b) => $a <=> $b
+            ) === $prevTypes) {
+                $action = self::ALIGN_PREV;
+            } else {
+                $action = self::ALIGN_NEXT;
+            }
         }
 
         /** @var Token $token2 */
         foreach ($group as $i => [$token1, $token2]) {
-            $token2->Padding += $max - $lengths[$i];
+            if ($action === self::ALIGN_PREV) {
+                $token2->_prev->Padding += $deltas[$i];
+            } elseif ($action === self::ALIGN_NEXT) {
+                if ($token2->hasNewlineAfter()) {
+                    continue;
+                }
+                $token2->_next->Padding += $deltas[$i];
+            } else {
+                $token2->Padding += $deltas[$i];
+            }
+            if (!($innerLines[$i] ?? null)) {
+                continue;
+            }
+            $token2->collect($token2->_nextCode->pragmaticEndOfExpression())
+                   ->forEach(fn(Token $t) => $t->LinePadding += $deltas[$i]);
         }
     }
 }

@@ -2,12 +2,78 @@
 
 namespace Lkrms\Pretty\Php;
 
+use LogicException;
+
 /**
  * @template TToken of CollectibleToken
  * @extends NavigableToken<TToken>
  */
 class CollectibleToken extends NavigableToken
 {
+    /**
+     * Get the token and its following tokens up to and including a given token
+     *
+     * @param TToken $to
+     */
+    final public function collect($to): TokenCollection
+    {
+        /**
+         * @var Token $this
+         * @var Token $to
+         */
+        return TokenCollection::collect($this, $to);
+    }
+
+    /**
+     * Get the token and its following siblings, optionally stopping at a given
+     * sibling
+     *
+     * @param TToken|null $to
+     */
+    final public function collectSiblings($to = null): TokenCollection
+    {
+        $tokens = new TokenCollection();
+        if ($this->IsNull) {
+            return $tokens;
+        }
+        $current = $this->OpenedBy ?: $this;
+        if ($to) {
+            $to = $to->OpenedBy ?: $to;
+            if ($to->IsNull || $this->Index > $to->Index) {
+                return $tokens;
+            }
+            if ($current->BracketStack !== $to->BracketStack) {
+                throw new LogicException('Argument #1 ($until) is not a sibling');
+            }
+        }
+        do {
+            /** @var Token $current */
+            $tokens[] = $current;
+            if ($to && $current === $to) {
+                break;
+            }
+        } while ($current = $current->_nextSibling);
+
+        return $tokens;
+    }
+
+    /**
+     * Get the token and its preceding siblings in document order, optionally
+     * starting from a given sibling
+     *
+     * @param TToken|null $from
+     */
+    final public function collectPrevSiblings($from = null): TokenCollection
+    {
+        $current = $this->OpenedBy ?: $this;
+        $from = $from
+            ?: ($current->BracketStack
+                ? end($current->BracketStack)->_nextCode
+                : $current->first()->_nextCode);
+
+        return $from->collectSiblings($current);
+    }
+
     /**
      * Get preceding tokens in reverse document order, up to but not including
      * the first that isn't one of the given types

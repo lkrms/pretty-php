@@ -5,47 +5,22 @@ namespace Lkrms\Pretty\Tests\Php\Rule;
 final class PlaceCommentsTest extends \Lkrms\Pretty\Tests\Php\TestCase
 {
     /**
-     * @dataProvider alignCommentProvider
+     * @dataProvider processTokenProvider
      */
-    public function testAlignComment(string $code, string $expected)
+    public function testProcessToken(string $expected, string $code): void
     {
-        $this->assertFormatterOutputIs($code, $expected);
+        $this->assertCodeFormatIs($expected, $code);
     }
 
-    public static function alignCommentProvider()
+    /**
+     * @return array<string,array{string,string}>
+     */
+    public static function processTokenProvider(): array
     {
         return [
             'switch comments' => [
                 <<<'PHP'
 <?php
-
-switch ($a) {
-//
-case 0:
-case 1:
-//
-func();
-// Aligns with previous statement
-case 2:
-//
-case 3:
-func2();
-break;
-
-// Aligns with previous statement
-
-case 4:
-func();
-break;
-
-//
-default:
-break;
-}
-PHP,
-                <<<'PHP'
-<?php
-
 switch ($a) {
     //
     case 0:
@@ -71,7 +46,33 @@ switch ($a) {
 }
 
 PHP,
-            ]
+                <<<'PHP'
+<?php
+switch ($a) {
+//
+case 0:
+case 1:
+//
+func();
+// Aligns with previous statement
+case 2:
+//
+case 3:
+func2();
+break;
+
+// Aligns with previous statement
+
+case 4:
+func();
+break;
+
+//
+default:
+break;
+}
+PHP,
+            ],
         ];
     }
 }
