@@ -18,8 +18,8 @@ class ClassName
     public function c()
     {
         return StaticClass::make('something')
-            ->with('string', $var)
-            ->with('string2', $var2);
+                   ->with('string', $var)
+                   ->with('string2', $var2);
     }
 
     /**
@@ -27,8 +27,8 @@ class ClassName
     public function c()
     {
         return StaticClass::make('something')
-            ->with('string', $var)
-            ->with('string2', $var2);
+                   ->with('string', $var)
+                   ->with('string2', $var2);
     }
 
     /**

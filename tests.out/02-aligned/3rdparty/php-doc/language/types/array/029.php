@@ -1,6 +1,6 @@
 <?php
 // Array as (property-)map
-$map = array('version' => 4,
+$map = array('version'    => 4,
              'OS'         => 'Linux',
              'lang'       => 'english',
              'short_tags' => true);

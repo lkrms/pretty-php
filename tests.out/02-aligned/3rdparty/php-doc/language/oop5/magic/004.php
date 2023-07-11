@@ -15,9 +15,9 @@ class Sort
 }
 
 $customers = [
-    ['id' => 1, 'first_name' => 'John', 'last_name' => 'Do'],
+    ['id' => 1, 'first_name' => 'John',  'last_name' => 'Do'],
     ['id' => 3, 'first_name' => 'Alice', 'last_name' => 'Gustav'],
-    ['id' => 2, 'first_name' => 'Bob', 'last_name' => 'Filipe']
+    ['id' => 2, 'first_name' => 'Bob',   'last_name' => 'Filipe']
 ];
 
 // sort customers by first name

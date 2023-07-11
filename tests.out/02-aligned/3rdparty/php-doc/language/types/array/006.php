@@ -1,7 +1,7 @@
 <?php
 $array = array(
-    'foo'   => 'bar',
-    42      => 24,
+    'foo' => 'bar',
+    42 => 24,
     'multi' => array(
         'dimensional' => array(
             'array' => 'foo'

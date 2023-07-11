@@ -1,5 +1,5 @@
 <?php
-f(1, $acc1 = ObjectClass::fb(array('ii' => uniqid(), 'nnnn' => 1, 'description' => 'description', 'images' => 'image-url')));
+f(1, $acc1 = ObjectClass::fb(array('ii'    => uniqid(), 'nnnn' => 1, 'description' => 'description', 'images'   => 'image-url')));
 f(null, $acc2 = ObjectClass::fb(array('ii' => uniqid(), 'nnnn' => 1, 'description' => 'description', 'imageUrl' => 'image-url')));
 
 $ds = array(

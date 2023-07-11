@@ -1,5 +1,4 @@
-<?php declare(encoding='UTF-8');
-
+<?php
 namespace MyProject
 {
     const CONNECT_OK = 1;

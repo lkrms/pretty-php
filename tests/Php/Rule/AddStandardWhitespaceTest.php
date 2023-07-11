@@ -89,9 +89,9 @@ if ($a):
 endif;
 PHP,
             ],
-            ...(PHP_VERSION_ID < 80000 ? [] : [
-                'match expressions' => [
-                    <<<'PHP'
+        ] + (PHP_VERSION_ID < 80000 ? [] : [
+            'match expressions' => [
+                <<<'PHP'
 <?php
 $out = match ($in) {
     0 => 'no items',
@@ -104,14 +104,14 @@ $out = match ($in) {
 };
 
 PHP,
-                    <<<'PHP'
+                <<<'PHP'
 <?php
 $out = match ($in) {0 => 'no items', 1 => "$i item", default => "$in items"};
 $out = match ($in) {0, 1 => 'less than 2 items', default => "$in items"};
 PHP,
-                ],
-                "match expressions with 'align-assignments'" => [
-                    <<<'PHP'
+            ],
+            "match expressions with 'align-assignments'" => [
+                <<<'PHP'
 <?php
 $out = match ($in) {
     0       => 'no items',
@@ -124,15 +124,14 @@ $out = match ($in) {
 };
 
 PHP,
-                    <<<'PHP'
+                <<<'PHP'
 <?php
 $out = match ($in) {0 => 'no items', 1 => "$i item", default => "$in items"};
 $out = match ($in) {0, 1 => 'less than 2 items', default => "$in items"};
 PHP,
-                    [AlignAssignments::class],
-                ],
-            ]),
-        ];
+                [AlignAssignments::class],
+            ],
+        ]);
     }
 
     protected function prepareFormatter(Formatter $formatter): Formatter
