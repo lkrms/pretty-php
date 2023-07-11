@@ -50,7 +50,9 @@ final class PlaceComments implements TokenRule
         // rendered early, e.g. by `Formatter->logProgress()`
         $token->CommentPlaced = true;
 
-        if ($token->isOneLineComment() && $token->_next && $token->_next->id !== T_CLOSE_TAG) {
+        if ($token->isOneLineComment() &&
+                $token->_next &&
+                $token->_next->id !== T_CLOSE_TAG) {
             $token->CriticalWhitespaceAfter |= WhitespaceType::LINE;
         }
 
@@ -60,12 +62,10 @@ final class PlaceComments implements TokenRule
                     $token->_prev->is([T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO])) {
                 $this->CommentsBesideCode[] = $token;
                 $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
-
                 return;
             }
             $token->WhitespaceBefore |= WhitespaceType::SPACE;
             $token->WhitespaceAfter |= WhitespaceType::SPACE;
-
             return;
         }
 
@@ -76,53 +76,49 @@ final class PlaceComments implements TokenRule
                     $token->_prev->is([T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO])) {
                 $this->CommentsBesideCode[] = $token;
                 $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
-
                 return;
             }
             $token->WhitespaceBefore |= WhitespaceType::SPACE;
-
             return;
         }
 
-        // Just before rendering, indentation and padding values are copied from
-        // `$next` to `$token` for each comment in `$this->Comments`. Add this
-        // comment unless `$next` is a close bracket.
-        $next = $token->nextCode();
-        if (!$next->IsNull &&
-                !$next->isCloseBracket() &&
-                !$next->endsAlternativeSyntax()) {
+        // Copy indentation and padding from `$next` to `$token` in
+        // `beforeRender()` unless `$next` is a close bracket
+        $next = $token->_nextCode;
+        if ($next &&
+                !($next->isCloseBracket() || $next->endsAlternativeSyntax())) {
             $this->Comments[] = [$token, $next];
         }
 
         $token->WhitespaceAfter |= WhitespaceType::LINE;
         if ($token->id !== T_DOC_COMMENT) {
             $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
-            $token->PinToCode = !$next->isCloseBracket() && !$next->endsAlternativeSyntax();
-
+            $token->PinToCode = !($next &&
+                ($next->isCloseBracket() || $next->endsAlternativeSyntax()));
             return;
         }
 
         $line = WhitespaceType::LINE;
         if ($token->hasNewline() &&
-            !($prev = $token->prev())->IsNull &&
-            !($prev === $token->parent()) &&
-            !($prev->id === T[','] ||
-                ($prev->is([T[':'], T[';']]) &&
-                    ($prev->inSwitchCase() || $prev->inLabel())))) {
+                $token->_prev->EndStatement === $token->_prev /*&&
+                $token->_prev->id !== T[',']*/) {
             $line = WhitespaceType::BLANK;
         }
         $token->WhitespaceBefore |= WhitespaceType::SPACE | $line;
 
         // Add a blank line after file-level docblocks
-        if ($token->next()->is([T_DECLARE, T_NAMESPACE])) {
+        $next = $token->_next;
+        if ($next &&
+            ($next->is([T_DECLARE, T_NAMESPACE]) ||
+                ($next->id === T_USE &&
+                    $next->parent()->declarationParts()->first(true)->is([T_NAMESPACE, T_NULL])))) {
             $token->WhitespaceAfter |= WhitespaceType::BLANK;
-
             return;
         }
 
-        if ($token->next()->IsCode) {
+        if ($next && $next->IsCode) {
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
-            $token->PinToCode = !$next->isCloseBracket() && !$next->endsAlternativeSyntax();
+            $token->PinToCode = !($next->isCloseBracket() || $next->endsAlternativeSyntax());
         }
     }
 

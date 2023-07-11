@@ -42,21 +42,18 @@ final class BreakOperators implements TokenRule
             if ($token !== $token->ChainOpenedBy) {
                 return;
             }
+
             $chain = $token->withNextSiblingsWhile(...TokenType::CHAIN_PART)
                            ->filter(fn(Token $t) => $t->is(TokenType::CHAIN));
+
             // If an object operator (`->` or `?->`) is at the start of a line,
             // add a newline before other object operators in the same chain
             if ($chain->count() < 2 ||
-                    !($first = $chain->find(fn(Token $t) => $t->hasNewlineBefore()))) {
+                    !$chain->find(fn(Token $t) => $t->hasNewlineBefore())) {
                 return;
             }
-            // Add newlines starting from the first `->` with a preceding
-            // newline or close bracket (`)`)
+
             $chain->shift();
-            while (($current = $chain->first())->Index < $first->Index &&
-                    $current->_prevCode->id !== T[')']) {
-                $chain->shift();
-            }
             $chain->addWhitespaceBefore(WhitespaceType::LINE);
 
             return;

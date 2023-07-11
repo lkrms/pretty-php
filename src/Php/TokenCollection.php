@@ -127,19 +127,31 @@ final class TokenCollection extends TypedCollection
     }
 
     /**
-     * Render tokens in the collection as-is, optionally removing leading
+     * Render tokens in the collection, optionally removing leading
      * whitespace from the first token
+     *
+     * Leading newlines are always trimmed.
      *
      */
     public function render(bool $softTabs = false, bool $trim = true): string
     {
         $this->assertCollected();
 
+        $trim = $trim ?: "\n";
         $code = '';
+
         /** @var Token $token */
         foreach ($this as $token) {
             $code .= $token->render($softTabs);
-            if ($trim && ($before = $token->renderWhitespaceBefore($softTabs))) {
+            if (!$trim) {
+                continue;
+            }
+            if ($trim !== true) {
+                $code = ltrim($code, $trim);
+                $trim = false;
+                continue;
+            }
+            if ($before = $token->renderWhitespaceBefore($softTabs)) {
                 $code = substr($code, strlen($before));
             }
             $trim = false;
@@ -269,6 +281,24 @@ final class TokenCollection extends TypedCollection
 
                 return $this;
         }
+    }
+
+    public function first(bool $returnNullToken = false)
+    {
+        return parent::first()
+            ?: ($returnNullToken ? Token::null() : false);
+    }
+
+    public function last(bool $returnNullToken = false)
+    {
+        return parent::last()
+            ?: ($returnNullToken ? Token::null() : false);
+    }
+
+    public function nth(int $n, bool $returnNullToken = false)
+    {
+        return parent::nth($n)
+            ?: ($returnNullToken ? Token::null() : false);
     }
 
     private function assertCollected(): void
