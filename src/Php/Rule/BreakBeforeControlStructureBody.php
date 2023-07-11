@@ -109,6 +109,7 @@ final class BreakBeforeControlStructureBody implements TokenRule
         }
 
         $this->Formatter->reportProblem(
+            $this,
             'Braces not used in %s control structure',
             $token,
             $end,

@@ -58,7 +58,7 @@ final class ReportUnnecessaryParentheses implements TokenRule
             ($prev->ClosedBy === $next ||
                 $next->Statement === $next ||
                 $next->EndStatement === $next)) {
-            $this->Formatter->reportProblem('Unnecessary parentheses', $first, $last);
+            $this->Formatter->reportProblem($this, 'Unnecessary parentheses', $first, $last);
         }
     }
 }

@@ -264,6 +264,12 @@ class Token extends CollectibleToken implements JsonSerializable
      */
     public $IsCloseTagStatementTerminator = false;
 
+    public ?int $OutputLine = null;
+
+    public ?int $OutputPos = null;
+
+    public ?int $OutputColumn = null;
+
     /**
      * @var Formatter|null
      */
@@ -1843,67 +1849,114 @@ class Token extends CollectibleToken implements JsonSerializable
                 : ($this->Padding ? str_repeat(' ', $this->Padding) : ''));
     }
 
-    public function render(bool $softTabs = false, ?Token &$last = null): string
+    public function render(bool $softTabs = false, bool $setPosition = false, ?Token &$last = null): string
     {
-        if ($this->id === T_START_HEREDOC) {
-            // Render heredocs (including any nested heredocs) in one go so we
-            // can safely trim empty lines
-            $current = &$last;
-            $heredoc = $this->text;
-            $current = $this;
-            do {
-                $current = $current->_next;
-                $heredoc .= $current->render($softTabs, $current);
-            } while ($current->id !== T_END_HEREDOC ||
-                $current->HeredocOpenedBy !== $this);
-            if ($this->HeredocIndent) {
-                $regex = preg_quote($this->HeredocIndent, '/');
-                $heredoc = preg_replace("/\\n$regex\$/m", "\n", $heredoc);
-            }
-        } elseif ($this->is(TokenType::DO_NOT_MODIFY)) {
-            return $this->text;
-        } elseif ($this->isMultiLineComment(true)) {
-            $comment = $this->renderComment($softTabs);
-        }
-
-        if (!$this->is(TokenType::DO_NOT_MODIFY_LHS)) {
-            $code = WhitespaceType::toWhitespace($this->effectiveWhitespaceBefore());
-            if (($code[0] ?? null) === "\n") {
+        if (!$this->is([
+            ...TokenType::DO_NOT_MODIFY,
+            ...TokenType::DO_NOT_MODIFY_LHS,
+        ])) {
+            $before = WhitespaceType::toWhitespace($this->effectiveWhitespaceBefore());
+            if ($before && $before[0] === "\n") {
                 // Don't indent close tags unless subsequent text is indented by
                 // at least the same amount
                 if ($this->id === T_CLOSE_TAG &&
                         $this->_next &&
                         $this->_next->getIndentSpacesFromText() < $this->getIndentSpaces()) {
-                    $code .= str_repeat($this->Formatter->Tab, $this->OpenTag->TagIndent);
+                    $before .= str_repeat(
+                        $softTabs
+                            ? $this->Formatter->SoftTab
+                            : $this->Formatter->Tab,
+                        $this->OpenTag->TagIndent
+                    );
                 } else {
-                    if ($this->TagIndent + $this->PreIndent + $this->Indent + $this->HangingIndent - $this->Deindent) {
-                        $code .= $this->renderIndent($softTabs);
+                    if ($indent = $this->indent()) {
+                        $before .= str_repeat(
+                            $softTabs
+                                ? $this->Formatter->SoftTab
+                                : $this->Formatter->Tab,
+                            $indent
+                        );
                     }
-                    if ($this->LinePadding - $this->LineUnpadding) {
-                        $code .= str_repeat(' ', $this->LinePadding - $this->LineUnpadding);
+                    if ($padding = $this->LinePadding - $this->LineUnpadding) {
+                        $before .= str_repeat(' ', $padding);
                     }
                 }
             }
             if ($this->Padding) {
-                $code .= str_repeat(' ', $this->Padding);
+                $before .= str_repeat(' ', $this->Padding);
             }
         }
 
-        $code = ($code ?? '') . ($heredoc ?? $comment ?? $this->text);
-
-        if ((is_null($this->_next) || $this->next()->is(TokenType::DO_NOT_MODIFY)) &&
-                !$this->is(TokenType::DO_NOT_MODIFY_RHS)) {
-            $code .= WhitespaceType::toWhitespace($this->effectiveWhitespaceAfter());
+        if ((!$this->_next || $this->_next->is([
+            ...TokenType::DO_NOT_MODIFY,
+            ...TokenType::DO_NOT_MODIFY_LHS,
+        ])) && !$this->is([
+            ...TokenType::DO_NOT_MODIFY,
+            ...TokenType::DO_NOT_MODIFY_RHS,
+        ])) {
+            $after = WhitespaceType::toWhitespace($this->effectiveWhitespaceAfter());
         }
 
-        return $code;
+        if ($setPosition) {
+            if (!$this->_prev) {
+                $this->OutputLine = 1;
+                $this->OutputColumn = 1;
+                $this->OutputPos = 0;
+            }
+
+            // Adjust the token's position to account for any leading whitespace
+            $this->movePosition($before ?? '');
+
+            // And use it as the baseline for the next token's position
+            if ($this->_next) {
+                $this->_next->OutputLine = $this->OutputLine;
+                $this->_next->OutputColumn = $this->OutputColumn;
+                $this->_next->OutputPos = $this->OutputPos;
+            }
+        }
+
+        if ($this->CommentType &&
+                strpos($this->text, "\n") !== false) {
+            $text = $this->renderComment($softTabs);
+        }
+
+        if ($this->id === T_START_HEREDOC ||
+                ($this->HeredocOpenedBy && $this->id !== T_END_HEREDOC)) {
+            $heredoc = $this->HeredocOpenedBy ?: $this;
+            if ($heredoc->HeredocIndent) {
+                $text = preg_replace(
+                    ($this->_next->text[0] ?? null) === "\n"
+                        ? "/\\n{$heredoc->HeredocIndent}\$/m"
+                        : "/\\n{$heredoc->HeredocIndent}(?=\\n)/",
+                    "\n",
+                    $text ?? $this->text
+                );
+            }
+        }
+
+        if ($setPosition && $this->_next) {
+            $this->_next->movePosition(($text ?? $this->text) . ($after ?? ''));
+        }
+
+        return ($before ?? '') . ($text ?? $this->text) . ($after ?? '');
+    }
+
+    private function movePosition(string $code): void
+    {
+        if ($code === '') {
+            return;
+        }
+        $this->OutputLine += ($newlines = substr_count($code, "\n"));
+        $this->OutputColumn = $newlines
+            ? mb_strlen($code) - mb_strrpos($code, "\n") - 1
+            : $this->OutputColumn + mb_strlen($code);
+        $this->OutputPos += strlen($code);
     }
 
     private function renderComment(bool $softTabs = false): string
     {
-        // Remove trailing whitespace from each line, preserving Markdown-style
-        // line breaks if requested
-        $code = preg_replace("/\\h++{$this->Formatter->PreserveTrailingSpacesRegex}\$/m", '', $this->text);
+        // Remove trailing whitespace from each line
+        $code = preg_replace('/\h++$/m', '', $this->text);
         switch ($this->id) {
             case T_COMMENT:
                 if (!$this->isMultiLineComment() ||

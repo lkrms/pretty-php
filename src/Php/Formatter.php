@@ -2,13 +2,10 @@
 
 namespace Lkrms\Pretty\Php;
 
-use Lkrms\Concern\TFullyReadable;
-use Lkrms\Concern\TWritable;
-use Lkrms\Contract\IReadable;
-use Lkrms\Contract\IWritable;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Sys;
+use Lkrms\Pretty\Php\Catalog\FormatterFlag;
 use Lkrms\Pretty\Php\Contract\BlockRule;
 use Lkrms\Pretty\Php\Contract\Filter;
 use Lkrms\Pretty\Php\Contract\ListRule;
@@ -59,145 +56,82 @@ use Lkrms\Pretty\PrettyBadSyntaxException;
 use Lkrms\Pretty\PrettyException;
 use Lkrms\Pretty\WhitespaceType;
 use Lkrms\Utility\Env;
+use Lkrms\Utility\Inspect;
 use LogicException;
 use ParseError;
 use Throwable;
 
 use const Lkrms\Pretty\Php\T_ID_MAP as T;
 
-/**
- * @property-read bool $Debug
- * @property-read int $QuietLevel
- * @property-read string|null $Filename
- * @property-read string|null $RunningService
- * @property-read array<string,string> $Log
- * @property int[] $PreserveTrailingSpaces
- */
-final class Formatter implements IReadable, IWritable
+final class Formatter
 {
-    use TFullyReadable, TWritable;
-
     /**
-     * @var bool
+     * The string used for indentation
+     *
+     * Usually `"    "` or `"\t"`.
+     *
+     * @readonly
      */
-    protected $Debug;
+    public string $Tab;
 
     /**
-     * @var int
+     * The size of an indent, in spaces
+     *
+     * @readonly
      */
-    protected $QuietLevel;
+    public int $TabSize;
 
     /**
-     * @var string|null
+     * A series of spaces equivalent to an indent
+     *
+     * @readonly
      */
-    protected $Filename;
+    public string $SoftTab;
 
     /**
-     * @var string|null
-     */
-    protected $RunningService;
-
-    /**
-     * @var array<string,string>
-     */
-    protected $Log = [];
-
-    /**
-     * @var int[]
-     */
-    protected $PreserveTrailingSpaces = [];
-
-    /**
-     * @var string
-     */
-    public $PreserveTrailingSpacesRegex = '';
-
-    /**
-     * @var string
-     */
-    public $Tab;
-
-    /**
-     * @var int
-     */
-    public $TabSize;
-
-    /**
-     * @var string
-     */
-    public $SoftTab;
-
-    /**
+     * Enabled formatting rules
+     *
+     * @readonly
      * @var array<class-string<Rule>,true>
      */
-    public $EnabledRules;
+    public array $EnabledRules;
 
-    /**
-     * @var string
-     */
-    public $PreferredEol = PHP_EOL;
+    public string $PreferredEol = PHP_EOL;
 
-    /**
-     * @var bool
-     */
-    public $PreserveEol = true;
+    public bool $PreserveEol = true;
 
-    /**
-     * @var bool
-     */
-    public $ClosuresAreDeclarations = true;
+    public bool $ClosuresAreDeclarations = true;
 
-    /**
-     * @var bool
-     */
-    public $MatchesAreLists = false;
+    public bool $MatchesAreLists = false;
 
-    /**
-     * @var bool
-     */
-    public $MirrorBrackets = true;
+    public bool $MirrorBrackets = true;
 
-    /**
-     * @var bool
-     */
-    public $HangingHeredocIndents = true;
+    public bool $HangingHeredocIndents = true;
 
-    /**
-     * @var bool
-     */
-    public $HangingMatchIndents = true;
+    public bool $HangingMatchIndents = true;
 
-    /**
-     * @var bool
-     */
-    public $IncreaseIndentBetweenUnenclosedTags = true;
+    public bool $IncreaseIndentBetweenUnenclosedTags = true;
 
     /**
      * If the first object operator in a chain of method calls has a leading
      * newline, align with the start of the chain?
      *
+     * Only applies if {@see AlignChainedCalls} is enabled.
+     *
      * ```php
      * // If `false`:
      * $result = $object
      *     ->method1();
+     *
      * // If `true`:
      * $result = $object
      *               ->method1();
      * ```
      *
-     * @var bool
      */
-    public $AlignFirstCallInChain = false;
+    public bool $AlignFirstCallInChain = true;
 
-    /**
-     * @var bool
-     */
-    public $OneTrueBraceStyle = false;
-
-    /**
-     * @var bool
-     */
-    public $LogProgress = false;
+    public bool $OneTrueBraceStyle = false;
 
     /**
      * @var array<class-string<Rule>>
@@ -224,37 +158,52 @@ final class Formatter implements IReadable, IWritable
      */
     public const DEFAULT_RULES = [
         ...self::MANDATORY_RULES,
-        SimplifyStrings::class,               // processToken  (60)  [OPTIONAL]
-        PreserveNewlines::class,              // processToken  (93)  [OPTIONAL]
-        SpaceMatch::class,                    // processToken (300)  [OPTIONAL]
-        ApplyMagicComma::class,               // processList  (360)  [OPTIONAL]
-        SpaceDeclarations::class,             // processToken (620)  [OPTIONAL]
-        ReindentHeredocs::class,              // processToken (900), beforeRender (900)  [OPTIONAL]
-        ReportUnnecessaryParentheses::class,  // processToken (990)  [OPTIONAL]
+        SimplifyStrings::class,    // processToken  (60)
+        PreserveNewlines::class,   // processToken  (93)
+        SpaceMatch::class,         // processToken (300)
+        ApplyMagicComma::class,    // processList  (360)
+        SpaceDeclarations::class,  // processToken (620)
+        ReindentHeredocs::class,   // processToken (900), beforeRender (900)
     ];
 
     /**
      * @var array<class-string<Rule>>
      */
     public const ADDITIONAL_RULES = [
-        PreserveOneLineStatements::class,  // processToken  (95)
-        AddBlankLineBeforeReturn::class,   // processToken  (97)
-        Laravel::class,                    // processToken (100)
-        WordPress::class,                  // processToken (100)
-        AlignAssignments::class,           // processBlock (340), callback (710)
-        AlignChainedCalls::class,          // processToken (340), callback (710)
-        AlignComments::class,              // processBlock (340), beforeRender (998)
-        NoMixedLists::class,               // processList  (370)
-        AlignArrowFunctions::class,        // processToken (380), callback (710)
-        AlignTernaryOperators::class,      // processToken (380), callback (710)
-        AlignLists::class,                 // processList  (400), callback (710)
-        DeclareArgumentsOnOneLine::class,  // processToken
+        PreserveOneLineStatements::class,     // processToken  (95)
+        AddBlankLineBeforeReturn::class,      // processToken  (97)
+        Laravel::class,                       // processToken (100)
+        WordPress::class,                     // processToken (100)
+        AlignAssignments::class,              // processBlock (340), callback (710)
+        AlignChainedCalls::class,             // processToken (340), callback (710)
+        AlignComments::class,                 // processBlock (340), beforeRender (998)
+        NoMixedLists::class,                  // processList  (370)
+        AlignArrowFunctions::class,           // processToken (380), callback (710)
+        AlignTernaryOperators::class,         // processToken (380), callback (710)
+        AlignLists::class,                    // processList  (400), callback (710)
+        ReportUnnecessaryParentheses::class,  // processToken (990)
+        DeclareArgumentsOnOneLine::class,     // processToken
     ];
 
     /**
      * @var Token[]|null
      */
     public $Tokens;
+
+    /**
+     * @var Problem[]|null
+     */
+    public $Problems;
+
+    /**
+     * @var array<string,string>|null
+     */
+    public $Log;
+
+    /**
+     * @var Rule[]
+     */
+    private $Rules;
 
     /**
      * @var Filter[]
@@ -269,49 +218,61 @@ final class Formatter implements IReadable, IWritable
     /**
      * [ [ Rule object, method name ], ... ]
      *
-     * @var array<array{0:TokenRule|ListRule,1:string}>
+     * @var array<array{TokenRule|ListRule,string}>
      */
-    private $MainLoop = [];
+    private $MainLoop;
 
     /**
      * [ [ Rule object, method name ], ... ]
      *
-     * @var array<array{0:BlockRule,1:string}>
+     * @var array<array{BlockRule,string}>
      */
-    private $BlockLoop = [];
+    private $BlockLoop;
 
     /**
      * [ [ Rule object, method name ], ... ]
      *
-     * @var array<array{0:Rule,1:string}>
+     * @var array<array{Rule,string}>
      */
-    private $BeforeRender = [];
+    private $BeforeRender;
 
     /**
-     * @var Rule[]
+     * @var array<int,array<int,array<array{Rule,callable}>>>
      */
-    private $Rules = [];
+    private $Callbacks;
+
+    private bool $Debug;
+
+    private bool $LogProgress;
+
+    private bool $ReportProblems;
 
     /**
-     * @var array<int,array<int,array<array{0:Rule,1:callable}>>>
-     */
-    private $Callbacks = [];
-
-    /**
+     * Get a new Formatter object
+     *
+     * Rules are processed from lowest to highest priority (smallest to biggest
+     * number).
+     *
      * @param array<class-string<Rule>> $skipRules
      * @param array<class-string<Rule>> $addRules
      * @param array<class-string<Filter>> $skipFilters
+     * @param int-mask-of<FormatterFlag::*> $flags
      */
     public function __construct(
         bool $insertSpaces = true,
         int $tabSize = 4,
         array $skipRules = [],
         array $addRules = [],
-        array $skipFilters = []
+        array $skipFilters = [],
+        int $flags = 0
     ) {
         $this->Tab = $insertSpaces ? str_repeat(' ', $tabSize) : "\t";
         $this->TabSize = $tabSize;
         $this->SoftTab = str_repeat(' ', $tabSize);
+
+        $this->Debug = $flags & FormatterFlag::DEBUG || Env::debug();
+        $this->LogProgress = $this->Debug && $flags & FormatterFlag::LOG_PROGRESS;
+        $this->ReportProblems = (bool) ($flags & FormatterFlag::REPORT_PROBLEMS);
 
         // If using tabs for indentation, disable incompatible rules
         if (!$insertSpaces) {
@@ -320,7 +281,7 @@ final class Formatter implements IReadable, IWritable
                 AlignArrowFunctions::class,
                 AlignChainedCalls::class,
                 AlignLists::class,
-                AlignTernaryOperators::class,
+                AlignTernaryOperators::class
             );
         }
 
@@ -402,8 +363,6 @@ final class Formatter implements IReadable, IWritable
                 $comparisonFilters
             )
         );
-
-        $this->Debug = Env::debug();
     }
 
     /**
@@ -419,28 +378,28 @@ final class Formatter implements IReadable, IWritable
     /**
      * Get formatted code
      *
-     * Rules are processed from lowest to highest priority (smallest to biggest
-     * number).
-     *
      * @param string|null $filename For reporting purposes only. No file
      * operations are performed on `$filename`.
      */
-    public function format(string $code, int $quietLevel = 0, ?string $filename = null, bool $fast = false): string
+    public function format(string $code, ?string $filename = null, bool $fast = false): string
     {
+        $this->Tokens = null;
+        $this->Log = null;
+        $this->Callbacks = [];
+        $this->Problems = [];
         foreach ($this->Rules as $rule) {
             $rule->reset();
         }
+        // NB: ComparisonFilters is a superset of FormatFilters
         foreach ($this->ComparisonFilters as $filter) {
             $filter->reset();
         }
-        $this->QuietLevel = $quietLevel;
-        $this->Filename = $filename;
 
-        $eol = $this->getEol($code);
-        if ($eol !== "\n") {
+        $eol = Inspect::getEol($code);
+        if ($eol && $eol !== "\n") {
             $code = str_replace($eol, "\n", $code);
         }
-        $eol = $this->PreserveEol ? $eol : $this->PreferredEol;
+        $eol = $eol && $this->PreserveEol ? $eol : $this->PreferredEol;
 
         Sys::startTimer(__METHOD__ . '#tokenize-input');
         try {
@@ -518,7 +477,7 @@ final class Formatter implements IReadable, IWritable
         Sys::stopTimer(__METHOD__ . '#find-lists');
 
         foreach ($this->MainLoop as [$rule, $method]) {
-            $this->RunningService = $_rule = Convert::classToBasename(get_class($rule));
+            $_rule = Convert::classToBasename(get_class($rule));
             Sys::startTimer($_rule, 'rule');
 
             if ($method === ListRule::PROCESS_LIST) {
@@ -529,7 +488,7 @@ final class Formatter implements IReadable, IWritable
                 }
                 Sys::stopTimer($_rule, 'rule');
                 !$this->Debug || !$this->LogProgress ||
-                    $this->logProgress(ListRule::PROCESS_LIST);
+                    $this->logProgress($_rule, ListRule::PROCESS_LIST);
                 continue;
             }
 
@@ -549,9 +508,8 @@ final class Formatter implements IReadable, IWritable
             }
             Sys::stopTimer($_rule, 'rule');
             !$this->Debug || !$this->LogProgress ||
-                $this->logProgress(TokenRule::PROCESS_TOKEN);
+                $this->logProgress($_rule, TokenRule::PROCESS_TOKEN);
         }
-        $this->RunningService = null;
 
         Sys::startTimer(__METHOD__ . '#find-blocks');
         /** @var array<TokenCollection[]> $blocks */
@@ -587,36 +545,34 @@ final class Formatter implements IReadable, IWritable
 
         /** @var BlockRule $rule */
         foreach ($this->BlockLoop as [$rule]) {
-            $this->RunningService = $_rule = Convert::classToBasename(get_class($rule));
+            $_rule = Convert::classToBasename(get_class($rule));
             Sys::startTimer($_rule, 'rule');
             foreach ($blocks as $block) {
                 $rule->processBlock($block);
             }
             Sys::stopTimer($_rule, 'rule');
             !$this->Debug || !$this->LogProgress ||
-                $this->logProgress(BlockRule::PROCESS_BLOCK);
+                $this->logProgress($_rule, BlockRule::PROCESS_BLOCK);
         }
-        $this->RunningService = null;
 
         $this->processCallbacks();
 
         /** @var Rule $rule */
         foreach ($this->BeforeRender as [$rule]) {
-            $this->RunningService = $_rule = Convert::classToBasename(get_class($rule));
+            $_rule = Convert::classToBasename(get_class($rule));
             Sys::startTimer($_rule, 'rule');
             $rule->beforeRender($this->Tokens);
             Sys::stopTimer($_rule, 'rule');
             !$this->Debug || !$this->LogProgress ||
-                $this->logProgress(Rule::BEFORE_RENDER);
+                $this->logProgress($_rule, Rule::BEFORE_RENDER);
         }
-        $this->RunningService = null;
 
         Sys::startTimer(__METHOD__ . '#render');
         try {
             $out = '';
             $current = reset($this->Tokens);
             do {
-                $out .= $current->render(false, $current);
+                $out .= $current->render(false, true, $current);
             } while ($current = $current->_next);
         } catch (Throwable $ex) {
             throw new PrettyException(
@@ -675,59 +631,38 @@ final class Formatter implements IReadable, IWritable
             );
         }
 
+        if ($this->ReportProblems && $this->Problems) {
+            /** @var Problem $problem */
+            foreach ($this->Problems as $problem) {
+                $values = [];
+
+                if ($filename) {
+                    $values[] = $filename;
+                    $values[] = $problem->Start->OutputLine;
+                    Console::warn(sprintf($problem->Message . ': %s:%d', ...$problem->Values, ...$values));
+                    continue;
+                }
+
+                $values[] = Convert::pluralRange(
+                    $problem->Start->OutputLine,
+                    $problem->End->OutputLine ?? $problem->Start->OutputLine,
+                    'line'
+                );
+                Console::warn(sprintf($problem->Message . ' %s', ...$problem->Values, ...$values));
+            }
+        }
+
         return $eol === "\n"
             ? $out
             : str_replace("\n", $eol, $out);
     }
 
     /**
-     * @param int[] $spaces
-     */
-    protected function _setPreserveTrailingSpaces(array $spaces): void
-    {
-        if (!($this->PreserveTrailingSpaces = $spaces)) {
-            $this->PreserveTrailingSpacesRegex = '';
-
-            return;
-        }
-
-        $seen = [];
-        $regex = [];
-        foreach ($spaces as $count) {
-            if ($seen[$count] ?? false) {
-                continue;
-            }
-            $seen[$count] = true;
-            $regex[] = str_repeat(' ', $count);
-        }
-        $this->PreserveTrailingSpacesRegex =
-            sprintf('(?<!%s)', '\S' . implode('|\S', $regex));
-    }
-
-    private function getEol(string $string): string
-    {
-        $lfPos = strpos($string, "\n");
-        if ($lfPos === false) {
-            return strpos($string, "\r") === false
-                ? $this->PreferredEol
-                : "\r";
-        }
-        if ($lfPos && $string[$lfPos - 1] === "\r") {
-            return "\r\n";
-        }
-        if (($string[$lfPos + 1] ?? null) === "\r") {
-            return "\n\r";
-        }
-
-        return "\n";
-    }
-
-    /**
      * Sort rules by priority
      *
      * @template TRule of Rule
-     * @param array<array{0:TRule,1:string,2:int}> $rules
-     * @return array<array{0:TRule,1:string}>
+     * @param array<array{TRule,string,int}> $rules
+     * @return array<array{TRule,string}>
      */
     private function sortRules(array $rules): array
     {
@@ -759,7 +694,7 @@ final class Formatter implements IReadable, IWritable
 
     /**
      * @param Token[] $tokens
-     * @return array<array{0:int,1:string}>
+     * @return array<array{int,string}>
      */
     private function simplifyTokens(array $tokens): array
     {
@@ -782,54 +717,37 @@ final class Formatter implements IReadable, IWritable
         foreach ($this->Callbacks as $priority => &$tokenCallbacks) {
             ksort($tokenCallbacks);
             foreach ($tokenCallbacks as $index => $callbacks) {
-                foreach ($callbacks as [$rule, $callback]) {
-                    $this->RunningService = $_rule = Convert::classToBasename(get_class($rule));
+                foreach ($callbacks as $i => [$rule, $callback]) {
+                    $_rule = Convert::classToBasename(get_class($rule));
                     Sys::startTimer($_rule, 'rule');
                     $callback();
                     Sys::stopTimer($_rule, 'rule');
                     !$this->Debug || !$this->LogProgress ||
-                        $this->logProgress('{closure}');
+                        $this->logProgress($_rule, "{closure:$index:$i}");
                 }
                 unset($tokenCallbacks[$index]);
             }
             unset($this->Callbacks[$priority]);
         }
-        $this->RunningService = null;
     }
 
     /**
      * @param string $message e.g. `"Unnecessary parentheses"`
      * @param mixed ...$values
      */
-    public function reportProblem(string $message, Token $start, ?Token $end = null, ...$values): void
+    public function reportProblem(Rule $rule, string $message, Token $start, ?Token $end = null, ...$values): void
     {
-        if ($this->QuietLevel > 1) {
-            return;
-        }
-        if ($this->Filename) {
-            $values[] = $this->Filename;
-            $values[] = $start->line;
-            Console::warn(sprintf($message . ': %s:%d', ...$values));
-
-            return;
-        }
-
-        $values[] = Convert::pluralRange(
-            $start->line,
-            $end ? $end->line : $start->line,
-            'line'
-        );
-        Console::warn(sprintf($message . ' %s', ...$values));
+        $this->Problems[] = new Problem($rule, $message, $start, $end, ...$values);
     }
 
-    private function logProgress(string $after): void
+    private function logProgress(string $rule, string $after): void
     {
         Sys::startTimer(__METHOD__ . '#render');
         try {
             $out = '';
             $current = reset($this->Tokens);
             do {
-                $out .= $current->render(false, $current);
+                $out .= $current->render(false, false, $current);
             } while ($current = $current->_next);
         } catch (Throwable $ex) {
             throw new PrettyException(
@@ -842,6 +760,6 @@ final class Formatter implements IReadable, IWritable
         } finally {
             Sys::stopTimer(__METHOD__ . '#render');
         }
-        $this->Log[$this->RunningService . '-' . $after] = $out;
+        $this->Log[$rule . '-' . $after] = $out;
     }
 }
