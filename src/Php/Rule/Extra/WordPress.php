@@ -51,7 +51,10 @@ final class WordPress implements TokenRule
                 if ($token->id === T_OPEN_PARENTHESIS && $token->_next->id === T_CLOSE_PARENTHESIS) {
                     return;
                 }
-                if ($token->id === T_OPEN_BRACKET && $token->_next->is([T_CLOSE_BRACKET, T_CONSTANT_ENCAPSED_STRING])) {
+                if ($token->id === T_OPEN_BRACKET &&
+                    ($token->StringOpenedBy ||
+                        $token->HeredocOpenedBy ||
+                        $token->_next->is([T_CLOSE_BRACKET, T_CONSTANT_ENCAPSED_STRING]))) {
                     return;
                 }
                 $token->WhitespaceAfter |= WhitespaceType::SPACE;

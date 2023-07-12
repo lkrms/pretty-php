@@ -742,6 +742,9 @@ EOF,
             $this->IgnoreConfigFiles = true;
             Console::debug('Reading formatting options:', $this->ConfigFile);
             $json = json_decode(file_get_contents($this->ConfigFile), true);
+            // To prevent unintended inclusion of default values in
+            // --print-config output, apply options as if they were given on the
+            // command line, without expanding optional values
             $this->applyFormattingOptionValues(
                 $this->normaliseFormattingOptionValues($json, false, false, false),
                 true
@@ -784,18 +787,10 @@ EOF,
                         sprintf('invalid configuration file: %s', $configFile)
                     );
                 }
-                if (Test::areSameFile($dir = dirname($configFile), getcwd())) {
-                    // To prevent unintended inclusion of default values in
-                    // configuration files, apply options as if they were given
-                    // on the command line, without expanding optional values
-                    $this->applyFormattingOptionValues(
-                        $this->normaliseFormattingOptionValues($json, true, false, false),
-                        true
-                    );
-                }
                 $this->applyFormattingOptionValues(
                     $this->normaliseFormattingOptionValues($json, true)
                 );
+                $dir = dirname($configFile);
                 $this->DirFormattingOptionValues[$dir] =
                     $this->normaliseFormattingOptionValues($json);
                 if (!$this->InputFiles) {
@@ -809,6 +804,9 @@ EOF,
                         continue;
                     }
                     $file = $dir . '/' . $file;
+                    if ($file === './.') {
+                        $file = '.';
+                    }
                 }
                 unset($file);
                 $this->expandPaths($this->InputFiles, $in, $dirs);
