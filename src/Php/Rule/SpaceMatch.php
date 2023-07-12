@@ -8,8 +8,6 @@ use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
-use const Lkrms\Pretty\Php\T_ID_MAP as T;
-
 /**
  * Add line breaks between the arms of match expressions where at least one
  * conditional or return expression has a trailing newline
@@ -44,7 +42,7 @@ final class SpaceMatch implements TokenRule
                         ->innerSiblings();
 
         if ($tokens->find(fn(Token $t) =>
-                              $t->is([T[','], ...TokenType::OPERATOR_DOUBLE_ARROW]) &&
+                              $t->is([T_COMMA, ...TokenType::OPERATOR_DOUBLE_ARROW]) &&
                                   $t->hasNewlineAfterCode())) {
             $tokens->filter(fn(Token $t) =>
                                 $t->isMatchDelimiter())

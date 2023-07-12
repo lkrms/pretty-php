@@ -8,8 +8,6 @@ use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
-use const Lkrms\Pretty\Php\T_ID_MAP as T;
-
 /**
  * Place comments beside code, above code, or inside code
  *
@@ -101,7 +99,7 @@ final class PlaceComments implements TokenRule
         $line = WhitespaceType::LINE;
         if ($token->hasNewline() &&
                 $token->_prev->EndStatement === $token->_prev /*&&
-                $token->_prev->id !== T[',']*/) {
+                $token->_prev->id !== T_COMMA*/) {
             $line = WhitespaceType::BLANK;
         }
         $token->WhitespaceBefore |= WhitespaceType::SPACE | $line;
@@ -173,7 +171,7 @@ final class PlaceComments implements TokenRule
                 $prev = $token->prevCode();
                 if ($prev !== $next->parent() &&
                         ($next->hasBlankLineBefore() || !$prev->hasBlankLineAfter()) &&
-                        !($prev->is([T[':'], T[';']]) && $prev->inSwitchCase())) {
+                        !($prev->is([T_COLON, T_SEMICOLON]) && $prev->inSwitchCase())) {
                     continue;
                 }
             }

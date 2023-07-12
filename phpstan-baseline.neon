@@ -81,6 +81,11 @@ parameters:
 			path: src/Command/FormatPhp.php
 
 		-
+			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$Psr12 is never written, only read\\.$#"
+			count: 1
+			path: src/Command/FormatPhp.php
+
+		-
 			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$Quiet is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php

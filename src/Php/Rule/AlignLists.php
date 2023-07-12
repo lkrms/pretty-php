@@ -9,8 +9,6 @@ use Lkrms\Pretty\Php\TokenCollection;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
-use const Lkrms\Pretty\Php\T_ID_MAP as T;
-
 /**
  * Align arguments and array elements with their enclosing brackets
  *
@@ -46,23 +44,19 @@ final class AlignLists implements ListRule
     public function processList(Token $owner, TokenCollection $items): void
     {
         // Do nothing if:
-        // - there's a newline after $owner
-        // - there's a newline before $owner's close bracket (if applicable), or
+        // - there's a newline after $owner, or
         // - $owner is `(` or `[`, and neither $owner nor any of its `(` or `[`
         //   parents open an array or have a predecessor listed in
         //   self::BEFORE_ALIGNABLE_LIST
         if ($owner->hasNewlineAfterCode() ||
-            ($owner->ClosedBy &&
-                ((!$this->Formatter->MirrorBrackets &&
-                        $owner->ClosedBy->hasNewlineBeforeCode()) ||
-                    ($owner->is([T['('], T['[']]) &&
-                        !$owner->withParentsWhile(T['('], T['['])
-                               ->find(
-                                   fn(Token $t): bool =>
-                                       ($t->prevCode()->is(self::BEFORE_ALIGNABLE_LIST) &&
-                                               ($t === $owner || $t->nextCode()->AlignedWith === $t)) ||
-                                           $t->isArrayOpenBracket()
-                               ))))) {
+            ($owner->is([T_OPEN_PARENTHESIS, T_OPEN_BRACKET]) &&
+                !$owner->withParentsWhile(T_OPEN_PARENTHESIS, T_OPEN_BRACKET)
+                       ->find(
+                           fn(Token $t): bool =>
+                               ($t->prevCode()->is(self::BEFORE_ALIGNABLE_LIST) &&
+                                       ($t === $owner || $t->nextCode()->AlignedWith === $t)) ||
+                                   $t->isArrayOpenBracket()
+                       ))) {
             return;
         }
 
@@ -76,9 +70,9 @@ final class AlignLists implements ListRule
 
         if ($count = $multiLineItems->count()) {
             // Do nothing if
-            // - the token at the end of the first line of every multi-line item
-            //   is an open bracket or has a subsequent token aligned by another
-            //   rule, and
+            // - the token at the end of every line of every multi-line item
+            //   - is an open bracket (the contents of which are ignored), or
+            //   - has a subsequent token aligned by another rule, and
             // - there are no line breaks between items
             //
             // ```php
@@ -91,20 +85,28 @@ final class AlignLists implements ListRule
             $ternaryAlignment = $this->Formatter->ruleIsEnabled(AlignTernaryOperators::class);
             $eolBracketItems = $multiLineItems->filter(
                 function (Token $t, ?Token $next) use ($chainAlignment, $fnAlignment, $ternaryAlignment) {
-                    $eol = $t->endOfLine();
-                    $nextCode = $eol->nextCode();
-                    $last = $next ? $next->prevCode() : $t->pragmaticEndOfExpression();
-
-                    return $last->Index >= $eol->Index &&
-                        (($ternaryAlignment &&
-                                $nextCode->IsTernaryOperator) ||
+                    $last = $next ? $next->_prevCode : $t->pragmaticEndOfExpression();
+                    $current = $t;
+                    while ($last->Index > ($eol = $current->endOfLine())->Index) {
+                        if ($eol->isStandardOpenBracket()) {
+                            $current = $eol->ClosedBy;
+                            continue;
+                        }
+                        $current = $eol->nextCode();
+                        if (!(($ternaryAlignment &&
+                                $current->IsTernaryOperator) ||
                             ($chainAlignment &&
-                                $nextCode->is(TokenType::CHAIN) &&
-                                $nextCode->AlignedWith) ||
-                            $eol->isStandardOpenBracket() ||
+                                $current->is(TokenType::CHAIN) &&
+                                $current->AlignedWith) ||
                             ($fnAlignment &&
-                                $eol->id === T_DOUBLE_ARROW &&
-                                $eol->prevSiblingOf(T_FN)->nextSiblingOf(T_DOUBLE_ARROW) === $eol));
+                                (($eol->id === T_DOUBLE_ARROW &&
+                                        ($eol->_prevSibling->_prevSibling->id ?? null) === T_FN) ||
+                                    ($current->id === T_DOUBLE_ARROW &&
+                                        ($current->_prevSibling->_prevSibling->id ?? null) === T_FN))))) {
+                            return false;
+                        }
+                    }
+                    return true;
                 }
             );
             if ($eolBracketItems->count() === $count &&
@@ -120,7 +122,14 @@ final class AlignLists implements ListRule
                     fn(Token $t) =>
                         $t !== $first &&
                             !$t->hasNewlineBefore() &&
-                            !$t->withNextCodeWhile(false, T['('], T['['], T['{'], T_ELLIPSIS, ...self::BEFORE_ALIGNABLE_LIST)
+                            !$t->withNextCodeWhile(
+                                   false,
+                                   T_OPEN_BRACE,
+                                   T_OPEN_BRACKET,
+                                   T_OPEN_PARENTHESIS,
+                                   T_ELLIPSIS,
+                                   ...self::BEFORE_ALIGNABLE_LIST
+                               )
                                ->has($t->endOfLine())
                 )
                 ->forEach(
@@ -132,6 +141,11 @@ final class AlignLists implements ListRule
             // Do nothing if there are no multi-line items and no line breaks
             // between items
             return;
+        }
+
+        if (!$this->Formatter->MirrorBrackets &&
+                $owner->ClosedBy->hasNewlineBeforeCode()) {
+            $this->mirrorBracket($owner, false);
         }
 
         $items->forEach(

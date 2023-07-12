@@ -2,8 +2,6 @@
 
 namespace Lkrms\Pretty\Php;
 
-use const Lkrms\Pretty\Php\T_ID_MAP as T;
-
 final class TokenType
 {
     public const NAME_MAP = [
@@ -60,28 +58,28 @@ final class TokenType
     ];
 
     public const PRESERVE_BLANK_AFTER = [
-        T[','],
-        T[';'],
-        T['}'],
+        T_CLOSE_BRACE,
+        T_COMMA,
         T_OPEN_TAG,
         T_OPEN_TAG_WITH_ECHO,
+        T_SEMICOLON,
         ...self::COMMENT,
     ];
 
     public const PRESERVE_NEWLINE_AFTER = [
-        T[':'],
-        T['('],
-        T['['],
-        T['{'],
+        T_COLON,
+        T_DOUBLE_ARROW,
         T_EXTENDS,
         T_IMPLEMENTS,
+        T_OPEN_BRACE,
+        T_OPEN_BRACKET,
+        T_OPEN_PARENTHESIS,
         T_RETURN,
         T_YIELD,
         T_YIELD_FROM,
         ...self::PRESERVE_BLANK_AFTER,
         ...self::OPERATOR_ASSIGNMENT,
         ...self::OPERATOR_COMPARISON_EXCEPT_COALESCE,
-        ...self::OPERATOR_DOUBLE_ARROW,
         ...self::OPERATOR_LOGICAL_EXCEPT_NOT,
     ];
 
@@ -90,18 +88,19 @@ final class TokenType
     ];
 
     public const PRESERVE_NEWLINE_BEFORE = [
-        T['!'],
-        T[')'],
-        T[']'],
         T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
         T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
+        T_CLOSE_BRACKET,
+        T_CLOSE_PARENTHESIS,
         T_COALESCE,
+        T_CONCAT,
+        T_DOUBLE_ARROW,
+        T_LOGICAL_NOT,
         T_NULLSAFE_OBJECT_OPERATOR,
         T_OBJECT_OPERATOR,
         ...self::PRESERVE_BLANK_BEFORE,
         ...self::OPERATOR_ARITHMETIC,
         ...self::OPERATOR_BITWISE,
-        ...self::OPERATOR_STRING,
         ...self::OPERATOR_TERNARY,
     ];
 
@@ -120,22 +119,22 @@ final class TokenType
     ];
 
     public const AMPERSAND = [
-        T['&'],
+        T_AND,
         T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
         T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
     ];
 
     public const OPERATOR_ARITHMETIC = [
-        T['+'],  // Can be unary or binary
-        T['-'],  // Can be unary or binary
-        T['*'],
-        T['/'],
-        T['%'],
-        T_POW,   // **
+        T_PLUS,   // Can be unary or binary
+        T_MINUS,  // Can be unary or binary
+        T_MUL,    // *
+        T_DIV,    // /
+        T_MOD,    // %
+        T_POW,    // **
     ];
 
     public const OPERATOR_ASSIGNMENT = [
-        T['='],
+        T_EQUAL,           // =
         T_PLUS_EQUAL,      // +=
         T_MINUS_EQUAL,     // -=
         T_MUL_EQUAL,       // *=
@@ -152,17 +151,17 @@ final class TokenType
     ];
 
     public const OPERATOR_BITWISE = [
-        T['&'],
-        T['|'],
-        T['^'],
-        T['~'],
-        T_SL,  // <<
-        T_SR,  // >>
+        T_AND,  // &
+        T_OR,   // |
+        T_XOR,  // ^
+        T_NOT,  // ~
+        T_SL,   // <<
+        T_SR,   // >>
     ];
 
     public const OPERATOR_COMPARISON_EXCEPT_COALESCE = [
-        T['<'],
-        T['>'],
+        T_SMALLER,              // <
+        T_GREATER,              // >
         T_IS_EQUAL,             // ==
         T_IS_IDENTICAL,         // ===
         T_IS_NOT_EQUAL,         // != or <>
@@ -178,16 +177,16 @@ final class TokenType
     ];
 
     public const OPERATOR_TERNARY = [
-        T['?'],
-        T[':'],
+        T_QUESTION,  // ?
+        T_COLON,     // :
     ];
 
     public const OPERATOR_ERROR_CONTROL = [
-        T['@'],
+        T_AMPERSAND,  // @
     ];
 
     public const OPERATOR_EXECUTION = [
-        T['`'],
+        T_BACKTICK,  // `
     ];
 
     public const OPERATOR_INCREMENT_DECREMENT = [
@@ -204,12 +203,12 @@ final class TokenType
     ];
 
     public const OPERATOR_LOGICAL = [
-        T['!'],
+        T_LOGICAL_NOT,  // !
         ...self::OPERATOR_LOGICAL_EXCEPT_NOT,
     ];
 
     public const OPERATOR_STRING = [
-        T['.'],
+        T_CONCAT,  // .
     ];
 
     public const OPERATOR_DOUBLE_ARROW = [
@@ -269,7 +268,7 @@ final class TokenType
     ];
 
     public const DECLARATION_LIST = [
-        T[','],
+        T_COMMA,  // ,
         ...self::DECLARATION_TYPE,
     ];
 
@@ -311,10 +310,10 @@ final class TokenType
     ];
 
     public const VALUE_TYPE = [
-        T['&'],
-        T['('],
-        T[')'],
-        T['|'],
+        T_AND,                // &
+        T_OR,                 // |
+        T_OPEN_PARENTHESIS,   // (
+        T_CLOSE_PARENTHESIS,  // )
         ...self::DECLARATION_TYPE,
     ];
 
@@ -324,9 +323,9 @@ final class TokenType
     ];
 
     public const CHAIN_PART = [
-        T['('],
-        T['['],
-        T['{'],
+        T_OPEN_BRACE,        // {
+        T_OPEN_BRACKET,      // [
+        T_OPEN_PARENTHESIS,  // (
         T_STRING,
         T_VARIABLE,
         ...self::CHAIN,
@@ -409,6 +408,7 @@ final class TokenType
         T_CLONE,
         T_CONTINUE,
         T_ECHO,
+        T_ELSE,
         T_ELSEIF,
         T_EXIT,
         T_FOR,
@@ -534,16 +534,11 @@ final class TokenType
     ];
 
     public const OTHER = [
-        T_ATTRIBUTE,
         T_CONSTANT_ENCAPSED_STRING,
         T_CURLY_OPEN,
         T_DNUMBER,
         T_DOLLAR_OPEN_CURLY_BRACES,
         T_LNUMBER,
-        T_NAME_FULLY_QUALIFIED,
-        T_NAME_QUALIFIED,
-        T_NAME_RELATIVE,
-        T_NS_SEPARATOR,
         T_NUM_STRING,
         T_STRING_VARNAME,
     ];

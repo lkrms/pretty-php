@@ -8,8 +8,6 @@ use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
-use const Lkrms\Pretty\Php\T_ID_MAP as T;
-
 /**
  * Apply vertical whitespace to operators
  *
@@ -31,7 +29,7 @@ final class BreakOperators implements TokenRule
     public function getTokenTypes(): array
     {
         return [
-            T['?'],
+            T_QUESTION,
             ...TokenType::CHAIN,
         ];
     }

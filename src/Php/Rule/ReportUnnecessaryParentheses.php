@@ -7,8 +7,6 @@ use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 
-use const Lkrms\Pretty\Php\T_ID_MAP as T;
-
 /**
  * Detect and report superfluous parentheses
  *
@@ -25,7 +23,7 @@ final class ReportUnnecessaryParentheses implements TokenRule
     public function getTokenTypes(): array
     {
         return [
-            T['('],
+            T_OPEN_PARENTHESIS,
         ];
     }
 
@@ -53,7 +51,7 @@ final class ReportUnnecessaryParentheses implements TokenRule
         }
         $prev = $start->prevCode();
         $next = $token->ClosedBy->nextCode();
-        if (($prev->isStatementPrecursor() ||
+        if (($prev->precedesStatement() ||
                 $prev->is([...TokenType::OPERATOR_DOUBLE_ARROW, ...TokenType::OPERATOR_ASSIGNMENT])) &&
             ($prev->ClosedBy === $next ||
                 $next->Statement === $next ||

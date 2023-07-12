@@ -7,8 +7,6 @@ use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
 
-use const Lkrms\Pretty\Php\T_ID_MAP as T;
-
 /**
  * Apply sensible indentation to switch statements
  *
@@ -41,7 +39,7 @@ final class SwitchPosition implements TokenRule
 
         if (!$token->is([T_CASE, T_DEFAULT]) ||
                 $token->parent()->prevSibling(2)->id !== T_SWITCH ||
-                ($separator = $token->nextSiblingOf(T[':'], T[';'], T_CLOSE_TAG))->IsNull) {
+                ($separator = $token->nextSiblingOf(T_COLON, T_SEMICOLON, T_CLOSE_TAG))->IsNull) {
             return;
         }
 

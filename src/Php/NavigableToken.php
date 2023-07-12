@@ -5,8 +5,6 @@ namespace Lkrms\Pretty\Php;
 use Lkrms\Pretty\Php\Contract\Filter;
 use PhpToken;
 
-use const Lkrms\Pretty\Php\T_ID_MAP as T;
-
 /**
  * @template TToken of NavigableToken
  */
@@ -171,13 +169,13 @@ class NavigableToken extends PhpToken
                 }
                 $opener = array_pop($stack);
                 if (($opener &&
-                    $opener->id === T[':'] &&
+                    $opener->id === T_COLON &&
                     //$opener->BracketStack === $stack &&
                     ($token->is(TokenType::ALT_SYNTAX_END) ||
                         ($token->is(TokenType::ALT_SYNTAX_CONTINUE_WITH_EXPRESSION) &&
-                            $token->nextSimpleSibling(2)->id === T[':']) ||
+                            $token->nextSimpleSibling(2)->id === T_COLON) ||
                         ($token->is(TokenType::ALT_SYNTAX_CONTINUE_WITHOUT_EXPRESSION) &&
-                            $token->nextSimpleSibling()->id === T[':']))) ||
+                            $token->nextSimpleSibling()->id === T_COLON))) ||
                         $prev->startsAlternativeSyntax()) {
                     $i--;
                     $virtual = new static(T_END_ALT_SYNTAX, '');
@@ -280,12 +278,12 @@ class NavigableToken extends PhpToken
     final public function isBracket(): bool
     {
         return $this->is([
-            T['('],
-            T[')'],
-            T['['],
-            T[']'],
-            T['{'],
-            T['}'],
+            T_OPEN_BRACE,
+            T_OPEN_BRACKET,
+            T_OPEN_PARENTHESIS,
+            T_CLOSE_BRACE,
+            T_CLOSE_BRACKET,
+            T_CLOSE_PARENTHESIS,
             T_ATTRIBUTE,
             T_CURLY_OPEN,
             T_DOLLAR_OPEN_CURLY_BRACES,
@@ -299,12 +297,12 @@ class NavigableToken extends PhpToken
     final public function isStandardBracket(): bool
     {
         return $this->is([
-            T['('],
-            T[')'],
-            T['['],
-            T[']'],
-            T['{'],
-            T['}'],
+            T_OPEN_BRACE,
+            T_OPEN_BRACKET,
+            T_OPEN_PARENTHESIS,
+            T_CLOSE_BRACE,
+            T_CLOSE_BRACKET,
+            T_CLOSE_PARENTHESIS,
         ]);
     }
 
@@ -316,9 +314,9 @@ class NavigableToken extends PhpToken
     final public function isOpenBracket(): bool
     {
         return $this->is([
-            T['('],
-            T['['],
-            T['{'],
+            T_OPEN_BRACE,
+            T_OPEN_BRACKET,
+            T_OPEN_PARENTHESIS,
             T_ATTRIBUTE,
             T_CURLY_OPEN,
             T_DOLLAR_OPEN_CURLY_BRACES,
@@ -332,9 +330,9 @@ class NavigableToken extends PhpToken
     final public function isCloseBracket(): bool
     {
         return $this->is([
-            T[')'],
-            T[']'],
-            T['}'],
+            T_CLOSE_BRACE,
+            T_CLOSE_BRACKET,
+            T_CLOSE_PARENTHESIS,
         ]);
     }
 
@@ -345,22 +343,22 @@ class NavigableToken extends PhpToken
     final public function isStandardOpenBracket(): bool
     {
         return $this->is([
-            T['('],
-            T['['],
-            T['{'],
+            T_OPEN_BRACE,
+            T_OPEN_BRACKET,
+            T_OPEN_PARENTHESIS,
         ]);
     }
 
     final public function startsAlternativeSyntax(): bool
     {
-        if ($this->id !== T[':']) {
+        if ($this->id !== T_COLON) {
             return false;
         }
         if ($this->ClosedBy) {
             return true;
         }
 
-        return ($this->_prevCode->id === T[')'] &&
+        return ($this->_prevCode->id === T_CLOSE_PARENTHESIS &&
                 $this->_prevCode->_prevSibling->is([
                     ...TokenType::ALT_SYNTAX_START,
                     ...TokenType::ALT_SYNTAX_CONTINUE_WITH_EXPRESSION,

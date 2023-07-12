@@ -8,8 +8,6 @@ use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
-use const Lkrms\Pretty\Php\T_ID_MAP as T;
-
 /**
  * Apply horizontal whitespace to operators
  *
@@ -37,7 +35,7 @@ final class SpaceOperators implements TokenRule
     public function getTokenTypes(): array
     {
         return [
-            T['$'],
+            T_DOLLAR,
             ...TokenType::ALL_OPERATOR,
         ];
     }
@@ -60,7 +58,7 @@ final class SpaceOperators implements TokenRule
                 ($token->next()->id === T_VARIABLE &&
                     $token->inFunctionDeclaration() &&
                     // Not `function getValue($param = $a & $b)`
-                    !$token->sinceStartOfStatement()->hasOneOf(T['='])))) {
+                    !$token->sinceStartOfStatement()->hasOneOf(T_EQUAL)))) {
             $token->WhitespaceBefore |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
 
@@ -68,16 +66,16 @@ final class SpaceOperators implements TokenRule
         }
 
         // Suppress whitespace between operators in union and intersection types
-        if (($token->is([T['|'], ...TokenType::AMPERSAND]) &&
+        if (($token->is([T_OR, ...TokenType::AMPERSAND]) &&
             ($token->isDeclaration() ||
                 ($token->inFunctionDeclaration() &&
-                    !$token->sinceStartOfStatement()->hasOneOf(T['='])) ||
+                    !$token->sinceStartOfStatement()->hasOneOf(T_EQUAL)) ||
                 (($prev = $token->prevCodeWhile(...TokenType::VALUE_TYPE)->last()) &&
-                    ($prev = $prev->prevCode())->id === T[':'] &&
+                    ($prev = $prev->prevCode())->id === T_COLON &&
                     $prev->prevSibling(2)->id === T_FN))) ||
-            ($token->id === T['|'] &&
-                ($prev = $token->prevCodeWhile(T['|'], ...TokenType::DECLARATION_TYPE)->last()) &&
-                ($prev = $prev->prevCode())->id === T['('] &&
+            ($token->id === T_OR &&
+                ($prev = $token->prevCodeWhile(T_OR, ...TokenType::DECLARATION_TYPE)->last()) &&
+                ($prev = $prev->prevCode())->id === T_OPEN_PARENTHESIS &&
                 $prev->prevCode()->id === T_CATCH)) {
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
             $token->WhitespaceMaskPrev = WhitespaceType::NONE;
@@ -86,7 +84,7 @@ final class SpaceOperators implements TokenRule
         }
 
         // Suppress whitespace after `?` in nullable types
-        if ($token->id === T['?'] && !$token->IsTernaryOperator) {
+        if ($token->id === T_QUESTION && !$token->IsTernaryOperator) {
             $token->WhitespaceBefore |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
 
@@ -115,7 +113,7 @@ final class SpaceOperators implements TokenRule
 
         $token->WhitespaceAfter |= WhitespaceType::SPACE;
 
-        if ($token->id === T[':'] && !$token->IsTernaryOperator) {
+        if ($token->id === T_COLON && !$token->IsTernaryOperator) {
             return;
         }
 

@@ -7,8 +7,6 @@ use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
 
-use const Lkrms\Pretty\Php\T_ID_MAP as T;
-
 /**
  * Suppress changes to whitespace within strings and heredocs
  *
@@ -42,7 +40,7 @@ final class ProtectStrings implements TokenRule
             $token->HeredocOpenedBy = $heredoc;
         }
 
-        if (($isStringDelimiter = $token->is([T['"'], T['`']])) &&
+        if (($isStringDelimiter = $token->is([T_DOUBLE_QUOTE, T_BACKTICK])) &&
                 (!$string || $string->BracketStack !== $token->BracketStack)) {
             $token->CriticalWhitespaceMaskNext = WhitespaceType::NONE;
             $this->Strings[] = $token;

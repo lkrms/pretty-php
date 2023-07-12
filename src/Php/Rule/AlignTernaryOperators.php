@@ -7,8 +7,6 @@ use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
 
-use const Lkrms\Pretty\Php\T_ID_MAP as T;
-
 /**
  * Align ternary operators with their expressions
  *
@@ -24,7 +22,7 @@ final class AlignTernaryOperators implements TokenRule
 
     public function getTokenTypes(): array
     {
-        return [T['?']];
+        return [T_QUESTION];
     }
 
     public function processToken(Token $token): void

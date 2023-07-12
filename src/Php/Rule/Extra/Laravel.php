@@ -7,8 +7,6 @@ use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
 
-use const Lkrms\Pretty\Php\T_ID_MAP as T;
-
 /**
  * Apply Laravel's code style
  *
@@ -29,8 +27,8 @@ final class Laravel implements TokenRule
     public function getTokenTypes(): array
     {
         return [
-            T['!'],
-            T['.'],
+            T_LOGICAL_NOT,
+            T_CONCAT,
             T_FN,
         ];
     }
@@ -38,15 +36,15 @@ final class Laravel implements TokenRule
     public function processToken(Token $token): void
     {
         switch ($token->id) {
-            case T['!']:
-                if (($token->_next->id ?? null) === T['!']) {
+            case T_LOGICAL_NOT:
+                if (($token->_next->id ?? null) === T_LOGICAL_NOT) {
                     return;
                 }
                 $token->WhitespaceAfter |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
                 return;
 
-            case T['.']:
+            case T_CONCAT:
                 $token->WhitespaceMaskPrev &= ~WhitespaceType::SPACE;
                 $token->WhitespaceMaskNext &= ~WhitespaceType::SPACE;
                 return;

@@ -7,8 +7,6 @@ use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
 
-use const Lkrms\Pretty\Php\T_ID_MAP as T;
-
 /**
  * Suppress newlines between arguments in function declarations
  *
@@ -25,7 +23,7 @@ final class DeclareArgumentsOnOneLine implements TokenRule
     public function getTokenTypes(): array
     {
         return [
-            T['('],
+            T_OPEN_PARENTHESIS,
         ];
     }
 
