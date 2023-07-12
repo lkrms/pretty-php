@@ -488,8 +488,9 @@ final class Formatter
                 fn(Token $t, ?Token $next, ?Token $prev) =>
                     !$prev || ($t->_prevCode->id === T_COMMA &&
                         ($parent->id !== T_OPEN_BRACE ||
-                            $t->_prevCode->prevSiblingOf(T_COMMA, ...TokenType::OPERATOR_DOUBLE_ARROW)
-                                         ->is(TokenType::OPERATOR_DOUBLE_ARROW)))
+                            $t->_prevCode
+                              ->prevSiblingOf(T_COMMA, ...TokenType::OPERATOR_DOUBLE_ARROW)
+                              ->is(TokenType::OPERATOR_DOUBLE_ARROW)))
             );
         }
         Sys::stopTimer(__METHOD__ . '#find-lists');

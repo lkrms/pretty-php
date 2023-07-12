@@ -1316,12 +1316,12 @@ class Token extends CollectibleToken implements JsonSerializable
     public function declarationParts(): TokenCollection
     {
         return ($this->Expression ?: $this)
-            ->skipAnySiblingsOf(T_RETURN, T_YIELD, T_YIELD_FROM)
-            ->withNextSiblingsUntil(
-                fn(Token $t) =>
-                    !$t->is(TokenType::DECLARATION_PART) &&
-                        !($t->id === T_OPEN_PARENTHESIS && $t->_prevCode->id === T_CLASS)
-            );
+                   ->skipAnySiblingsOf(T_RETURN, T_YIELD, T_YIELD_FROM)
+                   ->withNextSiblingsUntil(
+                       fn(Token $t) =>
+                           !$t->is(TokenType::DECLARATION_PART) &&
+                               !($t->id === T_OPEN_PARENTHESIS && $t->_prevCode->id === T_CLASS)
+                   );
     }
 
     public function sinceStartOfStatement(): TokenCollection
