@@ -31,8 +31,8 @@ jobs:
       - name: Run PHPStan
         run: vendor/bin/phpstan
 
-  tests:
-    name: PHPUnit Tests
+  unit-tests:
+    name: PHPUnit tests
 
     strategy:
       fail-fast: false
@@ -68,7 +68,7 @@ jobs:
         run: composer install --no-interaction --no-progress
 
       - name: Run PHPUnit tests and generate code coverage report
-        run: vendor/bin/phpunit --coverage-clover=coverage.xml
+        run: vendor/bin/phpunit --no-coverage --coverage-clover=coverage.xml
 
       - name: Upload code coverage report to Codecov
         uses: codecov/codecov-action@v3
@@ -79,7 +79,7 @@ jobs:
     name: Build phar
     needs:
       - phpstan
-      - tests
+      - unit-tests
     runs-on: ubuntu-latest
     outputs:
       artifact_name: ${{ steps.run-build-script.outputs.artifact_name }}
@@ -147,3 +147,46 @@ jobs:
         env:
           artifact_path: ${{ needs.build.outputs.artifact_path }}
         run: php "$artifact_path" --verbose
+
+  integration-tests:
+    name: Integration tests
+    needs:
+      - build
+      - test-phar
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        repository:
+          - laravel/framework
+        args:
+          - --include-if-php --preset laravel src tests bin
+        include:
+          - repository: WordPress/WordPress
+            args: --include-if-php --preset wordpress .
+
+    steps:
+      - name: Checkout ${{ matrix.repository }}
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ matrix.repository }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: none, json, mbstring, tokenizer
+          coverage: none
+
+      - name: Download phar artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ needs.build.outputs.artifact_name }}-snapshot-phar
+
+      - name: Run PrettyPHP
+        env:
+          artifact_path: ${{ needs.build.outputs.artifact_path }}
+        run: |
+          php "$artifact_path" --print-config ${{ matrix.args }} | tee .prettyphp
+          php "$artifact_path" || { status=$? && [[ $status -eq 2 ]] || (exit $status); }

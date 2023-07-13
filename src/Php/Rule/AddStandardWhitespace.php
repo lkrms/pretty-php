@@ -8,8 +8,6 @@ use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
-use const Lkrms\Pretty\Php\T_ID_MAP as T;
-
 /**
  * Apply sensible default spacing
  *
@@ -42,8 +40,8 @@ final class AddStandardWhitespace implements TokenRule
     public function getTokenTypes(): array
     {
         return [
-            T[','],
-            T[':'],
+            T_COMMA,
+            T_COLON,
             T_OPEN_TAG,
             T_OPEN_TAG_WITH_ECHO,
             T_CLOSE_TAG,
@@ -56,14 +54,14 @@ final class AddStandardWhitespace implements TokenRule
             ...TokenType::SUPPRESS_SPACE_BEFORE,
 
             // isCloseBracket()
-            T[')'],
-            T[']'],
-            T['}'],
+            T_CLOSE_PARENTHESIS,
+            T_CLOSE_BRACKET,
+            T_CLOSE_BRACE,
 
             // isOpenBracket()
-            T['('],
-            T['['],
-            T['{'],
+            T_OPEN_PARENTHESIS,
+            T_OPEN_BRACKET,
+            T_OPEN_BRACE,
             T_ATTRIBUTE,
             T_CURLY_OPEN,
             T_DOLLAR_OPEN_CURLY_BRACES,
@@ -72,7 +70,7 @@ final class AddStandardWhitespace implements TokenRule
             T_END_ALT_SYNTAX,
 
             // startsAlternativeSyntax()
-            T[':'],
+            T_COLON,
         ];
     }
 
@@ -223,7 +221,7 @@ final class AddStandardWhitespace implements TokenRule
         }
 
         // Add SPACE after and suppress SPACE before commas
-        if ($token->id === T[',']) {
+        if ($token->id === T_COMMA) {
             $token->WhitespaceMaskPrev = WhitespaceType::NONE;
             $token->WhitespaceAfter |= WhitespaceType::SPACE;
 
@@ -231,7 +229,7 @@ final class AddStandardWhitespace implements TokenRule
         }
 
         // Add LINE after labels
-        if ($token->id === T[':'] && $token->inLabel()) {
+        if ($token->id === T_COLON && $token->inLabel()) {
             $token->WhitespaceAfter |= WhitespaceType::LINE;
 
             return;
@@ -250,7 +248,7 @@ final class AddStandardWhitespace implements TokenRule
                     $current->WhitespaceAfter |= WhitespaceType::LINE;
                 }
                 $current = $current->nextSiblingOf(...TokenType::OPERATOR_DOUBLE_ARROW)
-                                   ->nextSiblingOf(T[',']);
+                                   ->nextSiblingOf(T_COMMA);
             } while (!$current->IsNull);
 
             return;
@@ -273,7 +271,7 @@ final class AddStandardWhitespace implements TokenRule
         }
 
         // Suppress whitespace inside `declare()`
-        if ($token->id === T['('] && $token->prevCode()->id === T_DECLARE) {
+        if ($token->id === T_OPEN_PARENTHESIS && $token->prevCode()->id === T_DECLARE) {
             $token->outer()
                   ->maskInnerWhitespace(WhitespaceType::NONE);
         }

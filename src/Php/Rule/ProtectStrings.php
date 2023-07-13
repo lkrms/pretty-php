@@ -7,8 +7,6 @@ use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
 
-use const Lkrms\Pretty\Php\T_ID_MAP as T;
-
 /**
  * Suppress changes to whitespace within strings and heredocs
  *
@@ -42,7 +40,7 @@ final class ProtectStrings implements TokenRule
             $token->HeredocOpenedBy = $heredoc;
         }
 
-        if (($isStringDelimiter = $token->is([T['"'], T['`']])) &&
+        if (($isStringDelimiter = $token->is([T_DOUBLE_QUOTE, T_BACKTICK])) &&
                 (!$string || $string->BracketStack !== $token->BracketStack)) {
             $token->CriticalWhitespaceMaskNext = WhitespaceType::NONE;
             $this->Strings[] = $token;
@@ -75,10 +73,10 @@ final class ProtectStrings implements TokenRule
             return;
         }
 
-        if (($string && $token->BracketStack === $string->BracketStack) ||
-                ($heredoc && $token->BracketStack === $heredoc->BracketStack)) {
+        if ($this->shouldProtect($token, $string ?: null) ||
+                $this->shouldProtect($token, $heredoc ?: null)) {
             $token->CriticalWhitespaceMaskPrev = WhitespaceType::NONE;
-            if (!$token->isOpenBracket()) {
+            if (!$token->is([T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES])) {
                 $token->CriticalWhitespaceMaskNext = WhitespaceType::NONE;
             }
         }
@@ -88,5 +86,13 @@ final class ProtectStrings implements TokenRule
     {
         $this->Strings = [];
         $this->Heredocs = [];
+    }
+
+    private function shouldProtect(Token $token, ?Token $openedBy): bool
+    {
+        return $openedBy &&
+            ($token->BracketStack === $openedBy->BracketStack ||
+                (array_slice($token->BracketStack, 0, -1) === $openedBy->BracketStack &&
+                    end($token->BracketStack)->id === T_OPEN_BRACKET));
     }
 }

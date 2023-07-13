@@ -7,8 +7,6 @@ use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\WhitespaceType;
 
-use const Lkrms\Pretty\Php\T_ID_MAP as T;
-
 /**
  * Apply the WordPress code style
  *
@@ -30,30 +28,33 @@ final class WordPress implements TokenRule
     public function getTokenTypes(): array
     {
         return [
-            T['!'],
-            T['('],
-            T[':'],
-            T['['],
+            T_LOGICAL_NOT,
+            T_OPEN_PARENTHESIS,
+            T_COLON,
+            T_OPEN_BRACKET,
         ];
     }
 
     public function processToken(Token $token): void
     {
         switch ($token->id) {
-            case T['!']:
-                if (($token->_next->id ?? null) === T['!']) {
+            case T_LOGICAL_NOT:
+                if (($token->_next->id ?? null) === T_LOGICAL_NOT) {
                     return;
                 }
                 $token->WhitespaceAfter |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
                 return;
 
-            case T['(']:
-            case T['[']:
-                if ($token->id === T['('] && $token->_next->id === T[')']) {
+            case T_OPEN_PARENTHESIS:
+            case T_OPEN_BRACKET:
+                if ($token->id === T_OPEN_PARENTHESIS && $token->_next->id === T_CLOSE_PARENTHESIS) {
                     return;
                 }
-                if ($token->id === T['['] && $token->_next->is([T[']'], T_CONSTANT_ENCAPSED_STRING])) {
+                if ($token->id === T_OPEN_BRACKET &&
+                    ($token->StringOpenedBy ||
+                        $token->HeredocOpenedBy ||
+                        $token->_next->is([T_CLOSE_BRACKET, T_CONSTANT_ENCAPSED_STRING]))) {
                     return;
                 }
                 $token->WhitespaceAfter |= WhitespaceType::SPACE;
@@ -62,7 +63,7 @@ final class WordPress implements TokenRule
                 $token->ClosedBy->WhitespaceMaskPrev |= WhitespaceType::SPACE;
                 return;
 
-            case T[':']:
+            case T_COLON:
                 if (!$token->startsAlternativeSyntax()) {
                     return;
                 }

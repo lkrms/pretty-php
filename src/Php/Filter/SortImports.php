@@ -170,7 +170,7 @@ final class SortImports implements Filter
 
         // Strip comments and semicolons and normalise to:
         //
-        //     `use A 0 B 1 {D, E}`
+        //     `use A 0 B 1 { D , E }`
         //     `use A 0 B 0 C`
         //
         // For output like:
@@ -178,16 +178,16 @@ final class SortImports implements Filter
         //     `use A\B\C;`
         //     `use A\B\{D, E};`
         //
-        $import = str_replace(
-            ['\\', '0{'],
-            ['0', '1{'],
+        $import = preg_replace(
+            ['/\\\\/', '/\h++/', '/(?<= )0(?= \{)/'],
+            [' 0 ', ' ', '1'],
             array_reduce(
                 array_filter(
                     $tokens,
                     fn(Token $t) => !$t->is(TokenType::COMMENT) &&
                         $t->id !== T_SEMICOLON
                 ),
-                fn($carry, Token $t) => $carry . $t->text,
+                fn($carry, Token $t) => ($carry ? $carry . ' ' : '') . $t->text,
             )
         );
 

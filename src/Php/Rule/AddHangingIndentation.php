@@ -7,8 +7,6 @@ use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 
-use const Lkrms\Pretty\Php\T_ID_MAP as T;
-
 /**
  * If the first token on a new line continues a statement from the previous one,
  * add a hanging indent
@@ -29,9 +27,9 @@ final class AddHangingIndentation implements TokenRule
             $token->IsHangingParent = true;
             $token->IsOverhangingParent =
                 // Does it have delimited values? (e.g. `list(var, var)`)
-                $token->innerSiblings()->hasOneOf(T[',']) ||
+                $token->innerSiblings()->hasOneOf(T_COMMA) ||
                     // Delimited expressions? (e.g. `for (expr; expr; expr)`)
-                    ($token->id === T['('] && $token->innerSiblings()->hasOneOf(T[';'])) ||
+                    ($token->id === T_OPEN_PARENTHESIS && $token->innerSiblings()->hasOneOf(T_SEMICOLON)) ||
                     // A subsequent statement or block? (e.g. `if (expr)
                     // statement`)
                     $token->adjacent();
@@ -43,8 +41,8 @@ final class AddHangingIndentation implements TokenRule
 
         $stack = [$token->BracketStack];
         $latest = end($token->IndentStack);
-        $prev = $token->prevCode();
-        $parent = $token->parent();
+        $parent = end($token->BracketStack);
+        $prev = $token->_prevCode;
 
         // Add an appropriate token to `$stack` to establish a context for this
         // level of hanging indentation. If `$stack` matches a context already
@@ -121,8 +119,10 @@ final class AddHangingIndentation implements TokenRule
                 $stack[] = $token;
             } elseif ($latest->isStartOfExpression()) {
                 $stack[] = $latest;
-            } elseif (!$prev->isStatementPrecursor() &&
-                    $latest->prevCode()->isStatementPrecursor()) {
+            } elseif ($latest->id === T_DOUBLE_ARROW) {
+                $stack[] = $latest;
+            } elseif (!$prev->precedesStatement() &&
+                    $latest->prevCode()->precedesStatement()) {
                 $stack[] = $latest;
             }
         }
@@ -143,11 +143,11 @@ final class AddHangingIndentation implements TokenRule
         $until = $until ?? $token->pragmaticEndOfExpression(true);
         $indent = 0;
         $hanging = [];
-        $parents = in_array($parent, $token->IndentParentStack, true)
+        $parents = !$parent || in_array($parent, $token->IndentParentStack, true)
             ? []
             : [$parent];
         $current = $parent;
-        while (!($current = $current->parent())->IsNull && $current->IsHangingParent) {
+        while ($current && ($current = end($current->BracketStack)) && $current->IsHangingParent) {
             if (in_array($current, $token->IndentParentStack, true)) {
                 continue;
             }
@@ -168,8 +168,8 @@ final class AddHangingIndentation implements TokenRule
         }
 
         $indent++;
-        if (!$token->prevCode()->isStatementPrecursor() &&
-                $parent->IsOverhangingParent) {
+        if ($parent && $parent->IsOverhangingParent &&
+                !$prev->precedesStatement()) {
             $indent++;
             $hanging[$parent->Index] = 1;
         }
@@ -198,7 +198,7 @@ final class AddHangingIndentation implements TokenRule
             //         $e)
             //     ?: $start;
             // ```
-            if (array_key_exists($parent->Index, $current->OverhangingParents) &&
+            if ($parent && array_key_exists($parent->Index, $current->OverhangingParents) &&
                     ($hanging[$parent->Index] ?? null)) {
                 $current->OverhangingParents[$parent->Index] += $hanging[$parent->Index];
             }
@@ -315,7 +315,7 @@ final class AddHangingIndentation implements TokenRule
         if ($token->isBrace() ||
             (!$ignoreIndent &&
                 $this->indent($token->_prevCode) !== $this->indent($token)) ||
-            ($token->_prevCode->isStatementPrecursor() &&
+            ($token->_prevCode->precedesStatement() &&
                 !$token->_prevCode->parent()->IsHangingParent)) {
             return false;
         }

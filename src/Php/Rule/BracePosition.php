@@ -8,8 +8,6 @@ use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
-use const Lkrms\Pretty\Php\T_ID_MAP as T;
-
 /**
  * Apply spacing to structural braces based on their context
  *
@@ -44,8 +42,8 @@ final class BracePosition implements TokenRule
     public function getTokenTypes(): array
     {
         return [
-            T['{'],
-            T['}'],
+            T_OPEN_BRACE,
+            T_CLOSE_BRACE,
         ];
     }
 
@@ -58,10 +56,10 @@ final class BracePosition implements TokenRule
 
         $matchList = $match && $this->Formatter->MatchesAreLists;
         $next = $token->next();
-        if ($token->id === T['{']) {
+        if ($token->id === T_OPEN_BRACE) {
             // Move empty bodies to the end of the previous line
             $parts = $token->declarationParts();
-            if ($next->id === T['}'] &&
+            if ($next->id === T_CLOSE_BRACE &&
                     $parts->hasOneOf(T_CLASS, T_ENUM, T_FUNCTION, T_INTERFACE, T_TRAIT)) {
                 $token->WhitespaceBefore |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskPrev = WhitespaceType::SPACE;
@@ -91,7 +89,7 @@ final class BracePosition implements TokenRule
                 $start = $parts->first();
                 if ($start->id !== T_USE) {
                     $prevCode = $start->prevCode();
-                    if ($prevCode->is([T[';'], T['{'], T['}'], T_CLOSE_TAG, T_NULL]) ||
+                    if ($prevCode->is([T_SEMICOLON, T_OPEN_BRACE, T_CLOSE_BRACE, T_CLOSE_TAG, T_NULL]) ||
                             ($start->id === T_NEW && $parts->hasNewlineBetweenTokens())) {
                         $line = WhitespaceType::LINE;
                     }
@@ -100,13 +98,13 @@ final class BracePosition implements TokenRule
             $prev = $parts->hasOneOf(T_FUNCTION)
                 ? $parts->last()->nextSibling()->canonicalClose()
                 : $token->prevCode();
-            if ($prev->id === T[')']) {
+            if ($prev->id === T_CLOSE_PARENTHESIS) {
                 $this->BracketBracePairs[] = [$prev, $token];
             }
             $token->WhitespaceBefore |= WhitespaceType::SPACE | $line;
             $token->WhitespaceAfter |= ($matchList ? 0 : WhitespaceType::LINE) | WhitespaceType::SPACE;
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
-            if ($next->id === T['}']) {
+            if ($next->id === T_CLOSE_BRACE) {
                 $token->WhitespaceMaskNext &= ~WhitespaceType::SPACE;
             }
 
@@ -117,7 +115,7 @@ final class BracePosition implements TokenRule
         $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
 
         if ($match ||
-                ($nextCode = $token->nextCode())->is([T[')'], T[']']]) ||
+                ($nextCode = $token->nextCode())->is([T_CLOSE_PARENTHESIS, T_CLOSE_BRACKET]) ||
                 $nextCode === $token->EndStatement) {
             return;
         }

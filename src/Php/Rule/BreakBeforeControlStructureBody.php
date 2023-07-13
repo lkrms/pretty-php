@@ -9,8 +9,6 @@ use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
-use const Lkrms\Pretty\Php\T_ID_MAP as T;
-
 /**
  * Add newlines after control structures where the body has no enclosing braces
  *
@@ -62,13 +60,13 @@ final class BreakBeforeControlStructureBody implements TokenRule
          */
         $body = $token->nextSibling($offset);
         if ($body->IsNull ||
-                $body->is([T[':'], T[';'], T['{'], T_CLOSE_TAG])) {
+                $body->is([T_COLON, T_SEMICOLON, T_OPEN_BRACE, T_CLOSE_TAG])) {
             return;
         }
 
         $token->BodyIsUnenclosed = true;
 
-        if ($token->prev()->id !== T['}'] || !$token->continuesControlStructure()) {
+        if ($token->prev()->id !== T_CLOSE_BRACE || !$token->continuesControlStructure()) {
             $token->WhitespaceBefore |= WhitespaceType::LINE;
             $token->WhitespaceMaskPrev |= WhitespaceType::LINE;
             $token->prev()->WhitespaceMaskNext |= WhitespaceType::LINE;

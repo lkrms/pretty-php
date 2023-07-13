@@ -123,6 +123,11 @@ class FormatPhp extends CliCommand
     private $NoSortImports;
 
     /**
+     * @var bool
+     */
+    private $Psr12;
+
+    /**
      * @var string|null
      */
     private $Preset;
@@ -513,6 +518,17 @@ Don't sort alias/import statements
 EOF)
                 ->bindTo($this->NoSortImports),
             CliOption::build()
+                ->long('psr12')
+                ->description(<<<EOF
+Enforce strict PSR-12 / PER Coding Style compliance
+
+Use this option to apply formatting rules and internal options required for
+__{{command}}__ output to satisfy the formatting-related requirements of PHP-FIG
+coding style standards.
+EOF)
+                ->visibility(Env::debug() ? $noSynopsis : $none)
+                ->bindTo($this->Psr12),
+            CliOption::build()
                 ->long('preset')
                 ->short('p')
                 ->valueName('PRESET')
@@ -726,6 +742,9 @@ EOF,
             $this->IgnoreConfigFiles = true;
             Console::debug('Reading formatting options:', $this->ConfigFile);
             $json = json_decode(file_get_contents($this->ConfigFile), true);
+            // To prevent unintended inclusion of default values in
+            // --print-config output, apply options as if they were given on the
+            // command line, without expanding optional values
             $this->applyFormattingOptionValues(
                 $this->normaliseFormattingOptionValues($json, false, false, false),
                 true
@@ -768,18 +787,10 @@ EOF,
                         sprintf('invalid configuration file: %s', $configFile)
                     );
                 }
-                if (Test::areSameFile($dir = dirname($configFile), getcwd())) {
-                    // To prevent unintended inclusion of default values in
-                    // configuration files, apply options as if they were given
-                    // on the command line, without expanding optional values
-                    $this->applyFormattingOptionValues(
-                        $this->normaliseFormattingOptionValues($json, true, false, false),
-                        true
-                    );
-                }
                 $this->applyFormattingOptionValues(
                     $this->normaliseFormattingOptionValues($json, true)
                 );
+                $dir = dirname($configFile);
                 $this->DirFormattingOptionValues[$dir] =
                     $this->normaliseFormattingOptionValues($json);
                 if (!$this->InputFiles) {
@@ -793,6 +804,9 @@ EOF,
                         continue;
                     }
                     $file = $dir . '/' . $file;
+                    if ($file === './.') {
+                        $file = '.';
+                    }
                 }
                 unset($file);
                 $this->expandPaths($this->InputFiles, $in, $dirs);
@@ -884,13 +898,30 @@ EOF,
                 }
                 Console::debug('New Formatter instance required for:', $file);
                 $this->applyFormattingOptionValues($options);
+                if ($this->Psr12) {
+                    $unskip = [
+                        ApplyMagicComma::class,
+                        SpaceDeclarations::class,
+                        ReindentHeredocs::class,
+                    ];
+                    $skip = [
+                        PreserveOneLineStatements::class,
+                        AlignLists::class,
+                    ];
+                    $add = [
+                        NoMixedLists::class,
+                    ];
+                    $this->SkipRules = array_diff($this->SkipRules, $unskip, $skip);
+                    array_push($this->SkipRules, ...$skip);
+                    array_push($this->AddRules, ...array_diff($add, $this->AddRules));
+                }
                 $f = new Formatter(
                     !$this->Tabs,
                     $this->Tabs ?: $this->Spaces ?: 4,
                     $this->SkipRules,
                     $this->AddRules,
                     $this->SkipFilters,
-                    FormatterFlag::REPORT_PROBLEMS
+                    ($this->Quiet < 2 ? FormatterFlag::REPORT_PROBLEMS : 0)
                         | ($this->Verbose ? FormatterFlag::LOG_PROGRESS : 0)
                 );
                 $f->PreferredEol = $this->Eol === 'auto' || $this->Eol === 'platform'
@@ -898,6 +929,9 @@ EOF,
                     : ($this->Eol === 'lf' ? "\n" : "\r\n");
                 $f->PreserveEol = $this->Eol === 'auto';
                 $f->OneTrueBraceStyle = $this->OneTrueBraceStyle;
+                if ($this->Psr12) {
+                    $f->NewlineBeforeFnDoubleArrows = true;
+                }
                 $this->MirrorBrackets === null || $f->MirrorBrackets = $this->MirrorBrackets;
                 $this->HangingHeredocIndents === null || $f->HangingHeredocIndents = $this->HangingHeredocIndents;
                 $this->IncreaseIndentBetweenUnenclosedTags === null || $f->IncreaseIndentBetweenUnenclosedTags = $this->IncreaseIndentBetweenUnenclosedTags;
@@ -1153,11 +1187,8 @@ EOF,
         if ($this->NoMagicCommas) {
             $this->SkipRules[] = 'magic-commas';
         }
-        if ($this->NoSortImports) {
+        if ($this->NoSortImports && !$this->Psr12) {
             $this->SkipFilters[] = SortImports::class;
-        }
-        if ($this->Quiet > 1) {
-            $this->SkipRules[] = 'report-brackets';
         }
 
         foreach (self::INCOMPATIBLE_RULES as $rules) {
@@ -1192,11 +1223,11 @@ EOF,
             'disable',
             'enable',
             'oneTrueBraceStyle',
-            'preserveTrailingSpaces',
             //'ignoreNewlines',
             'noSimplifyStrings',
             'noMagicCommas',
             'noSortImports',
+            'psr12',
             'preset',
         ];
         $names = $kebabCase ? [
@@ -1224,7 +1255,11 @@ EOF,
      */
     private function expandPaths(array $paths, ?array &$files, ?array &$dirs, ?int &$dirCount = null): void
     {
-        Console::debug('Expanding paths:', '`' . (implode('` `', $paths) ?: '<none>') . '`');
+        if (!$paths) {
+            return;
+        }
+
+        Console::debug('Expanding paths:', '`' . implode('` `', $paths) . '`');
 
         if ($paths === ['-']) {
             $files[] = '-';

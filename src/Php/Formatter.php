@@ -61,8 +61,6 @@ use LogicException;
 use ParseError;
 use Throwable;
 
-use const Lkrms\Pretty\Php\T_ID_MAP as T;
-
 final class Formatter
 {
     /**
@@ -112,6 +110,8 @@ final class Formatter
 
     public bool $IncreaseIndentBetweenUnenclosedTags = true;
 
+    public bool $NewlineBeforeFnDoubleArrows = false;
+
     /**
      * If the first object operator in a chain of method calls has a leading
      * newline, align with the start of the chain?
@@ -147,6 +147,7 @@ final class Formatter
         MirrorBrackets::class,                   // processToken  (96)
         BreakOperators::class,                   // processToken  (98)
         BreakLists::class,                       // processList   (98)
+        SpaceMatch::class,                       // processToken (300)
         AddIndentation::class,                   // processToken (600)
         SwitchPosition::class,                   // processToken (600)
         AddHangingIndentation::class,            // processToken (800), callback (800)
@@ -160,7 +161,6 @@ final class Formatter
         ...self::MANDATORY_RULES,
         SimplifyStrings::class,    // processToken  (60)
         PreserveNewlines::class,   // processToken  (93)
-        SpaceMatch::class,         // processToken (300)
         ApplyMagicComma::class,    // processList  (360)
         SpaceDeclarations::class,  // processToken (620)
         ReindentHeredocs::class,   // processToken (900), beforeRender (900)
@@ -378,6 +378,22 @@ final class Formatter
     /**
      * Get formatted code
      *
+     *  1. Call `reset()` on rules and filters
+     *  2. Get end-of-line sequence and replace line breaks with `"\n"` if
+     *     needed
+     *  3. `tokenize()` input and apply formatting filters
+     *  4. `prepareTokens()` for formatting
+     *  5. Find lists, i.e. comma-delimited items between non-empty square or
+     *     round brackets, and interface names after `extends` or `implements`
+     *  6. Process enabled {@see TokenRule} and {@see ListRule} rules in one
+     *     loop, ordered by priority
+     *  7. Find blocks, i.e. groups of tokens representing two or more
+     *     consecutive non-blank lines
+     *  8. Process enabled {@see BlockRule} rules in priority order
+     *  9. Process registered callbacks in priority and token order
+     * 10. Process rules that implement `beforeRender()` in priority order
+     * 11. Render and validate output
+     *
      * @param string|null $filename For reporting purposes only. No file
      * operations are performed on `$filename`.
      */
@@ -433,7 +449,8 @@ final class Formatter
                 return '';
             }
 
-            if ($last->IsCode && $last->startOfStatement()->id !== T_HALT_COMPILER) {
+            if ($last->IsCode &&
+                    ($last->Statement ?: $last)->id !== T_HALT_COMPILER) {
                 $last->WhitespaceAfter |= WhitespaceType::LINE;
             }
         } finally {
@@ -442,16 +459,17 @@ final class Formatter
 
         Sys::startTimer(__METHOD__ . '#find-lists');
         // Get non-empty open brackets
-        $listParents =
-            array_filter(
-                $this->Tokens,
-                fn(Token $t) =>
-                    ($t->is([T['('], T['[']]) ||
-                            ($this->MatchesAreLists && $t->id === T['{'] && $t->prevSibling(2)->id === T_MATCH) ||
-                            $t->is([T_IMPLEMENTS]) ||
-                            ($t->is([T_EXTENDS]) && $t->isDeclaration(T_INTERFACE))) &&
-                        $t->ClosedBy !== $t->nextCode()
-            );
+        $listParents = array_filter(
+            $this->Tokens,
+            fn(Token $t) =>
+                ($t->is([T_OPEN_PARENTHESIS, T_OPEN_BRACKET]) ||
+                        ($this->MatchesAreLists &&
+                            $t->id === T_OPEN_BRACE &&
+                            $t->prevSibling(2)->id === T_MATCH) ||
+                        $t->is([T_IMPLEMENTS]) ||
+                        ($t->is([T_EXTENDS]) && $t->isDeclaration(T_INTERFACE))) &&
+                    $t->ClosedBy !== $t->nextCode()
+        );
         $lists = [];
         foreach ($listParents as $i => $parent) {
             if ($parent->is([T_IMPLEMENTS, T_EXTENDS])) {
@@ -459,7 +477,7 @@ final class Formatter
                     ...TokenType::DECLARATION_LIST
                 )->filter(
                     fn(Token $t, ?Token $next, ?Token $prev) =>
-                        !$prev || $t->prevCode()->id === T[',']
+                        !$prev || $t->_prevCode->id === T_COMMA
                 );
                 if ($items->count() > 1) {
                     $lists[$i] = $items;
@@ -468,10 +486,11 @@ final class Formatter
             }
             $lists[$i] = $parent->innerSiblings()->filter(
                 fn(Token $t, ?Token $next, ?Token $prev) =>
-                    !$prev || (($prevCode = $t->prevCode())->id === T[','] &&
-                        ($parent->id !== T['{'] ||
-                            $prevCode->prevSiblingOf(T[','], ...TokenType::OPERATOR_DOUBLE_ARROW)
-                                     ->is(TokenType::OPERATOR_DOUBLE_ARROW)))
+                    !$prev || ($t->_prevCode->id === T_COMMA &&
+                        ($parent->id !== T_OPEN_BRACE ||
+                            $t->_prevCode
+                              ->prevSiblingOf(T_COMMA, ...TokenType::OPERATOR_DOUBLE_ARROW)
+                              ->is(TokenType::OPERATOR_DOUBLE_ARROW)))
             );
         }
         Sys::stopTimer(__METHOD__ . '#find-lists');
@@ -482,13 +501,11 @@ final class Formatter
 
             if ($method === ListRule::PROCESS_LIST) {
                 foreach ($lists as $i => $list) {
-                    $list = clone $list;
                     /** @var ListRule $rule */
-                    $rule->processList($listParents[$i], $list);
+                    $rule->processList($listParents[$i], clone $list);
                 }
                 Sys::stopTimer($_rule, 'rule');
-                !$this->Debug || !$this->LogProgress ||
-                    $this->logProgress($_rule, ListRule::PROCESS_LIST);
+                !$this->LogProgress || $this->logProgress($_rule, ListRule::PROCESS_LIST);
                 continue;
             }
 
@@ -507,8 +524,7 @@ final class Formatter
                 }
             }
             Sys::stopTimer($_rule, 'rule');
-            !$this->Debug || !$this->LogProgress ||
-                $this->logProgress($_rule, TokenRule::PROCESS_TOKEN);
+            !$this->LogProgress || $this->logProgress($_rule, TokenRule::PROCESS_TOKEN);
         }
 
         Sys::startTimer(__METHOD__ . '#find-blocks');
@@ -551,8 +567,7 @@ final class Formatter
                 $rule->processBlock($block);
             }
             Sys::stopTimer($_rule, 'rule');
-            !$this->Debug || !$this->LogProgress ||
-                $this->logProgress($_rule, BlockRule::PROCESS_BLOCK);
+            !$this->LogProgress || $this->logProgress($_rule, BlockRule::PROCESS_BLOCK);
         }
 
         $this->processCallbacks();
@@ -563,8 +578,7 @@ final class Formatter
             Sys::startTimer($_rule, 'rule');
             $rule->beforeRender($this->Tokens);
             Sys::stopTimer($_rule, 'rule');
-            !$this->Debug || !$this->LogProgress ||
-                $this->logProgress($_rule, Rule::BEFORE_RENDER);
+            !$this->LogProgress || $this->logProgress($_rule, Rule::BEFORE_RENDER);
         }
 
         Sys::startTimer(__METHOD__ . '#render');
@@ -722,8 +736,7 @@ final class Formatter
                     Sys::startTimer($_rule, 'rule');
                     $callback();
                     Sys::stopTimer($_rule, 'rule');
-                    !$this->Debug || !$this->LogProgress ||
-                        $this->logProgress($_rule, "{closure:$index:$i}");
+                    !$this->LogProgress || $this->logProgress($_rule, "{closure:$index:$i}");
                 }
                 unset($tokenCallbacks[$index]);
             }

@@ -6,8 +6,6 @@ use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
 
-use const Lkrms\Pretty\Php\T_ID_MAP as T;
-
 /**
  * Apply symmetrical vertical whitespace to brackets
  *
@@ -24,10 +22,10 @@ final class MirrorBrackets implements TokenRule
     public function getTokenTypes(): array
     {
         return [
-            T[':'],
-            T['('],
-            T['['],
-            T['{'],
+            T_COLON,
+            T_OPEN_BRACE,
+            T_OPEN_BRACKET,
+            T_OPEN_PARENTHESIS,
             T_ATTRIBUTE,
             T_CURLY_OPEN,
             T_DOLLAR_OPEN_CURLY_BRACES,
