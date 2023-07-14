@@ -6,8 +6,8 @@
  * more message
  *
  * here comes some code:
- * 	if($a){
- * 	}
+ *  if($a){
+ *  }
  *
  * @param type2 $a descriptionaccented
  * @return array

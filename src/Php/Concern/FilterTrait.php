@@ -2,6 +2,7 @@
 
 namespace Lkrms\Pretty\Php\Concern;
 
+use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\NavigableToken as Token;
 use Lkrms\Pretty\Php\TokenType;
 
@@ -12,7 +13,15 @@ trait FilterTrait
      */
     protected $Tokens;
 
-    public function __construct() {}
+    /**
+     * @var Formatter
+     */
+    protected $Formatter;
+
+    public function __construct(Formatter $formatter)
+    {
+        $this->Formatter = $formatter;
+    }
 
     protected function prevCode(int $i, ?int &$prev_i = null): Token
     {
@@ -58,11 +67,4 @@ trait FilterTrait
     }
 
     public function reset(): void {}
-
-    public function destroy(): void
-    {
-        $this->reset();
-        // @phpstan-ignore-next-line
-        $this->Tokens = null;
-    }
 }

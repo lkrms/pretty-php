@@ -96,6 +96,11 @@ parameters:
 			path: src/Command/FormatPhp.php
 
 		-
+			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$SortImportsBy is never written, only read\\.$#"
+			count: 1
+			path: src/Command/FormatPhp.php
+
+		-
 			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$Spaces is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php

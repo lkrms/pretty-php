@@ -151,7 +151,7 @@ final class TokenCollection extends TypedCollection
                 $trim = false;
                 continue;
             }
-            if ($before = $token->renderWhitespaceBefore($softTabs)) {
+            if ($before = $token->renderWhitespaceBefore($softTabs, true)) {
                 $code = substr($code, strlen($before));
             }
             $trim = false;

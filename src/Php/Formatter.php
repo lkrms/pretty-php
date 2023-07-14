@@ -6,11 +6,13 @@ use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Sys;
 use Lkrms\Pretty\Php\Catalog\FormatterFlag;
+use Lkrms\Pretty\Php\Catalog\ImportSortOrder;
 use Lkrms\Pretty\Php\Contract\BlockRule;
 use Lkrms\Pretty\Php\Contract\Filter;
 use Lkrms\Pretty\Php\Contract\ListRule;
 use Lkrms\Pretty\Php\Contract\Rule;
 use Lkrms\Pretty\Php\Contract\TokenRule;
+use Lkrms\Pretty\Php\Filter\CollectColumn;
 use Lkrms\Pretty\Php\Filter\NormaliseHeredocs;
 use Lkrms\Pretty\Php\Filter\NormaliseStrings;
 use Lkrms\Pretty\Php\Filter\RemoveComments;
@@ -134,6 +136,11 @@ final class Formatter
     public bool $OneTrueBraceStyle = false;
 
     /**
+     * @var ImportSortOrder::*
+     */
+    public int $ImportSortOrder = ImportSortOrder::NAME;
+
+    /**
      * @var array<class-string<Rule>>
      */
     public const MANDATORY_RULES = [
@@ -186,60 +193,94 @@ final class Formatter
     ];
 
     /**
+     * @var array<class-string<Filter>>
+     */
+    public const DEFAULT_FILTERS = [
+        CollectColumn::class,
+        RemoveWhitespace::class,
+        NormaliseHeredocs::class,
+        SortImports::class,
+        TrimCasts::class,
+    ];
+
+    /**
+     * @var array<class-string<Filter>>
+     */
+    public const OPTIONAL_FILTERS = [
+        SortImports::class,
+        TrimCasts::class,
+    ];
+
+    /**
+     * @var array<class-string<Filter>>
+     */
+    public const COMPARISON_FILTERS = [
+        NormaliseStrings::class,
+        RemoveComments::class,
+        RemoveEmptyTokens::class,
+        TrimOpenTags::class,
+    ];
+
+    /**
      * @var Token[]|null
      */
-    public $Tokens;
+    public ?array $Tokens = null;
 
     /**
      * @var Problem[]|null
      */
-    public $Problems;
+    public ?array $Problems = null;
 
     /**
      * @var array<string,string>|null
      */
-    public $Log;
+    public ?array $Log = null;
 
     /**
      * @var Rule[]
      */
-    private $Rules;
+    private array $Rules;
 
     /**
      * @var Filter[]
      */
-    private $FormatFilters;
+    private array $Filters;
 
     /**
      * @var Filter[]
      */
-    private $ComparisonFilters;
+    private array $FormatFilters;
+
+    /**
+     * @var Filter[]
+     */
+    private array $ComparisonFilters;
 
     /**
      * [ [ Rule object, method name ], ... ]
      *
      * @var array<array{TokenRule|ListRule,string}>
      */
-    private $MainLoop;
+    private array $MainLoop;
 
     /**
      * [ [ Rule object, method name ], ... ]
      *
      * @var array<array{BlockRule,string}>
      */
-    private $BlockLoop;
+    private array $BlockLoop;
 
     /**
      * [ [ Rule object, method name ], ... ]
      *
      * @var array<array{Rule,string}>
      */
-    private $BeforeRender;
+    private array $BeforeRender;
 
     /**
      * @var array<int,array<int,array<array{Rule,callable}>>>
      */
-    private $Callbacks;
+    private array $Callbacks;
 
     private bool $Debug;
 
@@ -330,39 +371,30 @@ final class Formatter
         $this->BeforeRender = $this->sortRules($beforeRender);
         Sys::stopTimer(__METHOD__ . '#sort-rules');
 
-        $mandatoryFilters = [
-            RemoveWhitespace::class,
-            NormaliseHeredocs::class,
-        ];
-        $optionalFilters = [
-            TrimCasts::class,
-            SortImports::class,
-        ];
-        $comparisonFilters = [
-            NormaliseStrings::class,
-            RemoveComments::class,
-            RemoveEmptyTokens::class,
-            TrimOpenTags::class,
-        ];
-
-        $this->FormatFilters = array_map(
-            fn(string $filter) => new $filter(),
-            array_merge(
-                $mandatoryFilters,
-                array_diff(
-                    $optionalFilters,
-                    $skipFilters
-                )
+        $filters = array_diff(
+            self::DEFAULT_FILTERS,
+            array_intersect(
+                self::OPTIONAL_FILTERS,
+                $skipFilters
             )
         );
-
+        $filters = array_combine(
+            $filters,
+            $this->FormatFilters = array_map(
+                fn(string $filter) => new $filter($this),
+                $filters
+            )
+        );
+        // Column values are unnecessary when comparing tokens
+        unset($filters[CollectColumn::class]);
         $this->ComparisonFilters = array_merge(
-            $this->FormatFilters,
-            array_map(
-                fn(string $filter) => new $filter(),
-                $comparisonFilters
+            array_values($filters),
+            $comparisonFilters = array_map(
+                fn(string $filter) => new $filter($this),
+                self::COMPARISON_FILTERS
             )
         );
+        $this->Filters = array_merge($this->FormatFilters, $comparisonFilters);
     }
 
     /**
@@ -406,8 +438,7 @@ final class Formatter
         foreach ($this->Rules as $rule) {
             $rule->reset();
         }
-        // NB: ComparisonFilters is a superset of FormatFilters
-        foreach ($this->ComparisonFilters as $filter) {
+        foreach ($this->Filters as $filter) {
             $filter->reset();
         }
 
@@ -586,7 +617,7 @@ final class Formatter
             $out = '';
             $current = reset($this->Tokens);
             do {
-                $out .= $current->render(false, true, $current);
+                $out .= $current->render(false, true);
             } while ($current = $current->_next);
         } catch (Throwable $ex) {
             throw new PrettyException(
@@ -760,7 +791,7 @@ final class Formatter
             $out = '';
             $current = reset($this->Tokens);
             do {
-                $out .= $current->render(false, false, $current);
+                $out .= $current->render(false, false);
             } while ($current = $current->_next);
         } catch (Throwable $ex) {
             throw new PrettyException(

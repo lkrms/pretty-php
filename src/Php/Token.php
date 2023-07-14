@@ -4,6 +4,7 @@ namespace Lkrms\Pretty\Php;
 
 use JsonSerializable;
 use Lkrms\Facade\Convert;
+use Lkrms\Pretty\Php\Catalog\CommentType;
 use Lkrms\Pretty\WhitespaceType;
 use RuntimeException;
 
@@ -50,9 +51,10 @@ class Token extends CollectibleToken implements JsonSerializable
 
     public ?Token $TernaryOperator2 = null;
 
+    /**
+     * @var CommentType::*|null
+     */
     public ?string $CommentType = null;
-
-    public bool $CommentPlaced = false;
 
     public bool $NewlineAfterPreserved = false;
 
@@ -210,16 +212,6 @@ class Token extends CollectibleToken implements JsonSerializable
         reset($tokens)->load();
 
         return $tokens;
-    }
-
-    /**
-     * @param static[] $tokens
-     */
-    public static function destroyTokens(array $tokens): void
-    {
-        foreach ($tokens as $token) {
-            $token->destroy();
-        }
     }
 
     public function getTokenName(): ?string
@@ -1730,22 +1722,24 @@ class Token extends CollectibleToken implements JsonSerializable
             : '';
     }
 
-    public function renderWhitespaceBefore(bool $softTabs = false): string
+    public function renderWhitespaceBefore(bool $softTabs = false, bool $withNewlines = false): string
     {
-        $whitespaceBefore = $this->effectiveWhitespaceBefore();
-
-        return WhitespaceType::toWhitespace($whitespaceBefore)
-            . ($whitespaceBefore & (WhitespaceType::LINE | WhitespaceType::BLANK)
-                ? (($indent = $this->TagIndent + $this->PreIndent + $this->Indent + $this->HangingIndent - $this->Deindent)
-                        ? str_repeat($softTabs ? $this->Formatter->SoftTab : $this->Formatter->Tab, $indent)
-                        : '')
-                    . (($padding = $this->LinePadding - $this->LineUnpadding + $this->Padding)
-                        ? str_repeat(' ', $padding)
-                        : '')
-                : ($this->Padding ? str_repeat(' ', $this->Padding) : ''));
+        $before = WhitespaceType::toWhitespace($this->effectiveWhitespaceBefore());
+        $padding = $this->Padding;
+        if ($before && $before[0] === "\n") {
+            if (!$withNewlines) {
+                $before = ltrim($before, "\n");
+            }
+            $before .= $this->renderIndent($softTabs);
+            $padding += $this->LinePadding - $this->LineUnpadding;
+        }
+        if ($padding) {
+            $before .= str_repeat(' ', $padding);
+        }
+        return $before;
     }
 
-    public function render(bool $softTabs = false, bool $setPosition = false, ?Token &$last = null): string
+    public function render(bool $softTabs = false, bool $setPosition = false): string
     {
         if (!$this->is([
             ...TokenType::DO_NOT_MODIFY,
@@ -1811,8 +1805,8 @@ class Token extends CollectibleToken implements JsonSerializable
             }
         }
 
-        if ($this->CommentType &&
-                strpos($this->text, "\n") !== false) {
+        // Comments are only formatted when output is being generated
+        if ($setPosition && $this->CommentType) {
             $text = $this->renderComment($softTabs);
         }
 
@@ -1842,52 +1836,97 @@ class Token extends CollectibleToken implements JsonSerializable
         if ($code === '') {
             return;
         }
+        $expanded = Convert::expandTabs($code, $this->Formatter->TabSize, $this->OutputColumn);
         $this->OutputLine += ($newlines = substr_count($code, "\n"));
         $this->OutputColumn = $newlines
-            ? mb_strlen($code) - mb_strrpos($code, "\n") - 1
-            : $this->OutputColumn + mb_strlen($code);
+            ? mb_strlen($expanded) - mb_strrpos($expanded, "\n")
+            : $this->OutputColumn + mb_strlen($expanded);
         $this->OutputPos += strlen($code);
     }
 
-    private function renderComment(bool $softTabs = false): string
+    private function renderComment(bool $softTabs): string
     {
-        // Remove trailing whitespace from each line
-        $code = preg_replace('/\h++$/m', '', $this->text);
-        switch ($this->id) {
-            case T_COMMENT:
-                if (!$this->isMultiLineComment() ||
-                        preg_match('/\n\h*+(?!\*)(\S|$)/', $code)) {
-                    return $code;
-                }
-            case T_DOC_COMMENT:
-                $start = $this->startOfLine();
-                $indent =
-                    "\n" . ($start === $this || !$this->CommentPlaced
-                        ? $this->renderIndent($softTabs)
-                            . str_repeat(
-                                ' ',
-                                $this->LinePadding - $this->LineUnpadding + $this->Padding
-                            )
-                        : ltrim($start->renderWhitespaceBefore(), "\n")
-                            . str_repeat(
-                                ' ',
-                                mb_strlen($start->collect($this->prev())->render($softTabs))
-                                    + strlen(WhitespaceType::toWhitespace($this->effectiveWhitespaceBefore()))
-                                    + $this->Padding
-                            ));
-
-                return preg_replace([
-                    '/\n\h*+(?:\* |\*(?!\/)(?=[\h\S])|(?=[^\s*]))/',
-                    '/\n\h*+\*?\h*+$/m',
-                    '/\n\h*+\*\//',
-                ], [
-                    $indent . ' * ',
-                    $indent . ' *',
-                    $indent . ' */',
-                ], $code);
+        if (strpos($this->text, "\n") === false) {
+            if (in_array(
+                $this->CommentType,
+                [CommentType::C, CommentType::DOC_COMMENT]
+            )) {
+                // Normalise comments like these:
+                // - `/*  comment  */`  => `/* comment */`
+                // - `/**comment*/`     => `/** comment */`
+                // - `/**comment **/`   => `/** comment **/`
+                //
+                // Without modifying comments like these:
+                // - `/*  comment  **/` (mismatched asterisks)
+                // - `/***comment*/` (more than two leading asterisks)
+                return preg_replace(
+                    '#^(/\*(\*?))(?!\*)\h*+(?=\H)(.*)(?<=\H)\h*(?<!\*)(\2?\*/)$#',
+                    '$1 $3 $4',
+                    $this->text
+                );
+            }
+            return $this->text;
         }
 
-        throw new RuntimeException('Not a T_COMMENT or T_DOC_COMMENT');
+        // Remove trailing whitespace from each line
+        $code = preg_replace('/\h++$/m', '', $this->ExpandedText ?: $this->text);
+
+        if ($this->id === T_COMMENT && preg_match('/\n\h*+(?!\*)\S/', $code)) {
+            $delta = $this->OutputColumn - $this->column;
+            if (!$delta) {
+                return $this->maybeUnexpandTabs($code, $softTabs);
+            }
+            $spaces = str_repeat(' ', abs($delta));
+            if ($delta < 0) {
+                // Don't deindent if any non-empty lines have insufficient
+                // whitespace
+                if (preg_match("/\\n(?!{$spaces}|\\n)/", $code)) {
+                    return $this->maybeUnexpandTabs($code, $softTabs);
+                }
+                return $this->maybeUnexpandTabs(str_replace("\n" . $spaces, "\n", $code), $softTabs);
+            }
+            return $this->maybeUnexpandTabs(str_replace("\n", "\n" . $spaces, $code), $softTabs);
+        }
+
+        $start = $this->startOfLine();
+        if ($start === $this) {
+            $indent = "\n" . $this->renderIndent($softTabs)
+                . str_repeat(' ', $this->LinePadding - $this->LineUnpadding + $this->Padding);
+        } else {
+            $indent = "\n" . $start->renderWhitespaceBefore($softTabs)
+                . str_repeat(' ', mb_strlen($start->collect($this->prev())->render($softTabs))
+                    + strlen(WhitespaceType::toWhitespace($this->effectiveWhitespaceBefore()))
+                    + $this->Padding);
+        }
+        // Normalise the start and end of multi-line docblocks as per PSR-5
+        if ($this->id === T_DOC_COMMENT) {
+            $code = preg_replace(
+                ['/^\/\*\*++\s*+/', '/\s*+\*++\/$/'],
+                ["/**\n", $indent . ' */'],
+                $code
+            );
+        } else {
+            $code = preg_replace(
+                '/\n\h*+(\*++\/)$/',
+                $indent . ' $1',
+                $code
+            );
+        }
+        return preg_replace([
+            '/\n\h*+(?:\* |\*(?!\/)(?=[\h\S])|(?=[^\s*]))/',
+            '/\n\h*+\*?$/m',
+        ], [
+            $indent . ' * ',
+            $indent . ' *',
+        ], $code);
+    }
+
+    private function maybeUnexpandTabs(string $text, bool $softTabs): string
+    {
+        if ($this->Formatter->Tab === "\t" && !$softTabs) {
+            return preg_replace("/(?<=\\n|\G){$this->Formatter->SoftTab}/", "\t", $text);
+        }
+        return $text;
     }
 
     public function __toString(): string
@@ -1897,37 +1936,6 @@ class Token extends CollectibleToken implements JsonSerializable
             $this->Index,
             $this->line,
             Convert::ellipsize(var_export($this->text, true), 20)
-        );
-    }
-
-    public function destroy(): void
-    {
-        unset(
-            $this->_prev,
-            $this->_next,
-            $this->_prevCode,
-            $this->_nextCode,
-            $this->_prevSibling,
-            $this->_nextSibling,
-            $this->BracketStack,
-            $this->OpenTag,
-            $this->CloseTag,
-            $this->OpenedBy,
-            $this->ClosedBy,
-            $this->Statement,
-            $this->EndStatement,
-            $this->Expression,
-            $this->EndExpression,
-            $this->TernaryOperator1,
-            $this->TernaryOperator2,
-            $this->IndentStack,
-            $this->IndentParentStack,
-            $this->IndentBracketStack,
-            $this->AlignedWith,
-            $this->ChainOpenedBy,
-            $this->HeredocOpenedBy,
-            $this->StringOpenedBy,
-            $this->Formatter,
         );
     }
 }

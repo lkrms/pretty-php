@@ -11,12 +11,14 @@ use PhpToken;
 class NavigableToken extends PhpToken
 {
     /**
-     * The token's position in an array of token objects
-     *
-     * Numbering starts at 0.
-     *
+     * The token's position (0-based) in an array of token objects
      */
     public ?int $Index = null;
+
+    /**
+     * The starting column (1-based) of the token
+     */
+    public int $column;
 
     /**
      * @var TToken|null
@@ -80,6 +82,13 @@ class NavigableToken extends PhpToken
      *
      */
     public bool $IsVirtual = false;
+
+    /**
+     * The original content of the token after expanding tabs if CollectColumn
+     * found tabs to expand
+     *
+     */
+    public ?string $ExpandedText = null;
 
     /**
      * The original content of the token if its content was changed by setText()
@@ -266,7 +275,6 @@ class NavigableToken extends PhpToken
         $token->IsCode = false;
         $token->IsNull = true;
         $token->IsVirtual = true;
-
         return $token;
     }
 
@@ -386,7 +394,6 @@ class NavigableToken extends PhpToken
             }
             $this->text = $text;
         }
-
         return $this;
     }
 
@@ -406,7 +413,6 @@ class NavigableToken extends PhpToken
                 return $t;
             }
         }
-
         return $this->null();
     }
 
@@ -426,7 +432,6 @@ class NavigableToken extends PhpToken
                 return $t;
             }
         }
-
         return $this->null();
     }
 
@@ -446,7 +451,6 @@ class NavigableToken extends PhpToken
         while ($t && $t->is($types)) {
             $t = $t->_nextSibling;
         }
-
         return $t ?: $this->null();
     }
 
@@ -461,7 +465,6 @@ class NavigableToken extends PhpToken
         while ($current->_prev) {
             $current = $current->_prevSibling ?: $current->_prev;
         }
-
         return $current;
     }
 
@@ -476,7 +479,34 @@ class NavigableToken extends PhpToken
         while ($current->_next) {
             $current = $current->_nextSibling ?: $current->_next;
         }
+        return $current;
+    }
 
+    /**
+     * Get the token at the beginning of the token's original line
+     *
+     * @return TToken
+     */
+    final public function startOfOriginalLine()
+    {
+        $current = $this;
+        while (($current->_prev->line ?? null) === $this->line) {
+            $current = $current->_prev;
+        }
+        return $current;
+    }
+
+    /**
+     * Get the token at the end of the token's original line
+     *
+     * @return TToken
+     */
+    final public function endOfOriginalLine()
+    {
+        $current = $this;
+        while (($current->_next->line ?? null) === $this->line) {
+            $current = $current->_next;
+        }
         return $current;
     }
 
@@ -504,7 +534,6 @@ class NavigableToken extends PhpToken
                 }
             }
         }
-
         return $this->null();
     }
 }

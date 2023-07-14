@@ -44,10 +44,6 @@ final class PlaceComments implements TokenRule
 
     public function processToken(Token $token): void
     {
-        // Prevent recursion in `Token->renderComment()` when tokens are
-        // rendered early, e.g. by `Formatter->logProgress()`
-        $token->CommentPlaced = true;
-
         if ($token->isOneLineComment() &&
                 $token->_next &&
                 $token->_next->id !== T_CLOSE_TAG) {

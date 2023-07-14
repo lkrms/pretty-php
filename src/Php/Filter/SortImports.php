@@ -3,6 +3,7 @@
 namespace Lkrms\Pretty\Php\Filter;
 
 use Lkrms\Facade\Convert;
+use Lkrms\Pretty\Php\Catalog\ImportSortOrder;
 use Lkrms\Pretty\Php\Concern\FilterTrait;
 use Lkrms\Pretty\Php\Contract\Filter;
 use Lkrms\Pretty\Php\NavigableToken as Token;
@@ -128,7 +129,8 @@ final class SortImports implements Filter
                 $b = $this->sortableImport(array_values($b));
 
                 return $a[0] <=> $b[0]
-                    ?: strcasecmp($a[1], $b[1]);
+                    ?: strcasecmp($a[1], $b[1])
+                    ?: $a[2] <=> $b[2];
             }
         );
 
@@ -152,7 +154,7 @@ final class SortImports implements Filter
 
     /**
      * @param Token[] $tokens
-     * @return array{0:int,1:string}
+     * @return array{int,string,int}
      */
     private function sortableImport(array $tokens): array
     {
@@ -168,19 +170,40 @@ final class SortImports implements Filter
                 break;
         }
 
+        if ($this->Formatter->ImportSortOrder === ImportSortOrder::NONE) {
+            return [$order, '', $tokens[0]->Index];
+        }
+
         // Strip comments and semicolons and normalise to:
         //
-        //     `use A 0 B 1 { D , E }`
-        //     `use A 0 B 0 C`
+        //     use 2A
+        //     use 0A \ 0B \ 1{ D , E }
+        //     use 0A \ 0B \ 2C
+        //     use 0A \ 2B
         //
         // For output like:
         //
-        //     `use A\B\C;`
-        //     `use A\B\{D, E};`
+        //     use A\B\{D, E};
+        //     use A\B\C;
+        //     use A\B;
+        //     use A;
         //
+        $depth = $this->Formatter->ImportSortOrder === ImportSortOrder::DEPTH;
         $import = preg_replace(
-            ['/\\\\/', '/\h++/', '/(?<= )0(?= \{)/'],
-            [' 0 ', ' ', '1'],
+            [
+                '/\\\\/',
+                '/\h++/',
+                '/(?:^use(?: function| const)?|\\\\) (?=[^ \\\\{]+(?: [^\\\\]|$))/i',
+                '/\\\\ (?=\{)/i',
+                '/(?:^use(?: function| const)?|\\\\) (?=[^ \\\\]+ \\\\)/i',
+            ],
+            [
+                ' \ ',
+                ' ',
+                $depth ? '${0}2' : '${0}0',
+                $depth ? '${0}1' : '${0}1',
+                $depth ? '${0}0' : '${0}0',
+            ],
             array_reduce(
                 array_filter(
                     $tokens,
@@ -191,6 +214,6 @@ final class SortImports implements Filter
             )
         );
 
-        return [$order, $import];
+        return [$order, $import, $tokens[0]->Index];
     }
 }

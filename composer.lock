@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "928fee071c734e01e438d14dd2bf884e",
+    "content-hash": "84c932766d527befe907b722274ab223",
     "packages": [
         {
             "name": "filp/whoops",
@@ -122,16 +122,16 @@
         },
         {
             "name": "lkrms/util",
-            "version": "v0.20.40",
+            "version": "v0.20.41",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/php-util.git",
-                "reference": "78b61845d98fc7aa419e1f659a30155ba705cf3f"
+                "reference": "0661867573718d099a4466a18ba081c7cef40c1b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/php-util/zipball/78b61845d98fc7aa419e1f659a30155ba705cf3f",
-                "reference": "78b61845d98fc7aa419e1f659a30155ba705cf3f",
+                "url": "https://api.github.com/repos/lkrms/php-util/zipball/0661867573718d099a4466a18ba081c7cef40c1b",
+                "reference": "0661867573718d099a4466a18ba081c7cef40c1b",
                 "shasum": ""
             },
             "require": {
@@ -149,7 +149,7 @@
                 "firebase/php-jwt": "^6",
                 "league/oauth2-client": "^2",
                 "phpstan/extension-installer": "^1",
-                "phpstan/phpstan": "1.10.22",
+                "phpstan/phpstan": "^1",
                 "phpstan/phpstan-deprecation-rules": "^1",
                 "phpunit/phpunit": "^9"
             },
@@ -182,9 +182,9 @@
             "description": "A lightweight PHP toolkit for expressive backend/CLI apps",
             "support": {
                 "issues": "https://github.com/lkrms/php-util/issues",
-                "source": "https://github.com/lkrms/php-util/tree/v0.20.40"
+                "source": "https://github.com/lkrms/php-util/tree/v0.20.41"
             },
-            "time": "2023-07-06T05:55:22+00:00"
+            "time": "2023-07-13T16:36:44+00:00"
         },
         {
             "name": "psr/container",

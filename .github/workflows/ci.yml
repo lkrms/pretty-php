@@ -68,7 +68,7 @@ jobs:
         run: composer install --no-interaction --no-progress
 
       - name: Run PHPUnit tests and generate code coverage report
-        run: vendor/bin/phpunit --no-coverage --coverage-clover=coverage.xml
+        run: php -dshort_open_tag=On vendor/bin/phpunit --no-coverage --coverage-clover=coverage.xml
 
       - name: Upload code coverage report to Codecov
         uses: codecov/codecov-action@v3

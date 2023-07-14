@@ -294,7 +294,7 @@ final class AlignAssignments implements BlockRule
         foreach ($innerLines as $i => $lines) {
             /** @var Token $token1 */
             foreach ($lines as $token1) {
-                $indent = mb_strlen(ltrim($token1->renderWhitespaceBefore(true), "\n"));
+                $indent = mb_strlen($token1->renderWhitespaceBefore(true));
                 if ($indent + $deltas[$i] < $maxLength) {
                     return;
                 }

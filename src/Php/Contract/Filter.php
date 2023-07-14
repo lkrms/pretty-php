@@ -2,11 +2,12 @@
 
 namespace Lkrms\Pretty\Php\Contract;
 
+use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\NavigableToken;
 
 interface Filter
 {
-    public function __construct();
+    public function __construct(Formatter $formatter);
 
     /**
      * Apply the filter to an array of tokens
@@ -22,10 +23,4 @@ interface Filter
      *
      */
     public function reset(): void;
-
-    /**
-     * Prepare for garbage collection
-     *
-     */
-    public function destroy(): void;
 }

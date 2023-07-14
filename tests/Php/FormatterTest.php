@@ -91,13 +91,12 @@ PHP,
 /**
  * leading asterisk and space
  * leading asterisk
- * 	leading asterisk and tab
- * 	leading asterisk, space and tab
+ *   leading asterisk and tab
+ *   leading asterisk, space and tab
  *
  *
  * no leading asterisk
  * leading tab and no leading asterisk
- *
  */
 
 PHP,

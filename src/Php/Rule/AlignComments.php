@@ -113,7 +113,7 @@ final class AlignComments implements BlockRule
                 // anything to collect between $token and $comment->prev(), so use
                 // $comment's leading whitespace for calculations
                 if ($token === $comment) {
-                    $length = strlen(ltrim($comment->renderWhitespaceBefore(true), "\n"));
+                    $length = strlen($comment->renderWhitespaceBefore(true));
                     $lengths[$i] = $length;
                     $max = max($max, $length);
                     continue;

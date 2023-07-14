@@ -46,11 +46,4 @@ trait RuleTrait
     }
 
     public function reset(): void {}
-
-    public function destroy(): void
-    {
-        $this->reset();
-        // @phpstan-ignore-next-line
-        $this->Formatter = null;
-    }
 }
