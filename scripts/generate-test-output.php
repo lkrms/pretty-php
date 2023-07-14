@@ -11,6 +11,10 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 
 $app = new CliApplication(dirname(__DIR__));
 
+if (!ini_get('short_open_tag')) {
+    throw new RuntimeException('short_open_tag must be enabled');
+}
+
 $count = 0;
 $replaced = 0;
 
