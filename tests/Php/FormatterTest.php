@@ -295,6 +295,14 @@ PHP,
                 'skipFilters' => [],
                 'callback' => null,
             ],
+            '03-tab' => [
+                'insertSpaces' => false,
+                'tabSize' => 8,
+                'skipRules' => [],
+                'addRules' => [],
+                'skipFilters' => [],
+                'callback' => null,
+            ],
         ];
     }
 

@@ -1,0 +1,30 @@
+<?php
+switch ($id) {
+	case 1:
+		if (true) {
+			// comment
+			// comment
+			$a = $b;
+			$c = $d;
+		} else {
+			// comment
+			// comment
+			$a = $b;
+			$c = $d;
+		}
+}
+
+switch ($id) {
+	case 1:
+		if (true):
+			// comment
+			// comment
+			$a = $b;
+			$c = $d;
+		else:
+			// comment
+			// comment
+			$a = $b;
+			$c = $d;
+		endif;
+}

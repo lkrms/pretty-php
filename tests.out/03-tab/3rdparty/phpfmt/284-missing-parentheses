@@ -1,0 +1,4 @@
+<?php
+//passes:Default,AddMissingParentheses
+$x = new Number(true);
+$y = new Number('hello', true);

@@ -1,0 +1,5 @@
+<?php
+$obj->method(
+	new SomeAmazingClass('en', array('messages' => array('a' => 'old_a', 'b' => 'old_b'))),
+	new SomeAmazingClass('en', array('messages' => array('a' => 'old_a', 'b' => 'old_b')))
+)->methodB();

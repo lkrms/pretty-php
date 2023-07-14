@@ -1,0 +1,3 @@
+# ./configure --enable-dtrace ...
+# make
+# make install

@@ -1,0 +1,9 @@
+<?php
+foreach ($arr['structure'] as $st => $ct) {
+	foreach ($ct as $cy => $nm) {
+		foreach ($nm as $nmv) {
+			echo $nmv;
+		}
+	}
+}
+?>

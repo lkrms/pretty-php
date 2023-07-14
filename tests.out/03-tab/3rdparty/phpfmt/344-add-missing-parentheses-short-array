@@ -1,0 +1,12 @@
+<?php
+//passes:AddMissingParentheses
+$h = new H(array(new H, new H));
+$i = new I([new I, new I]);
+$j = new J([
+	new J,
+	new J,
+]);
+$k = new K([
+	new K,
+	new K
+]);
