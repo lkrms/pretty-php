@@ -1,0 +1,4 @@
+$someInstance
+    ->create()
+    ->prepare()
+    ->run();
