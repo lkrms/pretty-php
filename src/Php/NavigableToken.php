@@ -2,6 +2,8 @@
 
 namespace Lkrms\Pretty\Php;
 
+use Lkrms\Pretty\Php\Catalog\CustomToken;
+use Lkrms\Pretty\Php\Catalog\TokenType;
 use Lkrms\Pretty\Php\Contract\Filter;
 use PhpToken;
 
@@ -276,6 +278,11 @@ class NavigableToken extends PhpToken
         $token->IsNull = true;
         $token->IsVirtual = true;
         return $token;
+    }
+
+    public function getTokenName(): ?string
+    {
+        return parent::getTokenName() ?: CustomToken::toName($this->id);
     }
 
     /**

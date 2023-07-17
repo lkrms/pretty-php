@@ -1,46 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Pretty\Php;
+namespace Lkrms\Pretty\Php\Catalog;
 
-final class TokenType
+use Lkrms\Concept\Dictionary;
+
+/**
+ * Tokens by type
+ *
+ */
+final class TokenType extends Dictionary
 {
-    public const NAME_MAP = [
-        // Custom
-        T_NULL => 'T_NULL',
-        T_END_ALT_SYNTAX => 'T_END_ALT_SYNTAX',
-        T_ATTRIBUTE_COMMENT => 'T_ATTRIBUTE_COMMENT',
-
-        // Unofficial
-        T_LOGICAL_NOT => 'T_LOGICAL_NOT',              // '!'
-        T_DOUBLE_QUOTE => 'T_DOUBLE_QUOTE',            // '"'
-        T_DOLLAR => 'T_DOLLAR',                        // '$'
-        T_MOD => 'T_MOD',                              // '%'
-        T_AND => 'T_AND',                              // '&'
-        T_OPEN_PARENTHESIS => 'T_OPEN_PARENTHESIS',    // '('
-        T_CLOSE_PARENTHESIS => 'T_CLOSE_PARENTHESIS',  // ')'
-        T_MUL => 'T_MUL',                              // '*'
-        T_PLUS => 'T_PLUS',                            // '+'
-        T_COMMA => 'T_COMMA',                          // ','
-        T_MINUS => 'T_MINUS',                          // '-'
-        T_CONCAT => 'T_CONCAT',                        // '.'
-        T_DIV => 'T_DIV',                              // '/'
-        T_COLON => 'T_COLON',                          // ':'
-        T_SEMICOLON => 'T_SEMICOLON',                  // ';'
-        T_SMALLER => 'T_SMALLER',                      // '<'
-        T_EQUAL => 'T_EQUAL',                          // '='
-        T_GREATER => 'T_GREATER',                      // '>'
-        T_QUESTION => 'T_QUESTION',                    // '?'
-        T_AMPERSAND => 'T_AMPERSAND',                  // '@'
-        T_OPEN_BRACKET => 'T_OPEN_BRACKET',            // '['
-        T_CLOSE_BRACKET => 'T_CLOSE_BRACKET',          // ']'
-        T_XOR => 'T_XOR',                              // '^'
-        T_BACKTICK => 'T_BACKTICK',                    // '`'
-        T_OPEN_BRACE => 'T_OPEN_BRACE',                // '{'
-        T_OR => 'T_OR',                                // '|'
-        T_CLOSE_BRACE => 'T_CLOSE_BRACE',              // '}'
-        T_NOT => 'T_NOT',                              // '~'
-    ];
-
     public const DO_NOT_MODIFY = [
         T_ENCAPSED_AND_WHITESPACE,
         T_INLINE_HTML,

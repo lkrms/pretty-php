@@ -7,6 +7,7 @@ use Lkrms\Facade\Convert;
 use Lkrms\Facade\Sys;
 use Lkrms\Pretty\Php\Catalog\FormatterFlag;
 use Lkrms\Pretty\Php\Catalog\ImportSortOrder;
+use Lkrms\Pretty\Php\Catalog\TokenType;
 use Lkrms\Pretty\Php\Contract\BlockRule;
 use Lkrms\Pretty\Php\Contract\Filter;
 use Lkrms\Pretty\Php\Contract\ListRule;

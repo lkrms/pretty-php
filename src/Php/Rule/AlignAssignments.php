@@ -2,10 +2,10 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
+use Lkrms\Pretty\Php\Catalog\TokenType;
 use Lkrms\Pretty\Php\Concern\BlockRuleTrait;
 use Lkrms\Pretty\Php\Contract\BlockRule;
 use Lkrms\Pretty\Php\Token;
-use Lkrms\Pretty\Php\TokenType;
 
 /**
  * Align consecutive assignment operators and double arrows when they have the

@@ -2,9 +2,9 @@
 
 namespace Lkrms\Pretty\Php\Concern;
 
+use Lkrms\Pretty\Php\Catalog\TokenType;
 use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\NavigableToken as Token;
-use Lkrms\Pretty\Php\TokenType;
 
 trait FilterTrait
 {

@@ -5,6 +5,7 @@ namespace Lkrms\Pretty\Php;
 use JsonSerializable;
 use Lkrms\Facade\Convert;
 use Lkrms\Pretty\Php\Catalog\CommentType;
+use Lkrms\Pretty\Php\Catalog\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 use RuntimeException;
 
@@ -212,11 +213,6 @@ class Token extends CollectibleToken implements JsonSerializable
         reset($tokens)->load();
 
         return $tokens;
-    }
-
-    public function getTokenName(): ?string
-    {
-        return TokenType::NAME_MAP[$this->id] ?? parent::getTokenName();
     }
 
     protected function prepare(): void

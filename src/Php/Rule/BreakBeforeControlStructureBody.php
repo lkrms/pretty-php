@@ -2,11 +2,11 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
+use Lkrms\Pretty\Php\Catalog\TokenType;
 use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Token;
-use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
 /**
