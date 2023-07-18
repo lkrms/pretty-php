@@ -3,7 +3,6 @@
 namespace Lkrms\Pretty\Php;
 
 use Lkrms\Facade\Console;
-use Lkrms\Facade\Convert;
 use Lkrms\Facade\Sys;
 use Lkrms\Pretty\Php\Catalog\FormatterFlag;
 use Lkrms\Pretty\Php\Catalog\ImportSortOrder;
@@ -58,6 +57,7 @@ use Lkrms\Pretty\Php\Rule\SwitchPosition;
 use Lkrms\Pretty\PrettyBadSyntaxException;
 use Lkrms\Pretty\PrettyException;
 use Lkrms\Pretty\WhitespaceType;
+use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Inspect;
 use LogicException;

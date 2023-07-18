@@ -3,9 +3,9 @@
 
 use Lkrms\Cli\CliApplication;
 use Lkrms\Facade\Console;
-use Lkrms\Facade\Convert;
 use Lkrms\Facade\File;
 use Lkrms\Pretty\Tests\Php\FormatterTest;
+use Lkrms\Utility\Convert;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 

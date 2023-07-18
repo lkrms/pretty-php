@@ -2,12 +2,12 @@
 
 namespace Lkrms\Pretty\Php\Filter;
 
-use Lkrms\Facade\Convert;
 use Lkrms\Pretty\Php\Catalog\ImportSortOrder;
 use Lkrms\Pretty\Php\Catalog\TokenType;
 use Lkrms\Pretty\Php\Concern\FilterTrait;
 use Lkrms\Pretty\Php\Contract\Filter;
 use Lkrms\Pretty\Php\NavigableToken as Token;
+use Lkrms\Utility\Convert;
 
 /**
  * Sort consecutive alias/import statements

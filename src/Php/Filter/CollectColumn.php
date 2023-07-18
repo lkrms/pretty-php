@@ -2,9 +2,9 @@
 
 namespace Lkrms\Pretty\Php\Filter;
 
-use Lkrms\Facade\Convert;
 use Lkrms\Pretty\Php\Concern\FilterTrait;
 use Lkrms\Pretty\Php\Contract\Filter;
+use Lkrms\Utility\Convert;
 
 /**
  * Assign the starting column of each token to its $column property

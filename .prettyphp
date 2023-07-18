@@ -3,6 +3,7 @@
         "bin",
         "src",
         "tests",
+        "scripts",
         "bootstrap.php"
     ],
     "includeIfPhp": null,
