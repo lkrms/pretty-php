@@ -212,10 +212,10 @@ PHP,
                 '#^3rdparty/php-doc/language/oop5/(inheritance/000|properties/00[034567]|traits/012)\.php#',
                 '#^3rdparty/php-doc/language/types/declarations/004\.php#',
                 '#^3rdparty/php-doc/language/types/integer/000\.php#',
-                '#^3rdparty/php-fig/per/01-overview\.php#',
             ],
             80200 => [
                 '#^3rdparty/php-doc/language/oop5/basic/00[234]\.php#',
+                '#^3rdparty/php-fig/.*#',
             ],
         ];
 
