@@ -21,7 +21,7 @@ $switching = array(10,          // key = 0
                    '8'  => 2,   // key = 8 (integer!)
                    '02' => 77,  // key = '02'
                    0    => 12   // the value 10 will be overwritten by 12
-);
+                   );
 
 // empty array
 $empty = array();

@@ -27,9 +27,9 @@ class Demo
     }
 
     #[Complex(
-        prop: 'val',
-        other: 5,
-    )]
+          prop: 'val',
+          other: 5,
+      )]
     #[Other, Stuff]
     #[Here]
     public function complicated(
@@ -39,9 +39,9 @@ class Demo
         string $b,
 
         #[Complex(
-            prop: 'val',
-            other: 5,
-        )]
+              prop: 'val',
+              other: 5,
+          )]
         string $c,
 
         int $d,

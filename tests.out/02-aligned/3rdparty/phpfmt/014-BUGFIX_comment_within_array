@@ -14,8 +14,8 @@ $array = [
 ];
 
 func($a
-// comment
-);
+     // comment
+     );
 
 $a->m1()
   ->m2()  // comment

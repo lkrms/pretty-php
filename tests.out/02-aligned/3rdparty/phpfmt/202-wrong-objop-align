@@ -3,27 +3,27 @@
 $object
     ->firstMethod()
     ->chainedMethod($var, [
-        1,
-        2,
-        3,
-    ]);
+                        1,
+                        2,
+                        3,
+                    ]);
 
 $object
     ->firstMethod()
     ->chainedMethod($var, [
-        1,
-        2,
-        3,
-    ]);
+                        1,
+                        2,
+                        3,
+                    ]);
 
 // old array syntax
 $object
     ->firstMethod()
     ->chainedMethod($var, array(
-        1,
-        2,
-        3,
-    ));
+                              1,
+                              2,
+                              3,
+                          ));
 
 $object
     ->firstMethod(
@@ -31,7 +31,7 @@ $object
             ->doMagic()
     )
     ->chainedMethod($var, array(
-        1,
-        2,
-        3,
-    ));
+                              1,
+                              2,
+                              3,
+                          ));

@@ -17,10 +17,10 @@ $var = [
     ],
     'xx' => [
         'yyyyaas' => 'aaaa',
-        'code' => func([
-            'aaa'       => 1,
-            'aaaaaa'    => 1,
-            'aaaaaaaaa' => 1,
-        ]),
+        'code'    => func([
+                              'aaa'       => 1,
+                              'aaaaaa'    => 1,
+                              'aaaaaaaaa' => 1,
+                          ]),
     ],
 ];

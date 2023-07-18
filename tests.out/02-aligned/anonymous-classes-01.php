@@ -2,10 +2,9 @@
 
 $a = new class extends B implements C, D, E {};
 
-$a = new class extends B implements
-    C,
-    D,
-    E {};
+$a = new class extends B implements C,
+                                    D,
+                                    E {};
 
 $a = new class extends B implements C, D, E {
     function f(string $h, int $i, $j) {}
@@ -15,10 +14,9 @@ $a = new class extends B implements C, D, E {
     function z() {}
 };
 
-$a = new class extends B implements
-    C,
-    D,
-    E
+$a = new class extends B implements C,
+                                    D,
+                                    E
 {
     function f(string $h, int $i, $j)
     {

@@ -1,8 +1,8 @@
 <?php
 define('HEREDOC', <<<EOS
-    CONTENT
+                  CONTENT
 
-    EOS);
+                  EOS);
 
 $a = <<<EOS
     CONTENT

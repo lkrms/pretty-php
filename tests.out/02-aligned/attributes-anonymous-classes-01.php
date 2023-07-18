@@ -8,10 +8,9 @@ $a = new
     #[AttrB(true)]
     #[AttrC(101, Types::ANON_CLASS)]
     #[AttrD()]
-    class extends B implements
-        C,
-        D,
-        E {};
+    class extends B implements C,
+                               D,
+                               E {};
 
 $a = new
     #[AttrE]
@@ -29,10 +28,9 @@ $a = new
     #[AttrI(true)]
     #[AttrJ(101, Types::ANON_CLASS)]
     #[AttrK()]
-    class extends B implements
-        C,
-        D,
-        E
+    class extends B implements C,
+                               D,
+                               E
     {
         #[AttrL(true)]
         #[AttrM(102, Types::FUNC)]

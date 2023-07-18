@@ -20,9 +20,9 @@ function dataState()
         Multiline comment
         Comment 3 */
         func(array(
-            'type' => 'CHAR',
-            'data' => $ch
-        ));
+                 'type' => 'CHAR',
+                 'data' => $ch
+             ));
 
         /*
         Multiline comment
@@ -52,9 +52,9 @@ function dataState()
         Multiline comment
         Comment 8 */
         func(array(
-            'type' => 'CHAR',
-            'data' => $ch
-        ));
+                 'type' => 'CHAR',
+                 'data' => $ch
+             ));
     } elseif ($tch === $this->EOF) {
         /*
         Multiline comment
@@ -65,9 +65,9 @@ function dataState()
         Multiline comment
         Comment 9 */
         func(array(
-            'type' => 'CHAR',
-            'data' => substr($dt, $tch)
-        ));
+                 'type' => 'CHAR',
+                 'data' => substr($dt, $tch)
+             ));
 
         $this->EOF();
     } else {
@@ -79,9 +79,9 @@ function dataState()
         $tch += $len - 1;
 
         func(array(
-            'type' => 'CHAR',
-            'data' => $ch
-        ));
+                 'type' => 'CHAR',
+                 'data' => $ch
+             ));
 
         $state = 'd';
     }
