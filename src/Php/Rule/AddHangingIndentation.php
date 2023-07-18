@@ -3,8 +3,8 @@
 namespace Lkrms\Pretty\Php\Rule;
 
 use Lkrms\Pretty\Php\Catalog\TokenType;
-use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
-use Lkrms\Pretty\Php\Contract\TokenRule;
+use Lkrms\Pretty\Php\Concern\MultiTokenRuleTrait;
+use Lkrms\Pretty\Php\Contract\MultiTokenRule;
 use Lkrms\Pretty\Php\Token;
 
 /**
@@ -12,208 +12,211 @@ use Lkrms\Pretty\Php\Token;
  * add a hanging indent
  *
  */
-final class AddHangingIndentation implements TokenRule
+final class AddHangingIndentation implements MultiTokenRule
 {
-    use TokenRuleTrait;
+    use MultiTokenRuleTrait;
 
     public function getPriority(string $method): ?int
     {
         return 800;
     }
 
-    public function processToken(Token $token): void
+    public function processTokens(array $tokens): void
     {
-        if ($token->isStandardOpenBracket() && !$token->hasNewlineAfterCode()) {
-            $token->IsHangingParent = true;
-            $token->IsOverhangingParent =
-                // Does it have delimited values? (e.g. `list(var, var)`)
-                $token->innerSiblings()->hasOneOf(T_COMMA) ||
-                    // Delimited expressions? (e.g. `for (expr; expr; expr)`)
-                    ($token->id === T_OPEN_PARENTHESIS && $token->innerSiblings()->hasOneOf(T_SEMICOLON)) ||
-                    // A subsequent statement or block? (e.g. `if (expr)
-                    // statement`)
-                    $token->adjacent();
-        }
+        foreach ($tokens as $token) {
+            if ($token->isStandardOpenBracket() && !$token->hasNewlineAfterCode()) {
+                $token->IsHangingParent = true;
+                $token->IsOverhangingParent =
+                    // Does it have delimited values? (e.g. `list(var, var)`)
+                    $token->innerSiblings()->hasOneOf(T_COMMA) ||
+                        // Delimited expressions? (e.g. `for (expr; expr; expr)`)
+                        ($token->id === T_OPEN_PARENTHESIS && $token->innerSiblings()->hasOneOf(T_SEMICOLON)) ||
+                        // A subsequent statement or block? (e.g. `if (expr)
+                        // statement`)
+                        $token->adjacent();
+            }
 
-        if (!$this->isHanging($token)) {
-            return;
-        }
+            if (!$this->isHanging($token)) {
+                continue;
+            }
 
-        $stack = [$token->BracketStack];
-        $latest = end($token->IndentStack);
-        $parent = end($token->BracketStack);
-        $prev = $token->_prevCode;
+            $stack = [$token->BracketStack];
+            $latest = end($token->IndentStack);
+            $parent = end($token->BracketStack);
+            $prev = $token->_prevCode;
+            unset($until);
 
-        // Add an appropriate token to `$stack` to establish a context for this
-        // level of hanging indentation. If `$stack` matches a context already
-        // applied on behalf of a previous token, return without doing anything.
-        //
-        // The aim is to differentiate between, say, lines where a new
-        // expression starts, and lines where an expression continues:
-        //
-        //     $iterator = new RecursiveDirectoryIterator($dir,
-        //         FilesystemIterator::KEY_AS_PATHNAME |
-        //             FilesystemIterator::CURRENT_AS_FILEINFO |
-        //             FilesystemIterator::SKIP_DOTS);
-        //
-        // Or between ternary operators and their predecessors:
-        //
-        //     return is_string($contents)
-        //         ? $contents
-        //         : json_encode($contents, JSON_PRETTY_PRINT);
-        //
-        // Or between the start of a ternary expression and a continued one:
-        //
-        //     fn($a, $b) =>
-        //         $a === $b
-        //             ? 0
-        //             : $a <=>
-        //                 $b;
-        //
-        if ($token->IsTernaryOperator) {
-            // Avoid outcomes like this by adding the earliest possible ternary
-            // operator to the stack:
+            // Add an appropriate token to `$stack` to establish a context for this
+            // level of hanging indentation. If `$stack` matches a context already
+            // applied on behalf of a previous token, return without doing anything.
             //
-            //     $a
-            //       ?: $b
-            //         ?: $c
-            //           ?: $d
+            // The aim is to differentiate between, say, lines where a new
+            // expression starts, and lines where an expression continues:
             //
-            $prevTernary =
-                $token->prevSiblingsUntil(
-                          fn(Token $t) =>
-                              $t->Statement !== $token->Statement
-                      )
-                      ->filter(
-                          fn(Token $t) =>
-                              $t->IsTernaryOperator &&
-                                  $t->TernaryOperator1 === $t &&
-                                  $t->TernaryOperator2->Index < $token->TernaryOperator1->Index
-                      )
-                      ->last();
-            $stack[] = $prevTernary ?: $token->TernaryOperator1;
+            //     $iterator = new RecursiveDirectoryIterator($dir,
+            //         FilesystemIterator::KEY_AS_PATHNAME |
+            //             FilesystemIterator::CURRENT_AS_FILEINFO |
+            //             FilesystemIterator::SKIP_DOTS);
+            //
+            // Or between ternary operators and their predecessors:
+            //
+            //     return is_string($contents)
+            //         ? $contents
+            //         : json_encode($contents, JSON_PRETTY_PRINT);
+            //
+            // Or between the start of a ternary expression and a continued one:
+            //
+            //     fn($a, $b) =>
+            //         $a === $b
+            //             ? 0
+            //             : $a <=>
+            //                 $b;
+            //
+            if ($token->IsTernaryOperator) {
+                // Avoid outcomes like this by adding the earliest possible ternary
+                // operator to the stack:
+                //
+                //     $a
+                //       ?: $b
+                //         ?: $c
+                //           ?: $d
+                //
+                $prevTernary =
+                    $token->prevSiblingsUntil(
+                              fn(Token $t) =>
+                                  $t->Statement !== $token->Statement
+                          )
+                          ->filter(
+                              fn(Token $t) =>
+                                  $t->IsTernaryOperator &&
+                                      $t->TernaryOperator1 === $t &&
+                                      $t->TernaryOperator2->Index < $token->TernaryOperator1->Index
+                          )
+                          ->last();
+                $stack[] = $prevTernary ?: $token->TernaryOperator1;
 
-            // Then, find
-            // - the last token
-            // - in the third expression
-            // - of the last ternary expression
-            // - encountered in this scope
+                // Then, find
+                // - the last token
+                // - in the third expression
+                // - of the last ternary expression
+                // - encountered in this scope
+                $current = $token;
+                do {
+                    $until = $current->TernaryOperator2->EndExpression ?: $current;
+                } while ($until !== $current &&
+                    ($current = $until->nextSibling())->IsTernaryOperator &&
+                    $current->TernaryOperator1 === $current);
+                // And without breaking out of an unenclosed control structure body,
+                // proceed to the end of the expression
+                if (!$until->nextSibling()->IsTernaryOperator) {
+                    $until = $until->pragmaticEndOfExpression(true);
+                }
+            } elseif ($token->ChainOpenedBy) {
+                $stack[] = $token->ChainOpenedBy;
+            } elseif ($token->is([T_ATTRIBUTE, T_ATTRIBUTE_COMMENT]) ||
+                    $token->prevSibling()->is([T_ATTRIBUTE, T_ATTRIBUTE_COMMENT])) {
+                $stack[] = $token->Expression;
+            } elseif ($latest && $latest->BracketStack === $token->BracketStack) {
+                if ($token->isStartOfExpression()) {
+                    $stack[] = $token;
+                } elseif ($latest->isStartOfExpression()) {
+                    $stack[] = $latest;
+                } elseif ($latest->id === T_DOUBLE_ARROW) {
+                    $stack[] = $latest;
+                } elseif (!$prev->precedesStatement() &&
+                        $latest->prevCode()->precedesStatement()) {
+                    $stack[] = $latest;
+                }
+            }
+
+            // If a hanging indent has already been applied to a token with the same
+            // stack, don't add it again
+            if (in_array($stack, $token->IndentBracketStack, true)) {
+                continue;
+            }
+
+            // Add indentation for any unapplied 'hanging parents' of $parent to
+            // ensure indentation accurately represents depth, e.g. in line 2 here:
+            //
+            //     if (!(($comment = $line->getLastOf(...TokenType::COMMENT)) &&
+            //                 $comment->hasNewlineAfter()) ||
+            //             $comment->hasNewline())
+            //
+            $until = $until ?? $token->pragmaticEndOfExpression(true);
+            $indent = 0;
+            $hanging = [];
+            $parents = !$parent || in_array($parent, $token->IndentParentStack, true)
+                ? []
+                : [$parent];
+            $current = $parent;
+            while ($current && ($current = end($current->BracketStack)) && $current->IsHangingParent) {
+                if (in_array($current, $token->IndentParentStack, true)) {
+                    continue;
+                }
+                $parents[] = $current;
+                // Don't add indentation for this parent if it doesn't have any
+                // hanging children
+                $children = $current->innerSiblings()
+                                    ->filter(fn(Token $t) => $this->isHanging($t, true));
+                if (!count($children)) {
+                    continue;
+                }
+                $indent++;
+                $hanging[$current->Index] = 1;
+                if ($current->IsOverhangingParent) {
+                    $indent++;
+                    $hanging[$current->Index]++;
+                }
+            }
+
+            $indent++;
+            if ($parent && $parent->IsOverhangingParent &&
+                    !$prev->precedesStatement()) {
+                $indent++;
+                $hanging[$parent->Index] = 1;
+            }
+
+            if ($indent > 1) {
+                $this->Formatter->registerCallback(
+                    $this,
+                    $token,
+                    fn() => $this->maybeCollapseOverhanging($token, $until, $hanging),
+                    800,
+                    true
+                );
+            }
+
+            if ($adjacent = $until->adjacentBeforeNewline()) {
+                $until = $adjacent->pragmaticEndOfExpression();
+            }
+
             $current = $token;
             do {
-                $until = $current->TernaryOperator2->EndExpression ?: $current;
-            } while ($until !== $current &&
-                ($current = $until->nextSibling())->IsTernaryOperator &&
-                $current->TernaryOperator1 === $current);
-            // And without breaking out of an unenclosed control structure body,
-            // proceed to the end of the expression
-            if (!$until->nextSibling()->IsTernaryOperator) {
-                $until = $until->pragmaticEndOfExpression(true);
-            }
-        } elseif ($token->ChainOpenedBy) {
-            $stack[] = $token->ChainOpenedBy;
-        } elseif ($token->is([T_ATTRIBUTE, T_ATTRIBUTE_COMMENT]) ||
-                $token->prevSibling()->is([T_ATTRIBUTE, T_ATTRIBUTE_COMMENT])) {
-            $stack[] = $token->Expression;
-        } elseif ($latest && $latest->BracketStack === $token->BracketStack) {
-            if ($token->isStartOfExpression()) {
-                $stack[] = $token;
-            } elseif ($latest->isStartOfExpression()) {
-                $stack[] = $latest;
-            } elseif ($latest->id === T_DOUBLE_ARROW) {
-                $stack[] = $latest;
-            } elseif (!$prev->precedesStatement() &&
-                    $latest->prevCode()->precedesStatement()) {
-                $stack[] = $latest;
-            }
+                // Allow multiple levels of hanging indentation within one parent:
+                //
+                // ```php
+                // $a = $b->c(fn() =>
+                //     $d &&
+                //         $e)
+                //     ?: $start;
+                // ```
+                if ($parent && array_key_exists($parent->Index, $current->OverhangingParents) &&
+                        ($hanging[$parent->Index] ?? null)) {
+                    $current->OverhangingParents[$parent->Index] += $hanging[$parent->Index];
+                }
+                $current->HangingIndent += $indent;
+                $current->OverhangingParents += $hanging;
+                if ($current !== $token) {
+                    $current->IndentBracketStack[] = $stack;
+                    $current->IndentStack[] = $token;
+                    array_push($current->IndentParentStack, ...$parents);
+                }
+                if ($current === $until) {
+                    break;
+                }
+                $current = $current->next();
+            } while (!$current->IsNull);
         }
-
-        // If a hanging indent has already been applied to a token with the same
-        // stack, don't add it again
-        if (in_array($stack, $token->IndentBracketStack, true)) {
-            return;
-        }
-
-        // Add indentation for any unapplied 'hanging parents' of $parent to
-        // ensure indentation accurately represents depth, e.g. in line 2 here:
-        //
-        //     if (!(($comment = $line->getLastOf(...TokenType::COMMENT)) &&
-        //                 $comment->hasNewlineAfter()) ||
-        //             $comment->hasNewline())
-        //
-        $until = $until ?? $token->pragmaticEndOfExpression(true);
-        $indent = 0;
-        $hanging = [];
-        $parents = !$parent || in_array($parent, $token->IndentParentStack, true)
-            ? []
-            : [$parent];
-        $current = $parent;
-        while ($current && ($current = end($current->BracketStack)) && $current->IsHangingParent) {
-            if (in_array($current, $token->IndentParentStack, true)) {
-                continue;
-            }
-            $parents[] = $current;
-            // Don't add indentation for this parent if it doesn't have any
-            // hanging children
-            $children = $current->innerSiblings()
-                                ->filter(fn(Token $t) => $this->isHanging($t, true));
-            if (!count($children)) {
-                continue;
-            }
-            $indent++;
-            $hanging[$current->Index] = 1;
-            if ($current->IsOverhangingParent) {
-                $indent++;
-                $hanging[$current->Index]++;
-            }
-        }
-
-        $indent++;
-        if ($parent && $parent->IsOverhangingParent &&
-                !$prev->precedesStatement()) {
-            $indent++;
-            $hanging[$parent->Index] = 1;
-        }
-
-        if ($indent > 1) {
-            $this->Formatter->registerCallback(
-                $this,
-                $token,
-                fn() => $this->maybeCollapseOverhanging($token, $until, $hanging),
-                800,
-                true
-            );
-        }
-
-        if ($adjacent = $until->adjacentBeforeNewline()) {
-            $until = $adjacent->pragmaticEndOfExpression();
-        }
-
-        $current = $token;
-        do {
-            // Allow multiple levels of hanging indentation within one parent:
-            //
-            // ```php
-            // $a = $b->c(fn() =>
-            //     $d &&
-            //         $e)
-            //     ?: $start;
-            // ```
-            if ($parent && array_key_exists($parent->Index, $current->OverhangingParents) &&
-                    ($hanging[$parent->Index] ?? null)) {
-                $current->OverhangingParents[$parent->Index] += $hanging[$parent->Index];
-            }
-            $current->HangingIndent += $indent;
-            $current->OverhangingParents += $hanging;
-            if ($current !== $token) {
-                $current->IndentBracketStack[] = $stack;
-                $current->IndentStack[] = $token;
-                array_push($current->IndentParentStack, ...$parents);
-            }
-            if ($current === $until) {
-                break;
-            }
-            $current = $current->next();
-        } while (!$current->IsNull);
     }
 
     /**
@@ -277,9 +280,14 @@ final class AddHangingIndentation implements TokenRule
         if (!$token->IsCode ||
                 !$token->_prevCode ||
                 $token->AlignedWith ||
-                $token->isCloseBracket() ||
-                $token->endsAlternativeSyntax() ||
-                $token->is([...TokenType::HAS_STATEMENT, ...TokenType::NOT_CODE])) {
+                $token->is([
+                    T_CLOSE_BRACE,
+                    T_CLOSE_BRACKET,
+                    T_CLOSE_PARENTHESIS,
+                    T_END_ALT_SYNTAX,
+                    ...TokenType::HAS_STATEMENT,
+                    ...TokenType::NOT_CODE,
+                ])) {
             return false;
         }
 

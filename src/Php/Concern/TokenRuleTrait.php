@@ -11,5 +11,10 @@ trait TokenRuleTrait
         return ['*'];
     }
 
+    public function getRequiresSortedTokens(): bool
+    {
+        return true;
+    }
+
     public function beforeRender(array $tokens): void {}
 }

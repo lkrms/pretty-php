@@ -82,6 +82,24 @@ final class TokenTypeIndex implements IImmutable
      * @readonly
      * @var array<int,bool>
      */
+    public array $AddSpaceAround;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $AddSpaceBefore;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $AddSpaceAfter;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
     public array $SuppressSpaceBefore;
 
     /**
@@ -187,6 +205,58 @@ final class TokenTypeIndex implements IImmutable
             T_END_HEREDOC,
             T_INLINE_HTML,
             T_WHITESPACE,
+        );
+
+        $this->AddSpaceAround = TT::getIndex(
+            T_AS,
+            T_FUNCTION,
+            T_INSTEADOF,
+            T_USE,
+        );
+
+        $this->AddSpaceBefore = TT::getIndex(
+            T_ARRAY,
+            T_CALLABLE,
+            T_ELLIPSIS,
+            T_FN,
+            T_NAME_FULLY_QUALIFIED,
+            T_NAME_QUALIFIED,
+            T_NAME_RELATIVE,
+            T_NS_SEPARATOR,
+            T_STATIC,
+            T_STRING,
+            T_VARIABLE,
+            ...TT::DECLARATION_EXCEPT_MULTI_PURPOSE,
+        );
+
+        $this->AddSpaceAfter = TT::getIndex(
+            T_BREAK,
+            T_CASE,
+            T_CATCH,
+            T_CLONE,
+            T_CONTINUE,
+            T_ECHO,
+            T_ELSE,
+            T_ELSEIF,
+            T_EXIT,
+            T_FOR,
+            T_FOREACH,
+            T_GOTO,
+            T_IF,
+            T_INCLUDE,
+            T_INCLUDE_ONCE,
+            T_MATCH,
+            T_NEW,
+            T_PRINT,
+            T_REQUIRE,
+            T_REQUIRE_ONCE,
+            T_RETURN,
+            T_SWITCH,
+            T_THROW,
+            T_WHILE,
+            T_YIELD,
+            T_YIELD_FROM,
+            ...TT::CAST,
         );
 
         $this->SuppressSpaceBefore = TT::getIndex(

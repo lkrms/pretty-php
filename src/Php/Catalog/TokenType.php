@@ -289,70 +289,6 @@ final class TokenType extends Dictionary
         T_YIELD_FROM,
     ];
 
-    public const ADD_SPACE_AROUND = [
-        T_AS,
-        T_FUNCTION,
-        T_INSTEADOF,
-        T_USE,
-    ];
-
-    public const ADD_SPACE_BEFORE = [
-        T_ARRAY,
-        T_CALLABLE,
-        T_ELLIPSIS,
-        T_FN,
-        T_NAME_FULLY_QUALIFIED,
-        T_NAME_QUALIFIED,
-        T_NAME_RELATIVE,
-        T_NS_SEPARATOR,
-        T_STATIC,
-        T_STRING,
-        T_VARIABLE,
-        ...self::DECLARATION_EXCEPT_MULTI_PURPOSE,
-    ];
-
-    public const ADD_SPACE_AFTER = [
-        T_BREAK,
-        T_CASE,
-        T_CATCH,
-        T_CLONE,
-        T_CONTINUE,
-        T_ECHO,
-        T_ELSE,
-        T_ELSEIF,
-        T_EXIT,
-        T_FOR,
-        T_FOREACH,
-        T_GOTO,
-        T_IF,
-        T_INCLUDE,
-        T_INCLUDE_ONCE,
-        T_MATCH,
-        T_NEW,
-        T_PRINT,
-        T_REQUIRE,
-        T_REQUIRE_ONCE,
-        T_RETURN,
-        T_SWITCH,
-        T_THROW,
-        T_WHILE,
-        T_YIELD,
-        T_YIELD_FROM,
-        ...self::CAST,
-    ];
-
-    public const SUPPRESS_SPACE_BEFORE = [
-        T_NS_SEPARATOR,
-    ];
-
-    public const SUPPRESS_SPACE_AFTER = [
-        T_DOUBLE_COLON,
-        T_ELLIPSIS,
-        T_NS_SEPARATOR,
-        T_NULLSAFE_OBJECT_OPERATOR,
-        T_OBJECT_OPERATOR,
-    ];
-
     public const ALT_SYNTAX_START = [
         T_DECLARE,
         T_FOR,
@@ -765,5 +701,29 @@ final class TokenType extends Dictionary
             T_YIELD => false,
             T_YIELD_FROM => false,
         ];
+    }
+
+    /**
+     * Merge one or more token type indexes
+     *
+     * @param array<int,bool> $index
+     * @param array<int,bool> ...$indexes
+     * @return array<int,bool>
+     */
+    public static function mergeIndexes(array $index, array ...$indexes): array
+    {
+        $index += self::getIndex();
+        foreach ($index as $type => $value) {
+            if ($value) {
+                continue;
+            }
+            foreach ($indexes as $_index) {
+                if ($_index[$type] ?? false) {
+                    $index[$type] = true;
+                    break;
+                }
+            }
+        }
+        return $index;
     }
 }
