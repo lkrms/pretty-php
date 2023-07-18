@@ -1,3 +1,5 @@
+<?php
+
 function allowed()
 {
     $allowedHeredoc = <<<COMPLIANT

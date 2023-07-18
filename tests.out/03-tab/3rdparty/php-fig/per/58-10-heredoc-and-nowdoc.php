@@ -1,7 +1,9 @@
+<?php
+
 $notAllowed =
-<<<'COUNTEREXAMPLE'
-    This
-    is
-    not
-    allowed.
-    COUNTEREXAMPLE;
+	<<<'COUNTEREXAMPLE'
+	This
+	is
+	not
+	allowed.
+	COUNTEREXAMPLE;

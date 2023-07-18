@@ -1,3 +1,4 @@
+<?php
 
 $func = fn(int $x, int $y): int => $x + $y;
 

@@ -1,7 +1,9 @@
+<?php
+
 class Point
 {
     public function __construct(
-      public readonly int $x,
-      public readonly int $y,
+        public readonly int $x,
+        public readonly int $y,
     ) {}
 }

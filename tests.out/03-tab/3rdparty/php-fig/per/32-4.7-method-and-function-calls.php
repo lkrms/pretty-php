@@ -1,4 +1,6 @@
+<?php
+
 $someInstance
-    ->create()
-    ->prepare()
-    ->run();
+	->create()
+	->prepare()
+	->run();

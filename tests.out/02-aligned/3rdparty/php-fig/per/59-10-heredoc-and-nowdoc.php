@@ -1,9 +1,11 @@
+<?php
+
 function notAllowed()
 {
     $notAllowed = <<<'COUNTEREXAMPLE'
-This
-is
-not
-allowed.
-COUNTEREXAMPLE
+        This
+        is
+        not
+        allowed.
+        COUNTEREXAMPLE;
 }

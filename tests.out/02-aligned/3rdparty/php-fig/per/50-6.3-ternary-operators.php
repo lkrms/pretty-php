@@ -1,1 +1,3 @@
+<?php
+
 $variable = $foo ?: 'bar';

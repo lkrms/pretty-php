@@ -1,4 +1,9 @@
-public function process(string $algorithm, &...$parts)
+<?php
+
+Class Demo
 {
-    // processing
+	public function process(string $algorithm, &...$parts)
+	{
+		// processing
+	}
 }

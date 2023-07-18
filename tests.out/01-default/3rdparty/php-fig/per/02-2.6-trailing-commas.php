@@ -1,3 +1,5 @@
+<?php
+
 function beep(string $a, string $b, string $c)
 {
     // ...

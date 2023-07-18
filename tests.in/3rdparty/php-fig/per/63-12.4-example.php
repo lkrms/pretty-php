@@ -1,3 +1,5 @@
+<?php
+
 #[Foo]
 #[Bar('baz')]
 class Demo

@@ -1,3 +1,5 @@
+<?php
+
 function allowed()
 {
     $allowedHeredoc = <<<COMPLIANT
@@ -15,16 +17,16 @@ function allowed()
         compliant
         nowdoc
         COMPLIANT;
-        
+
     var_dump(
         'foo',
         <<<'COMPLIANT'
-            This
-            is
-            a
-            compliant
-            parameter
-            COMPLIANT,
-         'bar',
+        This
+        is
+        a
+        compliant
+        parameter
+        COMPLIANT,
+        'bar',
     );
 }

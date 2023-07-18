@@ -1,3 +1,5 @@
+<?php
+
 $notAllowed =
 <<<'COUNTEREXAMPLE'
     This

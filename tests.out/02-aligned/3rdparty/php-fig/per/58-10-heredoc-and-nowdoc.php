@@ -1,5 +1,7 @@
+<?php
+
 $notAllowed =
-<<<'COUNTEREXAMPLE'
+    <<<'COUNTEREXAMPLE'
     This
     is
     not

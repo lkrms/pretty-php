@@ -1,3 +1,5 @@
+<?php
+
 function beep(string $a, string $b, string $c)
 {
     // ...
@@ -20,7 +22,7 @@ $arr = [
 ];
 
 $result = match ($a) {
-    'foo' => 'Foo',
-    'bar' => 'Bar',
+    'foo'   => 'Foo',
+    'bar'   => 'Bar',
     default => 'Baz',
 };
