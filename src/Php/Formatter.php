@@ -44,6 +44,7 @@ use Lkrms\Pretty\Php\Rule\Extra\Laravel;
 use Lkrms\Pretty\Php\Rule\Extra\WordPress;
 use Lkrms\Pretty\Php\Rule\MirrorBrackets;
 use Lkrms\Pretty\Php\Rule\NoMixedLists;
+use Lkrms\Pretty\Php\Rule\NormaliseComments;
 use Lkrms\Pretty\Php\Rule\PlaceComments;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
 use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
@@ -52,7 +53,6 @@ use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
 use Lkrms\Pretty\Php\Rule\ReportUnnecessaryParentheses;
 use Lkrms\Pretty\Php\Rule\SimplifyStrings;
 use Lkrms\Pretty\Php\Rule\SpaceDeclarations;
-use Lkrms\Pretty\Php\Rule\SpaceMatch;
 use Lkrms\Pretty\Php\Rule\SpaceOperators;
 use Lkrms\Pretty\Php\Rule\SwitchPosition;
 use Lkrms\Pretty\PrettyBadSyntaxException;
@@ -97,13 +97,17 @@ final class Formatter
      */
     public array $EnabledRules;
 
+    /**
+     * Enable strict PSR-12 compliance?
+     *
+     */
+    public bool $Psr12Compliance = false;
+
     public string $PreferredEol = PHP_EOL;
 
     public bool $PreserveEol = true;
 
     public bool $ClosuresAreDeclarations = true;
-
-    public bool $MatchesAreLists = false;
 
     public bool $MirrorBrackets = true;
 
@@ -155,9 +159,9 @@ final class Formatter
         MirrorBrackets::class,                   // processToken  (96)
         BreakOperators::class,                   // processToken  (98)
         BreakLists::class,                       // processList   (98)
-        SpaceMatch::class,                       // processToken (300)
         AddIndentation::class,                   // processToken (600)
         SwitchPosition::class,                   // processToken (600)
+        NormaliseComments::class,                // processToken (780)
         AddHangingIndentation::class,            // processToken (800), callback (800)
         AddEssentialWhitespace::class,           // beforeRender (999)
     ];
@@ -182,15 +186,15 @@ final class Formatter
         AddBlankLineBeforeReturn::class,      // processToken  (97)
         Laravel::class,                       // processToken (100)
         WordPress::class,                     // processToken (100)
-        AlignAssignments::class,              // processBlock (340), callback (710)
         AlignChainedCalls::class,             // processToken (340), callback (710)
-        AlignComments::class,                 // processBlock (340), beforeRender (998)
         NoMixedLists::class,                  // processList  (370)
         AlignArrowFunctions::class,           // processToken (380), callback (710)
         AlignTernaryOperators::class,         // processToken (380), callback (710)
         AlignLists::class,                    // processList  (400), callback (710)
         ReportUnnecessaryParentheses::class,  // processToken (990)
         DeclareArgumentsOnOneLine::class,     // processToken
+        AlignAssignments::class,              // processBlock (340), callback (720)
+        AlignComments::class,                 // processBlock (340), beforeRender (998)
     ];
 
     /**
@@ -341,6 +345,16 @@ final class Formatter
                 self::MANDATORY_RULES
             )
         );
+        if (count(array_intersect(
+            [NoMixedLists::class, AlignLists::class],
+            $rules
+        )) === 2) {
+            throw new LogicException(sprintf(
+                '%s and %s cannot both be enabled',
+                NoMixedLists::class,
+                AlignLists::class
+            ));
+        }
         $this->EnabledRules = array_combine($rules, array_fill(0, count($rules), true));
 
         Sys::startTimer(__METHOD__ . '#sort-rules');
@@ -494,10 +508,7 @@ final class Formatter
         $listParents = array_filter(
             $this->Tokens,
             fn(Token $t) =>
-                ($t->is([T_OPEN_PARENTHESIS, T_OPEN_BRACKET]) ||
-                        ($this->MatchesAreLists &&
-                            $t->id === T_OPEN_BRACE &&
-                            $t->prevSibling(2)->id === T_MATCH) ||
+                ($t->is([T_OPEN_PARENTHESIS, T_OPEN_BRACKET, T_ATTRIBUTE]) ||
                         $t->is([T_IMPLEMENTS]) ||
                         ($t->is([T_EXTENDS]) && $t->isDeclaration(T_INTERFACE))) &&
                     $t->ClosedBy !== $t->nextCode()
@@ -516,14 +527,47 @@ final class Formatter
                 }
                 continue;
             }
-            $lists[$i] = $parent->innerSiblings()->filter(
+            $prev = $parent->prevCode();
+            if ($parent->id === T_OPEN_PARENTHESIS &&
+                !(($prev->id === T_CLOSE_BRACE &&
+                        !$prev->isStructuralBrace()) ||
+                    ($prev->id === T_AMPERSAND &&
+                        $prev->prevCode()->is([T_FN, T_FUNCTION])) ||
+                    $prev->is([
+                        T_ARRAY,
+                        T_DECLARE,
+                        T_LIST,
+                        T_UNSET,
+                        T_USE,
+                        T_VARIABLE,
+                        ...TokenType::MAYBE_ANONYMOUS,
+                        ...TokenType::DEREFERENCEABLE_SCALAR_END,
+                        ...TokenType::NAME_WITH_READONLY,
+                    ]))) {
+                continue;
+            }
+            if ($parent->id === T_OPEN_BRACKET &&
+                    $parent->Expression !== $parent &&
+                    $prev->id !== T_AS &&
+                    $prev->is([
+                        T_CLOSE_BRACE,
+                        T_STRING_VARNAME,
+                        T_VARIABLE,
+                        ...TokenType::DEREFERENCEABLE_SCALAR_END,
+                        ...TokenType::NAME,
+                        ...TokenType::SEMI_RESERVED,
+                    ])) {
+                continue;
+            }
+            $list = $parent->innerSiblings()->filter(
                 fn(Token $t, ?Token $next, ?Token $prev) =>
-                    !$prev || ($t->_prevCode->id === T_COMMA &&
-                        ($parent->id !== T_OPEN_BRACE ||
-                            $t->_prevCode
-                              ->prevSiblingOf(T_COMMA, ...TokenType::OPERATOR_DOUBLE_ARROW)
-                              ->is(TokenType::OPERATOR_DOUBLE_ARROW)))
+                    $t->id !== T_COMMA &&
+                        (!$prev || $t->_prevCode->id === T_COMMA)
             );
+            if (!$list->count()) {
+                continue;
+            }
+            $lists[$i] = $list;
         }
         Sys::stopTimer(__METHOD__ . '#find-lists');
 

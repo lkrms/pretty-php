@@ -3,10 +3,10 @@
 namespace Lkrms\Pretty\Php;
 
 use JsonSerializable;
-use Lkrms\Facade\Convert;
 use Lkrms\Pretty\Php\Catalog\CommentType;
 use Lkrms\Pretty\Php\Catalog\TokenType;
 use Lkrms\Pretty\WhitespaceType;
+use Lkrms\Utility\Convert;
 use RuntimeException;
 
 /**
@@ -344,7 +344,7 @@ class Token extends CollectibleToken implements JsonSerializable
             // But they aren't delimiters:
             // - in `use` statements, e.g. `use my_trait { a as b; c as d; }`
             $parent = $this->parent();
-            if ($parent->is([T_OPEN_PARENTHESIS, T_OPEN_BRACKET]) ||
+            if ($parent->is([T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_ATTRIBUTE]) ||
                 ($parent->id === T_OPEN_BRACE &&
                     (!$parent->isStructuralBrace() || $this->isMatchDelimiter()))) {
                 $this->applyStatement();
@@ -487,7 +487,7 @@ class Token extends CollectibleToken implements JsonSerializable
             }
         } elseif ($this->id === T_COMMA) {
             $parent = $this->parent();
-            if ($parent->is([T_OPEN_PARENTHESIS, T_OPEN_BRACKET]) ||
+            if ($parent->is([T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_ATTRIBUTE]) ||
                 ($parent->id === T_OPEN_BRACE &&
                     (!$parent->isStructuralBrace() || $this->isMatchDelimiter(false)))) {
                 $this->Expression = false;
@@ -919,7 +919,9 @@ class Token extends CollectibleToken implements JsonSerializable
     final public function startOfLine(): Token
     {
         $current = $this;
-        while (!$current->hasNewlineBefore() && $current->_prev) {
+        while (!$current->hasNewlineBefore() &&
+                $current->id !== T_END_HEREDOC &&
+                $current->_prev) {
             $current = $current->_prev;
         }
 
@@ -929,7 +931,9 @@ class Token extends CollectibleToken implements JsonSerializable
     final public function endOfLine(): Token
     {
         $current = $this;
-        while (!$current->hasNewlineAfter() && $current->_next) {
+        while (!$current->hasNewlineAfter() &&
+                $current->id !== T_START_HEREDOC &&
+                $current->_next) {
             $current = $current->_next;
         }
 
@@ -937,38 +941,45 @@ class Token extends CollectibleToken implements JsonSerializable
     }
 
     /**
-     * Get the number of characters since the closest alignment token or the
-     * start of the line, whichever is encountered first
+     * Get the token's offset relative to the most recent alignment token or the
+     * start of the line, whichever is closest
      *
      * An alignment token is a token where {@see Token::$AlignedWith} is set.
-     * Whitespace at the start of the line is ignored. Code in the token itself
-     * is included.
      *
+     * Whitespace at the start of the line is ignored.
+     *
+     * @param bool $includeToken If `true` (the default), the offset includes
+     * the token itself.
+     * @param bool $allowSelfAlignment If `true`, the token itself is considered
+     * an alignment token candidate.
      */
-    public function alignmentOffset(bool $includeText = true): int
+    public function alignmentOffset(bool $includeToken = true, bool $allowSelfAlignment = false): int
     {
-        $start = $this->startOfLine();
-        $start = $start->collect($this)
-                       ->reverse()
-                       ->find(fn(Token $t, ?Token $next) =>
-                                  ($t->AlignedWith && $t->AlignedWith !== $this) ||
-                                      ($next && $next === $this->AlignedWith))
-            ?: $start;
+        $startOfLine = $this->startOfLine();
+        $from =
+            $startOfLine
+                ->collect($this)
+                ->reverse()
+                ->find(
+                    fn(Token $t, ?Token $next) =>
+                        ($t->AlignedWith &&
+                                ($allowSelfAlignment || $t !== $this)) ||
+                            ($next &&
+                                $next === $this->AlignedWith)
+                ) ?: $startOfLine;
 
-        $code = $start->collect($this)->render(true);
+        $code = $from->collect($this)->render(true);
+        if (!$includeToken &&
+                ($remove = ltrim($this->render(true))) !== '') {
+            $code = substr($code, 0, -strlen($remove));
+        }
         $offset = mb_strlen($code);
         // Handle strings with embedded newlines
         if (($newline = mb_strrpos($code, "\n")) !== false) {
             $newLinePadding = $offset - $newline - 1;
             $offset = $newLinePadding - ($this->LinePadding - $this->LineUnpadding);
-            if (!$includeText) {
-                $offset -= mb_strlen($this->text) - mb_strrpos("\n" . $this->text, "\n");
-            }
         } else {
-            $offset -= $start->hasNewlineBefore() ? $start->LineUnpadding : 0;
-            if (!$includeText) {
-                $offset -= mb_strlen($this->text);
-            }
+            $offset -= $from->hasNewlineBefore() ? $from->LineUnpadding : 0;
         }
 
         return $offset;
@@ -1225,36 +1236,45 @@ class Token extends CollectibleToken implements JsonSerializable
     final public function adjacent(...$types): ?Token
     {
         $current = $this->ClosedBy ?: $this;
-        if (!$current->is($types ?: ($types = [T_CLOSE_PARENTHESIS, T_COMMA, T_CLOSE_BRACKET, T_CLOSE_BRACE]))) {
-            return null;
+        if (!$types) {
+            $types = [T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_COMMA];
         }
         $outer = $current->withNextCodeWhile(true, ...$types)->last();
-        if (!$outer->_nextCode ||
+        if (!$outer ||
+                !$outer->_nextCode ||
                 !$outer->EndStatement ||
                 $outer->EndStatement->Index <= $outer->_nextCode->Index) {
             return null;
         }
-
         return $outer->_nextCode;
     }
 
     final public function adjacentBeforeNewline(bool $requireAlignedWith = true): ?Token
     {
         $current = $this->ClosedBy ?: $this;
-        if (!$current->OpenedBy) {
-            $current = $this->parent()->ClosedBy;
-        }
-        if (!$current) {
+        if (!$current->OpenedBy &&
+            !(($current = end($this->BracketStack)) &&
+                ($current = $current->ClosedBy))) {
             return null;
         }
         $eol = $this->endOfLine();
-        $outer = $current->withNextCodeWhile(false, T_CLOSE_PARENTHESIS, T_COMMA, T_CLOSE_BRACKET, T_CLOSE_BRACE)
+        $outer = $current->withNextCodeWhile(false, T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_COMMA)
                          ->filter(fn(Token $t) => $t->Index <= $eol->Index)
                          ->last();
-        if (!$outer || !$outer->_nextCode ||
-                $outer->_nextCode->Index > $eol->Index ||
-                !$outer->EndStatement ||
-                $outer->EndStatement->Index <= $outer->_nextCode->Index) {
+        $next = $outer;
+        while ($next &&
+                $next->Expression === false &&
+                $next->_nextSibling &&
+                $next->_nextSibling->Index <= $eol->Index) {
+            $next = $next->_nextSibling;
+        }
+        if (!$outer ||
+            !$outer->_nextCode ||
+            $outer->_nextCode->Index > $eol->Index ||
+            ((!$outer->EndStatement ||
+                    $outer->EndStatement->Index <= $outer->_nextCode->Index) &&
+                ($next === $outer ||
+                    $next->EndStatement->Index <= $next->_nextCode->Index))) {
             return null;
         }
 
@@ -1265,7 +1285,9 @@ class Token extends CollectibleToken implements JsonSerializable
             return null;
         }
 
-        return $outer->_nextCode;
+        return $next === $outer
+            ? $outer->_nextCode
+            : $next;
     }
 
     public function withAdjacentBeforeNewline(?Token $from = null, bool $requireAlignedWith = true): TokenCollection
@@ -1544,6 +1566,19 @@ class Token extends CollectibleToken implements JsonSerializable
             ($this->id === T_OPEN_PARENTHESIS && $this->prevCode()->id === T_ARRAY);
     }
 
+    public function isDestructuringConstruct(): bool
+    {
+        $current = $this->OpenedBy ?: $this;
+        return $current->id === T_LIST ||
+            $current->prevCode()->id === T_LIST ||
+            ($current->id === T_OPEN_BRACKET &&
+                (($adjacent = $current->adjacent(T_COMMA, T_CLOSE_BRACKET)) &&
+                    $adjacent->id === T_EQUAL) ||
+                (($root = $current->withParentsWhile(T_OPEN_BRACKET)->last()) &&
+                    $root->prevCode()->id === T_AS &&
+                    $root->parent()->prevCode()->id === T_FOREACH));
+    }
+
     final public function isBrace(): bool
     {
         return $this->id === T_OPEN_BRACE || ($this->id === T_CLOSE_BRACE && $this->OpenedBy->id === T_OPEN_BRACE);
@@ -1618,26 +1653,37 @@ class Token extends CollectibleToken implements JsonSerializable
 
     final public function inUnaryContext(): bool
     {
-        return $this->_prevCode &&
-            ($this->_prevCode->IsTernaryOperator ||
-                $this->_prevCode->IsCloseTagStatementTerminator ||
-                $this->_prevCode->isCloseBraceStatementTerminator() ||
-                $this->_prevCode->is([
-                    T_OPEN_PARENTHESIS,
-                    T_COMMA,
-                    T_SEMICOLON,
-                    T_OPEN_BRACKET,
-                    T_OPEN_BRACE,
-                    ...TokenType::OPERATOR_ARITHMETIC,
-                    ...TokenType::OPERATOR_ASSIGNMENT,
-                    ...TokenType::OPERATOR_BITWISE,
-                    ...TokenType::OPERATOR_COMPARISON,
-                    ...TokenType::OPERATOR_LOGICAL,
-                    ...TokenType::OPERATOR_STRING,
-                    ...TokenType::OPERATOR_DOUBLE_ARROW,
-                    ...TokenType::CAST,
-                    ...TokenType::KEYWORD,
-                ]));
+        if ($this->Expression === $this) {
+            return true;
+        }
+        if (!($prev = $this->_prevCode)) {
+            return false;
+        }
+        if ($prev->EndStatement === $prev) {
+            return true;
+        }
+        return $prev->IsTernaryOperator ||
+            $prev->is([
+                T_OPEN_BRACE,
+                T_OPEN_BRACKET,
+                T_OPEN_PARENTHESIS,
+                T_DOLLAR_OPEN_CURLY_BRACES,
+                T_COMMA,
+                T_DOUBLE_ARROW,
+                T_SEMICOLON,
+                T_BOOLEAN_AND,
+                T_BOOLEAN_OR,
+                T_AMPERSAND,
+                T_CONCAT,
+                T_ELLIPSIS,
+                ...TokenType::OPERATOR_ARITHMETIC,
+                ...TokenType::OPERATOR_ASSIGNMENT,
+                ...TokenType::OPERATOR_BITWISE,
+                ...TokenType::OPERATOR_COMPARISON,
+                ...TokenType::OPERATOR_LOGICAL,
+                ...TokenType::CAST,
+                ...TokenType::KEYWORD,
+            ]);
     }
 
     /**
@@ -1801,8 +1847,10 @@ class Token extends CollectibleToken implements JsonSerializable
             }
         }
 
-        // Comments are only formatted when output is being generated
-        if ($setPosition && $this->CommentType) {
+        // Multi-line comments are only formatted when output is being generated
+        if ($setPosition &&
+                $this->CommentType &&
+                strpos($this->text, "\n") !== false) {
             $text = $this->renderComment($softTabs);
         }
 
@@ -1842,30 +1890,14 @@ class Token extends CollectibleToken implements JsonSerializable
 
     private function renderComment(bool $softTabs): string
     {
-        if (strpos($this->text, "\n") === false) {
-            if (in_array(
-                $this->CommentType,
-                [CommentType::C, CommentType::DOC_COMMENT]
-            )) {
-                // Normalise comments like these:
-                // - `/*  comment  */`  => `/* comment */`
-                // - `/**comment*/`     => `/** comment */`
-                // - `/**comment **/`   => `/** comment **/`
-                //
-                // Without modifying comments like these:
-                // - `/*  comment  **/` (mismatched asterisks)
-                // - `/***comment*/` (more than two leading asterisks)
-                return preg_replace(
-                    '#^(/\*(\*?))(?!\*)\h*+(?=\H)(.*)(?<=\H)\h*(?<!\*)(\2?\*/)$#',
-                    '$1 $3 $4',
-                    $this->text
-                );
-            }
-            return $this->text;
+        if ($this->ExpandedText) {
+            $code = Convert::expandLeadingTabs(
+                $this->text, $this->Formatter->TabSize, !$this->wasFirstOnLine(), $this->column
+            );
         }
 
         // Remove trailing whitespace from each line
-        $code = preg_replace('/\h++$/m', '', $this->ExpandedText ?: $this->text);
+        $code = preg_replace('/\h++$/m', '', $code ?? $this->text);
 
         if ($this->id === T_COMMENT && preg_match('/\n\h*+(?!\*)\S/', $code)) {
             $delta = $this->OutputColumn - $this->column;

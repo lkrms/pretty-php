@@ -27,12 +27,7 @@ final class ApplyMagicComma implements ListRule
             return;
         }
 
-        if ($owner->ClosedBy->prevCode()->id === T_COMMA &&
-            !($owner->prevCode()->id === T_LIST ||
-                (($adjacent = $owner->adjacent(T_COMMA, T_CLOSE_BRACKET)) && $adjacent->id === T_EQUAL) ||
-                (($root = $owner->withParentsWhile(T_OPEN_BRACKET)->last()) &&
-                    $root->prevCode()->id === T_AS &&
-                    $root->parent()->prevCode()->id === T_FOREACH))) {
+        if ($owner->ClosedBy->prevCode()->id === T_COMMA) {
             $items[] = $owner->ClosedBy;
             $items->addWhitespaceBefore(WhitespaceType::LINE, true);
         }

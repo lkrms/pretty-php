@@ -931,6 +931,9 @@ EOF,
                 Console::debug('New Formatter instance required for:', $file);
                 $this->applyFormattingOptionValues($options);
                 if ($this->Psr12) {
+                    $this->Tabs = null;
+                    $this->Spaces = 4;
+                    $this->Eol = 'lf';
                     $unskip = [
                         ApplyMagicComma::class,
                         SpaceDeclarations::class,
@@ -946,6 +949,7 @@ EOF,
                     $this->SkipRules = array_diff($this->SkipRules, $unskip, $skip);
                     array_push($this->SkipRules, ...$skip);
                     array_push($this->AddRules, ...array_diff($add, $this->AddRules));
+                    $this->OneTrueBraceStyle = false;
                 }
                 $f = new Formatter(
                     !$this->Tabs,
@@ -965,6 +969,7 @@ EOF,
                     ? self::IMPORT_SORT_ORDER_MAP[$this->SortImportsBy]
                     : ImportSortOrder::NAME;
                 if ($this->Psr12) {
+                    $f->Psr12Compliance = true;
                     $f->NewlineBeforeFnDoubleArrows = true;
                 }
                 $this->MirrorBrackets === null || $f->MirrorBrackets = $this->MirrorBrackets;

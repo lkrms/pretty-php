@@ -54,7 +54,6 @@ final class BracePosition implements TokenRule
             return;
         }
 
-        $matchList = $match && $this->Formatter->MatchesAreLists;
         $next = $token->next();
         if ($token->id === T_OPEN_BRACE) {
             // Move empty bodies to the end of the previous line
@@ -85,7 +84,7 @@ final class BracePosition implements TokenRule
 
             if (!$this->Formatter->OneTrueBraceStyle &&
                     $parts->hasOneOf(...TokenType::DECLARATION) &&
-                    $parts->last()->id !== T_FUNCTION) {
+                    !$parts->last()->is([T_DECLARE, T_FUNCTION])) {
                 $start = $parts->first();
                 if ($start->id !== T_USE) {
                     $prevCode = $start->prevCode();
@@ -102,7 +101,7 @@ final class BracePosition implements TokenRule
                 $this->BracketBracePairs[] = [$prev, $token];
             }
             $token->WhitespaceBefore |= WhitespaceType::SPACE | $line;
-            $token->WhitespaceAfter |= ($matchList ? 0 : WhitespaceType::LINE) | WhitespaceType::SPACE;
+            $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
             if ($next->id === T_CLOSE_BRACE) {
                 $token->WhitespaceMaskNext &= ~WhitespaceType::SPACE;
@@ -111,7 +110,7 @@ final class BracePosition implements TokenRule
             return;
         }
 
-        $token->WhitespaceBefore |= ($matchList ? 0 : WhitespaceType::LINE) | WhitespaceType::SPACE;
+        $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
         $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
 
         if ($match ||

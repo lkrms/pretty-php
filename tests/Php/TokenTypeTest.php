@@ -12,7 +12,7 @@ final class TokenTypeTest extends \Lkrms\Pretty\Tests\Php\TestCase
     /**
      * @dataProvider uniquenessProvider
      *
-     * @param int[] $array
+     * @param array<int|string> $array
      */
     public function testUniqueness(array $array): void
     {
@@ -23,7 +23,7 @@ final class TokenTypeTest extends \Lkrms\Pretty\Tests\Php\TestCase
     }
 
     /**
-     * @return Generator<string,array<int[]>>
+     * @return Generator<string,array<array<int|string>>>
      */
     public static function uniquenessProvider(): Generator
     {

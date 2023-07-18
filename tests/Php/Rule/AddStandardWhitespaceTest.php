@@ -133,11 +133,4 @@ PHP,
             ],
         ]);
     }
-
-    protected function prepareFormatter(Formatter $formatter): Formatter
-    {
-        $formatter->MatchesAreLists = false;
-
-        return $formatter;
-    }
 }

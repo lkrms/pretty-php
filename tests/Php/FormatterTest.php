@@ -4,6 +4,7 @@ namespace Lkrms\Pretty\Tests\Php;
 
 use Generator;
 use Lkrms\Facade\File;
+use Lkrms\Pretty\Php\Catalog\ImportSortOrder;
 use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Rule\AlignArrowFunctions;
 use Lkrms\Pretty\Php\Rule\AlignAssignments;
@@ -11,6 +12,7 @@ use Lkrms\Pretty\Php\Rule\AlignChainedCalls;
 use Lkrms\Pretty\Php\Rule\AlignComments;
 use Lkrms\Pretty\Php\Rule\AlignLists;
 use Lkrms\Pretty\Php\Rule\AlignTernaryOperators;
+use Lkrms\Pretty\Php\Rule\NoMixedLists;
 use SplFileInfo;
 
 final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
@@ -91,8 +93,8 @@ PHP,
 /**
  * leading asterisk and space
  * leading asterisk
- *   leading asterisk and tab
- *   leading asterisk, space and tab
+ * 	leading asterisk and tab
+ * 	leading asterisk, space and tab
  *
  *
  * no leading asterisk
@@ -238,7 +240,11 @@ PHP,
         // - .php files
         // - files with no extension, and
         // - either of the above with a .fails extension
-        $files = File::find($inDir, null, '/(\.php|\/[^.\/]+)(\.fails)?$/');
+        $files = File::find(
+            $format === '04-psr12' ? $inDir . '/3rdparty/php-fig' : $inDir,
+            null,
+            '/(\.php|\/[^.\/]+)(\.fails)?$/'
+        );
         /** @var SplFileInfo $file */
         foreach ($files as $file) {
             $inFile = (string) $file;
@@ -302,6 +308,23 @@ PHP,
                 'addRules' => [],
                 'skipFilters' => [],
                 'callback' => null,
+            ],
+            '04-psr12' => [
+                'insertSpaces' => true,
+                'tabSize' => 4,
+                'skipRules' => [],
+                'addRules' => [
+                    NoMixedLists::class,
+                ],
+                'skipFilters' => [],
+                'callback' => function (Formatter $f): Formatter {
+                    $f->PreferredEol = "\n";
+                    $f->PreserveEol = false;
+                    $f->Psr12Compliance = true;
+                    $f->NewlineBeforeFnDoubleArrows = true;
+                    $f->ImportSortOrder = ImportSortOrder::NONE;
+                    return $f;
+                },
             ],
         ];
     }

@@ -198,49 +198,6 @@ final class TokenType extends Dictionary
         T_UNSET_CAST,   // (unset)
     ];
 
-    public const VISIBILITY = [
-        T_PRIVATE,
-        T_PROTECTED,
-        T_PUBLIC,
-    ];
-
-    public const DECLARATION_EXCEPT_MULTI_PURPOSE = [
-        T_ABSTRACT,
-        T_CLASS,
-        T_CONST,
-        T_ENUM,
-        T_EXTENDS,
-        T_FINAL,
-        T_GLOBAL,
-        T_IMPLEMENTS,
-        T_INTERFACE,
-        T_NAMESPACE,
-        T_READONLY,
-        T_TRAIT,
-        T_VAR,
-        ...self::VISIBILITY,
-    ];
-
-    public const DECLARATION = [
-        T_FUNCTION,
-        T_STATIC,
-        T_USE,
-        ...self::DECLARATION_EXCEPT_MULTI_PURPOSE,
-    ];
-
-    public const DECLARATION_TYPE = [
-        T_NAME_FULLY_QUALIFIED,
-        T_NAME_QUALIFIED,
-        T_NAME_RELATIVE,
-        T_NS_SEPARATOR,
-        T_STRING,
-    ];
-
-    public const DECLARATION_LIST = [
-        T_COMMA,  // ,
-        ...self::DECLARATION_TYPE,
-    ];
-
     public const DECLARATION_PART = [
         T_ATTRIBUTE,
         T_ATTRIBUTE_COMMENT,
@@ -443,6 +400,131 @@ final class TokenType extends Dictionary
         T_ENDWHILE,
     ];
 
+    public const DECLARATION_LIST = [
+        T_COMMA,  // ,
+        ...self::DECLARATION_TYPE,
+    ];
+
+    public const DECLARATION_TYPE = [
+        T_NS_SEPARATOR,
+        ...self::NAME,
+    ];
+
+    public const DECLARATION = [
+        T_FUNCTION,
+        T_STATIC,
+        T_USE,
+        ...self::DECLARATION_EXCEPT_MULTI_PURPOSE,
+    ];
+
+    public const DECLARATION_EXCEPT_MULTI_PURPOSE = [
+        T_ABSTRACT,
+        T_CLASS,
+        T_CONST,
+        T_DECLARE,
+        T_ENUM,
+        T_EXTENDS,
+        T_FINAL,
+        T_GLOBAL,
+        T_IMPLEMENTS,
+        T_INTERFACE,
+        T_NAMESPACE,
+        T_READONLY,
+        T_TRAIT,
+        T_VAR,
+        ...self::VISIBILITY,
+    ];
+
+    public const SEMI_RESERVED = [
+        ...self::RESERVED_NON_MODIFIER,
+        ...self::KEYWORD_MODIFIER,
+    ];
+
+    public const RESERVED_NON_MODIFIER = [
+        ...self::KEYWORD_NON_MODIFIER,
+        ...self::MAGIC_CONSTANT,
+    ];
+
+    public const KEYWORD = [
+        T_YIELD_FROM,
+        ...self::KEYWORD_MODIFIER,
+        ...self::KEYWORD_NON_MODIFIER,
+    ];
+
+    public const KEYWORD_MODIFIER = [
+        T_ABSTRACT,
+        T_FINAL,
+        T_READONLY,
+        T_STATIC,
+        ...self::VISIBILITY,
+    ];
+
+    public const KEYWORD_NON_MODIFIER = [
+        T_ARRAY,
+        T_AS,
+        T_BREAK,
+        T_CALLABLE,
+        T_CASE,
+        T_CATCH,
+        T_CLASS,
+        T_CLONE,
+        T_CONST,
+        T_CONTINUE,
+        T_DECLARE,
+        T_DEFAULT,
+        T_DO,
+        T_ECHO,
+        T_ELSE,
+        T_ELSEIF,
+        T_EMPTY,
+        T_ENDDECLARE,
+        T_ENDFOR,
+        T_ENDFOREACH,
+        T_ENDIF,
+        T_ENDSWITCH,
+        T_ENDWHILE,
+        T_ENUM,
+        T_EVAL,
+        T_EXIT,
+        T_EXTENDS,
+        T_FINALLY,
+        T_FN,
+        T_FOR,
+        T_FOREACH,
+        T_FUNCTION,
+        T_GLOBAL,
+        T_GOTO,
+        T_HALT_COMPILER,
+        T_IF,
+        T_IMPLEMENTS,
+        T_INCLUDE,
+        T_INCLUDE_ONCE,
+        T_INSTANCEOF,
+        T_INSTEADOF,
+        T_INTERFACE,
+        T_ISSET,
+        T_LIST,
+        T_LOGICAL_AND,
+        T_LOGICAL_OR,
+        T_LOGICAL_XOR,
+        T_MATCH,
+        T_NAMESPACE,
+        T_NEW,
+        T_PRINT,
+        T_REQUIRE,
+        T_REQUIRE_ONCE,
+        T_RETURN,
+        T_SWITCH,
+        T_THROW,
+        T_TRAIT,
+        T_TRY,
+        T_UNSET,
+        T_USE,
+        T_VAR,
+        T_WHILE,
+        T_YIELD,
+    ];
+
     public const MAGIC_CONSTANT = [
         T_CLASS_C,
         T_DIR,
@@ -454,52 +536,58 @@ final class TokenType extends Dictionary
         T_TRAIT_C,
     ];
 
-    public const KEYWORD = [
-        T_ARRAY,
-        T_AS,
-        T_BREAK,
-        T_CALLABLE,
-        T_CASE,
-        T_CATCH,
-        T_CLONE,
-        T_CONTINUE,
-        T_DECLARE,
-        T_DEFAULT,
-        T_DO,
-        T_ECHO,
-        T_ELLIPSIS,
-        T_ELSE,
-        T_ELSEIF,
-        T_EMPTY,
-        T_EVAL,
-        T_EXIT,
-        T_FINALLY,
+    public const NAME_WITH_READONLY = [
+        T_READONLY,
+        ...self::NAME,
+    ];
+
+    public const NAME = [
+        T_NAME_FULLY_QUALIFIED,
+        T_NAME_QUALIFIED,
+        T_NAME_RELATIVE,
+        T_STRING,
+    ];
+
+    public const VISIBILITY = [
+        T_PRIVATE,
+        T_PROTECTED,
+        T_PUBLIC,
+    ];
+
+    public const DEREFERENCEABLE_SCALAR_END = [
+        T_CLOSE_BRACKET,      // At the end of an array
+        T_CLOSE_PARENTHESIS,  // At the end of an array
+        T_CONSTANT_ENCAPSED_STRING,
+        T_DOUBLE_QUOTE,
+    ];
+
+    public const MAYBE_ANONYMOUS = [
+        T_CLASS,
         T_FN,
-        T_FOR,
-        T_FOREACH,
-        T_GOTO,
-        T_HALT_COMPILER,
-        T_IF,
-        T_INCLUDE_ONCE,
-        T_INCLUDE,
-        T_INSTEADOF,
-        T_ISSET,
-        T_LIST,
-        T_MATCH,
-        T_NEW,
-        T_PRINT,
-        T_REQUIRE_ONCE,
-        T_REQUIRE,
-        T_RETURN,
-        T_SWITCH,
-        T_THROW,
-        T_TRY,
-        T_UNSET,
-        T_WHILE,
-        T_YIELD_FROM,
-        T_YIELD,
-        ...self::DECLARATION,
-        ...self::ALT_SYNTAX_END,
+        T_FUNCTION,
+    ];
+
+    /**
+     * PHP keywords with no dedicated token
+     *
+     * `PhpToken::tokenize()` returns a `T_STRING` for each of these.
+     *
+     */
+    public const KEYWORD_TEXT = [
+        'bool',
+        'false',
+        'float',
+        'int',
+        'iterable',
+        'mixed',
+        'never',
+        'null',
+        'object',
+        'string',
+        'true',
+        'void',
+        //'numeric',
+        //'resource',
     ];
 
     public const OTHER = [

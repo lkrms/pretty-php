@@ -12,10 +12,9 @@ use Lkrms\Pretty\WhitespaceType;
  * Arrange items in lists horizontally or vertically by replicating the
  * arrangement of the first and second items
  *
- * This rule also:
- * - adds line breaks before the first item in vertical lists
- * - removes line breaks before the first item in horizontal lists when
- *   converting from a mixed list
+ * Newlines are added before the first item in vertical lists. Newlines before
+ * the first item in horizontal lists are removed when strict PSR-12 compliance
+ * is enabled.
  *
  */
 final class NoMixedLists implements ListRule
@@ -35,11 +34,9 @@ final class NoMixedLists implements ListRule
         if ($items->nth(2)->hasNewlineBefore()) {
             $items->addWhitespaceBefore(WhitespaceType::LINE);
         } else {
-            // Leave the first item alone if the list is already completely
-            // horizontal
-            if ($owner->ClosedBy &&
-                !$items->find(fn(Token $t, ?Token $next, ?Token $prev) =>
-                                  $prev && $t->hasNewlineBefore())) {
+            // Leave the first item alone unless strict PSR-12 compliance is
+            // enabled
+            if ($owner->ClosedBy && !$this->Formatter->Psr12Compliance) {
                 $items->shift();
             }
             $items->maskWhitespaceBefore(~WhitespaceType::BLANK & ~WhitespaceType::LINE);
