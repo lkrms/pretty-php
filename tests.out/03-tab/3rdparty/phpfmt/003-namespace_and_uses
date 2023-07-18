@@ -1,0 +1,10 @@
+<?php
+namespace NS;
+
+use A;
+use B;
+use C;
+
+new B;
+new C;
+?>

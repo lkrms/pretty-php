@@ -17,8 +17,8 @@ class Test
     public function b()
     {
         echo array_filter(['a', 'b', 'c'], function ($value) {
-            return 'b' == $value;
-        });
+                                               return 'b' == $value;
+                                           });
     }
 
     public function c()

@@ -15,9 +15,9 @@ echo ANIMALS[1];  // outputs "cat"
 
 // Constant arrays
 define('ANIMALS', array(
-    'dog',
-    'cat',
-    'bird'
-));
+                      'dog',
+                      'cat',
+                      'bird'
+                  ));
 echo ANIMALS[1];  // outputs "cat"
 ?>

@@ -1,9 +1,9 @@
 <?php
 define('ANIMALS', [
-    'dog',
-    'cat',
-    'bird'
-]);
+           'dog',
+           'cat',
+           'bird'
+       ]);
 
 echo ANIMALS[1];  // outputs "cat"
 ?>

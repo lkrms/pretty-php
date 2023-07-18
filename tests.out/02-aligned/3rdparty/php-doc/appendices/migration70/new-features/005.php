@@ -21,11 +21,11 @@ class Application
 
 $app = new Application;
 $app->setLogger(new class implements Logger {
-    public function log(string $msg)
-    {
-        echo $msg;
-    }
-});
+                    public function log(string $msg)
+                    {
+                        echo $msg;
+                    }
+                });
 
 var_dump($app->getLogger());
 ?>

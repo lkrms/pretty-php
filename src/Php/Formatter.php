@@ -3,14 +3,16 @@
 namespace Lkrms\Pretty\Php;
 
 use Lkrms\Facade\Console;
-use Lkrms\Facade\Convert;
 use Lkrms\Facade\Sys;
 use Lkrms\Pretty\Php\Catalog\FormatterFlag;
+use Lkrms\Pretty\Php\Catalog\ImportSortOrder;
+use Lkrms\Pretty\Php\Catalog\TokenType;
 use Lkrms\Pretty\Php\Contract\BlockRule;
 use Lkrms\Pretty\Php\Contract\Filter;
 use Lkrms\Pretty\Php\Contract\ListRule;
 use Lkrms\Pretty\Php\Contract\Rule;
 use Lkrms\Pretty\Php\Contract\TokenRule;
+use Lkrms\Pretty\Php\Filter\CollectColumn;
 use Lkrms\Pretty\Php\Filter\NormaliseHeredocs;
 use Lkrms\Pretty\Php\Filter\NormaliseStrings;
 use Lkrms\Pretty\Php\Filter\RemoveComments;
@@ -41,6 +43,7 @@ use Lkrms\Pretty\Php\Rule\Extra\Laravel;
 use Lkrms\Pretty\Php\Rule\Extra\WordPress;
 use Lkrms\Pretty\Php\Rule\MirrorBrackets;
 use Lkrms\Pretty\Php\Rule\NoMixedLists;
+use Lkrms\Pretty\Php\Rule\NormaliseComments;
 use Lkrms\Pretty\Php\Rule\PlaceComments;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
 use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
@@ -49,12 +52,12 @@ use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
 use Lkrms\Pretty\Php\Rule\ReportUnnecessaryParentheses;
 use Lkrms\Pretty\Php\Rule\SimplifyStrings;
 use Lkrms\Pretty\Php\Rule\SpaceDeclarations;
-use Lkrms\Pretty\Php\Rule\SpaceMatch;
 use Lkrms\Pretty\Php\Rule\SpaceOperators;
 use Lkrms\Pretty\Php\Rule\SwitchPosition;
 use Lkrms\Pretty\PrettyBadSyntaxException;
 use Lkrms\Pretty\PrettyException;
 use Lkrms\Pretty\WhitespaceType;
+use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Inspect;
 use LogicException;
@@ -94,13 +97,17 @@ final class Formatter
      */
     public array $EnabledRules;
 
+    /**
+     * Enable strict PSR-12 compliance?
+     *
+     */
+    public bool $Psr12Compliance = false;
+
     public string $PreferredEol = PHP_EOL;
 
     public bool $PreserveEol = true;
 
     public bool $ClosuresAreDeclarations = true;
-
-    public bool $MatchesAreLists = false;
 
     public bool $MirrorBrackets = true;
 
@@ -134,6 +141,11 @@ final class Formatter
     public bool $OneTrueBraceStyle = false;
 
     /**
+     * @var ImportSortOrder::*
+     */
+    public int $ImportSortOrder = ImportSortOrder::NAME;
+
+    /**
      * @var array<class-string<Rule>>
      */
     public const MANDATORY_RULES = [
@@ -147,9 +159,9 @@ final class Formatter
         MirrorBrackets::class,                   // processToken  (96)
         BreakOperators::class,                   // processToken  (98)
         BreakLists::class,                       // processList   (98)
-        SpaceMatch::class,                       // processToken (300)
         AddIndentation::class,                   // processToken (600)
         SwitchPosition::class,                   // processToken (600)
+        NormaliseComments::class,                // processToken (780)
         AddHangingIndentation::class,            // processToken (800), callback (800)
         AddEssentialWhitespace::class,           // beforeRender (999)
     ];
@@ -174,72 +186,106 @@ final class Formatter
         AddBlankLineBeforeReturn::class,      // processToken  (97)
         Laravel::class,                       // processToken (100)
         WordPress::class,                     // processToken (100)
-        AlignAssignments::class,              // processBlock (340), callback (710)
         AlignChainedCalls::class,             // processToken (340), callback (710)
-        AlignComments::class,                 // processBlock (340), beforeRender (998)
         NoMixedLists::class,                  // processList  (370)
         AlignArrowFunctions::class,           // processToken (380), callback (710)
         AlignTernaryOperators::class,         // processToken (380), callback (710)
         AlignLists::class,                    // processList  (400), callback (710)
         ReportUnnecessaryParentheses::class,  // processToken (990)
         DeclareArgumentsOnOneLine::class,     // processToken
+        AlignAssignments::class,              // processBlock (340), callback (720)
+        AlignComments::class,                 // processBlock (340), beforeRender (998)
+    ];
+
+    /**
+     * @var array<class-string<Filter>>
+     */
+    public const DEFAULT_FILTERS = [
+        CollectColumn::class,
+        RemoveWhitespace::class,
+        NormaliseHeredocs::class,
+        SortImports::class,
+        TrimCasts::class,
+    ];
+
+    /**
+     * @var array<class-string<Filter>>
+     */
+    public const OPTIONAL_FILTERS = [
+        SortImports::class,
+        TrimCasts::class,
+    ];
+
+    /**
+     * @var array<class-string<Filter>>
+     */
+    public const COMPARISON_FILTERS = [
+        NormaliseStrings::class,
+        RemoveComments::class,
+        RemoveEmptyTokens::class,
+        TrimOpenTags::class,
     ];
 
     /**
      * @var Token[]|null
      */
-    public $Tokens;
+    public ?array $Tokens = null;
 
     /**
      * @var Problem[]|null
      */
-    public $Problems;
+    public ?array $Problems = null;
 
     /**
      * @var array<string,string>|null
      */
-    public $Log;
+    public ?array $Log = null;
 
     /**
      * @var Rule[]
      */
-    private $Rules;
+    private array $Rules;
 
     /**
      * @var Filter[]
      */
-    private $FormatFilters;
+    private array $Filters;
 
     /**
      * @var Filter[]
      */
-    private $ComparisonFilters;
+    private array $FormatFilters;
+
+    /**
+     * @var Filter[]
+     */
+    private array $ComparisonFilters;
 
     /**
      * [ [ Rule object, method name ], ... ]
      *
      * @var array<array{TokenRule|ListRule,string}>
      */
-    private $MainLoop;
+    private array $MainLoop;
 
     /**
      * [ [ Rule object, method name ], ... ]
      *
      * @var array<array{BlockRule,string}>
      */
-    private $BlockLoop;
+    private array $BlockLoop;
 
     /**
      * [ [ Rule object, method name ], ... ]
      *
      * @var array<array{Rule,string}>
      */
-    private $BeforeRender;
+    private array $BeforeRender;
 
     /**
      * @var array<int,array<int,array<array{Rule,callable}>>>
      */
-    private $Callbacks;
+    private array $Callbacks;
 
     private bool $Debug;
 
@@ -299,6 +345,16 @@ final class Formatter
                 self::MANDATORY_RULES
             )
         );
+        if (count(array_intersect(
+            [NoMixedLists::class, AlignLists::class],
+            $rules
+        )) === 2) {
+            throw new LogicException(sprintf(
+                '%s and %s cannot both be enabled',
+                NoMixedLists::class,
+                AlignLists::class
+            ));
+        }
         $this->EnabledRules = array_combine($rules, array_fill(0, count($rules), true));
 
         Sys::startTimer(__METHOD__ . '#sort-rules');
@@ -330,39 +386,30 @@ final class Formatter
         $this->BeforeRender = $this->sortRules($beforeRender);
         Sys::stopTimer(__METHOD__ . '#sort-rules');
 
-        $mandatoryFilters = [
-            RemoveWhitespace::class,
-            NormaliseHeredocs::class,
-        ];
-        $optionalFilters = [
-            TrimCasts::class,
-            SortImports::class,
-        ];
-        $comparisonFilters = [
-            NormaliseStrings::class,
-            RemoveComments::class,
-            RemoveEmptyTokens::class,
-            TrimOpenTags::class,
-        ];
-
-        $this->FormatFilters = array_map(
-            fn(string $filter) => new $filter(),
-            array_merge(
-                $mandatoryFilters,
-                array_diff(
-                    $optionalFilters,
-                    $skipFilters
-                )
+        $filters = array_diff(
+            self::DEFAULT_FILTERS,
+            array_intersect(
+                self::OPTIONAL_FILTERS,
+                $skipFilters
             )
         );
-
+        $filters = array_combine(
+            $filters,
+            $this->FormatFilters = array_map(
+                fn(string $filter) => new $filter($this),
+                $filters
+            )
+        );
+        // Column values are unnecessary when comparing tokens
+        unset($filters[CollectColumn::class]);
         $this->ComparisonFilters = array_merge(
-            $this->FormatFilters,
-            array_map(
-                fn(string $filter) => new $filter(),
-                $comparisonFilters
+            array_values($filters),
+            $comparisonFilters = array_map(
+                fn(string $filter) => new $filter($this),
+                self::COMPARISON_FILTERS
             )
         );
+        $this->Filters = array_merge($this->FormatFilters, $comparisonFilters);
     }
 
     /**
@@ -406,8 +453,7 @@ final class Formatter
         foreach ($this->Rules as $rule) {
             $rule->reset();
         }
-        // NB: ComparisonFilters is a superset of FormatFilters
-        foreach ($this->ComparisonFilters as $filter) {
+        foreach ($this->Filters as $filter) {
             $filter->reset();
         }
 
@@ -462,10 +508,7 @@ final class Formatter
         $listParents = array_filter(
             $this->Tokens,
             fn(Token $t) =>
-                ($t->is([T_OPEN_PARENTHESIS, T_OPEN_BRACKET]) ||
-                        ($this->MatchesAreLists &&
-                            $t->id === T_OPEN_BRACE &&
-                            $t->prevSibling(2)->id === T_MATCH) ||
+                ($t->is([T_OPEN_PARENTHESIS, T_OPEN_BRACKET, T_ATTRIBUTE]) ||
                         $t->is([T_IMPLEMENTS]) ||
                         ($t->is([T_EXTENDS]) && $t->isDeclaration(T_INTERFACE))) &&
                     $t->ClosedBy !== $t->nextCode()
@@ -484,14 +527,47 @@ final class Formatter
                 }
                 continue;
             }
-            $lists[$i] = $parent->innerSiblings()->filter(
+            $prev = $parent->prevCode();
+            if ($parent->id === T_OPEN_PARENTHESIS &&
+                !(($prev->id === T_CLOSE_BRACE &&
+                        !$prev->isStructuralBrace()) ||
+                    ($prev->id === T_AMPERSAND &&
+                        $prev->prevCode()->is([T_FN, T_FUNCTION])) ||
+                    $prev->is([
+                        T_ARRAY,
+                        T_DECLARE,
+                        T_LIST,
+                        T_UNSET,
+                        T_USE,
+                        T_VARIABLE,
+                        ...TokenType::MAYBE_ANONYMOUS,
+                        ...TokenType::DEREFERENCEABLE_SCALAR_END,
+                        ...TokenType::NAME_WITH_READONLY,
+                    ]))) {
+                continue;
+            }
+            if ($parent->id === T_OPEN_BRACKET &&
+                    $parent->Expression !== $parent &&
+                    $prev->id !== T_AS &&
+                    $prev->is([
+                        T_CLOSE_BRACE,
+                        T_STRING_VARNAME,
+                        T_VARIABLE,
+                        ...TokenType::DEREFERENCEABLE_SCALAR_END,
+                        ...TokenType::NAME,
+                        ...TokenType::SEMI_RESERVED,
+                    ])) {
+                continue;
+            }
+            $list = $parent->innerSiblings()->filter(
                 fn(Token $t, ?Token $next, ?Token $prev) =>
-                    !$prev || ($t->_prevCode->id === T_COMMA &&
-                        ($parent->id !== T_OPEN_BRACE ||
-                            $t->_prevCode
-                              ->prevSiblingOf(T_COMMA, ...TokenType::OPERATOR_DOUBLE_ARROW)
-                              ->is(TokenType::OPERATOR_DOUBLE_ARROW)))
+                    $t->id !== T_COMMA &&
+                        (!$prev || $t->_prevCode->id === T_COMMA)
             );
+            if (!$list->count()) {
+                continue;
+            }
+            $lists[$i] = $list;
         }
         Sys::stopTimer(__METHOD__ . '#find-lists');
 
@@ -586,7 +662,7 @@ final class Formatter
             $out = '';
             $current = reset($this->Tokens);
             do {
-                $out .= $current->render(false, true, $current);
+                $out .= $current->render(false, true);
             } while ($current = $current->_next);
         } catch (Throwable $ex) {
             throw new PrettyException(
@@ -760,7 +836,7 @@ final class Formatter
             $out = '';
             $current = reset($this->Tokens);
             do {
-                $out .= $current->render(false, false, $current);
+                $out .= $current->render(false, false);
             } while ($current = $current->_next);
         } catch (Throwable $ex) {
             throw new PrettyException(

@@ -7,12 +7,12 @@ interface SomeInterface {}
 trait SomeTrait {}
 
 var_dump(new class(10) extends SomeClass implements SomeInterface {
-    private $num;
+             private $num;
 
-    public function __construct($num)
-    {
-        $this->num = $num;
-    }
+             public function __construct($num)
+             {
+                 $this->num = $num;
+             }
 
-    use SomeTrait;
-});
+             use SomeTrait;
+         });

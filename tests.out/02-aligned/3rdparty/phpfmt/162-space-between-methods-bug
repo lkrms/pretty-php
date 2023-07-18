@@ -1,8 +1,8 @@
 <?php
 //passes:SpaceBetweenMethods,Default
 $optPasses = array_map(function ($v) {
-    return trim($v);
-}, explode(',', $opts['passes']));
+                           return trim($v);
+                       }, explode(',', $opts['passes']));
 
 array_filter($arr,
              function ($v) {

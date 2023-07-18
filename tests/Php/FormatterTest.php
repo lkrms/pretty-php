@@ -4,6 +4,7 @@ namespace Lkrms\Pretty\Tests\Php;
 
 use Generator;
 use Lkrms\Facade\File;
+use Lkrms\Pretty\Php\Catalog\ImportSortOrder;
 use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Rule\AlignArrowFunctions;
 use Lkrms\Pretty\Php\Rule\AlignAssignments;
@@ -11,6 +12,7 @@ use Lkrms\Pretty\Php\Rule\AlignChainedCalls;
 use Lkrms\Pretty\Php\Rule\AlignComments;
 use Lkrms\Pretty\Php\Rule\AlignLists;
 use Lkrms\Pretty\Php\Rule\AlignTernaryOperators;
+use Lkrms\Pretty\Php\Rule\NoMixedLists;
 use SplFileInfo;
 
 final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
@@ -97,7 +99,6 @@ PHP,
  *
  * no leading asterisk
  * leading tab and no leading asterisk
- *
  */
 
 PHP,
@@ -213,10 +214,10 @@ PHP,
                 '#^3rdparty/php-doc/language/oop5/(inheritance/000|properties/00[034567]|traits/012)\.php#',
                 '#^3rdparty/php-doc/language/types/declarations/004\.php#',
                 '#^3rdparty/php-doc/language/types/integer/000\.php#',
-                '#^3rdparty/php-fig/per/01-overview\.php#',
             ],
             80200 => [
                 '#^3rdparty/php-doc/language/oop5/basic/00[234]\.php#',
+                '#^3rdparty/php-fig/.*#',
             ],
         ];
 
@@ -239,7 +240,11 @@ PHP,
         // - .php files
         // - files with no extension, and
         // - either of the above with a .fails extension
-        $files = File::find($inDir, null, '/(\.php|\/[^.\/]+)(\.fails)?$/');
+        $files = File::find(
+            $format === '04-psr12' ? $inDir . '/3rdparty/php-fig' : $inDir,
+            null,
+            '/(\.php|\/[^.\/]+)(\.fails)?$/'
+        );
         /** @var SplFileInfo $file */
         foreach ($files as $file) {
             $inFile = (string) $file;
@@ -295,6 +300,31 @@ PHP,
                 ],
                 'skipFilters' => [],
                 'callback' => null,
+            ],
+            '03-tab' => [
+                'insertSpaces' => false,
+                'tabSize' => 8,
+                'skipRules' => [],
+                'addRules' => [],
+                'skipFilters' => [],
+                'callback' => null,
+            ],
+            '04-psr12' => [
+                'insertSpaces' => true,
+                'tabSize' => 4,
+                'skipRules' => [],
+                'addRules' => [
+                    NoMixedLists::class,
+                ],
+                'skipFilters' => [],
+                'callback' => function (Formatter $f): Formatter {
+                    $f->PreferredEol = "\n";
+                    $f->PreserveEol = false;
+                    $f->Psr12Compliance = true;
+                    $f->NewlineBeforeFnDoubleArrows = true;
+                    $f->ImportSortOrder = ImportSortOrder::NONE;
+                    return $f;
+                },
             ],
         ];
     }

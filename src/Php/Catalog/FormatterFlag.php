@@ -7,6 +7,7 @@ use Lkrms\Concept\Enumeration;
 /**
  * Formatter flags
  *
+ * @extends Enumeration<int>
  */
 final class FormatterFlag extends Enumeration
 {

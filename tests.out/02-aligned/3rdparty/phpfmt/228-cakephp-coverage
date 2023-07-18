@@ -2,7 +2,7 @@
 //passes:Default,CakePHPStyle
 if ($a) {
     array(
-        /*comment*/
+        /* comment */
         'key' => 'value',
     );
 } else {  // comment

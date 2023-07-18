@@ -4,13 +4,14 @@ namespace Lkrms\Pretty\Php;
 
 use Lkrms\Concept\TypedCollection;
 use LogicException;
+use Stringable;
 
 /**
  * A collection of Tokens
  *
  * @extends TypedCollection<int,Token>
  */
-final class TokenCollection extends TypedCollection
+final class TokenCollection extends TypedCollection implements Stringable
 {
     protected const ITEM_CLASS = Token::class;
 
@@ -151,10 +152,22 @@ final class TokenCollection extends TypedCollection
                 $trim = false;
                 continue;
             }
-            if ($before = $token->renderWhitespaceBefore($softTabs)) {
+            if ($before = $token->renderWhitespaceBefore($softTabs, true)) {
                 $code = substr($code, strlen($before));
             }
             $trim = false;
+        }
+
+        return $code;
+    }
+
+    public function __toString(): string
+    {
+        $code = '';
+
+        /** @var Token $token */
+        foreach ($this as $token) {
+            $code .= $token->text;
         }
 
         return $code;

@@ -6,9 +6,9 @@ function double($i)
 
 $b = $a = 5;     /* assign the value five into the variable $a and $b */
 $c = $a++;       /* post-increment, assign original value of $a
-                       (5) to $c */
+                    (5) to $c */
 $e = $d = ++$b;  /* pre-increment, assign the incremented value of
-                       $b (6) to $d and $e */
+                    $b (6) to $d and $e */
 
 /* at this point, both $d and $e are equal to 6 */
 

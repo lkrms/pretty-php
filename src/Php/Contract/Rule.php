@@ -32,10 +32,4 @@ interface Rule
      *
      */
     public function reset(): void;
-
-    /**
-     * Prepare for garbage collection
-     *
-     */
-    public function destroy(): void;
 }

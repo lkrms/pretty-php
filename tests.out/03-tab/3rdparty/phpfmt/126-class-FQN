@@ -1,0 +1,11 @@
+<?php
+
+namespace A;
+
+class B {}
+
+echo B::class;
+
+echo B::class, 'aa';
+
+echo isset(B::class);

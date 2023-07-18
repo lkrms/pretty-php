@@ -2,10 +2,10 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
+use Lkrms\Pretty\Php\Catalog\TokenType;
 use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
-use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
 /**
@@ -55,12 +55,12 @@ final class SpaceDeclarations implements TokenRule
 
     public function processToken(Token $token): void
     {
-        // Checking for `use` after `function ()` is unnecessary because it
-        // never appears mid-statement
+        // Excluding `use` after `function ()` is unnecessary because it never
+        // appears mid-statement
         if ($token->Statement->skipAnySiblingsOf(T_ATTRIBUTE, T_ATTRIBUTE_COMMENT) !== $token ||
                 ($token->id === T_STATIC &&
-                    !$token->nextCode()->is([T_VARIABLE, ...TokenType::DECLARATION])) ||
-                ($token->id === T_NAMESPACE && $token->nextCode()->id === T_NS_SEPARATOR) ||
+                    !$token->_nextCode->is([T_VARIABLE, ...TokenType::DECLARATION])) ||
+                ($token->id === T_NAMESPACE && $token->_nextCode->id === T_NS_SEPARATOR) ||
                 // For formatting purposes, promoted constructor parameters
                 // aren't declarations
                 ($token->is(TokenType::VISIBILITY) && $token->inFunctionDeclaration())) {
@@ -75,7 +75,7 @@ final class SpaceDeclarations implements TokenRule
             return;
         }
 
-        // Add a blank line between declarations and other code
+        // Add blank lines between declarations and subsequent non-declarations
         if (!$token->EndStatement->nextCode()->skipAnySiblingsOf(
             T_ATTRIBUTE, T_ATTRIBUTE_COMMENT
         )->is([T_NULL, ...TokenType::DECLARATION]) &&
@@ -83,8 +83,9 @@ final class SpaceDeclarations implements TokenRule
             $token->EndStatement->WhitespaceAfter |= WhitespaceType::BLANK;
         }
 
-        // Don't add blank lines between `<?php` and declarations
-        $line = $token->OpenTag->nextCode() === $token
+        // Don't add blank lines between `<?php` and subsequent declarations
+        // unless strict PSR-12 compliance is enabled
+        $line = !$this->Formatter->Psr12Compliance && $token->OpenTag->nextCode() === $token
             ? WhitespaceType::LINE
             : WhitespaceType::BLANK;
 

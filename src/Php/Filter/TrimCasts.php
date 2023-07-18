@@ -2,10 +2,10 @@
 
 namespace Lkrms\Pretty\Php\Filter;
 
+use Lkrms\Pretty\Php\Catalog\TokenType;
 use Lkrms\Pretty\Php\Concern\FilterTrait;
 use Lkrms\Pretty\Php\Contract\Filter;
 use Lkrms\Pretty\Php\NavigableToken as Token;
-use Lkrms\Pretty\Php\TokenType;
 
 /**
  * Remove whitespace inside cast operators

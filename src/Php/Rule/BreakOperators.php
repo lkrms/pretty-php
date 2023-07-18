@@ -2,10 +2,10 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
+use Lkrms\Pretty\Php\Catalog\TokenType;
 use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
-use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
 /**
@@ -36,40 +36,42 @@ final class BreakOperators implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->is(TokenType::CHAIN)) {
-            if ($token !== $token->ChainOpenedBy) {
+        if ($token->id === T_QUESTION) {
+            if (!$token->IsTernaryOperator ||
+                    $token->TernaryOperator2 === $token->_next) {
                 return;
             }
 
-            $chain = $token->withNextSiblingsWhile(...TokenType::CHAIN_PART)
-                           ->filter(fn(Token $t) => $t->is(TokenType::CHAIN));
-
-            // If an object operator (`->` or `?->`) is at the start of a line,
-            // add a newline before other object operators in the same chain
-            if ($chain->count() < 2 ||
-                    !$chain->find(fn(Token $t) => $t->hasNewlineBefore())) {
-                return;
+            // If one ternary operator is at the start of a line, add a newline
+            // before the other
+            $op1Newline = $token->hasNewlineBefore();
+            $op2Newline = $token->TernaryOperator2->hasNewlineBefore();
+            if ($op1Newline && !$op2Newline) {
+                $token->TernaryOperator2->WhitespaceBefore |= WhitespaceType::LINE;
+            } elseif (!$op1Newline && $op2Newline) {
+                $token->WhitespaceBefore |= WhitespaceType::LINE;
             }
-
-            $chain->shift();
-            $chain->addWhitespaceBefore(WhitespaceType::LINE);
 
             return;
         }
 
-        if (!$token->IsTernaryOperator ||
-                $token->TernaryOperator2 === $token->_next) {
+        if ($token !== $token->ChainOpenedBy) {
             return;
         }
 
-        // If one ternary operator is at the start of a line, add a newline
-        // before the other
-        $op1Newline = $token->hasNewlineBefore();
-        $op2Newline = $token->TernaryOperator2->hasNewlineBefore();
-        if ($op1Newline && !$op2Newline) {
-            $token->TernaryOperator2->WhitespaceBefore |= WhitespaceType::LINE;
-        } elseif (!$op1Newline && $op2Newline) {
-            $token->WhitespaceBefore |= WhitespaceType::LINE;
+        $chain = $token->withNextSiblingsWhile(...TokenType::CHAIN_PART)
+                       ->filter(fn(Token $t) => $t->is(TokenType::CHAIN));
+
+        // If an object operator (`->` or `?->`) is at the start of a line,
+        // add a newline before other object operators in the same chain
+        if ($chain->count() < 2 ||
+                !$chain->find(fn(Token $t) => $t->hasNewlineBefore())) {
+            return;
         }
+
+        $chain->shift();
+        $chain->addWhitespaceBefore(WhitespaceType::LINE);
+
+        return;
     }
 }

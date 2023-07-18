@@ -13,8 +13,8 @@ $util->setLogger(new Logger());
 
 // Using an anonymous class
 $util->setLogger(new class {
-    public function log($msg)
-    {
-        echo $msg;
-    }
-});
+                     public function log($msg)
+                     {
+                         echo $msg;
+                     }
+                 });

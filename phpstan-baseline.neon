@@ -16,11 +16,6 @@ parameters:
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$Eol is never written, only read\\.$#"
-			count: 1
-			path: src/Command/FormatPhp.php
-
-		-
 			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$ExcludeRegex is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
@@ -61,11 +56,6 @@ parameters:
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$OneTrueBraceStyle is never written, only read\\.$#"
-			count: 1
-			path: src/Command/FormatPhp.php
-
-		-
 			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$OutputFiles is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
@@ -96,17 +86,12 @@ parameters:
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$Spaces is never written, only read\\.$#"
+			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$SortImportsBy is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
 		-
 			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$StdinFilename is never written, only read\\.$#"
-			count: 1
-			path: src/Command/FormatPhp.php
-
-		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$Tabs is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 

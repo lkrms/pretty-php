@@ -13,10 +13,10 @@ use Lkrms\Cli\CliOption;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Console\Catalog\ConsoleLevel;
 use Lkrms\Facade\Console;
-use Lkrms\Facade\Convert;
 use Lkrms\Facade\File;
 use Lkrms\Facade\Sys;
 use Lkrms\Pretty\Php\Catalog\FormatterFlag;
+use Lkrms\Pretty\Php\Catalog\ImportSortOrder;
 use Lkrms\Pretty\Php\Contract\Filter;
 use Lkrms\Pretty\Php\Contract\Rule;
 use Lkrms\Pretty\Php\Filter\SortImports;
@@ -41,6 +41,7 @@ use Lkrms\Pretty\Php\Rule\SpaceDeclarations;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\PrettyBadSyntaxException;
 use Lkrms\Pretty\PrettyException;
+use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Test;
 use RuntimeException;
@@ -116,6 +117,11 @@ class FormatPhp extends CliCommand
      * @var bool
      */
     private $NoMagicCommas;
+
+    /**
+     * @var string|null
+     */
+    private $SortImportsBy;
 
     /**
      * @var bool
@@ -271,6 +277,12 @@ class FormatPhp extends CliCommand
 
         // In the `Extra` namespace
         'one-line-arguments' => DeclareArgumentsOnOneLine::class,
+    ];
+
+    private const IMPORT_SORT_ORDER_MAP = [
+        'none' => ImportSortOrder::NONE,
+        'name' => ImportSortOrder::NAME,
+        'depth' => ImportSortOrder::DEPTH,
     ];
 
     private const INCOMPATIBLE_RULES = [
@@ -488,7 +500,7 @@ EOF)
 Ignore the position of newlines in the input
 
 This option cannot be overridden by configuration file settings (see
-___CONFIGURATION___ below). Use __--disable preserve-newlines__ for the same
+___CONFIGURATION___ below). Use __--disable=preserve-newlines__ for the same
 effect without overriding configuration files.
 EOF)
                 ->bindTo($this->IgnoreNewlines),
@@ -498,7 +510,7 @@ EOF)
                 ->description(<<<EOF
 Don't normalise single- and double-quoted strings
 
-Equivalent to __--disable simplify-strings__
+Equivalent to __--disable=simplify-strings__
 EOF)
                 ->bindTo($this->NoSimplifyStrings),
             CliOption::build()
@@ -507,14 +519,30 @@ EOF)
                 ->description(<<<EOF
 Don't split lists with trailing commas into one item per line
 
-Equivalent to __--disable magic-commas__
+Equivalent to __--disable=magic-commas__
 EOF)
                 ->bindTo($this->NoMagicCommas),
+            CliOption::build()
+                ->long('sort-imports-by')
+                ->short('m')
+                ->valueName('ORDER')
+                ->description(<<<EOF
+Set the sort order for alias/import statements
+
+Use __--sort-imports-by=none__ to group import statements by type without
+changing their order.
+
+Unless disabled by __-M__, __--no-sort-imports__, the default is to sort imports
+by _name_.
+EOF)
+                ->optionType(CliOptionType::ONE_OF)
+                ->allowedValues(array_keys(self::IMPORT_SORT_ORDER_MAP))
+                ->bindTo($this->SortImportsBy),
             CliOption::build()
                 ->long('no-sort-imports')
                 ->short('M')
                 ->description(<<<EOF
-Don't sort alias/import statements
+Don't sort or group alias/import statements
 EOF)
                 ->bindTo($this->NoSortImports),
             CliOption::build()
@@ -738,6 +766,10 @@ EOF,
             throw new CliInvalidArgumentsException('--tab and --space cannot both be given');
         }
 
+        if ($this->SortImportsBy && $this->NoSortImports) {
+            throw new CliInvalidArgumentsException('--sort-imports-by and --no-sort-imports cannot both be given');
+        }
+
         if ($this->ConfigFile) {
             $this->IgnoreConfigFiles = true;
             Console::debug('Reading formatting options:', $this->ConfigFile);
@@ -899,6 +931,9 @@ EOF,
                 Console::debug('New Formatter instance required for:', $file);
                 $this->applyFormattingOptionValues($options);
                 if ($this->Psr12) {
+                    $this->Tabs = null;
+                    $this->Spaces = 4;
+                    $this->Eol = 'lf';
                     $unskip = [
                         ApplyMagicComma::class,
                         SpaceDeclarations::class,
@@ -914,6 +949,7 @@ EOF,
                     $this->SkipRules = array_diff($this->SkipRules, $unskip, $skip);
                     array_push($this->SkipRules, ...$skip);
                     array_push($this->AddRules, ...array_diff($add, $this->AddRules));
+                    $this->OneTrueBraceStyle = false;
                 }
                 $f = new Formatter(
                     !$this->Tabs,
@@ -929,7 +965,11 @@ EOF,
                     : ($this->Eol === 'lf' ? "\n" : "\r\n");
                 $f->PreserveEol = $this->Eol === 'auto';
                 $f->OneTrueBraceStyle = $this->OneTrueBraceStyle;
+                $f->ImportSortOrder = $this->SortImportsBy
+                    ? self::IMPORT_SORT_ORDER_MAP[$this->SortImportsBy]
+                    : ImportSortOrder::NAME;
                 if ($this->Psr12) {
+                    $f->Psr12Compliance = true;
                     $f->NewlineBeforeFnDoubleArrows = true;
                 }
                 $this->MirrorBrackets === null || $f->MirrorBrackets = $this->MirrorBrackets;
@@ -1111,7 +1151,7 @@ EOF,
                 $options,
                 array_diff_key(
                     $this->getFormattingOptionNames(false),
-                    ['preset' => null]
+                    ['preset' => null, 'psr12' => null]
                 )
             );
         }
@@ -1223,10 +1263,10 @@ EOF,
             'disable',
             'enable',
             'oneTrueBraceStyle',
-            //'ignoreNewlines',
             'noSimplifyStrings',
             'noMagicCommas',
             'noSortImports',
+            'sortImportsBy',
             'psr12',
             'preset',
         ];

@@ -3,13 +3,17 @@
 
 use Lkrms\Cli\CliApplication;
 use Lkrms\Facade\Console;
-use Lkrms\Facade\Convert;
 use Lkrms\Facade\File;
 use Lkrms\Pretty\Tests\Php\FormatterTest;
+use Lkrms\Utility\Convert;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 $app = new CliApplication(dirname(__DIR__));
+
+if (!ini_get('short_open_tag')) {
+    throw new RuntimeException('short_open_tag must be enabled');
+}
 
 $count = 0;
 $replaced = 0;

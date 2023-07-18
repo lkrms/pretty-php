@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "928fee071c734e01e438d14dd2bf884e",
+    "content-hash": "68a0912bf6812011b7e46644b8dc24ec",
     "packages": [
         {
             "name": "filp/whoops",
-            "version": "2.15.2",
+            "version": "2.15.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filp/whoops.git",
-                "reference": "aac9304c5ed61bf7b1b7a6064bf9806ab842ce73"
+                "reference": "c83e88a30524f9360b11f585f71e6b17313b7187"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filp/whoops/zipball/aac9304c5ed61bf7b1b7a6064bf9806ab842ce73",
-                "reference": "aac9304c5ed61bf7b1b7a6064bf9806ab842ce73",
+                "url": "https://api.github.com/repos/filp/whoops/zipball/c83e88a30524f9360b11f585f71e6b17313b7187",
+                "reference": "c83e88a30524f9360b11f585f71e6b17313b7187",
                 "shasum": ""
             },
             "require": {
@@ -67,7 +67,7 @@
             ],
             "support": {
                 "issues": "https://github.com/filp/whoops/issues",
-                "source": "https://github.com/filp/whoops/tree/2.15.2"
+                "source": "https://github.com/filp/whoops/tree/2.15.3"
             },
             "funding": [
                 {
@@ -75,7 +75,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2023-04-12T12:00:00+00:00"
+            "time": "2023-07-13T12:00:00+00:00"
         },
         {
             "name": "lkrms/dice",
@@ -122,16 +122,16 @@
         },
         {
             "name": "lkrms/util",
-            "version": "v0.20.40",
+            "version": "v0.20.42",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/php-util.git",
-                "reference": "78b61845d98fc7aa419e1f659a30155ba705cf3f"
+                "reference": "b51ce2f7d6f5898a9ec715e389af10a8770a8aab"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/php-util/zipball/78b61845d98fc7aa419e1f659a30155ba705cf3f",
-                "reference": "78b61845d98fc7aa419e1f659a30155ba705cf3f",
+                "url": "https://api.github.com/repos/lkrms/php-util/zipball/b51ce2f7d6f5898a9ec715e389af10a8770a8aab",
+                "reference": "b51ce2f7d6f5898a9ec715e389af10a8770a8aab",
                 "shasum": ""
             },
             "require": {
@@ -149,7 +149,7 @@
                 "firebase/php-jwt": "^6",
                 "league/oauth2-client": "^2",
                 "phpstan/extension-installer": "^1",
-                "phpstan/phpstan": "1.10.22",
+                "phpstan/phpstan": "^1",
                 "phpstan/phpstan-deprecation-rules": "^1",
                 "phpunit/phpunit": "^9"
             },
@@ -182,9 +182,9 @@
             "description": "A lightweight PHP toolkit for expressive backend/CLI apps",
             "support": {
                 "issues": "https://github.com/lkrms/php-util/issues",
-                "source": "https://github.com/lkrms/php-util/tree/v0.20.40"
+                "source": "https://github.com/lkrms/php-util/tree/v0.20.42"
             },
-            "time": "2023-07-06T05:55:22+00:00"
+            "time": "2023-07-18T01:37:09+00:00"
         },
         {
             "name": "psr/container",

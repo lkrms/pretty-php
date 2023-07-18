@@ -6,10 +6,9 @@ class A1 extends B implements C, D, E {}
 #[AttrB(true)]
 #[AttrC(101, Types::ANON_CLASS)]
 #[AttrD()]
-class A2 extends B implements
-    C,
-    D,
-    E {}
+class A2 extends B implements C,
+                              D,
+                              E {}
 
 #[AttrE]
 class A3 extends B implements C, D, E
@@ -25,10 +24,9 @@ class A3 extends B implements C, D, E
 #[AttrI(true)]
 #[AttrJ(101, Types::ANON_CLASS)]
 #[AttrK()]
-class A4 extends B implements
-    C,
-    D,
-    E
+class A4 extends B implements C,
+                              D,
+                              E
 {
     #[AttrL(true)]
     #[AttrM(102, Types::FUNC)]

@@ -5,7 +5,7 @@ $a = array('color' => 'red',
            'shape' => 'round',
            'name'  => 'apple',
            4  // key will be 0
-);
+           );
 
 $b = array('a', 'b', 'c');
 

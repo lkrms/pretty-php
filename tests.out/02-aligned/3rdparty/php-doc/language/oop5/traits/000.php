@@ -2,11 +2,11 @@
 trait ezcReflectionReturnInfo
 {
     function getReturnType()
-    {  /*1*/
+    {  /* 1 */
     }
 
     function getReturnDescription()
-    {  /*2*/
+    {  /* 2 */
     }
 }
 

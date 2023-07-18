@@ -24,19 +24,33 @@ final class AlignListsTest extends \Lkrms\Pretty\Tests\Php\TestCase
             'array destructuring' => [
                 <<<'PHP'
 <?php
-[$a, $b, $c,] = [
+[
+    $a,
+    $b,
+    $c,
+] = [
     $d,
     $e,
     $f,
 ];
-[[$a, $b, $c,],] = [
+[
+    [
+        $a,
+        $b,
+        $c,
+    ],
+] = [
     [
         $d,
         $e,
         $f,
     ],
 ];
-list($a, $b, $c,) = [
+list(
+    $a,
+    $b,
+    $c,
+) = [
     $d,
     $e,
     $f,
@@ -47,7 +61,11 @@ foreach ([
         $e,
         $f,
     ],
-] as [$a, $b, $c,]) {
+] as [
+    $a,
+    $b,
+    $c,
+]) {
 }
 foreach ([
     [
@@ -57,7 +75,11 @@ foreach ([
             $f,
         ],
     ],
-] as [[$a, $b, $c,]]) {
+] as [[
+          $a,
+          $b,
+          $c,
+      ]]) {
 }
 foreach ([
     [
@@ -65,7 +87,11 @@ foreach ([
         $e,
         $f,
     ],
-] as list($a, $b, $c,)) {
+] as list(
+    $a,
+    $b,
+    $c,
+)) {
 }
 
 PHP,
@@ -312,27 +338,25 @@ PHP,
 F($a + (
       $b - $c
   ) / ($e
-           * $f),
-  $g + (
-      $h / $i
-  ));
+      * $f), $g + (
+                 $h / $i
+             ));
 
 F(1 / (($e
-            * $f) / (
-           $b - $c
-       )) + $a,
-  $g + (
-      $h / $i
-  ));
+          * $f) / (
+      $b - $c
+  )) + $a, $g + (
+               $h / $i
+           ));
 
 F($a + (
-    $b - $c
-) / (
-    $e
-        * $f
-), $g + (
-    $h / $i
-));
+      $b - $c
+  ) / (
+      $e
+          * $f
+  ), $g + (
+         $h / $i
+     ));
 
 F($a + (
       $b - $c
@@ -379,8 +403,59 @@ F($a + (
 $g + (
     $h / $i
 ));
-PHP
+PHP,
             ],
+            'with wide expressions and heredocs' => [
+                <<<'PHP'
+<?php
+alpha()->bravo([0], [1, 2,
+                     3], [4,
+                          5, 6], [7,
+                                  8],
+               [9, 10],
+               [11,
+                12], [13,
+                      14])
+       ->charlie(['a'], ['b', 'c',
+                         'd'], ['e', <<<EOF
+                                     f
+                                     EOF, 'g'], [<<<EOF
+                                                 h
+                                                 EOF], ['i',
+                                                        'j'],
+                 ['k', <<<EOF
+                       l
+                       EOF],
+                 ['m',
+                  'n'], ['o',
+                         'p']);
+
+PHP,
+                <<<'PHP'
+<?php
+alpha()->bravo([0], [1, 2,
+3], [4,
+5, 6], [7,
+8],
+[9, 10],
+[11,
+12], [13,
+14])
+->charlie(['a'], ['b', 'c',
+'d'], ['e', <<<EOF
+f
+EOF, 'g'], [<<<EOF
+h
+EOF], ['i',
+'j'],
+['k', <<<EOF
+l
+EOF],
+['m',
+'n'], ['o',
+'p']);
+PHP,
+            ]
         ];
     }
 }

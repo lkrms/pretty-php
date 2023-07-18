@@ -13,7 +13,8 @@ use Lkrms\Pretty\WhitespaceType;
  *
  * Specifically:
  * - If an interface list (`extends` or `implements`, depending on context)
- *   breaks over multiple lines, place every item on its own line.
+ *   breaks over multiple lines and neither {@see NoMixedLists} nor
+ *   {@see AlignLists} are enabled, add a newline before the first interface.
  * - If one or more parameters in an argument list break over multiple lines to
  *   accommodate a T_ATTRIBUTE, place every parameter on its own line, and add
  *   blank lines before and after annotated parameters to improve readability.
@@ -32,14 +33,22 @@ final class BreakLists implements ListRule
     {
         // If `$owner` has no `ClosedBy`, this is an interface list
         if (!$owner->ClosedBy) {
-            if ($items->find(fn(Token $token) => $token->hasNewlineBefore())) {
-                $items->addWhitespaceBefore(WhitespaceType::LINE, true);
+            if (!array_intersect_key(
+                [NoMixedLists::class => true, AlignLists::class => true],
+                $this->Formatter->EnabledRules
+            ) && $items->find(
+                fn(Token $token) => $token->hasNewlineBefore()
+            )) {
+                $first = $items->first();
+                $first->WhitespaceBefore |= WhitespaceType::LINE;
+                $first->WhitespaceMaskPrev |= WhitespaceType::LINE;
+                $first->_prev->WhitespaceMaskNext |= WhitespaceType::LINE;
             }
             return;
         }
 
         if ($owner->id !== T_OPEN_PARENTHESIS ||
-                !(($owner->_prevCode->id ?? null) === T_FN ||
+                !($owner->prevCode()->id === T_FN ||
                     $owner->isDeclaration(T_FUNCTION)) ||
                 !$items->find(fn(Token $token) => $this->hasAttributeOnOwnLine($token))) {
             return;

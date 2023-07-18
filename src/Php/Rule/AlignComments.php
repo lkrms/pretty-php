@@ -2,11 +2,11 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
+use Lkrms\Pretty\Php\Catalog\TokenType;
 use Lkrms\Pretty\Php\Concern\BlockRuleTrait;
 use Lkrms\Pretty\Php\Contract\BlockRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenCollection;
-use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
 /**
@@ -113,7 +113,7 @@ final class AlignComments implements BlockRule
                 // anything to collect between $token and $comment->prev(), so use
                 // $comment's leading whitespace for calculations
                 if ($token === $comment) {
-                    $length = strlen(ltrim($comment->renderWhitespaceBefore(true), "\n"));
+                    $length = strlen($comment->renderWhitespaceBefore(true));
                     $lengths[$i] = $length;
                     $max = max($max, $length);
                     continue;

@@ -3,7 +3,8 @@
 namespace Lkrms\Pretty\Tests\Php;
 
 use Generator;
-use Lkrms\Pretty\Php\TokenType;
+use Lkrms\Pretty\Php\Catalog\CustomToken;
+use Lkrms\Pretty\Php\Catalog\TokenType;
 use ReflectionClass;
 
 final class TokenTypeTest extends \Lkrms\Pretty\Tests\Php\TestCase
@@ -11,7 +12,7 @@ final class TokenTypeTest extends \Lkrms\Pretty\Tests\Php\TestCase
     /**
      * @dataProvider uniquenessProvider
      *
-     * @param int[] $array
+     * @param array<int|string> $array
      */
     public function testUniqueness(array $array): void
     {
@@ -22,7 +23,7 @@ final class TokenTypeTest extends \Lkrms\Pretty\Tests\Php\TestCase
     }
 
     /**
-     * @return Generator<string,array<int[]>>
+     * @return Generator<string,array<array<int|string>>>
      */
     public static function uniquenessProvider(): Generator
     {
@@ -74,10 +75,10 @@ final class TokenTypeTest extends \Lkrms\Pretty\Tests\Php\TestCase
     private function getTokenTypeNames(array $tokens): array
     {
         return array_map(
-            function (int $id) {
-                $name = TokenType::NAME_MAP[$id] ?? token_name($id);
-                if ($name === 'UNKNOWN') {
-                    return chr($id);
+            function (int $id): string {
+                $name = token_name($id);
+                if (substr($name, 0, 2) !== 'T_') {
+                    return CustomToken::toName($id);
                 }
                 return $name;
             },

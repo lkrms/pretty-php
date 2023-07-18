@@ -1,0 +1,3 @@
+<?php
+$i = $this->ptr;
+while (--$i >= 0 && is_array($this->tkns[$i]) && $this->tkns[$i][0] === T_WHITESPACE);

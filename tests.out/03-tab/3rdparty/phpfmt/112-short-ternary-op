@@ -1,0 +1,3 @@
+<?php
+echo $a ? $c : $b;
+echo $a ?: $b;

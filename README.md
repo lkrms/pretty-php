@@ -104,7 +104,8 @@ backslash escape, or the double-quoted equivalent is shorter.
 
 ### Alias/import statements are grouped and sorted alphabetically
 
-> Use `-M, --no-sort-imports` to disable this behaviour.
+> Use `-m, --sort-imports-by` or `-M, --no-sort-imports` to modify or disable
+> this behaviour.
 
 ### Comments beside code are never moved to the next line
 

@@ -2,10 +2,10 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
+use Lkrms\Pretty\Php\Catalog\TokenType;
 use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
-use Lkrms\Pretty\Php\TokenType;
 use Lkrms\Pretty\WhitespaceType;
 
 /**
@@ -16,14 +16,14 @@ use Lkrms\Pretty\WhitespaceType;
  * - Suppress SPACE and BLANK as per {@see TokenType}::`SUPPRESS_SPACE_*`
  * - Suppress SPACE and BLANK after open brackets and before close brackets
  * - Propagate indentation from `<?php` tags to subsequent tokens
- * - Apply SPACE between `<?php` and a subsequent `declare` construct in the
- *   global scope
+ * - Add SPACE or BLANK between `<?php` and a subsequent `declare` construct in
+ *   the global scope
  * - Add LINE|SPACE after `<?php` and before `?>`
  * - Preserve one-line `<?php` ... `?>`, or suppress inner LINE if both ends
  *   have adjacent code
  * - Add SPACE after and suppress SPACE before commas
  * - Add LINE after labels
- * - Add LINE between arms of match expressions
+ * - Add LINE between the arms of match expressions
  * - Add LINE before and after attributes, suppress BLANK after
  * - Suppress whitespace inside `declare()`
  *
@@ -152,15 +152,23 @@ final class AddStandardWhitespace implements TokenRule
                 }
             }
 
-            // Apply SPACE between `<?php` and a subsequent `declare` construct
-            // in the global scope
+            // Add SPACE or BLANK between `<?php` and a subsequent `declare`
+            // construct in the global scope
             $current = $token;
             if ($token->id === T_OPEN_TAG &&
-                    ($declare = $token->next())->id === T_DECLARE &&
-                    ($end = $declare->nextSibling(2)) === $declare->EndStatement) {
+                ($declare = $token->next())->id === T_DECLARE &&
+                ($end = $declare->nextSibling(2)) === $declare->EndStatement &&
+                (!$this->Formatter->Psr12Compliance ||
+                    (!strcasecmp((string) $declare->nextSibling()->inner(), 'strict_types=1') &&
+                        ($end->id === T_CLOSE_TAG || $end->next()->id === T_CLOSE_TAG)))) {
                 $token->WhitespaceAfter |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskNext = WhitespaceType::SPACE;
                 $current = $end;
+                if ($this->Formatter->Psr12Compliance ||
+                        ($end->id === T_CLOSE_TAG || $end->next()->id === T_CLOSE_TAG)) {
+                    $token->CloseTag->WhitespaceBefore |= WhitespaceType::SPACE;
+                    $token->CloseTag->WhitespaceMaskPrev = WhitespaceType::SPACE;
+                }
             }
             // Add LINE|SPACE after `<?php`
             $current->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
@@ -235,22 +243,21 @@ final class AddStandardWhitespace implements TokenRule
             return;
         }
 
-        // Add LINE between arms of match expressions
-        if ($token->id === T_MATCH && !$this->Formatter->MatchesAreLists) {
-            $arms = $token->nextSibling(2);
-            $current = $arms->nextCode();
-            if ($current === $arms->ClosedBy) {
+        // Add LINE between the arms of match expressions
+        if ($token->id === T_MATCH) {
+            $parent = $token->nextSibling(2);
+            $arm = $parent->nextCode();
+            if ($arm === $parent->ClosedBy) {
                 return;
             }
-            $i = 0;
-            do {
-                if ($i++) {
-                    $current->WhitespaceAfter |= WhitespaceType::LINE;
+            while (true) {
+                $arm = $arm->nextSiblingOf(T_DOUBLE_ARROW)
+                           ->nextSiblingOf(T_COMMA);
+                if ($arm->IsNull) {
+                    break;
                 }
-                $current = $current->nextSiblingOf(...TokenType::OPERATOR_DOUBLE_ARROW)
-                                   ->nextSiblingOf(T_COMMA);
-            } while (!$current->IsNull);
-
+                $arm->WhitespaceAfter |= WhitespaceType::LINE;
+            }
             return;
         }
 

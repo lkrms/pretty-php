@@ -38,6 +38,6 @@ function g()
 function h()
 {
     return array_map(function ($v) {
-        return null;
-    }, $arr);
+                         return null;
+                     }, $arr);
 }

@@ -1,0 +1,3 @@
+<?php
+foreach ($headers as $headerKey => $headerVal)
+	$params->{$headerKey} = (string) $headerVal;

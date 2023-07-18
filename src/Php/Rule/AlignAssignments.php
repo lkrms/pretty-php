@@ -2,10 +2,10 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
+use Lkrms\Pretty\Php\Catalog\TokenType;
 use Lkrms\Pretty\Php\Concern\BlockRuleTrait;
 use Lkrms\Pretty\Php\Contract\BlockRule;
 use Lkrms\Pretty\Php\Token;
-use Lkrms\Pretty\Php\TokenType;
 
 /**
  * Align consecutive assignment operators and double arrows when they have the
@@ -294,7 +294,7 @@ final class AlignAssignments implements BlockRule
         foreach ($innerLines as $i => $lines) {
             /** @var Token $token1 */
             foreach ($lines as $token1) {
-                $indent = mb_strlen(ltrim($token1->renderWhitespaceBefore(true), "\n"));
+                $indent = mb_strlen($token1->renderWhitespaceBefore(true));
                 if ($indent + $deltas[$i] < $maxLength) {
                     return;
                 }
