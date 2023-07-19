@@ -388,6 +388,16 @@ class NavigableToken extends PhpToken
         return $this->id === T_END_ALT_SYNTAX;
     }
 
+    final public function isCloseBracketOrEndsAlternativeSyntax(): bool
+    {
+        return $this->is([
+            T_CLOSE_BRACE,
+            T_CLOSE_BRACKET,
+            T_CLOSE_PARENTHESIS,
+            T_END_ALT_SYNTAX,
+        ]);
+    }
+
     /**
      * Update the content of the token, setting OriginalText if needed
      *

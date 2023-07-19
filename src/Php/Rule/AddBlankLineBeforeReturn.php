@@ -2,7 +2,6 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Pretty\Php\Catalog\TokenType;
 use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
@@ -12,6 +11,7 @@ use Lkrms\Pretty\WhitespaceType;
  * Add a blank line before return and yield statements unless they appear
  * consecutively or at the beginning of a compound statement
  *
+ * @api
  */
 final class AddBlankLineBeforeReturn implements TokenRule
 {
@@ -19,7 +19,13 @@ final class AddBlankLineBeforeReturn implements TokenRule
 
     public function getPriority(string $method): ?int
     {
-        return 97;
+        switch ($method) {
+            case self::PROCESS_TOKEN:
+                return 97;
+
+            default:
+                return null;
+        }
     }
 
     public function getTokenTypes(): array
@@ -33,14 +39,10 @@ final class AddBlankLineBeforeReturn implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->prevStatementStart()->is([T_RETURN, T_YIELD, T_YIELD_FROM])) {
+        if (($prev = $token->_prevSibling->Statement ?? null) &&
+                $prev->is([T_RETURN, T_YIELD, T_YIELD_FROM])) {
             return;
         }
-        $prev = $token->prev();
-        while ($prev->is(TokenType::COMMENT) && $prev->hasNewlineBefore()) {
-            $prev->PinToCode = true;
-            $prev = $prev->prev();
-        }
-        $token->WhitespaceBefore |= WhitespaceType::BLANK | WhitespaceType::SPACE;
+        $token->applyBlankLineBefore();
     }
 }

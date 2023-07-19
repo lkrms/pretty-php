@@ -100,7 +100,22 @@ final class TokenCollection extends TypedCollection implements Stringable
                 return true;
             }
         }
+        return false;
+    }
 
+    /**
+     * True if any tokens in the collection are separated by a blank line
+     *
+     */
+    public function hasBlankLineBetweenTokens(): bool
+    {
+        $i = 0;
+        /** @var Token $token */
+        foreach ($this as $token) {
+            if ($i++ && $token->hasBlankLineBefore()) {
+                return true;
+            }
+        }
         return false;
     }
 

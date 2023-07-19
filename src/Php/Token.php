@@ -108,8 +108,6 @@ class Token extends CollectibleToken implements JsonSerializable
      */
     public array $OverhangingParents = [];
 
-    public bool $PinToCode = false;
-
     public int $LinePadding = 0;
 
     public int $LineUnpadding = 0;
@@ -617,9 +615,12 @@ class Token extends CollectibleToken implements JsonSerializable
         return $this->ClosedBy ?: $this;
     }
 
+    /**
+     * @api
+     */
     final public function wasFirstOnLine(): bool
     {
-        if ($this->IsVirtual) {
+        if ($this->IsNull) {
             return false;
         }
         do {
@@ -635,9 +636,12 @@ class Token extends CollectibleToken implements JsonSerializable
             $prevCode[-1] === "\n";
     }
 
+    /**
+     * @api
+     */
     final public function wasLastOnLine(): bool
     {
-        if ($this->IsVirtual) {
+        if ($this->IsNull) {
             return false;
         }
         do {
@@ -651,13 +655,6 @@ class Token extends CollectibleToken implements JsonSerializable
 
         return ($this->line + $newlines) < $next->line ||
             $code[-1] === "\n";
-    }
-
-    public function wasBetweenTokensOnLine(bool $canHaveInnerNewline = false): bool
-    {
-        return !$this->wasFirstOnLine() &&
-            !$this->wasLastOnLine() &&
-            ($canHaveInnerNewline || !$this->hasNewline());
     }
 
     private function byOffset(string $name, int $offset): Token
@@ -1339,43 +1336,29 @@ class Token extends CollectibleToken implements JsonSerializable
         return $this->startOfStatement()->collect($this);
     }
 
-    final public function effectiveWhitespaceBefore(): int
+    /**
+     * @api
+     */
+    final public function applyBlankLineBefore(bool $withMask = false): void
     {
-        // If:
-        // - this token is a comment pinned to the code below it, and
-        // - the previous token isn't a pinned comment (or if it is, it has a
-        //   different type and is therefore distinct), and
-        // - there are no unpinned comments, or comments with a different type,
-        //   between this and the next code token
-        //
-        // Then:
-        // - combine this token's effective whitespace with the next code
-        //   token's effective whitespace
-        if ($this->PinToCode &&
-                $this->_nextCode &&
-                (!$this->_prev->PinToCode || $this->_prev->CommentType !== $this->CommentType)) {
-            $current = $this;
-            while (true) {
-                $current = $current->_next;
-                if ($current->Index >= $this->_nextCode->Index) {
-                    return ($this->_effectiveWhitespaceBefore()
-                            | $this->_nextCode->_effectiveWhitespaceBefore())
-                        & $this->_prev->WhitespaceMaskNext & $this->_prev->CriticalWhitespaceMaskNext
-                        & $this->WhitespaceMaskPrev & $this->CriticalWhitespaceMaskPrev;
-                }
-                if (!$current->PinToCode || $current->CommentType !== $this->CommentType) {
-                    break;
-                }
-            }
+        $current = $this;
+        /** @var Token|null */
+        $last = null;
+        while (!$current->hasBlankLineBefore() &&
+                $current->_prev &&
+                $current->_prev->CommentType &&
+                $current->_prev->hasNewlineBefore() &&
+                (!$last || $current->_prev->CommentType === $last->_prev->CommentType)) {
+            $last = $current;
+            $current = $current->_prev;
         }
-        if (!$this->PinToCode && ($this->_prev->PinToCode ?? false) && $this->IsCode) {
-            return ($this->_effectiveWhitespaceBefore() | WhitespaceType::LINE) & ~WhitespaceType::BLANK;
+        $current->WhitespaceBefore |= WhitespaceType::BLANK;
+        if ($withMask) {
+            $current->WhitespaceMaskPrev |= WhitespaceType::BLANK;
         }
-
-        return $this->_effectiveWhitespaceBefore();
     }
 
-    private function _effectiveWhitespaceBefore(): int
+    final public function effectiveWhitespaceBefore(): int
     {
         return $this->CriticalWhitespaceBefore
             | ($this->_prev->CriticalWhitespaceAfter ?? 0)
@@ -1388,15 +1371,6 @@ class Token extends CollectibleToken implements JsonSerializable
     }
 
     final public function effectiveWhitespaceAfter(): int
-    {
-        if ($this->PinToCode && ($this->_next->IsCode ?? false)) {
-            return ($this->_effectiveWhitespaceAfter() | WhitespaceType::LINE) & ~WhitespaceType::BLANK;
-        }
-
-        return $this->_effectiveWhitespaceAfter();
-    }
-
-    private function _effectiveWhitespaceAfter(): int
     {
         return $this->CriticalWhitespaceAfter
             | ($this->_next->CriticalWhitespaceBefore ?? 0)

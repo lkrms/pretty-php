@@ -63,14 +63,10 @@ final class BreakLists implements ListRule
                     return;
                 }
                 if ($prev) {
-                    $token->WhitespaceBefore |= WhitespaceType::BLANK;
-                    $token->WhitespaceMaskPrev |= WhitespaceType::BLANK;
-                    $token->_prev->WhitespaceMaskNext |= WhitespaceType::BLANK;
+                    $token->applyBlankLineBefore(true);
                 }
                 if ($next) {
-                    $next->WhitespaceBefore |= WhitespaceType::BLANK;
-                    $next->WhitespaceMaskPrev |= WhitespaceType::BLANK;
-                    $next->_prev->WhitespaceMaskNext |= WhitespaceType::BLANK;
+                    $next->applyBlankLineBefore(true);
                 }
             }
         );
