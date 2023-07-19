@@ -2,14 +2,13 @@
 
 namespace Lkrms\Pretty\Php\Filter;
 
-use Lkrms\Pretty\Php\Catalog\TokenType;
 use Lkrms\Pretty\Php\Concern\FilterTrait;
 use Lkrms\Pretty\Php\Contract\Filter;
-use Lkrms\Pretty\Php\NavigableToken as Token;
 
 /**
  * Remove whitespace inside cast operators
  *
+ * @api
  */
 final class TrimCasts implements Filter
 {
@@ -17,17 +16,17 @@ final class TrimCasts implements Filter
 
     public function filterTokens(array $tokens): array
     {
-        $casts = array_filter(
-            $tokens,
-            fn(Token $t) => $t->is(TokenType::CAST)
-        );
-
-        array_walk(
-            $casts,
-            function (Token $t) {
-                $t->setText('(' . trim(substr($t->text, 1, -1)) . ')');
+        foreach ($tokens as $token) {
+            if ($token->id === T_INT_CAST ||
+                    $token->id === T_BOOL_CAST ||
+                    $token->id === T_DOUBLE_CAST ||
+                    $token->id === T_STRING_CAST ||
+                    $token->id === T_ARRAY_CAST ||
+                    $token->id === T_OBJECT_CAST ||
+                    $token->id === T_UNSET_CAST) {
+                $token->setText('(' . trim($token->text, " \n\r\t\v\0()") . ')');
             }
-        );
+        }
 
         return $tokens;
     }

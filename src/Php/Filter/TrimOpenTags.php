@@ -4,11 +4,11 @@ namespace Lkrms\Pretty\Php\Filter;
 
 use Lkrms\Pretty\Php\Concern\FilterTrait;
 use Lkrms\Pretty\Php\Contract\Filter;
-use Lkrms\Pretty\Php\NavigableToken as Token;
 
 /**
  * Remove whitespace after T_OPEN_TAG and T_OPEN_TAG_WITH_ECHO for comparison
  *
+ * @api
  */
 final class TrimOpenTags implements Filter
 {
@@ -16,14 +16,11 @@ final class TrimOpenTags implements Filter
 
     public function filterTokens(array $tokens): array
     {
-        $openTags = array_filter(
-            $tokens,
-            fn(Token $t) =>
-                $t->is([T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO])
-        );
-
-        foreach ($openTags as $t) {
-            $t->setText(rtrim($t->text));
+        foreach ($tokens as $token) {
+            if ($token->id === T_OPEN_TAG ||
+                    $token->id === T_OPEN_TAG_WITH_ECHO) {
+                $token->setText(rtrim($token->text));
+            }
         }
 
         return $tokens;

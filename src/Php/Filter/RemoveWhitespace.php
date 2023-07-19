@@ -2,14 +2,13 @@
 
 namespace Lkrms\Pretty\Php\Filter;
 
-use Lkrms\Pretty\Php\Catalog\TokenType;
 use Lkrms\Pretty\Php\Concern\FilterTrait;
 use Lkrms\Pretty\Php\Contract\Filter;
-use Lkrms\Pretty\Php\NavigableToken as Token;
 
 /**
  * Remove whitespace tokens
  *
+ * @api
  */
 final class RemoveWhitespace implements Filter
 {
@@ -17,9 +16,13 @@ final class RemoveWhitespace implements Filter
 
     public function filterTokens(array $tokens): array
     {
-        return array_filter(
-            $tokens,
-            fn(Token $t) => $t->id !== T_WHITESPACE
-        );
+        $filtered = [];
+        foreach ($tokens as $token) {
+            if ($token->id !== T_WHITESPACE) {
+                $filtered[] = $token;
+            }
+        }
+
+        return $filtered;
     }
 }

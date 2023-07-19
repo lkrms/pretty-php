@@ -4,11 +4,11 @@ namespace Lkrms\Pretty\Php\Filter;
 
 use Lkrms\Pretty\Php\Concern\FilterTrait;
 use Lkrms\Pretty\Php\Contract\Filter;
-use Lkrms\Pretty\Php\NavigableToken as Token;
 
 /**
  * Remove tokens with no content
  *
+ * @api
  */
 final class RemoveEmptyTokens implements Filter
 {
@@ -16,9 +16,13 @@ final class RemoveEmptyTokens implements Filter
 
     public function filterTokens(array $tokens): array
     {
-        return array_filter(
-            $tokens,
-            fn(Token $t) => $t->text !== ''
-        );
+        $filtered = [];
+        foreach ($tokens as $token) {
+            if ($token->text !== '') {
+                $filtered[] = $token;
+            }
+        }
+
+        return $filtered;
     }
 }

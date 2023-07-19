@@ -788,12 +788,12 @@ final class Formatter
      */
     private function simplifyTokens(array $tokens): array
     {
-        $tokens = array_map(
-            fn(Token $t) => [$t->id, $t->text],
-            array_values($tokens)
-        );
+        $simple = [];
+        foreach ($tokens as $token) {
+            $simple[] = [$token->id, $token->text];
+        }
 
-        return $tokens;
+        return $simple;
     }
 
     public function registerCallback(Rule $rule, Token $first, callable $callback, int $priority = 100, bool $reverse = false): void
