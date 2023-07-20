@@ -35,46 +35,34 @@ final class TokenCollection extends TypedCollection implements Stringable
         return $tokens;
     }
 
-    /**
-     * @param int|string ...$types
-     */
-    public function hasOneOf(...$types): bool
+    public function hasOneOf(int ...$types): bool
     {
         return $this->find(
             fn(Token $t) => $t->is($types)
         ) !== false;
     }
 
-    /**
-     * @param int|string ...$types
-     */
-    public function getAnyOf(...$types): self
+    public function getAnyOf(int ...$types): self
     {
         return $this->filter(
             fn(Token $t) => $t->is($types)
         );
     }
 
-    /**
-     * @param int|string ...$types
-     */
-    public function getFirstOf(...$types): ?Token
+    public function getFirstOf(int ...$types): ?Token
     {
         return $this->find(
             fn(Token $t) => $t->is($types)
         ) ?: null;
     }
 
-    /**
-     * @param int|string ...$types
-     */
-    public function getLastOf(...$types): ?Token
+    public function getLastOf(int ...$types): ?Token
     {
         return $this->reverse()->getFirstOf(...$types);
     }
 
     /**
-     * @return array<int|string>
+     * @return int[]
      */
     public function getTypes(): array
     {

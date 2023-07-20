@@ -1,18 +1,21 @@
 <?php declare(strict_types=1);
 
+// As of PHP 7.4 (but still missing from widely-used stubs)
+defined('T_BAD_CHARACTER') || define('T_BAD_CHARACTER', 10001);
+
 // As of PHP 8.0
-defined('T_ATTRIBUTE') || define('T_ATTRIBUTE', 10001);
-defined('T_MATCH') || define('T_MATCH', 10002);
-defined('T_NAME_FULLY_QUALIFIED') || define('T_NAME_FULLY_QUALIFIED', 10003);
-defined('T_NAME_QUALIFIED') || define('T_NAME_QUALIFIED', 10004);
-defined('T_NAME_RELATIVE') || define('T_NAME_RELATIVE', 10005);
-defined('T_NULLSAFE_OBJECT_OPERATOR') || define('T_NULLSAFE_OBJECT_OPERATOR', 10006);
+defined('T_ATTRIBUTE') || define('T_ATTRIBUTE', 10002);
+defined('T_MATCH') || define('T_MATCH', 10003);
+defined('T_NAME_FULLY_QUALIFIED') || define('T_NAME_FULLY_QUALIFIED', 10004);
+defined('T_NAME_QUALIFIED') || define('T_NAME_QUALIFIED', 10005);
+defined('T_NAME_RELATIVE') || define('T_NAME_RELATIVE', 10006);
+defined('T_NULLSAFE_OBJECT_OPERATOR') || define('T_NULLSAFE_OBJECT_OPERATOR', 10007);
 
 // As of PHP 8.1
-defined('T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG') || define('T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG', 10007);
-defined('T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG') || define('T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG', 10008);
-defined('T_ENUM') || define('T_ENUM', 10009);
-defined('T_READONLY') || define('T_READONLY', 10010);
+defined('T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG') || define('T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG', 10008);
+defined('T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG') || define('T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG', 10009);
+defined('T_ENUM') || define('T_ENUM', 10010);
+defined('T_READONLY') || define('T_READONLY', 10011);
 
 /**
  * Returned when there aren't any real tokens to return

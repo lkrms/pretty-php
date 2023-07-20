@@ -417,11 +417,9 @@ class NavigableToken extends PhpToken
     /**
      * Get the previous token that is one of the listed types
      *
-     * @param int|string $type
-     * @param int|string ...$types
      * @return TToken
      */
-    final public function prevOf($type, ...$types)
+    final public function prevOf(int $type, int ...$types)
     {
         array_unshift($types, $type);
         $t = $this;
@@ -436,11 +434,9 @@ class NavigableToken extends PhpToken
     /**
      * Get the next token that is one of the listed types
      *
-     * @param int|string $type
-     * @param int|string ...$types
      * @return TToken
      */
-    final public function nextOf($type, ...$types)
+    final public function nextOf(int $type, int ...$types)
     {
         array_unshift($types, $type);
         $t = $this;
@@ -457,11 +453,9 @@ class NavigableToken extends PhpToken
      *
      * The token returns itself if it satisfies the criteria.
      *
-     * @param int|string $type
-     * @param int|string ...$types
      * @return TToken
      */
-    final public function skipAnySiblingsOf($type, ...$types)
+    final public function skipAnySiblingsOf(int $type, int ...$types)
     {
         array_unshift($types, $type);
         $t = $this->IsCode ? $this : $this->_nextCode;

@@ -96,10 +96,8 @@ class CollectibleToken extends NavigableToken
      * Get preceding tokens in reverse document order, up to but not including
      * the first that isn't one of the given types
      *
-     * @param int|string $type
-     * @param int|string ...$types
      */
-    final public function prevWhile($type, ...$types): TokenCollection
+    final public function prevWhile(int $type, int ...$types): TokenCollection
     {
         return $this->_prevWhile(false, false, $type, ...$types);
     }
@@ -111,10 +109,8 @@ class CollectibleToken extends NavigableToken
      * @param bool $testToken If `true` and the token isn't one of the given
      * types, an empty collection is returned. Otherwise, the token is added to
      * the collection regardless.
-     * @param int|string $type
-     * @param int|string ...$types
      */
-    final public function withPrevWhile(bool $testToken, $type, ...$types): TokenCollection
+    final public function withPrevWhile(bool $testToken, int $type, int ...$types): TokenCollection
     {
         return $this->_prevWhile(true, $testToken, $type, ...$types);
     }
@@ -123,10 +119,8 @@ class CollectibleToken extends NavigableToken
      * Get following tokens, up to but not including the first that isn't one of
      * the given types
      *
-     * @param int|string $type
-     * @param int|string ...$types
      */
-    final public function nextWhile($type, ...$types): TokenCollection
+    final public function nextWhile(int $type, int ...$types): TokenCollection
     {
         return $this->_nextWhile(false, false, $type, ...$types);
     }
@@ -138,10 +132,8 @@ class CollectibleToken extends NavigableToken
      * @param bool $testToken If `true` and the token isn't one of the given
      * types, an empty collection is returned. Otherwise, the token is added to
      * the collection regardless.
-     * @param int|string $type
-     * @param int|string ...$types
      */
-    final public function withNextWhile(bool $testToken, $type, ...$types): TokenCollection
+    final public function withNextWhile(bool $testToken, int $type, int ...$types): TokenCollection
     {
         return $this->_nextWhile(true, $testToken, $type, ...$types);
     }
@@ -150,10 +142,8 @@ class CollectibleToken extends NavigableToken
      * Get preceding code tokens in reverse document order, up to but not
      * including the first that isn't one of the given types
      *
-     * @param int|string $type
-     * @param int|string ...$types
      */
-    final public function prevCodeWhile($type, ...$types): TokenCollection
+    final public function prevCodeWhile(int $type, int ...$types): TokenCollection
     {
         return $this->_prevCodeWhile(false, false, $type, ...$types);
     }
@@ -165,10 +155,8 @@ class CollectibleToken extends NavigableToken
      * @param bool $testToken If `true` and the token isn't one of the given
      * types, an empty collection is returned. Otherwise, the token is added to
      * the collection regardless.
-     * @param int|string $type
-     * @param int|string ...$types
      */
-    final public function withPrevCodeWhile(bool $testToken, $type, ...$types): TokenCollection
+    final public function withPrevCodeWhile(bool $testToken, int $type, int ...$types): TokenCollection
     {
         return $this->_prevCodeWhile(true, $testToken, $type, ...$types);
     }
@@ -177,10 +165,8 @@ class CollectibleToken extends NavigableToken
      * Get following code tokens, up to but not including the first that isn't
      * one of the given types
      *
-     * @param int|string $type
-     * @param int|string ...$types
      */
-    final public function nextCodeWhile($type, ...$types): TokenCollection
+    final public function nextCodeWhile(int $type, int ...$types): TokenCollection
     {
         return $this->_nextCodeWhile(false, false, $type, ...$types);
     }
@@ -192,10 +178,8 @@ class CollectibleToken extends NavigableToken
      * @param bool $testToken If `true` and the token isn't one of the given
      * types, an empty collection is returned. Otherwise, the token is added to
      * the collection regardless.
-     * @param int|string $type
-     * @param int|string ...$types
      */
-    final public function withNextCodeWhile(bool $testToken, $type, ...$types): TokenCollection
+    final public function withNextCodeWhile(bool $testToken, int $type, int ...$types): TokenCollection
     {
         return $this->_nextCodeWhile(true, $testToken, $type, ...$types);
     }
@@ -250,10 +234,7 @@ class CollectibleToken extends NavigableToken
         return $this->_nextSiblingsUntil($callback, true, $testToken);
     }
 
-    /**
-     * @param int|string ...$types
-     */
-    private function _prevWhile(bool $includeToken, bool $testToken, ...$types): TokenCollection
+    private function _prevWhile(bool $includeToken, bool $testToken, int ...$types): TokenCollection
     {
         $tokens = new TokenCollection();
         if ($includeToken && !$testToken) {
@@ -271,10 +252,7 @@ class CollectibleToken extends NavigableToken
         return $tokens;
     }
 
-    /**
-     * @param int|string ...$types
-     */
-    private function _nextWhile(bool $includeToken, bool $testToken, ...$types): TokenCollection
+    private function _nextWhile(bool $includeToken, bool $testToken, int ...$types): TokenCollection
     {
         $tokens = new TokenCollection();
         if ($includeToken && !$testToken) {
@@ -292,10 +270,7 @@ class CollectibleToken extends NavigableToken
         return $tokens;
     }
 
-    /**
-     * @param int|string ...$types
-     */
-    private function _prevCodeWhile(bool $includeToken, bool $testToken, ...$types): TokenCollection
+    private function _prevCodeWhile(bool $includeToken, bool $testToken, int ...$types): TokenCollection
     {
         $tokens = new TokenCollection();
         if ($includeToken && !$testToken) {
@@ -313,10 +288,7 @@ class CollectibleToken extends NavigableToken
         return $tokens;
     }
 
-    /**
-     * @param int|string ...$types
-     */
-    private function _nextCodeWhile(bool $includeToken, bool $testToken, ...$types): TokenCollection
+    private function _nextCodeWhile(bool $includeToken, bool $testToken, int ...$types): TokenCollection
     {
         $tokens = new TokenCollection();
         if ($includeToken && !$testToken) {

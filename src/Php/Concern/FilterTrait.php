@@ -38,10 +38,7 @@ trait FilterTrait
         return Token::null();
     }
 
-    /**
-     * @param int|string ...$types
-     */
-    protected function prevDeclarationOf(int $i, ...$types): Token
+    protected function prevDeclarationOf(int $i, int ...$types): Token
     {
         while ($i--) {
             $token = $this->Tokens[$i];

@@ -657,6 +657,32 @@ class Token extends CollectibleToken implements JsonSerializable
             $code[-1] === "\n";
     }
 
+    /**
+     * True if the token is a reserved PHP word
+     *
+     * Aside from `enum`, "soft reserved words" are not considered PHP keywords,
+     * so `false` is returned for `resource` and `numeric`.
+     *
+     */
+    public function isKeyword(): bool
+    {
+        return $this->is(TokenType::KEYWORD) ||
+            ($this->id === T_STRING && in_array($this->text, [
+                'bool',
+                'false',
+                'float',
+                'int',
+                'iterable',
+                'mixed',
+                'never',
+                'null',
+                'object',
+                'string',
+                'true',
+                'void',
+            ]));
+    }
+
     private function byOffset(string $name, int $offset): Token
     {
         $t = $this;
@@ -748,9 +774,8 @@ class Token extends CollectibleToken implements JsonSerializable
     /**
      * Get the token's most recent sibling that is one of the listed types
      *
-     * @param int|string ...$types
      */
-    final public function prevSiblingOf(...$types): Token
+    final public function prevSiblingOf(int ...$types): Token
     {
         $prev = $this;
         do {
@@ -763,9 +788,8 @@ class Token extends CollectibleToken implements JsonSerializable
     /**
      * Get the token's next sibling that is one of the listed types
      *
-     * @param int|string ...$types
      */
-    final public function nextSiblingOf(...$types): Token
+    final public function nextSiblingOf(int ...$types): Token
     {
         $next = $this;
         do {
@@ -781,9 +805,8 @@ class Token extends CollectibleToken implements JsonSerializable
      *
      * Tokens are collected in order from closest to farthest.
      *
-     * @param int|string ...$types
      */
-    final public function prevSiblingsWhile(...$types): TokenCollection
+    final public function prevSiblingsWhile(int ...$types): TokenCollection
     {
         return $this->_prevSiblingsWhile(false, ...$types);
     }
@@ -794,17 +817,15 @@ class Token extends CollectibleToken implements JsonSerializable
      *
      * Tokens are collected in order from closest to farthest.
      *
-     * @param int|string ...$types
      */
-    final public function withPrevSiblingsWhile(...$types): TokenCollection
+    final public function withPrevSiblingsWhile(int ...$types): TokenCollection
     {
         return $this->_prevSiblingsWhile(true, ...$types);
     }
 
     /**
-     * @param int|string ...$types
      */
-    private function _prevSiblingsWhile(bool $includeToken = false, ...$types): TokenCollection
+    private function _prevSiblingsWhile(bool $includeToken = false, int ...$types): TokenCollection
     {
         $tokens = new TokenCollection();
         $prev = $includeToken ? $this : $this->_prevSibling;
@@ -820,9 +841,8 @@ class Token extends CollectibleToken implements JsonSerializable
      * Collect the token's siblings up to but not including the first that isn't
      * one of the listed types
      *
-     * @param int|string ...$types
      */
-    final public function nextSiblingsWhile(...$types): TokenCollection
+    final public function nextSiblingsWhile(int ...$types): TokenCollection
     {
         return $this->_nextSiblingsWhile(false, ...$types);
     }
@@ -831,17 +851,15 @@ class Token extends CollectibleToken implements JsonSerializable
      * Collect the token and its siblings up to but not including the first that
      * isn't one of the listed types
      *
-     * @param int|string ...$types
      */
-    final public function withNextSiblingsWhile(...$types): TokenCollection
+    final public function withNextSiblingsWhile(int ...$types): TokenCollection
     {
         return $this->_nextSiblingsWhile(true, ...$types);
     }
 
     /**
-     * @param int|string ...$types
      */
-    private function _nextSiblingsWhile(bool $includeToken = false, ...$types): TokenCollection
+    private function _nextSiblingsWhile(bool $includeToken = false, int ...$types): TokenCollection
     {
         $tokens = new TokenCollection();
         $next = $includeToken ? $this : $this->_nextSibling;
@@ -864,9 +882,8 @@ class Token extends CollectibleToken implements JsonSerializable
      * Collect the token's parents up to but not including the first that isn't
      * one of the listed types
      *
-     * @param int|string ...$types
      */
-    final public function parentsWhile(...$types): TokenCollection
+    final public function parentsWhile(int ...$types): TokenCollection
     {
         return $this->_parentsWhile(false, ...$types);
     }
@@ -875,17 +892,15 @@ class Token extends CollectibleToken implements JsonSerializable
      * Collect the token and its parents up to but not including the first that
      * isn't one of the listed types
      *
-     * @param int|string ...$types
      */
-    final public function withParentsWhile(...$types): TokenCollection
+    final public function withParentsWhile(int ...$types): TokenCollection
     {
         return $this->_parentsWhile(true, ...$types);
     }
 
     /**
-     * @param int|string ...$types
      */
-    private function _parentsWhile(bool $includeToken = false, ...$types): TokenCollection
+    private function _parentsWhile(bool $includeToken = false, int ...$types): TokenCollection
     {
         $tokens = new TokenCollection();
         $current = $this->OpenedBy ?: $this;
@@ -1228,9 +1243,8 @@ class Token extends CollectibleToken implements JsonSerializable
     }
 
     /**
-     * @param int|string ...$types
      */
-    final public function adjacent(...$types): ?Token
+    final public function adjacent(int ...$types): ?Token
     {
         $current = $this->ClosedBy ?: $this;
         if (!$types) {
@@ -1661,9 +1675,8 @@ class Token extends CollectibleToken implements JsonSerializable
     }
 
     /**
-     * @param int|string ...$types
      */
-    public function isDeclaration(...$types): bool
+    public function isDeclaration(int ...$types): bool
     {
         if (!$this->IsCode) {
             return false;
@@ -1854,7 +1867,9 @@ class Token extends CollectibleToken implements JsonSerializable
         if ($code === '') {
             return;
         }
-        $expanded = Convert::expandTabs($code, $this->Formatter->TabSize, $this->OutputColumn);
+        $expanded = strpos($code, "\t") === false
+            ? $code
+            : Convert::expandTabs($code, $this->Formatter->TabSize, $this->OutputColumn);
         $this->OutputLine += ($newlines = substr_count($code, "\n"));
         $this->OutputColumn = $newlines
             ? mb_strlen($expanded) - mb_strrpos($expanded, "\n")
