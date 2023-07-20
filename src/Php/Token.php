@@ -206,87 +206,89 @@ class Token extends CollectibleToken implements JsonSerializable
     {
         foreach ($tokens as $token) {
             $token->Formatter = $formatter;
-            $token->prepare();
+            if (!$token->IsVirtual) {
+                $text = $token->text;
+                if ($token->TokenTypeIndex->DoNotModifyLeft[$token->id]) {
+                    $text = rtrim($text);
+                } elseif ($token->TokenTypeIndex->DoNotModifyRight[$token->id]) {
+                    $text = ltrim($text);
+                } elseif (!$token->TokenTypeIndex->DoNotModify[$token->id]) {
+                    $text = trim($text);
+                }
+                if ($text !== $token->text) {
+                    $token->setText($text);
+                }
+
+                if ($token->id === T_COMMENT) {
+                    preg_match('/^(\/\/|\/\*|#)/', $token->text, $matches);
+                    $token->CommentType = $matches[1];
+                } elseif ($token->id === T_DOC_COMMENT) {
+                    $token->CommentType = '/**';
+                }
+
+                if ($token->id === T_OPEN_TAG ||
+                        $token->id === T_OPEN_TAG_WITH_ECHO) {
+                    $token->OpenTag = $token;
+                }
+            }
+
+            if (!($prev = $token->_prev)) {
+                continue;
+            }
+
+            /**
+             * Result:
+             *
+             * ```php
+             * <?php            // OpenTag = itself, CloseTag = Token
+             * $foo = 'bar';    // OpenTag = Token,  CloseTag = Token
+             * ?>               // OpenTag = Token,  CloseTag = itself
+             * <!-- markup -->  // OpenTag = null,   CloseTag = null
+             * <?php            // OpenTag = itself, CloseTag = null
+             * $foo = 'bar';    // OpenTag = Token,  CloseTag = null
+             * ```
+             */
+            if (!$token->OpenTag && $prev->OpenTag && !$prev->CloseTag) {
+                $token->OpenTag = $prev->OpenTag;
+                if ($token->id === T_CLOSE_TAG) {
+                    $t = $token;
+                    do {
+                        $t->CloseTag = $token;
+                        $t = $t->_prev;
+                    } while ($t && $t->OpenTag === $token->OpenTag);
+
+                    $t = $prev;
+                    while ($t->id === T_COMMENT ||
+                            $t->id === T_DOC_COMMENT) {
+                        $t = $t->_prev;
+                    }
+                    if ($t->Index > $token->OpenTag->Index &&
+                            !$t->is([T_COLON, T_SEMICOLON, T_OPEN_BRACE]) &&
+                            ($t->id !== T_CLOSE_BRACE || !$t->isCloseBraceStatementTerminator())) {
+                        $token->IsCloseTagStatementTerminator = true;
+                        $token->IsCode = true;
+                        $t = $token;
+                        while ($t = $t->_next) {
+                            $t->_prevCode = $token;
+                            if ($t->IsCode) {
+                                break;
+                            }
+                        }
+                        $t = $token;
+                        while ($t = $t->_prev) {
+                            $t->_nextCode = $token;
+                            if ($t->IsCode) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
         }
+
         reset($tokens)->load();
 
         return $tokens;
-    }
-
-    protected function prepare(): void
-    {
-        if (!$this->IsVirtual) {
-            if ($this->is(TokenType::DO_NOT_MODIFY_LHS)) {
-                $this->setText(rtrim($this->text));
-            } elseif ($this->is(TokenType::DO_NOT_MODIFY_RHS)) {
-                $this->setText(ltrim($this->text));
-            } elseif (!$this->is(TokenType::DO_NOT_MODIFY)) {
-                $this->setText(trim($this->text));
-            }
-
-            if ($this->id === T_COMMENT) {
-                preg_match('/^(\/\/|\/\*|#)/', $this->text, $matches);
-                $this->CommentType = $matches[1];
-            } elseif ($this->id === T_DOC_COMMENT) {
-                $this->CommentType = '/**';
-            }
-
-            if ($this->is([T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO])) {
-                $this->OpenTag = $this;
-            }
-        }
-
-        if (!($prev = $this->_prev)) {
-            return;
-        }
-
-        /**
-         * Result:
-         *
-         * ```php
-         * <?php            // OpenTag = itself, CloseTag = Token
-         * $foo = 'bar';    // OpenTag = Token,  CloseTag = Token
-         * ?>               // OpenTag = Token,  CloseTag = itself
-         * <!-- markup -->  // OpenTag = null,   CloseTag = null
-         * <?php            // OpenTag = itself, CloseTag = null
-         * $foo = 'bar';    // OpenTag = Token,  CloseTag = null
-         * ```
-         */
-        if (!$this->OpenTag && $prev->OpenTag && !$prev->CloseTag) {
-            $this->OpenTag = $prev->OpenTag;
-            if ($this->id === T_CLOSE_TAG) {
-                $t = $this;
-                do {
-                    $t->CloseTag = $this;
-                    $t = $t->_prev;
-                } while ($t && $t->OpenTag === $this->OpenTag);
-
-                $t = $prev;
-                while ($t->is(TokenType::COMMENT)) {
-                    $t = $t->_prev;
-                }
-                if ($t->Index > $this->OpenTag->Index &&
-                        !$t->is([T_COLON, T_SEMICOLON, T_OPEN_BRACE]) &&
-                        ($t->id !== T_CLOSE_BRACE || !$t->isCloseBraceStatementTerminator())) {
-                    $this->IsCloseTagStatementTerminator = true;
-                    $this->IsCode = true;
-                    $t = $this;
-                    while ($t = $t->_next) {
-                        $t->_prevCode = $this;
-                        if ($t->IsCode) {
-                            break;
-                        }
-                    }
-                    $t = $this;
-                    while ($t = $t->_prev) {
-                        $t->_nextCode = $this;
-                        if ($t->IsCode) {
-                            break;
-                        }
-                    }
-                }
-            }
-        }
     }
 
     protected function load(): void
@@ -313,8 +315,9 @@ class Token extends CollectibleToken implements JsonSerializable
     private function maybeApplyStatement(): void
     {
         if ((($this->id === T_SEMICOLON ||
-                $this->IsCloseTagStatementTerminator ||
-                $this->isCloseBraceStatementTerminator()) &&
+            $this->IsCloseTagStatementTerminator ||
+            ($this->id === T_CLOSE_BRACE &&
+                $this->isCloseBraceStatementTerminator())) &&
             !$this->nextCode()->is([T_ELSEIF, T_ELSE, T_CATCH, T_FINALLY]) &&
             !($this->nextCode()->id === T_WHILE &&
                 // Body enclosed: `do { ... } while ();`
@@ -577,6 +580,7 @@ class Token extends CollectibleToken implements JsonSerializable
             $a['IsCode'],
             $a['IsNull'],
             $a['IsVirtual'],
+            $a['TokenTypeIndex'],
             $a['Formatter'],
         );
         $a['id'] = $this->getTokenName();
@@ -1824,7 +1828,9 @@ class Token extends CollectibleToken implements JsonSerializable
             }
 
             // Adjust the token's position to account for any leading whitespace
-            $this->movePosition($before ?? '');
+            if ($before ?? null) {
+                $this->movePosition($before);
+            }
 
             // And use it as the baseline for the next token's position
             if ($this->_next) {
@@ -1855,18 +1861,16 @@ class Token extends CollectibleToken implements JsonSerializable
             }
         }
 
-        if ($setPosition && $this->_next) {
-            $this->_next->movePosition(($text ?? $this->text) . ($after ?? ''));
+        $output = ($text ?? $this->text) . ($after ?? '');
+        if ($output !== '' && $setPosition && $this->_next) {
+            $this->_next->movePosition($output);
         }
 
-        return ($before ?? '') . ($text ?? $this->text) . ($after ?? '');
+        return ($before ?? '') . $output;
     }
 
     private function movePosition(string $code): void
     {
-        if ($code === '') {
-            return;
-        }
         $expanded = strpos($code, "\t") === false
             ? $code
             : Convert::expandTabs($code, $this->Formatter->TabSize, $this->OutputColumn);

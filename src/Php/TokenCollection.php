@@ -299,24 +299,6 @@ final class TokenCollection extends TypedCollection implements Stringable
         }
     }
 
-    public function first(bool $returnNullToken = false)
-    {
-        return parent::first()
-            ?: ($returnNullToken ? Token::null() : false);
-    }
-
-    public function last(bool $returnNullToken = false)
-    {
-        return parent::last()
-            ?: ($returnNullToken ? Token::null() : false);
-    }
-
-    public function nth(int $n, bool $returnNullToken = false)
-    {
-        return parent::nth($n)
-            ?: ($returnNullToken ? Token::null() : false);
-    }
-
     private function assertCollected(): void
     {
         if (!$this->Collected) {
