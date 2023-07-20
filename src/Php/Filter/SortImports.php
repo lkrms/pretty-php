@@ -23,12 +23,13 @@ final class SortImports implements Filter
         $count = count($this->Tokens);
 
         // Identify relevant T_USE tokens and exit early if possible
-        $tokens = array_keys(array_filter(
-            $this->Tokens,
-            fn(Token $t, int $i) => $t->id === T_USE &&
-                $this->prevCode($i)->id !== T_CLOSE_PARENTHESIS,
-            ARRAY_FILTER_USE_BOTH
-        ));
+        $tokens = [];
+        foreach ($this->Tokens as $i => $token) {
+            if ($token->id === T_USE &&
+                    $this->prevCode($i)->id !== T_CLOSE_PARENTHESIS) {
+                $tokens[] = $i;
+            }
+        }
         if (!$tokens) {
             return $this->Tokens;
         }
@@ -189,6 +190,13 @@ final class SortImports implements Filter
         //     use A;
         //
         $depth = $this->Formatter->ImportSortOrder === ImportSortOrder::DEPTH;
+        $import = '';
+        foreach ($tokens as $token) {
+            if (!$token->is(TokenType::COMMENT) &&
+                    $token->id !== T_SEMICOLON) {
+                $import .= ($import ? ' ' : '') . $token->text;
+            }
+        }
         $import = preg_replace(
             [
                 '/\\\\/',
@@ -204,14 +212,7 @@ final class SortImports implements Filter
                 $depth ? '${0}1' : '${0}1',
                 $depth ? '${0}0' : '${0}0',
             ],
-            array_reduce(
-                array_filter(
-                    $tokens,
-                    fn(Token $t) => !$t->is(TokenType::COMMENT) &&
-                        $t->id !== T_SEMICOLON
-                ),
-                fn($carry, Token $t) => ($carry ? $carry . ' ' : '') . $t->text,
-            )
+            $import
         );
 
         return [$order, $import, $tokens[0]->Index];
