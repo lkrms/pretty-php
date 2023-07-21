@@ -935,8 +935,9 @@ EOF,
                 if ($formatter && $options === $lastOptions) {
                     return $formatter;
                 }
-                Console::debug('New Formatter instance required for:', $file);
+                Console::debug('New formatter required for:', $file);
                 $this->applyFormattingOptionValues($options);
+                !$this->Verbose || Console::debug('Applying options:', json_encode($options, JSON_PRETTY_PRINT));
                 if ($this->Psr12) {
                     $this->Tabs = null;
                     $this->Spaces = 4;
