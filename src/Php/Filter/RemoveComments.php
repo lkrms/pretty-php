@@ -2,14 +2,13 @@
 
 namespace Lkrms\Pretty\Php\Filter;
 
-use Lkrms\Pretty\Php\Catalog\TokenType;
 use Lkrms\Pretty\Php\Concern\FilterTrait;
 use Lkrms\Pretty\Php\Contract\Filter;
-use Lkrms\Pretty\Php\NavigableToken as Token;
 
 /**
  * Remove comments for comparison
  *
+ * @api
  */
 final class RemoveComments implements Filter
 {
@@ -17,9 +16,14 @@ final class RemoveComments implements Filter
 
     public function filterTokens(array $tokens): array
     {
-        return array_filter(
-            $tokens,
-            fn(Token $t) => !$t->is(TokenType::COMMENT)
-        );
+        $filtered = [];
+        foreach ($tokens as $token) {
+            if ($token->id !== T_DOC_COMMENT &&
+                    $token->id !== T_COMMENT) {
+                $filtered[] = $token;
+            }
+        }
+
+        return $filtered;
     }
 }

@@ -4,11 +4,11 @@ namespace Lkrms\Pretty\Php\Filter;
 
 use Lkrms\Pretty\Php\Concern\FilterTrait;
 use Lkrms\Pretty\Php\Contract\Filter;
-use Lkrms\Pretty\Php\NavigableToken as Token;
 
 /**
  * Use var_export() to normalise string constants for comparison
  *
+ * @api
  */
 final class NormaliseStrings implements Filter
 {
@@ -16,19 +16,13 @@ final class NormaliseStrings implements Filter
 
     public function filterTokens(array $tokens): array
     {
-        $strings = array_filter(
-            $tokens,
-            fn(Token $t) => $t->id === T_CONSTANT_ENCAPSED_STRING
-        );
-
         $string = '';
-        array_walk(
-            $strings,
-            function (Token $t) use ($string) {
-                eval("\$string = {$t->text};");
-                $t->setText(var_export($string, true));
+        foreach ($tokens as $token) {
+            if ($token->id === T_CONSTANT_ENCAPSED_STRING) {
+                eval("\$string = {$token->text};");
+                $token->setText(var_export($string, true));
             }
-        );
+        }
 
         return $tokens;
     }

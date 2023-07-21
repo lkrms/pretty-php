@@ -4,6 +4,7 @@
 class A
 {
     /* comment 3 */
+
     /**
      * b func
      */

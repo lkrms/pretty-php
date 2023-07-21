@@ -54,6 +54,7 @@ use Lkrms\Pretty\Php\Rule\SimplifyStrings;
 use Lkrms\Pretty\Php\Rule\SpaceDeclarations;
 use Lkrms\Pretty\Php\Rule\SpaceOperators;
 use Lkrms\Pretty\Php\Rule\SwitchPosition;
+use Lkrms\Pretty\Php\Support\TokenTypeIndex;
 use Lkrms\Pretty\PrettyBadSyntaxException;
 use Lkrms\Pretty\PrettyException;
 use Lkrms\Pretty\WhitespaceType;
@@ -88,6 +89,13 @@ final class Formatter
      * @readonly
      */
     public string $SoftTab;
+
+    /**
+     * Indexed token types
+     *
+     * @readonly
+     */
+    public TokenTypeIndex $TokenTypeIndex;
 
     /**
      * Enabled formatting rules
@@ -310,11 +318,13 @@ final class Formatter
         array $skipRules = [],
         array $addRules = [],
         array $skipFilters = [],
-        int $flags = 0
+        int $flags = 0,
+        ?TokenTypeIndex $tokenTypeIndex = null
     ) {
         $this->Tab = $insertSpaces ? str_repeat(' ', $tabSize) : "\t";
         $this->TabSize = $tabSize;
         $this->SoftTab = str_repeat(' ', $tabSize);
+        $this->TokenTypeIndex = $tokenTypeIndex ?: new TokenTypeIndex();
 
         $this->Debug = $flags & FormatterFlag::DEBUG || Env::debug();
         $this->LogProgress = $this->Debug && $flags & FormatterFlag::LOG_PROGRESS;
@@ -468,6 +478,7 @@ final class Formatter
             $this->Tokens = Token::tokenize(
                 $code,
                 TOKEN_PARSE,
+                $this->TokenTypeIndex,
                 ...$this->FormatFilters
             );
 
@@ -788,12 +799,12 @@ final class Formatter
      */
     private function simplifyTokens(array $tokens): array
     {
-        $tokens = array_map(
-            fn(Token $t) => [$t->id, $t->text],
-            array_values($tokens)
-        );
+        $simple = [];
+        foreach ($tokens as $token) {
+            $simple[] = [$token->id, $token->text];
+        }
 
-        return $tokens;
+        return $simple;
     }
 
     public function registerCallback(Rule $rule, Token $first, callable $callback, int $priority = 100, bool $reverse = false): void

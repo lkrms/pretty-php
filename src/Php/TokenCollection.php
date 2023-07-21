@@ -35,46 +35,34 @@ final class TokenCollection extends TypedCollection implements Stringable
         return $tokens;
     }
 
-    /**
-     * @param int|string ...$types
-     */
-    public function hasOneOf(...$types): bool
+    public function hasOneOf(int ...$types): bool
     {
         return $this->find(
             fn(Token $t) => $t->is($types)
         ) !== false;
     }
 
-    /**
-     * @param int|string ...$types
-     */
-    public function getAnyOf(...$types): self
+    public function getAnyOf(int ...$types): self
     {
         return $this->filter(
             fn(Token $t) => $t->is($types)
         );
     }
 
-    /**
-     * @param int|string ...$types
-     */
-    public function getFirstOf(...$types): ?Token
+    public function getFirstOf(int ...$types): ?Token
     {
         return $this->find(
             fn(Token $t) => $t->is($types)
         ) ?: null;
     }
 
-    /**
-     * @param int|string ...$types
-     */
-    public function getLastOf(...$types): ?Token
+    public function getLastOf(int ...$types): ?Token
     {
         return $this->reverse()->getFirstOf(...$types);
     }
 
     /**
-     * @return array<int|string>
+     * @return int[]
      */
     public function getTypes(): array
     {
@@ -100,7 +88,22 @@ final class TokenCollection extends TypedCollection implements Stringable
                 return true;
             }
         }
+        return false;
+    }
 
+    /**
+     * True if any tokens in the collection are separated by a blank line
+     *
+     */
+    public function hasBlankLineBetweenTokens(): bool
+    {
+        $i = 0;
+        /** @var Token $token */
+        foreach ($this as $token) {
+            if ($i++ && $token->hasBlankLineBefore()) {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -294,24 +297,6 @@ final class TokenCollection extends TypedCollection implements Stringable
 
                 return $this;
         }
-    }
-
-    public function first(bool $returnNullToken = false)
-    {
-        return parent::first()
-            ?: ($returnNullToken ? Token::null() : false);
-    }
-
-    public function last(bool $returnNullToken = false)
-    {
-        return parent::last()
-            ?: ($returnNullToken ? Token::null() : false);
-    }
-
-    public function nth(int $n, bool $returnNullToken = false)
-    {
-        return parent::nth($n)
-            ?: ($returnNullToken ? Token::null() : false);
     }
 
     private function assertCollected(): void

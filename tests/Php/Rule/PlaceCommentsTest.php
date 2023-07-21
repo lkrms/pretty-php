@@ -27,16 +27,23 @@ switch ($a) {
     case 1:
         //
         func();
-        // Aligns with previous statement
+        // Indented
     case 2:
-    //
+        // Indented
     case 3:
         func2();
         break;
 
-        // Aligns with previous statement
+        // Indented
 
     case 4:
+        func2();
+        break;
+
+        // Indented
+
+    //
+    case 5:
         func();
         break;
 
@@ -54,16 +61,23 @@ case 0:
 case 1:
 //
 func();
-// Aligns with previous statement
+// Indented
 case 2:
-//
+// Indented
 case 3:
 func2();
 break;
 
-// Aligns with previous statement
+// Indented
 
 case 4:
+func2();
+break;
+
+// Indented
+
+//
+case 5:
 func();
 break;
 

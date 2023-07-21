@@ -5,6 +5,7 @@ namespace Lkrms\Pretty\Php;
 use Lkrms\Pretty\Php\Catalog\CustomToken;
 use Lkrms\Pretty\Php\Catalog\TokenType;
 use Lkrms\Pretty\Php\Contract\Filter;
+use Lkrms\Pretty\Php\Support\TokenTypeIndex;
 use PhpToken;
 
 /**
@@ -99,6 +100,13 @@ class NavigableToken extends PhpToken
     public ?string $OriginalText = null;
 
     /**
+     * Indexed token types
+     *
+     * @readonly
+     */
+    public TokenTypeIndex $TokenTypeIndex;
+
+    /**
      * @return static[]
      */
     public static function onlyTokenize(string $code, int $flags = 0, Filter ...$filters): array
@@ -120,21 +128,21 @@ class NavigableToken extends PhpToken
     /**
      * @return static[]
      */
-    public static function tokenize(string $code, int $flags = 0, Filter ...$filters): array
+    public static function tokenize(string $code, int $flags = 0, ?TokenTypeIndex $tokenTypeIndex = null, Filter ...$filters): array
     {
-        $tokens = parent::tokenize($code, $flags);
+        $tokens = static::onlyTokenize($code, $flags, ...$filters);
 
         if (!$tokens) {
             return $tokens;
         }
 
-        foreach ($filters as $filter) {
-            /** @var static[] */
-            $tokens = $filter->filterTokens($tokens);
+        if (!$tokenTypeIndex) {
+            $tokenTypeIndex = new TokenTypeIndex();
         }
 
         // Pass 1:
         // - link adjacent tokens
+        // - assign token type index
 
         /** @var static|null */
         $prev = null;
@@ -143,6 +151,7 @@ class NavigableToken extends PhpToken
                 $token->_prev = $prev;
                 $prev->_next = $token;
             }
+            $token->TokenTypeIndex = $tokenTypeIndex;
 
             $prev = $token;
         }
@@ -162,20 +171,20 @@ class NavigableToken extends PhpToken
         $count = count($keys);
         for ($i = 0; $i < $count; $i++) {
             $token = $tokens[$keys[$i]];
-            if ($token->id === T_COMMENT && substr($token->text, 0, 2) === '#[') {
+            if ($token->id === T_COMMENT &&
+                    substr($token->text, 0, 2) === '#[') {
                 $token->id = T_ATTRIBUTE_COMMENT;
             }
-            if ($token->is(TokenType::NOT_CODE)) {
+            if ($tokenTypeIndex->NotCode[$token->id]) {
                 $token->IsCode = false;
             }
 
-            if ($token->is(
-                [...TokenType::ALT_SYNTAX_CONTINUE, ...TokenType::ALT_SYNTAX_END]
-            ) && $prev->id !== T_END_ALT_SYNTAX) {
+            if ($tokenTypeIndex->AltSyntaxEndOrContinue[$token->id] &&
+                    $prev->id !== T_END_ALT_SYNTAX) {
                 $stack = $prev->BracketStack;
                 // If the previous token is a close bracket, remove its opener
                 // from the top of the stack
-                if ($prev->isCloseBracket()) {
+                if ($tokenTypeIndex->CloseBracket[$prev->id]) {
                     array_pop($stack);
                 }
                 $opener = array_pop($stack);
@@ -193,6 +202,7 @@ class NavigableToken extends PhpToken
                     $virtual->IsVirtual = true;
                     $virtual->_prev = $prev;
                     $virtual->_next = $token;
+                    $virtual->TokenTypeIndex = $tokenTypeIndex;
                     $prev->_next = $virtual;
                     $token->_prev = $virtual;
                     $token = $virtual;
@@ -217,15 +227,16 @@ class NavigableToken extends PhpToken
 
             $token->BracketStack = $prev->BracketStack;
             $stackDelta = 0;
-            if ($prev->isOpenBracket() || $prev->startsAlternativeSyntax()) {
+            if ($tokenTypeIndex->OpenBracket[$prev->id] ||
+                    ($prev->id === T_COLON && $prev->startsAlternativeSyntax())) {
                 $token->BracketStack[] = $prev;
                 $stackDelta++;
-            } elseif ($prev->isCloseBracket() || $prev->endsAlternativeSyntax()) {
+            } elseif ($tokenTypeIndex->CloseBracket[$prev->id] || $prev->id === T_END_ALT_SYNTAX) {
                 array_pop($token->BracketStack);
                 $stackDelta--;
             }
 
-            if ($token->isCloseBracket() || $token->endsAlternativeSyntax()) {
+            if ($tokenTypeIndex->CloseBracket[$token->id] || $token->id === T_END_ALT_SYNTAX) {
                 $opener = end($token->BracketStack);
                 $opener->ClosedBy = $token;
                 $token->OpenedBy = $opener;
@@ -271,12 +282,15 @@ class NavigableToken extends PhpToken
      *
      * @return static
      */
-    final public static function null()
+    public function null()
     {
         $token = new static(T_NULL, '');
         $token->IsCode = false;
         $token->IsNull = true;
         $token->IsVirtual = true;
+        if (isset($this->TokenTypeIndex)) {
+            $token->TokenTypeIndex = $this->TokenTypeIndex;
+        }
         return $token;
     }
 
@@ -292,17 +306,7 @@ class NavigableToken extends PhpToken
      */
     final public function isBracket(): bool
     {
-        return $this->is([
-            T_OPEN_BRACE,
-            T_OPEN_BRACKET,
-            T_OPEN_PARENTHESIS,
-            T_CLOSE_BRACE,
-            T_CLOSE_BRACKET,
-            T_CLOSE_PARENTHESIS,
-            T_ATTRIBUTE,
-            T_CURLY_OPEN,
-            T_DOLLAR_OPEN_CURLY_BRACES,
-        ]);
+        return $this->TokenTypeIndex->Bracket[$this->id];
     }
 
     /**
@@ -311,14 +315,7 @@ class NavigableToken extends PhpToken
      */
     final public function isStandardBracket(): bool
     {
-        return $this->is([
-            T_OPEN_BRACE,
-            T_OPEN_BRACKET,
-            T_OPEN_PARENTHESIS,
-            T_CLOSE_BRACE,
-            T_CLOSE_BRACKET,
-            T_CLOSE_PARENTHESIS,
-        ]);
+        return $this->TokenTypeIndex->StandardBracket[$this->id];
     }
 
     /**
@@ -328,14 +325,7 @@ class NavigableToken extends PhpToken
      */
     final public function isOpenBracket(): bool
     {
-        return $this->is([
-            T_OPEN_BRACE,
-            T_OPEN_BRACKET,
-            T_OPEN_PARENTHESIS,
-            T_ATTRIBUTE,
-            T_CURLY_OPEN,
-            T_DOLLAR_OPEN_CURLY_BRACES,
-        ]);
+        return $this->TokenTypeIndex->OpenBracket[$this->id];
     }
 
     /**
@@ -344,11 +334,7 @@ class NavigableToken extends PhpToken
      */
     final public function isCloseBracket(): bool
     {
-        return $this->is([
-            T_CLOSE_BRACE,
-            T_CLOSE_BRACKET,
-            T_CLOSE_PARENTHESIS,
-        ]);
+        return $this->TokenTypeIndex->CloseBracket[$this->id];
     }
 
     /**
@@ -357,11 +343,7 @@ class NavigableToken extends PhpToken
      */
     final public function isStandardOpenBracket(): bool
     {
-        return $this->is([
-            T_OPEN_BRACE,
-            T_OPEN_BRACKET,
-            T_OPEN_PARENTHESIS,
-        ]);
+        return $this->TokenTypeIndex->StandardOpenBracket[$this->id];
     }
 
     final public function startsAlternativeSyntax(): bool
@@ -388,6 +370,12 @@ class NavigableToken extends PhpToken
         return $this->id === T_END_ALT_SYNTAX;
     }
 
+    final public function isCloseBracketOrEndsAlternativeSyntax(): bool
+    {
+        return $this->id === T_END_ALT_SYNTAX ||
+            $this->TokenTypeIndex->CloseBracket[$this->id];
+    }
+
     /**
      * Update the content of the token, setting OriginalText if needed
      *
@@ -407,11 +395,9 @@ class NavigableToken extends PhpToken
     /**
      * Get the previous token that is one of the listed types
      *
-     * @param int|string $type
-     * @param int|string ...$types
      * @return TToken
      */
-    final public function prevOf($type, ...$types)
+    final public function prevOf(int $type, int ...$types)
     {
         array_unshift($types, $type);
         $t = $this;
@@ -426,11 +412,9 @@ class NavigableToken extends PhpToken
     /**
      * Get the next token that is one of the listed types
      *
-     * @param int|string $type
-     * @param int|string ...$types
      * @return TToken
      */
-    final public function nextOf($type, ...$types)
+    final public function nextOf(int $type, int ...$types)
     {
         array_unshift($types, $type);
         $t = $this;
@@ -447,11 +431,9 @@ class NavigableToken extends PhpToken
      *
      * The token returns itself if it satisfies the criteria.
      *
-     * @param int|string $type
-     * @param int|string ...$types
      * @return TToken
      */
-    final public function skipAnySiblingsOf($type, ...$types)
+    final public function skipAnySiblingsOf(int $type, int ...$types)
     {
         array_unshift($types, $type);
         $t = $this->IsCode ? $this : $this->_nextCode;

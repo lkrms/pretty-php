@@ -108,8 +108,6 @@ class Token extends CollectibleToken implements JsonSerializable
      */
     public array $OverhangingParents = [];
 
-    public bool $PinToCode = false;
-
     public int $LinePadding = 0;
 
     public int $LineUnpadding = 0;
@@ -208,87 +206,89 @@ class Token extends CollectibleToken implements JsonSerializable
     {
         foreach ($tokens as $token) {
             $token->Formatter = $formatter;
-            $token->prepare();
+            if (!$token->IsVirtual) {
+                $text = $token->text;
+                if ($token->TokenTypeIndex->DoNotModifyLeft[$token->id]) {
+                    $text = rtrim($text);
+                } elseif ($token->TokenTypeIndex->DoNotModifyRight[$token->id]) {
+                    $text = ltrim($text);
+                } elseif (!$token->TokenTypeIndex->DoNotModify[$token->id]) {
+                    $text = trim($text);
+                }
+                if ($text !== $token->text) {
+                    $token->setText($text);
+                }
+
+                if ($token->id === T_COMMENT) {
+                    preg_match('/^(\/\/|\/\*|#)/', $token->text, $matches);
+                    $token->CommentType = $matches[1];
+                } elseif ($token->id === T_DOC_COMMENT) {
+                    $token->CommentType = '/**';
+                }
+
+                if ($token->id === T_OPEN_TAG ||
+                        $token->id === T_OPEN_TAG_WITH_ECHO) {
+                    $token->OpenTag = $token;
+                }
+            }
+
+            if (!($prev = $token->_prev)) {
+                continue;
+            }
+
+            /**
+             * Result:
+             *
+             * ```php
+             * <?php            // OpenTag = itself, CloseTag = Token
+             * $foo = 'bar';    // OpenTag = Token,  CloseTag = Token
+             * ?>               // OpenTag = Token,  CloseTag = itself
+             * <!-- markup -->  // OpenTag = null,   CloseTag = null
+             * <?php            // OpenTag = itself, CloseTag = null
+             * $foo = 'bar';    // OpenTag = Token,  CloseTag = null
+             * ```
+             */
+            if (!$token->OpenTag && $prev->OpenTag && !$prev->CloseTag) {
+                $token->OpenTag = $prev->OpenTag;
+                if ($token->id === T_CLOSE_TAG) {
+                    $t = $token;
+                    do {
+                        $t->CloseTag = $token;
+                        $t = $t->_prev;
+                    } while ($t && $t->OpenTag === $token->OpenTag);
+
+                    $t = $prev;
+                    while ($t->id === T_COMMENT ||
+                            $t->id === T_DOC_COMMENT) {
+                        $t = $t->_prev;
+                    }
+                    if ($t->Index > $token->OpenTag->Index &&
+                            !$t->is([T_COLON, T_SEMICOLON, T_OPEN_BRACE]) &&
+                            ($t->id !== T_CLOSE_BRACE || !$t->isCloseBraceStatementTerminator())) {
+                        $token->IsCloseTagStatementTerminator = true;
+                        $token->IsCode = true;
+                        $t = $token;
+                        while ($t = $t->_next) {
+                            $t->_prevCode = $token;
+                            if ($t->IsCode) {
+                                break;
+                            }
+                        }
+                        $t = $token;
+                        while ($t = $t->_prev) {
+                            $t->_nextCode = $token;
+                            if ($t->IsCode) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
         }
+
         reset($tokens)->load();
 
         return $tokens;
-    }
-
-    protected function prepare(): void
-    {
-        if (!$this->IsVirtual) {
-            if ($this->is(TokenType::DO_NOT_MODIFY_LHS)) {
-                $this->setText(rtrim($this->text));
-            } elseif ($this->is(TokenType::DO_NOT_MODIFY_RHS)) {
-                $this->setText(ltrim($this->text));
-            } elseif (!$this->is(TokenType::DO_NOT_MODIFY)) {
-                $this->setText(trim($this->text));
-            }
-
-            if ($this->id === T_COMMENT) {
-                preg_match('/^(\/\/|\/\*|#)/', $this->text, $matches);
-                $this->CommentType = $matches[1];
-            } elseif ($this->id === T_DOC_COMMENT) {
-                $this->CommentType = '/**';
-            }
-
-            if ($this->is([T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO])) {
-                $this->OpenTag = $this;
-            }
-        }
-
-        if (!($prev = $this->_prev)) {
-            return;
-        }
-
-        /**
-         * Result:
-         *
-         * ```php
-         * <?php            // OpenTag = itself, CloseTag = Token
-         * $foo = 'bar';    // OpenTag = Token,  CloseTag = Token
-         * ?>               // OpenTag = Token,  CloseTag = itself
-         * <!-- markup -->  // OpenTag = null,   CloseTag = null
-         * <?php            // OpenTag = itself, CloseTag = null
-         * $foo = 'bar';    // OpenTag = Token,  CloseTag = null
-         * ```
-         */
-        if (!$this->OpenTag && $prev->OpenTag && !$prev->CloseTag) {
-            $this->OpenTag = $prev->OpenTag;
-            if ($this->id === T_CLOSE_TAG) {
-                $t = $this;
-                do {
-                    $t->CloseTag = $this;
-                    $t = $t->_prev;
-                } while ($t && $t->OpenTag === $this->OpenTag);
-
-                $t = $prev;
-                while ($t->is(TokenType::COMMENT)) {
-                    $t = $t->_prev;
-                }
-                if ($t->Index > $this->OpenTag->Index &&
-                        !$t->is([T_COLON, T_SEMICOLON, T_OPEN_BRACE]) &&
-                        ($t->id !== T_CLOSE_BRACE || !$t->isCloseBraceStatementTerminator())) {
-                    $this->IsCloseTagStatementTerminator = true;
-                    $this->IsCode = true;
-                    $t = $this;
-                    while ($t = $t->_next) {
-                        $t->_prevCode = $this;
-                        if ($t->IsCode) {
-                            break;
-                        }
-                    }
-                    $t = $this;
-                    while ($t = $t->_prev) {
-                        $t->_nextCode = $this;
-                        if ($t->IsCode) {
-                            break;
-                        }
-                    }
-                }
-            }
-        }
     }
 
     protected function load(): void
@@ -315,8 +315,9 @@ class Token extends CollectibleToken implements JsonSerializable
     private function maybeApplyStatement(): void
     {
         if ((($this->id === T_SEMICOLON ||
-                $this->IsCloseTagStatementTerminator ||
-                $this->isCloseBraceStatementTerminator()) &&
+            $this->IsCloseTagStatementTerminator ||
+            ($this->id === T_CLOSE_BRACE &&
+                $this->isCloseBraceStatementTerminator())) &&
             !$this->nextCode()->is([T_ELSEIF, T_ELSE, T_CATCH, T_FINALLY]) &&
             !($this->nextCode()->id === T_WHILE &&
                 // Body enclosed: `do { ... } while ();`
@@ -579,6 +580,7 @@ class Token extends CollectibleToken implements JsonSerializable
             $a['IsCode'],
             $a['IsNull'],
             $a['IsVirtual'],
+            $a['TokenTypeIndex'],
             $a['Formatter'],
         );
         $a['id'] = $this->getTokenName();
@@ -617,9 +619,12 @@ class Token extends CollectibleToken implements JsonSerializable
         return $this->ClosedBy ?: $this;
     }
 
+    /**
+     * @api
+     */
     final public function wasFirstOnLine(): bool
     {
-        if ($this->IsVirtual) {
+        if ($this->IsNull) {
             return false;
         }
         do {
@@ -635,9 +640,12 @@ class Token extends CollectibleToken implements JsonSerializable
             $prevCode[-1] === "\n";
     }
 
+    /**
+     * @api
+     */
     final public function wasLastOnLine(): bool
     {
-        if ($this->IsVirtual) {
+        if ($this->IsNull) {
             return false;
         }
         do {
@@ -653,11 +661,30 @@ class Token extends CollectibleToken implements JsonSerializable
             $code[-1] === "\n";
     }
 
-    public function wasBetweenTokensOnLine(bool $canHaveInnerNewline = false): bool
+    /**
+     * True if the token is a reserved PHP word
+     *
+     * Aside from `enum`, "soft reserved words" are not considered PHP keywords,
+     * so `false` is returned for `resource` and `numeric`.
+     *
+     */
+    public function isKeyword(): bool
     {
-        return !$this->wasFirstOnLine() &&
-            !$this->wasLastOnLine() &&
-            ($canHaveInnerNewline || !$this->hasNewline());
+        return $this->is(TokenType::KEYWORD) ||
+            ($this->id === T_STRING && in_array($this->text, [
+                'bool',
+                'false',
+                'float',
+                'int',
+                'iterable',
+                'mixed',
+                'never',
+                'null',
+                'object',
+                'string',
+                'true',
+                'void',
+            ]));
     }
 
     private function byOffset(string $name, int $offset): Token
@@ -751,9 +778,8 @@ class Token extends CollectibleToken implements JsonSerializable
     /**
      * Get the token's most recent sibling that is one of the listed types
      *
-     * @param int|string ...$types
      */
-    final public function prevSiblingOf(...$types): Token
+    final public function prevSiblingOf(int ...$types): Token
     {
         $prev = $this;
         do {
@@ -766,9 +792,8 @@ class Token extends CollectibleToken implements JsonSerializable
     /**
      * Get the token's next sibling that is one of the listed types
      *
-     * @param int|string ...$types
      */
-    final public function nextSiblingOf(...$types): Token
+    final public function nextSiblingOf(int ...$types): Token
     {
         $next = $this;
         do {
@@ -784,9 +809,8 @@ class Token extends CollectibleToken implements JsonSerializable
      *
      * Tokens are collected in order from closest to farthest.
      *
-     * @param int|string ...$types
      */
-    final public function prevSiblingsWhile(...$types): TokenCollection
+    final public function prevSiblingsWhile(int ...$types): TokenCollection
     {
         return $this->_prevSiblingsWhile(false, ...$types);
     }
@@ -797,17 +821,15 @@ class Token extends CollectibleToken implements JsonSerializable
      *
      * Tokens are collected in order from closest to farthest.
      *
-     * @param int|string ...$types
      */
-    final public function withPrevSiblingsWhile(...$types): TokenCollection
+    final public function withPrevSiblingsWhile(int ...$types): TokenCollection
     {
         return $this->_prevSiblingsWhile(true, ...$types);
     }
 
     /**
-     * @param int|string ...$types
      */
-    private function _prevSiblingsWhile(bool $includeToken = false, ...$types): TokenCollection
+    private function _prevSiblingsWhile(bool $includeToken = false, int ...$types): TokenCollection
     {
         $tokens = new TokenCollection();
         $prev = $includeToken ? $this : $this->_prevSibling;
@@ -823,9 +845,8 @@ class Token extends CollectibleToken implements JsonSerializable
      * Collect the token's siblings up to but not including the first that isn't
      * one of the listed types
      *
-     * @param int|string ...$types
      */
-    final public function nextSiblingsWhile(...$types): TokenCollection
+    final public function nextSiblingsWhile(int ...$types): TokenCollection
     {
         return $this->_nextSiblingsWhile(false, ...$types);
     }
@@ -834,17 +855,15 @@ class Token extends CollectibleToken implements JsonSerializable
      * Collect the token and its siblings up to but not including the first that
      * isn't one of the listed types
      *
-     * @param int|string ...$types
      */
-    final public function withNextSiblingsWhile(...$types): TokenCollection
+    final public function withNextSiblingsWhile(int ...$types): TokenCollection
     {
         return $this->_nextSiblingsWhile(true, ...$types);
     }
 
     /**
-     * @param int|string ...$types
      */
-    private function _nextSiblingsWhile(bool $includeToken = false, ...$types): TokenCollection
+    private function _nextSiblingsWhile(bool $includeToken = false, int ...$types): TokenCollection
     {
         $tokens = new TokenCollection();
         $next = $includeToken ? $this : $this->_nextSibling;
@@ -867,9 +886,8 @@ class Token extends CollectibleToken implements JsonSerializable
      * Collect the token's parents up to but not including the first that isn't
      * one of the listed types
      *
-     * @param int|string ...$types
      */
-    final public function parentsWhile(...$types): TokenCollection
+    final public function parentsWhile(int ...$types): TokenCollection
     {
         return $this->_parentsWhile(false, ...$types);
     }
@@ -878,17 +896,15 @@ class Token extends CollectibleToken implements JsonSerializable
      * Collect the token and its parents up to but not including the first that
      * isn't one of the listed types
      *
-     * @param int|string ...$types
      */
-    final public function withParentsWhile(...$types): TokenCollection
+    final public function withParentsWhile(int ...$types): TokenCollection
     {
         return $this->_parentsWhile(true, ...$types);
     }
 
     /**
-     * @param int|string ...$types
      */
-    private function _parentsWhile(bool $includeToken = false, ...$types): TokenCollection
+    private function _parentsWhile(bool $includeToken = false, int ...$types): TokenCollection
     {
         $tokens = new TokenCollection();
         $current = $this->OpenedBy ?: $this;
@@ -1231,9 +1247,8 @@ class Token extends CollectibleToken implements JsonSerializable
     }
 
     /**
-     * @param int|string ...$types
      */
-    final public function adjacent(...$types): ?Token
+    final public function adjacent(int ...$types): ?Token
     {
         $current = $this->ClosedBy ?: $this;
         if (!$types) {
@@ -1339,43 +1354,29 @@ class Token extends CollectibleToken implements JsonSerializable
         return $this->startOfStatement()->collect($this);
     }
 
-    final public function effectiveWhitespaceBefore(): int
+    /**
+     * @api
+     */
+    final public function applyBlankLineBefore(bool $withMask = false): void
     {
-        // If:
-        // - this token is a comment pinned to the code below it, and
-        // - the previous token isn't a pinned comment (or if it is, it has a
-        //   different type and is therefore distinct), and
-        // - there are no unpinned comments, or comments with a different type,
-        //   between this and the next code token
-        //
-        // Then:
-        // - combine this token's effective whitespace with the next code
-        //   token's effective whitespace
-        if ($this->PinToCode &&
-                $this->_nextCode &&
-                (!$this->_prev->PinToCode || $this->_prev->CommentType !== $this->CommentType)) {
-            $current = $this;
-            while (true) {
-                $current = $current->_next;
-                if ($current->Index >= $this->_nextCode->Index) {
-                    return ($this->_effectiveWhitespaceBefore()
-                            | $this->_nextCode->_effectiveWhitespaceBefore())
-                        & $this->_prev->WhitespaceMaskNext & $this->_prev->CriticalWhitespaceMaskNext
-                        & $this->WhitespaceMaskPrev & $this->CriticalWhitespaceMaskPrev;
-                }
-                if (!$current->PinToCode || $current->CommentType !== $this->CommentType) {
-                    break;
-                }
-            }
+        $current = $this;
+        /** @var Token|null */
+        $last = null;
+        while (!$current->hasBlankLineBefore() &&
+                $current->_prev &&
+                $current->_prev->CommentType &&
+                $current->_prev->hasNewlineBefore() &&
+                (!$last || $current->_prev->CommentType === $last->_prev->CommentType)) {
+            $last = $current;
+            $current = $current->_prev;
         }
-        if (!$this->PinToCode && ($this->_prev->PinToCode ?? false) && $this->IsCode) {
-            return ($this->_effectiveWhitespaceBefore() | WhitespaceType::LINE) & ~WhitespaceType::BLANK;
+        $current->WhitespaceBefore |= WhitespaceType::BLANK;
+        if ($withMask) {
+            $current->WhitespaceMaskPrev |= WhitespaceType::BLANK;
         }
-
-        return $this->_effectiveWhitespaceBefore();
     }
 
-    private function _effectiveWhitespaceBefore(): int
+    final public function effectiveWhitespaceBefore(): int
     {
         return $this->CriticalWhitespaceBefore
             | ($this->_prev->CriticalWhitespaceAfter ?? 0)
@@ -1388,15 +1389,6 @@ class Token extends CollectibleToken implements JsonSerializable
     }
 
     final public function effectiveWhitespaceAfter(): int
-    {
-        if ($this->PinToCode && ($this->_next->IsCode ?? false)) {
-            return ($this->_effectiveWhitespaceAfter() | WhitespaceType::LINE) & ~WhitespaceType::BLANK;
-        }
-
-        return $this->_effectiveWhitespaceAfter();
-    }
-
-    private function _effectiveWhitespaceAfter(): int
     {
         return $this->CriticalWhitespaceAfter
             | ($this->_next->CriticalWhitespaceBefore ?? 0)
@@ -1687,9 +1679,8 @@ class Token extends CollectibleToken implements JsonSerializable
     }
 
     /**
-     * @param int|string ...$types
      */
-    public function isDeclaration(...$types): bool
+    public function isDeclaration(int ...$types): bool
     {
         if (!$this->IsCode) {
             return false;
@@ -1837,7 +1828,9 @@ class Token extends CollectibleToken implements JsonSerializable
             }
 
             // Adjust the token's position to account for any leading whitespace
-            $this->movePosition($before ?? '');
+            if ($before ?? null) {
+                $this->movePosition($before);
+            }
 
             // And use it as the baseline for the next token's position
             if ($this->_next) {
@@ -1868,19 +1861,19 @@ class Token extends CollectibleToken implements JsonSerializable
             }
         }
 
-        if ($setPosition && $this->_next) {
-            $this->_next->movePosition(($text ?? $this->text) . ($after ?? ''));
+        $output = ($text ?? $this->text) . ($after ?? '');
+        if ($output !== '' && $setPosition && $this->_next) {
+            $this->_next->movePosition($output);
         }
 
-        return ($before ?? '') . ($text ?? $this->text) . ($after ?? '');
+        return ($before ?? '') . $output;
     }
 
     private function movePosition(string $code): void
     {
-        if ($code === '') {
-            return;
-        }
-        $expanded = Convert::expandTabs($code, $this->Formatter->TabSize, $this->OutputColumn);
+        $expanded = strpos($code, "\t") === false
+            ? $code
+            : Convert::expandTabs($code, $this->Formatter->TabSize, $this->OutputColumn);
         $this->OutputLine += ($newlines = substr_count($code, "\n"));
         $this->OutputColumn = $newlines
             ? mb_strlen($expanded) - mb_strrpos($expanded, "\n")

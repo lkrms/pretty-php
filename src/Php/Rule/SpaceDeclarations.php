@@ -85,9 +85,9 @@ final class SpaceDeclarations implements TokenRule
 
         // Don't add blank lines between `<?php` and subsequent declarations
         // unless strict PSR-12 compliance is enabled
-        $line = !$this->Formatter->Psr12Compliance && $token->OpenTag->nextCode() === $token
-            ? WhitespaceType::LINE
-            : WhitespaceType::BLANK;
+        $blank =
+            $this->Formatter->Psr12Compliance ||
+                $token->OpenTag->nextCode() !== $token;
 
         // If the same DECLARATION_UNIQUE tokens appear in consecutive one-line
         // statements, propagate the gap between statements 1 and 2 to
@@ -96,7 +96,11 @@ final class SpaceDeclarations implements TokenRule
                        ->getTypes();
         // Allow `$types` to be empty if this is a property declaration
         if (!$types && !$parts->hasOneOf(...TokenType::VISIBILITY)) {
-            $token->WhitespaceBefore |= $line;
+            if ($blank) {
+                $token->applyBlankLineBefore();
+            } else {
+                $token->WhitespaceBefore |= WhitespaceType::LINE;
+            }
 
             return;
         }
@@ -111,7 +115,11 @@ final class SpaceDeclarations implements TokenRule
         $count = count($this->Prev);
         // Always add a blank line above the first declaration of each type
         if ($count < 2) {
-            $token->WhitespaceBefore |= $line;
+            if ($blank) {
+                $token->applyBlankLineBefore();
+            } else {
+                $token->WhitespaceBefore |= WhitespaceType::LINE;
+            }
 
             return;
         }
@@ -122,6 +130,7 @@ final class SpaceDeclarations implements TokenRule
             $this->PrevCondense = $parts->hasOneOf(...TokenType::DECLARATION_CONDENSE);
         }
         if ($this->PrevCondense) {
+            $token->WhitespaceBefore |= WhitespaceType::LINE;
             $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
 
             return;
@@ -158,20 +167,19 @@ final class SpaceDeclarations implements TokenRule
                 if (!$this->hasComment($token)) {
                     array_walk(
                         $this->Prev,
-                        function (Token $t) {
-                            $t->WhitespaceBefore |= WhitespaceType::BLANK;
-                            $t->WhitespaceMaskPrev |= WhitespaceType::BLANK;
-                        }
+                        fn(Token $t) =>
+                            $t->applyBlankLineBefore(true)
                     );
                 }
                 $this->PrevExpand = true;
             } else {
-                $token->WhitespaceBefore |= WhitespaceType::BLANK;
-                $token->WhitespaceMaskPrev |= WhitespaceType::BLANK;
+                $token->applyBlankLineBefore(true);
             }
 
             return;
         }
+
+        $token->WhitespaceBefore |= WhitespaceType::LINE;
 
         if ($count > 2) {
             $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
@@ -180,8 +188,10 @@ final class SpaceDeclarations implements TokenRule
 
     private function hasComment(Token $token): bool
     {
-        return ($comment = $token->prev())->is(TokenType::COMMENT) &&
-            $comment->PinToCode;
+        return ($prev = $token->_prev) &&
+            $prev->CommentType &&
+            $prev->hasNewlineBefore() &&
+            !$prev->hasBlankLineAfter();
     }
 
     public function reset(): void

@@ -25,6 +25,7 @@ trait FilterTrait
 
     protected function prevCode(int $i, ?int &$prev_i = null): Token
     {
+        $token = $this->Tokens[$i];
         while ($i--) {
             $token = $this->Tokens[$i];
             if ($token->is(TokenType::NOT_CODE)) {
@@ -35,28 +36,7 @@ trait FilterTrait
             return $token;
         }
 
-        return Token::null();
-    }
-
-    /**
-     * @param int|string ...$types
-     */
-    protected function prevDeclarationOf(int $i, ...$types): Token
-    {
-        while ($i--) {
-            $token = $this->Tokens[$i];
-            if ($token->is(TokenType::NOT_CODE)) {
-                continue;
-            }
-            if (!$token->is(TokenType::DECLARATION_PART)) {
-                break;
-            }
-            if ($token->is($types)) {
-                return $token;
-            }
-        }
-
-        return Token::null();
+        return $token->null();
     }
 
     protected function isOneLineComment(int $i): bool
