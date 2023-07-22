@@ -206,6 +206,11 @@ class FormatPhp extends CliCommand
     private $SkipFilters;
 
     /**
+     * @var int|null
+     */
+    private $SpacesBesideCode;
+
+    /**
      * @var bool|null
      */
     private $MirrorBrackets;
@@ -290,6 +295,7 @@ class FormatPhp extends CliCommand
     ];
 
     private const INTERNAL_OPTION_MAP = [
+        'spaces-beside-code' => 'SpacesBesideCode',
         'mirror-brackets' => 'MirrorBrackets',
         'hanging-heredoc-indents' => 'HangingHeredocIndents',
         'increase-indent-between-unenclosed-tags' => 'IncreaseIndentBetweenUnenclosedTags',
@@ -321,6 +327,7 @@ class FormatPhp extends CliCommand
             ],
             'one-true-brace-style' => true,
             '@internal' => [
+                'spaces-beside-code' => 1,
                 'mirror-brackets' => false,
                 'increase-indent-between-unenclosed-tags' => false,
                 'preset-rules' => [
@@ -972,6 +979,7 @@ EOF,
                     $f->Psr12Compliance = true;
                     $f->NewlineBeforeFnDoubleArrows = true;
                 }
+                $this->SpacesBesideCode === null || $f->SpacesBesideCode = $this->SpacesBesideCode;
                 $this->MirrorBrackets === null || $f->MirrorBrackets = $this->MirrorBrackets;
                 $this->HangingHeredocIndents === null || $f->HangingHeredocIndents = $this->HangingHeredocIndents;
                 $this->IncreaseIndentBetweenUnenclosedTags === null || $f->IncreaseIndentBetweenUnenclosedTags = $this->IncreaseIndentBetweenUnenclosedTags;
@@ -1202,7 +1210,7 @@ EOF,
         if ($values !== null) {
             $this->applyOptionValues($values, false, false, $asArguments);
             if ($internal = $values['@internal'] ?? null) {
-                /** @var array<array<class-string<Rule>>|bool|null> $internal */
+                /** @var array<array<class-string<Rule>>|bool|int|null> $internal */
                 foreach ($internal as $name => $value) {
                     $property = self::INTERNAL_OPTION_MAP[$name] ?? null;
                     if (!$property) {
