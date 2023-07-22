@@ -7,61 +7,10 @@ use Lkrms\Concept\Dictionary;
 /**
  * Tokens by type
  *
+ * @api
  */
 final class TokenType extends Dictionary
 {
-    public const PRESERVE_BLANK_AFTER = [
-        T_CLOSE_BRACE,
-        T_COMMA,
-        T_OPEN_TAG,
-        T_OPEN_TAG_WITH_ECHO,
-        T_SEMICOLON,
-        ...self::COMMENT,
-    ];
-
-    public const PRESERVE_NEWLINE_AFTER = [
-        T_COLON,
-        T_DOUBLE_ARROW,
-        T_EXTENDS,
-        T_IMPLEMENTS,
-        T_OPEN_BRACE,
-        T_OPEN_BRACKET,
-        T_OPEN_PARENTHESIS,
-        T_RETURN,
-        T_YIELD,
-        T_YIELD_FROM,
-        ...self::PRESERVE_BLANK_AFTER,
-        ...self::OPERATOR_ASSIGNMENT,
-        ...self::OPERATOR_COMPARISON_EXCEPT_COALESCE,
-        ...self::OPERATOR_LOGICAL_EXCEPT_NOT,
-    ];
-
-    public const PRESERVE_BLANK_BEFORE = [
-        T_CLOSE_TAG,
-    ];
-
-    public const PRESERVE_NEWLINE_BEFORE = [
-        T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
-        T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
-        T_CLOSE_BRACKET,
-        T_CLOSE_PARENTHESIS,
-        T_COALESCE,
-        T_CONCAT,
-        T_DOUBLE_ARROW,
-        T_LOGICAL_NOT,
-        T_NULLSAFE_OBJECT_OPERATOR,
-        T_OBJECT_OPERATOR,
-        ...self::PRESERVE_BLANK_BEFORE,
-        ...self::OPERATOR_ARITHMETIC,
-        ...self::OPERATOR_BITWISE,
-        ...self::OPERATOR_TERNARY,
-    ];
-
-    public const COMMENT = [
-        T_COMMENT,
-        T_DOC_COMMENT,
-    ];
-
     public const NOT_CODE = [
         T_INLINE_HTML,
         T_OPEN_TAG,
@@ -71,10 +20,32 @@ final class TokenType extends Dictionary
         ...self::COMMENT,
     ];
 
-    public const AMPERSAND = [
-        T_AND,
+    public const COMMENT = [
+        T_COMMENT,
+        T_DOC_COMMENT,
+    ];
+
+    /**
+     * All operator tokens
+     *
+     * {@see TokenType::OPERATOR_EXECUTION} is excluded because for formatting
+     * purposes, commands between backticks are equivalent to double-quoted
+     * strings.
+     */
+    public const OPERATOR_ALL = [
         T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
         T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
+        ...TokenType::OPERATOR_ARITHMETIC,
+        ...TokenType::OPERATOR_ASSIGNMENT,
+        ...TokenType::OPERATOR_BITWISE,
+        ...TokenType::OPERATOR_COMPARISON,
+        ...TokenType::OPERATOR_TERNARY,
+        ...TokenType::OPERATOR_ERROR_CONTROL,
+        ...TokenType::OPERATOR_INCREMENT_DECREMENT,
+        ...TokenType::OPERATOR_LOGICAL,
+        ...TokenType::OPERATOR_STRING,
+        ...TokenType::OPERATOR_DOUBLE_ARROW,
+        ...TokenType::OPERATOR_INSTANCEOF,
     ];
 
     public const OPERATOR_ARITHMETIC = [
@@ -112,6 +83,11 @@ final class TokenType extends Dictionary
         T_SR,   // >>
     ];
 
+    public const OPERATOR_COMPARISON = [
+        T_COALESCE,  // ??
+        ...self::OPERATOR_COMPARISON_EXCEPT_COALESCE,
+    ];
+
     public const OPERATOR_COMPARISON_EXCEPT_COALESCE = [
         T_SMALLER,              // <
         T_GREATER,              // >
@@ -122,11 +98,6 @@ final class TokenType extends Dictionary
         T_IS_SMALLER_OR_EQUAL,  // <=
         T_IS_GREATER_OR_EQUAL,  // >=
         T_SPACESHIP,            // <=>
-    ];
-
-    public const OPERATOR_COMPARISON = [
-        T_COALESCE,  // ??
-        ...self::OPERATOR_COMPARISON_EXCEPT_COALESCE,
     ];
 
     public const OPERATOR_TERNARY = [
@@ -147,17 +118,17 @@ final class TokenType extends Dictionary
         T_DEC,  // --
     ];
 
+    public const OPERATOR_LOGICAL = [
+        T_LOGICAL_NOT,  // !
+        ...self::OPERATOR_LOGICAL_EXCEPT_NOT,
+    ];
+
     public const OPERATOR_LOGICAL_EXCEPT_NOT = [
         T_LOGICAL_AND,  // and
         T_LOGICAL_OR,   // or
         T_LOGICAL_XOR,  // xor
         T_BOOLEAN_AND,  // &&
         T_BOOLEAN_OR,   // ||
-    ];
-
-    public const OPERATOR_LOGICAL = [
-        T_LOGICAL_NOT,  // !
-        ...self::OPERATOR_LOGICAL_EXCEPT_NOT,
     ];
 
     public const OPERATOR_STRING = [
@@ -182,54 +153,12 @@ final class TokenType extends Dictionary
         T_UNSET_CAST,   // (unset)
     ];
 
-    public const DECLARATION_PART = [
-        T_ATTRIBUTE,
-        T_ATTRIBUTE_COMMENT,
-        ...self::DECLARATION_LIST,
-        ...self::AMPERSAND,
-        ...self::DECLARATION,
-    ];
-
-    public const DECLARATION_PART_WITH_NEW = [
-        T_NEW,
-        ...self::DECLARATION_PART,
-    ];
-
-    public const DECLARATION_TOP_LEVEL = [
-        T_CLASS,
-        T_ENUM,
-        T_FUNCTION,
-        T_INTERFACE,
-        T_NAMESPACE,
-        T_TRAIT,
-    ];
-
-    public const DECLARATION_UNIQUE = [
-        T_CLASS,
-        T_CONST,
-        T_ENUM,
-        T_FUNCTION,
-        T_INTERFACE,
-        T_NAMESPACE,
-        T_TRAIT,
-        T_USE,
-    ];
-
-    public const DECLARATION_CONDENSE = [
-        T_USE,
-    ];
-
     public const VALUE_TYPE = [
         T_AND,                // &
         T_OR,                 // |
         T_OPEN_PARENTHESIS,   // (
         T_CLOSE_PARENTHESIS,  // )
         ...self::DECLARATION_TYPE,
-    ];
-
-    public const CHAIN = [
-        T_OBJECT_OPERATOR,
-        T_NULLSAFE_OBJECT_OPERATOR,
     ];
 
     public const CHAIN_PART = [
@@ -239,6 +168,18 @@ final class TokenType extends Dictionary
         T_STRING,
         T_VARIABLE,
         ...self::CHAIN,
+    ];
+
+    public const CHAIN = [
+        T_OBJECT_OPERATOR,           // ->
+        T_NULLSAFE_OBJECT_OPERATOR,  // ?->
+    ];
+
+    public const HAS_STATEMENT = [
+        ...self::HAS_STATEMENT_WITH_OPTIONAL_BRACES,
+        ...self::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES,
+        ...self::HAS_STATEMENT_WITH_BRACES,
+        ...self::HAS_EXPRESSION_AND_STATEMENT_WITH_BRACES,
     ];
 
     public const HAS_STATEMENT_WITH_OPTIONAL_BRACES = [
@@ -263,13 +204,6 @@ final class TokenType extends Dictionary
         T_CATCH,
         T_DECLARE,
         T_SWITCH,
-    ];
-
-    public const HAS_STATEMENT = [
-        ...self::HAS_STATEMENT_WITH_OPTIONAL_BRACES,
-        ...self::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES,
-        ...self::HAS_STATEMENT_WITH_BRACES,
-        ...self::HAS_EXPRESSION_AND_STATEMENT_WITH_BRACES,
     ];
 
     public const HAS_EXPRESSION_WITH_OPTIONAL_PARENTHESES = [
@@ -298,17 +232,17 @@ final class TokenType extends Dictionary
         T_WHILE,
     ];
 
+    public const ALT_SYNTAX_CONTINUE = [
+        ...self::ALT_SYNTAX_CONTINUE_WITHOUT_EXPRESSION,
+        ...self::ALT_SYNTAX_CONTINUE_WITH_EXPRESSION,
+    ];
+
     public const ALT_SYNTAX_CONTINUE_WITHOUT_EXPRESSION = [
         T_ELSE,
     ];
 
     public const ALT_SYNTAX_CONTINUE_WITH_EXPRESSION = [
         T_ELSEIF,
-    ];
-
-    public const ALT_SYNTAX_CONTINUE = [
-        ...self::ALT_SYNTAX_CONTINUE_WITHOUT_EXPRESSION,
-        ...self::ALT_SYNTAX_CONTINUE_WITH_EXPRESSION,
     ];
 
     public const ALT_SYNTAX_END = [
@@ -318,6 +252,43 @@ final class TokenType extends Dictionary
         T_ENDIF,
         T_ENDSWITCH,
         T_ENDWHILE,
+    ];
+
+    public const DECLARATION_PART_WITH_NEW = [
+        T_NEW,
+        ...self::DECLARATION_PART,
+    ];
+
+    public const DECLARATION_PART = [
+        T_ATTRIBUTE,
+        T_ATTRIBUTE_COMMENT,
+        ...self::DECLARATION,
+        ...self::DECLARATION_LIST,
+        ...self::AMPERSAND,
+    ];
+
+    public const DECLARATION_TOP_LEVEL = [
+        T_CLASS,
+        T_ENUM,
+        T_FUNCTION,
+        T_INTERFACE,
+        T_NAMESPACE,
+        T_TRAIT,
+    ];
+
+    public const DECLARATION_UNIQUE = [
+        T_CLASS,
+        T_CONST,
+        T_ENUM,
+        T_FUNCTION,
+        T_INTERFACE,
+        T_NAMESPACE,
+        T_TRAIT,
+        T_USE,
+    ];
+
+    public const DECLARATION_CONDENSE = [
+        T_USE,
     ];
 
     public const DECLARATION_LIST = [
@@ -487,6 +458,12 @@ final class TokenType extends Dictionary
         T_FUNCTION,
     ];
 
+    public const AMPERSAND = [
+        T_AND,
+        T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+        T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
+    ];
+
     public const OTHER = [
         T_CONSTANT_ENCAPSED_STRING,
         T_CURLY_OPEN,
@@ -495,24 +472,6 @@ final class TokenType extends Dictionary
         T_LNUMBER,
         T_NUM_STRING,
         T_STRING_VARNAME,
-    ];
-
-    // OPERATOR_EXECUTION is excluded because for formatting purposes, commands
-    // between backticks are equivalent to double-quoted strings
-    public const ALL_OPERATOR = [
-        T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
-        T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
-        ...TokenType::OPERATOR_ARITHMETIC,
-        ...TokenType::OPERATOR_ASSIGNMENT,
-        ...TokenType::OPERATOR_BITWISE,
-        ...TokenType::OPERATOR_COMPARISON,
-        ...TokenType::OPERATOR_TERNARY,
-        ...TokenType::OPERATOR_ERROR_CONTROL,
-        ...TokenType::OPERATOR_INCREMENT_DECREMENT,
-        ...TokenType::OPERATOR_LOGICAL,
-        ...TokenType::OPERATOR_STRING,
-        ...TokenType::OPERATOR_DOUBLE_ARROW,
-        ...TokenType::OPERATOR_INSTANCEOF,
     ];
 
     /**

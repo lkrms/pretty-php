@@ -9,6 +9,7 @@ use Lkrms\Pretty\Php\Catalog\TokenType as TT;
 /**
  * Indexed tokens by type
  *
+ * @api
  */
 final class TokenTypeIndex implements IImmutable
 {
@@ -53,6 +54,14 @@ final class TokenTypeIndex implements IImmutable
     public array $CloseBracketOrEndAltSyntax;
 
     /**
+     * Tokens that may contain tab characters
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $Expandable;
+
+    /**
      * @readonly
      * @var array<int,bool>
      */
@@ -69,14 +78,6 @@ final class TokenTypeIndex implements IImmutable
      * @var array<int,bool>
      */
     public array $DoNotModifyRight;
-
-    /**
-     * Tokens that may contain tab characters
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $Expandable;
 
     /**
      * @readonly
@@ -107,6 +108,30 @@ final class TokenTypeIndex implements IImmutable
      * @var array<int,bool>
      */
     public array $SuppressSpaceAfter;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $PreserveNewlineBefore;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $PreserveNewlineAfter;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $PreserveBlankBefore;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $PreserveBlankAfter;
 
     /**
      * @readonly
@@ -177,6 +202,20 @@ final class TokenTypeIndex implements IImmutable
             T_END_ALT_SYNTAX,
         );
 
+        $this->Expandable = TT::getIndex(
+            T_OPEN_TAG,
+            T_OPEN_TAG_WITH_ECHO,
+            T_COMMENT,
+            T_DOC_COMMENT,
+            T_ATTRIBUTE_COMMENT,
+            T_CONSTANT_ENCAPSED_STRING,
+            T_ENCAPSED_AND_WHITESPACE,
+            T_START_HEREDOC,
+            T_END_HEREDOC,
+            T_INLINE_HTML,
+            T_WHITESPACE,
+        );
+
         $this->DoNotModify = TT::getIndex(
             T_ENCAPSED_AND_WHITESPACE,
             T_INLINE_HTML,
@@ -191,20 +230,6 @@ final class TokenTypeIndex implements IImmutable
         $this->DoNotModifyRight = TT::getIndex(
             T_CLOSE_TAG,
             T_START_HEREDOC,
-        );
-
-        $this->Expandable = TT::getIndex(
-            T_OPEN_TAG,
-            T_OPEN_TAG_WITH_ECHO,
-            T_COMMENT,
-            T_DOC_COMMENT,
-            T_ATTRIBUTE_COMMENT,
-            T_CONSTANT_ENCAPSED_STRING,
-            T_ENCAPSED_AND_WHITESPACE,
-            T_START_HEREDOC,
-            T_END_HEREDOC,
-            T_INLINE_HTML,
-            T_WHITESPACE,
         );
 
         $this->AddSpaceAround = TT::getIndex(
@@ -269,6 +294,62 @@ final class TokenTypeIndex implements IImmutable
             T_NS_SEPARATOR,
             T_NULLSAFE_OBJECT_OPERATOR,
             T_OBJECT_OPERATOR,
+        );
+
+        $preserveBlankBefore = [
+            T_CLOSE_TAG,
+        ];
+
+        $preserveBlankAfter = [
+            T_CLOSE_BRACE,
+            T_COMMA,
+            T_COMMENT,
+            T_DOC_COMMENT,
+            T_OPEN_TAG,
+            T_OPEN_TAG_WITH_ECHO,
+            T_SEMICOLON,
+        ];
+
+        $this->PreserveNewlineBefore = TT::getIndex(
+            T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+            T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
+            T_CLOSE_BRACKET,
+            T_CLOSE_PARENTHESIS,
+            T_COALESCE,
+            T_CONCAT,
+            T_DOUBLE_ARROW,
+            T_LOGICAL_NOT,
+            T_NULLSAFE_OBJECT_OPERATOR,
+            T_OBJECT_OPERATOR,
+            ...$preserveBlankBefore,
+            ...TT::OPERATOR_ARITHMETIC,
+            ...TT::OPERATOR_BITWISE,
+            ...TT::OPERATOR_TERNARY,
+        );
+
+        $this->PreserveNewlineAfter = TT::getIndex(
+            T_COLON,
+            T_DOUBLE_ARROW,
+            T_EXTENDS,
+            T_IMPLEMENTS,
+            T_OPEN_BRACE,
+            T_OPEN_BRACKET,
+            T_OPEN_PARENTHESIS,
+            T_RETURN,
+            T_YIELD,
+            T_YIELD_FROM,
+            ...$preserveBlankAfter,
+            ...TT::OPERATOR_ASSIGNMENT,
+            ...TT::OPERATOR_COMPARISON_EXCEPT_COALESCE,
+            ...TT::OPERATOR_LOGICAL_EXCEPT_NOT,
+        );
+
+        $this->PreserveBlankBefore = TT::getIndex(
+            ...$preserveBlankBefore,
+        );
+
+        $this->PreserveBlankAfter = TT::getIndex(
+            ...$preserveBlankAfter,
         );
 
         $this->AltSyntaxContinue = TT::getIndex(...TT::ALT_SYNTAX_CONTINUE);

@@ -3,10 +3,10 @@
 namespace Lkrms\Pretty\Php\Rule;
 
 use Lkrms\Pretty\Php\Catalog\TokenType;
+use Lkrms\Pretty\Php\Catalog\WhitespaceType;
 use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
-use Lkrms\Pretty\WhitespaceType;
 use Lkrms\Utility\Test;
 
 /**
@@ -63,7 +63,7 @@ final class PreserveNewlines implements TokenRule
             return false;
         }
         if ($token->line >= $min && $token->line <= $max &&
-                $token->is(TokenType::PRESERVE_NEWLINE_BEFORE) &&
+                $this->TypeIndex->PreserveNewlineBefore[$token->id] &&
                 // Don't preserve newlines between empty brackets
                 ($ignoreBrackets || $token->OpenedBy !== $prev) &&
                 // Only preserve newlines before short closure `=>` operators if
@@ -74,7 +74,7 @@ final class PreserveNewlines implements TokenRule
                 // Treat `?:` as one operator
                 (!$token->IsTernaryOperator || $token->TernaryOperator1 !== $prev) &&
                 ($token->id !== T_COLON || $token->IsTernaryOperator)) {
-            if (!$token->is(TokenType::PRESERVE_BLANK_BEFORE)) {
+            if (!$this->TypeIndex->PreserveBlankBefore[$token->id]) {
                 $line = WhitespaceType::LINE;
             }
             $token->WhitespaceBefore |= $line;
@@ -91,7 +91,7 @@ final class PreserveNewlines implements TokenRule
             return false;
         }
         if ($next->line >= $min && $next->line <= $max &&
-            $token->is(TokenType::PRESERVE_NEWLINE_AFTER) &&
+            $this->TypeIndex->PreserveNewlineAfter[$token->id] &&
             // Don't preserve newlines between empty brackets
             ($ignoreBrackets || $token->ClosedBy !== $next) &&
             // Don't preserve newlines after short closure `=>` operators if
@@ -106,7 +106,7 @@ final class PreserveNewlines implements TokenRule
             // they are followed by a list of interfaces
             (!$token->is([T_IMPLEMENTS, T_EXTENDS]) ||
                 $token->nextSiblingsWhile(...TokenType::DECLARATION_LIST)->hasOneOf(T_COMMA))) {
-            if (!$token->is(TokenType::PRESERVE_BLANK_AFTER) ||
+            if (!$this->TypeIndex->PreserveBlankAfter[$token->id] ||
                     ($token->id === T_COMMA && !$next->is(TokenType::COMMENT)) ||
                     ($token->is(TokenType::COMMENT) && $token->prevCode()->id === T_COMMA)) {
                 $line = WhitespaceType::LINE;

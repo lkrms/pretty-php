@@ -7,6 +7,8 @@ use Lkrms\Concept\Enumeration;
 /**
  * Comment types
  *
+ * @api
+ *
  * @extends Enumeration<string>
  */
 final class CommentType extends Enumeration

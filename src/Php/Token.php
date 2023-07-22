@@ -5,7 +5,7 @@ namespace Lkrms\Pretty\Php;
 use JsonSerializable;
 use Lkrms\Pretty\Php\Catalog\CommentType;
 use Lkrms\Pretty\Php\Catalog\TokenType;
-use Lkrms\Pretty\WhitespaceType;
+use Lkrms\Pretty\Php\Catalog\WhitespaceType;
 use Lkrms\Utility\Convert;
 use RuntimeException;
 
@@ -1621,7 +1621,7 @@ class Token extends CollectibleToken implements JsonSerializable
 
     public function isOperator(): bool
     {
-        return $this->is(TokenType::ALL_OPERATOR);
+        return $this->is(TokenType::OPERATOR_ALL);
     }
 
     public function isBinaryOrTernaryOperator(): bool

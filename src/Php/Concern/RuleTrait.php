@@ -2,10 +2,10 @@
 
 namespace Lkrms\Pretty\Php\Concern;
 
+use Lkrms\Pretty\Php\Catalog\WhitespaceType;
 use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Support\TokenTypeIndex;
 use Lkrms\Pretty\Php\Token;
-use Lkrms\Pretty\WhitespaceType;
 
 trait RuleTrait
 {

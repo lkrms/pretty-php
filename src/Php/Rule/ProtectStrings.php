@@ -2,10 +2,10 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
+use Lkrms\Pretty\Php\Catalog\WhitespaceType;
 use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
-use Lkrms\Pretty\WhitespaceType;
 
 /**
  * Suppress changes to whitespace within strings and heredocs

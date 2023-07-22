@@ -1,9 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Pretty;
+namespace Lkrms\Pretty\Php\Catalog;
 
 use Lkrms\Concept\Enumeration;
-use UnexpectedValueException;
 
 /**
  * Whitespace types applied before and after tokens

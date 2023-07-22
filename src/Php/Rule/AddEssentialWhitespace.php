@@ -3,9 +3,9 @@
 namespace Lkrms\Pretty\Php\Rule;
 
 use Lkrms\Pretty\Php\Catalog\CommentType;
+use Lkrms\Pretty\Php\Catalog\WhitespaceType;
 use Lkrms\Pretty\Php\Concern\RuleTrait;
 use Lkrms\Pretty\Php\Contract\Rule;
-use Lkrms\Pretty\WhitespaceType;
 
 /**
  * Add whitespace after tokens that would otherwise fail to parse

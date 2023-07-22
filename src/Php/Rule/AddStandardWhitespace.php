@@ -3,11 +3,11 @@
 namespace Lkrms\Pretty\Php\Rule;
 
 use Lkrms\Pretty\Php\Catalog\TokenType;
+use Lkrms\Pretty\Php\Catalog\WhitespaceType;
 use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Support\TokenTypeIndex;
 use Lkrms\Pretty\Php\Token;
-use Lkrms\Pretty\WhitespaceType;
 
 /**
  * Apply sensible default spacing
