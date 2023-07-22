@@ -1774,12 +1774,11 @@ class Token extends CollectibleToken implements JsonSerializable
 
     public function render(bool $softTabs = false, bool $setPosition = false): string
     {
-        if (!$this->is([
-            ...TokenType::DO_NOT_MODIFY,
-            ...TokenType::DO_NOT_MODIFY_LHS,
-        ])) {
-            $before = WhitespaceType::toWhitespace($this->effectiveWhitespaceBefore());
-            if ($before && $before[0] === "\n") {
+        if (!($this->TokenTypeIndex->DoNotModify[$this->id] ||
+                $this->TokenTypeIndex->DoNotModifyLeft[$this->id])) {
+            if (($before = $this->effectiveWhitespaceBefore() ?: '') &&
+                    ($before = WhitespaceType::toWhitespace($before)) &&
+                    $before[0] === "\n") {
                 // Don't indent close tags unless subsequent text is indented by
                 // at least the same amount
                 if ($this->id === T_CLOSE_TAG &&
@@ -1810,13 +1809,11 @@ class Token extends CollectibleToken implements JsonSerializable
             }
         }
 
-        if ((!$this->_next || $this->_next->is([
-            ...TokenType::DO_NOT_MODIFY,
-            ...TokenType::DO_NOT_MODIFY_LHS,
-        ])) && !$this->is([
-            ...TokenType::DO_NOT_MODIFY,
-            ...TokenType::DO_NOT_MODIFY_RHS,
-        ])) {
+        if ((!$this->_next ||
+                $this->TokenTypeIndex->DoNotModify[$this->_next->id] ||
+                $this->TokenTypeIndex->DoNotModifyLeft[$this->_next->id]) &&
+            !($this->TokenTypeIndex->DoNotModify[$this->id] ||
+                $this->TokenTypeIndex->DoNotModifyRight[$this->id])) {
             $after = WhitespaceType::toWhitespace($this->effectiveWhitespaceAfter());
         }
 
@@ -1829,7 +1826,7 @@ class Token extends CollectibleToken implements JsonSerializable
 
             // Adjust the token's position to account for any leading whitespace
             if ($before ?? null) {
-                $this->movePosition($before);
+                $this->movePosition($before, $this->Formatter->Tab === "\t");
             }
 
             // And use it as the baseline for the next token's position
@@ -1863,15 +1860,15 @@ class Token extends CollectibleToken implements JsonSerializable
 
         $output = ($text ?? $this->text) . ($after ?? '');
         if ($output !== '' && $setPosition && $this->_next) {
-            $this->_next->movePosition($output);
+            $this->_next->movePosition($output, $this->TokenTypeIndex->Expandable[$this->id]);
         }
 
         return ($before ?? '') . $output;
     }
 
-    private function movePosition(string $code): void
+    private function movePosition(string $code, bool $expandTabs): void
     {
-        $expanded = strpos($code, "\t") === false
+        $expanded = !$expandTabs || strpos($code, "\t") === false
             ? $code
             : Convert::expandTabs($code, $this->Formatter->TabSize, $this->OutputColumn);
         $this->OutputLine += ($newlines = substr_count($code, "\n"));

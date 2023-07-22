@@ -10,22 +10,6 @@ use Lkrms\Concept\Dictionary;
  */
 final class TokenType extends Dictionary
 {
-    public const DO_NOT_MODIFY = [
-        T_ENCAPSED_AND_WHITESPACE,
-        T_INLINE_HTML,
-    ];
-
-    public const DO_NOT_MODIFY_RHS = [
-        T_CLOSE_TAG,
-        T_START_HEREDOC,
-    ];
-
-    public const DO_NOT_MODIFY_LHS = [
-        T_OPEN_TAG,
-        T_OPEN_TAG_WITH_ECHO,
-        T_END_HEREDOC,
-    ];
-
     public const PRESERVE_BLANK_AFTER = [
         T_CLOSE_BRACE,
         T_COMMA,

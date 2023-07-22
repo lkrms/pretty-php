@@ -50,13 +50,7 @@ final class TokenTypeIndex implements IImmutable
      * @readonly
      * @var array<int,bool>
      */
-    public array $AltSyntaxEndOrContinue;
-
-    /**
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $NotCode;
+    public array $CloseBracketOrEndAltSyntax;
 
     /**
      * @readonly
@@ -75,6 +69,44 @@ final class TokenTypeIndex implements IImmutable
      * @var array<int,bool>
      */
     public array $DoNotModifyRight;
+
+    /**
+     * Tokens that may contain tab characters
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $Expandable;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $SuppressSpaceBefore;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $SuppressSpaceAfter;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $AltSyntaxContinue;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $AltSyntaxEnd;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $NotCode;
 
     public function __construct()
     {
@@ -120,10 +152,57 @@ final class TokenTypeIndex implements IImmutable
             T_OPEN_PARENTHESIS,
         );
 
-        $this->AltSyntaxEndOrContinue = TT::getIndex(...TT::ALT_SYNTAX_CONTINUE, ...TT::ALT_SYNTAX_END);
+        $this->CloseBracketOrEndAltSyntax = TT::getIndex(
+            T_CLOSE_BRACE,
+            T_CLOSE_BRACKET,
+            T_CLOSE_PARENTHESIS,
+            T_END_ALT_SYNTAX,
+        );
+
+        $this->DoNotModify = TT::getIndex(
+            T_ENCAPSED_AND_WHITESPACE,
+            T_INLINE_HTML,
+        );
+
+        $this->DoNotModifyLeft = TT::getIndex(
+            T_OPEN_TAG,
+            T_OPEN_TAG_WITH_ECHO,
+            T_END_HEREDOC,
+        );
+
+        $this->DoNotModifyRight = TT::getIndex(
+            T_CLOSE_TAG,
+            T_START_HEREDOC,
+        );
+
+        $this->Expandable = TT::getIndex(
+            T_OPEN_TAG,
+            T_OPEN_TAG_WITH_ECHO,
+            T_COMMENT,
+            T_DOC_COMMENT,
+            T_ATTRIBUTE_COMMENT,
+            T_CONSTANT_ENCAPSED_STRING,
+            T_ENCAPSED_AND_WHITESPACE,
+            T_START_HEREDOC,
+            T_END_HEREDOC,
+            T_INLINE_HTML,
+            T_WHITESPACE,
+        );
+
+        $this->SuppressSpaceBefore = TT::getIndex(
+            T_NS_SEPARATOR,
+        );
+
+        $this->SuppressSpaceAfter = TT::getIndex(
+            T_DOUBLE_COLON,
+            T_ELLIPSIS,
+            T_NS_SEPARATOR,
+            T_NULLSAFE_OBJECT_OPERATOR,
+            T_OBJECT_OPERATOR,
+        );
+
+        $this->AltSyntaxContinue = TT::getIndex(...TT::ALT_SYNTAX_CONTINUE);
+        $this->AltSyntaxEnd = TT::getIndex(...TT::ALT_SYNTAX_END);
         $this->NotCode = TT::getIndex(...TT::NOT_CODE);
-        $this->DoNotModify = TT::getIndex(...TT::DO_NOT_MODIFY);
-        $this->DoNotModifyLeft = TT::getIndex(...TT::DO_NOT_MODIFY_LHS);
-        $this->DoNotModifyRight = TT::getIndex(...TT::DO_NOT_MODIFY_RHS);
     }
 }

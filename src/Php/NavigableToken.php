@@ -179,7 +179,8 @@ class NavigableToken extends PhpToken
                 $token->IsCode = false;
             }
 
-            if ($tokenTypeIndex->AltSyntaxEndOrContinue[$token->id] &&
+            if (($tokenTypeIndex->AltSyntaxContinue[$token->id] ||
+                        $tokenTypeIndex->AltSyntaxEnd[$token->id]) &&
                     $prev->id !== T_END_ALT_SYNTAX) {
                 $stack = $prev->BracketStack;
                 // If the previous token is a close bracket, remove its opener
