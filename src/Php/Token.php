@@ -1884,6 +1884,7 @@ class Token extends CollectibleToken implements JsonSerializable
     private function renderComment(bool $softTabs): string
     {
         if ($this->ExpandedText) {
+            /** @todo Guess input tab size and use it instead */
             $code = Convert::expandLeadingTabs(
                 $this->text, $this->Formatter->TabSize, !$this->wasFirstOnLine(), $this->column
             );

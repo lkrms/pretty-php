@@ -122,10 +122,11 @@ final class PlaceComments implements TokenRule
     {
         foreach ($this->CommentsBesideCode as $token) {
             if (!$token->hasNewlineBefore()) {
+                $token->WhitespaceBefore |= WhitespaceType::SPACE;
                 if ($token->hasNewlineAfter()) {
-                    $token->WhitespaceBefore |= WhitespaceType::TAB;
+                    $token->_prev->WhitespaceMaskNext |= WhitespaceType::SPACE;
+                    $token->Padding = $this->Formatter->SpacesBesideCode - 1;
                 } else {
-                    $token->WhitespaceBefore |= WhitespaceType::SPACE;
                     $token->WhitespaceAfter |= WhitespaceType::SPACE;
                 }
             }

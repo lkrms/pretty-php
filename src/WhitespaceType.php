@@ -6,6 +6,10 @@ use Lkrms\Concept\Enumeration;
 use UnexpectedValueException;
 
 /**
+ * Whitespace types applied before and after tokens
+ *
+ * @api
+ *
  * @extends Enumeration<int>
  */
 final class WhitespaceType extends Enumeration
@@ -21,43 +25,31 @@ final class WhitespaceType extends Enumeration
     public const SPACE = 1;
 
     /**
-     * Two or more horizontal spaces
-     */
-    public const TAB = 2;
-
-    /**
      * Newline
      */
-    public const LINE = 4;
+    public const LINE = 2;
 
     /**
      * Two newlines
      */
-    public const BLANK = 8;
+    public const BLANK = 4;
 
     /**
      * All whitespace types
      */
-    public const ALL = WhitespaceType::SPACE | WhitespaceType::TAB | WhitespaceType::LINE | WhitespaceType::BLANK;
+    public const ALL = WhitespaceType::SPACE | WhitespaceType::LINE | WhitespaceType::BLANK;
 
     public static function toWhitespace(int $value): string
     {
-        if (!$value) {
-            return '';
-        }
-        $tab = ($value & self::TAB) ? '  ' : '';
         if ($value & self::BLANK) {
-            return "\n\n$tab";
+            return "\n\n";
         }
         if ($value & self::LINE) {
-            return "\n$tab";
-        }
-        if ($value & self::TAB) {
-            return $tab;
+            return "\n";
         }
         if ($value & self::SPACE) {
             return ' ';
         }
-        throw new UnexpectedValueException("Invalid WhitespaceType: $value");
+        return '';
     }
 }

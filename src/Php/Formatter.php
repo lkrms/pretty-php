@@ -115,6 +115,12 @@ final class Formatter
 
     public bool $PreserveEol = true;
 
+    /**
+     * Spaces between code and comments on the same line
+     *
+     */
+    public int $SpacesBesideCode = 2;
+
     public bool $ClosuresAreDeclarations = true;
 
     public bool $MirrorBrackets = true;
@@ -466,6 +472,7 @@ final class Formatter
         foreach ($this->Filters as $filter) {
             $filter->reset();
         }
+        $this->SpacesBesideCode > 0 || $this->SpacesBesideCode = 1;
 
         $eol = Inspect::getEol($code);
         if ($eol && $eol !== "\n") {
