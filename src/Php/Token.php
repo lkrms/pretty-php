@@ -1805,98 +1805,109 @@ class Token extends CollectibleToken implements JsonSerializable
         return $before;
     }
 
-    public function render(bool $softTabs = false, bool $setPosition = false): string
+    public function render(bool $softTabs = false, ?Token $to = null, bool $setPosition = false): string
     {
-        if (!($this->TokenTypeIndex->DoNotModify[$this->id] ||
-                $this->TokenTypeIndex->DoNotModifyLeft[$this->id])) {
-            if (($before = $this->effectiveWhitespaceBefore() ?: '') &&
-                    ($before = WhitespaceType::toWhitespace($before)) &&
-                    $before[0] === "\n") {
-                // Don't indent close tags unless subsequent text is indented by
-                // at least the same amount
-                if ($this->id === T_CLOSE_TAG &&
-                        $this->_next &&
-                        $this->_next->getIndentSpacesFromText() < $this->getIndentSpaces()) {
-                    $before .= str_repeat(
-                        $softTabs
-                            ? $this->Formatter->SoftTab
-                            : $this->Formatter->Tab,
-                        $this->OpenTag->TagIndent
-                    );
-                } else {
-                    if ($indent = $this->indent()) {
+        if (!$to) {
+            $to = $this;
+        }
+
+        $current = $this;
+        $code = '';
+        do {
+            unset($before, $after, $text);
+            if (!($this->TokenTypeIndex->DoNotModify[$current->id] ||
+                    $this->TokenTypeIndex->DoNotModifyLeft[$current->id])) {
+                if (($before = $current->effectiveWhitespaceBefore() ?: '') &&
+                        ($before = WhitespaceType::toWhitespace($before)) &&
+                        $before[0] === "\n") {
+                    // Don't indent close tags unless subsequent text is indented by
+                    // at least the same amount
+                    if ($current->id === T_CLOSE_TAG &&
+                            $current->_next &&
+                            $current->_next->getIndentSpacesFromText() < $current->getIndentSpaces()) {
                         $before .= str_repeat(
                             $softTabs
                                 ? $this->Formatter->SoftTab
                                 : $this->Formatter->Tab,
-                            $indent
+                            $current->OpenTag->TagIndent
                         );
-                    }
-                    if ($padding = $this->LinePadding - $this->LineUnpadding) {
-                        $before .= str_repeat(' ', $padding);
+                    } else {
+                        if ($indent = $current->indent()) {
+                            $before .= str_repeat(
+                                $softTabs
+                                    ? $this->Formatter->SoftTab
+                                    : $this->Formatter->Tab,
+                                $indent
+                            );
+                        }
+                        if ($padding = $current->LinePadding - $current->LineUnpadding) {
+                            $before .= str_repeat(' ', $padding);
+                        }
                     }
                 }
-            }
-            if ($this->Padding) {
-                $before .= str_repeat(' ', $this->Padding);
-            }
-        }
-
-        if ((!$this->_next ||
-                $this->TokenTypeIndex->DoNotModify[$this->_next->id] ||
-                $this->TokenTypeIndex->DoNotModifyLeft[$this->_next->id]) &&
-            !($this->TokenTypeIndex->DoNotModify[$this->id] ||
-                $this->TokenTypeIndex->DoNotModifyRight[$this->id])) {
-            $after = WhitespaceType::toWhitespace($this->effectiveWhitespaceAfter());
-        }
-
-        if ($setPosition) {
-            if (!$this->_prev) {
-                $this->OutputLine = 1;
-                $this->OutputColumn = 1;
-                $this->OutputPos = 0;
+                if ($current->Padding) {
+                    $before .= str_repeat(' ', $current->Padding);
+                }
             }
 
-            // Adjust the token's position to account for any leading whitespace
-            if ($before ?? null) {
-                $this->movePosition($before, $this->Formatter->Tab === "\t");
+            if ((!$current->_next ||
+                    $this->TokenTypeIndex->DoNotModify[$current->_next->id] ||
+                    $this->TokenTypeIndex->DoNotModifyLeft[$current->_next->id]) &&
+                !($this->TokenTypeIndex->DoNotModify[$current->id] ||
+                    $this->TokenTypeIndex->DoNotModifyRight[$current->id])) {
+                $after = WhitespaceType::toWhitespace($current->effectiveWhitespaceAfter());
             }
 
-            // And use it as the baseline for the next token's position
-            if ($this->_next) {
-                $this->_next->OutputLine = $this->OutputLine;
-                $this->_next->OutputColumn = $this->OutputColumn;
-                $this->_next->OutputPos = $this->OutputPos;
+            if ($setPosition) {
+                if (!$current->_prev) {
+                    $current->OutputLine = 1;
+                    $current->OutputColumn = 1;
+                    $current->OutputPos = 0;
+                }
+
+                // Adjust the token's position to account for any leading whitespace
+                if ($before ?? null) {
+                    $current->movePosition($before, $this->Formatter->Tab === "\t");
+                }
+
+                // And use it as the baseline for the next token's position
+                if ($current->_next) {
+                    $current->_next->OutputLine = $current->OutputLine;
+                    $current->_next->OutputColumn = $current->OutputColumn;
+                    $current->_next->OutputPos = $current->OutputPos;
+                }
             }
-        }
 
-        // Multi-line comments are only formatted when output is being generated
-        if ($setPosition &&
-                $this->CommentType &&
-                strpos($this->text, "\n") !== false) {
-            $text = $this->renderComment($softTabs);
-        }
-
-        if ($this->id === T_START_HEREDOC ||
-                ($this->HeredocOpenedBy && $this->id !== T_END_HEREDOC)) {
-            $heredoc = $this->HeredocOpenedBy ?: $this;
-            if ($heredoc->HeredocIndent) {
-                $text = preg_replace(
-                    ($this->_next->text[0] ?? null) === "\n"
-                        ? "/\\n{$heredoc->HeredocIndent}\$/m"
-                        : "/\\n{$heredoc->HeredocIndent}(?=\\n)/",
-                    "\n",
-                    $text ?? $this->text
-                );
+            // Multi-line comments are only formatted when output is being generated
+            if ($setPosition &&
+                    $current->CommentType &&
+                    strpos($current->text, "\n") !== false) {
+                $text = $current->renderComment($softTabs);
             }
-        }
 
-        $output = ($text ?? $this->text) . ($after ?? '');
-        if ($output !== '' && $setPosition && $this->_next) {
-            $this->_next->movePosition($output, $this->TokenTypeIndex->Expandable[$this->id]);
-        }
+            if ($current->id === T_START_HEREDOC ||
+                    ($current->HeredocOpenedBy && $current->id !== T_END_HEREDOC)) {
+                $heredoc = $current->HeredocOpenedBy ?: $current;
+                if ($heredoc->HeredocIndent) {
+                    $text = preg_replace(
+                        ($current->_next->text[0] ?? null) === "\n"
+                            ? "/\\n{$heredoc->HeredocIndent}\$/m"
+                            : "/\\n{$heredoc->HeredocIndent}(?=\\n)/",
+                        "\n",
+                        $text ?? $current->text
+                    );
+                }
+            }
 
-        return ($before ?? '') . $output;
+            $output = ($text ?? $current->text) . ($after ?? '');
+            if ($output !== '' && $setPosition && $current->_next) {
+                $current->_next->movePosition($output, $this->TokenTypeIndex->Expandable[$current->id]);
+            }
+
+            $code .= ($before ?? '') . $output;
+        } while ($current !== $to && ($current = $current->_next));
+
+        return $code;
     }
 
     private function movePosition(string $code, bool $expandTabs): void

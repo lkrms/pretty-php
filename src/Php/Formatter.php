@@ -737,15 +737,13 @@ final class Formatter
 
         Sys::startTimer(__METHOD__ . '#render');
         try {
-            $out = '';
-            $current = reset($this->Tokens);
-            do {
-                $out .= $current->render(false, true);
-            } while ($current = $current->_next);
+            $first = reset($this->Tokens);
+            $last = end($this->Tokens);
+            $out = $first->render(false, $last, true);
         } catch (Throwable $ex) {
             throw new PrettyException(
                 'Formatting failed: output cannot be rendered',
-                $out,
+                null,
                 $this->Tokens,
                 $this->Log,
                 null,
@@ -935,15 +933,13 @@ final class Formatter
     {
         Sys::startTimer(__METHOD__ . '#render');
         try {
-            $out = '';
-            $current = reset($this->Tokens);
-            do {
-                $out .= $current->render(false, false);
-            } while ($current = $current->_next);
+            $first = reset($this->Tokens);
+            $last = end($this->Tokens);
+            $out = $first->render(false, $last);
         } catch (Throwable $ex) {
             throw new PrettyException(
                 'Formatting failed: unable to render unresolved output',
-                $out,
+                null,
                 $this->Tokens,
                 $this->Log,
                 $ex
