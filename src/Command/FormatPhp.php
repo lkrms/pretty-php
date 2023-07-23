@@ -1367,6 +1367,8 @@ EOF,
             return;
         }
 
+        Sys::startTimer(__METHOD__);
+
         $logDir = "{$this->DebugDirectory}/progress-log";
         File::maybeCreateDirectory($logDir);
         File::find($logDir, null, null, null, null, false)
@@ -1387,8 +1389,9 @@ EOF,
             'input.php' => $input,
             'output.php' => $output,
             'tokens.json' => $tokens,
-            'data.json' => is_string($data) ? null : $data,
-            'data.out' => is_string($data) ? $data : null,
+            is_string($data)
+                ? 'data.out'
+                : 'data.json' => $data,
         ], $logFiles ?? []) as $file => $contents) {
             $file = "{$this->DebugDirectory}/{$file}";
             File::maybeDelete($file);
@@ -1401,5 +1404,7 @@ EOF,
                 );
             }
         }
+
+        Sys::stopTimer(__METHOD__);
     }
 }

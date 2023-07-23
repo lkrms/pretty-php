@@ -561,50 +561,83 @@ class Token extends CollectibleToken implements JsonSerializable
      */
     public function jsonSerialize(): array
     {
-        $a = get_object_vars($this);
-        $_prevSibling = (string) $a['_prevSibling'];
-        $_nextSibling = (string) $a['_nextSibling'];
-        $a['_prevSibling'] = &$_prevSibling;
-        $a['_nextSibling'] = &$_nextSibling;
-        unset(
-            $a['_prev'],
-            $a['_next'],
-            $a['_prevCode'],
-            $a['_nextCode'],
-            $a['Index'],
-            $a['BracketStack'],
-            $a['OpenTag'],
-            $a['CloseTag'],
-            $a['OpenedBy'],
-            $a['ClosedBy'],
-            $a['IsCode'],
-            $a['IsNull'],
-            $a['IsVirtual'],
-            $a['TokenTypeIndex'],
-            $a['Formatter'],
-        );
         $a['id'] = $this->getTokenName();
-        $a['WhitespaceBefore'] = WhitespaceType::toWhitespace($a['WhitespaceBefore']);
-        $a['WhitespaceAfter'] = WhitespaceType::toWhitespace($a['WhitespaceAfter']);
-        if ($this->Expression === $this || $this->EndExpression === $this || $this->Expression === false) {
-            $a['PragmaticStartExpression'] = $this->pragmaticStartOfExpression();
-            $a['PragmaticEndExpression'] = $this->pragmaticEndOfExpression();
+        $a['column'] = $this->column;
+        $a['_prevSibling'] = $this->_prevSibling;
+        $a['_nextSibling'] = $this->_nextSibling;
+        $a['ExpandedText'] = $this->ExpandedText;
+        $a['OriginalText'] = $this->OriginalText;
+        $a['BodyIsUnenclosed'] = $this->BodyIsUnenclosed;
+        $a['Statement'] = $this->Statement;
+        $a['EndStatement'] = $this->EndStatement;
+        $a['Expression'] = $this->Expression;
+        $a['EndExpression'] = $this->EndExpression;
+        $a['IsTernaryOperator'] = $this->IsTernaryOperator;
+        $a['TernaryOperator1'] = $this->TernaryOperator1;
+        $a['TernaryOperator2'] = $this->TernaryOperator2;
+        $a['CommentType'] = $this->CommentType;
+        $a['NewlineAfterPreserved'] = $this->NewlineAfterPreserved;
+        $a['TagIndent'] = $this->TagIndent;
+        $a['PreIndent'] = $this->PreIndent;
+        $a['Indent'] = $this->Indent;
+        $a['Deindent'] = $this->Deindent;
+        $a['HangingIndent'] = $this->HangingIndent;
+        $a['IsHangingParent'] = $this->IsHangingParent;
+        $a['IsOverhangingParent'] = $this->IsOverhangingParent;
+        $a['IndentStack'] = $this->IndentStack;
+        $a['IndentParentStack'] = $this->IndentParentStack;
+
+        foreach ($this->IndentBracketStack as $i => $entry) {
+            foreach ($entry as $j => $entry) {
+                if (is_array($entry)) {
+                    foreach ($entry as $k => $entry) {
+                        $a['IndentBracketStack'][$i][$j][$k] = (string) $entry;
+                    }
+                    continue;
+                }
+                $a['IndentBracketStack'][$i][$j] = (string) $entry;
+            }
         }
+
+        $a['OverhangingParents'] = $this->OverhangingParents;
+        $a['LinePadding'] = $this->LinePadding;
+        $a['LineUnpadding'] = $this->LineUnpadding;
+        $a['Padding'] = $this->Padding;
+        $a['HeredocIndent'] = $this->HeredocIndent;
+        $a['AlignedWith'] = $this->AlignedWith;
+        $a['ChainOpenedBy'] = $this->ChainOpenedBy;
+        $a['HeredocOpenedBy'] = $this->HeredocOpenedBy;
+        $a['StringOpenedBy'] = $this->StringOpenedBy;
+        $a['WhitespaceBefore'] = WhitespaceType::toWhitespace($this->WhitespaceBefore);
+        $a['WhitespaceAfter'] = WhitespaceType::toWhitespace($this->WhitespaceAfter);
+        $a['WhitespaceMaskPrev'] = $this->WhitespaceMaskPrev;
+        $a['WhitespaceMaskNext'] = $this->WhitespaceMaskNext;
+        $a['CriticalWhitespaceBefore'] = $this->CriticalWhitespaceBefore;
+        $a['CriticalWhitespaceAfter'] = $this->CriticalWhitespaceAfter;
+        $a['CriticalWhitespaceMaskPrev'] = $this->CriticalWhitespaceMaskPrev;
+        $a['CriticalWhitespaceMaskNext'] = $this->CriticalWhitespaceMaskNext;
+        $a['IsCloseTagStatementTerminator'] = $this->IsCloseTagStatementTerminator;
+        $a['OutputLine'] = $this->OutputLine;
+        $a['OutputPos'] = $this->OutputPos;
+        $a['OutputColumn'] = $this->OutputColumn;
+
         foreach ($a as $key => $value) {
             if ($value === null ||
                     $value === [] ||
                     ($value === false && $key !== 'Expression')) {
                 unset($a[$key]);
+                continue;
             }
-        }
-        array_walk_recursive(
-            $a,
-            function (&$value) {
-                if ($value instanceof Token) {
-                    $value = (string) $value;
+            if ($value instanceof Token) {
+                $a[$key] = (string) $value;
+                continue;
+            }
+            if (($value[0] ?? null) instanceof Token) {
+                foreach ($value as $i => $value) {
+                    $a[$key][$i] = (string) $value;
                 }
             }
-        );
+        }
 
         return $a;
     }
