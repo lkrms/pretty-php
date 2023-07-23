@@ -9,6 +9,8 @@ use Lkrms\Concept\Enumeration;
  *
  * Comparison is always case-insensitive and locale-independent.
  *
+ * @api
+ *
  * @extends Enumeration<int>
  */
 final class ImportSortOrder extends Enumeration
@@ -22,7 +24,9 @@ final class ImportSortOrder extends Enumeration
     /**
      * Order by name
      *
-     * Grouped imports appear after ungrouped imports. Example:
+     * Grouped imports appear after ungrouped imports.
+     *
+     * Example:
      *
      * ```php
      * use A;
@@ -36,7 +40,9 @@ final class ImportSortOrder extends Enumeration
     /**
      * Order by name, depth-first
      *
-     * Grouped imports appear before ungrouped imports. Example:
+     * Grouped imports appear before ungrouped imports.
+     *
+     * Example:
      *
      * ```php
      * use A\B\{D, E};

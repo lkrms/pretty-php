@@ -3,10 +3,10 @@
 namespace Lkrms\Pretty\Php\Rule;
 
 use Lkrms\Pretty\Php\Catalog\TokenType;
+use Lkrms\Pretty\Php\Catalog\WhitespaceType;
 use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
-use Lkrms\Pretty\WhitespaceType;
 
 /**
  * Place comments beside code, above code, or inside code
@@ -122,10 +122,11 @@ final class PlaceComments implements TokenRule
     {
         foreach ($this->CommentsBesideCode as $token) {
             if (!$token->hasNewlineBefore()) {
+                $token->WhitespaceBefore |= WhitespaceType::SPACE;
                 if ($token->hasNewlineAfter()) {
-                    $token->WhitespaceBefore |= WhitespaceType::TAB;
+                    $token->_prev->WhitespaceMaskNext |= WhitespaceType::SPACE;
+                    $token->Padding = $this->Formatter->SpacesBesideCode - 1;
                 } else {
-                    $token->WhitespaceBefore |= WhitespaceType::SPACE;
                     $token->WhitespaceAfter |= WhitespaceType::SPACE;
                 }
             }

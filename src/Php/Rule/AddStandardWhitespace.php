@@ -3,17 +3,18 @@
 namespace Lkrms\Pretty\Php\Rule;
 
 use Lkrms\Pretty\Php\Catalog\TokenType;
+use Lkrms\Pretty\Php\Catalog\WhitespaceType;
 use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
+use Lkrms\Pretty\Php\Support\TokenTypeIndex;
 use Lkrms\Pretty\Php\Token;
-use Lkrms\Pretty\WhitespaceType;
 
 /**
  * Apply sensible default spacing
  *
  * Specifically:
- * - Add SPACE as per {@see TokenType}::`ADD_SPACE_*`
- * - Suppress SPACE and BLANK as per {@see TokenType}::`SUPPRESS_SPACE_*`
+ * - Add SPACE as per {@see TokenTypeIndex}::`$AddSpace*`
+ * - Suppress SPACE and BLANK as per {@see TokenTypeIndex}::`$SuppressSpace*`
  * - Suppress SPACE and BLANK after open brackets and before close brackets
  * - Propagate indentation from `<?php` tags to subsequent tokens
  * - Add SPACE or BLANK between `<?php` and a subsequent `declare` construct in
@@ -39,68 +40,57 @@ final class AddStandardWhitespace implements TokenRule
 
     public function getTokenTypes(): array
     {
-        return [
-            T_COMMA,
-            T_COLON,
-            T_OPEN_TAG,
-            T_OPEN_TAG_WITH_ECHO,
-            T_CLOSE_TAG,
-            T_ATTRIBUTE_COMMENT,
-            T_MATCH,
-            ...TokenType::ADD_SPACE_AROUND,
-            ...TokenType::ADD_SPACE_BEFORE,
-            ...TokenType::ADD_SPACE_AFTER,
-            ...TokenType::SUPPRESS_SPACE_AFTER,
-            ...TokenType::SUPPRESS_SPACE_BEFORE,
-
-            // isCloseBracket()
-            T_CLOSE_PARENTHESIS,
-            T_CLOSE_BRACKET,
-            T_CLOSE_BRACE,
-
-            // isOpenBracket()
-            T_OPEN_PARENTHESIS,
-            T_OPEN_BRACKET,
-            T_OPEN_BRACE,
-            T_ATTRIBUTE,
-            T_CURLY_OPEN,
-            T_DOLLAR_OPEN_CURLY_BRACES,
-
-            // endsAlternativeSyntax()
-            T_END_ALT_SYNTAX,
-
-            // startsAlternativeSyntax()
-            T_COLON,
-        ];
+        return TokenType::mergeIndexes(
+            TokenType::getIndex(
+                T_COLON,
+                T_COMMA,
+                T_MATCH,
+                T_OPEN_TAG,
+                T_OPEN_TAG_WITH_ECHO,
+                T_CLOSE_TAG,
+                T_ATTRIBUTE_COMMENT,
+            ),
+            $this->TypeIndex->OpenBracket,
+            $this->TypeIndex->CloseBracketOrEndAltSyntax,
+            $this->TypeIndex->AddSpaceAround,
+            $this->TypeIndex->AddSpaceBefore,
+            $this->TypeIndex->AddSpaceAfter,
+            $this->TypeIndex->SuppressSpaceBefore,
+            $this->TypeIndex->SuppressSpaceAfter,
+        );
     }
 
     public function processToken(Token $token): void
     {
-        // Add SPACE as per TokenType::ADD_SPACE_*
-        if ($token->is(TokenType::ADD_SPACE_AROUND)) {
+        // Add SPACE as per TokenTypeIndex::$AddSpace*
+        if ($this->TypeIndex->AddSpaceAround[$token->id]) {
             $token->WhitespaceBefore |= WhitespaceType::SPACE;
             $token->WhitespaceAfter |= WhitespaceType::SPACE;
-        } elseif ($token->is(TokenType::ADD_SPACE_BEFORE)) {
+        } elseif ($this->TypeIndex->AddSpaceBefore[$token->id]) {
             $token->WhitespaceBefore |= WhitespaceType::SPACE;
-        } elseif ($token->is(TokenType::ADD_SPACE_AFTER)) {
+        } elseif ($this->TypeIndex->AddSpaceAfter[$token->id]) {
             $token->WhitespaceAfter |= WhitespaceType::SPACE;
         }
 
         // Suppress SPACE and BLANK:
-        // - as per TokenType::SUPPRESS_SPACE_*
+        // - as per TokenTypeIndex::$SuppressSpace*
         // - after open brackets and before close brackets
-        if (($token->isOpenBracket() && !$token->isStructuralBrace()) ||
-                $token->is(TokenType::SUPPRESS_SPACE_AFTER)) {
+        if (($this->TypeIndex->OpenBracket[$token->id] && !$token->isStructuralBrace()) ||
+                $this->TypeIndex->SuppressSpaceAfter[$token->id]) {
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK & ~WhitespaceType::SPACE;
-        } elseif ($token->startsAlternativeSyntax()) {
+        } elseif ($token->id === T_COLON && $token->ClosedBy) {  // i.e. `$token->startsAlternativeSyntax()`
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
         }
-        if (($token->isCloseBracket() && !$token->isStructuralBrace()) ||
-            ($token->is(TokenType::SUPPRESS_SPACE_BEFORE) &&
+        if (($this->TypeIndex->CloseBracket[$token->id] && !$token->isStructuralBrace()) ||
+            ($this->TypeIndex->SuppressSpaceBefore[$token->id] &&
                 ($token->id !== T_NS_SEPARATOR ||
-                    $token->_prev->is([T_NAMESPACE, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE, T_STRING])))) {
+                    $token->_prev->id === T_NAMESPACE ||
+                    $token->_prev->id === T_NAME_FULLY_QUALIFIED ||
+                    $token->_prev->id === T_NAME_QUALIFIED ||
+                    $token->_prev->id === T_NAME_RELATIVE ||
+                    $token->_prev->id === T_STRING))) {
             $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::SPACE;
-        } elseif ($token->endsAlternativeSyntax()) {
+        } elseif ($token->id === T_END_ALT_SYNTAX) {
             $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
         }
 

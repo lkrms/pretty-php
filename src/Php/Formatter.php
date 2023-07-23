@@ -7,9 +7,11 @@ use Lkrms\Facade\Sys;
 use Lkrms\Pretty\Php\Catalog\FormatterFlag;
 use Lkrms\Pretty\Php\Catalog\ImportSortOrder;
 use Lkrms\Pretty\Php\Catalog\TokenType;
+use Lkrms\Pretty\Php\Catalog\WhitespaceType;
 use Lkrms\Pretty\Php\Contract\BlockRule;
 use Lkrms\Pretty\Php\Contract\Filter;
 use Lkrms\Pretty\Php\Contract\ListRule;
+use Lkrms\Pretty\Php\Contract\MultiTokenRule;
 use Lkrms\Pretty\Php\Contract\Rule;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Filter\CollectColumn;
@@ -57,7 +59,6 @@ use Lkrms\Pretty\Php\Rule\SwitchPosition;
 use Lkrms\Pretty\Php\Support\TokenTypeIndex;
 use Lkrms\Pretty\PrettyBadSyntaxException;
 use Lkrms\Pretty\PrettyException;
-use Lkrms\Pretty\WhitespaceType;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Inspect;
@@ -114,6 +115,12 @@ final class Formatter
     public string $PreferredEol = PHP_EOL;
 
     public bool $PreserveEol = true;
+
+    /**
+     * Spaces between code and comments on the same line
+     *
+     */
+    public int $SpacesBesideCode = 2;
 
     public bool $ClosuresAreDeclarations = true;
 
@@ -240,6 +247,11 @@ final class Formatter
     public ?array $Tokens = null;
 
     /**
+     * @var array<int,array<int,Token>>|null
+     */
+    public ?array $TokenIndex = null;
+
+    /**
      * @var Problem[]|null
      */
     public ?array $Problems = null;
@@ -253,6 +265,11 @@ final class Formatter
      * @var Rule[]
      */
     private array $Rules;
+
+    /**
+     * @var array<class-string<TokenRule>,array{'*'}|array<int,true>>
+     */
+    private array $TokenRuleTypes;
 
     /**
      * @var Filter[]
@@ -371,7 +388,7 @@ final class Formatter
         $mainLoop = [];
         $blockLoop = [];
         $beforeRender = [];
-        $index = 0;
+        $i = 0;
         foreach ($rules as $_rule) {
             if (!is_a($_rule, Rule::class, true)) {
                 throw new LogicException(sprintf('Not a %s: %s', Rule::class, $_rule));
@@ -380,16 +397,40 @@ final class Formatter
             $rule = new $_rule($this);
             $this->Rules[] = $rule;
             if ($rule instanceof TokenRule) {
-                $mainLoop[] = [$rule, TokenRule::PROCESS_TOKEN, $index];
+                $types = $rule->getTokenTypes();
+                $first = null;
+                if ($types && is_bool($first = reset($types))) {
+                    // If an index is returned, reduce it to types with a value
+                    // of `true`
+                    $index = $types;
+                    $types = [];
+                    foreach ($index as $type => $value) {
+                        if ($value) {
+                            $types[$type] = true;
+                        }
+                    }
+                } elseif (is_int($first)) {
+                    // If a list is returned, convert it to an index
+                    $types = array_combine(
+                        $types,
+                        array_fill(0, count($types), true),
+                    );
+                }
+                $this->TokenRuleTypes[$_rule] = $types;
+                if ($rule instanceof MultiTokenRule) {
+                    $mainLoop[] = [$rule, MultiTokenRule::PROCESS_TOKENS, $i];
+                } else {
+                    $mainLoop[] = [$rule, TokenRule::PROCESS_TOKEN, $i];
+                }
             }
             if ($rule instanceof ListRule) {
-                $mainLoop[] = [$rule, ListRule::PROCESS_LIST, $index];
+                $mainLoop[] = [$rule, ListRule::PROCESS_LIST, $i];
             }
             if ($rule instanceof BlockRule) {
-                $blockLoop[] = [$rule, BlockRule::PROCESS_BLOCK, $index];
+                $blockLoop[] = [$rule, BlockRule::PROCESS_BLOCK, $i];
             }
-            $beforeRender[] = [$rule, Rule::BEFORE_RENDER, $index];
-            $index++;
+            $beforeRender[] = [$rule, Rule::BEFORE_RENDER, $i];
+            $i++;
         }
         $this->MainLoop = $this->sortRules($mainLoop);
         $this->BlockLoop = $this->sortRules($blockLoop);
@@ -457,6 +498,7 @@ final class Formatter
     public function format(string $code, ?string $filename = null, bool $fast = false): string
     {
         $this->Tokens = null;
+        $this->TokenIndex = null;
         $this->Log = null;
         $this->Callbacks = [];
         $this->Problems = [];
@@ -466,6 +508,7 @@ final class Formatter
         foreach ($this->Filters as $filter) {
             $filter->reset();
         }
+        $this->SpacesBesideCode > 0 || $this->SpacesBesideCode = 1;
 
         $eol = Inspect::getEol($code);
         if ($eol && $eol !== "\n") {
@@ -514,76 +557,89 @@ final class Formatter
             Sys::stopTimer(__METHOD__ . '#prepare-tokens');
         }
 
+        Sys::startTimer(__METHOD__ . '#index-tokens');
+        foreach ($this->Tokens as $index => $token) {
+            $this->TokenIndex[$token->id][$index] = $token;
+        }
+        Sys::stopTimer(__METHOD__ . '#index-tokens');
+
         Sys::startTimer(__METHOD__ . '#find-lists');
         // Get non-empty open brackets
-        $listParents = array_filter(
-            $this->Tokens,
-            fn(Token $t) =>
-                ($t->is([T_OPEN_PARENTHESIS, T_OPEN_BRACKET, T_ATTRIBUTE]) ||
-                        $t->is([T_IMPLEMENTS]) ||
-                        ($t->is([T_EXTENDS]) && $t->isDeclaration(T_INTERFACE))) &&
-                    $t->ClosedBy !== $t->nextCode()
-        );
+        $listParents = $this->sortTokens([
+            T_OPEN_BRACKET => true,
+            T_OPEN_PARENTHESIS => true,
+            T_ATTRIBUTE => true,
+            T_EXTENDS => true,
+            T_IMPLEMENTS => true,
+        ]);
         $lists = [];
         foreach ($listParents as $i => $parent) {
-            if ($parent->is([T_IMPLEMENTS, T_EXTENDS])) {
-                $items = $parent->nextSiblingsWhile(
-                    ...TokenType::DECLARATION_LIST
-                )->filter(
-                    fn(Token $t, ?Token $next, ?Token $prev) =>
-                        !$prev || $t->_prevCode->id === T_COMMA
-                );
-                if ($items->count() > 1) {
-                    $lists[$i] = $items;
-                }
+            if ($parent->ClosedBy === $parent->_nextCode) {
                 continue;
             }
-            $prev = $parent->prevCode();
-            if ($parent->id === T_OPEN_PARENTHESIS &&
-                !(($prev->id === T_CLOSE_BRACE &&
-                        !$prev->isStructuralBrace()) ||
-                    ($prev->id === T_AMPERSAND &&
-                        $prev->prevCode()->is([T_FN, T_FUNCTION])) ||
-                    $prev->is([
-                        T_ARRAY,
-                        T_DECLARE,
-                        T_LIST,
-                        T_UNSET,
-                        T_USE,
-                        T_VARIABLE,
-                        ...TokenType::MAYBE_ANONYMOUS,
-                        ...TokenType::DEREFERENCEABLE_SCALAR_END,
-                        ...TokenType::NAME_WITH_READONLY,
-                    ]))) {
+            switch ($parent->id) {
+                case T_EXTENDS:
+                case T_IMPLEMENTS:
+                    $items =
+                        $parent->nextSiblingsWhile(...TokenType::DECLARATION_LIST)
+                               ->filter(fn(Token $t, ?Token $next, ?Token $prev) =>
+                                            !$prev || $t->_prevCode->id === T_COMMA);
+                    if ($items->count() > 1) {
+                        $lists[$i] = $items;
+                    }
+                    continue 2;
+
+                case T_OPEN_PARENTHESIS:;
+                    if (!($prev = $parent->_prevCode) ||
+                        !(($prev->id === T_CLOSE_BRACE &&
+                                !$prev->isStructuralBrace()) ||
+                            ($prev->id === T_AMPERSAND &&
+                                $prev->prevCode()->is([T_FN, T_FUNCTION])) ||
+                            $prev->is([
+                                T_ARRAY,
+                                T_DECLARE,
+                                T_LIST,
+                                T_UNSET,
+                                T_USE,
+                                T_VARIABLE,
+                                ...TokenType::MAYBE_ANONYMOUS,
+                                ...TokenType::DEREFERENCEABLE_SCALAR_END,
+                                ...TokenType::NAME_WITH_READONLY,
+                            ]))) {
+                        continue 2;
+                    }
+                    break;
+
+                case T_OPEN_BRACKET:
+                    if ($parent->Expression !== $parent &&
+                            ($prev = $parent->_prevCode) &&
+                            $prev->id !== T_AS &&
+                            $prev->is([
+                                T_CLOSE_BRACE,
+                                T_STRING_VARNAME,
+                                T_VARIABLE,
+                                ...TokenType::DEREFERENCEABLE_SCALAR_END,
+                                ...TokenType::NAME,
+                                ...TokenType::SEMI_RESERVED,
+                            ])) {
+                        continue 2;
+                    }
+                    break;
+            }
+            $items =
+                $parent->innerSiblings()
+                       ->filter(fn(Token $t, ?Token $next, ?Token $prev) =>
+                                    $t->id !== T_COMMA &&
+                                        (!$prev || $t->_prevCode->id === T_COMMA));
+            if (!$items->count()) {
                 continue;
             }
-            if ($parent->id === T_OPEN_BRACKET &&
-                    $parent->Expression !== $parent &&
-                    $prev->id !== T_AS &&
-                    $prev->is([
-                        T_CLOSE_BRACE,
-                        T_STRING_VARNAME,
-                        T_VARIABLE,
-                        ...TokenType::DEREFERENCEABLE_SCALAR_END,
-                        ...TokenType::NAME,
-                        ...TokenType::SEMI_RESERVED,
-                    ])) {
-                continue;
-            }
-            $list = $parent->innerSiblings()->filter(
-                fn(Token $t, ?Token $next, ?Token $prev) =>
-                    $t->id !== T_COMMA &&
-                        (!$prev || $t->_prevCode->id === T_COMMA)
-            );
-            if (!$list->count()) {
-                continue;
-            }
-            $lists[$i] = $list;
+            $lists[$i] = $items;
         }
         Sys::stopTimer(__METHOD__ . '#find-lists');
 
         foreach ($this->MainLoop as [$rule, $method]) {
-            $_rule = Convert::classToBasename(get_class($rule));
+            $_rule = Convert::classToBasename($_class = get_class($rule));
             Sys::startTimer($_rule, 'rule');
 
             if ($method === ListRule::PROCESS_LIST) {
@@ -596,17 +652,28 @@ final class Formatter
                 continue;
             }
 
-            // Prepare to filter the tokens as efficiently as possible
             /** @var TokenRule $rule */
-            $types = $rule->getTokenTypes();
+            $types = $this->TokenRuleTypes[$_class];
             if ($types === []) {
+                Sys::stopTimer($_rule, 'rule');
                 continue;
             }
-            $types = $types !== ['*'] ? TokenType::getIndex(...$types) : null;
-
-            /** @var Token $token */
-            foreach ($this->Tokens as $token) {
-                if (!$types || ($types[$token->id] ?? false) !== false) {
+            if ($types === ['*']) {
+                $tokens = $this->Tokens;
+            } elseif ($rule->getRequiresSortedTokens()) {
+                $tokens = $this->sortTokens($types);
+            } else {
+                $tokens = $this->getTokens($types);
+            }
+            if (!$tokens) {
+                Sys::stopTimer($_rule, 'rule');
+                continue;
+            }
+            if ($rule instanceof MultiTokenRule) {
+                $rule->processTokens($tokens);
+            } else {
+                /** @var Token $token */
+                foreach ($tokens as $token) {
                     $rule->processToken($token);
                 }
             }
@@ -756,6 +823,30 @@ final class Formatter
         return $eol === "\n"
             ? $out
             : str_replace("\n", $eol, $out);
+    }
+
+    /**
+     * @param array<int,true> $types
+     * @return array<int,Token>
+     */
+    private function getTokens(array $types): array
+    {
+        $tokens = array_intersect_key($this->TokenIndex ?: [], $types);
+        if ($base = array_shift($tokens)) {
+            return array_replace($base, ...$tokens);
+        }
+        return [];
+    }
+
+    /**
+     * @param array<int,true> $types
+     * @return array<int,Token>
+     */
+    private function sortTokens(array $types): array
+    {
+        $tokens = $this->getTokens($types);
+        ksort($tokens, SORT_NUMERIC);
+        return $tokens;
     }
 
     /**

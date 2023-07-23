@@ -206,6 +206,11 @@ class FormatPhp extends CliCommand
     private $SkipFilters;
 
     /**
+     * @var int|null
+     */
+    private $SpacesBesideCode;
+
+    /**
      * @var bool|null
      */
     private $MirrorBrackets;
@@ -290,6 +295,7 @@ class FormatPhp extends CliCommand
     ];
 
     private const INTERNAL_OPTION_MAP = [
+        'spaces-beside-code' => 'SpacesBesideCode',
         'mirror-brackets' => 'MirrorBrackets',
         'hanging-heredoc-indents' => 'HangingHeredocIndents',
         'increase-indent-between-unenclosed-tags' => 'IncreaseIndentBetweenUnenclosedTags',
@@ -321,6 +327,7 @@ class FormatPhp extends CliCommand
             ],
             'one-true-brace-style' => true,
             '@internal' => [
+                'spaces-beside-code' => 1,
                 'mirror-brackets' => false,
                 'increase-indent-between-unenclosed-tags' => false,
                 'preset-rules' => [
@@ -928,8 +935,9 @@ EOF,
                 if ($formatter && $options === $lastOptions) {
                     return $formatter;
                 }
-                Console::debug('New Formatter instance required for:', $file);
+                Console::debug('New formatter required for:', $file);
                 $this->applyFormattingOptionValues($options);
+                !$this->Verbose || Console::debug('Applying options:', json_encode($options, JSON_PRETTY_PRINT));
                 if ($this->Psr12) {
                     $this->Tabs = null;
                     $this->Spaces = 4;
@@ -972,6 +980,7 @@ EOF,
                     $f->Psr12Compliance = true;
                     $f->NewlineBeforeFnDoubleArrows = true;
                 }
+                $this->SpacesBesideCode === null || $f->SpacesBesideCode = $this->SpacesBesideCode;
                 $this->MirrorBrackets === null || $f->MirrorBrackets = $this->MirrorBrackets;
                 $this->HangingHeredocIndents === null || $f->HangingHeredocIndents = $this->HangingHeredocIndents;
                 $this->IncreaseIndentBetweenUnenclosedTags === null || $f->IncreaseIndentBetweenUnenclosedTags = $this->IncreaseIndentBetweenUnenclosedTags;
@@ -1202,7 +1211,7 @@ EOF,
         if ($values !== null) {
             $this->applyOptionValues($values, false, false, $asArguments);
             if ($internal = $values['@internal'] ?? null) {
-                /** @var array<array<class-string<Rule>>|bool|null> $internal */
+                /** @var array<array<class-string<Rule>>|bool|int|null> $internal */
                 foreach ($internal as $name => $value) {
                     $property = self::INTERNAL_OPTION_MAP[$name] ?? null;
                     if (!$property) {
@@ -1358,6 +1367,8 @@ EOF,
             return;
         }
 
+        Sys::startTimer(__METHOD__);
+
         $logDir = "{$this->DebugDirectory}/progress-log";
         File::maybeCreateDirectory($logDir);
         File::find($logDir, null, null, null, null, false)
@@ -1378,8 +1389,9 @@ EOF,
             'input.php' => $input,
             'output.php' => $output,
             'tokens.json' => $tokens,
-            'data.json' => is_string($data) ? null : $data,
-            'data.out' => is_string($data) ? $data : null,
+            is_string($data)
+                ? 'data.out'
+                : 'data.json' => $data,
         ], $logFiles ?? []) as $file => $contents) {
             $file = "{$this->DebugDirectory}/{$file}";
             File::maybeDelete($file);
@@ -1392,5 +1404,7 @@ EOF,
                 );
             }
         }
+
+        Sys::stopTimer(__METHOD__);
     }
 }

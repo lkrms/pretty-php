@@ -2,11 +2,11 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
+use Lkrms\Pretty\Php\Catalog\WhitespaceType;
 use Lkrms\Pretty\Php\Concern\ListRuleTrait;
 use Lkrms\Pretty\Php\Contract\ListRule;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\Php\TokenCollection;
-use Lkrms\Pretty\WhitespaceType;
 
 /**
  * Explode arrays and arguments with a trailing comma into one item per line

@@ -3,10 +3,10 @@
 namespace Lkrms\Pretty\Php\Rule;
 
 use Lkrms\Pretty\Php\Catalog\TokenType;
+use Lkrms\Pretty\Php\Catalog\WhitespaceType;
 use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Token;
-use Lkrms\Pretty\WhitespaceType;
 
 /**
  * Apply horizontal whitespace to operators
@@ -36,7 +36,7 @@ final class SpaceOperators implements TokenRule
     {
         return [
             T_DOLLAR,
-            ...TokenType::ALL_OPERATOR,
+            ...TokenType::OPERATOR_ALL,
         ];
     }
 

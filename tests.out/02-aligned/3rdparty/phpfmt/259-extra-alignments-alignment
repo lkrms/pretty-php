@@ -6,7 +6,7 @@ function a(
     TypeCCC $c  // Comment 3
 ) {
     noop();     // Comment 4
-                // Comment 5
+    // Comment 5
 
     // Comment 6
 }

@@ -5,6 +5,7 @@ namespace Lkrms\Pretty\Tests\Php;
 use Generator;
 use Lkrms\Pretty\Php\Catalog\CustomToken;
 use Lkrms\Pretty\Php\Catalog\TokenType;
+use Lkrms\Pretty\Php\Support\TokenTypeIndex;
 use ReflectionClass;
 
 final class TokenTypeTest extends \Lkrms\Pretty\Tests\Php\TestCase
@@ -49,21 +50,26 @@ final class TokenTypeTest extends \Lkrms\Pretty\Tests\Php\TestCase
      */
     public static function addSpaceProvider(): array
     {
+        $index = new TokenTypeIndex();
+        $around = self::indexToList($index->AddSpaceAround);
+        $before = self::indexToList($index->AddSpaceBefore);
+        $after = self::indexToList($index->AddSpaceAfter);
+
         return [
-            'Intersection of TokenType::ADD_SPACE_BEFORE and _AFTER' => [
-                array_intersect(TokenType::ADD_SPACE_BEFORE, TokenType::ADD_SPACE_AFTER),
+            'Intersection of TokenTypeIndex::$AddSpaceBefore and $AddSpaceAfter' => [
+                array_intersect($before, $after),
             ],
-            'Intersection of TokenType::ADD_SPACE_BEFORE and _AFTER, not in _AROUND' => [
+            'Intersection of TokenTypeIndex::$AddSpaceBefore and $AddSpaceAfter, not in $AddSpaceAround' => [
                 array_diff(
-                    array_intersect(TokenType::ADD_SPACE_BEFORE, TokenType::ADD_SPACE_AFTER),
-                    TokenType::ADD_SPACE_AROUND
+                    array_intersect($before, $after),
+                    $around
                 ),
             ],
-            'Intersection of TokenType::ADD_SPACE_AROUND and _BEFORE' => [
-                array_intersect(TokenType::ADD_SPACE_AROUND, TokenType::ADD_SPACE_BEFORE),
+            'Intersection of TokenTypeIndex::$AddSpaceAround and $AddSpaceBefore' => [
+                array_intersect($around, $before),
             ],
-            'Intersection of TokenType::ADD_SPACE_AROUND and _AFTER' => [
-                array_intersect(TokenType::ADD_SPACE_AROUND, TokenType::ADD_SPACE_AFTER),
+            'Intersection of TokenTypeIndex::$AddSpaceAround and $AddSpaceAfter' => [
+                array_intersect($around, $after),
             ],
         ];
     }
@@ -84,5 +90,19 @@ final class TokenTypeTest extends \Lkrms\Pretty\Tests\Php\TestCase
             },
             $tokens
         );
+    }
+
+    /**
+     * @param array<int,bool> $index
+     * @return int[]
+     */
+    private static function indexToList(array $index): array
+    {
+        foreach ($index as $type => $value) {
+            if ($value) {
+                $list[] = $type;
+            }
+        }
+        return $list ?? [];
     }
 }
