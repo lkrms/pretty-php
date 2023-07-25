@@ -22,6 +22,8 @@ final class WordPress implements TokenRule
 {
     use TokenRuleTrait;
 
+    private bool $DocCommentUnpinned = false;
+
     public function getPriority(string $method): ?int
     {
         switch ($method) {
@@ -36,9 +38,12 @@ final class WordPress implements TokenRule
     public function getTokenTypes(): array
     {
         return [
+            T_DOC_COMMENT,
             T_COLON,
             T_EXIT,
             T_LOGICAL_NOT,
+            T_OPEN_BRACE,
+            T_CLOSE_BRACE,
             T_OPEN_BRACKET,
             T_OPEN_PARENTHESIS,
         ];
@@ -46,6 +51,14 @@ final class WordPress implements TokenRule
 
     public function processToken(Token $token): void
     {
+        if ($token->id === T_DOC_COMMENT) {
+            if (!$this->DocCommentUnpinned) {
+                $token->WhitespaceMaskNext |= WhitespaceType::BLANK;
+                $this->DocCommentUnpinned = true;
+            }
+            return;
+        }
+
         if ($token->id === T_COLON) {
             if (!$token->startsAlternativeSyntax()) {
                 return;
@@ -69,12 +82,23 @@ final class WordPress implements TokenRule
             return;
         }
 
+        if ($token->id === T_OPEN_BRACE) {
+            $token->WhitespaceMaskNext |= WhitespaceType::BLANK;
+            return;
+        }
+
+        if ($token->id === T_CLOSE_BRACE) {
+            $token->WhitespaceMaskPrev |= WhitespaceType::BLANK;
+            return;
+        }
+
         // All that remains is T_OPEN_BRACKET and T_OPEN_PARENTHESIS
         if ($token->ClosedBy === $token->_next ||
             ($token->id === T_OPEN_BRACKET &&
                 ($token->StringOpenedBy ||
                     $token->HeredocOpenedBy ||
-                    $token->_next->id === T_CONSTANT_ENCAPSED_STRING))) {
+                    ($token->_next->_next === $token->ClosedBy &&
+                        $token->_next->id !== T_VARIABLE)))) {
             return;
         }
 
@@ -82,5 +106,10 @@ final class WordPress implements TokenRule
         $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
         $token->ClosedBy->WhitespaceBefore |= WhitespaceType::SPACE;
         $token->ClosedBy->WhitespaceMaskPrev |= WhitespaceType::SPACE;
+    }
+
+    public function reset(): void
+    {
+        $this->DocCommentUnpinned = false;
     }
 }

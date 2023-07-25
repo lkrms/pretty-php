@@ -49,6 +49,7 @@ final class AddStandardWhitespace implements TokenRule
                 T_OPEN_TAG_WITH_ECHO,
                 T_CLOSE_TAG,
                 T_ATTRIBUTE_COMMENT,
+                T_START_HEREDOC,
             ),
             $this->TypeIndex->OpenBracket,
             $this->TypeIndex->CloseBracketOrEndAltSyntax,
@@ -271,6 +272,11 @@ final class AddStandardWhitespace implements TokenRule
         if ($token->id === T_OPEN_PARENTHESIS && $token->prevCode()->id === T_DECLARE) {
             $token->outer()
                   ->maskInnerWhitespace(WhitespaceType::NONE);
+        }
+
+        if ($token->id === T_START_HEREDOC && $this->Formatter->Psr12Compliance) {
+            $token->WhitespaceBefore |= WhitespaceType::SPACE;
+            $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
         }
     }
 }

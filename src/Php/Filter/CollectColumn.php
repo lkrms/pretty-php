@@ -22,7 +22,7 @@ final class CollectColumn implements Filter
         foreach ($tokens as $i => $token) {
             $token->column = $column;
             $text =
-                !$this->Formatter->TokenTypeIndex->Expandable[$token->id] ||
+                !$this->TypeIndex->Expandable[$token->id] ||
                     strpos($token->text, "\t") === false
                         ? $token->text
                         : Convert::expandTabs($token->text, $this->Formatter->TabSize, $column);

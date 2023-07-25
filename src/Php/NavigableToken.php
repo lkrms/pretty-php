@@ -21,7 +21,7 @@ class NavigableToken extends PhpToken
     /**
      * The starting column (1-based) of the token
      */
-    public int $column;
+    public int $column = -1;
 
     /**
      * @var TToken|null

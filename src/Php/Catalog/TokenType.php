@@ -685,4 +685,54 @@ final class TokenType extends Dictionary
         }
         return $index;
     }
+
+    /**
+     * Get a token type index containing every entry in the first index
+     * that is not present in any of the others
+     *
+     * @param array<int,bool> $index
+     * @param array<int,bool> ...$indexes
+     * @return array<int,bool>
+     */
+    public static function diffIndexes(array $index, array ...$indexes): array
+    {
+        $index += self::getIndex();
+        foreach ($index as $type => $value) {
+            if (!$value) {
+                continue;
+            }
+            foreach ($indexes as $_index) {
+                if ($_index[$type] ?? false) {
+                    $index[$type] = false;
+                    break;
+                }
+            }
+        }
+        return $index;
+    }
+
+    /**
+     * Get a token type index containing every entry in the first index
+     * that is present in all of the others
+     *
+     * @param array<int,bool> $index
+     * @param array<int,bool> ...$indexes
+     * @return array<int,bool>
+     */
+    public static function intersectIndexes(array $index, array ...$indexes): array
+    {
+        $index += self::getIndex();
+        foreach ($index as $type => $value) {
+            if (!$value) {
+                continue;
+            }
+            foreach ($indexes as $_index) {
+                if (!($_index[$type] ?? false)) {
+                    $index[$type] = false;
+                    break;
+                }
+            }
+        }
+        return $index;
+    }
 }

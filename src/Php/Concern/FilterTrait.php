@@ -5,6 +5,7 @@ namespace Lkrms\Pretty\Php\Concern;
 use Lkrms\Pretty\Php\Catalog\TokenType;
 use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\NavigableToken as Token;
+use Lkrms\Pretty\Php\Support\TokenTypeIndex;
 
 trait FilterTrait
 {
@@ -18,9 +19,15 @@ trait FilterTrait
      */
     protected $Formatter;
 
+    /**
+     * @var TokenTypeIndex
+     */
+    protected $TypeIndex;
+
     public function __construct(Formatter $formatter)
     {
         $this->Formatter = $formatter;
+        $this->TypeIndex = $formatter->TokenTypeIndex;
     }
 
     protected function prevCode(int $i, ?int &$prev_i = null): Token

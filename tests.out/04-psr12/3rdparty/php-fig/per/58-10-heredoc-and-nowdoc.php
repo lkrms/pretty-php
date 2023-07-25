@@ -1,7 +1,6 @@
 <?php
 
-$notAllowed =
-    <<<'COUNTEREXAMPLE'
+$notAllowed = <<<'COUNTEREXAMPLE'
     This
     is
     not

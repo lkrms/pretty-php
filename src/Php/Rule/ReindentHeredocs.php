@@ -2,21 +2,23 @@
 
 namespace Lkrms\Pretty\Php\Rule;
 
-use Lkrms\Pretty\Php\Concern\TokenRuleTrait;
-use Lkrms\Pretty\Php\Contract\TokenRule;
-use Lkrms\Pretty\Php\Formatter;
+use Lkrms\Pretty\Php\Catalog\HeredocIndent;
+use Lkrms\Pretty\Php\Concern\MultiTokenRuleTrait;
+use Lkrms\Pretty\Php\Contract\MultiTokenRule;
 use Lkrms\Pretty\Php\Token;
 
 /**
- * Apply indentation to heredocs
+ * Apply indentation to heredocs and nowdocs
  *
- * {@see Formatter} normalises heredocs by removing indentation prior to
- * formatting. At the expense of compatibility with PHP prior to 7.3, this rule
- * [re]applies it.
+ * Indentation is removed from heredocs by a normalisation filter before code is
+ * formatted. At the expense of compatibility with PHP versions prior to 7.3,
+ * this rule [re]applies it.
+ *
+ * @api
  */
-final class ReindentHeredocs implements TokenRule
+final class ReindentHeredocs implements MultiTokenRule
 {
-    use TokenRuleTrait;
+    use MultiTokenRuleTrait;
 
     /**
      * @var Token[]
@@ -25,7 +27,16 @@ final class ReindentHeredocs implements TokenRule
 
     public function getPriority(string $method): ?int
     {
-        return 900;
+        switch ($method) {
+            case self::PROCESS_TOKENS:
+                return 900;
+
+            case self::BEFORE_RENDER:
+                return 900;
+
+            default:
+                return null;
+        }
     }
 
     public function getTokenTypes(): array
@@ -35,13 +46,21 @@ final class ReindentHeredocs implements TokenRule
         ];
     }
 
-    public function processToken(Token $token): void
+    public function processTokens(array $tokens): void
     {
-        $this->Heredocs[] = $token;
+        if ($this->Formatter->getHeredocIndent() === HeredocIndent::NONE) {
+            return;
+        }
+
+        $this->Heredocs = $tokens;
     }
 
     public function beforeRender(array $tokens): void
     {
+        if (!$this->Heredocs) {
+            return;
+        }
+
         foreach ($this->Heredocs as $heredoc) {
             $inherited = '';
             $current = $heredoc->HeredocOpenedBy;

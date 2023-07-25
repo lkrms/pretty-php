@@ -46,6 +46,8 @@ class Token extends CollectibleToken implements JsonSerializable
 
     public ?Token $EndExpression = null;
 
+    public bool $IsListParent = false;
+
     public bool $IsTernaryOperator = false;
 
     public ?Token $TernaryOperator1 = null;
@@ -69,9 +71,7 @@ class Token extends CollectibleToken implements JsonSerializable
 
     public int $HangingIndent = 0;
 
-    public bool $IsHangingParent = false;
-
-    public bool $IsOverhangingParent = false;
+    public ?int $HangingIndentParentType = null;
 
     /**
      * Tokens responsible for each level of hanging indentation applied to the
@@ -562,6 +562,8 @@ class Token extends CollectibleToken implements JsonSerializable
     public function jsonSerialize(): array
     {
         $a['id'] = $this->getTokenName();
+        $a['line'] = $this->line;
+        $a['pos'] = $this->pos;
         $a['column'] = $this->column;
         $a['_prevSibling'] = $this->_prevSibling;
         $a['_nextSibling'] = $this->_nextSibling;
@@ -572,6 +574,7 @@ class Token extends CollectibleToken implements JsonSerializable
         $a['EndStatement'] = $this->EndStatement;
         $a['Expression'] = $this->Expression;
         $a['EndExpression'] = $this->EndExpression;
+        $a['IsListParent'] = $this->IsListParent;
         $a['IsTernaryOperator'] = $this->IsTernaryOperator;
         $a['TernaryOperator1'] = $this->TernaryOperator1;
         $a['TernaryOperator2'] = $this->TernaryOperator2;
@@ -582,8 +585,7 @@ class Token extends CollectibleToken implements JsonSerializable
         $a['Indent'] = $this->Indent;
         $a['Deindent'] = $this->Deindent;
         $a['HangingIndent'] = $this->HangingIndent;
-        $a['IsHangingParent'] = $this->IsHangingParent;
-        $a['IsOverhangingParent'] = $this->IsOverhangingParent;
+        $a['HangingIndentParentType'] = $this->HangingIndentParentType;
         $a['IndentStack'] = $this->IndentStack;
         $a['IndentParentStack'] = $this->IndentParentStack;
 
@@ -1259,16 +1261,16 @@ class Token extends CollectibleToken implements JsonSerializable
             }
             if ($next->is([T_ELSEIF, T_ELSE]) && (
                 !$containUnenclosed ||
-                    $terminator->id === T_CLOSE_BRACE ||
-                    $terminator->prevSiblingOf(T_IF, T_ELSEIF)->Index >= $this->Index
+                $terminator->id === T_CLOSE_BRACE ||
+                $terminator->prevSiblingOf(T_IF, T_ELSEIF)->Index >= $this->Index
             )) {
                 continue;
             }
             if ($next->id === T_WHILE &&
                     $next->Statement !== $next && (
                         !$containUnenclosed ||
-                            $terminator->id === T_CLOSE_BRACE ||
-                            $next->Statement->Index >= $this->Index
+                        $terminator->id === T_CLOSE_BRACE ||
+                        $next->Statement->Index >= $this->Index
                     )) {
                 continue;
             }
@@ -1672,7 +1674,7 @@ class Token extends CollectibleToken implements JsonSerializable
             ...TokenType::OPERATOR_INCREMENT_DECREMENT
         ]) || (
             $this->is([T_PLUS, T_MINUS]) &&
-                $this->inUnaryContext()
+            $this->inUnaryContext()
         );
     }
 

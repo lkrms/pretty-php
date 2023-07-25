@@ -10,6 +10,6 @@ for ($index = 10; 0 <= $index; --$index) {
 
 if (
     !$conditions ||
-        !($anotherCondition || $someCondition)
+    !($anotherCondition || $someCondition)
 ) {
 }
