@@ -2,7 +2,7 @@
 
 while (
 	$expr1 &&
-		$expr2
+	$expr2
 ) {
 	// structure body
 }

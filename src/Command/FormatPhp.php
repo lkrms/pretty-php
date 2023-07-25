@@ -16,6 +16,7 @@ use Lkrms\Facade\Console;
 use Lkrms\Facade\File;
 use Lkrms\Facade\Sys;
 use Lkrms\Pretty\Php\Catalog\FormatterFlag;
+use Lkrms\Pretty\Php\Catalog\HeredocIndent;
 use Lkrms\Pretty\Php\Catalog\ImportSortOrder;
 use Lkrms\Pretty\Php\Contract\Filter;
 use Lkrms\Pretty\Php\Contract\Rule;
@@ -29,15 +30,15 @@ use Lkrms\Pretty\Php\Rule\AlignComments;
 use Lkrms\Pretty\Php\Rule\AlignLists;
 use Lkrms\Pretty\Php\Rule\AlignTernaryOperators;
 use Lkrms\Pretty\Php\Rule\ApplyMagicComma;
-use Lkrms\Pretty\Php\Rule\Extra\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\Extra\Laravel;
 use Lkrms\Pretty\Php\Rule\Extra\WordPress;
 use Lkrms\Pretty\Php\Rule\NoMixedLists;
 use Lkrms\Pretty\Php\Rule\PreserveNewlines;
 use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
-use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
 use Lkrms\Pretty\Php\Rule\SimplifyStrings;
 use Lkrms\Pretty\Php\Rule\SpaceDeclarations;
+use Lkrms\Pretty\Php\Support\TokenTypeIndex;
+use Lkrms\Pretty\Php\Support\WordPressTokenTypeIndex;
 use Lkrms\Pretty\Php\Token;
 use Lkrms\Pretty\PrettyBadSyntaxException;
 use Lkrms\Pretty\PrettyException;
@@ -53,6 +54,90 @@ use UnexpectedValueException;
 
 class FormatPhp extends CliCommand
 {
+    private const SKIP_RULE_MAP = [
+        'simplify-strings' => SimplifyStrings::class,
+        'preserve-newlines' => PreserveNewlines::class,
+        'magic-commas' => ApplyMagicComma::class,
+        'declaration-spacing' => SpaceDeclarations::class,
+    ];
+
+    private const ADD_RULE_MAP = [
+        'align-assignments' => AlignAssignments::class,
+        'align-chains' => AlignChainedCalls::class,
+        'align-comments' => AlignComments::class,
+        'align-fn' => AlignArrowFunctions::class,
+        'align-lists' => AlignLists::class,
+        'align-ternary' => AlignTernaryOperators::class,
+        'blank-before-return' => AddBlankLineBeforeReturn::class,
+        'strict-lists' => NoMixedLists::class,
+        'preserve-one-line' => PreserveOneLineStatements::class,
+    ];
+
+    private const HEREDOC_INDENT_MAP = [
+        'none' => HeredocIndent::NONE,
+        'line' => HeredocIndent::LINE,
+        'mixed' => HeredocIndent::MIXED,
+        'hanging' => HeredocIndent::HANGING,
+    ];
+
+    private const IMPORT_SORT_ORDER_MAP = [
+        'none' => ImportSortOrder::NONE,
+        'name' => ImportSortOrder::NAME,
+        'depth' => ImportSortOrder::DEPTH,
+    ];
+
+    private const INTERNAL_OPTION_MAP = [
+        'spaces-beside-code' => 'SpacesBesideCode',
+        'mirror-brackets' => 'MirrorBrackets',
+        'increase-indent-between-unenclosed-tags' => 'IncreaseIndentBetweenUnenclosedTags',
+        'relax-alignment-criteria' => 'RelaxAlignmentCriteria',
+        'preset-rules' => 'PresetRules',
+        'token-type-index' => 'TokenTypeIndex',
+    ];
+
+    private const PRESET_MAP = [
+        'laravel' => [
+            'disable' => [
+                'magic-commas',
+            ],
+            'enable' => [
+                'align-lists',
+                'blank-before-return',
+            ],
+            'heredoc-indent' => 'none',
+            '@internal' => [
+                'mirror-brackets' => false,
+                'preset-rules' => [
+                    Laravel::class,
+                ],
+            ],
+        ],
+        'wordpress' => [
+            'tab' => 4,
+            'disable' => [
+                'declaration-spacing',
+            ],
+            'enable' => [
+                'align-assignments',
+            ],
+            'one-true-brace-style' => true,
+            '@internal' => [
+                'spaces-beside-code' => 1,
+                'mirror-brackets' => false,
+                'increase-indent-between-unenclosed-tags' => false,
+                'relax-alignment-criteria' => true,
+                'preset-rules' => [
+                    WordPress::class,
+                ],
+                'token-type-index' => WordPressTokenTypeIndex::class,
+            ],
+        ],
+    ];
+
+    private const INCOMPATIBLE_RULES = [
+        ['align-lists', 'strict-lists'],
+    ];
+
     /**
      * @var string[]|null
      */
@@ -106,6 +191,16 @@ class FormatPhp extends CliCommand
     /**
      * @var bool
      */
+    private $OperatorsFirst;
+
+    /**
+     * @var bool
+     */
+    private $OperatorsLast;
+
+    /**
+     * @var bool
+     */
     private $IgnoreNewlines;
 
     /**
@@ -117,6 +212,11 @@ class FormatPhp extends CliCommand
      * @var bool
      */
     private $NoMagicCommas;
+
+    /**
+     * @var string|null
+     */
+    private $HeredocIndent;
 
     /**
      * @var string|null
@@ -218,17 +318,22 @@ class FormatPhp extends CliCommand
     /**
      * @var bool|null
      */
-    private $HangingHeredocIndents;
+    private $IncreaseIndentBetweenUnenclosedTags;
 
     /**
      * @var bool|null
      */
-    private $IncreaseIndentBetweenUnenclosedTags;
+    private $RelaxAlignmentCriteria;
 
     /**
      * @var array<class-string<Rule>>|null
      */
     private $PresetRules;
+
+    /**
+     * @var class-string<TokenTypeIndex>|null
+     */
+    private $TokenTypeIndex;
 
     /**
      * [ Option name => null ]
@@ -247,95 +352,19 @@ class FormatPhp extends CliCommand
     /**
      * [ Option name => default value ]
      *
-     * @var array<string,string|string[]|bool|int|null>
+     * @var array<string,array<string|int>|string|int|bool|null>
      */
     private $DefaultFormattingOptionValues;
 
     /**
-     * @var array<string,string|string[]|bool|int|null>|null
+     * @var array<string,array<string|int>|string|int|bool|null>|null
      */
     private $CliFormattingOptionValues;
 
     /**
-     * @var array<string,array<string,string|string[]|bool|int|null>|null>
+     * @var array<string,array<string,array<string|int>|string|int|bool|null>|null>
      */
     private $DirFormattingOptionValues = [];
-
-    private const SKIP_RULE_MAP = [
-        'simplify-strings' => SimplifyStrings::class,
-        'preserve-newlines' => PreserveNewlines::class,
-        'magic-commas' => ApplyMagicComma::class,
-        'declaration-spacing' => SpaceDeclarations::class,
-        'indent-heredocs' => ReindentHeredocs::class,
-    ];
-
-    private const ADD_RULE_MAP = [
-        'align-assignments' => AlignAssignments::class,
-        'align-chains' => AlignChainedCalls::class,
-        'align-comments' => AlignComments::class,
-        'align-fn' => AlignArrowFunctions::class,
-        'align-lists' => AlignLists::class,
-        'align-ternary' => AlignTernaryOperators::class,
-        'blank-before-return' => AddBlankLineBeforeReturn::class,
-        'strict-lists' => NoMixedLists::class,
-        'preserve-one-line' => PreserveOneLineStatements::class,
-
-        // In the `Extra` namespace
-        'one-line-arguments' => DeclareArgumentsOnOneLine::class,
-    ];
-
-    private const IMPORT_SORT_ORDER_MAP = [
-        'none' => ImportSortOrder::NONE,
-        'name' => ImportSortOrder::NAME,
-        'depth' => ImportSortOrder::DEPTH,
-    ];
-
-    private const INCOMPATIBLE_RULES = [
-        ['align-lists', 'strict-lists'],
-    ];
-
-    private const INTERNAL_OPTION_MAP = [
-        'spaces-beside-code' => 'SpacesBesideCode',
-        'mirror-brackets' => 'MirrorBrackets',
-        'hanging-heredoc-indents' => 'HangingHeredocIndents',
-        'increase-indent-between-unenclosed-tags' => 'IncreaseIndentBetweenUnenclosedTags',
-        'preset-rules' => 'PresetRules',
-    ];
-
-    private const PRESET_MAP = [
-        'laravel' => [
-            'disable' => [
-                'magic-commas',
-            ],
-            'enable' => [
-                'align-lists',
-                'blank-before-return',
-            ],
-            '@internal' => [
-                'mirror-brackets' => false,
-                'hanging-heredoc-indents' => false,
-                'preset-rules' => [
-                    Laravel::class,
-                ],
-            ],
-        ],
-        'wordpress' => [
-            'tab' => 4,
-            'disable' => [],
-            'enable' => [
-                'align-assignments',
-            ],
-            'one-true-brace-style' => true,
-            '@internal' => [
-                'spaces-beside-code' => 1,
-                'mirror-brackets' => false,
-                'increase-indent-between-unenclosed-tags' => false,
-                'preset-rules' => [
-                    WordPress::class,
-                ],
-            ],
-        ],
-    ];
 
     public function __construct(CliApplication $container)
     {
@@ -431,8 +460,8 @@ effect when using tabs for indentation.
 EOF)
                 ->optionType(CliOptionType::ONE_OF_OPTIONAL)
                 ->valueType(CliOptionValueType::INTEGER)
-                ->allowedValues(['2', '4', '8'])
-                ->defaultValue('4')
+                ->allowedValues([2, 4, 8])
+                ->defaultValue(4)
                 ->visibility($noSynopsis)
                 ->bindTo($this->Tabs),
             CliOption::build()
@@ -447,8 +476,8 @@ given.
 EOF)
                 ->optionType(CliOptionType::ONE_OF_OPTIONAL)
                 ->valueType(CliOptionValueType::INTEGER)
-                ->allowedValues(['2', '4', '8'])
-                ->defaultValue('4')
+                ->allowedValues([2, 4, 8])
+                ->defaultValue(4)
                 ->visibility($noSynopsis)
                 ->bindTo($this->Spaces),
             CliOption::build()
@@ -474,7 +503,7 @@ EOF)
                 ->short('i')
                 ->valueName('RULE')
                 ->description(<<<EOF
-Disable a standard formatting rule
+Disable one of the default formatting rules
 EOF)
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys(self::SKIP_RULE_MAP))
@@ -486,7 +515,7 @@ EOF)
                 ->short('r')
                 ->valueName('RULE')
                 ->description(<<<EOF
-Enable a non-standard formatting rule
+Enable an optional formatting rule
 EOF)
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys(self::ADD_RULE_MAP))
@@ -500,6 +529,20 @@ EOF)
 Format braces using the One True Brace Style
 EOF)
                 ->bindTo($this->OneTrueBraceStyle),
+            CliOption::build()
+                ->long('operators-first')
+                ->short('O')
+                ->description(<<<EOF
+Place newlines before operators when splitting code over multiple lines
+EOF)
+                ->bindTo($this->OperatorsFirst),
+            CliOption::build()
+                ->long('operators-last')
+                ->short('L')
+                ->description(<<<EOF
+Place newlines after operators when splitting code over multiple lines
+EOF)
+                ->bindTo($this->OperatorsLast),
             CliOption::build()
                 ->long('ignore-newlines')
                 ->short('N')
@@ -529,6 +572,18 @@ Don't split lists with trailing commas into one item per line
 Equivalent to __--disable=magic-commas__
 EOF)
                 ->bindTo($this->NoMagicCommas),
+            CliOption::build()
+                ->long('heredoc-indent')
+                ->short('h')
+                ->valueName('TYPE')
+                ->description(<<<EOF
+Set the indentation level of heredocs and nowdocs
+
+The default is to apply _hanging_ indentation to inline heredocs.
+EOF)
+                ->optionType(CliOptionType::ONE_OF)
+                ->allowedValues(array_keys(self::HEREDOC_INDENT_MAP))
+                ->bindTo($this->HeredocIndent),
             CliOption::build()
                 ->long('sort-imports-by')
                 ->short('m')
@@ -945,7 +1000,6 @@ EOF,
                     $unskip = [
                         ApplyMagicComma::class,
                         SpaceDeclarations::class,
-                        ReindentHeredocs::class,
                     ];
                     $skip = [
                         PreserveOneLineStatements::class,
@@ -958,6 +1012,7 @@ EOF,
                     array_push($this->SkipRules, ...$skip);
                     array_push($this->AddRules, ...array_diff($add, $this->AddRules));
                     $this->OneTrueBraceStyle = false;
+                    $this->HeredocIndent = 'hanging';
                 }
                 $f = new Formatter(
                     !$this->Tabs,
@@ -966,13 +1021,23 @@ EOF,
                     $this->AddRules,
                     $this->SkipFilters,
                     ($this->Quiet < 2 ? FormatterFlag::REPORT_PROBLEMS : 0)
-                        | ($this->Verbose ? FormatterFlag::LOG_PROGRESS : 0)
+                        | ($this->Verbose ? FormatterFlag::LOG_PROGRESS : 0),
+                    $this->TokenTypeIndex
+                        ? [$this->TokenTypeIndex, 'create']()
+                        : ($this->OperatorsFirst
+                            ? (new TokenTypeIndex())->withLeadingOperators()
+                            : ($this->OperatorsLast
+                                ? (new TokenTypeIndex())->withTrailingOperators()
+                                : null))
                 );
                 $f->PreferredEol = $this->Eol === 'auto' || $this->Eol === 'platform'
                     ? PHP_EOL
                     : ($this->Eol === 'lf' ? "\n" : "\r\n");
                 $f->PreserveEol = $this->Eol === 'auto';
                 $f->OneTrueBraceStyle = $this->OneTrueBraceStyle;
+                if ($this->HeredocIndent) {
+                    $f->HeredocIndent = self::HEREDOC_INDENT_MAP[$this->HeredocIndent];
+                }
                 $f->ImportSortOrder = $this->SortImportsBy
                     ? self::IMPORT_SORT_ORDER_MAP[$this->SortImportsBy]
                     : ImportSortOrder::NAME;
@@ -982,8 +1047,8 @@ EOF,
                 }
                 $this->SpacesBesideCode === null || $f->SpacesBesideCode = $this->SpacesBesideCode;
                 $this->MirrorBrackets === null || $f->MirrorBrackets = $this->MirrorBrackets;
-                $this->HangingHeredocIndents === null || $f->HangingHeredocIndents = $this->HangingHeredocIndents;
                 $this->IncreaseIndentBetweenUnenclosedTags === null || $f->IncreaseIndentBetweenUnenclosedTags = $this->IncreaseIndentBetweenUnenclosedTags;
+                $this->RelaxAlignmentCriteria === null || $f->RelaxAlignmentCriteria = $this->RelaxAlignmentCriteria;
                 $lastOptions = $options;
 
                 return $f;
@@ -1141,7 +1206,7 @@ EOF,
     }
 
     /**
-     * @return array<string,string|string[]|bool|int|null>
+     * @return array<string,array<string|int>|string|int|bool|null>
      */
     private function getFormattingOptionValues(bool $global, bool $internal = false): array
     {
@@ -1174,8 +1239,8 @@ EOF,
     }
 
     /**
-     * @param array<string,string|string[]|bool|int|null> $values
-     * @return array<string,string|string[]|bool|int|null>
+     * @param array<string,array<string|int>|string|int|bool|null> $values
+     * @return array<string,array<string|int>|string|int|bool|null>
      */
     private function normaliseFormattingOptionValues(array $values, bool $global = false, bool $internal = false, bool $expand = true): array
     {
@@ -1203,7 +1268,7 @@ EOF,
     }
 
     /**
-     * @param array<string,string|string[]|bool|int|null>|null $values
+     * @param array<string,array<string|int>|string|int|bool|null>|null $values
      * @return $this
      */
     private function applyFormattingOptionValues(?array $values = null, bool $asArguments = false)
@@ -1211,7 +1276,7 @@ EOF,
         if ($values !== null) {
             $this->applyOptionValues($values, false, false, $asArguments);
             if ($internal = $values['@internal'] ?? null) {
-                /** @var array<array<class-string<Rule>>|bool|int|null> $internal */
+                /** @var array<array<class-string<Rule>>|class-string<TokenTypeIndex>|int|bool|null> $internal */
                 foreach ($internal as $name => $value) {
                     $property = self::INTERNAL_OPTION_MAP[$name] ?? null;
                     if (!$property) {
@@ -1264,7 +1329,7 @@ EOF,
     private function getFormattingOptionNames(bool $global, bool $kebabCase = false): array
     {
         $names = $global
-            ? ['src', 'include', 'includeIfPhp', 'exclude']
+            ? ['src', 'include', 'exclude', 'includeIfPhp']
             : [];
         $names = [
             ...$names,
@@ -1272,10 +1337,13 @@ EOF,
             'disable',
             'enable',
             'oneTrueBraceStyle',
+            'operatorsFirst',
+            'operatorsLast',
             'noSimplifyStrings',
             'noMagicCommas',
-            'noSortImports',
+            'heredocIndent',
             'sortImportsBy',
+            'noSortImports',
             'psr12',
             'preset',
         ];

@@ -22,7 +22,13 @@ final class SimplifyStrings implements TokenRule
 
     public function getPriority(string $method): ?int
     {
-        return 60;
+        switch ($method) {
+            case self::PROCESS_TOKEN:
+                return 60;
+
+            default:
+                return null;
+        }
     }
 
     public function getTokenTypes(): array

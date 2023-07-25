@@ -55,8 +55,8 @@ final class AddEssentialWhitespace implements Rule
             }
 
             if ($token->effectiveWhitespaceAfter() ||
-                    $this->Formatter->TokenTypeIndex->SuppressSpaceAfter[$token->id] ||
-                    $this->Formatter->TokenTypeIndex->SuppressSpaceBefore[$next->id]) {
+                    $this->TypeIndex->SuppressSpaceAfter[$token->id] ||
+                    $this->TypeIndex->SuppressSpaceBefore[$next->id]) {
                 continue;
             }
 

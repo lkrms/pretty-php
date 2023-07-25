@@ -11,7 +11,7 @@ use Lkrms\Pretty\Php\Catalog\TokenType as TT;
  *
  * @api
  */
-final class TokenTypeIndex implements IImmutable
+class TokenTypeIndex implements IImmutable
 {
     use HasMutator {
         withPropertyValue as public with;
@@ -144,6 +144,12 @@ final class TokenTypeIndex implements IImmutable
      * @var array<int,bool>
      */
     public array $AltSyntaxEnd;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $HasStatement;
 
     /**
      * @readonly
@@ -354,6 +360,71 @@ final class TokenTypeIndex implements IImmutable
 
         $this->AltSyntaxContinue = TT::getIndex(...TT::ALT_SYNTAX_CONTINUE);
         $this->AltSyntaxEnd = TT::getIndex(...TT::ALT_SYNTAX_END);
+        $this->HasStatement = TT::getIndex(...TT::HAS_STATEMENT);
         $this->NotCode = TT::getIndex(...TT::NOT_CODE);
+    }
+
+    /**
+     * @return $this
+     */
+    public function withLeadingOperators()
+    {
+        $both = TT::intersectIndexes(
+            $this->PreserveNewlineBefore,
+            $this->PreserveNewlineAfter,
+        );
+        $preserveBefore = TT::mergeIndexes(
+            $this->PreserveNewlineBefore,
+            TT::getIndex(
+                ...TT::OPERATOR_LOGICAL_EXCEPT_NOT,
+            ),
+        );
+        $preserveAfter = TT::mergeIndexes(
+            TT::diffIndexes(
+                $this->PreserveNewlineAfter,
+                $preserveBefore,
+            ),
+            $both
+        );
+
+        return $this->with('PreserveNewlineBefore', $preserveBefore)
+                    ->with('PreserveNewlineAfter', $preserveAfter);
+    }
+
+    /**
+     * @return $this
+     */
+    public function withTrailingOperators()
+    {
+        $both = TT::intersectIndexes(
+            $this->PreserveNewlineBefore,
+            $this->PreserveNewlineAfter,
+        );
+        $preserveAfter = TT::mergeIndexes(
+            $this->PreserveNewlineAfter,
+            TT::getIndex(
+                T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+                T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
+                T_COALESCE,
+                T_CONCAT,
+                ...TT::OPERATOR_ARITHMETIC,
+                ...TT::OPERATOR_BITWISE,
+            ),
+        );
+        $preserveBefore = TT::mergeIndexes(
+            TT::diffIndexes(
+                $this->PreserveNewlineBefore,
+                $preserveAfter,
+            ),
+            $both
+        );
+
+        return $this->with('PreserveNewlineBefore', $preserveBefore)
+                    ->with('PreserveNewlineAfter', $preserveAfter);
+    }
+
+    public static function create(): TokenTypeIndex
+    {
+        return new self();
     }
 }

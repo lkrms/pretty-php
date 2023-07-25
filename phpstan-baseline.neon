@@ -56,6 +56,16 @@ parameters:
 			path: src/Command/FormatPhp.php
 
 		-
+			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$OperatorsFirst is never written, only read\\.$#"
+			count: 1
+			path: src/Command/FormatPhp.php
+
+		-
+			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$OperatorsLast is never written, only read\\.$#"
+			count: 1
+			path: src/Command/FormatPhp.php
+
+		-
 			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$OutputFiles is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php

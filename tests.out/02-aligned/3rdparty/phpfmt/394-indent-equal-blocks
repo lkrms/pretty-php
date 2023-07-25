@@ -28,14 +28,14 @@ $string = function () {
 
     $a[
         $c
-            . $d
+        . $d
     ] = 0;
 };
 
 $x = (
     $a
-        . $b
-        . $c
+    . $b
+    . $c
 );
 
 $x = [

@@ -183,9 +183,11 @@ final class AlignAssignments implements BlockRule
                             // multiple lines, as long as inner lines have a
                             // higher effective indentation level than the
                             // aligned tokens (enforced in callback)
-                            ($type !== '=' &&
+                            (($this->Formatter->RelaxAlignmentCriteria || $type !== '=') &&
                                 $block[$line - 1][0]->Index <=
-                                    $lastToken->_nextCode->pragmaticEndOfExpression()->Index)) {
+                                    $lastToken->_nextCode->pragmaticEndOfExpression()->Index) ||
+                            ($this->Formatter->RelaxAlignmentCriteria &&
+                                $block[$line - 1][0]->_prevCode === $block[$line][0]->_prevCode)) {
                             $run[$line] = $token;
                             continue;
                         }
@@ -291,12 +293,17 @@ final class AlignAssignments implements BlockRule
             $deltas[$i] = $maxLength - $length;
         }
 
+        $innerLineIsOutdented = false;
         foreach ($innerLines as $i => $lines) {
             /** @var Token $token1 */
             foreach ($lines as $token1) {
                 $indent = mb_strlen($token1->renderWhitespaceBefore(true));
                 if ($indent + $deltas[$i] < $maxLength) {
-                    return;
+                    if (!$this->Formatter->RelaxAlignmentCriteria) {
+                        return;
+                    }
+                    $innerLineIsOutdented = true;
+                    break 2;
                 }
             }
         }
@@ -325,7 +332,7 @@ final class AlignAssignments implements BlockRule
             } else {
                 $token2->Padding += $deltas[$i];
             }
-            if (!($innerLines[$i] ?? null)) {
+            if ($innerLineIsOutdented || !($innerLines[$i] ?? null)) {
                 continue;
             }
             $token2->collect($token2->_nextCode->pragmaticEndOfExpression())

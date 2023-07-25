@@ -5,7 +5,7 @@ namespace Lkrms\Pretty\Php\Catalog;
 use Lkrms\Concept\ConvertibleEnumeration;
 
 /**
- * Custom tokens
+ * Custom tokens, including polyfills
  *
  * Token constants are defined in `bootstrap.php`.
  *
@@ -161,6 +161,28 @@ final class CustomToken extends ConvertibleEnumeration
      */
     public const T_NOT = T_NOT;
 
+    public const T_BAD_CHARACTER = T_BAD_CHARACTER;
+
+    public const T_ATTRIBUTE = T_ATTRIBUTE;
+
+    public const T_MATCH = T_MATCH;
+
+    public const T_NAME_FULLY_QUALIFIED = T_NAME_FULLY_QUALIFIED;
+
+    public const T_NAME_QUALIFIED = T_NAME_QUALIFIED;
+
+    public const T_NAME_RELATIVE = T_NAME_RELATIVE;
+
+    public const T_NULLSAFE_OBJECT_OPERATOR = T_NULLSAFE_OBJECT_OPERATOR;
+
+    public const T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG = T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG;
+
+    public const T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG = T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG;
+
+    public const T_ENUM = T_ENUM;
+
+    public const T_READONLY = T_READONLY;
+
     protected static $NameMap = [
         T_NULL => 'T_NULL',
         T_END_ALT_SYNTAX => 'T_END_ALT_SYNTAX',
@@ -193,6 +215,17 @@ final class CustomToken extends ConvertibleEnumeration
         T_OR => 'T_OR',
         T_CLOSE_BRACE => 'T_CLOSE_BRACE',
         T_NOT => 'T_NOT',
+        T_BAD_CHARACTER => 'T_BAD_CHARACTER',
+        T_ATTRIBUTE => 'T_ATTRIBUTE',
+        T_MATCH => 'T_MATCH',
+        T_NAME_FULLY_QUALIFIED => 'T_NAME_FULLY_QUALIFIED',
+        T_NAME_QUALIFIED => 'T_NAME_QUALIFIED',
+        T_NAME_RELATIVE => 'T_NAME_RELATIVE',
+        T_NULLSAFE_OBJECT_OPERATOR => 'T_NULLSAFE_OBJECT_OPERATOR',
+        T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG => 'T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG',
+        T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG => 'T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG',
+        T_ENUM => 'T_ENUM',
+        T_READONLY => 'T_READONLY',
     ];
 
     protected static $ValueMap = [
@@ -227,5 +260,16 @@ final class CustomToken extends ConvertibleEnumeration
         'T_OR' => T_OR,
         'T_CLOSE_BRACE' => T_CLOSE_BRACE,
         'T_NOT' => T_NOT,
+        'T_BAD_CHARACTER' => T_BAD_CHARACTER,
+        'T_ATTRIBUTE' => T_ATTRIBUTE,
+        'T_MATCH' => T_MATCH,
+        'T_NAME_FULLY_QUALIFIED' => T_NAME_FULLY_QUALIFIED,
+        'T_NAME_QUALIFIED' => T_NAME_QUALIFIED,
+        'T_NAME_RELATIVE' => T_NAME_RELATIVE,
+        'T_NULLSAFE_OBJECT_OPERATOR' => T_NULLSAFE_OBJECT_OPERATOR,
+        'T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG' => T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+        'T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG' => T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
+        'T_ENUM' => T_ENUM,
+        'T_READONLY' => T_READONLY,
     ];
 }

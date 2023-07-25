@@ -5,6 +5,7 @@ namespace Lkrms\Pretty\Php;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Sys;
 use Lkrms\Pretty\Php\Catalog\FormatterFlag;
+use Lkrms\Pretty\Php\Catalog\HeredocIndent;
 use Lkrms\Pretty\Php\Catalog\ImportSortOrder;
 use Lkrms\Pretty\Php\Catalog\TokenType;
 use Lkrms\Pretty\Php\Catalog\WhitespaceType;
@@ -126,11 +127,16 @@ final class Formatter
 
     public bool $MirrorBrackets = true;
 
-    public bool $HangingHeredocIndents = true;
+    /**
+     * @var int&HeredocIndent::*
+     */
+    public int $HeredocIndent = HeredocIndent::MIXED;
 
     public bool $HangingMatchIndents = true;
 
     public bool $IncreaseIndentBetweenUnenclosedTags = true;
+
+    public bool $RelaxAlignmentCriteria = false;
 
     public bool $NewlineBeforeFnDoubleArrows = false;
 
@@ -178,6 +184,7 @@ final class Formatter
         SwitchPosition::class,                   // processToken (600)
         NormaliseComments::class,                // processToken (780)
         AddHangingIndentation::class,            // processToken (800), callback (800)
+        ReindentHeredocs::class,                 // processToken (900), beforeRender (900)
         AddEssentialWhitespace::class,           // beforeRender (999)
     ];
 
@@ -190,7 +197,6 @@ final class Formatter
         PreserveNewlines::class,   // processToken  (93)
         ApplyMagicComma::class,    // processList  (360)
         SpaceDeclarations::class,  // processToken (620)
-        ReindentHeredocs::class,   // processToken (900), beforeRender (900)
     ];
 
     /**
@@ -585,6 +591,7 @@ final class Formatter
                                ->filter(fn(Token $t, ?Token $next, ?Token $prev) =>
                                             !$prev || $t->_prevCode->id === T_COMMA);
                     if ($items->count() > 1) {
+                        $parent->IsListParent = true;
                         $lists[$i] = $items;
                     }
                     continue 2;
@@ -634,6 +641,7 @@ final class Formatter
             if (!$items->count()) {
                 continue;
             }
+            $parent->IsListParent = true;
             $lists[$i] = $items;
         }
         Sys::stopTimer(__METHOD__ . '#find-lists');
@@ -682,35 +690,53 @@ final class Formatter
         }
 
         Sys::startTimer(__METHOD__ . '#find-blocks');
-        /** @var array<TokenCollection[]> $blocks */
-        $blocks = [];
-        /** @var TokenCollection[] $block */
-        $block = [];
-        $line = new TokenCollection();
-        /** @var Token $token */
-        $token = reset($this->Tokens);
-        $line[] = $token;
 
-        while (!($token = $token->next())->IsNull) {
-            $before = $token->effectiveWhitespaceBefore() & (WhitespaceType::BLANK | WhitespaceType::LINE);
-            if (!$before) {
-                $line[] = $token;
-                continue;
+        /** @var array<TokenCollection[]> */
+        $blocks = [];
+
+        /** @var TokenCollection[] */
+        $block = [];
+
+        $line = new TokenCollection();
+
+        /** @var Token */
+        $token = reset($this->Tokens);
+
+        while ($keep = true) {
+            if ($token && $token->id !== T_INLINE_HTML) {
+                $before = $token->effectiveWhitespaceBefore();
+                if ($before & WhitespaceType::BLANK) {
+                    $endOfBlock = true;
+                } elseif ($before & WhitespaceType::LINE) {
+                    $endOfLine = true;
+                }
+            } else {
+                $endOfBlock = true;
+                $keep = false;
             }
-            if ($before === WhitespaceType::LINE) {
-                $block[] = $line;
-                $line = new TokenCollection();
-                $line[] = $token;
-                continue;
+            if ($endOfLine ?? $endOfBlock ?? false) {
+                if ($line->count()) {
+                    $block[] = $line;
+                    $line = new TokenCollection();
+                }
+                unset($endOfLine);
             }
-            $block[] = $line;
-            $blocks[] = $block;
-            $block = [];
-            $line = new TokenCollection();
-            $line[] = $token;
+            if ($endOfBlock ?? false) {
+                if ($block) {
+                    $blocks[] = $block;
+                }
+                $block = [];
+                unset($endOfBlock);
+            }
+            if (!$token) {
+                break;
+            }
+            if ($keep) {
+                $line[] = $token;
+            }
+            $token = $token->_next;
         }
-        $block[] = $line;
-        $blocks[] = $block;
+
         Sys::stopTimer(__METHOD__ . '#find-blocks');
 
         /** @var BlockRule $rule */
@@ -737,15 +763,13 @@ final class Formatter
 
         Sys::startTimer(__METHOD__ . '#render');
         try {
-            $out = '';
-            $current = reset($this->Tokens);
-            do {
-                $out .= $current->render(false, true);
-            } while ($current = $current->_next);
+            $first = reset($this->Tokens);
+            $last = end($this->Tokens);
+            $out = $first->render(false, $last, true);
         } catch (Throwable $ex) {
             throw new PrettyException(
                 'Formatting failed: output cannot be rendered',
-                $out,
+                null,
                 $this->Tokens,
                 $this->Log,
                 null,
@@ -823,6 +847,16 @@ final class Formatter
         return $eol === "\n"
             ? $out
             : str_replace("\n", $eol, $out);
+    }
+
+    /**
+     * @return int&HeredocIndent::*
+     */
+    public function getHeredocIndent(): int
+    {
+        return $this->Psr12Compliance
+            ? HeredocIndent::HANGING
+            : $this->HeredocIndent;
     }
 
     /**
@@ -935,15 +969,13 @@ final class Formatter
     {
         Sys::startTimer(__METHOD__ . '#render');
         try {
-            $out = '';
-            $current = reset($this->Tokens);
-            do {
-                $out .= $current->render(false, false);
-            } while ($current = $current->_next);
+            $first = reset($this->Tokens);
+            $last = end($this->Tokens);
+            $out = $first->render(false, $last);
         } catch (Throwable $ex) {
             throw new PrettyException(
                 'Formatting failed: unable to render unresolved output',
-                $out,
+                null,
                 $this->Tokens,
                 $this->Log,
                 $ex

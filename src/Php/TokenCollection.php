@@ -141,27 +141,16 @@ final class TokenCollection extends TypedCollection implements Stringable
     {
         $this->assertCollected();
 
-        $trim = $trim ?: "\n";
-        $code = '';
-
-        /** @var Token $token */
-        foreach ($this as $token) {
-            $code .= $token->render($softTabs);
-            if (!$trim) {
-                continue;
+        $first = $this->first();
+        $last = $this->last();
+        $code = $first->render($softTabs, $last);
+        if ($trim) {
+            if ($before = $first->renderWhitespaceBefore($softTabs, true)) {
+                return substr($code, strlen($before));
             }
-            if ($trim !== true) {
-                $code = ltrim($code, $trim);
-                $trim = false;
-                continue;
-            }
-            if ($before = $token->renderWhitespaceBefore($softTabs, true)) {
-                $code = substr($code, strlen($before));
-            }
-            $trim = false;
+            return $code;
         }
-
-        return $code;
+        return ltrim($code, "\n");
     }
 
     public function __toString(): string
