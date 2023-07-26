@@ -7,7 +7,6 @@ use Lkrms\Pretty\Php\Catalog\CommentType;
 use Lkrms\Pretty\Php\Catalog\TokenType;
 use Lkrms\Pretty\Php\Catalog\WhitespaceType;
 use Lkrms\Utility\Convert;
-use RuntimeException;
 
 /**
  * @extends CollectibleToken<Token>
@@ -1926,31 +1925,29 @@ class Token extends CollectibleToken implements JsonSerializable
 
     private function renderComment(bool $softTabs): string
     {
+        $text = $this->text;
         if ($this->ExpandedText) {
             /** @todo Guess input tab size and use it instead */
-            $code = Convert::expandLeadingTabs(
-                $this->text, $this->Formatter->TabSize, !$this->wasFirstOnLine(), $this->column
+            $text = Convert::expandLeadingTabs(
+                $text, $this->Formatter->TabSize, !$this->wasFirstOnLine(), $this->column
             );
         }
 
-        // Remove trailing whitespace from each line
-        $code = preg_replace('/\h++$/m', '', $code ?? $this->text);
-
-        if ($this->id === T_COMMENT && preg_match('/\n\h*+(?!\*)\S/', $code)) {
+        if ($this->id === T_COMMENT && preg_match('/\n\h*+(?!\*)\S/', $text)) {
             $delta = $this->OutputColumn - $this->column;
             if (!$delta) {
-                return $this->maybeUnexpandTabs($code, $softTabs);
+                return $this->maybeUnexpandTabs($text, $softTabs);
             }
             $spaces = str_repeat(' ', abs($delta));
             if ($delta < 0) {
                 // Don't deindent if any non-empty lines have insufficient
                 // whitespace
-                if (preg_match("/\\n(?!{$spaces}|\\n)/", $code)) {
-                    return $this->maybeUnexpandTabs($code, $softTabs);
+                if (preg_match("/\\n(?!{$spaces}|\\n)/", $text)) {
+                    return $this->maybeUnexpandTabs($text, $softTabs);
                 }
-                return $this->maybeUnexpandTabs(str_replace("\n" . $spaces, "\n", $code), $softTabs);
+                return $this->maybeUnexpandTabs(str_replace("\n" . $spaces, "\n", $text), $softTabs);
             }
-            return $this->maybeUnexpandTabs(str_replace("\n", "\n" . $spaces, $code), $softTabs);
+            return $this->maybeUnexpandTabs(str_replace("\n", "\n" . $spaces, $text), $softTabs);
         }
 
         $start = $this->startOfLine();
@@ -1963,31 +1960,36 @@ class Token extends CollectibleToken implements JsonSerializable
                     + strlen(WhitespaceType::toWhitespace($this->effectiveWhitespaceBefore()))
                     + $this->Padding);
         }
-        // Normalise the start and end of multi-line docblocks as per PSR-5
+        // Normalise the start and end of multi-line docblocks as per PSR-5 and
+        // remove trailing whitespace
         if ($this->id === T_DOC_COMMENT) {
-            $code = preg_replace(
+            $text = preg_replace(
                 ['/^\/\*\*++\s*+/', '/\s*+\*++\/$/'],
                 ["/**\n", $indent . ' */'],
-                $code
+                $text
             );
         } else {
-            $code = preg_replace(
+            $text = preg_replace(
                 '/\n\h*+(\*++\/)$/',
                 $indent . ' $1',
-                $code
+                $text
             );
         }
         return preg_replace([
             '/\n\h*+(?:\* |\*(?!\/)(?=[\h\S])|(?=[^\s*]))/',
             '/\n\h*+\*?$/m',
+            '/\h++$/m',
         ], [
             $indent . ' * ',
             $indent . ' *',
-        ], $code);
+            '',
+        ], $text);
     }
 
     private function maybeUnexpandTabs(string $text, bool $softTabs): string
     {
+        // Remove trailing whitespace
+        $text = preg_replace('/\h++$/m', '', $text);
         if ($this->Formatter->Tab === "\t" && !$softTabs) {
             return preg_replace("/(?<=\\n|\G){$this->Formatter->SoftTab}/", "\t", $text);
         }

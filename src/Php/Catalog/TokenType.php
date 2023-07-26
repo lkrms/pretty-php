@@ -262,7 +262,10 @@ final class TokenType extends Dictionary
     public const DECLARATION_PART = [
         T_ATTRIBUTE,
         T_ATTRIBUTE_COMMENT,
-        ...self::DECLARATION,
+        T_FUNCTION,
+        T_STATIC,
+        T_USE,
+        ...self::DECLARATION_EXCEPT_MULTI_PURPOSE,
         ...self::DECLARATION_LIST,
         ...self::AMPERSAND,
     ];
@@ -297,12 +300,14 @@ final class TokenType extends Dictionary
     ];
 
     public const DECLARATION_TYPE = [
+        T_NAMESPACE,
         T_NS_SEPARATOR,
         ...self::NAME,
     ];
 
     public const DECLARATION = [
         T_FUNCTION,
+        T_NAMESPACE,
         T_STATIC,
         T_USE,
         ...self::DECLARATION_EXCEPT_MULTI_PURPOSE,
@@ -319,7 +324,6 @@ final class TokenType extends Dictionary
         T_GLOBAL,
         T_IMPLEMENTS,
         T_INTERFACE,
-        T_NAMESPACE,
         T_READONLY,
         T_TRAIT,
         T_VAR,

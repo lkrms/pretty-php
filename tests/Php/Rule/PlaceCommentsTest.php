@@ -87,6 +87,48 @@ break;
 }
 PHP,
             ],
+            'multi-line comment #1' => [
+                <<<'PHP'
+<?php
+if (true) {
+    /**********
+      A multi-line "docblock" with an empty line and no leading asterisks
+
+     **********/
+}
+
+PHP,
+                <<<'PHP'
+<?php
+if (true) {
+/**********
+  A multi-line "docblock" with an empty line and no leading asterisks
+
+ **********/
+}
+PHP,
+            ],
+            'multi-line comment #2' => [
+                <<<'PHP'
+<?php
+if (true) {
+    /*
+      A multi-line comment with an empty line and no leading asterisks
+
+     */
+}
+
+PHP,
+                <<<'PHP'
+<?php
+if (true) {
+/*
+  A multi-line comment with an empty line and no leading asterisks
+
+ */
+}
+PHP,
+            ],
         ];
     }
 }
