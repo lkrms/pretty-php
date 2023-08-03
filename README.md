@@ -1,17 +1,13 @@
 # PrettyPHP
 
-## The opinionated formatter for modern, expressive PHP
+## The opinionated formatter for modern PHP
 
 *PrettyPHP* is a code formatter inspired by [Black], the "uncompromising Python
 formatter".
 
-Like Black, *PrettyPHP* runs with sensible defaults and doesn't need to be
-configured. It's also deterministic (with some [pragmatic exceptions]), so no
-matter how the input is formatted, it produces the same output.
-
-> *PrettyPHP*'s default output is unlikely to change significantly between now
-> and version 1.0, but if you're already using it in production, locking
-> `lkrms/pretty-php` to a specific version is recommended.
+Like Black, *PrettyPHP* has sensible defaults and doesn't need to be configured.
+It's also deterministic (with some [pragmatic exceptions]), so no matter how
+your code is formatted, it produces the same output.
 
 ## Requirements
 
@@ -21,12 +17,83 @@ matter how the input is formatted, it produces the same output.
   - `json`
   - `tokenizer`
 
+### A note about PHP versions
+
+Your PHP runtime must be able to parse the code you're formatting, e.g. if
+*PrettyPHP* is running on PHP 7.4, it won't be able to format code that requires
+PHP 8.0. Similarly, to format PHP 8.1 code, *PrettyPHP* must be running on PHP
+8.1 or above. If it fails with `"<file> cannot be parsed"` and your syntax is
+valid, check your PHP version.
+
+## Installation
+
+### PHP archive (PHAR)
+
+You can download the latest version of *PrettyPHP* packaged as a PHP archive and
+use it immediately:
+
+```shell
+curl -Lo pretty-php.phar https://github.com/lkrms/pretty-php/releases/latest/download/pretty-php.phar
+```
+
+```shell
+php pretty-php.phar --version
+pretty-php v0.4.15-b26ee688
+```
+
+The PHAR can be made executable for convenience:
+
+```shell
+chmod +x pretty-php.phar
+```
+
+```shell
+./pretty-php.phar --version
+pretty-php v0.4.15-b26ee688
+```
+
+It can also be installed to a location on your `PATH`, and the `.phar` extension
+is optional. For example:
+
+```shell
+mv pretty-php.phar /usr/local/bin/pretty-php
+```
+
+### Composer
+
+Alternatively, you can add *PrettyPHP* to your project using [Composer]:
+
+```shell
+composer require --dev lkrms/pretty-php
+```
+
+And run it like this:
+
+```shell
+./vendor/bin/pretty-php --version
+pretty-php v0.4.15-b26ee688
+```
+
+Until *PrettyPHP* version 1.0 is released, locking `lkrms/pretty-php` to a
+specific version is recommended if you're using it in production workflows. For
+example:
+
+```shell
+composer require --dev lkrms/pretty-php=0.4.15
+```
+
 ## Editor integrations
 
-### Visual Studio Code
-
-- **PrettyPHP for Visual Studio Code** — VS Code extension by the same author.  
+- **PrettyPHP for Visual Studio Code** \
+  Official VS Code extension \
   [Visual Studio Marketplace] | [Open VSX Registry] | [GitHub][vscode]
+
+Please create a pull request or [open an issue][new-issue] if an integration
+isn't listed above.
+
+## License
+
+MIT
 
 ## FAQ
 
@@ -35,7 +102,7 @@ matter how the input is formatted, it produces the same output.
 #### It's opinionated
 
 - No configuration is required
-- Formatting options are [deliberately limited][why-so-many-options]
+- Formatting options are deliberately limited
 - Readable code, small diffs, and fast batch processing are the main priorities
 
 #### It's a formatter, not a fixer<sup>\*</sup>
@@ -67,17 +134,10 @@ matter how the input is formatted, it produces the same output.
 Progress towards full compliance with the formatting-related requirements of
 [PSR-12] can be followed [here][PSR-12 issue].
 
-### If it's so opinionated, why does it have so many options?
-
-*PrettyPHP*'s formatting options will be simplified before version 1.0 is
-released. Until then, feel free to experiment and provide [feedback][issues] on
-what you think should be enabled by default and/or remain available as an option
-in the stable release.
-
 ## Support
 
-Bug reports, feature requests and support questions are always welcome and
-should be submitted [here][issues].
+Please [submit an issue][new-issue] to report a bug, request a feature or ask
+for help.
 
 ## Pragmatism
 
@@ -93,19 +153,19 @@ disabled for strictly deterministic behaviour.
 Unless suppressed by other rules, line breaks adjacent to most operators,
 separators and brackets are copied from the input to the output.
 
-> Use `-N, --ignore-newlines` to disable this behaviour.
+> Use `-N/--ignore-newlines` to disable this behaviour.
 
 ### Scalar strings are normalised
 
 Single-quoted strings are preferred unless one or more characters require a
 backslash escape, or the double-quoted equivalent is shorter.
 
-> Use `-S, --no-simplify-strings` to disable this behaviour.
+> Use `-S/--no-simplify-strings` to disable this behaviour.
 
 ### Alias/import statements are grouped and sorted alphabetically
 
-> Use `-m, --sort-imports-by` or `-M, --no-sort-imports` to modify or disable
-> this behaviour.
+> Use `-m/--sort-imports-by` or `-M/--no-sort-imports` to modify or disable this
+> behaviour.
 
 ### Comments beside code are never moved to the next line
 
@@ -120,8 +180,9 @@ ignored previous formatting.
 
 
 [Black]: https://github.com/psf/black
+[Composer]: https://getcomposer.org/
 [direct download]: https://github.com/lkrms/pretty-php/releases/latest/download/pretty-php.phar
-[issues]: https://github.com/lkrms/pretty-php/issues
+[new-issue]: https://github.com/lkrms/pretty-php/issues/new
 [Open VSX Registry]: https://open-vsx.org/extension/lkrms/pretty-php
 [php-cs-fixer]: https://github.com/PHP-CS-Fixer/PHP-CS-Fixer
 [phpcbf]: https://github.com/squizlabs/PHP_CodeSniffer
@@ -130,4 +191,3 @@ ignored previous formatting.
 [PSR-12 issue]: https://github.com/lkrms/pretty-php/issues/4
 [Visual Studio Marketplace]: https://marketplace.visualstudio.com/items?itemName=lkrms.pretty-php
 [vscode]: https://github.com/lkrms/vscode-pretty-php
-[why-so-many-options]: #if-its-so-opinionated-why-does-it-have-so-many-options
