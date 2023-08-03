@@ -10,7 +10,7 @@
         "ext-json": "*",
         "ext-mbstring": "*",
         "ext-tokenizer": "*",
-        "lkrms/util": "^0.20.47",
+        "lkrms/util": "^0.20.49",
         "sebastian/diff": "^4 || ^5"
     },
     "autoload": {
