@@ -1,6 +1,6 @@
 {
     "name": "lkrms/pretty-php",
-    "description": "The opinionated formatter for modern, expressive PHP",
+    "description": "The opinionated formatter for modern PHP",
     "license": "MIT",
     "bin": [
         "bin/pretty-php"
@@ -10,7 +10,7 @@
         "ext-json": "*",
         "ext-mbstring": "*",
         "ext-tokenizer": "*",
-        "lkrms/util": "^0.20.44",
+        "lkrms/util": "^0.20.47",
         "sebastian/diff": "^4 || ^5"
     },
     "autoload": {

@@ -342,6 +342,7 @@ class TokenTypeIndex implements IImmutable
             T_OPEN_BRACKET,
             T_OPEN_PARENTHESIS,
             T_RETURN,
+            T_THROW,
             T_YIELD,
             T_YIELD_FROM,
             ...$preserveBlankAfter,

@@ -6,7 +6,7 @@ use Lkrms\Cli\Catalog\CliHelpSectionName;
 use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\Catalog\CliOptionValueType;
 use Lkrms\Cli\Catalog\CliOptionValueUnknownPolicy;
-use Lkrms\Cli\Catalog\CliOptionVisibility;
+use Lkrms\Cli\Catalog\CliOptionVisibility as Visibility;
 use Lkrms\Cli\CliApplication;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOption;
@@ -387,9 +387,6 @@ class FormatPhp extends CliCommand
 
     protected function getOptionList(): array
     {
-        $noSynopsis = CliOptionVisibility::ALL & ~CliOptionVisibility::SYNOPSIS;
-        $none = CliOptionVisibility::NONE;
-
         return [
             CliOption::build()
                 ->long('src')
@@ -397,7 +394,7 @@ class FormatPhp extends CliCommand
                 ->description(<<<EOF
 Files and directories to format
 
-If the only path is a dash ('-'), or no paths are given, __{{command}}__ reads
+If the only path is a dash ('-'), or no paths are given, `{{command}}` reads
 from the standard input and writes to the standard output.
 
 Directories are searched recursively for files to format.
@@ -412,7 +409,7 @@ EOF)
                 ->description(<<<EOF
 A regular expression for pathnames to include when searching a directory
 
-Exclusions (__-X__, __--exclude__) are applied first.
+Exclusions (`-X/--exclude`) are applied first.
 EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->defaultValue('/\.php$/')
@@ -424,7 +421,7 @@ EOF)
                 ->description(<<<EOF
 A regular expression for pathnames to exclude when searching a directory
 
-Exclusions are applied before inclusions (__-I__, __--include__).
+Exclusions are applied before inclusions (`-I/--include`).
 EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->defaultValue('/\/(\.git|\.hg|\.svn|_?build|dist|tests[-._0-9a-z]*|var|vendor)\/$/i')
@@ -436,14 +433,14 @@ EOF)
                 ->description(<<<EOF
 Include files that contain PHP code when searching a directory
 
-Use this option to format files not matched by __-I__, __--include__ if they
-have a pathname that matches <REGEX> and a PHP open tag ('<?php') at the start
-of the first line that is not a shebang ('#!').
+Use this option to format files not matched by `-I/--include` if they have a
+pathname that matches <REGEX> and a PHP open tag ('\<?php') at the start of the
+first line that is not a shebang ('#!').
 
 The default regular expression matches files with no extension. Use
-__--include-if-php=/./__ to check the first line of all files.
+`--include-if-php=/./` to check the first line of all files.
 
-Exclusions (__-X__, __--exclude__) are applied first.
+Exclusions (`-X/--exclude`) are applied first.
 EOF)
                 ->optionType(CliOptionType::VALUE_OPTIONAL)
                 ->defaultValue('/(\/|^)[^.]+$/')
@@ -455,14 +452,14 @@ EOF)
                 ->description(<<<EOF
 Indent using tabs
 
-The _align-chains_, _align-fn_, _align-lists_, and _align-ternary_ rules have no
+The *align-chains*, *align-fn*, *align-lists*, and *align-ternary* rules have no
 effect when using tabs for indentation.
 EOF)
                 ->optionType(CliOptionType::ONE_OF_OPTIONAL)
                 ->valueType(CliOptionValueType::INTEGER)
                 ->allowedValues([2, 4, 8])
                 ->defaultValue(4)
-                ->visibility($noSynopsis)
+                ->visibility(Visibility::ALL & ~Visibility::SYNOPSIS)
                 ->bindTo($this->Tabs),
             CliOption::build()
                 ->long('space')
@@ -471,14 +468,13 @@ EOF)
                 ->description(<<<EOF
 Indent using spaces
 
-This is the default if neither __-t__, __--tab__ or __-s__, __--space__ are
-given.
+This is the default if neither `-t/--tab` or `-s/--space` are given.
 EOF)
                 ->optionType(CliOptionType::ONE_OF_OPTIONAL)
                 ->valueType(CliOptionValueType::INTEGER)
                 ->allowedValues([2, 4, 8])
                 ->defaultValue(4)
-                ->visibility($noSynopsis)
+                ->visibility(Visibility::ALL & ~Visibility::SYNOPSIS)
                 ->bindTo($this->Spaces),
             CliOption::build()
                 ->long('eol')
@@ -487,16 +483,16 @@ EOF)
                 ->description(<<<'EOF'
 Set the output file's end-of-line sequence
 
-In _platform_ mode, __{{command}}__ uses CRLF ("\r\n") line endings on Windows
-and LF ("\n") on other platforms.
+In *platform* mode, `{{command}}` uses CRLF ("\r\n") line endings on Windows and
+LF ("\n") on other platforms.
 
-In _auto_ mode (the default), the input file's line endings are preserved, and
-_platform_ mode is used as a fallback if there are no line breaks in the input.
+In *auto* mode (the default), the input file's line endings are preserved, and
+*platform* mode is used as a fallback if there are no line breaks in the input.
 EOF)
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(['auto', 'platform', 'lf', 'crlf'])
                 ->defaultValue('auto')
-                ->visibility($noSynopsis)
+                ->visibility(Visibility::ALL & ~Visibility::SYNOPSIS)
                 ->bindTo($this->Eol),
             CliOption::build()
                 ->long('disable')
@@ -550,7 +546,7 @@ EOF)
 Ignore the position of newlines in the input
 
 This option cannot be overridden by configuration file settings (see
-___CONFIGURATION___ below). Use __--disable=preserve-newlines__ for the same
+___CONFIGURATION___ below). Use `--disable=preserve-newlines` for the same
 effect without overriding configuration files.
 EOF)
                 ->bindTo($this->IgnoreNewlines),
@@ -560,7 +556,7 @@ EOF)
                 ->description(<<<EOF
 Don't normalise single- and double-quoted strings
 
-Equivalent to __--disable=simplify-strings__
+Equivalent to `--disable=simplify-strings`
 EOF)
                 ->bindTo($this->NoSimplifyStrings),
             CliOption::build()
@@ -569,7 +565,7 @@ EOF)
                 ->description(<<<EOF
 Don't split lists with trailing commas into one item per line
 
-Equivalent to __--disable=magic-commas__
+Equivalent to `--disable=magic-commas`
 EOF)
                 ->bindTo($this->NoMagicCommas),
             CliOption::build()
@@ -579,7 +575,7 @@ EOF)
                 ->description(<<<EOF
 Set the indentation level of heredocs and nowdocs
 
-The default is to apply _hanging_ indentation to inline heredocs.
+The default is to apply *hanging* indentation to inline heredocs.
 EOF)
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys(self::HEREDOC_INDENT_MAP))
@@ -591,11 +587,11 @@ EOF)
                 ->description(<<<EOF
 Set the sort order for alias/import statements
 
-Use __--sort-imports-by=none__ to group import statements by type without
-changing their order.
+Use `--sort-imports-by=none` to group import statements by type without changing
+their order.
 
-Unless disabled by __-M__, __--no-sort-imports__, the default is to sort imports
-by _name_.
+Unless disabled by `-M/--no-sort-imports`, the default is to sort imports by
+*name*.
 EOF)
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys(self::IMPORT_SORT_ORDER_MAP))
@@ -613,10 +609,10 @@ EOF)
 Enforce strict PSR-12 / PER Coding Style compliance
 
 Use this option to apply formatting rules and internal options required for
-__{{command}}__ output to satisfy the formatting-related requirements of PHP-FIG
+`{{command}}` output to satisfy the formatting-related requirements of PHP-FIG
 coding style standards.
 EOF)
-                ->visibility(Env::debug() ? $noSynopsis : $none)
+                ->visibility(Env::debug() ? Visibility::ALL & ~Visibility::SYNOPSIS : Visibility::NONE)
                 ->bindTo($this->Psr12),
             CliOption::build()
                 ->long('preset')
@@ -625,12 +621,12 @@ EOF)
                 ->description(<<<EOF
 Apply a formatting preset
 
-Formatting options other than __-N__, __--ignore-newlines__ are ignored when a
-preset is applied.
+Formatting options other than `-N/--ignore-newlines` are ignored when a preset
+is applied.
 EOF)
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys(self::PRESET_MAP))
-                ->visibility($noSynopsis)
+                ->visibility(Visibility::ALL & ~Visibility::SYNOPSIS)
                 ->bindTo($this->Preset),
             CliOption::build()
                 ->long('config')
@@ -665,8 +661,8 @@ EOF)
                 ->description(<<<EOF
 Write output to a different file
 
-If <FILE> is a dash ('-'), __{{command}}__ writes to the standard output.
-Otherwise, __-o__, __--output__ must be given once per input file, or not at all.
+If <FILE> is a dash ('-'), `{{command}}` writes to the standard output.
+Otherwise, `-o/--output` must be given once per input file, or not at all.
 EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->multipleAllowed()
@@ -706,7 +702,7 @@ Allows discovery of configuration files and improves reporting. Useful for
 editor integrations.
 EOF)
                 ->optionType(CliOptionType::VALUE)
-                ->visibility($noSynopsis)
+                ->visibility(Visibility::ALL & ~Visibility::SYNOPSIS)
                 ->bindTo($this->StdinFilename),
             CliOption::build()
                 ->long('debug')
@@ -714,26 +710,26 @@ EOF)
                 ->description(<<<EOF
 Create debug output in <DIR>
 
-Combine with __-v__, __--verbose__ to render output to a subdirectory of <DIR>
-after processing each pass of each rule.
+Combine with `-v/--verbose` to render output to a subdirectory of <DIR> after
+processing each pass of each rule.
 EOF)
                 ->optionType(CliOptionType::VALUE_OPTIONAL)
                 ->defaultValue($this->app()->getTempPath() . '/debug')
-                ->visibility(Env::debug() ? $noSynopsis : $none)
+                ->visibility(Env::debug() ? Visibility::ALL & ~Visibility::SYNOPSIS : Visibility::NONE)
                 ->bindTo($this->DebugDirectory),
             CliOption::build()
                 ->long('timers')
                 ->description(<<<EOF
 Report timers and resource usage on exit
 EOF)
-                ->visibility(Env::debug() ? $noSynopsis : $none)
+                ->visibility(Env::debug() ? Visibility::ALL & ~Visibility::SYNOPSIS : Visibility::NONE)
                 ->bindTo($this->ReportTimers),
             CliOption::build()
                 ->long('fast')
                 ->description(<<<EOF
 Skip equivalence checks
 EOF)
-                ->visibility($noSynopsis)
+                ->visibility(Visibility::ALL & ~Visibility::SYNOPSIS)
                 ->bindTo($this->Fast),
             CliOption::build()
                 ->long('verbose')
@@ -767,20 +763,20 @@ EOF)
     {
         return [
             CliHelpSectionName::CONFIGURATION => <<<'EOF'
-__{{command}}__ looks for a JSON configuration file named _.prettyphp_ or
-_prettyphp.json_ in the same directory as each input file, then in each of its
+`{{command}}` looks for a JSON configuration file named *.prettyphp* or
+*prettyphp.json* in the same directory as each input file, then in each of its
 parent directories. It stops looking when it finds a configuration file, a
-_.git_ directory, a _.hg_ directory, or the root of the filesystem, whichever
+*.git* directory, a *.hg* directory, or the root of the filesystem, whichever
 comes first.
 
-If a directory contains more than one configuration file, __{{command}}__
-reports an error and exits without formatting anything.
+If a directory contains more than one configuration file, `{{command}}` reports
+an error and exits without formatting anything.
 
 For input files with an applicable configuration file, command-line formatting
-options other than __-N__, __--ignore-newlines__ are replaced with settings from
-the configuration file.
+options other than `-N/--ignore-newlines` are replaced with settings from the
+configuration file.
 
-The __--print-config__ option can be used to generate a configuration file, for
+The `--print-config` option can be used to generate a configuration file, for
 example:
 
     $ {{command}} -P -S -M --print-config src tests bootstrap.php
@@ -795,16 +791,16 @@ example:
         "noSortImports": true
     }
 
-The optional _src_ array specifies files and directories to format. If
-__{{command}}__ is started with no <PATH> arguments in a directory where _src_
-is configured, or the directory is passed to __{{command}}__ for formatting,
-paths in _src_ are formatted. It is ignored otherwise.
+The optional *src* array specifies files and directories to format. If
+`{{command}}` is started with no <PATH> arguments in a directory where *src* is
+configured, or the directory is passed to `{{command}}` for formatting, paths in
+*src* are formatted. It is ignored otherwise.
 EOF,
             CliHelpSectionName::EXIT_STATUS => <<<EOF
-_0_   Formatting succeeded / input already formatted  
-_1_   Invalid arguments / input requires formatting  
-_2_   Invalid input (code could not be parsed)  
-_15_  Operational error
+*0*   Formatting succeeded / input already formatted \
+*1*   Invalid arguments / input requires formatting \
+*2*   Invalid input (code could not be parsed) \
+*15*  Operational error
 EOF,
         ];
     }
@@ -1376,7 +1372,7 @@ EOF,
             return;
         }
 
-        Console::debug('Expanding paths:', '`' . implode('` `', $paths) . '`');
+        Console::debug('Expanding paths:', implode(' ', $paths));
 
         if ($paths === ['-']) {
             $files[] = '-';
