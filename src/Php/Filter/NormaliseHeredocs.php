@@ -4,11 +4,12 @@ namespace Lkrms\Pretty\Php\Filter;
 
 use Lkrms\Pretty\Php\Concern\FilterTrait;
 use Lkrms\Pretty\Php\Contract\Filter;
-use Lkrms\Pretty\Php\NavigableToken as Token;
+use Lkrms\Pretty\Php\NavigableToken;
 
 /**
  * Remove indentation from heredocs
  *
+ * @implements Filter<NavigableToken>
  */
 final class NormaliseHeredocs implements Filter
 {
@@ -16,11 +17,11 @@ final class NormaliseHeredocs implements Filter
 
     public function filterTokens(array $tokens): array
     {
-        /** @var array<int,Token[]> */
+        /** @var array<int,NavigableToken[]> */
         $heredocTokens = [];
         /** @var array<int,string[]> */
         $heredocText = [];
-        /** @var array<int,Token> */
+        /** @var array<int,NavigableToken> */
         $stack = [];
         foreach ($tokens as $i => $token) {
             if ($stack) {

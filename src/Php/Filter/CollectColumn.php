@@ -4,11 +4,13 @@ namespace Lkrms\Pretty\Php\Filter;
 
 use Lkrms\Pretty\Php\Concern\FilterTrait;
 use Lkrms\Pretty\Php\Contract\Filter;
+use Lkrms\Pretty\Php\NavigableToken;
 use Lkrms\Utility\Convert;
 
 /**
  * Assign the starting column of each token to its $column property
  *
+ * @implements Filter<NavigableToken>
  */
 final class CollectColumn implements Filter
 {

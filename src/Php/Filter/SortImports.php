@@ -26,7 +26,8 @@ final class SortImports implements Filter
         $tokens = [];
         foreach ($this->Tokens as $i => $token) {
             if ($token->id === T_USE &&
-                    $this->prevCode($i)->id !== T_CLOSE_PARENTHESIS) {
+                (!($prevCode = $this->prevCode($i)) ||
+                    $prevCode->id !== T_CLOSE_PARENTHESIS)) {
                 $tokens[] = $i;
             }
         }
@@ -74,7 +75,8 @@ final class SortImports implements Filter
                         break;
                     } else {
                         if ($token->id === T_OPEN_BRACE) {
-                            if ($this->prevCode($i)->id !== T_NS_SEPARATOR) {
+                            if (!($prevCode = $this->prevCode($i)) ||
+                                    $prevCode->id !== T_NS_SEPARATOR) {
                                 $inTraitAdaptation = true;
                             }
                         } elseif ($token->id === T_CLOSE_BRACE) {

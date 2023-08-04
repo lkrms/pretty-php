@@ -3,27 +3,11 @@
 namespace Lkrms\Pretty\Php\Concern;
 
 use Lkrms\Pretty\Php\Catalog\WhitespaceType;
-use Lkrms\Pretty\Php\Formatter;
-use Lkrms\Pretty\Php\Support\TokenTypeIndex;
 use Lkrms\Pretty\Php\Token;
 
 trait RuleTrait
 {
-    /**
-     * @var Formatter
-     */
-    protected $Formatter;
-
-    /**
-     * @var TokenTypeIndex
-     */
-    protected $TypeIndex;
-
-    public function __construct(Formatter $formatter)
-    {
-        $this->Formatter = $formatter;
-        $this->TypeIndex = $formatter->TokenTypeIndex;
-    }
+    use ExtensionTrait;
 
     protected function preserveOneLine(Token $start, Token $end, bool $force = false): bool
     {
@@ -51,6 +35,4 @@ trait RuleTrait
             $openBracket->ClosedBy->prev()->WhitespaceMaskNext |= WhitespaceType::LINE;
         }
     }
-
-    public function reset(): void {}
 }
