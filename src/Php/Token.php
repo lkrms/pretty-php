@@ -561,6 +561,7 @@ class Token extends CollectibleToken implements JsonSerializable
     public function jsonSerialize(): array
     {
         $a['id'] = $this->getTokenName();
+        $a['text'] = $this->text;
         $a['line'] = $this->line;
         $a['pos'] = $this->pos;
         $a['column'] = $this->column;

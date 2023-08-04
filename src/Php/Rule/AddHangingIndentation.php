@@ -16,9 +16,26 @@ final class AddHangingIndentation implements MultiTokenRule
 {
     use MultiTokenRuleTrait;
 
-    private const NO_INDENT = 0;
-    private const NORMAL_INDENT = 1;
-    private const OVERHANGING_INDENT = 2;
+    /**
+     * Do not add a hanging indent to children of this parent
+     */
+    private const NO_INDENT = 2 ** 0;
+
+    /**
+     * Add a hanging indent to mid-statement children of this parent
+     */
+    private const NORMAL_INDENT = 2 ** 1;
+
+    /**
+     * Add a hanging indent to children of this parent, and an additional indent
+     * to mid-statement children
+     */
+    private const OVERHANGING_INDENT = 2 ** 2;
+
+    /**
+     * There is no newline between this parent and its first child
+     */
+    private const NO_INNER_NEWLINE = 2 ** 3;
 
     public function getPriority(string $method): ?int
     {
@@ -44,8 +61,8 @@ final class AddHangingIndentation implements MultiTokenRule
                         : ($token->IsListParent ||
                             ($token->id === T_OPEN_BRACE && $token->isStructuralBrace()) ||
                             ($token->id !== T_OPEN_BRACE && $token->adjacent())
-                                ? self::OVERHANGING_INDENT
-                                : self::NORMAL_INDENT);
+                                ? self::OVERHANGING_INDENT | self::NO_INNER_NEWLINE
+                                : self::NORMAL_INDENT | self::NO_INNER_NEWLINE);
             }
 
             $parent = end($token->BracketStack);
@@ -53,7 +70,7 @@ final class AddHangingIndentation implements MultiTokenRule
                     $parent &&
                     $parent === $token->_prevCode &&
                     $token !== $parent->ClosedBy &&
-                    $parent->HangingIndentParentType === self::NO_INDENT) {
+                    ($parent->HangingIndentParentType & self::NO_INDENT)) {
                 $current = $token;
                 $stack = [$token->BracketStack];
                 $stack[] = $token;
@@ -113,7 +130,7 @@ final class AddHangingIndentation implements MultiTokenRule
             if ($token->id === T_OPEN_BRACE ||
                     ($token->Statement === $token &&
                         (!$parent ||
-                            $parent->HangingIndentParentType !== self::OVERHANGING_INDENT)) ||
+                            !($parent->HangingIndentParentType & self::OVERHANGING_INDENT))) ||
                     $this->indent($prev) !== $this->indent($token)) {
                 continue;
             }
@@ -221,25 +238,29 @@ final class AddHangingIndentation implements MultiTokenRule
             $until = $until ?? $token->pragmaticEndOfExpression(true);
             $indent = 0;
             $hanging = [];
-            $parents = !$parent || in_array($parent, $token->IndentParentStack, true)
-                ? []
-                : [$parent];
+            $parents =
+                !$parent ||
+                    in_array($parent, $token->IndentParentStack, true)
+                        ? []
+                        : [$parent];
             $current = $parent;
-            while ($current && ($current = end($current->BracketStack)) && $current->HangingIndentParentType !== self::NO_INDENT) {
+            while ($current &&
+                    ($current = end($current->BracketStack)) &&
+                    ($current->HangingIndentParentType & self::NO_INNER_NEWLINE)) {
                 if (in_array($current, $token->IndentParentStack, true)) {
                     continue;
                 }
                 $parents[] = $current;
                 $indent++;
                 $hanging[$current->Index] = 1;
-                if ($current->HangingIndentParentType === self::OVERHANGING_INDENT) {
+                if ($current->HangingIndentParentType & self::OVERHANGING_INDENT) {
                     $indent++;
                     $hanging[$current->Index]++;
                 }
             }
 
             $indent++;
-            if ($parent && $parent->HangingIndentParentType === self::OVERHANGING_INDENT &&
+            if ($parent && ($parent->HangingIndentParentType & self::OVERHANGING_INDENT) &&
                     !$prev->precedesStatement()) {
                 $indent++;
                 $hanging[$parent->Index] = 1;
