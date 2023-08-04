@@ -17,11 +17,13 @@ final class HeredocIndent extends Enumeration
      * Do not indent heredocs
      *
      * ```php
-     * $array = [
-     *     <<<EOF
-     * Fugiat magna laborum ut occaecat sit nostrud non eiusmod laboris nisi.
-     * EOF
-     * ];
+     * <?php
+     * function f()
+     * {
+     *     $a = <<<EOF
+     * Content
+     * EOF;
+     * }
      * ```
      */
     public const NONE = 0;
@@ -30,11 +32,13 @@ final class HeredocIndent extends Enumeration
      * Apply line indentation to heredocs
      *
      * ```php
-     * $getString = function () {
-     *     return <<<EOF
-     *     Incididunt in sint sit aliqua pariatur ad.
+     * <?php
+     * function f()
+     * {
+     *     $a = <<<EOF
+     *     Content
      *     EOF;
-     * };
+     * }
      * ```
      */
     public const LINE = 1;
@@ -43,12 +47,13 @@ final class HeredocIndent extends Enumeration
      * Apply hanging indentation to inline heredocs
      *
      * ```php
-     * $string1 = <<<EOF
-     *     Enim Lorem nostrud pariatur aliqua.
+     * <?php
+     * $alpha = <<<EOF
+     *     Content
      *     EOF;
-     * $string2 =
+     * $bravo =
      *     <<<EOF
-     *     Aliquip mollit elit consectetur nulla laborum minim amet.
+     *     Content
      *     EOF;
      * ```
      */
@@ -58,12 +63,13 @@ final class HeredocIndent extends Enumeration
      * Always apply hanging indentation to heredocs
      *
      * ```php
-     * $string1 = <<<EOF
-     *     Enim Lorem nostrud pariatur aliqua.
+     * <?php
+     * $alpha = <<<EOF
+     *     Content
      *     EOF;
-     * $string2 =
+     * $bravo =
      *     <<<EOF
-     *         Aliquip mollit elit consectetur nulla laborum minim amet.
+     *         Content
      *         EOF;
      * ```
      */

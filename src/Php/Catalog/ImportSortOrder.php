@@ -22,13 +22,14 @@ final class ImportSortOrder extends Enumeration
     public const NONE = 0;
 
     /**
-     * Order by name
+     * Order imports by name
      *
      * Grouped imports appear after ungrouped imports.
      *
      * Example:
      *
      * ```php
+     * <?php
      * use A;
      * use A\B;
      * use A\B\C;
@@ -38,13 +39,14 @@ final class ImportSortOrder extends Enumeration
     public const NAME = 1;
 
     /**
-     * Order by name, depth-first
+     * Order imports by name, depth-first
      *
      * Grouped imports appear before ungrouped imports.
      *
      * Example:
      *
      * ```php
+     * <?php
      * use A\B\{D, E};
      * use A\B\C;
      * use A\B;

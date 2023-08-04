@@ -585,7 +585,7 @@ EOF)
                 ->short('m')
                 ->valueName('ORDER')
                 ->description(<<<EOF
-Set the sort order for alias/import statements
+Set the sort order for consecutive alias/import statements
 
 Use `--sort-imports-by=none` to group import statements by type without changing
 their order.
@@ -600,7 +600,7 @@ EOF)
                 ->long('no-sort-imports')
                 ->short('M')
                 ->description(<<<EOF
-Don't sort or group alias/import statements
+Don't sort or group consecutive alias/import statements
 EOF)
                 ->bindTo($this->NoSortImports),
             CliOption::build()

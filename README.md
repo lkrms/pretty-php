@@ -19,18 +19,18 @@ your code is formatted, it produces the same output.
 
 ### A note about PHP versions
 
-Your PHP runtime must be able to parse the code you're formatting, e.g. if
-*PrettyPHP* is running on PHP 7.4, it won't be able to format code that requires
-PHP 8.0. Similarly, to format PHP 8.1 code, *PrettyPHP* must be running on PHP
-8.1 or above. If it fails with `"<file> cannot be parsed"` and your syntax is
-valid, check your PHP version.
+Your PHP runtime must be able to parse the code you're formatting, so if
+*PrettyPHP* is running on PHP 7.4, for example, you won't be able to format code
+that requires PHP 8.0. Similarly, to format PHP 8.1 code, *PrettyPHP* must be
+running on PHP 8.1 or above. If it fails with `"<file> cannot be parsed"` and
+your syntax is valid, check your PHP version.
 
 ## Installation
 
 ### PHP archive (PHAR)
 
-You can download the latest version of *PrettyPHP* packaged as a PHP archive and
-use it immediately:
+You can [download] the latest version of *PrettyPHP* packaged as a PHP archive
+and use it immediately:
 
 ```shell
 curl -Lo pretty-php.phar https://github.com/lkrms/pretty-php/releases/latest/download/pretty-php.phar
@@ -52,16 +52,17 @@ chmod +x pretty-php.phar
 pretty-php v0.4.15-b26ee688
 ```
 
-It can also be installed to a location on your `PATH`, and the `.phar` extension
-is optional. For example:
+It can also be installed to a location on your `PATH`. For example:
 
 ```shell
 mv pretty-php.phar /usr/local/bin/pretty-php
 ```
 
+The `.phar` extension is optional.
+
 ### Composer
 
-Alternatively, you can add *PrettyPHP* to your project using [Composer]:
+You can also add *PrettyPHP* to your project using [Composer]:
 
 ```shell
 composer require --dev lkrms/pretty-php
@@ -86,14 +87,10 @@ composer require --dev lkrms/pretty-php=0.4.15
 
 - **PrettyPHP for Visual Studio Code** \
   Official VS Code extension \
-  [Visual Studio Marketplace] | [Open VSX Registry] | [GitHub][vscode]
+  [Visual Studio Marketplace] | [Open VSX Registry] | [Repository][vscode]
 
 Please create a pull request or [open an issue][new-issue] if an integration
 isn't listed above.
-
-## License
-
-MIT
 
 ## FAQ
 
@@ -119,7 +116,8 @@ MIT
 
 #### It's CI-friendly
 
-- Installs via `composer require --dev lkrms/pretty-php` or [direct download]
+- Installs via `composer require --dev lkrms/pretty-php` or [direct
+  download][download]
 - Runs on Linux, macOS and Windows
 - MIT-licensed
 
@@ -133,11 +131,6 @@ MIT
 
 Progress towards full compliance with the formatting-related requirements of
 [PSR-12] can be followed [here][PSR-12 issue].
-
-## Support
-
-Please [submit an issue][new-issue] to report a bug, request a feature or ask
-for help.
 
 ## Pragmatism
 
@@ -178,10 +171,19 @@ ignored previous formatting.
 
 > This behaviour cannot be disabled.
 
+## Support
+
+Please [submit an issue][new-issue] to report a bug, request a feature or ask
+for help.
+
+## License
+
+MIT
+
 
 [Black]: https://github.com/psf/black
 [Composer]: https://getcomposer.org/
-[direct download]: https://github.com/lkrms/pretty-php/releases/latest/download/pretty-php.phar
+[download]: https://github.com/lkrms/pretty-php/releases/latest/download/pretty-php.phar
 [new-issue]: https://github.com/lkrms/pretty-php/issues/new
 [Open VSX Registry]: https://open-vsx.org/extension/lkrms/pretty-php
 [php-cs-fixer]: https://github.com/PHP-CS-Fixer/PHP-CS-Fixer
