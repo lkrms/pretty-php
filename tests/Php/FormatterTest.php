@@ -317,14 +317,9 @@ PHP,
                     NoMixedLists::class,
                 ],
                 'skipFilters' => [],
-                'callback' => function (Formatter $f): Formatter {
-                    $f->PreferredEol = "\n";
-                    $f->PreserveEol = false;
-                    $f->Psr12Compliance = true;
-                    $f->NewlineBeforeFnDoubleArrows = true;
-                    $f->ImportSortOrder = ImportSortOrder::NONE;
-                    return $f;
-                },
+                'callback' =>
+                    fn(Formatter $f) =>
+                        $f->withPsr12Compliance(),
             ],
         ];
     }

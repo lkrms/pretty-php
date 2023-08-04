@@ -1037,17 +1037,15 @@ EOF,
                 $f->ImportSortOrder = $this->SortImportsBy
                     ? self::IMPORT_SORT_ORDER_MAP[$this->SortImportsBy]
                     : ImportSortOrder::NAME;
-                if ($this->Psr12) {
-                    $f->Psr12Compliance = true;
-                    $f->NewlineBeforeFnDoubleArrows = true;
-                }
                 $this->SpacesBesideCode === null || $f->SpacesBesideCode = $this->SpacesBesideCode;
                 $this->MirrorBrackets === null || $f->MirrorBrackets = $this->MirrorBrackets;
                 $this->IncreaseIndentBetweenUnenclosedTags === null || $f->IncreaseIndentBetweenUnenclosedTags = $this->IncreaseIndentBetweenUnenclosedTags;
                 $this->RelaxAlignmentCriteria === null || $f->RelaxAlignmentCriteria = $this->RelaxAlignmentCriteria;
                 $lastOptions = $options;
 
-                return $f;
+                return $this->Psr12
+                    ? $f->withPsr12Compliance()
+                    : $f;
             };
 
         $i = 0;
