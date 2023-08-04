@@ -346,7 +346,7 @@ class Token extends CollectibleToken implements JsonSerializable
             $parent = $this->parent();
             if ($parent->is([T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_ATTRIBUTE]) ||
                 ($parent->id === T_OPEN_BRACE &&
-                    (!$parent->isStructuralBrace() || $this->isMatchDelimiter()))) {
+                    (!$parent->isStructuralBrace() || $this->isDelimiterBetweenMatchArms()))) {
                 $this->applyStatement();
             }
         }
@@ -489,7 +489,7 @@ class Token extends CollectibleToken implements JsonSerializable
             $parent = $this->parent();
             if ($parent->is([T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_ATTRIBUTE]) ||
                 ($parent->id === T_OPEN_BRACE &&
-                    (!$parent->isStructuralBrace() || $this->isMatchDelimiter(false)))) {
+                    (!$parent->isStructuralBrace() || $this->isMatchDelimiter()))) {
                 $this->Expression = false;
                 $this->_prevCode->applyExpression();
             }
@@ -541,18 +541,26 @@ class Token extends CollectibleToken implements JsonSerializable
     {
         $current = $this->OpenedBy ?: $this;
 
-        return $current->id === T_OPEN_BRACE &&
-            $current->prevSibling(2)->id === T_MATCH;
+        return
+            $current->id === T_OPEN_BRACE &&
+            ($prev = $current->_prevSibling) &&
+            ($prev = $prev->_prevSibling) &&
+            $prev->id === T_MATCH;
     }
 
-    final public function isMatchDelimiter(bool $betweenArms = true): bool
+    final public function isMatchDelimiter(): bool
     {
-        return $this->id === T_COMMA &&
-            $this->parent()->isMatchBrace() &&
-            (!$betweenArms ||
-                !($this->prevSiblingOf(
-                    T_COMMA, ...TokenType::OPERATOR_DOUBLE_ARROW
-                )->is([T_COMMA, T_NULL])));
+        return
+            $this->id === T_COMMA &&
+            ($parent = end($this->BracketStack)) &&
+            $parent->isMatchBrace();
+    }
+
+    final public function isDelimiterBetweenMatchArms(): bool
+    {
+        return
+            $this->isMatchDelimiter() &&
+            $this->prevSiblingOf(T_COMMA, T_DOUBLE_ARROW)->id === T_DOUBLE_ARROW;
     }
 
     /**
