@@ -896,16 +896,6 @@ final class Formatter implements IReadable
     }
 
     /**
-     * @return int&HeredocIndent::*
-     */
-    public function getHeredocIndent(): int
-    {
-        return $this->Psr12Compliance
-            ? HeredocIndent::HANGING
-            : $this->HeredocIndent;
-    }
-
-    /**
      * @param array<int,true> $types
      * @return array<int,Token>
      */

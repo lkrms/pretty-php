@@ -48,7 +48,7 @@ final class ReindentHeredocs implements MultiTokenRule
 
     public function processTokens(array $tokens): void
     {
-        if ($this->Formatter->getHeredocIndent() === HeredocIndent::NONE) {
+        if ($this->Formatter->HeredocIndent === HeredocIndent::NONE) {
             return;
         }
 

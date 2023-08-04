@@ -104,7 +104,7 @@ final class AddHangingIndentation implements MultiTokenRule
             // heredocs if applicable)
             $prev = $token->_prevCode;
             if (!$prev->hasNewlineAfterCode() &&
-                !(($heredocIndent = $this->Formatter->getHeredocIndent())
+                !(($heredocIndent = $this->Formatter->HeredocIndent)
                     & (HeredocIndent::MIXED | HeredocIndent::HANGING) &&
                     $prev->id === T_START_HEREDOC &&
                     ($heredocIndent & HeredocIndent::HANGING ||
