@@ -4,6 +4,7 @@ namespace Lkrms\Pretty\Tests\Php;
 
 use Generator;
 use Lkrms\Facade\File;
+use Lkrms\Facade\Sys;
 use Lkrms\Pretty\Php\Catalog\ImportSortOrder;
 use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Rule\AlignArrowFunctions;
@@ -345,5 +346,15 @@ PHP,
                 yield "[{$format}] {$path}" => [$expected, $code, $formatter];
             }
         }
+    }
+
+    protected function setUp(): void
+    {
+        Sys::pushTimers();
+    }
+
+    protected function tearDown(): void
+    {
+        Sys::popTimers();
     }
 }
