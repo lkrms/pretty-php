@@ -66,7 +66,7 @@ PHP,
      */
     public function testProcessToken(string $expected, string $code): void
     {
-        $this->assertCodeFormatIs($expected, $code);
+        $this->assertCodeFormatIs($expected, $code, [AlignChainedCalls::class]);
     }
 
     /**
@@ -205,6 +205,25 @@ b();
 // comment
 else
 c();
+PHP,
+            ],
+            [
+                <<<'PHP'
+<?php
+$foo = $bar->baz()
+           ->quux([[$a,
+               $b], $bar->thud()
+                        ->grunt()])
+           ->quuux();
+
+PHP,
+                <<<'PHP'
+<?php
+$foo = $bar->baz()
+    ->quux([[$a,
+        $b], $bar->thud()
+        ->grunt()])
+    ->quuux();
 PHP,
             ],
         ];

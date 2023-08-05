@@ -19,10 +19,8 @@ class Demo
 	 * Sets the foo.
 	 */
 	#[Poink('narf'), Narf('poink')]
-	public function setFoo(
-		#[Beep]
-		Foo $new
-	): void {
+	public function setFoo(#[Beep] Foo $new): void
+	{
 		// ...
 	}
 

@@ -207,6 +207,7 @@ PHP,
                 '#^3rdparty/phpfmt/339-align-objop#',
                 '#^3rdparty/phpfmt/341-autosemicolon-objop#',
                 '#^attributes-[^/]+\.php#',
+                '#^match-expressions\.php#',
             ],
             80100 => [
                 '#^3rdparty/php-doc/appendices/migration81/new-features/.*#',

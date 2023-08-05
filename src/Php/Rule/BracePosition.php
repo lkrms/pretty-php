@@ -57,7 +57,7 @@ final class BracePosition implements TokenRule
         $next = $token->next();
         if ($token->id === T_OPEN_BRACE) {
             // Move empty bodies to the end of the previous line
-            $parts = $token->declarationParts();
+            $parts = $token->Expression->declarationParts();
             if ($next->id === T_CLOSE_BRACE &&
                     $parts->hasOneOf(T_CLASS, T_ENUM, T_FUNCTION, T_INTERFACE, T_TRAIT)) {
                 $token->WhitespaceBefore |= WhitespaceType::SPACE;
@@ -86,12 +86,11 @@ final class BracePosition implements TokenRule
                     $parts->hasOneOf(...TokenType::DECLARATION) &&
                     !$parts->last()->is([T_DECLARE, T_FUNCTION])) {
                 $start = $parts->first();
-                if ($start->id !== T_USE) {
-                    $prevCode = $start->prevCode();
-                    if ($prevCode->is([T_SEMICOLON, T_OPEN_BRACE, T_CLOSE_BRACE, T_CLOSE_TAG, T_NULL]) ||
-                            ($start->id === T_NEW && $parts->hasNewlineBetweenTokens())) {
-                        $line = WhitespaceType::LINE;
-                    }
+                if ($start->id !== T_USE &&
+                    ((!($prevCode = $start->_prevCode) ||
+                            $prevCode->is([T_SEMICOLON, T_OPEN_BRACE, T_CLOSE_BRACE, T_CLOSE_TAG])) ||
+                        ($start->id === T_NEW && $parts->hasNewlineBetweenTokens()))) {
+                    $line = WhitespaceType::LINE;
                 }
             }
             $prev = $parts->hasOneOf(T_FUNCTION)

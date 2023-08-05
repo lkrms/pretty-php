@@ -133,8 +133,6 @@ final class Formatter implements IReadable
      */
     public int $HeredocIndent = HeredocIndent::MIXED;
 
-    public bool $HangingMatchIndents = true;
-
     public bool $IncreaseIndentBetweenUnenclosedTags = true;
 
     public bool $RelaxAlignmentCriteria = false;
@@ -638,6 +636,9 @@ final class Formatter implements IReadable
                                             !$prev || $t->_prevCode->id === T_COMMA);
                     if ($items->count() > 1) {
                         $parent->IsListParent = true;
+                        foreach ($items as $token) {
+                            $token->ListParent = $parent;
+                        }
                         $lists[$i] = $items;
                     }
                     continue 2;
@@ -688,6 +689,9 @@ final class Formatter implements IReadable
                 continue;
             }
             $parent->IsListParent = true;
+            foreach ($items as $token) {
+                $token->ListParent = $parent;
+            }
             $lists[$i] = $items;
         }
         Sys::stopTimer(__METHOD__ . '#find-lists');

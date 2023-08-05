@@ -13,21 +13,6 @@ use Lkrms\Utility\Convert;
  */
 class Token extends CollectibleToken implements JsonSerializable
 {
-    /**
-     * Tokens regarded as expression terminators
-     *
-     * Somewhat arbitrary, but effective for formatting purposes.
-     *
-     */
-    private const EXPRESSION_TERMINATOR = [
-        T_CLOSE_BRACKET,
-        T_CLOSE_PARENTHESIS,
-        T_SEMICOLON,
-        ...TokenType::OPERATOR_ASSIGNMENT,
-        ...TokenType::OPERATOR_COMPARISON_EXCEPT_COALESCE,
-        ...TokenType::OPERATOR_DOUBLE_ARROW,
-    ];
-
     public bool $BodyIsUnenclosed = false;
 
     public ?Token $Statement = null;
@@ -42,6 +27,8 @@ class Token extends CollectibleToken implements JsonSerializable
     public ?Token $EndExpression = null;
 
     public bool $IsListParent = false;
+
+    public ?Token $ListParent = null;
 
     public bool $IsTernaryOperator = false;
 
@@ -69,39 +56,37 @@ class Token extends CollectibleToken implements JsonSerializable
     public ?int $HangingIndentParentType = null;
 
     /**
-     * Tokens responsible for each level of hanging indentation applied to the
+     * The token that triggered each level of hanging indentation applied to the
      * token
      *
      * @var Token[]
      */
-    public array $IndentStack = [];
-
-    /**
-     * Parent tokens associated with hanging indentation levels applied to the
-     * token
-     *
-     * @var Token[]
-     */
-    public array $IndentParentStack = [];
+    public array $HangingIndentStack = [];
 
     /**
      * The context of each level of hanging indentation applied to the token
      *
-     * Only used by {@see AddHangingIndentation::processToken()}.
-     *
      * @var array<array<Token[]|Token>>
      */
-    public array $IndentBracketStack = [];
+    public array $HangingIndentContextStack = [];
 
     /**
-     * Entries represent parent tokens and the collapsible ("overhanging")
-     * levels of indentation applied to the token on their behalf
+     * Parent tokens associated with at least one level of hanging indentation
+     * applied to the token
      *
-     * Parent token index => collapsible indentation levels applied
+     * @var Token[]
+     */
+    public array $HangingIndentParentStack = [];
+
+    /**
+     * Each entry represents a parent token associated with at least one level
+     * of collapsible indentation applied to the token
+     *
+     * Parent token index => levels of collapsible indentation applied
      *
      * @var array<int,int>
      */
-    public array $OverhangingParents = [];
+    public array $HangingIndentParentLevels = [];
 
     public int $LinePadding = 0;
 
@@ -348,10 +333,10 @@ class Token extends CollectibleToken implements JsonSerializable
             }
         }
 
-        if ($this->is(TokenType::CHAIN) && !$this->ChainOpenedBy) {
+        if ($this->TokenTypeIndex->Chain[$this->id] && !$this->ChainOpenedBy) {
             $this->ChainOpenedBy = $current = $this;
-            while (($current = $current->_nextSibling) && $current->is(TokenType::CHAIN_PART)) {
-                if ($current->is(TokenType::CHAIN)) {
+            while (($current = $current->_nextSibling) && $this->TokenTypeIndex->ChainPart[$current->id]) {
+                if ($this->TokenTypeIndex->Chain[$current->id]) {
                     $current->ChainOpenedBy = $this;
                 }
             }
@@ -360,7 +345,7 @@ class Token extends CollectibleToken implements JsonSerializable
         if ($this->id === T_CLOSE_BRACE && $this->isStructuralBrace()) {
             $this->_prevCode->applyExpression();
             $this->applyExpression();
-        } elseif ($this->is(self::EXPRESSION_TERMINATOR) ||
+        } elseif ($this->TokenTypeIndex->ExpressionTerminator[$this->id] ||
                 $this->IsStatementTerminator ||
                 ($this->id === T_COLON && ($this->inSwitchCase() || $this->inLabel())) ||
                 ($this->id === T_CLOSE_BRACE &&
@@ -449,6 +434,13 @@ class Token extends CollectibleToken implements JsonSerializable
             $this->prevSiblingOf(T_COMMA, T_DOUBLE_ARROW)->id === T_DOUBLE_ARROW;
     }
 
+    final public function isDelimiterBetweenMatchExpressions(): bool
+    {
+        return
+            $this->isMatchDelimiter() &&
+            $this->prevSiblingOf(T_COMMA, T_DOUBLE_ARROW)->id !== T_DOUBLE_ARROW;
+    }
+
     /**
      * @return array<string,mixed>
      */
@@ -481,22 +473,22 @@ class Token extends CollectibleToken implements JsonSerializable
         $a['Deindent'] = $this->Deindent;
         $a['HangingIndent'] = $this->HangingIndent;
         $a['HangingIndentParentType'] = $this->HangingIndentParentType;
-        $a['IndentStack'] = $this->IndentStack;
-        $a['IndentParentStack'] = $this->IndentParentStack;
+        $a['HangingIndentStack'] = $this->HangingIndentStack;
+        $a['HangingIndentParentStack'] = $this->HangingIndentParentStack;
 
-        foreach ($this->IndentBracketStack as $i => $entry) {
+        foreach ($this->HangingIndentContextStack as $i => $entry) {
             foreach ($entry as $j => $entry) {
                 if (is_array($entry)) {
                     foreach ($entry as $k => $entry) {
-                        $a['IndentBracketStack'][$i][$j][$k] = (string) $entry;
+                        $a['HangingIndentContextStack'][$i][$j][$k] = (string) $entry;
                     }
                     continue;
                 }
-                $a['IndentBracketStack'][$i][$j] = (string) $entry;
+                $a['HangingIndentContextStack'][$i][$j] = (string) $entry;
             }
         }
 
-        $a['OverhangingParents'] = $this->OverhangingParents;
+        $a['HangingIndentParentLevels'] = $this->HangingIndentParentLevels;
         $a['LinePadding'] = $this->LinePadding;
         $a['LineUnpadding'] = $this->LineUnpadding;
         $a['Padding'] = $this->Padding;
@@ -903,6 +895,11 @@ class Token extends CollectibleToken implements JsonSerializable
         return $offset;
     }
 
+    public function startOfExpression(): Token
+    {
+        return $this->Expression ?: $this;
+    }
+
     public function startOfStatement(): Token
     {
         return $this->Statement ?: $this;
@@ -934,7 +931,7 @@ class Token extends CollectibleToken implements JsonSerializable
     {
         // If the token is an object operator, return the first token in the
         // chain
-        if ($this->is(TokenType::CHAIN)) {
+        if ($this->TokenTypeIndex->Chain[$this->id]) {
             $current = $this;
             $first = null;
             while (($current = $current->_prevSibling) &&
@@ -1030,118 +1027,165 @@ class Token extends CollectibleToken implements JsonSerializable
     }
 
     /**
-     * Get the last sibling in the token's expression
+     * If the token were moved to the right, get the last token that would move
+     * with it
      *
      * Statement separators (e.g. `,` and `;`) are not part of expressions and
-     * are not returned by this method.
+     * are not returned unless {@see Token::pragmaticEndOfExpression()} is
+     * called on them directly.
      *
-     * @param bool $containUnenclosed If `true`, braces are imagined around
-     * control structures with unenclosed bodies. The default is `false`.
+     * @param bool $containUnenclosed If `true` (the default), braces are
+     * imagined around control structures with unenclosed bodies.
      */
-    final public function pragmaticEndOfExpression(bool $containUnenclosed = false, bool $containTopLevelDeclaration = true): Token
-    {
+    final public function pragmaticEndOfExpression(
+        bool $containUnenclosed = true,
+        bool $containDeclaration = true
+    ): Token {
+        // If the token is a statement terminator, there is no expression to
+        // move
         if ($this->EndStatement === $this && $this->Expression === false) {
             return $this;
         }
 
-        // If the token is part of a top-level declaration (namespace, class,
-        // function, trait, etc.), return the token before its opening brace
-        if ($containTopLevelDeclaration && $this->Statement &&
-                !$this->is([T_ATTRIBUTE, T_ATTRIBUTE_COMMENT]) &&
-                ($parts = $this->declarationParts())->has($this, true) &&
-                $parts->hasOneOf(...TokenType::DECLARATION_TOP_LEVEL) &&
-                // Anonymous functions aren't top-level declarations
-                ($last = $parts->last())->id !== T_FUNCTION &&
-                ($end = $last->nextSiblingOf(T_OPEN_BRACE))->Index < $this->EndStatement->Index) {
-            return $end->prevCode();
+        // If the token is part of a declaration with an adjacent body (class,
+        // function, interface, etc.), return the token that precedes the
+        // opening brace of the body to ensure it maintains its original
+        // position
+        if (
+            $containDeclaration &&
+            $this->Expression &&
+            ($parts = $this->Expression->declarationParts())->has($this, true) &&
+            $parts->hasOneOf(...TokenType::DECLARATION_TOP_LEVEL) &&
+            // Exclude anonymous functions, which can move as needed
+            ($last = $parts->last())->id !== T_FUNCTION &&
+            // Anonymous classes are a special case where if there is a newline
+            // before `class`, the first hanging indent in the declaration is
+            // propagated to the whole class, and a subsequent indent for the
+            // `implements` list is only propagated to other interfaces in the
+            // list:
+            //
+            // ```php
+            // <?php
+            // $foo = new
+            //     #[Attribute]
+            //     class implements
+            //         Bar,
+            //         Baz
+            //     {
+            //         // ...
+            //     };
+            // ```
+            //
+            // But if there is no newline before `class`, no indents are
+            // propagated to the whole class:
+            //
+            // ```php
+            // <?php
+            // $foo = new class implements
+            //     Bar,
+            //     Baz
+            // {
+            //     // ...
+            // };
+            // ```
+            (($first = $parts->first())->id !== T_NEW ||
+                !(($class = $parts->getFirstOf(T_CLASS)) &&
+                    $class->_prevCode->hasNewlineAfterCode()) ||
+                $first->_nextCode !== $this) &&
+            !($end = $last->nextSiblingOf(T_OPEN_BRACE))->IsNull &&
+            $end->Index < $this->EndStatement->Index
+        ) {
+            return $end->_prevCode;
         }
 
         // If the token is an expression boundary, return the last token in the
         // statement
         if (!$containUnenclosed && $this->Expression === false) {
             $end = $this->EndStatement ?: $this;
-
-            return $end === $this
-                ? $end
-                : $end->withoutTerminator();
+            return
+                $end === $this
+                    ? $end
+                    : $end->withoutTerminator();
         }
 
         // If the token is an object operator, return the last token in the
         // chain
-        if ($this->is(TokenType::CHAIN)) {
+        if ($this->TokenTypeIndex->Chain[$this->id]) {
             $current = $this;
-            $last = null;
-            while (($current = $current->_nextSibling) &&
-                    $this->Expression === $current->Expression &&
-                    $current->is(TokenType::CHAIN_PART)) {
+            do {
                 $last = $current;
-            }
+            } while (($current = $current->_nextSibling) &&
+                $this->Expression === $current->Expression &&
+                $this->TokenTypeIndex->ChainPart[$current->id]);
 
             return $last->ClosedBy ?: $last;
         }
 
         // If the token is between `?` and `:` in a ternary expression, return
         // the last token before `:`
-        $ternary1 =
-            $this->prevSiblings()
-                 ->find(fn(Token $t) =>
-                            $t->IsTernaryOperator &&
-                                $t === $t->TernaryOperator1);
-        if ($ternary1 && $ternary1->TernaryOperator2->Index > $this->Index) {
-            return $ternary1->TernaryOperator2->_prevCode;
+        $current = $this;
+        while ($current = $current->_prevSibling) {
+            if ($current->IsTernaryOperator &&
+                    $current === $current->TernaryOperator1) {
+                if ($current->TernaryOperator2->Index > $this->Index) {
+                    return $current->TernaryOperator2->_prevCode;
+                }
+                break;
+            }
         }
 
-        // Otherwise, traverse expressions until an appropriate terminator is
-        // reached
+        // Otherwise, traverse siblings by expression until none remain or an
+        // appropriate terminator is found
         $current = $this->OpenedBy ?: $this;
-        $inCase = $current->inSwitchCase();
+        $inSwitchCase = $current->inSwitchCase();
+
         while ($current->EndExpression) {
             $current = $current->EndExpression;
-            $terminator = ($current->_nextSibling->Expression ?? null) === false
-                ? $current->_nextSibling
-                : $current;
-            $next = $terminator->_nextSibling ?? null;
+            $terminator =
+                $current->_nextSibling &&
+                    $current->_nextSibling->Expression === false
+                        ? $current->_nextSibling
+                        : $current;
+            $next = $terminator->_nextSibling;
+
             if (!$next) {
                 return $current;
             }
+
             [$last, $current] = [$current, $next];
 
-            // Ignore most expression boundaries
+            // Don't terminate if the token between expressions is a ternary
+            // operator or an expression terminator other than `)`, `]` and `;`
             if ($terminator->IsTernaryOperator ||
-                    $terminator->is([
-                        ...TokenType::OPERATOR_DOUBLE_ARROW,
-                        ...TokenType::OPERATOR_ASSIGNMENT,
-                        ...TokenType::OPERATOR_COMPARISON_EXCEPT_COALESCE,
-                    ])) {
+                    $this->TokenTypeIndex->ExpressionDelimiter[$terminator->id]) {
                 continue;
             }
 
             // Don't terminate `case` and `default` statements until the next
             // `case` or `default` is reached
-            if ($inCase && !$next->is([T_CASE, T_DEFAULT])) {
+            if ($inSwitchCase && $next->id !== T_CASE && $next->id !== T_DEFAULT) {
                 continue;
             }
 
             // Don't terminate if the next token continues a control structure
-            if ($next->is([T_CATCH, T_FINALLY])) {
+            if ($next->id === T_CATCH || $next->id === T_FINALLY) {
                 continue;
             }
-            if ($next->is([T_ELSEIF, T_ELSE]) && (
-                !$containUnenclosed ||
-                $terminator->id === T_CLOSE_BRACE ||
-                $terminator->prevSiblingOf(T_IF, T_ELSEIF)->Index >= $this->Index
-            )) {
+            if (($next->id === T_ELSEIF || $next->id === T_ELSE) &&
+                (!$containUnenclosed ||
+                    $terminator->id === T_CLOSE_BRACE ||
+                    $terminator->prevSiblingOf(T_IF, T_ELSEIF)->Index >= $this->Index)) {
                 continue;
             }
             if ($next->id === T_WHILE &&
-                    $next->Statement !== $next && (
-                        !$containUnenclosed ||
-                        $terminator->id === T_CLOSE_BRACE ||
-                        $next->Statement->Index >= $this->Index
-                    )) {
+                $next->Statement !== $next &&
+                (!$containUnenclosed ||
+                    $terminator->id === T_CLOSE_BRACE ||
+                    $next->Statement->Index >= $this->Index)) {
                 continue;
             }
 
+            // Otherwise, terminate
             return $last;
         }
 
@@ -1168,16 +1212,24 @@ class Token extends CollectibleToken implements JsonSerializable
 
     final public function adjacentBeforeNewline(bool $requireAlignedWith = true): ?Token
     {
+        // Return `null` if neither the token nor its parent have a close
+        // bracket to start from
         $current = $this->ClosedBy ?: $this;
         if (!$current->OpenedBy &&
             !(($current = end($this->BracketStack)) &&
                 ($current = $current->ClosedBy))) {
             return null;
         }
+
+        // Find the last `)`, `]`, `}`, or `,` on the same line as the close
+        // bracket and assign it to `$outer`
         $eol = $this->endOfLine();
         $outer = $current->withNextCodeWhile(false, T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_COMMA)
                          ->filter(fn(Token $t) => $t->Index <= $eol->Index)
                          ->last();
+
+        // If it's a `,`, move to the first token of the next expression on the
+        // same line and assign it to `$next`
         $next = $outer;
         while ($next &&
                 $next->Expression === false &&
@@ -1185,6 +1237,10 @@ class Token extends CollectibleToken implements JsonSerializable
                 $next->_nextSibling->Index <= $eol->Index) {
             $next = $next->_nextSibling;
         }
+
+        // Return `null` if the first code token after `$outer` is on a
+        // subsequent line, or if neither `$outer` nor `$next` belong to a
+        // statement that continues beyond their respective next code tokens
         if (!$outer ||
             !$outer->_nextCode ||
             $outer->_nextCode->Index > $eol->Index ||
@@ -1195,6 +1251,9 @@ class Token extends CollectibleToken implements JsonSerializable
             return null;
         }
 
+        // Return `null` if `$requireAlignedWith` is `true` and there are no
+        // tokens between `$outer` and the end of the line where `AlignedWith`
+        // is set
         if ($requireAlignedWith &&
             !$outer->_nextCode
                    ->collect($eol)
@@ -1238,17 +1297,6 @@ class Token extends CollectibleToken implements JsonSerializable
         }
 
         return $this;
-    }
-
-    public function declarationParts(): TokenCollection
-    {
-        return ($this->Expression ?: $this)
-                   ->skipAnySiblingsOf(T_RETURN, T_YIELD, T_YIELD_FROM)
-                   ->withNextSiblingsUntil(
-                       fn(Token $t) =>
-                           !$t->is(TokenType::DECLARATION_PART) &&
-                               !($t->id === T_OPEN_PARENTHESIS && $t->_prevCode->id === T_CLASS)
-                   );
     }
 
     public function sinceStartOfStatement(): TokenCollection
@@ -1353,33 +1401,6 @@ class Token extends CollectibleToken implements JsonSerializable
                 break;
             }
             if ($current->hasNewlineAfter()) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * True if, between the previous code token and the token, there's a newline
-     * between tokens
-     *
-     */
-    final public function hasNewlineBeforeCode(): bool
-    {
-        if ($this->hasNewlineBefore()) {
-            return true;
-        }
-        if (!$this->_prevCode || $this->_prevCode === $this->_prev) {
-            return false;
-        }
-        $current = $this;
-        while (true) {
-            $current = $current->_prev;
-            if ($current === $this->_prevCode) {
-                break;
-            }
-            if ($current->hasNewlineBefore()) {
                 return true;
             }
         }
@@ -1552,10 +1573,10 @@ class Token extends CollectibleToken implements JsonSerializable
      */
     public function isDeclaration(int ...$types): bool
     {
-        if (!$this->IsCode) {
+        if (!$this->Expression) {
             return false;
         }
-        $parts = $this->declarationParts();
+        $parts = $this->Expression->declarationParts();
 
         return $parts->hasOneOf(...TokenType::DECLARATION) &&
             (!$types || $parts->hasOneOf(...$types));
@@ -1563,10 +1584,11 @@ class Token extends CollectibleToken implements JsonSerializable
 
     public function inFunctionDeclaration(): bool
     {
-        return ($parent = end($this->BracketStack)) &&
-            $parent->id === T_OPEN_PARENTHESIS &&
-            (($parent->_prevCode->id ?? null) === T_FN ||
-                $parent->prevOf(T_FUNCTION)->nextOf(T_OPEN_PARENTHESIS) === $parent);
+        return $this->Parent &&
+            $this->Parent->_prevCode &&
+            $this->Parent->id === T_OPEN_PARENTHESIS &&
+            ($this->Parent->_prevCode->id === T_FN ||
+                $this->Parent->prevOf(T_FUNCTION)->nextOf(T_OPEN_PARENTHESIS) === $this->Parent);
     }
 
     /**
@@ -1657,8 +1679,8 @@ class Token extends CollectibleToken implements JsonSerializable
                 if (($before = $current->effectiveWhitespaceBefore() ?: '') &&
                         ($before = WhitespaceType::toWhitespace($before)) &&
                         $before[0] === "\n") {
-                    // Don't indent close tags unless subsequent text is indented by
-                    // at least the same amount
+                    // Don't indent close tags unless subsequent text is
+                    // indented by at least the same amount
                     if ($current->id === T_CLOSE_TAG &&
                             $current->_next &&
                             $current->_next->getIndentSpacesFromText() < $current->getIndentSpaces()) {
@@ -1702,7 +1724,8 @@ class Token extends CollectibleToken implements JsonSerializable
                     $current->OutputPos = 0;
                 }
 
-                // Adjust the token's position to account for any leading whitespace
+                // Adjust the token's position to account for any leading
+                // whitespace
                 if ($before ?? null) {
                     $current->movePosition($before, $this->Formatter->Tab === "\t");
                 }
@@ -1715,7 +1738,8 @@ class Token extends CollectibleToken implements JsonSerializable
                 }
             }
 
-            // Multi-line comments are only formatted when output is being generated
+            // Multi-line comments are only formatted when output is being
+            // generated
             if ($setPosition &&
                     $current->CommentType &&
                     strpos($current->text, "\n") !== false) {

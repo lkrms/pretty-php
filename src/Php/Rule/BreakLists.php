@@ -15,9 +15,10 @@ use Lkrms\Pretty\Php\TokenCollection;
  * - If an interface list (`extends` or `implements`, depending on context)
  *   breaks over multiple lines and neither {@see NoMixedLists} nor
  *   {@see AlignLists} are enabled, add a newline before the first interface.
- * - If one or more parameters in an argument list break over multiple lines to
- *   accommodate a T_ATTRIBUTE, place every parameter on its own line, and add
- *   blank lines before and after annotated parameters to improve readability.
+ * - If a parameter list breaks over multiple lines and contains at least one
+ *   `T_ATTRIBUTE`, place every attribute and annotated parameter on its own
+ *   line, and add blank lines before and after annotated parameters to improve
+ *   readability.
  *
  */
 final class BreakLists implements ListRule
@@ -48,34 +49,40 @@ final class BreakLists implements ListRule
         }
 
         if ($owner->id !== T_OPEN_PARENTHESIS ||
-                !($owner->prevCode()->id === T_FN ||
-                    $owner->isDeclaration(T_FUNCTION)) ||
-                !$items->find(fn(Token $token) => $this->hasAttributeOnOwnLine($token))) {
+                !($owner->prevCode()->id === T_FN || $owner->isDeclaration(T_FUNCTION)) ||
+                !($items->hasOneOf(T_ATTRIBUTE, T_ATTRIBUTE_COMMENT) && $items->hasNewlineBetweenTokens())) {
             return;
         }
 
-        $items->forEach(
-            function (Token $token, ?Token $next, ?Token $prev) {
-                if (!$this->hasAttributeOnOwnLine($token)) {
-                    $token->WhitespaceBefore |= WhitespaceType::LINE;
-                    $token->WhitespaceMaskPrev |= WhitespaceType::LINE;
-                    $token->_prev->WhitespaceMaskNext |= WhitespaceType::LINE;
-                    return;
-                }
-                if ($prev) {
-                    $token->applyBlankLineBefore(true);
-                }
-                if ($next) {
-                    $next->applyBlankLineBefore(true);
-                }
+        $blankBeforeNext = false;
+        foreach ($items as $token) {
+            $blankBeforeApplied = $blankBeforeNext;
+            if ($blankBeforeNext) {
+                $token->applyBlankLineBefore(true);
+                $blankBeforeNext = false;
             }
-        );
-    }
-
-    private function hasAttributeOnOwnLine(Token $token): bool
-    {
-        return $token->is([T_ATTRIBUTE, T_ATTRIBUTE_COMMENT]) &&
-            $token->hasNewlineBefore() &&
-            ($token->ClosedBy ?: $token)->hasNewlineAfter();
+            $current = $token;
+            while ($current->id === T_ATTRIBUTE ||
+                    $current->id === T_ATTRIBUTE_COMMENT) {
+                $current->WhitespaceBefore |= WhitespaceType::LINE;
+                if ($current->id === T_ATTRIBUTE) {
+                    $current->ClosedBy->WhitespaceAfter |= WhitespaceType::LINE;
+                } else {
+                    $current->WhitespaceAfter |= WhitespaceType::LINE;
+                }
+                $current->WhitespaceMaskPrev |= WhitespaceType::LINE;
+                $current->_prev->WhitespaceMaskNext |= WhitespaceType::LINE;
+                $current = $current->_nextSibling;
+            }
+            if ($current === $token) {
+                $prev = $token;
+                continue;
+            }
+            if (!$blankBeforeApplied && ($prev ?? null)) {
+                $token->applyBlankLineBefore(true);
+            }
+            $blankBeforeNext = true;
+            $prev = $token;
+        }
     }
 }

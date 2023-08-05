@@ -25,7 +25,8 @@ use Lkrms\Pretty\Php\Token;
  * - Add SPACE after and suppress SPACE before commas
  * - Add LINE after labels
  * - Add LINE between the arms of match expressions
- * - Add LINE before and after attributes, suppress BLANK after
+ * - Add SPACE before and after parameter attributes, LINE and SPACE before and
+ *   after other attributes, and suppress BLANK after all attributes
  * - Suppress whitespace inside `declare()`
  *
  */
@@ -252,17 +253,27 @@ final class AddStandardWhitespace implements TokenRule
             return;
         }
 
-        // Add LINE before and after attributes, suppress BLANK after
+        // Add SPACE before and after parameter attributes, LINE and SPACE
+        // before and after other attributes, and suppress BLANK after all
+        // attributes
         if ($token->id === T_ATTRIBUTE) {
-            $token->WhitespaceBefore |= WhitespaceType::LINE;
-            $token->ClosedBy->WhitespaceAfter |= WhitespaceType::LINE;
+            if (!$token->inFunctionDeclaration()) {
+                $token->WhitespaceBefore |= WhitespaceType::LINE;
+                $token->ClosedBy->WhitespaceAfter |= WhitespaceType::LINE;
+            }
+            $token->WhitespaceBefore |= WhitespaceType::SPACE;
+            $token->ClosedBy->WhitespaceAfter |= WhitespaceType::SPACE;
             $token->ClosedBy->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
 
             return;
         }
         if ($token->id === T_ATTRIBUTE_COMMENT) {
-            $token->WhitespaceBefore |= WhitespaceType::LINE;
-            $token->WhitespaceAfter |= WhitespaceType::LINE;
+            if (!$token->inFunctionDeclaration()) {
+                $token->WhitespaceBefore |= WhitespaceType::LINE;
+                $token->WhitespaceAfter |= WhitespaceType::LINE;
+            }
+            $token->WhitespaceBefore |= WhitespaceType::SPACE;
+            $token->WhitespaceAfter |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
 
             return;

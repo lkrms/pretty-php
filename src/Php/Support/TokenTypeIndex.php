@@ -137,6 +137,18 @@ class TokenTypeIndex implements IImmutable
      * @readonly
      * @var array<int,bool>
      */
+    public array $ExpressionTerminator;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $ExpressionDelimiter;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
     public array $AltSyntaxContinue;
 
     /**
@@ -144,6 +156,30 @@ class TokenTypeIndex implements IImmutable
      * @var array<int,bool>
      */
     public array $AltSyntaxEnd;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $Chain;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $ChainPart;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $DeclarationPart;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $DeclarationPartWithNew;
 
     /**
      * @readonly
@@ -334,6 +370,7 @@ class TokenTypeIndex implements IImmutable
         );
 
         $this->PreserveNewlineAfter = TT::getIndex(
+            T_ATTRIBUTE_COMMENT,
             T_COLON,
             T_DOUBLE_ARROW,
             T_EXTENDS,
@@ -359,8 +396,29 @@ class TokenTypeIndex implements IImmutable
             ...$preserveBlankAfter,
         );
 
+        $expressionDelimiter = [
+            T_DOUBLE_ARROW,
+            ...TT::OPERATOR_ASSIGNMENT,
+            ...TT::OPERATOR_COMPARISON_EXCEPT_COALESCE,
+        ];
+
+        $this->ExpressionTerminator = TT::getIndex(
+            T_CLOSE_BRACKET,
+            T_CLOSE_PARENTHESIS,
+            T_SEMICOLON,
+            ...$expressionDelimiter,
+        );
+
+        $this->ExpressionDelimiter = TT::getIndex(
+            ...$expressionDelimiter,
+        );
+
         $this->AltSyntaxContinue = TT::getIndex(...TT::ALT_SYNTAX_CONTINUE);
         $this->AltSyntaxEnd = TT::getIndex(...TT::ALT_SYNTAX_END);
+        $this->Chain = TT::getIndex(...TT::CHAIN);
+        $this->ChainPart = TT::getIndex(...TT::CHAIN_PART);
+        $this->DeclarationPart = TT::getIndex(...TT::DECLARATION_PART);
+        $this->DeclarationPartWithNew = TT::getIndex(...TT::DECLARATION_PART_WITH_NEW);
         $this->HasStatement = TT::getIndex(...TT::HAS_STATEMENT);
         $this->NotCode = TT::getIndex(...TT::NOT_CODE);
     }

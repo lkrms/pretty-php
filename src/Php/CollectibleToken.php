@@ -11,6 +11,48 @@ use LogicException;
 class CollectibleToken extends NavigableToken
 {
     /**
+     * Optionally skip to the next declaration token in the same expression,
+     * then get the token and any subsequent declaration tokens
+     *
+     */
+    final public function declarationParts(
+        bool $allowAnonymous = true,
+        bool $skipToDeclaration = true
+    ): TokenCollection {
+        $index =
+            $allowAnonymous
+                ? $this->TokenTypeIndex->DeclarationPartWithNew
+                : $this->TokenTypeIndex->DeclarationPart;
+
+        /** @var Token $this */
+        $t = $this;
+
+        if ($skipToDeclaration) {
+            while (!$index[$t->id]) {
+                $t = $t->_nextSibling;
+                if (!$t || $t->Expression !== $this->Expression) {
+                    return new TokenCollection();
+                }
+            }
+        }
+
+        $from = $t;
+        while ($t->_nextSibling &&
+            ($index[$t->_nextSibling->id] ||
+                ($allowAnonymous &&
+                    $t->_nextSibling->id === T_OPEN_PARENTHESIS &&
+                    $t->id === T_CLASS))) {
+            $t = $t->_nextSibling;
+        }
+
+        if (!$allowAnonymous && $t->id === T_FUNCTION) {
+            return new TokenCollection();
+        }
+
+        return $from->collectSiblings($t);
+    }
+
+    /**
      * Get the token and its following tokens up to and including a given token
      *
      * @param TToken $to
