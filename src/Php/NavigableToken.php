@@ -64,9 +64,24 @@ class NavigableToken extends PhpToken
     public $ClosedBy;
 
     /**
+     * @var TToken|null
+     */
+    public $Parent;
+
+    /**
      * @var TToken[]
      */
     public $BracketStack = [];
+
+    /**
+     * @var TToken|null
+     */
+    public $OpenTag;
+
+    /**
+     * @var TToken|null
+     */
+    public $CloseTag;
 
     /**
      * True unless the token is a tag, comment, whitespace or inline markup
@@ -151,7 +166,44 @@ class NavigableToken extends PhpToken
                 $token->_prev = $prev;
                 $prev->_next = $token;
             }
+
             $token->TokenTypeIndex = $tokenTypeIndex;
+
+            /**
+             * ```php
+             * <!-- markup -->  // OpenTag = null,   CloseTag = null
+             * <?php            // OpenTag = itself, CloseTag = Token
+             * $foo = 'bar';    // OpenTag = Token,  CloseTag = Token
+             * ?>               // OpenTag = Token,  CloseTag = itself
+             * <!-- markup -->  // OpenTag = null,   CloseTag = null
+             * <?php            // OpenTag = itself, CloseTag = null
+             * $foo = 'bar';    // OpenTag = Token,  CloseTag = null
+             * ```
+             */
+            if ($token->id === T_OPEN_TAG ||
+                    $token->id === T_OPEN_TAG_WITH_ECHO) {
+                $token->OpenTag = $token;
+                $prev = $token;
+                continue;
+            }
+
+            if (!$prev || !$prev->OpenTag || $prev->CloseTag) {
+                $prev = $token;
+                continue;
+            }
+
+            $token->OpenTag = $prev->OpenTag;
+
+            if ($token->id !== T_CLOSE_TAG) {
+                $prev = $token;
+                continue;
+            }
+
+            $t = $token;
+            do {
+                $t->CloseTag = $token;
+                $t = $t->_prev;
+            } while ($t && $t->OpenTag === $token->OpenTag);
 
             $prev = $token;
         }
@@ -231,18 +283,23 @@ class NavigableToken extends PhpToken
             if ($tokenTypeIndex->OpenBracket[$prev->id] ||
                     ($prev->id === T_COLON && $prev->startsAlternativeSyntax())) {
                 $token->BracketStack[] = $prev;
+                $token->Parent = $prev;
                 $stackDelta++;
-            } elseif ($tokenTypeIndex->CloseBracket[$prev->id] || $prev->id === T_END_ALT_SYNTAX) {
+            } elseif ($tokenTypeIndex->CloseBracketOrEndAltSyntax[$prev->id]) {
                 array_pop($token->BracketStack);
+                $token->Parent = $prev->Parent;
                 $stackDelta--;
+            } else {
+                $token->Parent = $prev->Parent;
             }
 
-            if ($tokenTypeIndex->CloseBracket[$token->id] || $token->id === T_END_ALT_SYNTAX) {
+            if ($tokenTypeIndex->CloseBracketOrEndAltSyntax[$token->id]) {
                 $opener = end($token->BracketStack);
                 $opener->ClosedBy = $token;
                 $token->OpenedBy = $opener;
                 $token->_prevSibling = &$opener->_prevSibling;
                 $token->_nextSibling = &$opener->_nextSibling;
+                $token->Parent = &$opener->Parent;
             } else {
                 // If $token continues the previous context ($stackDelta == 0)
                 // or is the first token after a close bracket ($stackDelta <

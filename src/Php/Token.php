@@ -30,10 +30,6 @@ class Token extends CollectibleToken implements JsonSerializable
 
     public bool $BodyIsUnenclosed = false;
 
-    public ?Token $OpenTag = null;
-
-    public ?Token $CloseTag = null;
-
     public ?Token $Statement = null;
 
     public ?Token $EndStatement = null;
@@ -187,7 +183,7 @@ class Token extends CollectibleToken implements JsonSerializable
      * True if the token is a T_CLOSE_TAG that terminates a statement
      *
      */
-    public bool $IsCloseTagStatementTerminator = false;
+    public bool $IsStatementTerminator = false;
 
     public ?int $OutputLine = null;
 
@@ -224,62 +220,36 @@ class Token extends CollectibleToken implements JsonSerializable
                 } elseif ($token->id === T_DOC_COMMENT) {
                     $token->CommentType = '/**';
                 }
-
-                if ($token->id === T_OPEN_TAG ||
-                        $token->id === T_OPEN_TAG_WITH_ECHO) {
-                    $token->OpenTag = $token;
-                }
             }
 
-            if (!($prev = $token->_prev)) {
+            $prev = $token->_prev;
+
+            if (!$prev || $token->id !== T_CLOSE_TAG) {
                 continue;
             }
 
-            /**
-             * Result:
-             *
-             * ```php
-             * <?php            // OpenTag = itself, CloseTag = Token
-             * $foo = 'bar';    // OpenTag = Token,  CloseTag = Token
-             * ?>               // OpenTag = Token,  CloseTag = itself
-             * <!-- markup -->  // OpenTag = null,   CloseTag = null
-             * <?php            // OpenTag = itself, CloseTag = null
-             * $foo = 'bar';    // OpenTag = Token,  CloseTag = null
-             * ```
-             */
-            if (!$token->OpenTag && $prev->OpenTag && !$prev->CloseTag) {
-                $token->OpenTag = $prev->OpenTag;
-                if ($token->id === T_CLOSE_TAG) {
-                    $t = $token;
-                    do {
-                        $t->CloseTag = $token;
-                        $t = $t->_prev;
-                    } while ($t && $t->OpenTag === $token->OpenTag);
-
-                    $t = $prev;
-                    while ($t->id === T_COMMENT ||
-                            $t->id === T_DOC_COMMENT) {
-                        $t = $t->_prev;
+            $t = $prev;
+            while ($t->id === T_COMMENT ||
+                    $t->id === T_DOC_COMMENT) {
+                $t = $t->_prev;
+            }
+            if ($t->Index > $token->OpenTag->Index &&
+                    !$t->is([T_COLON, T_SEMICOLON, T_OPEN_BRACE]) &&
+                    ($t->id !== T_CLOSE_BRACE || !$t->isCloseBraceStatementTerminator())) {
+                $token->IsStatementTerminator = true;
+                $token->IsCode = true;
+                $t = $token;
+                while ($t = $t->_next) {
+                    $t->_prevCode = $token;
+                    if ($t->IsCode) {
+                        break;
                     }
-                    if ($t->Index > $token->OpenTag->Index &&
-                            !$t->is([T_COLON, T_SEMICOLON, T_OPEN_BRACE]) &&
-                            ($t->id !== T_CLOSE_BRACE || !$t->isCloseBraceStatementTerminator())) {
-                        $token->IsCloseTagStatementTerminator = true;
-                        $token->IsCode = true;
-                        $t = $token;
-                        while ($t = $t->_next) {
-                            $t->_prevCode = $token;
-                            if ($t->IsCode) {
-                                break;
-                            }
-                        }
-                        $t = $token;
-                        while ($t = $t->_prev) {
-                            $t->_nextCode = $token;
-                            if ($t->IsCode) {
-                                break;
-                            }
-                        }
+                }
+                $t = $token;
+                while ($t = $t->_prev) {
+                    $t->_nextCode = $token;
+                    if ($t->IsCode) {
+                        break;
                     }
                 }
             }
@@ -314,7 +284,7 @@ class Token extends CollectibleToken implements JsonSerializable
     private function maybeApplyStatement(): void
     {
         if ((($this->id === T_SEMICOLON ||
-            $this->IsCloseTagStatementTerminator ||
+            $this->IsStatementTerminator ||
             ($this->id === T_CLOSE_BRACE &&
                 $this->isCloseBraceStatementTerminator())) &&
             !$this->nextCode()->is([T_ELSEIF, T_ELSE, T_CATCH, T_FINALLY]) &&
@@ -475,7 +445,7 @@ class Token extends CollectibleToken implements JsonSerializable
             $this->_prevCode->applyExpression();
             $this->applyExpression();
         } elseif ($this->is(self::EXPRESSION_TERMINATOR) ||
-                $this->IsCloseTagStatementTerminator ||
+                $this->IsStatementTerminator ||
                 ($this->id === T_COLON && ($this->inSwitchCase() || $this->inLabel())) ||
                 ($this->id === T_CLOSE_BRACE &&
                     (!$this->isStructuralBrace() || $this->isMatchBrace())) ||
@@ -575,6 +545,7 @@ class Token extends CollectibleToken implements JsonSerializable
         $a['column'] = $this->column;
         $a['_prevSibling'] = $this->_prevSibling;
         $a['_nextSibling'] = $this->_nextSibling;
+        $a['Parent'] = $this->Parent;
         $a['ExpandedText'] = $this->ExpandedText;
         $a['OriginalText'] = $this->OriginalText;
         $a['BodyIsUnenclosed'] = $this->BodyIsUnenclosed;
@@ -626,7 +597,7 @@ class Token extends CollectibleToken implements JsonSerializable
         $a['CriticalWhitespaceAfter'] = $this->CriticalWhitespaceAfter;
         $a['CriticalWhitespaceMaskPrev'] = $this->CriticalWhitespaceMaskPrev;
         $a['CriticalWhitespaceMaskNext'] = $this->CriticalWhitespaceMaskNext;
-        $a['IsCloseTagStatementTerminator'] = $this->IsCloseTagStatementTerminator;
+        $a['IsStatementTerminator'] = $this->IsStatementTerminator;
         $a['OutputLine'] = $this->OutputLine;
         $a['OutputPos'] = $this->OutputPos;
         $a['OutputColumn'] = $this->OutputColumn;
@@ -1361,7 +1332,7 @@ class Token extends CollectibleToken implements JsonSerializable
     {
         if ($this->_prevCode &&
             ($this->is([T_SEMICOLON, T_COMMA, T_COLON]) ||
-                $this->IsCloseTagStatementTerminator)) {
+                $this->IsStatementTerminator)) {
             return $this->_prevCode;
         }
 
@@ -1372,9 +1343,9 @@ class Token extends CollectibleToken implements JsonSerializable
     {
         if ($this->_nextCode &&
             !($this->is([T_SEMICOLON, T_COMMA, T_COLON]) ||
-                $this->IsCloseTagStatementTerminator) &&
+                $this->IsStatementTerminator) &&
             ($this->_nextCode->is([T_SEMICOLON, T_COMMA, T_COLON]) ||
-                $this->_nextCode->IsCloseTagStatementTerminator)) {
+                $this->_nextCode->IsStatementTerminator)) {
             return $this->_nextCode;
         }
 
@@ -1647,7 +1618,7 @@ class Token extends CollectibleToken implements JsonSerializable
         // trait adaptation braces can be
         return $lastInner === $current ||                                           // `{}`
             $lastInner->is([T_COLON, T_SEMICOLON]) ||                               // `{ statement; }`
-            $lastInner->IsCloseTagStatementTerminator ||                            /* `{ statement ?>...<?php }` */
+            $lastInner->IsStatementTerminator ||                                    /* `{ statement ?>...<?php }` */
             ($lastInner->id === T_CLOSE_BRACE && $lastInner->isStructuralBrace());  // `{ { statement; } }`
     }
 
