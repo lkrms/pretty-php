@@ -102,6 +102,13 @@ class NavigableToken extends PhpToken
     public bool $IsVirtual = false;
 
     /**
+     * True if the token is a T_CLOSE_BRACE or T_CLOSE_TAG that coincides with
+     * the end of a statement
+     *
+     */
+    public bool $IsStatementTerminator = false;
+
+    /**
      * The original content of the token after expanding tabs if CollectColumn
      * found tabs to expand
      *
@@ -158,6 +165,7 @@ class NavigableToken extends PhpToken
         // Pass 1:
         // - link adjacent tokens
         // - assign token type index
+        // - set `OpenTag`, `CloseTag`
 
         /** @var static|null */
         $prev = null;
@@ -223,10 +231,13 @@ class NavigableToken extends PhpToken
         $count = count($keys);
         for ($i = 0; $i < $count; $i++) {
             $token = $tokens[$keys[$i]];
-            if ($token->id === T_COMMENT &&
+
+            if (PHP_VERSION_ID < 80000 &&
+                    $token->id === T_COMMENT &&
                     substr($token->text, 0, 2) === '#[') {
                 $token->id = T_ATTRIBUTE_COMMENT;
             }
+
             if ($tokenTypeIndex->NotCode[$token->id]) {
                 $token->IsCode = false;
             }
@@ -269,6 +280,21 @@ class NavigableToken extends PhpToken
                 continue;
             }
 
+            if ($token->id === T_CLOSE_TAG) {
+                $t = $prev;
+                while ($t->id === T_COMMENT ||
+                        $t->id === T_DOC_COMMENT) {
+                    $t = $t->_prev;
+                }
+
+                if ($t !== $token->OpenTag &&
+                        !$t->is([T_COLON, T_SEMICOLON, T_OPEN_BRACE]) &&
+                        ($t->id !== T_CLOSE_BRACE || !$t->IsStatementTerminator)) {
+                    $token->IsStatementTerminator = true;
+                    $token->IsCode = true;
+                }
+            }
+
             $token->_prevCode = $prev->IsCode ? $prev : $prev->_prevCode;
             if ($token->IsCode) {
                 $t = $prev;
@@ -300,6 +326,30 @@ class NavigableToken extends PhpToken
                 $token->_prevSibling = &$opener->_prevSibling;
                 $token->_nextSibling = &$opener->_nextSibling;
                 $token->Parent = &$opener->Parent;
+
+                // Treat `$token` as a statement terminator if it's a structural
+                // `T_CLOSE_BRACE` that doesn't enclose an anonymous function or
+                // class
+                if ($token->id !== T_CLOSE_BRACE ||
+                        !$token->isStructuralBrace(false)) {
+                    $prev = $token;
+                    continue;
+                }
+
+                /** @var static */
+                $_prev = $token->prevSiblingOf(T_FUNCTION, T_CLASS);
+                if (!$_prev->IsNull &&
+                        $_prev->nextSiblingOf(T_OPEN_BRACE)->ClosedBy === $token) {
+                    $_next = $_prev->_nextSibling;
+                    if ($_next->id === T_OPEN_PARENTHESIS ||
+                            $_next->id === T_EXTENDS ||
+                            $_next->id === T_IMPLEMENTS) {
+                        $prev = $token;
+                        continue;
+                    }
+                }
+
+                $token->IsStatementTerminator = true;
             } else {
                 // If $token continues the previous context ($stackDelta == 0)
                 // or is the first token after a close bracket ($stackDelta <
@@ -333,6 +383,44 @@ class NavigableToken extends PhpToken
         }
 
         return $linked;
+    }
+
+    /**
+     * True if the token is a brace that delimits a code block
+     *
+     * Returns `false` for braces in:
+     * - expressions (e.g. `$object->{$property}`)
+     * - strings (e.g. `"{$object->property}"`)
+     * - alias/import statements (e.g. `use A\{B, C}`)
+     *
+     * Returns `true` for braces around trait adaptations, and for `match`
+     * expression braces if `$orMatch` is `true`.
+     *
+     */
+    final public function isStructuralBrace(bool $orMatch = true): bool
+    {
+        /** @var static */
+        $current = $this->OpenedBy ?: $this;
+
+        // Exclude T_CURLY_OPEN and T_DOLLAR_OPEN_CURLY_BRACES
+        if ($current->id !== T_OPEN_BRACE) {
+            return false;
+        }
+
+        /** @var static|null */
+        $prev = $current->_prevSibling->_prevSibling ?? null;
+        if ($prev && $prev->id === T_MATCH) {
+            return $orMatch;
+        }
+
+        $lastInner = $current->ClosedBy->_prevCode;
+
+        // Braces cannot be empty in expression (dereferencing) contexts, but
+        // trait adaptation braces can be
+        return $lastInner === $current ||                                           // `{}`
+            $lastInner->is([T_COLON, T_SEMICOLON]) ||                               // `{ statement; }`
+            $lastInner->IsStatementTerminator ||                                    /* `{ statement ?>...<?php }` */
+            ($lastInner->id === T_CLOSE_BRACE && $lastInner->isStructuralBrace());  // `{ { statement; } }`
     }
 
     /**
@@ -477,6 +565,40 @@ class NavigableToken extends PhpToken
         array_unshift($types, $type);
         $t = $this;
         while ($t = $t->_next) {
+            if ($t->is($types)) {
+                return $t;
+            }
+        }
+        return $this->null();
+    }
+
+    /**
+     * Get the previous sibling that is one of the listed types
+     *
+     * @return TToken
+     */
+    final public function prevSiblingOf(int $type, int ...$types)
+    {
+        array_unshift($types, $type);
+        $t = $this;
+        while ($t = $t->_prevSibling) {
+            if ($t->is($types)) {
+                return $t;
+            }
+        }
+        return $this->null();
+    }
+
+    /**
+     * Get the next sibling that is one of the listed types
+     *
+     * @return TToken
+     */
+    final public function nextSiblingOf(int $type, int ...$types)
+    {
+        array_unshift($types, $type);
+        $t = $this;
+        while ($t = $t->_nextSibling) {
             if ($t->is($types)) {
                 return $t;
             }

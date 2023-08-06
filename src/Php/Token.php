@@ -179,12 +179,6 @@ class Token extends CollectibleToken implements JsonSerializable
      */
     public int $CriticalWhitespaceMaskNext = WhitespaceType::ALL;
 
-    /**
-     * True if the token is a T_CLOSE_TAG that terminates a statement
-     *
-     */
-    public bool $IsStatementTerminator = false;
-
     public ?int $OutputLine = null;
 
     public ?int $OutputPos = null;
@@ -221,38 +215,6 @@ class Token extends CollectibleToken implements JsonSerializable
                     $token->CommentType = '/**';
                 }
             }
-
-            $prev = $token->_prev;
-
-            if (!$prev || $token->id !== T_CLOSE_TAG) {
-                continue;
-            }
-
-            $t = $prev;
-            while ($t->id === T_COMMENT ||
-                    $t->id === T_DOC_COMMENT) {
-                $t = $t->_prev;
-            }
-            if ($t->Index > $token->OpenTag->Index &&
-                    !$t->is([T_COLON, T_SEMICOLON, T_OPEN_BRACE]) &&
-                    ($t->id !== T_CLOSE_BRACE || !$t->isCloseBraceStatementTerminator())) {
-                $token->IsStatementTerminator = true;
-                $token->IsCode = true;
-                $t = $token;
-                while ($t = $t->_next) {
-                    $t->_prevCode = $token;
-                    if ($t->IsCode) {
-                        break;
-                    }
-                }
-                $t = $token;
-                while ($t = $t->_prev) {
-                    $t->_nextCode = $token;
-                    if ($t->IsCode) {
-                        break;
-                    }
-                }
-            }
         }
 
         reset($tokens)->load();
@@ -283,10 +245,7 @@ class Token extends CollectibleToken implements JsonSerializable
      */
     private function maybeApplyStatement(): void
     {
-        if ((($this->id === T_SEMICOLON ||
-            $this->IsStatementTerminator ||
-            ($this->id === T_CLOSE_BRACE &&
-                $this->isCloseBraceStatementTerminator())) &&
+        if ((($this->id === T_SEMICOLON || $this->IsStatementTerminator) &&
             !$this->nextCode()->is([T_ELSEIF, T_ELSE, T_CATCH, T_FINALLY]) &&
             !($this->nextCode()->id === T_WHILE &&
                 // Body enclosed: `do { ... } while ();`
@@ -359,49 +318,6 @@ class Token extends CollectibleToken implements JsonSerializable
             }
             $current = $current->_nextSibling;
         } while ($current && $current->EndStatement === $this);
-    }
-
-    private function isCloseBraceStatementTerminator(): bool
-    {
-        if ($this->id !== T_CLOSE_BRACE || !$this->isStructuralBrace(false)) {
-            return false;
-        }
-
-        if (!($start = $this->Statement)) {
-            // Find the end of the last statement to find the start of this one
-            $current = $this->OpenedBy->_prevSibling;
-            while ($current && !$current->EndStatement) {
-                $start = $current;
-                $current = $current->_prevSibling;
-            }
-        }
-        // If the open brace is the start, the close brace is the end
-        if (!$start || $start === $this->OpenedBy) {
-            return true;
-        }
-
-        // Control structure bodies are terminated with `}`
-        if ($start->is(TokenType::HAS_STATEMENT)) {
-            return true;
-        }
-
-        // Alias/import statements end with `;` but are already excluded by
-        // `isStructuralBrace()`
-        if ($start->id === T_USE) {
-            return true;
-        }
-
-        // - Anonymous functions and classes are unterminated
-        // - Other declarations end with `}`
-        $parts = $start->withNextSiblingsWhile(...TokenType::DECLARATION_PART_WITH_NEW)
-                       ->filter(fn(Token $t) => !$t->is([T_ATTRIBUTE, T_ATTRIBUTE_COMMENT]));
-        if ($parts->hasOneOf(...TokenType::DECLARATION) &&
-                $parts->last()->id !== T_FUNCTION &&
-                !($parts->first()->id === T_NEW && $parts->nth(2)->id === T_CLASS)) {
-            return true;
-        }
-
-        return false;
     }
 
     /**
@@ -787,34 +703,6 @@ class Token extends CollectibleToken implements JsonSerializable
         }
 
         return $this->byOffset(__FUNCTION__, $offset);
-    }
-
-    /**
-     * Get the token's most recent sibling that is one of the listed types
-     *
-     */
-    final public function prevSiblingOf(int ...$types): Token
-    {
-        $prev = $this;
-        do {
-            $prev = $prev->_prevSibling;
-        } while ($prev && !$prev->is($types));
-
-        return $prev ?: $this->null();
-    }
-
-    /**
-     * Get the token's next sibling that is one of the listed types
-     *
-     */
-    final public function nextSiblingOf(int ...$types): Token
-    {
-        $next = $this;
-        do {
-            $next = $next->_nextSibling;
-        } while ($next && !$next->is($types));
-
-        return $next ?: $this->null();
     }
 
     /**
@@ -1588,38 +1476,6 @@ class Token extends CollectibleToken implements JsonSerializable
     final public function isBrace(): bool
     {
         return $this->id === T_OPEN_BRACE || ($this->id === T_CLOSE_BRACE && $this->OpenedBy->id === T_OPEN_BRACE);
-    }
-
-    /**
-     * True if the token is a brace that delimits a code block
-     *
-     * Returns `false` for braces in:
-     * - expressions (e.g. `$object->{$property}`)
-     * - strings (e.g. `"{$object->property}"`)
-     * - alias/import statements (e.g. `use A\{B, C}`)
-     *
-     * Returns `true` for braces around trait adaptations, and for `match`
-     * statement braces if `$orMatch` is `true`.
-     *
-     */
-    final public function isStructuralBrace(bool $orMatch = true): bool
-    {
-        $current = $this->OpenedBy ?: $this;
-        // Exclude T_CURLY_OPEN and T_DOLLAR_OPEN_CURLY_BRACES
-        if ($current->id !== T_OPEN_BRACE) {
-            return false;
-        }
-        if (($current->_prevSibling->_prevSibling->id ?? null) === T_MATCH) {
-            return $orMatch;
-        }
-        $lastInner = $current->ClosedBy->_prevCode;
-
-        // Braces cannot be empty in expression (dereferencing) contexts, but
-        // trait adaptation braces can be
-        return $lastInner === $current ||                                           // `{}`
-            $lastInner->is([T_COLON, T_SEMICOLON]) ||                               // `{ statement; }`
-            $lastInner->IsStatementTerminator ||                                    /* `{ statement ?>...<?php }` */
-            ($lastInner->id === T_CLOSE_BRACE && $lastInner->isStructuralBrace());  // `{ { statement; } }`
     }
 
     public function isOneLineComment(): bool
