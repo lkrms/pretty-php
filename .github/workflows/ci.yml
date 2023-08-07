@@ -9,6 +9,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  format:
+    name: Check formatting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup PHP and Composer
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          coverage: none
+
+      - name: Install PrettyPHP
+        run: composer create-project --no-interaction --no-progress --no-dev lkrms/pretty-php build/pretty-php
+
+      - name: Run PrettyPHP
+        run: build/pretty-php/bin/pretty-php --diff
+
   phpstan:
     name: PHPStan
     runs-on: ubuntu-latest
