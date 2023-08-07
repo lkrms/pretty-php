@@ -16,4 +16,4 @@ for ($i = 0; $i < count($args); $i += 2) {
     $manifest[$args[$i]] = $args[$i + 1];
 }
 
-printf("%s\n", json_encode($manifest, JSON_PRETTY_PRINT));
+printf("%s\n", json_encode($manifest ?? [], JSON_PRETTY_PRINT));

@@ -2,6 +2,9 @@ name: CI
 
 on:
   push:
+    branches:
+      - main
+      - develop
   pull_request:
 
 concurrency:
@@ -9,6 +12,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  format:
+    name: Check formatting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup PHP and Composer
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          coverage: none
+
+      - name: Install PrettyPHP
+        run: composer create-project --no-interaction --no-progress --no-dev lkrms/pretty-php build/pretty-php
+
+      - name: Run PrettyPHP
+        run: build/pretty-php/bin/pretty-php --diff
+
   phpstan:
     name: PHPStan
     runs-on: ubuntu-latest
@@ -101,7 +124,7 @@ jobs:
       - name: Run build script
         id: run-build-script
         run: |
-          scripts/build.sh --phar
+          scripts/build.sh
           jq -r '{"artifact_name":.package,"artifact_path":.assets[]|select(.type=="phar")|.path}|to_entries[]|"\(.key)=\(.value)"' build/dist/manifest.json | tee -a "$GITHUB_OUTPUT" >>"$GITHUB_ENV"
 
       - name: Upload phar artifact

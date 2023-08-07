@@ -3,6 +3,21 @@
 set -euo pipefail
 shopt -s extglob nullglob globstar
 
+# usage [<error-message>]
+function usage() {
+    if (($#)); then
+        cat >&2 && false || die "$@"
+    else
+        cat
+    fi <<EOF
+usage: ${0##*/}             build the working tree in its current state
+       ${0##*/} latest      build the version returned by 'git describe'
+       ${0##*/} v<VERSION>  build a given version${1:+
+}
+EOF
+    exit
+}
+
 # fail [<status>]
 function fail() {
     local s
@@ -33,35 +48,33 @@ type -P realpath >/dev/null ||
 REPO=$(realpath "${BASH_SOURCE[0]}") &&
     REPO=${REPO%/*/*} &&
     [[ ${BASH_SOURCE[0]} -ef $REPO/scripts/build.sh ]] &&
-    cd "$REPO" || die "error resolving ${BASH_SOURCE[0]}"
+    cd "$REPO" ||
+    die "error resolving ${BASH_SOURCE[0]}"
 
-PACKAGE=${REPO##*/}
+PACKAGE=$(composer show --self --name-only) &&
+    PACKAGE=${PACKAGE##*/} ||
+    die "error getting package name"
+
 LATEST=0
-PHAR=0
-TAR=0
 VERSION=
 while (($#)); do
     case "$1" in
-    --latest)
+    latest)
         LATEST=1
-        ;;
-    --phar)
-        PHAR=1
-        ;;
-    --tar)
-        TAR=1
         ;;
     v[0-9]*)
         LATEST=1
         VERSION=$1
         ;;
+    -h | --help)
+        usage
+        ;;
     *)
-        die "invalid argument: $1"
+        usage "invalid argument: $1"
         ;;
     esac
     shift
 done
-((PHAR || TAR)) || PHAR=1
 
 SRC_DIR=$REPO
 BUILD_DIR=build/$PACKAGE
@@ -75,8 +88,10 @@ if ((LATEST)); then
     # Clone the repo into a temporary directory and check out $VERSION
     TEMP_DIR=$(mktemp -d)/$PACKAGE &&
         trap 'rm -rf "${TEMP_DIR%/*}"' EXIT &&
-        git clone --progress "$REPO" "$TEMP_DIR" &&
-        git -C "$TEMP_DIR" -c advice.detachedHead=false checkout --progress "$VERSION" &&
+        git init "$TEMP_DIR" &&
+        git -C "$TEMP_DIR" remote add origin "$REPO" &&
+        git -C "$TEMP_DIR" fetch --progress --no-recurse-submodules --depth=1 origin +refs/tags/"$VERSION":refs/tags/"$VERSION" &&
+        git -C "$TEMP_DIR" -c advice.detachedHead=false checkout --progress --force refs/tags/"$VERSION" &&
         composer install -d "$TEMP_DIR" --no-plugins --no-interaction &&
         SRC_DIR=$TEMP_DIR &&
         # We need to complete the build here because composer won't pick up the
@@ -84,7 +99,7 @@ if ((LATEST)); then
         BUILD_DIR=$SRC_DIR/build/$PACKAGE ||
         die "error checking out $PACKAGE $VERSION"
 else
-    printf '==> Getting %s version from repository\n' "$PACKAGE"
+    printf '==> getting %s version from repository\n' "$PACKAGE"
     VERSION=$(git describe --dirty --match "v[0-9]*" --long |
         tee /dev/stderr |
         awk '/^v?[0-9]+(\.[0-9]+){0,3}-[0-9]+-g[0-9a-f]+(-dirty)?$/ { sub(/-0-/, "-"); sub(/g/, ""); print }') ||
@@ -101,32 +116,22 @@ cp -Rv "$SRC_DIR"/!(apigen|build|docs|phpstan*|phpunit*|scripts|tests*|var|vendo
     rm -fv "$BUILD_DIR"/**/.DS_Store &&
     rm -fv "$BUILD_DIR"/vendor/**/.gitignore &&
     rm -rfv "$BUILD_DIR"/vendor/bin &&
-    rm -rfv "$BUILD_DIR"/vendor/*/*/{docs,phpstan*,phpunit*,tests*,LICENSE*,README*,*.md,composer.json,.git?*} &&
-    rm -rfv "$BUILD_DIR"/vendor/lkrms/util/{bin,lib,src/Sync} ||
+    rm -rfv "$BUILD_DIR"/vendor/*/*/{docs,phpstan*,phpunit*,tests*,LICENSE*,README*,*.md,composer.{json,lock},.git*} &&
+    rm -rfv "$BUILD_DIR"/vendor/filp/whoops/src/Whoops/Resources/{css,js,views} &&
+    rm -rfv "$BUILD_DIR"/vendor/lkrms/util/{apigen,bin,lib,scripts,src/Sync} &&
+    rm -rfv "$BUILD_DIR"/vendor/lkrms/dice/src/!(Dice*.php) &&
+    rm -fv "$BUILD_DIR"/composer.lock ||
     die "error preparing $REPO/$BUILD_DIR"
 echo
 
 BUILD=$PACKAGE${VERSION:+-$VERSION}
 MANIFEST=(package "$PACKAGE" version "$VERSION")
 
-if ((TAR)); then
-    BUILD_TAR=$DIST_DIR/$BUILD.tar.gz
-    rm -f "$BUILD_TAR"
-    echo "==> Creating $BUILD_TAR"
-    tar -czvf "$BUILD_TAR" -C "${BUILD_DIR%/*}" "${BUILD_DIR##*/}"
-    MANIFEST+=(assets tar "${BUILD_TAR#"$DIST_DIR/"}")
-    echo
-    echo "==> Successfully created $BUILD_TAR"
-    echo
-fi
+BUILD_PHAR=$DIST_DIR/$BUILD.phar
+rm -f "$BUILD_PHAR"
+php -d phar.readonly=off "$SRC_DIR"/vendor/bin/phar-composer build "$BUILD_DIR/" "$BUILD_PHAR"
+MANIFEST+=(assets phar "${BUILD_PHAR#"$DIST_DIR/"}")
+echo
 
-if ((PHAR)); then
-    BUILD_PHAR=$DIST_DIR/$BUILD.phar
-    rm -f "$BUILD_PHAR"
-    php -d phar.readonly=off "$SRC_DIR"/vendor/bin/phar-composer build "$BUILD_DIR/" "$BUILD_PHAR"
-    MANIFEST+=(assets phar "${BUILD_PHAR#"$DIST_DIR/"}")
-    echo
-fi
-
-./scripts/create-manifest "${MANIFEST[@]}" >"$DIST_MANIFEST"
-echo "==> Build manifest created at $REPO/$DIST_MANIFEST"
+./scripts/create-manifest.php "${MANIFEST[@]}" >"$DIST_MANIFEST"
+echo "==> build manifest created at $REPO/$DIST_MANIFEST"
