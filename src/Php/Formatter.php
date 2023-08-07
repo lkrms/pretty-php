@@ -2,6 +2,8 @@
 
 namespace Lkrms\Pretty\Php;
 
+use Lkrms\Concern\TReadable;
+use Lkrms\Contract\IReadable;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Sys;
 use Lkrms\Pretty\Php\Catalog\FormatterFlag;
@@ -67,8 +69,13 @@ use LogicException;
 use ParseError;
 use Throwable;
 
-final class Formatter
+/**
+ * @property-read bool $Psr12Compliance Enforce strict PSR-12 compliance?
+ */
+final class Formatter implements IReadable
 {
+    use TReadable;
+
     /**
      * The string used for indentation
      *
@@ -107,12 +114,6 @@ final class Formatter
      */
     public array $EnabledRules;
 
-    /**
-     * Enable strict PSR-12 compliance?
-     *
-     */
-    public bool $Psr12Compliance = false;
-
     public string $PreferredEol = PHP_EOL;
 
     public bool $PreserveEol = true;
@@ -131,8 +132,6 @@ final class Formatter
      * @var int&HeredocIndent::*
      */
     public int $HeredocIndent = HeredocIndent::MIXED;
-
-    public bool $HangingMatchIndents = true;
 
     public bool $IncreaseIndentBetweenUnenclosedTags = true;
 
@@ -268,6 +267,12 @@ final class Formatter
     public ?array $Log = null;
 
     /**
+     * Enforce strict PSR-12 compliance?
+     *
+     */
+    private bool $_Psr12Compliance = false;
+
+    /**
      * @var Rule[]
      */
     private array $Rules;
@@ -323,6 +328,11 @@ final class Formatter
     private bool $LogProgress;
 
     private bool $ReportProblems;
+
+    protected function _getPsr12Compliance(): bool
+    {
+        return $this->_Psr12Compliance;
+    }
 
     /**
      * Get a new Formatter object
@@ -470,6 +480,40 @@ final class Formatter
     }
 
     /**
+     * @return $this
+     */
+    public function withPsr12Compliance()
+    {
+        if ($this->_Psr12Compliance) {
+            return $this;
+        }
+
+        /**
+         * @todo: Check ruleset compliance
+         */
+        $clone = clone $this;
+        $clone->Tab = '    ';
+        $clone->TabSize = 4;
+        $clone->SoftTab = '    ';
+        $clone->PreferredEol = "\n";
+        $clone->PreserveEol = false;
+        $clone->HeredocIndent = HeredocIndent::HANGING;
+        $clone->NewlineBeforeFnDoubleArrows = true;
+        $clone->OneTrueBraceStyle = false;
+        $clone->ImportSortOrder = ImportSortOrder::NONE;
+        $clone->_Psr12Compliance = true;
+
+        foreach ([
+            ...$this->Rules,
+            ...$this->Filters,
+        ] as $extension) {
+            $extension->setFormatter($clone);
+        }
+
+        return $clone;
+    }
+
+    /**
      * True if a formatting rule is enabled
      *
      * @param class-string<Rule> $rule
@@ -592,6 +636,9 @@ final class Formatter
                                             !$prev || $t->_prevCode->id === T_COMMA);
                     if ($items->count() > 1) {
                         $parent->IsListParent = true;
+                        foreach ($items as $token) {
+                            $token->ListParent = $parent;
+                        }
                         $lists[$i] = $items;
                     }
                     continue 2;
@@ -642,6 +689,9 @@ final class Formatter
                 continue;
             }
             $parent->IsListParent = true;
+            foreach ($items as $token) {
+                $token->ListParent = $parent;
+            }
             $lists[$i] = $items;
         }
         Sys::stopTimer(__METHOD__ . '#find-lists');
@@ -847,16 +897,6 @@ final class Formatter
         return $eol === "\n"
             ? $out
             : str_replace("\n", $eol, $out);
-    }
-
-    /**
-     * @return int&HeredocIndent::*
-     */
-    public function getHeredocIndent(): int
-    {
-        return $this->Psr12Compliance
-            ? HeredocIndent::HANGING
-            : $this->HeredocIndent;
     }
 
     /**

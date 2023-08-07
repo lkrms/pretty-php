@@ -4,6 +4,7 @@ namespace Lkrms\Pretty\Tests\Php;
 
 use Generator;
 use Lkrms\Facade\File;
+use Lkrms\Facade\Sys;
 use Lkrms\Pretty\Php\Catalog\ImportSortOrder;
 use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Rule\AlignArrowFunctions;
@@ -206,6 +207,7 @@ PHP,
                 '#^3rdparty/phpfmt/339-align-objop#',
                 '#^3rdparty/phpfmt/341-autosemicolon-objop#',
                 '#^attributes-[^/]+\.php#',
+                '#^match-expressions\.php#',
             ],
             80100 => [
                 '#^3rdparty/php-doc/appendices/migration81/new-features/.*#',
@@ -317,14 +319,9 @@ PHP,
                     NoMixedLists::class,
                 ],
                 'skipFilters' => [],
-                'callback' => function (Formatter $f): Formatter {
-                    $f->PreferredEol = "\n";
-                    $f->PreserveEol = false;
-                    $f->Psr12Compliance = true;
-                    $f->NewlineBeforeFnDoubleArrows = true;
-                    $f->ImportSortOrder = ImportSortOrder::NONE;
-                    return $f;
-                },
+                'callback' =>
+                    fn(Formatter $f) =>
+                        $f->withPsr12Compliance(),
             ],
         ];
     }
@@ -350,5 +347,15 @@ PHP,
                 yield "[{$format}] {$path}" => [$expected, $code, $formatter];
             }
         }
+    }
+
+    protected function setUp(): void
+    {
+        Sys::pushTimers();
+    }
+
+    protected function tearDown(): void
+    {
+        Sys::popTimers();
     }
 }

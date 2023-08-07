@@ -105,7 +105,7 @@ final class PlaceComments implements TokenRule
         if ($next &&
             ($next->is([T_DECLARE, T_NAMESPACE]) ||
                 ($next->id === T_USE &&
-                    (!($first = $next->parent()->declarationParts()->first()) ||
+                    (!($first = $next->parent()->startOfExpression()->declarationParts()->first()) ||
                         $first->id === T_NAMESPACE)))) {
             $token->WhitespaceAfter |= WhitespaceType::BLANK;
             return;

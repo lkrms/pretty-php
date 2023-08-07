@@ -32,29 +32,16 @@ class A4 extends B implements
 {
     #[AttrL(true)]
     #[AttrM(102, Types::FUNC)]
-    function f(
-        #[AttrN(true), Attr(103, Types::PARAM)]
-        #[AttrO()]
-        string $h,
-
-        #[AttrP]
-        int $i,
-
-        $j
-    ) {
+    function f(#[AttrN(true), Attr(103, Types::PARAM)] #[AttrO()] string $h, #[AttrP] int $i, $j)
+    {
         $this->l($h, $i);
         $j();
     }
 
-    function g(
-        #[AttrQ(null)]
-        $k
-    ) {
+    function g(#[AttrQ(null)] $k)
+    {
         echo $k;
     }
 
-    function z(
-        #[AttrY]
-        $x
-    ) {}
+    function z(#[AttrY] $x) {}
 }

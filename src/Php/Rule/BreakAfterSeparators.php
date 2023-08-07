@@ -32,7 +32,7 @@ final class BreakAfterSeparators implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->IsCloseTagStatementTerminator) {
+        if ($token->IsStatementTerminator) {
             $token->prev()->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
 
             return;

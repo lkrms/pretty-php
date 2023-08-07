@@ -60,7 +60,7 @@ final class BreakOperators implements TokenRule
         }
 
         $chain = $token->withNextSiblingsWhile(...TokenType::CHAIN_PART)
-                       ->filter(fn(Token $t) => $t->is(TokenType::CHAIN));
+                       ->filter(fn(Token $t) => $this->TypeIndex->Chain[$t->id]);
 
         // If an object operator (`->` or `?->`) is at the start of a line,
         // add a newline before other object operators in the same chain

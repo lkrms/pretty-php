@@ -37,42 +37,26 @@ final class AlignTernaryOperators implements TokenRule
             return;
         }
 
-        // Similar code in `AddHangingIndentation` also prevents this:
-        //
-        // ```
-        // $a
-        //   ?: $b
-        //     ?: $c
-        // ```
-        $prevTernary =
-            $token->prevSiblingsUntil(
-                      fn(Token $t) =>
-                          $t->Statement !== $token->Statement
-                  )
-                  ->filter(
-                      fn(Token $t) =>
-                          $t->IsTernaryOperator &&
-                              $t->TernaryOperator1 === $t &&
-                              $t->TernaryOperator2->Index < $token->Index
-                  )
-                  ->last();
         // If previous ternary operators in this scope have already been
         // aligned, do nothing
+        $prevTernary = AddHangingIndentation::getTernaryContext($token);
         if ($prevTernary && $prevTernary->AlignedWith) {
             $this->setAlignedWith($token, $prevTernary->AlignedWith);
             return;
         }
+
         $alignWith =
             ($prevTernary ?: $token)
-                ->prevCode()
+                ->_prevCode
                 ->pragmaticStartOfExpression(true);
 
         $this->setAlignedWith($token, $alignWith);
+        $until = AddHangingIndentation::getTernaryEndOfExpression($token);
 
         $this->Formatter->registerCallback(
             $this,
             $token,
-            fn() => $this->alignOperators($token, $alignWith),
+            fn() => $this->alignOperators($token, $until, $alignWith),
             710
         );
     }
@@ -83,25 +67,11 @@ final class AlignTernaryOperators implements TokenRule
         $token->TernaryOperator2->AlignedWith = $alignWith;
     }
 
-    private function alignOperators(Token $token, Token $alignWith): void
+    private function alignOperators(Token $token, Token $until, Token $alignWith): void
     {
-        $delta = $alignWith->alignmentOffset(false) + $this->Formatter->TabSize;
-        // Find
-        // - the last token
-        // - in the third expression
-        // - of the last ternary expression
-        // - in this scope
-        $current = $token;
-        do {
-            $until = $current->TernaryOperator2->EndExpression ?: $current;
-        } while ($until !== $current &&
-            ($current = $until->nextSibling())->IsTernaryOperator &&
-            $current->TernaryOperator1 === $current);
-        // And without breaking out of an unenclosed control structure body,
-        // proceed to the end of the expression
-        if (!$until->nextSibling()->IsTernaryOperator) {
-            $until = $until->pragmaticEndOfExpression(true);
-        }
+        $delta =
+            $alignWith->alignmentOffset(false)
+                + $this->Formatter->TabSize;
 
         $token->collect($until)
               ->forEach(fn(Token $t) => $t->LinePadding += $delta);

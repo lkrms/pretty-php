@@ -4,11 +4,14 @@ namespace Lkrms\Pretty\Php\Filter;
 
 use Lkrms\Pretty\Php\Concern\FilterTrait;
 use Lkrms\Pretty\Php\Contract\Filter;
+use Lkrms\Pretty\Php\NavigableToken;
 
 /**
  * Use var_export() to normalise string constants for comparison
  *
  * @api
+ *
+ * @implements Filter<NavigableToken>
  */
 final class NormaliseStrings implements Filter
 {

@@ -4,11 +4,14 @@ namespace Lkrms\Pretty\Php\Filter;
 
 use Lkrms\Pretty\Php\Concern\FilterTrait;
 use Lkrms\Pretty\Php\Contract\Filter;
+use Lkrms\Pretty\Php\NavigableToken;
 
 /**
  * Remove whitespace inside cast operators
  *
  * @api
+ *
+ * @implements Filter<NavigableToken>
  */
 final class TrimCasts implements Filter
 {
