@@ -2,6 +2,9 @@ name: CI
 
 on:
   push:
+    branches:
+      - main
+      - develop
   pull_request:
 
 concurrency:
@@ -121,7 +124,7 @@ jobs:
       - name: Run build script
         id: run-build-script
         run: |
-          scripts/build.sh --phar
+          scripts/build.sh
           jq -r '{"artifact_name":.package,"artifact_path":.assets[]|select(.type=="phar")|.path}|to_entries[]|"\(.key)=\(.value)"' build/dist/manifest.json | tee -a "$GITHUB_OUTPUT" >>"$GITHUB_ENV"
 
       - name: Upload phar artifact
