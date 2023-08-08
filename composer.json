@@ -6,7 +6,7 @@
         "bin/pretty-php"
     ],
     "require": {
-        "php": ">=7.4 <8.3",
+        "php": ">=7.4",
         "ext-json": "*",
         "ext-mbstring": "*",
         "ext-tokenizer": "*",
