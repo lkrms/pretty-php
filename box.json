@@ -1,0 +1,40 @@
+{
+    "output": "build/dist/pretty-php.phar",
+    "chmod": "0777",
+    "files": [
+        "bin/pretty-php",
+        "bootstrap.php"
+    ],
+    "finder": [
+        {
+            "in": "src"
+        },
+        {
+            "in": "vendor",
+            "notName": [
+                "/^(?:LICENSE|README|composer\\.(?:json|lock))$|\\.md$/"
+            ],
+            "notPath": [
+                "/^bin\\//",
+                "/^(?:[^\\/]+\\/){2}(?:tests?(?:_|\\b).*|docs?|apigen)\\//i",
+                "/^(?:[^\\/]+\\/){2}(?:phpunit|phpstan)\\b[^\\/]+$/i",
+                "/^lkrms\\/util\\/(bin|lib|scripts|src\\/Sync)/",
+                "/^lkrms\\/dice\\/src\\/(?!Dice.*\\.php$)/",
+                "/^filp\\/whoops\\/src\\/Whoops\\/Resources\\/(css|js|views)\\//"
+            ]
+        }
+    ],
+    "alias": "pretty-php.phar",
+    "banner": [
+        "This file is part of PrettyPHP",
+        "",
+        "(c) Luke Arms <luke@linacreative.com>",
+        "",
+        "For the full copyright and license information, please view the LICENSE",
+        "file that was distributed with this source code."
+    ],
+    "compactors": [
+        "KevinGH\\Box\\Compactor\\Json",
+        "KevinGH\\Box\\Compactor\\Php"
+    ]
+}
