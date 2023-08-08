@@ -6,7 +6,7 @@
         "bin/pretty-php"
     ],
     "require": {
-        "php": ">=7.4 <8.3",
+        "php": ">=7.4",
         "ext-json": "*",
         "ext-mbstring": "*",
         "ext-tokenizer": "*",
@@ -36,7 +36,6 @@
         }
     },
     "require-dev": {
-        "clue/phar-composer": "^1.4",
         "phpstan/extension-installer": "^1",
         "phpstan/phpstan": "^1",
         "phpstan/phpstan-deprecation-rules": "^1",
