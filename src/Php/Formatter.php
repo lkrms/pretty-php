@@ -18,47 +18,46 @@ use Lkrms\Pretty\Php\Contract\MultiTokenRule;
 use Lkrms\Pretty\Php\Contract\Rule;
 use Lkrms\Pretty\Php\Contract\TokenRule;
 use Lkrms\Pretty\Php\Filter\CollectColumn;
-use Lkrms\Pretty\Php\Filter\NormaliseHeredocs;
-use Lkrms\Pretty\Php\Filter\NormaliseStrings;
 use Lkrms\Pretty\Php\Filter\RemoveComments;
 use Lkrms\Pretty\Php\Filter\RemoveEmptyTokens;
+use Lkrms\Pretty\Php\Filter\RemoveHeredocIndentation;
 use Lkrms\Pretty\Php\Filter\RemoveWhitespace;
 use Lkrms\Pretty\Php\Filter\SortImports;
+use Lkrms\Pretty\Php\Filter\StandardiseStrings;
 use Lkrms\Pretty\Php\Filter\TrimCasts;
 use Lkrms\Pretty\Php\Filter\TrimOpenTags;
-use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
-use Lkrms\Pretty\Php\Rule\AddEssentialWhitespace;
-use Lkrms\Pretty\Php\Rule\AddHangingIndentation;
-use Lkrms\Pretty\Php\Rule\AddIndentation;
-use Lkrms\Pretty\Php\Rule\AddStandardWhitespace;
 use Lkrms\Pretty\Php\Rule\AlignArrowFunctions;
-use Lkrms\Pretty\Php\Rule\AlignAssignments;
-use Lkrms\Pretty\Php\Rule\AlignChainedCalls;
+use Lkrms\Pretty\Php\Rule\AlignChains;
 use Lkrms\Pretty\Php\Rule\AlignComments;
+use Lkrms\Pretty\Php\Rule\AlignData;
 use Lkrms\Pretty\Php\Rule\AlignLists;
 use Lkrms\Pretty\Php\Rule\AlignTernaryOperators;
-use Lkrms\Pretty\Php\Rule\ApplyMagicComma;
-use Lkrms\Pretty\Php\Rule\BracePosition;
-use Lkrms\Pretty\Php\Rule\BreakAfterSeparators;
-use Lkrms\Pretty\Php\Rule\BreakBeforeControlStructureBody;
-use Lkrms\Pretty\Php\Rule\BreakLists;
-use Lkrms\Pretty\Php\Rule\BreakOperators;
-use Lkrms\Pretty\Php\Rule\Extra\DeclareArgumentsOnOneLine;
+use Lkrms\Pretty\Php\Rule\BlankLineBeforeReturn;
+use Lkrms\Pretty\Php\Rule\ControlStructureSpacing;
+use Lkrms\Pretty\Php\Rule\DeclarationSpacing;
+use Lkrms\Pretty\Php\Rule\EssentialWhitespace;
 use Lkrms\Pretty\Php\Rule\Extra\Laravel;
+use Lkrms\Pretty\Php\Rule\Extra\Symfony;
 use Lkrms\Pretty\Php\Rule\Extra\WordPress;
-use Lkrms\Pretty\Php\Rule\MirrorBrackets;
-use Lkrms\Pretty\Php\Rule\NoMixedLists;
+use Lkrms\Pretty\Php\Rule\HangingIndentation;
+use Lkrms\Pretty\Php\Rule\HeredocIndentation;
+use Lkrms\Pretty\Php\Rule\ListSpacing;
+use Lkrms\Pretty\Php\Rule\MagicLists;
 use Lkrms\Pretty\Php\Rule\NormaliseComments;
+use Lkrms\Pretty\Php\Rule\NormaliseStrings;
+use Lkrms\Pretty\Php\Rule\OperatorLineBreaks;
+use Lkrms\Pretty\Php\Rule\OperatorSpaces;
+use Lkrms\Pretty\Php\Rule\PlaceBraces;
 use Lkrms\Pretty\Php\Rule\PlaceComments;
-use Lkrms\Pretty\Php\Rule\PreserveNewlines;
+use Lkrms\Pretty\Php\Rule\PreserveLineBreaks;
 use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
 use Lkrms\Pretty\Php\Rule\ProtectStrings;
-use Lkrms\Pretty\Php\Rule\ReindentHeredocs;
-use Lkrms\Pretty\Php\Rule\ReportUnnecessaryParentheses;
-use Lkrms\Pretty\Php\Rule\SimplifyStrings;
-use Lkrms\Pretty\Php\Rule\SpaceDeclarations;
-use Lkrms\Pretty\Php\Rule\SpaceOperators;
-use Lkrms\Pretty\Php\Rule\SwitchPosition;
+use Lkrms\Pretty\Php\Rule\StandardIndentation;
+use Lkrms\Pretty\Php\Rule\StandardWhitespace;
+use Lkrms\Pretty\Php\Rule\StatementSpacing;
+use Lkrms\Pretty\Php\Rule\StrictLists;
+use Lkrms\Pretty\Php\Rule\SwitchIndentation;
+use Lkrms\Pretty\Php\Rule\SymmetricalBrackets;
 use Lkrms\Pretty\Php\Support\TokenTypeIndex;
 use Lkrms\Pretty\PrettyBadSyntaxException;
 use Lkrms\Pretty\PrettyException;
@@ -124,9 +123,7 @@ final class Formatter implements IReadable
      */
     public int $SpacesBesideCode = 2;
 
-    public bool $ClosuresAreDeclarations = true;
-
-    public bool $MirrorBrackets = true;
+    public bool $SymmetricalBrackets = true;
 
     /**
      * @var int&HeredocIndent::*
@@ -143,7 +140,7 @@ final class Formatter implements IReadable
      * If the first object operator in a chain of method calls has a leading
      * newline, align with the start of the chain?
      *
-     * Only applies if {@see AlignChainedCalls} is enabled.
+     * Only applies if {@see AlignChains} is enabled.
      *
      * ```php
      * // If `false`:
@@ -169,22 +166,23 @@ final class Formatter implements IReadable
      * @var array<class-string<Rule>>
      */
     public const MANDATORY_RULES = [
-        ProtectStrings::class,                   // processToken  (40)
-        AddStandardWhitespace::class,            // processToken  (80), callback (820)
-        BreakAfterSeparators::class,             // processToken  (80)
-        SpaceOperators::class,                   // processToken  (80)
-        BreakBeforeControlStructureBody::class,  // processToken  (83)
-        PlaceComments::class,                    // processToken  (90), beforeRender (997)
-        BracePosition::class,                    // processToken  (94), beforeRender (94)
-        MirrorBrackets::class,                   // processToken  (96)
-        BreakOperators::class,                   // processToken  (98)
-        BreakLists::class,                       // processList   (98)
-        AddIndentation::class,                   // processToken (600)
-        SwitchPosition::class,                   // processToken (600)
-        NormaliseComments::class,                // processToken (780)
-        AddHangingIndentation::class,            // processToken (800), callback (800)
-        ReindentHeredocs::class,                 // processToken (900), beforeRender (900)
-        AddEssentialWhitespace::class,           // beforeRender (999)
+        ProtectStrings::class,           // processToken  (40)
+        StandardWhitespace::class,       // processToken  (80), callback (820)
+        StatementSpacing::class,         // processToken  (80)
+        OperatorSpaces::class,           // processToken  (80)
+        ControlStructureSpacing::class,  // processToken  (83)
+        PlaceComments::class,            // processToken  (90), beforeRender (997)
+        PlaceBraces::class,              // processToken  (94), beforeRender (94)
+        SymmetricalBrackets::class,      // processToken  (96)
+        OperatorLineBreaks::class,       // processToken  (98)
+        ListSpacing::class,              // processList   (98)
+        MagicLists::class,               // processList  (360)
+        StandardIndentation::class,      // processToken (600)
+        SwitchIndentation::class,        // processToken (600)
+        NormaliseComments::class,        // processToken (780)
+        HangingIndentation::class,       // processToken (800), callback (800)
+        HeredocIndentation::class,       // processToken (900), beforeRender (900)
+        EssentialWhitespace::class,      // beforeRender (999)
     ];
 
     /**
@@ -192,29 +190,27 @@ final class Formatter implements IReadable
      */
     public const DEFAULT_RULES = [
         ...self::MANDATORY_RULES,
-        SimplifyStrings::class,    // processToken  (60)
-        PreserveNewlines::class,   // processToken  (93)
-        ApplyMagicComma::class,    // processList  (360)
-        SpaceDeclarations::class,  // processToken (620)
+        NormaliseStrings::class,    // processToken  (60)
+        PreserveLineBreaks::class,  // processToken  (93)
+        DeclarationSpacing::class,  // processToken (620)
     ];
 
     /**
      * @var array<class-string<Rule>>
      */
     public const ADDITIONAL_RULES = [
-        PreserveOneLineStatements::class,     // processToken  (95)
-        AddBlankLineBeforeReturn::class,      // processToken  (97)
-        Laravel::class,                       // processToken (100)
-        WordPress::class,                     // processToken (100)
-        AlignChainedCalls::class,             // processToken (340), callback (710)
-        NoMixedLists::class,                  // processList  (370)
-        AlignArrowFunctions::class,           // processToken (380), callback (710)
-        AlignTernaryOperators::class,         // processToken (380), callback (710)
-        AlignLists::class,                    // processList  (400), callback (710)
-        ReportUnnecessaryParentheses::class,  // processToken (990)
-        DeclareArgumentsOnOneLine::class,     // processToken
-        AlignAssignments::class,              // processBlock (340), callback (720)
-        AlignComments::class,                 // processBlock (340), beforeRender (998)
+        PreserveOneLineStatements::class,  // processToken  (95)
+        BlankLineBeforeReturn::class,      // processToken  (97)
+        Laravel::class,                    // processToken (100)
+        Symfony::class,                    // processToken (100), processList (100)
+        WordPress::class,                  // processToken (100)
+        AlignChains::class,                // processToken (340), callback (710)
+        StrictLists::class,                // processList  (370)
+        AlignArrowFunctions::class,        // processToken (380), callback (710)
+        AlignTernaryOperators::class,      // processToken (380), callback (710)
+        AlignLists::class,                 // processList  (400), callback (710)
+        AlignData::class,                  // processBlock (340), callback (720)
+        AlignComments::class,              // processBlock (340), beforeRender (998)
     ];
 
     /**
@@ -223,7 +219,7 @@ final class Formatter implements IReadable
     public const DEFAULT_FILTERS = [
         CollectColumn::class,
         RemoveWhitespace::class,
-        NormaliseHeredocs::class,
+        RemoveHeredocIndentation::class,
         SortImports::class,
         TrimCasts::class,
     ];
@@ -240,7 +236,7 @@ final class Formatter implements IReadable
      * @var array<class-string<Filter>>
      */
     public const COMPARISON_FILTERS = [
-        NormaliseStrings::class,
+        StandardiseStrings::class,
         RemoveComments::class,
         RemoveEmptyTokens::class,
         TrimOpenTags::class,
@@ -368,7 +364,7 @@ final class Formatter implements IReadable
             array_push(
                 $skipRules,
                 AlignArrowFunctions::class,
-                AlignChainedCalls::class,
+                AlignChains::class,
                 AlignLists::class,
                 AlignTernaryOperators::class
             );
@@ -389,12 +385,12 @@ final class Formatter implements IReadable
             )
         );
         if (count(array_intersect(
-            [NoMixedLists::class, AlignLists::class],
+            [StrictLists::class, AlignLists::class],
             $rules
         )) === 2) {
             throw new LogicException(sprintf(
                 '%s and %s cannot both be enabled',
-                NoMixedLists::class,
+                StrictLists::class,
                 AlignLists::class
             ));
         }

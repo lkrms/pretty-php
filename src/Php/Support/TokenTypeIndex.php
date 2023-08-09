@@ -193,6 +193,12 @@ class TokenTypeIndex implements IImmutable
      */
     public array $NotCode;
 
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $Visibility;
+
     public function __construct()
     {
         $this->Bracket = TT::getIndex(
@@ -421,6 +427,7 @@ class TokenTypeIndex implements IImmutable
         $this->DeclarationPartWithNew = TT::getIndex(...TT::DECLARATION_PART_WITH_NEW);
         $this->HasStatement = TT::getIndex(...TT::HAS_STATEMENT);
         $this->NotCode = TT::getIndex(...TT::NOT_CODE);
+        $this->Visibility = TT::getIndex(...TT::VISIBILITY);
     }
 
     /**

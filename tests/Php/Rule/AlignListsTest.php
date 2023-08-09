@@ -2,7 +2,7 @@
 
 namespace Lkrms\Pretty\Tests\Php\Rule;
 
-use Lkrms\Pretty\Php\Rule\AlignChainedCalls;
+use Lkrms\Pretty\Php\Rule\AlignChains;
 use Lkrms\Pretty\Php\Rule\AlignLists;
 
 final class AlignListsTest extends \Lkrms\Pretty\Tests\Php\TestCase
@@ -12,7 +12,7 @@ final class AlignListsTest extends \Lkrms\Pretty\Tests\Php\TestCase
      */
     public function testProcessList(string $expected, string $code): void
     {
-        $this->assertCodeFormatIs($expected, $code, [AlignLists::class, AlignChainedCalls::class]);
+        $this->assertCodeFormatIs($expected, $code, [AlignLists::class, AlignChains::class]);
     }
 
     /**

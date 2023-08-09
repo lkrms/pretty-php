@@ -39,7 +39,7 @@ final class AlignTernaryOperators implements TokenRule
 
         // If previous ternary operators in this scope have already been
         // aligned, do nothing
-        $prevTernary = AddHangingIndentation::getTernaryContext($token);
+        $prevTernary = HangingIndentation::getTernaryContext($token);
         if ($prevTernary && $prevTernary->AlignedWith) {
             $this->setAlignedWith($token, $prevTernary->AlignedWith);
             return;
@@ -51,7 +51,7 @@ final class AlignTernaryOperators implements TokenRule
                 ->pragmaticStartOfExpression(true);
 
         $this->setAlignedWith($token, $alignWith);
-        $until = AddHangingIndentation::getTernaryEndOfExpression($token);
+        $until = HangingIndentation::getTernaryEndOfExpression($token);
 
         $this->Formatter->registerCallback(
             $this,

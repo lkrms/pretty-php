@@ -22,21 +22,21 @@ use Lkrms\Pretty\Php\Contract\Filter;
 use Lkrms\Pretty\Php\Contract\Rule;
 use Lkrms\Pretty\Php\Filter\SortImports;
 use Lkrms\Pretty\Php\Formatter;
-use Lkrms\Pretty\Php\Rule\AddBlankLineBeforeReturn;
 use Lkrms\Pretty\Php\Rule\AlignArrowFunctions;
-use Lkrms\Pretty\Php\Rule\AlignAssignments;
-use Lkrms\Pretty\Php\Rule\AlignChainedCalls;
+use Lkrms\Pretty\Php\Rule\AlignChains;
 use Lkrms\Pretty\Php\Rule\AlignComments;
+use Lkrms\Pretty\Php\Rule\AlignData;
 use Lkrms\Pretty\Php\Rule\AlignLists;
 use Lkrms\Pretty\Php\Rule\AlignTernaryOperators;
-use Lkrms\Pretty\Php\Rule\ApplyMagicComma;
+use Lkrms\Pretty\Php\Rule\BlankLineBeforeReturn;
+use Lkrms\Pretty\Php\Rule\DeclarationSpacing;
 use Lkrms\Pretty\Php\Rule\Extra\Laravel;
+use Lkrms\Pretty\Php\Rule\Extra\Symfony;
 use Lkrms\Pretty\Php\Rule\Extra\WordPress;
-use Lkrms\Pretty\Php\Rule\NoMixedLists;
-use Lkrms\Pretty\Php\Rule\PreserveNewlines;
+use Lkrms\Pretty\Php\Rule\NormaliseStrings;
+use Lkrms\Pretty\Php\Rule\PreserveLineBreaks;
 use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
-use Lkrms\Pretty\Php\Rule\SimplifyStrings;
-use Lkrms\Pretty\Php\Rule\SpaceDeclarations;
+use Lkrms\Pretty\Php\Rule\StrictLists;
 use Lkrms\Pretty\Php\Support\TokenTypeIndex;
 use Lkrms\Pretty\Php\Support\WordPressTokenTypeIndex;
 use Lkrms\Pretty\Php\Token;
@@ -55,21 +55,20 @@ use UnexpectedValueException;
 class FormatPhp extends CliCommand
 {
     private const SKIP_RULE_MAP = [
-        'simplify-strings' => SimplifyStrings::class,
-        'preserve-newlines' => PreserveNewlines::class,
-        'magic-commas' => ApplyMagicComma::class,
-        'declaration-spacing' => SpaceDeclarations::class,
+        'simplify-strings' => NormaliseStrings::class,
+        'preserve-newlines' => PreserveLineBreaks::class,
+        'declaration-spacing' => DeclarationSpacing::class,
     ];
 
     private const ADD_RULE_MAP = [
-        'align-assignments' => AlignAssignments::class,
-        'align-chains' => AlignChainedCalls::class,
         'align-comments' => AlignComments::class,
+        'align-chains' => AlignChains::class,
         'align-fn' => AlignArrowFunctions::class,
-        'align-lists' => AlignLists::class,
         'align-ternary' => AlignTernaryOperators::class,
-        'blank-before-return' => AddBlankLineBeforeReturn::class,
-        'strict-lists' => NoMixedLists::class,
+        'align-data' => AlignData::class,
+        'align-lists' => AlignLists::class,
+        'blank-before-return' => BlankLineBeforeReturn::class,
+        'strict-lists' => StrictLists::class,
         'preserve-one-line' => PreserveOneLineStatements::class,
     ];
 
@@ -88,7 +87,7 @@ class FormatPhp extends CliCommand
 
     private const INTERNAL_OPTION_MAP = [
         'spaces-beside-code' => 'SpacesBesideCode',
-        'mirror-brackets' => 'MirrorBrackets',
+        'symmetrical-brackets' => 'SymmetricalBrackets',
         'increase-indent-between-unenclosed-tags' => 'IncreaseIndentBetweenUnenclosedTags',
         'relax-alignment-criteria' => 'RelaxAlignmentCriteria',
         'preset-rules' => 'PresetRules',
@@ -97,18 +96,29 @@ class FormatPhp extends CliCommand
 
     private const PRESET_MAP = [
         'laravel' => [
-            'disable' => [
-                'magic-commas',
-            ],
+            'disable' => [],
             'enable' => [
                 'align-lists',
                 'blank-before-return',
             ],
             'heredoc-indent' => 'none',
             '@internal' => [
-                'mirror-brackets' => false,
+                'symmetrical-brackets' => false,
                 'preset-rules' => [
                     Laravel::class,
+                ],
+            ],
+        ],
+        'symfony' => [
+            'disable' => [],
+            'enable' => [
+                'blank-before-return',
+            ],
+            'operators-first' => true,
+            'heredoc-indent' => 'none',
+            '@internal' => [
+                'preset-rules' => [
+                    Symfony::class,
                 ],
             ],
         ],
@@ -118,12 +128,12 @@ class FormatPhp extends CliCommand
                 'declaration-spacing',
             ],
             'enable' => [
-                'align-assignments',
+                'align-data',
             ],
             'one-true-brace-style' => true,
             '@internal' => [
                 'spaces-beside-code' => 1,
-                'mirror-brackets' => false,
+                'symmetrical-brackets' => false,
                 'increase-indent-between-unenclosed-tags' => false,
                 'relax-alignment-criteria' => true,
                 'preset-rules' => [
@@ -207,11 +217,6 @@ class FormatPhp extends CliCommand
      * @var bool
      */
     private $NoSimplifyStrings;
-
-    /**
-     * @var bool
-     */
-    private $NoMagicCommas;
 
     /**
      * @var string|null
@@ -313,7 +318,7 @@ class FormatPhp extends CliCommand
     /**
      * @var bool|null
      */
-    private $MirrorBrackets;
+    private $SymmetricalBrackets;
 
     /**
      * @var bool|null
@@ -559,15 +564,6 @@ Don't normalise single- and double-quoted strings
 Equivalent to `--disable=simplify-strings`
 EOF)
                 ->bindTo($this->NoSimplifyStrings),
-            CliOption::build()
-                ->long('no-magic-commas')
-                ->short('C')
-                ->description(<<<EOF
-Don't split lists with trailing commas into one item per line
-
-Equivalent to `--disable=magic-commas`
-EOF)
-                ->bindTo($this->NoMagicCommas),
             CliOption::build()
                 ->long('heredoc-indent')
                 ->short('h')
@@ -994,15 +990,14 @@ EOF,
                     $this->Spaces = 4;
                     $this->Eol = 'lf';
                     $unskip = [
-                        ApplyMagicComma::class,
-                        SpaceDeclarations::class,
+                        DeclarationSpacing::class,
                     ];
                     $skip = [
                         PreserveOneLineStatements::class,
                         AlignLists::class,
                     ];
                     $add = [
-                        NoMixedLists::class,
+                        StrictLists::class,
                     ];
                     $this->SkipRules = array_diff($this->SkipRules, $unskip, $skip);
                     array_push($this->SkipRules, ...$skip);
@@ -1038,7 +1033,7 @@ EOF,
                     ? self::IMPORT_SORT_ORDER_MAP[$this->SortImportsBy]
                     : ImportSortOrder::NAME;
                 $this->SpacesBesideCode === null || $f->SpacesBesideCode = $this->SpacesBesideCode;
-                $this->MirrorBrackets === null || $f->MirrorBrackets = $this->MirrorBrackets;
+                $this->SymmetricalBrackets === null || $f->SymmetricalBrackets = $this->SymmetricalBrackets;
                 $this->IncreaseIndentBetweenUnenclosedTags === null || $f->IncreaseIndentBetweenUnenclosedTags = $this->IncreaseIndentBetweenUnenclosedTags;
                 $this->RelaxAlignmentCriteria === null || $f->RelaxAlignmentCriteria = $this->RelaxAlignmentCriteria;
                 $lastOptions = $options;
@@ -1292,9 +1287,6 @@ EOF,
         if ($this->NoSimplifyStrings) {
             $this->SkipRules[] = 'simplify-strings';
         }
-        if ($this->NoMagicCommas) {
-            $this->SkipRules[] = 'magic-commas';
-        }
         if ($this->NoSortImports && !$this->Psr12) {
             $this->SkipFilters[] = SortImports::class;
         }
@@ -1334,7 +1326,6 @@ EOF,
             'operatorsFirst',
             'operatorsLast',
             'noSimplifyStrings',
-            'noMagicCommas',
             'heredocIndent',
             'sortImportsBy',
             'noSortImports',
