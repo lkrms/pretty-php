@@ -31,6 +31,7 @@ use Lkrms\Pretty\Php\Rule\AlignTernaryOperators;
 use Lkrms\Pretty\Php\Rule\BlankLineBeforeReturn;
 use Lkrms\Pretty\Php\Rule\DeclarationSpacing;
 use Lkrms\Pretty\Php\Rule\Extra\Laravel;
+use Lkrms\Pretty\Php\Rule\Extra\Symfony;
 use Lkrms\Pretty\Php\Rule\Extra\WordPress;
 use Lkrms\Pretty\Php\Rule\NormaliseStrings;
 use Lkrms\Pretty\Php\Rule\PreserveLineBreaks;
@@ -105,6 +106,19 @@ class FormatPhp extends CliCommand
                 'symmetrical-brackets' => false,
                 'preset-rules' => [
                     Laravel::class,
+                ],
+            ],
+        ],
+        'symfony' => [
+            'disable' => [],
+            'enable' => [
+                'blank-before-return',
+            ],
+            'operators-first' => true,
+            'heredoc-indent' => 'none',
+            '@internal' => [
+                'preset-rules' => [
+                    Symfony::class,
                 ],
             ],
         ],

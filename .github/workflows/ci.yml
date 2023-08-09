@@ -184,6 +184,8 @@ jobs:
         args:
           - --include-if-php --preset laravel src tests bin
         include:
+          - repository: symfony/symfony
+            args: --include-if-php --preset symfony .
           - repository: WordPress/WordPress
             args: --include-if-php --preset wordpress .
 
