@@ -7,9 +7,9 @@ and explains how (and why) `PrettyPHP`'s default style is not quite 100% complia
 
 Enabled:
 
-- `NoMixedLists`
+- `StrictLists`
 - `SortImports`
-- `SpaceDeclarations`
+- `DeclarationSpacing`
 
 Suppressed:
 
@@ -88,8 +88,7 @@ $baz = <<<EOF
 
 ## Lists
 
-`NoMixedLists` (otherwise known as `strict-lists`) unconditionally adds a newline after the opening bracket of vertical
-lists.
+`StrictLists` unconditionally adds a newline after the opening bracket of vertical lists.
 
 
 [PSR-12]: https://www.php-fig.org/psr/psr-12/
