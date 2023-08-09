@@ -176,7 +176,8 @@ PHP,
     }
 
     /**
-     * Iterate over files in "tests.in" and map them to pathnames in "tests.out"
+     * Iterate over files in 'tests/fixtures/in' and map them to pathnames in
+     * 'tests/fixtures/out.<format>'
      *
      * @param string $format The format under test, i.e. one of the keys in
      * {@see FormatterTest::getFileFormats()}'s return value.
@@ -184,8 +185,8 @@ PHP,
      */
     public static function getFiles(string $format): Generator
     {
-        $inDir = dirname(__DIR__) . '.in';
-        $outDir = dirname(__DIR__) . '.out';
+        $inDir = dirname(__DIR__) . '/fixtures/in';
+        $outDir = dirname(__DIR__) . '/fixtures/out';
 
         $minVersionPatterns = [
             80000 => [
@@ -251,7 +252,7 @@ PHP,
         foreach ($files as $file) {
             $inFile = (string) $file;
             $path = substr($inFile, strlen($inDir));
-            $outFile = preg_replace('/\.fails$/', '', $outDir . '/' . $format . $path);
+            $outFile = preg_replace('/\.fails$/', '', $outDir . '.' . $format . $path);
 
             if ($minVersionPatterns) {
                 $path = ltrim($path, '/\\');

@@ -23,7 +23,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Lkrms\\Pretty\\Tests\\": "tests/"
+            "Lkrms\\Pretty\\Tests\\Php\\": "tests/unit/"
         }
     },
     "config": {
