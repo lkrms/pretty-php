@@ -41,11 +41,6 @@ parameters:
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$NoMagicCommas is never written, only read\\.$#"
-			count: 1
-			path: src/Command/FormatPhp.php
-
-		-
 			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$NoSimplifyStrings is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php

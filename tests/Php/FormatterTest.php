@@ -8,12 +8,12 @@ use Lkrms\Facade\Sys;
 use Lkrms\Pretty\Php\Catalog\ImportSortOrder;
 use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Rule\AlignArrowFunctions;
-use Lkrms\Pretty\Php\Rule\AlignAssignments;
-use Lkrms\Pretty\Php\Rule\AlignChainedCalls;
+use Lkrms\Pretty\Php\Rule\AlignChains;
 use Lkrms\Pretty\Php\Rule\AlignComments;
+use Lkrms\Pretty\Php\Rule\AlignData;
 use Lkrms\Pretty\Php\Rule\AlignLists;
 use Lkrms\Pretty\Php\Rule\AlignTernaryOperators;
-use Lkrms\Pretty\Php\Rule\NoMixedLists;
+use Lkrms\Pretty\Php\Rule\StrictLists;
 use SplFileInfo;
 
 final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
@@ -60,7 +60,7 @@ $b];
 PHP,
                 ['callback' =>
                     function (Formatter $formatter): Formatter {
-                        $formatter->MirrorBrackets = false;
+                        $formatter->SymmetricalBrackets = false;
                         return $formatter;
                     }],
             ],
@@ -293,8 +293,8 @@ PHP,
                 'tabSize' => null,
                 'skipRules' => [],
                 'addRules' => [
-                    AlignAssignments::class,
-                    AlignChainedCalls::class,
+                    AlignData::class,
+                    AlignChains::class,
                     AlignComments::class,
                     AlignArrowFunctions::class,
                     AlignLists::class,
@@ -316,7 +316,7 @@ PHP,
                 'tabSize' => 4,
                 'skipRules' => [],
                 'addRules' => [
-                    NoMixedLists::class,
+                    StrictLists::class,
                 ],
                 'skipFilters' => [],
                 'callback' =>
