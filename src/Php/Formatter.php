@@ -36,8 +36,8 @@ use Lkrms\Pretty\Php\Rule\BlankLineBeforeReturn;
 use Lkrms\Pretty\Php\Rule\ControlStructureSpacing;
 use Lkrms\Pretty\Php\Rule\DeclarationSpacing;
 use Lkrms\Pretty\Php\Rule\EssentialWhitespace;
-use Lkrms\Pretty\Php\Rule\Extra\DeclareArgumentsOnOneLine;
 use Lkrms\Pretty\Php\Rule\Extra\Laravel;
+use Lkrms\Pretty\Php\Rule\Extra\Symfony;
 use Lkrms\Pretty\Php\Rule\Extra\WordPress;
 use Lkrms\Pretty\Php\Rule\HangingIndentation;
 use Lkrms\Pretty\Php\Rule\HeredocIndentation;
@@ -123,8 +123,6 @@ final class Formatter implements IReadable
      */
     public int $SpacesBesideCode = 2;
 
-    public bool $ClosuresAreDeclarations = true;
-
     public bool $SymmetricalBrackets = true;
 
     /**
@@ -204,13 +202,13 @@ final class Formatter implements IReadable
         PreserveOneLineStatements::class,  // processToken  (95)
         BlankLineBeforeReturn::class,      // processToken  (97)
         Laravel::class,                    // processToken (100)
+        Symfony::class,                    // processToken (100), processList (100)
         WordPress::class,                  // processToken (100)
         AlignChains::class,                // processToken (340), callback (710)
         StrictLists::class,                // processList  (370)
         AlignArrowFunctions::class,        // processToken (380), callback (710)
         AlignTernaryOperators::class,      // processToken (380), callback (710)
         AlignLists::class,                 // processList  (400), callback (710)
-        DeclareArgumentsOnOneLine::class,  // processToken
         AlignData::class,                  // processBlock (340), callback (720)
         AlignComments::class,              // processBlock (340), beforeRender (998)
     ];
