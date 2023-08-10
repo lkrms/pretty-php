@@ -1,10 +1,19 @@
 <?php
-function gen_three_nulls()
+function &gen_reference()
 {
-	foreach (range(1, 3) as $i) {
-		yield;
+	$value = 3;
+
+	while ($value > 0) {
+		yield $value;
 	}
 }
 
-var_dump(iterator_to_array(gen_three_nulls()));
+/*
+ * Note that we can change $number within the loop, and
+ * because the generator is yielding references, $value
+ * within gen_reference() changes.
+ */
+foreach (gen_reference() as &$number) {
+	echo (--$number) . '... ';
+}
 ?>

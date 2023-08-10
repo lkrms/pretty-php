@@ -1,35 +1,67 @@
 <?php
-
-function count_to_ten()
+function getLinesFromFile($fileName)
 {
-    yield 1;
-    yield 2;
-    yield from [3, 4];
-    yield from new ArrayIterator([5, 6]);
-    yield from seven_eight();
-    return yield from nine_ten();
+    if (!$fileHandle = fopen($fileName, 'r')) {
+        return;
+    }
+
+    while (false !== $line = fgets($fileHandle)) {
+        yield $line;
+    }
+
+    fclose($fileHandle);
 }
 
-function seven_eight()
+// versus...
+
+class LineIterator implements Iterator
 {
-    yield 7;
-    yield from eight();
-}
+    protected $fileHandle;
 
-function eight()
-{
-    yield 8;
-}
+    protected $line;
 
-function nine_ten()
-{
-    yield 9;
-    return 10;
-}
+    protected $i;
 
-$gen = count_to_ten();
-foreach ($gen as $num) {
-    echo "$num ";
+    public function __construct($fileName)
+    {
+        if (!$this->fileHandle = fopen($fileName, 'r')) {
+            throw new RuntimeException('Couldn\'t open file "' . $fileName . '"');
+        }
+    }
+
+    public function rewind()
+    {
+        fseek($this->fileHandle, 0);
+        $this->line = fgets($this->fileHandle);
+        $this->i    = 0;
+    }
+
+    public function valid()
+    {
+        return false !== $this->line;
+    }
+
+    public function current()
+    {
+        return $this->line;
+    }
+
+    public function key()
+    {
+        return $this->i;
+    }
+
+    public function next()
+    {
+        if (false !== $this->line) {
+            $this->line = fgets($this->fileHandle);
+            $this->i++;
+        }
+    }
+
+    public function __destruct()
+    {
+        fclose($this->fileHandle);
+    }
 }
-echo $gen->getReturn();
 ?>

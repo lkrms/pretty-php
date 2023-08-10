@@ -1,22 +1,52 @@
 <?php
-$arr = array(1, 2, 3, 4);
-foreach ($arr as &$value) {
-    $value = $value * 2;
+/* foreach example 1: value only */
+
+$a = array(1, 2, 3, 17);
+
+foreach ($a as $v) {
+    echo "Current value of \$a: $v.\n";
 }
-// $arr is now array(2, 4, 6, 8)
 
-// without an unset($value), $value is still a reference to the last item: $arr[3]
+/* foreach example 2: value (with its manual access notation printed for illustration) */
 
-foreach ($arr as $key => $value) {
-    // $arr[3] will be updated with each value from $arr...
-    echo "{$key} => {$value} ";
-    print_r($arr);
+$a = array(1, 2, 3, 17);
+
+$i = 0;  /* for illustrative purposes only */
+
+foreach ($a as $v) {
+    echo "\$a[$i] => $v.\n";
+    $i++;
 }
-// ...until ultimately the second-to-last value is copied onto the last value
 
-// output:
-// 0 => 2 Array ( [0] => 2, [1] => 4, [2] => 6, [3] => 2 )
-// 1 => 4 Array ( [0] => 2, [1] => 4, [2] => 6, [3] => 4 )
-// 2 => 6 Array ( [0] => 2, [1] => 4, [2] => 6, [3] => 6 )
-// 3 => 6 Array ( [0] => 2, [1] => 4, [2] => 6, [3] => 6 )
+/* foreach example 3: key and value */
+
+$a = array(
+    'one' => 1,
+    'two' => 2,
+    'three' => 3,
+    'seventeen' => 17
+);
+
+foreach ($a as $k => $v) {
+    echo "\$a[$k] => $v.\n";
+}
+
+/* foreach example 4: multi-dimensional arrays */
+$a = array();
+$a[0][0] = 'a';
+$a[0][1] = 'b';
+$a[1][0] = 'y';
+$a[1][1] = 'z';
+
+foreach ($a as $v1) {
+    foreach ($v1 as $v2) {
+        echo "$v2\n";
+    }
+}
+
+/* foreach example 5: dynamic arrays */
+
+foreach (array(1, 2, 3, 4, 5) as $v) {
+    echo "$v\n";
+}
 ?>

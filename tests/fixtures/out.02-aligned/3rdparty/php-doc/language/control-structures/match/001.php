@@ -1,10 +1,11 @@
 <?php
-$result = match ($x) {
-    // This match arm:
-    $a, $b, $c => 5,
-    // Is equivalent to these three match arms:
-    $a => 5,
-    $b => 5,
-    $c => 5,
+$food = 'cake';
+
+$return_value = match ($food) {
+    'apple' => 'This food is an apple',
+    'bar'   => 'This food is a bar',
+    'cake'  => 'This food is a cake',
 };
+
+var_dump($return_value);
 ?>

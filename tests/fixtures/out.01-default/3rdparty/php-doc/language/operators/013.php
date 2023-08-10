@@ -1,21 +1,8 @@
 <?php
-// Arrays are compared like this with standard comparison operators as well as the spaceship operator.
-function standard_array_compare($op1, $op2)
-{
-    if (count($op1) < count($op2)) {
-        return -1;  // $op1 < $op2
-    } elseif (count($op1) > count($op2)) {
-        return 1;  // $op1 > $op2
-    }
-    foreach ($op1 as $key => $val) {
-        if (!array_key_exists($key, $op2)) {
-            return 1;
-        } elseif ($val < $op2[$key]) {
-            return -1;
-        } elseif ($val > $op2[$key]) {
-            return 1;
-        }
-    }
-    return 0;  // $op1 == $op2
-}
+// Bool and null are compared as bool always
+var_dump(1 == TRUE);  // TRUE - same as (bool)1 == TRUE
+var_dump(0 == FALSE);  // TRUE - same as (bool)0 == FALSE
+var_dump(100 < TRUE);  // FALSE - same as (bool)100 < TRUE
+var_dump(-10 < FALSE);  // FALSE - same as (bool)-10 < FALSE
+var_dump(min(-100, -10, NULL, 10, 100));  // NULL - (bool)NULL < (bool)-100 is FALSE < TRUE
 ?>

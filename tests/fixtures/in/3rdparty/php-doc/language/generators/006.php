@@ -1,14 +1,24 @@
 <?php
-function inner() {
-    yield 1; // key 0
-    yield 2; // key 1
-    yield 3; // key 2
+function count_to_ten() {
+    yield 1;
+    yield 2;
+    yield from [3, 4];
+    yield from new ArrayIterator([5, 6]);
+    yield from seven_eight();
+    yield 9;
+    yield 10;
 }
-function gen() {
-    yield 0; // key 0
-    yield from inner(); // keys 0-2
-    yield 4; // key 1
+
+function seven_eight() {
+    yield 7;
+    yield from eight();
 }
-// pass false as second parameter to get an array [0, 1, 2, 3, 4]
-var_dump(iterator_to_array(gen()));
+
+function eight() {
+    yield 8;
+}
+
+foreach (count_to_ten() as $num) {
+    echo "$num ";
+}
 ?>

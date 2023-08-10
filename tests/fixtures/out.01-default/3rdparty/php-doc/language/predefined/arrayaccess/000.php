@@ -1,18 +1,13 @@
 <?php
 class Obj implements ArrayAccess
 {
-    private $container = array();
+    public $container = [
+        'one' => 1,
+        'two' => 2,
+        'three' => 3,
+    ];
 
-    public function __construct()
-    {
-        $this->container = array(
-            'one' => 1,
-            'two' => 2,
-            'three' => 3,
-        );
-    }
-
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         if (is_null($offset)) {
             $this->container[] = $value;
@@ -21,17 +16,17 @@ class Obj implements ArrayAccess
         }
     }
 
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return isset($this->container[$offset]);
     }
 
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         unset($this->container[$offset]);
     }
 
-    public function offsetGet($offset)
+    public function offsetGet($offset): mixed
     {
         return isset($this->container[$offset]) ? $this->container[$offset] : null;
     }

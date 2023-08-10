@@ -1,15 +1,21 @@
 <?php
-var_dump(0 == 'a');
-var_dump('1' == '01');
-var_dump('10' == '1e1');
-var_dump(100 == '1e2');
-
-switch ('a') {
-    case 0:
-        echo '0';
-        break;
-    case 'a':
-        echo 'a';
-        break;
+// Arrays are compared like this with standard comparison operators as well as the spaceship operator.
+function standard_array_compare($op1, $op2)
+{
+    if (count($op1) < count($op2)) {
+        return -1;  // $op1 < $op2
+    } elseif (count($op1) > count($op2)) {
+        return 1;   // $op1 > $op2
+    }
+    foreach ($op1 as $key => $val) {
+        if (!array_key_exists($key, $op2)) {
+            return 1;
+        } elseif ($val < $op2[$key]) {
+            return -1;
+        } elseif ($val > $op2[$key]) {
+            return 1;
+        }
+    }
+    return 0;       // $op1 == $op2
 }
 ?>

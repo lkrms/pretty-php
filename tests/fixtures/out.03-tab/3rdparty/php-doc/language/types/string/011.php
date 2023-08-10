@@ -1,8 +1,5 @@
 <?php
-class foo
-{
-	public $bar = <<<EOT
-		bar
-		EOT;
-}
+echo <<<"FOOBAR"
+	Hello World!
+	FOOBAR;
 ?>

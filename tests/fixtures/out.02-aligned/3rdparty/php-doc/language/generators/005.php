@@ -1,19 +1,19 @@
 <?php
-function &gen_reference()
+
+function inner()
 {
-    $value = 3;
-
-    while ($value > 0) {
-        yield $value;
-    }
+    yield 1;  // key 0
+    yield 2;  // key 1
+    yield 3;  // key 2
 }
 
-/*
- * Note that we can change $number within the loop, and
- * because the generator is yielding references, $value
- * within gen_reference() changes.
- */
-foreach (gen_reference() as &$number) {
-    echo (--$number) . '... ';
+function gen()
+{
+    yield 0;             // key 0
+    yield from inner();  // keys 0-2
+    yield 4;             // key 1
 }
+
+// pass false as second parameter to get an array [0, 1, 2, 3, 4]
+var_dump(iterator_to_array(gen()));
 ?>

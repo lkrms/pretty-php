@@ -1,4 +1,4 @@
 <?php
-$foo = (int) $bar;
-$foo = ( int ) $bar;
+$binary = (binary) $string;
+$binary = b"binary string";
 ?>

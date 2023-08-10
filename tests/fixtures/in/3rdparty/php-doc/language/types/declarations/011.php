@@ -1,10 +1,13 @@
 <?php
-declare(strict_types=1);
+class User {
+    public static string $foo = 'foo';
 
-function sum(int $a, int $b) {
-    return $a + $b;
+    public int $id;
+    public string $username;
+
+    public function __construct(int $id, string $username) {
+        $this->id = $id;
+        $this->username = $username;
+    }
 }
-
-var_dump(sum(1, 2));
-var_dump(sum(1.5, 2.5));
 ?>

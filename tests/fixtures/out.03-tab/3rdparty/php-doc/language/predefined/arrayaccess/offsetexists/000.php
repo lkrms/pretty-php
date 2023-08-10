@@ -1,5 +1,5 @@
 <?php
-class obj implements arrayaccess
+class obj implements ArrayAccess
 {
 	public function offsetSet($offset, $value): void
 	{

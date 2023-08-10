@@ -1,22 +1,9 @@
 <?php
-$fruits = array('fruits'  => array('a' => 'orange',
-                                   'b' => 'banana',
-                                   'c' => 'apple'),
-                'numbers' => array(1,
-                                   2,
-                                   3,
-                                   4,
-                                   5,
-                                   6),
-                'holes'   => array('first',
-                                   5 => 'second',
-                                   'third'));
+$arr1   = array(2, 3);
+$arr2   = $arr1;
+$arr2[] = 4;  // $arr2 is changed,
+              // $arr1 is still array(2, 3)
 
-// Some examples to address values in the array above
-echo $fruits['holes'][5];     // prints "second"
-echo $fruits['fruits']['a'];  // prints "orange"
-unset($fruits['holes'][0]);   // remove "first"
-
-// Create a new multi-dimensional array
-$juices['apple']['green'] = 'good';
+$arr3   = &$arr1;
+$arr3[] = 4;  // now $arr1 and $arr3 are the same
 ?>
