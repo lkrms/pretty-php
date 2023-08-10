@@ -5,7 +5,6 @@ namespace Lkrms\Pretty\Tests\Php;
 use Generator;
 use Lkrms\Facade\File;
 use Lkrms\Facade\Sys;
-use Lkrms\Pretty\Php\Catalog\ImportSortOrder;
 use Lkrms\Pretty\Php\Formatter;
 use Lkrms\Pretty\Php\Rule\AlignArrowFunctions;
 use Lkrms\Pretty\Php\Rule\AlignChains;
@@ -18,6 +17,8 @@ use SplFileInfo;
 
 final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
 {
+    public const TARGET_VERSION_ID = 80200;
+
     /**
      * @dataProvider formatProvider
      *
@@ -185,59 +186,55 @@ PHP,
      */
     public static function getFiles(string $format): Generator
     {
-        $inDir = dirname(__DIR__) . '/fixtures/in';
-        $outDir = dirname(__DIR__) . '/fixtures/out';
+        return self::doGetFiles($format);
+    }
 
-        $minVersionPatterns = [
-            80000 => [
-                '#^3rdparty/php-doc/appendices/migration70/new-features/011\.php#',
-                '#^3rdparty/php-doc/appendices/migration80/new-features/00[123]\.php#',
-                '#^3rdparty/php-doc/appendices/migration81/incompatible/001\.php#',
-                '#^3rdparty/php-doc/language/control-structures/match/.*#',
-                '#^3rdparty/php-doc/language/exceptions/00[6-7]\.php#',
-                '#^3rdparty/php-doc/language/functions/0(05|12|19|20|21|23)\.php#',
-                '#^3rdparty/php-doc/language/namespaces/023\.php#',
-                '#^3rdparty/php-doc/language/oop5/basic/0(06|16|20)\.php#',
-                '#^3rdparty/php-doc/language/oop5/decon/00[1234]\.php#',
-                '#^3rdparty/php-doc/language/operators/036\.php#',
-                '#^3rdparty/php-doc/language/predefined/attributes/sensitiveparameter/000\.php#',
-                '#^3rdparty/php-doc/language/predefined/stringable/000\.php#',
-                '#^3rdparty/phpfmt/179-join-to-implode#',
-                '#^3rdparty/phpfmt/274-align-comments-in-function#',
-                '#^3rdparty/phpfmt/305-lwordwrap-pivot#',
-                '#^3rdparty/phpfmt/339-align-objop#',
-                '#^3rdparty/phpfmt/341-autosemicolon-objop#',
-                '#^attributes-[^/]+\.php#',
-                '#^match-expressions\.php#',
-            ],
-            80100 => [
-                '#^3rdparty/php-doc/appendices/migration81/new-features/.*#',
-                '#^3rdparty/php-doc/language/((types/)?enumerations|predefined/(backedenum|unitenum))/.*#',
-                '#^3rdparty/php-doc/language/(functions/04[345]|namespaces/024)\.php#',
-                '#^3rdparty/php-doc/language/oop5/(inheritance/000|properties/00[034567]|traits/012)\.php#',
-                '#^3rdparty/php-doc/language/types/declarations/004\.php#',
-                '#^3rdparty/php-doc/language/types/integer/000\.php#',
-            ],
-            80200 => [
-                '#^3rdparty/php-doc/language/oop5/basic/00[234]\.php#',
-                '#^3rdparty/php-fig/.*#',
-            ],
-        ];
+    /**
+     * Iterate over files in 'tests/fixtures/in' and map them to pathnames in
+     * 'tests/fixtures/out.<format>' without adjusting for the PHP version
+     *
+     * @return Generator<SplFileInfo,array{string,string|null}>
+     */
+    public static function getAllFiles(string $format): Generator
+    {
+        return self::doGetFiles($format, true);
+    }
 
-        $minVersionPatterns = array_reduce(
-            array_filter(
-                $minVersionPatterns,
-                fn(int $key) => PHP_VERSION_ID < $key,
+    /**
+     * @phpstan-return (
+     *     $all is false
+     *     ? Generator<SplFileInfo,string>
+     *     : Generator<SplFileInfo,array{string,string|null}>
+     * )
+     */
+    private static function doGetFiles(string $format, bool $all = false): Generator
+    {
+        $inDir = self::getInputFixturesPath();
+        $outDir = self::getOutputFixturesPath($format);
+        $pathOffset = strlen($inDir) + 1;
+
+        $index = [];
+        if (!$all && is_file($indexPath = self::getMinVersionIndexPath())) {
+            $index = array_merge(...array_filter(
+                json_decode(file_get_contents($indexPath), true),
+                fn(int $key) =>
+                    PHP_VERSION_ID < $key,
                 ARRAY_FILTER_USE_KEY
-            ),
-            fn(array $carry, array $patterns) =>
-                array_merge($carry, $patterns),
-            []
-        );
+            ));
+            $index = array_combine(
+                $index,
+                array_fill(0, count($index), true)
+            );
+        }
 
-        $versionSuffix = PHP_VERSION_ID < 80000
-            ? '.PHP74'
-            : null;
+        $versionSuffix =
+            PHP_VERSION_ID < 80000
+                ? '.PHP74'
+                : (PHP_VERSION_ID < 80100
+                    ? '.PHP80'
+                    : (PHP_VERSION_ID < 80200
+                        ? '.PHP81'
+                        : null));
 
         // Include:
         // - .php files
@@ -251,25 +248,23 @@ PHP,
         /** @var SplFileInfo $file */
         foreach ($files as $file) {
             $inFile = (string) $file;
-            $path = substr($inFile, strlen($inDir));
-            $outFile = preg_replace('/\.fails$/', '', $outDir . '.' . $format . $path);
+            $path = substr($inFile, $pathOffset);
 
-            if ($minVersionPatterns) {
-                $path = ltrim($path, '/\\');
-                foreach ($minVersionPatterns as $regex) {
-                    if (preg_match($regex, $path)) {
-                        continue 2;
-                    }
+            if ($index[$path] ?? false) {
+                continue;
+            }
+
+            $outFile = preg_replace('/\.fails$/', '', "$outDir/$path");
+            if ($versionSuffix) {
+                $versionOutFile = preg_replace('/(?<!\G)(\.php)?$/', "$versionSuffix\$1", $outFile);
+                if (!$all && file_exists($versionOutFile)) {
+                    $outFile = $versionOutFile;
                 }
             }
 
-            if ($versionSuffix && file_exists(
-                $versionOutFile = preg_replace('/(\.php)?$/', $versionSuffix . '\1', $outFile, 1)
-            )) {
-                $outFile = $versionOutFile;
-            }
-
-            yield $file => $outFile;
+            yield $file => $all
+                ? [$outFile, $versionOutFile ?? null]
+                : $outFile;
         }
     }
 
@@ -332,7 +327,7 @@ PHP,
      */
     public static function filesProvider(): Generator
     {
-        $inDir = dirname(__DIR__) . '.in';
+        $pathOffset = strlen(self::getInputFixturesPath()) + 1;
         foreach (self::getFileFormats() as $dir => $options) {
             $format = substr($dir, 3);
             $formatter = self::getFormatter($options);
@@ -342,12 +337,32 @@ PHP,
                     // Don't test if the file is expected to fail
                     continue;
                 }
-                $path = substr($inFile, strlen($inDir) + 1);
+                $path = substr($inFile, $pathOffset);
                 $code = file_get_contents($inFile);
                 $expected = file_get_contents($outFile);
                 yield "[{$format}] {$path}" => [$expected, $code, $formatter];
             }
         }
+    }
+
+    public static function getMinVersionIndexPath(): string
+    {
+        return self::getInputFixturesPath() . '/versions.json';
+    }
+
+    public static function getInputFixturesPath(): string
+    {
+        return self::getFixturesPath() . '/in';
+    }
+
+    public static function getOutputFixturesPath(string $format): string
+    {
+        return self::getFixturesPath() . "/out.{$format}";
+    }
+
+    public static function getFixturesPath(): string
+    {
+        return dirname(__DIR__) . '/fixtures';
     }
 
     protected function setUp(): void
