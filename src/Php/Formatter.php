@@ -543,6 +543,11 @@ final class Formatter implements IReadable
      */
     public function format(string $code, ?string $filename = null, bool $fast = false): string
     {
+        $errorLevel = error_reporting();
+        if ($errorLevel & E_COMPILE_WARNING) {
+            error_reporting($errorLevel & ~E_COMPILE_WARNING);
+        }
+
         $this->Tokens = null;
         $this->TokenIndex = null;
         $this->Log = null;
