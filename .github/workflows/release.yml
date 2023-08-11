@@ -19,7 +19,7 @@ jobs:
       - name: Setup PHP and Composer
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "7.4"
+          php-version: "8.2"
           coverage: none
 
       - name: Install dependencies
@@ -27,7 +27,7 @@ jobs:
 
       - name: Run build script
         run: |
-          scripts/build.sh --phar ${{ github.ref_name }}
+          scripts/build.sh ${{ github.ref_name }}
           jq -r '{"artifact_name":.package,"artifact_path":.assets[]|select(.type=="phar")|.path}|to_entries[]|"\(.key)=\(.value)"' build/dist/manifest.json >>$GITHUB_ENV
 
       - name: Create draft release
