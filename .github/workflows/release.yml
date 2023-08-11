@@ -27,7 +27,7 @@ jobs:
 
       - name: Run build script
         run: |
-          scripts/build.sh --phar ${{ github.ref_name }}
+          scripts/build.sh ${{ github.ref_name }}
           jq -r '{"artifact_name":.package,"artifact_path":.assets[]|select(.type=="phar")|.path}|to_entries[]|"\(.key)=\(.value)"' build/dist/manifest.json >>$GITHUB_ENV
 
       - name: Create draft release
