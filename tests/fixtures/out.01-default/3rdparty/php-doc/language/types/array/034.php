@@ -1,6 +1,6 @@
 <?php
 $fruits = array('fruits' => array('a' => 'orange',
-            'b' => 'banana',
+        'b' => 'banana',
         'c' => 'apple'),
     'numbers' => array(1,
         2,

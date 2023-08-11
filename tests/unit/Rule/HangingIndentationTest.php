@@ -226,6 +226,39 @@ $foo = $bar->baz()
     ->quuux();
 PHP,
             ],
+            [
+                <<<'PHP'
+<?php
+$a = array('b' => array('c' => 'd',
+        'e' => 'f',
+        'g' => 'h'),
+    'i' => array(1,
+        2,
+        3,
+        4,
+        5,
+        6),
+    'j' => array('k',
+        7 => 'l',
+        'm'));
+
+PHP,
+                <<<'PHP'
+<?php
+$a = array('b' => array('c' => 'd',
+'e' => 'f',
+'g' => 'h'),
+'i' => array(1,
+2,
+3,
+4,
+5,
+6),
+'j' => array('k',
+7 => 'l',
+'m'));
+PHP,
+            ],
         ];
     }
 }
