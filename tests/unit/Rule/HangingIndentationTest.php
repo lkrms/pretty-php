@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Pretty\Tests\Php\Rule;
+namespace Lkrms\PrettyPHP\Tests\Rule;
 
-use Lkrms\Pretty\Php\Rule\AlignChains;
+use Lkrms\PrettyPHP\Rule\AlignChains;
 
-final class HangingIndentationTest extends \Lkrms\Pretty\Tests\Php\TestCase
+final class HangingIndentationTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     /**
      * @dataProvider ternaryOperatorsProvider

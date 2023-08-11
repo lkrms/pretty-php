@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Pretty\Tests\Php\Rule;
+namespace Lkrms\PrettyPHP\Tests\Rule;
 
-use Lkrms\Pretty\Php\Rule\AlignData;
-use Lkrms\Pretty\Php\Rule\PreserveOneLineStatements;
+use Lkrms\PrettyPHP\Rule\AlignData;
+use Lkrms\PrettyPHP\Rule\PreserveOneLineStatements;
 
-final class AlignDataTest extends \Lkrms\Pretty\Tests\Php\TestCase
+final class AlignDataTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     /**
      * @dataProvider processBlockProvider

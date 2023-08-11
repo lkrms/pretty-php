@@ -4,8 +4,8 @@
 use Lkrms\Cli\CliApplication;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\File;
-use Lkrms\Pretty\PrettyBadSyntaxException;
-use Lkrms\Pretty\Tests\Php\FormatterTest;
+use Lkrms\PrettyPHP\Tests\FormatterTest;
+use Lkrms\PrettyPHP\PrettyBadSyntaxException;
 use Lkrms\Utility\Convert;
 
 require dirname(__DIR__) . '/vendor/autoload.php';

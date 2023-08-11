@@ -15,7 +15,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Lkrms\\Pretty\\": "src/"
+            "Lkrms\\PrettyPHP\\": "src/"
         },
         "files": [
             "bootstrap.php"
@@ -23,7 +23,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Lkrms\\Pretty\\Tests\\Php\\": "tests/unit/"
+            "Lkrms\\PrettyPHP\\Tests\\": "tests/unit/"
         }
     },
     "config": {

@@ -1,21 +1,21 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Pretty\Tests\Php;
+namespace Lkrms\PrettyPHP\Tests;
 
-use Generator;
 use Lkrms\Facade\File;
 use Lkrms\Facade\Sys;
-use Lkrms\Pretty\Php\Formatter;
-use Lkrms\Pretty\Php\Rule\AlignArrowFunctions;
-use Lkrms\Pretty\Php\Rule\AlignChains;
-use Lkrms\Pretty\Php\Rule\AlignComments;
-use Lkrms\Pretty\Php\Rule\AlignData;
-use Lkrms\Pretty\Php\Rule\AlignLists;
-use Lkrms\Pretty\Php\Rule\AlignTernaryOperators;
-use Lkrms\Pretty\Php\Rule\StrictLists;
+use Lkrms\PrettyPHP\Rule\AlignArrowFunctions;
+use Lkrms\PrettyPHP\Rule\AlignChains;
+use Lkrms\PrettyPHP\Rule\AlignComments;
+use Lkrms\PrettyPHP\Rule\AlignData;
+use Lkrms\PrettyPHP\Rule\AlignLists;
+use Lkrms\PrettyPHP\Rule\AlignTernaryOperators;
+use Lkrms\PrettyPHP\Rule\StrictLists;
+use Lkrms\PrettyPHP\Formatter;
+use Generator;
 use SplFileInfo;
 
-final class FormatterTest extends \Lkrms\Pretty\Tests\Php\TestCase
+final class FormatterTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     public const TARGET_VERSION_ID = 80200;
 

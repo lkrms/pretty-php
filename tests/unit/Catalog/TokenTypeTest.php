@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Pretty\Tests\Php\Catalog;
+namespace Lkrms\PrettyPHP\Tests\Catalog;
 
+use Lkrms\PrettyPHP\Catalog\CustomToken;
+use Lkrms\PrettyPHP\Catalog\TokenType;
+use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Generator;
-use Lkrms\Pretty\Php\Catalog\CustomToken;
-use Lkrms\Pretty\Php\Catalog\TokenType;
-use Lkrms\Pretty\Php\Support\TokenTypeIndex;
 use ReflectionClass;
 
-final class TokenTypeTest extends \Lkrms\Pretty\Tests\Php\TestCase
+final class TokenTypeTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     /**
      * @dataProvider uniquenessProvider

@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Pretty\Tests\Php\Rule;
+namespace Lkrms\PrettyPHP\Tests\Rule;
 
-use Lkrms\Pretty\Php\Catalog\HeredocIndent;
-use Lkrms\Pretty\Php\Formatter;
+use Lkrms\PrettyPHP\Catalog\HeredocIndent;
+use Lkrms\PrettyPHP\Formatter;
 
-final class HeredocIndentationTest extends \Lkrms\Pretty\Tests\Php\TestCase
+final class HeredocIndentationTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     /**
      * @dataProvider heredocIndentProvider
