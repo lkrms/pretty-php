@@ -377,6 +377,7 @@ final class HangingIndentation implements MultiTokenRule
                 $current = $token;
                 do {
                     $indent = $this->effectiveIndent($current);
+
                     // Find the next line with an indentation level that differs
                     // from the current line
                     $next = $current;
@@ -389,17 +390,29 @@ final class HangingIndentation implements MultiTokenRule
                         $nextIndent = $this->effectiveIndent($next);
                     } while ($nextIndent === $indent &&
                         $next->Index <= $until->Index);
-                    // Drop $indent and $nextIndent (if $next falls between
-                    // $token and $until and this hanging indent hasn't already
-                    // been collapsed) for comparison
-                    $unit = 1;
-                    $indent -= $unit;
-                    $nextIndent =
-                        !$next ||
-                            $next->Index > $until->Index ||
-                            !($next->HangingIndentParentLevels[$index] ?? 0)
-                                ? $nextIndent
-                                : $nextIndent - $unit;
+
+                    // Adjust $indent for this level of indentation
+                    $indent--;
+
+                    // Make the same adjustment to $nextIndent if:
+                    // - $next falls in the range being collapsed, and
+                    // - $next still has at least one level of uncollapsed
+                    //   indentation associated with this parent
+                    //
+                    // or, to trigger alignment of expressions that shouldn't
+                    // appear to be distinct, if:
+                    // - $next falls outside the range being collapsed
+                    // - $next has the same hanging indent context as $token
+                    if ($next &&
+                        (($next->Index <= $until->Index &&
+                                ($next->HangingIndentParentLevels[$index] ?? 0)) ||
+                            ($next->Index > $until->Index &&
+                                $next->BracketStack === $token->BracketStack &&
+                                $next->HangingIndentContextStack === $token->HangingIndentContextStack &&
+                                !(($next->Statement === $next) xor ($token->Statement === $token))))) {
+                        $nextIndent--;
+                    }
+
                     if ($nextIndent === $indent && $next) {
                         return;
                     }
