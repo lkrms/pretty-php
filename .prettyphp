@@ -2,7 +2,7 @@
     "src": [
         "bin",
         "src",
-        "tests",
+        "tests/unit",
         "scripts",
         "bootstrap.php"
     ],

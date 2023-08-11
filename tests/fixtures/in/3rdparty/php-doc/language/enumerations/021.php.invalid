@@ -1,0 +1,14 @@
+<?php
+// Thought experiment code where enums are not final.
+// Note, this won't actually work in PHP.
+enum MoreErrorCode extends ErrorCode {
+    case PEBKAC;
+}
+
+function fot(MoreErrorCode $errorCode) {
+    quux($errorCode);
+}
+
+fot(MoreErrorCode::PEBKAC);
+
+?>

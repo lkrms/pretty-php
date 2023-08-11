@@ -4,6 +4,7 @@
 use Lkrms\Cli\CliApplication;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\File;
+use Lkrms\Pretty\PrettyBadSyntaxException;
 use Lkrms\Pretty\Tests\Php\FormatterTest;
 use Lkrms\Utility\Convert;
 
@@ -15,24 +16,33 @@ if (!ini_get('short_open_tag')) {
     throw new RuntimeException('short_open_tag must be enabled');
 }
 
+$pathOffset = strlen(FormatterTest::getInputFixturesPath()) + 1;
+$outPathOffset = strlen(dirname(__DIR__)) + 1;
 $count = 0;
 $replaced = 0;
 
-foreach (FormatterTest::getFileFormats() as $dir => $options) {
+foreach (FormatterTest::getFileFormats() as $format => $options) {
     $formatter = FormatterTest::getFormatter($options);
-    foreach (FormatterTest::getFiles($dir) as $file => $outFile) {
+    foreach (FormatterTest::getAllFiles($format) as $file => [$outFile, $versionOutFile]) {
         $inFile = (string) $file;
-        $path = substr($outFile, strlen(dirname(__DIR__)) + 1);
+        $path = substr($inFile, $pathOffset);
+        $outPath = substr($outFile, $outPathOffset);
         $count++;
 
-        Console::logProgress('Generating', $path);
+        Console::logProgress('Generating', $outPath);
 
         File::maybeCreateDirectory(dirname($outFile));
         $code = file_get_contents($inFile);
         try {
             $output = $formatter->format($code);
+        } catch (PrettyBadSyntaxException $ex) {
+            if (PHP_VERSION_ID >= FormatterTest::TARGET_VERSION_ID) {
+                throw $ex;
+            }
+            $invalid[] = $path;
+            continue;
         } catch (Throwable $ex) {
-            Console::error('Unable to generate:', $path);
+            Console::error('Unable to generate:', $outPath);
             throw $ex;
         }
         $message = 'Creating';
@@ -40,12 +50,56 @@ foreach (FormatterTest::getFileFormats() as $dir => $options) {
             if (file_get_contents($outFile) === $output) {
                 continue;
             }
-            $message = 'Replacing';
+            if ($versionOutFile) {
+                $outFile = $versionOutFile;
+                $outPath = substr($outFile, $outPathOffset);
+                if (file_exists($outFile)) {
+                    if (file_get_contents($outFile) === $output) {
+                        continue;
+                    }
+                    $message = 'Replacing';
+                }
+            } else {
+                $message = 'Replacing';
+            }
         }
-        Console::log($message, $path);
+        Console::log($message, $outPath);
         file_put_contents($outFile, $output);
         $replaced++;
     }
+}
+
+if ($invalid ?? null) {
+    $indexPath = FormatterTest::getMinVersionIndexPath();
+    $index = file_exists($indexPath)
+        ? json_decode(file_get_contents($indexPath), true)
+        : [];
+
+    $version = (PHP_VERSION_ID - PHP_VERSION_ID % 100) + 100;
+    if ($version === 70500) {
+        $version = 80000;
+    }
+
+    foreach ($invalid as $path) {
+        foreach ($index as $_version => $_paths) {
+            if (($_key = array_search($path, $_paths, true)) !== false) {
+                if ($_version >= $version) {
+                    continue 2;
+                }
+                unset($index[$_version][$_key]);
+                break;
+            }
+        }
+        $index[$version][] = $path;
+    }
+
+    foreach ($index as &$paths) {
+        sort($paths);
+    }
+    ksort($index);
+
+    $json = json_encode($index, JSON_PRETTY_PRINT);
+    file_put_contents($indexPath, $json);
 }
 
 Console::summary(sprintf(

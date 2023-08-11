@@ -1,1 +1,0 @@
-$data = (yield $key => $value);

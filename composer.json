@@ -10,7 +10,7 @@
         "ext-json": "*",
         "ext-mbstring": "*",
         "ext-tokenizer": "*",
-        "lkrms/util": "^0.20.50",
+        "lkrms/util": "^0.20.51",
         "sebastian/diff": "^4 || ^5"
     },
     "autoload": {
@@ -23,7 +23,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Lkrms\\Pretty\\Tests\\": "tests/"
+            "Lkrms\\Pretty\\Tests\\Php\\": "tests/unit/"
         }
     },
     "config": {
