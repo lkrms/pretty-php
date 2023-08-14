@@ -26,6 +26,7 @@ jobs:
           php-version: "8.2"
           coverage: none
 
+      # Add a version constraint before using this elsewhere, e.g. "lkrms/pretty-php=0.4.18"
       - name: Install PrettyPHP
         run: composer create-project --no-interaction --no-progress --no-dev lkrms/pretty-php build/pretty-php
 
@@ -137,16 +138,25 @@ jobs:
     name: Test phar
     needs:
       - build
-    runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
         php-version:
           - "8.2"
-          - "8.1"
-          - "8.0"
-          - "7.4"
+        include:
+          - os: ubuntu-latest
+            php-version: "8.1"
+          - os: ubuntu-latest
+            php-version: "8.0"
+          - os: ubuntu-latest
+            php-version: "7.4"
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout
@@ -168,6 +178,7 @@ jobs:
         env:
           artifact_path: ${{ needs.build.outputs.artifact_path }}
         run: php "$artifact_path" --verbose
+        shell: bash
 
   integration-tests:
     name: Integration tests
