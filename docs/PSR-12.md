@@ -1,7 +1,12 @@
+---
+draft: true
+---
+
 # PSR-12
 
-This document describes what happens when strict [PSR-12] / [PER Coding Style] compliance is enforced with `--psr12`,
-and explains how (and why) `PrettyPHP`'s default style is not quite 100% compliant.
+This document describes what happens when strict [PSR-12] / [PER Coding Style]
+compliance is enforced with `--psr12`, and explains how (and why) `PrettyPHP`'s
+default style is not quite 100% compliant.
 
 ## Rules
 
@@ -22,8 +27,8 @@ The following behaviours apply only when strict PSR-12 compliance is enabled.
 
 ### Declare statements
 
-With or without a semicolon after the closing parenthesis, the following is collapsed to one line as per [PSR-12,
-section 3]:
+With or without a semicolon after the closing parenthesis, the following is
+collapsed to one line as per [PSR-12, section 3]:
 
 ```php
 <?php declare(strict_types=1) ?>
@@ -43,7 +48,8 @@ declare(strict_types=1);
 namespace Vendor\Package;
 ```
 
-> *PrettyPHP*'s default style departs from the standard to collapse an opening `declare` statement as follows:
+> *PrettyPHP*'s default style departs from the standard to collapse an opening
+> `declare` statement as follows:
 >
 > ```php
 > <?php declare(strict_types=1);
@@ -57,8 +63,8 @@ namespace Vendor\Package;
 
 ### Heredocs and nowdocs
 
-Newlines before heredocs and nowdocs are suppressed, and unconditional heredoc indentation is enforced as per [PER
-Coding Style 2.0, section 10]:
+Newlines before heredocs and nowdocs are suppressed, and unconditional heredoc
+indentation is enforced as per [PER Coding Style 2.0, section 10]:
 
 ```php
 <?php
@@ -73,7 +79,8 @@ $baz = <<<EOF
     EOF;
 ```
 
-> *PrettyPHP*'s default style does not apply indentation to heredocs in contexts where there is no ambiguity without it:
+> *PrettyPHP*'s default style does not apply indentation to heredocs in contexts
+> where there is no ambiguity without it:
 >
 > ```php
 > $foo = <<<EOF
@@ -88,7 +95,8 @@ $baz = <<<EOF
 
 ## Lists
 
-`StrictLists` unconditionally adds a newline after the opening bracket of vertical lists.
+`StrictLists` unconditionally adds a newline after the opening bracket of
+vertical lists.
 
 
 [PSR-12]: https://www.php-fig.org/psr/psr-12/

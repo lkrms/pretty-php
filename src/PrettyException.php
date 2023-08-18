@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP;
 
 use Lkrms\Exception\Exception;
-use Lkrms\PrettyPHP\Token;
+use Lkrms\PrettyPHP\Token\Token;
 use Throwable;
 
 class PrettyException extends Exception

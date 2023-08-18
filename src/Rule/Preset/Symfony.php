@@ -6,8 +6,8 @@ use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\ListRule;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
-use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenCollection;
+use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Token\TokenCollection;
 
 /**
  * Apply formatting specific to Symfony's coding standards

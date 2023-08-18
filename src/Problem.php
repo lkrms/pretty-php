@@ -3,6 +3,7 @@
 namespace Lkrms\PrettyPHP;
 
 use Lkrms\PrettyPHP\Contract\Rule;
+use Lkrms\PrettyPHP\Token\Token;
 
 /**
  * A non-critical problem detected in formatted code

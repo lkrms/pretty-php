@@ -1,17 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP;
+namespace Lkrms\PrettyPHP\Token;
 
 use Lkrms\PrettyPHP\Catalog\CustomToken;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use PhpToken;
 
-/**
- * @template TToken of NavigableToken
- */
-class NavigableToken extends PhpToken
+trait NavigableTokenTrait
 {
     /**
      * The token's position (0-based) in an array of token objects
@@ -24,62 +20,62 @@ class NavigableToken extends PhpToken
     public int $column = -1;
 
     /**
-     * @var TToken|null
+     * @var static|null
      */
     public $_prev;
 
     /**
-     * @var TToken|null
+     * @var static|null
      */
     public $_next;
 
     /**
-     * @var TToken|null
+     * @var static|null
      */
     public $_prevCode;
 
     /**
-     * @var TToken|null
+     * @var static|null
      */
     public $_nextCode;
 
     /**
-     * @var TToken|null
+     * @var static|null
      */
     public $_prevSibling;
 
     /**
-     * @var TToken|null
+     * @var static|null
      */
     public $_nextSibling;
 
     /**
-     * @var TToken|null
+     * @var static|null
      */
     public $OpenedBy;
 
     /**
-     * @var TToken|null
+     * @var static|null
      */
     public $ClosedBy;
 
     /**
-     * @var TToken|null
+     * @var static|null
      */
     public $Parent;
 
     /**
-     * @var TToken[]
+     * @var static[]
      */
     public $BracketStack = [];
 
     /**
-     * @var TToken|null
+     * @var static|null
      */
     public $OpenTag;
 
     /**
-     * @var TToken|null
+     * @var static|null
      */
     public $CloseTag;
 
@@ -541,7 +537,7 @@ class NavigableToken extends PhpToken
     /**
      * Get the previous token that is one of the listed types
      *
-     * @return TToken
+     * @return static
      */
     final public function prevOf(int $type, int ...$types)
     {
@@ -558,7 +554,7 @@ class NavigableToken extends PhpToken
     /**
      * Get the next token that is one of the listed types
      *
-     * @return TToken
+     * @return static
      */
     final public function nextOf(int $type, int ...$types)
     {
@@ -575,7 +571,7 @@ class NavigableToken extends PhpToken
     /**
      * Get the previous sibling that is one of the listed types
      *
-     * @return TToken
+     * @return static
      */
     final public function prevSiblingOf(int $type, int ...$types)
     {
@@ -592,7 +588,7 @@ class NavigableToken extends PhpToken
     /**
      * Get the next sibling that is one of the listed types
      *
-     * @return TToken
+     * @return static
      */
     final public function nextSiblingOf(int $type, int ...$types)
     {
@@ -611,7 +607,7 @@ class NavigableToken extends PhpToken
      *
      * The token returns itself if it satisfies the criteria.
      *
-     * @return TToken
+     * @return static
      */
     final public function skipAnySiblingsOf(int $type, int ...$types)
     {
@@ -626,7 +622,7 @@ class NavigableToken extends PhpToken
     /**
      * Get the first reachable token
      *
-     * @return TToken
+     * @return static
      */
     final public function first()
     {
@@ -640,7 +636,7 @@ class NavigableToken extends PhpToken
     /**
      * Get the last reachable token
      *
-     * @return TToken
+     * @return static
      */
     final public function last()
     {
@@ -654,7 +650,7 @@ class NavigableToken extends PhpToken
     /**
      * Get the token at the beginning of the token's original line
      *
-     * @return TToken
+     * @return static
      */
     final public function startOfOriginalLine()
     {
@@ -668,7 +664,7 @@ class NavigableToken extends PhpToken
     /**
      * Get the token at the end of the token's original line
      *
-     * @return TToken
+     * @return static
      */
     final public function endOfOriginalLine()
     {
@@ -683,7 +679,7 @@ class NavigableToken extends PhpToken
      * Get the next sibling via token traversal, without accounting for PHP's
      * alternative syntax
      *
-     * @return TToken
+     * @return static
      */
     private function nextSimpleSibling(int $offset = 1)
     {

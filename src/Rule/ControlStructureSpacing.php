@@ -6,8 +6,8 @@ use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\PrettyPHP\Formatter;
-use Lkrms\PrettyPHP\Token;
 
 /**
  * Add newlines after control structures where the body has no enclosing braces

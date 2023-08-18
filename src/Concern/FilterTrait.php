@@ -2,18 +2,18 @@
 
 namespace Lkrms\PrettyPHP\Concern;
 
-use PhpToken;
+use Lkrms\PrettyPHP\Token\Token;
 
 trait FilterTrait
 {
     use ExtensionTrait;
 
     /**
-     * @var PhpToken[]
+     * @var Token[]
      */
     protected $Tokens;
 
-    protected function prevCode(int $i, ?int &$prev_i = null): ?PhpToken
+    protected function prevCode(int $i, ?int &$prev_i = null): ?Token
     {
         $token = $this->Tokens[$i];
         while ($i--) {

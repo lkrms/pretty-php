@@ -1,18 +1,23 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP;
+namespace Lkrms\PrettyPHP\Token;
 
 use Lkrms\PrettyPHP\Catalog\CommentType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Token\CollectibleTokenTrait;
+use Lkrms\PrettyPHP\Token\NavigableTokenTrait;
+use Lkrms\PrettyPHP\Token\TokenCollection;
+use Lkrms\PrettyPHP\Formatter;
 use Lkrms\Utility\Convert;
 use JsonSerializable;
+use PhpToken;
 
-/**
- * @extends CollectibleToken<Token>
- */
-class Token extends CollectibleToken implements JsonSerializable
+class Token extends PhpToken implements JsonSerializable
 {
+    use CollectibleTokenTrait;
+    use NavigableTokenTrait;
+
     public bool $BodyIsUnenclosed = false;
 
     public ?Token $Statement = null;

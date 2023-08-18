@@ -1,8 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP;
+namespace Lkrms\PrettyPHP\Token;
 
 use Lkrms\Concept\TypedCollection;
+use Lkrms\PrettyPHP\Token\Token;
 use LogicException;
 use Stringable;
 

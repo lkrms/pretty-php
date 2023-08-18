@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Contract;
 
 use Lkrms\PrettyPHP\Catalog\TokenType;
-use Lkrms\PrettyPHP\Token;
+use Lkrms\PrettyPHP\Token\Token;
 
 interface TokenRule extends Rule
 {
