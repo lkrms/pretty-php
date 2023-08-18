@@ -59,6 +59,8 @@ use Lkrms\PrettyPHP\Rule\StrictLists;
 use Lkrms\PrettyPHP\Rule\SwitchIndentation;
 use Lkrms\PrettyPHP\Rule\SymmetricalBrackets;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
+use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Token\TokenCollection;
 use Lkrms\PrettyPHP\PrettyBadSyntaxException;
 use Lkrms\PrettyPHP\PrettyException;
 use Lkrms\Utility\Convert;

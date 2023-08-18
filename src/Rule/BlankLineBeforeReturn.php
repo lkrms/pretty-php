@@ -5,7 +5,7 @@ namespace Lkrms\PrettyPHP\Rule;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Token;
+use Lkrms\PrettyPHP\Token\Token;
 
 /**
  * Add a blank line before return and yield statements unless they appear

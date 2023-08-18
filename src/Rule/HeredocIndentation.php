@@ -5,7 +5,7 @@ namespace Lkrms\PrettyPHP\Rule;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
-use Lkrms\PrettyPHP\Token;
+use Lkrms\PrettyPHP\Token\Token;
 
 /**
  * Apply indentation to heredocs and nowdocs

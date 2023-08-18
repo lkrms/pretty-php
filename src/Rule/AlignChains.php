@@ -6,8 +6,8 @@ use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenCollection;
+use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Token\TokenCollection;
 
 /**
  * Align consecutive object operators in the same chain of method calls

@@ -6,7 +6,7 @@ use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Concern\FilterTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
-use Lkrms\PrettyPHP\NavigableToken as Token;
+use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\Utility\Convert;
 
 /**

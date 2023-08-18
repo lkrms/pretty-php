@@ -8,6 +8,8 @@ use Lkrms\Concept\Dictionary;
  * Tokens by type
  *
  * @api
+ *
+ * @extends Dictionary<int[]>
  */
 final class TokenType extends Dictionary
 {

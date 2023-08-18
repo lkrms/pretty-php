@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Concern;
 
-use Lkrms\PrettyPHP\Token;
+use Lkrms\PrettyPHP\Token\Token;
 
 trait MultiTokenRuleTrait
 {

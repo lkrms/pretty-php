@@ -6,7 +6,7 @@ use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Token;
+use Lkrms\PrettyPHP\Token\Token;
 
 /**
  * Apply vertical whitespace to operators

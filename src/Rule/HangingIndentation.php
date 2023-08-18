@@ -5,7 +5,7 @@ namespace Lkrms\PrettyPHP\Rule;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
-use Lkrms\PrettyPHP\Token;
+use Lkrms\PrettyPHP\Token\Token;
 
 /**
  * If the first token on a new line continues a statement from the previous one,

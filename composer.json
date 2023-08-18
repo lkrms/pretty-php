@@ -1,7 +1,17 @@
 {
     "name": "lkrms/pretty-php",
-    "description": "The opinionated formatter for modern PHP",
+    "description": "The opinionated code formatter for PHP",
     "license": "MIT",
+    "support": {
+        "issues": "https://github.com/lkrms/pretty-php/issues",
+        "source": "https://github.com/lkrms/pretty-php"
+    },
+    "authors": [
+        {
+            "name": "Luke Arms",
+            "email": "luke@linacreative.com"
+        }
+    ],
     "bin": [
         "bin/pretty-php"
     ],
@@ -10,7 +20,7 @@
         "ext-json": "*",
         "ext-mbstring": "*",
         "ext-tokenizer": "*",
-        "lkrms/util": "^0.20.51",
+        "lkrms/util": "^0.20.52",
         "sebastian/diff": "^4 || ^5"
     },
     "autoload": {

@@ -4,12 +4,11 @@ namespace Lkrms\PrettyPHP\Filter;
 
 use Lkrms\PrettyPHP\Concern\FilterTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
-use Lkrms\PrettyPHP\NavigableToken;
+use Lkrms\PrettyPHP\Token\Token;
 
 /**
  * Remove indentation from heredocs
  *
- * @implements Filter<NavigableToken>
  */
 final class RemoveHeredocIndentation implements Filter
 {
@@ -17,11 +16,11 @@ final class RemoveHeredocIndentation implements Filter
 
     public function filterTokens(array $tokens): array
     {
-        /** @var array<int,NavigableToken[]> */
+        /** @var array<int,Token[]> */
         $heredocTokens = [];
         /** @var array<int,string[]> */
         $heredocText = [];
-        /** @var array<int,NavigableToken> */
+        /** @var array<int,Token> */
         $stack = [];
         foreach ($tokens as $i => $token) {
             if ($stack) {

@@ -5,7 +5,7 @@ namespace Lkrms\PrettyPHP\Rule;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Concern\BlockRuleTrait;
 use Lkrms\PrettyPHP\Contract\BlockRule;
-use Lkrms\PrettyPHP\Token;
+use Lkrms\PrettyPHP\Token\Token;
 
 /**
  * Align consecutive assignment operators and double arrows when they have the
@@ -206,6 +206,7 @@ final class AlignData implements BlockRule
         //    - the first token on the same line as the token being aligned
         //    - the token being aligned
 
+        /** @var non-empty-array<int,Token> $run */
         foreach ($runs as [$type, $run]) {
             $first = null;
             $prev = null;

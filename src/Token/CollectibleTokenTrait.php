@@ -1,14 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP;
+namespace Lkrms\PrettyPHP\Token;
 
+use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Token\TokenCollection;
 use LogicException;
 
-/**
- * @template TToken of CollectibleToken
- * @extends NavigableToken<TToken>
- */
-class CollectibleToken extends NavigableToken
+trait CollectibleTokenTrait
 {
     /**
      * Optionally skip to the next declaration token in the same expression,
@@ -24,7 +22,7 @@ class CollectibleToken extends NavigableToken
                 ? $this->TokenTypeIndex->DeclarationPartWithNew
                 : $this->TokenTypeIndex->DeclarationPart;
 
-        /** @var Token $this */
+        /** @var Token */
         $t = $this;
 
         if ($skipToDeclaration) {
@@ -55,7 +53,7 @@ class CollectibleToken extends NavigableToken
     /**
      * Get the token and its following tokens up to and including a given token
      *
-     * @param TToken $to
+     * @param static $to
      */
     final public function collect($to): TokenCollection
     {
@@ -70,7 +68,7 @@ class CollectibleToken extends NavigableToken
      * Get the token and its following siblings, optionally stopping at a given
      * sibling
      *
-     * @param TToken|null $to
+     * @param static|null $to
      */
     final public function collectSiblings($to = null): TokenCollection
     {
@@ -104,7 +102,7 @@ class CollectibleToken extends NavigableToken
      * Get preceding siblings in reverse document order, optionally stopping at
      * a given sibling
      *
-     * @param TToken|null $to
+     * @param static|null $to
      */
     final public function prevSiblings($to = null): TokenCollection
     {
@@ -230,7 +228,7 @@ class CollectibleToken extends NavigableToken
      * Get preceding siblings in reverse document order, up to but not including
      * the first that satisfies a callback
      *
-     * @param callable(TToken, TokenCollection): bool $callback
+     * @param callable(self, TokenCollection): bool $callback
      */
     final public function prevSiblingsUntil(callable $callback): TokenCollection
     {
@@ -241,7 +239,7 @@ class CollectibleToken extends NavigableToken
      * Get the token and its preceding siblings in reverse document order, up to
      * but not including the first that satisfies a callback
      *
-     * @param callable(TToken, TokenCollection): bool $callback
+     * @param callable(self, TokenCollection): bool $callback
      * @param bool $testToken If `true` and the token doesn't satisfy the
      * callback, an empty collection is returned. Otherwise, the token is added
      * to the collection regardless.
@@ -255,7 +253,7 @@ class CollectibleToken extends NavigableToken
      * Get following siblings, up to but not including the first that satisfies
      * a callback
      *
-     * @param callable(TToken, TokenCollection): bool $callback
+     * @param callable(self, TokenCollection): bool $callback
      */
     final public function nextSiblingsUntil(callable $callback): TokenCollection
     {
@@ -266,7 +264,7 @@ class CollectibleToken extends NavigableToken
      * Get the token and its following siblings, up to but not including the
      * first that satisfies a callback
      *
-     * @param callable(TToken, TokenCollection): bool $callback
+     * @param callable(self, TokenCollection): bool $callback
      * @param bool $testToken If `true` and the token doesn't satisfy the
      * callback, an empty collection is returned. Otherwise, the token is added
      * to the collection regardless.
@@ -349,7 +347,7 @@ class CollectibleToken extends NavigableToken
     }
 
     /**
-     * @param callable(TToken, TokenCollection): bool $callback
+     * @param callable(self, TokenCollection): bool $callback
      */
     private function _prevSiblingsUntil(callable $callback, bool $includeToken = false, bool $testToken = false): TokenCollection
     {
@@ -370,7 +368,7 @@ class CollectibleToken extends NavigableToken
     }
 
     /**
-     * @param callable(TToken, TokenCollection): bool $callback
+     * @param callable(self, TokenCollection): bool $callback
      */
     private function _nextSiblingsUntil(callable $callback, bool $includeToken = false, bool $testToken = false): TokenCollection
     {
