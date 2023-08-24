@@ -1,0 +1,19 @@
+{
+	"Class file": {
+		"scope": "php",
+		"prefix": "<?php",
+		"body": [
+			"<?php declare(strict_types=1);",
+			"",
+			"namespace Lkrms\\PrettyPHP${TM_DIRECTORY/^.*\\\\/src|^.*\\\\/(tests\\\\/unit)|\\\\/([A-Z][a-zA-Z0-9]*)/${1:+\\\\Tests}${2:+\\\\}$2/g};",
+			"",
+			"/**",
+			" * ${1:Summary}",
+			" *",
+			" */",
+			"class ${TM_FILENAME_BASE/[^a-zA-Z0-9]+//g} {",
+			"    $0",
+			"}"
+		]
+	},
+}
