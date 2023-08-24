@@ -4,8 +4,8 @@
 use Lkrms\Cli\CliApplication;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\File;
+use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
 use Lkrms\PrettyPHP\Tests\FormatterTest;
-use Lkrms\PrettyPHP\PrettyBadSyntaxException;
 use Lkrms\Utility\Convert;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
@@ -35,7 +35,7 @@ foreach (FormatterTest::getFileFormats() as $format => $options) {
         $code = file_get_contents($inFile);
         try {
             $output = $formatter->format($code);
-        } catch (PrettyBadSyntaxException $ex) {
+        } catch (InvalidSyntaxException $ex) {
             if (PHP_VERSION_ID >= FormatterTest::TARGET_VERSION_ID) {
                 throw $ex;
             }

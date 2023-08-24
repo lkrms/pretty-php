@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP;
+namespace Lkrms\PrettyPHP\Support;
 
-use Lkrms\PrettyPHP\Contract\Rule;
+use Lkrms\PrettyPHP\Rule\Contract\Rule;
 use Lkrms\PrettyPHP\Token\Token;
 
 /**
  * A non-critical problem detected in formatted code
  *
  */
-final class Problem
+final class CodeProblem
 {
     /**
      * The rule that reported the problem

@@ -3,8 +3,8 @@
 namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
-use Lkrms\PrettyPHP\Concern\MultiTokenRuleTrait;
-use Lkrms\PrettyPHP\Contract\MultiTokenRule;
+use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
+use Lkrms\PrettyPHP\Rule\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Token\Token;
 
 /**

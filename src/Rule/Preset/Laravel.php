@@ -3,8 +3,8 @@
 namespace Lkrms\PrettyPHP\Rule\Preset;
 
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
-use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
-use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
+use Lkrms\PrettyPHP\Rule\Contract\TokenRule;
 use Lkrms\PrettyPHP\Token\Token;
 
 /**

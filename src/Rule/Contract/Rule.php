@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Contract;
+namespace Lkrms\PrettyPHP\Rule\Contract;
 
+use Lkrms\PrettyPHP\Contract\Extension;
 use Lkrms\PrettyPHP\Token\Token;
 
 interface Rule extends Extension
@@ -14,7 +15,6 @@ interface Rule extends Extension
      * Higher priorities (bigger numbers) correspond to later invocation. To
      * suppress calls to the method, return `null`.
      *
-     * @param static::* $method
      */
     public function getPriority(string $method): ?int;
 

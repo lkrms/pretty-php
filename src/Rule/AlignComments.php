@@ -2,10 +2,10 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Concern\BlockRuleTrait;
-use Lkrms\PrettyPHP\Contract\BlockRule;
+use Lkrms\PrettyPHP\Rule\Concern\BlockRuleTrait;
+use Lkrms\PrettyPHP\Rule\Contract\BlockRule;
+use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Token\Token;
-use Lkrms\PrettyPHP\Token\TokenCollection;
 
 /**
  * Align comments beside code

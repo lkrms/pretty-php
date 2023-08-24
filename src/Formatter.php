@@ -11,12 +11,9 @@ use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
-use Lkrms\PrettyPHP\Contract\BlockRule;
-use Lkrms\PrettyPHP\Contract\Filter;
-use Lkrms\PrettyPHP\Contract\ListRule;
-use Lkrms\PrettyPHP\Contract\MultiTokenRule;
-use Lkrms\PrettyPHP\Contract\Rule;
-use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\Exception\FormatterException;
+use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
+use Lkrms\PrettyPHP\Filter\Contract\Filter;
 use Lkrms\PrettyPHP\Filter\CollectColumn;
 use Lkrms\PrettyPHP\Filter\RemoveComments;
 use Lkrms\PrettyPHP\Filter\RemoveEmptyTokens;
@@ -26,6 +23,11 @@ use Lkrms\PrettyPHP\Filter\SortImports;
 use Lkrms\PrettyPHP\Filter\StandardiseStrings;
 use Lkrms\PrettyPHP\Filter\TrimCasts;
 use Lkrms\PrettyPHP\Filter\TrimOpenTags;
+use Lkrms\PrettyPHP\Rule\Contract\BlockRule;
+use Lkrms\PrettyPHP\Rule\Contract\ListRule;
+use Lkrms\PrettyPHP\Rule\Contract\MultiTokenRule;
+use Lkrms\PrettyPHP\Rule\Contract\Rule;
+use Lkrms\PrettyPHP\Rule\Contract\TokenRule;
 use Lkrms\PrettyPHP\Rule\Preset\Laravel;
 use Lkrms\PrettyPHP\Rule\Preset\Symfony;
 use Lkrms\PrettyPHP\Rule\Preset\WordPress;
@@ -58,11 +60,10 @@ use Lkrms\PrettyPHP\Rule\StatementSpacing;
 use Lkrms\PrettyPHP\Rule\StrictLists;
 use Lkrms\PrettyPHP\Rule\SwitchIndentation;
 use Lkrms\PrettyPHP\Rule\SymmetricalBrackets;
+use Lkrms\PrettyPHP\Support\CodeProblem;
+use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
-use Lkrms\PrettyPHP\Token\TokenCollection;
-use Lkrms\PrettyPHP\PrettyBadSyntaxException;
-use Lkrms\PrettyPHP\PrettyException;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Inspect;
@@ -71,6 +72,8 @@ use ParseError;
 use Throwable;
 
 /**
+ * Formats PHP code by applying filters and rules to tokens
+ *
  * @property-read bool $Psr12Compliance Enforce strict PSR-12 compliance?
  */
 final class Formatter implements IReadable
@@ -255,9 +258,9 @@ final class Formatter implements IReadable
     public ?array $TokenIndex = null;
 
     /**
-     * @var Problem[]|null
+     * @var CodeProblem[]|null
      */
-    public ?array $Problems = null;
+    public ?array $CodeProblems = null;
 
     /**
      * @var array<string,string>|null
@@ -325,7 +328,7 @@ final class Formatter implements IReadable
 
     private bool $LogProgress;
 
-    private bool $ReportProblems;
+    private bool $ReportCodeProblems;
 
     protected function _getPsr12Compliance(): bool
     {
@@ -359,7 +362,7 @@ final class Formatter implements IReadable
 
         $this->Debug = $flags & FormatterFlag::DEBUG || Env::debug();
         $this->LogProgress = $this->Debug && $flags & FormatterFlag::LOG_PROGRESS;
-        $this->ReportProblems = (bool) ($flags & FormatterFlag::REPORT_PROBLEMS);
+        $this->ReportCodeProblems = (bool) ($flags & FormatterFlag::REPORT_CODE_PROBLEMS);
 
         // If using tabs for indentation, disable incompatible rules
         if (!$insertSpaces) {
@@ -554,7 +557,7 @@ final class Formatter implements IReadable
         $this->TokenIndex = null;
         $this->Log = null;
         $this->Callbacks = [];
-        $this->Problems = [];
+        $this->CodeProblems = [];
         foreach ($this->Rules as $rule) {
             $rule->reset();
         }
@@ -582,7 +585,7 @@ final class Formatter implements IReadable
                 return '';
             }
         } catch (ParseError $ex) {
-            throw new PrettyBadSyntaxException(
+            throw new InvalidSyntaxException(
                 sprintf('Formatting failed: %s cannot be parsed', $filename ?: 'input'),
                 $ex
             );
@@ -820,7 +823,7 @@ final class Formatter implements IReadable
             $last = end($this->Tokens);
             $out = $first->render(false, $last, true);
         } catch (Throwable $ex) {
-            throw new PrettyException(
+            throw new FormatterException(
                 'Formatting failed: output cannot be rendered',
                 null,
                 $this->Tokens,
@@ -846,7 +849,7 @@ final class Formatter implements IReadable
                 ...$this->ComparisonFilters
             );
         } catch (ParseError $ex) {
-            throw new PrettyException(
+            throw new FormatterException(
                 'Formatting check failed: output cannot be parsed',
                 $out,
                 $this->Tokens,
@@ -867,7 +870,7 @@ final class Formatter implements IReadable
         $before = $this->simplifyTokens($tokensIn);
         $after = $this->simplifyTokens($tokensOut);
         if ($before !== $after) {
-            throw new PrettyException(
+            throw new FormatterException(
                 "Formatting check failed: parsed output doesn't match input",
                 $out,
                 $this->Tokens,
@@ -876,9 +879,9 @@ final class Formatter implements IReadable
             );
         }
 
-        if ($this->ReportProblems && $this->Problems) {
-            /** @var Problem $problem */
-            foreach ($this->Problems as $problem) {
+        if ($this->ReportCodeProblems && $this->CodeProblems) {
+            /** @var CodeProblem $problem */
+            foreach ($this->CodeProblems as $problem) {
                 $values = [];
 
                 if ($filename) {
@@ -1005,7 +1008,7 @@ final class Formatter implements IReadable
      */
     public function reportProblem(Rule $rule, string $message, Token $start, ?Token $end = null, ...$values): void
     {
-        $this->Problems[] = new Problem($rule, $message, $start, $end, ...$values);
+        $this->CodeProblems[] = new CodeProblem($rule, $message, $start, $end, ...$values);
     }
 
     private function logProgress(string $rule, string $after): void
@@ -1016,7 +1019,7 @@ final class Formatter implements IReadable
             $last = end($this->Tokens);
             $out = $first->render(false, $last);
         } catch (Throwable $ex) {
-            throw new PrettyException(
+            throw new FormatterException(
                 'Formatting failed: unable to render unresolved output',
                 null,
                 $this->Tokens,

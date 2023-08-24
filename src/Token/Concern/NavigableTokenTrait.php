@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Token;
+namespace Lkrms\PrettyPHP\Token\Concern;
 
 use Lkrms\PrettyPHP\Catalog\CustomToken;
 use Lkrms\PrettyPHP\Catalog\TokenType;
-use Lkrms\PrettyPHP\Contract\Filter;
+use Lkrms\PrettyPHP\Filter\Contract\Filter;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 
 trait NavigableTokenTrait

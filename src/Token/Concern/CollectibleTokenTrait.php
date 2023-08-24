@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Token;
+namespace Lkrms\PrettyPHP\Token\Concern;
 
+use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Token\Token;
-use Lkrms\PrettyPHP\Token\TokenCollection;
 use LogicException;
 
 trait CollectibleTokenTrait

@@ -2,8 +2,8 @@
 
 namespace Lkrms\PrettyPHP\Filter;
 
-use Lkrms\PrettyPHP\Concern\FilterTrait;
-use Lkrms\PrettyPHP\Contract\Filter;
+use Lkrms\PrettyPHP\Filter\Concern\FilterTrait;
+use Lkrms\PrettyPHP\Filter\Contract\Filter;
 
 /**
  * Use var_export() to normalise string constants for comparison
