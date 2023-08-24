@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Token;
+namespace Lkrms\PrettyPHP\Support;
 
 use Lkrms\Concept\TypedCollection;
 use Lkrms\PrettyPHP\Token\Token;

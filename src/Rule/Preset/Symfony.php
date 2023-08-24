@@ -3,11 +3,11 @@
 namespace Lkrms\PrettyPHP\Rule\Preset;
 
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
-use Lkrms\PrettyPHP\Concern\MultiTokenRuleTrait;
-use Lkrms\PrettyPHP\Contract\ListRule;
-use Lkrms\PrettyPHP\Contract\MultiTokenRule;
+use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
+use Lkrms\PrettyPHP\Rule\Contract\ListRule;
+use Lkrms\PrettyPHP\Rule\Contract\MultiTokenRule;
+use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Token\Token;
-use Lkrms\PrettyPHP\Token\TokenCollection;
 
 /**
  * Apply formatting specific to Symfony's coding standards

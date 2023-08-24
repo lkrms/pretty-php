@@ -1,9 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Concern;
+namespace Lkrms\PrettyPHP\Filter\Concern;
 
+use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Token\Token;
 
+/**
+ * Extends Lkrms\PrettyPHP\Concern\ExtensionTrait for use by filters
+ *
+ */
 trait FilterTrait
 {
     use ExtensionTrait;

@@ -18,12 +18,15 @@ use Lkrms\Facade\Sys;
 use Lkrms\PrettyPHP\Catalog\FormatterFlag;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
-use Lkrms\PrettyPHP\Contract\Filter;
-use Lkrms\PrettyPHP\Contract\Rule;
+use Lkrms\PrettyPHP\Exception\FormatterException;
+use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
+use Lkrms\PrettyPHP\Filter\Contract\Filter;
 use Lkrms\PrettyPHP\Filter\SortImports;
+use Lkrms\PrettyPHP\Rule\Contract\Rule;
 use Lkrms\PrettyPHP\Rule\Preset\Laravel;
 use Lkrms\PrettyPHP\Rule\Preset\Symfony;
 use Lkrms\PrettyPHP\Rule\Preset\WordPress;
+use Lkrms\PrettyPHP\Rule\Support\WordPressTokenTypeIndex;
 use Lkrms\PrettyPHP\Rule\AlignArrowFunctions;
 use Lkrms\PrettyPHP\Rule\AlignChains;
 use Lkrms\PrettyPHP\Rule\AlignComments;
@@ -37,11 +40,8 @@ use Lkrms\PrettyPHP\Rule\PreserveLineBreaks;
 use Lkrms\PrettyPHP\Rule\PreserveOneLineStatements;
 use Lkrms\PrettyPHP\Rule\StrictLists;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\PrettyPHP\Support\WordPressTokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\PrettyPHP\Formatter;
-use Lkrms\PrettyPHP\PrettyBadSyntaxException;
-use Lkrms\PrettyPHP\PrettyException;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Test;
@@ -52,6 +52,10 @@ use SplFileInfo;
 use Throwable;
 use UnexpectedValueException;
 
+/**
+ * Provides PrettyPHP's command-line interface
+ *
+ */
 class FormatPhp extends CliCommand
 {
     private const SKIP_RULE_MAP = [
@@ -1011,7 +1015,7 @@ EOF,
                     $this->SkipRules,
                     $this->AddRules,
                     $this->SkipFilters,
-                    ($this->Quiet < 2 ? FormatterFlag::REPORT_PROBLEMS : 0)
+                    ($this->Quiet < 2 ? FormatterFlag::REPORT_CODE_PROBLEMS : 0)
                         | ($this->Verbose ? FormatterFlag::LOG_PROGRESS : 0),
                     $this->TokenTypeIndex
                         ? [$this->TokenTypeIndex, 'create']()
@@ -1059,12 +1063,12 @@ EOF,
                     $inputFile,
                     $this->Fast
                 );
-            } catch (PrettyBadSyntaxException $ex) {
+            } catch (InvalidSyntaxException $ex) {
                 Console::exception($ex);
                 $this->setExitStatus(2);
                 $errors[] = $inputFile;
                 continue;
-            } catch (PrettyException $ex) {
+            } catch (FormatterException $ex) {
                 Console::error('Unable to format:', $inputFile);
                 $this->maybeDumpDebugOutput($input, $ex->getOutput(), $ex->getTokens(), $ex->getLog(), $ex->getData());
                 throw $ex;

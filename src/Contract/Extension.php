@@ -4,6 +4,10 @@ namespace Lkrms\PrettyPHP\Contract;
 
 use Lkrms\PrettyPHP\Formatter;
 
+/**
+ * Base interface for filters and rules
+ *
+ */
 interface Extension
 {
     public function __construct(Formatter $formatter);

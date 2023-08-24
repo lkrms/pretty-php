@@ -5,7 +5,7 @@ namespace Lkrms\PrettyPHP\Catalog;
 use Lkrms\Concept\Enumeration;
 
 /**
- * Heredoc indentation
+ * Heredoc indentation types
  *
  * @api
  *

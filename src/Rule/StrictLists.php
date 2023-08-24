@@ -3,10 +3,10 @@
 namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
-use Lkrms\PrettyPHP\Concern\ListRuleTrait;
-use Lkrms\PrettyPHP\Contract\ListRule;
+use Lkrms\PrettyPHP\Rule\Concern\ListRuleTrait;
+use Lkrms\PrettyPHP\Rule\Contract\ListRule;
+use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Token\Token;
-use Lkrms\PrettyPHP\Token\TokenCollection;
 
 /**
  * Arrange items in lists horizontally or vertically by replicating the

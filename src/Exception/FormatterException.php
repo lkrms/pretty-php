@@ -1,12 +1,16 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP;
+namespace Lkrms\PrettyPHP\Exception;
 
 use Lkrms\Exception\Exception;
 use Lkrms\PrettyPHP\Token\Token;
 use Throwable;
 
-class PrettyException extends Exception
+/**
+ * Thrown when formatting fails
+ *
+ */
+class FormatterException extends Exception
 {
     /**
      * @var string|null

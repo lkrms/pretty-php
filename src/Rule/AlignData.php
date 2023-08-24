@@ -3,8 +3,8 @@
 namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\TokenType;
-use Lkrms\PrettyPHP\Concern\BlockRuleTrait;
-use Lkrms\PrettyPHP\Contract\BlockRule;
+use Lkrms\PrettyPHP\Rule\Concern\BlockRuleTrait;
+use Lkrms\PrettyPHP\Rule\Contract\BlockRule;
 use Lkrms\PrettyPHP\Token\Token;
 
 /**
@@ -97,13 +97,14 @@ final class AlignData implements BlockRule
                     continue;
                 }
                 if ($token->is(TokenType::OPERATOR_ASSIGNMENT)) {
-                    if (!$token->BracketStack ||
-                            end($token->BracketStack)->isStructuralBrace(false)) {
+                    if (!$token->Parent || $token->Parent->isStructuralBrace(false)) {
                         $addToIndex('=');
-                    } elseif ($token->inFunctionDeclaration()) {
+                        continue;
+                    }
+                    if ($token->inFunctionDeclaration()) {
                         // Only align default value definitions within the same
                         // declaration
-                        $addToIndex(implode(':', ['fn', end($token->BracketStack)->Index]));
+                        $addToIndex(implode(':', ['fn', $token->Parent->Index]));
                     }
                     continue;
                 }
@@ -117,8 +118,9 @@ final class AlignData implements BlockRule
                 }
                 if ($token->id === T_COMMA &&
                         !$token->hasNewlineAfter() &&
-                        $token->BracketStack && end($token->BracketStack)->isArrayOpenBracket() &&
-                        !$token->_next->isCloseBracket()) {
+                        $token->Parent &&
+                        $token->Parent->isArrayOpenBracket() &&
+                        !$this->TypeIndex->CloseBracket[$token->_next->id]) {
                     $data = [
                         'prevTypes' => $token->prevSiblings($token->prevSiblingOf(T_COMMA)->nextCode())->getTypes(),
                         'nextTypes' => $token->_next->collectSiblings($token->nextSiblingOf(T_COMMA)->prevCode())->getTypes(),

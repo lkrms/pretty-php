@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Contract;
+namespace Lkrms\PrettyPHP\Rule\Contract;
 
 use Lkrms\PrettyPHP\Token\Token;
 

@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Contract;
+namespace Lkrms\PrettyPHP\Rule\Contract;
 
+use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Token\Token;
-use Lkrms\PrettyPHP\Token\TokenCollection;
 
 interface BlockRule extends Rule
 {

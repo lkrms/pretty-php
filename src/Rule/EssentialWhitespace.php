@@ -4,8 +4,8 @@ namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\CommentType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
-use Lkrms\PrettyPHP\Concern\RuleTrait;
-use Lkrms\PrettyPHP\Contract\Rule;
+use Lkrms\PrettyPHP\Rule\Concern\RuleTrait;
+use Lkrms\PrettyPHP\Rule\Contract\Rule;
 
 /**
  * Add whitespace after tokens that would otherwise fail to parse

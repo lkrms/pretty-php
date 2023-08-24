@@ -1,8 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Concern;
+namespace Lkrms\PrettyPHP\Rule\Concern;
 
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Token\Token;
 
 trait RuleTrait

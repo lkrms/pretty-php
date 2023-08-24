@@ -17,7 +17,7 @@ final class FormatterFlag extends Enumeration
      * Print warnings about non-critical problems detected in formatted code
      *
      */
-    public const REPORT_PROBLEMS = 1;
+    public const REPORT_CODE_PROBLEMS = 1;
 
     /**
      * Enable debug mode

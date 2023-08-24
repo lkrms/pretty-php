@@ -24,8 +24,7 @@ Or you could just give it a try 😉
 - Entire files are formatted in place
 - Configuration is optional
 - Formatting options are deliberately limited, workflow options are not
-- In `--diff` mode, a patch is generated for lines that would change
-- In `--check` mode, unformatted input triggers immediate failure
+- Reports lines that would would change in `--diff` mode
 - Exits with a meaningful status code
 - Written in PHP
 - Formats code written for PHP versions up to 8.2 (but see the [note about PHP
@@ -40,7 +39,8 @@ Or you could just give it a try 😉
 ## Requirements
 
 - Linux, macOS or Windows
-- PHP 7.4, 8.0, 8.1 or 8.2 with a CLI runtime and the following extensions:
+- PHP 7.4, 8.0, 8.1 or 8.2 with a CLI runtime and the following extensions
+  (enabled by default on most platforms):
   - `mbstring`
   - `json`
   - `tokenizer`
@@ -120,12 +120,17 @@ composer require --dev lkrms/pretty-php=0.4.18
 
 ## Pragmatism
 
-In general, *PrettyPHP* (a) ignores previous formatting and (b) doesn't change
-anything other than whitespace, but in cases where strict adherence to these
-rules would be at the expense of consistency and readability, an exception is
-made and documented here.
+In general, *PrettyPHP* ignores previous formatting and doesn't change anything
+other than whitespace, but in cases where these rules are at odds with the
+priorities [listed above](#features) (readability, consistency, small diffs),
+exceptions are occasionally made and documented below.
 
-- **Newlines are preserved** \
+### Exceptions
+
+Pragmatic exceptions to *PrettyPHP*'s otherwise deterministic output are as
+follows:
+
+- **Newlines are (selectively) preserved** \
   Unless suppressed by other rules, line breaks adjacent to most operators,
   separators and brackets are copied from the input to the output. \
   *This behaviour is disabled by `-N/--ignore-newlines`*
@@ -141,13 +146,13 @@ made and documented here.
 
 - **Comments beside code are not moved to the next line** \
   If previous formatting were ignored, detection of comments beside vs. above
-  code would not be possible.
+  the code they describe would not be possible.
 
 - **Comments are trimmed and aligned**
 
 ## Support
 
-You can ask questions, report bugs and request features by opening a [new
+You can ask a question, report a bug or request a feature by opening a [new
 issue][new-issue] in the official *PrettyPHP* GitHub repository.
 
 

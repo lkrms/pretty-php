@@ -2,10 +2,10 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Concern\ListRuleTrait;
-use Lkrms\PrettyPHP\Contract\ListRule;
+use Lkrms\PrettyPHP\Rule\Concern\ListRuleTrait;
+use Lkrms\PrettyPHP\Rule\Contract\ListRule;
+use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Token\Token;
-use Lkrms\PrettyPHP\Token\TokenCollection;
 
 /**
  * Align arguments, array elements and other list items with their

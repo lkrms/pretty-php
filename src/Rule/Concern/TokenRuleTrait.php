@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Concern;
+namespace Lkrms\PrettyPHP\Rule\Concern;
 
 trait TokenRuleTrait
 {
