@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Pretty\Tests\Php\Rule;
+namespace Lkrms\PrettyPHP\Tests\Rule;
 
-final class PreserveLineBreaksTest extends \Lkrms\Pretty\Tests\Php\TestCase
+final class PreserveLineBreaksTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     /**
      * @dataProvider processTokenProvider

@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Pretty\Tests\Php\Rule;
+namespace Lkrms\PrettyPHP\Tests\Rule;
 
-use Lkrms\Pretty\Php\Rule\AlignChains;
-use Lkrms\Pretty\Php\Rule\AlignLists;
+use Lkrms\PrettyPHP\Rule\AlignChains;
+use Lkrms\PrettyPHP\Rule\AlignLists;
 
-final class AlignListsTest extends \Lkrms\Pretty\Tests\Php\TestCase
+final class AlignListsTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     /**
      * @dataProvider processListProvider

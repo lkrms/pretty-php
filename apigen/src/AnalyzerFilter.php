@@ -4,6 +4,4 @@ namespace Lkrms\ApiGen;
 
 use ApiGen\Analyzer\Filter;
 
-class AnalyzerFilter extends Filter
-{
-}
+class AnalyzerFilter extends Filter {}

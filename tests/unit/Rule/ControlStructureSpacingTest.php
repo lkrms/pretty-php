@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Pretty\Tests\Php\Rule;
+namespace Lkrms\PrettyPHP\Tests\Rule;
 
-final class ControlStructureSpacingTest extends \Lkrms\Pretty\Tests\Php\TestCase
+final class ControlStructureSpacingTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     /**
      * @dataProvider processTokenProvider

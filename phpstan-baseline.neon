@@ -1,111 +1,111 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$Check is never written, only read\\.$#"
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$Check is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$ConfigFile is never written, only read\\.$#"
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$ConfigFile is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$Diff is never written, only read\\.$#"
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$Diff is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$ExcludeRegex is never written, only read\\.$#"
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$ExcludeRegex is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$Fast is never written, only read\\.$#"
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$Fast is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$IgnoreNewlines is never written, only read\\.$#"
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$IgnoreNewlines is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$IncludeIfPhpRegex is never written, only read\\.$#"
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$IncludeIfPhpRegex is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$IncludeRegex is never written, only read\\.$#"
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$IncludeRegex is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$NoSimplifyStrings is never written, only read\\.$#"
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$NoSimplifyStrings is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$NoSortImports is never written, only read\\.$#"
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$NoSortImports is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$OperatorsFirst is never written, only read\\.$#"
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$OperatorsFirst is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$OperatorsLast is never written, only read\\.$#"
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$OperatorsLast is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$OutputFiles is never written, only read\\.$#"
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$OutputFiles is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$Preset is never written, only read\\.$#"
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$Preset is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$PrintConfig is never written, only read\\.$#"
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$PrintConfig is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$Psr12 is never written, only read\\.$#"
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$Psr12 is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$Quiet is never written, only read\\.$#"
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$Quiet is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$ReportTimers is never written, only read\\.$#"
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$ReportTimers is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$SortImportsBy is never written, only read\\.$#"
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$SortImportsBy is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$StdinFilename is never written, only read\\.$#"
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$StdinFilename is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\Pretty\\\\Command\\\\FormatPhp\\:\\:\\$Verbose is never written, only read\\.$#"
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$Verbose is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
 		-
 			message: "#^Call to function is_bool\\(\\) with '\\*'\\|bool\\|int will always evaluate to false\\.$#"
 			count: 1
-			path: src/Php/Formatter.php
+			path: src/Formatter.php

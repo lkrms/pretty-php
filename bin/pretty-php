@@ -2,7 +2,7 @@
 <?php declare(strict_types=1);
 
 use Lkrms\Cli\CliApplication;
-use Lkrms\Pretty\Command\FormatPhp;
+use Lkrms\PrettyPHP\Command\FormatPhp;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 

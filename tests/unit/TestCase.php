@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Pretty\Tests\Php;
+namespace Lkrms\PrettyPHP\Tests;
 
-use Lkrms\Pretty\Php\Formatter;
+use Lkrms\PrettyPHP\Formatter;
 
 abstract class TestCase extends \PHPUnit\Framework\TestCase
 {

@@ -1,0 +1,89 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Format current file to output panel",
+            "type": "php",
+            "request": "launch",
+            "program": "${workspaceFolder:pretty-php}/bin/pretty-php",
+            "cwd": "${fileDirname}",
+            "port": 0,
+            "runtimeExecutable": "php",
+            "runtimeArgs": [
+                "-dzend_extension=xdebug.so",
+                "-dxdebug.start_with_request=yes",
+                "-dshort_open_tag=on"
+            ],
+            "env": {
+                "XDEBUG_MODE": "debug,develop",
+                "XDEBUG_CONFIG": "client_port=${port}"
+            },
+            "xdebugSettings": {
+                "max_children": 10000,
+                "show_hidden": 1,
+                "max_data": 10000000
+            },
+            "skipFiles": [
+                "!**/vendor/lkrms/**",
+                "**/vendor/**"
+            ],
+            "args": [
+                "--debug",
+                "--verbose",
+                "--no-config",
+                "--output",
+                "-",
+                "${file}"
+            ]
+        },
+        {
+            "name": "Format current file, with optional arguments",
+            "type": "php",
+            "request": "launch",
+            "program": "${workspaceFolder:pretty-php}/bin/pretty-php",
+            "cwd": "${fileDirname}",
+            "port": 0,
+            "runtimeExecutable": "bash",
+            "runtimeArgs": [
+                "-c",
+                "eval \"args=(${*: -1})\" && php \"${@:1:$#-1}\" \"${args[@]}\"",
+                "bash",
+                "-dzend_extension=xdebug.so",
+                "-dxdebug.start_with_request=yes",
+                "-dshort_open_tag=on"
+            ],
+            "env": {
+                "XDEBUG_MODE": "debug,develop",
+                "XDEBUG_CONFIG": "client_port=${port}"
+            },
+            "xdebugSettings": {
+                "max_children": 10000,
+                "show_hidden": 1,
+                "max_data": 10000000
+            },
+            "skipFiles": [
+                "!**/vendor/lkrms/**",
+                "**/vendor/**"
+            ],
+            "args": [
+                "--debug",
+                "--verbose",
+                "--no-config",
+                // This is expanded without quoting
+                "${input:prettyPhpArgs} \"${file}\""
+            ]
+        }
+    ],
+    "inputs": [
+        {
+            "id": "prettyPhpArgs",
+            "type": "command",
+            "command": "memento.promptString",
+            "args": {
+                "id": "prettyPhpArgs",
+                "description": "pretty-php command line arguments",
+                "default": "-o -"
+            }
+        }
+    ]
+}

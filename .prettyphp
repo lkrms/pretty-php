@@ -1,10 +1,12 @@
 {
     "src": [
-        "bin",
+        "bootstrap.php",
         "src",
-        "tests/unit",
+        "bin",
+        "tests\/unit",
         "scripts",
-        "bootstrap.php"
+        "box",
+        "apigen"
     ],
     "includeIfPhp": true,
     "enable": [
@@ -14,5 +16,6 @@
         "preserve-one-line",
         "strict-lists"
     ],
-    "heredocIndent": "none"
+    "heredocIndent": "none",
+    "sortImportsBy": "depth"
 }

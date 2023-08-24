@@ -4,6 +4,4 @@ namespace Lkrms\ApiGen;
 
 use ApiGen\Renderer\Filter;
 
-class RendererFilter extends Filter
-{
-}
+class RendererFilter extends Filter {}
