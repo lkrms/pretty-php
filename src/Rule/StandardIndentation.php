@@ -26,7 +26,6 @@ final class StandardIndentation implements TokenRule
     {
         if ($token->OpenedBy) {
             $token->Indent = $token->OpenedBy->Indent;
-
             return;
         }
 
@@ -46,7 +45,6 @@ final class StandardIndentation implements TokenRule
             if (!$prev->NewlineAfterPreserved) {
                 $this->mirrorBracket($prev, true);
             }
-
             return;
         }
 

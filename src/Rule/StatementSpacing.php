@@ -8,8 +8,7 @@ use Lkrms\PrettyPHP\Rule\Contract\TokenRule;
 use Lkrms\PrettyPHP\Token\Token;
 
 /**
- * Add newlines after statement terminators and spaces between `for` loop
- * expressions
+ * Apply whitespace to statement terminators
  *
  */
 final class StatementSpacing implements TokenRule
@@ -18,39 +17,68 @@ final class StatementSpacing implements TokenRule
 
     public function getPriority(string $method): ?int
     {
-        return 80;
+        switch ($method) {
+            case self::PROCESS_TOKEN:
+                return 80;
+
+            default:
+                return null;
+        }
     }
 
     public function getTokenTypes(): array
     {
         return [
-            T_SEMICOLON,
             T_COLON,
-            T_CLOSE_TAG,
+            T_SEMICOLON,
         ];
     }
 
     public function processToken(Token $token): void
     {
-        if ($token->IsStatementTerminator) {
-            $token->prev()->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
+        switch ($token->id) {
+            case T_COLON:
+                // Ignore colons that don't start an alternative syntax block
+                if (!$token->ClosedBy) {
+                    return;
+                }
+                break;
 
-            return;
-        }
-        if ($token->id === T_SEMICOLON) {
-            $parent = $token->parent();
-            if ($parent->id === T_OPEN_PARENTHESIS && $parent->prevCode()->id === T_FOR) {
-                $token->WhitespaceAfter |= WhitespaceType::SPACE;
-                $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
-                $token->next()->WhitespaceMaskPrev |= WhitespaceType::SPACE;
+            case T_SEMICOLON:
+                // Add SPACE after for loop expression delimiters where the next
+                // expression is non-empty
+                if ($token->Parent &&
+                        $token->Parent->_prevCode &&
+                        $token->Parent->id === T_OPEN_PARENTHESIS &&
+                        $token->Parent->_prevCode->id === T_FOR) {
+                    if (!$token->_nextSibling ||
+                            $token->_nextSibling->id === T_SEMICOLON) {
+                        return;
+                    }
+                    $token->WhitespaceAfter |= WhitespaceType::SPACE;
+                    $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
+                    $token->_next->WhitespaceMaskPrev |= WhitespaceType::SPACE;
+                    return;
+                }
 
-                return;
-            }
-            if ($token->startOfStatement()->id === T_HALT_COMPILER) {
-                return;
-            }
-        } elseif (!$token->startsAlternativeSyntax()) {
-            return;
+                // Don't make any changes after __halt_compiler()
+                if ($token->Statement->id === T_HALT_COMPILER) {
+                    return;
+                }
+
+                // Don't collapse whitespace before empty statements unless they
+                // follow a close bracket or semicolon
+                if ($token->Statement === $token) {
+                    if ($this->Formatter->CollectCodeProblems) {
+                        $this->Formatter->reportCodeProblem($this, 'Empty statement', $token);
+                    }
+                    if (!$this->TypeIndex->CloseBracket[$token->_prev->id] &&
+                            $token->_prev->id !== T_SEMICOLON) {
+                        return;
+                    }
+                }
+
+                break;
         }
 
         $token->WhitespaceBefore = WhitespaceType::NONE;

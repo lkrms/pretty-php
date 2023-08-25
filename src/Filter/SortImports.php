@@ -17,6 +17,16 @@ final class SortImports implements Filter
 {
     use FilterTrait;
 
+    /**
+     * @var string[]
+     */
+    private array $Search;
+
+    /**
+     * @var string[]
+     */
+    private array $Replace;
+
     public function filterTokens(array $tokens): array
     {
         $this->Tokens = array_values($tokens);
@@ -177,46 +187,73 @@ final class SortImports implements Filter
             return [$order, '', $tokens[0]->Index];
         }
 
-        // Strip comments and semicolons and normalise to:
-        //
-        //     use 2A
-        //     use 0A \ 0B \ 1{ D , E }
-        //     use 0A \ 0B \ 2C
-        //     use 0A \ 2B
-        //
-        // For output like:
-        //
-        //     use A\B\{D, E};
-        //     use A\B\C;
-        //     use A\B;
-        //     use A;
-        //
-        $depth = $this->Formatter->ImportSortOrder === ImportSortOrder::DEPTH;
         $import = '';
         foreach ($tokens as $token) {
-            if (!$token->is(TokenType::COMMENT) &&
-                    $token->id !== T_SEMICOLON) {
-                $import .= ($import ? ' ' : '') . $token->text;
+            if ($token->id === T_COMMENT ||
+                    $token->id === T_DOC_COMMENT ||
+                    $token->id === T_SEMICOLON) {
+                continue;
             }
+            $import .= ($import ? ' ' : '') . $token->text;
         }
-        $import = preg_replace(
-            [
-                '/\\\\/',
-                '/\h++/',
-                '/(?:^use(?: function| const)?|\\\\) (?=[^ \\\\{]+(?: [^\\\\]|$))/i',
-                '/\\\\ (?=\{)/i',
-                '/(?:^use(?: function| const)?|\\\\) (?=[^ \\\\]+ \\\\)/i',
-            ],
-            [
-                ' \ ',
-                ' ',
-                $depth ? '${0}2' : '${0}0',
-                $depth ? '${0}1' : '${0}1',
-                $depth ? '${0}0' : '${0}0',
-            ],
-            $import
-        );
 
-        return [$order, $import, $tokens[0]->Index];
+        return [
+            $order,
+            preg_replace($this->Search, $this->Replace, $import),
+            $tokens[0]->Index,
+        ];
+    }
+
+    public function reset(): void
+    {
+        // If sorting depth-first, normalise to:
+        //
+        // ```
+        // use 2A
+        // use 0A \ 0B \ 1{ D , E }
+        // use 0A \ 0B \ 2C
+        // use 0A \ 2B
+        // ```
+        //
+        // Otherwise, normalise to:
+        //
+        // ```
+        // use A
+        // use A \ B \ D , E
+        // use A \ B \ C
+        // use A \ B
+        // ```
+        $this->Search = [
+            '/\\\\/',
+            '/\h++/',
+        ];
+
+        $this->Replace = [
+            ' \ ',
+            ' ',
+        ];
+
+        switch ($this->Formatter->ImportSortOrder) {
+            case ImportSortOrder::DEPTH:
+                array_push(
+                    $this->Search,
+                    '/(?:^use(?: function| const)?|\\\\) (?=[^ \\\\{]+(?: [^\\\\]|$))/i',
+                    '/\\\\ (?=\{)/',
+                    '/(?:^use(?: function| const)?|\\\\) (?=[^ \\\\]+ \\\\)/i',
+                );
+                array_push(
+                    $this->Replace,
+                    '${0}2',
+                    '${0}1',
+                    '${0}0',
+                );
+                break;
+
+            case ImportSortOrder::NAME:
+            default:
+                $this->Search[] = '/(?<=\\\\ )\{ /';
+                $this->Replace[] = '';
+                break;
+        }
     }
 }

@@ -8,8 +8,7 @@ use Lkrms\PrettyPHP\Rule\Contract\BlockRule;
 use Lkrms\PrettyPHP\Token\Token;
 
 /**
- * Align consecutive assignment operators and double arrows when they have the
- * same context
+ * Align consecutive operators and values
  *
  */
 final class AlignData implements BlockRule

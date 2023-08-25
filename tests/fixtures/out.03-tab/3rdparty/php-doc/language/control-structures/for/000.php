@@ -7,7 +7,7 @@ for ($i = 1; $i <= 10; $i++) {
 
 /* example 2 */
 
-for ($i = 1; ; $i++) {
+for ($i = 1;; $i++) {
 	if ($i > 10) {
 		break;
 	}
@@ -17,7 +17,7 @@ for ($i = 1; ; $i++) {
 /* example 3 */
 
 $i = 1;
-for (; ; ) {
+for (;;) {
 	if ($i > 10) {
 		break;
 	}
