@@ -285,7 +285,7 @@ final class Formatter implements IReadable
     private bool $_Psr12Compliance = false;
 
     /**
-     * @var Rule[]
+     * @var array<string,Rule>
      */
     private array $Rules;
 
@@ -295,38 +295,48 @@ final class Formatter implements IReadable
     private array $TokenRuleTypes;
 
     /**
-     * @var Filter[]
+     * @var array<string,Filter>
      */
     private array $Filters;
 
     /**
-     * @var Filter[]
+     * @var array<string,Filter>
      */
     private array $FormatFilters;
 
     /**
-     * @var Filter[]
+     * @var array<string,Filter>
      */
     private array $ComparisonFilters;
 
     /**
+     * @var array<int,Filter>
+     */
+    private array $FormatFilterList;
+
+    /**
+     * @var array<int,Filter>
+     */
+    private array $ComparisonFilterList;
+
+    /**
      * [ [ Rule object, method name ], ... ]
      *
-     * @var array<array{TokenRule|ListRule,string}>
+     * @var array<string,array{TokenRule|ListRule,string}>
      */
     private array $MainLoop;
 
     /**
      * [ [ Rule object, method name ], ... ]
      *
-     * @var array<array{BlockRule,string}>
+     * @var array<string,array{BlockRule,string}>
      */
     private array $BlockLoop;
 
     /**
      * [ [ Rule object, method name ], ... ]
      *
-     * @var array<array{Rule,string}>
+     * @var array<string,array{Rule,string}>
      */
     private array $BeforeRender;
 
@@ -500,6 +510,8 @@ final class Formatter implements IReadable
         );
 
         $this->Filters = array_merge($this->FormatFilters, $comparisonFilters);
+        $this->FormatFilterList = array_values($this->FormatFilters);
+        $this->ComparisonFilterList = array_values($this->ComparisonFilters);
     }
 
     public function __clone()
@@ -534,6 +546,8 @@ final class Formatter implements IReadable
                 $this->ComparisonFilters[$_filter] = $filter;
             }
         }
+        $this->FormatFilterList = array_values($this->FormatFilters);
+        $this->ComparisonFilterList = array_values($this->ComparisonFilters);
     }
 
     /**
@@ -626,7 +640,7 @@ final class Formatter implements IReadable
                 $code,
                 TOKEN_PARSE,
                 $this->TokenTypeIndex,
-                ...$this->FormatFilters
+                ...$this->FormatFilterList
             );
 
             if (!$this->Tokens) {
@@ -894,7 +908,7 @@ final class Formatter implements IReadable
             $tokensOut = Token::onlyTokenize(
                 $out,
                 TOKEN_PARSE,
-                ...$this->ComparisonFilters
+                ...$this->ComparisonFilterList
             );
         } catch (ParseError $ex) {
             throw new FormatterException(
@@ -912,7 +926,7 @@ final class Formatter implements IReadable
         $tokensIn = Token::onlyTokenize(
             $code,
             TOKEN_PARSE,
-            ...$this->ComparisonFilters
+            ...$this->ComparisonFilterList
         );
 
         $before = $this->simplifyTokens($tokensIn);
