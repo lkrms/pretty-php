@@ -14,10 +14,16 @@ use Lkrms\Concept\Enumeration;
 final class FormatterFlag extends Enumeration
 {
     /**
+     * Collect warnings about non-critical problems detected in formatted code
+     *
+     */
+    public const COLLECT_CODE_PROBLEMS = 1;
+
+    /**
      * Print warnings about non-critical problems detected in formatted code
      *
      */
-    public const REPORT_CODE_PROBLEMS = 1;
+    public const REPORT_CODE_PROBLEMS = 2;
 
     /**
      * Enable debug mode
@@ -26,11 +32,11 @@ final class FormatterFlag extends Enumeration
      * returns `true`.
      *
      */
-    public const DEBUG = 2;
+    public const DEBUG = 4;
 
     /**
      * In debug mode, render output after processing each pass of each rule
      *
      */
-    public const LOG_PROGRESS = 4;
+    public const LOG_PROGRESS = 8;
 }

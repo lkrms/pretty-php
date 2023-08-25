@@ -1,9 +1,9 @@
 <?php
 namespace MyProject;
 
+use Project\Connection;
 use A;
 use C;
-use Project\Connection;
 
 class A
 {

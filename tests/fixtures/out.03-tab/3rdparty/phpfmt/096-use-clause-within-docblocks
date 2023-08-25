@@ -2,8 +2,8 @@
 
 namespace NS1;
 
-use AA\BB;
 use AA\BB\CC as CC;
+use AA\BB;
 
 class SomeClass
 {

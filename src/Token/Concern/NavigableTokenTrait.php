@@ -338,6 +338,7 @@ trait NavigableTokenTrait
                         $_prev->nextSiblingOf(T_OPEN_BRACE)->ClosedBy === $token) {
                     $_next = $_prev->_nextSibling;
                     if ($_next->id === T_OPEN_PARENTHESIS ||
+                            $_next->id === T_OPEN_BRACE ||
                             $_next->id === T_EXTENDS ||
                             $_next->id === T_IMPLEMENTS) {
                         $prev = $token;

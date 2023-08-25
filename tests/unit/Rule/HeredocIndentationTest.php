@@ -41,10 +41,9 @@ Fugiat magna laborum ut occaecat sit nostrud non eiusmod laboris nisi.
 EOF
 ];
 PHP,
-                ['callback' => function (Formatter $formatter): Formatter {
-                    $formatter->HeredocIndent = HeredocIndent::NONE;
-                    return $formatter;
-                }],
+                ['callback' =>
+                    fn(Formatter $f) =>
+                        $f->with('HeredocIndent', HeredocIndent::NONE)],
             ],
             'LINE' => [
                 <<<'PHP'
@@ -64,10 +63,9 @@ Incididunt in sint sit aliqua pariatur ad.
 EOF;
 };
 PHP,
-                ['callback' => function (Formatter $formatter): Formatter {
-                    $formatter->HeredocIndent = HeredocIndent::LINE;
-                    return $formatter;
-                }],
+                ['callback' =>
+                    fn(Formatter $f) =>
+                        $f->with('HeredocIndent', HeredocIndent::LINE)],
             ],
             'MIXED' => [
                 <<<'PHP'
@@ -91,10 +89,9 @@ $string2 =
 Aliquip mollit elit consectetur nulla laborum minim amet.
 EOF;
 PHP,
-                ['callback' => function (Formatter $formatter): Formatter {
-                    $formatter->HeredocIndent = HeredocIndent::MIXED;
-                    return $formatter;
-                }],
+                ['callback' =>
+                    fn(Formatter $f) =>
+                        $f->with('HeredocIndent', HeredocIndent::MIXED)],
             ],
             'HANGING' => [
                 <<<'PHP'
@@ -118,10 +115,9 @@ $string2 =
 Aliquip mollit elit consectetur nulla laborum minim amet.
 EOF;
 PHP,
-                ['callback' => function (Formatter $formatter): Formatter {
-                    $formatter->HeredocIndent = HeredocIndent::HANGING;
-                    return $formatter;
-                }],
+                ['callback' =>
+                    fn(Formatter $f) =>
+                        $f->with('HeredocIndent', HeredocIndent::HANGING)],
             ],
         ];
     }

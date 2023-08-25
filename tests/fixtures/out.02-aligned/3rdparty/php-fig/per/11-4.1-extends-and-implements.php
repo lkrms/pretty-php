@@ -2,9 +2,9 @@
 
 namespace Vendor\Package;
 
+use OtherVendor\OtherPackage\BazClass;
 use BarClass as Bar;
 use FooClass;
-use OtherVendor\OtherPackage\BazClass;
 
 class ClassName extends ParentClass implements
     \ArrayAccess,

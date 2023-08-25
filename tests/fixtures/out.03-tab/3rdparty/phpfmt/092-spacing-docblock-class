@@ -2,8 +2,8 @@
 
 namespace NS\SNS;
 
-use ONS\A;
 use ONS\A\B;
+use ONS\A;
 
 /**
  * Comment

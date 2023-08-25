@@ -4,29 +4,35 @@ namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
-use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
-use Lkrms\PrettyPHP\Rule\Contract\TokenRule;
+use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
+use Lkrms\PrettyPHP\Rule\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Token\Token;
 
 /**
- * Apply spacing to structural braces based on their context
+ * Apply whitespace to structural braces based on their context
  *
- * Specifically:
- * - Place open braces on their own line if they
- *   - follow a declaration (e.g. `class` or `function`),
- *   - do not enclose an anonymous function, and
- *   - are not part of a `use` statement
- * - Otherwise, place open braces at the end of a line
- * - Suppress blank lines after open braces and before close braces
- * - Allow control structures to continue on the same line as close braces
- * - Suppress horizontal whitespace between empty braces (`{}`)
- * - Suppress vertical whitespace between `)` and `{` if they appear
- *   consecutively on their own lines
+ * Open braces are placed on their own line if they:
  *
+ * - follow a declaration (e.g. `class` or `function`),
+ * - do not enclose an anonymous class declared on a single line,
+ * - do not enclose an anonymous function, and
+ * - are not part of a `use` statement
+ *
+ * Blank lines after open braces and before close braces are suppressed, and
+ * newlines are added after close braces unless they are part of a continuing
+ * control structure or expression.
+ *
+ * Horizontal whitespace between empty braces is suppressed, and empty class and
+ * function bodies are moved to the end of the previous line.
+ *
+ * Consecutive `)` and `{` tokens appearing on their own lines are collapsed to
+ * `) {`.
+ *
+ * @api
  */
-final class PlaceBraces implements TokenRule
+final class PlaceBraces implements MultiTokenRule
 {
-    use TokenRuleTrait;
+    use MultiTokenRuleTrait;
 
     /**
      * @var array<Token[]>
@@ -36,7 +42,16 @@ final class PlaceBraces implements TokenRule
 
     public function getPriority(string $method): ?int
     {
-        return 94;
+        switch ($method) {
+            case self::PROCESS_TOKENS:
+                return 94;
+
+            case self::BEFORE_RENDER:
+                return 400;
+
+            default:
+                return null;
+        }
     }
 
     public function getTokenTypes(): array
@@ -47,24 +62,56 @@ final class PlaceBraces implements TokenRule
         ];
     }
 
-    public function processToken(Token $token): void
+    public function processTokens(array $tokens): void
     {
-        if (!($match = $token->prevSibling(2)->id === T_MATCH) &&
-                !$token->isStructuralBrace(false)) {
-            return;
-        }
+        foreach ($tokens as $token) {
+            $isMatch = $token->isMatchBrace();
+            if (!$isMatch &&
+                    !$token->isStructuralBrace(false)) {
+                continue;
+            }
 
-        $next = $token->next();
-        if ($token->id === T_OPEN_BRACE) {
-            // Move empty bodies to the end of the previous line
+            if ($token->id !== T_OPEN_BRACE) {
+                // Suppress blank lines before close braces
+                $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
+                $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
+
+                // Continue without moving subsequent code to the next line if
+                // the brace is part of an expression
+                if ($isMatch) {
+                    continue;
+                }
+                $nextCode = $token->_nextCode;
+                if ($nextCode &&
+                    (($nextCode->OpenedBy && $nextCode->id !== T_CLOSE_BRACE) ||
+                        $nextCode === $token->EndStatement)) {
+                    continue;
+                }
+
+                // Keep structures like `} else {` on the same line too
+                if ($nextCode && $nextCode->continuesControlStructure()) {
+                    $token->WhitespaceAfter |= WhitespaceType::SPACE;
+                    if (!$nextCode->BodyIsUnenclosed) {
+                        $nextCode->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
+                    }
+                    continue;
+                }
+
+                // Otherwise, add newlines after close braces
+                $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
+                continue;
+            }
+
+            $next = $token->_next;
             $parts = $token->Expression->declarationParts();
+
+            // Move empty bodies to the end of the previous line
             if ($next->id === T_CLOSE_BRACE &&
                     $parts->hasOneOf(T_CLASS, T_ENUM, T_FUNCTION, T_INTERFACE, T_TRAIT)) {
                 $token->WhitespaceBefore |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskPrev = WhitespaceType::SPACE;
                 $token->WhitespaceMaskNext = WhitespaceType::NONE;
-
-                return;
+                continue;
             }
 
             // Otherwise, add a newline before this open brace if:
@@ -72,62 +119,47 @@ final class PlaceBraces implements TokenRule
             // 2. it isn't part of an anonymous function
             // 3. it isn't part of a `use` statement, and
             // 4. either:
-            //    - it's part of an anonymous class declaration that
-            //      spans multiple lines, or
+            //    - it's part of an anonymous class declaration that spans
+            //      multiple lines, or
             //    - the token before the declaration is:
             //      - `;`
             //      - `{`
             //      - `}`
             //      - a T_CLOSE_TAG statement terminator, or
             //      - non-existent (no code precedes the declaration)
-            $line = WhitespaceType::NONE;
-
             if (!$this->Formatter->OneTrueBraceStyle &&
                     $parts->hasOneOf(...TokenType::DECLARATION) &&
-                    !$parts->last()->is([T_DECLARE, T_FUNCTION])) {
+                    ($last = $parts->last())->id !== T_DECLARE &&
+                    $last->id !== T_FUNCTION) {
                 $start = $parts->first();
                 if ($start->id !== T_USE &&
                     ((!($prevCode = $start->_prevCode) ||
-                            $prevCode->is([T_SEMICOLON, T_OPEN_BRACE, T_CLOSE_BRACE, T_CLOSE_TAG])) ||
+                            $prevCode->id === T_SEMICOLON ||
+                            $prevCode->id === T_OPEN_BRACE ||
+                            $prevCode->id === T_CLOSE_BRACE ||
+                            $prevCode->id === T_CLOSE_TAG) ||
                         ($start->id === T_NEW && $parts->hasNewlineBetweenTokens()))) {
-                    $line = WhitespaceType::LINE;
+                    $token->WhitespaceBefore |= WhitespaceType::LINE;
                 }
             }
+
+            // Add newlines and suppress blank lines after open braces
+            $token->WhitespaceBefore |= WhitespaceType::SPACE;
+            $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
+            $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
+
+            // Suppress horizontal whitespace between empty braces
+            if ($next->id === T_CLOSE_BRACE) {
+                $token->WhitespaceMaskNext &= ~WhitespaceType::SPACE;
+            }
+
             $prev = $parts->hasOneOf(T_FUNCTION)
                 ? $parts->last()->nextSibling()->canonicalClose()
                 : $token->prevCode();
             if ($prev->id === T_CLOSE_PARENTHESIS) {
                 $this->BracketBracePairs[] = [$prev, $token];
             }
-            $token->WhitespaceBefore |= WhitespaceType::SPACE | $line;
-            $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
-            $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
-            if ($next->id === T_CLOSE_BRACE) {
-                $token->WhitespaceMaskNext &= ~WhitespaceType::SPACE;
-            }
-
-            return;
         }
-
-        $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
-        $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
-
-        if ($match ||
-                ($nextCode = $token->nextCode())->is([T_CLOSE_PARENTHESIS, T_CLOSE_BRACKET]) ||
-                $nextCode === $token->EndStatement) {
-            return;
-        }
-
-        if ($next->continuesControlStructure()) {
-            $token->WhitespaceAfter |= WhitespaceType::SPACE;
-            if (!$next->BodyIsUnenclosed) {
-                $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
-            }
-
-            return;
-        }
-
-        $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
     }
 
     public function beforeRender(array $tokens): void

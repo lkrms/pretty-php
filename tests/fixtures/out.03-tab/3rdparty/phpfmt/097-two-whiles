@@ -40,8 +40,7 @@ do {
 		//lll
 		while (true);
 		do {
-		}  /* lll */
-		while (true);
+		} /* lll */ while (true);
 
 		while (true) {
 		}

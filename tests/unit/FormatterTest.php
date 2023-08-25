@@ -4,6 +4,7 @@ namespace Lkrms\PrettyPHP\Tests;
 
 use Lkrms\Facade\File;
 use Lkrms\Facade\Sys;
+use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Rule\AlignArrowFunctions;
 use Lkrms\PrettyPHP\Rule\AlignChains;
 use Lkrms\PrettyPHP\Rule\AlignComments;
@@ -60,10 +61,8 @@ $a,
 $b];
 PHP,
                 ['callback' =>
-                    function (Formatter $formatter): Formatter {
-                        $formatter->SymmetricalBrackets = false;
-                        return $formatter;
-                    }],
+                    fn(Formatter $f) =>
+                        $f->with('SymmetricalBrackets', false)],
             ],
             'empty heredoc' => [
                 <<<'PHP'
@@ -163,6 +162,37 @@ while ($b):
 endwhile;
 else:
 endif;
+PHP,
+            ],
+            'empty statements inside braces' => [
+                <<<'PHP'
+<?php
+function a()
+{
+    ;
+    if ($b) {
+        ;
+        c();
+        if ($d) {
+            e();
+        }
+    }
+    f();
+    g();
+}
+
+PHP,
+                <<<'PHP'
+<?php
+function a()
+{;
+if ($b) {;
+    c();
+if ($d) {
+    e();
+} }
+    f();
+    g(); }
 PHP,
             ],
         ];
@@ -317,7 +347,8 @@ PHP,
                 'skipFilters' => [],
                 'callback' =>
                     fn(Formatter $f) =>
-                        $f->withPsr12Compliance(),
+                        $f->withPsr12Compliance()
+                          ->with('ImportSortOrder', ImportSortOrder::NONE),
             ],
         ];
     }

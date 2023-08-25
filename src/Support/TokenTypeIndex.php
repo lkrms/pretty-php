@@ -191,6 +191,18 @@ class TokenTypeIndex implements IImmutable
      * @readonly
      * @var array<int,bool>
      */
+    public array $HasStatementWithOptionalBraces;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $HasExpressionAndStatementWithOptionalBraces;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
     public array $NotCode;
 
     /**
@@ -426,6 +438,8 @@ class TokenTypeIndex implements IImmutable
         $this->DeclarationPart = TT::getIndex(...TT::DECLARATION_PART);
         $this->DeclarationPartWithNew = TT::getIndex(...TT::DECLARATION_PART_WITH_NEW);
         $this->HasStatement = TT::getIndex(...TT::HAS_STATEMENT);
+        $this->HasStatementWithOptionalBraces = TT::getIndex(...TT::HAS_STATEMENT_WITH_OPTIONAL_BRACES);
+        $this->HasExpressionAndStatementWithOptionalBraces = TT::getIndex(...TT::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES);
         $this->NotCode = TT::getIndex(...TT::NOT_CODE);
         $this->Visibility = TT::getIndex(...TT::VISIBILITY);
     }

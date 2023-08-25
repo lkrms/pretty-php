@@ -1,9 +1,9 @@
 <?php
-use Acme\Vendor\C;
 use Acme\Vendor\{
     A,
     B
 };
+use Acme\Vendor\C;
 
 class Test
 {

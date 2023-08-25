@@ -24,16 +24,18 @@ final class ImportSortOrder extends Enumeration
     /**
      * Order imports by name
      *
-     * Grouped imports appear after ungrouped imports.
+     * Grouped imports receive no special treatment.
      *
      * Example:
      *
      * ```php
      * <?php
      * use A;
-     * use A\B;
-     * use A\B\C;
-     * use A\B\{D, E};
+     * use B\C\E;
+     * use B\C\F\G;
+     * use B\C\F\{H, I};
+     * use B\C\F\J;
+     * use B\D;
      * ```
      */
     public const NAME = 1;
@@ -47,9 +49,11 @@ final class ImportSortOrder extends Enumeration
      *
      * ```php
      * <?php
-     * use A\B\{D, E};
-     * use A\B\C;
-     * use A\B;
+     * use B\C\F\{H, I};
+     * use B\C\F\G;
+     * use B\C\F\J;
+     * use B\C\E;
+     * use B\D;
      * use A;
      * ```
      */

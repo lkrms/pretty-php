@@ -591,7 +591,7 @@ Use `--sort-imports-by=none` to group import statements by type without changing
 their order.
 
 Unless disabled by `-M/--no-sort-imports`, the default is to sort imports by
-*name*.
+*depth*.
 EOF)
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys(self::IMPORT_SORT_ORDER_MAP))
@@ -1035,7 +1035,7 @@ EOF,
                 }
                 $f->ImportSortOrder = $this->SortImportsBy
                     ? self::IMPORT_SORT_ORDER_MAP[$this->SortImportsBy]
-                    : ImportSortOrder::NAME;
+                    : ImportSortOrder::DEPTH;
                 $this->SpacesBesideCode === null || $f->SpacesBesideCode = $this->SpacesBesideCode;
                 $this->SymmetricalBrackets === null || $f->SymmetricalBrackets = $this->SymmetricalBrackets;
                 $this->IncreaseIndentBetweenUnenclosedTags === null || $f->IncreaseIndentBetweenUnenclosedTags = $this->IncreaseIndentBetweenUnenclosedTags;
