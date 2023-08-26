@@ -9,7 +9,7 @@ use Lkrms\PrettyPHP\Rule\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Token\Token;
 
 /**
- * Apply whitespace to structural braces based on their context
+ * Apply whitespace to structural braces
  *
  * Open braces are placed on their own line if they:
  *

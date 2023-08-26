@@ -100,7 +100,7 @@ final class DeclarationSpacing implements MultiTokenRule
                         !$token->_nextCode->is([T_VARIABLE, ...TokenType::DECLARATION])) ||
                     ($token->id === T_NAMESPACE &&
                         $token->_nextCode->id === T_NS_SEPARATOR) ||
-                    ($token->is(TokenType::VISIBILITY) && $token->inFunctionDeclaration())) {
+                    ($token->is(TokenType::VISIBILITY) && $token->inParameterList())) {
                 continue;
             }
 

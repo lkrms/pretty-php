@@ -172,22 +172,22 @@ final class TokenCollection extends TypedCollection implements Stringable
     public function addWhitespaceBefore(int $type, bool $critical = false)
     {
         if ($critical) {
-            return $this->forEach(
-                function (Token $t) use ($type) {
-                    $t->CriticalWhitespaceBefore |= $type;
-                    $t->WhitespaceMaskPrev |= $type;
-                    $t->prev()->WhitespaceMaskNext |= $type;
-                }
-            );
+            /** @var Token $token */
+            foreach ($this as $token) {
+                $token->CriticalWhitespaceBefore |= $type;
+            }
+            return $this;
         }
 
-        return $this->forEach(
-            function (Token $t) use ($type) {
-                $t->WhitespaceBefore |= $type;
-                $t->WhitespaceMaskPrev |= $type;
-                $t->prev()->WhitespaceMaskNext |= $type;
+        /** @var Token $token */
+        foreach ($this as $token) {
+            $token->WhitespaceBefore |= $type;
+            $token->WhitespaceMaskPrev |= $type;
+            if ($token->_prev) {
+                $token->_prev->WhitespaceMaskNext |= $type;
             }
-        );
+        }
+        return $this;
     }
 
     /**
@@ -196,22 +196,22 @@ final class TokenCollection extends TypedCollection implements Stringable
     public function addWhitespaceAfter(int $type, bool $critical = false)
     {
         if ($critical) {
-            return $this->forEach(
-                function (Token $t) use ($type) {
-                    $t->CriticalWhitespaceAfter |= $type;
-                    $t->WhitespaceMaskNext |= $type;
-                    $t->next()->WhitespaceMaskPrev |= $type;
-                }
-            );
+            /** @var Token $token */
+            foreach ($this as $token) {
+                $token->CriticalWhitespaceAfter |= $type;
+            }
+            return $this;
         }
 
-        return $this->forEach(
-            function (Token $t) use ($type) {
-                $t->WhitespaceAfter |= $type;
-                $t->WhitespaceMaskNext |= $type;
-                $t->next()->WhitespaceMaskPrev |= $type;
+        /** @var Token $token */
+        foreach ($this as $token) {
+            $token->WhitespaceAfter |= $type;
+            $token->WhitespaceMaskNext |= $type;
+            if ($token->_next) {
+                $token->_next->WhitespaceMaskPrev |= $type;
             }
-        );
+        }
+        return $this;
     }
 
     /**

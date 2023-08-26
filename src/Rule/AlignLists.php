@@ -23,7 +23,13 @@ final class AlignLists implements ListRule
 
     public function getPriority(string $method): ?int
     {
-        return 400;
+        switch ($method) {
+            case self::PROCESS_LIST:
+                return 400;
+
+            default:
+                return null;
+        }
     }
 
     public function processList(Token $owner, TokenCollection $items): void
@@ -34,8 +40,9 @@ final class AlignLists implements ListRule
 
         // Do nothing if:
         // - an interface list has a leading line break, or
-        // - there are no multi-line items, and no line breaks between items
-        if ((!$owner->ClosedBy && $owner->hasNewlineAfterCode()) ||
+        // - the list does not break over multiple lines
+        if ((!$owner->ClosedBy &&
+                    $owner->hasNewlineAfterCode()) ||
                 !$first->collect($lastToken)->hasNewline()) {
             return;
         }
@@ -61,6 +68,9 @@ final class AlignLists implements ListRule
             function (Token $item, Token $to, int $delta) use ($owner) {
                 if (!$delta) {
                     return;
+                }
+                while (($adjacent = $to->lastSiblingBeforeNewline()) !== $to) {
+                    $to = $adjacent;
                 }
                 while (($adjacent = $to->adjacentBeforeNewline(false)) &&
                     ($adjacent->id !== T_OPEN_BRACE ||

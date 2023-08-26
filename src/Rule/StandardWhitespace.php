@@ -257,7 +257,7 @@ final class StandardWhitespace implements TokenRule
         // before and after other attributes, and suppress BLANK after all
         // attributes
         if ($token->id === T_ATTRIBUTE) {
-            if (!$token->inFunctionDeclaration()) {
+            if (!$token->inParameterList()) {
                 $token->WhitespaceBefore |= WhitespaceType::LINE;
                 $token->ClosedBy->WhitespaceAfter |= WhitespaceType::LINE;
             }
@@ -268,7 +268,7 @@ final class StandardWhitespace implements TokenRule
             return;
         }
         if ($token->id === T_ATTRIBUTE_COMMENT) {
-            if (!$token->inFunctionDeclaration()) {
+            if (!$token->inParameterList()) {
                 $token->WhitespaceBefore |= WhitespaceType::LINE;
                 $token->WhitespaceAfter |= WhitespaceType::LINE;
             }

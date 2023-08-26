@@ -106,6 +106,8 @@ final class TokenTypeTest extends \Lkrms\PrettyPHP\Tests\TestCase
         return [
             '[default] Intersection of TokenTypeIndex::$PreserveNewlineBefore and $PreserveNewlineAfter' => [
                 [
+                    T_ATTRIBUTE,
+                    T_ATTRIBUTE_COMMENT,
                     T_DOUBLE_ARROW,
                     T_COLON,
                 ],
@@ -113,6 +115,8 @@ final class TokenTypeTest extends \Lkrms\PrettyPHP\Tests\TestCase
             ],
             '[leading] Intersection of TokenTypeIndex::$PreserveNewlineBefore and $PreserveNewlineAfter' => [
                 [
+                    T_ATTRIBUTE,
+                    T_ATTRIBUTE_COMMENT,
                     T_DOUBLE_ARROW,
                     T_COLON,
                 ],
@@ -120,6 +124,8 @@ final class TokenTypeTest extends \Lkrms\PrettyPHP\Tests\TestCase
             ],
             '[trailing] Intersection of TokenTypeIndex::$PreserveNewlineBefore and $PreserveNewlineAfter' => [
                 [
+                    T_ATTRIBUTE,
+                    T_ATTRIBUTE_COMMENT,
                     T_DOUBLE_ARROW,
                     T_COLON,
                 ],

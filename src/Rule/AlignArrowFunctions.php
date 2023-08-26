@@ -16,7 +16,13 @@ final class AlignArrowFunctions implements TokenRule
 
     public function getPriority(string $method): ?int
     {
-        return 380;
+        switch ($method) {
+            case self::PROCESS_TOKEN:
+                return 380;
+
+            default:
+                return null;
+        }
     }
 
     public function getTokenTypes(): array
@@ -26,15 +32,18 @@ final class AlignArrowFunctions implements TokenRule
 
     public function processToken(Token $token): void
     {
-        $body = $token->nextSiblingOf(T_DOUBLE_ARROW)
-                      ->nextCode();
+        $arrow = $token->nextSiblingOf(T_DOUBLE_ARROW);
+        $body = $this->Formatter->NewlineBeforeFnDoubleArrows
+            ? $arrow
+            : $arrow->_nextCode;
+
         if (!$body->hasNewlineBefore()) {
             return;
         }
 
         // If the arrow function's arguments break over multiple lines, align
         // with the start of the previous line
-        $alignWith = $token->collect($body->prev())
+        $alignWith = $token->collect($body->_prev)
                            ->reverse()
                            ->find(fn(Token $t) =>
                                       $t->IsCode && $t->hasNewlineBefore() ||
@@ -51,10 +60,12 @@ final class AlignArrowFunctions implements TokenRule
 
     private function alignBody(Token $body, Token $alignWith, Token $until): void
     {
-        $diff = $body->getIndentDiff($alignWith);
-        $diff['LinePadding'] +=
+        $delta = $body->getIndentDelta($alignWith);
+        $delta->LinePadding +=
             $alignWith->alignmentOffset(false) + $this->Formatter->TabSize;
-        $body->collect($until)
-             ->forEach(fn(Token $t) => $t->applyIndentDiff($diff));
+
+        foreach ($body->collect($until) as $token) {
+            $delta->apply($token);
+        }
     }
 }

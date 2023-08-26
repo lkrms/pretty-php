@@ -40,12 +40,15 @@ class A4 extends B implements
         $j();
     }
 
-    function g(#[AttrQ(null)] $k)
-    {
+    function g(
+        #[AttrQ(null)]
+        $k
+    ) {
         echo $k;
     }
 
     function z(
-        #[AttrY] $x
+        #[AttrY]
+        $x
     ) {}
 }
