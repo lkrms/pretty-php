@@ -8,9 +8,9 @@ use Lkrms\PrettyPHP\Rule\AlignLists;
 final class AlignListsTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     /**
-     * @dataProvider processListProvider
+     * @dataProvider outputProvider
      */
-    public function testProcessList(string $expected, string $code): void
+    public function testOutput(string $expected, string $code): void
     {
         $this->assertCodeFormatIs($expected, $code, [AlignLists::class, AlignChains::class]);
     }
@@ -18,7 +18,7 @@ final class AlignListsTest extends \Lkrms\PrettyPHP\Tests\TestCase
     /**
      * @return array<string,array{string,string}>
      */
-    public static function processListProvider(): array
+    public static function outputProvider(): array
     {
         return [
             'array destructuring' => [

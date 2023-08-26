@@ -7,9 +7,9 @@ use Lkrms\PrettyPHP\Rule\AlignChains;
 final class AlignChainsTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     /**
-     * @dataProvider processTokenProvider
+     * @dataProvider outputProvider
      */
-    public function testProcessToken(string $expected, string $code): void
+    public function testOutput(string $expected, string $code): void
     {
         $this->assertCodeFormatIs($expected, $code, [AlignChains::class]);
     }
@@ -17,7 +17,7 @@ final class AlignChainsTest extends \Lkrms\PrettyPHP\Tests\TestCase
     /**
      * @return array<array{string,string}>
      */
-    public static function processTokenProvider(): array
+    public static function outputProvider(): array
     {
         return [
             [

@@ -7,11 +7,11 @@ use Lkrms\PrettyPHP\Rule\AlignData;
 final class StandardWhitespaceTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     /**
-     * @dataProvider processTokenProvider
+     * @dataProvider outputProvider
      *
      * @param string[] $addRules
      */
-    public function testProcessToken(string $expected, string $code, array $addRules = []): void
+    public function testOutput(string $expected, string $code, array $addRules = []): void
     {
         $this->assertCodeFormatIs($expected, $code, $addRules);
     }
@@ -19,7 +19,7 @@ final class StandardWhitespaceTest extends \Lkrms\PrettyPHP\Tests\TestCase
     /**
      * @return array<string,array{0:string,1:string,2?:string[]}>
      */
-    public static function processTokenProvider(): array
+    public static function outputProvider(): array
     {
         return [
             'indented tags #1' => [

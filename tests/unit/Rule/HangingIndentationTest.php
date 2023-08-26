@@ -7,9 +7,9 @@ use Lkrms\PrettyPHP\Rule\AlignChains;
 final class HangingIndentationTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     /**
-     * @dataProvider ternaryOperatorsProvider
+     * @dataProvider outputProvider
      */
-    public function testTernaryOperators(string $expected, string $code): void
+    public function testOutput(string $expected, string $code): void
     {
         $this->assertCodeFormatIs($expected, $code, [AlignChains::class]);
     }
@@ -17,7 +17,7 @@ final class HangingIndentationTest extends \Lkrms\PrettyPHP\Tests\TestCase
     /**
      * @return array<array{string,string}>
      */
-    public static function ternaryOperatorsProvider(): array
+    public static function outputProvider(): array
     {
         return [
             [
@@ -58,23 +58,6 @@ $result = true
 while (false);
 PHP,
             ],
-        ];
-    }
-
-    /**
-     * @dataProvider processTokenProvider
-     */
-    public function testProcessToken(string $expected, string $code): void
-    {
-        $this->assertCodeFormatIs($expected, $code, [AlignChains::class]);
-    }
-
-    /**
-     * @return array<array{string,string}>
-     */
-    public static function processTokenProvider(): array
-    {
-        return [
             [
                 <<<'PHP'
 <?php

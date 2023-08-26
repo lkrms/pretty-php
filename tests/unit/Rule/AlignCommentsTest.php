@@ -5,9 +5,9 @@ namespace Lkrms\PrettyPHP\Tests\Rule;
 final class AlignCommentsTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     /**
-     * @dataProvider processBlockProvider
+     * @dataProvider outputProvider
      */
-    public function testProcessBlock(string $expected, string $code): void
+    public function testOutput(string $expected, string $code): void
     {
         $this->assertCodeFormatIs($expected, $code);
     }
@@ -15,7 +15,7 @@ final class AlignCommentsTest extends \Lkrms\PrettyPHP\Tests\TestCase
     /**
      * @return array<string,array{string,string}>
      */
-    public static function processBlockProvider(): array
+    public static function outputProvider(): array
     {
         return [
             'standalone comments' => [

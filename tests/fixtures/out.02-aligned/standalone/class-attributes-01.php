@@ -30,7 +30,9 @@ class A4 extends B implements C,
 {
     #[AttrL(true)]
     #[AttrM(102, Types::FUNC)]
-    function f(#[AttrN(true), Attr(103, Types::PARAM)] #[AttrO()] string $h, #[AttrP] int $i, $j)
+    function f(#[AttrN(true), Attr(103, Types::PARAM)] #[AttrO()] string $h, #[AttrP] int $i, $j = [
+                                    '*'
+                                ])
     {
         $this->l($h, $i);
         $j();
@@ -41,5 +43,7 @@ class A4 extends B implements C,
         echo $k;
     }
 
-    function z(#[AttrY] $x) {}
+    function z(
+        #[AttrY] $x
+    ) {}
 }
