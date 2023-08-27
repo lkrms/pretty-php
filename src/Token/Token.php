@@ -6,6 +6,7 @@ use Lkrms\PrettyPHP\Catalog\CommentType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Support\TokenCollection;
+use Lkrms\PrettyPHP\Support\TokenIndentDelta;
 use Lkrms\PrettyPHP\Token\Concern\CollectibleTokenTrait;
 use Lkrms\PrettyPHP\Token\Concern\NavigableTokenTrait;
 use Lkrms\PrettyPHP\Formatter;
@@ -50,10 +51,24 @@ class Token extends PhpToken implements JsonSerializable
 
     public int $TagIndent = 0;
 
+    /**
+     * Indentation levels to ignore until the token is rendered, e.g. those
+     * applied to unenclosed control structure bodies
+     *
+     */
     public int $PreIndent = 0;
 
+    /**
+     * Indentation levels implied by the token's enclosing brackets
+     *
+     */
     public int $Indent = 0;
 
+    /**
+     * Indentation levels to remove when the token is rendered and to ignore
+     * otherwise, e.g. to indent `case` and `default` statements correctly
+     *
+     */
     public int $Deindent = 0;
 
     public int $HangingIndent = 0;
@@ -1215,15 +1230,39 @@ class Token extends PhpToken implements JsonSerializable
         return $outer->_nextCode;
     }
 
+    /**
+     * Get the first token of an expression, statement or block in a parent
+     * scope that appears between the token and the end of the line
+     *
+     * In this example, the token adjacent to `$b` is `{`:
+     *
+     * ```php
+     * if ($c &&
+     *         ($a || $b)) {
+     *     // ...
+     * }
+     * ```
+     *
+     * Returns `null` if:
+     *
+     * - there are no tokens adjacent to the token
+     * - neither the token nor its parent have a close bracket to establish a
+     *   distinct scope for subsequent tokens
+     * - `$requireAlignedWith` is `true` (the default) and there are no tokens
+     *   between the adjacent token and the end of the line with an
+     *   {@see Token::$AlignedWith} token
+     */
     final public function adjacentBeforeNewline(bool $requireAlignedWith = true): ?Token
     {
         // Return `null` if neither the token nor its parent have a close
-        // bracket to start from
+        // bracket
         $current = $this->ClosedBy ?: $this;
-        if (!$current->OpenedBy &&
-            !(($current = end($this->BracketStack)) &&
-                ($current = $current->ClosedBy))) {
-            return null;
+        if (!$current->OpenedBy) {
+            /** @var static|null */
+            $current = $current->Parent->ClosedBy ?? null;
+            if (!$current) {
+                return null;
+            }
         }
 
         // Find the last `)`, `]`, `}`, or `,` on the same line as the close
@@ -1278,6 +1317,24 @@ class Token extends PhpToken implements JsonSerializable
         }
 
         return ($from ?: $this)->collect($until ?? $this);
+    }
+
+    /**
+     * Get the token's last sibling before the end of the line
+     *
+     * The token returns itself if it satisfies the criteria.
+     */
+    final public function lastSiblingBeforeNewline(): Token
+    {
+        $eol = $this->endOfLine();
+        $current = $this->ClosedBy ?: $this;
+        do {
+            $last = $current;
+            $current = $current->_nextSibling;
+        } while ($current &&
+            $current->Index <= $eol->Index);
+
+        return $last;
     }
 
     final public function withoutTerminator(): Token
@@ -1587,7 +1644,15 @@ class Token extends PhpToken implements JsonSerializable
             (!$types || $parts->hasOneOf(...$types));
     }
 
-    public function inFunctionDeclaration(): bool
+    public function isParameterList(): bool
+    {
+        return $this->id === T_OPEN_PARENTHESIS &&
+            $this->_prevCode &&
+            ($this->_prevCode->id === T_FN ||
+                $this->prevOf(T_FUNCTION)->nextOf(T_OPEN_PARENTHESIS) === $this);
+    }
+
+    public function inParameterList(): bool
     {
         return $this->Parent &&
             $this->Parent->_prevCode &&
@@ -1596,32 +1661,9 @@ class Token extends PhpToken implements JsonSerializable
                 $this->Parent->prevOf(T_FUNCTION)->nextOf(T_OPEN_PARENTHESIS) === $this->Parent);
     }
 
-    /**
-     * @return array{PreIndent:int,Indent:int,Deindent:int,HangingIndent:int,LinePadding:int,LineUnpadding:int}
-     */
-    final public function getIndentDiff(Token $target): array
+    final public function getIndentDelta(Token $target): TokenIndentDelta
     {
-        return [
-            'PreIndent' => $target->PreIndent - $this->PreIndent,
-            'Indent' => $target->Indent - $this->Indent,
-            'Deindent' => $target->Deindent - $this->Deindent,
-            'HangingIndent' => $target->HangingIndent - $this->HangingIndent,
-            'LinePadding' => $target->LinePadding - $this->LinePadding,
-            'LineUnpadding' => $target->LineUnpadding - $this->LineUnpadding,
-        ];
-    }
-
-    /**
-     * @param array{PreIndent:int,Indent:int,Deindent:int,HangingIndent:int,LinePadding:int,LineUnpadding:int} $diff
-     */
-    final public function applyIndentDiff(array $diff): void
-    {
-        $this->PreIndent += $diff['PreIndent'];
-        $this->Indent += $diff['Indent'];
-        $this->Deindent += $diff['Deindent'];
-        $this->HangingIndent += $diff['HangingIndent'];
-        $this->LinePadding += $diff['LinePadding'];
-        $this->LineUnpadding += $diff['LineUnpadding'];
+        return TokenIndentDelta::between($this, $target);
     }
 
     private function getIndentSpaces(): int

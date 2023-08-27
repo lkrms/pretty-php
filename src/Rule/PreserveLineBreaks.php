@@ -116,7 +116,15 @@ final class PreserveLineBreaks implements MultiTokenRule
 
     private function maybePreserveNewlineAfter(Token $token, Token $next, int $line, int $min, int $max, bool $ignoreBrackets = false): bool
     {
-        if (!$this->TypeIndex->PreserveNewlineAfter[$token->id] ||
+        if ($token->id === T_ATTRIBUTE) {
+            return false;
+        }
+
+        if ($token->OpenedBy && $token->OpenedBy->id === T_ATTRIBUTE) {
+            $tokenId = T_ATTRIBUTE;
+        }
+
+        if (!$this->TypeIndex->PreserveNewlineAfter[$tokenId ?? $token->id] ||
                 $next->line < $min || $next->line > $max ||
                 ($ignoreBrackets && $this->TypeIndex->Bracket[$token->id])) {
             return false;

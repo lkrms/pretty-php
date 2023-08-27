@@ -8,9 +8,9 @@ use Lkrms\PrettyPHP\Rule\PreserveOneLineStatements;
 final class AlignDataTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     /**
-     * @dataProvider processBlockProvider
+     * @dataProvider outputProvider
      */
-    public function testProcessBlock(string $expected, string $code): void
+    public function testOutput(string $expected, string $code): void
     {
         $this->assertCodeFormatIs($expected, $code, [AlignData::class, PreserveOneLineStatements::class]);
     }
@@ -18,7 +18,7 @@ final class AlignDataTest extends \Lkrms\PrettyPHP\Tests\TestCase
     /**
      * @return array<string,array{string,string}>
      */
-    public static function processBlockProvider(): array
+    public static function outputProvider(): array
     {
         return [
             'one-line switch blocks' => [

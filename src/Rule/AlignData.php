@@ -100,7 +100,7 @@ final class AlignData implements BlockRule
                         $addToIndex('=');
                         continue;
                     }
-                    if ($token->inFunctionDeclaration()) {
+                    if ($token->inParameterList()) {
                         // Only align default value definitions within the same
                         // declaration
                         $addToIndex(implode(':', ['fn', $token->Parent->Index]));

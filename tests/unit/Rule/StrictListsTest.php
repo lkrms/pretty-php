@@ -7,9 +7,9 @@ use Lkrms\PrettyPHP\Rule\StrictLists;
 final class StrictListsTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     /**
-     * @dataProvider processListProvider
+     * @dataProvider outputProvider
      */
-    public function testProcessList(string $expected, string $code): void
+    public function testOutput(string $expected, string $code): void
     {
         $this->assertCodeFormatIs($expected, $code, [StrictLists::class]);
     }
@@ -17,7 +17,7 @@ final class StrictListsTest extends \Lkrms\PrettyPHP\Tests\TestCase
     /**
      * @return array<string,array{string,string}>
      */
-    public static function processListProvider(): array
+    public static function outputProvider(): array
     {
         return [
             'multi-line array' => [

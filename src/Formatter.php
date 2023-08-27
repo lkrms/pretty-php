@@ -45,7 +45,6 @@ use Lkrms\PrettyPHP\Rule\EssentialWhitespace;
 use Lkrms\PrettyPHP\Rule\HangingIndentation;
 use Lkrms\PrettyPHP\Rule\HeredocIndentation;
 use Lkrms\PrettyPHP\Rule\ListSpacing;
-use Lkrms\PrettyPHP\Rule\MagicLists;
 use Lkrms\PrettyPHP\Rule\NormaliseComments;
 use Lkrms\PrettyPHP\Rule\NormaliseStrings;
 use Lkrms\PrettyPHP\Rule\OperatorLineBreaks;
@@ -192,7 +191,6 @@ final class Formatter implements IReadable
         SymmetricalBrackets::class,      // processToken  (96)
         OperatorLineBreaks::class,       // processToken  (98)
         ListSpacing::class,              // processList   (98)
-        MagicLists::class,               // processList  (360)
         StandardIndentation::class,      // processToken (600)
         SwitchIndentation::class,        // processToken (600)
         NormaliseComments::class,        // processToken (780)

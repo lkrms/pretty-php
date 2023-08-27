@@ -373,6 +373,8 @@ class TokenTypeIndex implements IImmutable
         $this->PreserveNewlineBefore = TT::getIndex(
             T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
             T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
+            T_ATTRIBUTE,
+            T_ATTRIBUTE_COMMENT,
             T_CLOSE_BRACKET,
             T_CLOSE_PARENTHESIS,
             T_COALESCE,
@@ -388,6 +390,7 @@ class TokenTypeIndex implements IImmutable
         );
 
         $this->PreserveNewlineAfter = TT::getIndex(
+            T_ATTRIBUTE,
             T_ATTRIBUTE_COMMENT,
             T_COLON,
             T_DOUBLE_ARROW,

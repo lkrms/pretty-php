@@ -5,9 +5,9 @@ namespace Lkrms\PrettyPHP\Tests\Rule;
 final class ControlStructureSpacingTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     /**
-     * @dataProvider processTokenProvider
+     * @dataProvider outputProvider
      */
-    public function testProcessToken(string $expected, string $code): void
+    public function testOutput(string $expected, string $code): void
     {
         $this->assertCodeFormatIs($expected, $code);
     }
@@ -15,7 +15,7 @@ final class ControlStructureSpacingTest extends \Lkrms\PrettyPHP\Tests\TestCase
     /**
      * @return array<string,array{string,string}>
      */
-    public static function processTokenProvider(): array
+    public static function outputProvider(): array
     {
         return [
             'suppress empty line before closing while' => [

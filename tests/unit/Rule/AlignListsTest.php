@@ -8,9 +8,9 @@ use Lkrms\PrettyPHP\Rule\AlignLists;
 final class AlignListsTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     /**
-     * @dataProvider processListProvider
+     * @dataProvider outputProvider
      */
-    public function testProcessList(string $expected, string $code): void
+    public function testOutput(string $expected, string $code): void
     {
         $this->assertCodeFormatIs($expected, $code, [AlignLists::class, AlignChains::class]);
     }
@@ -18,7 +18,7 @@ final class AlignListsTest extends \Lkrms\PrettyPHP\Tests\TestCase
     /**
      * @return array<string,array{string,string}>
      */
-    public static function processListProvider(): array
+    public static function outputProvider(): array
     {
         return [
             'array destructuring' => [
@@ -416,19 +416,19 @@ alpha()->bravo([0], [1, 2,
                [11,
                 12], [13,
                       14])
-       ->charlie(['a'], ['b', 'c',
-                         'd'], ['e', <<<EOF
-                                     f
-                                     EOF, 'g'], [<<<EOF
-                                                 h
-                                                 EOF], ['i',
-                                                        'j'],
-                 ['k', <<<EOF
-                       l
+       ->charlie(['a'], ['b', 'c', ['d',
+                                    'e'], 'f'], ['g', <<<EOF
+                                                      h
+                                                      EOF, 'i'], [<<<EOF
+                                                                  j
+                                                                  EOF], ['k',
+                                                                         'l'],
+                 ['m', <<<EOF
+                       n
                        EOF],
-                 ['m',
-                  'n'], ['o',
-                         'p']);
+                 ['o',
+                  'p'], ['q',
+                         'r']);
 
 PHP,
                 <<<'PHP'
@@ -441,19 +441,19 @@ alpha()->bravo([0], [1, 2,
 [11,
 12], [13,
 14])
-->charlie(['a'], ['b', 'c',
-'d'], ['e', <<<EOF
-f
-EOF, 'g'], [<<<EOF
+->charlie(['a'], ['b', 'c', ['d',
+'e'], 'f'], ['g', <<<EOF
 h
-EOF], ['i',
-'j'],
-['k', <<<EOF
-l
+EOF, 'i'], [<<<EOF
+j
+EOF], ['k',
+'l'],
+['m', <<<EOF
+n
 EOF],
-['m',
-'n'], ['o',
-'p']);
+['o',
+'p'], ['q',
+'r']);
 PHP,
             ]
         ];

@@ -56,7 +56,7 @@ final class OperatorSpaces implements TokenRule
                 $token->inUnaryContext() ||
                 // `function getValue(&$param)`
                 ($token->next()->id === T_VARIABLE &&
-                    $token->inFunctionDeclaration() &&
+                    $token->inParameterList() &&
                     // Not `function getValue($param = $a & $b)`
                     !$token->sinceStartOfStatement()->hasOneOf(T_EQUAL)))) {
             $token->WhitespaceBefore |= WhitespaceType::SPACE;
@@ -68,7 +68,7 @@ final class OperatorSpaces implements TokenRule
         // Suppress whitespace between operators in union and intersection types
         if (($token->is([T_OR, ...TokenType::AMPERSAND]) &&
             ($token->isDeclaration() ||
-                ($token->inFunctionDeclaration() &&
+                ($token->inParameterList() &&
                     !$token->sinceStartOfStatement()->hasOneOf(T_EQUAL)) ||
                 (($prev = $token->prevCodeWhile(...TokenType::VALUE_TYPE)->last()) &&
                     ($prev = $prev->prevCode())->id === T_COLON &&

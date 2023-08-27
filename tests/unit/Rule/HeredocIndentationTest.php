@@ -8,11 +8,11 @@ use Lkrms\PrettyPHP\Formatter;
 final class HeredocIndentationTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     /**
-     * @dataProvider heredocIndentProvider
+     * @dataProvider outputProvider
      *
      * @param array{insertSpaces?:bool|null,tabSize?:int|null,skipRules?:string[],addRules?:string[],skipFilters?:string[],callback?:(callable(Formatter): Formatter)|null} $options
      */
-    public function testHeredocIndent(string $expected, string $code, array $options = []): void
+    public function testOutput(string $expected, string $code, array $options = []): void
     {
         $this->assertFormatterOutputIs($expected, $code, $this->getFormatter($options));
     }
@@ -20,7 +20,7 @@ final class HeredocIndentationTest extends \Lkrms\PrettyPHP\Tests\TestCase
     /**
      * @return array<string,array{string,string,array{insertSpaces?:bool|null,tabSize?:int|null,skipRules?:string[],addRules?:string[],skipFilters?:string[],callback?:(callable(Formatter): Formatter)|null}}>
      */
-    public static function heredocIndentProvider(): array
+    public static function outputProvider(): array
     {
         return [
             'NONE' => [
