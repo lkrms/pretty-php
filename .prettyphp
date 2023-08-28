@@ -16,6 +16,5 @@
         "preserve-one-line",
         "strict-lists"
     ],
-    "heredocIndent": "none",
-    "sortImportsBy": "depth"
+    "heredocIndent": "none"
 }

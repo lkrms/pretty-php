@@ -23,8 +23,7 @@ trait ExtensionTrait
 
     public function __construct(Formatter $formatter)
     {
-        $this->Formatter = $formatter;
-        $this->TypeIndex = $formatter->TokenTypeIndex;
+        $this->setFormatter($formatter);
     }
 
     public function setFormatter(Formatter $formatter): void

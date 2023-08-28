@@ -213,7 +213,7 @@ final class DeclarationSpacing implements MultiTokenRule
                     $token->applyBlankLineBefore(true);
                 }
 
-                continue;;
+                continue;
             }
 
             $token->WhitespaceBefore |= WhitespaceType::LINE;
