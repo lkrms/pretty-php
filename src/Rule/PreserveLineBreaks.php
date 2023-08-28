@@ -42,7 +42,7 @@ final class PreserveLineBreaks implements MultiTokenRule
                 (!$preserveTypeIndex[$token->id] &&
                     !$preserveTypeIndex[$prev->id])) {
                 continue;
-            };
+            }
 
             $lines = $token->line - $prev->line - substr_count($prev->text, "\n");
             if (!$lines) {
@@ -116,6 +116,8 @@ final class PreserveLineBreaks implements MultiTokenRule
 
     private function maybePreserveNewlineAfter(Token $token, Token $next, int $line, int $min, int $max, bool $ignoreBrackets = false): bool
     {
+        // To preserve newlines after attributes, ignore T_ATTRIBUTE itelf and
+        // treat attribute close brackets as T_ATTRIBUTE
         if ($token->id === T_ATTRIBUTE) {
             return false;
         }
@@ -135,6 +137,24 @@ final class PreserveLineBreaks implements MultiTokenRule
             return false;
         }
 
+        // Treat `?:` as one operator
+        if ($token->IsTernaryOperator && $token->TernaryOperator2 === $next) {
+            return false;
+        }
+
+        if ($token->id === T_CLOSE_BRACE &&
+                !$token->isStructuralBrace(false)) {
+            return false;
+        }
+
+        // Don't preserve newlines after `:` except when they terminate case
+        // statements and labels
+        if ($token->id === T_COLON &&
+                !$token->inSwitchCase() &&
+                !$token->isLabelTerminator()) {
+            return false;
+        }
+
         // Don't preserve newlines after arrow function `=>` operators if
         // disabled
         if ($token->id === T_DOUBLE_ARROW &&
@@ -143,34 +163,26 @@ final class PreserveLineBreaks implements MultiTokenRule
             return false;
         }
 
-        // Treat `?:` as one operator
-        if ($token->IsTernaryOperator && $token->TernaryOperator2 === $next) {
-            return false;
-        }
-
-        // Don't preserve newlines after `:` except when they terminate case
-        // statements and labels
-        if ($token->id === T_COLON &&
-                !$token->inSwitchCase() &&
-                !$token->inLabel()) {
-            return false;
-        }
-
         // Only preserve newlines after `implements` and `extends` if they are
         // followed by a list of interfaces
-        if (($token->id === T_IMPLEMENTS || $token->id === T_EXTENDS) &&
-            !$token->nextSiblingsWhile(...TokenType::DECLARATION_LIST)
-                   ->hasOneOf(T_COMMA)) {
+        if (($token->id === T_IMPLEMENTS ||
+                    $token->id === T_EXTENDS) &&
+                !$token->IsListParent) {
             return false;
         }
 
         if ($line & WhitespaceType::BLANK &&
             (!$this->TypeIndex->PreserveBlankAfter[$token->id] ||
                 ($token->id === T_COMMA &&
-                    !($next->CommentType || $token->isDelimiterBetweenMatchArms())) ||
+                    !$token->isDelimiterBetweenMatchArms()) ||
+                ($token->id === T_SEMICOLON &&
+                    $token->Parent &&
+                    $token->Parent->_prevCode &&
+                    $token->Parent->_prevCode->id === T_FOR) ||
                 ($token->CommentType &&
-                    $token->_prevCode &&
-                    $token->_prevCode->id === T_COMMA))) {
+                    $token->Parent &&
+                    !($token->Parent->id === T_OPEN_BRACE &&
+                        $token->Parent->isStructuralBrace(false))))) {
             $line = WhitespaceType::LINE;
         }
 

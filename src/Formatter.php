@@ -709,7 +709,7 @@ final class Formatter implements IReadable
                     }
                     continue 2;
 
-                case T_OPEN_PARENTHESIS:;
+                case T_OPEN_PARENTHESIS:
                     if (!($prev = $parent->_prevCode) ||
                         !(($prev->id === T_CLOSE_BRACE &&
                                 !$prev->isStructuralBrace()) ||

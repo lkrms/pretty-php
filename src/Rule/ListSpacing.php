@@ -7,6 +7,7 @@ use Lkrms\PrettyPHP\Rule\Concern\ListRuleTrait;
 use Lkrms\PrettyPHP\Rule\Contract\ListRule;
 use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Formatter;
 
 /**
  * Apply whitespace to lists
@@ -26,7 +27,11 @@ use Lkrms\PrettyPHP\Token\Token;
  */
 final class ListSpacing implements ListRule
 {
-    use ListRuleTrait;
+    use ListRuleTrait {
+        setFormatter as private _setFormatter;
+    }
+
+    private bool $ListRuleIsEnabled;
 
     public function getPriority(string $method): ?int
     {
@@ -39,16 +44,20 @@ final class ListSpacing implements ListRule
         }
     }
 
+    public function setFormatter(Formatter $formatter): void
+    {
+        $this->_setFormatter($formatter);
+        $this->ListRuleIsEnabled =
+            ($formatter->EnabledRules[StrictLists::class] ?? null) ||
+                ($formatter->EnabledRules[AlignLists::class] ?? null);
+    }
+
     public function processList(Token $owner, TokenCollection $items): void
     {
         // If `$owner` has no `ClosedBy`, this is an interface list
         if (!$owner->ClosedBy) {
-            if (!array_intersect_key(
-                [StrictLists::class => true, AlignLists::class => true],
-                $this->Formatter->EnabledRules
-            ) && $items->find(
-                fn(Token $token) => $token->hasNewlineBefore()
-            )) {
+            if (!$this->ListRuleIsEnabled &&
+                    $items->tokenHasNewlineBefore()) {
                 $first = $items->first();
                 $first->WhitespaceBefore |= WhitespaceType::LINE;
                 $first->WhitespaceMaskPrev |= WhitespaceType::LINE;
@@ -80,7 +89,7 @@ final class ListSpacing implements ListRule
                         : $current)->hasNewlineAfter()) {
                     $hasAttributeWithNewline = true;
                     break 2;
-                };
+                }
                 if (!($current = $current->_nextSibling)) {
                     break;
                 }

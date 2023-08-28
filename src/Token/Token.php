@@ -263,7 +263,7 @@ class Token extends PhpToken implements JsonSerializable
                            ->collectSiblings($this->nextCode())
                            ->filter(fn(Token $t) => $t->id === T_WHILE && $t->prevSibling(2)->id !== T_WHILE)
                            ->first() === $this->nextCode())))) ||
-                ($this->id === T_COLON && ($this->inSwitchCase() || $this->inLabel()))) {
+                ($this->id === T_COLON && ($this->inSwitchCase() || $this->isLabelTerminator()))) {
             $this->applyStatement();
         } elseif ($this->is([T_CLOSE_PARENTHESIS, T_CLOSE_BRACKET]) ||
                 ($this->id === T_CLOSE_BRACE && !$this->isStructuralBrace(false))) {
@@ -367,7 +367,7 @@ class Token extends PhpToken implements JsonSerializable
             $this->applyExpression();
         } elseif ($this->TokenTypeIndex->ExpressionTerminator[$this->id] ||
                 $this->IsStatementTerminator ||
-                ($this->id === T_COLON && ($this->inSwitchCase() || $this->inLabel())) ||
+                ($this->id === T_COLON && ($this->inSwitchCase() || $this->isLabelTerminator())) ||
                 ($this->id === T_CLOSE_BRACE &&
                     (!$this->isStructuralBrace() || $this->isMatchBrace())) ||
                 $this->IsTernaryOperator) {
@@ -1517,24 +1517,26 @@ class Token extends PhpToken implements JsonSerializable
     }
 
     /**
-     * True if the token is part of a label
-     *
-     * The token may be the label itself (`T_STRING`) or its terminator (`:`).
+     * True if the token is the colon after a label
      *
      */
-    final public function inLabel(): bool
+    final public function isLabelTerminator(): bool
     {
-        if ($this->id === T_COLON) {
-            return $this->prevCode()->id === T_STRING &&
-                (($prev = $this->prevCode(2))->is([T_SEMICOLON, T_CLOSE_TAG]) ||
-                    $prev->isStructuralBrace() ||
-                    $prev->startsAlternativeSyntax() ||
-                    ($prev->id === T_COLON && ($prev->inSwitchCase() || $prev->inLabel())));
+        if ($this->id !== T_COLON ||
+                // Exclude named arguments
+                ($this->Parent && $this->Parent->id === T_OPEN_PARENTHESIS)) {
+            return false;
         }
 
-        return $this->_nextCode &&
-            $this->_nextCode->id === T_COLON &&
-            $this->_nextCode->inLabel();
+        /** @var static */
+        $prev = $this->_prevCode;
+        if ($prev->id !== T_STRING) {
+            return false;
+        }
+
+        $prev = $prev->_prevSibling;
+        return !$prev ||
+            $prev->EndStatement === $prev;
     }
 
     public function isArrayOpenBracket(): bool

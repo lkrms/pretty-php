@@ -9,11 +9,14 @@ use Lkrms\PrettyPHP\Rule\Contract\TokenRule;
 use Lkrms\PrettyPHP\Token\Token;
 
 /**
- * Apply vertical whitespace to operators
+ * Apply sensible vertical whitespace
  *
  * Specifically:
+ *
  * - If an object operator (`->` or `?->`) is at the start of a line, add a
  *   newline before other object operators in the same chain
+ * - If one expression in a `for` loop is at the start of a line, add a newline
+ *   before the others
  * - If one ternary operator is at the start of a line, add a newline before the
  *   other
  */
@@ -29,6 +32,7 @@ final class OperatorLineBreaks implements TokenRule
     public function getTokenTypes(): array
     {
         return [
+            T_FOR,
             T_QUESTION,
             ...TokenType::CHAIN,
         ];
@@ -55,6 +59,21 @@ final class OperatorLineBreaks implements TokenRule
             return;
         }
 
+        if ($token->id === T_FOR) {
+            $terminators =
+                $token->_nextCode
+                      ->innerSiblings()
+                      ->filter(fn(Token $t) => $t->id === T_SEMICOLON);
+
+            // If one expression in a `for` loop is at the start of a line, add
+            // a newline before the others
+            if ($terminators->tokenHasNewlineAfter()) {
+                $terminators->addWhitespaceAfter(WhitespaceType::LINE);
+            }
+
+            return;
+        }
+
         if ($token !== $token->ChainOpenedBy) {
             return;
         }
@@ -62,8 +81,8 @@ final class OperatorLineBreaks implements TokenRule
         $chain = $token->withNextSiblingsWhile(...TokenType::CHAIN_PART)
                        ->filter(fn(Token $t) => $this->TypeIndex->Chain[$t->id]);
 
-        // If an object operator (`->` or `?->`) is at the start of a line,
-        // add a newline before other object operators in the same chain
+        // If an object operator (`->` or `?->`) is at the start of a line, add
+        // a newline before other object operators in the same chain
         if ($chain->count() < 2 ||
                 !$chain->find(fn(Token $t) => $t->hasNewlineBefore())) {
             return;

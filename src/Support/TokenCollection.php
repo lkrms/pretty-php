@@ -76,6 +76,36 @@ final class TokenCollection extends TypedCollection implements Stringable
     }
 
     /**
+     * True if there is a newline before one of the tokens in the collection
+     *
+     */
+    public function tokenHasNewlineBefore(): bool
+    {
+        /** @var Token $token */
+        foreach ($this as $token) {
+            if ($token->hasNewlineBefore()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * True if there is a newline after one of the tokens in the collection
+     *
+     */
+    public function tokenHasNewlineAfter(): bool
+    {
+        /** @var Token $token */
+        foreach ($this as $token) {
+            if ($token->hasNewlineAfter()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * True if any tokens in the collection are separated by one or more line
      * breaks
      *
