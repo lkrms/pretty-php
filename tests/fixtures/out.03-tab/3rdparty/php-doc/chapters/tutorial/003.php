@@ -1,5 +1,5 @@
 <?php
-if (strpos($_SERVER['HTTP_USER_AGENT'], 'Firefox') !== false) {
-	echo 'You are using Firefox.<br />';
+if (str_contains($_SERVER['HTTP_USER_AGENT'], 'Firefox')) {
+	echo 'You are using Firefox.';
 }
 ?>
