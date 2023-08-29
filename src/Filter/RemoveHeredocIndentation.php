@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Filter;
 
-use Lkrms\PrettyPHP\Filter\Concern\FilterTrait;
+use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Filter\Contract\Filter;
 use Lkrms\PrettyPHP\Token\Token;
 
@@ -12,7 +12,7 @@ use Lkrms\PrettyPHP\Token\Token;
  */
 final class RemoveHeredocIndentation implements Filter
 {
-    use FilterTrait;
+    use ExtensionTrait;
 
     public function filterTokens(array $tokens): array
     {
