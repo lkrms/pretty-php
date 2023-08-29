@@ -22,10 +22,11 @@ $object->firstMethod()
 		3,
 	));
 
-$object->firstMethod(
-	$obj2
-		->doMagic()
-)
+$object
+	->firstMethod(
+		$obj2
+			->doMagic()
+	)
 	->chainedMethod($var, array(
 		1,
 		2,

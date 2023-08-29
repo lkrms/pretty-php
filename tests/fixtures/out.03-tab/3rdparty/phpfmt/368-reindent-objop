@@ -1,13 +1,15 @@
 <?php
 //passes:Default,ReindentAndAlignObjOps
-$foo->bar(
-	'aoeu'
-)
+$foo
+	->bar(
+		'aoeu'
+	)
 	->baz();
 
-$foo->bar(
-	'aoeu'
-)
+$foo
+	->bar(
+		'aoeu'
+	)
 	->baz();
 
 $foo->bar(
@@ -16,8 +18,9 @@ $foo->bar(
 	//comment1
 	baz();
 
-$foo->bar(
-	'aoeu'
-)
+$foo
+	->bar(
+		'aoeu'
+	)
 	//comment2
 	->baz();
