@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "lkrms.pretty-php",
+        "spadin.memento-inputs",
+        "xdebug.php-debug",
+        "recca0120.vscode-phpunit",
+        "bmewburn.vscode-intelephense-client"
+    ]
+}
