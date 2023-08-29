@@ -1,0 +1,32 @@
+name: Publish - Homebrew
+
+on:
+  release:
+    types: [published]
+
+  workflow_dispatch:
+    inputs:
+      tag-name:
+        description: Version tag to publish to Homebrew
+        required: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  homebrew:
+    name: Update Homebrew formula
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Bump Homebrew formula and push to lkrms/misc tap
+        uses: mislav/bump-homebrew-formula-action@v2
+        with:
+          formula-name: pretty-php
+          tag-name: ${{ github.event.inputs.tag-name || github.ref_name }}
+          download-url: https://github.com/lkrms/pretty-php/releases/download/${{ github.event.inputs.tag-name || github.ref_name }}/pretty-php.phar
+          homebrew-tap: lkrms/homebrew-misc
+          push-to: lkrms/homebrew-misc
+        env:
+          COMMITTER_TOKEN: ${{ secrets.HOMEBREW_COMMITTER_TOKEN }}
