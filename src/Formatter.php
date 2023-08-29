@@ -47,7 +47,6 @@ use Lkrms\PrettyPHP\Rule\HeredocIndentation;
 use Lkrms\PrettyPHP\Rule\ListSpacing;
 use Lkrms\PrettyPHP\Rule\NormaliseComments;
 use Lkrms\PrettyPHP\Rule\NormaliseStrings;
-use Lkrms\PrettyPHP\Rule\OperatorLineBreaks;
 use Lkrms\PrettyPHP\Rule\OperatorSpaces;
 use Lkrms\PrettyPHP\Rule\PlaceBraces;
 use Lkrms\PrettyPHP\Rule\PlaceComments;
@@ -60,6 +59,7 @@ use Lkrms\PrettyPHP\Rule\StatementSpacing;
 use Lkrms\PrettyPHP\Rule\StrictLists;
 use Lkrms\PrettyPHP\Rule\SwitchIndentation;
 use Lkrms\PrettyPHP\Rule\SymmetricalBrackets;
+use Lkrms\PrettyPHP\Rule\VerticalWhitespace;
 use Lkrms\PrettyPHP\Support\CodeProblem;
 use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
@@ -189,7 +189,7 @@ final class Formatter implements IReadable
         PlaceComments::class,            // processToken  (90), beforeRender (997)
         PlaceBraces::class,              // processToken  (94), beforeRender (400)
         SymmetricalBrackets::class,      // processToken  (96)
-        OperatorLineBreaks::class,       // processToken  (98)
+        VerticalWhitespace::class,       // processToken  (98)
         ListSpacing::class,              // processList   (98)
         StandardIndentation::class,      // processToken (600)
         SwitchIndentation::class,        // processToken (600)

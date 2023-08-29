@@ -13,14 +13,14 @@ use Lkrms\PrettyPHP\Token\Token;
  *
  * Specifically:
  *
- * - If an object operator (`->` or `?->`) is at the start of a line, add a
- *   newline before other object operators in the same chain
  * - If one expression in a `for` loop is at the start of a line, add a newline
  *   before the others
  * - If one ternary operator is at the start of a line, add a newline before the
  *   other
+ * - If an object operator (`->` or `?->`) is at the start of a line, add a
+ *   newline before other object operators in the same chain
  */
-final class OperatorLineBreaks implements TokenRule
+final class VerticalWhitespace implements TokenRule
 {
     use TokenRuleTrait;
 
@@ -40,14 +40,28 @@ final class OperatorLineBreaks implements TokenRule
 
     public function processToken(Token $token): void
     {
+        // If one expression in a `for` loop is at the start of a line, add a
+        // newline before the others
+        if ($token->id === T_FOR) {
+            $terminators =
+                $token->_nextCode
+                      ->innerSiblings()
+                      ->filter(fn(Token $t) => $t->id === T_SEMICOLON);
+
+            if ($terminators->tokenHasNewlineAfter()) {
+                $terminators->addWhitespaceAfter(WhitespaceType::LINE);
+            }
+            return;
+        }
+
+        // If one ternary operator is at the start of a line, add a newline
+        // before the other
         if ($token->id === T_QUESTION) {
             if (!$token->IsTernaryOperator ||
                     $token->TernaryOperator2 === $token->_next) {
                 return;
             }
 
-            // If one ternary operator is at the start of a line, add a newline
-            // before the other
             $op1Newline = $token->hasNewlineBefore();
             $op2Newline = $token->TernaryOperator2->hasNewlineBefore();
             if ($op1Newline && !$op2Newline) {
@@ -55,25 +69,11 @@ final class OperatorLineBreaks implements TokenRule
             } elseif (!$op1Newline && $op2Newline) {
                 $token->WhitespaceBefore |= WhitespaceType::LINE;
             }
-
             return;
         }
 
-        if ($token->id === T_FOR) {
-            $terminators =
-                $token->_nextCode
-                      ->innerSiblings()
-                      ->filter(fn(Token $t) => $t->id === T_SEMICOLON);
-
-            // If one expression in a `for` loop is at the start of a line, add
-            // a newline before the others
-            if ($terminators->tokenHasNewlineAfter()) {
-                $terminators->addWhitespaceAfter(WhitespaceType::LINE);
-            }
-
-            return;
-        }
-
+        // If an object operator (`->` or `?->`) is at the start of a line, add
+        // a newline before other object operators in the same chain
         if ($token !== $token->ChainOpenedBy) {
             return;
         }
@@ -81,16 +81,27 @@ final class OperatorLineBreaks implements TokenRule
         $chain = $token->withNextSiblingsWhile(...TokenType::CHAIN_PART)
                        ->filter(fn(Token $t) => $this->TypeIndex->Chain[$t->id]);
 
-        // If an object operator (`->` or `?->`) is at the start of a line, add
-        // a newline before other object operators in the same chain
         if ($chain->count() < 2 ||
                 !$chain->find(fn(Token $t) => $t->hasNewlineBefore())) {
             return;
         }
 
-        $chain->shift();
-        $chain->addWhitespaceBefore(WhitespaceType::LINE);
+        // Leave the first object operator alone if chain alignment is enabled
+        // or if there are no structures that would end up like this:
+        //
+        //     $foxtrot->foo(
+        //         //
+        //     )
+        //         ->baz();
+        if (($this->Formatter->EnabledRules[AlignChains::class] ?? false) ||
+                !$chain->find(
+                    fn(Token $t) =>
+                        $this->TypeIndex->CloseBracket[$t->_prevCode->id] &&
+                            $t->_prevCode->hasNewlineBefore()
+                )) {
+            $chain->shift();
+        }
 
-        return;
+        $chain->addWhitespaceBefore(WhitespaceType::LINE);
     }
 }
