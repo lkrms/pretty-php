@@ -20,7 +20,7 @@ use Lkrms\PrettyPHP\Token\Token;
  * - If an object operator (`->` or `?->`) is at the start of a line, add a
  *   newline before other object operators in the same chain
  */
-final class OperatorLineBreaks implements TokenRule
+final class VerticalWhitespace implements TokenRule
 {
     use TokenRuleTrait;
 

@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Tests\Rule;
 
-final class OperatorLineBreaksTest extends \Lkrms\PrettyPHP\Tests\TestCase
+final class VerticalWhitespaceTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     /**
      * @dataProvider outputProvider
