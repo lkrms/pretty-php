@@ -18,26 +18,53 @@ trait FilterTrait
      */
     protected $Tokens;
 
-    protected function prevCode(int $i, ?int &$prev_i = null): ?Token
+    /**
+     * Get the previous code token for the token at a given index in the Tokens
+     * array
+     */
+    protected function prevCode(int $i): ?Token
     {
-        $token = $this->Tokens[$i];
         while ($i--) {
             $token = $this->Tokens[$i];
             if ($this->TypeIndex->NotCode[$token->id]) {
                 continue;
             }
-            $prev_i = $i;
-
             return $token;
         }
-
         return null;
     }
 
+    /**
+     * True if the token at a given index in the Tokens array, together with
+     * previous tokens in the same statement, form a declaration of one of the
+     * given types
+     */
+    protected function isDeclarationOf(int $i, int $type, int ...$types): bool
+    {
+        array_unshift($types, $type);
+        while ($i--) {
+            $token = $this->Tokens[$i];
+            if ($this->TypeIndex->NotCode[$token->id]) {
+                continue;
+            }
+            if (!$this->TypeIndex->DeclarationPart[$token->id]) {
+                break;
+            }
+            if ($token->is($types)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * True if the token at a given index in the Tokens array is a comment that
+     * starts with '//' or '#'
+     */
     protected function isOneLineComment(int $i): bool
     {
         $token = $this->Tokens[$i];
-
-        return $token->id === T_COMMENT && preg_match('@^(//|#)@', $token->text);
+        return $token->id === T_COMMENT &&
+            preg_match('@^(?://|#)@', $token->text);
     }
 }

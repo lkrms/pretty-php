@@ -34,11 +34,33 @@ final class SortImports implements Filter
 
         // Identify relevant T_USE tokens and exit early if possible
         $tokens = [];
+        /** @var array<int,Token> */
+        $stack = [];
         foreach ($this->Tokens as $i => $token) {
-            if ($token->id === T_USE &&
-                (!($prevCode = $this->prevCode($i)) ||
-                    $prevCode->id !== T_CLOSE_PARENTHESIS)) {
-                $tokens[] = $i;
+            if ($token->id === T_OPEN_BRACE ||
+                    $token->id === T_CURLY_OPEN ||
+                    $token->id === T_DOLLAR_OPEN_CURLY_BRACES) {
+                $stack[$i] = $token;
+                continue;
+            }
+            if ($token->id === T_CLOSE_BRACE) {
+                array_pop($stack);
+                continue;
+            }
+            if ($token->id === T_USE) {
+                // Exclude `use` when anonymous functions are inheriting
+                // variables from the parent scope
+                $prevCode = $this->prevCode($i);
+                if ($prevCode &&
+                        $prevCode->id === T_CLOSE_PARENTHESIS) {
+                    continue;
+                }
+                // Exclude `use` when inserting traits
+                $parentIndex = array_key_last($stack);
+                if ($parentIndex === null ||
+                        !$this->isDeclarationOf($parentIndex, T_CLASS, T_TRAIT)) {
+                    $tokens[] = $i;
+                }
             }
         }
         if (!$tokens) {
@@ -69,6 +91,7 @@ final class SortImports implements Filter
                             ($token->line === $terminator->line ||
                                 ($this->isOneLineComment($i) &&
                                     $this->isOneLineComment($i - 1) &&
+                                    $token->text[0] === $this->Tokens[$i - 1]->text[0] &&
                                     $token->line - $this->Tokens[$i - 1]->line === 1))) {
                             $current[$i++] = $token;
                             continue;
