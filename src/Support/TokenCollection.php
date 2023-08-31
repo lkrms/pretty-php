@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Support;
 
-use Lkrms\Concept\TypedCollection;
+use Lkrms\Concept\LooselyTypedCollection;
 use Lkrms\PrettyPHP\Token\Token;
 use LogicException;
 use Stringable;
@@ -10,9 +10,9 @@ use Stringable;
 /**
  * A collection of Tokens
  *
- * @extends TypedCollection<int,Token>
+ * @extends LooselyTypedCollection<int,Token>
  */
-final class TokenCollection extends TypedCollection implements Stringable
+final class TokenCollection extends LooselyTypedCollection implements Stringable
 {
     protected const ITEM_CLASS = Token::class;
 
@@ -23,43 +23,60 @@ final class TokenCollection extends TypedCollection implements Stringable
 
     public static function collect(Token $from, Token $to): self
     {
-        $tokens = new self();
-        $tokens->Collected = true;
-        if ($from->Index > $to->Index || $from->IsNull || $to->IsNull) {
-            return $tokens;
+        if ($from->Index <= $to->Index && !$from->IsNull && !$to->IsNull) {
+            $tokens[] = $from;
+            while ($from !== $to && $from->_next) {
+                $tokens[] = $from = $from->_next;
+            }
         }
-        $tokens[] = $from;
-        while ($from !== $to && $from->_next) {
-            $tokens[] = $from = $from->_next;
+        $instance = new self($tokens ?? []);
+        $instance->Collected = true;
+
+        return $instance;
+    }
+
+    public function hasOneOf(int $type, int ...$types): bool
+    {
+        array_unshift($types, $type);
+        /** @var Token $token */
+        foreach ($this as $token) {
+            if ($token->is($types)) {
+                return true;
+            }
         }
-
-        return $tokens;
+        return false;
     }
 
-    public function hasOneOf(int ...$types): bool
+    public function getAnyOf(int $type, int ...$types): self
     {
-        return $this->find(
-            fn(Token $t) => $t->is($types)
-        ) !== false;
+        array_unshift($types, $type);
+        /** @var Token $token */
+        foreach ($this as $token) {
+            if ($token->is($types)) {
+                $tokens[] = $token;
+            }
+        }
+        $instance = new self($tokens ?? []);
+        $instance->Collected = $this->Collected;
+
+        return $instance;
     }
 
-    public function getAnyOf(int ...$types): self
+    public function getFirstOf(int $type, int ...$types): ?Token
     {
-        return $this->filter(
-            fn(Token $t) => $t->is($types)
-        );
+        array_unshift($types, $type);
+        /** @var Token $token */
+        foreach ($this as $token) {
+            if ($token->is($types)) {
+                return $token;
+            }
+        }
+        return null;
     }
 
-    public function getFirstOf(int ...$types): ?Token
+    public function getLastOf(int $type, int ...$types): ?Token
     {
-        return $this->find(
-            fn(Token $t) => $t->is($types)
-        ) ?: null;
-    }
-
-    public function getLastOf(int ...$types): ?Token
-    {
-        return $this->reverse()->getFirstOf(...$types);
+        return $this->reverse()->getFirstOf($type, ...$types);
     }
 
     /**
@@ -257,20 +274,24 @@ final class TokenCollection extends TypedCollection implements Stringable
     public function maskWhitespaceBefore(int $mask, bool $critical = false)
     {
         if ($critical) {
-            return $this->forEach(
-                function (Token $t) use ($mask) {
-                    $t->CriticalWhitespaceMaskPrev &= $mask;
-                    $t->prev()->CriticalWhitespaceMaskNext &= $mask;
+            /** @var Token $token */
+            foreach ($this as $token) {
+                $token->CriticalWhitespaceMaskPrev &= $mask;
+                if ($token->_prev) {
+                    $token->_prev->CriticalWhitespaceMaskNext &= $mask;
                 }
-            );
+            }
+            return $this;
         }
 
-        return $this->forEach(
-            function (Token $t) use ($mask) {
-                $t->WhitespaceMaskPrev &= $mask;
-                $t->prev()->WhitespaceMaskNext &= $mask;
+        /** @var Token $token */
+        foreach ($this as $token) {
+            $token->WhitespaceMaskPrev &= $mask;
+            if ($token->_prev) {
+                $token->_prev->WhitespaceMaskNext &= $mask;
             }
-        );
+        }
+        return $this;
     }
 
     /**
@@ -286,37 +307,36 @@ final class TokenCollection extends TypedCollection implements Stringable
     {
         $this->assertCollected();
 
-        switch ($this->count()) {
-            case 0:
-            case 1:
-                return $this;
-
-            default:
-                $this->nth(2)
-                     ->collect($this->nth(-2))
-                     ->forEach(
-                         $critical
-                             ? function (Token $t) use ($mask) {
-                                 $t->CriticalWhitespaceMaskPrev &= $mask;
-                                 $t->CriticalWhitespaceMaskNext &= $mask;
-                             }
-                             : function (Token $t) use ($mask) {
-                                 $t->WhitespaceMaskPrev &= $mask;
-                                 $t->WhitespaceMaskNext &= $mask;
-                             }
-                     );
-                // No break
-            case 2:
-                if ($critical) {
-                    $this->first()->CriticalWhitespaceMaskNext &= $mask;
-                    $this->last()->CriticalWhitespaceMaskPrev &= $mask;
-                } else {
-                    $this->first()->WhitespaceMaskNext &= $mask;
-                    $this->last()->WhitespaceMaskPrev &= $mask;
-                }
-
-                return $this;
+        $count = $this->count();
+        if ($count < 2) {
+            return $this;
         }
+
+        if ($critical) {
+            if ($count > 2) {
+                foreach ($this->nth(2)->collect($this->nth(-2)) as $token) {
+                    $token->CriticalWhitespaceMaskPrev &= $mask;
+                    $token->CriticalWhitespaceMaskNext &= $mask;
+                }
+            }
+
+            $this->first()->CriticalWhitespaceMaskNext &= $mask;
+            $this->last()->CriticalWhitespaceMaskPrev &= $mask;
+
+            return $this;
+        }
+
+        if ($count > 2) {
+            foreach ($this->nth(2)->collect($this->nth(-2)) as $token) {
+                $token->WhitespaceMaskPrev &= $mask;
+                $token->WhitespaceMaskNext &= $mask;
+            }
+        }
+
+        $this->first()->WhitespaceMaskNext &= $mask;
+        $this->last()->WhitespaceMaskPrev &= $mask;
+
+        return $this;
     }
 
     private function assertCollected(): void
