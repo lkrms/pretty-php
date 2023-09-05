@@ -11,8 +11,7 @@ on:
         required: true
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}
 
 jobs:
   aur:
@@ -22,8 +21,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        #with:
-        #  ref: ${{ github.event.inputs.tag-name || github.ref_name }}
+        with:
+          ref: ${{ github.event.inputs.tag-name || github.ref }}
 
       - name: Generate PKGBUILD
         run: |
