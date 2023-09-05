@@ -1,55 +1,55 @@
+<div align="center">
+
+<img src="images/logo-600x600-rounded.png" alt="PrettyPHP logo" width="300" height="300">
+
 # PrettyPHP
 
 ## The opinionated code formatter for PHP
 
-*PrettyPHP* is a code formatter for PHP in the tradition of [Black] for Python,
-[Prettier] for JavaScript and [shfmt] for shell scripts. It aims to bring the
-benefits of fast, deterministic, minimally configurable, automated code
-formatting tools to PHP development.
+</div>
 
-You can use `pretty-php` as a standalone tool, run it from your [editor], add it
-to your CI workflows, or pair it with a linter like [phpcbf] or [php-cs-fixer].
+*PrettyPHP* is a code formatter for PHP in the tradition of [Black][] for
+Python, [Prettier][] for JavaScript and [shfmt][] for shell scripts. It aims to
+bring the benefits of fast, deterministic, minimally configurable, automated
+code formatting tools to PHP development.
 
-Or you could just give it a try 😉
+To that end, you can use *PrettyPHP* as a standalone tool, run it from your
+[editor][], or pair it with a linter like [phpcbf][] or [php-cs-fixer][] and add
+it to your CI workflows.
 
-## Features
-
-- Previous formatting is ignored<sup>\*\*</sup>
-- Whitespace is changed, code is not<sup>\*\*</sup>
-- Output is the same no matter how input is formatted<sup>\*\*</sup>
-- Code is formatted for:
-  1. readability
-  2. consistency
-  3. small diffs
-- Entire files are formatted in place
-- Configuration is optional
-- Formatting options are deliberately limited, workflow options are not
-- Reports lines that would would change in `--diff` mode
-- Exits with a meaningful status code
-- Written in PHP
-- Formats code written for PHP versions up to 8.2 (but see the [note about PHP
-  versions][versions] below)
-- Uses PHP's tokenizer to parse input and validate output
-- Checks formatted and original code for equivalence
-- Compliant with formatting-related [PSR-12] and [PER] requirements (when
-  `--psr12` is given; details [here](docs/PSR-12.md) and [here][PSR-12 issue])
-
-<sup>\*\*</sup> Some [pragmatic exceptions] are made.
+Or you could just give it a try and [let me know what you think][discuss]. 😉
 
 ## Requirements
 
 - Linux, macOS or Windows
-- PHP 7.4, 8.0, 8.1 or 8.2 with a CLI runtime and the following extensions
-  (enabled by default on most platforms):
-  - `mbstring`
-  - `json`
-  - `tokenizer`
+- PHP 7.4, 8.0, 8.1 or 8.2 with the standard `tokenizer`, `mbstring` and `json`
+  extensions enabled
 
-### A note about PHP versions
+## Features
 
-If your PHP runtime can parse your code, *PrettyPHP* can format it, so if
-formatting fails with `"<file> cannot be parsed"` even though your syntax is
-valid, run `php -v` to check your PHP version.
+Code is formatted for
+
+1. readability,
+2. consistency, and
+3. small diffs
+
+and with a few [pragmatic exceptions][]:
+
+- previous formatting is ignored
+- whitespace is changed, code is not
+- output is the same no matter how input is formatted
+
+Also:
+
+- Entire files are formatted in place
+- Configuration is optional
+- Formatting options are deliberately limited, workflow options are not
+- Uses PHP's tokenizer to parse input and validate output
+- Checks formatted and original code for equivalence
+- Supports code written for PHP versions up to 8.2 (when running on a PHP
+  version that can parse it)
+- Compliant with [PSR-12][] and [PER][] if `--psr12` is given (details
+  [here](docs/PSR-12.md) and [here][PSR-12 issue])
 
 ## License
 
@@ -88,8 +88,6 @@ It can also be installed to a location on your `PATH`. For example:
 mv pretty-php.phar /usr/local/bin/pretty-php
 ```
 
-The `.phar` extension is optional.
-
 ### Composer
 
 You can also add *PrettyPHP* to your project using [Composer]:
@@ -105,12 +103,12 @@ And run it like this:
 pretty-php v0.4.18-d62ba37b
 ```
 
-Until *PrettyPHP* is stable, locking `lkrms/pretty-php` to a specific version is
-recommended for production workflows. For example:
-
-```shell
-composer require --dev lkrms/pretty-php=0.4.18
-```
+> Until *PrettyPHP* is stable, locking `lkrms/pretty-php` to a specific version
+> is recommended for production workflows. For example:
+>
+> ```shell
+> composer require --dev lkrms/pretty-php=0.4.18
+> ```
 
 ## Editor integrations
 
@@ -120,33 +118,24 @@ composer require --dev lkrms/pretty-php=0.4.18
 
 ## Pragmatism
 
-In general, *PrettyPHP* ignores previous formatting and doesn't change anything
-other than whitespace, but in cases where these rules are at odds with the
-priorities [listed above](#features) (readability, consistency, small diffs),
-exceptions are occasionally made and documented below.
+*PrettyPHP* generally abides by its own rules ("previous formatting is ignored"
+and "whitespace is changed, code is not"), but pragmatic exceptions are
+occasionally made and added to the following list:
 
-### Exceptions
-
-Pragmatic exceptions to *PrettyPHP*'s otherwise deterministic output are as
-follows:
-
-- **Newlines are (selectively) preserved** \
-  Unless suppressed by other rules, line breaks adjacent to most operators,
-  separators and brackets are copied from the input to the output. \
-  *This behaviour is disabled by `-N/--ignore-newlines`*
+- **Newlines are preserved** \
+  Line breaks adjacent to most operators, separators and brackets are copied
+  from the input to the output. \
+  *`-N/--ignore-newlines` disables this behaviour*
 
 - **Strings are normalised** \
-  Single-quoted strings are preferred unless one or more characters require a
-  backslash escape, or the double-quoted equivalent is shorter. \
-  *This behaviour is disabled by `-S/--no-simplify-strings`*
+  Single-quoted strings are preferred unless the alternative is shorter or
+  backslash escapes are required. \
+  *`-S/--no-simplify-strings` disables this behaviour*
 
 - **Alias/import statements are grouped and sorted alphabetically** \
-  *This behaviour is modified by `-m/--sort-imports-by` and disabled by
-  `-M/--no-sort-imports`*
+  *`-M/--no-sort-imports` and `-m/--sort-imports-by` modify this behaviour*
 
-- **Comments beside code are not moved to the next line** \
-  If previous formatting were ignored, detection of comments beside vs. above
-  the code they describe would not be possible.
+- **Comments beside code are not moved to the next line**
 
 - **Comments are trimmed and aligned**
 
@@ -158,6 +147,7 @@ issue][new-issue] in the official *PrettyPHP* GitHub repository.
 
 [Black]: https://github.com/psf/black
 [Composer]: https://getcomposer.org/
+[discuss]: https://github.com/lkrms/pretty-php/discussions
 [download]: https://github.com/lkrms/pretty-php/releases/latest/download/pretty-php.phar
 [editor]: #editor-integrations
 [new-issue]: https://github.com/lkrms/pretty-php/issues/new
@@ -170,6 +160,5 @@ issue][new-issue] in the official *PrettyPHP* GitHub repository.
 [PSR-12]: https://www.php-fig.org/psr/psr-12/
 [PSR-12 issue]: https://github.com/lkrms/pretty-php/issues/4
 [shfmt]: https://github.com/mvdan/sh#shfmt
-[versions]: #a-note-about-php-versions
 [Visual Studio Marketplace]: https://marketplace.visualstudio.com/items?itemName=lkrms.pretty-php
 [vscode]: https://github.com/lkrms/vscode-pretty-php
