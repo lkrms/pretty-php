@@ -1,0 +1,103 @@
+name: Publish
+
+on:
+  release:
+    types: [published]
+
+  workflow_dispatch:
+    inputs:
+      tag-name:
+        description: Version tag to publish
+        required: true
+
+      update-homebrew:
+        description: Update Homebrew formula?
+        type: boolean
+        required: true
+        default: true
+
+      update-aur:
+        description: Update AUR package?
+        type: boolean
+        required: true
+        default: true
+
+      update-vscode:
+        description: Update VS Code extension?
+        type: boolean
+        required: true
+        default: true
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  homebrew:
+    name: Update Homebrew formula
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.update-homebrew }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Bump Homebrew formula and push to lkrms/misc tap
+        uses: mislav/bump-homebrew-formula-action@v2
+        with:
+          formula-name: pretty-php
+          tag-name: ${{ github.event.inputs.tag-name || github.ref_name }}
+          download-url: https://github.com/lkrms/pretty-php/releases/download/${{ github.event.inputs.tag-name || github.ref_name }}/pretty-php.phar
+          homebrew-tap: lkrms/homebrew-misc
+          push-to: lkrms/homebrew-misc
+        env:
+          COMMITTER_TOKEN: ${{ secrets.HOMEBREW_COMMITTER_TOKEN }}
+
+  aur:
+    name: Update AUR package
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.update-aur }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Generate PKGBUILD
+        run: |
+          mkdir -pv build
+          scripts/create-PKGBUILD.sh ${{ github.event.inputs.tag-name || github.ref_name }} >build/PKGBUILD
+
+      - name: Publish PKGBUILD to the AUR
+        uses: KSXGitHub/github-actions-deploy-aur@v2.7.0
+        with:
+          pkgname: pretty-php
+          pkgbuild: build/PKGBUILD
+          updpkgsums: true
+          test: true
+          test_flags: --clean --cleanbuild --syncdeps --noconfirm
+          commit_username: ${{ secrets.AUR_USERNAME }}
+          commit_email: ${{ secrets.AUR_EMAIL }}
+          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          commit_message: ${{ github.event.inputs.tag-name || github.ref_name }}
+          allow_empty_commits: false
+
+  vscode:
+    name: Update VS Code extension
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.update-vscode }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          repository: lkrms/vscode-pretty-php
+          token: ${{ secrets.VSCODE_COMMITTER_TOKEN }}
+          fetch-depth: 0
+
+      - name: Update extension version
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          status=0
+          scripts/update-version.sh ${{ github.event.inputs.tag-name || github.ref_name }} || status=$?
+          ((!status || status == 2)) || exit "$status"
+          ((status)) && draft= || unset draft
+          gh release create ${{ github.event.inputs.tag-name || github.ref_name }} ${draft+--draft} --generate-notes --verify-tag
+        env:
+          GH_TOKEN: ${{ secrets.VSCODE_COMMITTER_TOKEN }}
