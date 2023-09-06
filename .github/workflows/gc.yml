@@ -1,0 +1,76 @@
+name: GC
+
+on:
+  schedule:
+    # Run on the 7th of every month at 11:13am UTC
+    - cron: "13 11 7 * *"
+
+  workflow_dispatch:
+    inputs:
+      retain_days:
+        description: Number of days to keep
+        required: true
+        default: 28
+        type: number
+
+      keep_minimum_runs:
+        description: Minimum runs to keep for each workflow
+        required: true
+        default: 10
+        type: number
+
+      delete_workflow_pattern:
+        description: "Name or filename of workflow (default: all)"
+        required: false
+        type: string
+
+      delete_workflow_by_state_pattern:
+        description: Workflow state
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - active
+          - deleted
+          - disabled_inactivity
+          - disabled_manually
+
+      delete_run_by_conclusion_pattern:
+        description: Workflow conclusion
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - action_required
+          - cancelled
+          - failure
+          - skipped
+          - success
+
+      dry_run:
+        description: Dry run
+        required: false
+        type: boolean
+
+jobs:
+  delete-runs:
+    name: Delete workflow runs
+    runs-on: ubuntu-latest
+
+    permissions:
+      actions: write
+
+    steps:
+      - name: Delete workflow runs
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: ${{ inputs.retain_days || 28 }}
+          keep_minimum_runs: ${{ inputs.keep_minimum_runs || 10 }}
+          delete_workflow_pattern: ${{ inputs.delete_workflow_pattern || 'all' }}
+          delete_workflow_by_state_pattern: ${{ inputs.delete_workflow_by_state_pattern || 'all' }}
+          delete_run_by_conclusion_pattern: ${{ inputs.delete_run_by_conclusion_pattern || 'all' }}
+          dry_run: ${{ inputs.dry_run || null }}
