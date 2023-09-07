@@ -1,19 +1,26 @@
-<div align="center">
+<h1 align="center">pretty-php: the opinionated code formatter</h1>
 
-<img src="images/logo-600x600-rounded.png" alt="PrettyPHP logo" width="300" height="300">
+<p align="center">
+  <a href="https://github.com/lkrms/pretty-php">
+    <img src="https://github.com/lkrms/pretty-php/raw/main/images/logo-600x600-rounded.png" alt="pretty-php logo" width="250">
+  </a>
+<p>
 
-# PrettyPHP
+<p align="center">
+  <a href="https://packagist.org/packages/lkrms/pretty-php"><img src="https://poser.pugx.org/lkrms/pretty-php/v" alt="Latest Stable Version" /></a>
+  <a href="https://packagist.org/packages/lkrms/pretty-php"><img src="https://poser.pugx.org/lkrms/pretty-php/license" alt="License" /></a>
+  <a href="https://github.com/lkrms/pretty-php/actions"><img src="https://github.com/lkrms/pretty-php/actions/workflows/ci.yml/badge.svg" alt="CI Status" /></a>
+  <a href="https://codecov.io/gh/lkrms/pretty-php"><img src="https://codecov.io/gh/lkrms/pretty-php/graph/badge.svg?token=W0KVZU718K" alt="Code Coverage" /></a>
+</p>
 
-## The opinionated code formatter for PHP
+----
 
-</div>
-
-*PrettyPHP* is a code formatter for PHP in the tradition of [Black][] for
+`pretty-php` is a code formatter for PHP in the tradition of [Black][] for
 Python, [Prettier][] for JavaScript and [shfmt][] for shell scripts. It aims to
 bring the benefits of fast, deterministic, minimally configurable, automated
 code formatting tools to PHP development.
 
-To that end, you can use *PrettyPHP* as a standalone tool, run it from your
+To that end, you can use `pretty-php` as a standalone tool, run it from your
 [editor][], or pair it with a linter like [phpcbf][] or [php-cs-fixer][] and add
 it to your CI workflows.
 
@@ -59,7 +66,7 @@ MIT
 
 ### PHP archive (PHAR)
 
-You can [download] the latest version of *PrettyPHP* packaged as a PHP archive
+You can [download] the latest version of `pretty-php` packaged as a PHP archive
 and use it straightaway:
 
 ```shell
@@ -90,7 +97,7 @@ mv pretty-php.phar /usr/local/bin/pretty-php
 
 ### Composer
 
-You can also add *PrettyPHP* to your project using [Composer]:
+You can also add `pretty-php` to your project using [Composer]:
 
 ```shell
 composer require --dev lkrms/pretty-php
@@ -103,7 +110,7 @@ And run it like this:
 pretty-php v0.4.18-d62ba37b
 ```
 
-> Until *PrettyPHP* is stable, locking `lkrms/pretty-php` to a specific version
+> Until `pretty-php` is stable, locking `lkrms/pretty-php` to a specific version
 > is recommended for production workflows. For example:
 >
 > ```shell
@@ -112,13 +119,13 @@ pretty-php v0.4.18-d62ba37b
 
 ## Editor integrations
 
-- **PrettyPHP for Visual Studio Code** \
+- **pretty-php for Visual Studio Code** \
   Official VS Code extension \
   [Visual Studio Marketplace] | [Open VSX Registry] | [Repository][vscode]
 
 ## Pragmatism
 
-*PrettyPHP* generally abides by its own rules ("previous formatting is ignored"
+`pretty-php` generally abides by its own rules ("previous formatting is ignored"
 and "whitespace is changed, code is not"), but pragmatic exceptions are
 occasionally made and added to the following list:
 
@@ -139,18 +146,12 @@ occasionally made and added to the following list:
 
 - **Comments are trimmed and aligned**
 
-## Support
-
-You can ask a question, report a bug or request a feature by opening a [new
-issue][new-issue] in the official *PrettyPHP* GitHub repository.
-
 
 [Black]: https://github.com/psf/black
 [Composer]: https://getcomposer.org/
 [discuss]: https://github.com/lkrms/pretty-php/discussions
 [download]: https://github.com/lkrms/pretty-php/releases/latest/download/pretty-php.phar
 [editor]: #editor-integrations
-[new-issue]: https://github.com/lkrms/pretty-php/issues/new
 [Open VSX Registry]: https://open-vsx.org/extension/lkrms/pretty-php
 [PER]: https://www.php-fig.org/per/coding-style/
 [php-cs-fixer]: https://github.com/PHP-CS-Fixer/PHP-CS-Fixer

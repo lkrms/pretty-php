@@ -5,7 +5,7 @@ draft: true
 # PSR-12
 
 This document describes what happens when strict [PSR-12] / [PER Coding Style]
-compliance is enforced with `--psr12`, and explains how (and why) `PrettyPHP`'s
+compliance is enforced with `--psr12`, and explains how (and why) `pretty-php`'s
 default style is not quite 100% compliant.
 
 ## Rules
@@ -48,7 +48,7 @@ declare(strict_types=1);
 namespace Vendor\Package;
 ```
 
-> *PrettyPHP*'s default style departs from the standard to collapse an opening
+> `pretty-php`'s default style departs from the standard to collapse an opening
 > `declare` statement as follows:
 >
 > ```php
@@ -79,7 +79,7 @@ $baz = <<<EOF
     EOF;
 ```
 
-> *PrettyPHP*'s default style does not apply indentation to heredocs in contexts
+> `pretty-php`'s default style does not apply indentation to heredocs in contexts
 > where there is no ambiguity without it:
 >
 > ```php

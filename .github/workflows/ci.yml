@@ -23,10 +23,10 @@ jobs:
           coverage: none
 
       # Add a version constraint before using this elsewhere, e.g. "lkrms/pretty-php=0.4.18"
-      - name: Install PrettyPHP
+      - name: Install pretty-php
         run: composer create-project --no-interaction --no-progress --no-dev lkrms/pretty-php build/pretty-php
 
-      - name: Run PrettyPHP
+      - name: Run pretty-php
         run: build/pretty-php/bin/pretty-php --diff
 
   phpstan:
@@ -176,7 +176,7 @@ jobs:
         with:
           name: ${{ needs.build.outputs.artifact_name }}-snapshot-phar
 
-      - name: Run PrettyPHP
+      - name: Run pretty-php
         env:
           artifact_path: ${{ needs.build.outputs.artifact_path }}
         run: php "$artifact_path" --verbose
@@ -220,7 +220,7 @@ jobs:
         with:
           name: ${{ needs.build.outputs.artifact_name }}-snapshot-phar
 
-      - name: Run PrettyPHP
+      - name: Run pretty-php
         env:
           artifact_path: ${{ needs.build.outputs.artifact_path }}
         run: |

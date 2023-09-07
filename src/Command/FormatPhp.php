@@ -53,7 +53,7 @@ use Throwable;
 use UnexpectedValueException;
 
 /**
- * Provides PrettyPHP's command-line interface
+ * Provides pretty-php's command-line interface
  *
  */
 class FormatPhp extends CliCommand

@@ -26,7 +26,7 @@
     ],
     "alias": "pretty-php.phar",
     "banner": [
-        "This file is part of PrettyPHP",
+        "This file is part of pretty-php",
         "",
         "(c) Luke Arms <luke@linacreative.com>",
         "",
