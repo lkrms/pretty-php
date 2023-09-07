@@ -7,14 +7,12 @@ on:
 
 jobs:
   release:
-    name: Build phar and release
+    name: Build phar and create draft release
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - name: Setup PHP and Composer
         uses: shivammathur/setup-php@v2
@@ -28,12 +26,12 @@ jobs:
       - name: Run build script
         run: |
           scripts/build.sh ${{ github.ref_name }}
-          jq -r '{"artifact_name":.package,"artifact_path":.assets[]|select(.type=="phar")|.path}|to_entries[]|"\(.key)=\(.value)"' build/dist/manifest.json >>$GITHUB_ENV
+          { printf 'artifact_name=%s\n' "${GITHUB_REPOSITORY##*/}" &&
+            printf 'artifact_path=%s\n' build/dist/* | head -n1; } >>"$GITHUB_ENV"
 
       - name: Create draft release
         run: |
-          mv -f build/dist/${{ env.artifact_path }} build/dist/${{ env.artifact_name }}.phar
-          build/dist/${{ env.artifact_name }}.phar --version | grep -F '${{ env.artifact_name }} ${{ github.ref_name }}-'
-          gh release create ${{ github.ref_name }} build/dist/${{ env.artifact_name }}.phar --draft --generate-notes --verify-tag
+          ${{ env.artifact_path }} --version | grep -F '${{ env.artifact_name }} ${{ github.ref_name }}-'
+          gh release create ${{ github.ref_name }} ${{ env.artifact_path }} --draft --generate-notes --verify-tag
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

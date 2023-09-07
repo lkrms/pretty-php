@@ -112,8 +112,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - name: Setup PHP and Composer
         uses: shivammathur/setup-php@v2
@@ -128,12 +126,14 @@ jobs:
         id: run-build-script
         run: |
           scripts/build.sh
-          jq -r '{"artifact_name":.package,"artifact_path":.assets[]|select(.type=="phar")|.path}|to_entries[]|"\(.key)=\(.value)"' build/dist/manifest.json | tee -a "$GITHUB_OUTPUT" >>"$GITHUB_ENV"
+          cd build/dist
+          { printf 'artifact_name=%s-snapshot-phar\n' "${GITHUB_REPOSITORY##*/}" &&
+            printf 'artifact_path=%s\n' * | head -n1; } | tee -a "$GITHUB_OUTPUT" >>"$GITHUB_ENV"
 
       - name: Upload phar artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ env.artifact_name }}-snapshot-phar
+          name: ${{ env.artifact_name }}
           path: build/dist/${{ env.artifact_path }}
 
   test-phar:
@@ -174,7 +174,7 @@ jobs:
       - name: Download phar artifact
         uses: actions/download-artifact@v3
         with:
-          name: ${{ needs.build.outputs.artifact_name }}-snapshot-phar
+          name: ${{ needs.build.outputs.artifact_name }}
 
       - name: Run pretty-php
         env:
@@ -218,7 +218,7 @@ jobs:
       - name: Download phar artifact
         uses: actions/download-artifact@v3
         with:
-          name: ${{ needs.build.outputs.artifact_name }}-snapshot-phar
+          name: ${{ needs.build.outputs.artifact_name }}
 
       - name: Run pretty-php
         env:

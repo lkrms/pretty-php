@@ -1,6 +1,6 @@
 {
     "name": "lkrms/pretty-php",
-    "description": "The opinionated code formatter for PHP",
+    "description": "The opinionated PHP code formatter",
     "license": "MIT",
     "support": {
         "issues": "https://github.com/lkrms/pretty-php/issues",
