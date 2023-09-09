@@ -2,28 +2,27 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
-use Lkrms\PrettyPHP\Rule\Contract\TokenRule;
-use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
+use Lkrms\PrettyPHP\Rule\Contract\MultiTokenRule;
+use Lkrms\Utility\Pcre;
 
 /**
- * Replace single- and double-quoted strings with whichever is clearer and more
- * efficient
+ * Normalise escape sequences in strings and replace single- and double-quoted
+ * strings with whichever syntax is most readable and economical
  *
- * Single-quoted strings are preferred unless:
- * - one or more characters require a backslash escape;
- * - the double-quoted equivalent is shorter; or
- * - the single-quoted string contains a mix of `\` and `\\` and the
- *   double-quoted equivalent contains one or the other, but not both.
+ * Single-quoted strings are preferred unless one or more characters require
+ * escaping, or the double-quoted equivalent is shorter.
+ *
+ * @api
  */
-final class NormaliseStrings implements TokenRule
+final class NormaliseStrings implements MultiTokenRule
 {
-    use TokenRuleTrait;
+    use MultiTokenRuleTrait;
 
     public function getPriority(string $method): ?int
     {
         switch ($method) {
-            case self::PROCESS_TOKEN:
+            case self::PROCESS_TOKENS:
                 return 60;
 
             default:
@@ -38,86 +37,93 @@ final class NormaliseStrings implements TokenRule
         ];
     }
 
-    public function processToken(Token $token): void
+    public function processTokens(array $tokens): void
     {
-        // \x00 -> \t, \v, \f, \x0e -> \x1f is effectively \x00 -> \x1f without
-        // LF (\n) or CR (\r), which aren't escaped unless already escaped
-        $escape = "\0..\t\v\f\x0e..\x1f\"\$\\";
-        $match = '';
+        foreach ($tokens as $token) {
+            // \0 -> \t, \v, \f, \x0e -> \x1f is effectively \0 -> \x1f without
+            // LF (\n) or CR (\r), which aren't escaped unless already escaped
+            $escape = "\0..\t\v\f\x0e..\x1f\"\$\\";
+            $match = '';
 
-        if (!$token->hasNewline()) {
-            $escape .= "\n\r";
-            $match .= '\n\r';
-        }
+            if (!$token->hasNewline()) {
+                $escape .= "\n\r";
+                $match .= '\n\r';
+            }
 
-        $string = '';
-        eval("\$string = {$token->text};");
+            $string = '';
+            eval("\$string = {$token->text};");
+            $doubleQuote = '"';
 
-        // If $string contains valid UTF-8 sequences, don't escape leading bytes
-        // (\xc2 -> \xf4) or continuation bytes (\x80 -> \xbf)
-        if (mb_check_encoding($string, 'UTF-8')) {
-            $escape .= "\x7f\xc0\xc1\xf5..\xff";
-            $match .= '\x7f\xc0\xc1\xf5-\xff';
-        } else {
-            $escape .= "\x7f..\xff";
-            $match .= '\x7f-\xff';
-        }
+            // If $string contains valid UTF-8 sequences, don't escape leading
+            // bytes (\xc2 -> \xf4) or continuation bytes (\x80 -> \xbf)
+            if (mb_check_encoding($string, 'UTF-8')) {
+                $escape .= "\x7f\xc0\xc1\xf5..\xff";
+                $match .= '\x7f\xc0\xc1\xf5-\xff';
+            } else {
+                $escape .= "\x7f..\xff";
+                $match .= '\x7f-\xff';
+            }
 
-        $double = $this->doubleQuote($string, $escape);
-        if (preg_match("/[\\x00-\\x09\\x0b\\x0c\\x0e-\\x1f{$match}]/", $string)) {
+            // Convert octal notation to hexadecimal (e.g. "\177" to "\x7f") and
+            // correct for differences between C and PHP escape sequences:
+            // - recognised by PHP: \0 \e \f \n \r \t \v
+            // - applied by addcslashes: \000 \033 \a \b \f \n \r \t \v
+            $double = $doubleQuote . Pcre::replaceCallback(
+                '/((?<!\\\\)(?:\\\\\\\\)*)\\\\(?:(?P<octal>[0-7]{3})|(?P<cslash>[ab]))/',
+                fn(array $matches) =>
+                    $matches[1] . ($matches['octal'] !== null
+                        ? (($dec = octdec($matches['octal']))
+                            ? ($dec === 27 ? '\e' : sprintf('\x%02x', $dec))
+                            : '\0')
+                        : sprintf('\x%02x', ['a' => 7, 'b' => 8][$matches['cslash']])),
+                addcslashes($string, $escape),
+                -1,
+                $count,
+                PREG_UNMATCHED_AS_NULL
+            ) . $doubleQuote;
+
+            // Use the double-quoted variant if escape sequences remain after
+            // unescaping tabs used for indentation
+            if ($this->Formatter->Tab === "\t") {
+                $double = Pcre::replaceCallback(
+                    '/^(?:\\\\t)+(?=\S|$)/m',
+                    fn(array $matches) =>
+                        str_replace('\t', "\t", $matches[0]),
+                    $double,
+                );
+                if ($token->id !== T_CONSTANT_ENCAPSED_STRING ||
+                        Pcre::match("/[\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f{$match}]/", $string) ||
+                        Pcre::match('/(?<!\\\\)(?:\\\\\\\\)*\\\\t/', $double)) {
+                    $token->setText($double);
+                    continue;
+                }
+            } elseif ($token->id !== T_CONSTANT_ENCAPSED_STRING ||
+                    Pcre::match("/[\\x00-\\x09\\x0b\\x0c\\x0e-\\x1f{$match}]/", $string)) {
+                $token->setText($double);
+                continue;
+            }
+
+            $single = "'" . Pcre::replace(
+                "/(?:\\\\(?=\\\\)|(?<=\\\\)\\\\)|\\\\(?='|\$)|'/",
+                '\\\\$0',
+                $string
+            ) . "'";
+
+            // '\Lkrms\\' is valid but appears not to be, so replace it with
+            // '\\Lkrms\\'
+            $singles = Pcre::match('/(?<!\\\\)\\\\(?!\\\\)/', $single);
+            $doubles = Pcre::match('/(?<!\\\\)\\\\\\\\/', $single);
+
+            if ($singles && $doubles) {
+                $single = Pcre::replace('/(?<!\\\\)\\\\(?!\\\\)/', '\\\\$0', $single);
+            }
+
+            if (mb_strlen($single) <= mb_strlen($double)) {
+                $token->setText($single);
+                continue;
+            }
+
             $token->setText($double);
-
-            return;
         }
-        $single = $this->singleQuote($string);
-        // '\Lkrms\\' looks invalid and "\\Lkrms\\" uses double quotes
-        // unnecessarily, so try '\\Lkrms\\' before giving up on single quotes
-        if (!$this->checkConsistency($single) && $this->checkConsistency($double)) {
-            $single = preg_replace('/(?<!\\\\)\\\\(?!\\\\)/', '\\\\$0', $single);
-        }
-        $token->setText((mb_strlen($single) <= mb_strlen($double) &&
-                ($this->checkConsistency($single) || !$this->checkConsistency($double)))
-            ? $single
-            : $double);
-    }
-
-    private function singleQuote(string $string): string
-    {
-        return "'" . preg_replace(
-            "/(?:\\\\(?=\\\\)|(?<=\\\\)\\\\)|\\\\(?='|\$)|'/",
-            '\\\\$0',
-            $string
-        ) . "'";
-    }
-
-    private function doubleQuote(string $string, string $escape): string
-    {
-        // - Recognised by PHP: \0 \e \f \n \r \t \v
-        // - Returned by addcslashes: \0 \a \b \f \n \r \t \v
-        return '"' . preg_replace_callback(
-            '/\\\\(?:(?P<octal>[0-7]{3})|(?P<cslash>[ab])|.)/',
-            fn(array $matches) =>
-                ($matches['octal'] ?? null)
-                    ? (($dec = octdec($matches['octal']))
-                        ? sprintf('\x%02x', $dec)
-                        : '\0')
-                    : (($matches['cslash'] ?? null)
-                        ? sprintf('\x%02x', ['a' => 7, 'b' => 8][$matches['cslash']])
-                        : $matches[0]),
-            addcslashes($string, $escape)
-        ) . '"';
-    }
-
-    /**
-     * Return true if $string contains "\" or "\\", but not both
-     *
-     * Also returns true if `$string` doesn't contain either sequence.
-     */
-    private function checkConsistency(string $string): bool
-    {
-        $singles = preg_match_all('/(?<!\\\\)\\\\(?!\\\\)/', $string);
-        $doubles = preg_match_all('/(?<!\\\\)\\\\\\\\(?!\\\\)/', $string);
-
-        return !($singles + $doubles) || ($singles xor $doubles);
     }
 }
