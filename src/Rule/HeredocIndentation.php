@@ -63,13 +63,13 @@ final class HeredocIndentation implements MultiTokenRule
 
         foreach ($this->Heredocs as $heredoc) {
             $inherited = '';
-            $current = $heredoc->HeredocOpenedBy;
+            $current = $heredoc->Heredoc;
             while ($current) {
                 $inherited .= $current->HeredocIndent;
-                $current = $current->HeredocOpenedBy;
+                $current = $current->Heredoc;
             }
 
-            $next = $heredoc->next();
+            $next = $heredoc->_next;
             $indent = $next->renderIndent();
             $padding = str_repeat(' ', $next->LinePadding - $next->LineUnpadding);
             if (($indent[0] ?? null) === "\t" && $padding) {
@@ -88,7 +88,7 @@ final class HeredocIndentation implements MultiTokenRule
             $current = $heredoc;
             do {
                 $current->setText(str_replace("\n", "\n" . $indent, $current->text));
-                if ($current->id === T_END_HEREDOC && $current->HeredocOpenedBy === $heredoc) {
+                if ($current->id === T_END_HEREDOC && $current->Heredoc === $heredoc) {
                     break;
                 }
             } while ($current = $current->_next);

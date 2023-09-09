@@ -35,10 +35,8 @@ final class EssentialWhitespace implements Rule
         foreach ($tokens as $token) {
             $next = $token->_next;
             if (!$next ||
-                    $token->StringOpenedBy ||
-                    $token->HeredocOpenedBy ||
-                    $next->StringOpenedBy ||
-                    $next->HeredocOpenedBy ||
+                    $token->String ||
+                    $next->String ||
                     $token->hasNewlineAfter()) {
                 continue;
             }

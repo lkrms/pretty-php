@@ -95,8 +95,7 @@ final class WordPress implements TokenRule
         // All that remains is T_OPEN_BRACKET and T_OPEN_PARENTHESIS
         if ($token->ClosedBy === $token->_next ||
             ($token->id === T_OPEN_BRACKET &&
-                ($token->StringOpenedBy ||
-                    $token->HeredocOpenedBy ||
+                ($token->String ||
                     ($token->_next->_next === $token->ClosedBy &&
                         $token->_next->id !== T_VARIABLE)))) {
             return;

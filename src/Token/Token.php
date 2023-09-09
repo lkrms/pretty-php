@@ -120,10 +120,6 @@ class Token extends PhpToken implements JsonSerializable
 
     public ?Token $ChainOpenedBy = null;
 
-    public ?Token $HeredocOpenedBy = null;
-
-    public ?Token $StringOpenedBy = null;
-
     /**
      * Bitmask representing whitespace between the token and its predecessor
      *
@@ -474,6 +470,8 @@ class Token extends PhpToken implements JsonSerializable
         $a['_prevSibling'] = $this->_prevSibling;
         $a['_nextSibling'] = $this->_nextSibling;
         $a['Parent'] = $this->Parent;
+        $a['String'] = $this->String;
+        $a['Heredoc'] = $this->Heredoc;
         $a['ExpandedText'] = $this->ExpandedText;
         $a['OriginalText'] = $this->OriginalText;
         $a['BodyIsUnenclosed'] = $this->BodyIsUnenclosed;
@@ -515,8 +513,6 @@ class Token extends PhpToken implements JsonSerializable
         $a['HeredocIndent'] = $this->HeredocIndent;
         $a['AlignedWith'] = $this->AlignedWith;
         $a['ChainOpenedBy'] = $this->ChainOpenedBy;
-        $a['HeredocOpenedBy'] = $this->HeredocOpenedBy;
-        $a['StringOpenedBy'] = $this->StringOpenedBy;
         $a['WhitespaceBefore'] = WhitespaceType::toWhitespace($this->WhitespaceBefore);
         $a['WhitespaceAfter'] = WhitespaceType::toWhitespace($this->WhitespaceAfter);
         $a['WhitespaceMaskPrev'] = $this->WhitespaceMaskPrev;
@@ -1796,8 +1792,8 @@ class Token extends PhpToken implements JsonSerializable
             }
 
             if ($current->id === T_START_HEREDOC ||
-                    ($current->HeredocOpenedBy && $current->id !== T_END_HEREDOC)) {
-                $heredoc = $current->HeredocOpenedBy ?: $current;
+                    ($current->Heredoc && $current->id !== T_END_HEREDOC)) {
+                $heredoc = $current->Heredoc ?: $current;
                 if ($heredoc->HeredocIndent) {
                     $text = preg_replace(
                         ($current->_next->text[0] ?? null) === "\n"
