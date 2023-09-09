@@ -80,6 +80,21 @@ trait NavigableTokenTrait
     public $CloseTag;
 
     /**
+     * @var static|null
+     */
+    public $String;
+
+    /**
+     * @var static|null
+     */
+    public $StringClosedBy;
+
+    /**
+     * @var static|null
+     */
+    public $Heredoc;
+
+    /**
      * True unless the token is a tag, comment, whitespace or inline markup
      *
      */
@@ -276,6 +291,8 @@ trait NavigableTokenTrait
                 continue;
             }
 
+            // Determine whether or not a close tag is also a statement
+            // terminator and should therefore be regarded as a code token
             if ($token->id === T_CLOSE_TAG) {
                 $t = $prev;
                 while ($t->id === T_COMMENT ||
@@ -313,6 +330,30 @@ trait NavigableTokenTrait
                 $stackDelta--;
             } else {
                 $token->Parent = $prev->Parent;
+            }
+
+            $token->String = $prev->String;
+            $token->Heredoc = $prev->Heredoc;
+            if ($tokenTypeIndex->StringDelimiter[$prev->id]) {
+                if ($prev->String && $prev->String->StringClosedBy === $prev) {
+                    $token->String = $prev->String->String;
+                    if ($prev->id === T_END_HEREDOC) {
+                        $token->Heredoc = $prev->Heredoc->Heredoc;
+                    }
+                } else {
+                    $token->String = $prev;
+                    if ($prev->id === T_START_HEREDOC) {
+                        $token->Heredoc = $prev;
+                    }
+                }
+            }
+
+            if ($tokenTypeIndex->StringDelimiter[$token->id] &&
+                $token->String &&
+                $token->BracketStack === $token->String->BracketStack &&
+                (($token->String->id === T_START_HEREDOC && $token->id === T_END_HEREDOC) ||
+                    ($token->String->id !== T_START_HEREDOC && $token->String->id === $token->id))) {
+                $token->String->StringClosedBy = $token;
             }
 
             if ($tokenTypeIndex->CloseBracketOrEndAltSyntax[$token->id]) {

@@ -65,6 +65,12 @@ class TokenTypeIndex implements IImmutable
      * @readonly
      * @var array<int,bool>
      */
+    public array $StringDelimiter;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
     public array $DoNotModify;
 
     /**
@@ -274,6 +280,13 @@ class TokenTypeIndex implements IImmutable
             T_END_HEREDOC,
             T_INLINE_HTML,
             T_WHITESPACE,
+        );
+
+        $this->StringDelimiter = TT::getIndex(
+            T_DOUBLE_QUOTE,
+            T_START_HEREDOC,
+            T_END_HEREDOC,
+            T_BACKTICK,
         );
 
         $this->DoNotModify = TT::getIndex(

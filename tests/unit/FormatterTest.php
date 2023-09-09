@@ -3,7 +3,6 @@
 namespace Lkrms\PrettyPHP\Tests;
 
 use Lkrms\Facade\File;
-use Lkrms\Facade\Sys;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Rule\AlignArrowFunctions;
 use Lkrms\PrettyPHP\Rule\AlignChains;
@@ -394,15 +393,5 @@ PHP,
     public static function getFixturesPath(): string
     {
         return dirname(__DIR__) . '/fixtures';
-    }
-
-    protected function setUp(): void
-    {
-        Sys::pushTimers();
-    }
-
-    protected function tearDown(): void
-    {
-        Sys::popTimers();
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Tests;
 
+use Lkrms\Facade\Sys;
 use Lkrms\PrettyPHP\Formatter;
 
 abstract class TestCase extends \PHPUnit\Framework\TestCase
@@ -64,5 +65,15 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     protected function prepareFormatter(Formatter $formatter): Formatter
     {
         return $formatter;
+    }
+
+    protected function setUp(): void
+    {
+        Sys::pushTimers();
+    }
+
+    protected function tearDown(): void
+    {
+        Sys::popTimers();
     }
 }
