@@ -6,7 +6,8 @@ use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Filter\Contract\Filter;
 
 /**
- * Remove whitespace tokens
+ * Remove whitespace tokens and control characters other than horizontal tabs,
+ * line feeds and carriage returns
  *
  * @api
  */
@@ -16,13 +17,14 @@ final class RemoveWhitespace implements Filter
 
     public function filterTokens(array $tokens): array
     {
-        $filtered = [];
         foreach ($tokens as $token) {
-            if ($token->id !== T_WHITESPACE) {
-                $filtered[] = $token;
+            if ($token->id === T_WHITESPACE ||
+                    $token->id === T_BAD_CHARACTER) {
+                continue;
             }
+            $filtered[] = $token;
         }
 
-        return $filtered;
+        return $filtered ?? [];
     }
 }
