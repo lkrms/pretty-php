@@ -1,0 +1,26 @@
+changelog:
+  exclude:
+    labels:
+      - no-changelog
+      - cleanup
+
+  categories:
+    - title: Added
+      labels:
+        - new-feature
+
+    - title: Changed
+      labels:
+        - enhancement
+
+    - title: Deprecated
+      labels:
+        - deprecation
+
+    - title: Removed
+      labels:
+        - deletion
+
+    - title: Fixed
+      labels:
+        - bug
