@@ -49,7 +49,7 @@ final class ProtectStrings implements MultiTokenRule
                 if ($current->id === T_OPEN_BRACKET) {
                     foreach ($current->_next->collect($current->ClosedBy) as $inner) {
                         $inner->CriticalWhitespaceMaskPrev = WhitespaceType::NONE;
-                    };
+                    }
                 }
             }
         }
