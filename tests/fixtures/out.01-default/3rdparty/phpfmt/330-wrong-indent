@@ -6,6 +6,6 @@ if (true):
     endif;
 
     $html_out = <<<HtmlOutput
-        	    <div>Some text</div>
+        \t    <div>Some text</div>
         HtmlOutput;
 endif;
