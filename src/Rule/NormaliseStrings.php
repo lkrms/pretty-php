@@ -199,7 +199,7 @@ final class NormaliseStrings implements MultiTokenRule
         // where every backslash other than the trailing '\\' is singular
         if (($string[-1] ?? null) === '\\' &&
                 Pcre::matchAll('/(?<!\\\\)\\\\\\\\(?!\\\\)/', $string) === 1 &&
-                !Pcre::match("/(?<!\\\\)\\\\(?={$reserved})/", $string) &&
+                !Pcre::match("/(?<!\\\\)\\\\(?={$reserved})(?!\\\\\$)/", $string) &&
                 strpos($string, '\\\\\\') === false) {
             return Pcre::replace("/(?<!\\\\)\\\\(?!{$reserved})/", '\\\\$0', $string);
         }

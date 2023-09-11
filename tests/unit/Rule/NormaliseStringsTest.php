@@ -221,6 +221,19 @@ PHP,
 `echo 'two double-escaped backticks: \\\`\\\`'`;
 PHP,
             ],
+            'maybeEscapeEscapes' => [
+                <<<'PHP'
+<?php
+'Lkrms\\Tests\\Utility\\Debugging\\';
+'\\\\nas01\staff\\';
+
+PHP,
+                <<<'PHP'
+<?php
+"Lkrms\\Tests\\Utility\\Debugging\\";
+"\\\\nas01\\staff\\";
+PHP,
+            ]
         ];
     }
 }
