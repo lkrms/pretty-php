@@ -9,8 +9,8 @@ use Lkrms\Utility\Pcre;
 use RuntimeException;
 
 /**
- * Normalise escape sequences in strings and replace single- and double-quoted
- * strings with whichever syntax is most readable and economical
+ * Normalise escape sequences in strings, and replace single- and double-quoted
+ * strings with the most readable and economical syntax
  *
  * Single-quoted strings are preferred unless one or more characters require
  * escaping, or the double-quoted equivalent is shorter.

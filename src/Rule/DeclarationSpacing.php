@@ -9,7 +9,7 @@ use Lkrms\PrettyPHP\Rule\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Token\Token;
 
 /**
- * Normalise whitespace before, after and between declarations
+ * Normalise whitespace between declarations
  *
  * With sensible exceptions, this rule:
  *

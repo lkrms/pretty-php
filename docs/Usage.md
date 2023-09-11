@@ -119,7 +119,8 @@ pretty-php - Format a PHP file
 
 - **`-S`**, **`--no-simplify-strings`**
 
-  Don't normalise single- and double-quoted strings.
+  Don't normalise escape sequences in strings, and don't replace single- and
+  double-quoted strings with the most readable and economical syntax
 
   Equivalent to **`--disable=simplify-strings`**
 
