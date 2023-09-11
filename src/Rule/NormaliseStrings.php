@@ -61,13 +61,16 @@ final class NormaliseStrings implements MultiTokenRule
             $reserved = '';
 
             // Don't escape line breaks unless they are already escaped
-            if (!$token->hasNewline()) {
+            if (!$token->hasNewline() ||
+                ($token->_next->id === T_END_HEREDOC &&
+                    strpos(substr($token->text, 0, -1), "\n") === false)) {
                 $escape .= "\n\r";
                 $match .= '\n\r';
             }
 
             $string = '';
             $doubleQuote = '';
+            $suffix = '';
             if ($token->id === T_CONSTANT_ENCAPSED_STRING) {
                 eval("\$string = {$token->text};");
                 $doubleQuote = '"';
@@ -96,8 +99,13 @@ final class NormaliseStrings implements MultiTokenRule
                 $reserved .= '`';
             } elseif ($token->String->id === T_START_HEREDOC) {
                 $start = trim($token->String->text);
+                $text = $token->text;
                 $end = trim($token->String->StringClosedBy->text);
-                eval("\$string = {$start}\n{$token->text}\n{$end};");
+                if ($token->_next->id === T_END_HEREDOC) {
+                    $text = substr($text, 0, -1);
+                    $suffix = "\n";
+                }
+                eval("\$string = {$start}\n{$text}\n{$end};");
             } else {
                 throw new RuntimeException(
                     sprintf('Not a string delimiter: %s', CustomToken::toName($token->String->id))
@@ -137,7 +145,7 @@ final class NormaliseStrings implements MultiTokenRule
             );
 
             // Remove unnecessary backslashes
-            $reserved = "[nrtvef\\\\\${$reserved}]|[0-7]|[xu][0-9a-fA-F]|\$";
+            $reserved = "[nrtvef\\\\\${$reserved}]|[0-7]|x[0-9a-fA-F]|u\{[0-9a-fA-F]+\}|\$";
             $double = Pcre::replace(
                 "/(?<!\\\\)\\\\\\\\(?!{$reserved})/",
                 '\\',
@@ -146,6 +154,7 @@ final class NormaliseStrings implements MultiTokenRule
 
             $double = $doubleQuote
                 . $this->maybeEscapeEscapes($double, $reserved)
+                . $suffix
                 . $doubleQuote;
 
             // Use the double-quoted variant if escape sequences remain after
@@ -173,7 +182,7 @@ final class NormaliseStrings implements MultiTokenRule
                 "/(?:\\\\(?=\\\\)|(?<=\\\\)\\\\)|\\\\(?='|\$)|'/",
                 '\\\\$0',
                 $string
-            )) . "'";
+            )) . $suffix . "'";
 
             if (mb_strlen($single) <= mb_strlen($double)) {
                 $token->setText($single);
@@ -184,12 +193,13 @@ final class NormaliseStrings implements MultiTokenRule
         }
     }
 
-    private function maybeEscapeEscapes(string $string, string $reserved = '\\\\'): string
+    private function maybeEscapeEscapes(string $string, string $reserved = "['\\\\]"): string
     {
         // '\Name\\' is valid but confusing, so replace '\' with '\\' in strings
         // where every backslash other than the trailing '\\' is singular
         if (($string[-1] ?? null) === '\\' &&
                 Pcre::matchAll('/(?<!\\\\)\\\\\\\\(?!\\\\)/', $string) === 1 &&
+                !Pcre::match("/(?<!\\\\)\\\\(?={$reserved})/", $string) &&
                 strpos($string, '\\\\\\') === false) {
             return Pcre::replace("/(?<!\\\\)\\\\(?!{$reserved})/", '\\\\$0', $string);
         }
