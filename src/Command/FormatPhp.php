@@ -399,9 +399,9 @@ class FormatPhp extends CliCommand
         return [
             CliOption::build()
                 ->long('src')
-                ->valueName('PATH')
+                ->valueName('path')
                 ->description(<<<EOF
-Files and directories to format
+Files and directories to format.
 
 If the only path is a dash ('-'), or no paths are given, `{{command}}` reads
 from the standard input and writes to the standard output.
@@ -414,9 +414,9 @@ EOF)
             CliOption::build()
                 ->long('include')
                 ->short('I')
-                ->valueName('REGEX')
+                ->valueName('regex')
                 ->description(<<<EOF
-A regular expression for pathnames to include when searching a directory
+A regular expression for pathnames to include when searching a directory.
 
 Exclusions (`-X/--exclude`) are applied first.
 EOF)
@@ -426,9 +426,9 @@ EOF)
             CliOption::build()
                 ->long('exclude')
                 ->short('X')
-                ->valueName('REGEX')
+                ->valueName('regex')
                 ->description(<<<EOF
-A regular expression for pathnames to exclude when searching a directory
+A regular expression for pathnames to exclude when searching a directory.
 
 Exclusions are applied before inclusions (`-I/--include`).
 EOF)
@@ -438,12 +438,12 @@ EOF)
             CliOption::build()
                 ->long('include-if-php')
                 ->short('P')
-                ->valueName('REGEX')
+                ->valueName('regex')
                 ->description(<<<EOF
-Include files that contain PHP code when searching a directory
+Include files that contain PHP code when searching a directory.
 
 Use this option to format files not matched by `-I/--include` if they have a
-pathname that matches <REGEX> and a PHP open tag ('\<?php') at the start of the
+pathname that matches <regex> and a PHP open tag ('\<?php') at the start of the
 first line that is not a shebang ('#!').
 
 The default regular expression matches files with no extension. Use
@@ -457,12 +457,12 @@ EOF)
             CliOption::build()
                 ->long('tab')
                 ->short('t')
-                ->valueName('SIZE')
+                ->valueName('size')
                 ->description(<<<EOF
-Indent using tabs
+Indent using tabs.
 
-The *align-chains*, *align-fn*, *align-lists*, and *align-ternary* rules have no
-effect when using tabs for indentation.
+The *align-chains*, *align-fn*, *align-lists*, and *align-ternary* rules cannot
+be enabled when using tabs for indentation.
 EOF)
                 ->optionType(CliOptionType::ONE_OF_OPTIONAL)
                 ->valueType(CliOptionValueType::INTEGER)
@@ -473,9 +473,9 @@ EOF)
             CliOption::build()
                 ->long('space')
                 ->short('s')
-                ->valueName('SIZE')
+                ->valueName('size')
                 ->description(<<<EOF
-Indent using spaces
+Indent using spaces.
 
 This is the default if neither `-t/--tab` or `-s/--space` are given.
 EOF)
@@ -488,15 +488,15 @@ EOF)
             CliOption::build()
                 ->long('eol')
                 ->short('l')
-                ->valueName('SEQUENCE')
+                ->valueName('sequence')
                 ->description(<<<'EOF'
-Set the output file's end-of-line sequence
+Set the output file's end-of-line sequence.
 
-In *platform* mode, `{{command}}` uses CRLF ("\r\n") line endings on Windows and
-LF ("\n") on other platforms.
+In *platform* mode, `{{command}}` uses CRLF ("\\r\\n") line endings on Windows
+and LF ("\\n") on other platforms.
 
-In *auto* mode (the default), the input file's line endings are preserved, and
-*platform* mode is used as a fallback if there are no line breaks in the input.
+In *auto* mode, the input file's line endings are preserved, and *platform* mode
+is used as a fallback if there are no line breaks in the input.
 EOF)
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(['auto', 'platform', 'lf', 'crlf'])
@@ -506,9 +506,9 @@ EOF)
             CliOption::build()
                 ->long('disable')
                 ->short('i')
-                ->valueName('RULE')
+                ->valueName('rule')
                 ->description(<<<EOF
-Disable one of the default formatting rules
+Disable one of the default formatting rules.
 EOF)
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys(self::SKIP_RULE_MAP))
@@ -518,9 +518,9 @@ EOF)
             CliOption::build()
                 ->long('enable')
                 ->short('r')
-                ->valueName('RULE')
+                ->valueName('rule')
                 ->description(<<<EOF
-Enable an optional formatting rule
+Enable an optional formatting rule.
 EOF)
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys(self::ADD_RULE_MAP))
@@ -531,28 +531,28 @@ EOF)
                 ->long('one-true-brace-style')
                 ->short('1')
                 ->description(<<<EOF
-Format braces using the One True Brace Style
+Format braces using the One True Brace Style.
 EOF)
                 ->bindTo($this->OneTrueBraceStyle),
             CliOption::build()
                 ->long('operators-first')
                 ->short('O')
                 ->description(<<<EOF
-Place newlines before operators when splitting code over multiple lines
+Place newlines before operators when splitting code over multiple lines.
 EOF)
                 ->bindTo($this->OperatorsFirst),
             CliOption::build()
                 ->long('operators-last')
                 ->short('L')
                 ->description(<<<EOF
-Place newlines after operators when splitting code over multiple lines
+Place newlines after operators when splitting code over multiple lines.
 EOF)
                 ->bindTo($this->OperatorsLast),
             CliOption::build()
                 ->long('ignore-newlines')
                 ->short('N')
                 ->description(<<<EOF
-Ignore the position of newlines in the input
+Ignore the position of newlines in the input.
 
 This option cannot be overridden by configuration file settings (see
 ___CONFIGURATION___ below). Use `--disable=preserve-newlines` for the same
@@ -563,7 +563,7 @@ EOF)
                 ->long('no-simplify-strings')
                 ->short('S')
                 ->description(<<<EOF
-Don't normalise single- and double-quoted strings
+Don't normalise single- and double-quoted strings.
 
 Equivalent to `--disable=simplify-strings`
 EOF)
@@ -571,9 +571,9 @@ EOF)
             CliOption::build()
                 ->long('heredoc-indent')
                 ->short('h')
-                ->valueName('TYPE')
+                ->valueName('type')
                 ->description(<<<EOF
-Set the indentation level of heredocs and nowdocs
+Set the indentation level of heredocs and nowdocs.
 
 The default is to apply *hanging* indentation to inline heredocs.
 EOF)
@@ -583,9 +583,9 @@ EOF)
             CliOption::build()
                 ->long('sort-imports-by')
                 ->short('m')
-                ->valueName('ORDER')
+                ->valueName('order')
                 ->description(<<<EOF
-Set the sort order for consecutive alias/import statements
+Set the sort order for consecutive alias/import statements.
 
 Use `--sort-imports-by=none` to group import statements by type without changing
 their order.
@@ -600,26 +600,25 @@ EOF)
                 ->long('no-sort-imports')
                 ->short('M')
                 ->description(<<<EOF
-Don't sort or group consecutive alias/import statements
+Don't sort or group consecutive alias/import statements.
 EOF)
                 ->bindTo($this->NoSortImports),
             CliOption::build()
                 ->long('psr12')
                 ->description(<<<EOF
-Enforce strict PSR-12 / PER Coding Style compliance
+Enforce strict PSR-12 / PER Coding Style compliance.
 
 Use this option to apply formatting rules and internal options required for
 `{{command}}` output to satisfy the formatting-related requirements of PHP-FIG
 coding style standards.
 EOF)
-                ->visibility(Env::debug() ? Visibility::ALL & ~Visibility::SYNOPSIS : Visibility::NONE)
                 ->bindTo($this->Psr12),
             CliOption::build()
                 ->long('preset')
                 ->short('p')
-                ->valueName('PRESET')
+                ->valueName('preset')
                 ->description(<<<EOF
-Apply a formatting preset
+Apply a formatting preset.
 
 Formatting options other than `-N/--ignore-newlines` are ignored when a preset
 is applied.
@@ -631,11 +630,11 @@ EOF)
             CliOption::build()
                 ->long('config')
                 ->short('c')
-                ->valueName('FILE')
+                ->valueName('file')
                 ->description(<<<EOF
-Read formatting options from a JSON configuration file
+Read formatting options from a JSON configuration file.
 
-Settings in <FILE> override formatting options given on the command line, and
+Settings in <file> override formatting options given on the command line, and
 any configuration files that would usually apply to the input are ignored.
 
 See ___CONFIGURATION___ below.
@@ -646,10 +645,10 @@ EOF)
             CliOption::build()
                 ->long('no-config')
                 ->description(<<<EOF
-Ignore configuration files
+Ignore configuration files.
 
-Skip detection of configuration files that would otherwise take precedence over
-formatting options given on the command line.
+Use this option to skip detection of configuration files that would otherwise
+take precedence over formatting options given on the command line.
 
 See ___CONFIGURATION___ below.
 EOF)
@@ -657,11 +656,11 @@ EOF)
             CliOption::build()
                 ->long('output')
                 ->short('o')
-                ->valueName('FILE')
+                ->valueName('file')
                 ->description(<<<EOF
-Write output to a different file
+Write output to a different file.
 
-If <FILE> is a dash ('-'), `{{command}}` writes to the standard output.
+If <file> is a dash ('-'), `{{command}}` writes to the standard output.
 Otherwise, `-o/--output` must be given once per input file, or not at all.
 EOF)
                 ->optionType(CliOptionType::VALUE)
@@ -669,9 +668,9 @@ EOF)
                 ->bindTo($this->OutputFiles),
             CliOption::build()
                 ->long('diff')
-                ->valueName('TYPE')
+                ->valueName('type')
                 ->description(<<<EOF
-Fail with a diff when the input is not already formatted
+Fail with a diff when the input is not already formatted.
 EOF)
                 ->optionType(CliOptionType::ONE_OF_OPTIONAL)
                 ->allowedValues(['unified', 'name-only'])
@@ -680,13 +679,13 @@ EOF)
             CliOption::build()
                 ->long('check')
                 ->description(<<<EOF
-Fail silently when the input is not already formatted
+Fail silently when the input is not already formatted.
 EOF)
                 ->bindTo($this->Check),
             CliOption::build()
                 ->long('print-config')
                 ->description(<<<EOF
-Print a configuration file instead of formatting the input
+Print a configuration file instead of formatting the input.
 
 See ___CONFIGURATION___ below.
 EOF)
@@ -694,9 +693,9 @@ EOF)
             CliOption::build()
                 ->long('stdin-filename')
                 ->short('F')
-                ->valueName('PATH')
+                ->valueName('path')
                 ->description(<<<EOF
-The pathname of the file passed to the standard input
+The pathname of the file passed to the standard input.
 
 Allows discovery of configuration files and improves reporting. Useful for
 editor integrations.
@@ -706,28 +705,28 @@ EOF)
                 ->bindTo($this->StdinFilename),
             CliOption::build()
                 ->long('debug')
-                ->valueName('DIR')
+                ->valueName('directory')
                 ->description(<<<EOF
-Create debug output in <DIR>
+Create debug output in <directory>.
 
-Combine with `-v/--verbose` to render output to a subdirectory of <DIR> after
-processing each pass of each rule.
+Combine with `-v/--verbose` to render output to a subdirectory of <directory>
+after processing each pass of each rule.
 EOF)
                 ->optionType(CliOptionType::VALUE_OPTIONAL)
-                ->defaultValue($this->app()->getTempPath() . '/debug')
-                ->visibility(Env::debug() ? Visibility::ALL & ~Visibility::SYNOPSIS : Visibility::NONE)
+                ->defaultValue($this->App->getTempPath() . '/debug')
+                ->visibility((Env::debug() ? Visibility::ALL & ~Visibility::SYNOPSIS : Visibility::MARKDOWN | Visibility::MAN_PAGE) | Visibility::HIDE_DEFAULT)
                 ->bindTo($this->DebugDirectory),
             CliOption::build()
                 ->long('timers')
                 ->description(<<<EOF
-Report timers and resource usage on exit
+Report timers and resource usage on exit.
 EOF)
-                ->visibility(Env::debug() ? Visibility::ALL & ~Visibility::SYNOPSIS : Visibility::NONE)
+                ->visibility(Env::debug() ? Visibility::ALL & ~Visibility::SYNOPSIS : Visibility::MARKDOWN | Visibility::MAN_PAGE)
                 ->bindTo($this->ReportTimers),
             CliOption::build()
                 ->long('fast')
                 ->description(<<<EOF
-Skip equivalence checks
+Skip equivalence checks.
 EOF)
                 ->visibility(Visibility::ALL & ~Visibility::SYNOPSIS)
                 ->bindTo($this->Fast),
@@ -735,17 +734,17 @@ EOF)
                 ->long('verbose')
                 ->short('v')
                 ->description(<<<EOF
-Report unchanged files
+Report unchanged files.
 EOF)
                 ->bindTo($this->Verbose),
             CliOption::build()
                 ->long('quiet')
                 ->short('q')
                 ->description(<<<EOF
-Only report warnings and errors
+Only report warnings and errors.
 
-If given twice, suppress warnings as well. If given three or more times, also
-suppress TTY-only progress updates.
+If given twice, warnings are also suppressed. If given three or more times,
+TTY-only progress updates are also suppressed.
 
 Errors are always reported.
 EOF)
@@ -769,10 +768,7 @@ parent directories. It stops looking when it finds a configuration file, a
 *.git* directory, a *.hg* directory, or the root of the filesystem, whichever
 comes first.
 
-If a directory contains more than one configuration file, `{{command}}` reports
-an error and exits without formatting anything.
-
-For input files with an applicable configuration file, command-line formatting
+If an input file has an applicable configuration file, command-line formatting
 options other than `-N/--ignore-newlines` are replaced with settings from the
 configuration file.
 
@@ -792,15 +788,21 @@ example:
     }
 
 The optional *src* array specifies files and directories to format. If
-`{{command}}` is started with no <PATH> arguments in a directory where *src* is
+`{{command}}` is started with no path arguments in a directory where *src* is
 configured, or the directory is passed to `{{command}}` for formatting, paths in
 *src* are formatted. It is ignored otherwise.
+
+If a directory contains more than one configuration file, `{{command}}` reports
+an error and exits without formatting anything.
 EOF,
             CliHelpSectionName::EXIT_STATUS => <<<EOF
-*0*   Formatting succeeded / input already formatted \
-*1*   Invalid arguments / input requires formatting \
-*2*   Invalid input (code could not be parsed) \
-*15*  Operational error
+`{{command}}` returns 0 when formatting succeeds, 1 when invalid arguments are
+given, and 2 when one or more input files cannot be parsed. Other non-zero
+values are returned for other failures.
+
+When `--diff` or `--check` are given, `{{command}}` returns 0 when the input is
+already formatted and 1 when formatting is required. The meaning of other return
+values is unchanged.
 EOF,
         ];
     }
@@ -813,7 +815,7 @@ EOF,
             if (!Env::debug()) {
                 Env::debug(true);
             }
-            $this->app()->logConsoleMessages();
+            $this->App->logConsoleMessages();
         }
 
         if ($this->ReportTimers) {
@@ -916,7 +918,7 @@ EOF,
         $this->expandPaths($this->InputFiles, $in, $dirs, $dirCount);
         $out = $this->OutputFiles;
         if (!$in && !$this->StdinFilename && !$this->PrintConfig && stream_isatty(STDIN)) {
-            throw new CliInvalidArgumentsException('<PATH> required when input is a TTY');
+            throw new CliInvalidArgumentsException('<path> required when input is a TTY');
         }
         if (!$in || $in === ['-']) {
             $in = ['php://stdin'];

@@ -100,7 +100,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
   build:
-    name: Build phar
+    name: Build phar and man page
     needs:
       - phpstan
       - unit-tests
@@ -120,21 +120,32 @@ jobs:
           coverage: none
 
       - name: Install dependencies
-        run: composer install --no-interaction --no-progress
+        run: |
+          sudo apt-get update
+          sudo apt-get install pandoc groff
+          composer install --no-interaction --no-progress
 
       - name: Run build script
         id: run-build-script
         run: |
           scripts/build.sh
+          scripts/build.sh man
           cd build/dist
           { printf 'artifact_name=%s-snapshot-phar\n' "${GITHUB_REPOSITORY##*/}" &&
-            printf 'artifact_path=%s\n' * | head -n1; } | tee -a "$GITHUB_OUTPUT" >>"$GITHUB_ENV"
+            printf 'artifact_path=%s\n' *.phar | head -n1 &&
+            printf 'man_path=%s\n' *.[0-9] | head -n1; } | tee -a "$GITHUB_OUTPUT" >>"$GITHUB_ENV"
 
       - name: Upload phar artifact
         uses: actions/upload-artifact@v3
         with:
           name: ${{ env.artifact_name }}
           path: build/dist/${{ env.artifact_path }}
+
+      - name: Upload man page artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.man_path }}
+          path: build/dist/${{ env.man_path }}
 
   test-phar:
     name: Test phar
