@@ -145,14 +145,30 @@ final class NormaliseStrings implements MultiTokenRule
             );
 
             // Remove unnecessary backslashes
-            $reserved = "[nrtvef\\\\\${$reserved}]|[0-7]|x[0-9a-fA-F]|u\{[0-9a-fA-F]+\}"
-                . ($token->id === T_CONSTANT_ENCAPSED_STRING ||
-                    $token->String->id !== T_START_HEREDOC ? '|$' : '');
+            $reserved = "[nrtvef\\\\\${$reserved}]|[0-7]|x[0-9a-fA-F]|u\{[0-9a-fA-F]+\}";
+
+            if ($token->id === T_CONSTANT_ENCAPSED_STRING ||
+                    $token->_next !== $token->String->StringClosedBy ||
+                    $token->String->id !== T_START_HEREDOC) {
+                $reserved .= '|$';
+            }
+
             $double = Pcre::replace(
                 "/(?<!\\\\)\\\\\\\\(?!{$reserved})/",
                 '\\',
                 $double
             );
+
+            // "\\\{$a}" becomes "\\\{", which escapes to "\\\\{", but we need
+            // the brace to remain escaped lest it become a T_CURLY_OPEN
+            if ($token->id !== T_CONSTANT_ENCAPSED_STRING &&
+                    ($token->_next !== $token->String->StringClosedBy)) {
+                $double = Pcre::replace(
+                    '/(?<!\\\\)(\\\\(?:\\\\\\\\)*)\\\\(\{)$/',
+                    '$1$2',
+                    $double
+                );
+            }
 
             $double = $doubleQuote
                 . $this->maybeEscapeEscapes($double, $reserved)
