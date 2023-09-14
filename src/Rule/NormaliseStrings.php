@@ -145,7 +145,9 @@ final class NormaliseStrings implements MultiTokenRule
             );
 
             // Remove unnecessary backslashes
-            $reserved = "[nrtvef\\\\\${$reserved}]|[0-7]|x[0-9a-fA-F]|u\{[0-9a-fA-F]+\}|\$";
+            $reserved = "[nrtvef\\\\\${$reserved}]|[0-7]|x[0-9a-fA-F]|u\{[0-9a-fA-F]+\}"
+                . ($token->id === T_CONSTANT_ENCAPSED_STRING ||
+                    $token->String->id !== T_START_HEREDOC ? '|$' : '');
             $double = Pcre::replace(
                 "/(?<!\\\\)\\\\\\\\(?!{$reserved})/",
                 '\\',
