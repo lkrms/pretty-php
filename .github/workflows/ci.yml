@@ -119,11 +119,13 @@ jobs:
           php-version: "8.2"
           coverage: none
 
-      - name: Install dependencies
+      - name: Setup Pandoc
         run: |
           sudo apt-get update
-          sudo apt-get install pandoc groff
-          composer install --no-interaction --no-progress
+          sudo apt-get install pandoc
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress
 
       - name: Run build script
         id: run-build-script
