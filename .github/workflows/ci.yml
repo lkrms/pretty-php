@@ -127,11 +127,14 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --no-progress
 
+      # Run the phar and man builds separately and together to test each code
+      # path in the build script
       - name: Run build script
         id: run-build-script
         run: |
           scripts/build.sh
           scripts/build.sh man
+          scripts/build.sh man worktree
           cd build/dist
           { printf 'artifact_name=%s-snapshot-phar\n' "${GITHUB_REPOSITORY##*/}" &&
             printf 'artifact_path=%s\n' *.phar | head -n1 &&

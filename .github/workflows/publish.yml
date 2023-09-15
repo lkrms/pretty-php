@@ -98,6 +98,6 @@ jobs:
           scripts/update-version.sh ${{ github.event.inputs.tag-name || github.ref_name }} || status=$?
           ((!status || status == 2)) || exit "$status"
           ((status)) && draft= || unset draft
-          gh release create ${{ github.event.inputs.tag-name || github.ref_name }} ${draft+--draft} --generate-notes --verify-tag
+          gh release create ${{ github.event.inputs.tag-name || github.ref_name }} ${draft+--draft} ${draft+--generate-notes} --verify-tag
         env:
           GH_TOKEN: ${{ secrets.VSCODE_COMMITTER_TOKEN }}
