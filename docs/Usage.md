@@ -94,6 +94,7 @@ pretty-php - Format a PHP file
   - `align-data`
   - `align-lists`
   - `blank-before-return`
+  - `strict-expressions`
   - `strict-lists`
   - `preserve-one-line`
 
