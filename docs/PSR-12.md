@@ -12,6 +12,7 @@ default style is not quite 100% compliant.
 
 Enabled:
 
+- `StrictExpressions`
 - `StrictLists`
 - `SortImports`
 - `DeclarationSpacing`
@@ -61,6 +62,34 @@ namespace Vendor\Package;
 > namespace Vendor\Package;
 > ```
 
+### Control structure expressions
+
+Control structure expressions that break over multiple lines are moved to the
+start of a line:
+
+```php
+<?php
+// Before
+if ($foo || $bar) {
+    baz();
+}
+if ($foo ||
+        $bar) {
+    baz();
+}
+
+// After
+if ($foo || $bar) {
+    baz();
+}
+if (
+    $foo
+    || $bar
+) {
+    baz();
+}
+```
+
 ### Heredocs and nowdocs
 
 Newlines before heredocs and nowdocs are suppressed, and unconditional heredoc
@@ -79,8 +108,8 @@ $baz = <<<EOF
     EOF;
 ```
 
-> `pretty-php`'s default style does not apply indentation to heredocs in contexts
-> where there is no ambiguity without it:
+> `pretty-php`'s default style does not apply indentation to heredocs in
+> contexts where there is no ambiguity without it:
 >
 > ```php
 > $foo = <<<EOF

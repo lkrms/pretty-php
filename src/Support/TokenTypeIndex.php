@@ -215,7 +215,15 @@ class TokenTypeIndex implements IImmutable
      * @readonly
      * @var array<int,bool>
      */
+    public array $OperatorLogicalExceptNot;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
     public array $Visibility;
+
+    public bool $OperatorsAreMixed = true;
 
     public function __construct()
     {
@@ -457,6 +465,7 @@ class TokenTypeIndex implements IImmutable
         $this->HasStatementWithOptionalBraces = TT::getIndex(...TT::HAS_STATEMENT_WITH_OPTIONAL_BRACES);
         $this->HasExpressionAndStatementWithOptionalBraces = TT::getIndex(...TT::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES);
         $this->NotCode = TT::getIndex(...TT::NOT_CODE);
+        $this->OperatorLogicalExceptNot = TT::getIndex(...TT::OPERATOR_LOGICAL_EXCEPT_NOT);
         $this->Visibility = TT::getIndex(...TT::VISIBILITY);
     }
 
@@ -484,7 +493,8 @@ class TokenTypeIndex implements IImmutable
         );
 
         return $this->with('PreserveNewlineBefore', $preserveBefore)
-                    ->with('PreserveNewlineAfter', $preserveAfter);
+                    ->with('PreserveNewlineAfter', $preserveAfter)
+                    ->with('OperatorsAreMixed', false);
     }
 
     /**
@@ -516,7 +526,8 @@ class TokenTypeIndex implements IImmutable
         );
 
         return $this->with('PreserveNewlineBefore', $preserveBefore)
-                    ->with('PreserveNewlineAfter', $preserveAfter);
+                    ->with('PreserveNewlineAfter', $preserveAfter)
+                    ->with('OperatorsAreMixed', false);
     }
 
     public static function create(): TokenTypeIndex

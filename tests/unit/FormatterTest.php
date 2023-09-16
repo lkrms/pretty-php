@@ -10,6 +10,7 @@ use Lkrms\PrettyPHP\Rule\AlignComments;
 use Lkrms\PrettyPHP\Rule\AlignData;
 use Lkrms\PrettyPHP\Rule\AlignLists;
 use Lkrms\PrettyPHP\Rule\AlignTernaryOperators;
+use Lkrms\PrettyPHP\Rule\StrictExpressions;
 use Lkrms\PrettyPHP\Rule\StrictLists;
 use Lkrms\PrettyPHP\Formatter;
 use Generator;
@@ -270,7 +271,9 @@ PHP,
         // - files with no extension, and
         // - either of the above with a .fails extension
         $files = File::find(
-            $format === '04-psr12' ? $inDir . '/3rdparty/php-fig' : $inDir,
+            $format === '04-psr12'
+                ? [$inDir . '/3rdparty/php-fig', $inDir . '/standalone']
+                : $inDir,
             null,
             '/(\.php|\/[^.\/]+)(\.fails)?$/'
         );
@@ -341,6 +344,7 @@ PHP,
                 'tabSize' => 4,
                 'skipRules' => [],
                 'addRules' => [
+                    StrictExpressions::class,
                     StrictLists::class,
                 ],
                 'skipFilters' => [],

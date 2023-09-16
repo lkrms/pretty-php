@@ -2,8 +2,8 @@
 //passes: AutoSemicolon
 
 if (
-	f() &&
-	e()
+	f()
+	&& e()
 ) {
 	//
 }

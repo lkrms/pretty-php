@@ -29,7 +29,7 @@ trait ExtensionTrait
     public function setFormatter(Formatter $formatter): void
     {
         $this->Formatter = $formatter;
-        $this->TypeIndex = $formatter->TokenTypeIndex;
+        $this->TypeIndex = &$formatter->TokenTypeIndex;
     }
 
     public function reset(): void {}
