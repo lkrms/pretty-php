@@ -18,11 +18,13 @@
 `pretty-php` is a fast, deterministic, minimally configurable code formatter for
 PHP.
 
-With `pretty-php`, code looks the same regardless of the project you're working
-on. Code review is faster not just because diffs are smaller, but because the
-visual dissonance created by inconsistent code formatting is removed. And by
-yielding control over the minutiae of hand-formatting to `pretty-php`, you save
-time and mental energy for more important things.
+Using `pretty-php` absolves you of responsibility for the whitespace in your
+code, leaving you with more time and mental energy to focus on the content.
+
+In addition to producing the smallest diffs possible, code formatted by
+`pretty-php` looks the same regardless of the project you're working on,
+eliminating visual dissonance and improving the speed and effectiveness of code
+review.
 
 You can use `pretty-php` as a standalone tool, run it from your [editor][], pair
 it with a linter, or add it to your CI workflows. Configuration is optional in
@@ -49,7 +51,6 @@ If you have questions or feedback, I'd love to [hear from you][discuss].
 - Formatted and original code are compared for equivalence
 - Output is optionally compliant with [PSR-12][] and [PER][] (details
   [here](docs/PSR-12.md) and [here][PSR-12 issue])
-
 
 ## Installation
 
