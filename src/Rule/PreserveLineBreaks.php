@@ -17,6 +17,11 @@ final class PreserveLineBreaks implements MultiTokenRule
 {
     use MultiTokenRuleTrait;
 
+    /**
+     * @var Token[]
+     */
+    private $Check = [];
+
     public function getPriority(string $method): ?int
     {
         switch ($method) {
@@ -64,19 +69,48 @@ final class PreserveLineBreaks implements MultiTokenRule
 
             $min = $prev->line;
             $max = $token->line;
+            $maybeRemoveAfter = null;
+            $maybeAddBefore = null;
             # 1. Is a newline after $prev OK?
-            $this->maybePreserveNewlineAfter($prev, $token, $line, $min, $max) ||
-                # 2. Is a newline before $token OK?
-                $this->maybePreserveNewlineBefore($token, $prev, $line, $min, $max) ||
-                # 3. If $prev moved to the next line, would a newline before it be OK?
-                $this->maybePreserveNewlineBefore($prev, $prev->prev(), $line, $min, $max, true) ||
+            $preserved = $this->maybePreserveNewlineAfter($prev, $token, $line, $min, $max, false, $maybeRemoveAfter) ||
+                # 2. If $prev moved to the next line, would a newline before it be OK?
+                $this->maybePreserveNewlineBefore($prev, $prev->prev(), $line, $min, $max, true, $maybeAddBefore) ||
+                # 3. Is a newline before $token OK?
+                $this->maybePreserveNewlineBefore($token, $prev, $line, $min, $max, false, $maybeAddBefore) ||
                 # 4. If $token moved to the previous line, would a newline after it be OK?
-                $this->maybePreserveNewlineAfter($token, $token->next(), $line, $min, $max, true);
+                $this->maybePreserveNewlineAfter($token, $token->next(), $line, $min, $max, true, $maybeRemoveAfter);
+            if ($preserved &&
+                $maybeRemoveAfter &&
+                (!$maybeAddBefore ||
+                    $maybeRemoveAfter === $maybeAddBefore)) {
+                $this->Check[] = $maybeRemoveAfter;
+            }
+        }
+
+        if ($this->Check) {
+            $this->Formatter->registerCallback(
+                $this,
+                $this->Check[0],
+                fn() => $this->checkTokens(),
+                100,
+            );
         }
     }
 
-    private function maybePreserveNewlineBefore(Token $token, Token $prev, int $line, int $min, int $max, bool $ignoreBrackets = false): bool
+    private function maybePreserveNewlineBefore(Token $token, Token $prev, int $line, int $min, int $max, bool $ignoreBrackets = false, ?Token &$check = null): bool
     {
+        // In contexts where hanging indentation is not applied, move newlines
+        // before logical operators
+        if ($this->TypeIndex->OperatorsAreMixed &&
+                $this->TypeIndex->OperatorLogicalExceptNot[$token->id] &&
+                $token->BracketStack) {
+            if ($this->noHangingIndent($token)) {
+                $token->WhitespaceBefore |= WhitespaceType::LINE;
+                return true;
+            }
+            $check = $token;
+        }
+
         if (!$this->TypeIndex->PreserveNewlineBefore[$token->id] ||
                 $token->line < $min || $token->line > $max ||
                 ($ignoreBrackets && $this->TypeIndex->Bracket[$token->id])) {
@@ -114,7 +148,7 @@ final class PreserveLineBreaks implements MultiTokenRule
         return true;
     }
 
-    private function maybePreserveNewlineAfter(Token $token, Token $next, int $line, int $min, int $max, bool $ignoreBrackets = false): bool
+    private function maybePreserveNewlineAfter(Token $token, Token $next, int $line, int $min, int $max, bool $ignoreBrackets = false, ?Token &$check = null): bool
     {
         // To preserve newlines after attributes, ignore T_ATTRIBUTE itelf and
         // treat attribute close brackets as T_ATTRIBUTE
@@ -171,6 +205,17 @@ final class PreserveLineBreaks implements MultiTokenRule
             return false;
         }
 
+        // In contexts where hanging indentation is not applied, don't preserve
+        // newlines after logical operators
+        if ($this->TypeIndex->OperatorsAreMixed &&
+                $this->TypeIndex->OperatorLogicalExceptNot[$token->id] &&
+                $token->BracketStack) {
+            if ($this->noHangingIndent($token)) {
+                return false;
+            }
+            $check = $token;
+        }
+
         if ($line & WhitespaceType::BLANK &&
             (!$this->TypeIndex->PreserveBlankAfter[$token->id] ||
                 ($token->id === T_COMMA &&
@@ -190,5 +235,33 @@ final class PreserveLineBreaks implements MultiTokenRule
         $token->NewlineAfterPreserved = true;
 
         return true;
+    }
+
+    private function noHangingIndent(Token $token): bool
+    {
+        foreach ($token->BracketStack as $parent) {
+            if ($this->TypeIndex->OpenBracket[$parent->id] &&
+                $parent->hasNewlineAfterCode() &&
+                !($parent->IsListParent ||
+                    ($parent->id === T_OPEN_BRACE && $parent->isStructuralBrace()))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private function checkTokens(): void
+    {
+        foreach ($this->Check as $token) {
+            if ($this->noHangingIndent($token)) {
+                $token->WhitespaceMaskNext &= ~WhitespaceType::LINE;
+                $token->WhitespaceBefore |= WhitespaceType::LINE;
+            }
+        }
+    }
+
+    public function reset(): void
+    {
+        $this->Check = [];
     }
 }

@@ -56,6 +56,7 @@ use Lkrms\PrettyPHP\Rule\ProtectStrings;
 use Lkrms\PrettyPHP\Rule\StandardIndentation;
 use Lkrms\PrettyPHP\Rule\StandardWhitespace;
 use Lkrms\PrettyPHP\Rule\StatementSpacing;
+use Lkrms\PrettyPHP\Rule\StrictExpressions;
 use Lkrms\PrettyPHP\Rule\StrictLists;
 use Lkrms\PrettyPHP\Rule\SwitchIndentation;
 use Lkrms\PrettyPHP\Rule\SymmetricalBrackets;
@@ -205,7 +206,7 @@ final class Formatter implements IReadable
     public const DEFAULT_RULES = [
         ...self::MANDATORY_RULES,
         NormaliseStrings::class,    // processToken  (60)
-        PreserveLineBreaks::class,  // processToken  (93)
+        PreserveLineBreaks::class,  // processToken  (93), callback (100)
         DeclarationSpacing::class,  // processToken (620)
     ];
 
@@ -215,6 +216,7 @@ final class Formatter implements IReadable
     public const ADDITIONAL_RULES = [
         PreserveOneLineStatements::class,  // processToken  (95)
         BlankLineBeforeReturn::class,      // processToken  (97)
+        StrictExpressions::class,          // processToken  (98)
         Laravel::class,                    // processToken (100)
         Symfony::class,                    // processToken (100), processList (100)
         WordPress::class,                  // processToken (100)

@@ -38,6 +38,7 @@ use Lkrms\PrettyPHP\Rule\DeclarationSpacing;
 use Lkrms\PrettyPHP\Rule\NormaliseStrings;
 use Lkrms\PrettyPHP\Rule\PreserveLineBreaks;
 use Lkrms\PrettyPHP\Rule\PreserveOneLineStatements;
+use Lkrms\PrettyPHP\Rule\StrictExpressions;
 use Lkrms\PrettyPHP\Rule\StrictLists;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
@@ -72,6 +73,7 @@ class FormatPhp extends CliCommand
         'align-data' => AlignData::class,
         'align-lists' => AlignLists::class,
         'blank-before-return' => BlankLineBeforeReturn::class,
+        'strict-expressions' => StrictExpressions::class,
         'strict-lists' => StrictLists::class,
         'preserve-one-line' => PreserveOneLineStatements::class,
     ];
@@ -1004,6 +1006,7 @@ EOF,
                         AlignLists::class,
                     ];
                     $add = [
+                        StrictExpressions::class,
                         StrictLists::class,
                     ];
                     $this->SkipRules = array_diff($this->SkipRules, $unskip, $skip);
