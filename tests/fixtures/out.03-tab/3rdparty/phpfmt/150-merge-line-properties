@@ -12,7 +12,6 @@ class Foo
 	protected static $var_foo3;
 	private static $FooBar3;
 	private static $FooBar5;
-
 	var $old = 'foo';
 }
 
@@ -29,9 +28,7 @@ abstract class Foo2
 	public abstract function foo9();
 	public static function fooA() {}
 	public static function fooD() {}
-
 	final static function fooE() {}
-
 	abstract function fooF();
 
 	function fooG($foo) {}

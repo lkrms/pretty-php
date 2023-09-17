@@ -24,6 +24,7 @@ class bar
 
 class qux {}  // qux
 // continuation
+
 /**
  *
  */
@@ -54,4 +55,5 @@ class qux
 }
 
 class quux {}
+
 class foo {}

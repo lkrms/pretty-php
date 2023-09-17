@@ -2,16 +2,13 @@
 namespace foo;
 
 use My\Full\Classname as Another;
-
 // this is the same as use My\Full\NSname as NSname
 use My\Full\NSname;
-
 // importing a global class
 use ArrayObject;
 
 // importing a function
 use function My\Full\functionName;
-
 // aliasing a function
 use function My\Full\functionName as func;
 

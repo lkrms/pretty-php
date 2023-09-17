@@ -4,6 +4,7 @@ class A
 {
     function a() {}
     function b() {}
+
     //adsa
     function c() {}
 

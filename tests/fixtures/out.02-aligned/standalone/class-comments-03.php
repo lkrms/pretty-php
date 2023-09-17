@@ -23,13 +23,14 @@ class bar
 
 class qux {}  // qux
               // continuation
+
 /**
  *
  */
 class foo
 {
     function baz() {}
-}             // foo
+}  // foo
 // not a continuation
 
 /**
@@ -53,4 +54,5 @@ class qux
 }
 
 class quux {}
+
 class foo {}

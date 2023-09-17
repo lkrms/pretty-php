@@ -1,5 +1,4 @@
 <?php
-
 function inner()
 {
 	yield 1;  // key 0

@@ -1,5 +1,4 @@
 <?php
-
 function test_global_ref()
 {
     global $obj;
