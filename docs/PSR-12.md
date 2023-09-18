@@ -1,23 +1,34 @@
----
-draft: true
----
-
 # PSR-12
 
 This document describes what happens when strict [PSR-12] / [PER Coding Style]
-compliance is enforced with `--psr12`, and explains how (and why) `pretty-php`'s
-default style is not quite 100% compliant.
+compliance is enforced, and explains how (and why) `pretty-php`'s default style
+is not quite 100% compliant.
+
+## Options
+
+The following options are applied automatically when strict PSR-12 compliance is
+enabled:
+
+- `--space=4`
+- `--eol lf`
+- `--heredoc-indent hanging`
+
+And these are ignored:
+
+- ~~`--one-true-brace-style`~~
+- ~~`--no-sort-imports`~~
 
 ## Rules
 
-Enabled:
+In strict PSR-12 mode, these rules are enabled and cannot be disabled:
 
 - `StrictExpressions`
 - `StrictLists`
-- `SortImports`
+- `SortImports` (sort order is not specified, but import statements must be
+  grouped by class, then function, then constant as per [PSR-12, section 3])
 - `DeclarationSpacing`
 
-Suppressed:
+And these rules cannot be enabled:
 
 - `AlignLists`
 - `PreserveOneLineStatements`
@@ -65,7 +76,7 @@ namespace Vendor\Package;
 ### Control structure expressions
 
 Control structure expressions that break over multiple lines are moved to the
-start of a line:
+start of a line, as per [PSR-12, section 5]:
 
 ```php
 <?php
@@ -89,6 +100,25 @@ if (
     baz();
 }
 ```
+
+### Arrow functions
+
+Arrow functions that break over multiple lines are arranged as per [PER Coding Style 2.0, section 7.1]:
+
+```php
+<?php
+$foo = fn()
+    => bar();
+```
+
+> `pretty-php`'s default style departs from the standard to minimise the
+> horizontal space required for arrow function bodies:
+>
+> ```php
+> <?php
+> $foo = fn() =>
+>     bar();
+> ```
 
 ### Heredocs and nowdocs
 
@@ -122,13 +152,19 @@ $baz = <<<EOF
 >     EOF;
 > ```
 
-## Lists
+### Lists
 
-`StrictLists` unconditionally adds a newline after the opening bracket of
-vertical lists.
+Unconditional newlines are added after the opening bracket of vertical lists.
+
+### Comments
+
+Comments beside the closing brace of a `class` / `interface` / `trait` / `enum`
+are moved to the next line.
 
 
 [PSR-12]: https://www.php-fig.org/psr/psr-12/
 [PSR-12, section 3]: https://www.php-fig.org/psr/psr-12/#3-declare-statements-namespace-and-import-statements
+[PSR-12, section 5]: https://www.php-fig.org/psr/psr-12/#5-control-structures
 [PER Coding Style]: https://www.php-fig.org/per/coding-style/
+[PER Coding Style 2.0, section 7.1]: https://www.php-fig.org/per/coding-style/#71-short-closures
 [PER Coding Style 2.0, section 10]: https://www.php-fig.org/per/coding-style/#10-heredoc-and-nowdoc

@@ -1368,15 +1368,23 @@ class Token extends PhpToken implements JsonSerializable
     final public function applyBlankLineBefore(bool $withMask = false): void
     {
         $current = $this;
+        $prev = $current->_prev;
         /** @var Token|null */
         $last = null;
         while (!$current->hasBlankLineBefore() &&
-                $current->_prev &&
-                $current->_prev->CommentType &&
-                $current->_prev->hasNewlineBefore() &&
-                (!$last || $current->_prev->CommentType === $last->_prev->CommentType)) {
+            $prev &&
+            $prev->CommentType &&
+            $prev->hasNewlineBefore() &&
+            (($prev->CommentType === CommentType::DOC_COMMENT &&
+                    $prev->hasNewline()) ||
+                ($prev->wasFirstOnLine() &&
+                    $prev->column <= $this->column)) &&
+            (!$last ||
+                ($prev->CommentType === $last->_prev->CommentType &&
+                    !$prev->isMultiLineComment()))) {
             $last = $current;
             $current = $current->_prev;
+            $prev = $current->_prev;
         }
         $current->WhitespaceBefore |= WhitespaceType::BLANK;
         if ($withMask) {

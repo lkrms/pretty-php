@@ -97,6 +97,16 @@ final class PlaceBraces implements MultiTokenRule
                     continue;
                 }
 
+                // In strict PSR-12 mode, add critical newlines after the close
+                // brace of class/interface/trait/enum declarations
+                if ($this->Formatter->Psr12Compliance &&
+                        $token->Expression->declarationParts(false)->hasOneOf(
+                            T_CLASS, T_ENUM, T_INTERFACE, T_TRAIT
+                        )) {
+                    $token->CriticalWhitespaceAfter |= WhitespaceType::LINE;
+                    continue;
+                }
+
                 // Otherwise, add newlines after close braces
                 $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
                 continue;

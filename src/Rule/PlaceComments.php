@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\CommentType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
@@ -68,8 +69,11 @@ final class PlaceComments implements TokenRule
             return;
         }
 
-        // Don't move comments beside code to the next line
-        if (!$wasFirstOnLine) {
+        // Don't move comments beside code to the next line (except docblocks
+        // that break over multiple lines)
+        if (!$wasFirstOnLine &&
+            ($token->CommentType !== CommentType::DOC_COMMENT ||
+                !$token->hasNewline())) {
             $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
             if ($token->_prev->IsCode || $token->_prev->OpenTag === $token->_prev) {
                 $this->CommentsBesideCode[] = $token;
