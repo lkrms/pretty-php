@@ -206,7 +206,7 @@ final class Formatter implements IReadable
     public const DEFAULT_RULES = [
         ...self::MANDATORY_RULES,
         NormaliseStrings::class,    // processToken  (60)
-        PreserveLineBreaks::class,  // processToken  (93), callback (100)
+        PreserveLineBreaks::class,  // processToken  (93)
         DeclarationSpacing::class,  // processToken (620)
     ];
 
