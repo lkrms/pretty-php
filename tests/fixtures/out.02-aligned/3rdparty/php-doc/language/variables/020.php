@@ -2,10 +2,8 @@
 class foo
 {
     var $bar = 'I am bar.';
-
     var $arr = array('I am A.', 'I am B.', 'I am C.');
-
-    var $r = 'I am r.';
+    var $r   = 'I am r.';
 }
 
 $foo = new foo();

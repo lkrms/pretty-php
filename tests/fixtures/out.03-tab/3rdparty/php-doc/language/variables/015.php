@@ -1,5 +1,4 @@
 <?php
-
 function &get_instance_ref()
 {
 	static $obj;

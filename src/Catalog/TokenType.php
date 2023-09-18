@@ -284,6 +284,7 @@ final class TokenType extends Dictionary
     public const DECLARATION_UNIQUE = [
         T_CLASS,
         T_CONST,
+        T_DECLARE,
         T_ENUM,
         T_FUNCTION,
         T_INTERFACE,
@@ -294,6 +295,10 @@ final class TokenType extends Dictionary
 
     public const DECLARATION_CONDENSE = [
         T_USE,
+    ];
+
+    public const DECLARATION_CONDENSE_ONE_LINE = [
+        T_DECLARE,
     ];
 
     public const DECLARATION_LIST = [

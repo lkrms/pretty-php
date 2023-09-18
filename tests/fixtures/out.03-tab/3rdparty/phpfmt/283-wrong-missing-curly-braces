@@ -1,5 +1,4 @@
 <?php
-
 function a()
 {
 	if ('foo' == 'bar')

@@ -129,7 +129,9 @@ pretty-php - Format a PHP file
 
   Set the indentation level of heredocs and nowdocs.
 
-  The default is to apply `hanging` indentation to inline heredocs.
+  With `mixed` indentation (the default), line indentation is applied to
+  heredocs that start on their own line, otherwise hanging indentation is
+  applied.
 
 - **`-m`**, **`--sort-imports-by`** (`none`|`name`|`depth`)
 

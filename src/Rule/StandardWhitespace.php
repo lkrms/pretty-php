@@ -150,6 +150,7 @@ final class StandardWhitespace implements TokenRule
             if ($token->id === T_OPEN_TAG &&
                 ($declare = $token->next())->id === T_DECLARE &&
                 ($end = $declare->nextSibling(2)) === $declare->EndStatement &&
+                (!$end->_nextCode || $end->_nextCode->id !== T_DECLARE) &&
                 (!$this->Formatter->Psr12Compliance ||
                     (!strcasecmp((string) $declare->nextSibling()->inner(), 'strict_types=1') &&
                         ($end->id === T_CLOSE_TAG || $end->next()->id === T_CLOSE_TAG)))) {
