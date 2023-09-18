@@ -350,8 +350,9 @@ PHP,
                 'skipFilters' => [],
                 'callback' =>
                     fn(Formatter $f) =>
-                        $f->withPsr12Compliance()
-                          ->with('ImportSortOrder', ImportSortOrder::NONE),
+                        $f->with('TokenTypeIndex', $f->TokenTypeIndex->withLeadingOperators())
+                          ->with('ImportSortOrder', ImportSortOrder::NONE)
+                          ->withPsr12Compliance(),
             ],
         ];
     }

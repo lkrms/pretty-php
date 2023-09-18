@@ -3,6 +3,6 @@
 do {
 	// structure body;
 } while (
-	$expr1
-	&& $expr2
+	$expr1 &&
+	$expr2
 );
