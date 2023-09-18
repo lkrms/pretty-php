@@ -77,7 +77,6 @@ use B;  // Multiple
 // one-line
 // comments
 use C;
-
 # Different comment type = new block
 use A;
 

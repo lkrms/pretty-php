@@ -18,11 +18,13 @@ class foo
 class bar
 {
     function baz() {}
-}  /**
-    *
-    */
+}
 
-class qux {}  // qux
+/**
+ *
+ */
+class qux {}
+// qux
 // continuation
 
 /**
@@ -31,7 +33,8 @@ class qux {}  // qux
 class foo
 {
     function baz() {}
-}  // foo
+}
+// foo
 // not a continuation
 
 /**
@@ -40,9 +43,11 @@ class foo
 class bar
 {
     function baz() {}
-}  /**
-    *
-    */
+}
+
+/**
+ *
+ */
 
 /**
  *

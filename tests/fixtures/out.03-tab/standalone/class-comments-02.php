@@ -6,8 +6,8 @@ class foo
 		quux();
 	}  // baz
 }  // foo
-
 // continuation
+
 class bar
 {
 	function baz()
@@ -15,7 +15,7 @@ class bar
 		quux();
 	}  // baz
 }  // bar
-
 // continuation
+
 class qux {}  // qux
 // continuation

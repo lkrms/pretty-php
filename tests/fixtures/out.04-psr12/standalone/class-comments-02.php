@@ -6,17 +6,20 @@ class foo
     {
         quux();
     }  // baz
-}  // foo
-
+}
+// foo
 // continuation
+
 class bar
 {
     function baz()
     {
         quux();
     }  // baz
-}  // bar
-
+}
+// bar
 // continuation
-class qux {}  // qux
+
+class qux {}
+// qux
 // continuation

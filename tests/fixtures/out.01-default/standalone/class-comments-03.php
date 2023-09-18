@@ -17,10 +17,11 @@ class foo
 class bar
 {
     function baz() {}
-}  /**
-    *
-    */
+}
 
+/**
+ *
+ */
 class qux {}  // qux
 // continuation
 
@@ -39,9 +40,11 @@ class foo
 class bar
 {
     function baz() {}
-}  /**
-    *
-    */
+}
+
+/**
+ *
+ */
 
 /**
  *
