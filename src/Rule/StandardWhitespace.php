@@ -29,7 +29,6 @@ use Lkrms\Utility\Pcre;
  * - Add SPACE before and after parameter attributes, LINE and SPACE before and
  *   after other attributes, and suppress BLANK after all attributes
  * - Suppress whitespace inside `declare()`
- *
  */
 final class StandardWhitespace implements TokenRule
 {

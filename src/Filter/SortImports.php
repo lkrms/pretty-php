@@ -12,7 +12,6 @@ use Lkrms\Utility\Pcre;
 
 /**
  * Sort consecutive alias/import statements
- *
  */
 final class SortImports implements Filter
 {

@@ -9,7 +9,6 @@ use Lkrms\PrettyPHP\Token\Token;
 
 /**
  * Apply sensible indentation to switch statements
- *
  */
 final class SwitchIndentation implements TokenRule
 {

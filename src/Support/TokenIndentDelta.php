@@ -6,7 +6,6 @@ use Lkrms\PrettyPHP\Token\Token;
 
 /**
  * The difference in indentation between two tokens
- *
  */
 final class TokenIndentDelta
 {
@@ -38,7 +37,6 @@ final class TokenIndentDelta
 
     /**
      * Apply the difference in indentation to a token and return it
-     *
      */
     public function apply(Token $token): Token
     {

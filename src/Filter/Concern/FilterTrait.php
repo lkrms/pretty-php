@@ -8,7 +8,6 @@ use Lkrms\Utility\Pcre;
 
 /**
  * Extends Lkrms\PrettyPHP\Concern\ExtensionTrait for use by filters
- *
  */
 trait FilterTrait
 {

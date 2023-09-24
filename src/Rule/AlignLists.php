@@ -10,7 +10,6 @@ use Lkrms\PrettyPHP\Token\Token;
 /**
  * Align arguments, array elements and other list items with their
  * owners
- *
  */
 final class AlignLists implements ListRule
 {

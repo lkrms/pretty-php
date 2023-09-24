@@ -25,7 +25,6 @@ interface TokenRule extends Rule
 
     /**
      * Return true if tokens must be passed to the rule in document order
-     *
      */
     public function getRequiresSortedTokens(): bool;
 
@@ -35,7 +34,6 @@ interface TokenRule extends Rule
      * Non-whitespace tokens of the types returned by
      * {@see TokenRule::getTokenTypes()} are passed to
      * {@see TokenRule::processToken()}.
-     *
      */
     public function processToken(Token $token): void;
 }

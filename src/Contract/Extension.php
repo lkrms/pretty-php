@@ -6,7 +6,6 @@ use Lkrms\PrettyPHP\Formatter;
 
 /**
  * Base interface for filters and rules
- *
  */
 interface Extension
 {
@@ -14,13 +13,11 @@ interface Extension
 
     /**
      * Set the formatter
-     *
      */
     public function setFormatter(Formatter $formatter): void;
 
     /**
      * Clear state for a new payload
-     *
      */
     public function reset(): void;
 }

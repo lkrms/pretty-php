@@ -8,7 +8,6 @@ use Throwable;
 
 /**
  * Thrown when formatting fails
- *
  */
 class FormatterException extends Exception
 {

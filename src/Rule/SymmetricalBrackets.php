@@ -8,7 +8,6 @@ use Lkrms\PrettyPHP\Token\Token;
 
 /**
  * Apply symmetrical vertical whitespace to brackets
- *
  */
 final class SymmetricalBrackets implements TokenRule
 {

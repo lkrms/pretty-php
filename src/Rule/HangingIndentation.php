@@ -336,7 +336,6 @@ final class HangingIndentation implements MultiTokenRule
 
     /**
      * Get the last token in the same statement as a ternary operator
-     *
      */
     public static function getTernaryEndOfExpression(Token $token): Token
     {

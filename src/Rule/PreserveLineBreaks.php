@@ -64,13 +64,13 @@ final class PreserveLineBreaks implements MultiTokenRule
 
             $min = $prev->line;
             $max = $token->line;
-            # 1. Is a newline after $prev OK?
+            // 1. Is a newline after $prev OK?
             $this->maybePreserveNewlineAfter($prev, $token, $line, $min, $max) ||
-                # 2. If $prev moved to the next line, would a newline before it be OK?
+                // 2. If $prev moved to the next line, would a newline before it be OK?
                 $this->maybePreserveNewlineBefore($prev, $prev->prev(), $line, $min, $max, true) ||
-                # 3. Is a newline before $token OK?
+                // 3. Is a newline before $token OK?
                 $this->maybePreserveNewlineBefore($token, $prev, $line, $min, $max) ||
-                # 4. If $token moved to the previous line, would a newline after it be OK?
+                // 4. If $token moved to the previous line, would a newline after it be OK?
                 $this->maybePreserveNewlineAfter($token, $token->next(), $line, $min, $max, true);
         }
     }

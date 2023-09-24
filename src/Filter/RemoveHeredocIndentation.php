@@ -9,7 +9,6 @@ use Lkrms\Utility\Pcre;
 
 /**
  * Remove indentation from heredocs
- *
  */
 final class RemoveHeredocIndentation implements Filter
 {

@@ -11,7 +11,6 @@ interface ListRule extends Rule
 
     /**
      * Apply the rule to a list containing one or more items
-     *
      */
     public function processList(Token $owner, TokenCollection $items): void;
 }

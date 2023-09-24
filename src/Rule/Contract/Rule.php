@@ -14,7 +14,6 @@ interface Rule extends Extension
      *
      * Higher priorities (bigger numbers) correspond to later invocation. To
      * suppress calls to the method, return `null`.
-     *
      */
     public function getPriority(string $method): ?int;
 

@@ -156,6 +156,14 @@ PHP,
  */
 
 /**
+ * @return foo::*
+ */
+
+/**
+ * * <== look, it's an asterisk in a summary
+ */
+
+/**
  *
  */
 
@@ -193,6 +201,16 @@ comment */
 
 /**
  * comment **/
+
+/**
+ *
+ * @return foo::*
+ */
+
+/**
+ * * <== look, it's an asterisk in a summary
+ *
+ */
 
 /**
 */

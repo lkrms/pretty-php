@@ -7,7 +7,6 @@ use Lkrms\PrettyPHP\Token\Token;
 
 /**
  * A non-critical problem detected in formatted code
- *
  */
 final class CodeProblem
 {
@@ -20,7 +19,6 @@ final class CodeProblem
 
     /**
      * An sprintf() format string describing the problem
-     *
      */
     public string $Message;
 
@@ -33,7 +31,6 @@ final class CodeProblem
 
     /**
      * The start of the range of tokens with the problem
-     *
      */
     public Token $Start;
 
@@ -41,7 +38,6 @@ final class CodeProblem
      * The end of the range of tokens with the problem
      *
      * May be `null` if the problem only affects one token.
-     *
      */
     public ?Token $End;
 

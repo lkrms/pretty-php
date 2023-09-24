@@ -135,7 +135,6 @@ final class Formatter implements IReadable
 
     /**
      * Spaces between code and comments on the same line
-     *
      */
     public int $SpacesBesideCode = 2;
 
@@ -167,7 +166,6 @@ final class Formatter implements IReadable
      * $result = $object
      *               ->method1();
      * ```
-     *
      */
     public bool $AlignFirstCallInChain = true;
 
@@ -280,7 +278,6 @@ final class Formatter implements IReadable
 
     /**
      * Enforce strict PSR-12 compliance?
-     *
      */
     private bool $_Psr12Compliance = false;
 

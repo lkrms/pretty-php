@@ -9,7 +9,6 @@ use Lkrms\PrettyPHP\Token\Token;
 
 /**
  * Align ternary operators with their expressions
- *
  */
 final class AlignTernaryOperators implements TokenRule
 {

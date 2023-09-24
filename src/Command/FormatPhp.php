@@ -55,7 +55,6 @@ use UnexpectedValueException;
 
 /**
  * Provides pretty-php's command-line interface
- *
  */
 class FormatPhp extends CliCommand
 {
