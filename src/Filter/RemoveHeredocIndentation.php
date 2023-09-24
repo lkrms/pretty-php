@@ -5,6 +5,7 @@ namespace Lkrms\PrettyPHP\Filter;
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Filter\Contract\Filter;
 use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\Utility\Pcre;
 
 /**
  * Remove indentation from heredocs
@@ -41,19 +42,19 @@ final class RemoveHeredocIndentation implements Filter
         /** @var array<int,string[]> $heredocText */
         foreach ($heredocText as $i => $heredoc) {
             // Check for indentation to remove
-            if (!preg_match('/^\h+/', end($heredoc), $matches)) {
+            if (!Pcre::match('/^\h+/', end($heredoc), $matches)) {
                 continue;
             }
 
             // Remove it from the collected tokens
-            $stripped = preg_replace("/\\n{$matches[0]}/", "\n", $heredoc);
+            $stripped = Pcre::replace("/\\n{$matches[0]}/", "\n", $heredoc);
 
             // And from the start of the first token and closing identifier,
             // where there is no leading newline
             switch ($count = count($heredoc)) {
                 case 1:
                     $stripped[0] =
-                        preg_replace(
+                        Pcre::replace(
                             "/^{$matches[0]}/",
                             '',
                             $stripped[0]
@@ -63,7 +64,7 @@ final class RemoveHeredocIndentation implements Filter
                 default:
                     $j = $count - 1;
                     [$stripped[0], $stripped[$j]] =
-                        preg_replace(
+                        Pcre::replace(
                             "/^{$matches[0]}/",
                             '',
                             [$stripped[0], $stripped[$j]]

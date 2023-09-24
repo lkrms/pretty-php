@@ -7,6 +7,7 @@ use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Rule\Contract\TokenRule;
 use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\Utility\Pcre;
 
 /**
  * Normalise one-line comments
@@ -43,7 +44,7 @@ final class NormaliseComments implements TokenRule
             // Without modifying comments like these:
             // - `/*  comment  **/` (mismatched asterisks)
             // - `/***comment*/` (more than two leading asterisks)
-            $token->setText(preg_replace(
+            $token->setText(Pcre::replace(
                 '#^(/\*(\*?))(?!\*)\h*+(?=\H)(.*)(?<=\H)\h*(?<!\*)(\2?\*/)$#',
                 '$1 $3 $4',
                 $token->text

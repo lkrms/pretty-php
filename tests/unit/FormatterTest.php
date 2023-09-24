@@ -13,6 +13,7 @@ use Lkrms\PrettyPHP\Rule\AlignTernaryOperators;
 use Lkrms\PrettyPHP\Rule\StrictExpressions;
 use Lkrms\PrettyPHP\Rule\StrictLists;
 use Lkrms\PrettyPHP\Formatter;
+use Lkrms\Utility\Pcre;
 use Generator;
 use SplFileInfo;
 
@@ -88,7 +89,7 @@ PHP,
 use A ?>
 PHP,
             ],
-            'PHPDoc comment' => [
+            'PHPDoc comment #1' => [
                 <<<'PHP'
 <?php
 /**
@@ -116,6 +117,85 @@ no leading asterisk
 	leading tab and no leading asterisk
 
   */
+PHP,
+            ],
+            'PHPDoc comment #2' => [
+                <<<'PHP'
+<?php
+
+/**
+ * comment
+ */
+
+/**
+ * comment
+ */
+
+/**
+ * comment
+ */
+
+/**
+ * comment
+ */
+
+/**
+ * comment
+ */
+
+/**
+ * comment
+ */
+
+/**
+ * comment
+ */
+
+/**
+ * comment
+ */
+
+/**
+ *
+ */
+
+PHP,
+                <<<'PHP'
+<?php
+
+/**
+ *
+ * comment
+ */
+
+/**
+ * comment
+ *
+ */
+
+/**
+ *
+ * comment
+ *
+ */
+
+/** comment
+ */
+
+/**
+ * comment */
+
+/**
+comment */
+
+/**
+ comment */
+
+/**
+ * comment **/
+
+/**
+*/
 PHP,
             ],
             'alternative syntax #1' => [
@@ -286,9 +366,9 @@ PHP,
                 continue;
             }
 
-            $outFile = preg_replace('/\.fails$/', '', "$outDir/$path");
+            $outFile = Pcre::replace('/\.fails$/', '', "$outDir/$path");
             if ($versionSuffix) {
-                $versionOutFile = preg_replace('/(?<!\G)(\.php)?$/', "$versionSuffix\$1", $outFile);
+                $versionOutFile = Pcre::replace('/(?<!\G)(\.php)?$/', "$versionSuffix\$1", $outFile);
                 if (!$all && file_exists($versionOutFile)) {
                     $outFile = $versionOutFile;
                 }

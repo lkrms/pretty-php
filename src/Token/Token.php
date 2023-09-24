@@ -11,6 +11,7 @@ use Lkrms\PrettyPHP\Token\Concern\CollectibleTokenTrait;
 use Lkrms\PrettyPHP\Token\Concern\NavigableTokenTrait;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\Pcre;
 use JsonSerializable;
 use PhpToken;
 
@@ -210,7 +211,7 @@ class Token extends PhpToken implements JsonSerializable
                 }
 
                 if ($token->id === T_COMMENT) {
-                    preg_match('/^(\/\/|\/\*|#)/', $token->text, $matches);
+                    Pcre::match('/^(\/\/|\/\*|#)/', $token->text, $matches);
                     $token->CommentType = $matches[1];
                 } elseif ($token->id === T_DOC_COMMENT) {
                     $token->CommentType = '/**';
@@ -1681,7 +1682,7 @@ class Token extends PhpToken implements JsonSerializable
 
     private function getIndentSpacesFromText(): int
     {
-        if (!preg_match('/^(?:\s*\n)?(?P<indent>\h*)\S/', $this->text, $matches)) {
+        if (!Pcre::match('/^(?:\s*\n)?(?P<indent>\h*)\S/', $this->text, $matches)) {
             return 0;
         }
 
@@ -1803,7 +1804,7 @@ class Token extends PhpToken implements JsonSerializable
                     ($current->Heredoc && $current->id !== T_END_HEREDOC)) {
                 $heredoc = $current->Heredoc ?: $current;
                 if ($heredoc->HeredocIndent) {
-                    $text = preg_replace(
+                    $text = Pcre::replace(
                         ($current->_next->text[0] ?? null) === "\n"
                             ? "/\\n{$heredoc->HeredocIndent}\$/m"
                             : "/\\n{$heredoc->HeredocIndent}(?=\\n)/",
@@ -1839,23 +1840,27 @@ class Token extends PhpToken implements JsonSerializable
     private function renderComment(bool $softTabs): string
     {
         $text = $this->text;
-        if ($this->ExpandedText) {
+        if ($this->ExpandedText !== null) {
             /** @todo Guess input tab size and use it instead */
             $text = Convert::expandLeadingTabs(
                 $text, $this->Formatter->TabSize, !$this->wasFirstOnLine(), $this->column
             );
         }
 
-        if ($this->id === T_COMMENT && preg_match('/\n\h*+(?!\*)\S/', $text)) {
+        if ($this->id === T_COMMENT && Pcre::match('/\n\h*+(?!\*)\S/', $text)) {
             $delta = $this->OutputColumn - $this->column;
-            if (!$delta) {
+            /* Don't reindent if the comment hasn't moved, or if it has text in
+column 1 despite starting in column 2 or above (like this comment) */
+            if (!$delta ||
+                ($this->column > 1 &&
+                    Pcre::match('/\n(?!\*)\S/', $text))) {
                 return $this->maybeUnexpandTabs($text, $softTabs);
             }
             $spaces = str_repeat(' ', abs($delta));
             if ($delta < 0) {
                 // Don't deindent if any non-empty lines have insufficient
                 // whitespace
-                if (preg_match("/\\n(?!{$spaces}|\\n)/", $text)) {
+                if (Pcre::match("/\\n(?!{$spaces}|\\n)/", $text)) {
                     return $this->maybeUnexpandTabs($text, $softTabs);
                 }
                 return $this->maybeUnexpandTabs(str_replace("\n" . $spaces, "\n", $text), $softTabs);
@@ -1873,22 +1878,26 @@ class Token extends PhpToken implements JsonSerializable
                     + strlen(WhitespaceType::toWhitespace($this->effectiveWhitespaceBefore()))
                     + $this->Padding);
         }
-        // Normalise the start and end of multi-line docblocks as per PSR-5 and
-        // remove trailing whitespace
+
+        // Normalise the start and end of multi-line docblocks as per PSR-5
         if ($this->id === T_DOC_COMMENT) {
-            $text = preg_replace(
-                ['/^\/\*\*++\s*+/', '/\s*+\*++\/$/'],
+            $text = Pcre::replace(
+                ['/^\/\*\*[\s*]*(?!\/$)/', '/(?<!^\/|^\/\*|^\/\*\*)[\s*]*\/$/'],
                 ["/**\n", $indent . ' */'],
                 $text
             );
         } else {
-            $text = preg_replace(
+            $text = Pcre::replace(
                 '/\n\h*+(\*++\/)$/',
                 $indent . ' $1',
                 $text
             );
         }
-        return preg_replace([
+
+        // Add or replace " * " (" *" if the line is otherwise empty) at the
+        // start of every line, preserving existing spaces after asterisks, and
+        // remove trailing whitespace from each line
+        return Pcre::replace([
             '/\n\h*+(?:\* |\*(?!\/)(?=[\h\S])|(?=[^\s*]))/',
             '/\n\h*+\*?$/m',
             '/\h++$/m',
@@ -1902,9 +1911,9 @@ class Token extends PhpToken implements JsonSerializable
     private function maybeUnexpandTabs(string $text, bool $softTabs): string
     {
         // Remove trailing whitespace
-        $text = preg_replace('/\h++$/m', '', $text);
+        $text = Pcre::replace('/\h++$/m', '', $text);
         if ($this->Formatter->Tab === "\t" && !$softTabs) {
-            return preg_replace("/(?<=\\n|\G){$this->Formatter->SoftTab}/", "\t", $text);
+            return Pcre::replace("/(?<=\\n|\G){$this->Formatter->SoftTab}/", "\t", $text);
         }
         return $text;
     }
