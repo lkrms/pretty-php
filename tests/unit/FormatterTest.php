@@ -198,6 +198,33 @@ comment */
 */
 PHP,
             ],
+            'one-line comments' => [
+                <<<'PHP'
+<?php
+/* comment */
+/** docblock */
+/* comment */
+/* comment */
+/* comment */
+/* comment */
+/** */
+/* */
+/******/
+
+PHP,
+                <<<'PHP'
+<?php
+/*  comment  */
+/**  docblock  **/
+/***  comment  ***/
+/*comment*/
+/**comment**/
+/***comment***/
+/**   **/
+/***   ***/
+/******/
+PHP,
+            ],
             'alternative syntax #1' => [
                 <<<'PHP'
 <?php

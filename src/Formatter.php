@@ -253,8 +253,8 @@ final class Formatter implements IReadable
      */
     public const COMPARISON_FILTERS = [
         StandardiseStrings::class,
-        TruncateComments::class,
         RemoveEmptyTokens::class,
+        TruncateComments::class,
         TrimOpenTags::class,
     ];
 

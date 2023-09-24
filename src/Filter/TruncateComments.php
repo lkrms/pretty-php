@@ -6,7 +6,7 @@ use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Filter\Contract\Filter;
 
 /**
- * Remove comments for comparison
+ * Truncate comments for comparison
  *
  * @api
  */
@@ -16,14 +16,12 @@ final class TruncateComments implements Filter
 
     public function filterTokens(array $tokens): array
     {
-        $filtered = [];
         foreach ($tokens as $token) {
-            if ($token->id !== T_DOC_COMMENT &&
-                    $token->id !== T_COMMENT) {
-                $filtered[] = $token;
+            if ($token->id === T_COMMENT ||
+                $token->id === T_DOC_COMMENT) {
             }
+            $token->text = '';
         }
-
-        return $filtered;
+        return $tokens;
     }
 }
