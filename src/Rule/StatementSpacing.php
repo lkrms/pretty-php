@@ -9,7 +9,6 @@ use Lkrms\PrettyPHP\Token\Token;
 
 /**
  * Apply whitespace to statement terminators
- *
  */
 final class StatementSpacing implements TokenRule
 {

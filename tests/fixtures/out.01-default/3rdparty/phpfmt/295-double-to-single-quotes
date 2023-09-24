@@ -1,5 +1,5 @@
 <?php
-//passes:Default,DoubleToSingleQuote
+// passes:Default,DoubleToSingleQuote
 $var = 'some var';
 
 $a = 'literal' . 'anotherliteral' . "$var";

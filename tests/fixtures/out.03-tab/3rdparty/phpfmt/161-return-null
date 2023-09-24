@@ -1,5 +1,5 @@
 <?php
-//passes:ReturnNull,Default
+// passes:ReturnNull,Default
 function a()
 {
 	return null;

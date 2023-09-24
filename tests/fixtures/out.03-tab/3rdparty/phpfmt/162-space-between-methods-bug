@@ -1,5 +1,5 @@
 <?php
-//passes:SpaceBetweenMethods,Default
+// passes:SpaceBetweenMethods,Default
 $optPasses = array_map(function ($v) {
 	return trim($v);
 }, explode(',', $opts['passes']));

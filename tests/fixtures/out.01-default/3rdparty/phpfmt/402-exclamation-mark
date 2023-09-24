@@ -1,4 +1,4 @@
 <?php
-//passes: SpaceAroundExclamationMark
+// passes: SpaceAroundExclamationMark
 if (!true)
     foo();

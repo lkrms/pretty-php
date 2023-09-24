@@ -1,4 +1,4 @@
 <?php
-//passes:StripSpaces
+// passes:StripSpaces
 $a = [$a, $b];
 $b = array($b, $c);

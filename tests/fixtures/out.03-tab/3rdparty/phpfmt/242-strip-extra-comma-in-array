@@ -1,5 +1,5 @@
 <?php
-//passes:Default,StripExtraCommaInArray
+// passes:Default,StripExtraCommaInArray
 $arr = array(
 	1,
 	2,

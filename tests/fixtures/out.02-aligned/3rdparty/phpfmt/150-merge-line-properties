@@ -1,5 +1,5 @@
 <?php
-//passes:Default,PSR2ModifierVisibilityStaticOrder
+// passes:Default,PSR2ModifierVisibilityStaticOrder
 class Foo
 {
     public $var;

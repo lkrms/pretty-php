@@ -96,39 +96,33 @@ trait NavigableTokenTrait
 
     /**
      * True unless the token is a tag, comment, whitespace or inline markup
-     *
      */
     public bool $IsCode = true;
 
     /**
      * True if the token is T_NULL
-     *
      */
     public bool $IsNull = false;
 
     /**
      * True if the token is T_NULL, T_END_ALT_SYNTAX or some other impostor
-     *
      */
     public bool $IsVirtual = false;
 
     /**
      * True if the token is a T_CLOSE_BRACE or T_CLOSE_TAG that coincides with
      * the end of a statement
-     *
      */
     public bool $IsStatementTerminator = false;
 
     /**
      * The original content of the token after expanding tabs if CollectColumn
      * found tabs to expand
-     *
      */
     public ?string $ExpandedText = null;
 
     /**
      * The original content of the token if its content was changed by setText()
-     *
      */
     public ?string $OriginalText = null;
 
@@ -265,7 +259,7 @@ trait NavigableTokenTrait
                 $opener = array_pop($stack);
                 if (($opener &&
                     $opener->id === T_COLON &&
-                    //$opener->BracketStack === $stack &&
+                    // $opener->BracketStack === $stack &&
                     ($token->is(TokenType::ALT_SYNTAX_END) ||
                         ($token->is(TokenType::ALT_SYNTAX_CONTINUE_WITH_EXPRESSION) &&
                             $token->nextSimpleSibling(2)->id === T_COLON) ||
@@ -433,7 +427,6 @@ trait NavigableTokenTrait
      *
      * Returns `true` for braces around trait adaptations, and for `match`
      * expression braces if `$orMatch` is `true`.
-     *
      */
     final public function isStructuralBrace(bool $orMatch = true): bool
     {
@@ -486,7 +479,6 @@ trait NavigableTokenTrait
     /**
      * True if the token is '(', ')', '[', ']', '{', '}', T_ATTRIBUTE,
      * T_CURLY_OPEN or T_DOLLAR_OPEN_CURLY_BRACES
-     *
      */
     final public function isBracket(): bool
     {
@@ -495,7 +487,6 @@ trait NavigableTokenTrait
 
     /**
      * True if the token is '(', ')', '[', ']', '{' or '}'
-     *
      */
     final public function isStandardBracket(): bool
     {
@@ -505,7 +496,6 @@ trait NavigableTokenTrait
     /**
      * True if the token is '(', '[', '{', T_ATTRIBUTE, T_CURLY_OPEN or
      * T_DOLLAR_OPEN_CURLY_BRACES
-     *
      */
     final public function isOpenBracket(): bool
     {
@@ -514,7 +504,6 @@ trait NavigableTokenTrait
 
     /**
      * True if the token is ')', ']' or '}'
-     *
      */
     final public function isCloseBracket(): bool
     {
@@ -523,7 +512,6 @@ trait NavigableTokenTrait
 
     /**
      * True if the token is '(', '[' or '{'
-     *
      */
     final public function isStandardOpenBracket(): bool
     {

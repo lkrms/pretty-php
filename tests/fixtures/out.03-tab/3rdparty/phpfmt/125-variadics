@@ -1,5 +1,5 @@
 <?php
-//version:5.6.0
+// version:5.6.0
 function a($a, ...$b)
 {
 	echo $a;

@@ -25,7 +25,6 @@ use Lkrms\Utility\Test;
  *     default: $result = doDefaultThing(); break;
  * }
  * ```
- *
  */
 final class PreserveOneLineStatements implements TokenRule
 {

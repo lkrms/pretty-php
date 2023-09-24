@@ -1,5 +1,5 @@
 <?php
-//passes:JoinToImplode,Default
+// passes:JoinToImplode,Default
 
 /* comment */
 join /** doc comment */ ();

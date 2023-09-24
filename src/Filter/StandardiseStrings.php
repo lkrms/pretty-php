@@ -77,7 +77,7 @@ final class StandardiseStrings implements Filter
                 if (substr($start, 0, 4) === "<<<'") {
                     continue;
                 }
-                $end = preg_replace('/[^a-zA-Z0-9_]+/', '', $start);
+                $end = Pcre::replace('/[^a-zA-Z0-9_]+/', '', $start);
                 eval("\$string = {$start}\n{$token->text}\n{$end};");
             } else {
                 throw new RuntimeException('Error parsing string');

@@ -1,5 +1,5 @@
 <?php
-//passes: ReindentAndAlignObjOps
+// passes: ReindentAndAlignObjOps
 $func = function () {
     return method($var1)
                ->method($var2)

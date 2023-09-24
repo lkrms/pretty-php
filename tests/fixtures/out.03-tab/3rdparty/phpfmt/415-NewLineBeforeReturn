@@ -1,5 +1,5 @@
 <?php
-//passes:NewLineBeforeReturn
+// passes:NewLineBeforeReturn
 function a()
 {
 	$a = 1;

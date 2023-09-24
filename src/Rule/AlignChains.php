@@ -11,7 +11,6 @@ use Lkrms\PrettyPHP\Token\Token;
 
 /**
  * Align consecutive object operators in the same chain of method calls
- *
  */
 final class AlignChains implements TokenRule
 {

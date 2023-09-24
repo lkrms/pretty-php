@@ -1,5 +1,5 @@
 <?php
-//passes:Default,IndentTernaryConditions
+// passes:Default,IndentTernaryConditions
 $a = ($b)
 	? $c
 	: $d;

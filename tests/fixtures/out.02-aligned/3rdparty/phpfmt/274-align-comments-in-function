@@ -1,5 +1,5 @@
 <?php
-//passes:Default,AlignTypehint,AlignDoubleSlashComments
+// passes:Default,AlignTypehint,AlignDoubleSlashComments
 class A
 {
     public function __construct(

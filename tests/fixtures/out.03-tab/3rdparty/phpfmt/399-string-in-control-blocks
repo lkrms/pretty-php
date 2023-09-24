@@ -1,5 +1,5 @@
 <?php
-//passes: SpaceAroundControlStructures
+// passes: SpaceAroundControlStructures
 
 if (true) {
 	$label = "{$foo}{$bar}";
@@ -9,26 +9,26 @@ echo <<<EOT
 	{$foo}{$bar}
 	EOT;
 
-//comment that explain the if
+// comment that explain the if
 if ($x) {
-	//body
+	// body
 }
 
 $someothercode;
 
-//comment that explain the if
+// comment that explain the if
 while ($x) {
-	//body
+	// body
 }
 
 $someothercode;
 
 $someothercode;
-//comment that explain the if
+// comment that explain the if
 while ($x) {
-	//body
+	// body
 }
 
 ?>
 
-<?php  //comment should stay
+<?php  // comment should stay

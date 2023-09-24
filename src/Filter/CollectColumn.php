@@ -8,7 +8,6 @@ use Lkrms\Utility\Convert;
 
 /**
  * Assign the starting column of each token to its $column property
- *
  */
 final class CollectColumn implements Filter
 {

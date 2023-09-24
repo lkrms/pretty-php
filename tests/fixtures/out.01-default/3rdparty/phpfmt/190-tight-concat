@@ -1,5 +1,5 @@
 <?php
-//passes:Default,TightConcat
+// passes:Default,TightConcat
 echo $a . $b;
 echo $a . $b . $c;
 echo $a . 1 + 1 . $c;

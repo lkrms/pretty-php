@@ -11,6 +11,7 @@ use Lkrms\PrettyPHP\Token\Concern\CollectibleTokenTrait;
 use Lkrms\PrettyPHP\Token\Concern\NavigableTokenTrait;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\Pcre;
 use JsonSerializable;
 use PhpToken;
 
@@ -54,20 +55,17 @@ class Token extends PhpToken implements JsonSerializable
     /**
      * Indentation levels to ignore until the token is rendered, e.g. those
      * applied to unenclosed control structure bodies
-     *
      */
     public int $PreIndent = 0;
 
     /**
      * Indentation levels implied by the token's enclosing brackets
-     *
      */
     public int $Indent = 0;
 
     /**
      * Indentation levels to remove when the token is rendered and to ignore
      * otherwise, e.g. to indent `case` and `default` statements correctly
-     *
      */
     public int $Deindent = 0;
 
@@ -122,25 +120,21 @@ class Token extends PhpToken implements JsonSerializable
 
     /**
      * Bitmask representing whitespace between the token and its predecessor
-     *
      */
     public int $WhitespaceBefore = WhitespaceType::NONE;
 
     /**
      * Bitmask representing whitespace between the token and its successor
-     *
      */
     public int $WhitespaceAfter = WhitespaceType::NONE;
 
     /**
      * Bitmask applied to whitespace between the token and its predecessor
-     *
      */
     public int $WhitespaceMaskPrev = WhitespaceType::ALL;
 
     /**
      * Bitmask applied to whitespace between the token and its successor
-     *
      */
     public int $WhitespaceMaskNext = WhitespaceType::ALL;
 
@@ -149,7 +143,6 @@ class Token extends PhpToken implements JsonSerializable
      * predecessor
      *
      * Values added to this bitmask MUST NOT BE REMOVED.
-     *
      */
     public int $CriticalWhitespaceBefore = WhitespaceType::NONE;
 
@@ -158,7 +151,6 @@ class Token extends PhpToken implements JsonSerializable
      * successor
      *
      * Values added to this bitmask MUST NOT BE REMOVED.
-     *
      */
     public int $CriticalWhitespaceAfter = WhitespaceType::NONE;
 
@@ -167,7 +159,6 @@ class Token extends PhpToken implements JsonSerializable
      * predecessor
      *
      * Values removed from this bitmask MUST NOT BE RESTORED.
-     *
      */
     public int $CriticalWhitespaceMaskPrev = WhitespaceType::ALL;
 
@@ -176,7 +167,6 @@ class Token extends PhpToken implements JsonSerializable
      * successor
      *
      * Values removed from this bitmask MUST NOT BE RESTORED.
-     *
      */
     public int $CriticalWhitespaceMaskNext = WhitespaceType::ALL;
 
@@ -210,7 +200,7 @@ class Token extends PhpToken implements JsonSerializable
                 }
 
                 if ($token->id === T_COMMENT) {
-                    preg_match('/^(\/\/|\/\*|#)/', $token->text, $matches);
+                    Pcre::match('/^(\/\/|\/\*|#)/', $token->text, $matches);
                     $token->CommentType = $matches[1];
                 } elseif ($token->id === T_DOC_COMMENT) {
                     $token->CommentType = '/**';
@@ -242,7 +232,6 @@ class Token extends PhpToken implements JsonSerializable
     /**
      * If the token is a statement terminator, set Statement and EndStatement on
      * siblings loaded since the previous terminator
-     *
      */
     private function maybeApplyStatement(): void
     {
@@ -290,7 +279,6 @@ class Token extends PhpToken implements JsonSerializable
      * found, or when there are no more predecessors. The identified 'start'
      * token is then applied to the {@see Token::$Statement} property of the
      * same tokens.
-     *
      */
     private function applyStatement(): void
     {
@@ -323,7 +311,6 @@ class Token extends PhpToken implements JsonSerializable
 
     /**
      * Similar to maybeApplyStatement() (but not the same)
-     *
      */
     private function maybeApplyExpression(): void
     {
@@ -390,7 +377,6 @@ class Token extends PhpToken implements JsonSerializable
 
     /**
      * Similar to applyStatement()
-     *
      */
     private function applyExpression(): void
     {
@@ -604,7 +590,6 @@ class Token extends PhpToken implements JsonSerializable
      *
      * Aside from `enum`, "soft reserved words" are not considered PHP keywords,
      * so `false` is returned for `resource` and `numeric`.
-     *
      */
     public function isKeyword(): bool
     {
@@ -718,7 +703,6 @@ class Token extends PhpToken implements JsonSerializable
      * one of the listed types
      *
      * Tokens are collected in order from closest to farthest.
-     *
      */
     final public function prevSiblingsWhile(int ...$types): TokenCollection
     {
@@ -730,7 +714,6 @@ class Token extends PhpToken implements JsonSerializable
      * isn't one of the listed types
      *
      * Tokens are collected in order from closest to farthest.
-     *
      */
     final public function withPrevSiblingsWhile(int ...$types): TokenCollection
     {
@@ -738,6 +721,7 @@ class Token extends PhpToken implements JsonSerializable
     }
 
     /**
+     *
      */
     private function _prevSiblingsWhile(bool $includeToken = false, int ...$types): TokenCollection
     {
@@ -754,7 +738,6 @@ class Token extends PhpToken implements JsonSerializable
     /**
      * Collect the token's siblings up to but not including the first that isn't
      * one of the listed types
-     *
      */
     final public function nextSiblingsWhile(int ...$types): TokenCollection
     {
@@ -764,7 +747,6 @@ class Token extends PhpToken implements JsonSerializable
     /**
      * Collect the token and its siblings up to but not including the first that
      * isn't one of the listed types
-     *
      */
     final public function withNextSiblingsWhile(int ...$types): TokenCollection
     {
@@ -772,6 +754,7 @@ class Token extends PhpToken implements JsonSerializable
     }
 
     /**
+     *
      */
     private function _nextSiblingsWhile(bool $includeToken = false, int ...$types): TokenCollection
     {
@@ -795,7 +778,6 @@ class Token extends PhpToken implements JsonSerializable
     /**
      * Collect the token's parents up to but not including the first that isn't
      * one of the listed types
-     *
      */
     final public function parentsWhile(int ...$types): TokenCollection
     {
@@ -805,7 +787,6 @@ class Token extends PhpToken implements JsonSerializable
     /**
      * Collect the token and its parents up to but not including the first that
      * isn't one of the listed types
-     *
      */
     final public function withParentsWhile(int ...$types): TokenCollection
     {
@@ -813,6 +794,7 @@ class Token extends PhpToken implements JsonSerializable
     }
 
     /**
+     *
      */
     private function _parentsWhile(bool $includeToken = false, int ...$types): TokenCollection
     {
@@ -1209,6 +1191,7 @@ class Token extends PhpToken implements JsonSerializable
     }
 
     /**
+     *
      */
     final public function adjacent(int ...$types): ?Token
     {
@@ -1440,7 +1423,6 @@ class Token extends PhpToken implements JsonSerializable
 
     /**
      * True if the token contains a newline
-     *
      */
     final public function hasNewline(): bool
     {
@@ -1450,7 +1432,6 @@ class Token extends PhpToken implements JsonSerializable
     /**
      * True if, between the token and the next code token, there's a newline
      * between tokens
-     *
      */
     final public function hasNewlineAfterCode(): bool
     {
@@ -1486,7 +1467,6 @@ class Token extends PhpToken implements JsonSerializable
 
     /**
      * True if the next code token starts a new expression
-     *
      */
     final public function precedesExpression(): bool
     {
@@ -1495,7 +1475,6 @@ class Token extends PhpToken implements JsonSerializable
 
     /**
      * True if the next code token starts a new statement
-     *
      */
     final public function precedesStatement(): bool
     {
@@ -1509,7 +1488,6 @@ class Token extends PhpToken implements JsonSerializable
      * - `T_CASE` or `T_DEFAULT`
      * - the `:` or `;` after `T_CASE` or `T_DEFAULT`, or
      * - part of the expression between `T_CASE` and its terminator
-     *
      */
     final public function inSwitchCase(): bool
     {
@@ -1522,7 +1500,6 @@ class Token extends PhpToken implements JsonSerializable
 
     /**
      * True if the token is the colon after a label
-     *
      */
     final public function isLabelTerminator(): bool
     {
@@ -1638,6 +1615,7 @@ class Token extends PhpToken implements JsonSerializable
     }
 
     /**
+     *
      */
     public function isDeclaration(int ...$types): bool
     {
@@ -1681,7 +1659,7 @@ class Token extends PhpToken implements JsonSerializable
 
     private function getIndentSpacesFromText(): int
     {
-        if (!preg_match('/^(?:\s*\n)?(?P<indent>\h*)\S/', $this->text, $matches)) {
+        if (!Pcre::match('/^(?:\s*\n)?(?P<indent>\h*)\S/', $this->text, $matches)) {
             return 0;
         }
 
@@ -1803,7 +1781,7 @@ class Token extends PhpToken implements JsonSerializable
                     ($current->Heredoc && $current->id !== T_END_HEREDOC)) {
                 $heredoc = $current->Heredoc ?: $current;
                 if ($heredoc->HeredocIndent) {
-                    $text = preg_replace(
+                    $text = Pcre::replace(
                         ($current->_next->text[0] ?? null) === "\n"
                             ? "/\\n{$heredoc->HeredocIndent}\$/m"
                             : "/\\n{$heredoc->HeredocIndent}(?=\\n)/",
@@ -1839,23 +1817,27 @@ class Token extends PhpToken implements JsonSerializable
     private function renderComment(bool $softTabs): string
     {
         $text = $this->text;
-        if ($this->ExpandedText) {
+        if ($this->ExpandedText !== null) {
             /** @todo Guess input tab size and use it instead */
             $text = Convert::expandLeadingTabs(
                 $text, $this->Formatter->TabSize, !$this->wasFirstOnLine(), $this->column
             );
         }
 
-        if ($this->id === T_COMMENT && preg_match('/\n\h*+(?!\*)\S/', $text)) {
+        if ($this->id === T_COMMENT && Pcre::match('/\n\h*+(?!\*)\S/', $text)) {
             $delta = $this->OutputColumn - $this->column;
-            if (!$delta) {
+            /* Don't reindent if the comment hasn't moved, or if it has text in
+column 1 despite starting in column 2 or above (like this comment) */
+            if (!$delta ||
+                ($this->column > 1 &&
+                    Pcre::match('/\n(?!\*)\S/', $text))) {
                 return $this->maybeUnexpandTabs($text, $softTabs);
             }
             $spaces = str_repeat(' ', abs($delta));
             if ($delta < 0) {
                 // Don't deindent if any non-empty lines have insufficient
                 // whitespace
-                if (preg_match("/\\n(?!{$spaces}|\\n)/", $text)) {
+                if (Pcre::match("/\\n(?!{$spaces}|\\n)/", $text)) {
                     return $this->maybeUnexpandTabs($text, $softTabs);
                 }
                 return $this->maybeUnexpandTabs(str_replace("\n" . $spaces, "\n", $text), $softTabs);
@@ -1873,22 +1855,26 @@ class Token extends PhpToken implements JsonSerializable
                     + strlen(WhitespaceType::toWhitespace($this->effectiveWhitespaceBefore()))
                     + $this->Padding);
         }
-        // Normalise the start and end of multi-line docblocks as per PSR-5 and
-        // remove trailing whitespace
+
+        // Normalise the start and end of multi-line docblocks as per PSR-5
         if ($this->id === T_DOC_COMMENT) {
-            $text = preg_replace(
-                ['/^\/\*\*++\s*+/', '/\s*+\*++\/$/'],
-                ["/**\n", $indent . ' */'],
+            $text = Pcre::replace(
+                ['/^\/\*\*(?:\n\h*+\*|\s)*(?!\/$)/', '/(?<!^\/|^\/\*|^\/\*\*)(?:\n\h*+\*|\s)*\*+\/$/'],
+                ["/**\n *", $indent . ' */'],
                 $text
             );
         } else {
-            $text = preg_replace(
+            $text = Pcre::replace(
                 '/\n\h*+(\*++\/)$/',
                 $indent . ' $1',
                 $text
             );
         }
-        return preg_replace([
+
+        // Add or replace " * " (" *" if the line is otherwise empty) at the
+        // start of every line, preserving existing spaces after asterisks, and
+        // remove trailing whitespace from each line
+        return Pcre::replace([
             '/\n\h*+(?:\* |\*(?!\/)(?=[\h\S])|(?=[^\s*]))/',
             '/\n\h*+\*?$/m',
             '/\h++$/m',
@@ -1902,9 +1888,9 @@ class Token extends PhpToken implements JsonSerializable
     private function maybeUnexpandTabs(string $text, bool $softTabs): string
     {
         // Remove trailing whitespace
-        $text = preg_replace('/\h++$/m', '', $text);
+        $text = Pcre::replace('/\h++$/m', '', $text);
         if ($this->Formatter->Tab === "\t" && !$softTabs) {
-            return preg_replace("/(?<=\\n|\G){$this->Formatter->SoftTab}/", "\t", $text);
+            return Pcre::replace("/(?<=\\n|\G){$this->Formatter->SoftTab}/", "\t", $text);
         }
         return $text;
     }

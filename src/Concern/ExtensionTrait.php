@@ -7,7 +7,6 @@ use Lkrms\PrettyPHP\Formatter;
 
 /**
  * Implements Lkrms\PrettyPHP\Contract\Extension for use by filters and rules
- *
  */
 trait ExtensionTrait
 {

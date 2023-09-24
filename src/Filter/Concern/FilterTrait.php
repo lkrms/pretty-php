@@ -4,10 +4,10 @@ namespace Lkrms\PrettyPHP\Filter\Concern;
 
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\Utility\Pcre;
 
 /**
  * Extends Lkrms\PrettyPHP\Concern\ExtensionTrait for use by filters
- *
  */
 trait FilterTrait
 {
@@ -65,6 +65,6 @@ trait FilterTrait
     {
         $token = $this->Tokens[$i];
         return $token->id === T_COMMENT &&
-            preg_match('@^(?://|#)@', $token->text);
+            Pcre::match('@^(?://|#)@', $token->text);
     }
 }

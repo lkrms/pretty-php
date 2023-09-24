@@ -14,4 +14,4 @@
 </body>
 </html>
 <?php
-//passes:AlignPHPCode,PSR2IndentWithSpace
+// passes:AlignPHPCode,PSR2IndentWithSpace

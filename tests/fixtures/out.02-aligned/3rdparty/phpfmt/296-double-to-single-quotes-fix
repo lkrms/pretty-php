@@ -1,4 +1,4 @@
 <?php
-//passes:Default,DoubleToSingleQuote
+// passes:Default,DoubleToSingleQuote
 
 echo "aa\naaa";

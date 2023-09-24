@@ -8,6 +8,7 @@ use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Rule\Contract\TokenRule;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\Utility\Pcre;
 
 /**
  * Apply sensible default spacing
@@ -28,7 +29,6 @@ use Lkrms\PrettyPHP\Token\Token;
  * - Add SPACE before and after parameter attributes, LINE and SPACE before and
  *   after other attributes, and suppress BLANK after all attributes
  * - Suppress whitespace inside `declare()`
- *
  */
 final class StandardWhitespace implements TokenRule
 {
@@ -110,7 +110,7 @@ final class StandardWhitespace implements TokenRule
                     break;
                 }
             }
-            if ($token->_prev && preg_match('/\n(?P<indent>\h+)$/', "\n$text", $matches)) {
+            if ($token->_prev && Pcre::match('/\n(?P<indent>\h+)$/', "\n$text", $matches)) {
                 $indent = strlen(str_replace("\t", $this->Formatter->SoftTab, $matches['indent']));
                 if ($indent % $this->Formatter->TabSize === 0) {
                     $token->TagIndent = $indent / $this->Formatter->TabSize;

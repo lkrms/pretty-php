@@ -15,7 +15,6 @@ use Lkrms\PrettyPHP\Token\Token;
  * Newlines are added before the first item in vertical lists. Newlines before
  * the first item in horizontal lists are removed when strict PSR-12 compliance
  * is enabled.
- *
  */
 final class StrictLists implements ListRule
 {

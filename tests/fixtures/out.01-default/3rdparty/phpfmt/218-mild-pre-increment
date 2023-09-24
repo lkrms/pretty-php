@@ -1,5 +1,5 @@
 <?php
-//passes: TwoCommandsInSameLine, AddMissingCurlyBraces, NormalizeLnAndLtrimLines, MergeParenCloseWithCurlyOpen, MergeCurlyCloseAndDoWhile, MergeDoubleArrowAndArray, ExtraCommaInArray, ResizeSpaces, Reindent, ReindentColonBlocks,   ReindentObjOps, OrderAndRemoveUseClauses, EliminateDuplicatedEmptyLines, AlignEquals, AlignDoubleArrow, LeftAlignComment, RTrim, MildAutoPreincrement
+// passes: TwoCommandsInSameLine, AddMissingCurlyBraces, NormalizeLnAndLtrimLines, MergeParenCloseWithCurlyOpen, MergeCurlyCloseAndDoWhile, MergeDoubleArrowAndArray, ExtraCommaInArray, ResizeSpaces, Reindent, ReindentColonBlocks,   ReindentObjOps, OrderAndRemoveUseClauses, EliminateDuplicatedEmptyLines, AlignEquals, AlignDoubleArrow, LeftAlignComment, RTrim, MildAutoPreincrement
 
 $a++;
 

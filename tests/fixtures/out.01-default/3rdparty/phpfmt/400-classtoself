@@ -1,4 +1,4 @@
 <?php
-//passes:ClassToSelf
+// passes:ClassToSelf
 echo Ns\App::class;
 echo Ns\App::class;

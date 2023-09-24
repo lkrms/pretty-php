@@ -1,5 +1,5 @@
 <?php
-//passes:Default,StripNewlineAfterClassOpen
+// passes:Default,StripNewlineAfterClassOpen
 class A
 {
 	protected $a;

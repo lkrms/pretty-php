@@ -1,5 +1,5 @@
 <?php
-//passes:Default,WrongConstructorName
+// passes:Default,WrongConstructorName
 
 class WrongConstructorName
 {

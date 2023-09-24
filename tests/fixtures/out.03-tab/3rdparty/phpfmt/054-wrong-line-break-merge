@@ -9,5 +9,5 @@
 try {
 	doSomething();
 } catch (Exception $exc) {
-	//caught me!
+	// caught me!
 }

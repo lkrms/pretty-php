@@ -7,9 +7,9 @@ $res = new ClassObject(
 	$arr['pr'],
 	$arr['lo'],
 	$arr['li'],
-	//comment 1
+	// comment 1
 	(int) preg_replace('/[^0-9]|,[0-9]*$/', '', $arr['tr']),
 	$arr['pc'],
-	''  //comment 2
+	''  // comment 2
 );
 ?>

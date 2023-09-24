@@ -8,7 +8,6 @@ use Lkrms\PrettyPHP\Token\Token;
 
 /**
  * Align arrow function expressions with their definitions
- *
  */
 final class AlignArrowFunctions implements TokenRule
 {

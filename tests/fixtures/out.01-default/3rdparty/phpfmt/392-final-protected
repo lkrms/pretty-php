@@ -1,5 +1,5 @@
 <?php
-//passes: OrganizeClass
+// passes: OrganizeClass
 class SandboxedPass
 {
     final protected function alignPlaceholders($origPlaceholder, $contextCounter)

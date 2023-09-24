@@ -9,7 +9,6 @@ use Lkrms\PrettyPHP\Token\Token;
 
 /**
  * Align consecutive operators and values
- *
  */
 final class AlignData implements BlockRule
 {

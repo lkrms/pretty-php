@@ -16,7 +16,6 @@ use Lkrms\PrettyPHP\Exception\FormatterException;
 use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
 use Lkrms\PrettyPHP\Filter\Contract\Filter;
 use Lkrms\PrettyPHP\Filter\CollectColumn;
-use Lkrms\PrettyPHP\Filter\RemoveComments;
 use Lkrms\PrettyPHP\Filter\RemoveEmptyTokens;
 use Lkrms\PrettyPHP\Filter\RemoveHeredocIndentation;
 use Lkrms\PrettyPHP\Filter\RemoveWhitespace;
@@ -24,6 +23,7 @@ use Lkrms\PrettyPHP\Filter\SortImports;
 use Lkrms\PrettyPHP\Filter\StandardiseStrings;
 use Lkrms\PrettyPHP\Filter\TrimCasts;
 use Lkrms\PrettyPHP\Filter\TrimOpenTags;
+use Lkrms\PrettyPHP\Filter\TruncateComments;
 use Lkrms\PrettyPHP\Rule\Contract\BlockRule;
 use Lkrms\PrettyPHP\Rule\Contract\ListRule;
 use Lkrms\PrettyPHP\Rule\Contract\MultiTokenRule;
@@ -135,7 +135,6 @@ final class Formatter implements IReadable
 
     /**
      * Spaces between code and comments on the same line
-     *
      */
     public int $SpacesBesideCode = 2;
 
@@ -167,7 +166,6 @@ final class Formatter implements IReadable
      * $result = $object
      *               ->method1();
      * ```
-     *
      */
     public bool $AlignFirstCallInChain = true;
 
@@ -253,8 +251,8 @@ final class Formatter implements IReadable
      */
     public const COMPARISON_FILTERS = [
         StandardiseStrings::class,
-        RemoveComments::class,
         RemoveEmptyTokens::class,
+        TruncateComments::class,
         TrimOpenTags::class,
     ];
 
@@ -280,7 +278,6 @@ final class Formatter implements IReadable
 
     /**
      * Enforce strict PSR-12 compliance?
-     *
      */
     private bool $_Psr12Compliance = false;
 

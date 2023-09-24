@@ -1,5 +1,5 @@
 <?php
-//passes:Default, LongArray
+// passes:Default, LongArray
 
 $a = [1, 2];
 

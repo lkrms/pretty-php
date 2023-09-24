@@ -1,5 +1,5 @@
 <?php
-//passes:AddMissingParentheses
+// passes:AddMissingParentheses
 $a = new A;
 $b = (new B);
 $c = (new C)->x;

@@ -1,5 +1,5 @@
 <?php
-//passes:Default,ReindentObjOps
+// passes:Default,ReindentObjOps
 class Aa
 {
     public function c()

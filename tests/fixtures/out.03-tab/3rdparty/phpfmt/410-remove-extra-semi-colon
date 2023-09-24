@@ -1,5 +1,5 @@
 <?php
-//passes: RemoveSemicolonAfterCurly
+// passes: RemoveSemicolonAfterCurly
 
 function xxx()
 {

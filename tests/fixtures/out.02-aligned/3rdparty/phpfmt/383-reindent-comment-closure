@@ -1,5 +1,5 @@
 <?php
-//passes: ReindentAndAlignObjOps
+// passes: ReindentAndAlignObjOps
 $self = $this;
 $this->locker->lock($self->id, function () use ($self) {
                                    // comment a

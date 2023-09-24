@@ -1,5 +1,5 @@
 <?php
-//passes:Default, AllmanStyleBraces
+// passes:Default, AllmanStyleBraces
 switch (1) {
 	case 'value':
 		if (1) {

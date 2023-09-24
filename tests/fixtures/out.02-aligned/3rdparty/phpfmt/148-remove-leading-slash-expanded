@@ -1,5 +1,5 @@
 <?php
-//passes:Default,RemoveUseLeadingSlash
+// passes:Default,RemoveUseLeadingSlash
 class C
 {
     use \SomeTrait;

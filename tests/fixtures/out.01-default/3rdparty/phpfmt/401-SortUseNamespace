@@ -1,5 +1,5 @@
 <?php
-//passes:SortUseNameSpace
+// passes:SortUseNameSpace
 namespace Laravel\Spark\Repositories;
 
 use Carbon\Carbon;

@@ -1,5 +1,5 @@
 <?php
-//passes:Default,ReindentObjOps
+// passes:Default,ReindentObjOps
 // from sublime-phpfmt#101
 $console
     ->register('cms:setup')

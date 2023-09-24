@@ -1,5 +1,5 @@
 <?php
-//passes:Default,IndentTernaryConditions,PSR2IndentWithSpace
+// passes:Default,IndentTernaryConditions,PSR2IndentWithSpace
 
 $a = $b
          ? 'c'

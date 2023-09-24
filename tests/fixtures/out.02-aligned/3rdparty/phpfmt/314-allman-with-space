@@ -1,5 +1,5 @@
 <?php
-//passes:AllmanStyleBraces,PSR2IndentWithSpace
+// passes:AllmanStyleBraces,PSR2IndentWithSpace
 class A
 {
     public function a()

@@ -8,10 +8,10 @@ use Lkrms\PrettyPHP\Filter\Concern\FilterTrait;
 use Lkrms\PrettyPHP\Filter\Contract\Filter;
 use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\Pcre;
 
 /**
  * Sort consecutive alias/import statements
- *
  */
 final class SortImports implements Filter
 {
@@ -222,7 +222,7 @@ final class SortImports implements Filter
 
         return [
             $order,
-            preg_replace($this->Search, $this->Replace, $import),
+            Pcre::replace($this->Search, $this->Replace, $import),
             $tokens[0]->Index,
         ];
     }

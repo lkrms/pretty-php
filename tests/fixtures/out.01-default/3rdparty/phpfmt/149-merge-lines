@@ -1,6 +1,6 @@
 <?php
-//version:5.5.0
-//skipHHVM
+// version:5.5.0
+// skipHHVM
 while ($a) {
 }
 

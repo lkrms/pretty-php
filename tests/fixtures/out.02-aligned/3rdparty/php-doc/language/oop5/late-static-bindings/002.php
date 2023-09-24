@@ -30,5 +30,5 @@ class C extends A
 $b = new B();
 $b->test();
 $c = new C();
-$c->test();  //fails
+$c->test();  // fails
 ?>

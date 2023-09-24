@@ -1,5 +1,5 @@
 <?php
-//passes:AlignEquals,AlignDoubleArrow,AlignDoubleSlashComments,AlignGroupDoubleArrow,LongArray,OrderMethod,ReindentAndAlignObjOps,ReindentSwitchBlocks
+// passes:AlignEquals,AlignDoubleArrow,AlignDoubleSlashComments,AlignGroupDoubleArrow,LongArray,OrderMethod,ReindentAndAlignObjOps,ReindentSwitchBlocks
 switch ($a) {
 	case 'a':
 		$query = ' select a from b

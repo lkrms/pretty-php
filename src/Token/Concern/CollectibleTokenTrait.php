@@ -11,7 +11,6 @@ trait CollectibleTokenTrait
     /**
      * Optionally skip to the next declaration token in the same expression,
      * then get the token and any subsequent declaration tokens
-     *
      */
     final public function declarationParts(
         bool $allowAnonymous = true,
@@ -135,7 +134,6 @@ trait CollectibleTokenTrait
     /**
      * Get preceding tokens in reverse document order, up to but not including
      * the first that isn't one of the given types
-     *
      */
     final public function prevWhile(int $type, int ...$types): TokenCollection
     {
@@ -158,7 +156,6 @@ trait CollectibleTokenTrait
     /**
      * Get following tokens, up to but not including the first that isn't one of
      * the given types
-     *
      */
     final public function nextWhile(int $type, int ...$types): TokenCollection
     {
@@ -181,7 +178,6 @@ trait CollectibleTokenTrait
     /**
      * Get preceding code tokens in reverse document order, up to but not
      * including the first that isn't one of the given types
-     *
      */
     final public function prevCodeWhile(int $type, int ...$types): TokenCollection
     {
@@ -204,7 +200,6 @@ trait CollectibleTokenTrait
     /**
      * Get following code tokens, up to but not including the first that isn't
      * one of the given types
-     *
      */
     final public function nextCodeWhile(int $type, int ...$types): TokenCollection
     {

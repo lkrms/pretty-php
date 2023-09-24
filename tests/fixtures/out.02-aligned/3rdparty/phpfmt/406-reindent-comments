@@ -1,10 +1,10 @@
 <?php
 
 if ($x) {
-    //body
+    // body
 }
 
-//skipShortTag1
+// skipShortTag1
 
 /*
     aif(){

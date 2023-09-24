@@ -1,5 +1,5 @@
 <?php
-//passes:AllmanStyleBraces
+// passes:AllmanStyleBraces
 function lazyload_replace($content)
 {
 	$content = preg_replace_callback('/<img(.+)src=[\'"]([^\'"]+)[\'"](.*)>/i',

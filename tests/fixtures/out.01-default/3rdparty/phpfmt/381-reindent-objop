@@ -1,5 +1,5 @@
 <?php
-//passes: ReindentObjOps
+// passes: ReindentObjOps
 $func = function () {
     return method($var1)
         ->method($var2)

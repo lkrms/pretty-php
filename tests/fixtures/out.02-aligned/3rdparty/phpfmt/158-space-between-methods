@@ -1,11 +1,11 @@
 <?php
-//passes:SpaceBetweenMethods,Default
+// passes:SpaceBetweenMethods,Default
 class A
 {
     function a() {}
     function b() {}
 
-    //adsa
+    // adsa
     function c() {}
 
     /**

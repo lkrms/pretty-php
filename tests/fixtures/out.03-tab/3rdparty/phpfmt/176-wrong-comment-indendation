@@ -2,10 +2,12 @@
 class ClassName
 {
 	/**
+	 *
 	 */
 	public function a() {}
 
 	/**
+	 *
 	 */
 	public function b()
 	{
@@ -14,6 +16,7 @@ class ClassName
 	}
 
 	/**
+	 *
 	 */
 	public function c()
 	{
@@ -23,6 +26,7 @@ class ClassName
 	}
 
 	/**
+	 *
 	 */
 	public function c()
 	{
@@ -32,6 +36,7 @@ class ClassName
 	}
 
 	/**
+	 *
 	 */
 	public function d()
 	{

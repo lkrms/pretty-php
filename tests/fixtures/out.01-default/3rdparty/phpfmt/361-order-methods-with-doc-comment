@@ -1,5 +1,5 @@
 <?php
-//passes:OrderMethod
+// passes:OrderMethod
 
 class A
 {

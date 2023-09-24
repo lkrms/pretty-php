@@ -8,7 +8,6 @@ use Lkrms\PrettyPHP\Token\Token;
 /**
  * Applied to tokens returned by the PHP tokenizer before formatting and
  * subsequent equivalence checks
- *
  */
 interface Filter extends Extension
 {

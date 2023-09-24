@@ -17,7 +17,6 @@ final class ImportSortOrder extends Enumeration
 {
     /**
      * Do not sort imports
-     *
      */
     public const NONE = 0;
 
