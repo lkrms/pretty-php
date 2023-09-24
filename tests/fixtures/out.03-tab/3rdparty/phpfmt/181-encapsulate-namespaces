@@ -1,5 +1,5 @@
 <?php
-//passes:EncapsulateNamespaces,Default
+// passes:EncapsulateNamespaces,Default
 namespace A;
 
 class A {}

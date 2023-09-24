@@ -1,11 +1,11 @@
 <?php
 
 do
-//Comment
+// Comment
 {
 } while (false);
 
 while
-	//Comment
+	// Comment
 	(false) {
 	}

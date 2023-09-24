@@ -1,5 +1,5 @@
 <?php
-//passes:AutoSemicolon
+// passes:AutoSemicolon
 class A
 {
     protected function tokenIs($direction, $token, $ignoreList = [])

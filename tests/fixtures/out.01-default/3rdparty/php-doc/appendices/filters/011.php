@@ -9,7 +9,7 @@ class AES_CBC
     protected static function key_size()
     {
         return self::$KEY_SIZES['AES-128'];
-    }  //default AES-128
+    }  // default AES-128
 
     public static function encryptFile($password, $input_stream, $aes_filename)
     {
@@ -17,7 +17,7 @@ class AES_CBC
         $fin = fopen($input_stream, 'rb');
         $fc = fopen($aes_filename, 'wb+');
         if (!empty($fin) && !empty($fc)) {
-            fwrite($fc, str_repeat('_', 32));  //placeholder, SHA256 HMAC will go here later
+            fwrite($fc, str_repeat('_', 32));  // placeholder, SHA256 HMAC will go here later
             fwrite($fc, $hmac_salt = mcrypt_create_iv($iv_size, MCRYPT_DEV_URANDOM));
             fwrite($fc, $esalt = mcrypt_create_iv($iv_size, MCRYPT_DEV_URANDOM));
             fwrite($fc, $iv = mcrypt_create_iv($iv_size, MCRYPT_DEV_URANDOM));
@@ -31,13 +31,13 @@ class AES_CBC
                 fwrite($fc, $block);
             }
             $block_size = mcrypt_get_block_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
-            $padding = $block_size - ($infilesize % $block_size);  //$padding is a number from 1-16
-            fwrite($fc, str_repeat(chr($padding), $padding));  //perform PKCS7 padding
+            $padding = $block_size - ($infilesize % $block_size);  // $padding is a number from 1-16
+            fwrite($fc, str_repeat(chr($padding), $padding));  // perform PKCS7 padding
             fclose($fin);
             fclose($fc);
             $hmac_raw = self::calculate_hmac_after_32bytes($password, $hmac_salt, $aes_filename);
             $fc = fopen($aes_filename, 'rb+');
-            fwrite($fc, $hmac_raw);  //overwrite placeholder
+            fwrite($fc, $hmac_raw);  // overwrite placeholder
             fclose($fc);
         }
     }
@@ -51,7 +51,7 @@ class AES_CBC
         $fc = fopen($aes_filename, 'rb');
         $fout = fopen($out_stream, 'wb');
         if (!empty($fout) && !empty($fc) && self::hash_equals($hmac_raw, $hmac_calc)) {
-            fread($fc, 32 + $iv_size);  //skip sha256 hmac and salt
+            fread($fc, 32 + $iv_size);  // skip sha256 hmac and salt
             $esalt = fread($fc, $iv_size);
             $iv = fread($fc, $iv_size);
             $ekey = hash_pbkdf2('sha256', $password, $esalt, $it = 1000, self::key_size(), $raw = true);
@@ -60,7 +60,7 @@ class AES_CBC
             while (!feof($fc)) {
                 $block = fread($fc, 8192);
                 if (feof($fc)) {
-                    $padding = ord($block[strlen($block) - 1]);  //assume PKCS7 padding
+                    $padding = ord($block[strlen($block) - 1]);  // assume PKCS7 padding
                     $block = substr($block, 0, 0 - $padding);
                 }
                 fwrite($fout, $block);

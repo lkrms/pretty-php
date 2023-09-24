@@ -1,5 +1,5 @@
 <?php
-//passes:AddMissingParentheses
+// passes:AddMissingParentheses
 $h = new H(array(new H, new H));
 $i = new I([new I, new I]);
 $j = new J([

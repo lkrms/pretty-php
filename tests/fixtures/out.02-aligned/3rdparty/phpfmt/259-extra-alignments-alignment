@@ -1,5 +1,5 @@
 <?php
-//passes:Default, AlignDoubleSlashComments
+// passes:Default, AlignDoubleSlashComments
 function a(
     TypeA $a,   // Comment 1
     TypeBB $b,  // Comment 2

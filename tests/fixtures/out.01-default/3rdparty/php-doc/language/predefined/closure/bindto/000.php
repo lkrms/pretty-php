@@ -11,7 +11,7 @@ class A
 
     function getClosure()
     {
-        //returns closure bound to this object and scope
+        // returns closure bound to this object and scope
         return function () {
             return $this->val;
         };

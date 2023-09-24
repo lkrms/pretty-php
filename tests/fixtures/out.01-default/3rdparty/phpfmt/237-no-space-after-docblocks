@@ -1,5 +1,5 @@
 <?php
-//passes: Default,NoSpaceAfterPHPDocBlocks
+// passes: Default,NoSpaceAfterPHPDocBlocks
 
 /**
  * Some Dcc

@@ -1,5 +1,5 @@
 <?php
-//passes:AutoSemicolon
+// passes:AutoSemicolon
 
 $foo = round(
     bcdiv($obj->get('a')

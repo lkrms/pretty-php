@@ -1,5 +1,5 @@
 <?php
-//passes:Default,ReplaceIsNull
+// passes:Default,ReplaceIsNull
 
 if (is_null($a)) {
 }

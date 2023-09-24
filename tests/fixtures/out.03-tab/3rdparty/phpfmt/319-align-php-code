@@ -1,6 +1,6 @@
 <div>
 	<?php
-		//passes:AlignPHPCode
+		// passes:AlignPHPCode
 		echo 'a';
 		if ($a) {
 			echo $b;
@@ -10,7 +10,7 @@
 
 <div>
 	<?php
-		//passes:AlignPHPCode
+		// passes:AlignPHPCode
 		echo 'a';
 		if ($a) {
 			echo $b;
@@ -21,7 +21,7 @@
 
 <div>
 a	<?php
-//passes:AlignPHPCode
+// passes:AlignPHPCode
 echo 'a';
 if ($a) {
 	echo $b;

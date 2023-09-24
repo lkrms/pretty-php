@@ -1,5 +1,5 @@
 <?php
-//Passes:SpaceBetweenMethods,Default
+// Passes:SpaceBetweenMethods,Default
 class test
 {
 	public function upload()

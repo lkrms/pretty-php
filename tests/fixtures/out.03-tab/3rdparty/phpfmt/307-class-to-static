@@ -1,5 +1,5 @@
 <?php
-//passes:Default,ClassToStatic
+// passes:Default,ClassToStatic
 
 class SomeClass
 {

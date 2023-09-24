@@ -1,5 +1,5 @@
 <?php
-//passes:Default,ClassToSelf
+// passes:Default,ClassToSelf
 
 class SomeClass
 {

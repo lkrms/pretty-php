@@ -1,5 +1,5 @@
 <?php
-//passes:Default,ExtraCommaInArray
+// passes:Default,ExtraCommaInArray
 $x = 'literal'[
 	$x
 ];

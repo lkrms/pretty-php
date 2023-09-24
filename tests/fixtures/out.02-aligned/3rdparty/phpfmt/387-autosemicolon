@@ -1,5 +1,5 @@
 <?php
-//passes:AutoSemicolon
+// passes:AutoSemicolon
 
 $url = (
     isset($array['url'])

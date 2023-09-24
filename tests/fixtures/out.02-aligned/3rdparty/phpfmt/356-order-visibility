@@ -1,5 +1,5 @@
 <?php
-//passes:Default,OrderMethodAndVisibility
+// passes:Default,OrderMethodAndVisibility
 class A
 {
     public function d() {}

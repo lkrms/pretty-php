@@ -1,5 +1,5 @@
 <?php
-//passes:Default,CakePHPStyle
+// passes:Default,CakePHPStyle
 class A
 {
     public function __construct() {}

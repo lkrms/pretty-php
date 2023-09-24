@@ -1,5 +1,5 @@
 <?php
-//passes:SettersAndGettersPass,Default
+// passes:SettersAndGettersPass,Default
 
 namespace Spinen\ConnectWiseApi\Wrappers\ActivityApi;
 

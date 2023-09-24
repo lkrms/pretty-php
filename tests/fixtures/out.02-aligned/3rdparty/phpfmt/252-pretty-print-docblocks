@@ -1,5 +1,5 @@
 <?php
-//passes:PrettyPrintDocBlocks,Default
+// passes:PrettyPrintDocBlocks,Default
 
 /**
  * description

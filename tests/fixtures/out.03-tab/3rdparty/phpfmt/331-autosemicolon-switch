@@ -1,5 +1,5 @@
 <?php
-//passes:Default,AutoSemicolon
+// passes:Default,AutoSemicolon
 switch ($object) {
 	case 'song':
 		echo 'sounds cool';

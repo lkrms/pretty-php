@@ -1,5 +1,5 @@
 <?php
-//passes:Default,AutoSemicolon
+// passes:Default,AutoSemicolon
 $one = a->b
     ->c;
 

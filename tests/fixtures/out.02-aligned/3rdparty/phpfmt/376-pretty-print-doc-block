@@ -1,5 +1,5 @@
 <?php
-//passes:PrettyPrintDocBlocks
+// passes:PrettyPrintDocBlocks
 
 /**
  * This is a test

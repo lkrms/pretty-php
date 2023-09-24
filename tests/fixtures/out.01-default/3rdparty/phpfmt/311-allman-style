@@ -1,5 +1,5 @@
 <?php
-//passes:Default, AllmanStyleBraces
+// passes:Default, AllmanStyleBraces
 switch (1) {
     case 'value':
         if (1) {
@@ -12,15 +12,15 @@ switch (1) {
         }
 
         foreach ($variable as $key => $value) {
-            # code...
+            // code...
         }
 
         while (false) {
-            # code...
+            // code...
         }
 
         do {
-            # code...
+            // code...
         } while (false);
         break;
 

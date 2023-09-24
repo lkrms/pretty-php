@@ -1,5 +1,5 @@
 <?php
-//passes:AddMissingParentheses
+// passes:AddMissingParentheses
 $g = new G(
 	new G,
 	new G

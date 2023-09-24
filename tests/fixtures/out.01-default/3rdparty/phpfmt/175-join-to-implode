@@ -1,5 +1,5 @@
 <?php
-//passes:JoinToImplode,Default
+// passes:JoinToImplode,Default
 $str = join(',', $arr);
 
 $a = new stdClass();

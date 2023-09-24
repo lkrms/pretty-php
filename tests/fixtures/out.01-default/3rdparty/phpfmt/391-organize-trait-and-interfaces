@@ -1,5 +1,5 @@
 <?php
-//passes:OrganizeClass
+// passes:OrganizeClass
 
 interface Foo
 {

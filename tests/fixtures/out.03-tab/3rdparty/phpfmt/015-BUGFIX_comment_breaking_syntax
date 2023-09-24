@@ -26,7 +26,7 @@ class Test
 			->set_needed(CONSTANT_BAG::R)
 			->set_needed(CONSTANT_BAG::R)
 			->set_needed(CONSTANT_BAG::E)
-			->set_needed(CONSTANT_BAG::L)  //TODO: Remove this need
+			->set_needed(CONSTANT_BAG::L)  // TODO: Remove this need
 			->set_needed(CONSTANT_BAG::G, StaticCLass::group_content());
 		return $loader;
 	}

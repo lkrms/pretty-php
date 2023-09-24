@@ -1,5 +1,5 @@
 <?php
-//passes:GeneratePHPDoc, Default
+// passes:GeneratePHPDoc, Default
 
 class Abc
 {

@@ -1,5 +1,5 @@
 <?php
-//passes:TightConcat
+// passes:TightConcat
 throw new \InvalidArgumentException('a '
     . 'b. '
     . 'c '

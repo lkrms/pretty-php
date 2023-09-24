@@ -1,5 +1,5 @@
 <?php
-//passes:StripNewlineAfterClassOpen,StripNewlineAfterCurlyOpen,StripSpaceWithinControlStructures
+// passes:StripNewlineAfterClassOpen,StripNewlineAfterCurlyOpen,StripSpaceWithinControlStructures
 
 namespace Test;
 

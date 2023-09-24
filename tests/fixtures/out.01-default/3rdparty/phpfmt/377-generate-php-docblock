@@ -10,4 +10,4 @@ class BlogController
     }
 }
 
-//passes:GeneratePHPDoc
+// passes:GeneratePHPDoc

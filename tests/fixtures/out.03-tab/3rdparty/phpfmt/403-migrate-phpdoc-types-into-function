@@ -1,5 +1,5 @@
 <?php
-//passes:PHPDocTypesToFunctionTypehint
+// passes:PHPDocTypesToFunctionTypehint
 
 /**
  * @param int $a
