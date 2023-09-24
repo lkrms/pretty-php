@@ -10,7 +10,7 @@ use Lkrms\PrettyPHP\Filter\Contract\Filter;
  *
  * @api
  */
-final class RemoveComments implements Filter
+final class TruncateComments implements Filter
 {
     use ExtensionTrait;
 
