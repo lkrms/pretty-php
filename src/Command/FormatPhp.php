@@ -819,7 +819,7 @@ EOF,
             if (!Env::debug()) {
                 Env::debug(true);
             }
-            $this->App->logConsoleMessages();
+            $this->App->logOutput();
         }
 
         if ($this->ReportTimers) {
