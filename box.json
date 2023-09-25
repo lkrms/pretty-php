@@ -19,8 +19,7 @@
                 "/^(?:[^\\/]+\\/){2}(?:tests?(?:_|\\b).*|docs?|apigen)\\//i",
                 "/^(?:[^\\/]+\\/){2}(?:phpunit|phpstan)\\b[^\\/]+$/i",
                 "/^lkrms\\/util\\/(bin|lib|scripts|src\\/Sync)/",
-                "/^lkrms\\/dice\\/src\\/(?!Dice.*\\.php$)/",
-                "/^filp\\/whoops\\/src\\/Whoops\\/Resources\\/(css|js|views)\\//"
+                "/^lkrms\\/dice\\/src\\/(?!Dice.*\\.php$)/"
             ]
         }
     ],
