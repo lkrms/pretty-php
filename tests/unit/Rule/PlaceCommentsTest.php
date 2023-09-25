@@ -91,10 +91,9 @@ PHP,
                 <<<'PHP'
 <?php
 if (true) {
-    /**********
-      A multi-line "docblock" with an empty line and no leading asterisks
-
-     **********/
+    /*
+     * A multi-line "docblock" with an empty line and no leading asterisks
+     */
 }
 
 PHP,
@@ -113,8 +112,7 @@ PHP,
 <?php
 if (true) {
     /*
-      A multi-line comment with an empty line and no leading asterisks
-
+     * A multi-line comment with an empty line and no leading asterisks
      */
 }
 

@@ -27,9 +27,11 @@ final class SortImportsTest extends \Lkrms\PrettyPHP\Tests\TestCase
             'with comments #1' => [
                 <<<'PHP'
 <?php
-use Alpha;    /* One
+use Alpha;    /*
+               * One
                * multi-line
-               * comment */
+               * comment
+               */
 use Bravo;    // A one-line comment
 use Charlie;  // Multiple
               // one-line comments

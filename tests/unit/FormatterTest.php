@@ -97,10 +97,12 @@ PHP,
  * leading asterisk
  * 	leading asterisk and tab
  * 	leading asterisk, space and tab
+ * trailing space:
  *
  *
  * no leading asterisk
- * leading tab and no leading asterisk
+ *
+ * 	leading tab and no leading asterisk
  */
 
 PHP,
@@ -111,9 +113,11 @@ PHP,
 *leading asterisk
 *	leading asterisk and tab
 * 	leading asterisk, space and tab
+* trailing space:
 * 
 *
 no leading asterisk
+
 	leading tab and no leading asterisk
 
   */
@@ -161,11 +165,15 @@ PHP,
 
 /**
  * * <== look, it's an asterisk in a summary
+ *
+ * * <== and another in a description
+ *
+ * (There's one at the end, too.)
+ *
+ * *
  */
 
-/**
- *
- */
+/** */
 
 PHP,
                 <<<'PHP'
@@ -210,9 +218,120 @@ comment */
 /**
  * * <== look, it's an asterisk in a summary
  *
+ * * <== and another in a description
+ *
+ * (There's one at the end, too.)
+
+ * *
  */
 
 /**
+*/
+PHP,
+            ],
+            'C comment' => [
+                <<<'PHP'
+<?php
+
+/*
+ * comment
+ */
+
+/*
+ * comment
+ */
+
+/*
+ * comment
+ */
+
+/*
+ * comment
+ */
+
+/*
+ * comment
+ */
+
+/*
+ * comment
+ */
+
+/*
+ * comment
+ */
+
+/*
+ * comment
+ */
+
+/*
+ * @return foo::*
+ */
+
+/*
+ * * <== look, it's an asterisk in a comment
+ *
+ * * <== and another
+ *
+ * (There's one at the end, too.)
+ *
+ * *
+ */
+
+/* */
+
+PHP,
+                <<<'PHP'
+<?php
+
+/*
+ *
+ * comment
+ */
+
+/*
+ * comment
+ *
+ */
+
+/*
+ *
+ * comment
+ *
+ */
+
+/* comment
+ */
+
+/*
+ * comment */
+
+/*
+comment */
+
+/*
+ comment */
+
+/*
+ * comment **/
+
+/*
+ *
+ * @return foo::*
+ */
+
+/*
+ * * <== look, it's an asterisk in a comment
+ *
+ * * <== and another
+ *
+ * (There's one at the end, too.)
+
+ * *
+ */
+
+/*
 */
 PHP,
             ],
