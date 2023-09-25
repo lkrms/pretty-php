@@ -720,9 +720,6 @@ class Token extends PhpToken implements JsonSerializable
         return $this->_prevSiblingsWhile(true, ...$types);
     }
 
-    /**
-     *
-     */
     private function _prevSiblingsWhile(bool $includeToken = false, int ...$types): TokenCollection
     {
         $tokens = new TokenCollection();
@@ -753,9 +750,6 @@ class Token extends PhpToken implements JsonSerializable
         return $this->_nextSiblingsWhile(true, ...$types);
     }
 
-    /**
-     *
-     */
     private function _nextSiblingsWhile(bool $includeToken = false, int ...$types): TokenCollection
     {
         $tokens = new TokenCollection();
@@ -793,9 +787,6 @@ class Token extends PhpToken implements JsonSerializable
         return $this->_parentsWhile(true, ...$types);
     }
 
-    /**
-     *
-     */
     private function _parentsWhile(bool $includeToken = false, int ...$types): TokenCollection
     {
         $tokens = new TokenCollection();
@@ -1190,9 +1181,6 @@ class Token extends PhpToken implements JsonSerializable
         return $current;
     }
 
-    /**
-     *
-     */
     final public function adjacent(int ...$types): ?Token
     {
         $current = $this->ClosedBy ?: $this;
@@ -1614,9 +1602,6 @@ class Token extends PhpToken implements JsonSerializable
             ]);
     }
 
-    /**
-     *
-     */
     public function isDeclaration(int ...$types): bool
     {
         if (!$this->Expression) {
