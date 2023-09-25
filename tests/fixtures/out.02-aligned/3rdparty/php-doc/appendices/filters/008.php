@@ -10,10 +10,10 @@ fclose($fp);
 
 echo 'The compressed file is ' . filesize('test.deflated') . " bytes long.\n";
 
-/* Generates output:
-
-The original text is 70 characters long.
-The compressed file is 56 bytes long.
-
+/*
+ * Generates output:
+ *
+ * The original text is 70 characters long.
+ * The compressed file is 56 bytes long.
  */
 ?>

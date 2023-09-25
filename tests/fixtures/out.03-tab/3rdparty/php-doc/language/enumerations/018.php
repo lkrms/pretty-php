@@ -12,14 +12,15 @@ enum Baz: int
 print_r(Foo::Bar);
 print_r(Baz::Beep);
 
-/* Produces
-
-Foo Enum (
-    [name] => Bar
-)
-Baz Enum:int {
-    [name] => Beep
-    [value] => 5
-}
-*/
+/*
+ * Produces
+ *
+ * Foo Enum (
+ *     [name] => Bar
+ * )
+ * Baz Enum:int {
+ *     [name] => Beep
+ *     [value] => 5
+ * }
+ */
 ?>

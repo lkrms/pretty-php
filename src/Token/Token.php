@@ -720,9 +720,6 @@ class Token extends PhpToken implements JsonSerializable
         return $this->_prevSiblingsWhile(true, ...$types);
     }
 
-    /**
-     *
-     */
     private function _prevSiblingsWhile(bool $includeToken = false, int ...$types): TokenCollection
     {
         $tokens = new TokenCollection();
@@ -753,9 +750,6 @@ class Token extends PhpToken implements JsonSerializable
         return $this->_nextSiblingsWhile(true, ...$types);
     }
 
-    /**
-     *
-     */
     private function _nextSiblingsWhile(bool $includeToken = false, int ...$types): TokenCollection
     {
         $tokens = new TokenCollection();
@@ -793,9 +787,6 @@ class Token extends PhpToken implements JsonSerializable
         return $this->_parentsWhile(true, ...$types);
     }
 
-    /**
-     *
-     */
     private function _parentsWhile(bool $includeToken = false, int ...$types): TokenCollection
     {
         $tokens = new TokenCollection();
@@ -1190,9 +1181,6 @@ class Token extends PhpToken implements JsonSerializable
         return $current;
     }
 
-    /**
-     *
-     */
     final public function adjacent(int ...$types): ?Token
     {
         $current = $this->ClosedBy ?: $this;
@@ -1614,9 +1602,6 @@ class Token extends PhpToken implements JsonSerializable
             ]);
     }
 
-    /**
-     *
-     */
     public function isDeclaration(int ...$types): bool
     {
         if (!$this->Expression) {
@@ -1816,15 +1801,14 @@ class Token extends PhpToken implements JsonSerializable
 
     private function renderComment(bool $softTabs): string
     {
-        $text = $this->text;
-        if ($this->ExpandedText !== null) {
-            /** @todo Guess input tab size and use it instead */
-            $text = Convert::expandLeadingTabs(
-                $text, $this->Formatter->TabSize, !$this->wasFirstOnLine(), $this->column
-            );
-        }
-
-        if ($this->id === T_COMMENT && Pcre::match('/\n\h*+(?!\*)\S/', $text)) {
+        // If this is a C-style comment where at least one line starts with a
+        // character other than "*", and neither delimiter is on its own line,
+        // reindent it to preserve alignment
+        if ($this->id === T_COMMENT &&
+                Pcre::match('/\n\h*+(?!\*)\S/', $this->text) &&
+                Pcre::match('/^\/\*+\h*+(?!\*)\S/', $this->text) &&
+                Pcre::match('/\S(?<!\*)\h*+\*\//', $this->text)) {
+            $text = $this->maybeExpandTabs();
             $delta = $this->OutputColumn - $this->column;
             /* Don't reindent if the comment hasn't moved, or if it has text in
 column 1 despite starting in column 2 or above (like this comment) */
@@ -1837,7 +1821,7 @@ column 1 despite starting in column 2 or above (like this comment) */
             if ($delta < 0) {
                 // Don't deindent if any non-empty lines have insufficient
                 // whitespace
-                if (Pcre::match("/\\n(?!{$spaces}|\\n)/", $text)) {
+                if (Pcre::match("/\\n(?!{$spaces}|\h*+\\n)/", $text)) {
                     return $this->maybeUnexpandTabs($text, $softTabs);
                 }
                 return $this->maybeUnexpandTabs(str_replace("\n" . $spaces, "\n", $text), $softTabs);
@@ -1856,33 +1840,98 @@ column 1 despite starting in column 2 or above (like this comment) */
                     + $this->Padding);
         }
 
-        // Normalise the start and end of multi-line docblocks as per PSR-5
+        // Preserve indentation in comments where at least one line starts with
+        // a character other than "*"
+        $asterisk = ' *';
+        $preserveAsterisk = false;
+        if (Pcre::match('/\n\h*+(?!\*)\S/', $this->text)) {
+            if (Pcre::match('/^(\/\*++\h*+)(?!\*)\S/', $this->ExpandedText ?? $this->text, $matches)) {
+                $deindent = $this->column - 1 + strlen($matches[1]);
+            }
+            if (Pcre::matchAll('/^(?!\A)(\h*)(?!\*)\S/m', $this->ExpandedText ?? $this->text, $matches, PREG_SET_ORDER)) {
+                foreach ($matches as $match) {
+                    $length = strlen($match[1]);
+                    $deindent = min($deindent ?? $length, $length);
+                }
+            }
+
+            // If tabs don't appear first in every line where tabs and spaces
+            // are combined for indentation, expand tabs to spaces
+            $text = Pcre::match('/\n(?=\h)(?!\t* *(?!\h))/', $this->text)
+                ? $this->maybeExpandTabs()
+                : $this->text;
+
+            if ($deindent ?? null) {
+                $tabs = (int) ($deindent / $this->Formatter->TabSize);
+                $spaces = $deindent % $this->Formatter->TabSize;
+                $regex = ($tabs
+                    ? '(?:\t|' . str_repeat(' ', $this->Formatter->TabSize) . "){{$tabs}}"
+                    : '') . str_repeat(' ', $spaces);
+                // If every non-blank inner line was deindented, assume any
+                // leading asterisks are part of the content
+                if (!Pcre::matchAll("/\\n(?!\h*(?:$regex(?!\h)|(\*+\/)?\$))/m", $text)) {
+                    $asterisk = '';
+                    $preserveAsterisk = true;
+                }
+                $text = Pcre::replace("/\\n(\h*)$regex(?!\h)/", "\n\$1", $text);
+            }
+        } elseif (!Pcre::match('/(?<!\h\*)\h*(?!\z)$/m', $this->text)) {
+            // In comments where every line starts with "*" and ends with "\h*",
+            // strip the trailing asterisks
+            $text = Pcre::replace('/\h+\*+\h*(?!\z)$/m', '', $this->text, -1, $count);
+            if ($count < 2) {
+                $text = $this->text;
+            }
+        } else {
+            $text = $this->text;
+        }
+
+        // Normalise the start and end of multi-line comments as per PSR-5
         if ($this->id === T_DOC_COMMENT) {
             $text = Pcre::replace(
                 ['/^\/\*\*(?:\n\h*+\*|\s)*(?!\/$)/', '/(?<!^\/|^\/\*|^\/\*\*)(?:\n\h*+\*|\s)*\*+\/$/'],
-                ["/**\n *", $indent . ' */'],
-                $text
+                ["/**\n$asterisk", $indent . ' */'],
+                $text,
             );
         } else {
             $text = Pcre::replace(
-                '/\n\h*+(\*++\/)$/',
-                $indent . ' $1',
-                $text
+                ['/^\/\*+(?:\n\h*+\*|\s)*(?!\/$)/', '/(?<!^\/|^\/\*)(?:\n\h*+\*|\s)*\*+\/$/'],
+                ["/*\n$asterisk", $indent . ' */'],
+                $text,
             );
         }
 
         // Add or replace " * " (" *" if the line is otherwise empty) at the
-        // start of every line, preserving existing spaces after asterisks, and
-        // remove trailing whitespace from each line
+        // start of every line, preserving existing spaces after asterisks, then
+        // remove trailing whitespace from each line and collapse empty comments
+        // to one line
         return Pcre::replace([
-            '/\n\h*+(?:\* |\*(?!\/)(?=[\h\S])|(?=[^\s*]))/',
-            '/\n\h*+\*?$/m',
+            $preserveAsterisk
+                ? '/\n(\h*+)(?!\*\/)(?=\S)/'
+                : '/\n(?:\h*+\* |\h*+\*(?!\/)(?=[\h\S])|(\h*+)(?=[^\s*]))/',
+            $preserveAsterisk
+                ? '/\n\h*+$/m'
+                : '/\n\h*+\*?$/m',
             '/\h++$/m',
+            '/^(\/\*\*?)\n(?:\h+\*\n)*\h+(\*\/)$/',
         ], [
-            $indent . ' * ',
+            $indent . ' * $1',
             $indent . ' *',
             '',
+            '$1 $2',
         ], $text);
+    }
+
+    private function maybeExpandTabs(): string
+    {
+        if ($this->ExpandedText === null) {
+            return $this->text;
+        }
+
+        /** @todo Guess input tab size and use it instead */
+        return Convert::expandLeadingTabs(
+            $this->text, $this->Formatter->TabSize, !$this->wasFirstOnLine(), $this->column
+        );
     }
 
     private function maybeUnexpandTabs(string $text, bool $softTabs): string
