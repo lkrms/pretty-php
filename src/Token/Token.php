@@ -1889,13 +1889,13 @@ column 1 despite starting in column 2 or above (like this comment) */
         // Normalise the start and end of multi-line comments as per PSR-5
         if ($this->id === T_DOC_COMMENT) {
             $text = Pcre::replace(
-                ['/^\/\*\*(?:\n\h*+\*|\s)*(?!\/$)/', '/(?<!^\/|^\/\*|^\/\*\*)(?:\n\h*+\*|\s)*\*+\/$/'],
+                ['/^\/\*\*(?:\n\h*+\*|\s)*(?!\/)/', '/(?<!^\/|^\/\*|^\/\*\*)(?:\n\h*+\*|\s)*\*+\/$/'],
                 ["/**\n$asterisk", $indent . ' */'],
                 $text,
             );
         } else {
             $text = Pcre::replace(
-                ['/^\/\*+(?:\n\h*+\*|\s)*(?!\/$)/', '/(?<!^\/|^\/\*)(?:\n\h*+\*|\s)*\*+\/$/'],
+                ['/^\/\*+(?:\n\h*+\*|\s)*(?!\/)/', '/(?<!^\/|^\/\*)(?:\n\h*+\*|\s)*\*+\/$/'],
                 ["/*\n$asterisk", $indent . ' */'],
                 $text,
             );
