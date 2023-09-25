@@ -10,10 +10,10 @@ fclose($fp);
 
 echo 'The compressed file is ' . filesize('LICENSE.compressed') . " bytes long.\n";
 
-/* Generates output:
-
-The original file is 3288 bytes long.
-The compressed file is 1488 bytes long.
-
+/*
+ * Generates output:
+ *
+ * The original file is 3288 bytes long.
+ * The compressed file is 1488 bytes long.
  */
 ?>

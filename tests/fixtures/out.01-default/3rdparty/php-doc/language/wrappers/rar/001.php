@@ -11,7 +11,9 @@ $stream = fopen('rar://'
         )
     ));
 var_dump(stream_get_contents($stream));
-/* creation and last access date is opt-in in WinRAR, hence most
- * files don't have them */
+/*
+ * creation and last access date is opt-in in WinRAR, hence most
+ * files don't have them
+ */
 var_dump(fstat($stream));
 ?>

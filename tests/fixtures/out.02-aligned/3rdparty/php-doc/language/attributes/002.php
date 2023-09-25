@@ -27,13 +27,13 @@ function dumpAttributeData($reflection)
 
 dumpAttributeData(new ReflectionClass(Thing::class));
 /*
-string(11) "MyAttribute"
-array(1) {
-  ["value"]=>
-  int(1234)
-}
-object(MyAttribute)#3 (1) {
-  ["value"]=>
-  int(1234)
-}
-*/
+ * string(11) "MyAttribute"
+ * array(1) {
+ *   ["value"]=>
+ *   int(1234)
+ * }
+ * object(MyAttribute)#3 (1) {
+ *   ["value"]=>
+ *   int(1234)
+ * }
+ */

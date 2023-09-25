@@ -15,8 +15,10 @@ class A
 
 class B extends A
 {
-	/* foo() will be copied to B, hence its scope will still be A and
-	 * the call be successful */
+	/*
+	 * foo() will be copied to B, hence its scope will still be A and
+	 * the call be successful
+	 */
 }
 
 class C extends A

@@ -14,14 +14,14 @@ echo "The original text was:\n";
 /* Use readfile and zlib.inflate to decompress on the fly */
 readfile('php://filter/zlib.inflate/resource=test.deflated');
 
-/* Generates output:
-
-The original text is 70 characters long.
-The compressed file is 56 bytes long.
-The original text was:
-This is a test.
-This is only a test.
-This is not an important string.
-
+/*
+ * Generates output:
+ *
+ * The original text is 70 characters long.
+ * The compressed file is 56 bytes long.
+ * The original text was:
+ * This is a test.
+ * This is only a test.
+ * This is not an important string.
  */
 ?>
