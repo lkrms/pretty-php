@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "apigen/**"
+      - "**/apigen/**"
       - "src/**"
 
 concurrency:
@@ -27,15 +27,27 @@ jobs:
           php-version: "8.2"
           coverage: none
 
+      - name: Get Composer cache directory
+        id: get-composer-cache
+        shell: bash
+        run: printf 'cache_dir=%s\n' "$(composer config cache-files-dir)" >>"$GITHUB_OUTPUT"
+
+      - name: Cache PHP dependencies
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.get-composer-cache.outputs.cache_dir }}
+          key: composer-cache-${{ runner.os }}-${{ hashFiles('**/composer.json', '**/composer.lock') }}
+          restore-keys: composer-cache-${{ runner.os }}-
+
       - name: Install dependencies
         run: composer install --no-interaction --no-progress
 
       - name: Install ApiGen and its dependencies
-        working-directory: apigen
+        working-directory: tools/apigen
         run: composer install --no-interaction --no-progress
 
       - name: Run ApiGen
-        run: apigen/vendor/bin/apigen -c apigen/apigen.neon --output .ci/docs/api
+        run: tools/apigen/vendor/bin/apigen -c tools/apigen/apigen.neon --output .ci/docs/api --verbose
 
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v1

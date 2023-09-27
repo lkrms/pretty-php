@@ -556,7 +556,7 @@ EOF)
 Ignore the position of newlines in the input.
 
 This option cannot be overridden by configuration file settings (see
-___CONFIGURATION___ below). Use `--disable=preserve-newlines` for the same
+`CONFIGURATION` below). Use `--disable=preserve-newlines` for the same
 effect without overriding configuration files.
 EOF)
                 ->bindTo($this->IgnoreNewlines),
@@ -640,7 +640,7 @@ Read formatting options from a JSON configuration file.
 Settings in <file> override formatting options given on the command line, and
 any configuration files that would usually apply to the input are ignored.
 
-See ___CONFIGURATION___ below.
+See `CONFIGURATION` below.
 EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->valueType(CliOptionValueType::FILE)
@@ -653,7 +653,7 @@ Ignore configuration files.
 Use this option to skip detection of configuration files that would otherwise
 take precedence over formatting options given on the command line.
 
-See ___CONFIGURATION___ below.
+See `CONFIGURATION` below.
 EOF)
                 ->bindTo($this->IgnoreConfigFiles),
             CliOption::build()
@@ -690,7 +690,7 @@ EOF)
                 ->description(<<<EOF
 Print a configuration file instead of formatting the input.
 
-See ___CONFIGURATION___ below.
+See `CONFIGURATION` below.
 EOF)
                 ->bindTo($this->PrintConfig),
             CliOption::build()
