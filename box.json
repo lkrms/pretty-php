@@ -16,10 +16,11 @@
             ],
             "notPath": [
                 "/^bin\\//",
-                "/^(?:[^\\/]+\\/){2}(?:tests?(?:_|\\b).*|docs?|apigen)\\//i",
+                "/^(?:[^\\/]+\\/){2}(?:tests?(?:_|\\b).*|docs?)\\//i",
                 "/^(?:[^\\/]+\\/){2}(?:phpunit|phpstan)\\b[^\\/]+$/i",
-                "/^lkrms\\/util\\/(bin|lib|scripts|src\\/Sync)/",
-                "/^lkrms\\/dice\\/src\\/(?!Dice.*\\.php$)/"
+                "/^lkrms\\/util\\/(?:bin|lib|scripts|tools|src\\/(?:Auth|Curler|Db|Sync))/",
+                "/^lkrms\\/dice\\/src\\/(?!Dice.*\\.php$)/",
+                "/^psr\\/log\\/Psr\\/Log\\/Test\\//"
             ]
         }
     ],

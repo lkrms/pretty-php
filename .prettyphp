@@ -3,10 +3,9 @@
         "bootstrap.php",
         "src",
         "bin",
-        "tests\/unit",
         "scripts",
-        "box",
-        "apigen"
+        "tests\/unit",
+        "tools\/apigen"
     ],
     "includeIfPhp": true,
     "enable": [

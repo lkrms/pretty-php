@@ -115,7 +115,7 @@ pretty-php - Format a PHP file
   Ignore the position of newlines in the input.
 
   This option cannot be overridden by configuration file settings (see
-  ***CONFIGURATION*** below). Use **`--disable=preserve-newlines`** for the same effect
+  **`CONFIGURATION`** below). Use **`--disable=preserve-newlines`** for the same effect
   without overriding configuration files.
 
 - **`-S`**, **`--no-simplify-strings`**
@@ -170,7 +170,7 @@ pretty-php - Format a PHP file
   and any configuration files that would usually apply to the input are
   ignored.
 
-  See ***CONFIGURATION*** below.
+  See **`CONFIGURATION`** below.
 
 - **`--no-config`**
 
@@ -180,7 +180,7 @@ pretty-php - Format a PHP file
   otherwise take precedence over formatting options given on the command
   line.
 
-  See ***CONFIGURATION*** below.
+  See **`CONFIGURATION`** below.
 
 - **`-o`**, **`--output`** *<u>file</u>*,...
 
@@ -203,7 +203,7 @@ pretty-php - Format a PHP file
 
   Print a configuration file instead of formatting the input.
 
-  See ***CONFIGURATION*** below.
+  See **`CONFIGURATION`** below.
 
 - **`-F`**, **`--stdin-filename`** *<u>path</u>*
 

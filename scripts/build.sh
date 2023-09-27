@@ -100,7 +100,7 @@ if ((FROM_GIT)); then
         die "error checking out $PACKAGE $VERSION"
 elif ((BUILD_PHAR)) && [[ $TEMP_DIR != "$REPO" ]]; then
     printf '==> copying %s working tree to %s\n' "$PACKAGE" "$TEMP_DIR"
-    cp -Lpr "$REPO"/!(box|build|vendor) "$TEMP_DIR" ||
+    cp -Lpr "$REPO"/!(build|tools|var|vendor) "$TEMP_DIR" ||
         die "error copying working tree to $TEMP_DIR"
 fi
 
@@ -108,14 +108,14 @@ if ((BUILD_PHAR)); then
     printf '==> installing %s production dependencies in %s\n' "$PACKAGE" "$TEMP_DIR"
     composer install -d "$TEMP_DIR" --no-plugins --no-interaction --no-dev
 
-    printf '==> installing humbug/box in %s/box\n' "$REPO"
-    composer install -d box --no-plugins --no-interaction
+    printf '==> installing humbug/box in %s/tools/box\n' "$REPO"
+    composer install -d tools/box --no-plugins --no-interaction
 
     printf "==> running 'box compile' in %s\\n" "$TEMP_DIR"
     { [[ -f $TEMP_DIR/box.json ]] ||
         [[ -f $TEMP_DIR/box.json.dist ]] ||
         cp -v "$REPO/box.json" "$TEMP_DIR/box.json"; } &&
-        php -d phar.readonly=off box/vendor/bin/box compile -d "$TEMP_DIR" --no-interaction
+        php -d phar.readonly=off tools/box/vendor/bin/box compile -d "$TEMP_DIR" --no-interaction
 
     printf '==> finalising build\n'
     TEMP_PHAR=("$TEMP_DIR/$DIST"/*.phar)
