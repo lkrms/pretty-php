@@ -13,18 +13,18 @@
   <a href="https://codecov.io/gh/lkrms/pretty-php"><img src="https://codecov.io/gh/lkrms/pretty-php/graph/badge.svg?token=W0KVZU718K" alt="Code Coverage" /></a>
 </p>
 
-----
+---
 
 `pretty-php` is a fast, deterministic, minimally configurable code formatter for
 PHP.
 
 Using `pretty-php` absolves you of responsibility for the whitespace in your
-code, leaving you with more time and mental energy to focus on the content.
+code, giving you freedom to do more important things with the time and mental
+energy you didn't realise you were spending on such minutiae.
 
-In addition to producing the smallest diffs possible, code formatted by
-`pretty-php` looks the same regardless of the project you're working on,
-eliminating visual dissonance and improving the speed and effectiveness of code
-review.
+Code formatted by `pretty-php` produces the smallest diffs possible and looks
+the same regardless of the project you're working on, eliminating visual
+dissonance and improving the speed and effectiveness of code review.
 
 You can use `pretty-php` as a standalone tool, run it from your [editor][], pair
 it with a linter, or add it to your CI workflows. Configuration is optional in
@@ -162,15 +162,15 @@ but exceptions are occasionally made and documented here.
 - **Newlines are preserved** \
   Line breaks adjacent to most operators, separators and brackets are copied
   from the input to the output. \
-  *`-N/--ignore-newlines` disables this behaviour*
+  _`-N/--ignore-newlines` disables this behaviour_
 
 - **Strings are normalised** \
   Single-quoted strings are preferred unless the alternative is shorter or
   backslash escapes are required. \
-  *`-S/--no-simplify-strings` disables this behaviour*
+  _`-S/--no-simplify-strings` disables this behaviour_
 
 - **Alias/import statements are grouped and sorted alphabetically** \
-  *`-M/--no-sort-imports` and `-m/--sort-imports-by` modify this behaviour*
+  _`-M/--no-sort-imports` and `-m/--sort-imports-by` modify this behaviour_
 
 - **Comments beside code are not moved to the next line**
 
@@ -179,7 +179,6 @@ but exceptions are occasionally made and documented here.
 ## License
 
 MIT
-
 
 [AUR]: https://aur.archlinux.org/packages/pretty-php
 [Composer]: https://getcomposer.org/
