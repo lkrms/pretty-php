@@ -1,0 +1,146 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "JSON schema for pretty-php configuration files",
+    "type": "object",
+    "properties": {
+        "src": {
+            "description": "Files and directories to format.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "uniqueItems": true
+        },
+        "include": {
+            "description": "A regular expression for pathnames to include when searching a directory.",
+            "type": "string",
+            "default": "/\\.php$/"
+        },
+        "exclude": {
+            "description": "A regular expression for pathnames to exclude when searching a directory.",
+            "type": "string",
+            "default": "/\\/(\\.git|\\.hg|\\.svn|_?build|dist|tests[-._0-9a-z]*|var|vendor)\\/$/i"
+        },
+        "includeIfPhp": {
+            "description": "A regular expression for pathnames to check for PHP code when searching a directory. The regex applied if null or true is: /(\\/|^)[^.]+$/",
+            "type": [
+                "boolean",
+                "string",
+                "null"
+            ],
+            "default": false
+        },
+        "insertSpaces": {
+            "description": "Indent using spaces.",
+            "type": "boolean",
+            "default": true
+        },
+        "tabSize": {
+            "description": "The size of a tab in spaces.",
+            "enum": [
+                2,
+                4,
+                8
+            ],
+            "default": 4
+        },
+        "eol": {
+            "description": "Set the output file's end-of-line sequence.",
+            "enum": [
+                "auto",
+                "platform",
+                "lf",
+                "crlf"
+            ],
+            "default": "auto"
+        },
+        "disable": {
+            "description": "Disable one of the default formatting rules.",
+            "type": "array",
+            "items": {
+                "enum": [
+                    "simplify-strings",
+                    "preserve-newlines",
+                    "declaration-spacing"
+                ]
+            },
+            "uniqueItems": true
+        },
+        "enable": {
+            "description": "Enable an optional formatting rule.",
+            "type": "array",
+            "items": {
+                "enum": [
+                    "align-comments",
+                    "align-chains",
+                    "align-fn",
+                    "align-ternary",
+                    "align-data",
+                    "align-lists",
+                    "blank-before-return",
+                    "strict-expressions",
+                    "strict-lists",
+                    "preserve-one-line"
+                ]
+            },
+            "uniqueItems": true
+        },
+        "oneTrueBraceStyle": {
+            "description": "Format braces using the One True Brace Style.",
+            "type": "boolean",
+            "default": false
+        },
+        "operatorsFirst": {
+            "description": "Place newlines before operators when splitting code over multiple lines.",
+            "type": "boolean",
+            "default": false
+        },
+        "operatorsLast": {
+            "description": "Place newlines after operators when splitting code over multiple lines.",
+            "type": "boolean",
+            "default": false
+        },
+        "noSimplifyStrings": {
+            "description": "Don't normalise escape sequences in strings, and don't replace single- and double-quoted strings with the most readable and economical syntax.",
+            "type": "boolean",
+            "default": false
+        },
+        "heredocIndent": {
+            "description": "Set the indentation level of heredocs and nowdocs.",
+            "enum": [
+                "none",
+                "line",
+                "mixed",
+                "hanging"
+            ],
+            "default": "mixed"
+        },
+        "sortImportsBy": {
+            "description": "Set the sort order for consecutive alias/import statements.",
+            "enum": [
+                "none",
+                "name",
+                "depth"
+            ],
+            "default": "depth"
+        },
+        "noSortImports": {
+            "description": "Don't sort or group consecutive alias/import statements.",
+            "type": "boolean",
+            "default": false
+        },
+        "psr12": {
+            "description": "Enforce strict PSR-12 / PER Coding Style compliance.",
+            "type": "boolean",
+            "default": false
+        },
+        "preset": {
+            "description": "Apply a formatting preset.",
+            "enum": [
+                "laravel",
+                "symfony",
+                "wordpress"
+            ]
+        }
+    }
+}

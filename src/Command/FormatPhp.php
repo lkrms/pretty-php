@@ -441,7 +441,8 @@ EOF)
                 ->short('P')
                 ->valueName('regex')
                 ->description(<<<EOF
-Include files that contain PHP code when searching a directory.
+A regular expression for pathnames to check for PHP code when searching a
+directory.
 
 Use this option to format files not matched by `-I/--include` if they have a
 pathname that matches <regex> and a PHP open tag ('\<?php') at the start of the
@@ -565,7 +566,7 @@ EOF)
                 ->short('S')
                 ->description(<<<EOF
 Don't normalise escape sequences in strings, and don't replace single- and
-double-quoted strings with the most readable and economical syntax
+double-quoted strings with the most readable and economical syntax.
 
 Equivalent to `--disable=simplify-strings`
 EOF)
