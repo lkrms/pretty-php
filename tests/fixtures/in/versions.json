@@ -52,7 +52,8 @@
         "standalone\/class-anonymous-attributes-01.php",
         "standalone\/class-anonymous-attributes-02.php",
         "standalone\/class-attributes-01.php",
-        "standalone\/match-01.php"
+        "standalone\/match-01.php",
+        "standalone\/native-types-02.php"
     ],
     "80100": [
         "3rdparty\/php-doc\/appendices\/migration81\/new-features\/000.php",
@@ -86,12 +87,14 @@
         "3rdparty\/php-fig\/per\/01-overview.php",
         "3rdparty\/php-fig\/per\/20-4.4-methods-and-functions.php",
         "3rdparty\/php-fig\/per\/57-9-enumerations.php",
-        "3rdparty\/php-fig\/per\/63-12.4-example.php"
+        "3rdparty\/php-fig\/per\/63-12.4-example.php",
+        "standalone\/native-types-03.php"
     ],
     "80200": [
         "3rdparty\/php-doc\/language\/oop5\/basic\/002.php",
         "3rdparty\/php-doc\/language\/oop5\/basic\/003.php",
         "3rdparty\/php-doc\/language\/oop5\/basic\/004.php",
-        "3rdparty\/php-fig\/per\/27-4.6-modifier-keywords.php"
+        "3rdparty\/php-fig\/per\/27-4.6-modifier-keywords.php",
+        "standalone\/native-types-04.php"
     ]
 }

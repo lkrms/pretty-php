@@ -47,7 +47,7 @@ use Lkrms\PrettyPHP\Rule\HeredocIndentation;
 use Lkrms\PrettyPHP\Rule\ListSpacing;
 use Lkrms\PrettyPHP\Rule\NormaliseComments;
 use Lkrms\PrettyPHP\Rule\NormaliseStrings;
-use Lkrms\PrettyPHP\Rule\OperatorSpaces;
+use Lkrms\PrettyPHP\Rule\OperatorSpacing;
 use Lkrms\PrettyPHP\Rule\PlaceBraces;
 use Lkrms\PrettyPHP\Rule\PlaceComments;
 use Lkrms\PrettyPHP\Rule\PreserveLineBreaks;
@@ -183,7 +183,7 @@ final class Formatter implements IReadable
         ProtectStrings::class,           // processToken  (40)
         StandardWhitespace::class,       // processToken  (80), callback (820)
         StatementSpacing::class,         // processToken  (80)
-        OperatorSpaces::class,           // processToken  (80)
+        OperatorSpacing::class,          // processToken  (80)
         ControlStructureSpacing::class,  // processToken  (83)
         PlaceComments::class,            // processToken  (90), beforeRender (997)
         PlaceBraces::class,              // processToken  (94), beforeRender (400)
@@ -712,7 +712,7 @@ final class Formatter implements IReadable
                     if (!($prev = $parent->_prevCode) ||
                         !(($prev->id === T_CLOSE_BRACE &&
                                 !$prev->isStructuralBrace()) ||
-                            ($prev->id === T_AMPERSAND &&
+                            ($prev->id === T_AND &&
                                 $prev->prevCode()->is([T_FN, T_FUNCTION])) ||
                             $prev->is([
                                 T_ARRAY,

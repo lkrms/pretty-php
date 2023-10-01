@@ -108,7 +108,7 @@ final class TokenType extends Dictionary
     ];
 
     public const OPERATOR_ERROR_CONTROL = [
-        T_AMPERSAND,  // @
+        T_AT,  // @
     ];
 
     public const OPERATOR_EXECUTION = [
@@ -469,6 +469,11 @@ final class TokenType extends Dictionary
         T_FUNCTION,
     ];
 
+    public const TYPE_DELIMITER = [
+        T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
+        T_OR,
+    ];
+
     public const AMPERSAND = [
         T_AND,
         T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
@@ -494,7 +499,6 @@ final class TokenType extends Dictionary
     {
         return array_combine($types, array_fill(0, count($types), true)) + [
             T_ABSTRACT => false,
-            T_AMPERSAND => false,
             T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG => false,
             T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG => false,
             T_AND => false,
@@ -502,6 +506,7 @@ final class TokenType extends Dictionary
             T_ARRAY => false,
             T_ARRAY_CAST => false,
             T_AS => false,
+            T_AT => false,
             T_ATTRIBUTE => false,
             T_ATTRIBUTE_COMMENT => false,
             T_BACKTICK => false,
