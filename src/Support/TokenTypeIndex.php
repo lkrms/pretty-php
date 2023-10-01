@@ -18,36 +18,52 @@ class TokenTypeIndex implements IImmutable
     }
 
     /**
+     * T_OPEN_BRACE, T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_CLOSE_BRACE,
+     * T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_ATTRIBUTE, T_CURLY_OPEN,
+     * T_DOLLAR_OPEN_CURLY_BRACES
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $Bracket;
 
     /**
+     * T_OPEN_BRACE, T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_CLOSE_BRACE,
+     * T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $StandardBracket;
 
     /**
+     * T_OPEN_BRACE, T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_ATTRIBUTE,
+     * T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $OpenBracket;
 
     /**
+     * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $CloseBracket;
 
     /**
+     * T_OPEN_BRACE, T_OPEN_BRACKET, T_OPEN_PARENTHESIS
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $StandardOpenBracket;
 
     /**
+     * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_END_ALT_SYNTAX
+     *
      * @readonly
      * @var array<int,bool>
      */
@@ -62,54 +78,72 @@ class TokenTypeIndex implements IImmutable
     public array $Expandable;
 
     /**
+     * T_DOUBLE_QUOTE, T_START_HEREDOC, T_END_HEREDOC, T_BACKTICK
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $StringDelimiter;
 
     /**
+     * T_ENCAPSED_AND_WHITESPACE, T_INLINE_HTML
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $DoNotModify;
 
     /**
+     * T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO, T_END_HEREDOC
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $DoNotModifyLeft;
 
     /**
+     * T_CLOSE_TAG, T_START_HEREDOC
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $DoNotModifyRight;
 
     /**
+     * Tokens that require leading and trailing spaces
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $AddSpaceAround;
 
     /**
+     * Tokens that require leading spaces
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $AddSpaceBefore;
 
     /**
+     * Tokens that require trailing spaces
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $AddSpaceAfter;
 
     /**
+     * Tokens that require suppression of leading spaces
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $SuppressSpaceBefore;
 
     /**
+     * Tokens that require suppression of trailing spaces
+     *
      * @readonly
      * @var array<int,bool>
      */
@@ -155,6 +189,12 @@ class TokenTypeIndex implements IImmutable
      * @readonly
      * @var array<int,bool>
      */
+    public array $UnaryPredecessor;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
     public array $AltSyntaxContinue;
 
     /**
@@ -162,6 +202,15 @@ class TokenTypeIndex implements IImmutable
      * @var array<int,bool>
      */
     public array $AltSyntaxEnd;
+
+    /**
+     * T_AND, T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
+     * T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $Ampersand;
 
     /**
      * @readonly
@@ -210,6 +259,12 @@ class TokenTypeIndex implements IImmutable
      * @var array<int,bool>
      */
     public array $NotCode;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $TypeDelimiter;
 
     /**
      * @readonly
@@ -447,8 +502,31 @@ class TokenTypeIndex implements IImmutable
             ...$expressionDelimiter,
         );
 
+        $this->UnaryPredecessor = TT::getIndex(
+            T_OPEN_BRACE,
+            T_OPEN_BRACKET,
+            T_OPEN_PARENTHESIS,
+            T_DOLLAR_OPEN_CURLY_BRACES,
+            T_AT,
+            T_BOOLEAN_AND,
+            T_BOOLEAN_OR,
+            T_COMMA,
+            T_CONCAT,
+            T_DOUBLE_ARROW,
+            T_ELLIPSIS,
+            T_SEMICOLON,
+            ...TT::OPERATOR_ARITHMETIC,
+            ...TT::OPERATOR_ASSIGNMENT,
+            ...TT::OPERATOR_BITWISE,
+            ...TT::OPERATOR_COMPARISON,
+            ...TT::OPERATOR_LOGICAL,
+            ...TT::CAST,
+            ...TT::KEYWORD,
+        );
+
         $this->AltSyntaxContinue = TT::getIndex(...TT::ALT_SYNTAX_CONTINUE);
         $this->AltSyntaxEnd = TT::getIndex(...TT::ALT_SYNTAX_END);
+        $this->Ampersand = TT::getIndex(...TT::AMPERSAND);
         $this->Chain = TT::getIndex(...TT::CHAIN);
         $this->ChainPart = TT::getIndex(...TT::CHAIN_PART);
         $this->DeclarationPart = TT::getIndex(...TT::DECLARATION_PART);
@@ -457,6 +535,7 @@ class TokenTypeIndex implements IImmutable
         $this->HasStatementWithOptionalBraces = TT::getIndex(...TT::HAS_STATEMENT_WITH_OPTIONAL_BRACES);
         $this->HasExpressionAndStatementWithOptionalBraces = TT::getIndex(...TT::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES);
         $this->NotCode = TT::getIndex(...TT::NOT_CODE);
+        $this->TypeDelimiter = TT::getIndex(...TT::TYPE_DELIMITER);
         $this->Visibility = TT::getIndex(...TT::VISIBILITY);
     }
 

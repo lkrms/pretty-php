@@ -119,7 +119,7 @@ final class CustomToken extends ConvertibleEnumeration
     /**
      * '@'
      */
-    public const T_AMPERSAND = T_AMPERSAND;
+    public const T_AT = T_AT;
 
     /**
      * '['
@@ -206,7 +206,7 @@ final class CustomToken extends ConvertibleEnumeration
         T_EQUAL => 'T_EQUAL',
         T_GREATER => 'T_GREATER',
         T_QUESTION => 'T_QUESTION',
-        T_AMPERSAND => 'T_AMPERSAND',
+        T_AT => 'T_AT',
         T_OPEN_BRACKET => 'T_OPEN_BRACKET',
         T_CLOSE_BRACKET => 'T_CLOSE_BRACKET',
         T_XOR => 'T_XOR',
@@ -251,7 +251,7 @@ final class CustomToken extends ConvertibleEnumeration
         'T_EQUAL' => T_EQUAL,
         'T_GREATER' => T_GREATER,
         'T_QUESTION' => T_QUESTION,
-        'T_AMPERSAND' => T_AMPERSAND,
+        'T_AT' => T_AT,
         'T_OPEN_BRACKET' => T_OPEN_BRACKET,
         'T_CLOSE_BRACKET' => T_CLOSE_BRACKET,
         'T_XOR' => T_XOR,

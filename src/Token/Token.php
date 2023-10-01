@@ -1328,11 +1328,6 @@ class Token extends PhpToken implements JsonSerializable
         return $this;
     }
 
-    public function sinceStartOfStatement(): TokenCollection
-    {
-        return $this->startOfStatement()->collect($this);
-    }
-
     /**
      * @api
      */
@@ -1572,34 +1567,13 @@ class Token extends PhpToken implements JsonSerializable
         if ($this->Expression === $this) {
             return true;
         }
-        if (!($prev = $this->_prevCode)) {
+
+        if (!$this->_prevCode) {
             return false;
         }
-        if ($prev->EndStatement === $prev) {
-            return true;
-        }
-        return $prev->IsTernaryOperator ||
-            $prev->is([
-                T_OPEN_BRACE,
-                T_OPEN_BRACKET,
-                T_OPEN_PARENTHESIS,
-                T_DOLLAR_OPEN_CURLY_BRACES,
-                T_COMMA,
-                T_DOUBLE_ARROW,
-                T_SEMICOLON,
-                T_BOOLEAN_AND,
-                T_BOOLEAN_OR,
-                T_AMPERSAND,
-                T_CONCAT,
-                T_ELLIPSIS,
-                ...TokenType::OPERATOR_ARITHMETIC,
-                ...TokenType::OPERATOR_ASSIGNMENT,
-                ...TokenType::OPERATOR_BITWISE,
-                ...TokenType::OPERATOR_COMPARISON,
-                ...TokenType::OPERATOR_LOGICAL,
-                ...TokenType::CAST,
-                ...TokenType::KEYWORD,
-            ]);
+
+        return $this->_prevCode->IsTernaryOperator ||
+            $this->TokenTypeIndex->UnaryPredecessor[$this->_prevCode->id];
     }
 
     public function isDeclaration(int ...$types): bool

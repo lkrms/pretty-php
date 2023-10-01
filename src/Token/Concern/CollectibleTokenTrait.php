@@ -269,6 +269,18 @@ trait CollectibleTokenTrait
         return $this->_nextSiblingsUntil($callback, true, $testToken);
     }
 
+    /**
+     * Get the token and its preceding tokens in the same statement, in document
+     * order
+     */
+    final public function sinceStartOfStatement(): TokenCollection
+    {
+        /** @var Token $this */
+        $statement = $this->Statement ?? $this;
+
+        return $statement->collect($this);
+    }
+
     private function _prevWhile(bool $includeToken, bool $testToken, int ...$types): TokenCollection
     {
         $tokens = new TokenCollection();

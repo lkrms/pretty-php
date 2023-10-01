@@ -134,7 +134,7 @@ define('T_QUESTION', 63);
 /**
  * '@'
  */
-define('T_AMPERSAND', 64);
+define('T_AT', 64);
 
 /**
  * '['
