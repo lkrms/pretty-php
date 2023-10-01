@@ -16,7 +16,7 @@ class MyClass
         ?MyClass &$nullableClassByRef,
         ?MyClass $nullableAndOptionalClass = null,
         string $optionalString = MyClass::MY_CONSTANT,
-        string&...$variadicByRef
+        string &...$variadicByRef
     ): ?MyClass {
         return null;
     }

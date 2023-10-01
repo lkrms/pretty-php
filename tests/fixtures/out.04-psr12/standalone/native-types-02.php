@@ -21,7 +21,7 @@ class MyClass
         string|MyClass|null $nullableUnion = 'literal',
         array|MyClass $optionalArrayUnion = ['key' => 'value'],
         string|MyClass|null &$nullableUnionByRef = null,
-        string&...$variadicByRef
+        string &...$variadicByRef
     ): MyClass|string|null {
         return null;
     }
