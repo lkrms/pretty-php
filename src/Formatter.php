@@ -373,15 +373,15 @@ final class Formatter implements IReadable
         int $flags = 0,
         ?TokenTypeIndex $tokenTypeIndex = null
     ) {
-        $this->Tab = $insertSpaces ? str_repeat(' ', $tabSize) : "\t";
-        $this->TabSize = $tabSize;
         $this->SoftTab = str_repeat(' ', $tabSize);
-        $this->TokenTypeIndex = $tokenTypeIndex ?: new TokenTypeIndex();
+        $this->Tab = $insertSpaces ? $this->SoftTab : "\t";
+        $this->TabSize = $tabSize;
+        $this->TokenTypeIndex = $tokenTypeIndex ?? new TokenTypeIndex();
 
-        $this->Debug = $flags & FormatterFlag::DEBUG || Env::debug();
-        $this->LogProgress = $this->Debug && $flags & FormatterFlag::LOG_PROGRESS;
+        $this->Debug = ($flags & FormatterFlag::DEBUG) || Env::debug();
+        $this->LogProgress = $this->Debug && ($flags & FormatterFlag::LOG_PROGRESS);
         $this->ReportCodeProblems = (bool) ($flags & FormatterFlag::REPORT_CODE_PROBLEMS);
-        $this->CollectCodeProblems = $this->ReportCodeProblems || $flags & FormatterFlag::COLLECT_CODE_PROBLEMS;
+        $this->CollectCodeProblems = $this->ReportCodeProblems || ($flags & FormatterFlag::COLLECT_CODE_PROBLEMS);
 
         // If using tabs for indentation, disable incompatible rules
         if (!$insertSpaces) {
@@ -430,7 +430,7 @@ final class Formatter implements IReadable
                 throw new LogicException(sprintf('Not a %s: %s', Rule::class, $_rule));
             }
             /** @var Rule $rule */
-            $rule = new $_rule($this);
+            $rule = (new $_rule($this))->prepare();
             $this->Rules[$_rule] = $rule;
             if ($rule instanceof TokenRule) {
                 $types = $rule->getTokenTypes();
@@ -486,7 +486,7 @@ final class Formatter implements IReadable
         $this->FormatFilters = array_combine(
             $filters,
             array_map(
-                fn(string $filter) => new $filter($this),
+                fn(string $filter) => (new $filter($this))->prepare(),
                 $filters
             )
         );
@@ -500,7 +500,7 @@ final class Formatter implements IReadable
             $comparisonFilters = array_combine(
                 self::COMPARISON_FILTERS,
                 array_map(
-                    fn(string $filter) => new $filter($this),
+                    fn(string $filter) => (new $filter($this))->prepare(),
                     self::COMPARISON_FILTERS
                 )
             )
@@ -717,6 +717,7 @@ final class Formatter implements IReadable
                             $prev->is([
                                 T_ARRAY,
                                 T_DECLARE,
+                                T_FOR,
                                 T_LIST,
                                 T_UNSET,
                                 T_USE,
@@ -745,11 +746,14 @@ final class Formatter implements IReadable
                     }
                     break;
             }
+            $delimiter = $parent->_prevCode && $parent->_prevCode->id === T_FOR
+                ? T_SEMICOLON
+                : T_COMMA;
             $items =
-                $parent->innerSiblings()
+                $parent->children()
                        ->filter(fn(Token $t, ?Token $next, ?Token $prev) =>
-                                    $t->id !== T_COMMA &&
-                                        (!$prev || $t->_prevCode->id === T_COMMA));
+                                    $t->id !== $delimiter &&
+                                        (!$prev || $t->_prevCode->id === $delimiter));
             if (!$items->count()) {
                 continue;
             }

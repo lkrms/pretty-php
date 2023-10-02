@@ -80,6 +80,59 @@ final class TokenCollection extends LooselyTypedCollection implements Stringable
     }
 
     /**
+     * @param array<int,bool> $index
+     */
+    public function hasOneFrom(array $index): bool
+    {
+        /** @var Token $token */
+        foreach ($this as $token) {
+            if ($index[$token->id]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param array<int,bool> $index
+     */
+    public function getAnyFrom(array $index): self
+    {
+        /** @var Token $token */
+        foreach ($this as $token) {
+            if ($index[$token->id]) {
+                $tokens[] = $token;
+            }
+        }
+        $instance = new self($tokens ?? []);
+        $instance->Collected = $this->Collected;
+
+        return $instance;
+    }
+
+    /**
+     * @param array<int,bool> $index
+     */
+    public function getFirstFrom(array $index): ?Token
+    {
+        /** @var Token $token */
+        foreach ($this as $token) {
+            if ($index[$token->id]) {
+                return $token;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param array<int,bool> $index
+     */
+    public function getLastFrom(array $index): ?Token
+    {
+        return $this->reverse()->getFirstFrom($index);
+    }
+
+    /**
      * @return int[]
      */
     public function getTypes(): array

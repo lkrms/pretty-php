@@ -15,8 +15,8 @@ enabled:
 
 And these are ignored:
 
-- ~~`--one-true-brace-style`~~
-- ~~`--no-sort-imports`~~
+- `--one-true-brace-style`
+- `--no-sort-imports`
 
 ## Rules
 
@@ -94,8 +94,8 @@ if ($foo || $bar) {
     baz();
 }
 if (
-    $foo
-    || $bar
+    $foo ||
+    $bar
 ) {
     baz();
 }
@@ -103,7 +103,8 @@ if (
 
 ### Arrow functions
 
-Arrow functions that break over multiple lines are arranged as per [PER Coding Style 2.0, section 7.1]:
+Arrow functions that break over multiple lines are arranged as per [PER Coding
+Style 2.0, section 7.1]:
 
 ```php
 <?php
@@ -156,15 +157,24 @@ $baz = <<<EOF
 
 Unconditional newlines are added after the opening bracket of vertical lists.
 
+### Exceptions
+
+Spaces are added between exceptions and `|` in `catch` blocks.
+
+> `pretty-php`'s default style collapses whitespace in this context for
+> consistency with union type formatting.
+
 ### Comments
 
 Comments beside the closing brace of a `class` / `interface` / `trait` / `enum`
 are moved to the next line.
 
-
 [PSR-12]: https://www.php-fig.org/psr/psr-12/
-[PSR-12, section 3]: https://www.php-fig.org/psr/psr-12/#3-declare-statements-namespace-and-import-statements
+[PSR-12, section 3]:
+  https://www.php-fig.org/psr/psr-12/#3-declare-statements-namespace-and-import-statements
 [PSR-12, section 5]: https://www.php-fig.org/psr/psr-12/#5-control-structures
 [PER Coding Style]: https://www.php-fig.org/per/coding-style/
-[PER Coding Style 2.0, section 7.1]: https://www.php-fig.org/per/coding-style/#71-short-closures
-[PER Coding Style 2.0, section 10]: https://www.php-fig.org/per/coding-style/#10-heredoc-and-nowdoc
+[PER Coding Style 2.0, section 7.1]:
+  https://www.php-fig.org/per/coding-style/#71-short-closures
+[PER Coding Style 2.0, section 10]:
+  https://www.php-fig.org/per/coding-style/#10-heredoc-and-nowdoc

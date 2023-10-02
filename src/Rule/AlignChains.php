@@ -39,7 +39,7 @@ final class AlignChains implements TokenRule
             return;
         }
 
-        $chain = $token->withNextSiblingsWhile(...TokenType::CHAIN_PART)
+        $chain = $token->withNextSiblingsWhile(false, ...TokenType::CHAIN_PART)
                        ->filter(fn(Token $t) => $this->TypeIndex->Chain[$t->id]);
 
         // If there's no `->` in the chain with a leading newline, do nothing
