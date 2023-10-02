@@ -18,9 +18,10 @@
 `pretty-php` is a fast, deterministic, minimally configurable code formatter for
 PHP.
 
-Using `pretty-php` absolves you of responsibility for the whitespace in your
-code, giving you freedom to do more important things with the time and mental
-energy you didn't realise you were spending on such minutiae.
+By using `pretty-php`, you are absolved of responsibility for the whitespace in
+your code. You can disengage from the minutiae of how code is formatted and are
+better able to focus on its content. You have more time and mental energy
+available for other things.
 
 Code formatted by `pretty-php` produces the smallest diffs possible and looks
 the same regardless of the project you're working on, eliminating visual
@@ -124,7 +125,7 @@ brew install lkrms/misc/pretty-php
 
 ## Usage
 
-Once installed, getting started with `pretty-php` is as simple as passing it
+Once installed, getting started with `pretty-php` is as simple as giving it
 something to format. For example, to format `bootstrap.php` and any PHP files in
 the `src` directory:
 
@@ -160,13 +161,13 @@ ignored, and nothing in the original file other than whitespace is changed"),
 but exceptions are occasionally made and documented here.
 
 - **Newlines are preserved** \
-  Line breaks adjacent to most operators, separators and brackets are copied
-  from the input to the output. \
+  Line breaks adjacent to most operators, separators and brackets are copied from
+  the input to the output. \
   _`-N/--ignore-newlines` disables this behaviour_
 
 - **Strings are normalised** \
-  Single-quoted strings are preferred unless the alternative is shorter or
-  backslash escapes are required. \
+  Single-quoted strings are preferred unless the alternative is shorter or backslash
+  escapes are required. \
   _`-S/--no-simplify-strings` disables this behaviour_
 
 - **Alias/import statements are grouped and sorted alphabetically** \
@@ -183,13 +184,16 @@ MIT
 [AUR]: https://aur.archlinux.org/packages/pretty-php
 [Composer]: https://getcomposer.org/
 [discuss]: https://github.com/lkrms/pretty-php/discussions
-[download]: https://github.com/lkrms/pretty-php/releases/latest/download/pretty-php.phar
+[download]:
+  https://github.com/lkrms/pretty-php/releases/latest/download/pretty-php.phar
 [editor]: #editor-integrations
-[formula]: https://github.com/lkrms/homebrew-misc/blob/main/Formula/pretty-php.rb
+[formula]:
+  https://github.com/lkrms/homebrew-misc/blob/main/Formula/pretty-php.rb
 [Homebrew]: https://brew.sh/
 [Open VSX Registry]: https://open-vsx.org/extension/lkrms/pretty-php
 [PER]: https://www.php-fig.org/per/coding-style/
 [PSR-12]: https://www.php-fig.org/psr/psr-12/
 [PSR-12 issue]: https://github.com/lkrms/pretty-php/issues/4
-[Visual Studio Marketplace]: https://marketplace.visualstudio.com/items?itemName=lkrms.pretty-php
+[Visual Studio Marketplace]:
+  https://marketplace.visualstudio.com/items?itemName=lkrms.pretty-php
 [vscode]: https://github.com/lkrms/vscode-pretty-php
