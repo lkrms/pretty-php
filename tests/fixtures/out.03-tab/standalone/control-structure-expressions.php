@@ -39,9 +39,7 @@ do {
 for (;;) {
 	baz($i);
 }
-for (;
-	;
-) {
+for (;;) {
 	baz($i);
 }
 for ($i = 0; $i < 10; $i++) {
@@ -57,10 +55,14 @@ for ($i = 0, $j = 0;
 	$i++) {
 	baz($i);
 }
-for ($i = 0, $j = 0,
+for ($i = 0,
+	$j = 0,
 	$k = 0;
+
 	$i < 10;
-	$i++, $j++) {
+
+	$i++,
+	$j++) {
 	baz($i);
 }
 for ((isset($i) ||
@@ -79,11 +81,15 @@ for ($i = 0, $j = 0, (isset($k) ||
 	$i++) {
 	baz($i);
 }
-for ($i = 0, $j = 0,
+for ($i = 0,
+	$j = 0,
 	(isset($k) ||
 		$k = 0);
+
 	$i < 10;
-	$i++, $j++) {
+
+	$i++,
+	$j++) {
 	baz($i);
 }
 foreach ($foo as $bar) {

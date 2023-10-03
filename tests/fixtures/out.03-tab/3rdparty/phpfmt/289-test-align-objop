@@ -4,11 +4,13 @@ class Aa
 {
 	public function c()
 	{
-		$this->methodName()
+		$this
+			->methodName()
 			->secondMethod()
 			->thirdMethod();
 
-		$a->app['scheduler'] = $this->getMockBuilder('somestring')
+		$a->app['scheduler'] = $this
+			->getMockBuilder('somestring')
 			->setConstructorArgs(array($this->app))
 			->setMethods(array('getCurrentLongIp'))
 			->getMock();

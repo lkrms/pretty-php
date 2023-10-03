@@ -3,7 +3,8 @@ $class = new ClassObject('Constant');
 $method = $class->getMethod($name);
 $method->setAccessible(true);
 
-$m->setAccessible(true)
+$m
+    ->setAccessible(true)
     ->setName($name);;
 
 $m

@@ -5,13 +5,15 @@ class SomeClass
 {
     public function theMethod()
     {
-        $this->methodA()
+        $this
+            ->methodA()
             ->methodB();
     }
 
     public function theMethod2()
     {
-        $this->methodA()
+        $this
+            ->methodA()
             ->methodB($this->nestedMethodC());
     }
 }

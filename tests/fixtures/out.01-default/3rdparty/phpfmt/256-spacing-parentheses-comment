@@ -1,5 +1,6 @@
 <?php
-$a = $b->foo()
+$a = $b
+    ->foo()
     ->bar()  // comment
     ->baz();
 
