@@ -119,7 +119,7 @@ final class DeclarationSpacing implements MultiTokenRule
 
             // Add a blank line between declarations and subsequent
             // non-declarations
-            if (!$token->EndStatement->nextCode()->skipAnySiblingsOf(
+            if (!$token->EndStatement->nextCode()->skipSiblingsOf(
                 T_ATTRIBUTE, T_ATTRIBUTE_COMMENT
             )->is([T_NULL, ...TokenType::DECLARATION]) &&
                     $token->EndStatement->next()->id !== T_CLOSE_TAG) {

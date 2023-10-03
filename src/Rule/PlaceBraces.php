@@ -140,7 +140,7 @@ final class PlaceBraces implements MultiTokenRule
             if (!$this->Formatter->OneTrueBraceStyle &&
                     $parts->hasOneOf(...TokenType::DECLARATION) &&
                     ($last = $parts->last())->id !== T_DECLARE &&
-                    $last->id !== T_FUNCTION) {
+                    $last->skipPrevSiblingsOf(...TokenType::AMPERSAND)->id !== T_FUNCTION) {
                 $start = $parts->first();
                 if ($start->id !== T_USE &&
                     ((!($prevCode = $start->_prevCode) ||

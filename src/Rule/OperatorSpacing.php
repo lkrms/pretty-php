@@ -61,7 +61,9 @@ final class OperatorSpacing implements MultiTokenRule
             if ($this->TypeIndex->Ampersand[$token->id] &&
                 $token->_next->IsCode &&
                 // `function &getValue()`
-                (($token->_prevCode && $token->_prevCode->id === T_FUNCTION) ||
+                (($token->_prevCode &&
+                    ($token->_prevCode->id === T_FUNCTION ||
+                        $token->_prevCode->id === T_FN)) ||
                     // `[&$variable]`, `$a = &getValue()`
                     $token->inUnaryContext() ||
                     // `function foo(&$bar)`, `function foo($bar, &...$baz)`

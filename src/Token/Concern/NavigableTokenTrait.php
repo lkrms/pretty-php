@@ -665,12 +665,29 @@ trait NavigableTokenTrait
      *
      * @return static
      */
-    final public function skipAnySiblingsOf(int $type, int ...$types)
+    final public function skipSiblingsOf(int $type, int ...$types)
     {
         array_unshift($types, $type);
         $t = $this->IsCode ? $this : $this->_nextCode;
         while ($t && $t->is($types)) {
             $t = $t->_nextSibling;
+        }
+        return $t ?: $this->null();
+    }
+
+    /**
+     * Skip to the previous sibling that is not one of the listed types
+     *
+     * The token returns itself if it satisfies the criteria.
+     *
+     * @return static
+     */
+    final public function skipPrevSiblingsOf(int $type, int ...$types)
+    {
+        array_unshift($types, $type);
+        $t = $this->IsCode ? $this : $this->_prevCode;
+        while ($t && $t->is($types)) {
+            $t = $t->_prevSibling;
         }
         return $t ?: $this->null();
     }

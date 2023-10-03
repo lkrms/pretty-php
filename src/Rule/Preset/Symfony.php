@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule\Preset;
 
+use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Rule\Contract\ListRule;
@@ -63,10 +64,7 @@ final class Symfony implements MultiTokenRule, ListRule
 
     public function processList(Token $owner, TokenCollection $items): void
     {
-        if ($owner->id !== T_OPEN_PARENTHESIS ||
-            !($owner->isDeclaration(T_FUNCTION) ||
-                (($prev = $owner->_prevCode) &&
-                    ($prev->id === T_FUNCTION || $prev->id === T_FN)))) {
+        if (!$owner->isParameterList()) {
             return;
         }
 

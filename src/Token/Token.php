@@ -936,7 +936,9 @@ class Token extends PhpToken implements JsonSerializable
             ($parts = $this->Expression->declarationParts())->has($this, true) &&
             $parts->hasOneOf(...TokenType::DECLARATION_TOP_LEVEL) &&
             // Exclude anonymous functions, which can move as needed
-            ($last = $parts->last())->id !== T_FUNCTION &&
+            ($last = $parts->last()->skipPrevSiblingsOf(
+                ...TokenType::AMPERSAND
+            ))->id !== T_FUNCTION &&
             // Anonymous classes are a special case where if there is a newline
             // before `class`, the first hanging indent in the declaration is
             // propagated to the whole class, and a subsequent indent for the
@@ -1479,19 +1481,21 @@ class Token extends PhpToken implements JsonSerializable
 
     public function isParameterList(): bool
     {
-        return $this->id === T_OPEN_PARENTHESIS &&
-            $this->_prevCode &&
-            ($this->_prevCode->id === T_FN ||
-                $this->prevOf(T_FUNCTION)->nextOf(T_OPEN_PARENTHESIS) === $this);
+        if ($this->id !== T_OPEN_PARENTHESIS || !$this->_prevCode) {
+            return false;
+        }
+
+        $prev = $this->_prevCode->skipPrevSiblingsOf(
+            T_STRING, T_READONLY, ...TokenType::AMPERSAND
+        );
+
+        return $prev->id === T_FUNCTION || $prev->id === T_FN;
     }
 
     public function inParameterList(): bool
     {
         return $this->Parent &&
-            $this->Parent->_prevCode &&
-            $this->Parent->id === T_OPEN_PARENTHESIS &&
-            ($this->Parent->_prevCode->id === T_FN ||
-                $this->Parent->prevOf(T_FUNCTION)->nextOf(T_OPEN_PARENTHESIS) === $this->Parent);
+            $this->Parent->isParameterList();
     }
 
     final public function getIndentDelta(Token $target): TokenIndentDelta
