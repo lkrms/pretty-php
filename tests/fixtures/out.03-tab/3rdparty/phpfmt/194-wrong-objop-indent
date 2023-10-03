@@ -1,11 +1,13 @@
 <?php
 function index()
 {
-	$obj->attribute
+	$obj
+		->attribute
 		->with(['a' => 'b'])
 		->into($var);
 
-	$obj->attribute
+	$obj
+		->attribute
 		->with()
 		->into($var);
 }
@@ -14,6 +16,7 @@ $obj
 	->with(['a' => 'b'])
 	->into($var);
 
-$obj->attribute
+$obj
+	->attribute
 	->with(['a' => 'b'])
 	->into($var);

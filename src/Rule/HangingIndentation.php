@@ -144,6 +144,16 @@ final class HangingIndentation implements MultiTokenRule
                 continue;
             }
 
+            // Suppress hanging indentation between aligned expressions in `for`
+            // loops
+            if ($parent &&
+                $parent->_prevCode &&
+                $parent->_prevCode->id === T_FOR &&
+                ($token->_prevCode->id === T_COMMA &&
+                    $token->prevSiblingOf(T_SEMICOLON)->or($parent)->_nextCode->AlignedWith)) {
+                continue;
+            }
+
             // Ignore open braces, statements that inherit indentation from
             // enclosing brackets, and lines with different indentation levels
             // from the previous line

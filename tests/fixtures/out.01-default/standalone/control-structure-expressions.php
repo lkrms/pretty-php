@@ -39,9 +39,27 @@ do {
 for (;;) {
     baz($i);
 }
+for (;;) {
+    baz($i);
+}
+for ($a;;) {
+    baz($i);
+}
+for ($a;;) {
+    baz($i);
+}
+for (; $b;) {
+    baz($i);
+}
 for (;
-    ;
-) {
+    $b;) {
+    baz($i);
+}
+for (;; $c) {
+    baz($i);
+}
+for (;;
+    $c) {
     baz($i);
 }
 for ($i = 0; $i < 10; $i++) {
@@ -55,6 +73,43 @@ for ($i = 0;
 for ($i = 0, $j = 0;
     $i < 10;
     $i++) {
+    baz($i);
+}
+for ($i = 0,
+    $j = 0,
+    $k = 0;
+
+    $i < 10;
+
+    $i++,
+    $j++) {
+    baz($i);
+}
+for ((isset($i) ||
+        $i = 0); $i < 10; $i++) {
+    baz($i);
+}
+for ((isset($i) ||
+        $i = 0);
+    $i < 10;
+    $i++) {
+    baz($i);
+}
+for ($i = 0, $j = 0, (isset($k) ||
+        $k = 0);
+    $i < 10;
+    $i++) {
+    baz($i);
+}
+for ($i = 0,
+    $j = 0,
+    (isset($k) ||
+        $k = 0);
+
+    $i < 10;
+
+    $i++,
+    $j++) {
     baz($i);
 }
 foreach ($foo as $bar) {

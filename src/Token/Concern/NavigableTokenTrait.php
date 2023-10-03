@@ -471,6 +471,32 @@ trait NavigableTokenTrait
         return $token;
     }
 
+    /**
+     * Get a fallback token if the token is null or a callback succeeds,
+     * otherwise get the token
+     *
+     * The token is returned if it is not null and either:
+     *
+     * - no `$condition` is given, or
+     * - `$condition` returns `false` when it receives the token
+     *
+     * Otherwise, `$token` is resolved and returned.
+     *
+     * @param static|(callable(): static) $token
+     * @param (callable(static): bool)|null $condition
+     * @return static
+     */
+    public function or($token, ?callable $condition = null)
+    {
+        if (!$this->IsNull && (!$condition || !$condition($this))) {
+            return $this;
+        }
+        if ($token instanceof static) {
+            return $token;
+        }
+        return $token();
+    }
+
     public function getTokenName(): ?string
     {
         return parent::getTokenName() ?: CustomToken::toName($this->id);

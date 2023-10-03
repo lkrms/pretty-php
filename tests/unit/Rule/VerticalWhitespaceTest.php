@@ -43,7 +43,8 @@ PHP,
             'chain #2' => [
                 <<<'PHP'
 <?php
-$foxtrot->foo(fn() =>
+$foxtrot
+    ->foo(fn() =>
         bar())
     ->baz()
     ->quux();

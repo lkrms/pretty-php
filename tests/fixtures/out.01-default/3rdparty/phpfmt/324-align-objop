@@ -1,5 +1,6 @@
 <?php
-$query = (new Query)->select(['id', 'username'])
+$query = (new Query)
+    ->select(['id', 'username'])
     ->from('user')
     ->where(['pk_id' => $this->organization])
     ->offset($paging->offset)

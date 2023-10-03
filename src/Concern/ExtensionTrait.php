@@ -31,5 +31,10 @@ trait ExtensionTrait
         $this->TypeIndex = &$formatter->TokenTypeIndex;
     }
 
+    public function prepare()
+    {
+        return $this;
+    }
+
     public function reset(): void {}
 }

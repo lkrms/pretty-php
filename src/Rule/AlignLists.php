@@ -68,7 +68,10 @@ final class AlignLists implements ListRule
                 if (!$delta) {
                     return;
                 }
-                while (($adjacent = $to->lastSiblingBeforeNewline()) !== $to) {
+                while (($adjacent = $to->lastSiblingBeforeNewline()) !== $to &&
+                    ($adjacent->id !== T_OPEN_BRACE ||
+                        !$adjacent->isStructuralBrace() ||
+                        count($adjacent->BracketStack) > count($owner->BracketStack))) {
                     $to = $adjacent;
                 }
                 while (($adjacent = $to->adjacentBeforeNewline(false)) &&

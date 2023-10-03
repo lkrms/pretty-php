@@ -1,6 +1,7 @@
 <?php
 
-$query = (new Query)->select(['id', 'username'])
+$query = (new Query)
+    ->select(['id', 'username'])
     ->from('user')
     ->where(['pk_id' => $aaa->organization])
     ->all();
@@ -41,7 +42,8 @@ class SomeClass
 {
     public function save()
     {
-        VeryLongCall($this)->save($this)
+        VeryLongCall($this)
+            ->save($this)
             ->widen(600)
             ->greyscale()
             ->save($this);

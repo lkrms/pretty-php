@@ -17,6 +17,7 @@ func($a
 // comment
 );
 
-$a->m1()
+$a
+	->m1()
 	->m2()  // comment
 	->m3();

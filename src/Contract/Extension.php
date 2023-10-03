@@ -17,6 +17,13 @@ interface Extension
     public function setFormatter(Formatter $formatter): void;
 
     /**
+     * Initialise and return the object
+     *
+     * @return $this
+     */
+    public function prepare();
+
+    /**
      * Clear state for a new payload
      */
     public function reset(): void;

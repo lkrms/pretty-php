@@ -6,7 +6,8 @@ echo $a
 	->firstThis
 	->something;
 
-echo $a->firstThis
+echo $a
+	->firstThis
 	->something;
 
 echo $a->firstThis;

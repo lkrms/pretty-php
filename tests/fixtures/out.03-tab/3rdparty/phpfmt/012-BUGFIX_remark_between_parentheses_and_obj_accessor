@@ -1,5 +1,6 @@
 <?php
-$obj->get()
+$obj
+	->get()
 	->set(ConstantBag::NEED_A)
 	->set(ConstantBag::NEED_B)
 	->set(ConstantBag::NEED_C)

@@ -698,121 +698,11 @@ class Token extends PhpToken implements JsonSerializable
         return $this->byOffset(__FUNCTION__, $offset);
     }
 
-    /**
-     * Collect the token's siblings up to but not including the last that isn't
-     * one of the listed types
-     *
-     * Tokens are collected in order from closest to farthest.
-     */
-    final public function prevSiblingsWhile(int ...$types): TokenCollection
-    {
-        return $this->_prevSiblingsWhile(false, ...$types);
-    }
-
-    /**
-     * Collect the token and its siblings up to but not including the last that
-     * isn't one of the listed types
-     *
-     * Tokens are collected in order from closest to farthest.
-     */
-    final public function withPrevSiblingsWhile(int ...$types): TokenCollection
-    {
-        return $this->_prevSiblingsWhile(true, ...$types);
-    }
-
-    private function _prevSiblingsWhile(bool $includeToken = false, int ...$types): TokenCollection
-    {
-        $tokens = new TokenCollection();
-        $prev = $includeToken ? $this : $this->_prevSibling;
-        while ($prev && $prev->is($types)) {
-            $tokens[] = $prev;
-            $prev = $prev->_prevSibling;
-        }
-
-        return $tokens;
-    }
-
-    /**
-     * Collect the token's siblings up to but not including the first that isn't
-     * one of the listed types
-     */
-    final public function nextSiblingsWhile(int ...$types): TokenCollection
-    {
-        return $this->_nextSiblingsWhile(false, ...$types);
-    }
-
-    /**
-     * Collect the token and its siblings up to but not including the first that
-     * isn't one of the listed types
-     */
-    final public function withNextSiblingsWhile(int ...$types): TokenCollection
-    {
-        return $this->_nextSiblingsWhile(true, ...$types);
-    }
-
-    private function _nextSiblingsWhile(bool $includeToken = false, int ...$types): TokenCollection
-    {
-        $tokens = new TokenCollection();
-        $next = $includeToken ? $this : $this->_nextSibling;
-        while ($next && $next->is($types)) {
-            $tokens[] = $next;
-            $next = $next->_nextSibling;
-        }
-
-        return $tokens;
-    }
-
     final public function parent(): Token
     {
         $current = $this->OpenedBy ?: $this;
 
         return end($current->BracketStack) ?: $this->null();
-    }
-
-    /**
-     * Collect the token's parents up to but not including the first that isn't
-     * one of the listed types
-     */
-    final public function parentsWhile(int ...$types): TokenCollection
-    {
-        return $this->_parentsWhile(false, ...$types);
-    }
-
-    /**
-     * Collect the token and its parents up to but not including the first that
-     * isn't one of the listed types
-     */
-    final public function withParentsWhile(int ...$types): TokenCollection
-    {
-        return $this->_parentsWhile(true, ...$types);
-    }
-
-    private function _parentsWhile(bool $includeToken = false, int ...$types): TokenCollection
-    {
-        $tokens = new TokenCollection();
-        $current = $this->OpenedBy ?: $this;
-        $current = $includeToken ? $current : end($current->BracketStack);
-        while ($current && $current->is($types)) {
-            $tokens[] = $current;
-            $current = end($current->BracketStack);
-        }
-
-        return $tokens;
-    }
-
-    public function outer(): TokenCollection
-    {
-        return $this->canonical()->collect($this->ClosedBy ?: $this);
-    }
-
-    public function inner(): TokenCollection
-    {
-        return $this->canonical()->next()->collect(($this->ClosedBy ?: $this)->prev());
-    }
-
-    public function innerSiblings(): TokenCollection
-    {
-        return $this->canonical()->nextCode()->collectSiblings(($this->ClosedBy ?: $this)->prevCode());
     }
 
     final public function startOfLine(): Token
@@ -1517,7 +1407,7 @@ class Token extends PhpToken implements JsonSerializable
             ($current->id === T_OPEN_BRACKET &&
                 (($adjacent = $current->adjacent(T_COMMA, T_CLOSE_BRACKET)) &&
                     $adjacent->id === T_EQUAL) ||
-                (($root = $current->withParentsWhile(T_OPEN_BRACKET)->last()) &&
+                (($root = $current->withParentsWhile(false, T_OPEN_BRACKET)->last()) &&
                     $root->prevCode()->id === T_AS &&
                     $root->parent()->prevCode()->id === T_FOREACH));
     }

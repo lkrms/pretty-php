@@ -50,6 +50,54 @@ trait CollectibleTokenTrait
     }
 
     /**
+     * Get the token and its preceding tokens in the same statement, in document
+     * order
+     */
+    final public function sinceStartOfStatement(): TokenCollection
+    {
+        /** @var Token $this */
+        $statement = $this->Statement ?? $this;
+
+        return $statement->collect($this);
+    }
+
+    /**
+     * Get the token and its nested tokens
+     */
+    final public function outer(): TokenCollection
+    {
+        return
+            ($this->OpenedBy ?? $this)
+                ->collect($this->ClosedBy ?? $this);
+    }
+
+    /**
+     * Get the token's nested tokens
+     */
+    final public function inner(): TokenCollection
+    {
+        return
+            ($this->OpenedBy ?? $this)
+                ->next()
+                ->collect(
+                    ($this->ClosedBy ?? $this)->prev()
+                );
+    }
+
+    /**
+     * Get the token's nested siblings
+     */
+    final public function children(): TokenCollection
+    {
+        return
+            ($this->OpenedBy ?? $this)
+                ->nextCode()
+                ->collectSiblings(
+                    ($this->ClosedBy ?? $this)->prevCode()
+                );
+    }
+
+    /**
      * Get the token and its following tokens up to and including a given token
      *
      * @param static $to
@@ -76,9 +124,9 @@ trait CollectibleTokenTrait
             return $tokens;
         }
         !$to || !$to->IsNull || $to = null;
-        $current = $this->OpenedBy ?: $this;
+        $current = $this->OpenedBy ?? $this;
         if ($to) {
-            $to = $to->OpenedBy ?: $to;
+            $to = $to->OpenedBy ?? $to;
             if ($this->Index > $to->Index) {
                 return $tokens;
             }
@@ -110,12 +158,12 @@ trait CollectibleTokenTrait
             return $tokens;
         }
         !$to || !$to->IsNull || $to = null;
-        $current = $this->OpenedBy ?: $this;
+        $current = $this->OpenedBy ?? $this;
         if ($to) {
             if ($this->Index < $to->Index) {
                 return $tokens;
             }
-            $to = $to->OpenedBy ?: $to;
+            $to = $to->OpenedBy ?? $to;
             if ($current->BracketStack !== $to->BracketStack) {
                 throw new LogicException('Argument #1 ($to) is not a sibling');
             }
@@ -221,6 +269,50 @@ trait CollectibleTokenTrait
 
     /**
      * Get preceding siblings in reverse document order, up to but not including
+     * the first that isn't one of the given types
+     */
+    final public function prevSiblingsWhile(int $type, int ...$types): TokenCollection
+    {
+        return $this->_prevSiblingsWhile(false, false, $type, ...$types);
+    }
+
+    /**
+     * Get the token and its preceding siblings in reverse document order, up to
+     * but not including the first that isn't one of the given types
+     *
+     * @param bool $testToken If `true` and the token isn't one of the given
+     * types, an empty collection is returned. Otherwise, the token is added to
+     * the collection regardless.
+     */
+    final public function withPrevSiblingsWhile(bool $testToken, int $type, int ...$types): TokenCollection
+    {
+        return $this->_prevSiblingsWhile(true, $testToken, $type, ...$types);
+    }
+
+    /**
+     * Get following siblings, up to but not including the first that isn't one
+     * of the given types
+     */
+    final public function nextSiblingsWhile(int $type, int ...$types): TokenCollection
+    {
+        return $this->_nextSiblingsWhile(false, false, $type, ...$types);
+    }
+
+    /**
+     * Get the token and its following siblings, up to but not including the
+     * first that isn't one of the given types
+     *
+     * @param bool $testToken If `true` and the token isn't one of the given
+     * types, an empty collection is returned. Otherwise, the token is added to
+     * the collection regardless.
+     */
+    final public function withNextSiblingsWhile(bool $testToken, int $type, int ...$types): TokenCollection
+    {
+        return $this->_nextSiblingsWhile(true, $testToken, $type, ...$types);
+    }
+
+    /**
+     * Get preceding siblings in reverse document order, up to but not including
      * the first that satisfies a callback
      *
      * @param callable(self, TokenCollection): bool $callback
@@ -270,15 +362,21 @@ trait CollectibleTokenTrait
     }
 
     /**
-     * Get the token and its preceding tokens in the same statement, in document
-     * order
+     * Get parents up to but not including the first that isn't one of the given
+     * types
      */
-    final public function sinceStartOfStatement(): TokenCollection
+    final public function parentsWhile(int $type, int ...$types): TokenCollection
     {
-        /** @var Token $this */
-        $statement = $this->Statement ?? $this;
+        return $this->_parentsWhile(false, false, $type, ...$types);
+    }
 
-        return $statement->collect($this);
+    /**
+     * Get the token and its parents up to but not including the first that
+     * isn't one of the given types
+     */
+    final public function withParentsWhile(bool $testToken, int $type, int ...$types): TokenCollection
+    {
+        return $this->_parentsWhile(true, $testToken, $type, ...$types);
     }
 
     private function _prevWhile(bool $includeToken, bool $testToken, int ...$types): TokenCollection
@@ -353,6 +451,40 @@ trait CollectibleTokenTrait
         return $tokens;
     }
 
+    private function _prevSiblingsWhile(bool $includeToken, bool $testToken, int ...$types): TokenCollection
+    {
+        $tokens = new TokenCollection();
+        if ($includeToken && !$testToken) {
+            /** @var Token $this */
+            $tokens[] = $this;
+            $includeToken = false;
+        }
+        $prev = $includeToken ? $this : $this->_prevSibling;
+        while ($prev && $prev->is($types)) {
+            $tokens[] = $prev;
+            $prev = $prev->_prevSibling;
+        }
+
+        return $tokens;
+    }
+
+    private function _nextSiblingsWhile(bool $includeToken, bool $testToken, int ...$types): TokenCollection
+    {
+        $tokens = new TokenCollection();
+        if ($includeToken && !$testToken) {
+            /** @var Token $this */
+            $tokens[] = $this;
+            $includeToken = false;
+        }
+        $next = $includeToken ? $this : $this->_nextSibling;
+        while ($next && $next->is($types)) {
+            $tokens[] = $next;
+            $next = $next->_nextSibling;
+        }
+
+        return $tokens;
+    }
+
     /**
      * @param callable(self, TokenCollection): bool $callback
      */
@@ -390,6 +522,24 @@ trait CollectibleTokenTrait
             /** @var Token $next */
             $tokens[] = $next;
             $next = $next->_nextSibling;
+        }
+
+        return $tokens;
+    }
+
+    private function _parentsWhile(bool $includeToken, bool $testToken, int ...$types): TokenCollection
+    {
+        $tokens = new TokenCollection();
+        if ($includeToken && !$testToken) {
+            /** @var Token $this */
+            $tokens[] = $this;
+            $includeToken = false;
+        }
+        $current = $this->OpenedBy ?? $this;
+        $current = $includeToken ? $current : end($current->BracketStack);
+        while ($current && $current->is($types)) {
+            $tokens[] = $current;
+            $current = end($current->BracketStack);
         }
 
         return $tokens;
