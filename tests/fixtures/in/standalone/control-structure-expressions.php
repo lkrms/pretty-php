@@ -44,6 +44,30 @@ for (;
 ) {
     baz($i);
 }
+for ($a;;) {
+    baz($i);
+}
+for ($a;
+    ;
+) {
+    baz($i);
+}
+for (; $b;) {
+    baz($i);
+}
+for (;
+    $b;
+) {
+    baz($i);
+}
+for (;; $c) {
+    baz($i);
+}
+for (;
+    ;
+    $c) {
+    baz($i);
+}
 for ($i = 0; $i < 10; $i++) {
     baz($i);
 }
