@@ -48,6 +48,8 @@ class Token extends PhpToken implements JsonSerializable
      */
     public ?string $CommentType = null;
 
+    public bool $IsInformalDocComment = false;
+
     public bool $NewlineAfterPreserved = false;
 
     public int $TagIndent = 0;
@@ -202,6 +204,15 @@ class Token extends PhpToken implements JsonSerializable
                 if ($token->id === T_COMMENT) {
                     Pcre::match('/^(\/\/|\/\*|#)/', $token->text, $matches);
                     $token->CommentType = $matches[1];
+
+                    // If this is a multi-line C-style comment where every line
+                    // starts with "*" and both delimiters appear on their own
+                    // lines, treat it as a PHP docblock for formatting purposes
+                    $token->IsInformalDocComment =
+                        strpos($token->text, "\n") !== false &&
+                            !(Pcre::match('/\n\h*+(?!\*)\S/', $token->text) &&
+                                Pcre::match('/^\/\*+\h*+(?!\*)\S/', $token->text) &&
+                                Pcre::match('/\S(?<!\*)\h*+\*\//', $token->text));
                 } elseif ($token->id === T_DOC_COMMENT) {
                     $token->CommentType = '/**';
                 }
@@ -705,10 +716,12 @@ class Token extends PhpToken implements JsonSerializable
         return end($current->BracketStack) ?: $this->null();
     }
 
-    final public function startOfLine(): Token
+    final public function startOfLine(bool $ignoreComments = true): Token
     {
         $current = $this;
         while (!$current->hasNewlineBefore() &&
+                ($ignoreComments ||
+                    !($current->isMultiLineComment() && $current->hasNewline())) &&
                 $current->id !== T_END_HEREDOC &&
                 $current->_prev) {
             $current = $current->_prev;
@@ -717,10 +730,12 @@ class Token extends PhpToken implements JsonSerializable
         return $current;
     }
 
-    final public function endOfLine(): Token
+    final public function endOfLine(bool $ignoreComments = true): Token
     {
         $current = $this;
         while (!$current->hasNewlineAfter() &&
+                ($ignoreComments ||
+                    !($current->isMultiLineComment() && $current->hasNewline())) &&
                 $current->id !== T_START_HEREDOC &&
                 $current->_next) {
             $current = $current->_next;
@@ -1673,9 +1688,7 @@ class Token extends PhpToken implements JsonSerializable
         // character other than "*", and neither delimiter is on its own line,
         // reindent it to preserve alignment
         if ($this->id === T_COMMENT &&
-                Pcre::match('/\n\h*+(?!\*)\S/', $this->text) &&
-                Pcre::match('/^\/\*+\h*+(?!\*)\S/', $this->text) &&
-                Pcre::match('/\S(?<!\*)\h*+\*\//', $this->text)) {
+                !$this->IsInformalDocComment) {
             $text = $this->maybeExpandTabs();
             $delta = $this->OutputColumn - $this->column;
             /* Don't reindent if the comment hasn't moved, or if it has text in

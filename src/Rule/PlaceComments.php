@@ -58,7 +58,8 @@ final class PlaceComments implements TokenRule
         }
 
         // Leave embedded comments alone
-        if (!($wasFirstOnLine = $token->wasFirstOnLine()) && !$token->wasLastOnLine()) {
+        $wasFirstOnLine = $token->wasFirstOnLine();
+        if (!$wasFirstOnLine && !$token->wasLastOnLine()) {
             if ($token->_prev->IsCode || $token->_prev->OpenTag === $token->_prev) {
                 $this->CommentsBesideCode[] = $token;
                 $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
@@ -69,11 +70,10 @@ final class PlaceComments implements TokenRule
             return;
         }
 
-        // Don't move comments beside code to the next line (except docblocks
-        // that break over multiple lines)
+        // Don't move comments beside code to the next line (except docblocks,
+        // which can only be associated with subsequent structural elements)
         if (!$wasFirstOnLine &&
-            ($token->CommentType !== CommentType::DOC_COMMENT ||
-                !$token->hasNewline())) {
+                $token->CommentType !== CommentType::DOC_COMMENT) {
             $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
             if ($token->_prev->IsCode || $token->_prev->OpenTag === $token->_prev) {
                 $this->CommentsBesideCode[] = $token;
@@ -92,20 +92,20 @@ final class PlaceComments implements TokenRule
         }
 
         $token->WhitespaceAfter |= WhitespaceType::LINE;
-        if ($token->id !== T_DOC_COMMENT) {
-            $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
-            return;
-        }
 
-        // Add a blank line before multi-line docblocks
+        // Add a blank line before multi-line docblocks and C-style equivalents
         if ($token->hasNewline() &&
-                $token->_prev->EndStatement === $token->_prev) {
+                ($token->id === T_DOC_COMMENT || $token->IsInformalDocComment)) {
             $token->WhitespaceBefore |= WhitespaceType::BLANK | WhitespaceType::SPACE;
         } else {
             $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
+            if ($token->id !== T_DOC_COMMENT) {
+                return;
+            }
         }
 
-        // Add a blank line after file-level docblocks
+        // Add a blank line after file-level docblocks and multi-line C-style
+        // comments
         if ($next &&
             ($next->is([T_DECLARE, T_NAMESPACE]) ||
                 ($next->id === T_USE &&
@@ -116,7 +116,8 @@ final class PlaceComments implements TokenRule
         }
 
         // Otherwise, pin docblocks to subsequent code
-        if ($next &&
+        if ($token->id === T_DOC_COMMENT &&
+                $next &&
                 $next === $token->_next) {
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
         }

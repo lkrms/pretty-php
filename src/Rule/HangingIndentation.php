@@ -392,7 +392,27 @@ final class HangingIndentation implements MultiTokenRule
                     $next = $current;
                     $nextIndent = 0;
                     do {
-                        $next = $next->endOfLine()->_next;
+                        do {
+                            $next = $next->endOfLine(false);
+                            if (!$next->isMultiLineComment() || !$next->hasNewline()) {
+                                break;
+                            }
+                            // If a comment that breaks over multiple lines
+                            // appears on the same line as adjacent code, stop
+                            // checking for collapsible indentation levels
+                            if (!$next->hasNewlineBefore()) {
+                                $next = null;
+                                break 2;
+                            }
+                            if ($next->hasNewlineAfter()) {
+                                break;
+                            }
+                            $next = $next->_next;
+                            if (!$next) {
+                                break 2;
+                            }
+                        } while (true);
+                        $next = $next->_next;
                         if (!$next) {
                             break;
                         }
@@ -422,11 +442,12 @@ final class HangingIndentation implements MultiTokenRule
                         $nextIndent--;
                     }
 
-                    if ($nextIndent === $indent && $next) {
+                    if ($next && $nextIndent === $indent) {
                         return;
                     }
-                } while (($current = $next) &&
-                    $current->Index <= $until->Index);
+
+                    $current = $next;
+                } while ($current && $current->Index <= $until->Index);
 
                 foreach ($tokens as $t) {
                     if ($t->HangingIndentParentLevels[$index] ?? 0) {
