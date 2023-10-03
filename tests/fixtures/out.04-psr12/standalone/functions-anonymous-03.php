@@ -3,8 +3,7 @@ function () {
     return;
 };
 
-function &()
-{
+function &() {
     return;
 };
 function (
@@ -15,10 +14,11 @@ function (
     return;
 };
 
-function &(MyClass|string|null $foo,
+function &(
+    MyClass|string|null $foo,
     Countable&ArrayAccess $bar,
-    $baz)
-{
+    $baz
+) {
     return;
 };
 fn &() =>
@@ -36,6 +36,8 @@ fn(
     Countable&ArrayAccess $bar,
     $baz
 ) => null;
-fn &(MyClass | string | null $foo,
-    Countable & ArrayAccess $bar,
-    $baz) => null;
+fn &(
+    MyClass|string|null $foo,
+    Countable&ArrayAccess $bar,
+    $baz
+) => null;

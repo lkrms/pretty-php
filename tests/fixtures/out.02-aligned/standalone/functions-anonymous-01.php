@@ -3,8 +3,7 @@ function () {
     return;
 };
 
-function &()
-{
+function &() {
     return;
 };
 function (?string $foo,
@@ -14,9 +13,8 @@ function (?string $foo,
 };
 
 function &(?string $foo,
-    $bar,
-    $baz)
-{
+           $bar,
+           $baz) {
     return;
 };
 fn &() =>
@@ -33,5 +31,5 @@ fn(?string $foo,
    $bar,
    $baz) => null;
 fn &(?string $foo,
-    $bar,
-    $baz) => null;
+     $bar,
+     $baz) => null;

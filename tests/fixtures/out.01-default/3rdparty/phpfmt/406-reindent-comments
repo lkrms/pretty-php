@@ -11,6 +11,7 @@ if ($x) {
  * 	keep me intact
  * }
  */
+
 /*
  * bif(){
  * 	keep me intact
@@ -23,6 +24,7 @@ if (true) {
      * 	keep me intact
      * }
      */
+
     /*
      * dif(){
      * 	keep me intact
@@ -36,6 +38,7 @@ if (true) {
          * 	keep me intact
          * }
          */
+
         /*
          * fif(){
          * 	keep me intact

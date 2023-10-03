@@ -26,6 +26,7 @@ function dumpAttributeData($reflection)
 }
 
 dumpAttributeData(new ReflectionClass(Thing::class));
+
 /*
  * string(11) "MyAttribute"
  * array(1) {

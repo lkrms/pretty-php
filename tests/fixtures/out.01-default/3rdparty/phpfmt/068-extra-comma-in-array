@@ -4,6 +4,7 @@ $exclude_dirs = array(
     'b/',
     'c/',
     'd/',
+
     /*
      * comment
      */
