@@ -48,6 +48,8 @@ class Token extends PhpToken implements JsonSerializable
      */
     public ?string $CommentType = null;
 
+    public bool $IsInformalDocComment = false;
+
     public bool $NewlineAfterPreserved = false;
 
     public int $TagIndent = 0;
@@ -202,6 +204,15 @@ class Token extends PhpToken implements JsonSerializable
                 if ($token->id === T_COMMENT) {
                     Pcre::match('/^(\/\/|\/\*|#)/', $token->text, $matches);
                     $token->CommentType = $matches[1];
+
+                    // If this is a multi-line C-style comment where every line
+                    // starts with "*" and both delimiters appear on their own
+                    // lines, treat it as a PHP docblock for formatting purposes
+                    $token->IsInformalDocComment =
+                        strpos($token->text, "\n") !== false &&
+                            !(Pcre::match('/\n\h*+(?!\*)\S/', $token->text) &&
+                                Pcre::match('/^\/\*+\h*+(?!\*)\S/', $token->text) &&
+                                Pcre::match('/\S(?<!\*)\h*+\*\//', $token->text));
                 } elseif ($token->id === T_DOC_COMMENT) {
                     $token->CommentType = '/**';
                 }
@@ -705,10 +716,12 @@ class Token extends PhpToken implements JsonSerializable
         return end($current->BracketStack) ?: $this->null();
     }
 
-    final public function startOfLine(): Token
+    final public function startOfLine(bool $ignoreComments = true): Token
     {
         $current = $this;
         while (!$current->hasNewlineBefore() &&
+                ($ignoreComments ||
+                    !($current->isMultiLineComment() && $current->hasNewline())) &&
                 $current->id !== T_END_HEREDOC &&
                 $current->_prev) {
             $current = $current->_prev;
@@ -717,10 +730,12 @@ class Token extends PhpToken implements JsonSerializable
         return $current;
     }
 
-    final public function endOfLine(): Token
+    final public function endOfLine(bool $ignoreComments = true): Token
     {
         $current = $this;
         while (!$current->hasNewlineAfter() &&
+                ($ignoreComments ||
+                    !($current->isMultiLineComment() && $current->hasNewline())) &&
                 $current->id !== T_START_HEREDOC &&
                 $current->_next) {
             $current = $current->_next;
@@ -936,7 +951,9 @@ class Token extends PhpToken implements JsonSerializable
             ($parts = $this->Expression->declarationParts())->has($this, true) &&
             $parts->hasOneOf(...TokenType::DECLARATION_TOP_LEVEL) &&
             // Exclude anonymous functions, which can move as needed
-            ($last = $parts->last())->id !== T_FUNCTION &&
+            ($last = $parts->last()->skipPrevSiblingsOf(
+                ...TokenType::AMPERSAND
+            ))->id !== T_FUNCTION &&
             // Anonymous classes are a special case where if there is a newline
             // before `class`, the first hanging indent in the declaration is
             // propagated to the whole class, and a subsequent indent for the
@@ -1479,19 +1496,21 @@ class Token extends PhpToken implements JsonSerializable
 
     public function isParameterList(): bool
     {
-        return $this->id === T_OPEN_PARENTHESIS &&
-            $this->_prevCode &&
-            ($this->_prevCode->id === T_FN ||
-                $this->prevOf(T_FUNCTION)->nextOf(T_OPEN_PARENTHESIS) === $this);
+        if ($this->id !== T_OPEN_PARENTHESIS || !$this->_prevCode) {
+            return false;
+        }
+
+        $prev = $this->_prevCode->skipPrevSiblingsOf(
+            T_STRING, T_READONLY, ...TokenType::AMPERSAND
+        );
+
+        return $prev->id === T_FUNCTION || $prev->id === T_FN;
     }
 
     public function inParameterList(): bool
     {
         return $this->Parent &&
-            $this->Parent->_prevCode &&
-            $this->Parent->id === T_OPEN_PARENTHESIS &&
-            ($this->Parent->_prevCode->id === T_FN ||
-                $this->Parent->prevOf(T_FUNCTION)->nextOf(T_OPEN_PARENTHESIS) === $this->Parent);
+            $this->Parent->isParameterList();
     }
 
     final public function getIndentDelta(Token $target): TokenIndentDelta
@@ -1669,9 +1688,7 @@ class Token extends PhpToken implements JsonSerializable
         // character other than "*", and neither delimiter is on its own line,
         // reindent it to preserve alignment
         if ($this->id === T_COMMENT &&
-                Pcre::match('/\n\h*+(?!\*)\S/', $this->text) &&
-                Pcre::match('/^\/\*+\h*+(?!\*)\S/', $this->text) &&
-                Pcre::match('/\S(?<!\*)\h*+\*\//', $this->text)) {
+                !$this->IsInformalDocComment) {
             $text = $this->maybeExpandTabs();
             $delta = $this->OutputColumn - $this->column;
             /* Don't reindent if the comment hasn't moved, or if it has text in

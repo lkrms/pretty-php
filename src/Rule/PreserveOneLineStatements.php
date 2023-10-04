@@ -44,7 +44,7 @@ final class PreserveOneLineStatements implements TokenRule
                 ) &&
                 $token->is([T_ATTRIBUTE, T_ATTRIBUTE_COMMENT])) {
             $this->preserveOneLine(
-                $token->skipAnySiblingsOf(T_ATTRIBUTE, T_ATTRIBUTE_COMMENT),
+                $token->skipSiblingsOf(T_ATTRIBUTE, T_ATTRIBUTE_COMMENT),
                 $until
             );
         }

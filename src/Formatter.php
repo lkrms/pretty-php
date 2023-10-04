@@ -709,41 +709,59 @@ final class Formatter implements IReadable
                     continue 2;
 
                 case T_OPEN_PARENTHESIS:
-                    if (!($prev = $parent->_prevCode) ||
-                        !(($prev->id === T_CLOSE_BRACE &&
-                                !$prev->isStructuralBrace()) ||
-                            ($prev->id === T_AND &&
-                                $prev->prevCode()->is([T_FN, T_FUNCTION])) ||
-                            $prev->is([
-                                T_ARRAY,
-                                T_DECLARE,
-                                T_FOR,
-                                T_LIST,
-                                T_UNSET,
-                                T_USE,
-                                T_VARIABLE,
-                                ...TokenType::MAYBE_ANONYMOUS,
-                                ...TokenType::DEREFERENCEABLE_SCALAR_END,
-                                ...TokenType::NAME_WITH_READONLY,
-                            ]))) {
+                    $prev = $parent->_prevCode;
+                    if (!$prev) {
                         continue 2;
                     }
-                    break;
+                    if ($prev->id === T_CLOSE_BRACE &&
+                            !$prev->isStructuralBrace(false)) {
+                        break;
+                    }
+                    if ($prev->_prevCode &&
+                            $prev->is(TokenType::AMPERSAND) &&
+                            $prev->_prevCode->is([T_FN, T_FUNCTION])) {
+                        break;
+                    }
+                    if ($prev->is([
+                        T_ARRAY,
+                        T_DECLARE,
+                        T_FOR,
+                        T_LIST,
+                        T_UNSET,
+                        T_USE,
+                        T_VARIABLE,
+                        ...TokenType::MAYBE_ANONYMOUS,
+                        ...TokenType::DEREFERENCEABLE_SCALAR_END,
+                        ...TokenType::NAME_WITH_READONLY,
+                    ])) {
+                        break;
+                    }
+
+                    continue 2;
 
                 case T_OPEN_BRACKET:
-                    if ($parent->Expression !== $parent &&
-                            ($prev = $parent->_prevCode) &&
-                            $prev->id !== T_AS &&
-                            $prev->is([
-                                T_CLOSE_BRACE,
-                                T_STRING_VARNAME,
-                                T_VARIABLE,
-                                ...TokenType::DEREFERENCEABLE_SCALAR_END,
-                                ...TokenType::NAME,
-                                ...TokenType::SEMI_RESERVED,
-                            ])) {
+                    if ($parent->Expression === $parent) {
+                        break;
+                    }
+                    $prev = $parent->_prevCode;
+                    if ($prev && (
+                        $prev->is([
+                            T_CLOSE_BRACE,
+                            T_STRING_VARNAME,
+                            T_VARIABLE,
+                            ...TokenType::DEREFERENCEABLE_SCALAR_END,
+                            ...TokenType::NAME,
+                            ...TokenType::MAGIC_CONSTANT,
+                        ]) || (
+                            $prev->_prevCode &&
+                            $prev->_prevCode->id === T_DOUBLE_COLON &&
+                            $prev->is(TokenType::SEMI_RESERVED)
+                        )
+                        // This check should never be necessary
+                    ) && !$parent->children()->hasOneOf(T_COMMA)) {
                         continue 2;
                     }
+
                     break;
             }
             $delimiter = $parent->_prevCode && $parent->_prevCode->id === T_FOR

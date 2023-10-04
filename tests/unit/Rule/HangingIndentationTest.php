@@ -242,6 +242,25 @@ $a = array('b' => array('c' => 'd',
 'm'));
 PHP,
             ],
+            [
+                <<<'PHP'
+<?php
+if (!$foo &&
+    ($bar->qux !== Foo::BAR /* ||
+        !$bar->quux() */)) {
+    $foo = $bar;
+}
+
+PHP,
+                <<<'PHP'
+<?php
+if (!$foo &&
+        ($bar->qux !== Foo::BAR /* ||
+            !$bar->quux() */)) {
+    $foo = $bar;
+}
+PHP,
+            ],
         ];
     }
 }

@@ -92,6 +92,7 @@ PHP,
             'PHPDoc comment #1' => [
                 <<<'PHP'
 <?php
+
 /**
  * leading asterisk and space
  * leading asterisk

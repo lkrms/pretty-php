@@ -1,4 +1,5 @@
 <?php
+
 /*
  * The input is semi-colon separated fields, with the first
  * field being an ID to use as a key.

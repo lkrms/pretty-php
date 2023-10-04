@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Ignore the top section,
  * it is just formatting to make output clearer.
