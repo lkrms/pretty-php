@@ -96,7 +96,8 @@ final class PlaceComments implements TokenRule
         // Add a blank line before multi-line docblocks and C-style equivalents
         if ($token->hasNewline() &&
                 ($token->id === T_DOC_COMMENT || $token->IsInformalDocComment)) {
-            $token->WhitespaceBefore |= WhitespaceType::BLANK | WhitespaceType::SPACE;
+            $token->WhitespaceBefore |=
+                WhitespaceType::BLANK | WhitespaceType::LINE | WhitespaceType::SPACE;
         } else {
             $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
             if ($token->id !== T_DOC_COMMENT) {

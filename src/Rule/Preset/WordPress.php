@@ -38,6 +38,7 @@ final class WordPress implements TokenRule
     public function getTokenTypes(): array
     {
         return [
+            T_COMMENT,
             T_DOC_COMMENT,
             T_COLON,
             T_EXIT,
@@ -51,10 +52,19 @@ final class WordPress implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->id === T_DOC_COMMENT) {
-            if (!$this->DocCommentUnpinned) {
-                $token->WhitespaceMaskNext |= WhitespaceType::BLANK;
-                $this->DocCommentUnpinned = true;
+        if ($token->id === T_COMMENT && !$token->IsInformalDocComment) {
+            return;
+        }
+
+        if ($token->id === T_DOC_COMMENT && !$this->DocCommentUnpinned) {
+            $token->WhitespaceMaskNext |= WhitespaceType::BLANK;
+            $this->DocCommentUnpinned = true;
+        }
+
+        if ($token->id === T_DOC_COMMENT || $token->id === T_COMMENT) {
+            if ($token->hasBlankLineBefore() &&
+                    $token->line - $token->_prev->line - substr_count($token->_prev->text, "\n") < 2) {
+                $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
             }
             return;
         }
