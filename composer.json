@@ -20,6 +20,7 @@
         "ext-json": "*",
         "ext-mbstring": "*",
         "ext-tokenizer": "*",
+        "composer-runtime-api": "^2.2",
         "lkrms/util": "^0.20.67",
         "sebastian/diff": "^4 || ^5"
     },
