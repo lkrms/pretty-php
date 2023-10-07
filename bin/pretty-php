@@ -4,7 +4,8 @@
 use Lkrms\Cli\CliApplication;
 use Lkrms\PrettyPHP\Command\FormatPhp;
 
-require dirname(__DIR__) . '/vendor/autoload.php';
+require $_composer_autoload_path
+    ?? dirname(__DIR__) . '/vendor/autoload.php';
 
 (new CliApplication(dirname(__DIR__)))
     ->oneCommand(FormatPhp::class)

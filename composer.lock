@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b34ef022d01ae9f65e0d91e141e84e41",
+    "content-hash": "f7d1e2276a496b3d153e5dcc1b94a923",
     "packages": [
         {
             "name": "lkrms/dice",
@@ -2116,7 +2116,8 @@
         "php": ">=7.4",
         "ext-json": "*",
         "ext-mbstring": "*",
-        "ext-tokenizer": "*"
+        "ext-tokenizer": "*",
+        "composer-runtime-api": "^2.2"
     },
     "platform-dev": [],
     "platform-overrides": {
