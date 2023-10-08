@@ -436,8 +436,8 @@ class Token extends PhpToken implements JsonSerializable
     {
         return
             $this->id === T_COMMA &&
-            ($parent = end($this->BracketStack)) &&
-            $parent->isMatchBrace();
+            $this->Parent &&
+            $this->Parent->isMatchBrace();
     }
 
     final public function isDelimiterBetweenMatchArms(): bool
