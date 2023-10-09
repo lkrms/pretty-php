@@ -20,9 +20,9 @@
 `pretty-php` is a fast, deterministic, minimally configurable code formatter for
 PHP.
 
-By taking responsibility for the minutiae of formatting your code, `pretty-php`
-makes it easier to focus on the content and gives you more time and mental
-energy to use elsewhere.
+By taking responsibility for the whitespace in your code, `pretty-php` makes it
+easier to focus on the content, providing time and mental energy savings that
+accrue over time.
 
 Code formatted by `pretty-php` produces the smallest diffs possible and looks
 the same regardless of the project you're working on, eliminating visual
