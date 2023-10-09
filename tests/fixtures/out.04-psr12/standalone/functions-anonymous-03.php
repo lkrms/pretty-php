@@ -21,16 +21,16 @@ function &(
 ) {
     return;
 };
-fn &() =>
-    null;
+fn &()
+    => null;
 $foo = function () {
     return;
 };
 $foo = function &() {
     return;
 };
-$foo = fn &() =>
-    null;
+$foo = fn &()
+    => null;
 fn(
     MyClass|string|null $foo,
     Countable&ArrayAccess $bar,

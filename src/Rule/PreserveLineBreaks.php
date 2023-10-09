@@ -75,8 +75,14 @@ final class PreserveLineBreaks implements MultiTokenRule
         }
     }
 
-    private function maybePreserveNewlineBefore(Token $token, Token $prev, int $line, int $min, int $max, bool $ignoreBrackets = false): bool
-    {
+    private function maybePreserveNewlineBefore(
+        Token $token,
+        Token $prev,
+        int $line,
+        int $min,
+        int $max,
+        bool $ignoreBrackets = false
+    ): bool {
         if (!$this->TypeIndex->PreserveNewlineBefore[$token->id] ||
                 $token->line < $min || $token->line > $max ||
                 ($ignoreBrackets && $this->TypeIndex->Bracket[$token->id])) {
@@ -92,7 +98,9 @@ final class PreserveLineBreaks implements MultiTokenRule
         // enabled
         if ($token->id === T_DOUBLE_ARROW &&
             (!$this->Formatter->NewlineBeforeFnDoubleArrows ||
-                $token->prevSibling(2)->id !== T_FN)) {
+                $token->prevSibling(2)->skipPrevSiblingsOf(
+                    ...TokenType::AMPERSAND
+                )->id !== T_FN)) {
             return false;
         }
 
@@ -106,16 +114,28 @@ final class PreserveLineBreaks implements MultiTokenRule
             return false;
         }
 
-        $token->WhitespaceBefore |=
-            $this->TypeIndex->PreserveBlankBefore[$token->id]
-                ? $line
-                : WhitespaceType::LINE;
+        if (!$this->Formatter->PreserveLineBreaks &&
+                !$token->hasNewlineBefore()) {
+            return false;
+        }
+
+        if (!$this->TypeIndex->PreserveBlankBefore[$token->id]) {
+            $line = WhitespaceType::LINE;
+        }
+
+        $token->WhitespaceBefore |= $line;
 
         return true;
     }
 
-    private function maybePreserveNewlineAfter(Token $token, Token $next, int $line, int $min, int $max, bool $ignoreBrackets = false): bool
-    {
+    private function maybePreserveNewlineAfter(
+        Token $token,
+        Token $next,
+        int $line,
+        int $min,
+        int $max,
+        bool $ignoreBrackets = false
+    ): bool {
         // To preserve newlines after attributes, ignore T_ATTRIBUTE itelf and
         // treat attribute close brackets as T_ATTRIBUTE
         if ($token->id === T_ATTRIBUTE) {
@@ -159,7 +179,9 @@ final class PreserveLineBreaks implements MultiTokenRule
         // disabled
         if ($token->id === T_DOUBLE_ARROW &&
                 $this->Formatter->NewlineBeforeFnDoubleArrows &&
-                $token->prevSibling(2)->id === T_FN) {
+                $token->prevSibling(2)->skipPrevSiblingsOf(
+                    ...TokenType::AMPERSAND
+                )->id === T_FN) {
             return false;
         }
 
@@ -168,6 +190,20 @@ final class PreserveLineBreaks implements MultiTokenRule
         if (($token->id === T_IMPLEMENTS ||
                     $token->id === T_EXTENDS) &&
                 !$token->IsListParent) {
+            return false;
+        }
+
+        // Don't preserve newlines between `,` and `=>` in `match` expressions:
+        //
+        // ```
+        // match ($a) {
+        //     0,
+        //     => false,
+        // };
+        // ```
+        if ($token->id === T_COMMA &&
+                $token->isDelimiterBetweenMatchExpressions() &&
+                $token->_nextCode->id === T_DOUBLE_ARROW) {
             return false;
         }
 
@@ -180,10 +216,21 @@ final class PreserveLineBreaks implements MultiTokenRule
                     $token->Parent->_prevCode &&
                     $token->Parent->_prevCode->id === T_FOR) ||
                 ($token->CommentType &&
-                    $token->Parent &&
-                    !($token->Parent->id === T_OPEN_BRACE &&
-                        $token->Parent->isStructuralBrace(false))))) {
+                    (($token->_prevCode &&
+                            !$token->_prevCode->ClosedBy &&
+                            $token->_prevCode->EndStatement !== $token->_prevCode) ||
+                        ($token->Parent &&
+                            !($token->Parent->id === T_OPEN_BRACE &&
+                                $token->Parent->isStructuralBrace(false))))))) {
+            if (!$this->Formatter->PreserveLineBreaks) {
+                return false;
+            }
             $line = WhitespaceType::LINE;
+        }
+
+        if (!$this->Formatter->PreserveLineBreaks &&
+                !$token->hasNewlineAfter()) {
+            return false;
         }
 
         $token->WhitespaceAfter |= $line;

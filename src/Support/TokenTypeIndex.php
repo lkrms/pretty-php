@@ -598,6 +598,15 @@ class TokenTypeIndex implements IImmutable
                     ->with('PreserveNewlineAfter', $preserveAfter);
     }
 
+    /**
+     * @return $this
+     */
+    public function withoutPreservingNewlines()
+    {
+        return $this->with('PreserveNewlineBefore', $this->PreserveBlankBefore)
+                    ->with('PreserveNewlineAfter', $this->PreserveBlankAfter);
+    }
+
     public static function create(): TokenTypeIndex
     {
         return new self();

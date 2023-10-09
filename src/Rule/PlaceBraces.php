@@ -44,7 +44,7 @@ final class PlaceBraces implements MultiTokenRule
     {
         switch ($method) {
             case self::PROCESS_TOKENS:
-                return 94;
+                return 92;
 
             case self::BEFORE_RENDER:
                 return 400;
@@ -71,7 +71,7 @@ final class PlaceBraces implements MultiTokenRule
                 continue;
             }
 
-            if ($token->id !== T_OPEN_BRACE) {
+            if ($token->id === T_CLOSE_BRACE) {
                 // Suppress blank lines before close braces
                 $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
                 $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
@@ -122,35 +122,6 @@ final class PlaceBraces implements MultiTokenRule
                 $token->WhitespaceMaskPrev = WhitespaceType::SPACE;
                 $token->WhitespaceMaskNext = WhitespaceType::NONE;
                 continue;
-            }
-
-            // Otherwise, add a newline before this open brace if:
-            // 1. it's part of a declaration
-            // 2. it isn't part of an anonymous function
-            // 3. it isn't part of a `use` statement, and
-            // 4. either:
-            //    - it's part of an anonymous class declaration that spans
-            //      multiple lines, or
-            //    - the token before the declaration is:
-            //      - `;`
-            //      - `{`
-            //      - `}`
-            //      - a T_CLOSE_TAG statement terminator, or
-            //      - non-existent (no code precedes the declaration)
-            if (!$this->Formatter->OneTrueBraceStyle &&
-                    $parts->hasOneOf(...TokenType::DECLARATION) &&
-                    ($last = $parts->last())->id !== T_DECLARE &&
-                    $last->skipPrevSiblingsOf(...TokenType::AMPERSAND)->id !== T_FUNCTION) {
-                $start = $parts->first();
-                if ($start->id !== T_USE &&
-                    ((!($prevCode = $start->_prevCode) ||
-                            $prevCode->id === T_SEMICOLON ||
-                            $prevCode->id === T_OPEN_BRACE ||
-                            $prevCode->id === T_CLOSE_BRACE ||
-                            $prevCode->id === T_CLOSE_TAG) ||
-                        ($start->id === T_NEW && $parts->hasNewlineBetweenTokens()))) {
-                    $token->WhitespaceBefore |= WhitespaceType::LINE;
-                }
             }
 
             // Add newlines and suppress blank lines after open braces

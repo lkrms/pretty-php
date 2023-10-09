@@ -129,6 +129,14 @@ final class Formatter implements IReadable
      */
     public bool $CollectCodeProblems;
 
+    /**
+     * False if the only line breaks that should be preserved are blank lines
+     * between statements
+     *
+     * @readonly
+     */
+    public bool $PreserveLineBreaks = true;
+
     public string $PreferredEol = PHP_EOL;
 
     public bool $PreserveEol = true;
@@ -186,7 +194,7 @@ final class Formatter implements IReadable
         OperatorSpacing::class,          // processToken  (80)
         ControlStructureSpacing::class,  // processToken  (83)
         PlaceComments::class,            // processToken  (90), beforeRender (997)
-        PlaceBraces::class,              // processToken  (94), beforeRender (400)
+        PlaceBraces::class,              // processToken  (92), beforeRender (400)
         SymmetricalBrackets::class,      // processToken  (96)
         VerticalWhitespace::class,       // processToken  (98)
         ListSpacing::class,              // processList   (98)
@@ -394,6 +402,11 @@ final class Formatter implements IReadable
             );
         }
 
+        if (in_array(PreserveLineBreaks::class, $skipRules, true)) {
+            $this->PreserveLineBreaks = false;
+            $this->TokenTypeIndex = $this->TokenTypeIndex->withoutPreservingNewlines();
+        }
+
         $rules = array_diff(
             array_merge(
                 self::DEFAULT_RULES,
@@ -403,10 +416,10 @@ final class Formatter implements IReadable
                 )
             ),
             // Remove mandatory rules from $skipRules
-            array_diff(
-                $skipRules,
-                self::MANDATORY_RULES
-            )
+            array_diff($skipRules, [
+                ...self::MANDATORY_RULES,
+                PreserveLineBreaks::class,
+            ])
         );
         if (count(array_intersect(
             [StrictLists::class, AlignLists::class],

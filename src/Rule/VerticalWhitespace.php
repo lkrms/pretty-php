@@ -14,6 +14,8 @@ use Lkrms\PrettyPHP\Token\Token;
  * - If an expression in a `for` loop breaks over multiple lines, add a newline
  *   after each comma-delimited expression and a blank line between each
  *   semicolon-delimited expression
+ * - Add a newline before an open brace that is part of a top-level declaration
+ *   or an anonymous class declared over multiple lines
  * - If the second or third expression in a `for` loop is at the start of a
  *   line, add a newline before the other
  * - Suppress whitespace in empty `for` loop expressions
@@ -60,6 +62,7 @@ final class VerticalWhitespace implements MultiTokenRule
     {
         return [
             T_FOR,
+            T_OPEN_BRACE,
             T_QUESTION,
             ...TokenType::CHAIN,
         ];
@@ -104,6 +107,32 @@ final class VerticalWhitespace implements MultiTokenRule
                     }
                 }
 
+                continue;
+            }
+
+            // Add a newline before an open brace that is part of a top-level
+            // declaration or an anonymous class declared over multiple lines
+            if ($token->id === T_OPEN_BRACE) {
+                if (!$token->isStructuralBrace() ||
+                        ($token->_next->id === T_CLOSE_BRACE && !$token->hasNewlineAfter())) {
+                    continue;
+                }
+                $parts = $token->Expression->declarationParts();
+                if (!$this->Formatter->OneTrueBraceStyle &&
+                        $parts->hasOneOf(...TokenType::DECLARATION) &&
+                        ($last = $parts->last())->id !== T_DECLARE &&
+                        $last->skipPrevSiblingsOf(...TokenType::AMPERSAND)->id !== T_FUNCTION) {
+                    $start = $parts->first();
+                    if ($start->id !== T_USE &&
+                        ((!($prevCode = $start->_prevCode) ||
+                                $prevCode->id === T_SEMICOLON ||
+                                $prevCode->id === T_OPEN_BRACE ||
+                                $prevCode->id === T_CLOSE_BRACE ||
+                                $prevCode->id === T_CLOSE_TAG) ||
+                            ($start->id === T_NEW && $parts->hasNewlineBetweenTokens()))) {
+                        $token->WhitespaceBefore |= WhitespaceType::LINE;
+                    }
+                }
                 continue;
             }
 
