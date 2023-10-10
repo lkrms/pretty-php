@@ -155,20 +155,19 @@ final class DeclarationSpacing implements MultiTokenRule
             //   unless they have inner newlines
             $prev = end($this->Prev);
             $prevSibling = $token->prevCode()->startOfStatement();
-            if ($types !== $this->PrevTypes ||
-                    $prevSibling !== $prev) {
+            if ($types !== $this->PrevTypes || $prevSibling !== $prev) {
+                $this->Prev = [];
                 if (!$prevSibling->IsNull && $prevSibling !== $prev) {
-                    $prevSiblingTypes =
-                        $prevSibling->declarationParts(false, false)
-                                    ->getAnyOf(...TokenType::DECLARATION_UNIQUE)
-                                    ->getTypes();
-                    if ($prevSiblingTypes === $types) {
-                        $this->Prev = [$prevSibling];
-                    } else {
-                        $this->Prev = [];
+                    $prevParts =
+                        $prevSibling->declarationParts(false, false);
+                    if ($prevParts->hasOneOf(...TokenType::DECLARATION)) {
+                        $prevTypes =
+                            $prevParts->getAnyOf(...TokenType::DECLARATION_UNIQUE)
+                                      ->getTypes();
+                        if ($prevTypes === $types) {
+                            $this->Prev[] = $prevSibling;
+                        }
                     }
-                } else {
-                    $this->Prev = [];
                 }
 
                 $this->PrevTypes = $types;
