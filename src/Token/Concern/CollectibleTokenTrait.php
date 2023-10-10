@@ -16,6 +16,7 @@ trait CollectibleTokenTrait
         bool $allowAnonymous = true,
         bool $skipToDeclaration = true
     ): TokenCollection {
+        /** @var Token $this */
         $index =
             $allowAnonymous
                 ? $this->TokenTypeIndex->DeclarationPartWithNew
