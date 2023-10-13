@@ -98,9 +98,7 @@ final class PreserveLineBreaks implements MultiTokenRule
         // enabled
         if ($token->id === T_DOUBLE_ARROW &&
             (!$this->Formatter->NewlineBeforeFnDoubleArrows ||
-                $token->prevSibling(2)->skipPrevSiblingsOf(
-                    ...TokenType::AMPERSAND
-                )->id !== T_FN)) {
+                $token->prevSiblingOf(T_FN)->nextSiblingOf(T_DOUBLE_ARROW) !== $token)) {
             return false;
         }
 
@@ -179,9 +177,7 @@ final class PreserveLineBreaks implements MultiTokenRule
         // disabled
         if ($token->id === T_DOUBLE_ARROW &&
                 $this->Formatter->NewlineBeforeFnDoubleArrows &&
-                $token->prevSibling(2)->skipPrevSiblingsOf(
-                    ...TokenType::AMPERSAND
-                )->id === T_FN) {
+                $token->prevSiblingOf(T_FN)->nextSiblingOf(T_DOUBLE_ARROW) === $token) {
             return false;
         }
 
