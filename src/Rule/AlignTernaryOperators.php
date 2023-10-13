@@ -70,7 +70,7 @@ final class AlignTernaryOperators implements TokenRule
     {
         $delta =
             $alignWith->alignmentOffset(false)
-                + $this->Formatter->TabSize;
+            + $this->Formatter->TabSize;
 
         $token->collect($until)
               ->forEach(fn(Token $t) => $t->LinePadding += $delta);

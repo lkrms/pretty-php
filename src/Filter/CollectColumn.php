@@ -22,9 +22,9 @@ final class CollectColumn implements Filter
             $token->column = $column;
             $text =
                 !$this->TypeIndex->Expandable[$token->id] ||
-                    strpos($token->text, "\t") === false
-                        ? $token->text
-                        : Convert::expandTabs($token->text, $this->Formatter->TabSize, $column);
+                strpos($token->text, "\t") === false
+                    ? $token->text
+                    : Convert::expandTabs($token->text, $this->Formatter->TabSize, $column);
             if ($text !== $token->text) {
                 $token->ExpandedText = $text;
             }

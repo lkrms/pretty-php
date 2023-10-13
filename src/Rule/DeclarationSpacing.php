@@ -173,10 +173,10 @@ final class DeclarationSpacing implements MultiTokenRule
                 $this->PrevTypes = $types;
                 $this->PrevExpand =
                     $this->hasComment($token) ||
-                        ($this->Prev &&
-                            ($this->hasComment($prevSibling) ||
-                                $prevSibling->hasBlankLineBefore() ||
-                                $prevSibling->collect($prevSibling->EndStatement)->hasNewline()));
+                    ($this->Prev &&
+                        ($this->hasComment($prevSibling) ||
+                            $prevSibling->hasBlankLineBefore() ||
+                            $prevSibling->collect($prevSibling->EndStatement)->hasNewline()));
             }
             $this->Prev[] = $token;
             $count = count($this->Prev);

@@ -210,9 +210,9 @@ class Token extends PhpToken implements JsonSerializable
                     // lines, treat it as a PHP docblock for formatting purposes
                     $token->IsInformalDocComment =
                         strpos($token->text, "\n") !== false &&
-                            !(Pcre::match('/\n\h*+(?!\*)\S/', $token->text) &&
-                                Pcre::match('/^\/\*+\h*+(?!\*)\S/', $token->text) &&
-                                Pcre::match('/\S(?<!\*)\h*+\*\//', $token->text));
+                        !(Pcre::match('/\n\h*+(?!\*)\S/', $token->text) &&
+                            Pcre::match('/^\/\*+\h*+(?!\*)\S/', $token->text) &&
+                            Pcre::match('/\S(?<!\*)\h*+\*\//', $token->text));
                 } elseif ($token->id === T_DOC_COMMENT) {
                     $token->CommentType = '/**';
                 }
@@ -1039,9 +1039,9 @@ class Token extends PhpToken implements JsonSerializable
             $current = $current->EndExpression;
             $terminator =
                 $current->_nextSibling &&
-                    $current->_nextSibling->Expression === false
-                        ? $current->_nextSibling
-                        : $current;
+                $current->_nextSibling->Expression === false
+                    ? $current->_nextSibling
+                    : $current;
             $next = $terminator->_nextSibling;
 
             if (!$next) {

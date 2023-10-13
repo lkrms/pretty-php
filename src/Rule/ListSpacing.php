@@ -49,7 +49,7 @@ final class ListSpacing implements ListRule
         $this->_setFormatter($formatter);
         $this->ListRuleIsEnabled =
             ($formatter->EnabledRules[StrictLists::class] ?? null) ||
-                ($formatter->EnabledRules[AlignLists::class] ?? null);
+            ($formatter->EnabledRules[AlignLists::class] ?? null);
     }
 
     public function processList(Token $owner, TokenCollection $items): void
