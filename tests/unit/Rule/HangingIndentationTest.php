@@ -62,7 +62,7 @@ PHP,
                 <<<'PHP'
 <?php
 $a = $b->c(fn() =>
-    $d &&
+        $d &&
         $e)
     ?: $start;
 
