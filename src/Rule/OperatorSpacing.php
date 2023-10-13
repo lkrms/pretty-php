@@ -175,6 +175,6 @@ final class OperatorSpacing implements MultiTokenRule
                 !$token->sinceStartOfStatement()->hasOneOf(T_VARIABLE)) ||
             (($prev = $token->prevCodeWhile(...TokenType::VALUE_TYPE)->last()) &&
                 ($prev = $prev->prevCode())->id === T_COLON &&
-                $prev->prevSibling(2)->id === T_FN);
+                $prev->prevSibling(2)->skipPrevSiblingsOf(...TokenType::AMPERSAND)->id === T_FN);
     }
 }

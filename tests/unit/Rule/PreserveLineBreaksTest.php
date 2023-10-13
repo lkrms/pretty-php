@@ -201,7 +201,7 @@ class Foo
                 1,
                 2 =>
                     $this->baz
-                        * 2,
+                    * 2,
 
                 default =>
                     0,

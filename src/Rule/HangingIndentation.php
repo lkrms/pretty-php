@@ -3,6 +3,7 @@
 namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
+use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Rule\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Token\Token;
@@ -206,13 +207,20 @@ final class HangingIndentation implements MultiTokenRule
                 $until = self::getTernaryEndOfExpression($token);
             } elseif ($token->ChainOpenedBy) {
                 $stack[] = $token->ChainOpenedBy;
+            } elseif ($token->Heredoc && $token->Heredoc === $prevCode) {
+                $stack[] = $token->Heredoc;
             } elseif ($token->ListParent) {
                 $stack[] = $token->ListParent;
             } elseif ($latest && $latest->BracketStack === $token->BracketStack) {
-                if ($token->Expression === $token) {
+                if ($token->_prevCode->is([
+                    T_DOUBLE_ARROW,
+                    ...TokenType::OPERATOR_COMPARISON_EXCEPT_COALESCE,
+                ]) || ($latest->Expression === $latest &&
+                        $token->Expression === $token &&
+                        $latest->_prevCode &&
+                        $this->TypeIndex->ExpressionDelimiter[$latest->_prevCode->id] &&
+                        $this->TypeIndex->ExpressionDelimiter[$token->_prevCode->id])) {
                     $stack[] = $token;
-                } elseif ($latest->Expression === $latest) {
-                    $stack[] = $latest;
                 } elseif ($latest->id === T_DOUBLE_ARROW) {
                     $stack[] = $latest;
                 } elseif ($token->Statement !== $token &&
