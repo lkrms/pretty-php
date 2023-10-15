@@ -103,7 +103,7 @@ final class PreserveLineBreaks implements MultiTokenRule
         }
 
         // Treat `?:` as one operator
-        if ($token->IsTernaryOperator && $token->TernaryOperator1 === $prev) {
+        if ($token->TernaryOperator1 === $prev) {
             return false;
         }
 
@@ -156,7 +156,7 @@ final class PreserveLineBreaks implements MultiTokenRule
         }
 
         // Treat `?:` as one operator
-        if ($token->IsTernaryOperator && $token->TernaryOperator2 === $next) {
+        if ($token->TernaryOperator2 === $next) {
             return false;
         }
 

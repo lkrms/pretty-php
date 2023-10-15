@@ -849,8 +849,7 @@ class Token extends PhpToken implements JsonSerializable
         $ternary1 =
             $this->prevSiblings()
                  ->find(fn(Token $t) =>
-                            $t->IsTernaryOperator &&
-                                $t === $t->TernaryOperator1);
+                            $t === $t->TernaryOperator1);
         if ($ternary1 && $ternary1->TernaryOperator2->Index > $this->Index) {
             return $ternary1->_nextCode->_pragmaticStartOfExpression($this);
         }
@@ -1021,8 +1020,7 @@ class Token extends PhpToken implements JsonSerializable
         // the last token before `:`
         $current = $this;
         while ($current = $current->_prevSibling) {
-            if ($current->IsTernaryOperator &&
-                    $current === $current->TernaryOperator1) {
+            if ($current === $current->TernaryOperator1) {
                 if ($current->TernaryOperator2->Index > $this->Index) {
                     return $current->TernaryOperator2->_prevCode;
                 }

@@ -2,68 +2,84 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
-use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
-use Lkrms\PrettyPHP\Rule\Contract\TokenRule;
+use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
+use Lkrms\PrettyPHP\Rule\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Token\Token;
 
 /**
- * Align ternary operators with their expressions
+ * Align ternary and null coalescing operators with their expressions
+ *
+ * @api
  */
-final class AlignTernaryOperators implements TokenRule
+final class AlignTernaryOperators implements MultiTokenRule
 {
-    use TokenRuleTrait;
+    use MultiTokenRuleTrait;
 
     public function getPriority(string $method): ?int
     {
-        return 380;
+        switch ($method) {
+            case self::PROCESS_TOKENS:
+                return 380;
+
+            default:
+                return null;
+        }
     }
 
     public function getTokenTypes(): array
     {
-        return [T_QUESTION];
+        return [
+            T_QUESTION,
+            T_COALESCE,
+        ];
     }
 
-    public function processToken(Token $token): void
+    public function processTokens(array $tokens): void
     {
-        if (!$token->IsTernaryOperator) {
-            return;
+        foreach ($tokens as $token) {
+            if ($token->id === T_QUESTION && !$token->IsTernaryOperator) {
+                continue;
+            }
+
+            // Do nothing if none of the operators in question are at the start
+            // of a line
+            if (!$token->hasNewlineBefore() &&
+                ($token->id === T_COALESCE ||
+                    !$token->TernaryOperator2->hasNewlineBefore())) {
+                continue;
+            }
+
+            // If previous ternary or null coalescing operators in this scope
+            // have already been aligned, do nothing
+            $prevTernary = HangingIndentation::getTernaryContext($token);
+            if ($prevTernary && $prevTernary->AlignedWith) {
+                $this->setAlignedWith($token, $prevTernary->AlignedWith);
+                continue;
+            }
+
+            $alignWith =
+                ($prevTernary ?: $token)
+                    ->_prevCode
+                    ->pragmaticStartOfExpression(true);
+
+            $this->setAlignedWith($token, $alignWith);
+            $until = HangingIndentation::getTernaryEndOfExpression($token);
+
+            $this->Formatter->registerCallback(
+                $this,
+                $token,
+                fn() => $this->alignOperators($token, $until, $alignWith),
+                710
+            );
         }
-
-        // If neither operator is at the start of a line, do nothing
-        if (!($token->hasNewlineBefore() ||
-                $token->TernaryOperator2->hasNewlineBefore())) {
-            return;
-        }
-
-        // If previous ternary operators in this scope have already been
-        // aligned, do nothing
-        $prevTernary = HangingIndentation::getTernaryContext($token);
-        if ($prevTernary && $prevTernary->AlignedWith) {
-            $this->setAlignedWith($token, $prevTernary->AlignedWith);
-            return;
-        }
-
-        $alignWith =
-            ($prevTernary ?: $token)
-                ->_prevCode
-                ->pragmaticStartOfExpression(true);
-
-        $this->setAlignedWith($token, $alignWith);
-        $until = HangingIndentation::getTernaryEndOfExpression($token);
-
-        $this->Formatter->registerCallback(
-            $this,
-            $token,
-            fn() => $this->alignOperators($token, $until, $alignWith),
-            710
-        );
     }
 
     private function setAlignedWith(Token $token, Token $alignWith): void
     {
         $token->AlignedWith = $alignWith;
-        $token->TernaryOperator2->AlignedWith = $alignWith;
+        if ($token->TernaryOperator2) {
+            $token->TernaryOperator2->AlignedWith = $alignWith;
+        }
     }
 
     private function alignOperators(Token $token, Token $until, Token $alignWith): void
@@ -72,7 +88,8 @@ final class AlignTernaryOperators implements TokenRule
             $alignWith->alignmentOffset(false)
             + $this->Formatter->TabSize;
 
-        $token->collect($until)
-              ->forEach(fn(Token $t) => $t->LinePadding += $delta);
+        foreach ($token->collect($until) as $token) {
+            $token->LinePadding += $delta;
+        }
     }
 }
