@@ -1,0 +1,6 @@
+<?php
+
+use \Slim\Slim;
+
+// after this comment
+$app = new Slim;

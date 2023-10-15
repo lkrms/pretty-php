@@ -1,0 +1,8 @@
+<?php
+
+// passes:EncapsulateNamespaces,Default
+namespace A;
+
+class A {}
+
+echo 'hello world';

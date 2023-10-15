@@ -1,0 +1,50 @@
+<?php
+// passes:OrderAndRemoveUseClauses,AddMissingCurlyBraces,SmartLnAfterCurlyOpen,NormalizeLnAndLtrimLines,MergeParenCloseWithCurlyOpen,MergeCurlyCloseAndDoWhile,MergeDoubleArrowAndArray,ExtraCommaInArray,ResizeSpaces,Reindent,ReindentColonBlocks,ReindentObjOps,EliminateDuplicatedEmptyLines,AlignEquals,AlignDoubleArrow,LeftAlignComment,RTrim
+$str = <<<EOT
+    \tsdf
+    EOT;
+
+$str = <<<EOT
+    \tsdf
+    \t{$keywords}abcd"
+    EOT;
+
+if ($a) {
+    $str = <<<EOT
+        \t\t{$keywords}abcd"
+        EOT;
+}
+
+if ($a) {
+    $str = <<<EOT
+        \t\t{$keywords}abcd"
+        EOT;
+}
+
+if ($a) {
+    $str = <<<EOT
+
+        \t\t{$keywords}abcd"
+        EOT;
+}
+
+if ($a) {
+    $str = "
+
+\t\t{$keywords}abcd
+";
+}
+
+if ($aa) {
+    $str = <<<EOT
+        \tsdf
+        \t{$keywords}abcd"
+        EOT;
+}
+
+if ($aa) {
+    $str = <<<EOT
+        \tsdf
+        \t{$keywords}abcd"
+        EOT;
+}

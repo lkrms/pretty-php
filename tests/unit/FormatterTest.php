@@ -516,9 +516,7 @@ PHP,
         // - files with no extension, and
         // - either of the above with a .fails extension
         $files = File::find(
-            $format === '04-psr12'
-                ? [$inDir . '/3rdparty/php-fig', $inDir . '/standalone']
-                : $inDir,
+            $inDir,
             null,
             '/(\.php|\/[^.\/]+)(\.fails)?$/'
         );

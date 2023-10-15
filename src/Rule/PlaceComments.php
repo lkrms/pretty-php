@@ -70,10 +70,16 @@ final class PlaceComments implements TokenRule
             return;
         }
 
-        // Don't move comments beside code to the next line (except docblocks,
-        // which can only be associated with subsequent structural elements)
+        // Aside from docblocks and, in strict PSR-12 mode, comments after
+        // top-level close braces, don't move comments to the next line
         if (!$wasFirstOnLine &&
-                $token->CommentType !== CommentType::DOC_COMMENT) {
+            $token->CommentType !== CommentType::DOC_COMMENT &&
+            !($this->Formatter->Psr12Compliance &&
+                $token->_prev->id === T_CLOSE_BRACE &&
+                $token->_prev->isStructuralBrace() &&
+                $token->_prev->Expression->declarationParts(false)->hasOneOf(
+                    T_CLASS, T_ENUM, T_INTERFACE, T_TRAIT
+                ))) {
             $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
             if ($token->_prev->IsCode || $token->_prev->OpenTag === $token->_prev) {
                 $this->CommentsBesideCode[] = $token;

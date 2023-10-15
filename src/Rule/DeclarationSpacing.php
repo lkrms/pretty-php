@@ -157,17 +157,10 @@ final class DeclarationSpacing implements MultiTokenRule
             $prevSibling = $token->prevCode()->startOfStatement();
             if ($types !== $this->PrevTypes || $prevSibling !== $prev) {
                 $this->Prev = [];
-                if (!$prevSibling->IsNull && $prevSibling !== $prev) {
-                    $prevParts =
-                        $prevSibling->declarationParts(false, false);
-                    if ($prevParts->hasOneOf(...TokenType::DECLARATION)) {
-                        $prevTypes =
-                            $prevParts->getAnyOf(...TokenType::DECLARATION_UNIQUE)
-                                      ->getTypes();
-                        if ($prevTypes === $types) {
-                            $this->Prev[] = $prevSibling;
-                        }
-                    }
+                if (!$prevSibling->IsNull &&
+                        $prevSibling !== $prev &&
+                        $this->uniqueDeclarationTypes($prevSibling) === $types) {
+                    $this->Prev[] = $prevSibling;
                 }
 
                 $this->PrevTypes = $types;
@@ -257,6 +250,33 @@ final class DeclarationSpacing implements MultiTokenRule
                 $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
             }
         }
+    }
+
+    /**
+     * @return int[]|null `null` if there is no declaration at `$token`, or if
+     * the declaration at `$token` does not contain any
+     * {@see TokenType::DECLARATION_UNIQUE} tokens and is not a variable or
+     * property declaration.
+     */
+    private function uniqueDeclarationTypes(Token $token): ?array
+    {
+        $parts = $token->declarationParts(false, false);
+
+        if (!$parts->count() ||
+                !$parts->hasOneOf(...TokenType::DECLARATION)) {
+            return null;
+        }
+
+        $types = $parts->getAnyOf(...TokenType::DECLARATION_UNIQUE)
+                       ->getTypes();
+
+        if (!$types && !$parts->hasOneOf(
+            T_GLOBAL, T_READONLY, T_STATIC, T_VAR, ...TokenType::VISIBILITY
+        )) {
+            return null;
+        }
+
+        return $types;
     }
 
     private function maybeApplyBlankLineBefore(Token $token, bool $withMask = false): void

@@ -229,7 +229,8 @@ final class HangingIndentation implements MultiTokenRule
                 } elseif ($token->Statement !== $token &&
                         $latest->Statement !== $latest) {
                     $latest = end($latest->HangingIndentStack);
-                    if ($latest && $latest->Statement === $latest) {
+                    if ($latest && $latest->BracketStack === $token->BracketStack &&
+                            $latest->Statement === $latest) {
                         $stack[] = $latest;
                     }
                 }

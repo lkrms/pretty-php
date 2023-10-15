@@ -1,0 +1,6 @@
+<?php
+
+class StdObj
+{
+    protected function method(array $v, ClassObj $r, $l) {}
+}
