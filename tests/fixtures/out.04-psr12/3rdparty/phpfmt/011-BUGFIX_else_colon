@@ -1,0 +1,5 @@
+<?php if (isset($var)): ?>
+HTML
+<?php else: ?>
+HTML
+<?php endif ?>

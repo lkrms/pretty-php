@@ -1,0 +1,9 @@
+<?php
+
+namespace NS;
+
+use C, A, B;
+
+new A();
+new B();
+new C();

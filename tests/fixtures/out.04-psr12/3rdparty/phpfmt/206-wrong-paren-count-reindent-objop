@@ -1,0 +1,4 @@
+<?php
+$obj
+    ->cmd('string', array(new SomeClass('bar')))
+    ->setValue('value');

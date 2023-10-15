@@ -1,0 +1,8 @@
+<?php
+// passes:PrettyPrintDocBlocks,Default
+
+/**
+ * comment
+ * @return string
+ */
+function a() {}
