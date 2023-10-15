@@ -9,8 +9,7 @@ class Foo
         };
         $func();
     }
-}
-;
+};
 new Foo();
 
 ?>
