@@ -63,7 +63,9 @@ PHP,
 <?php
 $a = $b->c(fn() =>
         $d &&
-        $e)
+        $e,
+    $f &&
+        $g)
     ?: $start;
 
 PHP,
@@ -71,7 +73,9 @@ PHP,
 <?php
 $a = $b->c(fn() =>
 $d &&
-$e)
+$e,
+$f &&
+$g)
 ?: $start;
 PHP,
             ],
@@ -259,6 +263,73 @@ if (!$foo &&
             !$bar->quux() */)) {
     $foo = $bar;
 }
+PHP,
+            ],
+            [
+                <<<'PHP'
+<?php
+$alpha = $bravo
+    ?? $charlie
+    ?: $delta
+    ?? $echo
+    ?: $foxtrot;
+$alpha =
+    $bravo
+        ?? $charlie
+        ?: $delta
+        ?? $echo
+        ?: $foxtrot;
+
+PHP,
+                <<<'PHP'
+<?php
+$alpha = $bravo
+?? $charlie
+?: $delta
+?? $echo
+?: $foxtrot;
+$alpha =
+$bravo
+?? $charlie
+?: $delta
+?? $echo
+?: $foxtrot;
+PHP,
+            ],
+            [
+                <<<'PHP'
+<?php
+$iterator = new RecursiveDirectoryIterator($dir,
+    FilesystemIterator::KEY_AS_PATHNAME
+        | FilesystemIterator::CURRENT_AS_FILEINFO
+        | FilesystemIterator::SKIP_DOTS);
+
+PHP,
+                <<<'PHP'
+<?php
+$iterator = new RecursiveDirectoryIterator($dir,
+FilesystemIterator::KEY_AS_PATHNAME
+| FilesystemIterator::CURRENT_AS_FILEINFO
+| FilesystemIterator::SKIP_DOTS);
+PHP,
+            ],
+            [
+                <<<'PHP'
+<?php
+fn($a, $b) =>
+    $a === $b
+        ? 0
+        : $a <=>
+            $b;
+
+PHP,
+                <<<'PHP'
+<?php
+fn($a, $b) =>
+$a === $b
+? 0
+: $a <=>
+$b;
 PHP,
             ],
         ];
