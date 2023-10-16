@@ -3,6 +3,8 @@ name: CI
 on:
   pull_request:
 
+  workflow_call:
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
@@ -11,6 +13,7 @@ jobs:
   format:
     name: Check formatting
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
 
     steps:
       - name: Checkout
@@ -34,12 +37,11 @@ jobs:
           key: composer-cache-${{ runner.os }}-${{ hashFiles('**/composer.json', '**/composer.lock') }}
           restore-keys: composer-cache-${{ runner.os }}-
 
-      # Add a version constraint before using this elsewhere, e.g. "lkrms/pretty-php=0.4.18"
-      - name: Install pretty-php
-        run: composer create-project --no-interaction --no-progress --no-dev lkrms/pretty-php build/pretty-php
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --no-dev
 
       - name: Run pretty-php
-        run: build/pretty-php/bin/pretty-php --diff
+        run: bin/pretty-php --diff
 
   phpstan:
     name: PHPStan
