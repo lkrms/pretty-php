@@ -75,11 +75,11 @@ final class HangingIndentation implements MultiTokenRule
             if ($this->TypeIndex->OpenBracket[$token->id]) {
                 $token->HangingIndentParentType =
                     $token->hasNewlineAfterCode()
-                        ? ($token->IsListParent ||
+                        ? (($token->IsListParent && $token->ListItemCount > 1) ||
                             ($token->id === T_OPEN_BRACE && $token->isStructuralBrace())
                                 ? self::NORMAL_INDENT
                                 : self::NO_INDENT)
-                        : ($token->IsListParent ||
+                        : (($token->IsListParent && $token->ListItemCount > 1) ||
                             ($token->id === T_OPEN_BRACE && $token->isStructuralBrace()) ||
                             ($token->id !== T_OPEN_BRACE && $token->adjacent())
                                 ? self::OVERHANGING_INDENT | self::NO_INNER_NEWLINE
@@ -218,7 +218,22 @@ final class HangingIndentation implements MultiTokenRule
                     $stack[] = $latest;
                 } elseif ($token->Statement !== $token &&
                         $latest->Statement === $latest) {
-                    $stack[] = $latest;
+                    if ($token->Expression === $latest->Expression) {
+                        $stack[] = $latest;
+                    } else {
+                        $delimiter = $token->prevSiblingOf(
+                            T_DOUBLE_ARROW,
+                            ...TokenType::OPERATOR_ASSIGNMENT,
+                        );
+                        if ($delimiter->IsNull) {
+                            $stack[] = $latest;
+                        } else {
+                            $startOfLine = $token->_prevCode->startOfLine();
+                            if ($delimiter->Index < $startOfLine->Index) {
+                                $stack[] = $latest;
+                            }
+                        }
+                    }
                 } elseif ($token->Statement !== $token &&
                         $latest->Statement !== $latest) {
                     $latest = end($latest->HangingIndentStack);
@@ -270,8 +285,8 @@ final class HangingIndentation implements MultiTokenRule
             // Add at least one level of hanging indentation
             $indent++;
 
-            // And another if the token is mid-statement and `$parent` has
-            // overhanging indents
+            // And another if the token is mid-statement and has an
+            // OVERHANGING_INDENT parent
             if ($parent &&
                     ($parent->HangingIndentParentType & self::OVERHANGING_INDENT) &&
                     $token->Statement !== $token) {
