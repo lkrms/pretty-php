@@ -373,6 +373,25 @@ $a === $b
 $b;
 PHP,
             ],
+            [
+                <<<'PHP'
+<?php
+!foo() ||
+    $bar =
+        <<<EOF
+        Heredoc
+        EOF;
+
+PHP,
+                <<<'PHP'
+<?php
+!foo() ||
+$bar =
+<<<EOF
+Heredoc
+EOF;
+PHP,
+            ]
         ];
     }
 }

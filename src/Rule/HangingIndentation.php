@@ -212,14 +212,7 @@ final class HangingIndentation implements MultiTokenRule
             } elseif ($token->ListParent) {
                 $stack[] = $token->ListParent;
             } elseif ($latest && $latest->BracketStack === $token->BracketStack) {
-                if ($token->_prevCode->is([
-                    T_DOUBLE_ARROW,
-                    ...TokenType::OPERATOR_COMPARISON_EXCEPT_COALESCE,
-                ]) || ($latest->Expression === $latest &&
-                        $token->Expression === $token &&
-                        $latest->_prevCode &&
-                        $this->TypeIndex->ExpressionDelimiter[$latest->_prevCode->id] &&
-                        $this->TypeIndex->ExpressionDelimiter[$token->_prevCode->id])) {
+                if ($this->TypeIndex->ExpressionDelimiter[$token->_prevCode->id]) {
                     $stack[] = $token;
                 } elseif ($latest->id === T_DOUBLE_ARROW) {
                     $stack[] = $latest;

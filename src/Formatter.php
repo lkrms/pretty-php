@@ -447,8 +447,10 @@ final class Formatter implements IReadable
             $this->Rules[$_rule] = $rule;
             if ($rule instanceof TokenRule) {
                 $types = $rule->getTokenTypes();
-                $first = null;
-                if ($types && is_bool($first = reset($types))) {
+                $first = $types
+                    ? reset($types)
+                    : null;
+                if (is_bool($first)) {
                     // If an index is returned, reduce it to types with a value
                     // of `true`
                     $index = $types;

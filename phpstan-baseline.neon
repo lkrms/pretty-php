@@ -104,8 +104,3 @@ parameters:
 			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$Verbose is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
-
-		-
-			message: "#^Call to function is_bool\\(\\) with '\\*'\\|bool\\|int will always evaluate to false\\.$#"
-			count: 1
-			path: src/Formatter.php
