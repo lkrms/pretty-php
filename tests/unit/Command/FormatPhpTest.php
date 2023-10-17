@@ -3,6 +3,9 @@
 namespace Lkrms\PrettyPHP\Tests\Command;
 
 use Lkrms\Cli\CliApplication;
+use Lkrms\Console\Catalog\ConsoleLevels as Levels;
+use Lkrms\Console\Target\MockTarget;
+use Lkrms\Facade\Console;
 use Lkrms\Facade\File;
 use Lkrms\PrettyPHP\Command\FormatPhp;
 
@@ -16,6 +19,9 @@ final class FormatPhpTest extends \Lkrms\PrettyPHP\Tests\TestCase
      */
     public function testOutput(string $expected, string $code, array $args = [], int $expectedExitStatus = 0): void
     {
+        $target = new MockTarget();
+        Console::registerTarget($target, Levels::ALL_EXCEPT_DEBUG);
+
         $this->expectOutputString($expected);
 
         $basePath = File::createTemporaryDirectory();
@@ -26,13 +32,15 @@ final class FormatPhpTest extends \Lkrms\PrettyPHP\Tests\TestCase
             file_put_contents($src, $code);
 
             $formatPhp = new FormatPhp($app);
-            $exitStatus = $formatPhp(...[...$args, '--no-config', '-qqq', '-o', '-', '--', $src]);
+            $exitStatus = $formatPhp(...[...$args, '--no-config', '-o', '-', '--', $src]);
             $this->assertSame($expectedExitStatus, $exitStatus, 'exit status');
         } finally {
             $app->unload();
 
             File::pruneDirectory($basePath);
             rmdir($basePath);
+
+            Console::deregisterTarget($target);
         }
     }
 

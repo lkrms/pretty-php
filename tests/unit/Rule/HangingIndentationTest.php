@@ -373,6 +373,48 @@ $a === $b
 $b;
 PHP,
             ],
+            [
+                <<<'PHP'
+<?php
+!foo() ||
+    $bar =
+        <<<EOF
+        Heredoc
+        EOF;
+
+PHP,
+                <<<'PHP'
+<?php
+!foo() ||
+$bar =
+<<<EOF
+Heredoc
+EOF;
+PHP,
+            ],
+            [
+                <<<'PHP'
+<?php
+if (
+    ($cm === 'RCDATA' ||
+        $cm === 'CDATA') && $es === true &&
+    charfunc($tch, 3) === '-->'
+) {
+    $es = false;
+}
+
+PHP,
+                <<<'PHP'
+<?php
+if (
+($cm === 'RCDATA' ||
+$cm === 'CDATA') && $es === true &&
+charfunc($tch, 3) === '-->'
+) {
+$es = false;
+}
+PHP,
+            ],
         ];
     }
 }

@@ -447,8 +447,10 @@ final class Formatter implements IReadable
             $this->Rules[$_rule] = $rule;
             if ($rule instanceof TokenRule) {
                 $types = $rule->getTokenTypes();
-                $first = null;
-                if ($types && is_bool($first = reset($types))) {
+                $first = $types
+                    ? reset($types)
+                    : null;
+                if (is_bool($first)) {
                     // If an index is returned, reduce it to types with a value
                     // of `true`
                     $index = $types;
@@ -712,8 +714,10 @@ final class Formatter implements IReadable
                         $parent->nextSiblingsWhile(...TokenType::DECLARATION_LIST)
                                ->filter(fn(Token $t, ?Token $next, ?Token $prev) =>
                                             !$prev || $t->_prevCode->id === T_COMMA);
-                    if ($items->count() > 1) {
+                    $count = $items->count();
+                    if ($count > 1) {
                         $parent->IsListParent = true;
+                        $parent->ListItemCount = $count;
                         foreach ($items as $token) {
                             $token->ListParent = $parent;
                         }
@@ -785,10 +789,12 @@ final class Formatter implements IReadable
                        ->filter(fn(Token $t, ?Token $next, ?Token $prev) =>
                                     $t->id !== $delimiter &&
                                         (!$prev || $t->_prevCode->id === $delimiter));
-            if (!$items->count()) {
+            $count = $items->count();
+            if (!$count) {
                 continue;
             }
             $parent->IsListParent = true;
+            $parent->ListItemCount = $count;
             foreach ($items as $token) {
                 $token->ListParent = $parent;
             }

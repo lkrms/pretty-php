@@ -35,6 +35,8 @@ class Token extends PhpToken implements JsonSerializable
 
     public bool $IsListParent = false;
 
+    public ?int $ListItemCount = null;
+
     public ?Token $ListParent = null;
 
     public bool $IsTernaryOperator = false;
@@ -477,6 +479,7 @@ class Token extends PhpToken implements JsonSerializable
         $a['Expression'] = $this->Expression;
         $a['EndExpression'] = $this->EndExpression;
         $a['IsListParent'] = $this->IsListParent;
+        $a['ListItemCount'] = $this->ListItemCount;
         $a['IsTernaryOperator'] = $this->IsTernaryOperator;
         $a['TernaryOperator1'] = $this->TernaryOperator1;
         $a['TernaryOperator2'] = $this->TernaryOperator2;
@@ -767,9 +770,9 @@ class Token extends PhpToken implements JsonSerializable
                 ->find(
                     fn(Token $t, ?Token $next) =>
                         ($t->AlignedWith &&
-                                ($allowSelfAlignment || $t !== $this)) ||
-                            ($next &&
-                                $next === $this->AlignedWith)
+                            ($allowSelfAlignment || $t !== $this)) ||
+                        ($next &&
+                            $next === $this->AlignedWith)
                 ) ?: $startOfLine;
 
         $code = $from->collect($this)->render(true);

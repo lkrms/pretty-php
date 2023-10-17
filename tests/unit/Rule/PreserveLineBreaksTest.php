@@ -187,7 +187,7 @@ class Foo
                 $this->Quux[
                     $key
                 ] % 5 ||
-                    $key === 'bravo'
+                $key === 'bravo'
             ) {
                 $c++;
             }

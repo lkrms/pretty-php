@@ -69,7 +69,7 @@ class SomeClass
 		VeryLongCall($this->temp_path)
 			->save(
 				$this->save_path
-					. $this->save_name
+				. $this->save_name
 			)
 			->widen(600)
 			->greyscale()

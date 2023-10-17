@@ -75,11 +75,11 @@ final class HangingIndentation implements MultiTokenRule
             if ($this->TypeIndex->OpenBracket[$token->id]) {
                 $token->HangingIndentParentType =
                     $token->hasNewlineAfterCode()
-                        ? ($token->IsListParent ||
+                        ? (($token->IsListParent && $token->ListItemCount > 1) ||
                             ($token->id === T_OPEN_BRACE && $token->isStructuralBrace())
                                 ? self::NORMAL_INDENT
                                 : self::NO_INDENT)
-                        : ($token->IsListParent ||
+                        : (($token->IsListParent && $token->ListItemCount > 1) ||
                             ($token->id === T_OPEN_BRACE && $token->isStructuralBrace()) ||
                             ($token->id !== T_OPEN_BRACE && $token->adjacent())
                                 ? self::OVERHANGING_INDENT | self::NO_INNER_NEWLINE
@@ -93,7 +93,7 @@ final class HangingIndentation implements MultiTokenRule
             if ($token->IsCode &&
                     $parent &&
                     $parent === $token->_prevCode &&
-                    $token !== $parent->ClosedBy &&
+                    $token->_nextCode->Index < $parent->ClosedBy->Index &&
                     ($parent->HangingIndentParentType & self::NO_INDENT)) {
                 $current = $token->_next;
                 $stack = [$token->BracketStack];
@@ -212,20 +212,28 @@ final class HangingIndentation implements MultiTokenRule
             } elseif ($token->ListParent) {
                 $stack[] = $token->ListParent;
             } elseif ($latest && $latest->BracketStack === $token->BracketStack) {
-                if ($token->_prevCode->is([
-                    T_DOUBLE_ARROW,
-                    ...TokenType::OPERATOR_COMPARISON_EXCEPT_COALESCE,
-                ]) || ($latest->Expression === $latest &&
-                        $token->Expression === $token &&
-                        $latest->_prevCode &&
-                        $this->TypeIndex->ExpressionDelimiter[$latest->_prevCode->id] &&
-                        $this->TypeIndex->ExpressionDelimiter[$token->_prevCode->id])) {
+                if ($this->TypeIndex->ExpressionDelimiter[$token->_prevCode->id]) {
                     $stack[] = $token;
                 } elseif ($latest->id === T_DOUBLE_ARROW) {
                     $stack[] = $latest;
                 } elseif ($token->Statement !== $token &&
                         $latest->Statement === $latest) {
-                    $stack[] = $latest;
+                    if ($token->Expression === $latest->Expression) {
+                        $stack[] = $latest;
+                    } else {
+                        $delimiter = $token->prevSiblingOf(
+                            T_DOUBLE_ARROW,
+                            ...TokenType::OPERATOR_ASSIGNMENT,
+                        );
+                        if ($delimiter->IsNull) {
+                            $stack[] = $latest;
+                        } else {
+                            $startOfLine = $token->_prevCode->startOfLine();
+                            if ($delimiter->Index < $startOfLine->Index) {
+                                $stack[] = $latest;
+                            }
+                        }
+                    }
                 } elseif ($token->Statement !== $token &&
                         $latest->Statement !== $latest) {
                     $latest = end($latest->HangingIndentStack);
@@ -277,8 +285,8 @@ final class HangingIndentation implements MultiTokenRule
             // Add at least one level of hanging indentation
             $indent++;
 
-            // And another if the token is mid-statement and `$parent` has
-            // overhanging indents
+            // And another if the token is mid-statement and has an
+            // OVERHANGING_INDENT parent
             if ($parent &&
                     ($parent->HangingIndentParentType & self::OVERHANGING_INDENT) &&
                     $token->Statement !== $token) {
