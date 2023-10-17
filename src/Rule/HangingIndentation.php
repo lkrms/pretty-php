@@ -93,7 +93,7 @@ final class HangingIndentation implements MultiTokenRule
             if ($token->IsCode &&
                     $parent &&
                     $parent === $token->_prevCode &&
-                    $token !== $parent->ClosedBy &&
+                    $token->_nextCode->Index < $parent->ClosedBy->Index &&
                     ($parent->HangingIndentParentType & self::NO_INDENT)) {
                 $current = $token->_next;
                 $stack = [$token->BracketStack];
