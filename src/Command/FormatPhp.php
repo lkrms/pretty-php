@@ -933,7 +933,7 @@ EOF,
         } elseif ($out && $out !== ['-'] && ($dirCount || count($out) !== count($in))) {
             throw new CliInvalidArgumentsException(
                 '--output is required once per input file'
-                    . ($dirCount ? ' and cannot be given with directories' : '')
+                . ($dirCount ? ' and cannot be given with directories' : '')
             );
         } elseif (!$out) {
             $out = $in;

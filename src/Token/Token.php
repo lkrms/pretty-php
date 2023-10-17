@@ -770,9 +770,9 @@ class Token extends PhpToken implements JsonSerializable
                 ->find(
                     fn(Token $t, ?Token $next) =>
                         ($t->AlignedWith &&
-                                ($allowSelfAlignment || $t !== $this)) ||
-                            ($next &&
-                                $next === $this->AlignedWith)
+                            ($allowSelfAlignment || $t !== $this)) ||
+                        ($next &&
+                            $next === $this->AlignedWith)
                 ) ?: $startOfLine;
 
         $code = $from->collect($this)->render(true);
