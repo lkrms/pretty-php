@@ -230,7 +230,7 @@ final class StandardWhitespace implements TokenRule
         }
 
         // Add LINE after labels
-        if ($token->id === T_COLON && $token->isLabelTerminator()) {
+        if ($token->id === T_COLON && $token->inLabel()) {
             $token->WhitespaceAfter |= WhitespaceType::LINE;
 
             return;
