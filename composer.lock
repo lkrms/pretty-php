@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a7a81af7015f321096059a3847a3aae0",
+    "content-hash": "9b60c3ca921db8d1c662e24ffe704382",
     "packages": [
         {
             "name": "lkrms/dice",
@@ -51,16 +51,16 @@
         },
         {
             "name": "lkrms/util",
-            "version": "v0.20.73",
+            "version": "v0.20.74",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/php-util.git",
-                "reference": "059e5da7b50a6e8fb607894757b870dab402ab08"
+                "reference": "9c00bf3bc8bf0f67e13412ab6020406559fd8c34"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/php-util/zipball/059e5da7b50a6e8fb607894757b870dab402ab08",
-                "reference": "059e5da7b50a6e8fb607894757b870dab402ab08",
+                "url": "https://api.github.com/repos/lkrms/php-util/zipball/9c00bf3bc8bf0f67e13412ab6020406559fd8c34",
+                "reference": "9c00bf3bc8bf0f67e13412ab6020406559fd8c34",
                 "shasum": ""
             },
             "require": {
@@ -76,7 +76,7 @@
                 "clue/phar-composer": "^1",
                 "firebase/php-jwt": "^6",
                 "league/oauth2-client": "^2",
-                "lkrms/pretty-php": "0.4.36",
+                "lkrms/pretty-php": "^0.4.40",
                 "phpstan/extension-installer": "^1",
                 "phpstan/phpstan": "^1",
                 "phpstan/phpstan-deprecation-rules": "^1",
@@ -117,9 +117,9 @@
             "description": "A lightweight PHP toolkit for expressive backend/CLI apps",
             "support": {
                 "issues": "https://github.com/lkrms/php-util/issues",
-                "source": "https://github.com/lkrms/php-util/tree/v0.20.73"
+                "source": "https://github.com/lkrms/php-util/tree/v0.20.74"
             },
-            "time": "2023-10-18T06:17:52+00:00"
+            "time": "2023-10-19T11:49:17+00:00"
         },
         {
             "name": "psr/container",

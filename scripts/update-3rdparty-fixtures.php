@@ -5,6 +5,7 @@ use Lkrms\Cli\CliApplication;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\File;
 use Lkrms\Facade\Sys;
+use Lkrms\Iterator\RecursiveFilesystemIterator;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
 
@@ -56,11 +57,12 @@ Console::info('Updating php-doc fixtures');
 $exclude = preg_quote("$repoRoot/php-doc/reference/", '/');
 $count = 0;
 $replaced = 0;
-foreach (File::find(
-    "$repoRoot/php-doc",
-    "/^$exclude/",
-    '/\.xml$/'
-) as $xmlFile) {
+foreach (
+    (new RecursiveFilesystemIterator())
+        ->in("$repoRoot/php-doc")
+        ->exclude("/^$exclude/")
+        ->include('/\.xml$/') as $xmlFile
+) {
     $xml = file_get_contents((string) $xmlFile);
 
     // Remove entities without changing anything between CDATA tags

@@ -29,6 +29,7 @@ use Lkrms\PrettyPHP\Rule\Contract\ListRule;
 use Lkrms\PrettyPHP\Rule\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Rule\Contract\Rule;
 use Lkrms\PrettyPHP\Rule\Contract\TokenRule;
+use Lkrms\PrettyPHP\Rule\Preset\Drupal;
 use Lkrms\PrettyPHP\Rule\Preset\Laravel;
 use Lkrms\PrettyPHP\Rule\Preset\Symfony;
 use Lkrms\PrettyPHP\Rule\Preset\WordPress;
@@ -223,6 +224,7 @@ final class Formatter implements IReadable
         PreserveOneLineStatements::class,  // processToken  (95)
         BlankLineBeforeReturn::class,      // processToken  (97)
         StrictExpressions::class,          // processToken  (98)
+        Drupal::class,                     // processToken (100)
         Laravel::class,                    // processToken (100)
         Symfony::class,                    // processToken (100), processList (100)
         WordPress::class,                  // processToken (100)
@@ -743,7 +745,9 @@ final class Formatter implements IReadable
                         T_ARRAY,
                         T_DECLARE,
                         T_FOR,
+                        T_ISSET,
                         T_LIST,
+                        T_STATIC,
                         T_UNSET,
                         T_USE,
                         T_VARIABLE,

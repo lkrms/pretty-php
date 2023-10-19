@@ -19,7 +19,7 @@
         "exclude": {
             "description": "A regular expression for pathnames to exclude when searching a directory.",
             "type": "string",
-            "default": "/\\/(\\.git|\\.hg|\\.svn|_?build|dist|tests[-._0-9a-z]*|var|vendor)\\/$/i"
+            "default": "/\\/(\\.git|\\.hg|\\.svn|_?build|dist|vendor)\\/$/"
         },
         "includeIfPhp": {
             "description": "A regular expression for pathnames to check for PHP code when searching a directory. The regex applied if null or true is: /(\\/|^)[^.]+$/",
@@ -137,6 +137,7 @@
         "preset": {
             "description": "Apply a formatting preset.",
             "enum": [
+                "drupal",
                 "laravel",
                 "symfony",
                 "wordpress"

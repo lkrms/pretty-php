@@ -15,6 +15,7 @@ use Lkrms\Console\Catalog\ConsoleLevel;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\File;
 use Lkrms\Facade\Sys;
+use Lkrms\Iterator\RecursiveFilesystemIterator;
 use Lkrms\PrettyPHP\Catalog\FormatterFlag;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
@@ -23,6 +24,7 @@ use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
 use Lkrms\PrettyPHP\Filter\Contract\Filter;
 use Lkrms\PrettyPHP\Filter\SortImports;
 use Lkrms\PrettyPHP\Rule\Contract\Rule;
+use Lkrms\PrettyPHP\Rule\Preset\Drupal;
 use Lkrms\PrettyPHP\Rule\Preset\Laravel;
 use Lkrms\PrettyPHP\Rule\Preset\Symfony;
 use Lkrms\PrettyPHP\Rule\Preset\WordPress;
@@ -45,6 +47,7 @@ use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
+use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Test;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
 use SebastianBergmann\Diff\Differ;
@@ -100,6 +103,18 @@ class FormatPhp extends CliCommand
     ];
 
     private const PRESET_MAP = [
+        'drupal' => [
+            'space' => 2,
+            'disable' => [],
+            'enable' => [],
+            'one-true-brace-style' => true,
+            'heredoc-indent' => 'none',
+            '@internal' => [
+                'preset-rules' => [
+                    Drupal::class,
+                ],
+            ],
+        ],
         'laravel' => [
             'disable' => [],
             'enable' => [
@@ -434,7 +449,7 @@ A regular expression for pathnames to exclude when searching a directory.
 Exclusions are applied before inclusions (`-I/--include`).
 EOF)
                 ->optionType(CliOptionType::VALUE)
-                ->defaultValue('/\/(\.git|\.hg|\.svn|_?build|dist|tests[-._0-9a-z]*|var|vendor)\/$/i')
+                ->defaultValue('/\/(\.git|\.hg|\.svn|_?build|dist|vendor)\/$/')
                 ->bindTo($this->ExcludeRegex),
             CliOption::build()
                 ->long('include-if-php')
@@ -1398,22 +1413,28 @@ EOF,
                 $addFile(new SplFileInfo($path));
                 continue;
             }
+
             if (!is_dir($path)) {
                 throw new CliInvalidArgumentsException(sprintf('file not found: %s', $path));
             }
-            $dirCount++;
-            $iterator = File::find(
-                $path,
-                $this->ExcludeRegex,
-                $this->IncludeRegex,
-                null,
-                $this->IncludeIfPhpRegex ? [
-                    $this->IncludeIfPhpRegex =>
-                        fn(SplFileInfo $file) => File::isPhp((string) $file)
-                ] : null
-            );
 
-            /** @var SplFileInfo $file */
+            $dirCount++;
+
+            $iterator =
+                (new RecursiveFilesystemIterator())
+                    ->in($path)
+                    ->exclude($this->ExcludeRegex)
+                    ->include($this->IncludeRegex);
+
+            if ($this->IncludeIfPhpRegex !== null) {
+                $iterator = $iterator
+                    ->include(
+                        fn(SplFileInfo $file, string $path) =>
+                            Pcre::match($this->IncludeIfPhpRegex, $path) &&
+                            File::isPhp((string) $file)
+                    );
+            }
+
             foreach ($iterator as $file) {
                 $addFile($file);
             }
@@ -1435,7 +1456,9 @@ EOF,
 
         $logDir = "{$this->DebugDirectory}/progress-log";
         File::maybeCreateDirectory($logDir);
-        File::find($logDir, null, null, null, null, false)
+        (new RecursiveFilesystemIterator())
+            ->in($logDir)
+            ->doNotRecurse()
             ->forEach(fn(SplFileInfo $file) => unlink((string) $file));
 
         // Only dump output logged after something changed
