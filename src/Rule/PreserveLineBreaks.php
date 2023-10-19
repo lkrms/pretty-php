@@ -169,7 +169,7 @@ final class PreserveLineBreaks implements MultiTokenRule
         // statements and labels
         if ($token->id === T_COLON &&
                 !$token->inSwitchCase() &&
-                !$token->isLabelTerminator()) {
+                !$token->inLabel()) {
             return false;
         }
 

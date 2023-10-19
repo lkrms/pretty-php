@@ -3,11 +3,13 @@
 namespace Lkrms\PrettyPHP\Token;
 
 use Lkrms\PrettyPHP\Catalog\CommentType;
+use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Support\TokenIndentDelta;
 use Lkrms\PrettyPHP\Token\Concern\CollectibleTokenTrait;
+use Lkrms\PrettyPHP\Token\Concern\ContextAwareTokenTrait;
 use Lkrms\PrettyPHP\Token\Concern\NavigableTokenTrait;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\Utility\Convert;
@@ -18,6 +20,7 @@ use PhpToken;
 class Token extends PhpToken implements JsonSerializable
 {
     use CollectibleTokenTrait;
+    use ContextAwareTokenTrait;
     use NavigableTokenTrait;
 
     public bool $BodyIsUnenclosed = false;
@@ -261,7 +264,7 @@ class Token extends PhpToken implements JsonSerializable
                            ->collectSiblings($this->nextCode())
                            ->filter(fn(Token $t) => $t->id === T_WHILE && $t->prevSibling(2)->id !== T_WHILE)
                            ->first() === $this->nextCode())))) ||
-                ($this->id === T_COLON && ($this->inSwitchCase() || $this->isLabelTerminator()))) {
+                ($this->id === T_COLON && ($this->inSwitchCase() || $this->inLabel()))) {
             $this->applyStatement();
         } elseif ($this->is([T_CLOSE_PARENTHESIS, T_CLOSE_BRACKET]) ||
                 ($this->id === T_CLOSE_BRACE && !$this->isStructuralBrace(false))) {
@@ -327,7 +330,9 @@ class Token extends PhpToken implements JsonSerializable
      */
     private function maybeApplyExpression(): void
     {
-        if ($this->id === T_QUESTION) {
+        if ($this->id === T_QUESTION &&
+            $this->getQuestionType() ===
+                TokenSubType::QUESTION_TERNARY_OPERATOR) {
             $current = $this;
             $count = 0;
             while (($current = $current->_nextSibling) &&
@@ -335,11 +340,18 @@ class Token extends PhpToken implements JsonSerializable
                 if ($current->IsTernaryOperator) {
                     continue;
                 }
-                if ($current->id === T_QUESTION) {
+                if ($current->id === T_QUESTION &&
+                    $current->getQuestionType() ===
+                        TokenSubType::QUESTION_TERNARY_OPERATOR) {
                     $count++;
                     continue;
                 }
-                if ($current->id !== T_COLON || $count--) {
+                if (!($current->id === T_COLON &&
+                    $current->getColonType() ===
+                        TokenSubType::COLON_TERNARY_OPERATOR)) {
+                    continue;
+                }
+                if ($count--) {
                     continue;
                 }
                 $current->IsTernaryOperator = $this->IsTernaryOperator = true;
@@ -363,7 +375,7 @@ class Token extends PhpToken implements JsonSerializable
             $this->applyExpression();
         } elseif ($this->TokenTypeIndex->ExpressionTerminator[$this->id] ||
                 $this->IsStatementTerminator ||
-                ($this->id === T_COLON && ($this->inSwitchCase() || $this->isLabelTerminator())) ||
+                ($this->id === T_COLON && ($this->inSwitchCase() || $this->inLabel())) ||
                 ($this->id === T_CLOSE_BRACE &&
                     (!$this->isStructuralBrace() || $this->isMatchBrace())) ||
                 $this->IsTernaryOperator) {
@@ -466,6 +478,11 @@ class Token extends PhpToken implements JsonSerializable
         $a['line'] = $this->line;
         $a['pos'] = $this->pos;
         $a['column'] = $this->column;
+
+        if ($this->SubType !== null) {
+            $a['SubType'] = TokenSubType::toName($this->SubType);
+        }
+
         $a['_prevSibling'] = $this->_prevSibling;
         $a['_nextSibling'] = $this->_nextSibling;
         $a['Parent'] = $this->Parent;
@@ -1372,45 +1389,6 @@ class Token extends PhpToken implements JsonSerializable
         return $this->_nextCode && $this->_nextCode->Statement === $this->_nextCode;
     }
 
-    /**
-     * True if the token is part of a case or default statement
-     *
-     * Specifically, the token may be:
-     * - `T_CASE` or `T_DEFAULT`
-     * - the `:` or `;` after `T_CASE` or `T_DEFAULT`, or
-     * - part of the expression between `T_CASE` and its terminator
-     */
-    final public function inSwitchCase(): bool
-    {
-        return $this->id === T_CASE ||
-            ($this->parent()->prevSibling(2)->id === T_SWITCH &&
-                ($this->id === T_DEFAULT ||
-                    $this->prevSiblingOf(T_COLON, T_SEMICOLON, T_CLOSE_TAG, T_CASE, T_DEFAULT)
-                         ->is([T_CASE, T_DEFAULT])));
-    }
-
-    /**
-     * True if the token is the colon after a label
-     */
-    final public function isLabelTerminator(): bool
-    {
-        if ($this->id !== T_COLON ||
-                // Exclude named arguments
-                ($this->Parent && $this->Parent->id === T_OPEN_PARENTHESIS)) {
-            return false;
-        }
-
-        /** @var static */
-        $prev = $this->_prevCode;
-        if ($prev->id !== T_STRING) {
-            return false;
-        }
-
-        $prev = $prev->_prevSibling;
-        return !$prev ||
-            $prev->EndStatement === $prev;
-    }
-
     public function isArrayOpenBracket(): bool
     {
         return $this->id === T_OPEN_BRACKET ||
@@ -1493,25 +1471,6 @@ class Token extends PhpToken implements JsonSerializable
 
         return $parts->hasOneOf(...TokenType::DECLARATION) &&
             (!$types || $parts->hasOneOf(...$types));
-    }
-
-    public function isParameterList(): bool
-    {
-        if ($this->id !== T_OPEN_PARENTHESIS || !$this->_prevCode) {
-            return false;
-        }
-
-        $prev = $this->_prevCode->skipPrevSiblingsOf(
-            T_STRING, T_READONLY, ...TokenType::AMPERSAND
-        );
-
-        return $prev->id === T_FUNCTION || $prev->id === T_FN;
-    }
-
-    public function inParameterList(): bool
-    {
-        return $this->Parent &&
-            $this->Parent->isParameterList();
     }
 
     final public function getIndentDelta(Token $target): TokenIndentDelta

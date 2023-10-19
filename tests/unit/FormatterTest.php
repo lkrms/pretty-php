@@ -440,6 +440,27 @@ if ($d) {
     g(); }
 PHP,
             ],
+            'ternary with closure return type in expression 1' => [
+                <<<'PHP'
+<?php
+$filter =
+    $exclude
+        ? function ($value, $key, $iterator) use ($exclude): bool {
+            return (bool) preg_match($exclude, $key);
+        }
+        : null;
+
+PHP,
+                <<<'PHP'
+<?php
+$filter =
+$exclude
+? function ($value, $key, $iterator) use ($exclude): bool {
+return (bool) preg_match($exclude, $key);
+}
+: null;
+PHP,
+            ],
         ];
     }
 

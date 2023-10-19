@@ -6,6 +6,7 @@ use Lkrms\PrettyPHP\Catalog\CustomToken;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Filter\Contract\Filter;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
+use Lkrms\PrettyPHP\Token\Token;
 
 trait NavigableTokenTrait
 {
@@ -20,77 +21,77 @@ trait NavigableTokenTrait
     public int $column = -1;
 
     /**
-     * @var static|null
+     * @var Token|null
      */
     public $_prev;
 
     /**
-     * @var static|null
+     * @var Token|null
      */
     public $_next;
 
     /**
-     * @var static|null
+     * @var Token|null
      */
     public $_prevCode;
 
     /**
-     * @var static|null
+     * @var Token|null
      */
     public $_nextCode;
 
     /**
-     * @var static|null
+     * @var Token|null
      */
     public $_prevSibling;
 
     /**
-     * @var static|null
+     * @var Token|null
      */
     public $_nextSibling;
 
     /**
-     * @var static|null
+     * @var Token|null
      */
     public $OpenedBy;
 
     /**
-     * @var static|null
+     * @var Token|null
      */
     public $ClosedBy;
 
     /**
-     * @var static|null
+     * @var Token|null
      */
     public $Parent;
 
     /**
-     * @var static[]
+     * @var Token[]
      */
     public $BracketStack = [];
 
     /**
-     * @var static|null
+     * @var Token|null
      */
     public $OpenTag;
 
     /**
-     * @var static|null
+     * @var Token|null
      */
     public $CloseTag;
 
     /**
-     * @var static|null
+     * @var Token|null
      */
     public $String;
 
     /**
-     * @var static|null
+     * @var Token|null
      */
     public $StringClosedBy;
 
     /**
-     * @var static|null
+     * @var Token|null
      */
     public $Heredoc;
 
@@ -134,10 +135,11 @@ trait NavigableTokenTrait
     public TokenTypeIndex $TokenTypeIndex;
 
     /**
-     * @return static[]
+     * @return Token[]
      */
     public static function onlyTokenize(string $code, int $flags = 0, Filter ...$filters): array
     {
+        /** @var Token[] */
         $tokens = parent::tokenize($code, $flags);
 
         if (!$tokens) {
@@ -145,7 +147,6 @@ trait NavigableTokenTrait
         }
 
         foreach ($filters as $filter) {
-            /** @var static[] */
             $tokens = $filter->filterTokens($tokens);
         }
 
@@ -153,7 +154,7 @@ trait NavigableTokenTrait
     }
 
     /**
-     * @return static[]
+     * @return Token[]
      */
     public static function tokenize(string $code, int $flags = 0, ?TokenTypeIndex $tokenTypeIndex = null, Filter ...$filters): array
     {
@@ -172,7 +173,7 @@ trait NavigableTokenTrait
         // - assign token type index
         // - set `OpenTag`, `CloseTag`
 
-        /** @var static|null */
+        /** @var Token|null */
         $prev = null;
         foreach ($tokens as $token) {
             if ($prev) {
@@ -226,9 +227,9 @@ trait NavigableTokenTrait
         // - pair open brackets and tags with their counterparts
         // - link siblings, parents and children
 
-        /** @var static[] */
+        /** @var Token[] */
         $linked = [];
-        /** @var static|null */
+        /** @var Token|null */
         $prev = null;
         $index = 0;
 
@@ -259,7 +260,6 @@ trait NavigableTokenTrait
                 $opener = array_pop($stack);
                 if (($opener &&
                     $opener->id === T_COLON &&
-                    // $opener->BracketStack === $stack &&
                     ($token->is(TokenType::ALT_SYNTAX_END) ||
                         ($token->is(TokenType::ALT_SYNTAX_CONTINUE_WITH_EXPRESSION) &&
                             $token->nextSimpleSibling(2)->id === T_COLON) ||
@@ -367,7 +367,7 @@ trait NavigableTokenTrait
                     continue;
                 }
 
-                /** @var static */
+                /** @var Token */
                 $_prev = $token->prevSiblingOf(T_FUNCTION, T_CLASS);
                 if (!$_prev->IsNull &&
                         $_prev->nextSiblingOf(T_OPEN_BRACE)->ClosedBy === $token) {
@@ -430,7 +430,7 @@ trait NavigableTokenTrait
      */
     final public function isStructuralBrace(bool $orMatch = true): bool
     {
-        /** @var static */
+        /** @var Token */
         $current = $this->OpenedBy ?: $this;
 
         // Exclude T_CURLY_OPEN and T_DOLLAR_OPEN_CURLY_BRACES
@@ -438,7 +438,7 @@ trait NavigableTokenTrait
             return false;
         }
 
-        /** @var static|null */
+        /** @var Token|null */
         $prev = $current->_prevSibling->_prevSibling ?? null;
         if ($prev && $prev->id === T_MATCH) {
             return $orMatch;
@@ -457,7 +457,7 @@ trait NavigableTokenTrait
     /**
      * Get a new T_NULL token
      *
-     * @return static
+     * @return Token
      */
     public function null()
     {
@@ -482,9 +482,9 @@ trait NavigableTokenTrait
      *
      * Otherwise, `$token` is resolved and returned.
      *
-     * @param static|(callable(): static) $token
-     * @param (callable(static): bool)|null $condition
-     * @return static
+     * @param Token|(callable(): Token) $token
+     * @param (callable(Token): bool)|null $condition
+     * @return Token
      */
     public function or($token, ?callable $condition = null)
     {
@@ -593,7 +593,7 @@ trait NavigableTokenTrait
     /**
      * Get the previous token that is one of the listed types
      *
-     * @return static
+     * @return Token
      */
     final public function prevOf(int $type, int ...$types)
     {
@@ -610,7 +610,7 @@ trait NavigableTokenTrait
     /**
      * Get the next token that is one of the listed types
      *
-     * @return static
+     * @return Token
      */
     final public function nextOf(int $type, int ...$types)
     {
@@ -627,7 +627,7 @@ trait NavigableTokenTrait
     /**
      * Get the previous sibling that is one of the listed types
      *
-     * @return static
+     * @return Token
      */
     final public function prevSiblingOf(int $type, int ...$types)
     {
@@ -644,7 +644,7 @@ trait NavigableTokenTrait
     /**
      * Get the next sibling that is one of the listed types
      *
-     * @return static
+     * @return Token
      */
     final public function nextSiblingOf(int $type, int ...$types)
     {
@@ -663,7 +663,7 @@ trait NavigableTokenTrait
      *
      * The token returns itself if it satisfies the criteria.
      *
-     * @return static
+     * @return Token
      */
     final public function skipSiblingsOf(int $type, int ...$types)
     {
@@ -680,7 +680,7 @@ trait NavigableTokenTrait
      *
      * The token returns itself if it satisfies the criteria.
      *
-     * @return static
+     * @return Token
      */
     final public function skipPrevSiblingsOf(int $type, int ...$types)
     {
@@ -695,7 +695,7 @@ trait NavigableTokenTrait
     /**
      * Get the first reachable token
      *
-     * @return static
+     * @return Token
      */
     final public function first()
     {
@@ -709,7 +709,7 @@ trait NavigableTokenTrait
     /**
      * Get the last reachable token
      *
-     * @return static
+     * @return Token
      */
     final public function last()
     {
@@ -723,7 +723,7 @@ trait NavigableTokenTrait
     /**
      * Get the token at the beginning of the token's original line
      *
-     * @return static
+     * @return Token
      */
     final public function startOfOriginalLine()
     {
@@ -737,7 +737,7 @@ trait NavigableTokenTrait
     /**
      * Get the token at the end of the token's original line
      *
-     * @return static
+     * @return Token
      */
     final public function endOfOriginalLine()
     {
@@ -752,9 +752,9 @@ trait NavigableTokenTrait
      * Get the next sibling via token traversal, without accounting for PHP's
      * alternative syntax
      *
-     * @return static
+     * @return Token
      */
-    private function nextSimpleSibling(int $offset = 1)
+    final public function nextSimpleSibling(int $offset = 1)
     {
         $depth = 0;
         $t = $this;
