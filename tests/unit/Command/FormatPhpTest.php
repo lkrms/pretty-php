@@ -231,7 +231,208 @@ class FooBar {
     }
 }
 PHP,
-                ['--preset', 'symfony']
+                ['--preset', 'symfony'],
+            ],
+            'Drupal #1' => [
+                <<<'PHP'
+<?php
+
+/**
+ * @file
+ * File description.
+ *
+ * An extended description of the file.
+ */
+
+function foo($bar, $baz, $qux, $quux) {
+  if ($bar) {
+    return $qux;
+  }
+  elseif ($baz) {
+    return $quux;
+  }
+  else {
+    return null;
+  }
+}
+
+PHP,
+                <<<'PHP'
+<?php
+/**
+ * @file
+ * File description.
+ *
+ * An extended description of the file.
+ */
+function foo($bar, $baz, $qux, $quux)
+{
+if ($bar) {
+return $qux;
+} elseif ($baz) {
+return $quux;
+} else {
+return null;
+}
+}
+PHP,
+                ['--preset', 'drupal'],
+            ],
+            'Drupal #2' => [
+                <<<'PHP'
+<?php
+
+/**
+ * @file
+ * File description.
+ *
+ * An extended description of the file.
+ */
+
+namespace Vendor;
+
+use Vendor\Qux\A;
+use Vendor\Quux;
+use Bar;
+
+/**
+ * Class description.
+ */
+class Foo {
+
+  public const ANSWER = 42;
+
+  private string $question;
+
+  /**
+   * @param Bar|Quux|A|null $quux
+   */
+  public function __construct(?string $question, $quux = null) {
+    if ($quux === null) {
+      $this->question = $this->sanitise($question);
+    }
+    elseif ($quux instanceof Quux) {
+      $this->question = $quux->escape($question);
+    }
+    else {
+      $this->question = (string) $quux;
+    }
+  }
+
+  /**
+   * Cleans up the question
+   *
+   * @param array<string,mixed> $options
+   *
+   * @throws \RuntimeException when an invalid option is provided.
+   */
+  private function sanitise(?string $question, array $options = []): ?string {
+    $defaultOptions = [
+      'option1' => 'value',
+      'option2' => 'some other value',
+    ];
+
+    // This loop is completely pointless, of course
+    do {
+      foreach ($options as $name => $value) {
+        if (!array_key_exists($name, $defaultOptions)) {
+          throw new \RuntimeException(sprintf('Invalid option: %s', $name));
+        }
+      }
+    } while (false);
+
+    $mergedOptions = array_merge($defaultOptions, $options);
+
+    if (null === $question) {
+      return null;
+    }
+
+    if ('value' === $mergedOptions['option1']) {
+      return substr($question, 0, 5);
+    }
+
+    return ucwords($question);
+  }
+
+}
+
+PHP,
+                <<<'PHP'
+<?php
+/**
+ * @file
+ * File description.
+ *
+ * An extended description of the file.
+ */
+namespace Vendor;
+use Vendor\Qux\A;
+use Vendor\Quux;
+use Bar;
+/**
+ * Class description.
+ */
+class Foo
+{
+public const ANSWER = 42;
+private string $question;
+/**
+ * @param Bar|Quux|A|null $quux
+ */
+public function __construct(?string $question, $quux = null)
+{
+
+if ($quux === null) {
+
+$this->question = $this->sanitise($question);
+
+} elseif ($quux instanceof Quux) {
+
+$this->question = $quux->escape($question);
+
+} else {
+
+$this->question = (string) $quux;
+
+}
+
+}
+/**
+ * Cleans up the question
+ *
+ * @param array<string,mixed> $options
+ *
+ * @throws \RuntimeException when an invalid option is provided.
+ */
+private function sanitise(?string $question, array $options = []): ?string
+{
+$defaultOptions = ['option1' => 'value',
+                   'option2' => 'some other value',];
+
+// This loop is completely pointless, of course
+do {
+foreach ($options as $name => $value) {
+if (!array_key_exists($name, $defaultOptions)) {
+throw new \RuntimeException(sprintf('Invalid option: %s', $name));
+}
+}
+} while (false);
+
+$mergedOptions = array_merge($defaultOptions, $options);
+
+if (null === $question) {
+return null;
+}
+
+if ('value' === $mergedOptions['option1']) {
+return substr($question, 0, 5);
+}
+
+return ucwords($question);
+}
+}
+PHP,
+                ['--preset', 'drupal'],
             ],
         ];
     }
