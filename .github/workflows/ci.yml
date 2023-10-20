@@ -263,6 +263,8 @@ jobs:
         args:
           - --include-if-php --preset laravel src tests bin
         include:
+          - repository: drupal/drupal
+            args: --exclude '/\/(\.git|\.hg|\.svn|_?build|dist|vendor|core\/lib\/Drupal\/Component\/Transliteration\/data)\/$/' --include-if-php=/./ --preset drupal .
           - repository: symfony/symfony
             args: --include-if-php --preset symfony .
           - repository: WordPress/WordPress
@@ -291,4 +293,4 @@ jobs:
           artifact_path: ${{ needs.build.outputs.artifact_path }}
         run: |
           php "$artifact_path" --print-config ${{ matrix.args }} | tee .prettyphp
-          php "$artifact_path" || { status=$? && [[ $status -eq 2 ]] || (exit $status); }
+          php "$artifact_path" --timers || { status=$? && [[ $status -eq 2 ]] || (exit $status); }

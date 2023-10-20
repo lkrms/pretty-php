@@ -31,7 +31,7 @@ pretty-php - Format a PHP file
 
   Exclusions are applied before inclusions (**`-I/--include`**).
 
-  The default regex is: `/\/(\.git|\.hg|\.svn|_?build|dist|tests[-._0-9a-z]*|var|vendor)\/$/i`
+  The default regex is: `/\/(\.git|\.hg|\.svn|_?build|dist|vendor)\/$/`
 
 - **`-P`**, **`--include-if-php`**\[=*<u>regex</u>*]
 
@@ -156,7 +156,7 @@ pretty-php - Format a PHP file
   for **`pretty-php`** output to satisfy the formatting-related requirements of
   PHP-FIG coding style standards.
 
-- **`-p`**, **`--preset`** (`laravel`|`symfony`|`wordpress`)
+- **`-p`**, **`--preset`** (`drupal`|`laravel`|`symfony`|`wordpress`)
 
   Apply a formatting preset.
 
