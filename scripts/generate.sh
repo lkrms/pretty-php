@@ -26,3 +26,5 @@ done
 FILE=docs/Usage.md
 printf '==> generating %s\n' "$FILE"
 bin/pretty-php _md >"$FILE"
+
+vendor/bin/lk-util generate builder --no-meta --force 'Lkrms\PrettyPHP\Formatter'

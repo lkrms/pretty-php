@@ -95,7 +95,7 @@ final class Formatter implements IReadable
     public string $Tab;
 
     /**
-     * The size of an indent, in spaces
+     * The size of a tab, in spaces
      *
      * @readonly
      */
@@ -369,17 +369,20 @@ final class Formatter implements IReadable
      * Rules are processed from lowest to highest priority (smallest to biggest
      * number).
      *
-     * @param array<class-string<Rule>> $skipRules
-     * @param array<class-string<Rule>> $addRules
-     * @param array<class-string<Filter>> $skipFilters
-     * @param int-mask-of<FormatterFlag::*> $flags
+     * @param bool $insertSpaces Use spaces for indentation?
+     * @param int $tabSize The size of a tab, in spaces
+     * @param array<class-string<Rule>> $disableRules Non-mandatory rules to disable
+     * @param array<class-string<Rule>> $enableRules Additional rules to enable
+     * @param array<class-string<Filter>> $disableFilters Optional filters to disable
+     * @param int-mask-of<FormatterFlag::*> $flags Debugging flags
+     * @param TokenTypeIndex|null $tokenTypeIndex Provide a customised token type index
      */
     public function __construct(
         bool $insertSpaces = true,
         int $tabSize = 4,
-        array $skipRules = [],
-        array $addRules = [],
-        array $skipFilters = [],
+        array $disableRules = [],
+        array $enableRules = [],
+        array $disableFilters = [],
         int $flags = 0,
         ?TokenTypeIndex $tokenTypeIndex = null
     ) {
@@ -396,7 +399,7 @@ final class Formatter implements IReadable
         // If using tabs for indentation, disable incompatible rules
         if (!$insertSpaces) {
             array_push(
-                $skipRules,
+                $disableRules,
                 AlignArrowFunctions::class,
                 AlignChains::class,
                 AlignLists::class,
@@ -404,7 +407,7 @@ final class Formatter implements IReadable
             );
         }
 
-        if (in_array(PreserveLineBreaks::class, $skipRules, true)) {
+        if (in_array(PreserveLineBreaks::class, $disableRules, true)) {
             $this->PreserveLineBreaks = false;
             $this->TokenTypeIndex = $this->TokenTypeIndex->withoutPreservingNewlines();
         }
@@ -414,11 +417,11 @@ final class Formatter implements IReadable
                 self::DEFAULT_RULES,
                 array_intersect(
                     self::ADDITIONAL_RULES,
-                    $addRules
+                    $enableRules
                 )
             ),
             // Remove mandatory rules from $skipRules
-            array_diff($skipRules, [
+            array_diff($disableRules, [
                 ...self::MANDATORY_RULES,
                 PreserveLineBreaks::class,
             ])
@@ -496,7 +499,7 @@ final class Formatter implements IReadable
             self::DEFAULT_FILTERS,
             array_intersect(
                 self::OPTIONAL_FILTERS,
-                $skipFilters
+                $disableFilters
             )
         );
 
