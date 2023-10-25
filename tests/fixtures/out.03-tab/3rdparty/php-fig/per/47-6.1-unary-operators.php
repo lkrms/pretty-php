@@ -1,1 +1,3 @@
+<?php
+
 $intValue = (int) $input;

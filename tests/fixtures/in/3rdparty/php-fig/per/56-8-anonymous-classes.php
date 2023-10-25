@@ -3,7 +3,7 @@
 // Brace on the same line
 // No arguments
 $instance = new class extends \Foo implements \HandleableInterface {
-    // Class content
+    // ...
 };
 
 // Brace on the next line
@@ -16,5 +16,5 @@ $instance = new class($a) extends \Foo implements
     public function __construct(public int $a)
     {
     }
-    // Class content
+    // ...
 };

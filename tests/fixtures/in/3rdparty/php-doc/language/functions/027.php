@@ -1,25 +1,20 @@
 <?php
-function foo() {
-    echo "In foo()<br />\n";
-}
-
-function bar($arg = '')
+class Foo
 {
-    echo "In bar(); argument was '$arg'.<br />\n";
+    function Variable()
+    {
+        $name = 'Bar';
+        $this->$name(); // This calls the Bar() method
+    }
+    
+    function Bar()
+    {
+        echo "This is Bar";
+    }
 }
 
-// This is a wrapper function around echo
-function echoit($string)
-{
-    echo $string;
-}
+$foo = new Foo();
+$funcname = "Variable";
+$foo->$funcname();  // This calls $foo->Variable()
 
-$func = 'foo';
-$func();        // This calls foo()
-
-$func = 'bar';
-$func('test');  // This calls bar()
-
-$func = 'echoit';
-$func('test');  // This calls echoit()
 ?>

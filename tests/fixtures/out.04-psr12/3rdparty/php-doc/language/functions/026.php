@@ -1,9 +1,27 @@
 <?php
 
-function &returns_reference()
+function foo()
 {
-    return $someref;
+    echo "In foo()<br />\n";
 }
 
-$newref = &returns_reference();
+function bar($arg = '')
+{
+    echo "In bar(); argument was '$arg'.<br />\n";
+}
+
+// This is a wrapper function around echo
+function echoit($string)
+{
+    echo $string;
+}
+
+$func = 'foo';
+$func();  // This calls foo()
+
+$func = 'bar';
+$func('test');  // This calls bar()
+
+$func = 'echoit';
+$func('test');  // This calls echoit()
 ?>

@@ -4,15 +4,15 @@ namespace Vendor\Package;
 
 abstract class ClassName
 {
-	protected static readonly string $foo;
+	protected static string $foo;
 
-	final protected int $beep;
+	private readonly int $beep;
 
 	abstract protected function zim();
 
 	final public static function bar()
 	{
-		// method body
+		// ...
 	}
 }
 

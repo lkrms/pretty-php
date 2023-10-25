@@ -9,6 +9,6 @@ class ClassName
 		&$arg2,
 		array $arg3 = [],
 	) {
-		// method body
+		// ...
 	}
 }

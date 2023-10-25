@@ -24,5 +24,5 @@ use const Vendor\Package\{CONSTANT_A, CONSTANT_B, CONSTANT_C};
  */
 class FooBar
 {
-    // ... additional PHP code ...
+    // ...
 }

@@ -2,7 +2,7 @@
 <html>
 <body>
     <?php
-        // ... additional PHP code ...
+        // ...
     ?>
 </body>
 </html>

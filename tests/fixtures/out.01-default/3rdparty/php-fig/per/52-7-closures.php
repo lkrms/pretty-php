@@ -5,7 +5,7 @@ $longArgs_noVars = function (
     $longerArgument,
     $muchLongerArgument,
 ) {
-    // body
+    // ...
 };
 
 $noArgs_longVars = function () use (
@@ -13,7 +13,7 @@ $noArgs_longVars = function () use (
     $longerVar2,
     $muchLongerVar3,
 ) {
-    // body
+    // ...
 };
 
 $longArgs_longVars = function (
@@ -25,7 +25,7 @@ $longArgs_longVars = function (
     $longerVar2,
     $muchLongerVar3,
 ) {
-    // body
+    // ...
 };
 
 $longArgs_shortVars = function (
@@ -33,7 +33,7 @@ $longArgs_shortVars = function (
     $longerArgument,
     $muchLongerArgument,
 ) use ($var1) {
-    // body
+    // ...
 };
 
 $shortArgs_longVars = function ($arg) use (
@@ -41,5 +41,5 @@ $shortArgs_longVars = function ($arg) use (
     $longerVar2,
     $muchLongerVar3,
 ) {
-    // body
+    // ...
 };

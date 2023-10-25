@@ -2,20 +2,16 @@
 
 class Foo
 {
-    function Variable()
-    {
-        $name = 'Bar';
-        $this->$name();  // This calls the Bar() method
-    }
+    static $variable = 'static property';
 
-    function Bar()
+    static function Variable()
     {
-        echo 'This is Bar';
+        echo 'Method Variable called';
     }
 }
 
-$foo = new Foo();
-$funcname = 'Variable';
-$foo->$funcname();  // This calls $foo->Variable()
+echo Foo::$variable;  // This prints 'static property'. It does need a $variable in this scope.
+$variable = 'Variable';
+Foo::$variable();  // This calls $foo->Variable() reading $variable in this scope.
 
 ?>
