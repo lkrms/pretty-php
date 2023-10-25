@@ -1,1 +1,6 @@
+# Exclude generated files from GitHub diffs and stats
+in/versions.json linguist-generated
+in/3rdparty/** linguist-generated
+out.*/** linguist-generated
+
 out.04-psr12/** text eol=lf
