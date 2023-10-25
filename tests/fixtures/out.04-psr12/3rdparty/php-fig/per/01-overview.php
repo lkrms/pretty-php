@@ -26,7 +26,7 @@ class Foo extends Bar implements FooInterface
 
     final public static function bar()
     {
-        // method body
+        // ...
     }
 }
 

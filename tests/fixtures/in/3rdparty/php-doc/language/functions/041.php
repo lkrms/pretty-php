@@ -1,10 +1,8 @@
 <?php
 
-fn(array $x) => $x;
-static fn(): int => $x;
-fn($x = 42) => $x;
-fn(&$x) => $x;
-fn&($x) => $x;
-fn($x, ...$rest) => $rest;
+$x = 1;
+$fn = fn() => $x++; // Has no effect
+$fn();
+var_export($x);  // Outputs 1
 
 ?>

@@ -10,7 +10,7 @@ die() {
 [[ ${BASH_SOURCE[0]} -ef scripts/generate.sh ]] ||
     die "must run from root of package folder"
 
-(($#)) || set -- php82 php81 php80 php74
+(($#)) || set -- php83 php82 php81 php80 php74
 
 for PHP in "$@"; do
     type -P "$PHP" >/dev/null ||
@@ -26,3 +26,5 @@ done
 FILE=docs/Usage.md
 printf '==> generating %s\n' "$FILE"
 bin/pretty-php _md >"$FILE"
+
+vendor/bin/lk-util generate builder --no-meta --force 'Lkrms\PrettyPHP\Formatter'

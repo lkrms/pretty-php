@@ -8,5 +8,5 @@ use FooClass;
 
 class ClassName extends ParentClass implements \ArrayAccess, \Countable
 {
-	// constants, properties, methods
+	// ...
 }

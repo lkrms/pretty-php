@@ -20,7 +20,7 @@ use SplFileInfo;
 
 final class FormatterTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
-    public const TARGET_VERSION_ID = 80200;
+    public const TARGET_VERSION_ID = 80300;
 
     /**
      * @dataProvider formatProvider
@@ -462,6 +462,24 @@ return (bool) preg_match($exclude, $key);
 : null;
 PHP,
             ],
+            'label after close brace' => [
+                <<<'PHP'
+<?php
+if ($foo) {
+    goto bar;
+}
+bar:
+qux();
+
+PHP,
+                <<<'PHP'
+<?php
+if ($foo) {
+goto bar;
+}
+bar: qux();
+PHP
+            ],
         ];
     }
 
@@ -531,7 +549,9 @@ PHP,
                     ? '.PHP80'
                     : (PHP_VERSION_ID < 80200
                         ? '.PHP81'
-                        : null));
+                        : (PHP_VERSION_ID < 80300
+                            ? '.PHP82'
+                            : null)));
 
         // Include:
         // - .php files

@@ -24,5 +24,5 @@ use const Another\Vendor\CONSTANT_D;
  */
 class FooBar
 {
-    // ... additional PHP code ...
+    // ...
 }

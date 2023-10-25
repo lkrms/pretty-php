@@ -1,17 +1,15 @@
 <?php
 
-class Test
+class Foo
 {
-    public function testing()
+    function __construct()
     {
-        return function () {
+        $func = static function () {
             var_dump($this);
         };
+        $func();
     }
-}
-
-$object   = new Test;
-$function = $object->testing();
-$function();
+};
+new Foo();
 
 ?>

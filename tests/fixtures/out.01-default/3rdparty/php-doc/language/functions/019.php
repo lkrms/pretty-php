@@ -1,7 +1,3 @@
 <?php
-// Using positional arguments:
-array_fill(0, 100, 50);
-
-// Using named arguments:
-array_fill(start_index: 0, count: 100, value: 50);
+array_fill(value: 50, count: 100, start_index: 0);
 ?>
