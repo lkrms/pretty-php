@@ -148,8 +148,9 @@ trait ContextAwareTokenTrait
             $this->_prevCode &&
             $this->_prevCode->id === T_STRING &&
             (!$this->_prevCode->_prevSibling ||
-                $this->_prevCode->_prevSibling->EndStatement ===
-                    $this->_prevCode->_prevSibling)
+                ($this->_prevCode->_prevSibling->EndStatement &&
+                    $this->_prevCode->_prevSibling->EndStatement->_nextSibling ===
+                        $this->_prevCode))
         ) {
             return true;
         }
@@ -158,8 +159,8 @@ trait ContextAwareTokenTrait
             $this->id === T_STRING &&
             $this->_nextCode->id === T_COLON &&
             (!$this->_prevSibling ||
-                $this->_prevSibling->EndStatement ===
-                    $this->_prevSibling)
+                ($this->_prevSibling->EndStatement &&
+                    $this->_prevSibling->EndStatement->_nextSibling === $this))
         ) {
             return true;
         }

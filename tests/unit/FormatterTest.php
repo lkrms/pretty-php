@@ -462,6 +462,24 @@ return (bool) preg_match($exclude, $key);
 : null;
 PHP,
             ],
+            'label after close brace' => [
+                <<<'PHP'
+<?php
+if ($foo) {
+    goto bar;
+}
+bar:
+qux();
+
+PHP,
+                <<<'PHP'
+<?php
+if ($foo) {
+goto bar;
+}
+bar: qux();
+PHP
+            ],
         ];
     }
 
