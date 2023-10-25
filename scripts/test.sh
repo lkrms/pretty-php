@@ -35,10 +35,10 @@ function run_with_php_versions() {
     die "must run from root of package folder"
 
 run bin/pretty-php --diff
-run_with_php_versions 82 74 vendor/bin/phpstan
-run_with_php_versions 82 81 80 74 vendor/bin/phpunit
+run_with_php_versions 83 82 74 vendor/bin/phpstan
+run_with_php_versions 83 82 81 80 74 vendor/bin/phpunit
 
 run scripts/build.sh
 run scripts/build.sh man
 run scripts/build.sh man worktree
-run_with_php_versions 82 81 80 74 build/dist/pretty-php.phar --verbose
+run_with_php_versions 83 82 81 80 74 build/dist/pretty-php.phar --verbose

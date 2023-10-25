@@ -8,6 +8,7 @@ use Lkrms\Facade\Sys;
 use Lkrms\Iterator\RecursiveFilesystemIterator;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
+use Lkrms\Utility\Str;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
@@ -41,6 +42,7 @@ $repos = [
 ];
 
 Console::info('Updating source repositories');
+
 foreach ($repos as $dir => $remote) {
     $repo = "$repoRoot/$dir";
     if (!is_dir($repo)) {
@@ -53,16 +55,20 @@ foreach ($repos as $dir => $remote) {
     run('git', '-C', $repo, 'pull');
 }
 
-Console::info('Updating php-doc fixtures');
-$exclude = preg_quote("$repoRoot/php-doc/reference/", '/');
-$count = 0;
+$fixtures = 0;
 $replaced = 0;
-foreach (
+
+Console::info('Updating php-doc fixtures');
+
+$exclude = preg_quote("$repoRoot/php-doc/reference/", '/');
+$files =
     (new RecursiveFilesystemIterator())
         ->in("$repoRoot/php-doc")
         ->exclude("/^$exclude/")
-        ->include('/\.xml$/') as $xmlFile
-) {
+        ->include('/\.xml$/');
+
+$count = 0;
+foreach ($files as $xmlFile) {
     $xml = file_get_contents((string) $xmlFile);
 
     // Remove entities without changing anything between CDATA tags
@@ -91,6 +97,7 @@ foreach (
                 if ($reader->nodeType === XMLReader::CDATA) {
                     $listings[$source][] = trim($reader->value);
                     $count++;
+                    $fixtures++;
                     break;
                 }
             }
@@ -100,34 +107,116 @@ foreach (
 
 Console::log('Listings extracted from PHP documentation:', (string) $count);
 
+$dir = "$fixturesRoot/php-doc";
+File::maybeCreateDirectory($dir);
+File::pruneDirectory($dir);
+
 foreach ($listings ?? [] as $source => $sourceListings) {
     $dir = "$fixturesRoot/php-doc/$source";
+    Console::log('Updating:', $dir);
     File::maybeCreateDirectory($dir);
     foreach ($sourceListings as $i => $output) {
         $ext = '';
         try {
             // @phpstan-ignore-next-line
             token_get_all($output, TOKEN_PARSE);
-        } catch (ParseError $ex) {
+        } catch (CompileError $ex) {
             $ext = '.invalid';
         }
         $outFile = sprintf('%s/%03d.php%s', $dir, $i, $ext);
-        $message = 'Creating';
-        if (file_exists($outFile)) {
-            if (file_get_contents($outFile) === $output) {
-                continue;
-            }
-            $message = 'Replacing';
-        }
-        Console::log($message, substr($outFile, strlen("$fixturesRoot/")));
+        Console::logProgress('Creating', substr($outFile, strlen("$fixturesRoot/")));
         file_put_contents($outFile, $output);
         $replaced++;
     }
 }
 
+$markdownRegex = <<<'REGEX'
+(?xms)
+(?<= ^ )
+(?:
+  (?: \#{1,2} \h+ | \#+ \h+ (?= [0-9] ) ) (?<heading> \V++ ) |
+  ```php \n
+  (?<code> .*? \n )
+  (?= ``` $ )
+)
+REGEX;
+
+Console::info('Updating PER Coding Style fixtures');
+$file = "$repoRoot/per/spec.md";
+
+if (!is_file($file)) {
+    throw new RuntimeException(sprintf('File not found: %s', $file));
+}
+
+if (!Pcre::matchAll(
+    "/$markdownRegex/",
+    Str::setEol(file_get_contents($file)),
+    $matches,
+    PREG_UNMATCHED_AS_NULL,
+)) {
+    throw new RuntimeException(sprintf('No PHP listings: %s', $file));
+}
+
+$count = 0;
+$heading = null;
+$byHeading = [];
+foreach (array_keys($matches[0]) as $i) {
+    if ($matches[1][$i] !== null) {
+        $heading = $matches[1][$i];
+        continue;
+    }
+    if ($heading === null) {
+        Console::warnOnce('PHP listing before heading:', $file, null, false);
+        continue;
+    }
+    $byHeading[$heading][] = $matches[2][$i];
+    $count++;
+    $fixtures++;
+}
+
+Console::log('Listings extracted from PER Coding Style:', (string) $count);
+
+$dir = "$fixturesRoot/php-fig/per";
+Console::log('Updating:', $dir);
+File::maybeCreateDirectory($dir);
+File::pruneDirectory($dir);
+
+$index = 0;
+foreach ($byHeading as $heading => $listings) {
+    $heading = trim(Pcre::replace(
+        '/(?:\.(?![0-9])|[^a-z0-9.])+/i',
+        '-',
+        strtolower($heading)
+    ), '-');
+
+    foreach ($listings as $i => $listing) {
+        $name = sprintf('%s-%02d', $heading, $i);
+
+        if (substr(ltrim($listing), 0, 5) !== '<?php') {
+            $listing = "<?php\n\n$listing";
+            Console::warn('No open tag:', $name, null, false);
+        }
+
+        $ext = '';
+        try {
+            // @phpstan-ignore-next-line
+            token_get_all($listing, TOKEN_PARSE);
+        } catch (CompileError $ex) {
+            $ext = '.invalid';
+            Console::warn('Invalid:', $name, null, false);
+        }
+
+        $index++;
+        $outFile = sprintf('%s/%02d-%s.php%s', $dir, $index, $heading, $ext);
+        Console::logProgress('Creating', substr($outFile, strlen("$fixturesRoot/")));
+        file_put_contents($outFile, $listing);
+        $replaced++;
+    }
+}
+
 Console::summary(sprintf(
-    $replaced ? 'Updated %1$d of %2$d %3$s' : 'Generated %2$d %3$s',
+    $replaced !== $fixtures ? 'Updated %1$d of %2$d %3$s' : 'Generated %2$d %3$s',
     $replaced,
-    $count,
-    Convert::plural($count, 'file')
+    $fixtures,
+    Convert::plural($fixtures, 'file')
 ), 'successfully');

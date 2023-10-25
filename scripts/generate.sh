@@ -10,7 +10,7 @@ die() {
 [[ ${BASH_SOURCE[0]} -ef scripts/generate.sh ]] ||
     die "must run from root of package folder"
 
-(($#)) || set -- php82 php81 php80 php74
+(($#)) || set -- php83 php82 php81 php80 php74
 
 for PHP in "$@"; do
     type -P "$PHP" >/dev/null ||

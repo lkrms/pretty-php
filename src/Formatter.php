@@ -69,8 +69,8 @@ use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Inspect;
+use CompileError;
 use LogicException;
-use ParseError;
 use Throwable;
 
 /**
@@ -663,7 +663,7 @@ final class Formatter implements IReadable
             if (!$this->Tokens) {
                 return '';
             }
-        } catch (ParseError $ex) {
+        } catch (CompileError $ex) {
             throw new InvalidSyntaxException(
                 sprintf('Formatting failed: %s cannot be parsed', $filename ?: 'input'),
                 $ex
@@ -955,7 +955,7 @@ final class Formatter implements IReadable
                 TOKEN_PARSE,
                 ...$this->ComparisonFilterList
             );
-        } catch (ParseError $ex) {
+        } catch (CompileError $ex) {
             throw new FormatterException(
                 'Formatting check failed: output cannot be parsed',
                 $out,

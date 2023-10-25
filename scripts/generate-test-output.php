@@ -37,6 +37,7 @@ foreach (FormatterTest::getFileFormats() as $format => $options) {
             $output = $formatter->format($code);
         } catch (InvalidSyntaxException $ex) {
             if (PHP_VERSION_ID >= FormatterTest::TARGET_VERSION_ID) {
+                Console::error('Unable to generate:', $outPath);
                 throw $ex;
             }
             $invalid[] = $path;
