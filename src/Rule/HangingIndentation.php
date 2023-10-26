@@ -368,6 +368,19 @@ final class HangingIndentation implements MultiTokenRule
             $current = $current->_prevSibling;
         }
 
+        // Handle this scenario:
+        //
+        // ```php
+        // $foo = $bar
+        //     ? $qux[$i] ?? $fallback
+        //     : $quux;
+        // ```
+        if ($prevTernary &&
+                $token === $token->TernaryOperator2 &&
+                $prevTernary->Index > $token->TernaryOperator1->Index) {
+            return null;
+        }
+
         return $prevTernary;
     }
 
