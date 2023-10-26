@@ -4,4 +4,4 @@ $threshold =
 		? null
 		: (is_array($this->UncertaintyThreshold)
 			? $this->UncertaintyThreshold[$algorithm] ?? null
-				: $this->UncertaintyThreshold);
+			: $this->UncertaintyThreshold);
