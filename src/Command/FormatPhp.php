@@ -13,9 +13,7 @@ use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOption;
 use Lkrms\Console\Catalog\ConsoleLevel;
 use Lkrms\Facade\Console;
-use Lkrms\Facade\File;
 use Lkrms\Facade\Sys;
-use Lkrms\Iterator\RecursiveFilesystemIterator;
 use Lkrms\PrettyPHP\Catalog\FormatterFlag;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
@@ -47,6 +45,7 @@ use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
+use Lkrms\Utility\File;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Test;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
@@ -829,7 +828,7 @@ EOF,
     protected function run(...$params)
     {
         if ($this->DebugDirectory !== null) {
-            File::maybeCreateDirectory($this->DebugDirectory);
+            File::createDir($this->DebugDirectory);
             $this->DebugDirectory = realpath($this->DebugDirectory) ?: null;
             if (!Env::debug()) {
                 Env::debug(true);
@@ -1420,11 +1419,10 @@ EOF,
 
             $dirCount++;
 
-            $iterator =
-                (new RecursiveFilesystemIterator())
-                    ->in($path)
-                    ->exclude($this->ExcludeRegex)
-                    ->include($this->IncludeRegex);
+            $iterator = File::find()
+                            ->in($path)
+                            ->exclude($this->ExcludeRegex)
+                            ->include($this->IncludeRegex);
 
             if ($this->IncludeIfPhpRegex !== null) {
                 $iterator = $iterator
@@ -1455,8 +1453,8 @@ EOF,
         Sys::startTimer(__METHOD__);
 
         $logDir = "{$this->DebugDirectory}/progress-log";
-        File::maybeCreateDirectory($logDir);
-        (new RecursiveFilesystemIterator())
+        File::createDir($logDir);
+        File::find()
             ->in($logDir)
             ->doNotRecurse()
             ->forEach(fn(SplFileInfo $file) => unlink((string) $file));
@@ -1481,7 +1479,7 @@ EOF,
                 : 'data.json' => $data,
         ], $logFiles ?? []) as $file => $contents) {
             $file = "{$this->DebugDirectory}/{$file}";
-            File::maybeDelete($file);
+            File::delete($file);
             if ($contents !== null) {
                 file_put_contents(
                     $file,

@@ -6,8 +6,8 @@ use Lkrms\Cli\CliApplication;
 use Lkrms\Console\Catalog\ConsoleLevels as Levels;
 use Lkrms\Console\Target\MockTarget;
 use Lkrms\Facade\Console;
-use Lkrms\Facade\File;
 use Lkrms\PrettyPHP\Command\FormatPhp;
+use Lkrms\Utility\File;
 
 final class FormatPhpTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
@@ -24,7 +24,7 @@ final class FormatPhpTest extends \Lkrms\PrettyPHP\Tests\TestCase
 
         $this->expectOutputString($expected);
 
-        $basePath = File::createTemporaryDirectory();
+        $basePath = File::createTempDir();
         $app = new CliApplication($basePath);
 
         try {
@@ -37,7 +37,7 @@ final class FormatPhpTest extends \Lkrms\PrettyPHP\Tests\TestCase
         } finally {
             $app->unload();
 
-            File::pruneDirectory($basePath);
+            File::pruneDir($basePath);
             rmdir($basePath);
 
             Console::deregisterTarget($target);

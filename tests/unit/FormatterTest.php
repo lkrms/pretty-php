@@ -2,8 +2,6 @@
 
 namespace Lkrms\PrettyPHP\Tests;
 
-use Lkrms\Facade\File;
-use Lkrms\Iterator\RecursiveFilesystemIterator;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Rule\AlignArrowFunctions;
 use Lkrms\PrettyPHP\Rule\AlignChains;
@@ -14,6 +12,7 @@ use Lkrms\PrettyPHP\Rule\AlignTernaryOperators;
 use Lkrms\PrettyPHP\Rule\StrictExpressions;
 use Lkrms\PrettyPHP\Rule\StrictLists;
 use Lkrms\PrettyPHP\Formatter;
+use Lkrms\Utility\File;
 use Lkrms\Utility\Pcre;
 use Generator;
 use SplFileInfo;
@@ -557,10 +556,9 @@ PHP
         // - .php files
         // - files with no extension, and
         // - either of the above with a .fails extension
-        $files =
-            (new RecursiveFilesystemIterator())
-                ->in($inDir)
-                ->include('/(\.php|\/[^.\/]+)(\.fails)?$/');
+        $files = File::find()
+                     ->in($inDir)
+                     ->include('/(\.php|\/[^.\/]+)(\.fails)?$/');
 
         /** @var SplFileInfo $file */
         foreach ($files as $file) {

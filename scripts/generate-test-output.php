@@ -3,10 +3,10 @@
 
 use Lkrms\Cli\CliApplication;
 use Lkrms\Facade\Console;
-use Lkrms\Facade\File;
 use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
 use Lkrms\PrettyPHP\Tests\FormatterTest;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\File;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
@@ -31,7 +31,7 @@ foreach (FormatterTest::getFileFormats() as $format => $options) {
 
         Console::logProgress('Generating', $outPath);
 
-        File::maybeCreateDirectory(dirname($outFile));
+        File::createDir(dirname($outFile));
         $code = file_get_contents($inFile);
         try {
             $output = $formatter->format($code);

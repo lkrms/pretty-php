@@ -1,0 +1,12 @@
+/.git-blame-ignore-revs export-ignore
+/.gitattributes export-ignore
+/.github export-ignore
+/.gitignore export-ignore
+/.prettyphp export-ignore
+/box.json* export-ignore
+/docs export-ignore
+/phpstan* export-ignore
+/phpunit* export-ignore
+/scripts export-ignore
+/tests export-ignore
+/tools export-ignore
