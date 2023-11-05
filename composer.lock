@@ -4,27 +4,27 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9b60c3ca921db8d1c662e24ffe704382",
+    "content-hash": "49d7aedb483625b6385d8de359e839e6",
     "packages": [
         {
             "name": "lkrms/dice",
-            "version": "v4.1.6",
+            "version": "v4.1.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/Dice.git",
-                "reference": "44e35d7cbd4a08d8eadf91c6d47c19cc0c8aaaf9"
+                "reference": "1f219484fcb55a8fab4943672f73f7993480bfea"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/Dice/zipball/44e35d7cbd4a08d8eadf91c6d47c19cc0c8aaaf9",
-                "reference": "44e35d7cbd4a08d8eadf91c6d47c19cc0c8aaaf9",
+                "url": "https://api.github.com/repos/lkrms/Dice/zipball/1f219484fcb55a8fab4943672f73f7993480bfea",
+                "reference": "1f219484fcb55a8fab4943672f73f7993480bfea",
                 "shasum": ""
             },
             "require": {
                 "php": ">=7.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^8"
+                "phpunit/phpunit": "^9"
             },
             "type": "library",
             "autoload": {
@@ -45,22 +45,22 @@
                 "ioc"
             ],
             "support": {
-                "source": "https://github.com/lkrms/Dice/tree/v4.1.6"
+                "source": "https://github.com/lkrms/Dice/tree/v4.1.7"
             },
-            "time": "2023-06-07T04:25:00+00:00"
+            "time": "2023-11-05T22:53:14+00:00"
         },
         {
             "name": "lkrms/util",
-            "version": "v0.20.74",
+            "version": "v0.20.87",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/php-util.git",
-                "reference": "9c00bf3bc8bf0f67e13412ab6020406559fd8c34"
+                "reference": "7ab83f679bb193f4bd9a260aa17f6347ba7747d7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/php-util/zipball/9c00bf3bc8bf0f67e13412ab6020406559fd8c34",
-                "reference": "9c00bf3bc8bf0f67e13412ab6020406559fd8c34",
+                "url": "https://api.github.com/repos/lkrms/php-util/zipball/7ab83f679bb193f4bd9a260aa17f6347ba7747d7",
+                "reference": "7ab83f679bb193f4bd9a260aa17f6347ba7747d7",
                 "shasum": ""
             },
             "require": {
@@ -76,7 +76,6 @@
                 "clue/phar-composer": "^1",
                 "firebase/php-jwt": "^6",
                 "league/oauth2-client": "^2",
-                "lkrms/pretty-php": "^0.4.40",
                 "phpstan/extension-installer": "^1",
                 "phpstan/phpstan": "^1",
                 "phpstan/phpstan-deprecation-rules": "^1",
@@ -94,11 +93,6 @@
                 "bin/lk-util"
             ],
             "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-main": "0.20.x-dev"
-                }
-            },
             "autoload": {
                 "files": [
                     "bootstrap.php"
@@ -117,9 +111,9 @@
             "description": "A lightweight PHP toolkit for expressive backend/CLI apps",
             "support": {
                 "issues": "https://github.com/lkrms/php-util/issues",
-                "source": "https://github.com/lkrms/php-util/tree/v0.20.74"
+                "source": "https://github.com/lkrms/php-util/tree/v0.20.87"
             },
-            "time": "2023-10-19T11:49:17+00:00"
+            "time": "2023-11-05T17:50:23+00:00"
         },
         {
             "name": "psr/container",
@@ -634,16 +628,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.10.39",
+            "version": "1.10.41",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "d9dedb0413f678b4d03cbc2279a48f91592c97c4"
+                "reference": "c6174523c2a69231df55bdc65b61655e72876d76"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/d9dedb0413f678b4d03cbc2279a48f91592c97c4",
-                "reference": "d9dedb0413f678b4d03cbc2279a48f91592c97c4",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/c6174523c2a69231df55bdc65b61655e72876d76",
+                "reference": "c6174523c2a69231df55bdc65b61655e72876d76",
                 "shasum": ""
             },
             "require": {
@@ -692,7 +686,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-10-17T15:46:26+00:00"
+            "time": "2023-11-05T12:57:57+00:00"
         },
         {
             "name": "phpstan/phpstan-deprecation-rules",

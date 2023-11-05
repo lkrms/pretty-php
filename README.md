@@ -40,7 +40,7 @@ If you have questions or feedback, I'd love to [hear from you][discuss].
 
 ## Features
 
-- Supports code written for **PHP 8.2** and below (when running on a PHP version
+- Supports code written for **PHP 8.3** and below (when running on a PHP version
   that can parse it)
 - Code is formatted for **readability**, **consistency** and **small diffs**
 - With few [exceptions](#pragmatism), **previous formatting is ignored**, and

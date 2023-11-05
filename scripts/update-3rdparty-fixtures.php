@@ -3,10 +3,9 @@
 
 use Lkrms\Cli\CliApplication;
 use Lkrms\Facade\Console;
-use Lkrms\Facade\File;
 use Lkrms\Facade\Sys;
-use Lkrms\Iterator\RecursiveFilesystemIterator;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\File;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
 
@@ -30,7 +29,7 @@ $app = new CliApplication(dirname(__DIR__));
 error_reporting(error_reporting() & ~E_COMPILE_WARNING);
 
 $repoRoot = $app->getCachePath() . '/git';
-File::maybeCreateDirectory($repoRoot);
+File::createDir($repoRoot);
 
 $skipUpdate = in_array('--skip-update', $argv);
 $fixturesRoot = dirname(__DIR__) . '/tests/fixtures/in/3rdparty';
@@ -61,11 +60,10 @@ $replaced = 0;
 Console::info('Updating php-doc fixtures');
 
 $exclude = preg_quote("$repoRoot/php-doc/reference/", '/');
-$files =
-    (new RecursiveFilesystemIterator())
-        ->in("$repoRoot/php-doc")
-        ->exclude("/^$exclude/")
-        ->include('/\.xml$/');
+$files = File::find()
+             ->in("$repoRoot/php-doc")
+             ->exclude("/^$exclude/")
+             ->include('/\.xml$/');
 
 $count = 0;
 foreach ($files as $xmlFile) {
@@ -108,13 +106,13 @@ foreach ($files as $xmlFile) {
 Console::log('Listings extracted from PHP documentation:', (string) $count);
 
 $dir = "$fixturesRoot/php-doc";
-File::maybeCreateDirectory($dir);
-File::pruneDirectory($dir);
+File::createDir($dir);
+File::pruneDir($dir);
 
 foreach ($listings ?? [] as $source => $sourceListings) {
     $dir = "$fixturesRoot/php-doc/$source";
     Console::log('Updating:', $dir);
-    File::maybeCreateDirectory($dir);
+    File::createDir($dir);
     foreach ($sourceListings as $i => $output) {
         $ext = '';
         try {
@@ -178,8 +176,8 @@ Console::log('Listings extracted from PER Coding Style:', (string) $count);
 
 $dir = "$fixturesRoot/php-fig/per";
 Console::log('Updating:', $dir);
-File::maybeCreateDirectory($dir);
-File::pruneDirectory($dir);
+File::createDir($dir);
+File::pruneDir($dir);
 
 $index = 0;
 foreach ($byHeading as $heading => $listings) {
