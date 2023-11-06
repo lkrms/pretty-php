@@ -12,6 +12,8 @@ interface Rule extends Extension
 {
     public const BEFORE_RENDER = 'beforeRender';
 
+    public const CALLBACK = 'callback';
+
     /**
      * Get the priority of a method implemented by the rule
      *

@@ -20,6 +20,9 @@ final class AlignArrowFunctions implements TokenRule
             case self::PROCESS_TOKEN:
                 return 380;
 
+            case self::CALLBACK:
+                return 710;
+
             default:
                 return null;
         }
@@ -51,10 +54,9 @@ final class AlignArrowFunctions implements TokenRule
 
         $body->AlignedWith = $alignWith;
         $this->Formatter->registerCallback(
-            $this,
+            static::class,
             $body,
-            fn() => $this->alignBody($body, $alignWith, $token->EndStatement),
-            710
+            fn() => $this->alignBody($body, $alignWith, $token->EndStatement)
         );
     }
 

@@ -30,7 +30,13 @@ final class PreserveOneLineStatements implements TokenRule
 
     public static function getPriority(string $method): ?int
     {
-        return 95;
+        switch ($method) {
+            case self::PROCESS_TOKEN:
+                return 95;
+
+            default:
+                return null;
+        }
     }
 
     public function processToken(Token $token): void

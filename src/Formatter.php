@@ -77,6 +77,7 @@ use Lkrms\Utility\Env;
 use Lkrms\Utility\Get;
 use Lkrms\Utility\Str;
 use CompileError;
+use LogicException;
 use Throwable;
 
 /**
@@ -230,48 +231,48 @@ final class Formatter implements Buildable
      * @var array<class-string<Rule>>
      */
     public const DEFAULT_RULES = [
-        ProtectStrings::class,           // processToken  (40)
-        NormaliseStrings::class,         // processToken  (60)
-        NormaliseComments::class,        // processToken  (70)
-        StandardWhitespace::class,       // processToken  (80), callback (820)
-        StatementSpacing::class,         // processToken  (80)
-        OperatorSpacing::class,          // processToken  (80)
-        ControlStructureSpacing::class,  // processToken  (83)
-        PlaceComments::class,            // processToken  (90), beforeRender (997)
-        PlaceBraces::class,              // processToken  (92), beforeRender (400)
-        PreserveLineBreaks::class,       // processToken  (93)
-        SymmetricalBrackets::class,      // processToken  (96)
-        VerticalWhitespace::class,       // processToken  (98)
-        ListSpacing::class,              // processList   (98)
-        StandardIndentation::class,      // processToken (600)
-        SwitchIndentation::class,        // processToken (600)
-        DeclarationSpacing::class,       // processToken (620)
-        HangingIndentation::class,       // processToken (800), callback (800)
-        HeredocIndentation::class,       // processToken (900), beforeRender (900)
-        EssentialWhitespace::class,      // beforeRender (999)
+        ProtectStrings::class,
+        NormaliseStrings::class,
+        NormaliseComments::class,
+        StandardWhitespace::class,
+        StatementSpacing::class,
+        OperatorSpacing::class,
+        ControlStructureSpacing::class,
+        PlaceComments::class,
+        PlaceBraces::class,
+        PreserveLineBreaks::class,
+        SymmetricalBrackets::class,
+        VerticalWhitespace::class,
+        ListSpacing::class,
+        StandardIndentation::class,
+        SwitchIndentation::class,
+        DeclarationSpacing::class,
+        HangingIndentation::class,
+        HeredocIndentation::class,
+        EssentialWhitespace::class,
     ];
 
     /**
      * @var array<class-string<Rule>>
      */
     public const OPTIONAL_RULES = [
-        NormaliseStrings::class,           // processToken  (60)
-        PreserveLineBreaks::class,         // processToken  (93)
-        PreserveOneLineStatements::class,  // processToken  (95)
-        BlankLineBeforeReturn::class,      // processToken  (97)
-        StrictExpressions::class,          // processToken  (98)
-        Drupal::class,                     // processToken (100)
-        Laravel::class,                    // processToken (100)
-        Symfony::class,                    // processToken (100), processList (100)
-        WordPress::class,                  // processToken (100)
-        AlignChains::class,                // processToken (340), callback (710)
-        StrictLists::class,                // processList  (370)
-        AlignArrowFunctions::class,        // processToken (380), callback (710)
-        AlignTernaryOperators::class,      // processToken (380), callback (710)
-        AlignLists::class,                 // processList  (400), callback (710)
-        AlignData::class,                  // processBlock (340), callback (720)
-        AlignComments::class,              // processBlock (340), beforeRender (998)
-        DeclarationSpacing::class,         // processToken (620)
+        NormaliseStrings::class,
+        PreserveLineBreaks::class,
+        PreserveOneLineStatements::class,
+        BlankLineBeforeReturn::class,
+        StrictExpressions::class,
+        Drupal::class,
+        Laravel::class,
+        Symfony::class,
+        WordPress::class,
+        AlignChains::class,
+        StrictLists::class,
+        AlignArrowFunctions::class,
+        AlignTernaryOperators::class,
+        AlignLists::class,
+        AlignData::class,
+        AlignComments::class,
+        DeclarationSpacing::class,
     ];
 
     /**
@@ -391,6 +392,11 @@ final class Formatter implements Buildable
     private array $BeforeRender;
 
     /**
+     * @var array<class-string<Rule>,int>
+     */
+    private array $CallbackPriorities;
+
+    /**
      * @var array<class-string<Filter>>
      */
     private array $FormatFilters;
@@ -435,7 +441,9 @@ final class Formatter implements Buildable
     private ?array $TokenIndex = null;
 
     /**
-     * @var array<int,array<int,array<array{Rule,callable}>>>|null
+     * [ priority => [ token index => [ [ rule, callback ], ... ] ] ]
+     *
+     * @var array<int,array<int,array<array{class-string<Rule>,callable}>>>|null
      */
     private ?array $Callbacks = null;
 
@@ -603,6 +611,7 @@ final class Formatter implements Buildable
         $mainLoop = [];
         $blockLoop = [];
         $beforeRender = [];
+        $callbackPriorities = [];
         $i = 0;
         foreach ($rules as $rule) {
             if (is_a($rule, TokenRule::class, true)) {
@@ -639,6 +648,12 @@ final class Formatter implements Buildable
                 $blockLoop[$rule] = [$rule, BlockRule::PROCESS_BLOCK, $i];
             }
             $beforeRender[$rule] = [$rule, Rule::BEFORE_RENDER, $i];
+
+            $priority = $rule::getPriority(Rule::CALLBACK);
+            if ($priority !== null) {
+                $callbackPriorities[$rule] = $priority;
+            }
+
             $i++;
         }
 
@@ -647,6 +662,7 @@ final class Formatter implements Buildable
         $this->MainLoop = $this->sortRules($mainLoop);
         $this->BlockLoop = $this->sortRules($blockLoop);
         $this->BeforeRender = $this->sortRules($beforeRender);
+        $this->CallbackPriorities = $callbackPriorities;
 
         Profile::stopTimer(__METHOD__ . '#sort-rules');
 
@@ -1211,9 +1227,29 @@ final class Formatter implements Buildable
         return $simple;
     }
 
-    public function registerCallback(Rule $rule, Token $first, callable $callback, int $priority = 100, bool $reverse = false): void
-    {
-        $this->Callbacks[$priority][($reverse ? -1 : 1) * $first->Index][] = [$rule, $callback];
+    /**
+     * @param class-string<Rule> $rule
+     */
+    public function registerCallback(
+        string $rule,
+        Token $first,
+        callable $callback,
+        bool $reverse = false
+    ): void {
+        if (!isset($this->CallbackPriorities[$rule])) {
+            // @codeCoverageIgnoreStart
+            throw new LogicException(
+                sprintf('Rule has no callback priority: %s', $rule)
+            );
+            // @codeCoverageIgnoreEnd
+        }
+
+        $priority = $this->CallbackPriorities[$rule];
+        $index = $first->Index;
+        if ($reverse) {
+            $index = -$index;
+        }
+        $this->Callbacks[$priority][$index][] = [$rule, $callback];
     }
 
     private function processCallbacks(): void
@@ -1226,7 +1262,7 @@ final class Formatter implements Buildable
             ksort($tokenCallbacks);
             foreach ($tokenCallbacks as $index => $callbacks) {
                 foreach ($callbacks as $i => [$rule, $callback]) {
-                    $_rule = Get::basename(get_class($rule));
+                    $_rule = Get::basename($rule);
                     Profile::startTimer($_rule, 'rule');
                     $callback();
                     Profile::stopTimer($_rule, 'rule');
@@ -1332,6 +1368,7 @@ final class Formatter implements Buildable
         $this->MainLoop = [];
         $this->BlockLoop = [];
         $this->BeforeRender = [];
+        $this->CallbackPriorities = [];
         $this->FormatFilters = [];
         $this->ComparisonFilters = [];
         $this->RuleMap = [];

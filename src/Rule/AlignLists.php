@@ -26,6 +26,9 @@ final class AlignLists implements ListRule
             case self::PROCESS_LIST:
                 return 400;
 
+            case self::CALLBACK:
+                return 710;
+
             default:
                 return null;
         }
@@ -52,10 +55,9 @@ final class AlignLists implements ListRule
         );
 
         $this->Formatter->registerCallback(
-            $this,
+            static::class,
             $first,
-            fn() => $this->alignList($owner, $items, $first, $lastToken),
-            710
+            fn() => $this->alignList($owner, $items, $first, $lastToken)
         );
 
         $this->ListOwnersByIndex[$owner->Index] = true;

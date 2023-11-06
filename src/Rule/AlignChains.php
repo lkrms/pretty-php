@@ -19,7 +19,16 @@ final class AlignChains implements TokenRule
 
     public static function getPriority(string $method): ?int
     {
-        return 340;
+        switch ($method) {
+            case self::PROCESS_TOKEN:
+                return 340;
+
+            case self::CALLBACK:
+                return 710;
+
+            default:
+                return null;
+        }
     }
 
     public static function getTokenTypes(TokenTypeIndex $typeIndex): array
@@ -94,10 +103,9 @@ final class AlignChains implements TokenRule
         $chain->forEach(fn(Token $t) => $t->AlignedWith = $alignWith);
 
         $this->Formatter->registerCallback(
-            $this,
+            static::class,
             $first ?? $alignFirst,
-            fn() => $this->alignChain($chain, $alignFirst, $alignWith, $adjust),
-            710
+            fn() => $this->alignChain($chain, $alignFirst, $alignWith, $adjust)
         );
     }
 
