@@ -128,41 +128,33 @@ PHP,
                 <<<'PHP'
 <?php
 
-/**
- * comment
- */
+/** comment */
 
-/**
- * comment
- */
+/** comment */
 
-/**
- * comment
- */
+/** comment */
 
-/**
- * comment
- */
+/** comment */
 
-/**
- * comment
- */
+/** comment */
 
-/**
- * comment
- */
+/** comment */
 
-/**
- * comment
- */
+/** comment */
 
-/**
- * comment
- */
+/** comment */
+
+/** comment */
+
+/** @return foo::* */
 
 /**
  * @return foo::*
  */
+function foo()
+{
+    return foo::BAR;
+}
 
 /**
  * * <== look, it's an asterisk in a summary
@@ -173,8 +165,6 @@ PHP,
  *
  * *
  */
-
-/** */
 
 PHP,
                 <<<'PHP'
@@ -211,10 +201,18 @@ comment */
 /**
  * comment **/
 
+/** comment */
+
 /**
  *
  * @return foo::*
  */
+
+/** @return foo::* */
+function foo()
+{
+    return foo::BAR;
+}
 
 /**
  * * <== look, it's an asterisk in a summary
@@ -227,7 +225,10 @@ comment */
  */
 
 /**
-*/
+ *
+ */
+
+/** */
 PHP,
             ],
             'C comment' => [
@@ -266,9 +267,19 @@ PHP,
  * comment
  */
 
+/* comment */
+
 /*
  * @return foo::*
  */
+
+/*
+ * @return foo::*
+ */
+function foo()
+{
+    return foo::BAR;
+}
 
 /*
  * * <== look, it's an asterisk in a comment
@@ -278,6 +289,10 @@ PHP,
  * (There's one at the end, too.)
  *
  * *
+ */
+
+/*
+ *
  */
 
 /* */
@@ -317,10 +332,21 @@ comment */
 /*
  * comment **/
 
+/* comment */
+
 /*
  *
  * @return foo::*
  */
+
+/*
+ *
+ * @return foo::*
+ */
+function foo()
+{
+    return foo::BAR;
+}
 
 /*
  * * <== look, it's an asterisk in a comment
@@ -333,7 +359,10 @@ comment */
  */
 
 /*
-*/
+ *
+ */
+
+/* */
 PHP,
             ],
             'one-line comments' => [
@@ -345,7 +374,7 @@ PHP,
 /* comment */
 /* comment */
 /* comment */
-/** */
+
 /* */
 /******/
 
