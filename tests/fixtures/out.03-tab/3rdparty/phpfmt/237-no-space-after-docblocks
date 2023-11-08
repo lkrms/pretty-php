@@ -17,15 +17,10 @@ class SomeClass
 
 	function b()
 	{
-		/**
-		 * @var SomeType
-		 */
+		/** @var SomeType */
 		$var &= $var;
 
 		$var &= $var;
-
-		/**
-		 * @var SomeType
-		 */
+		/** @var SomeType */
 	}
 }

@@ -1,13 +1,19 @@
 <?php
 class PropertyTest
 {
-    /** Location for overloaded data. */
+    /**
+     * Location for overloaded data.
+     */
     private $data = array();
 
-    /** Overloading not used on declared properties. */
+    /**
+     * Overloading not used on declared properties.
+     */
     public $declared = 1;
 
-    /** Overloading only used on this when accessed outside the class. */
+    /**
+     * Overloading only used on this when accessed outside the class.
+     */
     private $hidden = 2;
 
     public function __set($name, $value)
@@ -45,7 +51,9 @@ class PropertyTest
         unset($this->data[$name]);
     }
 
-    /** Not a magic method, just here for example. */
+    /**
+     * Not a magic method, just here for example.
+     */
     public function getHidden()
     {
         return $this->hidden;

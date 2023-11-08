@@ -1,33 +1,66 @@
 <?php
-$foo = $bar || /**
-                * comment
-                */ $baz;
+$foo = $bar ||
+	/** comment */
+	$baz;
 
-if ($foo || /**
-             * comment
-             */ $bar) {
+if ($foo ||
+	/** comment */
+	$bar) {
+}
+
+function baz(
+	/** comment */
+	$foo,
+	/** comment */
+	$bar
+	/** comment */
+) {}
+
+class Foo
+{
+	/** comment */
+	use Bar;
+}
+
+$foo = $bar ||
+	/**
+	 * line 1
+	 * line 2
+	 */
+	$baz;
+
+if ($foo ||
+	/**
+	 * line 1
+	 * line 2
+	 */
+	$bar) {
 }
 
 function baz(
 	/**
-	 * comment
+	 * line 1
+	 * line 2
 	 */
 	$foo,
 
 	/**
-	 * comment
+	 * line 1
+	 * line 2
 	 */
 	$bar
 
 	/**
-	 * comment
+	 * line 1
+	 * line 2
 	 */
 ) {}
 
 class Foo
 {
 	/**
-	 * comment
+	 * line 1
+	 * line 2
 	 */
 	use Bar;
 }
