@@ -129,6 +129,57 @@ trait ContextAwareTokenTrait
     }
 
     /**
+     * Get the sub-type of a T_USE token
+     *
+     * @return TokenSubType::USE_*
+     */
+    public function getUseType(): int
+    {
+        /** @var Token $this */
+        if ($this->id !== T_USE) {
+            // @codeCoverageIgnoreStart
+            throw new LogicException('Not a T_USE');
+            // @codeCoverageIgnoreEnd
+        }
+
+        if ($this->SubType !== null) {
+            /** @var TokenSubType::USE_* */
+            $type = $this->SubType;
+            return $type;
+        }
+
+        if (
+            $this->_prevCode &&
+            $this->_prevCode->id === T_CLOSE_PARENTHESIS
+        ) {
+            $this->SubType = TokenSubType::USE_VARIABLES;
+        } elseif (
+            !$this->Parent ||
+            $this->Parent->id !== T_OPEN_BRACE
+        ) {
+            $this->SubType = TokenSubType::USE_IMPORT;
+        } else {
+            $t = $this->Parent->_prevSibling;
+            while (
+                $t &&
+                $this->TokenTypeIndex->DeclarationPart[$t->id]
+            ) {
+                if ($this->TokenTypeIndex->DeclarationClass[$t->id]) {
+                    $this->SubType = TokenSubType::USE_TRAIT;
+                    break;
+                }
+                $t = $t->_prevSibling;
+            }
+        }
+
+        if ($this->SubType === null) {
+            $this->SubType = TokenSubType::USE_IMPORT;
+        }
+
+        return $this->SubType;
+    }
+
+    /**
      * True if the token is in a label
      *
      * Returns `true` if the token is a `T_STRING` or `T_COLON` comprising part

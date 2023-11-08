@@ -44,7 +44,19 @@ final class PreserveLineBreaks implements MultiTokenRule
                 continue;
             }
 
-            $lines = $token->line - $prev->line - substr_count($prev->text, "\n");
+            if ($prev->OriginalText === null) {
+                $text = $prev->text;
+            } elseif (
+                $this->TypeIndex->DoNotModify[$prev->id] ||
+                $this->TypeIndex->DoNotModifyRight[$prev->id]
+            ) {
+                $text = $prev->OriginalText;
+            } else {
+                $text = rtrim($prev->OriginalText);
+            }
+
+            $lines = $token->line - $prev->line - substr_count($text, "\n");
+
             if (!$lines) {
                 continue;
             }

@@ -273,11 +273,15 @@ final class TokenType extends Dictionary
     ];
 
     public const DECLARATION_TOP_LEVEL = [
+        T_FUNCTION,
+        T_NAMESPACE,
+        ...self::DECLARATION_CLASS,
+    ];
+
+    public const DECLARATION_CLASS = [
         T_CLASS,
         T_ENUM,
-        T_FUNCTION,
         T_INTERFACE,
-        T_NAMESPACE,
         T_TRAIT,
     ];
 
