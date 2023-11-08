@@ -579,9 +579,7 @@ final class Formatter implements IReadable
             return $this;
         }
 
-        /**
-         * @todo: Check ruleset compliance
-         */
+        /** @todo: Check ruleset compliance */
         $clone = clone $this;
         $clone->Tab = '    ';
         $clone->TabSize = 4;
