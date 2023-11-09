@@ -191,6 +191,7 @@ final class Formatter implements IReadable
      */
     public const MANDATORY_RULES = [
         ProtectStrings::class,           // processToken  (40)
+        NormaliseComments::class,        // processToken  (70)
         StandardWhitespace::class,       // processToken  (80), callback (820)
         StatementSpacing::class,         // processToken  (80)
         OperatorSpacing::class,          // processToken  (80)
@@ -202,7 +203,6 @@ final class Formatter implements IReadable
         ListSpacing::class,              // processList   (98)
         StandardIndentation::class,      // processToken (600)
         SwitchIndentation::class,        // processToken (600)
-        NormaliseComments::class,        // processToken (780)
         HangingIndentation::class,       // processToken (800), callback (800)
         HeredocIndentation::class,       // processToken (900), beforeRender (900)
         EssentialWhitespace::class,      // beforeRender (999)
