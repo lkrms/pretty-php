@@ -59,8 +59,8 @@ If you have questions or feedback, I'd love to [hear from you][discuss].
 ### Prerequisites
 
 - Linux, macOS or Windows
-- PHP 8.2, 8.1, 8.0 or 7.4 with `tokenizer`, `mbstring` and `json` extensions
-  enabled
+- PHP 8.3, 8.2, 8.1, 8.0 or 7.4 with `tokenizer`, `mbstring` and `json`
+  extensions enabled
 
 ### PHP archive (PHAR)
 
@@ -163,20 +163,21 @@ but exceptions are occasionally made and documented here.
 
 - **Newlines are preserved** \
   Line breaks adjacent to most operators, separators and brackets are copied from
-  the input to the output. \
-  _`-N/--ignore-newlines` disables this behaviour_
+  the input to the output. _Use **`-N/--ignore-newlines`** to disable this behaviour._
 
 - **Strings are normalised** \
   Single-quoted strings are preferred unless the alternative is shorter or backslash
-  escapes are required. \
-  _`-S/--no-simplify-strings` disables this behaviour_
+  escapes are required. _Use **`-S/--no-simplify-strings`** to disable this behaviour._
 
 - **Alias/import statements are grouped and sorted alphabetically** \
-  _`-M/--no-sort-imports` and `-m/--sort-imports-by` modify this behaviour_
+  _Use **`-M/--no-sort-imports`** or **`-m/--sort-imports-by`** to disable or modify
+  this behaviour._
 
 - **Comments beside code are not moved to the next line**
 
 - **Comments are trimmed and aligned**
+
+- **Empty DocBlocks are removed**
 
 ## License
 
