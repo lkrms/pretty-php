@@ -15,7 +15,7 @@ use Throwable;
  *
  * - Add blank lines before and after non-empty `class`, `enum`, `interface` and
  *   `trait` bodies
- * - Add a blank line after PHP docblocks with a `@file` tag
+ * - Add a blank line after PHP DocBlocks with a `@file` tag
  * - Add a newline after close braces with a subsequent `catch`, `else`,
  *   `elseif` or `finally`
  */
@@ -80,7 +80,7 @@ final class Drupal implements TokenRule
             return;
         }
 
-        // Add a blank line after PHP docblocks with a `@file` tag
+        // Add a blank line after PHP DocBlocks with a `@file` tag
         if ($token->id === T_DOC_COMMENT) {
             try {
                 $phpDoc = new PhpDoc($token->text);

@@ -225,6 +225,14 @@ class TokenTypeIndex implements IImmutable
     public array $ChainPart;
 
     /**
+     * T_CLASS, T_ENUM, T_INTERFACE, T_TRAIT
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $DeclarationClass;
+
+    /**
      * @readonly
      * @var array<int,bool>
      */
@@ -529,6 +537,7 @@ class TokenTypeIndex implements IImmutable
         $this->Ampersand = TT::getIndex(...TT::AMPERSAND);
         $this->Chain = TT::getIndex(...TT::CHAIN);
         $this->ChainPart = TT::getIndex(...TT::CHAIN_PART);
+        $this->DeclarationClass = TT::getIndex(...TT::DECLARATION_CLASS);
         $this->DeclarationPart = TT::getIndex(...TT::DECLARATION_PART);
         $this->DeclarationPartWithNew = TT::getIndex(...TT::DECLARATION_PART_WITH_NEW);
         $this->HasStatement = TT::getIndex(...TT::HAS_STATEMENT);

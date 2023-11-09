@@ -16,6 +16,7 @@ use Lkrms\PrettyPHP\Exception\FormatterException;
 use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
 use Lkrms\PrettyPHP\Filter\Contract\Filter;
 use Lkrms\PrettyPHP\Filter\CollectColumn;
+use Lkrms\PrettyPHP\Filter\RemoveEmptyDocBlocks;
 use Lkrms\PrettyPHP\Filter\RemoveEmptyTokens;
 use Lkrms\PrettyPHP\Filter\RemoveHeredocIndentation;
 use Lkrms\PrettyPHP\Filter\RemoveWhitespace;
@@ -244,6 +245,7 @@ final class Formatter implements IReadable
         CollectColumn::class,
         RemoveWhitespace::class,
         RemoveHeredocIndentation::class,
+        RemoveEmptyDocBlocks::class,
         SortImports::class,
         TrimCasts::class,
     ];
@@ -252,6 +254,7 @@ final class Formatter implements IReadable
      * @var array<class-string<Filter>>
      */
     public const OPTIONAL_FILTERS = [
+        RemoveEmptyDocBlocks::class,
         SortImports::class,
         TrimCasts::class,
     ];
@@ -576,9 +579,7 @@ final class Formatter implements IReadable
             return $this;
         }
 
-        /**
-         * @todo: Check ruleset compliance
-         */
+        /** @todo: Check ruleset compliance */
         $clone = clone $this;
         $clone->Tab = '    ';
         $clone->TabSize = 4;

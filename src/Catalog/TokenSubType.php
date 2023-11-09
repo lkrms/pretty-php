@@ -28,4 +28,10 @@ final class TokenSubType extends ReflectiveEnumeration
     public const QUESTION_TERNARY_OPERATOR = 6;
 
     public const QUESTION_NULLABLE = 7;
+
+    public const USE_IMPORT = 8;
+
+    public const USE_TRAIT = 9;
+
+    public const USE_VARIABLES = 10;
 }

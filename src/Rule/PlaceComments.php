@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\CommentType;
+use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
@@ -51,43 +51,55 @@ final class PlaceComments implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->isOneLineComment() &&
-                $token->_next &&
-                $token->_next->id !== T_CLOSE_TAG) {
+        if (
+            $token->isOneLineComment() &&
+            $token->_next &&
+            $token->_next->id !== T_CLOSE_TAG
+        ) {
             $token->CriticalWhitespaceAfter |= WhitespaceType::LINE;
         }
 
-        // Leave embedded comments alone
-        $wasFirstOnLine = $token->wasFirstOnLine();
-        if (!$wasFirstOnLine && !$token->wasLastOnLine()) {
-            if ($token->_prev->IsCode || $token->_prev->OpenTag === $token->_prev) {
-                $this->CommentsBesideCode[] = $token;
-                $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
-                return;
-            }
-            $token->WhitespaceBefore |= WhitespaceType::SPACE;
-            $token->WhitespaceAfter |= WhitespaceType::SPACE;
-            return;
-        }
+        $isDocComment =
+            $token->id === T_DOC_COMMENT ||
+            $token->IsInformalDocComment;
 
-        // Aside from docblocks and, in strict PSR-12 mode, comments after
-        // top-level close braces, don't move comments to the next line
-        if (!$wasFirstOnLine &&
-            $token->CommentType !== CommentType::DOC_COMMENT &&
-            !($this->Formatter->Psr12Compliance &&
-                $token->_prev->id === T_CLOSE_BRACE &&
-                $token->_prev->isStructuralBrace() &&
-                $token->_prev->Expression->declarationParts(false)->hasOneOf(
-                    T_CLASS, T_ENUM, T_INTERFACE, T_TRAIT
-                ))) {
-            $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
-            if ($token->_prev->IsCode || $token->_prev->OpenTag === $token->_prev) {
-                $this->CommentsBesideCode[] = $token;
-                $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
+        $prevIsTopLevelCloseBrace =
+            $token->_prev->id === T_CLOSE_BRACE &&
+            $token->_prev->isStructuralBrace(false) &&
+            $token->_prev->Expression->namedDeclarationParts()->hasOneOf(
+                ...TokenType::DECLARATION_CLASS
+            );
+
+        $needsNewlineBefore =
+            $token->id === T_DOC_COMMENT ||
+            ($this->Formatter->Psr12Compliance && $prevIsTopLevelCloseBrace);
+
+        if (!$needsNewlineBefore) {
+            // Leave embedded comments alone
+            $wasFirstOnLine = $token->wasFirstOnLine();
+            if (!$wasFirstOnLine && !$token->wasLastOnLine()) {
+                if ($token->_prev->IsCode || $token->_prev->OpenTag === $token->_prev) {
+                    $this->CommentsBesideCode[] = $token;
+                    $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
+                    return;
+                }
+                $token->WhitespaceBefore |= WhitespaceType::SPACE;
+                $token->WhitespaceAfter |= WhitespaceType::SPACE;
                 return;
             }
-            $token->WhitespaceBefore |= WhitespaceType::SPACE;
-            return;
+
+            // Aside from DocBlocks and, in strict PSR-12 mode, comments after
+            // top-level close braces, don't move comments to the next line
+            if (!$wasFirstOnLine) {
+                $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
+                if ($token->_prev->IsCode || $token->_prev->OpenTag === $token->_prev) {
+                    $this->CommentsBesideCode[] = $token;
+                    $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
+                    return;
+                }
+                $token->WhitespaceBefore |= WhitespaceType::SPACE;
+                return;
+            }
         }
 
         // Copy indentation and padding from `$next` to `$token` in
@@ -99,33 +111,45 @@ final class PlaceComments implements TokenRule
 
         $token->WhitespaceAfter |= WhitespaceType::LINE;
 
-        // Add a blank line before multi-line docblocks and C-style equivalents
-        if ($token->hasNewline() &&
-                ($token->id === T_DOC_COMMENT || $token->IsInformalDocComment)) {
+        // Add a blank line before multi-line DocBlocks and C-style equivalents
+        // unless they appear mid-statement
+        if (
+            $token->hasNewline() &&
+            $isDocComment &&
+            (!$token->_prevSibling || !$token->_nextSibling ||
+                $token->_prevSibling->Statement !== $token->_nextSibling->Statement)
+        ) {
             $token->WhitespaceBefore |=
                 WhitespaceType::BLANK | WhitespaceType::LINE | WhitespaceType::SPACE;
         } else {
             $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
-            if ($token->id !== T_DOC_COMMENT) {
-                return;
-            }
         }
 
-        // Add a blank line after file-level docblocks and multi-line C-style
+        if (!$isDocComment) {
+            return;
+        }
+
+        // Add a blank line after file-level DocBlocks and multi-line C-style
         // comments
-        if ($next &&
-            ($next->is([T_DECLARE, T_NAMESPACE]) ||
-                ($next->id === T_USE &&
-                    (!($first = $next->parent()->startOfExpression()->declarationParts()->first()) ||
-                        $first->id === T_NAMESPACE)))) {
+        if (
+            $next && (
+                $next->id === T_DECLARE ||
+                $next->id === T_NAMESPACE || (
+                    $next->id === T_USE &&
+                    $next->getUseType() === TokenSubType::USE_IMPORT
+                )
+            )
+        ) {
             $token->WhitespaceAfter |= WhitespaceType::BLANK;
             return;
         }
 
-        // Otherwise, pin docblocks to subsequent code
-        if ($token->id === T_DOC_COMMENT &&
-                $next &&
-                $next === $token->_next) {
+        // Otherwise, pin DocBlocks to subsequent code
+        if (
+            $next &&
+            $next === $token->_next &&
+            $token->id === T_DOC_COMMENT
+        ) {
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
         }
     }
@@ -186,9 +210,11 @@ final class PlaceComments implements TokenRule
             // brace or between a blank line and the next `case`/`default`.
             //
             $indent = 0;
-            if ($next->id === T_CASE ||
+            if (
+                $next->id === T_CASE ||
                 ($next->id === T_DEFAULT &&
-                    $next->parent()->prevSibling(2)->id === T_SWITCH)) {
+                    $next->parent()->prevSibling(2)->id === T_SWITCH)
+            ) {
                 $prev = $token->_prevCode;
                 if (!(end($token->BracketStack) === $prev ||
                     ($prev->collect($token)->hasBlankLineBetweenTokens() &&

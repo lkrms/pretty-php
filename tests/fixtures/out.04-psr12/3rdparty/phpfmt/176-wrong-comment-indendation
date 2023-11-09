@@ -2,17 +2,14 @@
 
 class ClassName
 {
-    /** */
     public function a() {}
 
-    /** */
     public function b()
     {
         return StaticClass::do('something')
             ->with('string');
     }
 
-    /** */
     public function c()
     {
         return StaticClass::make('something')
@@ -20,7 +17,6 @@ class ClassName
             ->with('string2', $var2);
     }
 
-    /** */
     public function c()
     {
         return StaticClass::make('something')
@@ -28,7 +24,6 @@ class ClassName
             ->with('string2', $var2);
     }
 
-    /** */
     public function d()
     {
         return StaticClass::make('something-else');

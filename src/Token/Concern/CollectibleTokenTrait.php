@@ -10,6 +10,16 @@ trait CollectibleTokenTrait
 {
     /**
      * Optionally skip to the next declaration token in the same expression,
+     * then get the token and any subsequent non-anonymous declaration tokens
+     */
+    final public function namedDeclarationParts(
+        bool $skipToDeclaration = true
+    ): TokenCollection {
+        return $this->declarationParts(false, $skipToDeclaration);
+    }
+
+    /**
+     * Optionally skip to the next declaration token in the same expression,
      * then get the token and any subsequent declaration tokens
      */
     final public function declarationParts(

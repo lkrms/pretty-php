@@ -2,7 +2,9 @@
 // passes:JoinToImplode,Default
 
 /* comment */
-join /** doc comment */ ();
+join
+    /** doc comment */
+    ();
 
 Somclass\join();
 Join\do();

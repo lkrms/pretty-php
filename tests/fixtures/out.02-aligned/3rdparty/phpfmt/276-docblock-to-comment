@@ -59,19 +59,13 @@ class SomeClass
 
     function lets_see_some_magic()
     {
-        /**
-         * Touch this
-         */
+        /** Touch this */
         some_func();
 
-        /**
-         * @var $a SomeType
-         */
+        /** @var $a SomeType */
         $a = 10;
 
-        /**
-         * @var $b SomeType
-         */
+        /** @var $b SomeType */
         $b;
 
         /**
@@ -87,14 +81,10 @@ class SomeClass
         foreach ($arr as $e => $f) {
         }
 
-        /**
-         * Touch this
-         */
+        /** Touch this */
         list($c, $d) = something();
 
-        /**
-         * Touch this
-         */
+        /** Touch this */
         foreach ($arr as $e => $f) {
         }
 
@@ -105,12 +95,7 @@ class SomeClass
         foreach (($arr) as $e => $f) {
         }
 
-        /**
-         * Touch this
-         */
+        /** Touch this */
     }
 }
-
-/**
- * Touch this
- */
+/** Touch this */

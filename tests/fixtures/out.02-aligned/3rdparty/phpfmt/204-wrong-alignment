@@ -6,6 +6,5 @@ class A
         $this->thing;
     }
 
-    /** */
     public function action() {}
 }
