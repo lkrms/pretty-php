@@ -2,6 +2,12 @@ name: CI
 
 on:
   pull_request:
+    paths:
+      - "bin/**"
+      - "src/**"
+      - "tests/**"
+      - "scripts/**"
+      - bootstrap.php
 
   workflow_call:
 
