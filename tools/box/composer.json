@@ -3,6 +3,6 @@
         "php": "^8.1"
     },
     "require-dev": {
-        "humbug/box": ">=4.2.0 <4.3.0"
+        "humbug/box": "^4"
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Support;
 
-use Lkrms\Concept\LooselyTypedCollection;
+use Lkrms\Concept\TypedList;
 use Lkrms\PrettyPHP\Token\Token;
 use LogicException;
 use Stringable;
@@ -10,16 +10,19 @@ use Stringable;
 /**
  * A collection of Tokens
  *
- * @extends LooselyTypedCollection<int,Token>
+ * @extends TypedList<Token>
  */
-final class TokenCollection extends LooselyTypedCollection implements Stringable
+final class TokenCollection extends TypedList implements Stringable
 {
-    protected const ITEM_CLASS = Token::class;
-
     /**
      * @var bool
      */
     private $Collected = false;
+
+    /**
+     * @var array<int,Token>
+     */
+    private $OriginalItems;
 
     public static function collect(Token $from, Token $to): self
     {
@@ -29,8 +32,10 @@ final class TokenCollection extends LooselyTypedCollection implements Stringable
                 $tokens[] = $from = $from->_next;
             }
         }
+
         $instance = new self($tokens ?? []);
         $instance->Collected = true;
+        $instance->OriginalItems = $instance->Items;
 
         return $instance;
     }
@@ -391,7 +396,7 @@ final class TokenCollection extends LooselyTypedCollection implements Stringable
         if (!$this->Collected) {
             throw new LogicException(sprintf('Not collected by %s::collect()', static::class));
         }
-        if ($this->isMutant()) {
+        if ($this->Items !== $this->OriginalItems) {
             throw new LogicException(sprintf('Modified since collection by %s::collect()', static::class));
         }
     }

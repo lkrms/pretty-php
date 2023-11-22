@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "530d0f15f609b3f8433c5d52711ab75d",
+    "content-hash": "a8c56a027b709194a40825dfea5ebe09",
     "packages": [],
     "packages-dev": [
         {
@@ -908,17 +908,86 @@
             "time": "2022-12-18T10:49:34+00:00"
         },
         {
-            "name": "humbug/box",
-            "version": "4.2.0",
+            "name": "fidry/filesystem",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/box-project/box.git",
-                "reference": "afc3a4742c2a3a777e521af5e8e784a14e5c5958"
+                "url": "https://github.com/theofidry/filesystem.git",
+                "reference": "1dd372ab3eb8b84ffe9578bff576b00c9a44ee46"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/box-project/box/zipball/afc3a4742c2a3a777e521af5e8e784a14e5c5958",
-                "reference": "afc3a4742c2a3a777e521af5e8e784a14e5c5958",
+                "url": "https://api.github.com/repos/theofidry/filesystem/zipball/1dd372ab3eb8b84ffe9578bff576b00c9a44ee46",
+                "reference": "1dd372ab3eb8b84ffe9578bff576b00c9a44ee46",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1",
+                "symfony/filesystem": "^6.3",
+                "thecodingmachine/safe": "^2.0"
+            },
+            "require-dev": {
+                "bamarni/composer-bin-plugin": "^1.4",
+                "ergebnis/composer-normalize": "^2.28",
+                "infection/infection": "^0.26",
+                "phpspec/prophecy-phpunit": "^2.0",
+                "phpunit/phpunit": "^10.3",
+                "symfony/finder": "^6.3",
+                "symfony/phpunit-bridge": "^6.2"
+            },
+            "type": "library",
+            "extra": {
+                "bamarni-bin": {
+                    "bin-links": false,
+                    "forward-command": false
+                },
+                "branch-alias": {
+                    "dev-main": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Fidry\\FileSystem\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Théo Fidry",
+                    "email": "theo.fidry@gmail.com"
+                }
+            ],
+            "description": "Symfony Filesystem with a few more utilities.",
+            "keywords": [
+                "filesystem"
+            ],
+            "support": {
+                "issues": "https://github.com/theofidry/filesystem/issues",
+                "source": "https://github.com/theofidry/filesystem/tree/1.1.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/theofidry",
+                    "type": "github"
+                }
+            ],
+            "time": "2023-10-07T07:32:54+00:00"
+        },
+        {
+            "name": "humbug/box",
+            "version": "4.4.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/box-project/box.git",
+                "reference": "b7e493d93f514b95da60e454fcd4fe5d78e008ae"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/box-project/box/zipball/b7e493d93f514b95da60e454fcd4fe5d78e008ae",
+                "reference": "b7e493d93f514b95da60e454fcd4fe5d78e008ae",
                 "shasum": ""
             },
             "require": {
@@ -928,16 +997,19 @@
                 "composer/xdebug-handler": "^3.0.3",
                 "ext-phar": "*",
                 "ext-sodium": "*",
-                "fidry/console": "^0.5.3",
-                "humbug/php-scoper": "^0.17.7 || ^0.18",
+                "fidry/console": "^0.5.3 || ^0.6.0",
+                "fidry/filesystem": "^1.1",
+                "humbug/php-scoper": "^0.18.3",
                 "justinrainbow/json-schema": "^5.2.12",
                 "laravel/serializable-closure": "^1.2.2",
                 "nikic/iter": "^2.2",
                 "nikic/php-parser": "^4.15.2",
-                "paragonie/pharaoh": "^0.6",
+                "paragonie/constant_time_encoding": "^2.6",
                 "php": "^8.1",
                 "phpdocumentor/reflection-docblock": "^5.3",
+                "phpdocumentor/type-resolver": "^1.7",
                 "psr/log": "^3.0",
+                "sebastian/diff": "^4.0",
                 "seld/jsonlint": "^1.9",
                 "symfony/console": "^6.1.7",
                 "symfony/filesystem": "^6.1.5",
@@ -953,10 +1025,14 @@
             },
             "require-dev": {
                 "bamarni/composer-bin-plugin": "^1.8.2",
+                "ergebnis/composer-normalize": "^2.29",
+                "fidry/makefile": "^1.0",
                 "mikey179/vfsstream": "^1.6.11",
                 "phpspec/prophecy-phpunit": "^2.0.1",
                 "phpunit/phpunit": "^9.5.26",
-                "symfony/phpunit-bridge": "^4.2 || ^5.4.14 || ^6.1.6"
+                "symfony/phpunit-bridge": "^6.1.6",
+                "symfony/yaml": "^6.2",
+                "webmozarts/strict-phpunit": "^7.6"
             },
             "suggest": {
                 "ext-openssl": "To accelerate private key generation."
@@ -966,17 +1042,16 @@
             ],
             "type": "library",
             "extra": {
-                "branch-alias": {
-                    "dev-master": "4.x-dev"
-                },
                 "bamarni-bin": {
                     "bin-links": false,
                     "forward-command": false
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev"
                 }
             },
             "autoload": {
                 "files": [
-                    "src/FileSystem/file_system.php",
                     "src/consts.php",
                     "src/functions.php"
                 ],
@@ -984,7 +1059,8 @@
                     "KevinGH\\Box\\": "src"
                 },
                 "exclude-from-classmap": [
-                    "/Test/"
+                    "/Test/",
+                    "vendor/humbug/php-scoper/vendor-hotfix"
                 ]
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -1008,9 +1084,9 @@
             ],
             "support": {
                 "issues": "https://github.com/box-project/box/issues",
-                "source": "https://github.com/box-project/box/tree/4.2.0"
+                "source": "https://github.com/box-project/box/tree/4.4.0"
             },
-            "time": "2022-11-21T22:08:42+00:00"
+            "time": "2023-10-11T18:28:48+00:00"
         },
         {
             "name": "humbug/php-scoper",
@@ -1448,66 +1524,6 @@
             "time": "2022-06-14T06:56:20+00:00"
         },
         {
-            "name": "paragonie/pharaoh",
-            "version": "v0.6.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/paragonie/pharaoh.git",
-                "reference": "d33976a45429edc9c4282e7b0f2b6c3a3a5783fc"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/paragonie/pharaoh/zipball/d33976a45429edc9c4282e7b0f2b6c3a3a5783fc",
-                "reference": "d33976a45429edc9c4282e7b0f2b6c3a3a5783fc",
-                "shasum": ""
-            },
-            "require": {
-                "paragonie/constant_time_encoding": "^2",
-                "paragonie/sodium_compat": "^1.3",
-                "php": "^7|^8",
-                "ulrichsg/getopt-php": "^3"
-            },
-            "require-dev": {
-                "vimeo/psalm": "^1|^2|^3"
-            },
-            "bin": [
-                "pharaoh"
-            ],
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "ParagonIE\\Pharaoh\\": "src/Pharaoh/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Scott Arciszewski",
-                    "email": "scott@paragonie.com",
-                    "homepage": "https://paragonie.com",
-                    "role": "Developer"
-                }
-            ],
-            "description": "Compare PHARs from the Command Line",
-            "keywords": [
-                "auditing",
-                "diff",
-                "phar",
-                "security",
-                "tool",
-                "utility"
-            ],
-            "support": {
-                "email": "info@paragonie.com",
-                "issues": "https://github.com/paragonie/pharaoh/issues",
-                "source": "https://github.com/paragonie/pharaoh"
-            },
-            "time": "2020-12-03T04:57:05+00:00"
-        },
-        {
             "name": "phpdocumentor/reflection-common",
             "version": "2.2.0",
             "source": {
@@ -1874,6 +1890,72 @@
                 "source": "https://github.com/php-fig/log/tree/3.0.0"
             },
             "time": "2021-07-14T16:46:02+00:00"
+        },
+        {
+            "name": "sebastian/diff",
+            "version": "4.0.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/sebastianbergmann/diff.git",
+                "reference": "74be17022044ebaaecfdf0c5cd504fc9cd5a7131"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/sebastianbergmann/diff/zipball/74be17022044ebaaecfdf0c5cd504fc9cd5a7131",
+                "reference": "74be17022044ebaaecfdf0c5cd504fc9cd5a7131",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.3"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.3",
+                "symfony/process": "^4.2 || ^5"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "4.0-dev"
+                }
+            },
+            "autoload": {
+                "classmap": [
+                    "src/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Sebastian Bergmann",
+                    "email": "sebastian@phpunit.de"
+                },
+                {
+                    "name": "Kore Nordmann",
+                    "email": "mail@kore-nordmann.de"
+                }
+            ],
+            "description": "Diff implementation",
+            "homepage": "https://github.com/sebastianbergmann/diff",
+            "keywords": [
+                "diff",
+                "udiff",
+                "unidiff",
+                "unified diff"
+            ],
+            "support": {
+                "issues": "https://github.com/sebastianbergmann/diff/issues",
+                "source": "https://github.com/sebastianbergmann/diff/tree/4.0.5"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/sebastianbergmann",
+                    "type": "github"
+                }
+            ],
+            "time": "2023-05-07T05:35:17+00:00"
         },
         {
             "name": "seld/jsonlint",
@@ -3082,56 +3164,6 @@
             "time": "2023-04-05T11:54:14+00:00"
         },
         {
-            "name": "ulrichsg/getopt-php",
-            "version": "v3.4.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/getopt-php/getopt-php.git",
-                "reference": "9121d7c2c51a6a59ee407c49a13b4d8cfae71075"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/getopt-php/getopt-php/zipball/9121d7c2c51a6a59ee407c49a13b4d8cfae71075",
-                "reference": "9121d7c2c51a6a59ee407c49a13b4d8cfae71075",
-                "shasum": ""
-            },
-            "require": {
-                "ext-mbstring": "*",
-                "php": ">=5.4.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^4.8",
-                "squizlabs/php_codesniffer": "^2.7"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "GetOpt\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Ulrich Schmidt-Goertz",
-                    "email": "ulrich@schmidt-goertz.de"
-                },
-                {
-                    "name": "Thomas Flori",
-                    "email": "thflori@gmail.com"
-                }
-            ],
-            "description": "Command line arguments parser for PHP 5.4 - 7.3",
-            "homepage": "http://getopt-php.github.io/getopt-php",
-            "support": {
-                "issues": "https://github.com/getopt-php/getopt-php/issues",
-                "source": "https://github.com/getopt-php/getopt-php/tree/v3.4.0"
-            },
-            "time": "2020-07-14T06:09:04+00:00"
-        },
-        {
             "name": "webmozart/assert",
             "version": "1.11.0",
             "source": {
@@ -3199,5 +3231,5 @@
         "php": "^8.1"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.6.0"
 }

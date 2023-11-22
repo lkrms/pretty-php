@@ -13,6 +13,7 @@ use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOption;
 use Lkrms\Console\Catalog\ConsoleLevel;
 use Lkrms\Facade\Console;
+use Lkrms\Facade\Profile;
 use Lkrms\Facade\Sys;
 use Lkrms\PrettyPHP\Catalog\FormatterFlag;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
@@ -1077,7 +1078,7 @@ EOF,
             $this->Quiet > 2 || Console::logProgress(sprintf('Formatting %d of %d:', ++$i, $count), $inputFile);
             $input = file_get_contents($file);
             $formatter = $getFormatter($inputFile);
-            Sys::startTimer($inputFile, 'file');
+            Profile::startTimer($inputFile, 'file');
             try {
                 $output = $formatter->format(
                     $input,
@@ -1098,7 +1099,7 @@ EOF,
                 $this->maybeDumpDebugOutput($input, null, $formatter->Tokens, $formatter->Log, (string) $ex);
                 throw $ex;
             } finally {
-                Sys::stopTimer($inputFile, 'file');
+                Profile::stopTimer($inputFile, 'file');
             }
             if ($i === $count) {
                 $this->maybeDumpDebugOutput($input, $output, $formatter->Tokens, $formatter->Log, null);
@@ -1450,7 +1451,7 @@ EOF,
             return;
         }
 
-        Sys::startTimer(__METHOD__);
+        Profile::startTimer(__METHOD__);
 
         $logDir = "{$this->DebugDirectory}/progress-log";
         File::createDir($logDir);
@@ -1490,6 +1491,6 @@ EOF,
             }
         }
 
-        Sys::stopTimer(__METHOD__);
+        Profile::stopTimer(__METHOD__);
     }
 }
