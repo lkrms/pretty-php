@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Tests;
 
-use Lkrms\Facade\Sys;
+use Lkrms\Facade\Profile;
 use Lkrms\PrettyPHP\Formatter;
 
 abstract class TestCase extends \PHPUnit\Framework\TestCase
@@ -69,11 +69,11 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
     protected function setUp(): void
     {
-        Sys::pushTimers();
+        Profile::pushTimers();
     }
 
     protected function tearDown(): void
     {
-        Sys::popTimers();
+        Profile::popTimers();
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Support;
 
-use Lkrms\Concern\HasMutator;
+use Lkrms\Concern\Immutable;
 use Lkrms\Contract\IImmutable;
 use Lkrms\PrettyPHP\Catalog\TokenType as TT;
 
@@ -13,7 +13,7 @@ use Lkrms\PrettyPHP\Catalog\TokenType as TT;
  */
 class TokenTypeIndex implements IImmutable
 {
-    use HasMutator {
+    use Immutable {
         withPropertyValue as public with;
     }
 
@@ -549,7 +549,7 @@ class TokenTypeIndex implements IImmutable
     }
 
     /**
-     * @return $this
+     * @return static
      */
     public function withLeadingOperators()
     {
@@ -576,7 +576,7 @@ class TokenTypeIndex implements IImmutable
     }
 
     /**
-     * @return $this
+     * @return static
      */
     public function withTrailingOperators()
     {
@@ -608,7 +608,7 @@ class TokenTypeIndex implements IImmutable
     }
 
     /**
-     * @return $this
+     * @return static
      */
     public function withoutPreservingNewlines()
     {

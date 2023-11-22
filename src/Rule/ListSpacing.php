@@ -69,7 +69,8 @@ final class ListSpacing implements ListRule
         // If the list has a "magic comma", add a newline before each item and
         // another after the last item
         if ($owner->ClosedBy->_prevCode->id === T_COMMA) {
-            $items->push($owner->ClosedBy)
+            $items->clone()
+                  ->add($owner->ClosedBy)
                   ->addWhitespaceBefore(WhitespaceType::LINE, true);
         }
 

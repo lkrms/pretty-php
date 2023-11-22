@@ -2,11 +2,11 @@
 
 namespace Lkrms\PrettyPHP;
 
-use Lkrms\Concern\HasMutator;
+use Lkrms\Concern\Immutable;
 use Lkrms\Concern\TReadable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Facade\Console;
-use Lkrms\Facade\Sys;
+use Lkrms\Facade\Profile;
 use Lkrms\PrettyPHP\Catalog\FormatterFlag;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
@@ -81,7 +81,7 @@ use Throwable;
  */
 final class Formatter implements IReadable
 {
-    use HasMutator {
+    use Immutable {
         withPropertyValue as public with;
     }
     use TReadable;
@@ -441,7 +441,7 @@ final class Formatter implements IReadable
         }
         $this->EnabledRules = array_combine($rules, array_fill(0, count($rules), true));
 
-        Sys::startTimer(__METHOD__ . '#sort-rules');
+        Profile::startTimer(__METHOD__ . '#sort-rules');
         $mainLoop = [];
         $blockLoop = [];
         $beforeRender = [];
@@ -496,7 +496,7 @@ final class Formatter implements IReadable
         $this->MainLoop = $this->sortRules($mainLoop);
         $this->BlockLoop = $this->sortRules($blockLoop);
         $this->BeforeRender = $this->sortRules($beforeRender);
-        Sys::stopTimer(__METHOD__ . '#sort-rules');
+        Profile::stopTimer(__METHOD__ . '#sort-rules');
 
         $filters = array_diff(
             self::DEFAULT_FILTERS,
@@ -652,7 +652,7 @@ final class Formatter implements IReadable
         }
         $eol = $eol && $this->PreserveEol ? $eol : $this->PreferredEol;
 
-        Sys::startTimer(__METHOD__ . '#tokenize-input');
+        Profile::startTimer(__METHOD__ . '#tokenize-input');
         try {
             $this->Tokens = Token::tokenize(
                 $code,
@@ -670,10 +670,10 @@ final class Formatter implements IReadable
                 $ex
             );
         } finally {
-            Sys::stopTimer(__METHOD__ . '#tokenize-input');
+            Profile::stopTimer(__METHOD__ . '#tokenize-input');
         }
 
-        Sys::startTimer(__METHOD__ . '#prepare-tokens');
+        Profile::startTimer(__METHOD__ . '#prepare-tokens');
         try {
             $this->Tokens = Token::prepareTokens(
                 $this->Tokens,
@@ -690,16 +690,16 @@ final class Formatter implements IReadable
                 $last->WhitespaceAfter |= WhitespaceType::LINE;
             }
         } finally {
-            Sys::stopTimer(__METHOD__ . '#prepare-tokens');
+            Profile::stopTimer(__METHOD__ . '#prepare-tokens');
         }
 
-        Sys::startTimer(__METHOD__ . '#index-tokens');
+        Profile::startTimer(__METHOD__ . '#index-tokens');
         foreach ($this->Tokens as $index => $token) {
             $this->TokenIndex[$token->id][$index] = $token;
         }
-        Sys::stopTimer(__METHOD__ . '#index-tokens');
+        Profile::stopTimer(__METHOD__ . '#index-tokens');
 
-        Sys::startTimer(__METHOD__ . '#find-lists');
+        Profile::startTimer(__METHOD__ . '#find-lists');
         // Get non-empty open brackets
         $listParents = $this->sortTokens([
             T_OPEN_BRACKET => true,
@@ -808,18 +808,18 @@ final class Formatter implements IReadable
             }
             $lists[$i] = $items;
         }
-        Sys::stopTimer(__METHOD__ . '#find-lists');
+        Profile::stopTimer(__METHOD__ . '#find-lists');
 
         foreach ($this->MainLoop as [$rule, $method]) {
             $_rule = Convert::classToBasename($_class = get_class($rule));
-            Sys::startTimer($_rule, 'rule');
+            Profile::startTimer($_rule, 'rule');
 
             if ($method === ListRule::PROCESS_LIST) {
                 foreach ($lists as $i => $list) {
                     /** @var ListRule $rule */
                     $rule->processList($listParents[$i], clone $list);
                 }
-                Sys::stopTimer($_rule, 'rule');
+                Profile::stopTimer($_rule, 'rule');
                 !$this->LogProgress || $this->logProgress($_rule, ListRule::PROCESS_LIST);
                 continue;
             }
@@ -827,7 +827,7 @@ final class Formatter implements IReadable
             /** @var TokenRule $rule */
             $types = $this->TokenRuleTypes[$_class];
             if ($types === []) {
-                Sys::stopTimer($_rule, 'rule');
+                Profile::stopTimer($_rule, 'rule');
                 continue;
             }
             if ($types === ['*']) {
@@ -838,7 +838,7 @@ final class Formatter implements IReadable
                 $tokens = $this->getTokens($types);
             }
             if (!$tokens) {
-                Sys::stopTimer($_rule, 'rule');
+                Profile::stopTimer($_rule, 'rule');
                 continue;
             }
             if ($rule instanceof MultiTokenRule) {
@@ -849,11 +849,11 @@ final class Formatter implements IReadable
                     $rule->processToken($token);
                 }
             }
-            Sys::stopTimer($_rule, 'rule');
+            Profile::stopTimer($_rule, 'rule');
             !$this->LogProgress || $this->logProgress($_rule, TokenRule::PROCESS_TOKEN);
         }
 
-        Sys::startTimer(__METHOD__ . '#find-blocks');
+        Profile::startTimer(__METHOD__ . '#find-blocks');
 
         /** @var array<TokenCollection[]> */
         $blocks = [];
@@ -901,16 +901,16 @@ final class Formatter implements IReadable
             $token = $token->_next;
         }
 
-        Sys::stopTimer(__METHOD__ . '#find-blocks');
+        Profile::stopTimer(__METHOD__ . '#find-blocks');
 
         /** @var BlockRule $rule */
         foreach ($this->BlockLoop as [$rule]) {
             $_rule = Convert::classToBasename(get_class($rule));
-            Sys::startTimer($_rule, 'rule');
+            Profile::startTimer($_rule, 'rule');
             foreach ($blocks as $block) {
                 $rule->processBlock($block);
             }
-            Sys::stopTimer($_rule, 'rule');
+            Profile::stopTimer($_rule, 'rule');
             !$this->LogProgress || $this->logProgress($_rule, BlockRule::PROCESS_BLOCK);
         }
 
@@ -919,13 +919,13 @@ final class Formatter implements IReadable
         /** @var Rule $rule */
         foreach ($this->BeforeRender as [$rule]) {
             $_rule = Convert::classToBasename(get_class($rule));
-            Sys::startTimer($_rule, 'rule');
+            Profile::startTimer($_rule, 'rule');
             $rule->beforeRender($this->Tokens);
-            Sys::stopTimer($_rule, 'rule');
+            Profile::stopTimer($_rule, 'rule');
             !$this->LogProgress || $this->logProgress($_rule, Rule::BEFORE_RENDER);
         }
 
-        Sys::startTimer(__METHOD__ . '#render');
+        Profile::startTimer(__METHOD__ . '#render');
         try {
             $first = reset($this->Tokens);
             $last = end($this->Tokens);
@@ -940,7 +940,7 @@ final class Formatter implements IReadable
                 $ex
             );
         } finally {
-            Sys::stopTimer(__METHOD__ . '#render');
+            Profile::stopTimer(__METHOD__ . '#render');
         }
 
         if ($fast) {
@@ -949,7 +949,7 @@ final class Formatter implements IReadable
                 : str_replace("\n", $eol, $out);
         }
 
-        Sys::startTimer(__METHOD__ . '#parse-output');
+        Profile::startTimer(__METHOD__ . '#parse-output');
         try {
             $tokensOut = Token::onlyTokenize(
                 $out,
@@ -966,7 +966,7 @@ final class Formatter implements IReadable
                 $ex
             );
         } finally {
-            Sys::stopTimer(__METHOD__ . '#parse-output');
+            Profile::stopTimer(__METHOD__ . '#parse-output');
         }
 
         $tokensIn = Token::onlyTokenize(
@@ -1100,9 +1100,9 @@ final class Formatter implements IReadable
             foreach ($tokenCallbacks as $index => $callbacks) {
                 foreach ($callbacks as $i => [$rule, $callback]) {
                     $_rule = Convert::classToBasename(get_class($rule));
-                    Sys::startTimer($_rule, 'rule');
+                    Profile::startTimer($_rule, 'rule');
                     $callback();
-                    Sys::stopTimer($_rule, 'rule');
+                    Profile::stopTimer($_rule, 'rule');
                     !$this->LogProgress || $this->logProgress($_rule, "{closure:$index:$i}");
                 }
                 unset($tokenCallbacks[$index]);
@@ -1125,7 +1125,7 @@ final class Formatter implements IReadable
 
     private function logProgress(string $rule, string $after): void
     {
-        Sys::startTimer(__METHOD__ . '#render');
+        Profile::startTimer(__METHOD__ . '#render');
         try {
             $first = reset($this->Tokens);
             $last = end($this->Tokens);
@@ -1139,7 +1139,7 @@ final class Formatter implements IReadable
                 $ex
             );
         } finally {
-            Sys::stopTimer(__METHOD__ . '#render');
+            Profile::stopTimer(__METHOD__ . '#render');
         }
         $this->Log[$rule . '-' . $after] = $out;
     }
