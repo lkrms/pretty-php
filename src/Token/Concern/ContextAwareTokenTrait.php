@@ -34,7 +34,7 @@ trait ContextAwareTokenTrait
 
         if (!$this->_prevCode) {
             // @codeCoverageIgnoreStart
-            throw new Exception('Illegal T_COLON context');
+            throw new LogicException('Illegal T_COLON context');
             // @codeCoverageIgnoreEnd
         }
 
@@ -99,7 +99,7 @@ trait ContextAwareTokenTrait
 
         if (!$this->_prevCode) {
             // @codeCoverageIgnoreStart
-            throw new Exception('Illegal T_QUESTION context');
+            throw new LogicException('Illegal T_QUESTION context');
             // @codeCoverageIgnoreEnd
         }
 

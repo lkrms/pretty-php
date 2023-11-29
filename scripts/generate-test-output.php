@@ -70,7 +70,7 @@ foreach (FormatterTest::getFileFormats() as $format => $options) {
     }
 }
 
-if ($invalid ?? null) {
+if (isset($invalid)) {
     $indexPath = FormatterTest::getMinVersionIndexPath();
     $index = file_exists($indexPath)
         ? json_decode(file_get_contents($indexPath), true)
