@@ -31,11 +31,11 @@ function run_with_php_versions() {
     done
 }
 
-[[ ${BASH_SOURCE[0]} -ef scripts/test.sh ]] ||
+[[ ${BASH_SOURCE[0]} -ef scripts/run-tests.sh ]] ||
     die "must run from root of package folder"
 
 run bin/pretty-php --diff
-run_with_php_versions 83 82 74 vendor/bin/phpstan
+run_with_php_versions 83 74 vendor/bin/phpstan
 run_with_php_versions 83 82 81 80 74 vendor/bin/phpunit
 
 run scripts/build.sh

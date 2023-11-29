@@ -428,7 +428,7 @@ class Token extends PhpToken implements JsonSerializable
             $latest = $current;
             $current = $current->_prevSibling;
         }
-        if (!($latest ?? null)) {
+        if (!isset($latest)) {
             return;
         }
 
@@ -1592,7 +1592,7 @@ class Token extends PhpToken implements JsonSerializable
 
                 // Adjust the token's position to account for any leading
                 // whitespace
-                if ($before ?? null) {
+                if (isset($before)) {
                     $current->movePosition($before, $this->Formatter->Tab === "\t");
                 }
 

@@ -28,7 +28,7 @@ jobs:
       - name: Setup PHP and Composer
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.2"
+          php-version: "8.3"
           coverage: none
 
       - name: Get Composer cache directory
@@ -56,7 +56,7 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
-          - "8.2"
+          - "8.3"
           - "7.4"
 
     steps:
@@ -98,10 +98,10 @@ jobs:
           - windows-latest
           - macos-latest
         php-version:
-          - "8.2"
+          - "8.3"
         include:
           - os: ubuntu-latest
-            php-version: "8.3"
+            php-version: "8.2"
           - os: ubuntu-latest
             php-version: "8.1"
           - os: ubuntu-latest
@@ -162,7 +162,7 @@ jobs:
       - name: Setup PHP and Composer
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.2"
+          php-version: "8.3"
           coverage: none
 
       - name: Get Composer cache directory
@@ -223,10 +223,10 @@ jobs:
           - windows-latest
           - macos-latest
         php-version:
-          - "8.2"
+          - "8.3"
         include:
           - os: ubuntu-latest
-            php-version: "8.3"
+            php-version: "8.2"
           - os: ubuntu-latest
             php-version: "8.1"
           - os: ubuntu-latest
@@ -289,7 +289,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.2"
+          php-version: "8.3"
           extensions: none, json, mbstring, tokenizer
           coverage: none
 
