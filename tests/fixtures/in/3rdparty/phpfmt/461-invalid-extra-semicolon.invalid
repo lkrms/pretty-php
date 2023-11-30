@@ -1,0 +1,7 @@
+<?php
+//passes:AutoSemicolon
+map(function (OrderHistory $order) {
+    if ($events === null) {
+        return 0
+    }
+});

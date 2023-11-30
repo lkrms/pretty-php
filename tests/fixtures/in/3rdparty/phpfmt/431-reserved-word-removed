@@ -1,0 +1,15 @@
+<?php
+//passes:Default,ReindentEnumBlocks,PSR2ModifierVisibilityStaticOrder
+//version:8.1.0
+enum Status {
+    case public;
+    case protected;
+    case private;
+}
+
+enum Status: int {
+    case public = 0;
+    case foo = 1;
+    case protected = 2;
+    case private = 3;
+}

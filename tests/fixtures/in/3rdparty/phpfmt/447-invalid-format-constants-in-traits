@@ -1,0 +1,16 @@
+<?php
+//passes:PSR2ModifierVisibilityStaticOrder
+trait FooBar {
+    const FII = 'foo';
+    protected const FOO = 'foo';
+    private const BAR = 'bar';
+    final const BAZ = 'baz';
+    final protected const QUX = 'qux';
+}
+
+trait FaaBar {
+    private const BAR = 'bar';
+    final const BAZ = 'baz';
+    final protected const QUX = 'qux';
+    const FOO = 'foo';
+}

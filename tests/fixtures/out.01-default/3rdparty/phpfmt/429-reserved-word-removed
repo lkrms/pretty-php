@@ -1,0 +1,5 @@
+<?php
+class A
+{
+    final public function include(Documents $documents): Documents {}
+}

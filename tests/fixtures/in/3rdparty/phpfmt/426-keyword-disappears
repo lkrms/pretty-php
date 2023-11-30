@@ -1,0 +1,5 @@
+<?php
+//passes:PSR2ModifierVisibilityStaticOrder
+ICollection::PUBLIC;
+ICollection::FINAL;
+ICollection::STATIC;

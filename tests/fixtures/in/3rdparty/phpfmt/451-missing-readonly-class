@@ -1,0 +1,15 @@
+<?php declare (strict_types = 1);
+//version:8.2
+//passes:PSR2ModifierVisibilityStaticOrder
+namespace App\DDD\Accounting\DTOs;
+
+readonly class InvoiceCreateActionItemDTO
+{
+    public function __construct(
+        public string $description,
+        public int $quantity,
+        public int $amount,
+        public int $vat,
+        public int $total
+    ) {}
+}

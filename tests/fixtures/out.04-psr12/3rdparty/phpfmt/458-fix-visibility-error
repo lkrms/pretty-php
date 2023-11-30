@@ -1,0 +1,8 @@
+<?php
+
+// passes:PSR2ModifierVisibilityStaticOrder
+namespace Test;
+
+class A {}
+
+function F() {}

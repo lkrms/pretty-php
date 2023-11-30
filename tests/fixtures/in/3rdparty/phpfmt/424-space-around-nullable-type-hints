@@ -1,0 +1,18 @@
+<?php
+//version:7.1
+class FooTestClass {
+	public function setFoo( ? Foo $foo)
+	{
+		$this->foo = $foo;
+	}
+
+	public function getFoo(): ? Foo
+	{
+		return $this->foo;
+	}
+
+	public function getFooBar(Foo $foo, ? Bar $bar)
+	{
+		return $foo->set($bar);
+	}
+}

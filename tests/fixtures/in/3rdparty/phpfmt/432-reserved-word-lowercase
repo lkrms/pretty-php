@@ -1,0 +1,15 @@
+<?php
+//passes:Default,ReindentEnumBlocks,PSR2KeywordsLowerCase
+//version:8.1.0
+enum Status {
+    case PUBLIC;
+    case PROTECTED;
+    case PRIVATE;
+}
+
+enum Status: int {
+    case Public = 0;
+    case Foo = 1;
+    case Protected = 2;
+    case Private = 3;
+}

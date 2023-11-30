@@ -1,0 +1,4 @@
+<?php
+Collection::FOREACH;
+Collection::WHILE;
+Collection::ELSE;

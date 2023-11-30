@@ -1,0 +1,10 @@
+<?php
+// version:8
+// passes:AutoSemicolon
+$this
+    ->ticket
+    ->messages
+    ->each(function () {
+        match (true) {
+        };
+    });

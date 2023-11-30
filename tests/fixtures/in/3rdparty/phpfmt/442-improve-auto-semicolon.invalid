@@ -1,0 +1,13 @@
+<?php
+//passes:Autosemicolon
+$data['total'] = 1
+/** comment **/
+
+$data['total'] = 1
+// comment
+
+$data['total'] = 'foo'
+// comment
+
+$data['total'] = "foo"
+// comment

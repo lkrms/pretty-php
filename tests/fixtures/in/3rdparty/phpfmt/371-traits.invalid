@@ -1,0 +1,23 @@
+<?php
+//passes:Default,OrganizeClass
+class A {
+	use SomeTrait;
+	use SomeTrait2, SomeTrait3 {
+		SomeTrait3::smallTalk insteadof SomeTrait2;
+	        SomeTrait2::bigTalk insteadof SomeTrait3;
+	};
+	// some trait4
+	use SomeTrait4;
+	// some trait5,6
+	use SomeTrait5, SomeTrait6 {
+		SomeTrait6::smallTalk insteadof SomeTrait5;
+	        SomeTrait5::bigTalk insteadof SomeTrait6;
+	};
+
+	function c() {
+	}
+
+	function b() {
+
+	}
+}

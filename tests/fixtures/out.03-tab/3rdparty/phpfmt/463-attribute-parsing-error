@@ -1,0 +1,25 @@
+<?php
+// passes:PSR2ModifierVisibilityStaticOrder
+// version:8
+namespace App\Entity;
+
+use Symfony\Component\Validator\Constraints\Ip;
+
+class User
+{
+	private ?string $testP;
+
+	#[Ip(groups: [])]
+	public function test() {}
+
+	private function test2() {}
+
+	protected function test4() {}
+
+	function test5() {}
+
+	function testOut(): ?string
+	{
+		return $this->testP;
+	}
+}

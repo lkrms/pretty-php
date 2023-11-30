@@ -1,3 +1,4 @@
 <?php
+//version:700000
 //passes:MergeNamespaceWithOpenTag,NoSpaceAfterPHPDocBlocks,StripNewlineAfterCurlyOpen,StripNewlineAfterClassOpen,PrettyPrintDocBlocks,AlignTypehint,AlignDoubleSlashComments,GeneratePHPDoc,OrderMethod,DocBlockToComment,StrictComparison,WordWrap,PSR2EmptyFunction
 $a . $b;

@@ -1,0 +1,38 @@
+<?php
+//passes:PSR2ModifierVisibilityStaticOrder
+//version:8.3
+class Test {
+    const string FOO = 'test';
+    protected const string GARPLY = 'test';
+    final protected const string WALDO = 'test';
+    final protected const string|int JAMES = 'test';
+}
+trait TestTrait {
+    final protected const string WALDO = 'test';
+}
+interface TestInterface {
+    public const string TEST = 'test';
+}
+enum TestEnum: string {
+    public const string TEST = 'test';
+}
+
+//
+
+class MyClass {
+    public const MY_CONST = 42;
+}
+
+$constName = 'MY_CONST';
+
+echo MyClass::{$constName};
+
+//
+
+enum MyEnum: int {
+    case MyMember = 42;
+}
+
+$enumName = 'MyMember';
+
+echo MyEnum::{$enumName}->value;

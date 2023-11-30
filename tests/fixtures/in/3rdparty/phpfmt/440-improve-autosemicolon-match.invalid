@@ -1,0 +1,7 @@
+<?php
+//passes:Autosemicolon
+//version:8
+if (true) {
+    match ($a) {
+    }
+}

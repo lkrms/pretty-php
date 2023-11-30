@@ -1,0 +1,8 @@
+<?php
+//version:8.1
+//passes:PSR2ModifierVisibilityStaticOrder
+class TestClass {
+    public $a;
+    public string $b;
+    public readonly string $c;
+}

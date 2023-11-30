@@ -2,10 +2,38 @@
 //passes:AutoSemicolon
 
 return new Object('foo', function ($a,  $b) {
-	$obj = new StdClass();
+    $obj = new StdClass();
 
-	$gaApi->aaa = 'bbbb'
-	$gaApi->ccc = 'ddddd';
-	$gaApi->eee = 'fffff';
-	$gaApi->ggg = 'hhhh'
+    $gaApi->aaa = 'bbbb'
+    $gaApi->ccc = 'ddddd';
+    $gaApi->eee = 'fffff';
+    $gaApi->ggg = 'hhhh'
+});
+
+return new Object('foo', function ($a,  $b) {
+    $obj = new StdClass();
+
+    $gaApi->aaa = 'bbbb'
+    $gaApi->ccc = 'ddddd';
+    $gaApi->eee = 'fffff';
+    $gaApi->ggg = true
+});
+
+
+return new Object('foo', function ($a,  $b) {
+    $obj = new StdClass();
+
+    $gaApi->aaa = 'bbbb'
+    $gaApi->ccc = 'ddddd';
+    $gaApi->eee = 'fffff';
+    $gaApi->ggg = 1
+});
+
+return new Object('foo', function ($a,  $b) {
+    $obj = new StdClass();
+
+    $gaApi->aaa = 'bbbb'
+    $gaApi->ccc = 'ddddd';
+    $gaApi->eee = 'fffff';
+    $gaApi->ggg = 1.1
 });

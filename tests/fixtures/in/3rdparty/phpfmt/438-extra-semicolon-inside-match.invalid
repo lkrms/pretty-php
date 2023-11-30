@@ -1,0 +1,9 @@
+<?php
+//passes:Autosemicolon
+//version:8
+return match (true) {
+    "d"=>"c"
+    "b"=>"c",
+    "a"=>"b"
+    default => []
+};

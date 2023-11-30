@@ -1,0 +1,14 @@
+<?php
+//passes:ResizeSpaces
+namespace App\Entity;
+
+class User
+{
+    public const PRIVATE = 5;
+    public const PUBLIC = 10;
+    public const PROTECTED = 15;
+    public const private = 25;
+    public const public = 30;
+    public const protected = 35;
+    public const TEST = 45;
+}

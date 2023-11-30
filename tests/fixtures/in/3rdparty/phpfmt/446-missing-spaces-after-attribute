@@ -1,0 +1,5 @@
+<?php
+//version:8
+function passwordHash(#[\SensitiveParameter] string $password) {
+    debug_print_backtrace();
+}

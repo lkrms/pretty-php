@@ -1,3 +1,4 @@
 <?php
 //passes:Default,CakePHPStyle
+//version:80000
 $a = &$b;

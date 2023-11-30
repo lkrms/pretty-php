@@ -1,0 +1,17 @@
+<?php
+//passes:Default,ReindentEnumBlocks
+//version:8.1.0
+
+enum Status: int {
+    case public = 0;
+    case foo = 1;
+
+    public function getStr(): string
+    {
+        return match ($this) {
+            self::public => 'a',
+            self::foo => 'b',
+            default => null,
+        };
+    }
+}

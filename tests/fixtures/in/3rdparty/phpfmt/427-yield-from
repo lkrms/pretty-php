@@ -1,0 +1,11 @@
+<?php
+//version:7.1
+class Test2 {
+	public function foo() {
+		yield 1;
+	}
+
+	public function bar() {
+		yield from $this->foo();
+	}
+}

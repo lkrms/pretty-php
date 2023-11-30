@@ -1,0 +1,13 @@
+<?php
+
+class A {
+    public function test(): array {
+
+    }
+}
+
+class A {
+    public function test(): ? array {
+
+    }
+}

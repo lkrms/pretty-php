@@ -1,0 +1,20 @@
+<?php
+
+// version:8
+// passes:Reindent
+namespace App\Entity;
+
+use ApiPlatform\Metadata\ApiProperty;
+
+class MyClass
+{
+    #[ApiProperty(
+        description: <<<UwU
+            text text.
+
+            * text text.
+            * text text.
+            UwU,
+    )]
+    public string $myProperty;
+}

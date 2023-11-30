@@ -1,0 +1,35 @@
+<?php
+//version:8.1
+//passes:StripSpaceWithinControlStructures
+namespace App\Enums;
+
+enum InvoiceStatus: string {
+  case DRAFT = 'draft';
+  case UNPAID = 'unpaid';
+  case PAID = 'paid';
+  case PARTIAL = 'partial';
+
+  public static function isValid(string $status): bool {
+        
+        new class {};
+        foreach ($a as $b) {
+
+
+        $a++;
+    }
+
+    while (1) {
+        echo "a";
+    }
+
+    return in_array($status, self::cases(), true);
+  }
+
+}
+
+enum InvoiceStatus: string {
+case PARTIAL = 'partial';
+  public static function isValid(string $status): bool {
+  }
+
+}

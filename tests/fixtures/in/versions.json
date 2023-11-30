@@ -49,6 +49,11 @@
         "3rdparty\/phpfmt\/305-lwordwrap-pivot",
         "3rdparty\/phpfmt\/339-align-objop",
         "3rdparty\/phpfmt\/341-autosemicolon-objop",
+        "3rdparty\/phpfmt\/434-extra-space-after-class-as-parameter",
+        "3rdparty\/phpfmt\/446-missing-spaces-after-attribute",
+        "3rdparty\/phpfmt\/452-heredoc-format-breaking",
+        "3rdparty\/phpfmt\/455-extra-semicolon",
+        "3rdparty\/phpfmt\/460-space-between-methods",
         "standalone\/class-anonymous-attributes-01.php",
         "standalone\/class-anonymous-attributes-02.php",
         "standalone\/class-attributes-01.php",
@@ -90,6 +95,12 @@
         "3rdparty\/php-fig\/per\/20-4.4-methods-and-functions.php",
         "3rdparty\/php-fig\/per\/57-9-enumerations.php",
         "3rdparty\/php-fig\/per\/63-12.4-example.php",
+        "3rdparty\/phpfmt\/431-reserved-word-removed",
+        "3rdparty\/phpfmt\/432-reserved-word-lowercase",
+        "3rdparty\/phpfmt\/433-missing-space",
+        "3rdparty\/phpfmt\/445-php81-basic-test",
+        "3rdparty\/phpfmt\/450-php81-readonly-property",
+        "3rdparty\/phpfmt\/456-strip-space-within-control-structures-removes-return",
         "standalone\/functions-anonymous-03.php",
         "standalone\/native-types-03.php"
     ],
@@ -98,7 +109,12 @@
         "3rdparty\/php-doc\/language\/oop5\/basic\/003.php",
         "3rdparty\/php-doc\/language\/oop5\/basic\/004.php",
         "3rdparty\/php-fig\/per\/27-4.6-modifier-keywords.php",
+        "3rdparty\/phpfmt\/451-missing-readonly-class",
         "standalone\/functions-anonymous-04.php",
         "standalone\/native-types-04.php"
+    ],
+    "80300": [
+        "3rdparty\/phpfmt\/352-spacing-interpolated-value",
+        "3rdparty\/phpfmt\/448-php83"
     ]
 }

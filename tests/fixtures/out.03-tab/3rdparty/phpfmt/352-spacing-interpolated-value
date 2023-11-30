@@ -1,2 +1,2 @@
 <?php
-static::{$direction . 'tokenSubsetIsAtIdx'}();
+static::{$direction . 'tokenSubsetIsAtIdx'};

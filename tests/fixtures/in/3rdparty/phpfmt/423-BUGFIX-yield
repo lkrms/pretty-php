@@ -1,0 +1,5 @@
+<?php
+//version:7.1
+function b() {
+yield from a();
+}

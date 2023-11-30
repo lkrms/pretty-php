@@ -1,0 +1,21 @@
+<?php
+//passes:OrganizeClass
+//version:8.0.0
+namespace App\Entity;
+
+use App\Entity\Traits as Traits;
+use Doctrine\ORM\Mapping as ORM;
+use App\Repository\AddressRepository;
+
+#[ORM\Entity(repositoryClass: AddressRepository::class)]
+class Address {
+  #[ORM\Id]
+  #[ORM\GeneratedValue]
+  #[ORM\Column]
+  private ?int $id = null;
+  #[ORM\Int]
+  #[ORM\GeneratedValue]
+  #[ORM\Column]
+  public ?int $store_id = null;
+
+}
