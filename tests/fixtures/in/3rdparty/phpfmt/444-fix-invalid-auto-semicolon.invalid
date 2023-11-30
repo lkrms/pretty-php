@@ -1,0 +1,4 @@
+<?php
+//passes:Autosemicolon
+$b = $a() /**  */
++ 1

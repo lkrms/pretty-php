@@ -1,0 +1,3 @@
+<?php
+ClassWithStaticMethod::if($argument);
+ClassWithStaticMethod::for($argument);

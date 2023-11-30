@@ -1,0 +1,17 @@
+<?php
+
+class A{
+	function funcName($parameter) {
+		try
+		{
+			doSomething()
+		}
+
+		// comment
+		// comment
+		// comment
+		catch (Exception $e) {
+			throw $e;
+		}
+	}
+}

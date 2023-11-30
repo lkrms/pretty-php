@@ -1,0 +1,11 @@
+<?php
+// passes:PSR2CurlyOpenNextLine
+class A
+{
+    final public function include(Documents $documents): Documents {}
+}
+
+class B
+{
+    final public function other(Documents $documents): Documents {}
+}

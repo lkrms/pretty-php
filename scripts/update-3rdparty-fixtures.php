@@ -128,6 +128,36 @@ foreach ($listings ?? [] as $source => $sourceListings) {
     }
 }
 
+Console::info('Updating phpfmt fixtures');
+
+$files = File::find()
+             ->in("$repoRoot/phpfmt/tests/Original")
+             ->include('/\.in$/');
+
+$dir = "$fixturesRoot/phpfmt";
+Console::log('Updating:', $dir);
+File::createDir($dir);
+File::pruneDir($dir);
+
+$count = 0;
+foreach ($files as $file) {
+    $ext = '';
+    try {
+        // @phpstan-ignore-next-line
+        token_get_all(file_get_contents((string) $file), TOKEN_PARSE);
+    } catch (CompileError $ex) {
+        $ext = '.invalid';
+    }
+    $outFile = "$dir/" . $file->getBasename('.in') . $ext;
+    Console::logProgress('Creating', substr($outFile, strlen("$fixturesRoot/")));
+    copy((string) $file, $outFile);
+    $count++;
+    $fixtures++;
+    $replaced++;
+}
+
+Console::log('Listings copied from phpfmt:', (string) $count);
+
 $markdownRegex = <<<'REGEX'
 (?xms)
 (?<= ^ )

@@ -1,0 +1,5 @@
+<?php
+
+return $action->handle(
+	id: intval($id), class: TicketApiClassEnum::from($class)
+);

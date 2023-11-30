@@ -1,0 +1,53 @@
+<?php
+//passes: AutoSemicolon
+
+/**
+ * @param array|string $value
+ * @return array|string
+ */
+function stripslashes_deep($value) {
+    $value = is_array($value) ?
+        array_map('stripslashes_deep', $value) :
+        stripslashes($value)
+    return $value;
+}
+
+/**
+ * @param array|string $value
+ * @return array|string
+ */
+function stripslashes_deep($value) {
+    $value = is_array($value) ?
+        array_map('stripslashes_deep', $value) :
+        stripslashes($value)
+    return $value;
+}
+
+/**
+ * @param array|string $value
+ * @return array|string
+ */
+function stripslashes_deep($value) {
+	switch ($x) {
+	case "T":
+		hey();
+		break;
+	case "F":
+		return ($x == 1) ? shalom() : hello()
+		break;
+	}
+
+	switch ($x) {
+	case "T":
+		hey();
+		break;
+	case "F":
+		shalom();
+		break;
+	}
+
+	$value = is_array($value) ?
+	array_map('stripslashes_deep', $value) :
+	explode($value)
+	return $value;
+}

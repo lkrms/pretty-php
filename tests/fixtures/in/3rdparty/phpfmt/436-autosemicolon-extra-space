@@ -1,0 +1,4 @@
+<?php
+//passes:Autosemicolon
+$test = "{$item['name']} ({$item['id']}) | {$item['type']} {$suffix}";
+$test = "{$item['name']} \"({$item['id']})\" | {$item['type']} {$suffix}";

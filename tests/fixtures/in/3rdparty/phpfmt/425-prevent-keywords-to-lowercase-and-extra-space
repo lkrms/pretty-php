@@ -1,0 +1,7 @@
+<?php
+//passes:PSR2KeywordsLowerCase,ResizeSpaces
+ICollection::OR;
+ICollection::INSTANCEOF;
+ICollection::GOTO;
+ICollection::FINALLY;
+ICollection::ABSTRACT;

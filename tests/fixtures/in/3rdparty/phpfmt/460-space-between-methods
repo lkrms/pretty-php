@@ -1,0 +1,10 @@
+<?php
+//passes:SpaceBetweenMethods,StripNewlineAfterClassOpen,StripNewlineAfterCurlyOpen,StripNewlineWithinClassBody
+class ExampleClass {
+
+  public function __construct(private SomeService $service) {}
+  public function otherMethod() {
+
+    // do something
+  }
+}

@@ -1,0 +1,7 @@
+<?php
+//passes:PSR2ModifierVisibilityStaticOrder
+class A {
+    final public function include(Documents $documents): Documents {
+
+    }
+}

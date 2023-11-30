@@ -17,23 +17,23 @@ pretty-php - Format a PHP file
 
   Directories are searched recursively for files to format.
 
-- **`-I`**, **`--include`** *<u>regex</u>*
+- **`-I`**, **`--include`** *<u>regex</u>*
 
   A regular expression for pathnames to include when searching a directory.
 
   Exclusions (**`-X/--exclude`**) are applied first.
 
-  The default regex is: `/\.php$/`
+  The default regex is: `/\.php$/`
 
-- **`-X`**, **`--exclude`** *<u>regex</u>*
+- **`-X`**, **`--exclude`** *<u>regex</u>*
 
   A regular expression for pathnames to exclude when searching a directory.
 
   Exclusions are applied before inclusions (**`-I/--include`**).
 
-  The default regex is: `/\/(\.git|\.hg|\.svn|_?build|dist|vendor)\/$/`
+  The default regex is: `/\/(\.git|\.hg|\.svn|_?build|dist|vendor)\/$/`
 
-- **`-P`**, **`--include-if-php`**\[=*<u>regex</u>*]
+- **`-P`**, **`--include-if-php`**\[=*<u>regex</u>*]
 
   A regular expression for pathnames to check for PHP code when searching a
   directory.
@@ -47,26 +47,26 @@ pretty-php - Format a PHP file
 
   Exclusions (**`-X/--exclude`**) are applied first.
 
-  The default regex is: `/(\/|^)[^.]+$/`
+  The default regex is: `/(\/|^)[^.]+$/`
 
-- **`-t`**, **`--tab`**\[=`2`|`4`|`8`]
+- **`-t`**, **`--tab`**\[=`2`|`4`|`8`]
 
   Indent using tabs.
 
   The `align-chains`, `align-fn`, `align-lists`, and `align-ternary` rules cannot be
   enabled when using tabs for indentation.
 
-  The default size is: `4`
+  The default size is: `4`
 
-- **`-s`**, **`--space`**\[=`2`|`4`|`8`]
+- **`-s`**, **`--space`**\[=`2`|`4`|`8`]
 
   Indent using spaces.
 
   This is the default if neither **`-t/--tab`** or **`-s/--space`** are given.
 
-  The default size is: `4`
+  The default size is: `4`
 
-- **`-l`**, **`--eol`** (`auto`|`platform`|`lf`|`crlf`)
+- **`-l`**, **`--eol`** (`auto`|`platform`|`lf`|`crlf`)
 
   Set the output file's end-of-line sequence.
 
@@ -76,13 +76,13 @@ pretty-php - Format a PHP file
   In `auto` mode, the input file's line endings are preserved, and `platform`
   mode is used as a fallback if there are no line breaks in the input.
 
-  The default sequence is: `auto`
+  The default sequence is: `auto`
 
-- **`-i`**, **`--disable`** (`simplify-strings`|`preserve-newlines`|`declaration-spacing`),...
+- **`-i`**, **`--disable`** (`simplify-strings`|`preserve-newlines`|`declaration-spacing`),...
 
   Disable one of the default formatting rules.
 
-- **`-r`**, **`--enable`** *<u>rule</u>*,...
+- **`-r`**, **`--enable`** *<u>rule</u>*,...
 
   Enable an optional formatting rule.
 
@@ -99,19 +99,19 @@ pretty-php - Format a PHP file
   - `strict-lists`
   - `preserve-one-line`
 
-- **`-1`**, **`--one-true-brace-style`**
+- **`-1`**, **`--one-true-brace-style`**
 
   Format braces using the One True Brace Style.
 
-- **`-O`**, **`--operators-first`**
+- **`-O`**, **`--operators-first`**
 
   Place newlines before operators when splitting code over multiple lines.
 
-- **`-L`**, **`--operators-last`**
+- **`-L`**, **`--operators-last`**
 
   Place newlines after operators when splitting code over multiple lines.
 
-- **`-N`**, **`--ignore-newlines`**
+- **`-N`**, **`--ignore-newlines`**
 
   Ignore the position of newlines in the input.
 
@@ -119,14 +119,14 @@ pretty-php - Format a PHP file
   **`CONFIGURATION`** below). Use **`--disable=preserve-newlines`** for the same effect
   without overriding configuration files.
 
-- **`-S`**, **`--no-simplify-strings`**
+- **`-S`**, **`--no-simplify-strings`**
 
   Don't normalise escape sequences in strings, and don't replace single- and
   double-quoted strings with the most readable and economical syntax.
 
   Equivalent to **`--disable=simplify-strings`**
 
-- **`-h`**, **`--heredoc-indent`** (`none`|`line`|`mixed`|`hanging`)
+- **`-h`**, **`--heredoc-indent`** (`none`|`line`|`mixed`|`hanging`)
 
   Set the indentation level of heredocs and nowdocs.
 
@@ -134,7 +134,7 @@ pretty-php - Format a PHP file
   heredocs that start on their own line, otherwise hanging indentation is
   applied.
 
-- **`-m`**, **`--sort-imports-by`** (`none`|`name`|`depth`)
+- **`-m`**, **`--sort-imports-by`** (`none`|`name`|`depth`)
 
   Set the sort order for consecutive alias/import statements.
 
@@ -144,7 +144,7 @@ pretty-php - Format a PHP file
   Unless disabled by **`-M/--no-sort-imports`**, the default is to sort imports by
   `depth`.
 
-- **`-M`**, **`--no-sort-imports`**
+- **`-M`**, **`--no-sort-imports`**
 
   Don't sort or group consecutive alias/import statements.
 
@@ -156,14 +156,14 @@ pretty-php - Format a PHP file
   for **`pretty-php`** output to satisfy the formatting-related requirements of
   PHP-FIG coding style standards.
 
-- **`-p`**, **`--preset`** (`drupal`|`laravel`|`symfony`|`wordpress`)
+- **`-p`**, **`--preset`** (`drupal`|`laravel`|`symfony`|`wordpress`)
 
   Apply a formatting preset.
 
   Formatting options other than **`-N/--ignore-newlines`** are ignored when a
   preset is applied.
 
-- **`-c`**, **`--config`** *<u>file</u>*
+- **`-c`**, **`--config`** *<u>file</u>*
 
   Read formatting options from a JSON configuration file.
 
@@ -183,7 +183,7 @@ pretty-php - Format a PHP file
 
   See **`CONFIGURATION`** below.
 
-- **`-o`**, **`--output`** *<u>file</u>*,...
+- **`-o`**, **`--output`** *<u>file</u>*,...
 
   Write output to a different file.
 
@@ -194,7 +194,7 @@ pretty-php - Format a PHP file
 
   Fail with a diff when the input is not already formatted.
 
-  The default type is: `unified`
+  The default type is: `unified`
 
 - **`--check`**
 
@@ -206,7 +206,7 @@ pretty-php - Format a PHP file
 
   See **`CONFIGURATION`** below.
 
-- **`-F`**, **`--stdin-filename`** *<u>path</u>*
+- **`-F`**, **`--stdin-filename`** *<u>path</u>*
 
   The pathname of the file passed to the standard input.
 
@@ -228,11 +228,11 @@ pretty-php - Format a PHP file
 
   Skip equivalence checks.
 
-- **`-v`**, **`--verbose`**
+- **`-v`**, **`--verbose`**
 
   Report unchanged files.
 
-- **`-q`**, **`--quiet`**
+- **`-q`**, **`--quiet`**
 
   Only report warnings and errors.
 

@@ -1,0 +1,11 @@
+<?php
+//passes:Default,CakePHPStyle
+if($a){
+	array(
+		/*comment*/'key' => 'value',
+	)
+}else{// comment
+
+}
+?>
+<?php exit()?>

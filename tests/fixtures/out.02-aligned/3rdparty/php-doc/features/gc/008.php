@@ -2,6 +2,7 @@
 class Foo
 {
     public $var = '3.14159265359';
+    public $self;
 }
 
 $baseMemory = memory_get_usage();

@@ -1,0 +1,5 @@
+<?php
+//passes:PSR2CurlyOpenNextLine
+//version:7.0.0
+$instance = new class {};
+$instance = new class {};

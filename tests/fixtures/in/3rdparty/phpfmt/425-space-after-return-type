@@ -1,0 +1,13 @@
+<?php
+//version:7.1
+class FooTestClass2 {
+	private function foobar(
+		string $longVariableName,
+		string $anotherLongVariableName,
+		string $reallyLongVariableName,
+		string $tooLongVariableNameSoThatLineLimitExeeds
+	):    string {
+		$foobar = 'asd';
+		return $foobar;
+	}
+}

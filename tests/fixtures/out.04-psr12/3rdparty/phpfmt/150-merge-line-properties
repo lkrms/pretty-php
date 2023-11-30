@@ -16,7 +16,7 @@ class Foo
     var $old = 'foo';
 }
 
-abstract class Foo2
+abstract class FooX
 {
     public function foo1() {}
     function foo2() {}
@@ -30,6 +30,7 @@ abstract class Foo2
     public static function fooA() {}
     public static function fooD() {}
     final static function fooE() {}
+    static function fooEE() {}
     abstract function fooF();
 
     function fooG($foo) {}
@@ -42,7 +43,7 @@ abstract class Foo2
     }
 }
 
-function foo4()
+function foo412()
 {
     static $class;
 
@@ -56,4 +57,19 @@ class Foo3
     private $foo2;
     protected $bar1, $bar2;
     public $baz1 = null, $baz2, $baz3 = false;
+}
+
+class ClassName extends AnotherClass
+{
+    public function __construct() {}
+}
+
+class MyClass
+{
+    static function whatever($things) {}
+}
+
+class std_object
+{
+    function method_name() {}
 }

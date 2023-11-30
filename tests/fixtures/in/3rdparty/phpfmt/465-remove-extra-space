@@ -1,0 +1,16 @@
+<?php
+//passes:ResizeSpaces
+//version:8
+class ExampleClass {
+  use Traits\ExampleTrait1, Traits\ExampleTrait2, Traits\ExampleTrait3;
+
+  #[ORM\Id, ORM\GeneratedValue, ORM\Column]
+  private ?int $id = null;
+}
+
+class ExampleClass2 {
+    use ExampleTrait1, \ExampleTrait2, ExampleTrait3;
+
+    #[Id, \ORM\GeneratedValue, ORM]
+    private ?int $id = null;
+}
