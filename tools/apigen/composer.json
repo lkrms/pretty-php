@@ -9,5 +9,10 @@
         "psr-4": {
             "Lkrms\\ApiGen\\": "src/"
         }
+    },
+    "config": {
+        "platform": {
+            "php": "8.1.2"
+        }
     }
 }

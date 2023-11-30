@@ -26,18 +26,10 @@ use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 final class FormatterBuilder extends Builder
 {
     /**
-     * @internal
+     * @inheritDoc
      */
     protected static function getService(): string
     {
         return Formatter::class;
-    }
-
-    /**
-     * @internal
-     */
-    protected static function getTerminators(): array
-    {
-        return [];
     }
 }
