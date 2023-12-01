@@ -271,7 +271,10 @@ class Token extends PhpToken implements JsonSerializable
                            ->collectSiblings($this->nextCode())
                            ->filter(fn(Token $t) => $t->id === T_WHILE && $t->prevSibling(2)->id !== T_WHILE)
                            ->first() === $this->nextCode())))) ||
-                ($this->id === T_COLON && ($this->inSwitchCase() || $this->inLabel()))) {
+                ($this->id === T_COLON && (
+                    $this->getColonType() === TokenSubType::COLON_SWITCH_CASE_DELIMITER ||
+                    $this->SubType === TokenSubType::COLON_LABEL_DELIMITER
+                ))) {
             $this->applyStatement();
         } elseif ($this->is([T_CLOSE_PARENTHESIS, T_CLOSE_BRACKET]) ||
                 ($this->id === T_CLOSE_BRACE && !$this->isStructuralBrace(false))) {
@@ -382,7 +385,10 @@ class Token extends PhpToken implements JsonSerializable
             $this->applyExpression();
         } elseif ($this->TokenTypeIndex->ExpressionTerminator[$this->id] ||
                 $this->IsStatementTerminator ||
-                ($this->id === T_COLON && ($this->inSwitchCase() || $this->inLabel())) ||
+                ($this->id === T_COLON && (
+                    $this->getColonType() === TokenSubType::COLON_SWITCH_CASE_DELIMITER ||
+                    $this->SubType === TokenSubType::COLON_LABEL_DELIMITER
+                )) ||
                 ($this->id === T_CLOSE_BRACE &&
                     (!$this->isStructuralBrace() || $this->isMatchBrace())) ||
                 $this->IsTernaryOperator) {
@@ -1012,7 +1018,7 @@ class Token extends PhpToken implements JsonSerializable
             // ```
             (($first = $parts->first())->id !== T_NEW ||
                 !(($class = $parts->getFirstOf(T_CLASS)) &&
-                    $class->_prevCode->hasNewlineAfterCode()) ||
+                    $class->_prevCode->hasNewlineBeforeNextCode()) ||
                 $first->_nextCode !== $this) &&
             !($end = $last->nextSiblingOf(T_OPEN_BRACE))->IsNull &&
             $end->Index < $this->EndStatement->Index
@@ -1348,7 +1354,7 @@ class Token extends PhpToken implements JsonSerializable
      * True if, between the token and the next code token, there's a newline
      * between tokens
      */
-    final public function hasNewlineAfterCode(): bool
+    final public function hasNewlineBeforeNextCode(bool $orInHtml = true): bool
     {
         if ($this->hasNewlineAfter()) {
             return true;
@@ -1363,6 +1369,13 @@ class Token extends PhpToken implements JsonSerializable
                 break;
             }
             if ($current->hasNewlineAfter()) {
+                return true;
+            }
+            if ($orInHtml && (
+                $current->id === T_INLINE_HTML ||
+                $current === $current->OpenTag ||
+                $current === $current->CloseTag
+            ) && $current->hasNewline()) {
                 return true;
             }
         }
@@ -1494,7 +1507,7 @@ class Token extends PhpToken implements JsonSerializable
 
     private function getIndentSpacesFromText(): int
     {
-        if (!Pcre::match('/^(?:\s*\n)?(?P<indent>\h*)\S/', $this->text, $matches)) {
+        if (!Pcre::match('/^(?:\s*\n)?(?<indent>\h*)\S/', $this->text, $matches)) {
             return 0;
         }
 

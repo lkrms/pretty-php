@@ -192,12 +192,40 @@ class TokenTypeIndex implements IImmutable
     public array $UnaryPredecessor;
 
     /**
+     * T_DECLARE, T_FOR, T_FOREACH, T_IF, T_SWITCH, T_WHILE
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $AltSyntaxStart;
+
+    /**
+     * T_ELSE, T_ELSEIF
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $AltSyntaxContinue;
 
     /**
+     * T_ELSEIF
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $AltSyntaxContinueWithExpression;
+
+    /**
+     * T_ELSE
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $AltSyntaxContinueWithoutExpression;
+
+    /**
+     * T_ENDDECLARE, T_ENDFOR, T_ENDFOREACH, T_ENDIF, T_ENDSWITCH, T_ENDWHILE
+     *
      * @readonly
      * @var array<int,bool>
      */
@@ -532,7 +560,10 @@ class TokenTypeIndex implements IImmutable
             ...TT::KEYWORD,
         );
 
+        $this->AltSyntaxStart = TT::getIndex(...TT::ALT_SYNTAX_START);
         $this->AltSyntaxContinue = TT::getIndex(...TT::ALT_SYNTAX_CONTINUE);
+        $this->AltSyntaxContinueWithExpression = TT::getIndex(...TT::ALT_SYNTAX_CONTINUE_WITH_EXPRESSION);
+        $this->AltSyntaxContinueWithoutExpression = TT::getIndex(...TT::ALT_SYNTAX_CONTINUE_WITHOUT_EXPRESSION);
         $this->AltSyntaxEnd = TT::getIndex(...TT::ALT_SYNTAX_END);
         $this->Ampersand = TT::getIndex(...TT::AMPERSAND);
         $this->Chain = TT::getIndex(...TT::CHAIN);

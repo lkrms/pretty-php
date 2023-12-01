@@ -2,7 +2,6 @@
 
 namespace Lkrms\PrettyPHP\Token\Concern;
 
-use Lkrms\Exception\Exception;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Token\Token;
@@ -184,8 +183,10 @@ trait ContextAwareTokenTrait
      *
      * Returns `true` if the token is a `T_STRING` or `T_COLON` comprising part
      * of a label.
+     *
+     * @see ContextAwareTokenTrait::getColonType()
      */
-    final public function inLabel(): bool
+    final protected function inLabel(): bool
     {
         /** @var Token $this */
 
@@ -197,11 +198,12 @@ trait ContextAwareTokenTrait
         if (
             $this->id === T_COLON &&
             $this->_prevCode &&
-            $this->_prevCode->id === T_STRING &&
-            (!$this->_prevCode->_prevSibling ||
-                ($this->_prevCode->_prevSibling->EndStatement &&
-                    $this->_prevCode->_prevSibling->EndStatement->_nextSibling ===
-                        $this->_prevCode))
+            $this->_prevCode->id === T_STRING && (
+                !$this->_prevCode->_prevSibling || (
+                    $this->_prevCode->_prevSibling->EndStatement &&
+                    $this->_prevCode->_prevSibling->EndStatement->_nextSibling === $this->_prevCode
+                )
+            )
         ) {
             return true;
         }
@@ -260,7 +262,7 @@ trait ContextAwareTokenTrait
     /**
      * True if the token is in a T_SWITCH case list
      */
-    final public function inSwitchCaseList(): bool
+    final protected function inSwitchCaseList(): bool
     {
         /** @var Token $this */
         if (
@@ -280,8 +282,10 @@ trait ContextAwareTokenTrait
      *
      * Returns `true` if the token is `T_CASE` or `T_DEFAULT`, part of the
      * expression after `T_CASE`, or the subsequent `:` or `;` delimiter.
+     *
+     * @see ContextAwareTokenTrait::getColonType()
      */
-    final public function inSwitchCase(): bool
+    final protected function inSwitchCase(): bool
     {
         /** @var Token $this */
         if (!$this->inSwitchCaseList()) {

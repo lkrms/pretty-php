@@ -41,7 +41,7 @@ final class AlignLists implements ListRule
         // - an interface list has a leading line break, or
         // - the list does not break over multiple lines
         if ((!$owner->ClosedBy &&
-                    $owner->hasNewlineAfterCode()) ||
+                    $owner->hasNewlineBeforeNextCode()) ||
                 !$first->collect($lastToken)->hasNewline()) {
             return;
         }
@@ -85,7 +85,7 @@ final class AlignLists implements ListRule
                 );
             };
 
-        if (!$owner->hasNewlineAfterCode()) {
+        if (!$owner->hasNewlineBeforeNextCode()) {
             $delta = $owner->alignmentOffset() + ($owner->ClosedBy ? 0 : 1);
             $callback($first, $lastToken, $delta);
         }

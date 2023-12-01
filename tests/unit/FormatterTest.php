@@ -32,7 +32,7 @@ final class FormatterTest extends \Lkrms\PrettyPHP\Tests\TestCase
     }
 
     /**
-     * @return array<string,array{string,string,array{insertSpaces?:bool|null,tabSize?:int|null,skipRules?:string[],addRules?:string[],skipFilters?:string[],callback?:(callable(Formatter): Formatter)|null}}>
+     * @return array<string,array{string,string,2?:array{insertSpaces?:bool|null,tabSize?:int|null,skipRules?:string[],addRules?:string[],skipFilters?:string[],callback?:(callable(Formatter): Formatter)|null}}>
      */
     public static function formatProvider(): array
     {
@@ -40,30 +40,6 @@ final class FormatterTest extends \Lkrms\PrettyPHP\Tests\TestCase
             'empty string' => [
                 '',
                 '',
-            ],
-            'no symmetrical bracket' => [
-                <<<'PHP'
-<?php
-[$a,
-    $b
-];
-[
-    $a,
-    $b];
-
-PHP,
-                <<<'PHP'
-<?php
-[$a,
-$b
-];
-[
-$a,
-$b];
-PHP,
-                ['callback' =>
-                    fn(Formatter $f) =>
-                        $f->with('SymmetricalBrackets', false)],
             ],
             'empty heredoc' => [
                 <<<'PHP'

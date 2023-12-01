@@ -10,10 +10,23 @@ trait RuleTrait
 {
     use ExtensionTrait;
 
-    protected function preserveOneLine(Token $start, Token $end, bool $force = false): bool
+    protected function preserveOneLine(Token $start, Token $end, bool $force = false, bool $oneStatement = false): bool
     {
         if (!$force && $start->line !== $end->line) {
             return false;
+        }
+
+        if ($oneStatement) {
+            $from = $start->IsCode ? $start : $start->_nextCode;
+            $to = $end->IsCode ? $end : $end->_prevCode;
+            if (
+                $from &&
+                $to &&
+                $from->Index <= $to->Index &&
+                $from->Statement !== $to->Statement
+            ) {
+                return false;
+            }
         }
 
         $start->collect($end)
@@ -22,11 +35,13 @@ trait RuleTrait
         return true;
     }
 
-    protected function mirrorBracket(Token $openBracket, ?bool $hasNewlineAfterCode = null): void
+    protected function mirrorBracket(Token $openBracket, ?bool $hasNewlineBeforeNextCode = null): void
     {
-        if ($hasNewlineAfterCode === false || !$openBracket->hasNewlineAfterCode()) {
+        if (
+            $hasNewlineBeforeNextCode === false ||
+            !$openBracket->hasNewlineBeforeNextCode()
+        ) {
             $openBracket->ClosedBy->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
-
             return;
         }
 

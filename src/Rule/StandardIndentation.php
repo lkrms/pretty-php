@@ -40,7 +40,7 @@ final class StandardIndentation implements TokenRule
             return;
         }
 
-        if ($prev->hasNewlineAfterCode()) {
+        if ($prev->hasNewlineBeforeNextCode()) {
             $token->Indent++;
             if (!$prev->NewlineAfterPreserved) {
                 $this->mirrorBracket($prev, true);

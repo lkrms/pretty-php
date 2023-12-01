@@ -148,8 +148,6 @@ final class Formatter implements IReadable
      */
     public int $SpacesBesideCode = 2;
 
-    public bool $SymmetricalBrackets = true;
-
     /**
      * @var int&HeredocIndent::*
      */

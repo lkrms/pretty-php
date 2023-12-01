@@ -2,20 +2,27 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
-use Lkrms\PrettyPHP\Rule\Contract\TokenRule;
-use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
+use Lkrms\PrettyPHP\Rule\Contract\MultiTokenRule;
 
 /**
- * Apply symmetrical vertical whitespace to brackets
+ * Apply symmetrical whitespace to brackets
+ *
+ * @api
  */
-final class SymmetricalBrackets implements TokenRule
+final class SymmetricalBrackets implements MultiTokenRule
 {
-    use TokenRuleTrait;
+    use MultiTokenRuleTrait;
 
     public function getPriority(string $method): ?int
     {
-        return 96;
+        switch ($method) {
+            case self::PROCESS_TOKENS:
+                return 96;
+
+            default:
+                return null;
+        }
     }
 
     public function getTokenTypes(): array
@@ -31,13 +38,14 @@ final class SymmetricalBrackets implements TokenRule
         ];
     }
 
-    public function processToken(Token $token): void
+    public function processTokens(array $tokens): void
     {
-        if (!$this->Formatter->SymmetricalBrackets ||
-                !$token->ClosedBy) {
-            return;
-        }
+        foreach ($tokens as $token) {
+            if (!$token->ClosedBy) {
+                continue;
+            }
 
-        $this->mirrorBracket($token);
+            $this->mirrorBracket($token);
+        }
     }
 }
