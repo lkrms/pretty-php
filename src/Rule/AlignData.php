@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Rule\Concern\BlockRuleTrait;
 use Lkrms\PrettyPHP\Rule\Contract\BlockRule;
@@ -106,7 +107,8 @@ final class AlignData implements BlockRule
                     }
                     continue;
                 }
-                if ($token->id === T_COLON && $token->inSwitchCase()) {
+                if ($token->id === T_COLON &&
+                        $token->getColonType() === TokenSubType::COLON_SWITCH_CASE_DELIMITER) {
                     $addToIndex('case');
                     continue;
                 }

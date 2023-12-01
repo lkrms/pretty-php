@@ -130,7 +130,7 @@ final class NormaliseStrings implements MultiTokenRule
             // - recognised by PHP: \0 \e \f \n \r \t \v
             // - applied by addcslashes: \000 \033 \a \b \f \n \r \t \v
             $double = Pcre::replaceCallback(
-                '/((?<!\\\\)(?:\\\\\\\\)*)\\\\(?:(?P<octal>[0-7]{3})|(?P<cslash>[ab]))/',
+                '/((?<!\\\\)(?:\\\\\\\\)*)\\\\(?:(?<octal>[0-7]{3})|(?<cslash>[ab]))/',
                 fn(array $matches) =>
                     $matches[1]
                         . ($matches['octal'] !== null

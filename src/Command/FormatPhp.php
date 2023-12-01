@@ -61,13 +61,13 @@ use UnexpectedValueException;
  */
 class FormatPhp extends CliCommand
 {
-    private const SKIP_RULE_MAP = [
+    private const DISABLE_RULE_MAP = [
         'simplify-strings' => NormaliseStrings::class,
         'preserve-newlines' => PreserveLineBreaks::class,
         'declaration-spacing' => DeclarationSpacing::class,
     ];
 
-    private const ADD_RULE_MAP = [
+    private const ENABLE_RULE_MAP = [
         'align-comments' => AlignComments::class,
         'align-chains' => AlignChains::class,
         'align-fn' => AlignArrowFunctions::class,
@@ -95,7 +95,6 @@ class FormatPhp extends CliCommand
 
     private const INTERNAL_OPTION_MAP = [
         'spaces-beside-code' => 'SpacesBesideCode',
-        'symmetrical-brackets' => 'SymmetricalBrackets',
         'increase-indent-between-unenclosed-tags' => 'IncreaseIndentBetweenUnenclosedTags',
         'relax-alignment-criteria' => 'RelaxAlignmentCriteria',
         'preset-rules' => 'PresetRules',
@@ -123,7 +122,6 @@ class FormatPhp extends CliCommand
             ],
             'heredoc-indent' => 'none',
             '@internal' => [
-                'symmetrical-brackets' => false,
                 'preset-rules' => [
                     Laravel::class,
                 ],
@@ -153,7 +151,6 @@ class FormatPhp extends CliCommand
             'one-true-brace-style' => true,
             '@internal' => [
                 'spaces-beside-code' => 1,
-                'symmetrical-brackets' => false,
                 'increase-indent-between-unenclosed-tags' => false,
                 'relax-alignment-criteria' => true,
                 'preset-rules' => [
@@ -167,6 +164,8 @@ class FormatPhp extends CliCommand
     private const INCOMPATIBLE_RULES = [
         ['align-lists', 'strict-lists'],
     ];
+
+    private const PROGRESS_LOG_DIR = 'progress-log';
 
     /**
      * @var string[]|null
@@ -206,12 +205,12 @@ class FormatPhp extends CliCommand
     /**
      * @var string[]|null
      */
-    private $SkipRules;
+    private $DisableRules;
 
     /**
      * @var string[]|null
      */
-    private $AddRules;
+    private $EnableRules;
 
     /**
      * @var bool
@@ -334,11 +333,6 @@ class FormatPhp extends CliCommand
      * @var int|null
      */
     private $SpacesBesideCode;
-
-    /**
-     * @var bool|null
-     */
-    private $SymmetricalBrackets;
 
     /**
      * @var bool|null
@@ -528,10 +522,10 @@ EOF)
 Disable one of the default formatting rules.
 EOF)
                 ->optionType(CliOptionType::ONE_OF)
-                ->allowedValues(array_keys(self::SKIP_RULE_MAP))
+                ->allowedValues(array_keys(self::DISABLE_RULE_MAP))
                 ->unknownValuePolicy(CliOptionValueUnknownPolicy::DISCARD)
                 ->multipleAllowed()
-                ->bindTo($this->SkipRules),
+                ->bindTo($this->DisableRules),
             CliOption::build()
                 ->long('enable')
                 ->short('r')
@@ -540,10 +534,10 @@ EOF)
 Enable an optional formatting rule.
 EOF)
                 ->optionType(CliOptionType::ONE_OF)
-                ->allowedValues(array_keys(self::ADD_RULE_MAP))
+                ->allowedValues(array_keys(self::ENABLE_RULE_MAP))
                 ->unknownValuePolicy(CliOptionValueUnknownPolicy::DISCARD)
                 ->multipleAllowed()
-                ->bindTo($this->AddRules),
+                ->bindTo($this->EnableRules),
             CliOption::build()
                 ->long('one-true-brace-style')
                 ->short('1')
@@ -571,9 +565,8 @@ EOF)
                 ->description(<<<EOF
 Ignore the position of newlines in the input.
 
-This option cannot be overridden by configuration file settings (see
-`CONFIGURATION` below). Use `--disable=preserve-newlines` for the same
-effect without overriding configuration files.
+Unlike `--disable=preserve-newlines`, this option is not ignored when a
+configuration file is applied.
 EOF)
                 ->bindTo($this->IgnoreNewlines),
             CliOption::build()
@@ -725,22 +718,22 @@ EOF)
             CliOption::build()
                 ->long('debug')
                 ->valueName('directory')
-                ->description(<<<EOF
+                ->description(str_replace('{}', self::PROGRESS_LOG_DIR, <<<EOF
 Create debug output in <directory>.
 
-Combine with `-v/--verbose` to render output to a subdirectory of <directory>
-after processing each pass of each rule.
-EOF)
+If combined with `-v/--verbose`, partially formatted code is written to a series
+of files in *\<directory>/{}* that represent changes applied by enabled rules.
+EOF))
                 ->optionType(CliOptionType::VALUE_OPTIONAL)
                 ->defaultValue($this->App->getTempPath() . '/debug')
-                ->visibility((Env::debug() ? Visibility::ALL & ~Visibility::SYNOPSIS : Visibility::MARKDOWN | Visibility::MAN_PAGE) | Visibility::HIDE_DEFAULT)
+                ->visibility((Visibility::ALL & ~Visibility::SYNOPSIS) | Visibility::HIDE_DEFAULT)
                 ->bindTo($this->DebugDirectory),
             CliOption::build()
                 ->long('timers')
                 ->description(<<<EOF
 Report timers and resource usage on exit.
 EOF)
-                ->visibility(Env::debug() ? Visibility::ALL & ~Visibility::SYNOPSIS : Visibility::MARKDOWN | Visibility::MAN_PAGE)
+                ->visibility(Visibility::ALL & ~Visibility::SYNOPSIS)
                 ->bindTo($this->ReportTimers),
             CliOption::build()
                 ->long('fast')
@@ -1025,17 +1018,17 @@ EOF,
                         StrictExpressions::class,
                         StrictLists::class,
                     ];
-                    $this->SkipRules = array_diff($this->SkipRules, $unskip, $skip);
-                    array_push($this->SkipRules, ...$skip);
-                    array_push($this->AddRules, ...array_diff($add, $this->AddRules));
+                    $this->DisableRules = array_diff($this->DisableRules, $unskip, $skip);
+                    array_push($this->DisableRules, ...$skip);
+                    array_push($this->EnableRules, ...array_diff($add, $this->EnableRules));
                     $this->OneTrueBraceStyle = false;
                     $this->HeredocIndent = 'hanging';
                 }
                 $f = new Formatter(
                     !$this->Tabs,
                     $this->Tabs ?: $this->Spaces ?: 4,
-                    $this->SkipRules,
-                    $this->AddRules,
+                    $this->DisableRules,
+                    $this->EnableRules,
                     $this->SkipFilters,
                     ($this->Quiet < 2 ? FormatterFlag::REPORT_CODE_PROBLEMS : 0)
                         | ($this->Verbose ? FormatterFlag::LOG_PROGRESS : 0),
@@ -1059,7 +1052,6 @@ EOF,
                     ? self::IMPORT_SORT_ORDER_MAP[$this->SortImportsBy]
                     : ImportSortOrder::DEPTH;
                 $this->SpacesBesideCode === null || $f->SpacesBesideCode = $this->SpacesBesideCode;
-                $this->SymmetricalBrackets === null || $f->SymmetricalBrackets = $this->SymmetricalBrackets;
                 $this->IncreaseIndentBetweenUnenclosedTags === null || $f->IncreaseIndentBetweenUnenclosedTags = $this->IncreaseIndentBetweenUnenclosedTags;
                 $this->RelaxAlignmentCriteria === null || $f->RelaxAlignmentCriteria = $this->RelaxAlignmentCriteria;
                 $lastOptions = $options;
@@ -1308,10 +1300,10 @@ EOF,
 
         $this->SkipFilters = [];
         if ($this->IgnoreNewlines) {
-            $this->SkipRules[] = 'preserve-newlines';
+            $this->DisableRules[] = 'preserve-newlines';
         }
         if ($this->NoSimplifyStrings) {
-            $this->SkipRules[] = 'simplify-strings';
+            $this->DisableRules[] = 'simplify-strings';
         }
         if ($this->NoSortImports && !$this->Psr12) {
             $this->SkipFilters[] = SortImports::class;
@@ -1320,16 +1312,16 @@ EOF,
         foreach (self::INCOMPATIBLE_RULES as $rules) {
             // If multiple rules from this group have been enabled, remove all
             // but the last
-            if (count($rules = array_intersect($this->AddRules, $rules)) > 1) {
+            if (count($rules = array_intersect($this->EnableRules, $rules)) > 1) {
                 array_pop($rules);
-                $this->AddRules = array_diff_key($this->AddRules, $rules);
+                $this->EnableRules = array_diff_key($this->EnableRules, $rules);
             }
         }
 
-        $this->SkipRules = array_values(array_intersect_key(self::SKIP_RULE_MAP, array_flip($this->SkipRules)));
-        $this->AddRules = array_values(array_intersect_key(self::ADD_RULE_MAP, array_flip($this->AddRules)));
+        $this->DisableRules = array_values(array_intersect_key(self::DISABLE_RULE_MAP, array_flip($this->DisableRules)));
+        $this->EnableRules = array_values(array_intersect_key(self::ENABLE_RULE_MAP, array_flip($this->EnableRules)));
         if ($this->PresetRules) {
-            array_push($this->AddRules, ...$this->PresetRules);
+            array_push($this->EnableRules, ...$this->PresetRules);
         }
 
         return $this;
@@ -1445,50 +1437,59 @@ EOF,
      * @param array<string,string>|null $log
      * @param mixed $data
      */
-    private function maybeDumpDebugOutput(string $input, ?string $output, ?array $tokens, ?array $log, $data): void
-    {
+    private function maybeDumpDebugOutput(
+        string $input,
+        ?string $output,
+        ?array $tokens,
+        ?array $log,
+        $data
+    ): void {
         if ($this->DebugDirectory === null) {
             return;
         }
 
         Profile::startTimer(__METHOD__);
 
-        $logDir = "{$this->DebugDirectory}/progress-log";
-        File::createDir($logDir);
-        File::find()
-            ->in($logDir)
-            ->doNotRecurse()
-            ->forEach(fn(SplFileInfo $file) => unlink((string) $file));
-
-        // Only dump output logged after something changed
+        $files = [];
         $i = 0;
         $last = null;
-        foreach ($log ?: [] as $after => $out) {
+        foreach ((array) $log as $after => $out) {
+            // Only dump output logged after something changed
             if ($i++ && $out === $last) {
                 continue;
             }
-            $logFile = sprintf('progress-log/%03d-%s.php', $i, $after);
-            $last = $logFiles[$logFile] = $out;
+            $file = sprintf('%s/%03d-%s.php', self::PROGRESS_LOG_DIR, $i, $after);
+            $files[$file] = $out;
+            $last = $out;
         }
 
-        foreach (array_merge([
+        // Either empty or completely remove the progress log directory
+        $dir = "{$this->DebugDirectory}/" . self::PROGRESS_LOG_DIR;
+        if ($files) {
+            File::createDir($dir);
+            File::pruneDir($dir);
+        } else {
+            File::deleteDir($dir, true);
+        }
+
+        $files += [
             'input.php' => $input,
             'output.php' => $output,
             'tokens.json' => $tokens,
-            is_string($data)
-                ? 'data.out'
-                : 'data.json' => $data,
-        ], $logFiles ?? []) as $file => $contents) {
+            'data.out' => is_string($data) ? $data : null,
+            'data.json' => is_string($data) ? null : $data,
+        ];
+
+        foreach ($files as $file => $out) {
             $file = "{$this->DebugDirectory}/{$file}";
             File::delete($file);
-            if ($contents !== null) {
-                file_put_contents(
-                    $file,
-                    is_string($contents)
-                        ? $contents
-                        : json_encode($contents, JSON_PRETTY_PRINT | JSON_FORCE_OBJECT)
-                );
+            if ($out === null) {
+                continue;
             }
+            if (!is_string($out)) {
+                $out = json_encode($out, JSON_PRETTY_PRINT | JSON_FORCE_OBJECT);
+            }
+            file_put_contents($file, $out);
         }
 
         Profile::stopTimer(__METHOD__);

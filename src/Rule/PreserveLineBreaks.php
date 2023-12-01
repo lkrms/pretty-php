@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
@@ -180,8 +181,8 @@ final class PreserveLineBreaks implements MultiTokenRule
         // Don't preserve newlines after `:` except when they terminate case
         // statements and labels
         if ($token->id === T_COLON &&
-                !$token->inSwitchCase() &&
-                !$token->inLabel()) {
+                $token->getColonType() !== TokenSubType::COLON_SWITCH_CASE_DELIMITER &&
+                $token->SubType !== TokenSubType::COLON_LABEL_DELIMITER) {
             return false;
         }
 

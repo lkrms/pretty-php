@@ -235,16 +235,16 @@ final class TokenType extends Dictionary
     ];
 
     public const ALT_SYNTAX_CONTINUE = [
-        ...self::ALT_SYNTAX_CONTINUE_WITHOUT_EXPRESSION,
         ...self::ALT_SYNTAX_CONTINUE_WITH_EXPRESSION,
-    ];
-
-    public const ALT_SYNTAX_CONTINUE_WITHOUT_EXPRESSION = [
-        T_ELSE,
+        ...self::ALT_SYNTAX_CONTINUE_WITHOUT_EXPRESSION,
     ];
 
     public const ALT_SYNTAX_CONTINUE_WITH_EXPRESSION = [
         T_ELSEIF,
+    ];
+
+    public const ALT_SYNTAX_CONTINUE_WITHOUT_EXPRESSION = [
+        T_ELSE,
     ];
 
     public const ALT_SYNTAX_END = [
