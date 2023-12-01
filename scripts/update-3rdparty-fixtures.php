@@ -4,6 +4,7 @@
 use Lkrms\Cli\CliApplication;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Sys;
+use Lkrms\PrettyPHP\Tests\FormatterTest;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Pcre;
@@ -32,7 +33,7 @@ $repoRoot = $app->getCachePath() . '/git';
 File::createDir($repoRoot);
 
 $skipUpdate = in_array('--skip-update', $argv);
-$fixturesRoot = dirname(__DIR__) . '/tests/fixtures/in/3rdparty';
+$fixturesRoot = FormatterTest::getFixturesPath() . '/in/3rdparty';
 
 $repos = [
     'php-doc' => 'https://github.com/php/doc-en.git',
