@@ -496,8 +496,8 @@ PHP
     }
 
     /**
-     * Iterate over files in 'tests/fixtures/in' and map them to pathnames in
-     * 'tests/fixtures/out.<format>'
+     * Iterate over files in 'tests/fixtures/Formatter/in' and map them to
+     * pathnames in 'tests/fixtures/Formatter/out/<format>'
      *
      * @param string $format The format under test, i.e. one of the keys in
      * {@see FormatterTest::getFileFormats()}'s return value.
@@ -509,8 +509,9 @@ PHP
     }
 
     /**
-     * Iterate over files in 'tests/fixtures/in' and map them to pathnames in
-     * 'tests/fixtures/out.<format>' without adjusting for the PHP version
+     * Iterate over files in 'tests/fixtures/Formatter/in' and map them to
+     * pathnames in 'tests/fixtures/Formatter/out/<format>' without adjusting
+     * for the PHP version
      *
      * @return Generator<SplFileInfo,array{string,string|null}>
      */
@@ -670,7 +671,7 @@ PHP
 
     public static function getMinVersionIndexPath(): string
     {
-        return self::getInputFixturesPath() . '/versions.json';
+        return self::getFixturesPath() . '/versions.json';
     }
 
     public static function getInputFixturesPath(): string
@@ -680,11 +681,11 @@ PHP
 
     public static function getOutputFixturesPath(string $format): string
     {
-        return self::getFixturesPath() . "/out.{$format}";
+        return self::getFixturesPath() . "/out/{$format}";
     }
 
-    public static function getFixturesPath(): string
+    public static function getFixturesPath(string $class = __CLASS__): string
     {
-        return dirname(__DIR__) . '/fixtures';
+        return parent::getFixturesPath($class);
     }
 }

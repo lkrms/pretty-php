@@ -4,6 +4,7 @@ namespace Lkrms\PrettyPHP\Tests;
 
 use Lkrms\Facade\Profile;
 use Lkrms\PrettyPHP\Formatter;
+use Lkrms\Utility\Pcre;
 
 abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
@@ -13,7 +14,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         $second = $formatter->format($first, null, true);
         self::assertSame($expected, $first, 'Output is not formatted correctly.');
         self::assertSame($expected, $second, 'Output is not idempotent.');
-        if ($code) {
+        if ($code !== '') {
             $last = end($formatter->Tokens);
             self::assertSame($last->pos, $last->OutputPos, 'pos and OutputPos do not match.');
         }
@@ -60,6 +61,17 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
                 $skipFilters
             )
         ));
+    }
+
+    public static function getFixturesPath(string $class): string
+    {
+        return dirname(__DIR__)
+            . '/fixtures/'
+            . Pcre::replace(
+                ['/^Lkrms\\\\PrettyPHP\\\\(?|Tests\\\\(.+)Test$|(.+))/', '/\\\\/'],
+                ['$1', '/'],
+                $class
+            );
     }
 
     protected function prepareFormatter(Formatter $formatter): Formatter

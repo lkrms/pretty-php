@@ -17,7 +17,7 @@ for PHP in "$@"; do
         die "command not found: $PHP"
 done
 
-rm -rf tests/fixtures/in/versions.json tests/fixtures/out.*
+rm -rf tests/fixtures/Formatter/versions.json tests/fixtures/Formatter/out/*
 
 for PHP in "$@"; do
     "$PHP" scripts/generate-test-output.php
