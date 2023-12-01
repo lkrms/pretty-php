@@ -74,7 +74,7 @@ final class HangingIndentation implements MultiTokenRule
         foreach ($tokens as $token) {
             if ($this->TypeIndex->OpenBracket[$token->id]) {
                 $token->HangingIndentParentType =
-                    $token->hasNewlineAfterCode()
+                    $token->hasNewlineBeforeNextCode()
                         ? (($token->IsListParent && $token->ListItemCount > 1) ||
                             ($token->id === T_OPEN_BRACE && $token->isStructuralBrace())
                                 ? self::NORMAL_INDENT
@@ -126,13 +126,13 @@ final class HangingIndentation implements MultiTokenRule
 
             // Ignore tokens that aren't at the beginning of a line (including
             // heredocs if applicable)
-            if (!$prevCode->hasNewlineAfterCode() &&
+            if (!$prevCode->hasNewlineBeforeNextCode() &&
                 !($this->HeredocMayHaveHangingIndent &&
                     $prevCode->id === T_START_HEREDOC &&
                     ($this->HeredocHasHangingIndent ||
                         ($prevCode->_prevCode &&
                             !$prevCode->AlignedWith &&
-                            !$prevCode->_prevCode->hasNewlineAfterCode())))) {
+                            !$prevCode->_prevCode->hasNewlineBeforeNextCode())))) {
                 continue;
             }
 

@@ -1018,7 +1018,7 @@ class Token extends PhpToken implements JsonSerializable
             // ```
             (($first = $parts->first())->id !== T_NEW ||
                 !(($class = $parts->getFirstOf(T_CLASS)) &&
-                    $class->_prevCode->hasNewlineAfterCode()) ||
+                    $class->_prevCode->hasNewlineBeforeNextCode()) ||
                 $first->_nextCode !== $this) &&
             !($end = $last->nextSiblingOf(T_OPEN_BRACE))->IsNull &&
             $end->Index < $this->EndStatement->Index
@@ -1354,7 +1354,7 @@ class Token extends PhpToken implements JsonSerializable
      * True if, between the token and the next code token, there's a newline
      * between tokens
      */
-    final public function hasNewlineAfterCode(): bool
+    final public function hasNewlineBeforeNextCode(bool $orInHtml = true): bool
     {
         if ($this->hasNewlineAfter()) {
             return true;
@@ -1369,6 +1369,13 @@ class Token extends PhpToken implements JsonSerializable
                 break;
             }
             if ($current->hasNewlineAfter()) {
+                return true;
+            }
+            if ($orInHtml && (
+                $current->id === T_INLINE_HTML ||
+                $current === $current->OpenTag ||
+                $current === $current->CloseTag
+            ) && $current->hasNewline()) {
                 return true;
             }
         }

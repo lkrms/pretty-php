@@ -35,11 +35,13 @@ trait RuleTrait
         return true;
     }
 
-    protected function mirrorBracket(Token $openBracket, ?bool $hasNewlineAfterCode = null): void
+    protected function mirrorBracket(Token $openBracket, ?bool $hasNewlineBeforeNextCode = null): void
     {
-        if ($hasNewlineAfterCode === false || !$openBracket->hasNewlineAfterCode()) {
+        if (
+            $hasNewlineBeforeNextCode === false ||
+            !$openBracket->hasNewlineBeforeNextCode()
+        ) {
             $openBracket->ClosedBy->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
-
             return;
         }
 

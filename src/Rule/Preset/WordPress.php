@@ -113,8 +113,10 @@ final class WordPress implements TokenRule
 
         $token->WhitespaceAfter |= WhitespaceType::SPACE;
         $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
+        $token->_next->WhitespaceMaskPrev |= WhitespaceType::SPACE;
         $token->ClosedBy->WhitespaceBefore |= WhitespaceType::SPACE;
         $token->ClosedBy->WhitespaceMaskPrev |= WhitespaceType::SPACE;
+        $token->ClosedBy->_prev->WhitespaceMaskNext |= WhitespaceType::SPACE;
     }
 
     public function reset(): void
