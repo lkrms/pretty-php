@@ -21,7 +21,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @param array{insertSpaces?:bool|null,tabSize?:int|null,skipRules?:string[],addRules?:string[],skipFilters?:string[],callback?:(callable(Formatter): Formatter)|null} $options
+     * @param array{insertSpaces?:bool|null,tabSize?:2|4|8|null,skipRules?:string[],addRules?:string[],skipFilters?:string[],callback?:(callable(Formatter): Formatter)|null} $options
      */
     final public static function getFormatter(array $options): Formatter
     {
@@ -42,6 +42,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * @param string[] $addRules
      * @param string[] $skipRules
      * @param string[] $skipFilters
+     * @param 2|4|8 $tabSize
      */
     final public function assertCodeFormatIs(
         string $expected,

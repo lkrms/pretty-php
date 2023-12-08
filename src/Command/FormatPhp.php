@@ -12,6 +12,7 @@ use Lkrms\Cli\CliApplication;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOption;
 use Lkrms\Console\Catalog\ConsoleLevel;
+use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Profile;
 use Lkrms\Facade\Sys;
@@ -19,6 +20,7 @@ use Lkrms\PrettyPHP\Catalog\FormatterFlag;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Exception\FormatterException;
+use Lkrms\PrettyPHP\Exception\InvalidConfigurationException;
 use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
 use Lkrms\PrettyPHP\Filter\Contract\Filter;
 use Lkrms\PrettyPHP\Filter\SortImports;
@@ -45,16 +47,13 @@ use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\Utility\Convert;
-use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Test;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
 use SebastianBergmann\Diff\Differ;
-use RuntimeException;
 use SplFileInfo;
 use Throwable;
-use UnexpectedValueException;
 
 /**
  * Provides pretty-php's command-line interface
@@ -408,12 +407,12 @@ class FormatPhp extends CliCommand
     {
         return [
             CliOption::build()
-                ->long('src')
+                ->name('src')
                 ->valueName('path')
                 ->description(<<<EOF
 Files and directories to format.
 
-If the only path is a dash ('-'), or no paths are given, `{{command}}` reads
+If the only path is a dash ('-'), or no paths are given, `{{program}}` reads
 from the standard input and writes to the standard output.
 
 Directories are searched recursively for files to format.
@@ -503,7 +502,7 @@ EOF)
                 ->description(<<<'EOF'
 Set the output file's end-of-line sequence.
 
-In *platform* mode, `{{command}}` uses CRLF ("\\r\\n") line endings on Windows
+In *platform* mode, `{{program}}` uses CRLF ("\\r\\n") line endings on Windows
 and LF ("\\n") on other platforms.
 
 In *auto* mode, the input file's line endings are preserved, and *platform* mode
@@ -619,10 +618,6 @@ EOF)
                 ->long('psr12')
                 ->description(<<<EOF
 Enforce strict PSR-12 / PER Coding Style compliance.
-
-Use this option to apply formatting rules and internal options required for
-`{{command}}` output to satisfy the formatting-related requirements of PHP-FIG
-coding style standards.
 EOF)
                 ->bindTo($this->Psr12),
             CliOption::build()
@@ -659,8 +654,8 @@ EOF)
                 ->description(<<<EOF
 Ignore configuration files.
 
-Use this option to skip detection of configuration files that would otherwise
-take precedence over formatting options given on the command line.
+Use this option to ignore any configuration files that would usually apply to
+the input.
 
 See `CONFIGURATION` below.
 EOF)
@@ -672,7 +667,7 @@ EOF)
                 ->description(<<<EOF
 Write output to a different file.
 
-If <file> is a dash ('-'), `{{command}}` writes to the standard output.
+If <file> is a dash ('-'), `{{program}}` writes to the standard output.
 Otherwise, `-o/--output` must be given once per input file, or not at all.
 EOF)
                 ->optionType(CliOptionType::VALUE)
@@ -774,47 +769,44 @@ EOF)
     {
         return [
             CliHelpSectionName::CONFIGURATION => <<<'EOF'
-`{{command}}` looks for a JSON configuration file named *.prettyphp* or
+`{{program}}` looks for a JSON configuration file named *.prettyphp* or
 *prettyphp.json* in the same directory as each input file, then in each of its
 parent directories. It stops looking when it finds a configuration file, a
-*.git* directory, a *.hg* directory, or the root of the filesystem, whichever
+*.git*, *.hg* or *.svn* directory, or the root of the filesystem, whichever
 comes first.
 
-If an input file has an applicable configuration file, command-line formatting
-options other than `-N/--ignore-newlines` are replaced with settings from the
-configuration file.
+If a configuration file is found, `{{program}}` formats the input using
+formatting options read from the configuration file, and command-line formatting
+options other than `-N/--ignore-newlines` are ignored.
 
 The `--print-config` option can be used to generate a configuration file, for
 example:
 
-    $ {{command}} -P -S -M --print-config src tests bootstrap.php
-    {
-        "src": [
-            "src",
-            "tests",
-            "bootstrap.php"
-        ],
-        "includeIfPhp": true,
-        "noSimplifyStrings": true,
-        "noSortImports": true
-    }
+```console
+$ {{command}} --sort-imports-by=name --psr12 src tests --print-config
+{
+    "src": [
+        "src",
+        "tests"
+    ],
+    "sortImportsBy": "name",
+    "psr12": true
+}
+```
 
-The optional *src* array specifies files and directories to format. If
-`{{command}}` is started with no path arguments in a directory where *src* is
-configured, or the directory is passed to `{{command}}` for formatting, paths in
-*src* are formatted. It is ignored otherwise.
+The optional *src* array specifies files and directories to format when
+`{{command}}` is started in the same directory or when the directory is passed
+to `{{command}}` for formatting.
 
-If a directory contains more than one configuration file, `{{command}}` reports
+If a directory contains more than one configuration file, `{{program}}` reports
 an error and exits without formatting anything.
 EOF,
             CliHelpSectionName::EXIT_STATUS => <<<EOF
-`{{command}}` returns 0 when formatting succeeds, 1 when invalid arguments are
-given, and 2 when one or more input files cannot be parsed. Other non-zero
-values are returned for other failures.
-
-When `--diff` or `--check` are given, `{{command}}` returns 0 when the input is
-already formatted and 1 when formatting is required. The meaning of other return
-values is unchanged.
+`{{program}}` returns 0 when formatting succeeds, 1 when invalid arguments are
+given, 2 when invalid configuration files are found, and 4 when one or more
+input files cannot be parsed. When `--diff` or `--check` are given,
+`{{program}}` returns 0 when the input is already formatted and 8 when
+formatting is required.
 EOF,
         ];
     }
@@ -824,8 +816,8 @@ EOF,
         if ($this->DebugDirectory !== null) {
             File::createDir($this->DebugDirectory);
             $this->DebugDirectory = realpath($this->DebugDirectory) ?: null;
-            if (!Env::debug()) {
-                Env::debug(true);
+            if (!$this->Env->debug()) {
+                $this->Env->debug(true);
             }
             $this->App->logOutput();
         }
@@ -974,7 +966,11 @@ EOF,
                     );
                     break;
                 }
-                if (is_dir($dir . '/.git') || is_dir($dir . '/.hg')) {
+                if (
+                    is_dir($dir . '/.git') ||
+                    is_dir($dir . '/.hg') ||
+                    is_dir($dir . '/.svn')
+                ) {
                     break;
                 }
                 if ($dir === '.') {
@@ -1067,7 +1063,9 @@ EOF,
         $errors = [];
         foreach ($in as $key => $file) {
             $inputFile = ($file === 'php://stdin' ? $this->StdinFilename : null) ?: $file;
-            $this->Quiet > 2 || Console::logProgress(sprintf('Formatting %d of %d:', ++$i, $count), $inputFile);
+            if ($this->Quiet < 3 && ($file !== 'php://stdin' || !stream_isatty(STDIN))) {
+                Console::logProgress(sprintf('Formatting %d of %d:', ++$i, $count), $inputFile);
+            }
             $input = file_get_contents($file);
             $formatter = $getFormatter($inputFile);
             Profile::startTimer($inputFile, 'file');
@@ -1079,7 +1077,7 @@ EOF,
                 );
             } catch (InvalidSyntaxException $ex) {
                 Console::exception($ex);
-                $this->setExitStatus(2);
+                $this->setExitStatus(4);
                 $errors[] = $inputFile;
                 continue;
             } catch (FormatterException $ex) {
@@ -1101,9 +1099,11 @@ EOF,
                 if ($input === $output) {
                     continue;
                 }
-                $this->Quiet || Console::error('Input requires formatting');
+                if (!$this->Quiet) {
+                    Console::error('Input requires formatting');
+                }
 
-                return 1;
+                return 8;
             }
 
             if ($this->Diff) {
@@ -1121,7 +1121,9 @@ EOF,
                             'fromFile' => "a/$inputFile",
                             'toFile' => "b/$inputFile",
                         ])))->diff($input, $output);
-                        $this->Quiet || Console::log('Would replace', $inputFile);
+                        if (!$this->Quiet) {
+                            Console::log('Would replace', $inputFile);
+                        }
                 }
                 $replaced++;
                 continue;
@@ -1137,7 +1139,7 @@ EOF,
                 continue;
             }
 
-            if (!Test::areSameFile($file, $outFile)) {
+            if (!File::is($file, $outFile)) {
                 $input = is_file($outFile) ? file_get_contents($outFile) : null;
             }
 
@@ -1146,7 +1148,9 @@ EOF,
                 continue;
             }
 
-            $this->Quiet || Console::log('Replacing', $outFile);
+            if (!$this->Quiet) {
+                Console::log('Replacing', $outFile);
+            }
             file_put_contents($outFile, $output);
             $replaced++;
         }
@@ -1171,26 +1175,32 @@ EOF,
         }
 
         if ($this->Diff) {
-            $this->Quiet || !$replaced || Console::out('', ConsoleLevel::INFO);
-            $this->Quiet || Console::log(sprintf(
-                $replaced
-                    ? '%1$d of %2$d %3$s %4$s formatting'
-                    : '%2$d %3$s would be left unchanged',
-                $replaced,
-                $count,
-                Convert::plural($count, 'file'),
-                Convert::plural($count, 'requires', 'require')
-            ));
+            if (!$this->Quiet) {
+                if ($replaced) {
+                    Console::out('', ConsoleLevel::INFO);
+                }
+                Console::log(sprintf(
+                    $replaced
+                        ? '%1$d of %2$d %3$s %4$s formatting'
+                        : '%2$d %3$s would be left unchanged',
+                    $replaced,
+                    $count,
+                    Convert::plural($count, 'file'),
+                    Convert::plural($count, 'requires', 'require')
+                ));
+            }
 
-            return $replaced ? 1 : 0;
+            return $replaced ? 8 : 0;
         }
 
-        $this->Quiet || Console::summary(sprintf(
-            $replaced ? 'Replaced %1$d of %2$d %3$s' : 'Formatted %2$d %3$s',
-            $replaced,
-            $count,
-            Convert::plural($count, 'file')
-        ), 'successfully');
+        if (!$this->Quiet) {
+            Console::summary(sprintf(
+                $replaced ? 'Replaced %1$d of %2$d %3$s' : 'Formatted %2$d %3$s',
+                $replaced,
+                $count,
+                Convert::plural($count, 'file')
+            ), 'successfully');
+        }
     }
 
     private function maybeGetConfigFile(string $dir): ?string
@@ -1203,7 +1213,7 @@ EOF,
             $file = $dir . '/' . $file;
             if (is_file($file)) {
                 if ($found ?? null) {
-                    throw new RuntimeException(sprintf('Too many configuration files: %s', $dir));
+                    throw new InvalidConfigurationException(sprintf('Too many configuration files: %s', $dir));
                 }
                 $found = $file;
             }
@@ -1430,6 +1440,8 @@ EOF,
                 $addFile($file);
             }
         }
+
+        $files = array_values($files);
     }
 
     /**

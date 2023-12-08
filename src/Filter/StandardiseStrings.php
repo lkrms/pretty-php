@@ -3,10 +3,10 @@
 namespace Lkrms\PrettyPHP\Filter;
 
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
+use Lkrms\PrettyPHP\Exception\FilterException;
 use Lkrms\PrettyPHP\Filter\Contract\Filter;
 use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\Utility\Pcre;
-use RuntimeException;
 
 /**
  * Evaluate strings for comparison
@@ -80,7 +80,7 @@ final class StandardiseStrings implements Filter
                 $end = Pcre::replace('/[^a-zA-Z0-9_]+/', '', $start);
                 eval("\$string = {$start}\n{$token->text}\n{$end};");
             } else {
-                throw new RuntimeException('Error parsing string');
+                throw new FilterException('Error parsing string');
             }
             $token->setText($string);
         }

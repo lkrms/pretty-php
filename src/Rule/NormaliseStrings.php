@@ -3,10 +3,10 @@
 namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\CustomToken;
+use Lkrms\PrettyPHP\Exception\RuleException;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Rule\Contract\MultiTokenRule;
 use Lkrms\Utility\Pcre;
-use RuntimeException;
 
 /**
  * Normalise escape sequences in strings, and replace single- and double-quoted
@@ -107,7 +107,7 @@ final class NormaliseStrings implements MultiTokenRule
                 }
                 eval("\$string = {$start}\n{$text}\n{$end};");
             } else {
-                throw new RuntimeException(
+                throw new RuleException(
                     sprintf('Not a string delimiter: %s', CustomToken::toName($token->String->id))
                 );
             }

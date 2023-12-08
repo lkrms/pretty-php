@@ -5,6 +5,7 @@ namespace Lkrms\PrettyPHP;
 use Lkrms\Concern\Immutable;
 use Lkrms\Concern\TReadable;
 use Lkrms\Contract\IReadable;
+use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Profile;
 use Lkrms\PrettyPHP\Catalog\FormatterFlag;
@@ -13,6 +14,7 @@ use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Exception\FormatterException;
+use Lkrms\PrettyPHP\Exception\IncompatibleRulesException;
 use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
 use Lkrms\PrettyPHP\Filter\Contract\Filter;
 use Lkrms\PrettyPHP\Filter\CollectColumn;
@@ -99,6 +101,7 @@ final class Formatter implements IReadable
      * The size of a tab, in spaces
      *
      * @readonly
+     * @var (2|4|8)
      */
     public int $TabSize;
 
@@ -132,26 +135,44 @@ final class Formatter implements IReadable
     public bool $CollectCodeProblems;
 
     /**
-     * False if the only line breaks that should be preserved are blank lines
-     * between statements
+     * False if line breaks are only preserved between statements
+     *
+     * When the {@see PreserveLineBreaks} rule is disabled, `false` is assigned
+     * to this property and the rule is reinstated to preserve blank lines
+     * between statements.
      *
      * @readonly
      */
     public bool $PreserveLineBreaks = true;
 
-    public string $PreferredEol = PHP_EOL;
+    /**
+     * End-of-line sequence used when line endings are not preserved or when
+     * there are no line breaks in the input
+     *
+     * @readonly
+     */
+    public string $PreferredEol;
 
-    public bool $PreserveEol = true;
+    /**
+     * True if line endings are preserved
+     *
+     * @readonly
+     */
+    public bool $PreserveEol;
 
     /**
      * Spaces between code and comments on the same line
+     *
+     * @readonly
      */
-    public int $SpacesBesideCode = 2;
+    public int $SpacesBesideCode;
 
     /**
-     * @var int&HeredocIndent::*
+     * Indentation applied to heredocs and nowdocs
+     *
+     * @var HeredocIndent::*
      */
-    public int $HeredocIndent = HeredocIndent::MIXED;
+    public int $HeredocIndent;
 
     public bool $IncreaseIndentBetweenUnenclosedTags = true;
 
@@ -177,12 +198,17 @@ final class Formatter implements IReadable
      */
     public bool $AlignFirstCallInChain = true;
 
-    public bool $OneTrueBraceStyle = false;
+    /**
+     * True if braces are formatted using the One True Brace Style
+     *
+     * @readonly
+     */
+    public bool $OneTrueBraceStyle;
 
     /**
      * @var ImportSortOrder::*
      */
-    public int $ImportSortOrder = ImportSortOrder::DEPTH;
+    public int $ImportSortOrder;
 
     /**
      * @var array<class-string<Rule>>
@@ -234,6 +260,13 @@ final class Formatter implements IReadable
         AlignLists::class,                 // processList  (400), callback (710)
         AlignData::class,                  // processBlock (340), callback (720)
         AlignComments::class,              // processBlock (340), beforeRender (998)
+    ];
+
+    /**
+     * @var array<array<class-string<Rule>>>
+     */
+    public const INCOMPATIBLE_RULE_GROUPS = [
+        [StrictLists::class, AlignLists::class],
     ];
 
     /**
@@ -365,18 +398,20 @@ final class Formatter implements IReadable
     }
 
     /**
-     * Get a new Formatter object
+     * Creates a new Formatter object
      *
      * Rules are processed from lowest to highest priority (smallest to biggest
      * number).
      *
      * @param bool $insertSpaces Use spaces for indentation?
-     * @param int $tabSize The size of a tab, in spaces
+     * @param (2|4|8) $tabSize The size of a tab, in spaces
      * @param array<class-string<Rule>> $disableRules Non-mandatory rules to disable
      * @param array<class-string<Rule>> $enableRules Additional rules to enable
      * @param array<class-string<Filter>> $disableFilters Optional filters to disable
      * @param int-mask-of<FormatterFlag::*> $flags Debugging flags
      * @param TokenTypeIndex|null $tokenTypeIndex Provide a customised token type index
+     * @param HeredocIndent::* $heredocIndent
+     * @param ImportSortOrder::* $importSortOrder
      */
     public function __construct(
         bool $insertSpaces = true,
@@ -385,12 +420,33 @@ final class Formatter implements IReadable
         array $enableRules = [],
         array $disableFilters = [],
         int $flags = 0,
-        ?TokenTypeIndex $tokenTypeIndex = null
+        ?TokenTypeIndex $tokenTypeIndex = null,
+        string $preferredEol = PHP_EOL,
+        bool $preserveEol = true,
+        int $spacesBesideCode = 2,
+        int $heredocIndent = HeredocIndent::MIXED,
+        int $importSortOrder = ImportSortOrder::DEPTH,
+        bool $oneTrueBraceStyle = false
     ) {
+        if (!in_array($tabSize, [2, 4, 8], true)) {
+            // @codeCoverageIgnoreStart
+            throw new InvalidArgumentException(sprintf(
+                'Invalid tabSize (2, 4 or 8 expected): %d',
+                $tabSize
+            ));
+            // @codeCoverageIgnoreEnd
+        }
+
         $this->SoftTab = str_repeat(' ', $tabSize);
         $this->Tab = $insertSpaces ? $this->SoftTab : "\t";
         $this->TabSize = $tabSize;
-        $this->TokenTypeIndex = $tokenTypeIndex ?? new TokenTypeIndex();
+        $this->TokenTypeIndex = $tokenTypeIndex ?: new TokenTypeIndex();
+        $this->PreferredEol = $preferredEol;
+        $this->PreserveEol = $preserveEol;
+        $this->SpacesBesideCode = $spacesBesideCode;
+        $this->HeredocIndent = $heredocIndent;
+        $this->ImportSortOrder = $importSortOrder;
+        $this->OneTrueBraceStyle = $oneTrueBraceStyle;
 
         $this->Debug = ($flags & FormatterFlag::DEBUG) || Env::debug();
         $this->LogProgress = $this->Debug && ($flags & FormatterFlag::LOG_PROGRESS);
@@ -404,7 +460,7 @@ final class Formatter implements IReadable
                 AlignArrowFunctions::class,
                 AlignChains::class,
                 AlignLists::class,
-                AlignTernaryOperators::class
+                AlignTernaryOperators::class,
             );
         }
 
@@ -418,7 +474,7 @@ final class Formatter implements IReadable
                 self::DEFAULT_RULES,
                 array_intersect(
                     self::ADDITIONAL_RULES,
-                    $enableRules
+                    $enableRules,
                 )
             ),
             // Remove mandatory rules from $skipRules
@@ -427,15 +483,11 @@ final class Formatter implements IReadable
                 PreserveLineBreaks::class,
             ])
         );
-        if (count(array_intersect(
-            [StrictLists::class, AlignLists::class],
-            $rules
-        )) === 2) {
-            throw new LogicException(sprintf(
-                '%s and %s cannot both be enabled',
-                StrictLists::class,
-                AlignLists::class
-            ));
+        foreach (self::INCOMPATIBLE_RULE_GROUPS as $group) {
+            $enabled = array_intersect($group, $rules);
+            if (count($enabled) > 1) {
+                throw new IncompatibleRulesException(...$enabled);
+            }
         }
         $this->EnabledRules = array_combine($rules, array_fill(0, count($rules), true));
 
