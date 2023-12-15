@@ -482,6 +482,7 @@ class TokenTypeIndex implements IImmutable
             \T_CLOSE_BRACKET,
             \T_CLOSE_PARENTHESIS,
             \T_COALESCE,
+            \T_COALESCE_EQUAL,
             \T_CONCAT,
             \T_DOUBLE_ARROW,
             \T_LOGICAL_NOT,
@@ -508,7 +509,7 @@ class TokenTypeIndex implements IImmutable
             \T_YIELD,
             \T_YIELD_FROM,
             ...$preserveBlankAfter,
-            ...TT::OPERATOR_ASSIGNMENT,
+            ...TT::OPERATOR_ASSIGNMENT_EXCEPT_COALESCE,
             ...TT::OPERATOR_COMPARISON_EXCEPT_COALESCE,
             ...TT::OPERATOR_LOGICAL_EXCEPT_NOT,
         );
