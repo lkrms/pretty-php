@@ -25,6 +25,14 @@ EOF
     exit
 }
 
+# generate <file> <command> [<argument>...]
+function generate() {
+    local FILE=$1
+    shift
+    printf '==> generating %s\n' "$FILE"
+    "$@" >"$FILE"
+}
+
 [[ ${BASH_SOURCE[0]} -ef scripts/generate.sh ]] ||
     die "must run from root of package folder"
 
@@ -68,9 +76,8 @@ if ((FIXTURES)); then
 fi
 
 if ((ASSETS)); then
-    FILE=docs/Usage.md
-    printf '==> generating %s\n' "$FILE"
-    bin/pretty-php _md >"$FILE"
+    generate docs/Usage.md bin/pretty-php _md
+    generate resources/prettyphp-schema.json bin/pretty-php _json_schema "JSON schema for pretty-php configuration files"
 
     vendor/bin/lk-util generate builder --no-meta --force 'Lkrms\PrettyPHP\Formatter'
 fi

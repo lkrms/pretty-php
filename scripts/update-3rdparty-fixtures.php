@@ -3,12 +3,12 @@
 
 use Lkrms\Cli\CliApplication;
 use Lkrms\Facade\Console;
-use Lkrms\Facade\Sys;
 use Lkrms\PrettyPHP\Tests\FormatterTest;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
+use Lkrms\Utility\Sys;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 

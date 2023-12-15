@@ -21,7 +21,7 @@
         "ext-mbstring": "*",
         "ext-tokenizer": "*",
         "composer-runtime-api": "^2.2",
-        "lkrms/util": "^0.21.11",
+        "lkrms/util": "^0.21.13",
         "sebastian/diff": "^4 || ^5"
     },
     "autoload": {

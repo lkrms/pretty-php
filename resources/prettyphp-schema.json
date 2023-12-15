@@ -22,10 +22,10 @@
             "default": "/\\/(\\.git|\\.hg|\\.svn|_?build|dist|vendor)\\/$/"
         },
         "includeIfPhp": {
-            "description": "A regular expression for pathnames to check for PHP code when searching a directory. The regex applied if null or true is: /(\\/|^)[^.]+$/",
+            "description": "A regular expression for pathnames to check for PHP code when searching a directory. The regex applied if true or null is: /(\\/|^)[^.]+$/",
             "type": [
-                "boolean",
                 "string",
+                "boolean",
                 "null"
             ],
             "default": false

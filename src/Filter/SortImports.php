@@ -7,7 +7,7 @@ use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Filter\Concern\FilterTrait;
 use Lkrms\PrettyPHP\Filter\Contract\Filter;
 use Lkrms\PrettyPHP\Token\Token;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Pcre;
 
 /**
@@ -185,7 +185,7 @@ final class SortImports implements Filter
             $nextLine += substr_count($t->text, "\n") + 1;
         }
 
-        Convert::arraySpliceAtKey($this->Tokens, $firstKey, count($sorted), $sorted);
+        $this->Tokens = Arr::spliceByKey($this->Tokens, $firstKey, count($sorted), $sorted);
     }
 
     /**

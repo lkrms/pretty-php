@@ -15,7 +15,6 @@ use Lkrms\Console\Catalog\ConsoleLevel;
 use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Profile;
-use Lkrms\Facade\Sys;
 use Lkrms\PrettyPHP\Catalog\FormatterFlag;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
@@ -46,9 +45,11 @@ use Lkrms\PrettyPHP\Rule\StrictLists;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\PrettyPHP\Formatter;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Pcre;
+use Lkrms\Utility\Sys;
 use Lkrms\Utility\Test;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
 use SebastianBergmann\Diff\Differ;
@@ -419,6 +420,8 @@ Directories are searched recursively for files to format.
 EOF)
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->multipleAllowed()
+                ->unique()
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->InputFiles),
             CliOption::build()
                 ->long('include')
@@ -431,6 +434,7 @@ Exclusions (`-X/--exclude`) are applied first.
 EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->defaultValue('/\.php$/')
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->IncludeRegex),
             CliOption::build()
                 ->long('exclude')
@@ -443,6 +447,7 @@ Exclusions are applied before inclusions (`-I/--include`).
 EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->defaultValue('/\/(\.git|\.hg|\.svn|_?build|dist|vendor)\/$/')
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->ExcludeRegex),
             CliOption::build()
                 ->long('include-if-php')
@@ -463,6 +468,7 @@ Exclusions (`-X/--exclude`) are applied first.
 EOF)
                 ->optionType(CliOptionType::VALUE_OPTIONAL)
                 ->defaultValue('/(\/|^)[^.]+$/')
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->IncludeIfPhpRegex),
             CliOption::build()
                 ->long('tab')
@@ -478,7 +484,7 @@ EOF)
                 ->valueType(CliOptionValueType::INTEGER)
                 ->allowedValues([2, 4, 8])
                 ->defaultValue(4)
-                ->visibility(Visibility::ALL & ~Visibility::SYNOPSIS)
+                ->visibility(Visibility::ALL_EXCEPT_SYNOPSIS)
                 ->bindTo($this->Tabs),
             CliOption::build()
                 ->long('space')
@@ -493,7 +499,7 @@ EOF)
                 ->valueType(CliOptionValueType::INTEGER)
                 ->allowedValues([2, 4, 8])
                 ->defaultValue(4)
-                ->visibility(Visibility::ALL & ~Visibility::SYNOPSIS)
+                ->visibility(Visibility::ALL_EXCEPT_SYNOPSIS)
                 ->bindTo($this->Spaces),
             CliOption::build()
                 ->long('eol')
@@ -511,7 +517,7 @@ EOF)
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(['auto', 'platform', 'lf', 'crlf'])
                 ->defaultValue('auto')
-                ->visibility(Visibility::ALL & ~Visibility::SYNOPSIS)
+                ->visibility(Visibility::ALL_EXCEPT_SYNOPSIS | Visibility::SCHEMA)
                 ->bindTo($this->Eol),
             CliOption::build()
                 ->long('disable')
@@ -524,6 +530,8 @@ EOF)
                 ->allowedValues(array_keys(self::DISABLE_RULE_MAP))
                 ->unknownValuePolicy(CliOptionValueUnknownPolicy::DISCARD)
                 ->multipleAllowed()
+                ->unique()
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->DisableRules),
             CliOption::build()
                 ->long('enable')
@@ -536,6 +544,8 @@ EOF)
                 ->allowedValues(array_keys(self::ENABLE_RULE_MAP))
                 ->unknownValuePolicy(CliOptionValueUnknownPolicy::DISCARD)
                 ->multipleAllowed()
+                ->unique()
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->EnableRules),
             CliOption::build()
                 ->long('one-true-brace-style')
@@ -543,6 +553,7 @@ EOF)
                 ->description(<<<EOF
 Format braces using the One True Brace Style.
 EOF)
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->OneTrueBraceStyle),
             CliOption::build()
                 ->long('operators-first')
@@ -550,6 +561,7 @@ EOF)
                 ->description(<<<EOF
 Place newlines before operators when splitting code over multiple lines.
 EOF)
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->OperatorsFirst),
             CliOption::build()
                 ->long('operators-last')
@@ -557,6 +569,7 @@ EOF)
                 ->description(<<<EOF
 Place newlines after operators when splitting code over multiple lines.
 EOF)
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->OperatorsLast),
             CliOption::build()
                 ->long('ignore-newlines')
@@ -577,19 +590,22 @@ double-quoted strings with the most readable and economical syntax.
 
 Equivalent to `--disable=simplify-strings`
 EOF)
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->NoSimplifyStrings),
             CliOption::build()
                 ->long('heredoc-indent')
                 ->short('h')
-                ->valueName('type')
+                ->valueName('level')
                 ->description(<<<EOF
 Set the indentation level of heredocs and nowdocs.
 
-With *mixed* indentation (the default), line indentation is applied to heredocs
+If `--heredoc-indent=mixed` is given, line indentation is applied to heredocs
 that start on their own line, otherwise hanging indentation is applied.
 EOF)
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys(self::HEREDOC_INDENT_MAP))
+                ->defaultValue(array_flip(self::HEREDOC_INDENT_MAP)[HeredocIndent::MIXED])
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->HeredocIndent),
             CliOption::build()
                 ->long('sort-imports-by')
@@ -600,12 +616,11 @@ Set the sort order for consecutive alias/import statements.
 
 Use `--sort-imports-by=none` to group import statements by type without changing
 their order.
-
-Unless disabled by `-M/--no-sort-imports`, the default is to sort imports by
-*depth*.
 EOF)
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys(self::IMPORT_SORT_ORDER_MAP))
+                ->defaultValue(array_flip(self::IMPORT_SORT_ORDER_MAP)[ImportSortOrder::DEPTH])
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->SortImportsBy),
             CliOption::build()
                 ->long('no-sort-imports')
@@ -613,12 +628,14 @@ EOF)
                 ->description(<<<EOF
 Don't sort or group consecutive alias/import statements.
 EOF)
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->NoSortImports),
             CliOption::build()
                 ->long('psr12')
                 ->description(<<<EOF
 Enforce strict PSR-12 / PER Coding Style compliance.
 EOF)
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->Psr12),
             CliOption::build()
                 ->long('preset')
@@ -632,7 +649,7 @@ is applied.
 EOF)
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys(self::PRESET_MAP))
-                ->visibility(Visibility::ALL & ~Visibility::SYNOPSIS)
+                ->visibility(Visibility::ALL_EXCEPT_SYNOPSIS | Visibility::SCHEMA)
                 ->bindTo($this->Preset),
             CliOption::build()
                 ->long('config')
@@ -708,7 +725,7 @@ Allows discovery of configuration files and improves reporting. Useful for
 editor integrations.
 EOF)
                 ->optionType(CliOptionType::VALUE)
-                ->visibility(Visibility::ALL & ~Visibility::SYNOPSIS)
+                ->visibility(Visibility::ALL_EXCEPT_SYNOPSIS)
                 ->bindTo($this->StdinFilename),
             CliOption::build()
                 ->long('debug')
@@ -721,21 +738,21 @@ of files in *\<directory>/{}* that represent changes applied by enabled rules.
 EOF))
                 ->optionType(CliOptionType::VALUE_OPTIONAL)
                 ->defaultValue($this->App->getTempPath() . '/debug')
-                ->visibility((Visibility::ALL & ~Visibility::SYNOPSIS) | Visibility::HIDE_DEFAULT)
+                ->visibility(Visibility::ALL_EXCEPT_SYNOPSIS | Visibility::HIDE_DEFAULT)
                 ->bindTo($this->DebugDirectory),
             CliOption::build()
                 ->long('timers')
                 ->description(<<<EOF
 Report timers and resource usage on exit.
 EOF)
-                ->visibility(Visibility::ALL & ~Visibility::SYNOPSIS)
+                ->visibility(Visibility::ALL_EXCEPT_SYNOPSIS)
                 ->bindTo($this->ReportTimers),
             CliOption::build()
                 ->long('fast')
                 ->description(<<<EOF
 Skip equivalence checks.
 EOF)
-                ->visibility(Visibility::ALL & ~Visibility::SYNOPSIS)
+                ->visibility(Visibility::ALL_EXCEPT_SYNOPSIS)
                 ->bindTo($this->Fast),
             CliOption::build()
                 ->long('verbose')
@@ -809,6 +826,28 @@ input files cannot be parsed. When `--diff` or `--check` are given,
 formatting is required.
 EOF,
         ];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function filterJsonSchema(array $schema): array
+    {
+        $schema['properties'] =
+            Arr::spliceByKey($schema['properties'], 'eol', 0, [
+                'insertSpaces' => [
+                    'description' => 'Indent using spaces.',
+                    'type' => 'boolean',
+                    'default' => true,
+                ],
+                'tabSize' => [
+                    'description' => 'The size of a tab in spaces.',
+                    'enum' => [2, 4, 8],
+                    'default' => 4,
+                ],
+            ]);
+
+        return $schema;
     }
 
     protected function run(...$params)
@@ -896,7 +935,7 @@ EOF,
                 unset($cliInputFiles[$i]);
                 // Update any relative paths loaded from the configuration file
                 foreach ($this->InputFiles as &$file) {
-                    if (Test::isAbsolutePath($file)) {
+                    if (File::isAbsolute($file)) {
                         continue;
                     }
                     $file = $dir . '/' . $file;

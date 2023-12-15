@@ -71,7 +71,7 @@ use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
-use Lkrms\Utility\Inspect;
+use Lkrms\Utility\Get;
 use CompileError;
 use LogicException;
 use Throwable;
@@ -696,7 +696,7 @@ final class Formatter implements IReadable
         }
         $this->SpacesBesideCode > 0 || $this->SpacesBesideCode = 1;
 
-        $eol = Inspect::getEol($code);
+        $eol = Get::eol($code);
         if ($eol && $eol !== "\n") {
             $code = str_replace($eol, "\n", $code);
         }
@@ -861,7 +861,7 @@ final class Formatter implements IReadable
         Profile::stopTimer(__METHOD__ . '#find-lists');
 
         foreach ($this->MainLoop as [$rule, $method]) {
-            $_rule = Convert::classToBasename($_class = get_class($rule));
+            $_rule = Get::basename($_class = get_class($rule));
             Profile::startTimer($_rule, 'rule');
 
             if ($method === ListRule::PROCESS_LIST) {
@@ -955,7 +955,7 @@ final class Formatter implements IReadable
 
         /** @var BlockRule $rule */
         foreach ($this->BlockLoop as [$rule]) {
-            $_rule = Convert::classToBasename(get_class($rule));
+            $_rule = Get::basename(get_class($rule));
             Profile::startTimer($_rule, 'rule');
             foreach ($blocks as $block) {
                 $rule->processBlock($block);
@@ -968,7 +968,7 @@ final class Formatter implements IReadable
 
         /** @var Rule $rule */
         foreach ($this->BeforeRender as [$rule]) {
-            $_rule = Convert::classToBasename(get_class($rule));
+            $_rule = Get::basename(get_class($rule));
             Profile::startTimer($_rule, 'rule');
             $rule->beforeRender($this->Tokens);
             Profile::stopTimer($_rule, 'rule');
@@ -1149,7 +1149,7 @@ final class Formatter implements IReadable
             ksort($tokenCallbacks);
             foreach ($tokenCallbacks as $index => $callbacks) {
                 foreach ($callbacks as $i => [$rule, $callback]) {
-                    $_rule = Convert::classToBasename(get_class($rule));
+                    $_rule = Get::basename(get_class($rule));
                     Profile::startTimer($_rule, 'rule');
                     $callback();
                     Profile::stopTimer($_rule, 'rule');

@@ -129,9 +129,11 @@ pretty-php - Format a PHP file
 
   Set the indentation level of heredocs and nowdocs.
 
-  With `mixed` indentation (the default), line indentation is applied to
+  If **`--heredoc-indent=mixed`** is given, line indentation is applied to
   heredocs that start on their own line, otherwise hanging indentation is
   applied.
+
+  The default level is: `mixed`
 
 - **`-m`**, **`--sort-imports-by`** (`none`|`name`|`depth`)
 
@@ -140,8 +142,7 @@ pretty-php - Format a PHP file
   Use **`--sort-imports-by=none`** to group import statements by type without
   changing their order.
 
-  Unless disabled by **`-M/--no-sort-imports`**, the default is to sort imports by
-  `depth`.
+  The default order is: `depth`
 
 - **`-M`**, **`--no-sort-imports`**
 
