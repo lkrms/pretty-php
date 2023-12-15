@@ -92,8 +92,8 @@ final class DeclarationSpacing implements MultiTokenRule
             // other than the first in each declaration
             while ($token->Statement !== $token) {
                 if (!$token->_prevSibling ||
-                    !($token->_prevSibling->id === T_ATTRIBUTE ||
-                        $token->_prevSibling->id === T_ATTRIBUTE_COMMENT)) {
+                    !($token->_prevSibling->id === \T_ATTRIBUTE ||
+                        $token->_prevSibling->id === \T_ATTRIBUTE_COMMENT)) {
                     continue 2;
                 }
                 $token = $token->_prevSibling;
@@ -101,10 +101,10 @@ final class DeclarationSpacing implements MultiTokenRule
 
             // Ignore `static` outside of declarations, `namespace` in the
             // context of relative names, and promoted constructor parameters
-            if (($token->id === T_STATIC &&
-                    !$token->_nextCode->is([T_VARIABLE, ...TokenType::DECLARATION])) ||
-                ($token->id === T_NAMESPACE &&
-                    $token->_nextCode->id === T_NS_SEPARATOR) ||
+            if (($token->id === \T_STATIC &&
+                    !$token->_nextCode->is([\T_VARIABLE, ...TokenType::DECLARATION])) ||
+                ($token->id === \T_NAMESPACE &&
+                    $token->_nextCode->id === \T_NS_SEPARATOR) ||
                 ($token->is(TokenType::VISIBILITY) &&
                     $token->inParameterList())) {
                 continue;
@@ -120,9 +120,9 @@ final class DeclarationSpacing implements MultiTokenRule
             // Add a blank line between declarations and subsequent
             // non-declarations
             if (!$token->EndStatement->nextCode()->skipSiblingsOf(
-                T_ATTRIBUTE, T_ATTRIBUTE_COMMENT
-            )->is([T_NULL, ...TokenType::DECLARATION]) &&
-                    $token->EndStatement->next()->id !== T_CLOSE_TAG) {
+                \T_ATTRIBUTE, \T_ATTRIBUTE_COMMENT
+            )->is([\T_NULL, ...TokenType::DECLARATION]) &&
+                    $token->EndStatement->next()->id !== \T_CLOSE_TAG) {
                 $token->EndStatement->WhitespaceAfter |= WhitespaceType::BLANK;
             }
 
@@ -135,7 +135,7 @@ final class DeclarationSpacing implements MultiTokenRule
             // Allow `$types` to be empty if this is a variable or property
             // declaration
             if (!$types && !$parts->hasOneOf(
-                T_GLOBAL, T_READONLY, T_STATIC, T_VAR, ...TokenType::VISIBILITY
+                \T_GLOBAL, \T_READONLY, \T_STATIC, \T_VAR, ...TokenType::VISIBILITY
             )) {
                 $this->maybeApplyBlankLineBefore($token);
                 continue;
@@ -209,12 +209,12 @@ final class DeclarationSpacing implements MultiTokenRule
             if (!$this->PrevExpand) {
                 $prevParts = $prev->declarationParts(false, false);
                 if (($parts->getFirstOf(...TokenType::VISIBILITY)->id ?? null) !== ($prevParts->getFirstOf(...TokenType::VISIBILITY)->id ?? null) ||
-                        ($parts->getFirstOf(T_ABSTRACT)->id ?? null) !== ($prevParts->getFirstOf(T_ABSTRACT)->id ?? null) ||
-                        ($parts->getFirstOf(T_FINAL)->id ?? null) !== ($prevParts->getFirstOf(T_FINAL)->id ?? null) ||
-                        ($parts->getFirstOf(T_GLOBAL)->id ?? null) !== ($prevParts->getFirstOf(T_GLOBAL)->id ?? null) ||
-                        ($parts->getFirstOf(T_READONLY)->id ?? null) !== ($prevParts->getFirstOf(T_READONLY)->id ?? null) ||
-                        ($parts->getFirstOf(T_STATIC)->id ?? null) !== ($prevParts->getFirstOf(T_STATIC)->id ?? null) ||
-                        ($parts->getFirstOf(T_VAR)->id ?? null) !== ($prevParts->getFirstOf(T_VAR)->id ?? null)) {
+                        ($parts->getFirstOf(\T_ABSTRACT)->id ?? null) !== ($prevParts->getFirstOf(\T_ABSTRACT)->id ?? null) ||
+                        ($parts->getFirstOf(\T_FINAL)->id ?? null) !== ($prevParts->getFirstOf(\T_FINAL)->id ?? null) ||
+                        ($parts->getFirstOf(\T_GLOBAL)->id ?? null) !== ($prevParts->getFirstOf(\T_GLOBAL)->id ?? null) ||
+                        ($parts->getFirstOf(\T_READONLY)->id ?? null) !== ($prevParts->getFirstOf(\T_READONLY)->id ?? null) ||
+                        ($parts->getFirstOf(\T_STATIC)->id ?? null) !== ($prevParts->getFirstOf(\T_STATIC)->id ?? null) ||
+                        ($parts->getFirstOf(\T_VAR)->id ?? null) !== ($prevParts->getFirstOf(\T_VAR)->id ?? null)) {
                     $this->Prev = [$token];
                     $count = 1;
                 }
@@ -271,7 +271,7 @@ final class DeclarationSpacing implements MultiTokenRule
                        ->getTypes();
 
         if (!$types && !$parts->hasOneOf(
-            T_GLOBAL, T_READONLY, T_STATIC, T_VAR, ...TokenType::VISIBILITY
+            \T_GLOBAL, \T_READONLY, \T_STATIC, \T_VAR, ...TokenType::VISIBILITY
         )) {
             return null;
         }

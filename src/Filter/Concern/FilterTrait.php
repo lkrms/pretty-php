@@ -64,7 +64,7 @@ trait FilterTrait
     protected function isOneLineComment(int $i): bool
     {
         $token = $this->Tokens[$i];
-        return $token->id === T_COMMENT &&
+        return $token->id === \T_COMMENT &&
             Pcre::match('@^(?://|#)@', $token->text);
     }
 }

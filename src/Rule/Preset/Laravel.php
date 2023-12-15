@@ -27,29 +27,29 @@ final class Laravel implements TokenRule
     public function getTokenTypes(): array
     {
         return [
-            T_LOGICAL_NOT,
-            T_CONCAT,
-            T_FN,
+            \T_LOGICAL_NOT,
+            \T_CONCAT,
+            \T_FN,
         ];
     }
 
     public function processToken(Token $token): void
     {
         switch ($token->id) {
-            case T_LOGICAL_NOT:
-                if (($token->_next->id ?? null) === T_LOGICAL_NOT) {
+            case \T_LOGICAL_NOT:
+                if (($token->_next->id ?? null) === \T_LOGICAL_NOT) {
                     return;
                 }
                 $token->WhitespaceAfter |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
                 return;
 
-            case T_CONCAT:
+            case \T_CONCAT:
                 $token->WhitespaceMaskPrev &= ~WhitespaceType::SPACE;
                 $token->WhitespaceMaskNext &= ~WhitespaceType::SPACE;
                 return;
 
-            case T_FN:
+            case \T_FN:
                 $token->WhitespaceAfter |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
                 return;

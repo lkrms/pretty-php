@@ -57,8 +57,8 @@ final class PlaceBraces implements MultiTokenRule
     public function getTokenTypes(): array
     {
         return [
-            T_OPEN_BRACE,
-            T_CLOSE_BRACE,
+            \T_OPEN_BRACE,
+            \T_CLOSE_BRACE,
         ];
     }
 
@@ -71,7 +71,7 @@ final class PlaceBraces implements MultiTokenRule
                 continue;
             }
 
-            if ($token->id === T_CLOSE_BRACE) {
+            if ($token->id === \T_CLOSE_BRACE) {
                 // Suppress blank lines before close braces
                 $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
                 $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
@@ -83,7 +83,7 @@ final class PlaceBraces implements MultiTokenRule
                 }
                 $nextCode = $token->_nextCode;
                 if ($nextCode &&
-                    (($nextCode->OpenedBy && $nextCode->id !== T_CLOSE_BRACE) ||
+                    (($nextCode->OpenedBy && $nextCode->id !== \T_CLOSE_BRACE) ||
                         $nextCode === $token->EndStatement)) {
                     continue;
                 }
@@ -106,8 +106,8 @@ final class PlaceBraces implements MultiTokenRule
             $parts = $token->Expression->declarationParts();
 
             // Move empty bodies to the end of the previous line
-            if ($next->id === T_CLOSE_BRACE &&
-                    $parts->hasOneOf(T_CLASS, T_ENUM, T_FUNCTION, T_INTERFACE, T_TRAIT)) {
+            if ($next->id === \T_CLOSE_BRACE &&
+                    $parts->hasOneOf(\T_CLASS, \T_ENUM, \T_FUNCTION, \T_INTERFACE, \T_TRAIT)) {
                 $token->WhitespaceBefore |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskPrev = WhitespaceType::SPACE;
                 $token->WhitespaceMaskNext = WhitespaceType::NONE;
@@ -120,14 +120,14 @@ final class PlaceBraces implements MultiTokenRule
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
 
             // Suppress horizontal whitespace between empty braces
-            if ($next->id === T_CLOSE_BRACE) {
+            if ($next->id === \T_CLOSE_BRACE) {
                 $token->WhitespaceMaskNext &= ~WhitespaceType::SPACE;
             }
 
-            $prev = $parts->hasOneOf(T_FUNCTION)
+            $prev = $parts->hasOneOf(\T_FUNCTION)
                 ? $parts->last()->nextSibling()->canonicalClose()
                 : $token->prevCode();
-            if ($prev->id === T_CLOSE_PARENTHESIS) {
+            if ($prev->id === \T_CLOSE_PARENTHESIS) {
                 $this->BracketBracePairs[] = [$prev, $token];
             }
         }

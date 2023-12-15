@@ -41,7 +41,7 @@ return a($b) && a($c)
 PHP,
         ];
 
-        if (PHP_VERSION_ID < 80000) {
+        if (\PHP_VERSION_ID < 80000) {
             return;
         }
 

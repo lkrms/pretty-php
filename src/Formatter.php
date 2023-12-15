@@ -421,7 +421,7 @@ final class Formatter implements IReadable
         array $disableFilters = [],
         int $flags = 0,
         ?TokenTypeIndex $tokenTypeIndex = null,
-        string $preferredEol = PHP_EOL,
+        string $preferredEol = \PHP_EOL,
         bool $preserveEol = true,
         int $spacesBesideCode = 2,
         int $heredocIndent = HeredocIndent::MIXED,
@@ -679,8 +679,8 @@ final class Formatter implements IReadable
     public function format(string $code, ?string $filename = null, bool $fast = false): string
     {
         $errorLevel = error_reporting();
-        if ($errorLevel & E_COMPILE_WARNING) {
-            error_reporting($errorLevel & ~E_COMPILE_WARNING);
+        if ($errorLevel & \E_COMPILE_WARNING) {
+            error_reporting($errorLevel & ~\E_COMPILE_WARNING);
         }
 
         $this->Tokens = null;
@@ -706,7 +706,7 @@ final class Formatter implements IReadable
         try {
             $this->Tokens = Token::tokenize(
                 $code,
-                TOKEN_PARSE,
+                \TOKEN_PARSE,
                 $this->TokenTypeIndex,
                 ...$this->FormatFilterList
             );
@@ -736,7 +736,7 @@ final class Formatter implements IReadable
             }
 
             if ($last->IsCode &&
-                    ($last->Statement ?: $last)->id !== T_HALT_COMPILER) {
+                    ($last->Statement ?: $last)->id !== \T_HALT_COMPILER) {
                 $last->WhitespaceAfter |= WhitespaceType::LINE;
             }
         } finally {
@@ -752,11 +752,11 @@ final class Formatter implements IReadable
         Profile::startTimer(__METHOD__ . '#find-lists');
         // Get non-empty open brackets
         $listParents = $this->sortTokens([
-            T_OPEN_BRACKET => true,
-            T_OPEN_PARENTHESIS => true,
-            T_ATTRIBUTE => true,
-            T_EXTENDS => true,
-            T_IMPLEMENTS => true,
+            \T_OPEN_BRACKET => true,
+            \T_OPEN_PARENTHESIS => true,
+            \T_ATTRIBUTE => true,
+            \T_EXTENDS => true,
+            \T_IMPLEMENTS => true,
         ]);
         $lists = [];
         foreach ($listParents as $i => $parent) {
@@ -764,12 +764,12 @@ final class Formatter implements IReadable
                 continue;
             }
             switch ($parent->id) {
-                case T_EXTENDS:
-                case T_IMPLEMENTS:
+                case \T_EXTENDS:
+                case \T_IMPLEMENTS:
                     $items =
                         $parent->nextSiblingsWhile(...TokenType::DECLARATION_LIST)
                                ->filter(fn(Token $t, ?Token $next, ?Token $prev) =>
-                                            !$prev || $t->_prevCode->id === T_COMMA);
+                                            !$prev || $t->_prevCode->id === \T_COMMA);
                     $count = $items->count();
                     if ($count > 1) {
                         $parent->IsListParent = true;
@@ -781,30 +781,30 @@ final class Formatter implements IReadable
                     }
                     continue 2;
 
-                case T_OPEN_PARENTHESIS:
+                case \T_OPEN_PARENTHESIS:
                     $prev = $parent->_prevCode;
                     if (!$prev) {
                         continue 2;
                     }
-                    if ($prev->id === T_CLOSE_BRACE &&
+                    if ($prev->id === \T_CLOSE_BRACE &&
                             !$prev->isStructuralBrace(false)) {
                         break;
                     }
                     if ($prev->_prevCode &&
                             $prev->is(TokenType::AMPERSAND) &&
-                            $prev->_prevCode->is([T_FN, T_FUNCTION])) {
+                            $prev->_prevCode->is([\T_FN, \T_FUNCTION])) {
                         break;
                     }
                     if ($prev->is([
-                        T_ARRAY,
-                        T_DECLARE,
-                        T_FOR,
-                        T_ISSET,
-                        T_LIST,
-                        T_STATIC,
-                        T_UNSET,
-                        T_USE,
-                        T_VARIABLE,
+                        \T_ARRAY,
+                        \T_DECLARE,
+                        \T_FOR,
+                        \T_ISSET,
+                        \T_LIST,
+                        \T_STATIC,
+                        \T_UNSET,
+                        \T_USE,
+                        \T_VARIABLE,
                         ...TokenType::MAYBE_ANONYMOUS,
                         ...TokenType::DEREFERENCEABLE_SCALAR_END,
                         ...TokenType::NAME_WITH_READONLY,
@@ -814,34 +814,34 @@ final class Formatter implements IReadable
 
                     continue 2;
 
-                case T_OPEN_BRACKET:
+                case \T_OPEN_BRACKET:
                     if ($parent->Expression === $parent) {
                         break;
                     }
                     $prev = $parent->_prevCode;
                     if ($prev && (
                         $prev->is([
-                            T_CLOSE_BRACE,
-                            T_STRING_VARNAME,
-                            T_VARIABLE,
+                            \T_CLOSE_BRACE,
+                            \T_STRING_VARNAME,
+                            \T_VARIABLE,
                             ...TokenType::DEREFERENCEABLE_SCALAR_END,
                             ...TokenType::NAME,
                             ...TokenType::MAGIC_CONSTANT,
                         ]) || (
                             $prev->_prevCode &&
-                            $prev->_prevCode->id === T_DOUBLE_COLON &&
+                            $prev->_prevCode->id === \T_DOUBLE_COLON &&
                             $prev->is(TokenType::SEMI_RESERVED)
                         )
                         // This check should never be necessary
-                    ) && !$parent->children()->hasOneOf(T_COMMA)) {
+                    ) && !$parent->children()->hasOneOf(\T_COMMA)) {
                         continue 2;
                     }
 
                     break;
             }
-            $delimiter = $parent->_prevCode && $parent->_prevCode->id === T_FOR
-                ? T_SEMICOLON
-                : T_COMMA;
+            $delimiter = $parent->_prevCode && $parent->_prevCode->id === \T_FOR
+                ? \T_SEMICOLON
+                : \T_COMMA;
             $items =
                 $parent->children()
                        ->filter(fn(Token $t, ?Token $next, ?Token $prev) =>
@@ -917,7 +917,7 @@ final class Formatter implements IReadable
         $token = reset($this->Tokens);
 
         while ($keep = true) {
-            if ($token && $token->id !== T_INLINE_HTML) {
+            if ($token && $token->id !== \T_INLINE_HTML) {
                 $before = $token->effectiveWhitespaceBefore();
                 if ($before & WhitespaceType::BLANK) {
                     $endOfBlock = true;
@@ -1003,7 +1003,7 @@ final class Formatter implements IReadable
         try {
             $tokensOut = Token::onlyTokenize(
                 $out,
-                TOKEN_PARSE,
+                \TOKEN_PARSE,
                 ...$this->ComparisonFilterList
             );
         } catch (CompileError $ex) {
@@ -1021,7 +1021,7 @@ final class Formatter implements IReadable
 
         $tokensIn = Token::onlyTokenize(
             $code,
-            TOKEN_PARSE,
+            \TOKEN_PARSE,
             ...$this->ComparisonFilterList
         );
 
@@ -1084,7 +1084,7 @@ final class Formatter implements IReadable
     private function sortTokens(array $types): array
     {
         $tokens = $this->getTokens($types);
-        ksort($tokens, SORT_NUMERIC);
+        ksort($tokens, \SORT_NUMERIC);
         return $tokens;
     }
 

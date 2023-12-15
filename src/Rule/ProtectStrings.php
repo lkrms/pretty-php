@@ -29,9 +29,9 @@ final class ProtectStrings implements MultiTokenRule
     public function getTokenTypes(): array
     {
         return [
-            T_DOUBLE_QUOTE,
-            T_START_HEREDOC,
-            T_BACKTICK,
+            \T_DOUBLE_QUOTE,
+            \T_START_HEREDOC,
+            \T_BACKTICK,
         ];
     }
 
@@ -46,7 +46,7 @@ final class ProtectStrings implements MultiTokenRule
                 $current->CriticalWhitespaceMaskPrev = WhitespaceType::NONE;
                 // "$foo[0]" and "$foo[$bar]" fail to parse if there is any
                 // whitespace between the brackets
-                if ($current->id === T_OPEN_BRACKET) {
+                if ($current->id === \T_OPEN_BRACKET) {
                     foreach ($current->_next->collect($current->ClosedBy) as $inner) {
                         $inner->CriticalWhitespaceMaskPrev = WhitespaceType::NONE;
                     }

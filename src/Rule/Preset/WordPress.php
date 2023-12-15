@@ -38,30 +38,30 @@ final class WordPress implements TokenRule
     public function getTokenTypes(): array
     {
         return [
-            T_COMMENT,
-            T_DOC_COMMENT,
-            T_COLON,
-            T_EXIT,
-            T_LOGICAL_NOT,
-            T_OPEN_BRACE,
-            T_CLOSE_BRACE,
-            T_OPEN_BRACKET,
-            T_OPEN_PARENTHESIS,
+            \T_COMMENT,
+            \T_DOC_COMMENT,
+            \T_COLON,
+            \T_EXIT,
+            \T_LOGICAL_NOT,
+            \T_OPEN_BRACE,
+            \T_CLOSE_BRACE,
+            \T_OPEN_BRACKET,
+            \T_OPEN_PARENTHESIS,
         ];
     }
 
     public function processToken(Token $token): void
     {
-        if ($token->id === T_COMMENT && !$token->IsInformalDocComment) {
+        if ($token->id === \T_COMMENT && !$token->IsInformalDocComment) {
             return;
         }
 
-        if ($token->id === T_DOC_COMMENT && !$this->DocCommentUnpinned) {
+        if ($token->id === \T_DOC_COMMENT && !$this->DocCommentUnpinned) {
             $token->WhitespaceMaskNext |= WhitespaceType::BLANK;
             $this->DocCommentUnpinned = true;
         }
 
-        if ($token->id === T_DOC_COMMENT || $token->id === T_COMMENT) {
+        if ($token->id === \T_DOC_COMMENT || $token->id === \T_COMMENT) {
             if ($token->hasBlankLineBefore() &&
                     $token->line - $token->_prev->line - substr_count($token->_prev->text, "\n") < 2) {
                 $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
@@ -69,7 +69,7 @@ final class WordPress implements TokenRule
             return;
         }
 
-        if ($token->id === T_COLON) {
+        if ($token->id === \T_COLON) {
             if (!$token->startsAlternativeSyntax()) {
                 return;
             }
@@ -78,13 +78,13 @@ final class WordPress implements TokenRule
             return;
         }
 
-        if ($token->id === T_EXIT) {
+        if ($token->id === \T_EXIT) {
             $token->WhitespaceMaskNext = WhitespaceType::NONE;
             return;
         }
 
-        if ($token->id === T_LOGICAL_NOT) {
-            if ($token->_next->id === T_LOGICAL_NOT) {
+        if ($token->id === \T_LOGICAL_NOT) {
+            if ($token->_next->id === \T_LOGICAL_NOT) {
                 return;
             }
             $token->WhitespaceAfter |= WhitespaceType::SPACE;
@@ -92,22 +92,22 @@ final class WordPress implements TokenRule
             return;
         }
 
-        if ($token->id === T_OPEN_BRACE) {
+        if ($token->id === \T_OPEN_BRACE) {
             $token->WhitespaceMaskNext |= WhitespaceType::BLANK;
             return;
         }
 
-        if ($token->id === T_CLOSE_BRACE) {
+        if ($token->id === \T_CLOSE_BRACE) {
             $token->WhitespaceMaskPrev |= WhitespaceType::BLANK;
             return;
         }
 
         // All that remains is T_OPEN_BRACKET and T_OPEN_PARENTHESIS
         if ($token->ClosedBy === $token->_next ||
-            ($token->id === T_OPEN_BRACKET &&
+            ($token->id === \T_OPEN_BRACKET &&
                 ($token->String ||
                     ($token->_next->_next === $token->ClosedBy &&
-                        $token->_next->id !== T_VARIABLE)))) {
+                        $token->_next->id !== \T_VARIABLE)))) {
             return;
         }
 

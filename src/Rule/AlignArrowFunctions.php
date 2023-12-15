@@ -26,12 +26,12 @@ final class AlignArrowFunctions implements TokenRule
 
     public function getTokenTypes(): array
     {
-        return [T_FN];
+        return [\T_FN];
     }
 
     public function processToken(Token $token): void
     {
-        $arrow = $token->nextSiblingOf(T_DOUBLE_ARROW);
+        $arrow = $token->nextSiblingOf(\T_DOUBLE_ARROW);
         $body = $this->Formatter->NewlineBeforeFnDoubleArrows
             ? $arrow
             : $arrow->_nextCode;

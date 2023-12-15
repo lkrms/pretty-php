@@ -19,7 +19,7 @@ trait ContextAwareTokenTrait
     final public function getColonType(): int
     {
         /** @var Token $this */
-        if ($this->id !== T_COLON) {
+        if ($this->id !== \T_COLON) {
             // @codeCoverageIgnoreStart
             throw new LogicException('Not a T_COLON');
             // @codeCoverageIgnoreEnd
@@ -44,26 +44,26 @@ trait ContextAwareTokenTrait
         } elseif ($this->inSwitchCase()) {
             $this->SubType = TokenSubType::COLON_SWITCH_CASE_DELIMITER;
         } elseif (
-            $this->_prevCode->id === T_STRING &&
+            $this->_prevCode->id === \T_STRING &&
             $this->_prevCode->_prevCode &&
-            $this->_prevCode->_prevCode->id === T_ENUM
+            $this->_prevCode->_prevCode->id === \T_ENUM
         ) {
             $this->SubType = TokenSubType::COLON_BACKED_ENUM_TYPE_DELIMITER;
-        } elseif ($this->_prevCode->id === T_CLOSE_PARENTHESIS) {
+        } elseif ($this->_prevCode->id === \T_CLOSE_PARENTHESIS) {
             $prev = $this->_prevCode->_prevSibling;
             if (
                 $prev &&
-                $prev->id === T_USE &&
+                $prev->id === \T_USE &&
                 $prev->_prevCode &&
-                $prev->_prevCode->id === T_CLOSE_PARENTHESIS
+                $prev->_prevCode->id === \T_CLOSE_PARENTHESIS
             ) {
                 $prev = $prev->_prevCode->_prevSibling;
             }
             if ($prev) {
                 $prev = $prev->skipPrevSiblingsOf(
-                    T_STRING, T_READONLY, ...TokenType::AMPERSAND
+                    \T_STRING, \T_READONLY, ...TokenType::AMPERSAND
                 );
-                if ($prev->id === T_FUNCTION || $prev->id === T_FN) {
+                if ($prev->id === \T_FUNCTION || $prev->id === \T_FN) {
                     $this->SubType = TokenSubType::COLON_RETURN_TYPE_DELIMITER;
                 }
             }
@@ -84,7 +84,7 @@ trait ContextAwareTokenTrait
     final public function getQuestionType(): int
     {
         /** @var Token $this */
-        if ($this->id !== T_QUESTION) {
+        if ($this->id !== \T_QUESTION) {
             // @codeCoverageIgnoreStart
             throw new LogicException('Not a T_QUESTION');
             // @codeCoverageIgnoreEnd
@@ -102,9 +102,9 @@ trait ContextAwareTokenTrait
             // @codeCoverageIgnoreEnd
         }
 
-        if ($this->_prevCode->id === T_CONST) {
+        if ($this->_prevCode->id === \T_CONST) {
             $this->SubType = TokenSubType::QUESTION_NULLABLE;
-        } elseif ($this->_prevCode->id === T_COLON) {
+        } elseif ($this->_prevCode->id === \T_COLON) {
             $prevType = $this->_prevCode->getColonType();
             if (
                 $prevType === TokenSubType::COLON_RETURN_TYPE_DELIMITER ||
@@ -113,7 +113,7 @@ trait ContextAwareTokenTrait
                 $this->SubType = TokenSubType::QUESTION_NULLABLE;
             }
         } elseif (
-            $this->_prevCode->is([T_VAR, ...TokenType::KEYWORD_MODIFIER])
+            $this->_prevCode->is([\T_VAR, ...TokenType::KEYWORD_MODIFIER])
         ) {
             $this->SubType = TokenSubType::QUESTION_NULLABLE;
         } elseif ($this->inParameterList()) {
@@ -135,7 +135,7 @@ trait ContextAwareTokenTrait
     public function getUseType(): int
     {
         /** @var Token $this */
-        if ($this->id !== T_USE) {
+        if ($this->id !== \T_USE) {
             // @codeCoverageIgnoreStart
             throw new LogicException('Not a T_USE');
             // @codeCoverageIgnoreEnd
@@ -149,12 +149,12 @@ trait ContextAwareTokenTrait
 
         if (
             $this->_prevCode &&
-            $this->_prevCode->id === T_CLOSE_PARENTHESIS
+            $this->_prevCode->id === \T_CLOSE_PARENTHESIS
         ) {
             $this->SubType = TokenSubType::USE_VARIABLES;
         } elseif (
             !$this->Parent ||
-            $this->Parent->id !== T_OPEN_BRACE
+            $this->Parent->id !== \T_OPEN_BRACE
         ) {
             $this->SubType = TokenSubType::USE_IMPORT;
         } else {
@@ -191,14 +191,14 @@ trait ContextAwareTokenTrait
         /** @var Token $this */
 
         // Exclude named arguments
-        if ($this->Parent && $this->Parent->id === T_OPEN_PARENTHESIS) {
+        if ($this->Parent && $this->Parent->id === \T_OPEN_PARENTHESIS) {
             return false;
         }
 
         if (
-            $this->id === T_COLON &&
+            $this->id === \T_COLON &&
             $this->_prevCode &&
-            $this->_prevCode->id === T_STRING && (
+            $this->_prevCode->id === \T_STRING && (
                 !$this->_prevCode->_prevSibling || (
                     $this->_prevCode->_prevSibling->EndStatement &&
                     $this->_prevCode->_prevSibling->EndStatement->_nextSibling === $this->_prevCode
@@ -209,8 +209,8 @@ trait ContextAwareTokenTrait
         }
 
         if (
-            $this->id === T_STRING &&
-            $this->_nextCode->id === T_COLON &&
+            $this->id === \T_STRING &&
+            $this->_nextCode->id === \T_COLON &&
             (!$this->_prevSibling ||
                 ($this->_prevSibling->EndStatement &&
                     $this->_prevSibling->EndStatement->_nextSibling === $this))
@@ -226,7 +226,7 @@ trait ContextAwareTokenTrait
      */
     final public function isParameterList(): bool
     {
-        if ($this->id !== T_OPEN_PARENTHESIS) {
+        if ($this->id !== \T_OPEN_PARENTHESIS) {
             return false;
         }
 
@@ -235,12 +235,12 @@ trait ContextAwareTokenTrait
         }
 
         $prev = $this->_prevCode->skipPrevSiblingsOf(
-            T_STRING,
-            T_READONLY,
+            \T_STRING,
+            \T_READONLY,
             ...TokenType::AMPERSAND,
         );
 
-        if ($prev->id === T_FUNCTION || $prev->id === T_FN) {
+        if ($prev->id === \T_FUNCTION || $prev->id === \T_FN) {
             return true;
         }
 
@@ -269,7 +269,7 @@ trait ContextAwareTokenTrait
             $this->Parent &&
             $this->Parent->_prevSibling &&
             $this->Parent->_prevSibling->_prevSibling &&
-            $this->Parent->_prevSibling->_prevSibling->id === T_SWITCH
+            $this->Parent->_prevSibling->_prevSibling->id === \T_SWITCH
         ) {
             return true;
         }
@@ -292,21 +292,21 @@ trait ContextAwareTokenTrait
             return false;
         }
 
-        if ($this->id === T_CASE || $this->id === T_DEFAULT) {
+        if ($this->id === \T_CASE || $this->id === \T_DEFAULT) {
             return true;
         }
 
         $lastCaseOrDelimiter = $this->prevSiblingOf(
-            T_CASE,
-            T_DEFAULT,
-            T_COLON,
-            T_SEMICOLON,
-            T_CLOSE_TAG,
+            \T_CASE,
+            \T_DEFAULT,
+            \T_COLON,
+            \T_SEMICOLON,
+            \T_CLOSE_TAG,
         );
 
         if (
-            $lastCaseOrDelimiter->id === T_CASE ||
-            $lastCaseOrDelimiter->id === T_DEFAULT
+            $lastCaseOrDelimiter->id === \T_CASE ||
+            $lastCaseOrDelimiter->id === \T_DEFAULT
         ) {
             return true;
         }

@@ -27,7 +27,7 @@ function run(string $command, string ...$arg): string
 
 $app = new CliApplication(dirname(__DIR__));
 
-error_reporting(error_reporting() & ~E_COMPILE_WARNING);
+error_reporting(error_reporting() & ~\E_COMPILE_WARNING);
 
 $repoRoot = $app->getCachePath() . '/git';
 File::createDir($repoRoot);
@@ -72,7 +72,7 @@ foreach ($files as $xmlFile) {
 
     // Remove entities without changing anything between CDATA tags
     /** @var string[] */
-    $split = Pcre::split('/(<!\[CDATA\[.*?\]\]>)/s', $xml, -1, PREG_SPLIT_DELIM_CAPTURE);
+    $split = Pcre::split('/(<!\[CDATA\[.*?\]\]>)/s', $xml, -1, \PREG_SPLIT_DELIM_CAPTURE);
     if (count($split) < 2) {
         continue;
     }
@@ -118,7 +118,7 @@ foreach ($listings ?? [] as $source => $sourceListings) {
         $ext = '';
         try {
             // @phpstan-ignore-next-line
-            token_get_all($output, TOKEN_PARSE);
+            token_get_all($output, \TOKEN_PARSE);
         } catch (CompileError $ex) {
             $ext = '.invalid';
         }
@@ -145,7 +145,7 @@ foreach ($files as $file) {
     $ext = '';
     try {
         // @phpstan-ignore-next-line
-        token_get_all(file_get_contents((string) $file), TOKEN_PARSE);
+        token_get_all(file_get_contents((string) $file), \TOKEN_PARSE);
     } catch (CompileError $ex) {
         $ext = '.invalid';
     }
@@ -181,7 +181,7 @@ if (!Pcre::matchAll(
     "/$markdownRegex/",
     Str::setEol(file_get_contents($file)),
     $matches,
-    PREG_UNMATCHED_AS_NULL,
+    \PREG_UNMATCHED_AS_NULL,
 )) {
     throw new RuntimeException(sprintf('No PHP listings: %s', $file));
 }
@@ -229,7 +229,7 @@ foreach ($byHeading as $heading => $listings) {
         $ext = '';
         try {
             // @phpstan-ignore-next-line
-            token_get_all($listing, TOKEN_PARSE);
+            token_get_all($listing, \TOKEN_PARSE);
         } catch (CompileError $ex) {
             $ext = '.invalid';
             Console::warn('Invalid:', $name, null, false);

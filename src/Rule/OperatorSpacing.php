@@ -42,7 +42,7 @@ final class OperatorSpacing implements MultiTokenRule
     public function getTokenTypes(): array
     {
         return [
-            T_DOLLAR,
+            \T_DOLLAR,
             ...TokenType::OPERATOR_ALL,
         ];
     }
@@ -52,7 +52,7 @@ final class OperatorSpacing implements MultiTokenRule
         foreach ($tokens as $token) {
             if ($token->Parent &&
                     $token->Parent->_prevCode &&
-                    $token->Parent->_prevCode->id === T_DECLARE) {
+                    $token->Parent->_prevCode->id === \T_DECLARE) {
                 continue;
             }
 
@@ -62,16 +62,16 @@ final class OperatorSpacing implements MultiTokenRule
                 $token->_next->IsCode &&
                 // `function &getValue()`
                 (($token->_prevCode &&
-                    ($token->_prevCode->id === T_FUNCTION ||
-                        $token->_prevCode->id === T_FN)) ||
+                    ($token->_prevCode->id === \T_FUNCTION ||
+                        $token->_prevCode->id === \T_FN)) ||
                     // `[&$variable]`, `$a = &getValue()`
                     $token->inUnaryContext() ||
                     // `function foo(&$bar)`, `function foo($bar, &...$baz)`
-                    (($token->_next->id === T_VARIABLE ||
-                            $token->_next->id === T_ELLIPSIS) &&
+                    (($token->_next->id === \T_VARIABLE ||
+                            $token->_next->id === \T_ELLIPSIS) &&
                         $token->inParameterList() &&
                         // Not `function getValue($param = $a & $b)`
-                        !$token->sinceStartOfStatement()->hasOneOf(T_VARIABLE)))) {
+                        !$token->sinceStartOfStatement()->hasOneOf(\T_VARIABLE)))) {
                 $token->WhitespaceBefore |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskNext = WhitespaceType::NONE;
                 continue;
@@ -81,12 +81,12 @@ final class OperatorSpacing implements MultiTokenRule
             // DNF types
             if ($this->TypeIndex->TypeDelimiter[$token->id] &&
                 (($inTypeContext = $this->inTypeContext($token)) ||
-                    ($token->id === T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG &&
+                    ($token->id === \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG &&
                         $token->Parent &&
-                        $token->Parent->id === T_OPEN_PARENTHESIS &&
+                        $token->Parent->id === \T_OPEN_PARENTHESIS &&
                         (($token->Parent->_prevCode &&
-                                $token->Parent->_prevCode->id === T_OR) ||
-                            $token->Parent->ClosedBy->_nextCode->id === T_OR) &&
+                                $token->Parent->_prevCode->id === \T_OR) ||
+                            $token->Parent->ClosedBy->_nextCode->id === \T_OR) &&
                         $this->inTypeContext($token->Parent)))) {
                 $token->WhitespaceMaskNext = WhitespaceType::NONE;
                 $token->WhitespaceMaskPrev = WhitespaceType::NONE;
@@ -98,7 +98,7 @@ final class OperatorSpacing implements MultiTokenRule
                 // Add a leading space to DNF types with opening parentheses
                 // (e.g. `(A&B)|null`)
                 $parent = $token->Parent;
-                if (!$parent->_prevCode || $parent->_prevCode->id !== T_OR) {
+                if (!$parent->_prevCode || $parent->_prevCode->id !== \T_OR) {
                     $parent->WhitespaceBefore |= WhitespaceType::SPACE;
                 }
                 continue;
@@ -106,10 +106,10 @@ final class OperatorSpacing implements MultiTokenRule
 
             // Suppress whitespace around exception delimiters in `catch` blocks
             // (unless in strict PSR-12 mode)
-            if ($token->id === T_OR &&
+            if ($token->id === \T_OR &&
                     $token->Parent &&
                     $token->Parent->_prevCode &&
-                    $token->Parent->_prevCode->id === T_CATCH &&
+                    $token->Parent->_prevCode->id === \T_CATCH &&
                     !$this->Formatter->Psr12Compliance) {
                 $token->WhitespaceMaskNext = WhitespaceType::NONE;
                 $token->WhitespaceMaskPrev = WhitespaceType::NONE;
@@ -117,7 +117,7 @@ final class OperatorSpacing implements MultiTokenRule
             }
 
             // Suppress whitespace after `?` in nullable types
-            if ($token->id === T_QUESTION && !$token->IsTernaryOperator) {
+            if ($token->id === \T_QUESTION && !$token->IsTernaryOperator) {
                 $token->WhitespaceBefore |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskNext = WhitespaceType::NONE;
                 continue;
@@ -125,11 +125,11 @@ final class OperatorSpacing implements MultiTokenRule
 
             // Suppress whitespace between `++` and `--` and the variables they
             // operate on
-            if ($token->id === T_INC ||
-                    $token->id === T_DEC) {
-                if ($token->_prev && $token->_prev->id === T_VARIABLE) {
+            if ($token->id === \T_INC ||
+                    $token->id === \T_DEC) {
+                if ($token->_prev && $token->_prev->id === \T_VARIABLE) {
                     $token->WhitespaceMaskPrev = WhitespaceType::NONE;
-                } elseif ($token->_next && $token->_next->id === T_VARIABLE) {
+                } elseif ($token->_next && $token->_next->id === \T_VARIABLE) {
                     $token->WhitespaceMaskNext = WhitespaceType::NONE;
                 }
             }
@@ -147,7 +147,7 @@ final class OperatorSpacing implements MultiTokenRule
 
             $token->WhitespaceAfter |= WhitespaceType::SPACE;
 
-            if ($token->id === T_COLON && !$token->IsTernaryOperator) {
+            if ($token->id === \T_COLON && !$token->IsTernaryOperator) {
                 continue;
             }
 
@@ -172,9 +172,9 @@ final class OperatorSpacing implements MultiTokenRule
     {
         return $token->isDeclaration() ||
             ($token->inParameterList() &&
-                !$token->sinceStartOfStatement()->hasOneOf(T_VARIABLE)) ||
+                !$token->sinceStartOfStatement()->hasOneOf(\T_VARIABLE)) ||
             (($prev = $token->prevCodeWhile(...TokenType::VALUE_TYPE)->last()) &&
-                ($prev = $prev->prevCode())->id === T_COLON &&
-                $prev->prevSibling(2)->skipPrevSiblingsOf(...TokenType::AMPERSAND)->id === T_FN);
+                ($prev = $prev->prevCode())->id === \T_COLON &&
+                $prev->prevSibling(2)->skipPrevSiblingsOf(...TokenType::AMPERSAND)->id === \T_FN);
     }
 }

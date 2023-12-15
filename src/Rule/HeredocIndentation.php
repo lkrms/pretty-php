@@ -42,7 +42,7 @@ final class HeredocIndentation implements MultiTokenRule
     public function getTokenTypes(): array
     {
         return [
-            T_START_HEREDOC,
+            \T_START_HEREDOC,
         ];
     }
 
@@ -88,7 +88,7 @@ final class HeredocIndentation implements MultiTokenRule
             $current = $heredoc;
             do {
                 $current->setText(str_replace("\n", "\n" . $indent, $current->text));
-                if ($current->id === T_END_HEREDOC && $current->Heredoc === $heredoc) {
+                if ($current->id === \T_END_HEREDOC && $current->Heredoc === $heredoc) {
                     break;
                 }
             } while ($current = $current->_next);

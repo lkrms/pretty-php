@@ -960,7 +960,7 @@ EOF,
 
         $this->expandPaths($this->InputFiles, $in, $dirs, $dirCount);
         $out = $this->OutputFiles;
-        if (!$in && !$this->StdinFilename && !$this->PrintConfig && stream_isatty(STDIN)) {
+        if (!$in && !$this->StdinFilename && !$this->PrintConfig && stream_isatty(\STDIN)) {
             throw new CliInvalidArgumentsException('<path> required when input is a TTY');
         }
         if (!$in || $in === ['-']) {
@@ -982,7 +982,7 @@ EOF,
         }
 
         if ($this->PrintConfig) {
-            printf("%s\n", json_encode($this->getFormattingOptionValues(true), JSON_PRETTY_PRINT));
+            printf("%s\n", json_encode($this->getFormattingOptionValues(true), \JSON_PRETTY_PRINT));
 
             return;
         }
@@ -1037,7 +1037,7 @@ EOF,
                 }
                 Console::debug('New formatter required for:', $file);
                 $this->applyFormattingOptionValues($options);
-                !$this->Verbose || Console::debug('Applying options:', json_encode($options, JSON_PRETTY_PRINT));
+                !$this->Verbose || Console::debug('Applying options:', json_encode($options, \JSON_PRETTY_PRINT));
                 if ($this->Psr12) {
                     $this->Tabs = null;
                     $this->Spaces = 4;
@@ -1076,7 +1076,7 @@ EOF,
                                 : null))
                 );
                 $f->PreferredEol = $this->Eol === 'auto' || $this->Eol === 'platform'
-                    ? PHP_EOL
+                    ? \PHP_EOL
                     : ($this->Eol === 'lf' ? "\n" : "\r\n");
                 $f->PreserveEol = $this->Eol === 'auto';
                 $f->OneTrueBraceStyle = $this->OneTrueBraceStyle;
@@ -1102,7 +1102,7 @@ EOF,
         $errors = [];
         foreach ($in as $key => $file) {
             $inputFile = ($file === 'php://stdin' ? $this->StdinFilename : null) ?: $file;
-            if ($this->Quiet < 3 && ($file !== 'php://stdin' || !stream_isatty(STDIN))) {
+            if ($this->Quiet < 3 && ($file !== 'php://stdin' || !stream_isatty(\STDIN))) {
                 Console::logProgress(sprintf('Formatting %d of %d:', ++$i, $count), $inputFile);
             }
             $input = file_get_contents($file);
@@ -1172,7 +1172,7 @@ EOF,
             if ($outFile === '-') {
                 Console::maybeClearLine();
                 print $output;
-                if (stream_isatty(STDOUT)) {
+                if (stream_isatty(\STDOUT)) {
                     Console::tty('');
                 }
                 continue;
@@ -1538,7 +1538,7 @@ EOF,
                 continue;
             }
             if (!is_string($out)) {
-                $out = json_encode($out, JSON_PRETTY_PRINT | JSON_FORCE_OBJECT);
+                $out = json_encode($out, \JSON_PRETTY_PRINT | \JSON_FORCE_OBJECT);
             }
             file_put_contents($file, $out);
         }

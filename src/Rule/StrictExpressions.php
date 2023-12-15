@@ -32,12 +32,12 @@ final class StrictExpressions implements MultiTokenRule
     public function getTokenTypes(): array
     {
         return [
-            T_IF,
-            T_ELSEIF,
-            T_SWITCH,
-            T_WHILE,
-            T_FOR,
-            T_FOREACH,
+            \T_IF,
+            \T_ELSEIF,
+            \T_SWITCH,
+            \T_WHILE,
+            \T_FOR,
+            \T_FOREACH,
         ];
     }
 

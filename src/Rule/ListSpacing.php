@@ -68,13 +68,13 @@ final class ListSpacing implements ListRule
 
         // If the list has a "magic comma", add a newline before each item and
         // another after the last item
-        if ($owner->ClosedBy->_prevCode->id === T_COMMA) {
+        if ($owner->ClosedBy->_prevCode->id === \T_COMMA) {
             $items->clone()
                   ->add($owner->ClosedBy)
                   ->addWhitespaceBefore(WhitespaceType::LINE, true);
         }
 
-        if ($owner->id !== T_OPEN_PARENTHESIS ||
+        if ($owner->id !== \T_OPEN_PARENTHESIS ||
                 !$owner->isParameterList()) {
             return;
         }
@@ -82,10 +82,10 @@ final class ListSpacing implements ListRule
         $hasAttributeWithNewline = false;
         foreach ($items as $item) {
             $current = $item;
-            while ($current->id === T_ATTRIBUTE ||
-                    $current->id === T_ATTRIBUTE_COMMENT) {
+            while ($current->id === \T_ATTRIBUTE ||
+                    $current->id === \T_ATTRIBUTE_COMMENT) {
                 if ($current->hasNewlineBefore() ||
-                    ($current->id === T_ATTRIBUTE
+                    ($current->id === \T_ATTRIBUTE
                         ? $current->ClosedBy
                         : $current)->hasNewlineAfter()) {
                     $hasAttributeWithNewline = true;
@@ -113,13 +113,13 @@ final class ListSpacing implements ListRule
                 $current->WhitespaceBefore |= WhitespaceType::LINE;
                 $current->WhitespaceMaskPrev |= WhitespaceType::LINE;
                 $current->_prev->WhitespaceMaskNext |= WhitespaceType::LINE;
-                if ($current->id === T_ATTRIBUTE) {
+                if ($current->id === \T_ATTRIBUTE) {
                     $current->ClosedBy->WhitespaceAfter |= WhitespaceType::LINE;
-                } elseif ($current->id === T_ATTRIBUTE_COMMENT) {
+                } elseif ($current->id === \T_ATTRIBUTE_COMMENT) {
                     $current->WhitespaceAfter |= WhitespaceType::LINE;
                 }
-            } while (($current->id === T_ATTRIBUTE ||
-                    $current->id === T_ATTRIBUTE_COMMENT) &&
+            } while (($current->id === \T_ATTRIBUTE ||
+                    $current->id === \T_ATTRIBUTE_COMMENT) &&
                 ($current = $current->_nextSibling));
 
             // Continue if $token is a parameter with no attributes

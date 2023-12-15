@@ -29,22 +29,22 @@ final class AlignTernaryOperators implements MultiTokenRule
     public function getTokenTypes(): array
     {
         return [
-            T_QUESTION,
-            T_COALESCE,
+            \T_QUESTION,
+            \T_COALESCE,
         ];
     }
 
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            if ($token->id === T_QUESTION && !$token->IsTernaryOperator) {
+            if ($token->id === \T_QUESTION && !$token->IsTernaryOperator) {
                 continue;
             }
 
             // Do nothing if none of the operators in question are at the start
             // of a line
             if (!$token->hasNewlineBefore() &&
-                ($token->id === T_COALESCE ||
+                ($token->id === \T_COALESCE ||
                     !$token->TernaryOperator2->hasNewlineBefore())) {
                 continue;
             }

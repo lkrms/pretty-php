@@ -36,7 +36,7 @@ foreach (FormatterTest::getFileFormats() as $format => $options) {
         try {
             $output = $formatter->format($code);
         } catch (InvalidSyntaxException $ex) {
-            if (PHP_VERSION_ID >= FormatterTest::TARGET_VERSION_ID) {
+            if (\PHP_VERSION_ID >= FormatterTest::TARGET_VERSION_ID) {
                 Console::error('Unable to generate:', $outPath);
                 throw $ex;
             }
@@ -76,7 +76,7 @@ if (isset($invalid)) {
         ? json_decode(file_get_contents($indexPath), true)
         : [];
 
-    $version = (PHP_VERSION_ID - PHP_VERSION_ID % 100) + 100;
+    $version = (\PHP_VERSION_ID - \PHP_VERSION_ID % 100) + 100;
     if ($version === 70500) {
         $version = 80000;
     }
@@ -99,7 +99,7 @@ if (isset($invalid)) {
     }
     ksort($index);
 
-    $json = json_encode($index, JSON_PRETTY_PRINT);
+    $json = json_encode($index, \JSON_PRETTY_PRINT);
     file_put_contents($indexPath, $json);
 }
 

@@ -48,12 +48,12 @@ trait CollectibleTokenTrait
         while ($t->_nextSibling &&
             ($index[$t->_nextSibling->id] ||
                 ($allowAnonymous &&
-                    $t->_nextSibling->id === T_OPEN_PARENTHESIS &&
-                    $t->id === T_CLASS))) {
+                    $t->_nextSibling->id === \T_OPEN_PARENTHESIS &&
+                    $t->id === \T_CLASS))) {
             $t = $t->_nextSibling;
         }
 
-        if (!$allowAnonymous && $t->id === T_FUNCTION) {
+        if (!$allowAnonymous && $t->id === \T_FUNCTION) {
             return new TokenCollection();
         }
 

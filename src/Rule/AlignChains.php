@@ -58,11 +58,11 @@ final class AlignChains implements TokenRule
             while (($current = $current->_prevSibling) &&
                     $token->Expression === $current->Expression &&
                     $current->is([
-                        T_DOUBLE_COLON,
-                        T_NAME_FULLY_QUALIFIED,
-                        T_NAME_QUALIFIED,
-                        T_NAME_RELATIVE,
-                        T_NS_SEPARATOR,
+                        \T_DOUBLE_COLON,
+                        \T_NAME_FULLY_QUALIFIED,
+                        \T_NAME_QUALIFIED,
+                        \T_NAME_RELATIVE,
+                        \T_NS_SEPARATOR,
                         ...TokenType::CHAIN_PART
                     ])) {
                 $alignWith = $current;

@@ -87,7 +87,7 @@ if ($a):
 endif;
 PHP,
             ],
-        ] + (PHP_VERSION_ID < 80000 ? [] : [
+        ] + (\PHP_VERSION_ID < 80000 ? [] : [
             'match expressions' => [
                 <<<'PHP'
 <?php

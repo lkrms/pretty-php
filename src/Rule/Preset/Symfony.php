@@ -40,8 +40,8 @@ final class Symfony implements MultiTokenRule, ListRule
     public function getTokenTypes(): array
     {
         return [
-            T_CONCAT,
-            T_FN,
+            \T_CONCAT,
+            \T_FN,
         ];
     }
 
@@ -49,12 +49,12 @@ final class Symfony implements MultiTokenRule, ListRule
     {
         foreach ($tokens as $token) {
             switch ($token->id) {
-                case T_CONCAT;
+                case \T_CONCAT;
                     $token->WhitespaceMaskPrev &= ~WhitespaceType::SPACE;
                     $token->WhitespaceMaskNext &= ~WhitespaceType::SPACE;
                     continue 2;
 
-                case T_FN:
+                case \T_FN:
                     $token->WhitespaceAfter |= WhitespaceType::SPACE;
                     $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
                     continue 2;

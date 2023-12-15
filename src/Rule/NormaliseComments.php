@@ -39,7 +39,7 @@ final class NormaliseComments implements MultiTokenRule
         foreach ($tokens as $token) {
             // Extract DocBlock content, preserving indentation if any lines
             // start with characters other than "*", and normalise as per PSR-5
-            if ($token->id === T_DOC_COMMENT || $token->IsInformalDocComment) {
+            if ($token->id === \T_DOC_COMMENT || $token->IsInformalDocComment) {
                 $preserveAsterisk = false;
                 $deindent = null;
                 $asterisksAreMissing = Pcre::match('/\n\h*+(?!\*)\S/', $token->text);
@@ -59,7 +59,7 @@ final class NormaliseComments implements MultiTokenRule
                         '/^(?!\A)(\h*+)(?!\*)\S/m',
                         $token->ExpandedText ?? $token->text,
                         $matches,
-                        PREG_SET_ORDER
+                        \PREG_SET_ORDER
                     );
                     if ($otherLinesHaveIndent) {
                         foreach ($matches as $match) {
@@ -127,21 +127,21 @@ final class NormaliseComments implements MultiTokenRule
                 // Collapse DocBlocks with one line of content to a single line
                 // unless they describe a file or are pinned to a declaration
                 if (
-                    ($token->id === T_DOC_COMMENT ||
+                    ($token->id === \T_DOC_COMMENT ||
                         strpos($token->OriginalText ?? $token->text, "\n") === false) &&
                     strpos($text, "\n") === false &&
                     !($token->_nextCode && (
-                        $token->_nextCode->id === T_DECLARE ||
-                        $token->_nextCode->id === T_NAMESPACE || (
-                            $token->_nextCode->id === T_USE &&
+                        $token->_nextCode->id === \T_DECLARE ||
+                        $token->_nextCode->id === \T_NAMESPACE || (
+                            $token->_nextCode->id === \T_USE &&
                             $token->_nextCode->getUseType() === TokenSubType::USE_IMPORT
                         )
                     )) && (
                         !($token->_next &&
                             $token->_next->Statement === $token->_next &&
                             $token->_next->isDeclaration() &&
-                            $token->_next->id !== T_DECLARE) ||
-                        ($token->_next->id === T_USE &&
+                            $token->_next->id !== \T_DECLARE) ||
+                        ($token->_next->id === \T_USE &&
                             $token->_next->getUseType() === TokenSubType::USE_TRAIT)
                     )
                 ) {
@@ -154,7 +154,7 @@ final class NormaliseComments implements MultiTokenRule
                     );
                     $text = $text === '' ? "\n *\n */" : "\n * " . $text . "\n */";
                 }
-                $text = ($token->id === T_DOC_COMMENT ? '/**' : '/*') . $text;
+                $text = ($token->id === \T_DOC_COMMENT ? '/**' : '/*') . $text;
                 $token->setText($text);
                 continue;
             }

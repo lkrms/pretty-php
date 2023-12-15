@@ -31,16 +31,16 @@ final class BlankLineBeforeReturn implements TokenRule
     public function getTokenTypes(): array
     {
         return [
-            T_RETURN,
-            T_YIELD,
-            T_YIELD_FROM,
+            \T_RETURN,
+            \T_YIELD,
+            \T_YIELD_FROM,
         ];
     }
 
     public function processToken(Token $token): void
     {
         if (($prev = $token->_prevSibling->Statement ?? null) &&
-                $prev->is([T_RETURN, T_YIELD, T_YIELD_FROM])) {
+                $prev->is([\T_RETURN, \T_YIELD, \T_YIELD_FROM])) {
             return;
         }
         $token->applyBlankLineBefore();

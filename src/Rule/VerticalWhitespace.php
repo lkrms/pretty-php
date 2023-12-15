@@ -42,8 +42,8 @@ final class VerticalWhitespace implements MultiTokenRule
 
     public function prepare()
     {
-        $this->CommaIndex = TokenType::getIndex(T_COMMA);
-        $this->SemicolonIndex = TokenType::getIndex(T_SEMICOLON);
+        $this->CommaIndex = TokenType::getIndex(\T_COMMA);
+        $this->SemicolonIndex = TokenType::getIndex(\T_SEMICOLON);
         return $this;
     }
 
@@ -61,9 +61,9 @@ final class VerticalWhitespace implements MultiTokenRule
     public function getTokenTypes(): array
     {
         return [
-            T_FOR,
-            T_OPEN_BRACE,
-            T_QUESTION,
+            \T_FOR,
+            \T_OPEN_BRACE,
+            \T_QUESTION,
             ...TokenType::CHAIN,
         ];
     }
@@ -71,7 +71,7 @@ final class VerticalWhitespace implements MultiTokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            if ($token->id === T_FOR) {
+            if ($token->id === \T_FOR) {
                 $children = $token->_nextCode->children();
                 $commas = $children->getAnyFrom($this->CommaIndex);
                 $semicolons = $children->getAnyFrom($this->SemicolonIndex);
@@ -112,24 +112,24 @@ final class VerticalWhitespace implements MultiTokenRule
 
             // Add a newline before an open brace that is part of a top-level
             // declaration or an anonymous class declared over multiple lines
-            if ($token->id === T_OPEN_BRACE) {
+            if ($token->id === \T_OPEN_BRACE) {
                 if (!$token->isStructuralBrace() ||
-                        ($token->_next->id === T_CLOSE_BRACE && !$token->hasNewlineAfter())) {
+                        ($token->_next->id === \T_CLOSE_BRACE && !$token->hasNewlineAfter())) {
                     continue;
                 }
                 $parts = $token->Expression->declarationParts();
                 if (!$this->Formatter->OneTrueBraceStyle &&
                         $parts->hasOneOf(...TokenType::DECLARATION) &&
-                        ($last = $parts->last())->id !== T_DECLARE &&
-                        $last->skipPrevSiblingsOf(...TokenType::AMPERSAND)->id !== T_FUNCTION) {
+                        ($last = $parts->last())->id !== \T_DECLARE &&
+                        $last->skipPrevSiblingsOf(...TokenType::AMPERSAND)->id !== \T_FUNCTION) {
                     $start = $parts->first();
-                    if ($start->id !== T_USE &&
+                    if ($start->id !== \T_USE &&
                         ((!($prevCode = $start->_prevCode) ||
-                                $prevCode->id === T_SEMICOLON ||
-                                $prevCode->id === T_OPEN_BRACE ||
-                                $prevCode->id === T_CLOSE_BRACE ||
-                                $prevCode->id === T_CLOSE_TAG) ||
-                            ($start->id === T_NEW && $parts->hasNewlineBetweenTokens()))) {
+                                $prevCode->id === \T_SEMICOLON ||
+                                $prevCode->id === \T_OPEN_BRACE ||
+                                $prevCode->id === \T_CLOSE_BRACE ||
+                                $prevCode->id === \T_CLOSE_TAG) ||
+                            ($start->id === \T_NEW && $parts->hasNewlineBetweenTokens()))) {
                         $token->WhitespaceBefore |= WhitespaceType::LINE;
                     }
                 }
@@ -138,7 +138,7 @@ final class VerticalWhitespace implements MultiTokenRule
 
             // If one ternary operator is at the start of a line, add a newline
             // before the other
-            if ($token->id === T_QUESTION) {
+            if ($token->id === \T_QUESTION) {
                 if (!$token->IsTernaryOperator ||
                         $token->TernaryOperator2 === $token->_next) {
                     continue;
