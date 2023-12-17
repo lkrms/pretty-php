@@ -3,10 +3,10 @@
 namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\CustomToken;
+use Lkrms\PrettyPHP\Exception\RuleException;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Rule\Contract\MultiTokenRule;
 use Lkrms\Utility\Pcre;
-use RuntimeException;
 
 /**
  * Normalise escape sequences in strings, and replace single- and double-quoted
@@ -35,8 +35,8 @@ final class NormaliseStrings implements MultiTokenRule
     public function getTokenTypes(): array
     {
         return [
-            T_CONSTANT_ENCAPSED_STRING,
-            T_ENCAPSED_AND_WHITESPACE,
+            \T_CONSTANT_ENCAPSED_STRING,
+            \T_ENCAPSED_AND_WHITESPACE,
         ];
     }
 
@@ -44,8 +44,8 @@ final class NormaliseStrings implements MultiTokenRule
     {
         foreach ($tokens as $token) {
             // Ignore nowdocs
-            if ($token->id !== T_CONSTANT_ENCAPSED_STRING &&
-                    $token->String->id === T_START_HEREDOC &&
+            if ($token->id !== \T_CONSTANT_ENCAPSED_STRING &&
+                    $token->String->id === \T_START_HEREDOC &&
                     substr($token->String->text, 0, 4) === "<<<'") {
                 continue;
             }
@@ -62,7 +62,7 @@ final class NormaliseStrings implements MultiTokenRule
 
             // Don't escape line breaks unless they are already escaped
             if (!$token->hasNewline() ||
-                ($token->_next->id === T_END_HEREDOC &&
+                ($token->_next->id === \T_END_HEREDOC &&
                     strpos(substr($token->text, 0, -1), "\n") === false)) {
                 $escape .= "\n\r";
                 $match .= '\n\r';
@@ -71,16 +71,16 @@ final class NormaliseStrings implements MultiTokenRule
             $string = '';
             $doubleQuote = '';
             $suffix = '';
-            if ($token->id === T_CONSTANT_ENCAPSED_STRING) {
+            if ($token->id === \T_CONSTANT_ENCAPSED_STRING) {
                 eval("\$string = {$token->text};");
                 $doubleQuote = '"';
                 $escape .= '"';
                 $reserved .= '"';
-            } elseif ($token->String->id === T_DOUBLE_QUOTE) {
+            } elseif ($token->String->id === \T_DOUBLE_QUOTE) {
                 eval("\$string = \"{$token->text}\";");
                 $escape .= '"';
                 $reserved .= '"';
-            } elseif ($token->String->id === T_BACKTICK) {
+            } elseif ($token->String->id === \T_BACKTICK) {
                 // Convert backtick-enclosed substrings to double-quoted
                 // equivalents by escaping '\"' and '"', and unescaping '\`'
                 $text = Pcre::replaceCallback(
@@ -97,17 +97,17 @@ final class NormaliseStrings implements MultiTokenRule
                 eval("\$string = \"{$text}\";");
                 $escape .= '`';
                 $reserved .= '`';
-            } elseif ($token->String->id === T_START_HEREDOC) {
+            } elseif ($token->String->id === \T_START_HEREDOC) {
                 $start = trim($token->String->text);
                 $text = $token->text;
                 $end = trim($token->String->StringClosedBy->text);
-                if ($token->_next->id === T_END_HEREDOC) {
+                if ($token->_next->id === \T_END_HEREDOC) {
                     $text = substr($text, 0, -1);
                     $suffix = "\n";
                 }
                 eval("\$string = {$start}\n{$text}\n{$end};");
             } else {
-                throw new RuntimeException(
+                throw new RuleException(
                     sprintf('Not a string delimiter: %s', CustomToken::toName($token->String->id))
                 );
             }
@@ -141,15 +141,15 @@ final class NormaliseStrings implements MultiTokenRule
                 $double,
                 -1,
                 $count,
-                PREG_UNMATCHED_AS_NULL
+                \PREG_UNMATCHED_AS_NULL
             );
 
             // Remove unnecessary backslashes
             $reserved = "[nrtvef\\\\\${$reserved}]|[0-7]|x[0-9a-fA-F]|u\{[0-9a-fA-F]+\}";
 
-            if ($token->id === T_CONSTANT_ENCAPSED_STRING ||
+            if ($token->id === \T_CONSTANT_ENCAPSED_STRING ||
                     $token->_next !== $token->String->StringClosedBy ||
-                    $token->String->id !== T_START_HEREDOC) {
+                    $token->String->id !== \T_START_HEREDOC) {
                 $reserved .= '|$';
             }
 
@@ -161,7 +161,7 @@ final class NormaliseStrings implements MultiTokenRule
 
             // "\\\{$a}" becomes "\\\{", which escapes to "\\\\{", but we need
             // the brace to remain escaped lest it become a T_CURLY_OPEN
-            if ($token->id !== T_CONSTANT_ENCAPSED_STRING &&
+            if ($token->id !== \T_CONSTANT_ENCAPSED_STRING &&
                     ($token->_next !== $token->String->StringClosedBy)) {
                 $double = Pcre::replace(
                     '/(?<!\\\\)(\\\\(?:\\\\\\\\)*)\\\\(\{)$/',
@@ -184,13 +184,13 @@ final class NormaliseStrings implements MultiTokenRule
                         str_replace('\t', "\t", $matches[0]),
                     $double,
                 );
-                if ($token->id !== T_CONSTANT_ENCAPSED_STRING ||
+                if ($token->id !== \T_CONSTANT_ENCAPSED_STRING ||
                         Pcre::match("/[\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f{$match}]/", $string) ||
                         Pcre::match('/(?<!\\\\)(?:\\\\\\\\)*\\\\t/', $double)) {
                     $token->setText($double);
                     continue;
                 }
-            } elseif ($token->id !== T_CONSTANT_ENCAPSED_STRING ||
+            } elseif ($token->id !== \T_CONSTANT_ENCAPSED_STRING ||
                     Pcre::match("/[\\x00-\\x09\\x0b\\x0c\\x0e-\\x1f{$match}]/", $string)) {
                 $token->setText($double);
                 continue;

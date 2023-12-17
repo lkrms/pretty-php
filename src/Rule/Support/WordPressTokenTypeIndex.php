@@ -14,9 +14,9 @@ class WordPressTokenTypeIndex extends TokenTypeIndex
     public static function create(): WordPressTokenTypeIndex
     {
         $instance = (new self())->withLeadingOperators();
-        $instance->PreserveBlankAfter[T_OPEN_BRACE] = true;
-        $instance->PreserveBlankBefore[T_CLOSE_BRACE] = true;
-        $instance->PreserveNewlineAfter[T_CONCAT] = true;
+        $instance->PreserveBlankAfter[\T_OPEN_BRACE] = true;
+        $instance->PreserveBlankBefore[\T_CLOSE_BRACE] = true;
+        $instance->PreserveNewlineAfter[\T_CONCAT] = true;
 
         return $instance;
     }

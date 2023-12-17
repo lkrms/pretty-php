@@ -41,7 +41,45 @@ return a($b) && a($c)
 PHP,
         ];
 
-        if (PHP_VERSION_ID < 80000) {
+        yield 'newline after null coalesce assignment operator' => [
+            <<<'PHP'
+<?php
+class A
+{
+    private static $b = [];
+
+    public static function foo()
+    {
+        $foo = self::$b[static::class]
+            ??= self::getFoo();
+    }
+
+    private static function getFoo()
+    {
+        return 'bar';
+    }
+}
+
+PHP,
+            <<<'PHP'
+<?php
+class A
+{
+    private static $b = [];
+    public static function foo()
+    {
+        $foo = self::$b[static::class] ??=
+            self::getFoo();
+    }
+    private static function getFoo()
+    {
+        return 'bar';
+    }
+}
+PHP,
+        ];
+
+        if (\PHP_VERSION_ID < 80000) {
             return;
         }
 

@@ -28,30 +28,30 @@ final class StatementSpacing implements TokenRule
     public function getTokenTypes(): array
     {
         return [
-            T_COLON,
-            T_SEMICOLON,
+            \T_COLON,
+            \T_SEMICOLON,
         ];
     }
 
     public function processToken(Token $token): void
     {
         switch ($token->id) {
-            case T_COLON:
+            case \T_COLON:
                 // Ignore colons that don't start an alternative syntax block
                 if (!$token->ClosedBy) {
                     return;
                 }
                 break;
 
-            case T_SEMICOLON:
+            case \T_SEMICOLON:
                 // Add SPACE after for loop expression delimiters where the next
                 // expression is non-empty
                 if ($token->Parent &&
                         $token->Parent->_prevCode &&
-                        $token->Parent->id === T_OPEN_PARENTHESIS &&
-                        $token->Parent->_prevCode->id === T_FOR) {
+                        $token->Parent->id === \T_OPEN_PARENTHESIS &&
+                        $token->Parent->_prevCode->id === \T_FOR) {
                     if (!$token->_nextSibling ||
-                            $token->_nextSibling->id === T_SEMICOLON) {
+                            $token->_nextSibling->id === \T_SEMICOLON) {
                         return;
                     }
                     $token->WhitespaceAfter |= WhitespaceType::SPACE;
@@ -61,7 +61,7 @@ final class StatementSpacing implements TokenRule
                 }
 
                 // Don't make any changes after __halt_compiler()
-                if ($token->Statement->id === T_HALT_COMPILER) {
+                if ($token->Statement->id === \T_HALT_COMPILER) {
                     return;
                 }
 
@@ -72,7 +72,7 @@ final class StatementSpacing implements TokenRule
                         $this->Formatter->reportCodeProblem($this, 'Empty statement', $token);
                     }
                     if (!$this->TypeIndex->CloseBracket[$token->_prev->id] &&
-                            $token->_prev->id !== T_SEMICOLON) {
+                            $token->_prev->id !== \T_SEMICOLON) {
                         return;
                     }
                 }

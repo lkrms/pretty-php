@@ -303,4 +303,4 @@ jobs:
           artifact_path: ${{ needs.build.outputs.artifact_path }}
         run: |
           php "$artifact_path" --print-config ${{ matrix.args }} | tee .prettyphp
-          php "$artifact_path" --timers || { status=$? && [[ $status -eq 2 ]] || (exit $status); }
+          php "$artifact_path" --timers || { status=$? && [[ $status -eq 4 ]] || (exit $status); }

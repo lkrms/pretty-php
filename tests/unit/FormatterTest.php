@@ -538,8 +538,8 @@ PHP
             $index = array_merge(...array_filter(
                 json_decode(file_get_contents($indexPath), true),
                 fn(int $key) =>
-                    PHP_VERSION_ID < $key,
-                ARRAY_FILTER_USE_KEY
+                    \PHP_VERSION_ID < $key,
+                \ARRAY_FILTER_USE_KEY
             ));
             $index = array_combine(
                 $index,
@@ -548,13 +548,13 @@ PHP
         }
 
         $versionSuffix =
-            PHP_VERSION_ID < 80000
+            \PHP_VERSION_ID < 80000
                 ? '.PHP74'
-                : (PHP_VERSION_ID < 80100
+                : (\PHP_VERSION_ID < 80100
                     ? '.PHP80'
-                    : (PHP_VERSION_ID < 80200
+                    : (\PHP_VERSION_ID < 80200
                         ? '.PHP81'
-                        : (PHP_VERSION_ID < 80300
+                        : (\PHP_VERSION_ID < 80300
                             ? '.PHP82'
                             : null)));
 

@@ -109,9 +109,9 @@ final class PreserveLineBreaks implements MultiTokenRule
 
         // Only preserve newlines before arrow function `=>` operators if
         // enabled
-        if ($token->id === T_DOUBLE_ARROW &&
+        if ($token->id === \T_DOUBLE_ARROW &&
             (!$this->Formatter->NewlineBeforeFnDoubleArrows ||
-                $token->prevSiblingOf(T_FN)->nextSiblingOf(T_DOUBLE_ARROW) !== $token)) {
+                $token->prevSiblingOf(\T_FN)->nextSiblingOf(\T_DOUBLE_ARROW) !== $token)) {
             return false;
         }
 
@@ -121,7 +121,7 @@ final class PreserveLineBreaks implements MultiTokenRule
         }
 
         // Don't preserve newlines before `:` other than ternary operators
-        if ($token->id === T_COLON && !$token->IsTernaryOperator) {
+        if ($token->id === \T_COLON && !$token->IsTernaryOperator) {
             return false;
         }
 
@@ -149,12 +149,12 @@ final class PreserveLineBreaks implements MultiTokenRule
     ): bool {
         // To preserve newlines after attributes, ignore T_ATTRIBUTE itelf and
         // treat attribute close brackets as T_ATTRIBUTE
-        if ($token->id === T_ATTRIBUTE) {
+        if ($token->id === \T_ATTRIBUTE) {
             return false;
         }
 
-        if ($token->OpenedBy && $token->OpenedBy->id === T_ATTRIBUTE) {
-            $tokenId = T_ATTRIBUTE;
+        if ($token->OpenedBy && $token->OpenedBy->id === \T_ATTRIBUTE) {
+            $tokenId = \T_ATTRIBUTE;
         }
 
         if (!$this->TypeIndex->PreserveNewlineAfter[$tokenId ?? $token->id] ||
@@ -173,14 +173,14 @@ final class PreserveLineBreaks implements MultiTokenRule
             return false;
         }
 
-        if ($token->id === T_CLOSE_BRACE &&
+        if ($token->id === \T_CLOSE_BRACE &&
                 !$token->isStructuralBrace(false)) {
             return false;
         }
 
         // Don't preserve newlines after `:` except when they terminate case
         // statements and labels
-        if ($token->id === T_COLON &&
+        if ($token->id === \T_COLON &&
                 $token->getColonType() !== TokenSubType::COLON_SWITCH_CASE_DELIMITER &&
                 $token->SubType !== TokenSubType::COLON_LABEL_DELIMITER) {
             return false;
@@ -188,16 +188,16 @@ final class PreserveLineBreaks implements MultiTokenRule
 
         // Don't preserve newlines after arrow function `=>` operators if
         // disabled
-        if ($token->id === T_DOUBLE_ARROW &&
+        if ($token->id === \T_DOUBLE_ARROW &&
                 $this->Formatter->NewlineBeforeFnDoubleArrows &&
-                $token->prevSiblingOf(T_FN)->nextSiblingOf(T_DOUBLE_ARROW) === $token) {
+                $token->prevSiblingOf(\T_FN)->nextSiblingOf(\T_DOUBLE_ARROW) === $token) {
             return false;
         }
 
         // Only preserve newlines after `implements` and `extends` if they are
         // followed by a list of interfaces
-        if (($token->id === T_IMPLEMENTS ||
-                    $token->id === T_EXTENDS) &&
+        if (($token->id === \T_IMPLEMENTS ||
+                    $token->id === \T_EXTENDS) &&
                 !$token->IsListParent) {
             return false;
         }
@@ -210,26 +210,26 @@ final class PreserveLineBreaks implements MultiTokenRule
         //     => false,
         // };
         // ```
-        if ($token->id === T_COMMA &&
+        if ($token->id === \T_COMMA &&
                 $token->isDelimiterBetweenMatchExpressions() &&
-                $token->_nextCode->id === T_DOUBLE_ARROW) {
+                $token->_nextCode->id === \T_DOUBLE_ARROW) {
             return false;
         }
 
         if ($line & WhitespaceType::BLANK &&
             (!$this->TypeIndex->PreserveBlankAfter[$token->id] ||
-                ($token->id === T_COMMA &&
+                ($token->id === \T_COMMA &&
                     !$token->isDelimiterBetweenMatchArms()) ||
-                ($token->id === T_SEMICOLON &&
+                ($token->id === \T_SEMICOLON &&
                     $token->Parent &&
                     $token->Parent->_prevCode &&
-                    $token->Parent->_prevCode->id === T_FOR) ||
+                    $token->Parent->_prevCode->id === \T_FOR) ||
                 ($token->CommentType &&
                     (($token->_prevCode &&
                             !$token->_prevCode->ClosedBy &&
                             $token->_prevCode->EndStatement !== $token->_prevCode) ||
                         ($token->Parent &&
-                            !($token->Parent->id === T_OPEN_BRACE &&
+                            !($token->Parent->id === \T_OPEN_BRACE &&
                                 $token->Parent->isStructuralBrace(false))))))) {
             if (!$this->Formatter->PreserveLineBreaks) {
                 return false;

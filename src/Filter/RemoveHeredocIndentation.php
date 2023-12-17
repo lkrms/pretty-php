@@ -29,11 +29,11 @@ final class RemoveHeredocIndentation implements Filter
                     $heredocText[$j][] = $token->text;
                 }
             }
-            if ($token->id === T_START_HEREDOC) {
+            if ($token->id === \T_START_HEREDOC) {
                 $stack[$i] = $token;
                 continue;
             }
-            if ($token->id === T_END_HEREDOC) {
+            if ($token->id === \T_END_HEREDOC) {
                 array_pop($stack);
             }
         }

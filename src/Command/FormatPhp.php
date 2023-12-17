@@ -12,13 +12,14 @@ use Lkrms\Cli\CliApplication;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOption;
 use Lkrms\Console\Catalog\ConsoleLevel;
+use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Profile;
-use Lkrms\Facade\Sys;
 use Lkrms\PrettyPHP\Catalog\FormatterFlag;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Exception\FormatterException;
+use Lkrms\PrettyPHP\Exception\InvalidConfigurationException;
 use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
 use Lkrms\PrettyPHP\Filter\Contract\Filter;
 use Lkrms\PrettyPHP\Filter\SortImports;
@@ -44,17 +45,16 @@ use Lkrms\PrettyPHP\Rule\StrictLists;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\PrettyPHP\Formatter;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
-use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Pcre;
+use Lkrms\Utility\Sys;
 use Lkrms\Utility\Test;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
 use SebastianBergmann\Diff\Differ;
-use RuntimeException;
 use SplFileInfo;
 use Throwable;
-use UnexpectedValueException;
 
 /**
  * Provides pretty-php's command-line interface
@@ -408,18 +408,20 @@ class FormatPhp extends CliCommand
     {
         return [
             CliOption::build()
-                ->long('src')
+                ->name('src')
                 ->valueName('path')
                 ->description(<<<EOF
 Files and directories to format.
 
-If the only path is a dash ('-'), or no paths are given, `{{command}}` reads
+If the only path is a dash ('-'), or no paths are given, `{{program}}` reads
 from the standard input and writes to the standard output.
 
 Directories are searched recursively for files to format.
 EOF)
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->multipleAllowed()
+                ->unique()
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->InputFiles),
             CliOption::build()
                 ->long('include')
@@ -432,6 +434,7 @@ Exclusions (`-X/--exclude`) are applied first.
 EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->defaultValue('/\.php$/')
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->IncludeRegex),
             CliOption::build()
                 ->long('exclude')
@@ -444,6 +447,7 @@ Exclusions are applied before inclusions (`-I/--include`).
 EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->defaultValue('/\/(\.git|\.hg|\.svn|_?build|dist|vendor)\/$/')
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->ExcludeRegex),
             CliOption::build()
                 ->long('include-if-php')
@@ -464,6 +468,7 @@ Exclusions (`-X/--exclude`) are applied first.
 EOF)
                 ->optionType(CliOptionType::VALUE_OPTIONAL)
                 ->defaultValue('/(\/|^)[^.]+$/')
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->IncludeIfPhpRegex),
             CliOption::build()
                 ->long('tab')
@@ -479,7 +484,7 @@ EOF)
                 ->valueType(CliOptionValueType::INTEGER)
                 ->allowedValues([2, 4, 8])
                 ->defaultValue(4)
-                ->visibility(Visibility::ALL & ~Visibility::SYNOPSIS)
+                ->visibility(Visibility::ALL_EXCEPT_SYNOPSIS)
                 ->bindTo($this->Tabs),
             CliOption::build()
                 ->long('space')
@@ -494,7 +499,7 @@ EOF)
                 ->valueType(CliOptionValueType::INTEGER)
                 ->allowedValues([2, 4, 8])
                 ->defaultValue(4)
-                ->visibility(Visibility::ALL & ~Visibility::SYNOPSIS)
+                ->visibility(Visibility::ALL_EXCEPT_SYNOPSIS)
                 ->bindTo($this->Spaces),
             CliOption::build()
                 ->long('eol')
@@ -503,7 +508,7 @@ EOF)
                 ->description(<<<'EOF'
 Set the output file's end-of-line sequence.
 
-In *platform* mode, `{{command}}` uses CRLF ("\\r\\n") line endings on Windows
+In *platform* mode, `{{program}}` uses CRLF ("\\r\\n") line endings on Windows
 and LF ("\\n") on other platforms.
 
 In *auto* mode, the input file's line endings are preserved, and *platform* mode
@@ -512,7 +517,7 @@ EOF)
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(['auto', 'platform', 'lf', 'crlf'])
                 ->defaultValue('auto')
-                ->visibility(Visibility::ALL & ~Visibility::SYNOPSIS)
+                ->visibility(Visibility::ALL_EXCEPT_SYNOPSIS | Visibility::SCHEMA)
                 ->bindTo($this->Eol),
             CliOption::build()
                 ->long('disable')
@@ -525,6 +530,8 @@ EOF)
                 ->allowedValues(array_keys(self::DISABLE_RULE_MAP))
                 ->unknownValuePolicy(CliOptionValueUnknownPolicy::DISCARD)
                 ->multipleAllowed()
+                ->unique()
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->DisableRules),
             CliOption::build()
                 ->long('enable')
@@ -537,6 +544,8 @@ EOF)
                 ->allowedValues(array_keys(self::ENABLE_RULE_MAP))
                 ->unknownValuePolicy(CliOptionValueUnknownPolicy::DISCARD)
                 ->multipleAllowed()
+                ->unique()
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->EnableRules),
             CliOption::build()
                 ->long('one-true-brace-style')
@@ -544,6 +553,7 @@ EOF)
                 ->description(<<<EOF
 Format braces using the One True Brace Style.
 EOF)
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->OneTrueBraceStyle),
             CliOption::build()
                 ->long('operators-first')
@@ -551,6 +561,7 @@ EOF)
                 ->description(<<<EOF
 Place newlines before operators when splitting code over multiple lines.
 EOF)
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->OperatorsFirst),
             CliOption::build()
                 ->long('operators-last')
@@ -558,6 +569,7 @@ EOF)
                 ->description(<<<EOF
 Place newlines after operators when splitting code over multiple lines.
 EOF)
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->OperatorsLast),
             CliOption::build()
                 ->long('ignore-newlines')
@@ -578,19 +590,22 @@ double-quoted strings with the most readable and economical syntax.
 
 Equivalent to `--disable=simplify-strings`
 EOF)
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->NoSimplifyStrings),
             CliOption::build()
                 ->long('heredoc-indent')
                 ->short('h')
-                ->valueName('type')
+                ->valueName('level')
                 ->description(<<<EOF
 Set the indentation level of heredocs and nowdocs.
 
-With *mixed* indentation (the default), line indentation is applied to heredocs
+If `--heredoc-indent=mixed` is given, line indentation is applied to heredocs
 that start on their own line, otherwise hanging indentation is applied.
 EOF)
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys(self::HEREDOC_INDENT_MAP))
+                ->defaultValue(array_flip(self::HEREDOC_INDENT_MAP)[HeredocIndent::MIXED])
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->HeredocIndent),
             CliOption::build()
                 ->long('sort-imports-by')
@@ -601,12 +616,11 @@ Set the sort order for consecutive alias/import statements.
 
 Use `--sort-imports-by=none` to group import statements by type without changing
 their order.
-
-Unless disabled by `-M/--no-sort-imports`, the default is to sort imports by
-*depth*.
 EOF)
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys(self::IMPORT_SORT_ORDER_MAP))
+                ->defaultValue(array_flip(self::IMPORT_SORT_ORDER_MAP)[ImportSortOrder::DEPTH])
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->SortImportsBy),
             CliOption::build()
                 ->long('no-sort-imports')
@@ -614,16 +628,14 @@ EOF)
                 ->description(<<<EOF
 Don't sort or group consecutive alias/import statements.
 EOF)
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->NoSortImports),
             CliOption::build()
                 ->long('psr12')
                 ->description(<<<EOF
 Enforce strict PSR-12 / PER Coding Style compliance.
-
-Use this option to apply formatting rules and internal options required for
-`{{command}}` output to satisfy the formatting-related requirements of PHP-FIG
-coding style standards.
 EOF)
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->Psr12),
             CliOption::build()
                 ->long('preset')
@@ -637,7 +649,7 @@ is applied.
 EOF)
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys(self::PRESET_MAP))
-                ->visibility(Visibility::ALL & ~Visibility::SYNOPSIS)
+                ->visibility(Visibility::ALL_EXCEPT_SYNOPSIS | Visibility::SCHEMA)
                 ->bindTo($this->Preset),
             CliOption::build()
                 ->long('config')
@@ -659,8 +671,8 @@ EOF)
                 ->description(<<<EOF
 Ignore configuration files.
 
-Use this option to skip detection of configuration files that would otherwise
-take precedence over formatting options given on the command line.
+Use this option to ignore any configuration files that would usually apply to
+the input.
 
 See `CONFIGURATION` below.
 EOF)
@@ -672,7 +684,7 @@ EOF)
                 ->description(<<<EOF
 Write output to a different file.
 
-If <file> is a dash ('-'), `{{command}}` writes to the standard output.
+If <file> is a dash ('-'), `{{program}}` writes to the standard output.
 Otherwise, `-o/--output` must be given once per input file, or not at all.
 EOF)
                 ->optionType(CliOptionType::VALUE)
@@ -713,7 +725,7 @@ Allows discovery of configuration files and improves reporting. Useful for
 editor integrations.
 EOF)
                 ->optionType(CliOptionType::VALUE)
-                ->visibility(Visibility::ALL & ~Visibility::SYNOPSIS)
+                ->visibility(Visibility::ALL_EXCEPT_SYNOPSIS)
                 ->bindTo($this->StdinFilename),
             CliOption::build()
                 ->long('debug')
@@ -726,21 +738,21 @@ of files in *\<directory>/{}* that represent changes applied by enabled rules.
 EOF))
                 ->optionType(CliOptionType::VALUE_OPTIONAL)
                 ->defaultValue($this->App->getTempPath() . '/debug')
-                ->visibility((Visibility::ALL & ~Visibility::SYNOPSIS) | Visibility::HIDE_DEFAULT)
+                ->visibility(Visibility::ALL_EXCEPT_SYNOPSIS | Visibility::HIDE_DEFAULT)
                 ->bindTo($this->DebugDirectory),
             CliOption::build()
                 ->long('timers')
                 ->description(<<<EOF
 Report timers and resource usage on exit.
 EOF)
-                ->visibility(Visibility::ALL & ~Visibility::SYNOPSIS)
+                ->visibility(Visibility::ALL_EXCEPT_SYNOPSIS)
                 ->bindTo($this->ReportTimers),
             CliOption::build()
                 ->long('fast')
                 ->description(<<<EOF
 Skip equivalence checks.
 EOF)
-                ->visibility(Visibility::ALL & ~Visibility::SYNOPSIS)
+                ->visibility(Visibility::ALL_EXCEPT_SYNOPSIS)
                 ->bindTo($this->Fast),
             CliOption::build()
                 ->long('verbose')
@@ -774,49 +786,68 @@ EOF)
     {
         return [
             CliHelpSectionName::CONFIGURATION => <<<'EOF'
-`{{command}}` looks for a JSON configuration file named *.prettyphp* or
+`{{program}}` looks for a JSON configuration file named *.prettyphp* or
 *prettyphp.json* in the same directory as each input file, then in each of its
 parent directories. It stops looking when it finds a configuration file, a
-*.git* directory, a *.hg* directory, or the root of the filesystem, whichever
+*.git*, *.hg* or *.svn* directory, or the root of the filesystem, whichever
 comes first.
 
-If an input file has an applicable configuration file, command-line formatting
-options other than `-N/--ignore-newlines` are replaced with settings from the
-configuration file.
+If a configuration file is found, `{{program}}` formats the input using
+formatting options read from the configuration file, and command-line formatting
+options other than `-N/--ignore-newlines` are ignored.
 
 The `--print-config` option can be used to generate a configuration file, for
 example:
 
-    $ {{command}} -P -S -M --print-config src tests bootstrap.php
-    {
-        "src": [
-            "src",
-            "tests",
-            "bootstrap.php"
-        ],
-        "includeIfPhp": true,
-        "noSimplifyStrings": true,
-        "noSortImports": true
-    }
+```console
+$ {{command}} --sort-imports-by=name --psr12 src tests --print-config
+{
+    "src": [
+        "src",
+        "tests"
+    ],
+    "sortImportsBy": "name",
+    "psr12": true
+}
+```
 
-The optional *src* array specifies files and directories to format. If
-`{{command}}` is started with no path arguments in a directory where *src* is
-configured, or the directory is passed to `{{command}}` for formatting, paths in
-*src* are formatted. It is ignored otherwise.
+The optional *src* array specifies files and directories to format when
+`{{command}}` is started in the same directory or when the directory is passed
+to `{{command}}` for formatting.
 
-If a directory contains more than one configuration file, `{{command}}` reports
+If a directory contains more than one configuration file, `{{program}}` reports
 an error and exits without formatting anything.
 EOF,
             CliHelpSectionName::EXIT_STATUS => <<<EOF
-`{{command}}` returns 0 when formatting succeeds, 1 when invalid arguments are
-given, and 2 when one or more input files cannot be parsed. Other non-zero
-values are returned for other failures.
-
-When `--diff` or `--check` are given, `{{command}}` returns 0 when the input is
-already formatted and 1 when formatting is required. The meaning of other return
-values is unchanged.
+`{{program}}` returns 0 when formatting succeeds, 1 when invalid arguments are
+given, 2 when invalid configuration files are found, and 4 when one or more
+input files cannot be parsed. When `--diff` or `--check` are given,
+`{{program}}` returns 0 when the input is already formatted and 8 when
+formatting is required.
 EOF,
         ];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function filterJsonSchema(array $schema): array
+    {
+        $schema['properties'] =
+            Arr::spliceByKey($schema['properties'], 'eol', 0, [
+                'insertSpaces' => [
+                    'description' => 'Indent using spaces.',
+                    'type' => 'boolean',
+                    'default' => true,
+                ],
+                'tabSize' => [
+                    'description' => 'The size of a tab in spaces.',
+                    'enum' => [2, 4, 8],
+                    'default' => 4,
+                ],
+            ]);
+
+        return $schema;
     }
 
     protected function run(...$params)
@@ -824,8 +855,8 @@ EOF,
         if ($this->DebugDirectory !== null) {
             File::createDir($this->DebugDirectory);
             $this->DebugDirectory = realpath($this->DebugDirectory) ?: null;
-            if (!Env::debug()) {
-                Env::debug(true);
+            if (!$this->Env->debug()) {
+                $this->Env->debug(true);
             }
             $this->App->logOutput();
         }
@@ -904,7 +935,7 @@ EOF,
                 unset($cliInputFiles[$i]);
                 // Update any relative paths loaded from the configuration file
                 foreach ($this->InputFiles as &$file) {
-                    if (Test::isAbsolutePath($file)) {
+                    if (File::isAbsolute($file)) {
                         continue;
                     }
                     $file = $dir . '/' . $file;
@@ -929,7 +960,7 @@ EOF,
 
         $this->expandPaths($this->InputFiles, $in, $dirs, $dirCount);
         $out = $this->OutputFiles;
-        if (!$in && !$this->StdinFilename && !$this->PrintConfig && stream_isatty(STDIN)) {
+        if (!$in && !$this->StdinFilename && !$this->PrintConfig && stream_isatty(\STDIN)) {
             throw new CliInvalidArgumentsException('<path> required when input is a TTY');
         }
         if (!$in || $in === ['-']) {
@@ -951,7 +982,7 @@ EOF,
         }
 
         if ($this->PrintConfig) {
-            printf("%s\n", json_encode($this->getFormattingOptionValues(true), JSON_PRETTY_PRINT));
+            printf("%s\n", json_encode($this->getFormattingOptionValues(true), \JSON_PRETTY_PRINT));
 
             return;
         }
@@ -974,7 +1005,11 @@ EOF,
                     );
                     break;
                 }
-                if (is_dir($dir . '/.git') || is_dir($dir . '/.hg')) {
+                if (
+                    is_dir($dir . '/.git') ||
+                    is_dir($dir . '/.hg') ||
+                    is_dir($dir . '/.svn')
+                ) {
                     break;
                 }
                 if ($dir === '.') {
@@ -1002,7 +1037,7 @@ EOF,
                 }
                 Console::debug('New formatter required for:', $file);
                 $this->applyFormattingOptionValues($options);
-                !$this->Verbose || Console::debug('Applying options:', json_encode($options, JSON_PRETTY_PRINT));
+                !$this->Verbose || Console::debug('Applying options:', json_encode($options, \JSON_PRETTY_PRINT));
                 if ($this->Psr12) {
                     $this->Tabs = null;
                     $this->Spaces = 4;
@@ -1041,7 +1076,7 @@ EOF,
                                 : null))
                 );
                 $f->PreferredEol = $this->Eol === 'auto' || $this->Eol === 'platform'
-                    ? PHP_EOL
+                    ? \PHP_EOL
                     : ($this->Eol === 'lf' ? "\n" : "\r\n");
                 $f->PreserveEol = $this->Eol === 'auto';
                 $f->OneTrueBraceStyle = $this->OneTrueBraceStyle;
@@ -1067,7 +1102,9 @@ EOF,
         $errors = [];
         foreach ($in as $key => $file) {
             $inputFile = ($file === 'php://stdin' ? $this->StdinFilename : null) ?: $file;
-            $this->Quiet > 2 || Console::logProgress(sprintf('Formatting %d of %d:', ++$i, $count), $inputFile);
+            if ($this->Quiet < 3 && ($file !== 'php://stdin' || !stream_isatty(\STDIN))) {
+                Console::logProgress(sprintf('Formatting %d of %d:', ++$i, $count), $inputFile);
+            }
             $input = file_get_contents($file);
             $formatter = $getFormatter($inputFile);
             Profile::startTimer($inputFile, 'file');
@@ -1079,7 +1116,7 @@ EOF,
                 );
             } catch (InvalidSyntaxException $ex) {
                 Console::exception($ex);
-                $this->setExitStatus(2);
+                $this->setExitStatus(4);
                 $errors[] = $inputFile;
                 continue;
             } catch (FormatterException $ex) {
@@ -1101,9 +1138,11 @@ EOF,
                 if ($input === $output) {
                     continue;
                 }
-                $this->Quiet || Console::error('Input requires formatting');
+                if (!$this->Quiet) {
+                    Console::error('Input requires formatting');
+                }
 
-                return 1;
+                return 8;
             }
 
             if ($this->Diff) {
@@ -1121,7 +1160,9 @@ EOF,
                             'fromFile' => "a/$inputFile",
                             'toFile' => "b/$inputFile",
                         ])))->diff($input, $output);
-                        $this->Quiet || Console::log('Would replace', $inputFile);
+                        if (!$this->Quiet) {
+                            Console::log('Would replace', $inputFile);
+                        }
                 }
                 $replaced++;
                 continue;
@@ -1131,13 +1172,13 @@ EOF,
             if ($outFile === '-') {
                 Console::maybeClearLine();
                 print $output;
-                if (stream_isatty(STDOUT)) {
+                if (stream_isatty(\STDOUT)) {
                     Console::tty('');
                 }
                 continue;
             }
 
-            if (!Test::areSameFile($file, $outFile)) {
+            if (!File::is($file, $outFile)) {
                 $input = is_file($outFile) ? file_get_contents($outFile) : null;
             }
 
@@ -1146,7 +1187,9 @@ EOF,
                 continue;
             }
 
-            $this->Quiet || Console::log('Replacing', $outFile);
+            if (!$this->Quiet) {
+                Console::log('Replacing', $outFile);
+            }
             file_put_contents($outFile, $output);
             $replaced++;
         }
@@ -1171,26 +1214,32 @@ EOF,
         }
 
         if ($this->Diff) {
-            $this->Quiet || !$replaced || Console::out('', ConsoleLevel::INFO);
-            $this->Quiet || Console::log(sprintf(
-                $replaced
-                    ? '%1$d of %2$d %3$s %4$s formatting'
-                    : '%2$d %3$s would be left unchanged',
-                $replaced,
-                $count,
-                Convert::plural($count, 'file'),
-                Convert::plural($count, 'requires', 'require')
-            ));
+            if (!$this->Quiet) {
+                if ($replaced) {
+                    Console::out('', ConsoleLevel::INFO);
+                }
+                Console::log(sprintf(
+                    $replaced
+                        ? '%1$d of %2$d %3$s %4$s formatting'
+                        : '%2$d %3$s would be left unchanged',
+                    $replaced,
+                    $count,
+                    Convert::plural($count, 'file'),
+                    Convert::plural($count, 'requires', 'require')
+                ));
+            }
 
-            return $replaced ? 1 : 0;
+            return $replaced ? 8 : 0;
         }
 
-        $this->Quiet || Console::summary(sprintf(
-            $replaced ? 'Replaced %1$d of %2$d %3$s' : 'Formatted %2$d %3$s',
-            $replaced,
-            $count,
-            Convert::plural($count, 'file')
-        ), 'successfully');
+        if (!$this->Quiet) {
+            Console::summary(sprintf(
+                $replaced ? 'Replaced %1$d of %2$d %3$s' : 'Formatted %2$d %3$s',
+                $replaced,
+                $count,
+                Convert::plural($count, 'file')
+            ), 'successfully');
+        }
     }
 
     private function maybeGetConfigFile(string $dir): ?string
@@ -1203,7 +1252,7 @@ EOF,
             $file = $dir . '/' . $file;
             if (is_file($file)) {
                 if ($found ?? null) {
-                    throw new RuntimeException(sprintf('Too many configuration files: %s', $dir));
+                    throw new InvalidConfigurationException(sprintf('Too many configuration files: %s', $dir));
                 }
                 $found = $file;
             }
@@ -1430,6 +1479,8 @@ EOF,
                 $addFile($file);
             }
         }
+
+        $files = array_values($files);
     }
 
     /**
@@ -1487,7 +1538,7 @@ EOF,
                 continue;
             }
             if (!is_string($out)) {
-                $out = json_encode($out, JSON_PRETTY_PRINT | JSON_FORCE_OBJECT);
+                $out = json_encode($out, \JSON_PRETTY_PRINT | \JSON_FORCE_OBJECT);
             }
             file_put_contents($file, $out);
         }

@@ -54,14 +54,14 @@ final class StandardWhitespace implements MultiTokenRule
     {
         return TokenType::mergeIndexes(
             TokenType::getIndex(
-                T_COLON,
-                T_COMMA,
-                T_MATCH,
-                T_OPEN_TAG,
-                T_OPEN_TAG_WITH_ECHO,
-                T_CLOSE_TAG,
-                T_ATTRIBUTE_COMMENT,
-                T_START_HEREDOC,
+                \T_COLON,
+                \T_COMMA,
+                \T_MATCH,
+                \T_OPEN_TAG,
+                \T_OPEN_TAG_WITH_ECHO,
+                \T_CLOSE_TAG,
+                \T_ATTRIBUTE_COMMENT,
+                \T_START_HEREDOC,
             ),
             $this->TypeIndex->OpenBracket,
             $this->TypeIndex->CloseBracketOrEndAltSyntax,
@@ -99,7 +99,7 @@ final class StandardWhitespace implements MultiTokenRule
             if (($idx->OpenBracket[$token->id] && !$token->isStructuralBrace()) ||
                     $idx->SuppressSpaceAfter[$token->id]) {
                 $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK & ~WhitespaceType::SPACE;
-            } elseif ($token->id === T_COLON && $token->ClosedBy) {
+            } elseif ($token->id === \T_COLON && $token->ClosedBy) {
                 $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
             }
 
@@ -107,15 +107,15 @@ final class StandardWhitespace implements MultiTokenRule
                     ($idx->SuppressSpaceBefore[$token->id] && (
                         // Only suppress SPACE before namespace separators in or
                         // immediately after an identifier
-                        $token->id !== T_NS_SEPARATOR ||
-                        $token->_prev->id === T_NAMESPACE ||
-                        $token->_prev->id === T_NAME_FULLY_QUALIFIED ||
-                        $token->_prev->id === T_NAME_QUALIFIED ||
-                        $token->_prev->id === T_NAME_RELATIVE ||
-                        $token->_prev->id === T_STRING
+                        $token->id !== \T_NS_SEPARATOR ||
+                        $token->_prev->id === \T_NAMESPACE ||
+                        $token->_prev->id === \T_NAME_FULLY_QUALIFIED ||
+                        $token->_prev->id === \T_NAME_QUALIFIED ||
+                        $token->_prev->id === \T_NAME_RELATIVE ||
+                        $token->_prev->id === \T_STRING
                     ))) {
                 $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::SPACE;
-            } elseif ($token->id === T_END_ALT_SYNTAX) {
+            } elseif ($token->id === \T_END_ALT_SYNTAX) {
                 $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
             }
 
@@ -129,7 +129,7 @@ final class StandardWhitespace implements MultiTokenRule
                 $current = $token;
                 while ($current = $current->_prev) {
                     $text = $current->text . $text;
-                    if ($current->id === T_CLOSE_TAG) {
+                    if ($current->id === \T_CLOSE_TAG) {
                         break;
                     }
                 }
@@ -181,13 +181,13 @@ final class StandardWhitespace implements MultiTokenRule
                 // construct in the global scope
                 $current = $token;
                 if (
-                    $token->id === T_OPEN_TAG &&
-                    ($declare = $token->next())->id === T_DECLARE &&
+                    $token->id === \T_OPEN_TAG &&
+                    ($declare = $token->next())->id === \T_DECLARE &&
                     ($end = $declare->nextSibling(2)) === $declare->EndStatement &&
-                    (!$end->_nextCode || $end->_nextCode->id !== T_DECLARE) && (
+                    (!$end->_nextCode || $end->_nextCode->id !== \T_DECLARE) && (
                         !$this->Formatter->Psr12Compliance || (
                             !strcasecmp((string) $declare->nextSibling()->inner(), 'strict_types=1') &&
-                            ($end->id === T_CLOSE_TAG || $end->next()->id === T_CLOSE_TAG)
+                            ($end->id === \T_CLOSE_TAG || $end->next()->id === \T_CLOSE_TAG)
                         )
                     )
                 ) {
@@ -196,8 +196,8 @@ final class StandardWhitespace implements MultiTokenRule
                     $current = $end;
                     if (
                         $this->Formatter->Psr12Compliance ||
-                        $end->id === T_CLOSE_TAG ||
-                        $end->next()->id === T_CLOSE_TAG
+                        $end->id === \T_CLOSE_TAG ||
+                        $end->next()->id === \T_CLOSE_TAG
                     ) {
                         $token->CloseTag->WhitespaceBefore |= WhitespaceType::SPACE;
                         $token->CloseTag->WhitespaceMaskPrev = WhitespaceType::SPACE;
@@ -275,13 +275,13 @@ final class StandardWhitespace implements MultiTokenRule
             }
 
             /* Add LINE|SPACE before `?>` */
-            if ($token->id === T_CLOSE_TAG) {
+            if ($token->id === \T_CLOSE_TAG) {
                 $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
                 continue;
             }
 
             // Add SPACE after and suppress SPACE before commas
-            if ($token->id === T_COMMA) {
+            if ($token->id === \T_COMMA) {
                 $token->WhitespaceMaskPrev = WhitespaceType::NONE;
                 $token->WhitespaceAfter |= WhitespaceType::SPACE;
                 continue;
@@ -289,7 +289,7 @@ final class StandardWhitespace implements MultiTokenRule
 
             // Add LINE after labels
             if (
-                $token->id === T_COLON &&
+                $token->id === \T_COLON &&
                 $token->getColonType() === TokenSubType::COLON_LABEL_DELIMITER
             ) {
                 $token->WhitespaceAfter |= WhitespaceType::LINE;
@@ -297,15 +297,15 @@ final class StandardWhitespace implements MultiTokenRule
             }
 
             // Add LINE between the arms of match expressions
-            if ($token->id === T_MATCH) {
+            if ($token->id === \T_MATCH) {
                 $parent = $token->_nextSibling->_nextSibling;
                 $arm = $parent->_nextCode;
                 if ($arm === $parent->ClosedBy) {
                     continue;
                 }
                 while (true) {
-                    $arm = $arm->nextSiblingOf(T_DOUBLE_ARROW)
-                               ->nextSiblingOf(T_COMMA);
+                    $arm = $arm->nextSiblingOf(\T_DOUBLE_ARROW)
+                               ->nextSiblingOf(\T_COMMA);
                     if ($arm->IsNull) {
                         break;
                     }
@@ -317,7 +317,7 @@ final class StandardWhitespace implements MultiTokenRule
             // Add SPACE before and after parameter attributes, LINE and SPACE
             // before and after other attributes, and suppress BLANK after all
             // attributes
-            if ($token->id === T_ATTRIBUTE) {
+            if ($token->id === \T_ATTRIBUTE) {
                 if (!$token->inParameterList()) {
                     $token->WhitespaceBefore |= WhitespaceType::LINE;
                     $token->ClosedBy->WhitespaceAfter |= WhitespaceType::LINE;
@@ -327,7 +327,7 @@ final class StandardWhitespace implements MultiTokenRule
                 $token->ClosedBy->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
                 continue;
             }
-            if ($token->id === T_ATTRIBUTE_COMMENT) {
+            if ($token->id === \T_ATTRIBUTE_COMMENT) {
                 if (!$token->inParameterList()) {
                     $token->WhitespaceBefore |= WhitespaceType::LINE;
                     $token->WhitespaceAfter |= WhitespaceType::LINE;
@@ -340,16 +340,16 @@ final class StandardWhitespace implements MultiTokenRule
 
             // Suppress whitespace inside `declare()`
             if (
-                $token->id === T_OPEN_PARENTHESIS &&
+                $token->id === \T_OPEN_PARENTHESIS &&
                 $token->_prevCode &&
-                $token->_prevCode->id === T_DECLARE
+                $token->_prevCode->id === \T_DECLARE
             ) {
                 $token->outer()->maskInnerWhitespace(WhitespaceType::NONE);
                 continue;
             }
 
             // In strict PSR-12 mode, suppress BLANK and LINE before heredocs
-            if ($token->id === T_START_HEREDOC && $this->Formatter->Psr12Compliance) {
+            if ($token->id === \T_START_HEREDOC && $this->Formatter->Psr12Compliance) {
                 $token->WhitespaceBefore |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
             }

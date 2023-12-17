@@ -3,10 +3,10 @@
 namespace Lkrms\PrettyPHP\Filter;
 
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
+use Lkrms\PrettyPHP\Exception\FilterException;
 use Lkrms\PrettyPHP\Filter\Contract\Filter;
 use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\Utility\Pcre;
-use RuntimeException;
 
 /**
  * Evaluate strings for comparison
@@ -52,13 +52,13 @@ final class StandardiseStrings implements Filter
                 continue;
             }
 
-            if ($token->id === T_CONSTANT_ENCAPSED_STRING) {
+            if ($token->id === \T_CONSTANT_ENCAPSED_STRING) {
                 eval("\$string = {$token->text};");
-            } elseif ($token->id !== T_ENCAPSED_AND_WHITESPACE) {
+            } elseif ($token->id !== \T_ENCAPSED_AND_WHITESPACE) {
                 continue;
-            } elseif ($lastString->id === T_DOUBLE_QUOTE) {
+            } elseif ($lastString->id === \T_DOUBLE_QUOTE) {
                 eval("\$string = \"{$token->text}\";");
-            } elseif ($lastString->id === T_BACKTICK) {
+            } elseif ($lastString->id === \T_BACKTICK) {
                 $text = Pcre::replaceCallback(
                     '/((?<!\\\\)(?:\\\\\\\\)*)(\\\\?"|\\\\`)/',
                     fn(array $matches) =>
@@ -71,7 +71,7 @@ final class StandardiseStrings implements Filter
                     $token->text
                 );
                 eval("\$string = \"{$text}\";");
-            } elseif ($lastString->id === T_START_HEREDOC) {
+            } elseif ($lastString->id === \T_START_HEREDOC) {
                 $start = trim($lastString->text);
                 // Ignore nowdocs
                 if (substr($start, 0, 4) === "<<<'") {
@@ -80,7 +80,7 @@ final class StandardiseStrings implements Filter
                 $end = Pcre::replace('/[^a-zA-Z0-9_]+/', '', $start);
                 eval("\$string = {$start}\n{$token->text}\n{$end};");
             } else {
-                throw new RuntimeException('Error parsing string');
+                throw new FilterException('Error parsing string');
             }
             $token->setText($string);
         }

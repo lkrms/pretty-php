@@ -46,7 +46,7 @@ final class EssentialWhitespace implements Rule
             if ($token->CommentType &&
                     ($token->CommentType === CommentType::CPP ||
                         $token->CommentType === CommentType::SHELL) &&
-                    $next->id !== T_CLOSE_TAG) {
+                    $next->id !== \T_CLOSE_TAG) {
                 $token->WhitespaceAfter |= WhitespaceType::LINE;
                 $token->WhitespaceMaskNext |= WhitespaceType::LINE;
                 $next->WhitespaceMaskPrev |= WhitespaceType::LINE;
@@ -59,7 +59,7 @@ final class EssentialWhitespace implements Rule
                 continue;
             }
 
-            if ($token->id === T_OPEN_TAG ||
+            if ($token->id === \T_OPEN_TAG ||
                     Pcre::match(
                         '/^[a-zA-Z0-9\\\\_\x80-\xff]{2}$/',
                         ($token->text[-1] ?? '') . ($next->text[0] ?? '')

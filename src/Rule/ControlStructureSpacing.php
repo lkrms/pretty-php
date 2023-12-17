@@ -42,14 +42,14 @@ final class ControlStructureSpacing implements MultiTokenRule
     {
         foreach ($tokens as $token) {
             // Ignore the second half of `elseif` expressed as `else if`
-            if ($token->id === T_IF &&
+            if ($token->id === \T_IF &&
                     $token->_prevCode &&
-                    $token->_prevCode->id === T_ELSE) {
+                    $token->_prevCode->id === \T_ELSE) {
                 continue;
             }
 
-            if ($token->id === T_ELSE &&
-                    $token->_nextCode->id === T_IF) {
+            if ($token->id === \T_ELSE &&
+                    $token->_nextCode->id === \T_IF) {
                 $body = $token->_nextSibling->_nextSibling->_nextSibling;
             } elseif ($this->TypeIndex->HasStatementWithOptionalBraces[$token->id]) {
                 $body = $token->_nextSibling;
@@ -58,9 +58,9 @@ final class ControlStructureSpacing implements MultiTokenRule
             }
 
             // Ignore enclosed and empty bodies
-            if ($body->id === T_OPEN_BRACE ||
-                    $body->id === T_COLON ||
-                    $body->id === T_SEMICOLON ||
+            if ($body->id === \T_OPEN_BRACE ||
+                    $body->id === \T_COLON ||
+                    $body->id === \T_SEMICOLON ||
                     $body->IsStatementTerminator) {
                 continue;
             }
@@ -70,7 +70,7 @@ final class ControlStructureSpacing implements MultiTokenRule
             // Add a newline before the token unless it continues a control
             // structure where the previous body had enclosing braces
             if (!$token->_prevCode ||
-                    $token->_prevCode->id !== T_CLOSE_BRACE ||
+                    $token->_prevCode->id !== \T_CLOSE_BRACE ||
                     !$token->continuesControlStructure()) {
                 $token->WhitespaceBefore |= WhitespaceType::LINE;
                 $token->WhitespaceMaskPrev |= WhitespaceType::LINE;
@@ -86,11 +86,11 @@ final class ControlStructureSpacing implements MultiTokenRule
             // Find the last token in the body
             $end = null;
             $continues = false;
-            if ($token->id === T_DO) {
+            if ($token->id === \T_DO) {
                 $continues = true;
-            } elseif ($token->is([T_IF, T_ELSEIF])) {
-                $end = $body->prevSibling()->nextSiblingOf(T_IF, T_ELSEIF, T_ELSE);
-                if ($end->id === T_IF) {
+            } elseif ($token->is([\T_IF, \T_ELSEIF])) {
+                $end = $body->prevSibling()->nextSiblingOf(\T_IF, \T_ELSEIF, \T_ELSE);
+                if ($end->id === \T_IF) {
                     $end = $body->EndStatement;
                 } elseif (!$end->IsNull) {
                     $end = $end->_prevCode;

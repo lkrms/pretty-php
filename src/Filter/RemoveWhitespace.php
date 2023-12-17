@@ -18,8 +18,8 @@ final class RemoveWhitespace implements Filter
     public function filterTokens(array $tokens): array
     {
         foreach ($tokens as $token) {
-            if ($token->id === T_WHITESPACE ||
-                    $token->id === T_BAD_CHARACTER) {
+            if ($token->id === \T_WHITESPACE ||
+                    $token->id === \T_BAD_CHARACTER) {
                 continue;
             }
             $filtered[] = $token;

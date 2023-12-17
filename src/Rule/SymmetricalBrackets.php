@@ -28,13 +28,13 @@ final class SymmetricalBrackets implements MultiTokenRule
     public function getTokenTypes(): array
     {
         return [
-            T_COLON,
-            T_OPEN_BRACE,
-            T_OPEN_BRACKET,
-            T_OPEN_PARENTHESIS,
-            T_ATTRIBUTE,
-            T_CURLY_OPEN,
-            T_DOLLAR_OPEN_CURLY_BRACES,
+            \T_COLON,
+            \T_OPEN_BRACE,
+            \T_OPEN_BRACKET,
+            \T_OPEN_PARENTHESIS,
+            \T_ATTRIBUTE,
+            \T_CURLY_OPEN,
+            \T_DOLLAR_OPEN_CURLY_BRACES,
         ];
     }
 

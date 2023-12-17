@@ -54,24 +54,24 @@ final class PlaceComments implements TokenRule
         if (
             $token->isOneLineComment() &&
             $token->_next &&
-            $token->_next->id !== T_CLOSE_TAG
+            $token->_next->id !== \T_CLOSE_TAG
         ) {
             $token->CriticalWhitespaceAfter |= WhitespaceType::LINE;
         }
 
         $isDocComment =
-            $token->id === T_DOC_COMMENT ||
+            $token->id === \T_DOC_COMMENT ||
             $token->IsInformalDocComment;
 
         $prevIsTopLevelCloseBrace =
-            $token->_prev->id === T_CLOSE_BRACE &&
+            $token->_prev->id === \T_CLOSE_BRACE &&
             $token->_prev->isStructuralBrace(false) &&
             $token->_prev->Expression->namedDeclarationParts()->hasOneOf(
                 ...TokenType::DECLARATION_CLASS
             );
 
         $needsNewlineBefore =
-            $token->id === T_DOC_COMMENT ||
+            $token->id === \T_DOC_COMMENT ||
             ($this->Formatter->Psr12Compliance && $prevIsTopLevelCloseBrace);
 
         if (!$needsNewlineBefore) {
@@ -133,9 +133,9 @@ final class PlaceComments implements TokenRule
         // comments
         if (
             $next && (
-                $next->id === T_DECLARE ||
-                $next->id === T_NAMESPACE || (
-                    $next->id === T_USE &&
+                $next->id === \T_DECLARE ||
+                $next->id === \T_NAMESPACE || (
+                    $next->id === \T_USE &&
                     $next->getUseType() === TokenSubType::USE_IMPORT
                 )
             )
@@ -148,7 +148,7 @@ final class PlaceComments implements TokenRule
         if (
             $next &&
             $next === $token->_next &&
-            $token->id === T_DOC_COMMENT
+            $token->id === \T_DOC_COMMENT
         ) {
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
         }
@@ -211,9 +211,9 @@ final class PlaceComments implements TokenRule
             //
             $indent = 0;
             if (
-                $next->id === T_CASE ||
-                ($next->id === T_DEFAULT &&
-                    $next->parent()->prevSibling(2)->id === T_SWITCH)
+                $next->id === \T_CASE ||
+                ($next->id === \T_DEFAULT &&
+                    $next->parent()->prevSibling(2)->id === \T_SWITCH)
             ) {
                 $prev = $token->_prevCode;
                 if (!(end($token->BracketStack) === $prev ||

@@ -38,17 +38,17 @@ final class Drupal implements TokenRule
     {
         return [
             // --
-            T_CLASS,
-            T_ENUM,
-            T_INTERFACE,
-            T_TRAIT,
+            \T_CLASS,
+            \T_ENUM,
+            \T_INTERFACE,
+            \T_TRAIT,
             // --
-            T_DOC_COMMENT,
+            \T_DOC_COMMENT,
             // --
-            T_CATCH,
-            T_ELSE,
-            T_ELSEIF,
-            T_FINALLY,
+            \T_CATCH,
+            \T_ELSE,
+            \T_ELSEIF,
+            \T_FINALLY,
         ];
     }
 
@@ -57,18 +57,18 @@ final class Drupal implements TokenRule
         // Add blank lines before and after non-empty `class`, `enum`,
         // `interface` and `trait` bodies
         if ($token->is([
-            T_CLASS,
-            T_ENUM,
-            T_INTERFACE,
-            T_TRAIT,
+            \T_CLASS,
+            \T_ENUM,
+            \T_INTERFACE,
+            \T_TRAIT,
         ])) {
             $parts = $token->Expression->declarationParts(false);
             if (!$parts->hasOneOf(...TokenType::DECLARATION)) {
                 return;
             }
 
-            $open = $token->nextSiblingOf(T_OPEN_BRACE);
-            if ($open->_next->id === T_CLOSE_BRACE) {
+            $open = $token->nextSiblingOf(\T_OPEN_BRACE);
+            if ($open->_next->id === \T_CLOSE_BRACE) {
                 return;
             }
 
@@ -81,7 +81,7 @@ final class Drupal implements TokenRule
         }
 
         // Add a blank line after PHP DocBlocks with a `@file` tag
-        if ($token->id === T_DOC_COMMENT) {
+        if ($token->id === \T_DOC_COMMENT) {
             try {
                 $phpDoc = new PhpDoc($token->text);
             } catch (Throwable $ex) {
@@ -98,7 +98,7 @@ final class Drupal implements TokenRule
 
         // Add a newline after close braces with a subsequent `catch`, `else`,
         // `elseif` or `finally`
-        if ($token->_prevCode->id === T_CLOSE_BRACE) {
+        if ($token->_prevCode->id === \T_CLOSE_BRACE) {
             $token->WhitespaceBefore |= WhitespaceType::LINE;
             $token->WhitespaceMaskPrev |= WhitespaceType::LINE;
         }

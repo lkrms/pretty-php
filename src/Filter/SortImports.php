@@ -7,7 +7,7 @@ use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Filter\Concern\FilterTrait;
 use Lkrms\PrettyPHP\Filter\Contract\Filter;
 use Lkrms\PrettyPHP\Token\Token;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Pcre;
 
 /**
@@ -37,28 +37,28 @@ final class SortImports implements Filter
         /** @var array<int,Token> */
         $stack = [];
         foreach ($this->Tokens as $i => $token) {
-            if ($token->id === T_OPEN_BRACE ||
-                    $token->id === T_CURLY_OPEN ||
-                    $token->id === T_DOLLAR_OPEN_CURLY_BRACES) {
+            if ($token->id === \T_OPEN_BRACE ||
+                    $token->id === \T_CURLY_OPEN ||
+                    $token->id === \T_DOLLAR_OPEN_CURLY_BRACES) {
                 $stack[$i] = $token;
                 continue;
             }
-            if ($token->id === T_CLOSE_BRACE) {
+            if ($token->id === \T_CLOSE_BRACE) {
                 array_pop($stack);
                 continue;
             }
-            if ($token->id === T_USE) {
+            if ($token->id === \T_USE) {
                 // Exclude `use` when anonymous functions are inheriting
                 // variables from the parent scope
                 $prevCode = $this->prevCode($i);
                 if ($prevCode &&
-                        $prevCode->id === T_CLOSE_PARENTHESIS) {
+                        $prevCode->id === \T_CLOSE_PARENTHESIS) {
                     continue;
                 }
                 // Exclude `use` when inserting traits
                 $parentIndex = array_key_last($stack);
                 if ($parentIndex === null ||
-                        !$this->isDeclarationOf($parentIndex, T_CLASS, T_TRAIT)) {
+                        !$this->isDeclarationOf($parentIndex, \T_CLASS, \T_TRAIT)) {
                     $tokens[] = $i;
                 }
             }
@@ -102,22 +102,22 @@ final class SortImports implements Filter
                             $current = [];
                             $terminator = null;
                         }
-                    } elseif ($token->id === T_CLOSE_TAG) {
+                    } elseif ($token->id === \T_CLOSE_TAG) {
                         /* Statements like `use A\B\C ?>` are discarded */
                         $current = [];
                         break;
                     } else {
-                        if ($token->id === T_OPEN_BRACE) {
+                        if ($token->id === \T_OPEN_BRACE) {
                             if (!($prevCode = $this->prevCode($i)) ||
-                                    $prevCode->id !== T_NS_SEPARATOR) {
+                                    $prevCode->id !== \T_NS_SEPARATOR) {
                                 $inTraitAdaptation = true;
                             }
-                        } elseif ($token->id === T_CLOSE_BRACE) {
+                        } elseif ($token->id === \T_CLOSE_BRACE) {
                             if ($inTraitAdaptation) {
                                 $terminator = $token;
                                 $inTraitAdaptation = false;
                             }
-                        } elseif ($token->id === T_SEMICOLON && !$inTraitAdaptation) {
+                        } elseif ($token->id === \T_SEMICOLON && !$inTraitAdaptation) {
                             $terminator = $token;
                         }
                         $current[$i++] = $token;
@@ -127,7 +127,7 @@ final class SortImports implements Filter
                 // This point is only reached with the first token in a possible
                 // series of `use` statements, and with the first token after a
                 // `use` statement is finalised
-                if ($token->id !== T_USE) {
+                if ($token->id !== \T_USE) {
                     break;
                 }
                 $current[$i++] = $token;
@@ -185,7 +185,7 @@ final class SortImports implements Filter
             $nextLine += substr_count($t->text, "\n") + 1;
         }
 
-        Convert::arraySpliceAtKey($this->Tokens, $firstKey, count($sorted), $sorted);
+        $this->Tokens = Arr::spliceByKey($this->Tokens, $firstKey, count($sorted), $sorted);
     }
 
     /**
@@ -194,11 +194,11 @@ final class SortImports implements Filter
      */
     private function sortableImport(array $tokens): array
     {
-        switch ($tokens[1]->id ?? T_STRING) {
-            case T_FUNCTION:
+        switch ($tokens[1]->id ?? \T_STRING) {
+            case \T_FUNCTION:
                 $order = 1;
                 break;
-            case T_CONST:
+            case \T_CONST:
                 $order = 2;
                 break;
             default:
@@ -212,9 +212,9 @@ final class SortImports implements Filter
 
         $import = '';
         foreach ($tokens as $token) {
-            if ($token->id === T_COMMENT ||
-                    $token->id === T_DOC_COMMENT ||
-                    $token->id === T_SEMICOLON) {
+            if ($token->id === \T_COMMENT ||
+                    $token->id === \T_DOC_COMMENT ||
+                    $token->id === \T_SEMICOLON) {
                 continue;
             }
             $import .= ($import ? ' ' : '') . $token->text;

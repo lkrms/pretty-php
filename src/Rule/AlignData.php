@@ -24,10 +24,10 @@ final class AlignData implements BlockRule
     private const ALIGN_NEXT = 3;
 
     private const TOKEN_COMPARISON_MAP = [
-        T_CONSTANT_ENCAPSED_STRING => T_STRING,
-        T_DNUMBER => T_STRING,
-        T_LNUMBER => T_STRING,
-        T_VARIABLE => T_STRING,
+        \T_CONSTANT_ENCAPSED_STRING => \T_STRING,
+        \T_DNUMBER => \T_STRING,
+        \T_LNUMBER => \T_STRING,
+        \T_VARIABLE => \T_STRING,
     ];
 
     /**
@@ -107,23 +107,23 @@ final class AlignData implements BlockRule
                     }
                     continue;
                 }
-                if ($token->id === T_COLON &&
+                if ($token->id === \T_COLON &&
                         $token->getColonType() === TokenSubType::COLON_SWITCH_CASE_DELIMITER) {
                     $addToIndex('case');
                     continue;
                 }
-                if ($token->id === T_DOUBLE_ARROW) {
+                if ($token->id === \T_DOUBLE_ARROW) {
                     $addToIndex('=>');
                     continue;
                 }
-                if ($token->id === T_COMMA &&
+                if ($token->id === \T_COMMA &&
                         !$token->hasNewlineAfter() &&
                         $token->Parent &&
                         $token->Parent->isArrayOpenBracket() &&
                         !$this->TypeIndex->CloseBracket[$token->_next->id]) {
                     $data = [
-                        'prevTypes' => $token->prevSiblings($token->prevSiblingOf(T_COMMA)->nextCode())->getTypes(),
-                        'nextTypes' => $token->_next->collectSiblings($token->nextSiblingOf(T_COMMA)->prevCode())->getTypes(),
+                        'prevTypes' => $token->prevSiblings($token->prevSiblingOf(\T_COMMA)->nextCode())->getTypes(),
+                        'nextTypes' => $token->_next->collectSiblings($token->nextSiblingOf(\T_COMMA)->prevCode())->getTypes(),
                     ];
                     $type = array_map(fn(array $types): string => implode(',', $this->simplifyTokenTypes($types)), $data);
                     array_unshift($type, ',');
@@ -287,7 +287,7 @@ final class AlignData implements BlockRule
             if ($action === self::ALIGN_DATA &&
                     ($types = $this->TokenData[$token2->Index]['prevTypes'] ?? null) &&
                     // Exclude `null` from type detection heuristic
-                    !($types === [T_STRING] && strcasecmp($token2->_prev->text, 'null'))) {
+                    !($types === [\T_STRING] && strcasecmp($token2->_prev->text, 'null'))) {
                 $prevTypes[] = $types;
             }
         }
@@ -314,7 +314,7 @@ final class AlignData implements BlockRule
         if ($action === self::ALIGN_DATA) {
             if ($prevTypes && array_uintersect(
                 $prevTypes,
-                [[T_LNUMBER], [T_DNUMBER], [T_VARIABLE]],
+                [[\T_LNUMBER], [\T_DNUMBER], [\T_VARIABLE]],
                 fn($a, $b) => $a <=> $b
             ) === $prevTypes) {
                 $action = self::ALIGN_PREV;

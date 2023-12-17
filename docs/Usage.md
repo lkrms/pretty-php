@@ -115,9 +115,8 @@ pretty-php - Format a PHP file
 
   Ignore the position of newlines in the input.
 
-  This option cannot be overridden by configuration file settings (see
-  **`CONFIGURATION`** below). Use **`--disable=preserve-newlines`** for the same effect
-  without overriding configuration files.
+  Unlike **`--disable=preserve-newlines`**, this option is not ignored when a
+  configuration file is applied.
 
 - **`-S`**, **`--no-simplify-strings`**
 
@@ -130,9 +129,11 @@ pretty-php - Format a PHP file
 
   Set the indentation level of heredocs and nowdocs.
 
-  With `mixed` indentation (the default), line indentation is applied to
+  If **`--heredoc-indent=mixed`** is given, line indentation is applied to
   heredocs that start on their own line, otherwise hanging indentation is
   applied.
+
+  The default level is: `mixed`
 
 - **`-m`**, **`--sort-imports-by`** (`none`|`name`|`depth`)
 
@@ -141,8 +142,7 @@ pretty-php - Format a PHP file
   Use **`--sort-imports-by=none`** to group import statements by type without
   changing their order.
 
-  Unless disabled by **`-M/--no-sort-imports`**, the default is to sort imports by
-  `depth`.
+  The default order is: `depth`
 
 - **`-M`**, **`--no-sort-imports`**
 
@@ -151,10 +151,6 @@ pretty-php - Format a PHP file
 - **`--psr12`**
 
   Enforce strict PSR-12 / PER Coding Style compliance.
-
-  Use this option to apply formatting rules and internal options required
-  for **`pretty-php`** output to satisfy the formatting-related requirements of
-  PHP-FIG coding style standards.
 
 - **`-p`**, **`--preset`** (`drupal`|`laravel`|`symfony`|`wordpress`)
 
@@ -177,9 +173,8 @@ pretty-php - Format a PHP file
 
   Ignore configuration files.
 
-  Use this option to skip detection of configuration files that would
-  otherwise take precedence over formatting options given on the command
-  line.
+  Use this option to ignore any configuration files that would usually apply
+  to the input.
 
   See **`CONFIGURATION`** below.
 
@@ -217,8 +212,9 @@ pretty-php - Format a PHP file
 
   Create debug output in *<u>directory</u>*.
 
-  Combine with **`-v/--verbose`** to render output to a subdirectory of *<u>directory</u>*
-  after processing each pass of each rule.
+  If combined with **`-v/--verbose`**, partially formatted code is written to a
+  series of files in `<directory>/progress-log` that represent changes applied
+  by enabled rules.
 
 - **`--timers`**
 
@@ -246,32 +242,31 @@ pretty-php - Format a PHP file
 **`pretty-php`** looks for a JSON configuration file named `.prettyphp` or
 `prettyphp.json` in the same directory as each input file, then in each of its
 parent directories. It stops looking when it finds a configuration file, a
-`.git` directory, a `.hg` directory, or the root of the filesystem, whichever
-comes first.
+`.git`, `.hg` or `.svn` directory, or the root of the filesystem, whichever comes
+first.
 
-If an input file has an applicable configuration file, command-line
-formatting options other than **`-N/--ignore-newlines`** are replaced with
-settings from the configuration file.
+If a configuration file is found, **`pretty-php`** formats the input using
+formatting options read from the configuration file, and command-line
+formatting options other than **`-N/--ignore-newlines`** are ignored.
 
 The **`--print-config`** option can be used to generate a configuration file, for
 example:
 
-    $ pretty-php -P -S -M --print-config src tests bootstrap.php
-    {
-        "src": [
-            "src",
-            "tests",
-            "bootstrap.php"
-        ],
-        "includeIfPhp": true,
-        "noSimplifyStrings": true,
-        "noSortImports": true
-    }
+```console
+$ pretty-php --sort-imports-by=name --psr12 src tests --print-config
+{
+    "src": [
+        "src",
+        "tests"
+    ],
+    "sortImportsBy": "name",
+    "psr12": true
+}
+```
 
-The optional `src` array specifies files and directories to format. If
-**`pretty-php`** is started with no path arguments in a directory where `src` is
-configured, or the directory is passed to **`pretty-php`** for formatting, paths
-in `src` are formatted. It is ignored otherwise.
+The optional `src` array specifies files and directories to format when
+**`pretty-php`** is started in the same directory or when the directory is passed
+to **`pretty-php`** for formatting.
 
 If a directory contains more than one configuration file, **`pretty-php`** reports
 an error and exits without formatting anything.
@@ -279,9 +274,7 @@ an error and exits without formatting anything.
 ## EXIT STATUS
 
 **`pretty-php`** returns 0 when formatting succeeds, 1 when invalid arguments are
-given, and 2 when one or more input files cannot be parsed. Other non-zero
-values are returned for other failures.
-
-When **`--diff`** or **`--check`** are given, **`pretty-php`** returns 0 when the input is
-already formatted and 1 when formatting is required. The meaning of other
-return values is unchanged.
+given, 2 when invalid configuration files are found, and 4 when one or more
+input files cannot be parsed. When **`--diff`** or **`--check`** are given, **`pretty-php`**
+returns 0 when the input is already formatted and 8 when formatting is
+required.

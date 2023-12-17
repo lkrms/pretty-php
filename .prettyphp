@@ -5,7 +5,8 @@
         "bin",
         "scripts",
         "tests\/unit",
-        "tools\/apigen"
+        "tools\/apigen",
+        ".php-cs-fixer.dist.php"
     ],
     "includeIfPhp": true,
     "enable": [

@@ -17,8 +17,8 @@ final class TruncateComments implements Filter
     public function filterTokens(array $tokens): array
     {
         foreach ($tokens as $token) {
-            if ($token->id === T_COMMENT ||
-                $token->id === T_DOC_COMMENT) {
+            if ($token->id === \T_COMMENT ||
+                $token->id === \T_DOC_COMMENT) {
             }
             $token->text = '';
         }
