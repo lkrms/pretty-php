@@ -6,35 +6,22 @@ use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Formatter;
 
 /**
- * Implements Lkrms\PrettyPHP\Contract\Extension for use by filters and rules
+ * Implements the extension interface
  */
 trait ExtensionTrait
 {
-    /**
-     * @var Formatter
-     */
-    protected $Formatter;
+    protected Formatter $Formatter;
 
-    /**
-     * @var TokenTypeIndex
-     */
-    protected $TypeIndex;
+    protected TokenTypeIndex $TypeIndex;
 
     public function __construct(Formatter $formatter)
     {
-        $this->setFormatter($formatter);
-    }
-
-    public function setFormatter(Formatter $formatter): void
-    {
         $this->Formatter = $formatter;
-        $this->TypeIndex = &$formatter->TokenTypeIndex;
+        $this->TypeIndex = $formatter->TokenTypeIndex;
     }
 
-    public function prepare()
-    {
-        return $this;
-    }
-
+    /**
+     * @inheritDoc
+     */
     public function reset(): void {}
 }

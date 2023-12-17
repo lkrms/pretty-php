@@ -2,11 +2,14 @@
 
 namespace Lkrms\PrettyPHP\Token\Concern;
 
+use Lkrms\PrettyPHP\Catalog\CommentType;
 use Lkrms\PrettyPHP\Catalog\CustomToken;
-use Lkrms\PrettyPHP\Catalog\TokenType;
+use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Filter\Contract\Filter;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Formatter;
+use Lkrms\Utility\Pcre;
 
 trait NavigableTokenTrait
 {
@@ -32,6 +35,17 @@ trait NavigableTokenTrait
 
     public ?Token $_nextSibling = null;
 
+    public ?Token $Statement = null;
+
+    public ?Token $EndStatement = null;
+
+    /**
+     * @var Token|false|null
+     */
+    public $Expression = null;
+
+    public ?Token $EndExpression = null;
+
     public ?Token $OpenedBy = null;
 
     public ?Token $ClosedBy = null;
@@ -53,6 +67,14 @@ trait NavigableTokenTrait
 
     public ?Token $Heredoc = null;
 
+    public bool $IsTernaryOperator = false;
+
+    public ?Token $TernaryOperator1 = null;
+
+    public ?Token $TernaryOperator2 = null;
+
+    public ?Token $ChainOpenedBy = null;
+
     /**
      * True unless the token is a tag, comment, whitespace or inline markup
      *
@@ -72,6 +94,17 @@ trait NavigableTokenTrait
     public bool $IsVirtual = false;
 
     /**
+     * @var CommentType::*|null
+     */
+    public ?string $CommentType = null;
+
+    /**
+     * True if the token is a C-style comment where every line starts with "*"
+     * or at least one delimiter appears on its own line
+     */
+    public bool $IsInformalDocComment = false;
+
+    /**
      * True if the token is a T_CLOSE_BRACE or T_CLOSE_TAG that terminates a
      * statement
      */
@@ -89,11 +122,18 @@ trait NavigableTokenTrait
     public ?string $OriginalText = null;
 
     /**
+     * The formatter to which the token belongs
+     *
+     * @readonly
+     */
+    public Formatter $Formatter;
+
+    /**
      * Indexed token types
      *
      * @readonly
      */
-    public TokenTypeIndex $TokenTypeIndex;
+    public TokenTypeIndex $TypeIndex;
 
     /**
      * @return Token[]
@@ -103,7 +143,7 @@ trait NavigableTokenTrait
         /** @var Token[] */
         $tokens = parent::tokenize($code, $flags);
 
-        if (!$tokens) {
+        if (!$tokens || !$filters) {
             return $tokens;
         }
 
@@ -117,22 +157,21 @@ trait NavigableTokenTrait
     /**
      * @return Token[]
      */
-    public static function tokenize(string $code, int $flags = 0, ?TokenTypeIndex $tokenTypeIndex = null, Filter ...$filters): array
+    public static function tokenize(string $code, int $flags = 0, ?Formatter $formatter = null, Filter ...$filters): array
     {
         $tokens = static::onlyTokenize($code, $flags, ...$filters);
 
-        if (!$tokens) {
+        if (!$tokens || !$formatter) {
             return $tokens;
         }
 
-        $idx = $tokenTypeIndex === null
-            ? new TokenTypeIndex()
-            : $tokenTypeIndex;
-
         // Pass 1:
+        //
         // - link adjacent tokens (set `_prev` and `_next`)
-        // - assign token type index
+        // - assign formatter and token type index
         // - set `OpenTag`, `CloseTag`
+
+        $idx = $formatter->TokenTypeIndex;
 
         /** @var Token|null */
         $prev = null;
@@ -142,7 +181,8 @@ trait NavigableTokenTrait
                 $prev->_next = $token;
             }
 
-            $token->TokenTypeIndex = $idx;
+            $token->Formatter = $formatter;
+            $token->TypeIndex = $formatter->TokenTypeIndex;
 
             /**
              * ```php
@@ -180,14 +220,17 @@ trait NavigableTokenTrait
         }
 
         // Pass 2:
+        //
         // - on PHP < 8.0, convert comments that appear to be PHP >= 8.0
         //   attributes to `T_ATTRIBUTE_COMMENT`
+        // - trim the text of each token
         // - add virtual close brackets after alternative syntax bodies
         // - pair open brackets and tags with their counterparts
         // - link siblings, parents and children (set `BracketStack`, `Parent`,
         //   `_prevCode`, `_nextCode`, `_prevSibling`, `_nextSibling`)
-        // - set `Index`, `IsCode`, `IsStatementTerminator`, `OpenedBy`,
-        //   `ClosedBy`, `String`, `Heredoc`, `StringClosedBy`
+        // - set `Index`, `IsCode`, `CommentType`, `IsInformalDocComment`,
+        //   `IsStatementTerminator`, `OpenedBy`, `ClosedBy`, `String`,
+        //   `Heredoc`, `StringClosedBy`
 
         /** @var Token[] */
         $linked = [];
@@ -208,8 +251,44 @@ trait NavigableTokenTrait
                 $token->id = \T_ATTRIBUTE_COMMENT;
             }
 
+            /** @todo Only trim tokens capable of holding whitespace */
+            $text = $token->text;
+            if ($idx->DoNotModifyLeft[$token->id]) {
+                $text = rtrim($text);
+            } elseif ($idx->DoNotModifyRight[$token->id]) {
+                $text = ltrim($text);
+            } elseif (!$idx->DoNotModify[$token->id]) {
+                $text = trim($text);
+            }
+            if ($text !== $token->text) {
+                $token->setText($text);
+            }
+
             if ($idx->NotCode[$token->id]) {
                 $token->IsCode = false;
+
+                if ($token->id === \T_DOC_COMMENT) {
+                    $token->CommentType = '/**';
+                } elseif ($token->id === \T_COMMENT) {
+                    // "//", "/*" or "#"
+                    $token->CommentType = $text[0] === '/'
+                        ? substr($text, 0, 2)
+                        : $text[0];
+
+                    // Make multi-line C-style comments honourary DocBlocks if:
+                    // - every line starts with "*", or
+                    // - at least one delimiter appears on its own line
+                    $token->IsInformalDocComment =
+                        $token->CommentType === CommentType::C &&
+                        strpos($text, "\n") !== false && (
+                            // Every line starts with "*"
+                            !Pcre::match('/\n\h*+(?!\*)\S/', $text) ||
+                            // The first delimiter is followed by a newline
+                            !Pcre::match('/^\/\*++(\h++|(?!\*))\S/', $text) ||
+                            // The last delimiter is preceded by a newline
+                            !Pcre::match('/\S((?<!\*)|\h++)\*++\/$/', $text)
+                        );
+                }
             }
 
             if (
@@ -237,7 +316,8 @@ trait NavigableTokenTrait
                     $virtual->IsVirtual = true;
                     $virtual->_prev = $prev;
                     $virtual->_next = $token;
-                    $virtual->TokenTypeIndex = $idx;
+                    $virtual->Formatter = $formatter;
+                    $virtual->TypeIndex = $idx;
                     $virtual->OpenTag = $token->OpenTag;
                     $virtual->CloseTag = &$virtual->OpenTag->CloseTag;
                     $prev->_next = $virtual;
@@ -335,6 +415,8 @@ trait NavigableTokenTrait
                 $token->_prevSibling = &$opener->_prevSibling;
                 $token->_nextSibling = &$opener->_nextSibling;
                 $token->Parent = &$opener->Parent;
+                $token->Statement = &$opener->Statement;
+                $token->EndStatement = &$opener->EndStatement;
 
                 // Treat `$token` as a statement terminator if it's a structural
                 // `T_CLOSE_BRACE` that doesn't enclose an anonymous function or
@@ -403,6 +485,234 @@ trait NavigableTokenTrait
             $prev = $token;
         }
 
+        // Pass 3: resolve statements
+
+        $endStatementOffset = 0;
+        $token = reset($linked);
+        while (true) {
+            // If `$token` or its predecessor is a statement terminator, set the
+            // `Statement` and `EndStatement` of siblings between the end of the
+            // previous statement (or the start of the context, if there is no
+            // previous statement) and `$token`
+            if ($endStatementOffset) {
+                $end = $token;
+                while (--$endStatementOffset) {
+                    $end = $end->_prevCode;
+                }
+
+                // Skip empty brackets
+                if ($end->ClosedBy && $end->_nextCode === $end->ClosedBy) {
+                    continue;
+                }
+
+                $current = $end->OpenedBy ?: $end;
+                do {
+                    $current->EndStatement = $end;
+                    $start = $current;
+                    $current = $current->_prevSibling;
+                } while ($current && !$current->EndStatement);
+
+                $current = $start;
+                do {
+                    $current->Statement = $start;
+                    $current = $current->_nextSibling;
+                } while ($current && $current->EndStatement === $end);
+            }
+
+            $token = $token->_nextCode;
+            if (!$token) {
+                break;
+            }
+
+            // The following tokens are regarded as statement terminators:
+            //
+            // - `T_SEMICOLON`, or `T_CLOSE_BRACE` / `T_CLOSE_TAG` where
+            //   `$IsStatementTerminator` is `true`, unless the next token
+            //   continues an open control structure
+            // - `T_COLON` after a switch case or a label
+            // - The last token between brackets other than structural braces
+            // - `T_COMMA`:
+            //   - between parentheses and square brackets, e.g. in argument
+            //     lists, arrays, `for` expressions
+            //   - between non-structural braces, e.g. in `match` expressions
+
+            if ($token->id === \T_SEMICOLON || $token->IsStatementTerminator) {
+                if ($next = $token->_nextCode) {
+                    if ($idx->ContinuesControlStructure[$next->id]) {
+                        continue;
+                    }
+                    if ($next->id === \T_WHILE && $next->isWhileAfterDo()) {
+                        continue;
+                    }
+                }
+                $endStatementOffset = 1;
+                continue;
+            }
+
+            if ($token->id === \T_COLON) {
+                if ($token->isColonStatementDelimiter()) {
+                    $endStatementOffset = 1;
+                }
+                continue;
+            }
+
+            if (
+                $idx->CloseBracketExceptBrace[$token->id] || (
+                    $token->id === \T_CLOSE_BRACE &&
+                    !$token->isStructuralBrace(false)
+                )
+            ) {
+                $endStatementOffset = 2;
+            }
+
+            if ($token->id === \T_COMMA) {
+                if (($parent = $token->Parent) && (
+                    $idx->OpenBracketExceptBrace[$parent->id] || (
+                        $parent->id === \T_OPEN_BRACE &&
+                        !$parent->isStructuralBrace(false)
+                    )
+                )) {
+                    $endStatementOffset = 1;
+                }
+                continue;
+            }
+        }
+
+        // Pass 4:
+        //
+        // - resolve expressions
+        // - identify ternary operators and set `IsTernaryOperator`,
+        //   `TernaryOperator1`, `TernaryOperator2`
+        // - identify method chains and set `ChainOpenedBy`
+
+        $endExpressionOffsets = [];
+        $token = reset($linked);
+        while (true) {
+            if ($endExpressionOffsets) {
+                foreach ($endExpressionOffsets as $endExpressionOffset) {
+                    $end = $token;
+                    while (--$endExpressionOffset) {
+                        $end = $end->_prevCode;
+                    }
+
+                    // Skip empty brackets
+                    if ($end->ClosedBy && $end->_nextCode === $end->ClosedBy) {
+                        continue;
+                    }
+
+                    unset($start);
+
+                    $current = $end->OpenedBy ?: $end;
+                    while ($current && !$current->EndExpression) {
+                        $current->EndExpression = $end;
+                        if ($current->ClosedBy) {
+                            $current->ClosedBy->EndExpression = $end;
+                        }
+                        if ($current->Expression === false) {
+                            break;
+                        }
+                        $start = $current;
+                        $current = $current->_prevSibling;
+                    }
+
+                    if (!isset($start)) {
+                        continue;
+                    }
+
+                    $current = $start;
+                    do {
+                        $current->Expression = $start;
+                        if ($current->ClosedBy) {
+                            $current->ClosedBy->Expression = $start;
+                        }
+                        $current = $current->_nextSibling;
+                    } while ($current && $current->EndExpression === $end);
+                }
+
+                $endExpressionOffsets = [];
+            }
+
+            $token = $token->_nextCode;
+            if (!$token) {
+                break;
+            }
+
+            if ($token->id === \T_QUESTION &&
+                $token->getQuestionType() ===
+                    TokenSubType::QUESTION_TERNARY_OPERATOR) {
+                $current = $token;
+                $count = 0;
+                while (($current = $current->_nextSibling) &&
+                        $token->EndStatement !== ($current->ClosedBy ?: $current)) {
+                    if ($current->IsTernaryOperator) {
+                        continue;
+                    }
+                    if ($current->id === \T_QUESTION &&
+                        $current->getQuestionType() ===
+                            TokenSubType::QUESTION_TERNARY_OPERATOR) {
+                        $count++;
+                        continue;
+                    }
+                    if (!($current->id === \T_COLON &&
+                        $current->getColonType() ===
+                            TokenSubType::COLON_TERNARY_OPERATOR)) {
+                        continue;
+                    }
+                    if ($count--) {
+                        continue;
+                    }
+                    $current->IsTernaryOperator = $token->IsTernaryOperator = true;
+                    $current->TernaryOperator1 = $token->TernaryOperator1 = $token;
+                    $current->TernaryOperator2 = $token->TernaryOperator2 = $current;
+                    break;
+                }
+            }
+
+            if ($idx->Chain[$token->id] && !$token->ChainOpenedBy) {
+                $token->ChainOpenedBy = $current = $token;
+                while (($current = $current->_nextSibling) && $idx->ChainPart[$current->id]) {
+                    if ($idx->Chain[$current->id]) {
+                        $current->ChainOpenedBy = $token;
+                    }
+                }
+            }
+
+            if ($token->id === \T_CLOSE_BRACE && $token->isStructuralBrace()) {
+                $endExpressionOffsets = [2, 1];
+                continue;
+            }
+
+            if ($idx->ExpressionTerminator[$token->id] ||
+                    $token->IsStatementTerminator ||
+                    ($token->id === \T_COLON && $token->isColonStatementDelimiter()) ||
+                    ($token->id === \T_CLOSE_BRACE &&
+                        (!$token->isStructuralBrace() || $token->isMatchBrace())) ||
+                    $token->IsTernaryOperator) {
+                // Expression terminators don't form part of the expression
+                $token->Expression = false;
+                if ($token->_prevCode) {
+                    $endExpressionOffsets = [2];
+                }
+                continue;
+            }
+
+            if ($token->id === \T_COMMA) {
+                $parent = $token->parent();
+                if ($parent->is([\T_OPEN_BRACKET, \T_OPEN_PARENTHESIS, \T_ATTRIBUTE]) ||
+                    ($parent->id === \T_OPEN_BRACE &&
+                        (!$parent->isStructuralBrace() || $token->isMatchDelimiter()))) {
+                    $token->Expression = false;
+                    $endExpressionOffsets = [2];
+                }
+                continue;
+            }
+
+            // Catch the last global expression
+            if (!$token->_next) {
+                $endExpressionOffsets = [1];
+            }
+        }
+
         return $linked;
     }
 
@@ -444,6 +754,50 @@ trait NavigableTokenTrait
     }
 
     /**
+     * True if the token is a T_WHILE that belongs to a do ... while structure
+     */
+    final public function isWhileAfterDo(): bool
+    {
+        /** @var Token $this */
+        if (
+            $this->id !== \T_WHILE ||
+            !$this->_prevSibling ||
+            !$this->_prevSibling->_prevSibling
+        ) {
+            return false;
+        }
+
+        // Test for enclosed and unenclosed bodies, e.g.
+        // - `do { ... } while ();`
+        // - `do statement; while ();`
+
+        if ($this->_prevSibling->_prevSibling->id === \T_DO) {
+            return true;
+        }
+
+        // Starting from the previous sibling because `do` immediately before
+        // `while` cannot be part of the same structure, look for a previous
+        // `T_DO` the token could form a control structure with
+        $do = $this->_prevSibling->prevSiblingOf(\T_DO)->orNull();
+        if (!$do) {
+            return false;
+        }
+        // Now look for its `T_WHILE` counterpart, starting from the first token
+        // it could be and allowing for nested unenclosed `T_WHILE` loops, e.g.
+        // `do while () while (); while ();`
+        $tokens = $do->_nextSibling->_nextSibling->collectSiblings($this);
+        foreach ($tokens as $token) {
+            if (
+                $token->id === \T_WHILE &&
+                $token->_prevSibling->_prevSibling->id !== \T_WHILE
+            ) {
+                return $token === $this;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Get a new T_NULL token
      *
      * @return Token
@@ -454,36 +808,45 @@ trait NavigableTokenTrait
         $token->IsCode = false;
         $token->IsNull = true;
         $token->IsVirtual = true;
-        if (isset($this->TokenTypeIndex)) {
-            $token->TokenTypeIndex = $this->TokenTypeIndex;
+        if (isset($this->TypeIndex)) {
+            $token->TypeIndex = $this->TypeIndex;
         }
         return $token;
     }
 
     /**
-     * Get a fallback token if the token is null or a callback succeeds,
-     * otherwise get the token
+     * Get a fallback token if the token is null, otherwise get the token
      *
-     * The token is returned if it is not null and either:
-     *
-     * - no `$condition` is given, or
-     * - `$condition` returns `false` when it receives the token
-     *
-     * Otherwise, `$token` is resolved and returned.
+     * The token is returned if it is not null, otherwise `$token` is resolved
+     * and returned.
      *
      * @param Token|(callable(): Token) $token
-     * @param (callable(Token): bool)|null $condition
      * @return Token
      */
-    public function or($token, ?callable $condition = null)
+    public function or($token)
     {
-        if (!$this->IsNull && (!$condition || !$condition($this))) {
+        if (!$this->IsNull) {
             return $this;
         }
         if ($token instanceof static) {
             return $token;
         }
         return $token();
+    }
+
+    /**
+     * Get the token if it is not null
+     *
+     * Returns `null` if the token is a null token.
+     *
+     * @return $this|null
+     */
+    public function orNull()
+    {
+        if ($this->IsNull) {
+            return null;
+        }
+        return $this;
     }
 
     public function getTokenName(): ?string
@@ -497,7 +860,7 @@ trait NavigableTokenTrait
      */
     final public function isBracket(): bool
     {
-        return $this->TokenTypeIndex->Bracket[$this->id];
+        return $this->TypeIndex->Bracket[$this->id];
     }
 
     /**
@@ -505,7 +868,7 @@ trait NavigableTokenTrait
      */
     final public function isStandardBracket(): bool
     {
-        return $this->TokenTypeIndex->StandardBracket[$this->id];
+        return $this->TypeIndex->StandardBracket[$this->id];
     }
 
     /**
@@ -514,7 +877,7 @@ trait NavigableTokenTrait
      */
     final public function isOpenBracket(): bool
     {
-        return $this->TokenTypeIndex->OpenBracket[$this->id];
+        return $this->TypeIndex->OpenBracket[$this->id];
     }
 
     /**
@@ -522,7 +885,7 @@ trait NavigableTokenTrait
      */
     final public function isCloseBracket(): bool
     {
-        return $this->TokenTypeIndex->CloseBracket[$this->id];
+        return $this->TypeIndex->CloseBracket[$this->id];
     }
 
     /**
@@ -530,7 +893,7 @@ trait NavigableTokenTrait
      */
     final public function isStandardOpenBracket(): bool
     {
-        return $this->TokenTypeIndex->StandardOpenBracket[$this->id];
+        return $this->TypeIndex->StandardOpenBracket[$this->id];
     }
 
     final public function startsAlternativeSyntax(): bool
@@ -541,7 +904,7 @@ trait NavigableTokenTrait
         if ($this->ClosedBy) {
             return true;
         }
-        if ($this->TokenTypeIndex->AltSyntaxContinueWithoutExpression[$this->_prevCode->id]) {
+        if ($this->TypeIndex->AltSyntaxContinueWithoutExpression[$this->_prevCode->id]) {
             return true;
         }
 
@@ -551,8 +914,8 @@ trait NavigableTokenTrait
 
         $prev = $this->_prevCode->_prevSibling;
         if (
-            $this->TokenTypeIndex->AltSyntaxStart[$prev->id] ||
-            $this->TokenTypeIndex->AltSyntaxContinueWithExpression[$prev->id]
+            $this->TypeIndex->AltSyntaxStart[$prev->id] ||
+            $this->TypeIndex->AltSyntaxContinueWithExpression[$prev->id]
         ) {
             return true;
         }

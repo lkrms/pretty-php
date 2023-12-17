@@ -20,7 +20,7 @@ final class StrictLists implements ListRule
 {
     use ListRuleTrait;
 
-    public function getPriority(string $method): ?int
+    public static function getPriority(string $method): ?int
     {
         switch ($method) {
             case self::PROCESS_LIST:
@@ -41,7 +41,7 @@ final class StrictLists implements ListRule
         } else {
             // Leave the first item alone unless strict PSR-12 compliance is
             // enabled
-            if ($owner->ClosedBy && !$this->Formatter->Psr12Compliance) {
+            if ($owner->ClosedBy && !$this->Formatter->Psr12) {
                 $items->shift();
             }
             $items->maskWhitespaceBefore(~WhitespaceType::BLANK & ~WhitespaceType::LINE);

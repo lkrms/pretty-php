@@ -3,8 +3,6 @@
 namespace Lkrms\PrettyPHP;
 
 use Lkrms\Concern\Immutable;
-use Lkrms\Concern\TReadable;
-use Lkrms\Contract\IReadable;
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Profile;
@@ -13,8 +11,9 @@ use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Contract\Extension;
+use Lkrms\PrettyPHP\Exception\EnabledRulesAreNotCompatible;
 use Lkrms\PrettyPHP\Exception\FormatterException;
-use Lkrms\PrettyPHP\Exception\IncompatibleRulesException;
 use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
 use Lkrms\PrettyPHP\Filter\Contract\Filter;
 use Lkrms\PrettyPHP\Filter\CollectColumn;
@@ -69,39 +68,33 @@ use Lkrms\PrettyPHP\Support\CodeProblem;
 use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Get;
+use Lkrms\Utility\Str;
 use CompileError;
-use LogicException;
 use Throwable;
 
 /**
- * Formats PHP code by applying filters and rules to tokens
- *
- * @property-read bool $Psr12Compliance Enforce strict PSR-12 compliance?
+ * Formats PHP code
  */
-final class Formatter implements IReadable
+final class Formatter
 {
-    use Immutable {
-        withPropertyValue as public with;
-    }
-    use TReadable;
+    use Immutable;
 
     /**
-     * The string used for indentation
-     *
-     * Usually `"    "` or `"\t"`.
+     * Use spaces for indentation?
      *
      * @readonly
      */
-    public string $Tab;
+    public bool $InsertSpaces;
 
     /**
      * The size of a tab, in spaces
      *
      * @readonly
-     * @var (2|4|8)
+     * @phpstan-var 2|4|8
      */
     public int $TabSize;
 
@@ -113,37 +106,19 @@ final class Formatter implements IReadable
     public string $SoftTab;
 
     /**
+     * The string used for indentation
+     *
+     * @readonly
+     * @var ("  "|"    "|"        "|"	")
+     */
+    public string $Tab;
+
+    /**
      * Indexed token types
      *
      * @readonly
      */
     public TokenTypeIndex $TokenTypeIndex;
-
-    /**
-     * Enabled formatting rules
-     *
-     * @readonly
-     * @var array<class-string<Rule>,true>
-     */
-    public array $EnabledRules;
-
-    /**
-     * False if calls to reportCodeProblem() are ignored
-     *
-     * @readonly
-     */
-    public bool $CollectCodeProblems;
-
-    /**
-     * False if line breaks are only preserved between statements
-     *
-     * When the {@see PreserveLineBreaks} rule is disabled, `false` is assigned
-     * to this property and the rule is reinstated to preserve blank lines
-     * between statements.
-     *
-     * @readonly
-     */
-    public bool $PreserveLineBreaks = true;
 
     /**
      * End-of-line sequence used when line endings are not preserved or when
@@ -174,6 +149,51 @@ final class Formatter implements IReadable
      */
     public int $HeredocIndent;
 
+    /**
+     * @var ImportSortOrder::*
+     */
+    public int $ImportSortOrder;
+
+    /**
+     * True if braces are formatted using the One True Brace Style
+     *
+     * @readonly
+     */
+    public bool $OneTrueBraceStyle;
+
+    /**
+     * Enforce strict PSR-12 / PER Coding Style compliance?
+     */
+    public bool $Psr12;
+
+    /**
+     * False if calls to reportCodeProblem() are ignored
+     *
+     * @readonly
+     */
+    public bool $CollectCodeProblems;
+
+    /**
+     * False if line breaks are only preserved between statements
+     *
+     * When the {@see PreserveLineBreaks} rule is disabled, `false` is assigned
+     * to this property and the rule is reinstated to preserve blank lines
+     * between statements.
+     *
+     * @readonly
+     */
+    public bool $PreserveLineBreaks;
+
+    /**
+     * An index of enabled extensions
+     *
+     * @readonly
+     * @var array<class-string<Extension>,true>
+     */
+    public array $Enabled;
+
+    // --
+
     public bool $IncreaseIndentBetweenUnenclosedTags = true;
 
     public bool $RelaxAlignmentCriteria = false;
@@ -198,23 +218,14 @@ final class Formatter implements IReadable
      */
     public bool $AlignFirstCallInChain = true;
 
-    /**
-     * True if braces are formatted using the One True Brace Style
-     *
-     * @readonly
-     */
-    public bool $OneTrueBraceStyle;
-
-    /**
-     * @var ImportSortOrder::*
-     */
-    public int $ImportSortOrder;
+    // --
 
     /**
      * @var array<class-string<Rule>>
      */
-    public const MANDATORY_RULES = [
+    public const DEFAULT_RULES = [
         ProtectStrings::class,           // processToken  (40)
+        NormaliseStrings::class,         // processToken  (60)
         NormaliseComments::class,        // processToken  (70)
         StandardWhitespace::class,       // processToken  (80), callback (820)
         StatementSpacing::class,         // processToken  (80)
@@ -222,11 +233,13 @@ final class Formatter implements IReadable
         ControlStructureSpacing::class,  // processToken  (83)
         PlaceComments::class,            // processToken  (90), beforeRender (997)
         PlaceBraces::class,              // processToken  (92), beforeRender (400)
+        PreserveLineBreaks::class,       // processToken  (93)
         SymmetricalBrackets::class,      // processToken  (96)
         VerticalWhitespace::class,       // processToken  (98)
         ListSpacing::class,              // processList   (98)
         StandardIndentation::class,      // processToken (600)
         SwitchIndentation::class,        // processToken (600)
+        DeclarationSpacing::class,       // processToken (620)
         HangingIndentation::class,       // processToken (800), callback (800)
         HeredocIndentation::class,       // processToken (900), beforeRender (900)
         EssentialWhitespace::class,      // beforeRender (999)
@@ -235,17 +248,9 @@ final class Formatter implements IReadable
     /**
      * @var array<class-string<Rule>>
      */
-    public const DEFAULT_RULES = [
-        ...self::MANDATORY_RULES,
-        NormaliseStrings::class,    // processToken  (60)
-        PreserveLineBreaks::class,  // processToken  (93)
-        DeclarationSpacing::class,  // processToken (620)
-    ];
-
-    /**
-     * @var array<class-string<Rule>>
-     */
-    public const ADDITIONAL_RULES = [
+    public const OPTIONAL_RULES = [
+        NormaliseStrings::class,           // processToken  (60)
+        PreserveLineBreaks::class,         // processToken  (93)
         PreserveOneLineStatements::class,  // processToken  (95)
         BlankLineBeforeReturn::class,      // processToken  (97)
         StrictExpressions::class,          // processToken  (98)
@@ -260,13 +265,27 @@ final class Formatter implements IReadable
         AlignLists::class,                 // processList  (400), callback (710)
         AlignData::class,                  // processBlock (340), callback (720)
         AlignComments::class,              // processBlock (340), beforeRender (998)
+        DeclarationSpacing::class,         // processToken (620)
+    ];
+
+    /**
+     * @var array<class-string<Rule>>
+     */
+    public const NO_TAB_RULES = [
+        AlignChains::class,
+        AlignArrowFunctions::class,
+        AlignTernaryOperators::class,
+        AlignLists::class,
     ];
 
     /**
      * @var array<array<class-string<Rule>>>
      */
-    public const INCOMPATIBLE_RULE_GROUPS = [
-        [StrictLists::class, AlignLists::class],
+    public const INCOMPATIBLE_RULES = [
+        [
+            StrictLists::class,
+            AlignLists::class,
+        ],
     ];
 
     /**
@@ -300,15 +319,99 @@ final class Formatter implements IReadable
         TrimOpenTags::class,
     ];
 
+    // --
+
     /**
-     * @var Token[]|null
+     * @var array<class-string<Rule>>
+     */
+    private array $PreferredRules;
+
+    /**
+     * @var array<class-string<Filter>>
+     */
+    private array $PreferredFilters;
+
+    // --
+
+    /**
+     * @var array<class-string<Rule>>
+     */
+    private array $Rules;
+
+    /**
+     * @var array<class-string<TokenRule>,array<int,true>|array{'*'}>
+     */
+    private array $RuleTokenTypes;
+
+    /**
+     * [ key => [ rule, method ] ]
+     *
+     * @var array<string,array{class-string<TokenRule|ListRule>,string}>
+     */
+    private array $MainLoop;
+
+    /**
+     * [ key => [ rule, method ] ]
+     *
+     * @var array<string,array{class-string<BlockRule>,string}>
+     */
+    private array $BlockLoop;
+
+    /**
+     * [ key => [ rule, method ] ]
+     *
+     * @var array<string,array{class-string<Rule>,string}>
+     */
+    private array $BeforeRender;
+
+    /**
+     * @var array<class-string<Filter>>
+     */
+    private array $FormatFilters;
+
+    /**
+     * @var array<class-string<Filter>>
+     */
+    private array $ComparisonFilters;
+
+    /**
+     * @var array<class-string<Rule>,Rule>
+     */
+    private array $RuleMap;
+
+    /**
+     * @var Filter[]
+     */
+    private array $FormatFilterList;
+
+    /**
+     * @var Filter[]
+     */
+    private array $ComparisonFilterList;
+
+    /**
+     * @var array<class-string<Extension>,Extension>
+     */
+    private array $Extensions;
+
+    private bool $ExtensionsLoaded = false;
+
+    // --
+
+    /**
+     * @var array<int,Token>|null
      */
     public ?array $Tokens = null;
 
     /**
      * @var array<int,array<int,Token>>|null
      */
-    public ?array $TokenIndex = null;
+    private ?array $TokenIndex = null;
+
+    /**
+     * @var array<int,array<int,array<array{Rule,callable}>>>|null
+     */
+    private ?array $Callbacks = null;
 
     /**
      * @var CodeProblem[]|null
@@ -320,71 +423,7 @@ final class Formatter implements IReadable
      */
     public ?array $Log = null;
 
-    /**
-     * Enforce strict PSR-12 compliance?
-     */
-    private bool $_Psr12Compliance = false;
-
-    /**
-     * @var array<string,Rule>
-     */
-    private array $Rules;
-
-    /**
-     * @var array<class-string<TokenRule>,array{'*'}|array<int,true>>
-     */
-    private array $TokenRuleTypes;
-
-    /**
-     * @var array<string,Filter>
-     */
-    private array $Filters;
-
-    /**
-     * @var array<string,Filter>
-     */
-    private array $FormatFilters;
-
-    /**
-     * @var array<string,Filter>
-     */
-    private array $ComparisonFilters;
-
-    /**
-     * @var array<int,Filter>
-     */
-    private array $FormatFilterList;
-
-    /**
-     * @var array<int,Filter>
-     */
-    private array $ComparisonFilterList;
-
-    /**
-     * [ [ Rule object, method name ], ... ]
-     *
-     * @var array<string,array{TokenRule|ListRule,string}>
-     */
-    private array $MainLoop;
-
-    /**
-     * [ [ Rule object, method name ], ... ]
-     *
-     * @var array<string,array{BlockRule,string}>
-     */
-    private array $BlockLoop;
-
-    /**
-     * [ [ Rule object, method name ], ... ]
-     *
-     * @var array<string,array{Rule,string}>
-     */
-    private array $BeforeRender;
-
-    /**
-     * @var array<int,array<int,array<array{Rule,callable}>>>
-     */
-    private array $Callbacks;
+    // --
 
     private bool $Debug;
 
@@ -392,22 +431,15 @@ final class Formatter implements IReadable
 
     private bool $ReportCodeProblems;
 
-    protected function _getPsr12Compliance(): bool
-    {
-        return $this->_Psr12Compliance;
-    }
-
     /**
      * Creates a new Formatter object
      *
      * Rules are processed from lowest to highest priority (smallest to biggest
      * number).
      *
-     * @param bool $insertSpaces Use spaces for indentation?
-     * @param (2|4|8) $tabSize The size of a tab, in spaces
-     * @param array<class-string<Rule>> $disableRules Non-mandatory rules to disable
-     * @param array<class-string<Rule>> $enableRules Additional rules to enable
-     * @param array<class-string<Filter>> $disableFilters Optional filters to disable
+     * @phpstan-param 2|4|8 $tabSize
+     * @param array<class-string<Extension>> $disable Non-mandatory extensions to disable
+     * @param array<class-string<Extension>> $enable Optional extensions to enable
      * @param int-mask-of<FormatterFlag::*> $flags Debugging flags
      * @param TokenTypeIndex|null $tokenTypeIndex Provide a customised token type index
      * @param HeredocIndent::* $heredocIndent
@@ -416,9 +448,8 @@ final class Formatter implements IReadable
     public function __construct(
         bool $insertSpaces = true,
         int $tabSize = 4,
-        array $disableRules = [],
-        array $enableRules = [],
-        array $disableFilters = [],
+        array $disable = [],
+        array $enable = [],
         int $flags = 0,
         ?TokenTypeIndex $tokenTypeIndex = null,
         string $preferredEol = \PHP_EOL,
@@ -426,19 +457,17 @@ final class Formatter implements IReadable
         int $spacesBesideCode = 2,
         int $heredocIndent = HeredocIndent::MIXED,
         int $importSortOrder = ImportSortOrder::DEPTH,
-        bool $oneTrueBraceStyle = false
+        bool $oneTrueBraceStyle = false,
+        bool $psr12 = false
     ) {
         if (!in_array($tabSize, [2, 4, 8], true)) {
-            // @codeCoverageIgnoreStart
             throw new InvalidArgumentException(sprintf(
                 'Invalid tabSize (2, 4 or 8 expected): %d',
                 $tabSize
             ));
-            // @codeCoverageIgnoreEnd
         }
 
-        $this->SoftTab = str_repeat(' ', $tabSize);
-        $this->Tab = $insertSpaces ? $this->SoftTab : "\t";
+        $this->InsertSpaces = $insertSpaces;
         $this->TabSize = $tabSize;
         $this->TokenTypeIndex = $tokenTypeIndex ?: new TokenTypeIndex();
         $this->PreferredEol = $preferredEol;
@@ -447,70 +476,89 @@ final class Formatter implements IReadable
         $this->HeredocIndent = $heredocIndent;
         $this->ImportSortOrder = $importSortOrder;
         $this->OneTrueBraceStyle = $oneTrueBraceStyle;
+        $this->Psr12 = $psr12;
 
         $this->Debug = ($flags & FormatterFlag::DEBUG) || Env::debug();
         $this->LogProgress = $this->Debug && ($flags & FormatterFlag::LOG_PROGRESS);
         $this->ReportCodeProblems = (bool) ($flags & FormatterFlag::REPORT_CODE_PROBLEMS);
         $this->CollectCodeProblems = $this->ReportCodeProblems || ($flags & FormatterFlag::COLLECT_CODE_PROBLEMS);
 
+        $this->resolveExtensions($rules, $filters, $enable, $disable);
+        $this->PreferredRules = $rules;
+        $this->PreferredFilters = $filters;
+
+        $this->apply();
+    }
+
+    /**
+     * Get an instance with a value applied to a given property
+     *
+     * @param mixed $value
+     * @return static
+     */
+    public function with(string $property, $value): self
+    {
+        return $this->withPropertyValue($property, $value)
+                    ->apply();
+    }
+
+    private function __clone()
+    {
+        $this->flush();
+    }
+
+    /**
+     * @return static
+     */
+    private function apply(): self
+    {
+        $this->SoftTab = str_repeat(' ', $this->TabSize);
+        $this->Tab = $this->InsertSpaces ? $this->SoftTab : "\t";
+
+        if ($this->SpacesBesideCode < 1) {
+            $this->SpacesBesideCode = 1;
+        }
+
+        $rules = $this->PreferredRules;
+        $filters = $this->PreferredFilters;
+
         // If using tabs for indentation, disable incompatible rules
-        if (!$insertSpaces) {
-            array_push(
-                $disableRules,
-                AlignArrowFunctions::class,
-                AlignChains::class,
-                AlignLists::class,
-                AlignTernaryOperators::class,
-            );
+        if (!$this->InsertSpaces) {
+            $rules = array_diff($rules, self::NO_TAB_RULES);
         }
 
-        if (in_array(PreserveLineBreaks::class, $disableRules, true)) {
+        // Enable `PreserveLineBreaks` if disabled, but limit its scope to blank
+        // lines between statements
+        if (!in_array(PreserveLineBreaks::class, $rules, true)) {
             $this->PreserveLineBreaks = false;
-            $this->TokenTypeIndex = $this->TokenTypeIndex->withoutPreservingNewlines();
+            $this->TokenTypeIndex = $this->TokenTypeIndex->withoutPreserveNewline();
+            $rules[] = PreserveLineBreaks::class;
+        } else {
+            $this->PreserveLineBreaks = true;
+            $this->TokenTypeIndex = $this->TokenTypeIndex->withPreserveNewline();
         }
 
-        $rules = array_diff(
-            array_merge(
-                self::DEFAULT_RULES,
-                array_intersect(
-                    self::ADDITIONAL_RULES,
-                    $enableRules,
-                )
-            ),
-            // Remove mandatory rules from $skipRules
-            array_diff($disableRules, [
-                ...self::MANDATORY_RULES,
-                PreserveLineBreaks::class,
-            ])
-        );
-        foreach (self::INCOMPATIBLE_RULE_GROUPS as $group) {
-            $enabled = array_intersect($group, $rules);
-            if (count($enabled) > 1) {
-                throw new IncompatibleRulesException(...$enabled);
+        foreach (self::INCOMPATIBLE_RULES as $notCompatible) {
+            $notCompatible = array_intersect($notCompatible, $rules);
+            if (count($notCompatible) > 1) {
+                throw new EnabledRulesAreNotCompatible(...$notCompatible);
             }
         }
-        $this->EnabledRules = array_combine($rules, array_fill(0, count($rules), true));
 
         Profile::startTimer(__METHOD__ . '#sort-rules');
+
+        $tokenTypes = [];
         $mainLoop = [];
         $blockLoop = [];
         $beforeRender = [];
         $i = 0;
-        foreach ($rules as $_rule) {
-            if (!is_a($_rule, Rule::class, true)) {
-                throw new LogicException(sprintf('Not a %s: %s', Rule::class, $_rule));
-            }
-            /** @var Rule $rule */
-            $rule = (new $_rule($this))->prepare();
-            $this->Rules[$_rule] = $rule;
-            if ($rule instanceof TokenRule) {
-                $types = $rule->getTokenTypes();
-                $first = $types
-                    ? reset($types)
-                    : null;
+        foreach ($rules as $rule) {
+            if (is_a($rule, TokenRule::class, true)) {
+                /** @var int[]|array<int,bool>|array{'*'} */
+                $types = $rule::getTokenTypes($this->TokenTypeIndex);
+                $first = $types ? reset($types) : null;
                 if (is_bool($first)) {
-                    // If an index is returned, reduce it to types with a value
-                    // of `true`
+                    // Reduce an index to entries with a value of `true`
                     $index = $types;
                     $types = [];
                     foreach ($index as $type => $value) {
@@ -519,147 +567,132 @@ final class Formatter implements IReadable
                         }
                     }
                 } elseif (is_int($first)) {
-                    // If a list is returned, convert it to an index
-                    $types = array_combine(
-                        $types,
-                        array_fill(0, count($types), true),
-                    );
+                    // Convert a list of types to an index
+                    /** @var int[] */
+                    $list = $types;
+                    $types = Arr::toIndex($list);
                 }
-                $this->TokenRuleTypes[$_rule] = $types;
-                $key = "$_rule:" . TokenRule::PROCESS_TOKEN;
-                if ($rule instanceof MultiTokenRule) {
-                    $mainLoop[$key] = [$rule, MultiTokenRule::PROCESS_TOKENS, $i];
+                $tokenTypes[$rule] = $types;
+
+                if (is_a($rule, MultiTokenRule::class, true)) {
+                    $mainLoop[$rule . '#token'] = [$rule, MultiTokenRule::PROCESS_TOKENS, $i];
                 } else {
-                    $mainLoop[$key] = [$rule, TokenRule::PROCESS_TOKEN, $i];
+                    $mainLoop[$rule . '#token'] = [$rule, TokenRule::PROCESS_TOKEN, $i];
                 }
             }
-            if ($rule instanceof ListRule) {
-                $key = "$_rule:" . ListRule::PROCESS_LIST;
-                $mainLoop[$key] = [$rule, ListRule::PROCESS_LIST, $i];
+            if (is_a($rule, ListRule::class, true)) {
+                $mainLoop[$rule . '#list'] = [$rule, ListRule::PROCESS_LIST, $i];
             }
-            if ($rule instanceof BlockRule) {
-                $blockLoop[$_rule] = [$rule, BlockRule::PROCESS_BLOCK, $i];
+            if (is_a($rule, BlockRule::class, true)) {
+                $blockLoop[$rule] = [$rule, BlockRule::PROCESS_BLOCK, $i];
             }
-            $beforeRender[$_rule] = [$rule, Rule::BEFORE_RENDER, $i];
+            $beforeRender[$rule] = [$rule, Rule::BEFORE_RENDER, $i];
             $i++;
         }
+
+        $this->Rules = $rules;
+        $this->RuleTokenTypes = $tokenTypes;
         $this->MainLoop = $this->sortRules($mainLoop);
         $this->BlockLoop = $this->sortRules($blockLoop);
         $this->BeforeRender = $this->sortRules($beforeRender);
+
         Profile::stopTimer(__METHOD__ . '#sort-rules');
 
-        $filters = array_diff(
-            self::DEFAULT_FILTERS,
-            array_intersect(
-                self::OPTIONAL_FILTERS,
-                $disableFilters
-            )
-        );
+        $withComparison = array_merge($filters, self::COMPARISON_FILTERS);
+        // Column numbers are unnecessary when comparing tokens
+        $withoutColumn = array_diff($withComparison, [CollectColumn::class]);
 
-        $this->FormatFilters = array_combine(
-            $filters,
-            array_map(
-                fn(string $filter) => (new $filter($this))->prepare(),
-                $filters
-            )
-        );
+        $this->FormatFilters = $filters;
+        $this->ComparisonFilters = $withoutColumn;
 
-        // Column values are unnecessary when comparing tokens
-        $filters = $this->FormatFilters;
-        unset($filters[CollectColumn::class]);
+        /** @var array<class-string<Extension>,true> */
+        $enabled = Arr::toIndex(Arr::extend($rules, ...$withComparison));
+        $this->Enabled = $enabled;
 
-        $this->ComparisonFilters = array_merge(
-            $filters,
-            $comparisonFilters = array_combine(
-                self::COMPARISON_FILTERS,
-                array_map(
-                    fn(string $filter) => (new $filter($this))->prepare(),
-                    self::COMPARISON_FILTERS
-                )
-            )
-        );
-
-        $this->Filters = array_merge($this->FormatFilters, $comparisonFilters);
-        $this->FormatFilterList = array_values($this->FormatFilters);
-        $this->ComparisonFilterList = array_values($this->ComparisonFilters);
-    }
-
-    public function __clone()
-    {
-        foreach ($this->Rules as $_rule => &$rule) {
-            $rule = clone $rule;
-            $rule->setFormatter($this);
-            if ($rule instanceof TokenRule &&
-                    ($this->MainLoop[$key = "$_rule:" . TokenRule::PROCESS_TOKEN] ?? null)) {
-                $this->MainLoop[$key][0] = $rule;
-            }
-            if ($rule instanceof ListRule &&
-                    ($this->MainLoop[$key = "$_rule:" . ListRule::PROCESS_LIST] ?? null)) {
-                $this->MainLoop[$key][0] = $rule;
-            }
-            if ($rule instanceof BlockRule &&
-                    ($this->BlockLoop[$_rule] ?? null)) {
-                $this->BlockLoop[$_rule][0] = $rule;
-            }
-            if ($this->BeforeRender[$_rule] ?? null) {
-                $this->BeforeRender[$_rule][0] = $rule;
-            }
-        }
-
-        foreach ($this->Filters as $_filter => &$filter) {
-            $filter = clone $filter;
-            $filter->setFormatter($this);
-            if ($this->FormatFilters[$_filter] ?? null) {
-                $this->FormatFilters[$_filter] = $filter;
-            }
-            if ($this->ComparisonFilters[$_filter] ?? null) {
-                $this->ComparisonFilters[$_filter] = $filter;
-            }
-        }
-        $this->FormatFilterList = array_values($this->FormatFilters);
-        $this->ComparisonFilterList = array_values($this->ComparisonFilters);
+        return $this;
     }
 
     /**
-     * @return $this
+     * @param array<class-string<Extension>> $extensions
+     * @return static
      */
-    public function withPsr12Compliance()
+    public function withoutExtensions(array $extensions = []): self
     {
-        if ($this->_Psr12Compliance) {
-            return $this;
-        }
-
-        /** @todo: Check ruleset compliance */
-        $clone = clone $this;
-        $clone->Tab = '    ';
-        $clone->TabSize = 4;
-        $clone->SoftTab = '    ';
-        $clone->PreferredEol = "\n";
-        $clone->PreserveEol = false;
-        $clone->HeredocIndent = HeredocIndent::HANGING;
-        $clone->NewlineBeforeFnDoubleArrows = true;
-        $clone->OneTrueBraceStyle = false;
-        $clone->_Psr12Compliance = true;
-
-        return $clone;
+        return $this->withExtensions([], $extensions);
     }
 
     /**
-     * True if a formatting rule is enabled
-     *
-     * @param class-string<Rule> $rule
+     * @param array<class-string<Extension>> $enable
+     * @param array<class-string<Extension>> $disable
+     * @return static
      */
-    public function ruleIsEnabled(string $rule): bool
+    public function withExtensions(array $enable, array $disable = [], bool $preserveCurrent = true): self
     {
-        return $this->EnabledRules[$rule] ?? false;
+        return $this->doWithExtensions($enable, $disable, $preserveCurrent)
+                    ->apply();
+    }
+
+    /**
+     * @param array<class-string<Extension>> $enable
+     * @param array<class-string<Extension>> $disable
+     * @return static
+     */
+    private function doWithExtensions(array $enable, array $disable = [], bool $preserveCurrent = true): self
+    {
+        if ($preserveCurrent) {
+            $enable = array_merge(
+                $enable,
+                $this->PreferredRules,
+                $this->PreferredFilters,
+            );
+
+            $disable = array_merge(
+                $disable,
+                array_diff(
+                    Arr::extend(self::DEFAULT_RULES, ...self::DEFAULT_FILTERS),
+                    $this->PreferredRules,
+                    $this->PreferredFilters,
+                ),
+            );
+        }
+
+        $this->resolveExtensions($rules, $filters, $enable, $disable);
+
+        return $this->withPropertyValue('PreferredRules', $rules)
+                    ->withPropertyValue('PreferredFilters', $filters);
+    }
+
+    /**
+     * @return static
+     */
+    public function withPsr12()
+    {
+        return $this->withPropertyValue('InsertSpaces', true)
+                    ->withPropertyValue('TabSize', 4)
+                    ->withPropertyValue('PreferredEol', "\n")
+                    ->withPropertyValue('PreserveEol', false)
+                    ->withPropertyValue('HeredocIndent', HeredocIndent::HANGING)
+                    ->withPropertyValue('NewlineBeforeFnDoubleArrows', true)
+                    ->withPropertyValue('OneTrueBraceStyle', false)
+                    ->withPropertyValue('Psr12', true)
+                    ->doWithExtensions([
+                        SortImports::class,
+                        StrictExpressions::class,
+                        StrictLists::class,
+                        DeclarationSpacing::class,
+                    ], [
+                        PreserveOneLineStatements::class,
+                        AlignLists::class,
+                    ])
+                    ->apply();
     }
 
     /**
      * Get formatted code
      *
-     *  1. Call `reset()` on rules and filters
-     *  2. Get end-of-line sequence and replace line breaks with `"\n"` if
-     *     needed
+     *  1. Call `reset()` on the formatter, filters and rules
+     *  2. Detect end-of-line sequence if not given and replace line breaks with
+     *     `"\n"` if needed
      *  3. `tokenize()` input and apply formatting filters
      *  4. `prepareTokens()` for formatting
      *  5. Find lists, i.e. comma-delimited items between non-empty square or
@@ -673,42 +706,51 @@ final class Formatter implements IReadable
      * 10. Process rules that implement `beforeRender()` in priority order
      * 11. Render and validate output
      *
+     * @param string|null $eol The end-of-line sequence used in `$code`, if
+     * known.
      * @param string|null $filename For reporting purposes only. No file
      * operations are performed on `$filename`.
      */
-    public function format(string $code, ?string $filename = null, bool $fast = false): string
-    {
+    public function format(
+        string $code,
+        ?string $eol = null,
+        ?string $filename = null,
+        bool $fast = false
+    ): string {
         $errorLevel = error_reporting();
         if ($errorLevel & \E_COMPILE_WARNING) {
             error_reporting($errorLevel & ~\E_COMPILE_WARNING);
         }
 
-        $this->Tokens = null;
-        $this->TokenIndex = null;
-        $this->Log = null;
-        $this->Callbacks = [];
-        $this->CodeProblems = [];
-        foreach ($this->Rules as $rule) {
-            $rule->reset();
-        }
-        foreach ($this->Filters as $filter) {
-            $filter->reset();
-        }
-        $this->SpacesBesideCode > 0 || $this->SpacesBesideCode = 1;
+        Profile::startTimer(__METHOD__ . '#reset');
 
-        $eol = Get::eol($code);
-        if ($eol && $eol !== "\n") {
+        if (!$this->ExtensionsLoaded) {
+            $this->RuleMap = array_combine($this->Rules, $this->getExtensions($this->Rules));
+            $this->FormatFilterList = $this->getExtensions($this->FormatFilters);
+            $this->ComparisonFilterList = $this->getExtensions($this->ComparisonFilters);
+            $this->ExtensionsLoaded = true;
+        }
+
+        $this->reset();
+        $this->resetExtensions();
+
+        Profile::stopTimer(__METHOD__ . '#reset');
+
+        Profile::startTimer(__METHOD__ . '#detect-eol');
+        $eol = Str::coalesce($eol, null);
+        $eol ??= Get::eol($code);
+        if ((string) $eol !== '' && $eol !== "\n") {
             $code = str_replace($eol, "\n", $code);
         }
-        $eol = $eol && $this->PreserveEol ? $eol : $this->PreferredEol;
+        $eol = (string) $eol !== '' && $this->PreserveEol
+            ? $eol
+            : $this->PreferredEol;
+        Profile::stopTimer(__METHOD__ . '#detect-eol');
 
         Profile::startTimer(__METHOD__ . '#tokenize-input');
         try {
             $this->Tokens = Token::tokenize(
-                $code,
-                \TOKEN_PARSE,
-                $this->TokenTypeIndex,
-                ...$this->FormatFilterList
+                $code, \TOKEN_PARSE, $this, ...$this->FormatFilterList
             );
 
             if (!$this->Tokens) {
@@ -716,7 +758,10 @@ final class Formatter implements IReadable
             }
         } catch (CompileError $ex) {
             throw new InvalidSyntaxException(
-                sprintf('Formatting failed: %s cannot be parsed', $filename ?: 'input'),
+                sprintf(
+                    'Formatting failed: %s cannot be parsed',
+                    Str::coalesce($filename, 'input')
+                ),
                 $ex
             );
         } finally {
@@ -725,15 +770,7 @@ final class Formatter implements IReadable
 
         Profile::startTimer(__METHOD__ . '#prepare-tokens');
         try {
-            $this->Tokens = Token::prepareTokens(
-                $this->Tokens,
-                $this
-            );
-
             $last = end($this->Tokens);
-            if (!$last) {
-                return '';
-            }
 
             if ($last->IsCode &&
                     ($last->Statement ?: $last)->id !== \T_HALT_COMPILER) {
@@ -860,8 +897,10 @@ final class Formatter implements IReadable
         }
         Profile::stopTimer(__METHOD__ . '#find-lists');
 
-        foreach ($this->MainLoop as [$rule, $method]) {
-            $_rule = Get::basename($_class = get_class($rule));
+        foreach ($this->MainLoop as [$_class, $method]) {
+            /** @var TokenRule|ListRule */
+            $rule = $this->RuleMap[$_class];
+            $_rule = Get::basename($_class);
             Profile::startTimer($_rule, 'rule');
 
             if ($method === ListRule::PROCESS_LIST) {
@@ -874,8 +913,7 @@ final class Formatter implements IReadable
                 continue;
             }
 
-            /** @var TokenRule $rule */
-            $types = $this->TokenRuleTypes[$_class];
+            $types = $this->RuleTokenTypes[$_class];
             if ($types === []) {
                 Profile::stopTimer($_rule, 'rule');
                 continue;
@@ -953,9 +991,10 @@ final class Formatter implements IReadable
 
         Profile::stopTimer(__METHOD__ . '#find-blocks');
 
-        /** @var BlockRule $rule */
-        foreach ($this->BlockLoop as [$rule]) {
-            $_rule = Get::basename(get_class($rule));
+        foreach ($this->BlockLoop as [$_class]) {
+            /** @var BlockRule */
+            $rule = $this->RuleMap[$_class];
+            $_rule = Get::basename($_class);
             Profile::startTimer($_rule, 'rule');
             foreach ($blocks as $block) {
                 $rule->processBlock($block);
@@ -966,9 +1005,9 @@ final class Formatter implements IReadable
 
         $this->processCallbacks();
 
-        /** @var Rule $rule */
-        foreach ($this->BeforeRender as [$rule]) {
-            $_rule = Get::basename(get_class($rule));
+        foreach ($this->BeforeRender as [$_class]) {
+            $rule = $this->RuleMap[$_class];
+            $_rule = Get::basename($_class);
             Profile::startTimer($_rule, 'rule');
             $rule->beforeRender($this->Tokens);
             Profile::stopTimer($_rule, 'rule');
@@ -1042,7 +1081,7 @@ final class Formatter implements IReadable
             foreach ($this->CodeProblems as $problem) {
                 $values = [];
 
-                if ($filename) {
+                if ((string) $filename !== '') {
                     $values[] = $filename;
                     $values[] = $problem->Start->OutputLine;
                     $values[] = $problem->Start->OutputColumn;
@@ -1092,17 +1131,15 @@ final class Formatter implements IReadable
      * Sort rules by priority
      *
      * @template TRule of Rule
-     * @param array<array{TRule,string,int}> $rules
-     * @return array<array{TRule,string}>
+     *
+     * @param array<string,array{class-string<TRule>,string,int}> $rules
+     * @return array<string,array{class-string<TRule>,string}>
      */
     private function sortRules(array $rules): array
     {
-        /**
-         * @var Rule $rule
-         * @var string $method
-         */
         foreach ($rules as $key => [$rule, $method]) {
-            $priority = $rule->getPriority($method);
+            /** @var int|null */
+            $priority = $rule::getPriority($method);
             if ($priority === null) {
                 unset($rules[$key]);
                 continue;
@@ -1114,13 +1151,15 @@ final class Formatter implements IReadable
         uasort(
             $rules,
             fn(array $a, array $b) =>
-                ($a[3] <=> $b[3]) ?: $a[2] <=> $b[2]
+                $a[3] <=> $b[3]
+                    ?: $a[2] <=> $b[2]
         );
 
-        return array_map(
-            fn(array $rule) => [$rule[0], $rule[1]],
-            $rules
-        );
+        foreach ($rules as $key => [$rule, $method]) {
+            $result[$key] = [$rule, $method];
+        }
+
+        return $result ?? [];
     }
 
     /**
@@ -1144,6 +1183,9 @@ final class Formatter implements IReadable
 
     private function processCallbacks(): void
     {
+        if (!$this->Callbacks) {
+            return;
+        }
         ksort($this->Callbacks);
         foreach ($this->Callbacks as $priority => &$tokenCallbacks) {
             ksort($tokenCallbacks);
@@ -1171,6 +1213,109 @@ final class Formatter implements IReadable
             return;
         }
         $this->CodeProblems[] = new CodeProblem($rule, $message, $start, $end, ...$values);
+    }
+
+    /**
+     * @template T of Extension
+     *
+     * @param array<class-string<T>> $extensions
+     * @return array<T>
+     */
+    private function getExtensions(array $extensions): array
+    {
+        foreach ($extensions as $ext) {
+            $result[] = $this->Extensions[$ext] ??= new $ext($this);
+        }
+        return $result ?? [];
+    }
+
+    private function resetExtensions(): void
+    {
+        foreach ($this->Extensions as $ext) {
+            $ext->reset();
+        }
+    }
+
+    /**
+     * @param array<class-string<Rule>>|null $rules
+     * @param-out array<class-string<Rule>> $rules
+     * @param array<class-string<Filter>>|null $filters
+     * @param-out array<class-string<Filter>> $filters
+     * @param array<class-string<Extension>> $enable
+     * @param array<class-string<Extension>> $disable
+     */
+    private function resolveExtensions(?array &$rules, ?array &$filters, array $enable, array $disable): void
+    {
+        $rules = $this->getEnabled($enable, $disable, self::DEFAULT_RULES, self::OPTIONAL_RULES);
+        $filters = $this->getEnabled($enable, $disable, self::DEFAULT_FILTERS, self::OPTIONAL_FILTERS);
+    }
+
+    /**
+     * @template T of Extension
+     *
+     * @param array<class-string<Extension>> $enable
+     * @param array<class-string<Extension>> $disable
+     * @param array<class-string<T>> $default
+     * @param array<class-string<T>> $optional
+     * @return array<class-string<T>>
+     */
+    private function getEnabled(array $enable, array $disable, array $default, array $optional): array
+    {
+        // 5. Remove eligible extensions found in `$disable` from enabled
+        //    extensions, disabling any also found in `$enable`
+        return array_diff(
+            // 3. Merge default extensions with eligible extensions found in
+            //    `$enable`
+            array_merge(
+                $default,
+                // 2. Limit `$enable` to optional extensions
+                array_intersect(
+                    $optional,
+                    // 1. Remove extensions enabled by default from `$enable`
+                    array_diff($enable, $default),
+                ),
+            ),
+            // 4. Limit `$disable` to optional extensions
+            array_intersect(
+                $optional,
+                $disable,
+            ),
+        );
+    }
+
+    /**
+     * Clear state that should not persist beyond a change to the formatter's
+     * configuration
+     */
+    private function flush(): void
+    {
+        $this->reset();
+
+        $this->Enabled = [];
+        $this->Rules = [];
+        $this->RuleTokenTypes = [];
+        $this->MainLoop = [];
+        $this->BlockLoop = [];
+        $this->BeforeRender = [];
+        $this->FormatFilters = [];
+        $this->ComparisonFilters = [];
+        $this->RuleMap = [];
+        $this->FormatFilterList = [];
+        $this->ComparisonFilterList = [];
+        $this->Extensions = [];
+        $this->ExtensionsLoaded = false;
+    }
+
+    /**
+     * Clear state that should not persist beyond a formatting payload
+     */
+    private function reset(): void
+    {
+        $this->Tokens = null;
+        $this->TokenIndex = null;
+        $this->Callbacks = null;
+        $this->CodeProblems = null;
+        $this->Log = null;
     }
 
     private function logProgress(string $rule, string $after): void

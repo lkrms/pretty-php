@@ -2,16 +2,18 @@
 
 namespace Lkrms\PrettyPHP\Rule\Concern;
 
+use Lkrms\PrettyPHP\Support\TokenTypeIndex;
+
 trait TokenRuleTrait
 {
     use RuleTrait;
 
-    public function getTokenTypes(): array
+    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
     {
         return ['*'];
     }
 
-    public function getRequiresSortedTokens(): bool
+    public static function getRequiresSortedTokens(): bool
     {
         return true;
     }

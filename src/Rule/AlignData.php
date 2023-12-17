@@ -37,7 +37,7 @@ final class AlignData implements BlockRule
      */
     private $TokenData = [];
 
-    public function getPriority(string $method): ?int
+    public static function getPriority(string $method): ?int
     {
         return 340;
     }

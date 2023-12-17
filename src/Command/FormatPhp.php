@@ -50,7 +50,6 @@ use Lkrms\Utility\Convert;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Sys;
-use Lkrms\Utility\Test;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
 use SebastianBergmann\Diff\Differ;
 use SplFileInfo;
@@ -1062,9 +1061,8 @@ EOF,
                 $f = new Formatter(
                     !$this->Tabs,
                     $this->Tabs ?: $this->Spaces ?: 4,
-                    $this->DisableRules,
+                    array_merge($this->DisableRules, $this->SkipFilters),
                     $this->EnableRules,
-                    $this->SkipFilters,
                     ($this->Quiet < 2 ? FormatterFlag::REPORT_CODE_PROBLEMS : 0)
                         | ($this->Verbose ? FormatterFlag::LOG_PROGRESS : 0),
                     $this->TokenTypeIndex
@@ -1092,7 +1090,7 @@ EOF,
                 $lastOptions = $options;
 
                 return $this->Psr12
-                    ? $f->withPsr12Compliance()
+                    ? $f->withPsr12()
                     : $f;
             };
 
@@ -1111,6 +1109,7 @@ EOF,
             try {
                 $output = $formatter->format(
                     $input,
+                    null,
                     $inputFile,
                     $this->Fast
                 );

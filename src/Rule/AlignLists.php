@@ -20,7 +20,7 @@ final class AlignLists implements ListRule
      */
     private $ListOwnersByIndex = [];
 
-    public function getPriority(string $method): ?int
+    public static function getPriority(string $method): ?int
     {
         switch ($method) {
             case self::PROCESS_LIST:

@@ -6,11 +6,16 @@ use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Rule\Contract\MultiTokenRule;
+use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\Utility\Arr;
+use Closure;
 
 /**
  * Apply sensible vertical spacing
  *
+ * - Propagate newlines adjacent to boolean operators to others of equal or
+ *   lower precedence in the same statement
  * - If an expression in a `for` loop breaks over multiple lines, add a newline
  *   after each comma-delimited expression and a blank line between each
  *   semicolon-delimited expression
@@ -30,24 +35,53 @@ final class VerticalWhitespace implements MultiTokenRule
 {
     use MultiTokenRuleTrait;
 
-    /**
-     * @var array<int,bool>
-     */
-    private $CommaIndex;
+    private const BOOLEAN_MAP = [
+        T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG => T_AND,
+        T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG => T_AND,
+    ];
+
+    private const BOOLEAN_PRECEDENCE = [
+        \T_AND => 0,
+        \T_XOR => 1,
+        \T_OR => 2,
+        \T_BOOLEAN_AND => 3,
+        \T_BOOLEAN_OR => 4,
+        \T_LOGICAL_AND => 5,
+        \T_LOGICAL_XOR => 6,
+        \T_LOGICAL_OR => 7,
+    ];
 
     /**
      * @var array<int,bool>
      */
-    private $SemicolonIndex;
+    private array $CommaIndex;
 
-    public function prepare()
-    {
-        $this->CommaIndex = TokenType::getIndex(\T_COMMA);
-        $this->SemicolonIndex = TokenType::getIndex(\T_SEMICOLON);
-        return $this;
-    }
+    /**
+     * @var array<int,bool>
+     */
+    private array $SemicolonIndex;
 
-    public function getPriority(string $method): ?int
+    /**
+     * @var array<int,Closure(Token): bool>
+     */
+    private array $BooleanHasLineBreakClosure;
+
+    /**
+     * @var array<int,Closure(Token): void>
+     */
+    private array $ApplyBooleanLineBreakClosure;
+
+    /**
+     * @var array<int,null>
+     */
+    private array $EmptyBooleansByType;
+
+    /**
+     * @var array<int,true>
+     */
+    private array $Seen;
+
+    public static function getPriority(string $method): ?int
     {
         switch ($method) {
             case self::PROCESS_TOKENS:
@@ -58,19 +92,115 @@ final class VerticalWhitespace implements MultiTokenRule
         }
     }
 
-    public function getTokenTypes(): array
+    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
     {
         return [
             \T_FOR,
             \T_OPEN_BRACE,
             \T_QUESTION,
             ...TokenType::CHAIN,
+            ...TokenType::OPERATOR_BOOLEAN_EXCEPT_NOT,
         ];
+    }
+
+    public function reset(): void
+    {
+        if (!isset($this->EmptyBooleansByType)) {
+            /** @var array<int,Closure(Token): bool> */
+            $hasLineBreak = [];
+            /** @var array<int,Closure(Token): void> */
+            $applyLineBreak = [];
+            $booleanTypes = array_keys(self::BOOLEAN_PRECEDENCE);
+            foreach ($booleanTypes as $type) {
+                if (
+                    $this->TypeIndex->PreserveNewlineBefore[$type] ||
+                    !$this->TypeIndex->PreserveNewlineAfter[$type]
+                ) {
+                    $hasLineBreak[$type] =
+                        fn(Token $token): bool => $token->hasNewlineBefore();
+                    $applyLineBreak[$type] =
+                        function (Token $token): void {
+                            $startOfLine = $token->startOfLine();
+                            if (
+                                $startOfLine === $token ||
+                                $startOfLine->collect($token->_prev)->hasOneNotFrom($this->TypeIndex->CloseBracket)
+                            ) {
+                                $token->WhitespaceBefore |= WhitespaceType::LINE;
+                            }
+                        };
+                } else {
+                    $hasLineBreak[$type] =
+                        fn(Token $token): bool => $token->hasNewlineBeforeNextCode();
+                    $applyLineBreak[$type] =
+                        function (Token $token): void {
+                            $endOfLine = $token->endOfLine();
+                            if (
+                                $endOfLine === $token ||
+                                $token->_next->collect($endOfLine)->hasOneNotFrom($this->TypeIndex->StandardOpenBracket)
+                            ) {
+                                $token->WhitespaceAfter |= WhitespaceType::LINE;
+                            }
+                        };
+                }
+            }
+
+            $this->CommaIndex = TokenType::getIndex(\T_COMMA);
+            $this->SemicolonIndex = TokenType::getIndex(\T_SEMICOLON);
+            $this->BooleanHasLineBreakClosure = $hasLineBreak;
+            $this->ApplyBooleanLineBreakClosure = $applyLineBreak;
+            $this->EmptyBooleansByType = Arr::toIndex($booleanTypes, null);
+        }
+
+        $this->Seen = [];
     }
 
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
+            // Propagate newlines adjacent to boolean operators to others of
+            // equal or lower precedence in the same statement
+            if ($this->TypeIndex->OperatorBooleanExceptNot[$token->id]) {
+                $tokenId = self::BOOLEAN_MAP[$token->id] ?? $token->id;
+
+                // Ignore statements already processed and tokens with no
+                // adjacent newline
+                if (
+                    ($this->Seen[$token->Statement->Index] ?? false) ||
+                    !($this->BooleanHasLineBreakClosure[$tokenId])($token)
+                ) {
+                    continue;
+                }
+
+                // Get the statement's boolean operators and find the
+                // highest-precedence operator with an adjacent newline
+                /** @var array<int,Token[]|null> */
+                $byType = $this->EmptyBooleansByType;
+                $minPrecedence = self::BOOLEAN_PRECEDENCE[$tokenId];
+                foreach ($token->Statement->collectSiblings($token->EndStatement) as $t) {
+                    if (!$this->TypeIndex->OperatorBooleanExceptNot[$t->id]) {
+                        continue;
+                    }
+                    $id = self::BOOLEAN_MAP[$t->id] ?? $t->id;
+                    $byType[$id][] = $t;
+                    if ($t === $token || !($t->hasNewlineAfter() || $t->hasNewlineBefore())) {
+                        continue;
+                    }
+                    $minPrecedence = min($minPrecedence, self::BOOLEAN_PRECEDENCE[$id]);
+                }
+
+                foreach ($byType as $type => $tokens) {
+                    if (!$tokens || self::BOOLEAN_PRECEDENCE[$type] < $minPrecedence) {
+                        continue;
+                    }
+                    foreach ($tokens as $t) {
+                        ($this->ApplyBooleanLineBreakClosure[$type])($t);
+                    }
+                }
+
+                $this->Seen[$token->Statement->Index] = true;
+                continue;
+            }
+
             if ($token->id === \T_FOR) {
                 $children = $token->_nextCode->children();
                 $commas = $children->getAnyFrom($this->CommaIndex);
@@ -170,8 +300,8 @@ final class VerticalWhitespace implements MultiTokenRule
 
             // Leave the first object operator alone if chain alignment is
             // enabled and strict PSR-12 compliance isn't
-            if (($this->Formatter->EnabledRules[AlignChains::class] ?? null) &&
-                    !$this->Formatter->Psr12Compliance) {
+            if (($this->Formatter->Enabled[AlignChains::class] ?? null) &&
+                    !$this->Formatter->Psr12) {
                 $chain->shift();
             }
 

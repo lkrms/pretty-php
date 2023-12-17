@@ -13,8 +13,10 @@ function dataState()
 		 * Comment 2
 		 */
 		if (($cm === 'RCDATA' || $cm ===
-					'CDATA') && $es === false &&
-				$tch >= 3 && charfunc($tch - 4, 4) === '<!--') {
+					'CDATA') &&
+				$es === false &&
+				$tch >= 3 &&
+				charfunc($tch - 4, 4) === '<!--') {
 			$es = true;
 		}
 
@@ -50,7 +52,8 @@ function dataState()
 		 * Comment 7
 		 */
 		if (($cm === 'RCDATA' ||
-					$cm === 'CDATA') && $es === true &&
+					$cm === 'CDATA') &&
+				$es === true &&
 				charfunc($tch, 3) === '-->') {
 			$es = false;
 		}

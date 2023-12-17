@@ -3,6 +3,7 @@
 namespace Lkrms\PrettyPHP\Support;
 
 use Lkrms\Concept\TypedList;
+use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Token\Token;
 use LogicException;
 use Stringable;
@@ -101,6 +102,14 @@ final class TokenCollection extends TypedList implements Stringable
     /**
      * @param array<int,bool> $index
      */
+    public function hasOneNotFrom(array $index): bool
+    {
+        return $this->hasOneFrom(TokenType::invertIndex($index));
+    }
+
+    /**
+     * @param array<int,bool> $index
+     */
     public function getAnyFrom(array $index): self
     {
         /** @var Token $token */
@@ -113,6 +122,14 @@ final class TokenCollection extends TypedList implements Stringable
         $instance->Collected = $this->Collected;
 
         return $instance;
+    }
+
+    /**
+     * @param array<int,bool> $index
+     */
+    public function getAnyNotFrom(array $index): self
+    {
+        return $this->getAnyFrom(TokenType::invertIndex($index));
     }
 
     /**
@@ -132,9 +149,25 @@ final class TokenCollection extends TypedList implements Stringable
     /**
      * @param array<int,bool> $index
      */
+    public function getFirstNotFrom(array $index): ?Token
+    {
+        return $this->getFirstFrom(TokenType::invertIndex($index));
+    }
+
+    /**
+     * @param array<int,bool> $index
+     */
     public function getLastFrom(array $index): ?Token
     {
         return $this->reverse()->getFirstFrom($index);
+    }
+
+    /**
+     * @param array<int,bool> $index
+     */
+    public function getLastNotFrom(array $index): ?Token
+    {
+        return $this->reverse()->getFirstFrom(TokenType::invertIndex($index));
     }
 
     /**

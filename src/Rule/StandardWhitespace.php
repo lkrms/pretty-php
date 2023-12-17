@@ -7,6 +7,7 @@ use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Rule\Contract\MultiTokenRule;
+use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
 
@@ -39,7 +40,7 @@ final class StandardWhitespace implements MultiTokenRule
 {
     use MultiTokenRuleTrait;
 
-    public function getPriority(string $method): ?int
+    public static function getPriority(string $method): ?int
     {
         switch ($method) {
             case self::PROCESS_TOKENS:
@@ -50,7 +51,7 @@ final class StandardWhitespace implements MultiTokenRule
         }
     }
 
-    public function getTokenTypes(): array
+    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
     {
         return TokenType::mergeIndexes(
             TokenType::getIndex(
@@ -63,13 +64,13 @@ final class StandardWhitespace implements MultiTokenRule
                 \T_ATTRIBUTE_COMMENT,
                 \T_START_HEREDOC,
             ),
-            $this->TypeIndex->OpenBracket,
-            $this->TypeIndex->CloseBracketOrEndAltSyntax,
-            $this->TypeIndex->AddSpaceAround,
-            $this->TypeIndex->AddSpaceBefore,
-            $this->TypeIndex->AddSpaceAfter,
-            $this->TypeIndex->SuppressSpaceBefore,
-            $this->TypeIndex->SuppressSpaceAfter,
+            $typeIndex->OpenBracket,
+            $typeIndex->CloseBracketOrEndAltSyntax,
+            $typeIndex->AddSpaceAround,
+            $typeIndex->AddSpaceBefore,
+            $typeIndex->AddSpaceAfter,
+            $typeIndex->SuppressSpaceBefore,
+            $typeIndex->SuppressSpaceAfter,
         );
     }
 
@@ -185,7 +186,7 @@ final class StandardWhitespace implements MultiTokenRule
                     ($declare = $token->next())->id === \T_DECLARE &&
                     ($end = $declare->nextSibling(2)) === $declare->EndStatement &&
                     (!$end->_nextCode || $end->_nextCode->id !== \T_DECLARE) && (
-                        !$this->Formatter->Psr12Compliance || (
+                        !$this->Formatter->Psr12 || (
                             !strcasecmp((string) $declare->nextSibling()->inner(), 'strict_types=1') &&
                             ($end->id === \T_CLOSE_TAG || $end->next()->id === \T_CLOSE_TAG)
                         )
@@ -195,7 +196,7 @@ final class StandardWhitespace implements MultiTokenRule
                     $token->WhitespaceMaskNext = WhitespaceType::SPACE;
                     $current = $end;
                     if (
-                        $this->Formatter->Psr12Compliance ||
+                        $this->Formatter->Psr12 ||
                         $end->id === \T_CLOSE_TAG ||
                         $end->next()->id === \T_CLOSE_TAG
                     ) {
@@ -349,7 +350,7 @@ final class StandardWhitespace implements MultiTokenRule
             }
 
             // In strict PSR-12 mode, suppress BLANK and LINE before heredocs
-            if ($token->id === \T_START_HEREDOC && $this->Formatter->Psr12Compliance) {
+            if ($token->id === \T_START_HEREDOC && $this->Formatter->Psr12) {
                 $token->WhitespaceBefore |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
             }

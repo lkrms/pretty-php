@@ -5,6 +5,7 @@ namespace Lkrms\PrettyPHP\Rule\Preset;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Rule\Contract\TokenRule;
+use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 
 /**
@@ -19,12 +20,12 @@ final class Laravel implements TokenRule
 {
     use TokenRuleTrait;
 
-    public function getPriority(string $method): ?int
+    public static function getPriority(string $method): ?int
     {
         return 100;
     }
 
-    public function getTokenTypes(): array
+    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
     {
         return [
             \T_LOGICAL_NOT,

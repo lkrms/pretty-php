@@ -35,8 +35,6 @@ final class TokenType extends Dictionary
      * strings.
      */
     public const OPERATOR_ALL = [
-        \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
-        \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
         ...TokenType::OPERATOR_ARITHMETIC,
         ...TokenType::OPERATOR_ASSIGNMENT,
         ...TokenType::OPERATOR_BITWISE,
@@ -80,7 +78,18 @@ final class TokenType extends Dictionary
         \T_CONCAT_EQUAL,  // .=
     ];
 
+    public const OPERATOR_BOOLEAN_EXCEPT_NOT = [
+        \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+        \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
+        \T_AND,
+        \T_OR,
+        \T_XOR,
+        ...self::OPERATOR_LOGICAL_EXCEPT_NOT,
+    ];
+
     public const OPERATOR_BITWISE = [
+        \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+        \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
         \T_AND,  // &
         \T_OR,   // |
         \T_XOR,  // ^
@@ -160,17 +169,19 @@ final class TokenType extends Dictionary
     ];
 
     public const VALUE_TYPE = [
-        \T_AND,                // &
-        \T_OR,                 // |
-        \T_OPEN_PARENTHESIS,   // (
-        \T_CLOSE_PARENTHESIS,  // )
+        \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+        \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
+        \T_AND,
+        \T_OR,
+        \T_OPEN_PARENTHESIS,
+        \T_CLOSE_PARENTHESIS,
         ...self::DECLARATION_TYPE,
     ];
 
     public const CHAIN_PART = [
-        \T_OPEN_BRACE,        // {
-        \T_OPEN_BRACKET,      // [
-        \T_OPEN_PARENTHESIS,  // (
+        \T_OPEN_BRACE,
+        \T_OPEN_BRACKET,
+        \T_OPEN_PARENTHESIS,
         \T_STRING,
         \T_VARIABLE,
         ...self::CHAIN,
@@ -684,6 +695,21 @@ final class TokenType extends Dictionary
             \T_YIELD => false,
             \T_YIELD_FROM => false,
         ];
+    }
+
+    /**
+     * Invert an index
+     *
+     * @param array<int,bool> $index
+     * @return array<int,bool>
+     */
+    public static function invertIndex(array $index): array
+    {
+        $index += self::getIndex();
+        foreach ($index as &$value) {
+            $value = !$value;
+        }
+        return $index;
     }
 
     /**

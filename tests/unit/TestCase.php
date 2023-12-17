@@ -11,7 +11,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     final public static function assertFormatterOutputIs(string $expected, string $code, Formatter $formatter): void
     {
         $first = $formatter->format($code);
-        $second = $formatter->format($first, null, true);
+        $second = $formatter->format($first, null, null, true);
         self::assertSame($expected, $first, 'Output is not formatted correctly.');
         self::assertSame($expected, $second, 'Output is not idempotent.');
         if ($code !== '') {
@@ -28,9 +28,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         $formatter = new Formatter(
             $options['insertSpaces'] ?? true,
             $options['tabSize'] ?? 4,
-            $options['skipRules'] ?? [],
-            $options['addRules'] ?? [],
-            $options['skipFilters'] ?? []
+            array_merge($options['skipRules'] ?? [], $options['skipFilters'] ?? []),
+            $options['addRules'] ?? []
         );
         if ($callback = ($options['callback'] ?? null)) {
             return $callback($formatter);
@@ -57,9 +56,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
             new Formatter(
                 $insertSpaces,
                 $tabSize,
-                $skipRules,
-                $addRules,
-                $skipFilters
+                array_merge($skipRules, $skipFilters),
+                $addRules
             )
         ));
     }

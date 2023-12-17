@@ -153,8 +153,6 @@ final class TokenTypeTest extends \Lkrms\PrettyPHP\Tests\TestCase
             ],
             'Difference between [default] TokenTypeIndex::$PreserveNewlineBefore and [trailing] $PreserveNewlineBefore' => [
                 [
-                    \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
-                    \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
                     \T_COALESCE,
                     \T_CONCAT,
                     \T_PLUS,
@@ -163,6 +161,8 @@ final class TokenTypeTest extends \Lkrms\PrettyPHP\Tests\TestCase
                     \T_DIV,
                     \T_MOD,
                     \T_POW,
+                    \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+                    \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
                     \T_AND,
                     \T_OR,
                     \T_XOR,

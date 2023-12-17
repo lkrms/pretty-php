@@ -7,6 +7,7 @@ use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Rule\Contract\TokenRule;
+use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 
 /**
@@ -30,7 +31,7 @@ final class PlaceComments implements TokenRule
      */
     private $Comments = [];
 
-    public function getPriority(string $method): ?int
+    public static function getPriority(string $method): ?int
     {
         switch ($method) {
             case self::PROCESS_TOKEN:
@@ -44,7 +45,7 @@ final class PlaceComments implements TokenRule
         }
     }
 
-    public function getTokenTypes(): array
+    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
     {
         return TokenType::COMMENT;
     }
@@ -72,7 +73,7 @@ final class PlaceComments implements TokenRule
 
         $needsNewlineBefore =
             $token->id === \T_DOC_COMMENT ||
-            ($this->Formatter->Psr12Compliance && $prevIsTopLevelCloseBrace);
+            ($this->Formatter->Psr12 && $prevIsTopLevelCloseBrace);
 
         if (!$needsNewlineBefore) {
             // Leave embedded comments alone
@@ -116,7 +117,8 @@ final class PlaceComments implements TokenRule
         if (
             $token->hasNewline() &&
             $isDocComment &&
-            (!$token->_prevSibling || !$token->_nextSibling ||
+            (!$token->_prevSibling ||
+                !$token->_nextSibling ||
                 $token->_prevSibling->Statement !== $token->_nextSibling->Statement)
         ) {
             $token->WhitespaceBefore |=

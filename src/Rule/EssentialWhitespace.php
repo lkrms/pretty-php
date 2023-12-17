@@ -20,7 +20,7 @@ final class EssentialWhitespace implements Rule
 {
     use RuleTrait;
 
-    public function getPriority(string $method): ?int
+    public static function getPriority(string $method): ?int
     {
         switch ($method) {
             case self::BEFORE_RENDER:

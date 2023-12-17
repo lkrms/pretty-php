@@ -7,6 +7,7 @@ use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Rule\Contract\MultiTokenRule;
+use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\Utility\Pcre;
 
 /**
@@ -18,7 +19,7 @@ final class NormaliseComments implements MultiTokenRule
 {
     use MultiTokenRuleTrait;
 
-    public function getPriority(string $method): ?int
+    public static function getPriority(string $method): ?int
     {
         switch ($method) {
             case self::PROCESS_TOKENS:
@@ -29,7 +30,7 @@ final class NormaliseComments implements MultiTokenRule
         }
     }
 
-    public function getTokenTypes(): array
+    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
     {
         return TokenType::COMMENT;
     }

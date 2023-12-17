@@ -2,7 +2,6 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
@@ -18,7 +17,7 @@ final class PreserveLineBreaks implements MultiTokenRule
 {
     use MultiTokenRuleTrait;
 
-    public function getPriority(string $method): ?int
+    public static function getPriority(string $method): ?int
     {
         switch ($method) {
             case self::PROCESS_TOKENS:
@@ -97,7 +96,8 @@ final class PreserveLineBreaks implements MultiTokenRule
         bool $ignoreBrackets = false
     ): bool {
         if (!$this->TypeIndex->PreserveNewlineBefore[$token->id] ||
-                $token->line < $min || $token->line > $max ||
+                $token->line < $min ||
+                $token->line > $max ||
                 ($ignoreBrackets && $this->TypeIndex->Bracket[$token->id])) {
             return false;
         }
@@ -158,7 +158,8 @@ final class PreserveLineBreaks implements MultiTokenRule
         }
 
         if (!$this->TypeIndex->PreserveNewlineAfter[$tokenId ?? $token->id] ||
-                $next->line < $min || $next->line > $max ||
+                $next->line < $min ||
+                $next->line > $max ||
                 ($ignoreBrackets && $this->TypeIndex->Bracket[$token->id])) {
             return false;
         }
@@ -180,9 +181,7 @@ final class PreserveLineBreaks implements MultiTokenRule
 
         // Don't preserve newlines after `:` except when they terminate case
         // statements and labels
-        if ($token->id === \T_COLON &&
-                $token->getColonType() !== TokenSubType::COLON_SWITCH_CASE_DELIMITER &&
-                $token->SubType !== TokenSubType::COLON_LABEL_DELIMITER) {
+        if ($token->id === \T_COLON && !$token->isColonStatementDelimiter()) {
             return false;
         }
 
