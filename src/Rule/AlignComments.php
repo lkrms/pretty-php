@@ -144,6 +144,9 @@ final class AlignComments implements BlockRule
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     public function reset(): void
     {
         $this->BlockComments = [];

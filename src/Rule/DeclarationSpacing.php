@@ -298,6 +298,9 @@ final class DeclarationSpacing implements MultiTokenRule
             !$prev->hasBlankLineAfter();
     }
 
+    /**
+     * @inheritDoc
+     */
     public function reset(): void
     {
         $this->Prev = [];

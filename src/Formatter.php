@@ -17,6 +17,7 @@ use Lkrms\PrettyPHP\Exception\FormatterException;
 use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
 use Lkrms\PrettyPHP\Filter\Contract\Filter;
 use Lkrms\PrettyPHP\Filter\CollectColumn;
+use Lkrms\PrettyPHP\Filter\MoveComments;
 use Lkrms\PrettyPHP\Filter\RemoveEmptyDocBlocks;
 use Lkrms\PrettyPHP\Filter\RemoveEmptyTokens;
 use Lkrms\PrettyPHP\Filter\RemoveHeredocIndentation;
@@ -296,6 +297,7 @@ final class Formatter
         RemoveWhitespace::class,
         RemoveHeredocIndentation::class,
         RemoveEmptyDocBlocks::class,
+        MoveComments::class,
         SortImports::class,
         TrimCasts::class,
     ];
@@ -305,6 +307,7 @@ final class Formatter
      */
     public const OPTIONAL_FILTERS = [
         RemoveEmptyDocBlocks::class,
+        MoveComments::class,
         SortImports::class,
         TrimCasts::class,
     ];
@@ -317,6 +320,24 @@ final class Formatter
         RemoveEmptyTokens::class,
         TruncateComments::class,
         TrimOpenTags::class,
+    ];
+
+    /**
+     * @var array<class-string<Extension>>
+     */
+    public const PSR12_ENABLE = [
+        SortImports::class,
+        StrictExpressions::class,
+        StrictLists::class,
+        DeclarationSpacing::class,
+    ];
+
+    /**
+     * @var array<class-string<Extension>>
+     */
+    public const PSR12_DISABLE = [
+        PreserveOneLineStatements::class,
+        AlignLists::class,
     ];
 
     // --
@@ -512,15 +533,35 @@ final class Formatter
      */
     private function apply(): self
     {
+        if ($this->Psr12) {
+            $this->InsertSpaces = true;
+            $this->TabSize = 4;
+            $this->PreferredEol = "\n";
+            $this->PreserveEol = false;
+            $this->HeredocIndent = HeredocIndent::HANGING;
+            $this->NewlineBeforeFnDoubleArrows = true;
+            $this->OneTrueBraceStyle = false;
+
+            $enable = array_merge(
+                self::PSR12_ENABLE,
+                $this->PreferredRules,
+                $this->PreferredFilters,
+            );
+
+            $disable = self::PSR12_DISABLE;
+
+            $this->resolveExtensions($rules, $filters, $enable, $disable);
+        } else {
+            $rules = $this->PreferredRules;
+            $filters = $this->PreferredFilters;
+        }
+
         $this->SoftTab = str_repeat(' ', $this->TabSize);
         $this->Tab = $this->InsertSpaces ? $this->SoftTab : "\t";
 
         if ($this->SpacesBesideCode < 1) {
             $this->SpacesBesideCode = 1;
         }
-
-        $rules = $this->PreferredRules;
-        $filters = $this->PreferredFilters;
 
         // If using tabs for indentation, disable incompatible rules
         if (!$this->InsertSpaces) {
@@ -650,8 +691,7 @@ final class Formatter
                 $disable,
                 array_diff(
                     Arr::extend(self::DEFAULT_RULES, ...self::DEFAULT_FILTERS),
-                    $this->PreferredRules,
-                    $this->PreferredFilters,
+                    $enable,
                 ),
             );
         }
@@ -667,23 +707,7 @@ final class Formatter
      */
     public function withPsr12()
     {
-        return $this->withPropertyValue('InsertSpaces', true)
-                    ->withPropertyValue('TabSize', 4)
-                    ->withPropertyValue('PreferredEol', "\n")
-                    ->withPropertyValue('PreserveEol', false)
-                    ->withPropertyValue('HeredocIndent', HeredocIndent::HANGING)
-                    ->withPropertyValue('NewlineBeforeFnDoubleArrows', true)
-                    ->withPropertyValue('OneTrueBraceStyle', false)
-                    ->withPropertyValue('Psr12', true)
-                    ->doWithExtensions([
-                        SortImports::class,
-                        StrictExpressions::class,
-                        StrictLists::class,
-                        DeclarationSpacing::class,
-                    ], [
-                        PreserveOneLineStatements::class,
-                        AlignLists::class,
-                    ])
+        return $this->withPropertyValue('Psr12', true)
                     ->apply();
     }
 

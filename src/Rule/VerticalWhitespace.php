@@ -36,8 +36,8 @@ final class VerticalWhitespace implements MultiTokenRule
     use MultiTokenRuleTrait;
 
     private const BOOLEAN_MAP = [
-        T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG => T_AND,
-        T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG => T_AND,
+        \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG => \T_AND,
+        \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG => \T_AND,
     ];
 
     private const BOOLEAN_PRECEDENCE = [
@@ -103,55 +103,60 @@ final class VerticalWhitespace implements MultiTokenRule
         ];
     }
 
+    /**
+     * @inheritDoc
+     */
     public function reset(): void
     {
-        if (!isset($this->EmptyBooleansByType)) {
-            /** @var array<int,Closure(Token): bool> */
-            $hasLineBreak = [];
-            /** @var array<int,Closure(Token): void> */
-            $applyLineBreak = [];
-            $booleanTypes = array_keys(self::BOOLEAN_PRECEDENCE);
-            foreach ($booleanTypes as $type) {
-                if (
-                    $this->TypeIndex->PreserveNewlineBefore[$type] ||
-                    !$this->TypeIndex->PreserveNewlineAfter[$type]
-                ) {
-                    $hasLineBreak[$type] =
-                        fn(Token $token): bool => $token->hasNewlineBefore();
-                    $applyLineBreak[$type] =
-                        function (Token $token): void {
-                            $startOfLine = $token->startOfLine();
-                            if (
-                                $startOfLine === $token ||
-                                $startOfLine->collect($token->_prev)->hasOneNotFrom($this->TypeIndex->CloseBracket)
-                            ) {
-                                $token->WhitespaceBefore |= WhitespaceType::LINE;
-                            }
-                        };
-                } else {
-                    $hasLineBreak[$type] =
-                        fn(Token $token): bool => $token->hasNewlineBeforeNextCode();
-                    $applyLineBreak[$type] =
-                        function (Token $token): void {
-                            $endOfLine = $token->endOfLine();
-                            if (
-                                $endOfLine === $token ||
-                                $token->_next->collect($endOfLine)->hasOneNotFrom($this->TypeIndex->StandardOpenBracket)
-                            ) {
-                                $token->WhitespaceAfter |= WhitespaceType::LINE;
-                            }
-                        };
-                }
-            }
+        $this->Seen = [];
 
-            $this->CommaIndex = TokenType::getIndex(\T_COMMA);
-            $this->SemicolonIndex = TokenType::getIndex(\T_SEMICOLON);
-            $this->BooleanHasLineBreakClosure = $hasLineBreak;
-            $this->ApplyBooleanLineBreakClosure = $applyLineBreak;
-            $this->EmptyBooleansByType = Arr::toIndex($booleanTypes, null);
+        if (isset($this->EmptyBooleansByType)) {
+            return;
         }
 
-        $this->Seen = [];
+        /** @var array<int,Closure(Token): bool> */
+        $hasLineBreak = [];
+        /** @var array<int,Closure(Token): void> */
+        $applyLineBreak = [];
+        $booleanTypes = array_keys(self::BOOLEAN_PRECEDENCE);
+        foreach ($booleanTypes as $type) {
+            if (
+                $this->TypeIndex->PreserveNewlineBefore[$type] ||
+                !$this->TypeIndex->PreserveNewlineAfter[$type]
+            ) {
+                $hasLineBreak[$type] =
+                    fn(Token $token): bool => $token->hasNewlineBefore();
+                $applyLineBreak[$type] =
+                    function (Token $token): void {
+                        $startOfLine = $token->startOfLine();
+                        if (
+                            $startOfLine === $token ||
+                            $startOfLine->collect($token->_prev)->hasOneNotFrom($this->TypeIndex->CloseBracket)
+                        ) {
+                            $token->WhitespaceBefore |= WhitespaceType::LINE;
+                        }
+                    };
+            } else {
+                $hasLineBreak[$type] =
+                    fn(Token $token): bool => $token->hasNewlineBeforeNextCode();
+                $applyLineBreak[$type] =
+                    function (Token $token): void {
+                        $endOfLine = $token->endOfLine();
+                        if (
+                            $endOfLine === $token ||
+                            $token->_next->collect($endOfLine)->hasOneNotFrom($this->TypeIndex->StandardOpenBracket)
+                        ) {
+                            $token->WhitespaceAfter |= WhitespaceType::LINE;
+                        }
+                    };
+            }
+        }
+
+        $this->CommaIndex = TokenType::getIndex(\T_COMMA);
+        $this->SemicolonIndex = TokenType::getIndex(\T_SEMICOLON);
+        $this->BooleanHasLineBreakClosure = $hasLineBreak;
+        $this->ApplyBooleanLineBreakClosure = $applyLineBreak;
+        $this->EmptyBooleansByType = Arr::toIndex($booleanTypes, null);
     }
 
     public function processTokens(array $tokens): void

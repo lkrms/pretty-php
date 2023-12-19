@@ -724,12 +724,7 @@ class TokenTypeIndex implements IImmutable
      */
     public function withPreserveNewline()
     {
-        if (isset($this->LastOperatorsMethod)) {
-            return $this->{$this->LastOperatorsMethod}();
-        }
-
-        return $this->with('PreserveNewlineBefore', $this->_PreserveNewlineBefore)
-                    ->with('PreserveNewlineAfter', $this->_PreserveNewlineAfter);
+        return $this->{$this->LastOperatorsMethod}();
     }
 
     /**

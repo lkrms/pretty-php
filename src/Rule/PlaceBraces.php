@@ -143,6 +143,9 @@ final class PlaceBraces implements MultiTokenRule
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     public function reset(): void
     {
         $this->BracketBracePairs = [];

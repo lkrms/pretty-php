@@ -506,12 +506,13 @@ trait NavigableTokenTrait
                 }
 
                 $current = $end->OpenedBy ?: $end;
-                do {
+                while ($current && !$current->EndStatement) {
                     $current->EndStatement = $end;
                     $start = $current;
                     $current = $current->_prevSibling;
-                } while ($current && !$current->EndStatement);
+                }
 
+                $start ??= $token;
                 $current = $start;
                 do {
                     $current->Statement = $start;

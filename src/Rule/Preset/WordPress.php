@@ -120,6 +120,9 @@ final class WordPress implements TokenRule
         $token->ClosedBy->_prev->WhitespaceMaskNext |= WhitespaceType::SPACE;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function reset(): void
     {
         $this->DocCommentUnpinned = false;

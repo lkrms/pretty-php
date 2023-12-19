@@ -6,9 +6,6 @@ use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\Utility\Pcre;
 
-/**
- * Extends Lkrms\PrettyPHP\Concern\ExtensionTrait for use by filters
- */
 trait FilterTrait
 {
     use ExtensionTrait;
@@ -19,8 +16,7 @@ trait FilterTrait
     protected $Tokens;
 
     /**
-     * Get the previous code token for the token at a given index in the Tokens
-     * array
+     * Get the given token's previous code token
      */
     protected function prevCode(int $i): ?Token
     {
@@ -35,9 +31,8 @@ trait FilterTrait
     }
 
     /**
-     * True if the token at a given index in the Tokens array, together with
-     * previous tokens in the same statement, form a declaration of one of the
-     * given types
+     * True if the given token, together with previous tokens in the same
+     * statement, form a declaration of one of the given types
      */
     protected function isDeclarationOf(int $i, int $type, int ...$types): bool
     {
@@ -48,7 +43,7 @@ trait FilterTrait
                 continue;
             }
             if (!$this->TypeIndex->DeclarationPart[$token->id]) {
-                break;
+                return false;
             }
             if ($token->is($types)) {
                 return true;
@@ -58,8 +53,7 @@ trait FilterTrait
     }
 
     /**
-     * True if the token at a given index in the Tokens array is a comment that
-     * starts with '//' or '#'
+     * True if the given token is a comment that starts with '//' or '#'
      */
     protected function isOneLineComment(int $i): bool
     {

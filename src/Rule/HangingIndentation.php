@@ -60,8 +60,16 @@ final class HangingIndentation implements MultiTokenRule
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     public function reset(): void
     {
+        if (isset($this->HeredocHasHangingIndent)) {
+            return;
+        }
+
+        /** @var int&HeredocIndent::* */
         $indent = $this->Formatter->HeredocIndent;
         $this->HeredocMayHaveHangingIndent =
             (bool) ($indent & (HeredocIndent::MIXED | HeredocIndent::HANGING));

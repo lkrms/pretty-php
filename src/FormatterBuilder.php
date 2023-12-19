@@ -25,6 +25,10 @@ use Lkrms\PrettyPHP\Support\TokenTypeIndex;
  * @method $this importSortOrder(ImportSortOrder::* $value) Set Formatter::$ImportSortOrder
  * @method $this oneTrueBraceStyle(bool $value = true) True if braces are formatted using the One True Brace Style (default: false)
  * @method $this psr12(bool $value = true) Enforce strict PSR-12 / PER Coding Style compliance? (default: false)
+ * @method Formatter with(string $property, mixed $value) Get an instance with a value applied to a given property
+ * @method Formatter withoutExtensions(array<class-string<Extension>> $extensions = []) Call Formatter::withoutExtensions() on a new instance
+ * @method Formatter withExtensions(array<class-string<Extension>> $enable, array<class-string<Extension>> $disable = [], bool $preserveCurrent = true) Call Formatter::withExtensions() on a new instance
+ * @method string format(string $code, string|null $eol = null, string|null $filename = null, bool $fast = false) Get formatted code (see {@see Formatter::format()})
  *
  * @uses Formatter
  *
@@ -38,5 +42,18 @@ final class FormatterBuilder extends Builder
     protected static function getService(): string
     {
         return Formatter::class;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected static function getTerminators(): array
+    {
+        return [
+            'with',
+            'withoutExtensions',
+            'withExtensions',
+            'format',
+        ];
     }
 }

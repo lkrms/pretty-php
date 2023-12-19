@@ -247,6 +247,9 @@ final class PlaceComments implements TokenRule
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     public function reset(): void
     {
         $this->CommentsBesideCode = [];

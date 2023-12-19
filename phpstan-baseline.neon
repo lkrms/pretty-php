@@ -6,12 +6,7 @@ parameters:
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$ConfigFile is never written, only read\\.$#"
-			count: 1
-			path: src/Command/FormatPhp.php
-
-		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$Diff is never written, only read\\.$#"
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$Eol is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
@@ -51,22 +46,17 @@ parameters:
 			path: src/Command/FormatPhp.php
 
 		-
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$OneTrueBraceStyle is never written, only read\\.$#"
+			count: 1
+			path: src/Command/FormatPhp.php
+
+		-
 			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$OperatorsFirst is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
 		-
 			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$OperatorsLast is never written, only read\\.$#"
-			count: 1
-			path: src/Command/FormatPhp.php
-
-		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$OutputFiles is never written, only read\\.$#"
-			count: 1
-			path: src/Command/FormatPhp.php
-
-		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$Preset is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
@@ -91,12 +81,17 @@ parameters:
 			path: src/Command/FormatPhp.php
 
 		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$SortImportsBy is never written, only read\\.$#"
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$Spaces is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 
 		-
 			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$StdinFilename is never written, only read\\.$#"
+			count: 1
+			path: src/Command/FormatPhp.php
+
+		-
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$Tabs is never written, only read\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
 

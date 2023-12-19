@@ -104,6 +104,9 @@ final class AlignLists implements ListRule
         );
     }
 
+    /**
+     * @inheritDoc
+     */
     public function reset(): void
     {
         $this->ListOwnersByIndex = [];

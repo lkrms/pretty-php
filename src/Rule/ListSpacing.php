@@ -41,6 +41,9 @@ final class ListSpacing implements ListRule
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     public function reset(): void
     {
         $this->ListRuleIsEnabled

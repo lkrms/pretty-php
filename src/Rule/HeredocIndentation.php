@@ -96,6 +96,9 @@ final class HeredocIndentation implements MultiTokenRule
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     public function reset(): void
     {
         $this->Heredocs = [];
