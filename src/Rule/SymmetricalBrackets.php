@@ -4,6 +4,7 @@ namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Rule\Contract\MultiTokenRule;
+use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 
 /**
  * Apply symmetrical whitespace to brackets
@@ -14,7 +15,7 @@ final class SymmetricalBrackets implements MultiTokenRule
 {
     use MultiTokenRuleTrait;
 
-    public function getPriority(string $method): ?int
+    public static function getPriority(string $method): ?int
     {
         switch ($method) {
             case self::PROCESS_TOKENS:
@@ -25,7 +26,7 @@ final class SymmetricalBrackets implements MultiTokenRule
         }
     }
 
-    public function getTokenTypes(): array
+    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
     {
         return [
             \T_COLON,

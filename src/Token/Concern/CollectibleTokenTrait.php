@@ -29,8 +29,8 @@ trait CollectibleTokenTrait
         /** @var Token $this */
         $index =
             $allowAnonymous
-                ? $this->TokenTypeIndex->DeclarationPartWithNew
-                : $this->TokenTypeIndex->DeclarationPart;
+                ? $this->TypeIndex->DeclarationPartWithNew
+                : $this->TypeIndex->DeclarationPart;
 
         /** @var Token */
         $t = $this;

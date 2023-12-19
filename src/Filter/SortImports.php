@@ -227,8 +227,15 @@ final class SortImports implements Filter
         ];
     }
 
+    /**
+     * @inheritDoc
+     */
     public function reset(): void
     {
+        if (isset($this->Replace)) {
+            return;
+        }
+
         // If sorting depth-first, normalise to:
         //
         // ```
@@ -246,12 +253,12 @@ final class SortImports implements Filter
         // use A \ B \ C
         // use A \ B
         // ```
-        $this->Search = [
+        $search = [
             '/\\\\/',
             '/\h++/',
         ];
 
-        $this->Replace = [
+        $replace = [
             ' \ ',
             ' ',
         ];
@@ -259,13 +266,13 @@ final class SortImports implements Filter
         switch ($this->Formatter->ImportSortOrder) {
             case ImportSortOrder::DEPTH:
                 array_push(
-                    $this->Search,
+                    $search,
                     '/(?:^use(?: function| const)?|\\\\) (?=[^ \\\\{]+(?: [^\\\\]|$))/i',
                     '/\\\\ (?=\{)/',
                     '/(?:^use(?: function| const)?|\\\\) (?=[^ \\\\]+ \\\\)/i',
                 );
                 array_push(
-                    $this->Replace,
+                    $replace,
                     '${0}2',
                     '${0}1',
                     '${0}0',
@@ -274,9 +281,12 @@ final class SortImports implements Filter
 
             case ImportSortOrder::NAME:
             default:
-                $this->Search[] = '/(?<=\\\\ )\{ /';
-                $this->Replace[] = '';
+                $search[] = '/(?<=\\\\ )\{ /';
+                $replace[] = '';
                 break;
         }
+
+        $this->Search = $search;
+        $this->Replace = $replace;
     }
 }

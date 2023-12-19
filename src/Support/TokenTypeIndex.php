@@ -14,7 +14,7 @@ use Lkrms\PrettyPHP\Catalog\TokenType as TT;
 class TokenTypeIndex implements IImmutable
 {
     use Immutable {
-        withPropertyValue as public with;
+        withPropertyValue as protected with;
     }
 
     /**
@@ -68,6 +68,32 @@ class TokenTypeIndex implements IImmutable
      * @var array<int,bool>
      */
     public array $CloseBracketOrEndAltSyntax;
+
+    /**
+     * T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_ATTRIBUTE
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $OpenBracketExceptBrace;
+
+    /**
+     * T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $CloseBracketExceptBrace;
+
+    /**
+     * T_ELSEIF, T_ELSE, T_CATCH, T_FINALLY
+     *
+     * Excludes `T_WHILE`, which only qualifies after `T_DO`.
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $ContinuesControlStructure;
 
     /**
      * Tokens that may contain tab characters
@@ -297,6 +323,17 @@ class TokenTypeIndex implements IImmutable
     public array $NotCode;
 
     /**
+     * T_AND, T_OR, T_XOR, T_BOOLEAN_AND, T_BOOLEAN_OR, T_LOGICAL_AND,
+     * T_LOGICAL_OR, T_LOGICAL_XOR
+     *
+     * `&`, `|`, `^`, `&&`, `||`, `and`, `or`, `xor`
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $OperatorBooleanExceptNot;
+
+    /**
      * @readonly
      * @var array<int,bool>
      */
@@ -307,6 +344,18 @@ class TokenTypeIndex implements IImmutable
      * @var array<int,bool>
      */
     public array $Visibility;
+
+    private string $LastOperatorsMethod;
+
+    /**
+     * @var array<int,bool>
+     */
+    private array $_PreserveNewlineBefore;
+
+    /**
+     * @var array<int,bool>
+     */
+    private array $_PreserveNewlineAfter;
 
     public function __construct()
     {
@@ -357,6 +406,24 @@ class TokenTypeIndex implements IImmutable
             \T_CLOSE_BRACKET,
             \T_CLOSE_PARENTHESIS,
             \T_END_ALT_SYNTAX,
+        );
+
+        $this->OpenBracketExceptBrace = TT::getIndex(
+            \T_OPEN_BRACKET,
+            \T_OPEN_PARENTHESIS,
+            \T_ATTRIBUTE,
+        );
+
+        $this->CloseBracketExceptBrace = TT::getIndex(
+            \T_CLOSE_BRACKET,
+            \T_CLOSE_PARENTHESIS,
+        );
+
+        $this->ContinuesControlStructure = TT::getIndex(
+            \T_ELSEIF,
+            \T_ELSE,
+            \T_CATCH,
+            \T_FINALLY,
         );
 
         $this->Expandable = TT::getIndex(
@@ -475,8 +542,6 @@ class TokenTypeIndex implements IImmutable
         ];
 
         $this->PreserveNewlineBefore = TT::getIndex(
-            \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
-            \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
             \T_ATTRIBUTE,
             \T_ATTRIBUTE_COMMENT,
             \T_CLOSE_BRACKET,
@@ -576,8 +641,13 @@ class TokenTypeIndex implements IImmutable
         $this->HasStatementWithOptionalBraces = TT::getIndex(...TT::HAS_STATEMENT_WITH_OPTIONAL_BRACES);
         $this->HasExpressionAndStatementWithOptionalBraces = TT::getIndex(...TT::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES);
         $this->NotCode = TT::getIndex(...TT::NOT_CODE);
+        $this->OperatorBooleanExceptNot = TT::getIndex(...TT::OPERATOR_BOOLEAN_EXCEPT_NOT);
         $this->TypeDelimiter = TT::getIndex(...TT::TYPE_DELIMITER);
         $this->Visibility = TT::getIndex(...TT::VISIBILITY);
+
+        $this->LastOperatorsMethod = 'withMixedOperators';
+        $this->_PreserveNewlineBefore = $this->PreserveNewlineBefore;
+        $this->_PreserveNewlineAfter = $this->PreserveNewlineAfter;
     }
 
     /**
@@ -586,25 +656,26 @@ class TokenTypeIndex implements IImmutable
     public function withLeadingOperators()
     {
         $both = TT::intersectIndexes(
-            $this->PreserveNewlineBefore,
-            $this->PreserveNewlineAfter,
+            $this->_PreserveNewlineBefore,
+            $this->_PreserveNewlineAfter,
         );
         $preserveBefore = TT::mergeIndexes(
-            $this->PreserveNewlineBefore,
+            $this->_PreserveNewlineBefore,
             TT::getIndex(
                 ...TT::OPERATOR_LOGICAL_EXCEPT_NOT,
             ),
         );
         $preserveAfter = TT::mergeIndexes(
             TT::diffIndexes(
-                $this->PreserveNewlineAfter,
+                $this->_PreserveNewlineAfter,
                 $preserveBefore,
             ),
             $both
         );
 
         return $this->with('PreserveNewlineBefore', $preserveBefore)
-                    ->with('PreserveNewlineAfter', $preserveAfter);
+                    ->with('PreserveNewlineAfter', $preserveAfter)
+                    ->with('LastOperatorsMethod', __FUNCTION__);
     }
 
     /**
@@ -613,14 +684,12 @@ class TokenTypeIndex implements IImmutable
     public function withTrailingOperators()
     {
         $both = TT::intersectIndexes(
-            $this->PreserveNewlineBefore,
-            $this->PreserveNewlineAfter,
+            $this->_PreserveNewlineBefore,
+            $this->_PreserveNewlineAfter,
         );
         $preserveAfter = TT::mergeIndexes(
-            $this->PreserveNewlineAfter,
+            $this->_PreserveNewlineAfter,
             TT::getIndex(
-                \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
-                \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
                 \T_COALESCE,
                 \T_CONCAT,
                 ...TT::OPERATOR_ARITHMETIC,
@@ -629,20 +698,39 @@ class TokenTypeIndex implements IImmutable
         );
         $preserveBefore = TT::mergeIndexes(
             TT::diffIndexes(
-                $this->PreserveNewlineBefore,
+                $this->_PreserveNewlineBefore,
                 $preserveAfter,
             ),
             $both
         );
 
         return $this->with('PreserveNewlineBefore', $preserveBefore)
-                    ->with('PreserveNewlineAfter', $preserveAfter);
+                    ->with('PreserveNewlineAfter', $preserveAfter)
+                    ->with('LastOperatorsMethod', __FUNCTION__);
     }
 
     /**
      * @return static
      */
-    public function withoutPreservingNewlines()
+    public function withMixedOperators()
+    {
+        return $this->with('PreserveNewlineBefore', $this->_PreserveNewlineBefore)
+                    ->with('PreserveNewlineAfter', $this->_PreserveNewlineAfter)
+                    ->with('LastOperatorsMethod', __FUNCTION__);
+    }
+
+    /**
+     * @return static
+     */
+    public function withPreserveNewline()
+    {
+        return $this->{$this->LastOperatorsMethod}();
+    }
+
+    /**
+     * @return static
+     */
+    public function withoutPreserveNewline()
     {
         return $this->with('PreserveNewlineBefore', $this->PreserveBlankBefore)
                     ->with('PreserveNewlineAfter', $this->PreserveBlankAfter);

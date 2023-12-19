@@ -12,6 +12,18 @@ trait ContextAwareTokenTrait
     public ?int $SubType = null;
 
     /**
+     * True if the token is a colon after a switch case or a label
+     */
+    final public function isColonStatementDelimiter(): bool
+    {
+        /** @var Token $this */
+        return $this->id === \T_COLON && (
+            $this->getColonType() === TokenSubType::COLON_SWITCH_CASE_DELIMITER ||
+            $this->SubType === TokenSubType::COLON_LABEL_DELIMITER
+        );
+    }
+
+    /**
      * Get the sub-type of a T_COLON token
      *
      * @return TokenSubType::COLON_*
@@ -161,9 +173,9 @@ trait ContextAwareTokenTrait
             $t = $this->Parent->_prevSibling;
             while (
                 $t &&
-                $this->TokenTypeIndex->DeclarationPart[$t->id]
+                $this->TypeIndex->DeclarationPart[$t->id]
             ) {
-                if ($this->TokenTypeIndex->DeclarationClass[$t->id]) {
+                if ($this->TypeIndex->DeclarationClass[$t->id]) {
                     $this->SubType = TokenSubType::USE_TRAIT;
                     break;
                 }

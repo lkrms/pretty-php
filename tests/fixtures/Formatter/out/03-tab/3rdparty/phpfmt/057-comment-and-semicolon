@@ -13,5 +13,4 @@ $obj
 	->set(ConstantBag::P)
 	->set(ConstantBag::R)
 	->set(ConstantBag::S)
-	->set(ConstantBag::U)  // Comment
-	;
+	->set(ConstantBag::U);  // Comment

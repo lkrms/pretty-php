@@ -5,26 +5,16 @@ namespace Lkrms\PrettyPHP\Contract;
 use Lkrms\PrettyPHP\Formatter;
 
 /**
- * Base interface for filters and rules
+ * Base interface for formatter extensions
  */
 interface Extension
 {
     public function __construct(Formatter $formatter);
 
     /**
-     * Set the formatter
-     */
-    public function setFormatter(Formatter $formatter): void;
-
-    /**
-     * Initialise and return the object
+     * Clear the extension's state for a new payload
      *
-     * @return $this
-     */
-    public function prepare();
-
-    /**
-     * Clear state for a new payload
+     * Called once per input file, before formatting begins.
      */
     public function reset(): void;
 }

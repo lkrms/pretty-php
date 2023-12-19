@@ -5,6 +5,7 @@ namespace Lkrms\PrettyPHP\Rule;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Rule\Contract\MultiTokenRule;
+use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 
 /**
  * Suppress changes to whitespace inside strings and heredocs
@@ -15,7 +16,7 @@ final class ProtectStrings implements MultiTokenRule
 {
     use MultiTokenRuleTrait;
 
-    public function getPriority(string $method): ?int
+    public static function getPriority(string $method): ?int
     {
         switch ($method) {
             case self::PROCESS_TOKENS:
@@ -26,7 +27,7 @@ final class ProtectStrings implements MultiTokenRule
         }
     }
 
-    public function getTokenTypes(): array
+    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
     {
         return [
             \T_DOUBLE_QUOTE,

@@ -17,7 +17,7 @@ final class StandardIndentation implements TokenRule
 {
     use TokenRuleTrait;
 
-    public function getPriority(string $method): ?int
+    public static function getPriority(string $method): ?int
     {
         return 600;
     }

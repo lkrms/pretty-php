@@ -2,11 +2,9 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Rule\Contract\TokenRule;
 use Lkrms\PrettyPHP\Token\Token;
-use Lkrms\Utility\Test;
 
 /**
  * Suppress newlines in statements and control structures that start and end on
@@ -30,7 +28,7 @@ final class PreserveOneLineStatements implements TokenRule
 {
     use TokenRuleTrait;
 
-    public function getPriority(string $method): ?int
+    public static function getPriority(string $method): ?int
     {
         return 95;
     }

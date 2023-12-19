@@ -7,7 +7,6 @@ use Lkrms\PrettyPHP\Rule\Concern\ListRuleTrait;
 use Lkrms\PrettyPHP\Rule\Contract\ListRule;
 use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Token\Token;
-use Lkrms\PrettyPHP\Formatter;
 
 /**
  * Apply whitespace to lists
@@ -27,13 +26,11 @@ use Lkrms\PrettyPHP\Formatter;
  */
 final class ListSpacing implements ListRule
 {
-    use ListRuleTrait {
-        setFormatter as private _setFormatter;
-    }
+    use ListRuleTrait;
 
     private bool $ListRuleIsEnabled;
 
-    public function getPriority(string $method): ?int
+    public static function getPriority(string $method): ?int
     {
         switch ($method) {
             case self::PROCESS_LIST:
@@ -44,12 +41,14 @@ final class ListSpacing implements ListRule
         }
     }
 
-    public function setFormatter(Formatter $formatter): void
+    /**
+     * @inheritDoc
+     */
+    public function reset(): void
     {
-        $this->_setFormatter($formatter);
-        $this->ListRuleIsEnabled =
-            ($formatter->EnabledRules[StrictLists::class] ?? null) ||
-            ($formatter->EnabledRules[AlignLists::class] ?? null);
+        $this->ListRuleIsEnabled
+            ??= ($this->Formatter->Enabled[StrictLists::class] ?? null) ||
+                ($this->Formatter->Enabled[AlignLists::class] ?? null);
     }
 
     public function processList(Token $owner, TokenCollection $items): void

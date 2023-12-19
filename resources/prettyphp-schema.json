@@ -59,6 +59,8 @@
             "type": "array",
             "items": {
                 "enum": [
+                    "sort-imports",
+                    "move-comments",
                     "simplify-strings",
                     "preserve-newlines",
                     "declaration-spacing"

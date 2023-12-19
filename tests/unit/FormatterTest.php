@@ -641,7 +641,7 @@ PHP
                     fn(Formatter $f) =>
                         $f->with('TokenTypeIndex', $f->TokenTypeIndex->withLeadingOperators())
                           ->with('ImportSortOrder', ImportSortOrder::NONE)
-                          ->withPsr12Compliance(),
+                          ->withPsr12(),
             ],
         ];
     }

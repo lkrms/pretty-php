@@ -78,9 +78,17 @@ pretty-php - Format a PHP file
 
   The default sequence is: `auto`
 
-- **`-i`**, **`--disable`** (`simplify-strings`|`preserve-newlines`|`declaration-spacing`),...
+- **`-i`**, **`--disable`** *<u>rule</u>*,...
 
   Disable one of the default formatting rules.
+
+  The rule can be:
+
+  - `sort-imports`
+  - `move-comments`
+  - `simplify-strings`
+  - `preserve-newlines`
+  - `declaration-spacing`
 
 - **`-r`**, **`--enable`** *<u>rule</u>*,...
 
@@ -147,6 +155,8 @@ pretty-php - Format a PHP file
 - **`-M`**, **`--no-sort-imports`**
 
   Don't sort or group consecutive alias/import statements.
+
+  Equivalent to **`--disable=sort-imports`**
 
 - **`--psr12`**
 

@@ -21,6 +21,9 @@ class SomeClass
 		$var &= $var;
 
 		$var &= $var;
-		/** @var SomeType */
+
+		/*
+		 * @var SomeType
+		 */
 	}
 }

@@ -5,6 +5,7 @@ namespace Lkrms\PrettyPHP\Rule;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Rule\Contract\MultiTokenRule;
+use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 
 /**
  * If a control structure expression breaks over multiple lines, add newlines
@@ -18,7 +19,7 @@ final class StrictExpressions implements MultiTokenRule
 {
     use MultiTokenRuleTrait;
 
-    public function getPriority(string $method): ?int
+    public static function getPriority(string $method): ?int
     {
         switch ($method) {
             case self::PROCESS_TOKENS:
@@ -29,7 +30,7 @@ final class StrictExpressions implements MultiTokenRule
         }
     }
 
-    public function getTokenTypes(): array
+    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
     {
         return [
             \T_IF,
@@ -41,7 +42,7 @@ final class StrictExpressions implements MultiTokenRule
         ];
     }
 
-    public function getRequiresSortedTokens(): bool
+    public static function getRequiresSortedTokens(): bool
     {
         return false;
     }

@@ -30,7 +30,8 @@ final class PreserveLineBreaksTest extends \Lkrms\PrettyPHP\Tests\TestCase
         yield 'logical operator after bracket' => [
             <<<'PHP'
 <?php
-return a($b) && a($c) &&
+return a($b) &&
+    a($c) &&
     strcmp((string) $b, (string) $c) === 0;
 
 PHP,

@@ -49,7 +49,7 @@ final class HangingIndentation implements MultiTokenRule
      */
     private bool $HeredocHasHangingIndent;
 
-    public function getPriority(string $method): ?int
+    public static function getPriority(string $method): ?int
     {
         switch ($method) {
             case self::PROCESS_TOKENS:
@@ -60,8 +60,16 @@ final class HangingIndentation implements MultiTokenRule
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     public function reset(): void
     {
+        if (isset($this->HeredocHasHangingIndent)) {
+            return;
+        }
+
+        /** @var int&HeredocIndent::* */
         $indent = $this->Formatter->HeredocIndent;
         $this->HeredocMayHaveHangingIndent =
             (bool) ($indent & (HeredocIndent::MIXED | HeredocIndent::HANGING));
@@ -202,7 +210,7 @@ final class HangingIndentation implements MultiTokenRule
             //         : $a <=>
             //             $b;
             // ```
-            if ($token->IsTernaryOperator || $token->id === \T_COALESCE) {
+            if ($token->IsTernaryOperator || $token->id === \T_COALESCE || $token->id === \T_COALESCE_EQUAL) {
                 $stack[] = self::getTernaryContext($token) ?: $token->TernaryOperator1 ?: $token;
                 $until = self::getTernaryEndOfExpression($token);
             } elseif ($token->ChainOpenedBy) {
@@ -237,7 +245,8 @@ final class HangingIndentation implements MultiTokenRule
                 } elseif ($token->Statement !== $token &&
                         $latest->Statement !== $latest) {
                     $latest = end($latest->HangingIndentStack);
-                    if ($latest && $latest->BracketStack === $token->BracketStack &&
+                    if ($latest &&
+                            $latest->BracketStack === $token->BracketStack &&
                             $latest->Statement === $latest) {
                         $stack[] = $latest;
                     }
@@ -360,6 +369,7 @@ final class HangingIndentation implements MultiTokenRule
         while ($current &&
                 $current->Statement === $token->Statement) {
             if ($current->id === \T_COALESCE ||
+                $current->id === \T_COALESCE_EQUAL ||
                 ($current->TernaryOperator1 === $current &&
                     $current->TernaryOperator2->Index <
                         ($token->TernaryOperator1 ?: $token)->Index)) {
@@ -394,7 +404,10 @@ final class HangingIndentation implements MultiTokenRule
         // - of the last ternary expression in this statement
         $current = $token;
         do {
-            if ($current->id === \T_COALESCE) {
+            if (
+                $current->id === \T_COALESCE ||
+                $current->id === \T_COALESCE_EQUAL
+            ) {
                 $until = $current->EndExpression ?: $current;
             } else {
                 $until = $current->TernaryOperator2->EndExpression ?: $current;
@@ -402,6 +415,7 @@ final class HangingIndentation implements MultiTokenRule
         } while ($until !== $current &&
             ($current = $until->_nextSibling) &&
             ($current->id === \T_COALESCE ||
+                $current->id === \T_COALESCE_EQUAL ||
                 $current->TernaryOperator1 === $current));
 
         // And without breaking out of an unenclosed control structure

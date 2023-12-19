@@ -21,7 +21,7 @@ final class AlignComments implements BlockRule
      */
     private $BlockComments = [];
 
-    public function getPriority(string $method): ?int
+    public static function getPriority(string $method): ?int
     {
         switch ($method) {
             case self::PROCESS_BLOCK:
@@ -144,6 +144,9 @@ final class AlignComments implements BlockRule
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     public function reset(): void
     {
         $this->BlockComments = [];

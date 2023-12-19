@@ -3,6 +3,7 @@
 namespace Lkrms\PrettyPHP\Rule\Contract;
 
 use Lkrms\PrettyPHP\Catalog\TokenType;
+use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 
 interface TokenRule extends Rule
@@ -19,14 +20,14 @@ interface TokenRule extends Rule
      * To receive all tokens, return `['*']`, otherwise return either a list of
      * token types, or an index returned by {@see TokenType::getIndex()}.
      *
-     * @return array{'*'}|int[]|array<int,bool>
+     * @return int[]|array<int,bool>|array{'*'}
      */
-    public function getTokenTypes(): array;
+    public static function getTokenTypes(TokenTypeIndex $typeIndex): array;
 
     /**
      * Return true if tokens must be passed to the rule in document order
      */
-    public function getRequiresSortedTokens(): bool;
+    public static function getRequiresSortedTokens(): bool;
 
     /**
      * Apply the rule to a token

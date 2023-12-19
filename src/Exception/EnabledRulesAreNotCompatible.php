@@ -4,11 +4,12 @@ namespace Lkrms\PrettyPHP\Exception;
 
 use Lkrms\Exception\Exception;
 use Lkrms\PrettyPHP\Rule\Contract\Rule;
+use Lkrms\Utility\Get;
 
 /**
  * Thrown when incompatible rules are enabled
  */
-class IncompatibleRulesException extends Exception
+class EnabledRulesAreNotCompatible extends Exception
 {
     /**
      * @var array<class-string<Rule>>
@@ -16,18 +17,20 @@ class IncompatibleRulesException extends Exception
     protected array $Rules;
 
     /**
-     * @param class-string<Rule> $rule1
-     * @param class-string<Rule> $rule2
      * @param class-string<Rule> ...$rules
      */
-    public function __construct(string $rule1, string $rule2, string ...$rules)
+    public function __construct(string ...$rules)
     {
-        array_unshift($rules, $rule1, $rule2);
         $this->Rules = $rules;
+
+        $rules = '';
+        foreach ($this->Rules as $rule) {
+            $rules .= ($rules === '' ? '' : ', ') . Get::basename($rule);
+        }
 
         parent::__construct(sprintf(
             'Enabled rules are not compatible: %s',
-            implode(', ', $this->Rules)
+            $rules
         ));
     }
 }

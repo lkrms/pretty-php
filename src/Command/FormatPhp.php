@@ -21,7 +21,7 @@ use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Exception\FormatterException;
 use Lkrms\PrettyPHP\Exception\InvalidConfigurationException;
 use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
-use Lkrms\PrettyPHP\Filter\Contract\Filter;
+use Lkrms\PrettyPHP\Filter\MoveComments;
 use Lkrms\PrettyPHP\Filter\SortImports;
 use Lkrms\PrettyPHP\Rule\Contract\Rule;
 use Lkrms\PrettyPHP\Rule\Preset\Drupal;
@@ -45,12 +45,12 @@ use Lkrms\PrettyPHP\Rule\StrictLists;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\PrettyPHP\Formatter;
+use Lkrms\PrettyPHP\FormatterBuilder;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Sys;
-use Lkrms\Utility\Test;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
 use SebastianBergmann\Diff\Differ;
 use SplFileInfo;
@@ -61,13 +61,15 @@ use Throwable;
  */
 class FormatPhp extends CliCommand
 {
-    private const DISABLE_RULE_MAP = [
+    private const DISABLE_MAP = [
+        'sort-imports' => SortImports::class,
+        'move-comments' => MoveComments::class,
         'simplify-strings' => NormaliseStrings::class,
         'preserve-newlines' => PreserveLineBreaks::class,
         'declaration-spacing' => DeclarationSpacing::class,
     ];
 
-    private const ENABLE_RULE_MAP = [
+    private const ENABLE_MAP = [
         'align-comments' => AlignComments::class,
         'align-chains' => AlignChains::class,
         'align-fn' => AlignArrowFunctions::class,
@@ -78,6 +80,13 @@ class FormatPhp extends CliCommand
         'strict-expressions' => StrictExpressions::class,
         'strict-lists' => StrictLists::class,
         'preserve-one-line' => PreserveOneLineStatements::class,
+    ];
+
+    private const EOL_MAP = [
+        'auto' => \PHP_EOL,
+        'platform' => \PHP_EOL,
+        'lf' => "\n",
+        'crlf' => "\r\n",
     ];
 
     private const HEREDOC_INDENT_MAP = [
@@ -161,173 +170,98 @@ class FormatPhp extends CliCommand
         ],
     ];
 
-    private const INCOMPATIBLE_RULES = [
-        ['align-lists', 'strict-lists'],
-    ];
-
     private const PROGRESS_LOG_DIR = 'progress-log';
 
     /**
      * @var string[]|null
      */
-    private $InputFiles;
+    private ?array $InputFiles;
 
-    /**
-     * @var string
-     */
-    private $IncludeRegex;
+    private ?string $IncludeRegex;
 
-    /**
-     * @var string
-     */
-    private $ExcludeRegex;
+    private ?string $ExcludeRegex;
 
-    /**
-     * @var string|null
-     */
-    private $IncludeIfPhpRegex;
+    private ?string $IncludeIfPhpRegex;
 
-    /**
-     * @var int|null
-     */
-    private $Tabs;
+    private ?int $Tabs;
 
-    /**
-     * @var int|null
-     */
-    private $Spaces;
+    private ?int $Spaces;
 
-    /**
-     * @var string
-     */
-    private $Eol;
+    private ?string $Eol;
 
     /**
      * @var string[]|null
      */
-    private $DisableRules;
+    private ?array $Disable;
 
     /**
      * @var string[]|null
      */
-    private $EnableRules;
+    private ?array $Enable;
 
-    /**
-     * @var bool
-     */
-    private $OneTrueBraceStyle;
+    private ?bool $OneTrueBraceStyle;
 
-    /**
-     * @var bool
-     */
-    private $OperatorsFirst;
+    private ?bool $OperatorsFirst;
 
-    /**
-     * @var bool
-     */
-    private $OperatorsLast;
+    private ?bool $OperatorsLast;
 
-    /**
-     * @var bool
-     */
-    private $IgnoreNewlines;
+    private ?bool $IgnoreNewlines;
 
-    /**
-     * @var bool
-     */
-    private $NoSimplifyStrings;
+    private ?bool $NoSimplifyStrings;
 
     /**
      * @var string|null
      */
-    private $HeredocIndent;
+    protected $HeredocIndent;
 
     /**
      * @var string|null
      */
-    private $SortImportsBy;
+    protected $SortImportsBy;
 
-    /**
-     * @var bool
-     */
-    private $NoSortImports;
+    private ?bool $NoSortImports;
 
-    /**
-     * @var bool
-     */
-    private $Psr12;
+    private ?bool $Psr12;
 
     /**
      * @var string|null
      */
-    private $Preset;
+    protected $Preset;
 
     /**
      * @var string|null
      */
-    private $ConfigFile;
+    protected $ConfigFile;
 
-    /**
-     * @var bool
-     */
-    private $IgnoreConfigFiles;
+    private ?bool $IgnoreConfigFiles;
 
     /**
      * @var string[]|null
      */
-    private $OutputFiles;
+    protected $OutputFiles;
 
     /**
      * @var string|null
      */
-    private $Diff;
+    protected $Diff;
 
-    /**
-     * @var bool
-     */
-    private $Check;
+    private ?bool $Check;
 
-    /**
-     * @var bool
-     */
-    private $PrintConfig;
+    private ?bool $PrintConfig;
 
-    /**
-     * @var string|null
-     */
-    private $StdinFilename;
+    private ?string $StdinFilename;
 
-    /**
-     * @var string|null
-     */
-    private $DebugDirectory;
+    private ?string $DebugDirectory;
 
-    /**
-     * @var bool
-     */
-    private $ReportTimers;
+    private ?bool $ReportTimers;
 
-    /**
-     * @var bool
-     */
-    private $Fast;
+    private ?bool $Fast;
 
-    /**
-     * @var bool
-     */
-    private $Verbose;
+    private ?bool $Verbose;
 
-    /**
-     * @var int
-     */
-    private $Quiet;
+    private ?int $Quiet;
 
     // --
-
-    /**
-     * @var array<class-string<Filter>>|null
-     */
-    private $SkipFilters;
 
     /**
      * @var int|null
@@ -515,7 +449,7 @@ In *auto* mode, the input file's line endings are preserved, and *platform* mode
 is used as a fallback if there are no line breaks in the input.
 EOF)
                 ->optionType(CliOptionType::ONE_OF)
-                ->allowedValues(['auto', 'platform', 'lf', 'crlf'])
+                ->allowedValues(array_keys(self::EOL_MAP))
                 ->defaultValue('auto')
                 ->visibility(Visibility::ALL_EXCEPT_SYNOPSIS | Visibility::SCHEMA)
                 ->bindTo($this->Eol),
@@ -527,12 +461,12 @@ EOF)
 Disable one of the default formatting rules.
 EOF)
                 ->optionType(CliOptionType::ONE_OF)
-                ->allowedValues(array_keys(self::DISABLE_RULE_MAP))
+                ->allowedValues(array_keys(self::DISABLE_MAP))
                 ->unknownValuePolicy(CliOptionValueUnknownPolicy::DISCARD)
                 ->multipleAllowed()
                 ->unique()
                 ->visibility(Visibility::ALL | Visibility::SCHEMA)
-                ->bindTo($this->DisableRules),
+                ->bindTo($this->Disable),
             CliOption::build()
                 ->long('enable')
                 ->short('r')
@@ -541,12 +475,12 @@ EOF)
 Enable an optional formatting rule.
 EOF)
                 ->optionType(CliOptionType::ONE_OF)
-                ->allowedValues(array_keys(self::ENABLE_RULE_MAP))
+                ->allowedValues(array_keys(self::ENABLE_MAP))
                 ->unknownValuePolicy(CliOptionValueUnknownPolicy::DISCARD)
                 ->multipleAllowed()
                 ->unique()
                 ->visibility(Visibility::ALL | Visibility::SCHEMA)
-                ->bindTo($this->EnableRules),
+                ->bindTo($this->Enable),
             CliOption::build()
                 ->long('one-true-brace-style')
                 ->short('1')
@@ -627,6 +561,8 @@ EOF)
                 ->short('M')
                 ->description(<<<EOF
 Don't sort or group consecutive alias/import statements.
+
+Equivalent to `--disable=sort-imports`
 EOF)
                 ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->NoSortImports),
@@ -869,8 +805,15 @@ EOF,
             throw new CliInvalidArgumentsException('--tab and --space cannot both be given');
         }
 
-        if ($this->SortImportsBy && $this->NoSortImports) {
-            throw new CliInvalidArgumentsException('--sort-imports-by and --no-sort-imports cannot both be given');
+        if ($this->OperatorsFirst && $this->OperatorsLast) {
+            throw new CliInvalidArgumentsException('--operators-first and --operators-last cannot both be given');
+        }
+
+        if (
+            $this->SortImportsBy &&
+            ($this->NoSortImports || in_array('sort-imports', $this->Disable, true))
+        ) {
+            throw new CliInvalidArgumentsException('--sort-imports-by and --no-sort-imports/--disable=sort-imports cannot both be given');
         }
 
         if ($this->ConfigFile) {
@@ -1029,71 +972,54 @@ EOF,
         $lastOptions = null;
         $getFormatter =
             function (?string $file) use (&$formatter, &$lastOptions): Formatter {
-                if (!$file || !($options = $this->DirFormattingOptionValues[dirname($file)] ?? null)) {
-                    $options = $this->CliFormattingOptionValues;
+                if ($file !== null) {
+                    $options = $this->DirFormattingOptionValues[dirname($file)] ?? null;
                 }
+                $options ??= $this->CliFormattingOptionValues;
                 if ($formatter && $options === $lastOptions) {
                     return $formatter;
                 }
                 Console::debug('New formatter required for:', $file);
                 $this->applyFormattingOptionValues($options);
                 !$this->Verbose || Console::debug('Applying options:', json_encode($options, \JSON_PRETTY_PRINT));
-                if ($this->Psr12) {
-                    $this->Tabs = null;
-                    $this->Spaces = 4;
-                    $this->Eol = 'lf';
-                    $unskip = [
-                        DeclarationSpacing::class,
-                    ];
-                    $skip = [
-                        PreserveOneLineStatements::class,
-                        AlignLists::class,
-                    ];
-                    $add = [
-                        StrictExpressions::class,
-                        StrictLists::class,
-                    ];
-                    $this->DisableRules = array_diff($this->DisableRules, $unskip, $skip);
-                    array_push($this->DisableRules, ...$skip);
-                    array_push($this->EnableRules, ...array_diff($add, $this->EnableRules));
-                    $this->OneTrueBraceStyle = false;
-                    $this->HeredocIndent = 'hanging';
+
+                $flags = 0;
+                if ($this->Quiet < 2) {
+                    $flags |= FormatterFlag::REPORT_CODE_PROBLEMS;
                 }
-                $f = new Formatter(
-                    !$this->Tabs,
-                    $this->Tabs ?: $this->Spaces ?: 4,
-                    $this->DisableRules,
-                    $this->EnableRules,
-                    $this->SkipFilters,
-                    ($this->Quiet < 2 ? FormatterFlag::REPORT_CODE_PROBLEMS : 0)
-                        | ($this->Verbose ? FormatterFlag::LOG_PROGRESS : 0),
-                    $this->TokenTypeIndex
+                if ($this->Verbose) {
+                    $flags |= FormatterFlag::LOG_PROGRESS;
+                }
+
+                $tokenTypeIndex =
+                    $this->TokenTypeIndex !== null
                         ? [$this->TokenTypeIndex, 'create']()
                         : ($this->OperatorsFirst
                             ? (new TokenTypeIndex())->withLeadingOperators()
                             : ($this->OperatorsLast
                                 ? (new TokenTypeIndex())->withTrailingOperators()
-                                : null))
-                );
-                $f->PreferredEol = $this->Eol === 'auto' || $this->Eol === 'platform'
-                    ? \PHP_EOL
-                    : ($this->Eol === 'lf' ? "\n" : "\r\n");
-                $f->PreserveEol = $this->Eol === 'auto';
-                $f->OneTrueBraceStyle = $this->OneTrueBraceStyle;
-                if ($this->HeredocIndent) {
-                    $f->HeredocIndent = self::HEREDOC_INDENT_MAP[$this->HeredocIndent];
-                }
-                $f->ImportSortOrder = $this->SortImportsBy
-                    ? self::IMPORT_SORT_ORDER_MAP[$this->SortImportsBy]
-                    : ImportSortOrder::DEPTH;
-                $this->SpacesBesideCode === null || $f->SpacesBesideCode = $this->SpacesBesideCode;
-                $this->IncreaseIndentBetweenUnenclosedTags === null || $f->IncreaseIndentBetweenUnenclosedTags = $this->IncreaseIndentBetweenUnenclosedTags;
-                $this->RelaxAlignmentCriteria === null || $f->RelaxAlignmentCriteria = $this->RelaxAlignmentCriteria;
+                                : new TokenTypeIndex()));
+
+                $f = (new FormatterBuilder())
+                         ->insertSpaces(!$this->Tabs)
+                         ->tabSize($this->Tabs ?: $this->Spaces ?: 4)
+                         ->disable($this->Disable)
+                         ->enable($this->Enable)
+                         ->flags($flags)
+                         ->tokenTypeIndex($tokenTypeIndex)
+                         ->preferredEol(self::EOL_MAP[$this->Eol])
+                         ->preserveEol($this->Eol === 'auto')
+                         ->spacesBesideCode($this->SpacesBesideCode ?? 2)
+                         ->heredocIndent(self::HEREDOC_INDENT_MAP[$this->HeredocIndent])
+                         ->importSortOrder(self::IMPORT_SORT_ORDER_MAP[$this->SortImportsBy])
+                         ->oneTrueBraceStyle($this->OneTrueBraceStyle)
+                         ->psr12($this->Psr12)
+                         ->with('IncreaseIndentBetweenUnenclosedTags', $this->IncreaseIndentBetweenUnenclosedTags ?? true)
+                         ->with('RelaxAlignmentCriteria', $this->RelaxAlignmentCriteria ?? false);
+
                 $lastOptions = $options;
 
-                return $this->Psr12
-                    ? $f->withPsr12Compliance()
-                    : $f;
+                return $f;
             };
 
         $i = 0;
@@ -1111,6 +1037,7 @@ EOF,
             try {
                 $output = $formatter->format(
                     $input,
+                    null,
                     $inputFile,
                     $this->Fast
                 );
@@ -1347,30 +1274,31 @@ EOF,
             return $this->applyFormattingOptionValues(self::PRESET_MAP[$this->Preset]);
         }
 
-        $this->SkipFilters = [];
         if ($this->IgnoreNewlines) {
-            $this->DisableRules[] = 'preserve-newlines';
+            $this->Disable[] = 'preserve-newlines';
         }
         if ($this->NoSimplifyStrings) {
-            $this->DisableRules[] = 'simplify-strings';
+            $this->Disable[] = 'simplify-strings';
         }
-        if ($this->NoSortImports && !$this->Psr12) {
-            $this->SkipFilters[] = SortImports::class;
+        if ($this->NoSortImports) {
+            $this->Disable[] = 'sort-imports';
         }
 
-        foreach (self::INCOMPATIBLE_RULES as $rules) {
+        foreach (Formatter::INCOMPATIBLE_RULES as $rules) {
+            $rules = array_keys(array_intersect(self::ENABLE_MAP, $rules));
             // If multiple rules from this group have been enabled, remove all
             // but the last
-            if (count($rules = array_intersect($this->EnableRules, $rules)) > 1) {
+            $rules = array_intersect($this->Enable, $rules);
+            if (count($rules) > 1) {
                 array_pop($rules);
-                $this->EnableRules = array_diff_key($this->EnableRules, $rules);
+                $this->Enable = array_diff_key($this->Enable, $rules);
             }
         }
 
-        $this->DisableRules = array_values(array_intersect_key(self::DISABLE_RULE_MAP, array_flip($this->DisableRules)));
-        $this->EnableRules = array_values(array_intersect_key(self::ENABLE_RULE_MAP, array_flip($this->EnableRules)));
+        $this->Disable = array_values(array_intersect_key(self::DISABLE_MAP, array_flip($this->Disable)));
+        $this->Enable = array_values(array_intersect_key(self::ENABLE_MAP, array_flip($this->Enable)));
         if ($this->PresetRules) {
-            array_push($this->EnableRules, ...$this->PresetRules);
+            array_push($this->Enable, ...$this->PresetRules);
         }
 
         return $this;
