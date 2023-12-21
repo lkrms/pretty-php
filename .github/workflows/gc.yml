@@ -20,17 +20,17 @@ on:
         type: number
 
       delete_workflow_pattern:
-        description: "Name or filename of workflow (default: all)"
+        description: "Name or filename of workflow (if not set, all workflows are targeted)"
         required: false
         type: string
 
       delete_workflow_by_state_pattern:
         description: Workflow state
         required: true
-        default: all
+        default: ALL
         type: choice
         options:
-          - all
+          - ALL
           - active
           - deleted
           - disabled_inactivity
@@ -39,10 +39,10 @@ on:
       delete_run_by_conclusion_pattern:
         description: Workflow conclusion
         required: true
-        default: all
+        default: ALL
         type: choice
         options:
-          - all
+          - ALL
           - action_required
           - cancelled
           - failure
@@ -70,7 +70,7 @@ jobs:
           repository: ${{ github.repository }}
           retain_days: ${{ inputs.retain_days || 28 }}
           keep_minimum_runs: ${{ inputs.keep_minimum_runs || 10 }}
-          delete_workflow_pattern: ${{ inputs.delete_workflow_pattern || 'all' }}
-          delete_workflow_by_state_pattern: ${{ inputs.delete_workflow_by_state_pattern || 'all' }}
-          delete_run_by_conclusion_pattern: ${{ inputs.delete_run_by_conclusion_pattern || 'all' }}
+          delete_workflow_pattern: ${{ inputs.delete_workflow_pattern || null }}
+          delete_workflow_by_state_pattern: ${{ inputs.delete_workflow_by_state_pattern || 'ALL' }}
+          delete_run_by_conclusion_pattern: ${{ inputs.delete_run_by_conclusion_pattern || 'ALL' }}
           dry_run: ${{ inputs.dry_run || null }}
