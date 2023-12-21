@@ -173,6 +173,10 @@ but exceptions are occasionally made and documented here.
   _Use **`-M/--no-sort-imports`** or **`-m/--sort-imports-by`** to disable or modify
   this behaviour._
 
+- **Comments are placed after adjacent delimiters** \
+  Relocated DocBlocks are converted to standard C-style comments as a precaution.
+  _Use **`--disable=move-comments`** to disable this behaviour._
+
 - **Comments beside code are not moved to the next line**
 
 - **Comments are trimmed and aligned**
