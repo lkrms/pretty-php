@@ -7,6 +7,7 @@ use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
 use Lkrms\PrettyPHP\Tests\FormatterTest;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\File;
+use Lkrms\Utility\Json;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
@@ -21,8 +22,7 @@ $outPathOffset = strlen(dirname(__DIR__)) + 1;
 $count = 0;
 $replaced = 0;
 
-foreach (FormatterTest::getFileFormats() as $format => $options) {
-    $formatter = FormatterTest::getFormatter($options);
+foreach (FormatterTest::getFileFormats() as $format => $formatter) {
     foreach (FormatterTest::getAllFiles($format) as $file => [$outFile, $versionOutFile]) {
         $inFile = (string) $file;
         $path = substr($inFile, $pathOffset);
@@ -32,7 +32,7 @@ foreach (FormatterTest::getFileFormats() as $format => $options) {
         Console::logProgress('Generating', $outPath);
 
         File::createDir(dirname($outFile));
-        $code = file_get_contents($inFile);
+        $code = File::getContents($inFile);
         try {
             $output = $formatter->format($code);
         } catch (InvalidSyntaxException $ex) {
@@ -48,14 +48,14 @@ foreach (FormatterTest::getFileFormats() as $format => $options) {
         }
         $message = 'Creating';
         if (file_exists($outFile)) {
-            if (file_get_contents($outFile) === $output) {
+            if (File::getContents($outFile) === $output) {
                 continue;
             }
             if ($versionOutFile) {
                 $outFile = $versionOutFile;
                 $outPath = substr($outFile, $outPathOffset);
                 if (file_exists($outFile)) {
-                    if (file_get_contents($outFile) === $output) {
+                    if (File::getContents($outFile) === $output) {
                         continue;
                     }
                     $message = 'Replacing';
@@ -65,7 +65,7 @@ foreach (FormatterTest::getFileFormats() as $format => $options) {
             }
         }
         Console::log($message, $outPath);
-        file_put_contents($outFile, $output);
+        File::putContents($outFile, $output);
         $replaced++;
     }
 }
@@ -73,7 +73,7 @@ foreach (FormatterTest::getFileFormats() as $format => $options) {
 if (isset($invalid)) {
     $indexPath = FormatterTest::getMinVersionIndexPath();
     $index = file_exists($indexPath)
-        ? json_decode(file_get_contents($indexPath), true)
+        ? Json::parseObjectAsArray(File::getContents($indexPath))
         : [];
 
     $version = (\PHP_VERSION_ID - \PHP_VERSION_ID % 100) + 100;
@@ -99,8 +99,8 @@ if (isset($invalid)) {
     }
     ksort($index);
 
-    $json = json_encode($index, \JSON_PRETTY_PRINT);
-    file_put_contents($indexPath, $json);
+    $json = Json::prettyPrint($index);
+    File::putContents($indexPath, $json);
 }
 
 Console::summary(sprintf(

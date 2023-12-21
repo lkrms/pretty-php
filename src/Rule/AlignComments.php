@@ -19,7 +19,7 @@ final class AlignComments implements BlockRule
     /**
      * @var array<array{TokenCollection[],Token[]}>
      */
-    private $BlockComments = [];
+    private array $BlockComments = [];
 
     public static function getPriority(string $method): ?int
     {

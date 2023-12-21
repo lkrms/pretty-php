@@ -13,7 +13,7 @@ trait FilterTrait
     /**
      * @var Token[]
      */
-    protected $Tokens;
+    protected array $Tokens;
 
     /**
      * Get the given token's previous code token

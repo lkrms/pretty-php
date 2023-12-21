@@ -48,27 +48,18 @@ final class DeclarationSpacing implements MultiTokenRule
     /**
      * @var Token[]
      */
-    private $Prev = [];
+    private array $Prev = [];
 
     /**
      * @var int[]
      */
-    private $PrevTypes = [];
+    private array $PrevTypes = [];
 
-    /**
-     * @var bool
-     */
-    private $PrevExpand = false;
+    private bool $PrevExpand = false;
 
-    /**
-     * @var bool
-     */
-    private $PrevCondense = false;
+    private bool $PrevCondense = false;
 
-    /**
-     * @var bool
-     */
-    private $PrevCondenseOneLine = false;
+    private bool $PrevCondenseOneLine = false;
 
     public static function getPriority(string $method): ?int
     {

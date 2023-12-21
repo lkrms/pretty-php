@@ -3,16 +3,19 @@
 namespace Lkrms\PrettyPHP\Tests;
 
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
+use Lkrms\PrettyPHP\Contract\Extension;
 use Lkrms\PrettyPHP\Rule\AlignArrowFunctions;
 use Lkrms\PrettyPHP\Rule\AlignChains;
 use Lkrms\PrettyPHP\Rule\AlignComments;
 use Lkrms\PrettyPHP\Rule\AlignData;
 use Lkrms\PrettyPHP\Rule\AlignLists;
 use Lkrms\PrettyPHP\Rule\AlignTernaryOperators;
-use Lkrms\PrettyPHP\Rule\StrictExpressions;
-use Lkrms\PrettyPHP\Rule\StrictLists;
+use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Formatter;
+use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\File;
+use Lkrms\Utility\Json;
 use Lkrms\Utility\Pcre;
 use Generator;
 use SplFileInfo;
@@ -24,22 +27,26 @@ final class FormatterTest extends \Lkrms\PrettyPHP\Tests\TestCase
     /**
      * @dataProvider formatProvider
      *
-     * @param array{insertSpaces?:bool|null,tabSize?:int|null,skipRules?:string[],addRules?:string[],skipFilters?:string[],callback?:(callable(Formatter): Formatter)|null} $options
+     * @param Formatter|FormatterB $formatter
      */
-    public function testFormat(string $expected, string $code, array $options = []): void
+    public function testFormat(string $expected, string $code, $formatter): void
     {
-        $this->assertFormatterOutputIs($expected, $code, $this->getFormatter($options));
+        $this->assertFormatterOutputIs($expected, $code, $formatter);
     }
 
     /**
-     * @return array<string,array{string,string,2?:array{insertSpaces?:bool|null,tabSize?:int|null,skipRules?:string[],addRules?:string[],skipFilters?:string[],callback?:(callable(Formatter): Formatter)|null}}>
+     * @return array<string,array{string,string,Formatter|FormatterB}>
      */
     public static function formatProvider(): array
     {
+        $formatterB = Formatter::build();
+        $formatter = $formatterB->go();
+
         return [
             'empty string' => [
                 '',
                 '',
+                $formatter,
             ],
             'empty heredoc' => [
                 <<<'PHP'
@@ -53,6 +60,7 @@ PHP,
 $a = <<<EOF
 EOF;
 PHP,
+                $formatter,
             ],
             'import with close tag terminator' => [
                 <<<'PHP'
@@ -64,6 +72,7 @@ PHP,
 <?php
 use A ?>
 PHP,
+                $formatter,
             ],
             'PHPDoc comment #1' => [
                 <<<'PHP'
@@ -99,6 +108,7 @@ no leading asterisk
 
   */
 PHP,
+                $formatter,
             ],
             'PHPDoc comment #2' => [
                 <<<'PHP'
@@ -206,6 +216,7 @@ function foo()
 
 /** */
 PHP,
+                $formatter,
             ],
             'C comment' => [
                 <<<'PHP'
@@ -340,6 +351,7 @@ function foo()
 
 /* */
 PHP,
+                $formatter,
             ],
             'one-line comments' => [
                 <<<'PHP'
@@ -367,6 +379,7 @@ PHP,
 /***   ***/
 /******/
 PHP,
+                $formatter,
             ],
             'alternative syntax #1' => [
                 <<<'PHP'
@@ -394,6 +407,7 @@ e();
 endif;
 f();
 PHP,
+                $formatter,
             ],
             'alternative syntax #2' => [
                 <<<'PHP'
@@ -413,6 +427,7 @@ endwhile;
 else:
 endif;
 PHP,
+                $formatter,
             ],
             'empty statements inside braces' => [
                 <<<'PHP'
@@ -444,6 +459,7 @@ if ($d) {
     f();
     g(); }
 PHP,
+                $formatter,
             ],
             'ternary with closure return type in expression 1' => [
                 <<<'PHP'
@@ -465,6 +481,7 @@ return (bool) preg_match($exclude, $key);
 }
 : null;
 PHP,
+                $formatter,
             ],
             'label after close brace' => [
                 <<<'PHP'
@@ -482,7 +499,8 @@ if ($foo) {
 goto bar;
 }
 bar: qux();
-PHP
+PHP,
+                $formatter,
             ],
         ];
     }
@@ -496,11 +514,36 @@ PHP
     }
 
     /**
+     * @return Generator<string,array{string,string,Formatter}>
+     */
+    public static function filesProvider(): Generator
+    {
+        $pathOffset = strlen(self::getInputFixturesPath()) + 1;
+        foreach (self::getFileFormats() as $dir => $formatter) {
+            $format = substr($dir, 3);
+            foreach (self::getFiles($dir) as $file => $outFile) {
+                $inFile = (string) $file;
+
+                // Don't test if the file is expected to fail
+                if ($file->getExtension() === 'fails') {
+                    continue;
+                }
+
+                $path = substr($inFile, $pathOffset);
+                $code = File::getContents($inFile);
+                $expected = File::getContents($outFile);
+
+                yield "[{$format}] {$path}" => [$expected, $code, $formatter];
+            }
+        }
+    }
+
+    /**
      * Iterate over files in 'tests/fixtures/Formatter/in' and map them to
      * pathnames in 'tests/fixtures/Formatter/out/<format>'
      *
-     * @param string $format The format under test, i.e. one of the keys in
-     * {@see FormatterTest::getFileFormats()}'s return value.
+     * @param string $format The format under test, i.e. one of the keys
+     * returned by {@see FormatterTest::getFileFormats()}.
      * @return Generator<SplFileInfo,string>
      */
     public static function getFiles(string $format): Generator
@@ -510,8 +553,13 @@ PHP
 
     /**
      * Iterate over files in 'tests/fixtures/Formatter/in' and map them to
-     * pathnames in 'tests/fixtures/Formatter/out/<format>' without adjusting
-     * for the PHP version
+     * pathnames in 'tests/fixtures/Formatter/out/<format>' without excluding
+     * incompatible files
+     *
+     * Each input file is mapped to an array that contains an output path at
+     * index 0 and, if running on a version of PHP lower than the target
+     * version, a path for version-specific output at index 1, should it be
+     * necessary.
      *
      * @return Generator<SplFileInfo,array{string,string|null}>
      */
@@ -535,16 +583,14 @@ PHP
 
         $index = [];
         if (!$all && is_file($indexPath = self::getMinVersionIndexPath())) {
+            /** @var string[] */
             $index = array_merge(...array_filter(
-                json_decode(file_get_contents($indexPath), true),
+                Json::parseObjectAsArray(File::getContents($indexPath)),
                 fn(int $key) =>
                     \PHP_VERSION_ID < $key,
                 \ARRAY_FILTER_USE_KEY
             ));
-            $index = array_combine(
-                $index,
-                array_fill(0, count($index), true)
-            );
+            $index = Arr::toIndex($index);
         }
 
         $versionSuffix =
@@ -590,83 +636,39 @@ PHP
     }
 
     /**
-     * Get the formats applied to files in "tests.in" during testing
+     * Get formats applied to files in 'tests/fixtures/Formatter/in'
      *
-     * @return array<string,array{insertSpaces?:bool|null,tabSize?:int|null,skipRules?:string[],addRules?:string[],skipFilters?:string[],callback?:(callable(Formatter): Formatter)|null}>
+     * @return array<string,Formatter>
      */
     public static function getFileFormats(): array
     {
         return [
-            '01-default' => [
-                'insertSpaces' => null,
-                'tabSize' => null,
-                'skipRules' => [],
-                'addRules' => [],
-                'skipFilters' => [],
-                'callback' => null,
-            ],
-            '02-aligned' => [
-                'insertSpaces' => null,
-                'tabSize' => null,
-                'skipRules' => [],
-                'addRules' => [
-                    AlignData::class,
-                    AlignChains::class,
-                    AlignComments::class,
-                    AlignArrowFunctions::class,
-                    AlignLists::class,
-                    AlignTernaryOperators::class,
-                ],
-                'skipFilters' => [],
-                'callback' => null,
-            ],
-            '03-tab' => [
-                'insertSpaces' => false,
-                'tabSize' => 8,
-                'skipRules' => [],
-                'addRules' => [],
-                'skipFilters' => [],
-                'callback' => null,
-            ],
-            '04-psr12' => [
-                'insertSpaces' => true,
-                'tabSize' => 4,
-                'skipRules' => [],
-                'addRules' => [
-                    StrictExpressions::class,
-                    StrictLists::class,
-                ],
-                'skipFilters' => [],
-                'callback' =>
-                    fn(Formatter $f) =>
-                        $f->with('TokenTypeIndex', $f->TokenTypeIndex->withLeadingOperators())
-                          ->with('ImportSortOrder', ImportSortOrder::NONE)
-                          ->withPsr12(),
-            ],
+            '01-default' =>
+                Formatter::build()
+                    ->go(),
+            '02-aligned' =>
+                Formatter::build()
+                    ->enable([
+                        AlignData::class,
+                        AlignChains::class,
+                        AlignComments::class,
+                        AlignArrowFunctions::class,
+                        AlignLists::class,
+                        AlignTernaryOperators::class,
+                    ])
+                    ->go(),
+            '03-tab' =>
+                Formatter::build()
+                    ->insertSpaces(false)
+                    ->tabSize(8)
+                    ->go(),
+            '04-psr12' =>
+                Formatter::build()
+                    ->tokenTypeIndex((new TokenTypeIndex())->withLeadingOperators())
+                    ->importSortOrder(ImportSortOrder::NONE)
+                    ->psr12()
+                    ->go(),
         ];
-    }
-
-    /**
-     * @return Generator<string,array{string,string,Formatter}>
-     */
-    public static function filesProvider(): Generator
-    {
-        $pathOffset = strlen(self::getInputFixturesPath()) + 1;
-        foreach (self::getFileFormats() as $dir => $options) {
-            $format = substr($dir, 3);
-            $formatter = self::getFormatter($options);
-            foreach (self::getFiles($dir) as $file => $outFile) {
-                $inFile = (string) $file;
-                if ($file->getExtension() === 'fails') {
-                    // Don't test if the file is expected to fail
-                    continue;
-                }
-                $path = substr($inFile, $pathOffset);
-                $code = file_get_contents($inFile);
-                $expected = file_get_contents($outFile);
-                yield "[{$format}] {$path}" => [$expected, $code, $formatter];
-            }
-        }
     }
 
     public static function getMinVersionIndexPath(): string

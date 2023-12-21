@@ -15,15 +15,12 @@ use Stringable;
  */
 final class TokenCollection extends TypedList implements Stringable
 {
-    /**
-     * @var bool
-     */
-    private $Collected = false;
+    private bool $Collected = false;
 
     /**
-     * @var array<int,Token>
+     * @var array<int,Token>|null
      */
-    private $OriginalItems;
+    private ?array $OriginalItems = null;
 
     public static function collect(Token $from, Token $to): self
     {

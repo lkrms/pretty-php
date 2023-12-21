@@ -9,11 +9,11 @@ final class StandardWhitespaceTest extends \Lkrms\PrettyPHP\Tests\TestCase
     /**
      * @dataProvider outputProvider
      *
-     * @param string[] $addRules
+     * @param string[] $enable
      */
-    public function testOutput(string $expected, string $code, array $addRules = []): void
+    public function testOutput(string $expected, string $code, array $enable = []): void
     {
-        $this->assertCodeFormatIs($expected, $code, $addRules);
+        $this->assertCodeFormatIs($expected, $code, $enable);
     }
 
     /**

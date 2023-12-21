@@ -4,6 +4,7 @@ namespace Lkrms\PrettyPHP\Exception;
 
 use Lkrms\Exception\Exception;
 use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\Utility\Json;
 use Throwable;
 
 /**
@@ -11,20 +12,17 @@ use Throwable;
  */
 class FormatterException extends Exception
 {
-    /**
-     * @var string|null
-     */
-    protected $Output;
+    protected ?string $Output;
 
     /**
      * @var Token[]|null
      */
-    protected $Tokens;
+    protected ?array $Tokens;
 
     /**
      * @var array<string,string>|null
      */
-    protected $Log;
+    protected ?array $Log;
 
     /**
      * @var mixed[]|object|null
@@ -50,8 +48,8 @@ class FormatterException extends Exception
     {
         return [
             'output' => $this->Output,
-            'tokens' => json_encode($this->Tokens, \JSON_PRETTY_PRINT | \JSON_FORCE_OBJECT),
-            'data' => json_encode($this->Data, \JSON_PRETTY_PRINT),
+            'tokens' => Json::prettyPrint($this->Tokens, \JSON_FORCE_OBJECT),
+            'data' => Json::prettyPrint($this->Data),
         ];
     }
 
