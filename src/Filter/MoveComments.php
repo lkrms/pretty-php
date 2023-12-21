@@ -55,9 +55,11 @@ final class MoveComments implements Filter
                 continue;
             }
 
+            $prev = $this->Tokens[$i - 1];
+
             $first = $i;
             $last = null;
-            $line = $token->line;
+            $line = $prev->line + substr_count($prev->text, "\n");
             $tokens = [$token];
             $delimiters = [];
             while (++$i < $count) {
