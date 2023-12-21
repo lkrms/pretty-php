@@ -4,24 +4,27 @@ namespace Lkrms\PrettyPHP\Tests\Rule;
 
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Formatter;
+use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
 
 final class HeredocIndentationTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     /**
      * @dataProvider outputProvider
      *
-     * @param array{insertSpaces?:bool|null,tabSize?:int|null,skipRules?:string[],addRules?:string[],skipFilters?:string[],callback?:(callable(Formatter): Formatter)|null} $options
+     * @param Formatter|FormatterB $formatter
      */
-    public function testOutput(string $expected, string $code, array $options = []): void
+    public function testOutput(string $expected, string $code, $formatter): void
     {
-        $this->assertFormatterOutputIs($expected, $code, $this->getFormatter($options));
+        $this->assertFormatterOutputIs($expected, $code, $formatter);
     }
 
     /**
-     * @return array<string,array{string,string,array{insertSpaces?:bool|null,tabSize?:int|null,skipRules?:string[],addRules?:string[],skipFilters?:string[],callback?:(callable(Formatter): Formatter)|null}}>
+     * @return array<array{string,string,Formatter|FormatterB}>
      */
     public static function outputProvider(): array
     {
+        $formatterB = Formatter::build();
+
         return [
             'NONE' => [
                 <<<'PHP'
@@ -41,9 +44,8 @@ Fugiat magna laborum ut occaecat sit nostrud non eiusmod laboris nisi.
 EOF
 ];
 PHP,
-                ['callback' =>
-                    fn(Formatter $f) =>
-                        $f->with('HeredocIndent', HeredocIndent::NONE)],
+                $formatterB
+                    ->heredocIndent(HeredocIndent::NONE),
             ],
             'LINE' => [
                 <<<'PHP'
@@ -63,9 +65,8 @@ Incididunt in sint sit aliqua pariatur ad.
 EOF;
 };
 PHP,
-                ['callback' =>
-                    fn(Formatter $f) =>
-                        $f->with('HeredocIndent', HeredocIndent::LINE)],
+                $formatterB
+                    ->heredocIndent(HeredocIndent::LINE),
             ],
             'MIXED' => [
                 <<<'PHP'
@@ -89,9 +90,8 @@ $string2 =
 Aliquip mollit elit consectetur nulla laborum minim amet.
 EOF;
 PHP,
-                ['callback' =>
-                    fn(Formatter $f) =>
-                        $f->with('HeredocIndent', HeredocIndent::MIXED)],
+                $formatterB
+                    ->heredocIndent(HeredocIndent::MIXED),
             ],
             'HANGING' => [
                 <<<'PHP'
@@ -115,9 +115,8 @@ $string2 =
 Aliquip mollit elit consectetur nulla laborum minim amet.
 EOF;
 PHP,
-                ['callback' =>
-                    fn(Formatter $f) =>
-                        $f->with('HeredocIndent', HeredocIndent::HANGING)],
+                $formatterB
+                    ->heredocIndent(HeredocIndent::HANGING),
             ],
         ];
     }

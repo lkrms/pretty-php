@@ -22,14 +22,14 @@ final class PlaceComments implements TokenRule
     /**
      * @var Token[]
      */
-    private $CommentsBesideCode = [];
+    private array $CommentsBesideCode = [];
 
     /**
      * [ [ Comment token, subsequent code token ] ]
      *
      * @var array<Token[]>
      */
-    private $Comments = [];
+    private array $Comments = [];
 
     public static function getPriority(string $method): ?int
     {

@@ -2,7 +2,9 @@
 
 namespace Lkrms\PrettyPHP;
 
+use Lkrms\Concern\HasBuilder;
 use Lkrms\Concern\Immutable;
+use Lkrms\Contract\Buildable;
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Profile;
@@ -79,9 +81,12 @@ use Throwable;
 
 /**
  * Formats PHP code
+ *
+ * @implements Buildable<FormatterBuilder>
  */
-final class Formatter
+final class Formatter implements Buildable
 {
+    use HasBuilder;
     use Immutable;
 
     /**

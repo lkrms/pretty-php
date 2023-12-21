@@ -35,7 +35,7 @@ final class AlignData implements BlockRule
      *
      * @var array<int,mixed[]>
      */
-    private $TokenData = [];
+    private array $TokenData = [];
 
     public static function getPriority(string $method): ?int
     {

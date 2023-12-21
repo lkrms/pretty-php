@@ -35,10 +35,9 @@ final class PlaceBraces implements MultiTokenRule
     use MultiTokenRuleTrait;
 
     /**
-     * @var array<Token[]>
-     * @psalm-var array<array{0:Token,1:Token}>
+     * @var array<array{Token,Token}>
      */
-    private $BracketBracePairs = [];
+    private array $BracketBracePairs = [];
 
     public static function getPriority(string $method): ?int
     {

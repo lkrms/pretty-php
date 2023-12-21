@@ -29,7 +29,7 @@ final class FormatPhpTest extends \Lkrms\PrettyPHP\Tests\TestCase
 
         try {
             $src = tempnam($app->getTempPath(), 'src');
-            file_put_contents($src, $code);
+            File::putContents($src, $code);
 
             $formatPhp = new FormatPhp($app);
             $exitStatus = $formatPhp(...[...$args, '--no-config', '-o', '-', '--', $src]);

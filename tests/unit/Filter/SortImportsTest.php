@@ -5,24 +5,28 @@ namespace Lkrms\PrettyPHP\Tests\Filter;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Rule\AlignComments;
 use Lkrms\PrettyPHP\Formatter;
+use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
 
 final class SortImportsTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     /**
      * @dataProvider outputProvider
      *
-     * @param array{insertSpaces?:bool|null,tabSize?:int|null,skipRules?:string[],addRules?:string[],skipFilters?:string[],callback?:(callable(Formatter): Formatter)|null} $options
+     * @param Formatter|FormatterB $formatter
      */
-    public function testOutput(string $expected, string $code, array $options = []): void
+    public function testOutput(string $expected, string $code, $formatter): void
     {
-        $this->assertFormatterOutputIs($expected, $code, $this->getFormatter($options));
+        $this->assertFormatterOutputIs($expected, $code, $formatter);
     }
 
     /**
-     * @return array<array{string,string,array{insertSpaces?:bool|null,tabSize?:int|null,skipRules?:string[],addRules?:string[],skipFilters?:string[],callback?:(callable(Formatter): Formatter)|null}}>
+     * @return array<array{string,string,Formatter|FormatterB}>
      */
     public static function outputProvider(): array
     {
+        $formatterB = Formatter::build();
+        $formatter = $formatterB->go();
+
         return [
             'with comments #1' => [
                 <<<'PHP'
@@ -68,9 +72,8 @@ use Alpha; /* One
  */
 class foo extends bar {}
 PHP,
-                [
-                    'addRules' => [AlignComments::class],
-                ],
+                $formatterB
+                    ->enable([AlignComments::class]),
             ],
             'with comments #2' => [
                 <<<'PHP'
@@ -92,6 +95,7 @@ use B; // Multiple
 # Different comment type = new block
 use A;
 PHP,
+                $formatter,
             ],
             'sorted by depth' => [
                 <<<'PHP'
@@ -113,6 +117,7 @@ use B\C\E;
 use B\C\F\{H, I};
 use B\C\F\G;
 PHP,
+                $formatter,
             ],
             'sorted by name' => [
                 <<<'PHP'
@@ -134,11 +139,8 @@ use A;
 use B\C\F\G;
 use B\C\E;
 PHP,
-                [
-                    'callback' =>
-                        fn(Formatter $f) =>
-                            $f->with('ImportSortOrder', ImportSortOrder::NAME),
-                ],
+                $formatterB
+                    ->importSortOrder(ImportSortOrder::NAME),
             ],
             'with traits' => [
                 <<<'PHP'
@@ -178,6 +180,7 @@ use A;
 use B { C::value insteadof D; }
 }
 PHP,
+                $formatter,
             ],
         ];
     }

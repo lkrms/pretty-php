@@ -24,7 +24,7 @@ final class HeredocIndentation implements MultiTokenRule
     /**
      * @var Token[]
      */
-    private $Heredocs = [];
+    private array $Heredocs = [];
 
     public static function getPriority(string $method): ?int
     {

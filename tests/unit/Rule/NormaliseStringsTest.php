@@ -3,24 +3,28 @@
 namespace Lkrms\PrettyPHP\Tests\Rule;
 
 use Lkrms\PrettyPHP\Formatter;
+use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
 
 final class NormaliseStringsTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     /**
      * @dataProvider outputProvider
      *
-     * @param array{insertSpaces?:bool|null,tabSize?:int|null,skipRules?:string[],addRules?:string[],skipFilters?:string[],callback?:(callable(Formatter): Formatter)|null} $options
+     * @param Formatter|FormatterB $formatter
      */
-    public function testOutput(string $expected, string $code, array $options = []): void
+    public function testOutput(string $expected, string $code, $formatter): void
     {
-        $this->assertFormatterOutputIs($expected, $code, $this->getFormatter($options));
+        $this->assertFormatterOutputIs($expected, $code, $formatter);
     }
 
     /**
-     * @return array<array{string,string,array{insertSpaces?:bool|null,tabSize?:int|null,skipRules?:string[],addRules?:string[],skipFilters?:string[],callback?:(callable(Formatter): Formatter)|null}}>
+     * @return array<array{string,string,Formatter|FormatterB}>
      */
     public static function outputProvider(): array
     {
+        $formatterB = Formatter::build();
+        $formatter = $formatterB->go();
+
         return [
             'leading tabs + tab indentation' => [
                 <<<PHP
@@ -40,9 +44,8 @@ $foo = "bar
 \t\tqux";
 }
 PHP,
-                [
-                    'insertSpaces' => false,
-                ],
+                $formatterB
+                    ->insertSpaces(false),
             ],
             'leading + inline tabs + tab indentation' => [
                 <<<PHP
@@ -62,9 +65,8 @@ $foo = "bar
 \t\tqux\tquux";
 }
 PHP,
-                [
-                    'insertSpaces' => false,
-                ],
+                $formatterB
+                    ->insertSpaces(false),
             ],
             'leading tabs' => [
                 <<<'PHP'
@@ -84,6 +86,7 @@ $foo = "bar
 \t\tqux";
 }
 PHP,
+                $formatter,
             ],
             'leading + inline tabs' => [
                 <<<'PHP'
@@ -103,6 +106,7 @@ $foo = "bar
 \t\tqux\tquux";
 }
 PHP,
+                $formatter,
             ],
             'escapes' => [
                 <<<'PHP'
@@ -168,6 +172,7 @@ EOF;
 {$a}\!\"\#\\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\=\>\?\@\[\]\^\_\`\{\|\}\~\\\\
 EOF;
 PHP,
+                $formatter,
             ],
             'special escapes' => [
                 <<<'PHP'
@@ -195,6 +200,7 @@ EOF;
 \\0\\33\\a\\b\\e\\f\\n\\r\\t\\v\\177\\l\\k\\u{03b4}
 EOF;
 PHP,
+                $formatter,
             ],
             'backticks' => [
                 <<<'PHP'
@@ -220,6 +226,7 @@ PHP,
 `echo 'one double-escaped backtick: \\\`'`;
 `echo 'two double-escaped backticks: \\\`\\\`'`;
 PHP,
+                $formatter,
             ],
             'curly escapes' => [
                 <<<'PHP'
@@ -249,6 +256,7 @@ EOF;
 \\${a}\\{$a}\\$a\\\${a}\\\{$a}\\\$a\\
 EOF;
 PHP,
+                $formatter,
             ],
             'maybeEscapeEscapes' => [
                 <<<'PHP'
@@ -278,6 +286,7 @@ foo \\
 bar \\ baz
 EOF;
 PHP,
+                $formatter,
             ],
         ];
     }

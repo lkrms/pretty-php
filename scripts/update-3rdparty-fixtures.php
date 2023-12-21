@@ -2,6 +2,7 @@
 <?php declare(strict_types=1);
 
 use Lkrms\Cli\CliApplication;
+use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Facade\Console;
 use Lkrms\PrettyPHP\Tests\FormatterTest;
 use Lkrms\Utility\Convert;
@@ -16,9 +17,9 @@ function run(string $command, string ...$arg): string
 {
     $command = Sys::escapeCommand([$command, ...$arg]);
     Console::log('Running:', $command);
-    $handle = popen($command, 'rb');
-    $output = stream_get_contents($handle);
-    $status = pclose($handle);
+    $pipe = File::openPipe($command, 'rb');
+    $output = File::getContents($pipe);
+    $status = File::closePipe($pipe);
     if ($status !== 0) {
         throw new RuntimeException(sprintf('Command exited with status %d: %s', $status, $command));
     }
@@ -68,7 +69,7 @@ $files = File::find()
 
 $count = 0;
 foreach ($files as $xmlFile) {
-    $xml = file_get_contents((string) $xmlFile);
+    $xml = File::getContents((string) $xmlFile);
 
     // Remove entities without changing anything between CDATA tags
     /** @var string[] */
@@ -87,7 +88,12 @@ foreach ($files as $xmlFile) {
     }
 
     $source = substr((string) $xmlFile, strlen("$repoRoot/php-doc/"), -4);
-    $reader = XMLReader::XML($xml);
+    $reader = new XMLReader();
+    if (!$reader->XML($xml)) {
+        throw new UnexpectedValueException(
+            sprintf('Unable to process XML in %s', (string) $xmlFile)
+        );
+    }
     while ($reader->read()) {
         if ($reader->nodeType === XMLReader::ELEMENT &&
                 $reader->name === 'programlisting' &&
@@ -124,7 +130,7 @@ foreach ($listings ?? [] as $source => $sourceListings) {
         }
         $outFile = sprintf('%s/%03d.php%s', $dir, $i, $ext);
         Console::logProgress('Creating', substr($outFile, strlen("$fixturesRoot/")));
-        file_put_contents($outFile, $output);
+        File::putContents($outFile, $output);
         $replaced++;
     }
 }
@@ -145,7 +151,7 @@ foreach ($files as $file) {
     $ext = '';
     try {
         // @phpstan-ignore-next-line
-        token_get_all(file_get_contents((string) $file), \TOKEN_PARSE);
+        token_get_all(File::getContents((string) $file), \TOKEN_PARSE);
     } catch (CompileError $ex) {
         $ext = '.invalid';
     }
@@ -179,7 +185,7 @@ if (!is_file($file)) {
 
 if (!Pcre::matchAll(
     "/$markdownRegex/",
-    Str::setEol(file_get_contents($file)),
+    Str::setEol(File::getContents($file)),
     $matches,
     \PREG_UNMATCHED_AS_NULL,
 )) {
@@ -238,7 +244,7 @@ foreach ($byHeading as $heading => $listings) {
         $index++;
         $outFile = sprintf('%s/%02d-%s.php%s', $dir, $index, $heading, $ext);
         Console::logProgress('Creating', substr($outFile, strlen("$fixturesRoot/")));
-        file_put_contents($outFile, $listing);
+        File::putContents($outFile, $listing);
         $replaced++;
     }
 }

@@ -18,6 +18,7 @@ use Lkrms\Facade\Profile;
 use Lkrms\PrettyPHP\Catalog\FormatterFlag;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
+use Lkrms\PrettyPHP\Contract\Extension;
 use Lkrms\PrettyPHP\Exception\FormatterException;
 use Lkrms\PrettyPHP\Exception\InvalidConfigurationException;
 use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
@@ -49,6 +50,7 @@ use Lkrms\PrettyPHP\FormatterBuilder;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\File;
+use Lkrms\Utility\Json;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Sys;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
@@ -175,149 +177,135 @@ class FormatPhp extends CliCommand
     /**
      * @var string[]|null
      */
-    private ?array $InputFiles;
+    protected ?array $InputFiles;
 
-    private ?string $IncludeRegex;
+    protected ?string $IncludeRegex;
 
-    private ?string $ExcludeRegex;
+    protected ?string $ExcludeRegex;
 
-    private ?string $IncludeIfPhpRegex;
+    protected ?string $IncludeIfPhpRegex;
 
-    private ?int $Tabs;
+    protected ?int $Tabs;
 
-    private ?int $Spaces;
+    protected ?int $Spaces;
 
-    private ?string $Eol;
-
-    /**
-     * @var string[]|null
-     */
-    private ?array $Disable;
+    protected ?string $Eol;
 
     /**
      * @var string[]|null
      */
-    private ?array $Enable;
-
-    private ?bool $OneTrueBraceStyle;
-
-    private ?bool $OperatorsFirst;
-
-    private ?bool $OperatorsLast;
-
-    private ?bool $IgnoreNewlines;
-
-    private ?bool $NoSimplifyStrings;
-
-    /**
-     * @var string|null
-     */
-    protected $HeredocIndent;
-
-    /**
-     * @var string|null
-     */
-    protected $SortImportsBy;
-
-    private ?bool $NoSortImports;
-
-    private ?bool $Psr12;
-
-    /**
-     * @var string|null
-     */
-    protected $Preset;
-
-    /**
-     * @var string|null
-     */
-    protected $ConfigFile;
-
-    private ?bool $IgnoreConfigFiles;
+    protected ?array $Disable;
 
     /**
      * @var string[]|null
      */
-    protected $OutputFiles;
+    protected ?array $Enable;
+
+    protected ?bool $OneTrueBraceStyle;
+
+    protected ?bool $OperatorsFirst;
+
+    protected ?bool $OperatorsLast;
+
+    protected ?bool $IgnoreNewlines;
+
+    protected ?bool $NoSimplifyStrings;
+
+    protected ?string $HeredocIndent;
+
+    protected ?string $SortImportsBy;
+
+    protected ?bool $NoSortImports;
+
+    protected ?bool $Psr12;
+
+    protected ?string $Preset;
+
+    protected ?string $ConfigFile;
+
+    protected ?bool $IgnoreConfigFiles;
 
     /**
-     * @var string|null
+     * @var string[]|null
      */
-    protected $Diff;
+    protected ?array $OutputFiles;
 
-    private ?bool $Check;
+    protected ?string $Diff;
 
-    private ?bool $PrintConfig;
+    protected ?bool $Check;
 
-    private ?string $StdinFilename;
+    protected ?bool $PrintConfig;
 
-    private ?string $DebugDirectory;
+    protected ?string $StdinFilename;
 
-    private ?bool $ReportTimers;
+    protected ?string $DebugDirectory;
 
-    private ?bool $Fast;
+    protected ?bool $ReportTimers;
 
-    private ?bool $Verbose;
+    protected ?bool $Fast;
 
-    private ?int $Quiet;
+    protected ?bool $Verbose;
+
+    protected ?int $Quiet;
 
     // --
 
     /**
-     * @var int|null
+     * @var array<class-string<Extension>>
      */
-    private $SpacesBesideCode;
+    private array $DisableExtensions;
 
     /**
-     * @var bool|null
+     * @var array<class-string<Extension>>
      */
-    private $IncreaseIndentBetweenUnenclosedTags;
+    private array $EnableExtensions;
 
-    /**
-     * @var bool|null
-     */
-    private $RelaxAlignmentCriteria;
+    private ?int $SpacesBesideCode = null;
+
+    private ?bool $IncreaseIndentBetweenUnenclosedTags = null;
+
+    private ?bool $RelaxAlignmentCriteria = null;
 
     /**
      * @var array<class-string<Rule>>|null
      */
-    private $PresetRules;
+    private ?array $PresetRules = null;
 
     /**
      * @var class-string<TokenTypeIndex>|null
      */
-    private $TokenTypeIndex;
+    private ?string $TokenTypeIndex = null;
 
     /**
      * [ Option name => null ]
      *
      * @var array<string,null>
      */
-    private $FormattingOptionNames;
+    private array $FormattingOptionNames;
 
     /**
      * [ Option name => null ]
      *
      * @var array<string,null>
      */
-    private $GlobalFormattingOptionNames;
+    private array $GlobalFormattingOptionNames;
 
     /**
      * [ Option name => default value ]
      *
      * @var array<string,array<string|int>|string|int|bool|null>
      */
-    private $DefaultFormattingOptionValues;
+    private array $DefaultFormattingOptionValues;
 
     /**
-     * @var array<string,array<string|int>|string|int|bool|null>|null
+     * @var array<string,array<string|int>|string|int|bool|null>
      */
-    private $CliFormattingOptionValues;
+    private array $CliFormattingOptionValues;
 
     /**
      * @var array<string,array<string,array<string|int>|string|int|bool|null>|null>
      */
-    private $DirFormattingOptionValues = [];
+    private array $DirFormattingOptionValues;
 
     public function __construct(CliApplication $container)
     {
@@ -788,6 +776,8 @@ EOF,
 
     protected function run(...$params)
     {
+        $this->DirFormattingOptionValues = [];
+
         if ($this->DebugDirectory !== null) {
             File::createDir($this->DebugDirectory);
             $this->DebugDirectory = realpath($this->DebugDirectory) ?: null;
@@ -819,7 +809,7 @@ EOF,
         if ($this->ConfigFile) {
             $this->IgnoreConfigFiles = true;
             Console::debug('Reading formatting options:', $this->ConfigFile);
-            $json = json_decode(file_get_contents($this->ConfigFile), true);
+            $json = Json::parseObjectAsArray(File::getContents($this->ConfigFile));
             // To prevent unintended inclusion of default values in
             // --print-config output, apply options as if they were given on the
             // command line, without expanding optional values
@@ -854,12 +844,12 @@ EOF,
             $cliInputFiles = $this->InputFiles;
             foreach ($configFiles as $i => $configFile) {
                 Console::debug('Reading settings:', $configFile);
-                $json = file_get_contents($configFile);
+                $json = File::getContents($configFile);
                 if (!$json) {
                     Console::debug('Ignoring empty file:', $configFile);
                     continue;
                 }
-                $json = json_decode($json, true);
+                $json = Json::parseObjectAsArray($json);
                 if (!is_array($json)) {
                     throw new CliInvalidArgumentsException(
                         sprintf('invalid configuration file: %s', $configFile)
@@ -925,7 +915,7 @@ EOF,
         }
 
         if ($this->PrintConfig) {
-            printf("%s\n", json_encode($this->getFormattingOptionValues(true), \JSON_PRETTY_PRINT));
+            printf("%s\n", Json::prettyPrint($this->getFormattingOptionValues(true)));
 
             return;
         }
@@ -944,7 +934,7 @@ EOF,
                 if ($file = $this->maybeGetConfigFile($dir)) {
                     Console::debug('Configuration file found:', $file);
                     $options = $this->normaliseFormattingOptionValues(
-                        json_decode(file_get_contents($file), true)
+                        Json::parseObjectAsArray(File::getContents($file))
                     );
                     break;
                 }
@@ -981,7 +971,7 @@ EOF,
                 }
                 Console::debug('New formatter required for:', $file);
                 $this->applyFormattingOptionValues($options);
-                !$this->Verbose || Console::debug('Applying options:', json_encode($options, \JSON_PRETTY_PRINT));
+                !$this->Verbose || Console::debug('Applying options:', Json::prettyPrint($options));
 
                 $flags = 0;
                 if ($this->Quiet < 2) {
@@ -992,7 +982,7 @@ EOF,
                 }
 
                 $tokenTypeIndex =
-                    $this->TokenTypeIndex !== null
+                    isset($this->TokenTypeIndex)
                         ? [$this->TokenTypeIndex, 'create']()
                         : ($this->OperatorsFirst
                             ? (new TokenTypeIndex())->withLeadingOperators()
@@ -1003,8 +993,8 @@ EOF,
                 $f = (new FormatterBuilder())
                          ->insertSpaces(!$this->Tabs)
                          ->tabSize($this->Tabs ?: $this->Spaces ?: 4)
-                         ->disable($this->Disable)
-                         ->enable($this->Enable)
+                         ->disable($this->DisableExtensions)
+                         ->enable($this->EnableExtensions)
                          ->flags($flags)
                          ->tokenTypeIndex($tokenTypeIndex)
                          ->preferredEol(self::EOL_MAP[$this->Eol])
@@ -1031,7 +1021,7 @@ EOF,
             if ($this->Quiet < 3 && ($file !== 'php://stdin' || !stream_isatty(\STDIN))) {
                 Console::logProgress(sprintf('Formatting %d of %d:', ++$i, $count), $inputFile);
             }
-            $input = file_get_contents($file);
+            $input = File::getContents($file);
             $formatter = $getFormatter($inputFile);
             Profile::startTimer($inputFile, 'file');
             try {
@@ -1106,7 +1096,7 @@ EOF,
             }
 
             if (!File::is($file, $outFile)) {
-                $input = is_file($outFile) ? file_get_contents($outFile) : null;
+                $input = is_file($outFile) ? File::getContents($outFile) : null;
             }
 
             if ($input !== null && $input === $output) {
@@ -1117,7 +1107,7 @@ EOF,
             if (!$this->Quiet) {
                 Console::log('Replacing', $outFile);
             }
-            file_put_contents($outFile, $output);
+            File::putContents($outFile, $output);
             $replaced++;
         }
 
@@ -1295,10 +1285,10 @@ EOF,
             }
         }
 
-        $this->Disable = array_values(array_intersect_key(self::DISABLE_MAP, array_flip($this->Disable)));
-        $this->Enable = array_values(array_intersect_key(self::ENABLE_MAP, array_flip($this->Enable)));
-        if ($this->PresetRules) {
-            array_push($this->Enable, ...$this->PresetRules);
+        $this->DisableExtensions = array_values(array_intersect_key(self::DISABLE_MAP, array_flip($this->Disable)));
+        $this->EnableExtensions = array_values(array_intersect_key(self::ENABLE_MAP, array_flip($this->Enable)));
+        if (isset($this->PresetRules)) {
+            array_push($this->EnableExtensions, ...$this->PresetRules);
         }
 
         return $this;
@@ -1466,9 +1456,9 @@ EOF,
                 continue;
             }
             if (!is_string($out)) {
-                $out = json_encode($out, \JSON_PRETTY_PRINT | \JSON_FORCE_OBJECT);
+                $out = Json::prettyPrint($out, \JSON_FORCE_OBJECT);
             }
-            file_put_contents($file, $out);
+            File::putContents($file, $out);
         }
 
         Profile::stopTimer(__METHOD__);

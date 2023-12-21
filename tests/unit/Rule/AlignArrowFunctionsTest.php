@@ -4,24 +4,27 @@ namespace Lkrms\PrettyPHP\Tests\Rule;
 
 use Lkrms\PrettyPHP\Rule\AlignArrowFunctions;
 use Lkrms\PrettyPHP\Formatter;
+use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
 
 final class AlignArrowFunctionsTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     /**
      * @dataProvider outputProvider
      *
-     * @param array{insertSpaces?:bool|null,tabSize?:int|null,skipRules?:string[],addRules?:string[],skipFilters?:string[],callback?:(callable(Formatter): Formatter)|null} $options
+     * @param Formatter|FormatterB $formatter
      */
-    public function testOutput(string $expected, string $code, array $options = []): void
+    public function testOutput(string $expected, string $code, $formatter): void
     {
-        $this->assertFormatterOutputIs($expected, $code, $this->getFormatter($options));
+        $this->assertFormatterOutputIs($expected, $code, $formatter);
     }
 
     /**
-     * @return array<array{string,string,array{insertSpaces?:bool|null,tabSize?:int|null,skipRules?:string[],addRules?:string[],skipFilters?:string[],callback?:(callable(Formatter): Formatter)|null}}>
+     * @return array<array{string,string,Formatter|FormatterB}>
      */
     public static function outputProvider(): array
     {
+        $formatterB = Formatter::build();
+
         return [
             [
                 <<<'PHP'
@@ -35,10 +38,8 @@ PHP,
 $alpha = bravo($charlie, fn() =>
     delta($echo));
 PHP,
-                [
-                    'addRules' => [AlignArrowFunctions::class],
-                    'callback' => fn(Formatter $f) => $f,
-                ],
+                $formatterB
+                    ->enable([AlignArrowFunctions::class])
             ],
         ];
     }
