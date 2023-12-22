@@ -553,7 +553,13 @@ final class Formatter implements Buildable
                 $this->PreferredFilters,
             );
 
-            $disable = self::PSR12_DISABLE;
+            $disable = array_merge(
+                self::PSR12_DISABLE,
+                array_diff(
+                    Arr::extend(self::DEFAULT_RULES, ...self::DEFAULT_FILTERS),
+                    $enable,
+                ),
+            );
 
             $this->resolveExtensions($rules, $filters, $enable, $disable);
         } else {
