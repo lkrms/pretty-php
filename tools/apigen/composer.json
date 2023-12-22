@@ -1,6 +1,6 @@
 {
     "require": {
-        "php": "^8.1"
+        "php": "^8.2"
     },
     "require-dev": {
         "apigen/apigen": "^7@alpha"
@@ -12,7 +12,7 @@
     },
     "config": {
         "platform": {
-            "php": "8.1.2"
+            "php": "8.2.4"
         }
     }
 }

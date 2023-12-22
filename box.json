@@ -18,7 +18,7 @@
                 "/^bin\\//",
                 "/^lkrms\\/util\\/(?:bin|lk-util|src\\/(?:Curler|Db|Http|Sync))\\//",
                 "/^lkrms\\/dice\\/src\\/Loader\\//",
-                "/^psr\\/log\\/Psr\\/Log\\/Test\\//"
+                "/^psr\\/(?:http-message|log\\/Psr\\/Log\\/Test)\\//"
             ]
         }
     ],
