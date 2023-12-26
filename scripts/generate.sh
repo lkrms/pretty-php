@@ -73,6 +73,13 @@ if ((FIXTURES)); then
     for PHP in "$@"; do
         "$PHP" scripts/generate-test-output.php
     done
+
+    for DIR in tests/fixtures/Command/FormatPhp/preset/*; do
+        PRESET=${DIR##*/}
+        for FILE in "$DIR"/*.in; do
+            bin/pretty-php --no-config --preset "$PRESET" --output "${FILE%.in}.out" "$FILE"
+        done
+    done
 fi
 
 if ((ASSETS)); then

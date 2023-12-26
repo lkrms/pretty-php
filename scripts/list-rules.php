@@ -10,7 +10,6 @@ use Lkrms\PrettyPHP\Rule\Contract\Rule;
 use Lkrms\PrettyPHP\Rule\Contract\TokenRule;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\Utility\Arr;
-use Lkrms\Utility\File;
 use Lkrms\Utility\Get;
 
 require dirname(__DIR__) . '/vendor/autoload.php';

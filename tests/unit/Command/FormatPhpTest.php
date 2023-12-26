@@ -5,435 +5,148 @@ namespace Lkrms\PrettyPHP\Tests\Command;
 use Lkrms\Cli\CliApplication;
 use Lkrms\Console\Catalog\ConsoleLevels as Levels;
 use Lkrms\Console\Target\MockTarget;
+use Lkrms\Exception\Contract\ExceptionInterface;
 use Lkrms\Facade\Console;
 use Lkrms\PrettyPHP\Command\FormatPhp;
 use Lkrms\Utility\File;
+use Generator;
 
 final class FormatPhpTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
+    private static string $BasePath;
+
+    public static function setUpBeforeClass(): void
+    {
+        self::$BasePath = File::createTempDir();
+    }
+
+    public static function tearDownAfterClass(): void
+    {
+        File::pruneDir(self::$BasePath);
+        rmdir(self::$BasePath);
+    }
+
     /**
-     * @dataProvider outputProvider
+     * @dataProvider drupalProvider
+     */
+    public function testDrupal(string $file): void
+    {
+        $this->makePresetAssertions('drupal', $file);
+    }
+
+    /**
+     * @return Generator<string,array{string}>
+     */
+    public static function drupalProvider(): Generator
+    {
+        yield from self::getInputFiles('preset/drupal');
+    }
+
+    /**
+     * @dataProvider symfonyProvider
      * @requires PHP >= 8.0
-     *
+     */
+    public function testSymfony(string $file): void
+    {
+        $this->makePresetAssertions('symfony', $file);
+    }
+
+    /**
+     * @return Generator<string,array{string}>
+     */
+    public static function symfonyProvider(): Generator
+    {
+        yield from self::getInputFiles('preset/symfony');
+    }
+
+    /**
+     * @dataProvider wordpressProvider
+     */
+    public function testWordpress(string $file): void
+    {
+        $this->makePresetAssertions('wordpress', $file);
+    }
+
+    /**
+     * @return Generator<string,array{string}>
+     */
+    public static function wordpressProvider(): Generator
+    {
+        yield from self::getInputFiles('preset/wordpress');
+    }
+
+    public function testMultipleConfigFiles(): void
+    {
+        $dir = $this->getFixturesPath(__CLASS__) . '/multiple-config-files';
+        $this->assertCommandProduces(null, null, ['--', $dir], 2);
+    }
+
+    private function makePresetAssertions(string $preset, string $file): void
+    {
+        $input = File::getContents($file);
+        $expected = File::getContents(substr($file, 0, -3) . '.out');
+        $this->assertCommandProduces($expected, $input, ['--preset', $preset]);
+    }
+
+    /**
      * @param string[] $args
      */
-    public function testOutput(string $expected, string $code, array $args = [], int $expectedExitStatus = 0): void
-    {
+    private function assertCommandProduces(
+        ?string $output,
+        ?string $input,
+        array $args = [],
+        int $exitStatus = 0
+    ): void {
         $target = new MockTarget();
         Console::registerTarget($target, Levels::ALL_EXCEPT_DEBUG);
 
-        $this->expectOutputString($expected);
-
-        $basePath = File::createTempDir();
-        $app = new CliApplication($basePath);
+        $app = new CliApplication(self::$BasePath);
+        $formatPhp = $app->get(FormatPhp::class);
 
         try {
-            $src = tempnam($app->getTempPath(), 'src');
-            File::putContents($src, $code);
+            if ($input === null) {
+                $this->expectOutputString((string) $output);
+                $this->assertSame($exitStatus, $formatPhp(...$args));
+                return;
+            }
 
-            $formatPhp = new FormatPhp($app);
-            $exitStatus = $formatPhp(...[...$args, '--no-config', '-o', '-', '--', $src]);
-            $this->assertSame($expectedExitStatus, $exitStatus, 'exit status');
+            $temp = $app->getTempPath();
+            $src1 = tempnam($temp, 'src');
+            $src2 = tempnam($temp, 'src');
+            File::putContents($src1, $input);
+            File::putContents($src2, (string) $output);
+
+            $output .= $output;
+            array_push($args, '--no-config', '-o', '-', '--');
+
+            $this->expectOutputString($output);
+            $this->assertSame($exitStatus, $formatPhp(...[...$args, $src1]));
+            $this->assertSame($exitStatus, $formatPhp(...[...$args, $src2]));
+        } catch (ExceptionInterface $ex) {
+            if (!$exitStatus) {
+                throw $ex;
+            }
+            $this->assertSame($exitStatus, $ex->getExitStatus());
         } finally {
             $app->unload();
-
-            File::pruneDir($basePath);
-            rmdir($basePath);
-
             Console::deregisterTarget($target);
         }
     }
 
     /**
-     * @return array<string,array{0:string,1:string,2?:string[],3?:int}>
+     * @return Generator<string,array{string}>
      */
-    public static function outputProvider(): array
+    private static function getInputFiles(string $source): Generator
     {
-        return [
-            'Symfony' => [
-                <<<'PHP'
-<?php
+        $dir = self::getFixturesPath(__CLASS__) . "/$source";
+        $offset = strlen($dir) + 1;
+        $files = File::find()
+                     ->in($dir)
+                     ->include('/\.in$/');
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
-namespace Acme;
-
-use Other\Qux;
-
-/**
- * Coding standards demonstration.
- */
-class FooBar
-{
-    public const SOME_CONST = 42;
-
-    private string $fooBar;
-
-    /**
-     * @param $dummy some argument description
-     */
-    public function __construct(
-        string $dummy,
-        private Qux $qux
-    ) {
-        $this->fooBar = $this->transformText($dummy);
-    }
-
-    /**
-     * @deprecated
-     */
-    public function someDeprecatedMethod(): string
-    {
-        trigger_deprecation('symfony/package-name', '5.1', 'The %s() method is deprecated, use Acme\Baz::someMethod() instead.', __METHOD__);
-
-        return Baz::someMethod();
-    }
-
-    /**
-     * Transforms the input given as the first argument.
-     *
-     * @param $options an options collection to be used within the transformation
-     *
-     * @throws \RuntimeException when an invalid option is provided
-     */
-    private function transformText(bool|string $dummy, array $options = []): ?string
-    {
-        $defaultOptions = [
-            'some_default' => 'values',
-            'another_default' => 'more values',
-        ];
-
-        foreach ($options as $name => $value) {
-            if (!array_key_exists($name, $defaultOptions)) {
-                throw new \RuntimeException(sprintf('Unrecognized option "%s"', $name));
-            }
+        foreach ($files as $file) {
+            $path = substr((string) $file, $offset);
+            yield $path => [(string) $file];
         }
-
-        $mergedOptions = array_merge($defaultOptions, $options);
-
-        if (true === $dummy) {
-            return 'something';
-        }
-
-        if (\is_string($dummy)) {
-            if ('values' === $mergedOptions['some_default']) {
-                return substr($dummy, 0, 5);
-            }
-
-            return ucwords($dummy);
-        }
-
-        return null;
-    }
-
-    /**
-     * Performs some basic operations for a given value.
-     */
-    private function performOperations(mixed $value = null, bool $theSwitch = false): void
-    {
-        if (!$theSwitch) {
-            return;
-        }
-
-        $this->qux->doFoo($value);
-        $this->qux->doBar($value);
-    }
-}
-
-PHP,
-                <<<'PHP'
-<?php
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-namespace Acme;
-use Other\Qux;
-/**
- * Coding standards demonstration.
- */
-class FooBar {
-    public const SOME_CONST = 42;
-    private string $fooBar;
-    /**
-     * @param $dummy some argument description
-     */
-    public function __construct(string $dummy, private Qux $qux) {
-        $this->fooBar = $this->transformText($dummy);
-    }
-    /**
-     * @deprecated
-     */
-    public function someDeprecatedMethod(): string {
-        trigger_deprecation('symfony/package-name', '5.1', 'The %s() method is deprecated, use Acme\Baz::someMethod() instead.', __METHOD__);
-        return Baz::someMethod();
-    }
-    /**
-     * Transforms the input given as the first argument.
-     *
-     * @param $options an options collection to be used within the transformation
-     *
-     * @throws \RuntimeException when an invalid option is provided
-     */
-    private function transformText(
-        bool|string $dummy,
-        array $options = []
-    ): ?string {
-        $defaultOptions = [
-            'some_default' => 'values',
-            'another_default' => 'more values',
-        ];
-
-        foreach ($options as $name => $value) {
-            if (!array_key_exists($name, $defaultOptions)) {
-                throw new \RuntimeException(sprintf('Unrecognized option "%s"', $name));
-            }
-        }
-
-        $mergedOptions = array_merge($defaultOptions, $options);
-
-        if (true === $dummy) {
-            return 'something';
-        }
-
-        if (\is_string($dummy)) {
-            if ('values' === $mergedOptions['some_default']) {
-                return substr($dummy, 0, 5);
-            }
-            return ucwords($dummy);
-        }
-        return null;
-    }
-    /**
-     * Performs some basic operations for a given value.
-     */
-    private function performOperations(
-        mixed $value = null,
-        bool $theSwitch = false
-    ): void {
-        if (!$theSwitch) {
-            return;
-        }
-
-        $this->qux->doFoo($value);
-        $this->qux->doBar($value);
-    }
-}
-PHP,
-                ['--preset', 'symfony'],
-            ],
-            'Drupal #1' => [
-                <<<'PHP'
-<?php
-
-/**
- * @file
- * File description.
- *
- * An extended description of the file.
- */
-
-function foo($bar, $baz, $qux, $quux) {
-  if ($bar) {
-    return $qux;
-  }
-  elseif ($baz) {
-    return $quux;
-  }
-  else {
-    return null;
-  }
-}
-
-PHP,
-                <<<'PHP'
-<?php
-/**
- * @file
- * File description.
- *
- * An extended description of the file.
- */
-function foo($bar, $baz, $qux, $quux)
-{
-if ($bar) {
-return $qux;
-} elseif ($baz) {
-return $quux;
-} else {
-return null;
-}
-}
-PHP,
-                ['--preset', 'drupal'],
-            ],
-            'Drupal #2' => [
-                <<<'PHP'
-<?php
-
-/**
- * @file
- * File description.
- *
- * An extended description of the file.
- */
-
-namespace Vendor;
-
-use Vendor\Qux\A;
-use Vendor\Quux;
-use Bar;
-
-/**
- * Class description.
- */
-class Foo {
-
-  public const ANSWER = 42;
-
-  private string $question;
-
-  /**
-   * @param Bar|Quux|A|null $quux
-   */
-  public function __construct(?string $question, $quux = null) {
-    if ($quux === null) {
-      $this->question = $this->sanitise($question);
-    }
-    elseif ($quux instanceof Quux) {
-      $this->question = $quux->escape($question);
-    }
-    else {
-      $this->question = (string) $quux;
-    }
-  }
-
-  /**
-   * Cleans up the question
-   *
-   * @param array<string,mixed> $options
-   *
-   * @throws \RuntimeException when an invalid option is provided.
-   */
-  private function sanitise(?string $question, array $options = []): ?string {
-    $defaultOptions = [
-      'option1' => 'value',
-      'option2' => 'some other value',
-    ];
-
-    // This loop is completely pointless, of course
-    do {
-      foreach ($options as $name => $value) {
-        if (!array_key_exists($name, $defaultOptions)) {
-          throw new \RuntimeException(sprintf('Invalid option: %s', $name));
-        }
-      }
-    } while (false);
-
-    $mergedOptions = array_merge($defaultOptions, $options);
-
-    if (null === $question) {
-      return null;
-    }
-
-    if ('value' === $mergedOptions['option1']) {
-      return substr($question, 0, 5);
-    }
-
-    return ucwords($question);
-  }
-
-}
-
-PHP,
-                <<<'PHP'
-<?php
-/**
- * @file
- * File description.
- *
- * An extended description of the file.
- */
-namespace Vendor;
-use Vendor\Qux\A;
-use Vendor\Quux;
-use Bar;
-/**
- * Class description.
- */
-class Foo
-{
-public const ANSWER = 42;
-private string $question;
-/**
- * @param Bar|Quux|A|null $quux
- */
-public function __construct(?string $question, $quux = null)
-{
-
-if ($quux === null) {
-
-$this->question = $this->sanitise($question);
-
-} elseif ($quux instanceof Quux) {
-
-$this->question = $quux->escape($question);
-
-} else {
-
-$this->question = (string) $quux;
-
-}
-
-}
-/**
- * Cleans up the question
- *
- * @param array<string,mixed> $options
- *
- * @throws \RuntimeException when an invalid option is provided.
- */
-private function sanitise(?string $question, array $options = []): ?string
-{
-$defaultOptions = ['option1' => 'value',
-                   'option2' => 'some other value',];
-
-// This loop is completely pointless, of course
-do {
-foreach ($options as $name => $value) {
-if (!array_key_exists($name, $defaultOptions)) {
-throw new \RuntimeException(sprintf('Invalid option: %s', $name));
-}
-}
-} while (false);
-
-$mergedOptions = array_merge($defaultOptions, $options);
-
-if (null === $question) {
-return null;
-}
-
-if ('value' === $mergedOptions['option1']) {
-return substr($question, 0, 5);
-}
-
-return ucwords($question);
-}
-}
-PHP,
-                ['--preset', 'drupal'],
-            ],
-        ];
     }
 }
