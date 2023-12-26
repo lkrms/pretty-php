@@ -128,7 +128,6 @@ class FormatPhp extends CliCommand
         'laravel' => [
             'disable' => [],
             'enable' => [
-                'align-lists',
                 'blank-before-return',
             ],
             'heredoc-indent' => 'none',

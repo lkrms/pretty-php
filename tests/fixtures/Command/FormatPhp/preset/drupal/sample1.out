@@ -1,0 +1,20 @@
+<?php
+
+/**
+ * @file
+ * File description.
+ *
+ * An extended description of the file.
+ */
+
+function foo($bar, $baz, $qux, $quux) {
+  if ($bar) {
+    return $qux;
+  }
+  elseif ($baz) {
+    return $quux;
+  }
+  else {
+    return null;
+  }
+}

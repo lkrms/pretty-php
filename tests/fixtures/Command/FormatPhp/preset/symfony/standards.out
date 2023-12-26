@@ -1,0 +1,94 @@
+<?php
+
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Acme;
+
+use Other\Qux;
+
+/**
+ * Coding standards demonstration.
+ */
+class FooBar
+{
+    public const SOME_CONST = 42;
+
+    private string $fooBar;
+
+    /**
+     * @param $dummy some argument description
+     */
+    public function __construct(
+        string $dummy,
+        private Qux $qux,
+    ) {
+        $this->fooBar = $this->transformText($dummy);
+    }
+
+    /**
+     * @deprecated
+     */
+    public function someDeprecatedMethod(): string
+    {
+        trigger_deprecation('symfony/package-name', '5.1', 'The %s() method is deprecated, use Acme\Baz::someMethod() instead.', __METHOD__);
+
+        return Baz::someMethod();
+    }
+
+    /**
+     * Transforms the input given as the first argument.
+     *
+     * @param $options an options collection to be used within the transformation
+     *
+     * @throws \RuntimeException when an invalid option is provided
+     */
+    private function transformText(bool|string $dummy, array $options = []): ?string
+    {
+        $defaultOptions = [
+            'some_default' => 'values',
+            'another_default' => 'more values',
+        ];
+
+        foreach ($options as $name => $value) {
+            if (!array_key_exists($name, $defaultOptions)) {
+                throw new \RuntimeException(sprintf('Unrecognized option "%s"', $name));
+            }
+        }
+
+        $mergedOptions = array_merge($defaultOptions, $options);
+
+        if (true === $dummy) {
+            return 'something';
+        }
+
+        if (\is_string($dummy)) {
+            if ('values' === $mergedOptions['some_default']) {
+                return substr($dummy, 0, 5);
+            }
+
+            return ucwords($dummy);
+        }
+
+        return null;
+    }
+
+    /**
+     * Performs some basic operations for a given value.
+     */
+    private function performOperations(mixed $value = null, bool $theSwitch = false): void
+    {
+        if (!$theSwitch) {
+            return;
+        }
+
+        $this->qux->doFoo($value);
+        $this->qux->doBar($value);
+    }
+}

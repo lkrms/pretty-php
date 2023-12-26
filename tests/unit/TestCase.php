@@ -13,7 +13,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     /**
      * @param Formatter|FormatterB $formatter
      */
-    final public static function assertFormatterOutputIs(string $expected, string $code, $formatter): void
+    public static function assertFormatterOutputIs(string $expected, string $code, $formatter): void
     {
         if ($formatter instanceof FormatterB) {
             $formatter = $formatter->go();
@@ -33,7 +33,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * @param array<class-string<Extension>> $disable
      * @param 2|4|8 $tabSize
      */
-    final public function assertCodeFormatIs(
+    public static function assertCodeFormatIs(
         string $expected,
         string $code,
         array $enable = [],
