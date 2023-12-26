@@ -43,6 +43,23 @@ final class FormatPhpTest extends \Lkrms\PrettyPHP\Tests\TestCase
     }
 
     /**
+     * @dataProvider laravelProvider
+     * @requires PHP >= 8.1
+     */
+    public function testLaravel(string $file): void
+    {
+        $this->makePresetAssertions('laravel', $file);
+    }
+
+    /**
+     * @return Generator<string,array{string}>
+     */
+    public static function laravelProvider(): Generator
+    {
+        yield from self::getInputFiles('preset/laravel');
+    }
+
+    /**
      * @dataProvider symfonyProvider
      * @requires PHP >= 8.0
      */
