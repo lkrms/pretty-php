@@ -39,7 +39,16 @@ final class AlignData implements BlockRule
 
     public static function getPriority(string $method): ?int
     {
-        return 340;
+        switch ($method) {
+            case self::PROCESS_BLOCK:
+                return 340;
+
+            case self::CALLBACK:
+                return 720;
+
+            default:
+                return null;
+        }
     }
 
     public function processBlock(array $block): void
@@ -243,10 +252,9 @@ final class AlignData implements BlockRule
                     ? self::ALIGN_NEXT
                     : self::ALIGN_TOKEN);
             $this->Formatter->registerCallback(
-                $this,
+                static::class,
                 $first,
-                fn() => $this->alignGroup($action, $group, $innerLines),
-                720
+                fn() => $this->alignGroup($action, $group, $innerLines)
             );
         }
     }

@@ -53,6 +53,7 @@ final class HangingIndentation implements MultiTokenRule
     {
         switch ($method) {
             case self::PROCESS_TOKENS:
+            case self::CALLBACK:
                 return 800;
 
             default:
@@ -309,10 +310,9 @@ final class HangingIndentation implements MultiTokenRule
 
             if ($indent > 1) {
                 $this->Formatter->registerCallback(
-                    $this,
+                    static::class,
                     $token,
                     fn() => $this->maybeCollapseOverhanging($token, $until, $hanging),
-                    800,
                     true
                 );
             }

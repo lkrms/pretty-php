@@ -46,6 +46,9 @@ final class StandardWhitespace implements MultiTokenRule
             case self::PROCESS_TOKENS:
                 return 80;
 
+            case self::CALLBACK:
+                return 820;
+
             default:
                 return null;
         }
@@ -255,7 +258,7 @@ final class StandardWhitespace implements MultiTokenRule
                     $next = $token->_next;
                     $last = $sibling ? $sibling->_prev : $last;
                     $this->Formatter->registerCallback(
-                        $this,
+                        static::class,
                         $next,
                         function () use ($tagIndent, $next, $last, $sibling, $siblingIndent) {
                             $delta = $tagIndent - $next->indent();
@@ -267,8 +270,7 @@ final class StandardWhitespace implements MultiTokenRule
                             if ($sibling) {
                                 $sibling->TagIndent += $siblingIndent - $sibling->indent();
                             }
-                        },
-                        820
+                        }
                     );
                 }
 

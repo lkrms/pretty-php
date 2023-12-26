@@ -19,7 +19,13 @@ final class StandardIndentation implements TokenRule
 
     public static function getPriority(string $method): ?int
     {
-        return 600;
+        switch ($method) {
+            case self::PROCESS_TOKEN:
+                return 600;
+
+            default:
+                return null;
+        }
     }
 
     public function processToken(Token $token): void

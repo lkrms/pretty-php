@@ -22,7 +22,13 @@ final class Laravel implements TokenRule
 
     public static function getPriority(string $method): ?int
     {
-        return 100;
+        switch ($method) {
+            case self::PROCESS_TOKEN:
+                return 100;
+
+            default:
+                return null;
+        }
     }
 
     public static function getTokenTypes(TokenTypeIndex $typeIndex): array

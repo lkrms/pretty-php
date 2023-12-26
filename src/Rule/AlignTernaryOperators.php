@@ -22,6 +22,9 @@ final class AlignTernaryOperators implements MultiTokenRule
             case self::PROCESS_TOKENS:
                 return 380;
 
+            case self::CALLBACK:
+                return 710;
+
             default:
                 return null;
         }
@@ -67,10 +70,9 @@ final class AlignTernaryOperators implements MultiTokenRule
             $until = HangingIndentation::getTernaryEndOfExpression($token);
 
             $this->Formatter->registerCallback(
-                $this,
+                static::class,
                 $token,
-                fn() => $this->alignOperators($token, $until, $alignWith),
-                710
+                fn() => $this->alignOperators($token, $until, $alignWith)
             );
         }
     }
