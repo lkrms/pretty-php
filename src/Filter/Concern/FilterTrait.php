@@ -4,7 +4,6 @@ namespace Lkrms\PrettyPHP\Filter\Concern;
 
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Token\Token;
-use Lkrms\Utility\Pcre;
 
 trait FilterTrait
 {
@@ -32,11 +31,10 @@ trait FilterTrait
 
     /**
      * True if the given token, together with previous tokens in the same
-     * statement, form a declaration of one of the given types
+     * statement, form a declaration of the given type
      */
-    protected function isDeclarationOf(int $i, int $type, int ...$types): bool
+    protected function isDeclarationOf(int $i, int $type): bool
     {
-        array_unshift($types, $type);
         while ($i--) {
             $token = $this->Tokens[$i];
             if ($this->TypeIndex->NotCode[$token->id]) {
@@ -45,7 +43,7 @@ trait FilterTrait
             if (!$this->TypeIndex->DeclarationPart[$token->id]) {
                 return false;
             }
-            if ($token->is($types)) {
+            if ($token->id === $type) {
                 return true;
             }
         }
@@ -58,7 +56,9 @@ trait FilterTrait
     protected function isOneLineComment(int $i): bool
     {
         $token = $this->Tokens[$i];
-        return $token->id === \T_COMMENT &&
-            Pcre::match('@^(?://|#)@', $token->text);
+        return $token->id === \T_COMMENT && (
+            $token->text[0] === '#' ||
+            $token->text[1] === '/'
+        );
     }
 }

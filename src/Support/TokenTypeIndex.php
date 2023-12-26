@@ -86,6 +86,14 @@ class TokenTypeIndex implements IImmutable
     public array $CloseBracketExceptBrace;
 
     /**
+     * T_OPEN_BRACE, T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $OpenBrace;
+
+    /**
      * T_ELSEIF, T_ELSE, T_CATCH, T_FINALLY
      *
      * Excludes `T_WHILE`, which only qualifies after `T_DO`.
@@ -279,6 +287,14 @@ class TokenTypeIndex implements IImmutable
     public array $ChainPart;
 
     /**
+     * T_COMMENT, T_DOC_COMMENT
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $Comment;
+
+    /**
      * T_CLASS, T_ENUM, T_INTERFACE, T_TRAIT
      *
      * @readonly
@@ -417,6 +433,12 @@ class TokenTypeIndex implements IImmutable
         $this->CloseBracketExceptBrace = TT::getIndex(
             \T_CLOSE_BRACKET,
             \T_CLOSE_PARENTHESIS,
+        );
+
+        $this->OpenBrace = TT::getIndex(
+            \T_OPEN_BRACE,
+            \T_CURLY_OPEN,
+            \T_DOLLAR_OPEN_CURLY_BRACES,
         );
 
         $this->ContinuesControlStructure = TT::getIndex(
@@ -634,6 +656,7 @@ class TokenTypeIndex implements IImmutable
         $this->Ampersand = TT::getIndex(...TT::AMPERSAND);
         $this->Chain = TT::getIndex(...TT::CHAIN);
         $this->ChainPart = TT::getIndex(...TT::CHAIN_PART);
+        $this->Comment = TT::getIndex(...TT::COMMENT);
         $this->DeclarationClass = TT::getIndex(...TT::DECLARATION_CLASS);
         $this->DeclarationPart = TT::getIndex(...TT::DECLARATION_PART);
         $this->DeclarationPartWithNew = TT::getIndex(...TT::DECLARATION_PART_WITH_NEW);
