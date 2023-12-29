@@ -26,3 +26,9 @@ foo(bar() ||
 
 foo(bar() &&
     qux() || quux() && quuux());
+
+foo(bar() &&
+    qux() && quux() && !(
+        quuux() ||
+        quuuux()
+    ));

@@ -62,6 +62,11 @@ final class VerticalWhitespace implements MultiTokenRule
     private array $SemicolonIndex;
 
     /**
+     * @var array<int,bool>
+     */
+    private array $OpenBracketOrNotIndex;
+
+    /**
      * @var array<int,Closure(Token): bool>
      */
     private array $BooleanHasLineBreakClosure;
@@ -144,7 +149,7 @@ final class VerticalWhitespace implements MultiTokenRule
                         $endOfLine = $token->endOfLine();
                         if (
                             $endOfLine === $token ||
-                            $token->_next->collect($endOfLine)->hasOneNotFrom($this->TypeIndex->StandardOpenBracket)
+                            $token->_next->collect($endOfLine)->hasOneNotFrom($this->OpenBracketOrNotIndex)
                         ) {
                             $token->WhitespaceAfter |= WhitespaceType::LINE;
                         }
@@ -154,6 +159,10 @@ final class VerticalWhitespace implements MultiTokenRule
 
         $this->CommaIndex = TokenType::getIndex(\T_COMMA);
         $this->SemicolonIndex = TokenType::getIndex(\T_SEMICOLON);
+        $this->OpenBracketOrNotIndex = TokenType::mergeIndexes(
+            $this->TypeIndex->StandardOpenBracket,
+            TokenType::getIndex(\T_LOGICAL_NOT, \T_NOT),
+        );
         $this->BooleanHasLineBreakClosure = $hasLineBreak;
         $this->ApplyBooleanLineBreakClosure = $applyLineBreak;
         $this->EmptyBooleansByType = Arr::toIndex($booleanTypes, null);
