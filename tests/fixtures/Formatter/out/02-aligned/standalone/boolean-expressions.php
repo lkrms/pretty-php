@@ -41,8 +41,7 @@ foo(bar() &&
 
 foo(bar() &&
         qux() &&
-        quux() &&
-        !(
+        quux() && !(
             quuux() ||
             quuuux()
         ));
