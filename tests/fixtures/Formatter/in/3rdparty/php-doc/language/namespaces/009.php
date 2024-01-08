@@ -19,7 +19,7 @@ subnamespace\foo(); // resolves to function Foo\Bar\subnamespace\foo
 subnamespace\foo::staticmethod(); // resolves to class Foo\Bar\subnamespace\foo,
                                   // method staticmethod
 echo subnamespace\FOO; // resolves to constant Foo\Bar\subnamespace\FOO
-                                  
+
 /* Fully qualified name */
 \Foo\Bar\foo(); // resolves to function Foo\Bar\foo
 \Foo\Bar\foo::staticmethod(); // resolves to class Foo\Bar\foo, method staticmethod

@@ -49,9 +49,11 @@ use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Json;
 use Lkrms\Utility\Pcre;
+use Lkrms\Utility\Str;
 use Lkrms\Utility\Sys;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
 use SebastianBergmann\Diff\Differ;
@@ -780,8 +782,8 @@ EOF,
         if ($this->DebugDirectory !== null) {
             File::createDir($this->DebugDirectory);
             $this->DebugDirectory = realpath($this->DebugDirectory) ?: null;
-            if (!$this->Env->debug()) {
-                $this->Env->debug(true);
+            if (!Env::debug()) {
+                Env::debug(true);
             }
             $this->App->logOutput();
         }
@@ -1094,7 +1096,7 @@ EOF,
                 continue;
             }
 
-            if (!File::is($file, $outFile)) {
+            if (!File::same($file, $outFile)) {
                 $input = is_file($outFile) ? File::getContents($outFile) : null;
             }
 
@@ -1182,7 +1184,7 @@ EOF,
      */
     private function getFormattingOptionValues(bool $global, bool $internal = false): array
     {
-        $options = $this->getOptionValues(true, [Convert::class, 'toCamelCase']);
+        $options = $this->getOptionValues(true, [Str::class, 'toCamelCase']);
         if ($this->Tabs || $this->Spaces) {
             $options['insertSpaces'] = !$this->Tabs;
             $options['tabSize'] = $this->Tabs ?: $this->Spaces ?: 4;
@@ -1227,7 +1229,7 @@ EOF,
             $values['space'] = $values['tabSize'];
         }
         unset($values['insertSpaces'], $values['tabSize']);
-        $values = $this->normaliseOptionValues($values, $expand, [Convert::class, 'toKebabCase']);
+        $values = $this->normaliseOptionValues($values, $expand, [Str::class, 'toKebabCase']);
         // If `$internal` is false, ignore `$values['@internal']` without
         // suppressing `$this->DefaultFormattingOptionValues['@internal']`
         $values = array_diff_key($values, $internal ? [] : ['@internal' => null]);
@@ -1328,7 +1330,7 @@ EOF,
 
         return array_combine(
             $kebabCase
-                ? array_map([Convert::class, 'toKebabCase'], $names)
+                ? array_map([Str::class, 'toKebabCase'], $names)
                 : $names,
             array_fill(0, count($names), null)
         );
@@ -1455,7 +1457,7 @@ EOF,
                 continue;
             }
             if (!is_string($out)) {
-                $out = Json::prettyPrint($out, \JSON_FORCE_OBJECT);
+                $out = Json::prettyPrint($out, \JSON_FORCE_OBJECT | \JSON_INVALID_UTF8_IGNORE);
             }
             File::putContents($file, $out);
         }

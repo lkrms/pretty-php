@@ -1,5 +1,5 @@
 <?php
-// classa.inc:
+// A.php:
 
 class A
 {
@@ -13,7 +13,7 @@ class A
 
 // page1.php:
 
-include ('classa.inc');
+include 'A.php';
 
 $a = new A;
 $s = serialize($a);
@@ -23,7 +23,7 @@ file_put_contents('store', $s);
 // page2.php:
 
 // this is needed for the unserialize to work properly.
-include ('classa.inc');
+include 'A.php';
 
 $s = file_get_contents('store');
 $a = unserialize($s);

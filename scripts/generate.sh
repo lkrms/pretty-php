@@ -86,5 +86,5 @@ if ((ASSETS)); then
     generate docs/Usage.md bin/pretty-php _md
     generate resources/prettyphp-schema.json bin/pretty-php _json_schema "JSON schema for pretty-php configuration files"
 
-    vendor/bin/lk-util generate builder --forward=format,with,withExtensions,withPsr12,withoutExtensions --no-meta --force 'Lkrms\PrettyPHP\Formatter'
+    vendor/bin/lk-util generate builder --forward=format,with,withExtensions,withPsr12,withoutExtensions --force 'Lkrms\PrettyPHP\Formatter'
 fi

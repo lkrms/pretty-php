@@ -4,3 +4,5 @@ in/3rdparty/** linguist-generated
 out/** linguist-generated
 
 out/04-psr12/** text eol=lf
+
+**/3rdparty/utf-8.php text diff

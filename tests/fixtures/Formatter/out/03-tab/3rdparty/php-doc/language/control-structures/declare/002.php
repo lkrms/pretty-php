@@ -12,7 +12,7 @@ $a = 1;  // causes a tick event
 
 if ($a > 0) {
 	$a += 2;  // causes a tick event
-	print ($a);  // causes a tick event
+	print $a;  // causes a tick event
 }
 
 ?>
