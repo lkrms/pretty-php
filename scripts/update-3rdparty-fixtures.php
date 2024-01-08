@@ -30,7 +30,8 @@ $app = new CliApplication(dirname(__DIR__));
 
 error_reporting(error_reporting() & ~\E_COMPILE_WARNING);
 
-$repoRoot = $app->getCachePath() . '/git';
+$cacheRoot = $app->getCachePath();
+$repoRoot = "$cacheRoot/git";
 File::createDir($repoRoot);
 
 $skipUpdate = in_array('--skip-update', $argv);
@@ -40,6 +41,10 @@ $repos = [
     'php-doc' => 'https://github.com/php/doc-en.git',
     'per' => 'https://github.com/php-fig/per-coding-style.git',
     'phpfmt' => 'https://github.com/driade/phpfmt8.git',
+];
+
+$data = [
+    'utf-8.txt' => 'https://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-test.txt',
 ];
 
 Console::info('Updating source repositories');
@@ -54,6 +59,17 @@ foreach ($repos as $dir => $remote) {
         continue;
     }
     run('git', '-C', $repo, 'pull');
+}
+
+Console::info('Updating data files');
+
+foreach ($data as $name => $url) {
+    $file = "$cacheRoot/$name";
+    if (!is_file($file)) {
+        Console::log('Retrieving:', $url);
+        File::copy($url, $file);
+    }
+    $data[$name] = $file;
 }
 
 $fixtures = 0;
@@ -157,7 +173,7 @@ foreach ($files as $file) {
     }
     $outFile = "$dir/" . $file->getBasename('.in') . $ext;
     Console::logProgress('Creating', substr($outFile, strlen("$fixturesRoot/")));
-    copy((string) $file, $outFile);
+    File::copy((string) $file, $outFile);
     $count++;
     $fixtures++;
     $replaced++;
@@ -248,6 +264,36 @@ foreach ($byHeading as $heading => $listings) {
         $replaced++;
     }
 }
+
+Console::info('Updating UTF-8 test fixture');
+
+$output = <<<'PHP'
+<?php
+$ascii = "\0\x01\x02\x03\x04\x05\x06\x07\x08\t\n\v\f\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\e\x1c\x1d\x1e\x1f";
+$bom = "\u{feff}";
+$ignorable = "\u{00ad}\u{202a}\u{202b}\u{202c}\u{202d}\u{202e}\u{2066}\u{2067}\u{2068}\u{2069}";
+
+PHP;
+
+Pcre::matchAll(
+    "/\"[^\"]*(?:[\0-\x08\x0e-\x1f\x7f-\xff][^\"]*)+\"/",
+    File::getContents($data['utf-8.txt']),
+    $matches,
+    \PREG_SET_ORDER,
+);
+
+foreach ($matches as $match) {
+    $match = Pcre::replace('/^"|\s{2,}|\|\s*\n|"$/', '', $match[0]);
+    $match = "'" . str_replace(['\\', "'"], ['\\\\', "\'"], $match) . "'";
+    $output .= "$match;" . \PHP_EOL;
+}
+
+$outFile = $fixturesRoot . '/utf-8.php';
+Console::log('Creating', substr($outFile, strlen("$fixturesRoot/")));
+File::putContents($outFile, $output);
+$count++;
+$fixtures++;
+$replaced++;
 
 Console::summary(sprintf(
     $replaced !== $fixtures ? 'Updated %1$d of %2$d %3$s' : 'Generated %2$d %3$s',

@@ -119,7 +119,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
-          extensions: none, dom, json, mbstring, openssl, tokenizer, xml, xmlwriter
+          extensions: none, ctype, dom, json, mbstring, openssl, tokenizer, xml, xmlwriter
           coverage: pcov
 
       - name: Get Composer cache directory

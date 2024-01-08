@@ -22,6 +22,13 @@ final class NormaliseStrings implements MultiTokenRule
 {
     use MultiTokenRuleTrait;
 
+    /**
+     * Matches a code point with the Default_Ignorable_Code_Point property
+     *
+     * @link https://www.unicode.org/Public/UCD/latest/ucd/DerivedCoreProperties.txt
+     */
+    private const DEFAULT_IGNORABLE = '/[\x{00AD}\x{17B4}\x{17B5}\x{034F}\x{061C}\x{115F}\x{180B}-\x{180F}\x{200B}-\x{200F}\x{202A}-\x{202E}\x{1160}\x{2060}-\x{2064}\x{2065}\x{2066}-\x{206F}\x{3164}\x{FE00}-\x{FEFF}\x{FFA0}\x{FFF0}-\x{FFF8}\x{1BCA0}-\x{1BCA3}\x{1D173}-\x{1D17A}\x{E0000}\x{E0001}\x{E01F0}-\x{E0FFF}\x{E0002}-\x{E001F}\x{E0020}-\x{E007F}\x{E0080}-\x{E00FF}\x{E0100}-\x{E01EF}]/u';
+
     public static function getPriority(string $method): ?int
     {
         switch ($method) {
@@ -45,9 +52,11 @@ final class NormaliseStrings implements MultiTokenRule
     {
         foreach ($tokens as $token) {
             // Ignore nowdocs
-            if ($token->id !== \T_CONSTANT_ENCAPSED_STRING &&
-                    $token->String->id === \T_START_HEREDOC &&
-                    substr($token->String->text, 0, 4) === "<<<'") {
+            if (
+                $token->id !== \T_CONSTANT_ENCAPSED_STRING &&
+                $token->String->id === \T_START_HEREDOC &&
+                substr($token->String->text, 0, 4) === "<<<'"
+            ) {
                 continue;
             }
 
@@ -62,11 +71,17 @@ final class NormaliseStrings implements MultiTokenRule
             $reserved = '';
 
             // Don't escape line breaks unless they are already escaped
-            if (!$token->hasNewline() ||
-                ($token->_next->id === \T_END_HEREDOC &&
-                    strpos(substr($token->text, 0, -1), "\n") === false)) {
+            if (
+                !$token->hasNewline() || (
+                    $token->_next->id === \T_END_HEREDOC &&
+                    strpos(substr($token->text, 0, -1), "\n") === false
+                )
+            ) {
                 $escape .= "\n\r";
                 $match .= '\n\r';
+            } else {
+                $escape .= "\r";
+                $match .= '\r';
             }
 
             $string = '';
@@ -108,16 +123,20 @@ final class NormaliseStrings implements MultiTokenRule
                 }
                 eval("\$string = {$start}\n{$text}\n{$end};");
             } else {
+                // @codeCoverageIgnoreStart
                 throw new RuleException(
                     sprintf('Not a string delimiter: %s', CustomToken::toName($token->String->id))
                 );
+                // @codeCoverageIgnoreEnd
             }
 
             // If $string contains valid UTF-8 sequences, don't escape leading
             // bytes (\xc2 -> \xf4) or continuation bytes (\x80 -> \xbf)
+            $utf8 = false;
             if (mb_check_encoding($string, 'UTF-8')) {
                 $escape .= "\x7f\xc0\xc1\xf5..\xff";
                 $match .= '\x7f\xc0\xc1\xf5-\xff';
+                $utf8 = true;
             } else {
                 $escape .= "\x7f..\xff";
                 $match .= '\x7f-\xff';
@@ -126,13 +145,25 @@ final class NormaliseStrings implements MultiTokenRule
             // \0..\t\v\f\x0e..\x1f is equivalent to \0..\x1f without \n and \r
             $double = addcslashes($string, "\0..\t\v\f\x0e..\x1f\$\\{$escape}");
 
+            $utf8Escapes = 0;
+            if ($utf8) {
+                $double = Pcre::replaceCallback(
+                    self::DEFAULT_IGNORABLE,
+                    fn(array $matches): string =>
+                        sprintf('\u{%04X}', mb_ord($matches[0])),
+                    $double,
+                    -1,
+                    $utf8Escapes,
+                );
+            }
+
             // Convert octal notation to hexadecimal (e.g. "\177" to "\x7f") and
             // correct for differences between C and PHP escape sequences:
             // - recognised by PHP: \0 \e \f \n \r \t \v
             // - applied by addcslashes: \000 \033 \a \b \f \n \r \t \v
             $double = Pcre::replaceCallback(
                 '/((?<!\\\\)(?:\\\\\\\\)*)\\\\(?:(?<octal>[0-7]{3})|(?<cslash>[ab]))/',
-                fn(array $matches) =>
+                fn(array $matches): string =>
                     $matches[1]
                         . ($matches['octal'] !== null
                             ? (($dec = octdec($matches['octal']))
@@ -186,12 +217,14 @@ final class NormaliseStrings implements MultiTokenRule
                     $double,
                 );
                 if ($token->id !== \T_CONSTANT_ENCAPSED_STRING ||
+                        $utf8Escapes ||
                         Pcre::match("/[\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f{$match}]/", $string) ||
                         Pcre::match('/(?<!\\\\)(?:\\\\\\\\)*\\\\t/', $double)) {
                     $token->setText($double);
                     continue;
                 }
             } elseif ($token->id !== \T_CONSTANT_ENCAPSED_STRING ||
+                    $utf8Escapes ||
                     Pcre::match("/[\\x00-\\x09\\x0b\\x0c\\x0e-\\x1f{$match}]/", $string)) {
                 $token->setText($double);
                 continue;
@@ -216,10 +249,13 @@ final class NormaliseStrings implements MultiTokenRule
     {
         // '\Name\\' is valid but confusing, so replace '\' with '\\' in strings
         // where every backslash other than the trailing '\\' is singular
-        if (($string[-1] ?? null) === '\\' &&
-                Pcre::matchAll('/(?<!\\\\)\\\\\\\\(?!\\\\)/', $string) === 1 &&
-                !Pcre::match("/(?<!\\\\)\\\\(?={$reserved})(?!\\\\\$)/", $string) &&
-                strpos($string, '\\\\\\') === false) {
+        if (
+            $string !== '' &&
+            $string[-1] === '\\' &&
+            Pcre::matchAll('/(?<!\\\\)\\\\\\\\(?!\\\\)/', $string) === 1 &&
+            !Pcre::match("/(?<!\\\\)\\\\(?={$reserved})(?!\\\\\$)/", $string) &&
+            strpos($string, '\\\\\\') === false
+        ) {
             return Pcre::replace("/(?<!\\\\)\\\\(?!{$reserved})/", '\\\\$0', $string);
         }
         return $string;

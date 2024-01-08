@@ -30,9 +30,9 @@ use Lkrms\PrettyPHP\Support\TokenTypeIndex;
  * @method Formatter withExtensions(array<class-string<Extension>> $enable, array<class-string<Extension>> $disable = [], bool $preserveCurrent = true) Call Formatter::withExtensions() on a new instance
  * @method string format(string $code, string|null $eol = null, string|null $filename = null, bool $fast = false) Get formatted code (see {@see Formatter::format()})
  *
- * @uses Formatter
- *
  * @extends Builder<Formatter>
+ *
+ * @generated
  */
 final class FormatterBuilder extends Builder
 {

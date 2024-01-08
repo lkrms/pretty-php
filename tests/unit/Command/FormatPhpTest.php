@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Tests\Command;
 
 use Lkrms\Cli\CliApplication;
-use Lkrms\Console\Catalog\ConsoleLevels as Levels;
+use Lkrms\Console\Catalog\ConsoleLevelGroup as LevelGroup;
 use Lkrms\Console\Target\MockTarget;
 use Lkrms\Exception\Contract\ExceptionInterface;
 use Lkrms\Facade\Console;
@@ -115,7 +115,7 @@ final class FormatPhpTest extends \Lkrms\PrettyPHP\Tests\TestCase
         int $exitStatus = 0
     ): void {
         $target = new MockTarget();
-        Console::registerTarget($target, Levels::ALL_EXCEPT_DEBUG);
+        Console::registerTarget($target, LevelGroup::ALL_EXCEPT_DEBUG);
 
         $app = new CliApplication(self::$BasePath);
         $formatPhp = $app->get(FormatPhp::class);
