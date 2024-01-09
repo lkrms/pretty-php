@@ -20,7 +20,7 @@ use Lkrms\Utility\Pcre;
 use Generator;
 use SplFileInfo;
 
-final class FormatterTest extends \Lkrms\PrettyPHP\Tests\TestCase
+final class FormatterTest extends TestCase
 {
     public const TARGET_VERSION_ID = 80300;
 

@@ -44,7 +44,7 @@ jobs:
 
       - name: Install ApiGen and its dependencies
         working-directory: tools/apigen
-        run: composer install --no-interaction --no-progress
+        run: composer install --no-interaction --no-progress --no-dev
 
       - name: Run ApiGen
         run: tools/apigen/vendor/bin/apigen -c tools/apigen/apigen.neon --output .ci/docs/api --verbose
