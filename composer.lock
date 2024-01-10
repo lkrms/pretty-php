@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "aefb588c5014292ec711fd3017855f71",
+    "content-hash": "d34c8a4a2b15ead5ce5ca8642386cf6a",
     "packages": [
         {
             "name": "lkrms/dice",
@@ -51,16 +51,16 @@
         },
         {
             "name": "lkrms/util",
-            "version": "v0.21.19",
+            "version": "v0.21.20",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/php-util.git",
-                "reference": "0eab30725304dbfcf9ac8ad0896856184cb1d5a9"
+                "reference": "3c902aeee2c876a2645b51785c4dbac000242de3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/php-util/zipball/0eab30725304dbfcf9ac8ad0896856184cb1d5a9",
-                "reference": "0eab30725304dbfcf9ac8ad0896856184cb1d5a9",
+                "url": "https://api.github.com/repos/lkrms/php-util/zipball/3c902aeee2c876a2645b51785c4dbac000242de3",
+                "reference": "3c902aeee2c876a2645b51785c4dbac000242de3",
                 "shasum": ""
             },
             "require": {
@@ -118,9 +118,9 @@
             "description": "A lightweight PHP toolkit for expressive backend/CLI apps",
             "support": {
                 "issues": "https://github.com/lkrms/php-util/issues",
-                "source": "https://github.com/lkrms/php-util/tree/v0.21.19"
+                "source": "https://github.com/lkrms/php-util/tree/v0.21.20"
             },
-            "time": "2024-01-08T22:54:25+00:00"
+            "time": "2024-01-10T05:51:22+00:00"
         },
         {
             "name": "psr/container",
