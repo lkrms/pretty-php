@@ -13,7 +13,7 @@ use Lkrms\Utility\Pcre;
  *
  * @api
  */
-final class StandardiseStrings implements Filter
+final class EvaluateStrings implements Filter
 {
     use ExtensionTrait;
 
@@ -82,7 +82,7 @@ final class StandardiseStrings implements Filter
             } else {
                 throw new FilterException('Error parsing string');
             }
-            $token->setText($string);
+            $token->text = $string;
         }
 
         return $tokens;

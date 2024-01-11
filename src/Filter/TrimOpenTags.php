@@ -17,9 +17,8 @@ final class TrimOpenTags implements Filter
     public function filterTokens(array $tokens): array
     {
         foreach ($tokens as $token) {
-            if ($token->id === \T_OPEN_TAG ||
-                    $token->id === \T_OPEN_TAG_WITH_ECHO) {
-                $token->setText(rtrim($token->text));
+            if ($this->TypeIndex->OpenTag[$token->id]) {
+                $token->text = rtrim($token->text);
             }
         }
 

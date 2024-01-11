@@ -87,6 +87,7 @@ pretty-php - Format a PHP file
   - `sort-imports`
   - `move-comments`
   - `simplify-strings`
+  - `simplify-numbers`
   - `preserve-newlines`
   - `declaration-spacing`
 
@@ -132,6 +133,12 @@ pretty-php - Format a PHP file
   double-quoted strings with the most readable and economical syntax.
 
   Equivalent to **`--disable=simplify-strings`**
+
+- **`-n`**, **`--no-simplify-numbers`**
+
+  Don't normalise integers and floats.
+
+  Equivalent to **`--disable=simplify-numbers`**
 
 - **`-h`**, **`--heredoc-indent`** (`none`|`line`|`mixed`|`hanging`)
 

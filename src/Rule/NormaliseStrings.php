@@ -27,7 +27,7 @@ final class NormaliseStrings implements MultiTokenRule
      *
      * @link https://www.unicode.org/Public/UCD/latest/ucd/DerivedCoreProperties.txt
      */
-    private const DEFAULT_IGNORABLE = '/[\x{00AD}\x{17B4}\x{17B5}\x{034F}\x{061C}\x{115F}\x{180B}-\x{180F}\x{200B}-\x{200F}\x{202A}-\x{202E}\x{1160}\x{2060}-\x{2064}\x{2065}\x{2066}-\x{206F}\x{3164}\x{FE00}-\x{FEFF}\x{FFA0}\x{FFF0}-\x{FFF8}\x{1BCA0}-\x{1BCA3}\x{1D173}-\x{1D17A}\x{E0000}\x{E0001}\x{E01F0}-\x{E0FFF}\x{E0002}-\x{E001F}\x{E0020}-\x{E007F}\x{E0080}-\x{E00FF}\x{E0100}-\x{E01EF}]/u';
+    private const DEFAULT_IGNORABLE = '/^[\x{00AD}\x{17B4}\x{17B5}\x{034F}\x{061C}\x{115F}\x{180B}-\x{180F}\x{200B}-\x{200F}\x{202A}-\x{202E}\x{1160}\x{2060}-\x{2064}\x{2065}\x{2066}-\x{206F}\x{3164}\x{FE00}-\x{FEFF}\x{FFA0}\x{FFF0}-\x{FFF8}\x{1BCA0}-\x{1BCA3}\x{1D173}-\x{1D17A}\x{E0000}\x{E0001}\x{E01F0}-\x{E0FFF}\x{E0002}-\x{E001F}\x{E0020}-\x{E007F}\x{E0080}-\x{E00FF}\x{E0100}-\x{E01EF}]$/u';
 
     public static function getPriority(string $method): ?int
     {
@@ -125,7 +125,7 @@ final class NormaliseStrings implements MultiTokenRule
             } else {
                 // @codeCoverageIgnoreStart
                 throw new RuleException(
-                    sprintf('Not a string delimiter: %s', CustomToken::toName($token->String->id))
+                    sprintf('Not a string delimiter: %s', $token->String->getTokenName())
                 );
                 // @codeCoverageIgnoreEnd
             }
@@ -148,12 +148,15 @@ final class NormaliseStrings implements MultiTokenRule
             $utf8Escapes = 0;
             if ($utf8) {
                 $double = Pcre::replaceCallback(
-                    self::DEFAULT_IGNORABLE,
-                    fn(array $matches): string =>
-                        sprintf('\u{%04X}', mb_ord($matches[0])),
+                    '/(?![\x00-\x7f])\X/u',
+                    function (array $matches) use (&$utf8Escapes): string {
+                        if (!Pcre::match(self::DEFAULT_IGNORABLE, $matches[0])) {
+                            return $matches[0];
+                        }
+                        $utf8Escapes++;
+                        return sprintf('\u{%04X}', mb_ord($matches[0]));
+                    },
                     $double,
-                    -1,
-                    $utf8Escapes,
                 );
             }
 

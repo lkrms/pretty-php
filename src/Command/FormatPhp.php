@@ -38,6 +38,7 @@ use Lkrms\PrettyPHP\Rule\AlignLists;
 use Lkrms\PrettyPHP\Rule\AlignTernaryOperators;
 use Lkrms\PrettyPHP\Rule\BlankLineBeforeReturn;
 use Lkrms\PrettyPHP\Rule\DeclarationSpacing;
+use Lkrms\PrettyPHP\Rule\NormaliseNumbers;
 use Lkrms\PrettyPHP\Rule\NormaliseStrings;
 use Lkrms\PrettyPHP\Rule\PreserveLineBreaks;
 use Lkrms\PrettyPHP\Rule\PreserveOneLineStatements;
@@ -69,6 +70,7 @@ class FormatPhp extends CliCommand
         'sort-imports' => SortImports::class,
         'move-comments' => MoveComments::class,
         'simplify-strings' => NormaliseStrings::class,
+        'simplify-numbers' => NormaliseNumbers::class,
         'preserve-newlines' => PreserveLineBreaks::class,
         'declaration-spacing' => DeclarationSpacing::class,
     ];
@@ -211,6 +213,8 @@ class FormatPhp extends CliCommand
     protected ?bool $IgnoreNewlines;
 
     protected ?bool $NoSimplifyStrings;
+
+    protected ?bool $NoSimplifyNumbers;
 
     protected ?string $HeredocIndent;
 
@@ -515,6 +519,16 @@ Equivalent to `--disable=simplify-strings`
 EOF)
                 ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->NoSimplifyStrings),
+            CliOption::build()
+                ->long('no-simplify-numbers')
+                ->short('n')
+                ->description(<<<EOF
+Don't normalise integers and floats.
+
+Equivalent to `--disable=simplify-numbers`
+EOF)
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
+                ->bindTo($this->NoSimplifyNumbers),
             CliOption::build()
                 ->long('heredoc-indent')
                 ->short('h')
@@ -1271,6 +1285,9 @@ EOF,
         if ($this->NoSimplifyStrings) {
             $this->Disable[] = 'simplify-strings';
         }
+        if ($this->NoSimplifyNumbers) {
+            $this->Disable[] = 'simplify-numbers';
+        }
         if ($this->NoSortImports) {
             $this->Disable[] = 'sort-imports';
         }
@@ -1312,6 +1329,7 @@ EOF,
             'operatorsFirst',
             'operatorsLast',
             'noSimplifyStrings',
+            'noSimplifyNumbers',
             'heredocIndent',
             'sortImportsBy',
             'noSortImports',
