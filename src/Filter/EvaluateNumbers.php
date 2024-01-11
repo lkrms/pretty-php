@@ -6,19 +6,21 @@ use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Filter\Contract\Filter;
 
 /**
- * Truncate comments for comparison
+ * Evaluate numbers for comparison
  *
  * @api
  */
-final class TruncateComments implements Filter
+final class EvaluateNumbers implements Filter
 {
     use ExtensionTrait;
 
     public function filterTokens(array $tokens): array
     {
+        $number = 0;
         foreach ($tokens as $token) {
-            if ($this->TypeIndex->Comment[$token->id]) {
-                $token->text = '';
+            if ($this->TypeIndex->Number[$token->id]) {
+                eval("\$number = {$token->text};");
+                $token->text = var_export($number, true);
             }
         }
 

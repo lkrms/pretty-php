@@ -26,6 +26,11 @@ function run(string $command, string ...$arg): string
     return $output;
 }
 
+function quote(string $string): string
+{
+    return "'" . str_replace(['\\', "'"], ['\\\\', "\'"], $string) . "'";
+}
+
 $app = new CliApplication(dirname(__DIR__));
 
 error_reporting(error_reporting() & ~\E_COMPILE_WARNING);
@@ -45,6 +50,7 @@ $repos = [
 
 $data = [
     'utf-8.txt' => 'https://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-test.txt',
+    'emoji.txt' => 'https://www.unicode.org/Public/emoji/latest/emoji-test.txt',
 ];
 
 Console::info('Updating source repositories');
@@ -237,7 +243,7 @@ foreach ($byHeading as $heading => $listings) {
     $heading = trim(Pcre::replace(
         '/(?:\.(?![0-9])|[^a-z0-9.])+/i',
         '-',
-        strtolower($heading)
+        Str::lower($heading)
     ), '-');
 
     foreach ($listings as $i => $listing) {
@@ -284,8 +290,36 @@ Pcre::matchAll(
 
 foreach ($matches as $match) {
     $match = Pcre::replace('/^"|\s{2,}|\|\s*\n|"$/', '', $match[0]);
-    $match = "'" . str_replace(['\\', "'"], ['\\\\', "\'"], $match) . "'";
-    $output .= "$match;" . \PHP_EOL;
+    $output .= quote($match) . ';' . \PHP_EOL;
+}
+
+$file = $data['emoji.txt'];
+$stream = File::open($file, 'r');
+$groups = [];
+$group = 'ungrouped';
+while (true) {
+    $line = fgets($stream);
+    if ($line === false) {
+        if (!feof($stream)) {
+            throw new RuntimeException(sprintf('Error reading file: %s', $file));
+        }
+        break;
+    }
+    if (Pcre::match('/^\h*+#\h*+subgroup:\h*+(?<subgroup>.+)(?<!\h)/', $line, $matches)) {
+        $group = $matches['subgroup'];
+        continue;
+    }
+    if (!Pcre::match('/^[0-9a-f]+(?: [0-9a-f]+)*/i', $line, $matches)) {
+        continue;
+    }
+    $sequence = '';
+    foreach (explode(' ', $matches[0]) as $codepoint) {
+        $sequence .= '\u{' . Str::lower($codepoint) . '}';
+    }
+    $groups[$group][] = $sequence;
+}
+foreach ($groups as $group => $sequences) {
+    $output .= '[' . quote($group) . ' => "' . implode(' ', $sequences) . '"];' . \PHP_EOL;
 }
 
 $outFile = $fixturesRoot . '/utf-8.php';

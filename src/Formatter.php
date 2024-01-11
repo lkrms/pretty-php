@@ -19,13 +19,14 @@ use Lkrms\PrettyPHP\Exception\FormatterException;
 use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
 use Lkrms\PrettyPHP\Filter\Contract\Filter;
 use Lkrms\PrettyPHP\Filter\CollectColumn;
+use Lkrms\PrettyPHP\Filter\EvaluateNumbers;
+use Lkrms\PrettyPHP\Filter\EvaluateStrings;
 use Lkrms\PrettyPHP\Filter\MoveComments;
 use Lkrms\PrettyPHP\Filter\RemoveEmptyDocBlocks;
 use Lkrms\PrettyPHP\Filter\RemoveEmptyTokens;
 use Lkrms\PrettyPHP\Filter\RemoveHeredocIndentation;
 use Lkrms\PrettyPHP\Filter\RemoveWhitespace;
 use Lkrms\PrettyPHP\Filter\SortImports;
-use Lkrms\PrettyPHP\Filter\StandardiseStrings;
 use Lkrms\PrettyPHP\Filter\TrimCasts;
 use Lkrms\PrettyPHP\Filter\TrimOpenTags;
 use Lkrms\PrettyPHP\Filter\TruncateComments;
@@ -52,6 +53,7 @@ use Lkrms\PrettyPHP\Rule\HangingIndentation;
 use Lkrms\PrettyPHP\Rule\HeredocIndentation;
 use Lkrms\PrettyPHP\Rule\ListSpacing;
 use Lkrms\PrettyPHP\Rule\NormaliseComments;
+use Lkrms\PrettyPHP\Rule\NormaliseNumbers;
 use Lkrms\PrettyPHP\Rule\NormaliseStrings;
 use Lkrms\PrettyPHP\Rule\OperatorSpacing;
 use Lkrms\PrettyPHP\Rule\PlaceBraces;
@@ -232,6 +234,7 @@ final class Formatter implements Buildable
      */
     public const DEFAULT_RULES = [
         ProtectStrings::class,
+        NormaliseNumbers::class,
         NormaliseStrings::class,
         NormaliseComments::class,
         StandardWhitespace::class,
@@ -256,6 +259,7 @@ final class Formatter implements Buildable
      * @var array<class-string<Rule>>
      */
     public const OPTIONAL_RULES = [
+        NormaliseNumbers::class,
         NormaliseStrings::class,
         PreserveLineBreaks::class,
         PreserveOneLineStatements::class,
@@ -322,10 +326,11 @@ final class Formatter implements Buildable
      * @var array<class-string<Filter>>
      */
     public const COMPARISON_FILTERS = [
-        StandardiseStrings::class,
         RemoveEmptyTokens::class,
-        TruncateComments::class,
+        EvaluateNumbers::class,
+        EvaluateStrings::class,
         TrimOpenTags::class,
+        TruncateComments::class,
     ];
 
     /**

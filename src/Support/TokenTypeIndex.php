@@ -94,6 +94,14 @@ class TokenTypeIndex implements IImmutable
     public array $OpenBrace;
 
     /**
+     * T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $OpenTag;
+
+    /**
      * T_ELSEIF, T_ELSE, T_CATCH, T_FINALLY
      *
      * Excludes `T_WHILE`, which only qualifies after `T_DO`.
@@ -110,6 +118,14 @@ class TokenTypeIndex implements IImmutable
      * @var array<int,bool>
      */
     public array $Expandable;
+
+    /**
+     * T_LNUMBER, T_DNUMBER
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $Number;
 
     /**
      * T_DOUBLE_QUOTE, T_START_HEREDOC, T_END_HEREDOC, T_BACKTICK
@@ -441,6 +457,11 @@ class TokenTypeIndex implements IImmutable
             \T_DOLLAR_OPEN_CURLY_BRACES,
         );
 
+        $this->OpenTag = TT::getIndex(
+            \T_OPEN_TAG,
+            \T_OPEN_TAG_WITH_ECHO,
+        );
+
         $this->ContinuesControlStructure = TT::getIndex(
             \T_ELSEIF,
             \T_ELSE,
@@ -460,6 +481,11 @@ class TokenTypeIndex implements IImmutable
             \T_END_HEREDOC,
             \T_INLINE_HTML,
             \T_WHITESPACE,
+        );
+
+        $this->Number = TT::getIndex(
+            \T_LNUMBER,
+            \T_DNUMBER,
         );
 
         $this->StringDelimiter = TT::getIndex(

@@ -3,7 +3,7 @@ $o = new ClassOBj(
 	(string) $obj->Hn,
 	'',
 	(string) $obj->Ha,
-	.0,
+	0.0,
 	0
 );
 
@@ -11,7 +11,7 @@ $o = new ClassOBj(
 	$obj->Hn,
 	'',
 	(string) $obj->Ha,
-	.0,
+	0.0,
 	0
 );
 
@@ -19,7 +19,7 @@ $o = new ClassOBj(
 	func(),
 	'',
 	(string) $obj->Ha,
-	.0,
+	0.0,
 	0
 );
 
@@ -27,11 +27,11 @@ $o = new ClassOBj(
 	CONSTANT_NAME,
 	'',
 	(string) $obj->Ha,
-	.0,
+	0.0,
 	0
 );
 
-$o = new ClassOBj((string) $obj->Hn, '', (string) $obj->Ha, .0, 0);
-$o = new ClassOBj($obj->Hn, '', (string) $obj->Ha, .0, 0);
-$o = new ClassOBj(func(), '', (string) $obj->Ha, .0, 0);
-$o = new ClassOBj(CONSTANT_NAME, '', (string) $obj->Ha, .0, 0);
+$o = new ClassOBj((string) $obj->Hn, '', (string) $obj->Ha, 0.0, 0);
+$o = new ClassOBj($obj->Hn, '', (string) $obj->Ha, 0.0, 0);
+$o = new ClassOBj(func(), '', (string) $obj->Ha, 0.0, 0);
+$o = new ClassOBj(CONSTANT_NAME, '', (string) $obj->Ha, 0.0, 0);

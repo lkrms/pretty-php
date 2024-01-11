@@ -10,6 +10,6 @@ $people = array(
 );
 
 for ($i = 0; $i < count($people); ++$i) {
-    $people[$i]['salt'] = mt_rand(000000, 999999);
+    $people[$i]['salt'] = mt_rand(0, 999999);
 }
 ?>

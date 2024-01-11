@@ -5,8 +5,8 @@
 // closure as a callback.
 class Cart
 {
-    const PRICE_BUTTER = 1.00;
-    const PRICE_MILK = 3.00;
+    const PRICE_BUTTER = 1.0;
+    const PRICE_MILK = 3.0;
     const PRICE_EGGS = 6.95;
 
     protected $products = array();
@@ -25,7 +25,7 @@ class Cart
 
     public function getTotal($tax)
     {
-        $total = 0.00;
+        $total = 0.0;
 
         $callback =
             function ($quantity, $product) use ($tax, &$total) {
