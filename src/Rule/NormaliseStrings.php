@@ -2,7 +2,6 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\CustomToken;
 use Lkrms\PrettyPHP\Exception\RuleException;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Rule\Contract\MultiTokenRule;
@@ -145,6 +144,8 @@ final class NormaliseStrings implements MultiTokenRule
             // \0..\t\v\f\x0e..\x1f is equivalent to \0..\x1f without \n and \r
             $double = addcslashes($string, "\0..\t\v\f\x0e..\x1f\$\\{$escape}");
 
+            // Convert ignorable code points to "\u{xxxx}" unless they belong to
+            // an extended grapheme cluster, i.e. a recognised Unicode sequence
             $utf8Escapes = 0;
             if ($utf8) {
                 $double = Pcre::replaceCallback(
@@ -165,14 +166,16 @@ final class NormaliseStrings implements MultiTokenRule
             // - recognised by PHP: \0 \e \f \n \r \t \v
             // - applied by addcslashes: \000 \033 \a \b \f \n \r \t \v
             $double = Pcre::replaceCallback(
-                '/((?<!\\\\)(?:\\\\\\\\)*)\\\\(?:(?<octal>[0-7]{3})|(?<cslash>[ab]))/',
+                '/((?<!\\\\)(?:\\\\\\\\)*)\\\\(?:(?<NUL>000(?![0-7]))|(?<octal>[0-7]{3})|(?<cslash>[ab]))/',
                 fn(array $matches): string =>
                     $matches[1]
-                        . ($matches['octal'] !== null
-                            ? (($dec = octdec($matches['octal']))
-                                ? ($dec === 27 ? '\e' : sprintf('\x%02x', $dec))
-                                : '\0')
-                            : sprintf('\x%02x', ['a' => 7, 'b' => 8][$matches['cslash']])),
+                        . ($matches['NUL'] !== null
+                            ? '\0'
+                            : ($matches['octal'] !== null
+                                ? (($dec = octdec($matches['octal'])) === 27
+                                    ? '\e'
+                                    : sprintf('\x%02x', $dec))
+                                : sprintf('\x%02x', ['a' => 7, 'b' => 8][$matches['cslash']]))),
                 $double,
                 -1,
                 $count,

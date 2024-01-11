@@ -119,7 +119,7 @@ final class NormaliseNumbers implements MultiTokenRule
                 '/^0*+(?<integer>[0-9]+)?(?:\.(?<fractional>[0-9]+(?<!0))?0*)?(?:e(?<sign>[-+])?0*(?<exponent>[0-9]+))?$/i',
                 $text,
                 $matches,
-                PREG_UNMATCHED_AS_NULL,
+                \PREG_UNMATCHED_AS_NULL,
             )) {
                 throw new RuleException(
                     sprintf('Invalid %s: %s', $token->getTokenName(), $token->text)
