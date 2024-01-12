@@ -35,8 +35,7 @@ each case.
 If you have questions or feedback, I'd love to [hear from you][discuss].
 
 > `pretty-php` isn't stable yet, so updates may introduce formatting changes
-> that affect your code. Locking the `lkrms/pretty-php` package to a specific
-> version is recommended for production workflows.
+> that affect your code.
 
 ## Features
 
@@ -56,16 +55,15 @@ If you have questions or feedback, I'd love to [hear from you][discuss].
 
 ## Installation
 
-### Prerequisites
+### Requirements
 
 - Linux, macOS or Windows
-- PHP 8.3, 8.2, 8.1, 8.0 or 7.4 with `tokenizer`, `mbstring` and `json`
-  extensions enabled
+- PHP 8.3, 8.2, 8.1, 8.0 or 7.4 with the standard `tokenizer`, `mbstring` and
+  `json` extensions enabled
 
 ### PHP archive (PHAR)
 
-You can [download][] the latest version of `pretty-php` packaged as a PHP
-archive and use it straightaway:
+`pretty-php` is distributed as a PHP archive you can download and run:
 
 ```shell
 wget -O pretty-php.phar https://github.com/lkrms/pretty-php/releases/latest/download/pretty-php.phar
@@ -75,7 +73,7 @@ wget -O pretty-php.phar https://github.com/lkrms/pretty-php/releases/latest/down
 php pretty-php.phar --version
 ```
 
-The PHAR can be made executable for convenience:
+The PHAR can be made executable:
 
 ```shell
 chmod +x pretty-php.phar
@@ -85,40 +83,43 @@ chmod +x pretty-php.phar
 ./pretty-php.phar --version
 ```
 
-It can also be installed to a location on your `PATH`. For example:
+Official releases distributed via GitHub are signed and can be verified as
+follows:
 
 ```shell
-mv pretty-php.phar /usr/local/bin/pretty-php
+wget -O pretty-php.phar https://github.com/lkrms/pretty-php/releases/latest/download/pretty-php.phar
+wget -O pretty-php.phar.asc https://github.com/lkrms/pretty-php/releases/latest/download/pretty-php.phar.asc
+gpg --recv-keys 0xE8CC5BC780B581F2
+gpg --verify pretty-php.phar.asc pretty-php.phar
 ```
 
-### Composer
-
-To add `pretty-php` to a [Composer][] project:
+Installation with [PHIVE][], which verifies PHAR releases automatically, is also
+supported:
 
 ```shell
-composer require --dev lkrms/pretty-php
+phive install lkrms/pretty-php
 ```
-
-Then, assuming your project's `bin-dir` is `vendor/bin`:
 
 ```shell
-vendor/bin/pretty-php --version
+./tools/pretty-php --version
 ```
+
+Adding `lkrms/pretty-php` to your project as a Composer dependency is not
+recommended.
 
 ### Arch Linux
 
-Arch Linux users can install the [`pretty-php` package][AUR] from the AUR. For
-example, if your preferred AUR helper is `yay`:
+Arch Linux users can install `pretty-php` from the AUR. For example, if your
+preferred AUR helper is `yay`:
 
 ```shell
 yay -S pretty-php
 ```
 
-### Homebrew on macOS
+### macOS
 
-[Homebrew][] users on macOS can use [this formula][formula] to install
-`pretty-php`. The following command automatically adds the `lkrms/misc` tap if
-necessary:
+Homebrew users on macOS can install `pretty-php` using the following command,
+which automatically taps `lkrms/misc` if necessary:
 
 ```shell
 brew install lkrms/misc/pretty-php
@@ -134,40 +135,39 @@ the `src` directory:
 pretty-php bootstrap.php src
 ```
 
-If you would prefer to see what would change without actually replacing any
-files, add the `--diff` option:
+To see what would change without actually replacing any files, add the `--diff`
+option:
 
 ```shell
 pretty-php --diff bootstrap.php src
 ```
 
-For detailed information about this and other options:
+For detailed usage information, see [usage](docs/Usage.md) or run:
 
 ```shell
 pretty-php --help
 ```
 
-Usage information is also available [here](docs/Usage.md).
-
 ## Editor integrations
 
 - **pretty-php for Visual Studio Code** \
   Official VS Code extension \
-  [Visual Studio Marketplace] | [Open VSX Registry] | [Repository][vscode]
+  [Visual Studio Marketplace][] | [Open VSX Registry][] | [Repository][vscode]
 
 ## Pragmatism
 
-`pretty-php` generally abides by its own rules (e.g. "previous formatting is
-ignored, and nothing in the original file other than whitespace is changed"),
-but exceptions are occasionally made and documented here.
+`pretty-php` generally abides by its own rules ("previous formatting is ignored,
+and nothing in the original file other than whitespace is changed"), but
+exceptions are occasionally made and documented here.
 
 - **Newlines are preserved** \
   Line breaks adjacent to most operators, separators and brackets are copied from
   the input to the output. _Use **`-N/--ignore-newlines`** to disable this behaviour._
 
-- **Strings are normalised** \
+- **Strings and numbers are normalised** \
   Single-quoted strings are preferred unless the alternative is shorter or backslash
-  escapes are required. _Use **`-S/--no-simplify-strings`** to disable this behaviour._
+  escapes are required. _Use **`-S/--no-simplify-strings`** and **`-n/--no-simplify-numbers`**
+  to disable or modify this behaviour._
 
 - **Alias/import statements are grouped and sorted alphabetically** \
   _Use **`-M/--no-sort-imports`** or **`-m/--sort-imports-by`** to disable or modify
@@ -187,17 +187,11 @@ but exceptions are occasionally made and documented here.
 
 MIT
 
-[AUR]: https://aur.archlinux.org/packages/pretty-php
-[Composer]: https://getcomposer.org/
 [discuss]: https://github.com/lkrms/pretty-php/discussions
-[download]:
-  https://github.com/lkrms/pretty-php/releases/latest/download/pretty-php.phar
 [editor]: #editor-integrations
-[formula]:
-  https://github.com/lkrms/homebrew-misc/blob/main/Formula/pretty-php.rb
-[Homebrew]: https://brew.sh/
 [Open VSX Registry]: https://open-vsx.org/extension/lkrms/pretty-php
 [PER]: https://www.php-fig.org/per/coding-style/
+[PHIVE]: https://phar.io
 [PSR-12]: https://www.php-fig.org/psr/psr-12/
 [PSR-12 issue]: https://github.com/lkrms/pretty-php/issues/4
 [Visual Studio Marketplace]:
