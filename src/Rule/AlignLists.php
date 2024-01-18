@@ -2,8 +2,8 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Contract\ListRule;
 use Lkrms\PrettyPHP\Rule\Concern\ListRuleTrait;
-use Lkrms\PrettyPHP\Rule\Contract\ListRule;
 use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Token\Token;
 

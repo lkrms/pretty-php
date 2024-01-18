@@ -276,6 +276,7 @@ Console::info('Updating UTF-8 test fixture');
 $output = <<<'PHP'
 <?php
 $ascii = "\0\x01\x02\x03\x04\x05\x06\x07\x08\t\n\v\f\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\e\x1c\x1d\x1e\x1f";
+$blank = "\u{00a0}\u{2000}\u{2001}\u{2002}\u{2003}\u{2004}\u{2005}\u{2006}\u{2007}\u{2008}\u{2009}\u{200a}\u{202f}\u{205f}\u{3000}";
 $bom = "\u{feff}";
 $ignorable = "\u{00ad}\u{202a}\u{202b}\u{202c}\u{202d}\u{202e}\u{2066}\u{2067}\u{2068}\u{2069}";
 

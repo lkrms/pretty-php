@@ -3,21 +3,63 @@
 namespace Lkrms\PrettyPHP\Tests\Command;
 
 use Lkrms\Cli\CliApplication;
+use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleLevelGroup as LevelGroup;
 use Lkrms\Console\Target\MockTarget;
 use Lkrms\Exception\Contract\ExceptionInterface;
 use Lkrms\Facade\Console;
 use Lkrms\PrettyPHP\Command\FormatPhp;
 use Lkrms\Utility\File;
+use Lkrms\Utility\Json;
+use Lkrms\Utility\Str;
 use Generator;
 
+/**
+ * @backupGlobals enabled
+ */
 final class FormatPhpTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
+    private const SYNOPSIS = <<<'EOF'
+
+pretty-php [-1OLNSnMvq] [-I <regex>] [-X <regex>] [-P[<regex>]] [-i <rule>,...]
+    [-r <rule>,...] [-h <level>] [-m <order>] [--psr12] [-c <file>]
+    [--no-config] [-o <file>,...] [--diff[=<type>]] [--check] [--print-config]
+    [--] [<path>...]
+
+See 'pretty-php --help' for more information.
+EOF;
+
+    private static string $FixturesPath;
+
     private static string $BasePath;
+
+    private CliApplication $App;
+
+    private MockTarget $ConsoleTarget;
 
     public static function setUpBeforeClass(): void
     {
+        self::$FixturesPath = self::getFixturesPath(__CLASS__);
         self::$BasePath = File::createTempDir();
+    }
+
+    protected function setUp(): void
+    {
+        $this->ConsoleTarget = new MockTarget(null, true, true, false);
+        Console::registerTarget($this->ConsoleTarget, LevelGroup::ALL_EXCEPT_DEBUG);
+
+        $_SERVER['SCRIPT_FILENAME'] = 'pretty-php';
+
+        $this->App = (new CliApplication(self::$BasePath))
+            ->oneCommand(FormatPhp::class);
+    }
+
+    protected function tearDown(): void
+    {
+        $this->App->unload();
+
+        Console::deregisterTarget($this->ConsoleTarget);
+        Console::unload();
     }
 
     public static function tearDownAfterClass(): void
@@ -92,12 +134,6 @@ final class FormatPhpTest extends \Lkrms\PrettyPHP\Tests\TestCase
         yield from self::getInputFiles('preset/wordpress');
     }
 
-    public function testMultipleConfigFiles(): void
-    {
-        $dir = $this->getFixturesPath(__CLASS__) . '/multiple-config-files';
-        $this->assertCommandProduces(null, null, ['--', $dir], 2);
-    }
-
     private function makePresetAssertions(string $preset, string $file): void
     {
         $input = File::getContents($file);
@@ -106,28 +142,356 @@ final class FormatPhpTest extends \Lkrms\PrettyPHP\Tests\TestCase
     }
 
     /**
+     * @dataProvider directoriesProvider
+     */
+    public function testDirectories(
+        int $exitStatus,
+        ?string $message,
+        string $dir,
+        bool $chdir = false,
+        string ...$args
+    ): void {
+        if (!$exitStatus) {
+            $messages = $message === null
+                ? []
+                : [[Level::INFO, $message]];
+        } elseif ($exitStatus === 2) {
+            $messages = [[Level::ERROR, ' !! InvalidConfigurationException: ' . $message]];
+        } else {
+            $messages = [[Level::ERROR, (string) $message]];
+        }
+        if ($chdir) {
+            chdir(self::$FixturesPath . $dir);
+            $this->assertCommandProduces(null, null, $args, $exitStatus, $messages);
+            return;
+        }
+        $dir = self::$FixturesPath . $dir;
+        $this->assertCommandProduces(null, null, ['--', $dir, ...$args], $exitStatus, $messages);
+    }
+
+    /**
+     * @return array<string,array{int,string|null,string,3?:bool,...}>
+     */
+    public static function directoriesProvider(): array
+    {
+        return [
+            'empty' => [
+                0,
+                ' // Formatted 0 files successfully',
+                '/empty',
+            ],
+            'empty config' => [
+                0,
+                ' // Formatted 1 file successfully',
+                '/empty-config',
+            ],
+            'empty config in cwd' => [
+                0,
+                ' // Formatted 1 file successfully',
+                '/empty-config',
+                true,
+            ],
+            'multiple config files' => [
+                2,
+                'Too many configuration files: ',
+                '/multiple-config-files'
+            ],
+            'multiple config files in cwd' => [
+                2,
+                'Too many configuration files: ./.prettyphp ./prettyphp.json',
+                '/multiple-config-files',
+                true,
+            ],
+            'operators first and last' => [
+                2,
+                'operatorsFirst and operatorsLast cannot both be given in ',
+                '/operators-first-and-last',
+            ],
+            'operators first and last in cwd' => [
+                2,
+                'operatorsFirst and operatorsLast cannot both be given in ./.prettyphp',
+                '/operators-first-and-last',
+                true,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider invalidOptionsProvider
+     */
+    public function testInvalidOptions(string $message, string ...$args): void
+    {
+        $this->assertCommandProduces(null, null, $args, 1, [
+            [Level::ERROR, 'Error: ' . $message],
+            [Level::INFO, self::SYNOPSIS],
+        ]);
+    }
+
+    /**
+     * @return array<string,array{string,...}>
+     */
+    public static function invalidOptionsProvider(): array
+    {
+        return [
+            'two dashes #1' => [
+                '<path> does not accept the same value multiple times',
+                '-',
+                '-',
+            ],
+            'two dashes #2' => [
+                '<path> does not accept the same value multiple times',
+                '--',
+                '-',
+                '-',
+            ],
+            'tab and space' => [
+                '--tab and --space cannot both be given',
+                '--tab',
+                '--space',
+            ],
+            'tab=1' => [
+                "invalid --tab value '1' (expected one of: 2,4,8)",
+                '--tab=1',
+            ],
+            'space=6' => [
+                "invalid --space value '6' (expected one of: 2,4,8)",
+                '--space=6',
+            ],
+            'operators first and last' => [
+                '--operators-first and --operators-last cannot both be given',
+                '--operators-first',
+                '--operators-last',
+            ],
+            'invalid sort-imports #1' => [
+                '--sort-imports-by and --no-sort-imports/--disable=sort-imports cannot both be given',
+                '--sort-imports-by',
+                'name',
+                '--no-sort-imports',
+            ],
+            'invalid sort-imports #2' => [
+                '--sort-imports-by and --no-sort-imports/--disable=sort-imports cannot both be given',
+                '--sort-imports-by',
+                'name',
+                '--disable',
+                'sort-imports',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider configProvider
+     * @dataProvider printConfigProvider
+     */
+    public function testPrintConfig(string $config, string ...$args): void
+    {
+        $this->assertCommandProduces(
+            $config . \PHP_EOL,
+            null,
+            ['--print-config', ...$args],
+            0,
+            [],
+        );
+    }
+
+    /**
+     * @return array<string,array{string,...}>
+     */
+    public static function printConfigProvider(): array
+    {
+        return [
+            'current directory' => [
+                <<<'EOF'
+{
+    "src": [
+        "."
+    ]
+}
+EOF,
+                '.',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider configProvider
+     * @dataProvider printLoadedConfigProvider
+     *
+     * @param array{string,string}|string $config
+     */
+    public function testPrintLoadedConfig($config): void
+    {
+        $config = (array) $config;
+        $config[1] ??= $config[0];
+        $dir = File::createTempDir($this->App->getTempPath());
+        $file = $dir . '/.prettyphp';
+        File::putContents($file, $config[1] . \PHP_EOL);
+        $this->assertCommandProduces(
+            $config[0] . \PHP_EOL,
+            null,
+            ['--config', $file, '--print-config'],
+            0,
+            [],
+        );
+    }
+
+    /**
+     * @return array<string,array{array{string,string}|string}>
+     */
+    public static function printLoadedConfigProvider(): array
+    {
+        return [
+            'current directory' => [
+                [
+                    '{}',
+                    <<<'EOF'
+{
+    "src": [
+        "."
+    ]
+}
+EOF,
+                ],
+            ],
+            'tabSize only' => [
+                [
+                    <<<'EOF'
+{
+    "insertSpaces": true,
+    "tabSize": 2
+}
+EOF,
+                    <<<'EOF'
+{
+    "tabSize": 2
+}
+EOF,
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string,array{string,...}>
+     */
+    public static function configProvider(): array
+    {
+        $data = self::getConfigData();
+        foreach ($data as &$args) {
+            if (!is_string($args[0])) {
+                $args[0] = Json::prettyPrint($args[0]);
+            }
+        }
+        return $data;
+    }
+
+    /**
+     * @return array<string,array{array<string,mixed>|string,...}>
+     */
+    private static function getConfigData(): array
+    {
+        return [
+            'empty' => [
+                '{}',
+            ],
+            'tab' => [
+                [
+                    'insertSpaces' => false,
+                    'tabSize' => 4,
+                ],
+                '--tab',
+            ],
+            'tab=2' => [
+                [
+                    'insertSpaces' => false,
+                    'tabSize' => 2,
+                ],
+                '--tab=2',
+            ],
+            'space' => [
+                [
+                    'insertSpaces' => true,
+                    'tabSize' => 4,
+                ],
+                '--space',
+            ],
+            'space=2' => [
+                [
+                    'insertSpaces' => true,
+                    'tabSize' => 2,
+                ],
+                '--space=2',
+            ],
+            'preset' => [
+                [
+                    'preset' => 'laravel',
+                ],
+                '--preset',
+                'laravel',
+            ],
+            'preset + psr12' => [
+                [
+                    'psr12' => true,
+                    'preset' => 'laravel',
+                ],
+                '--preset',
+                'laravel',
+                '--psr12',
+            ],
+            'preset + tab' => [
+                [
+                    'preset' => 'laravel',
+                ],
+                '--preset',
+                'laravel',
+                '--tab',
+            ],
+        ];
+    }
+
+    public function testDebug(): void
+    {
+        $file = self::$FixturesPath . '/empty-config/Foo.php';
+        $messages = [[Level::INFO, ' // Formatted 1 file successfully']];
+        $dir = $this->App->getTempPath() . '/debug';
+
+        $this->assertCommandProduces(null, null, ['--debug', $file], 0, $messages);
+        $this->assertDirectoryExists($dir);
+        $this->assertDirectoryDoesNotExist("$dir/progress-log");
+
+        $this->assertCommandProduces(null, null, ['--debug', '--log-progress', $file], 0, $messages);
+        $this->assertDirectoryExists("$dir/progress-log");
+
+        $this->assertCommandProduces(null, null, ['--debug', $file], 0, $messages);
+        $this->assertDirectoryDoesNotExist("$dir/progress-log");
+    }
+
+    public function testJsonSchema(): void
+    {
+        $file = dirname(__DIR__, 3) . '/resources/prettyphp-schema.json';
+        $output = File::getContents($file);
+        $args = ['_json_schema', 'JSON schema for pretty-php configuration files'];
+        $this->assertCommandProduces($output, null, $args, 0, []);
+    }
+
+    /**
      * @param string[] $args
+     * @param array<array{Level::*,string,2?:array<string,mixed>}>|null $messages
      */
     private function assertCommandProduces(
         ?string $output,
         ?string $input,
         array $args = [],
-        int $exitStatus = 0
+        int $exitStatus = 0,
+        ?array $messages = null
     ): void {
-        $target = new MockTarget();
-        Console::registerTarget($target, LevelGroup::ALL_EXCEPT_DEBUG);
-
-        $app = new CliApplication(self::$BasePath);
-        $formatPhp = $app->get(FormatPhp::class);
-
         try {
             if ($input === null) {
                 $this->expectOutputString((string) $output);
-                $this->assertSame($exitStatus, $formatPhp(...$args));
+                $this->assertSame($exitStatus, $this->formatPhp(...$args));
                 return;
             }
 
-            $temp = $app->getTempPath();
+            $temp = $this->App->getTempPath();
             $src1 = tempnam($temp, 'src');
             $src2 = tempnam($temp, 'src');
             File::putContents($src1, $input);
@@ -137,20 +501,51 @@ final class FormatPhpTest extends \Lkrms\PrettyPHP\Tests\TestCase
             array_push($args, '--no-config', '-o', '-', '--');
 
             $this->expectOutputString($output);
-            $this->assertSame($exitStatus, $formatPhp(...[...$args, $src1]));
-            $this->assertSame($exitStatus, $formatPhp(...[...$args, $src2]));
+            $this->assertSame($exitStatus, $this->formatPhp(...[...$args, $src1]));
+            $this->assertSame($exitStatus, $this->formatPhp(...[...$args, $src2]));
         } catch (ExceptionInterface $ex) {
             if (!$exitStatus) {
                 throw $ex;
             }
             $this->assertSame($exitStatus, $ex->getExitStatus());
+            Console::exception($ex);
         } finally {
-            $app->unload();
-            Console::deregisterTarget($target);
+            if ($messages !== null) {
+                $this->assertSameMessages(
+                    $messages,
+                    $this->ConsoleTarget->getMessages()
+                );
+            }
         }
     }
 
     /**
+     * @param array<array{Level::*,string,2?:array<string,mixed>}> $expected
+     * @param mixed[] $actual
+     */
+    private function assertSameMessages(array $expected, array $actual): void
+    {
+        foreach ($expected as $i => &$message) {
+            $message[1] = Str::eolFromNative($message[1]);
+            if (isset($actual[$i][1])) {
+                $actual[$i][1] = substr($actual[$i][1], 0, strlen($message[1]));
+            }
+            if (!isset($message[2]) && isset($actual[$i][2])) {
+                unset($actual[$i][2]);
+            }
+        }
+        $this->assertEquals($expected, $actual);
+    }
+
+    private function formatPhp(string ...$args): int
+    {
+        $_SERVER['argv'] = [$_SERVER['SCRIPT_FILENAME'], ...$args];
+        return $this->App->run()->getLastExitStatus();
+    }
+
+    /**
+     * Get *.in files in the given directory
+     *
      * @return Generator<string,array{string}>
      */
     private static function getInputFiles(string $source): Generator
@@ -162,8 +557,9 @@ final class FormatPhpTest extends \Lkrms\PrettyPHP\Tests\TestCase
                      ->include('/\.in$/');
 
         foreach ($files as $file) {
-            $path = substr((string) $file, $offset);
-            yield $path => [(string) $file];
+            $file = (string) $file;
+            $path = substr($file, $offset);
+            yield $path => [$file];
         }
     }
 }

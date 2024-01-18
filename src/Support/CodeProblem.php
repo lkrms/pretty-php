@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Support;
 
-use Lkrms\PrettyPHP\Rule\Contract\Rule;
+use Lkrms\PrettyPHP\Contract\Rule;
 use Lkrms\PrettyPHP\Token\Token;
 
 /**

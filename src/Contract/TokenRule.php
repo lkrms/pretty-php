@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Rule\Contract;
+namespace Lkrms\PrettyPHP\Contract;
 
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;

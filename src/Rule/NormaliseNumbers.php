@@ -2,9 +2,9 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Exception\RuleException;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
-use Lkrms\PrettyPHP\Rule\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;

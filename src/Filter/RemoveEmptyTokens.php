@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Filter;
 
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
-use Lkrms\PrettyPHP\Filter\Contract\Filter;
+use Lkrms\PrettyPHP\Contract\Filter;
 
 /**
  * Remove tokens with no content for comparison

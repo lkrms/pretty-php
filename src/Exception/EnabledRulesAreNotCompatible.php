@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Exception;
 
 use Lkrms\Exception\Exception;
-use Lkrms\PrettyPHP\Rule\Contract\Rule;
+use Lkrms\PrettyPHP\Contract\Rule;
 use Lkrms\Utility\Get;
 
 /**

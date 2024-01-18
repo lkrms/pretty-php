@@ -2,8 +2,8 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Contract\BlockRule;
 use Lkrms\PrettyPHP\Rule\Concern\BlockRuleTrait;
-use Lkrms\PrettyPHP\Rule\Contract\BlockRule;
 use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Token\Token;
 

@@ -3,10 +3,16 @@
 namespace Lkrms\PrettyPHP\Rule\Preset;
 
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Contract\Preset;
+use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
-use Lkrms\PrettyPHP\Rule\Contract\TokenRule;
+use Lkrms\PrettyPHP\Rule\Support\WordPressTokenTypeIndex;
+use Lkrms\PrettyPHP\Rule\AlignData;
+use Lkrms\PrettyPHP\Rule\DeclarationSpacing;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Formatter;
+use Lkrms\PrettyPHP\FormatterBuilder;
 
 /**
  * Apply the WordPress code style
@@ -19,11 +25,29 @@ use Lkrms\PrettyPHP\Token\Token;
  * - Add a space inside non-empty square brackets unless their first inner token
  *   is a T_CONSTANT_ENCAPSED_STRING
  */
-final class WordPress implements TokenRule
+final class WordPress implements Preset, TokenRule
 {
     use TokenRuleTrait;
 
     private bool $DocCommentUnpinned = false;
+
+    public static function getFormatter(int $flags = 0): Formatter
+    {
+        return (new FormatterBuilder())
+                   ->insertSpaces(false)
+                   ->tabSize(4)
+                   ->disable([DeclarationSpacing::class])
+                   ->enable([
+                       AlignData::class,
+                       self::class,
+                   ])
+                   ->flags($flags)
+                   ->tokenTypeIndex(WordPressTokenTypeIndex::create())
+                   ->oneTrueBraceStyle()
+                   ->spacesBesideCode(1)
+                   ->with('IncreaseIndentBetweenUnenclosedTags', false)
+                   ->with('RelaxAlignmentCriteria', true);
+    }
 
     public static function getPriority(string $method): ?int
     {

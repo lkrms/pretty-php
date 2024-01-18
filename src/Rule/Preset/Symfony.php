@@ -2,13 +2,18 @@
 
 namespace Lkrms\PrettyPHP\Rule\Preset;
 
+use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Contract\ListRule;
+use Lkrms\PrettyPHP\Contract\MultiTokenRule;
+use Lkrms\PrettyPHP\Contract\Preset;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
-use Lkrms\PrettyPHP\Rule\Contract\ListRule;
-use Lkrms\PrettyPHP\Rule\Contract\MultiTokenRule;
+use Lkrms\PrettyPHP\Rule\BlankLineBeforeReturn;
 use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Formatter;
+use Lkrms\PrettyPHP\FormatterBuilder;
 
 /**
  * Apply formatting specific to Symfony's coding standards
@@ -19,9 +24,22 @@ use Lkrms\PrettyPHP\Token\Token;
  *   more are promoted
  * - Suppress newlines between parameters in other function declarations
  */
-final class Symfony implements MultiTokenRule, ListRule
+final class Symfony implements Preset, MultiTokenRule, ListRule
 {
     use MultiTokenRuleTrait;
+
+    public static function getFormatter(int $flags = 0): Formatter
+    {
+        return (new FormatterBuilder())
+                   ->enable([
+                       BlankLineBeforeReturn::class,
+                       self::class,
+                   ])
+                   ->flags($flags)
+                   ->tokenTypeIndex((new TokenTypeIndex())->withLeadingOperators())
+                   ->heredocIndent(HeredocIndent::NONE)
+                   ->go();
+    }
 
     public static function getPriority(string $method): ?int
     {

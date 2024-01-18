@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d34c8a4a2b15ead5ce5ca8642386cf6a",
+    "content-hash": "fa2197bf9a661ff30959eac4cbfdfe46",
     "packages": [
         {
             "name": "lkrms/dice",
@@ -51,16 +51,16 @@
         },
         {
             "name": "lkrms/util",
-            "version": "v0.21.20",
+            "version": "v0.21.28",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/php-util.git",
-                "reference": "3c902aeee2c876a2645b51785c4dbac000242de3"
+                "reference": "960cc800be4c7ce57525a1f8559faf7ef2af6f3d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/php-util/zipball/3c902aeee2c876a2645b51785c4dbac000242de3",
-                "reference": "3c902aeee2c876a2645b51785c4dbac000242de3",
+                "url": "https://api.github.com/repos/lkrms/php-util/zipball/960cc800be4c7ce57525a1f8559faf7ef2af6f3d",
+                "reference": "960cc800be4c7ce57525a1f8559faf7ef2af6f3d",
                 "shasum": ""
             },
             "require": {
@@ -118,9 +118,9 @@
             "description": "A lightweight PHP toolkit for expressive backend/CLI apps",
             "support": {
                 "issues": "https://github.com/lkrms/php-util/issues",
-                "source": "https://github.com/lkrms/php-util/tree/v0.21.20"
+                "source": "https://github.com/lkrms/php-util/tree/v0.21.28"
             },
-            "time": "2024-01-10T05:51:22+00:00"
+            "time": "2024-01-20T17:36:37+00:00"
         },
         {
             "name": "psr/container",
@@ -795,16 +795,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.10.55",
+            "version": "1.10.56",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "9a88f9d18ddf4cf54c922fbeac16c4cb164c5949"
+                "reference": "27816a01aea996191ee14d010f325434c0ee76fa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/9a88f9d18ddf4cf54c922fbeac16c4cb164c5949",
-                "reference": "9a88f9d18ddf4cf54c922fbeac16c4cb164c5949",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/27816a01aea996191ee14d010f325434c0ee76fa",
+                "reference": "27816a01aea996191ee14d010f325434c0ee76fa",
                 "shasum": ""
             },
             "require": {
@@ -853,7 +853,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-01-08T12:32:40+00:00"
+            "time": "2024-01-15T10:43:00+00:00"
         },
         {
             "name": "phpstan/phpstan-deprecation-rules",
@@ -1224,16 +1224,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "9.6.15",
+            "version": "9.6.16",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "05017b80304e0eb3f31d90194a563fd53a6021f1"
+                "reference": "3767b2c56ce02d01e3491046f33466a1ae60a37f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/05017b80304e0eb3f31d90194a563fd53a6021f1",
-                "reference": "05017b80304e0eb3f31d90194a563fd53a6021f1",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/3767b2c56ce02d01e3491046f33466a1ae60a37f",
+                "reference": "3767b2c56ce02d01e3491046f33466a1ae60a37f",
                 "shasum": ""
             },
             "require": {
@@ -1307,7 +1307,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/9.6.15"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/9.6.16"
             },
             "funding": [
                 {
@@ -1323,7 +1323,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-12-01T16:55:19+00:00"
+            "time": "2024-01-19T07:03:14+00:00"
         },
         {
             "name": "sebastian/cli-parser",
