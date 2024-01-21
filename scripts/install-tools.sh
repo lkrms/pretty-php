@@ -35,3 +35,5 @@ esac
 for file in tools/*/composer.lock; do
     run-in-dir "${file%/*}" composer "$subcommand" --no-interaction --no-progress
 done
+
+run-in-dir . phive --no-progress "$subcommand"
