@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Filter;
 
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
-use Lkrms\PrettyPHP\Filter\Contract\Filter;
+use Lkrms\PrettyPHP\Contract\Filter;
 
 /**
  * Remove whitespace after T_OPEN_TAG and T_OPEN_TAG_WITH_ECHO for comparison

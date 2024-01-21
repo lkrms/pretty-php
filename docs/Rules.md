@@ -11,6 +11,7 @@ needed.
 | Rule                        | Mandatory? | Default? | Pass | Method            | Priority |
 | --------------------------- | ---------- | -------- | ---- | ----------------- | -------- |
 | `ProtectStrings`            | Y          | -        | 1    | `processTokens()` | 40       |
+| `NormaliseNumbers`          | -          | Y        | 1    | `processTokens()` | 60       |
 | `NormaliseStrings`          | -          | Y        | 1    | `processTokens()` | 60       |
 | `NormaliseComments`         | Y          | -        | 1    | `processTokens()` | 70       |
 | `StandardWhitespace` (1)    | Y          | -        | 1    | `processTokens()` | 80       |

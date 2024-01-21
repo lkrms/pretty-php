@@ -8,28 +8,24 @@ use Lkrms\Cli\Catalog\CliOptionValueType;
 use Lkrms\Cli\Catalog\CliOptionValueUnknownPolicy;
 use Lkrms\Cli\Catalog\CliOptionVisibility as Visibility;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
-use Lkrms\Cli\CliApplication;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOption;
 use Lkrms\Console\Catalog\ConsoleLevel;
-use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Profile;
 use Lkrms\PrettyPHP\Catalog\FormatterFlag;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
-use Lkrms\PrettyPHP\Contract\Extension;
+use Lkrms\PrettyPHP\Contract\Preset;
 use Lkrms\PrettyPHP\Exception\FormatterException;
 use Lkrms\PrettyPHP\Exception\InvalidConfigurationException;
 use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
 use Lkrms\PrettyPHP\Filter\MoveComments;
 use Lkrms\PrettyPHP\Filter\SortImports;
-use Lkrms\PrettyPHP\Rule\Contract\Rule;
 use Lkrms\PrettyPHP\Rule\Preset\Drupal;
 use Lkrms\PrettyPHP\Rule\Preset\Laravel;
 use Lkrms\PrettyPHP\Rule\Preset\Symfony;
 use Lkrms\PrettyPHP\Rule\Preset\WordPress;
-use Lkrms\PrettyPHP\Rule\Support\WordPressTokenTypeIndex;
 use Lkrms\PrettyPHP\Rule\AlignArrowFunctions;
 use Lkrms\PrettyPHP\Rule\AlignChains;
 use Lkrms\PrettyPHP\Rule\AlignComments;
@@ -52,19 +48,21 @@ use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
+use Lkrms\Utility\Get;
 use Lkrms\Utility\Json;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
 use Lkrms\Utility\Sys;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
 use SebastianBergmann\Diff\Differ;
+use JsonException;
 use SplFileInfo;
 use Throwable;
 
 /**
  * Provides pretty-php's command-line interface
  */
-class FormatPhp extends CliCommand
+final class FormatPhp extends CliCommand
 {
     private const DISABLE_MAP = [
         'sort-imports' => SortImports::class,
@@ -108,229 +106,142 @@ class FormatPhp extends CliCommand
         'depth' => ImportSortOrder::DEPTH,
     ];
 
-    private const INTERNAL_OPTION_MAP = [
-        'spaces-beside-code' => 'SpacesBesideCode',
-        'increase-indent-between-unenclosed-tags' => 'IncreaseIndentBetweenUnenclosedTags',
-        'relax-alignment-criteria' => 'RelaxAlignmentCriteria',
-        'preset-rules' => 'PresetRules',
-        'token-type-index' => 'TokenTypeIndex',
+    /**
+     * @var array<string,class-string<Preset>>
+     */
+    private const PRESET_MAP = [
+        'drupal' => Drupal::class,
+        'laravel' => Laravel::class,
+        'symfony' => Symfony::class,
+        'wordpress' => WordPress::class,
     ];
 
-    private const PRESET_MAP = [
-        'drupal' => [
-            'space' => 2,
-            'disable' => [],
-            'enable' => [],
-            'one-true-brace-style' => true,
-            'heredoc-indent' => 'none',
-            '@internal' => [
-                'preset-rules' => [
-                    Drupal::class,
-                ],
-            ],
-        ],
-        'laravel' => [
-            'disable' => [],
-            'enable' => [
-                'blank-before-return',
-            ],
-            'heredoc-indent' => 'none',
-            '@internal' => [
-                'preset-rules' => [
-                    Laravel::class,
-                ],
-            ],
-        ],
-        'symfony' => [
-            'disable' => [],
-            'enable' => [
-                'blank-before-return',
-            ],
-            'operators-first' => true,
-            'heredoc-indent' => 'none',
-            '@internal' => [
-                'preset-rules' => [
-                    Symfony::class,
-                ],
-            ],
-        ],
-        'wordpress' => [
-            'tab' => 4,
-            'disable' => [
-                'declaration-spacing',
-            ],
-            'enable' => [
-                'align-data',
-            ],
-            'one-true-brace-style' => true,
-            '@internal' => [
-                'spaces-beside-code' => 1,
-                'increase-indent-between-unenclosed-tags' => false,
-                'relax-alignment-criteria' => true,
-                'preset-rules' => [
-                    WordPress::class,
-                ],
-                'token-type-index' => WordPressTokenTypeIndex::class,
-            ],
-        ],
+    private const CONFIG_FILE_NAME = [
+        '.prettyphp',
+        'prettyphp.json',
+    ];
+
+    private const SRC_OPTION_INDEX = [
+        'src' => true,
+        'include' => true,
+        'exclude' => true,
+        'includeIfPhp' => true,
     ];
 
     private const PROGRESS_LOG_DIR = 'progress-log';
 
     /**
-     * @var string[]|null
+     * @var string[]
      */
-    protected ?array $InputFiles;
+    private array $InputFiles = [];
 
-    protected ?string $IncludeRegex;
+    private string $IncludeRegex = '';
 
-    protected ?string $ExcludeRegex;
+    private string $ExcludeRegex = '';
 
-    protected ?string $IncludeIfPhpRegex;
+    private ?string $IncludeIfPhpRegex = null;
 
-    protected ?int $Tabs;
+    private ?int $Tabs = null;
 
-    protected ?int $Spaces;
+    private ?int $Spaces = null;
 
-    protected ?string $Eol;
+    private string $Eol = '';
 
     /**
-     * @var string[]|null
+     * @var string[]
      */
-    protected ?array $Disable;
+    private array $Disable = [];
 
     /**
-     * @var string[]|null
+     * @var string[]
      */
-    protected ?array $Enable;
+    private array $Enable = [];
 
-    protected ?bool $OneTrueBraceStyle;
+    private bool $OneTrueBraceStyle = false;
 
-    protected ?bool $OperatorsFirst;
+    private bool $OperatorsFirst = false;
 
-    protected ?bool $OperatorsLast;
+    private bool $OperatorsLast = false;
 
-    protected ?bool $IgnoreNewlines;
+    private bool $IgnoreNewlines = false;
 
-    protected ?bool $NoSimplifyStrings;
+    private bool $NoSimplifyStrings = false;
 
-    protected ?bool $NoSimplifyNumbers;
+    private bool $NoSimplifyNumbers = false;
 
-    protected ?string $HeredocIndent;
+    private string $HeredocIndent = '';
 
-    protected ?string $SortImportsBy;
+    private string $SortImportsBy = '';
 
-    protected ?bool $NoSortImports;
+    private bool $NoSortImports = false;
 
-    protected ?bool $Psr12;
+    private bool $Psr12 = false;
 
-    protected ?string $Preset;
+    private ?string $Preset = null;
 
-    protected ?string $ConfigFile;
+    private ?string $ConfigFile = null;
 
-    protected ?bool $IgnoreConfigFiles;
+    private bool $IgnoreConfigFiles = false;
 
     /**
-     * @var string[]|null
+     * @var string[]
      */
-    protected ?array $OutputFiles;
+    private array $OutputFiles = [];
 
-    protected ?string $Diff;
+    private ?string $Diff = null;
 
-    protected ?bool $Check;
+    private bool $Check = false;
 
-    protected ?bool $PrintConfig;
+    private bool $PrintConfig = false;
 
-    protected ?string $StdinFilename;
+    private ?string $StdinFilename = null;
 
-    protected ?string $DebugDirectory;
+    private ?string $DebugDirectory = null;
 
-    protected ?bool $ReportTimers;
+    private bool $LogProgress = false;
 
-    protected ?bool $Fast;
+    private bool $ReportTimers = false;
 
-    protected ?bool $Verbose;
+    private bool $Fast = false;
 
-    protected ?int $Quiet;
+    private bool $Verbose = false;
+
+    /**
+     * - 0 = print unformatted files, summary, warnings, TTY-only progress
+     * - 1 = print summary, warnings, TTY-only progress
+     * - 2 = print warnings, TTY-only progress
+     * - 3 = print TTY-only progress
+     * - 4 = only print errors
+     */
+    private int $Quiet = 0;
 
     // --
 
     /**
-     * @var array<class-string<Extension>>
+     * @var array<string,Formatter>
      */
-    private array $DisableExtensions;
+    private array $FormatterByDir;
+
+    private Formatter $DefaultFormatter;
 
     /**
-     * @var array<class-string<Extension>>
+     * @var array<string,array<string|int|bool>|string|int|bool|null>
      */
-    private array $EnableExtensions;
+    private array $DefaultSchemaOptionValues;
 
-    private ?int $SpacesBesideCode = null;
-
-    private ?bool $IncreaseIndentBetweenUnenclosedTags = null;
-
-    private ?bool $RelaxAlignmentCriteria = null;
+    private bool $Debug;
 
     /**
-     * @var array<class-string<Rule>>|null
+     * @codeCoverageIgnore
      */
-    private ?array $PresetRules = null;
-
-    /**
-     * @var class-string<TokenTypeIndex>|null
-     */
-    private ?string $TokenTypeIndex = null;
-
-    /**
-     * [ Option name => null ]
-     *
-     * @var array<string,null>
-     */
-    private array $FormattingOptionNames;
-
-    /**
-     * [ Option name => null ]
-     *
-     * @var array<string,null>
-     */
-    private array $GlobalFormattingOptionNames;
-
-    /**
-     * [ Option name => default value ]
-     *
-     * @var array<string,array<string|int>|string|int|bool|null>
-     */
-    private array $DefaultFormattingOptionValues;
-
-    /**
-     * @var array<string,array<string|int>|string|int|bool|null>
-     */
-    private array $CliFormattingOptionValues;
-
-    /**
-     * @var array<string,array<string,array<string|int>|string|int|bool|null>|null>
-     */
-    private array $DirFormattingOptionValues;
-
-    public function __construct(CliApplication $container)
-    {
-        parent::__construct($container);
-
-        $this->FormattingOptionNames = $this->getFormattingOptionNames(false, true);
-        $this->GlobalFormattingOptionNames = $this->getFormattingOptionNames(true, true);
-        $this->DefaultFormattingOptionValues = array_intersect_key(
-            $this->getDefaultOptionValues(), $this->GlobalFormattingOptionNames
-        );
-        foreach (self::INTERNAL_OPTION_MAP as $name => $property) {
-            $this->DefaultFormattingOptionValues['@internal'][$name] = $this->{$property};
-        }
-    }
-
     public function description(): string
     {
         return 'Format a PHP file';
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function getOptionList(): array
     {
         return [
@@ -346,6 +257,7 @@ from the standard input and writes to the standard output.
 Directories are searched recursively for files to format.
 EOF)
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
+                ->valueType(CliOptionValueType::PATH_OR_DASH)
                 ->multipleAllowed()
                 ->unique()
                 ->visibility(Visibility::ALL | Visibility::SCHEMA)
@@ -411,7 +323,7 @@ EOF)
                 ->valueType(CliOptionValueType::INTEGER)
                 ->allowedValues([2, 4, 8])
                 ->defaultValue(4)
-                ->visibility(Visibility::ALL_EXCEPT_SYNOPSIS)
+                ->visibility(Visibility::ALL_EXCEPT_SYNOPSIS | Visibility::SCHEMA)
                 ->bindTo($this->Tabs),
             CliOption::build()
                 ->long('space')
@@ -426,7 +338,7 @@ EOF)
                 ->valueType(CliOptionValueType::INTEGER)
                 ->allowedValues([2, 4, 8])
                 ->defaultValue(4)
-                ->visibility(Visibility::ALL_EXCEPT_SYNOPSIS)
+                ->visibility(Visibility::ALL_EXCEPT_SYNOPSIS | Visibility::SCHEMA)
                 ->bindTo($this->Spaces),
             CliOption::build()
                 ->long('eol')
@@ -672,13 +584,22 @@ EOF)
                 ->description(str_replace('{}', self::PROGRESS_LOG_DIR, <<<EOF
 Create debug output in <directory>.
 
-If combined with `-v/--verbose`, partially formatted code is written to a series
-of files in *\<directory>/{}* that represent changes applied by enabled rules.
+Combine with `--log-progress` to write partially formatted code to a series of
+files in *\<directory>/{}* that represent changes applied by enabled rules.
 EOF))
                 ->optionType(CliOptionType::VALUE_OPTIONAL)
                 ->defaultValue($this->App->getTempPath() . '/debug')
                 ->visibility(Visibility::ALL_EXCEPT_SYNOPSIS | Visibility::HIDE_DEFAULT)
                 ->bindTo($this->DebugDirectory),
+            CliOption::build()
+                ->long('log-progress')
+                ->description(<<<EOF
+Write partially formatted code to files in the debug output directory.
+
+This option has no effect if `--debug` is not given.
+EOF)
+                ->visibility(Visibility::ALL_EXCEPT_SYNOPSIS)
+                ->bindTo($this->LogProgress),
             CliOption::build()
                 ->long('timers')
                 ->description(<<<EOF
@@ -704,10 +625,13 @@ EOF)
                 ->long('quiet')
                 ->short('q')
                 ->description(<<<EOF
-Only report warnings and errors.
+Do not report files that require formatting.
 
-If given twice, warnings are also suppressed. If given three or more times,
-TTY-only progress updates are also suppressed.
+May be given multiple times for less verbose output:
+
+- `-qq`: do not print a summary of files formatted and replaced on exit.
+- `-qqq`: suppress warnings.
+- `-qqqq`: suppress TTY-only progress updates.
 
 Errors are always reported.
 EOF)
@@ -716,12 +640,10 @@ EOF)
         ];
     }
 
-    protected function getLongDescription(): ?string
-    {
-        return null;
-    }
-
-    protected function getHelpSections(): ?array
+    /**
+     * @codeCoverageIgnore
+     */
+    protected function getHelpSections(): array
     {
         return [
             CliHelpSectionName::CONFIGURATION => <<<'EOF'
@@ -773,7 +695,7 @@ EOF,
     protected function filterJsonSchema(array $schema): array
     {
         $schema['properties'] =
-            Arr::spliceByKey($schema['properties'], 'eol', 0, [
+            Arr::spliceByKey($schema['properties'], 'tab', 2, [
                 'insertSpaces' => [
                     'description' => 'Indent using spaces.',
                     'type' => 'boolean',
@@ -789,17 +711,70 @@ EOF,
         return $schema;
     }
 
+    /**
+     * @inheritDoc
+     */
+    protected function filterGetSchemaValues(array $values): array
+    {
+        // If a preset is given, remove every formatting option other than
+        // `--preset` and `--psr12`
+        if (isset($values['preset'])) {
+            return array_intersect_key($values, self::SRC_OPTION_INDEX + [
+                'preset' => true,
+                'psr12' => true,
+            ]);
+        }
+
+        /** @var int|bool|null */
+        $tab = $values['tab'] ?? null;
+        /** @var int|bool|null */
+        $space = $values['space'] ?? null;
+        if ($space || $tab) {
+            $values['insertSpaces'] = $space ? true : false;
+            $tabSize = $space ?: $tab ?: 4;
+            if ($tabSize === true) {
+                $tabSize = 4;
+            }
+            $values['tabSize'] = $tabSize;
+        }
+        unset($values['tab'], $values['space']);
+        return $values;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function filterNormaliseSchemaValues(array $values): array
+    {
+        unset($values['tab'], $values['space']);
+        if (array_key_exists('insertSpaces', $values)) {
+            if (!$values['insertSpaces']) {
+                $values['tab'] = $values['tabSize'] ?? 4;
+            } else {
+                $values['space'] = $values['tabSize'] ?? 4;
+            }
+        } elseif (array_key_exists('tabSize', $values)) {
+            $values['space'] = $values['tabSize'];
+        }
+        unset($values['insertSpaces'], $values['tabSize']);
+        return $values;
+    }
+
+    /**
+     * @inheritDoc
+     */
     protected function run(...$params)
     {
-        $this->DirFormattingOptionValues = [];
+        $this->FormatterByDir = [];
 
         if ($this->DebugDirectory !== null) {
             File::createDir($this->DebugDirectory);
-            $this->DebugDirectory = realpath($this->DebugDirectory) ?: null;
-            if (!Env::debug()) {
-                Env::debug(true);
-            }
+            $this->DebugDirectory = File::realpath($this->DebugDirectory);
+            Env::debug(true);
             $this->App->logOutput();
+            $this->Debug = true;
+        } else {
+            $this->Debug = Env::debug();
         }
 
         if ($this->ReportTimers) {
@@ -810,114 +785,146 @@ EOF,
             throw new CliInvalidArgumentsException('--tab and --space cannot both be given');
         }
 
-        if ($this->OperatorsFirst && $this->OperatorsLast) {
-            throw new CliInvalidArgumentsException('--operators-first and --operators-last cannot both be given');
-        }
+        $this->validateOptions();
 
-        if (
-            $this->SortImportsBy &&
-            ($this->NoSortImports || in_array('sort-imports', $this->Disable, true))
-        ) {
-            throw new CliInvalidArgumentsException('--sort-imports-by and --no-sort-imports/--disable=sort-imports cannot both be given');
-        }
-
-        if ($this->ConfigFile) {
+        if ($this->ConfigFile !== null) {
             $this->IgnoreConfigFiles = true;
-            Console::debug('Reading formatting options:', $this->ConfigFile);
-            $json = Json::parseObjectAsArray(File::getContents($this->ConfigFile));
-            // To prevent unintended inclusion of default values in
-            // --print-config output, apply options as if they were given on the
-            // command line, without expanding optional values
-            $this->applyFormattingOptionValues(
-                $this->normaliseFormattingOptionValues($json, false, false, false),
-                true
-            );
-            $this->applyFormattingOptionValues(
-                $this->normaliseFormattingOptionValues($json),
-            );
+            $config = $this->getFormattingConfigValues($this->ConfigFile);
+            $defaults = $this->getDefaultFormattingOptionValues();
+            // 1. Set the value of every formatting option
+            $this->applyOptionValues($config + $defaults, true, true, true);
+            // 2. Set the value of configured options as if they had been given
+            //    on the command line
+            $this->applyOptionValues($config, true, true, true, true, true);
+            $this->validateOptions(InvalidConfigurationException::class, $this->ConfigFile);
+            if ($this->Debug) {
+                Console::debug(sprintf(
+                    'Applied formatting options from %s:',
+                    $this->ConfigFile,
+                ), Json::prettyPrint($config));
+            }
         }
 
         $in = [];
         $dirs = [];
         $dirCount = 0;
-        if (!$this->IgnoreConfigFiles &&
-                !$this->PrintConfig &&
-                ($this->InputFiles || !$this->StdinFilename) &&
-                // Get files and directories to format from the current
-                // directory's configuration file (if there are no paths on the
-                // command line and a configuration file exists), or from the
-                // configuration files of any directories on the command line
-                // (if they exist)
-                ($configFiles = array_filter(array_map(
-                    fn(string $path) => is_dir($path) ? $this->maybeGetConfigFile($path) : null,
-                    $this->InputFiles ?: ['.']
-                )))) {
-            // Take a backup of $this->InputFiles etc.
-            $cliOptionValues = $this->normaliseFormattingOptionValues(
-                $this->getFormattingOptionValues(true), true
-            );
-            $cliInputFiles = $this->InputFiles;
-            foreach ($configFiles as $i => $configFile) {
-                Console::debug('Reading settings:', $configFile);
-                $json = File::getContents($configFile);
-                if (!$json) {
-                    Console::debug('Ignoring empty file:', $configFile);
+
+        if ($this->InputFiles === ['-']) {
+            $in[] = '-';
+        } elseif (in_array('-', $this->InputFiles, true)) {
+            throw new CliInvalidArgumentsException("<path> cannot be '-' when multiple paths are given");
+        } elseif (
+            !$this->IgnoreConfigFiles &&
+            !$this->PrintConfig &&
+            ($this->InputFiles || $this->StdinFilename === null)
+        ) {
+            // Get files and directories to format from the current directory's
+            // configuration file (if there are no paths on the command line and
+            // a configuration file exists), or from the configuration files of
+            // any directories on the command line (if they exist)
+            foreach ($this->InputFiles ?: ['.'] as $path) {
+                if (!is_dir($path)) {
+                    $this->addFile($path, $in, $dirs);
                     continue;
                 }
-                $json = Json::parseObjectAsArray($json);
-                if (!is_array($json)) {
-                    throw new CliInvalidArgumentsException(
-                        sprintf('invalid configuration file: %s', $configFile)
-                    );
+
+                $configFile = $this->getConfigFile($path);
+                $configValues = $configFile === null
+                    ? null
+                    : $this->getConfigValues($configFile);
+
+                if ($configValues === null) {
+                    if (!$this->InputFiles) {
+                        break;
+                    }
+                    $dirCount++;
+                    $this->addDir($path, $in, $dirs);
+                    continue;
                 }
-                $this->applyFormattingOptionValues(
-                    $this->normaliseFormattingOptionValues($json, true)
-                );
+
+                $dirCount++;
+
+                $config = $this->getConfig($configValues);
+                $config->validateOptions(InvalidConfigurationException::class, $configFile);
+                if ($this->Debug) {
+                    Console::debug(sprintf(
+                        'Applied options from %s to instance #%d:',
+                        $configFile,
+                        spl_object_id($config),
+                    ), Json::prettyPrint($configValues));
+                }
                 $dir = dirname($configFile);
-                $this->DirFormattingOptionValues[$dir] =
-                    $this->normaliseFormattingOptionValues($json);
-                if (!$this->InputFiles) {
+                $this->FormatterByDir[$dir] = $config->getFormatter();
+
+                if (!$config->InputFiles) {
+                    $this->addDir($path, $in, $dirs);
+                    continue;
+                }
+
+                foreach ($config->InputFiles as $path) {
+                    if (File::isAbsolute($path)) {
+                        throw new InvalidConfigurationException(sprintf(
+                            'Path cannot be absolute in %s: %s',
+                            $configFile,
+                            $path,
+                        ));
+                    }
+                    $path = $dir . '/' . $path;
+                    if ($path === './.') {
+                        $path = '.';
+                    }
+                    if (is_file($path)) {
+                        $config->addFile($path, $in, $dirs);
+                        continue;
+                    }
+                    if (is_dir($path)) {
+                        $config->addDir($path, $in, $dirs);
+                        continue;
+                    }
+                    throw new InvalidConfigurationException(sprintf(
+                        'File not found in %s: %s',
+                        $configFile,
+                        $path,
+                    ));
+                }
+            }
+        } else {
+            foreach ($this->InputFiles as $path) {
+                if (!is_dir($path)) {
+                    $this->addFile($path, $in, $dirs);
                     continue;
                 }
                 $dirCount++;
-                unset($cliInputFiles[$i]);
-                // Update any relative paths loaded from the configuration file
-                foreach ($this->InputFiles as &$file) {
-                    if (File::isAbsolute($file)) {
-                        continue;
-                    }
-                    $file = $dir . '/' . $file;
-                    if ($file === './.') {
-                        $file = '.';
-                    }
-                }
-                unset($file);
-                $this->expandPaths($this->InputFiles, $in, $dirs);
+                $this->addDir($path, $in, $dirs);
             }
-            // Restore $this->InputFiles etc.
-            ($dir ?? null) === '.' ||
-                $this->applyFormattingOptionValues($cliOptionValues);
-            // Remove directories that have already been expanded
-            $this->InputFiles = $cliInputFiles;
         }
 
-        // Save formatting options to restore as needed
-        $this->CliFormattingOptionValues = $this->normaliseFormattingOptionValues(
-            $this->getFormattingOptionValues(false, true), false, true
-        );
-
-        $this->expandPaths($this->InputFiles, $in, $dirs, $dirCount);
-        $out = $this->OutputFiles;
-        if (!$in && !$this->StdinFilename && !$this->PrintConfig && stream_isatty(\STDIN)) {
+        if (
+            !$in &&
+            !$dirCount &&
+            !$this->InputFiles &&
+            !$this->PrintConfig &&
+            $this->StdinFilename === null &&
+            stream_isatty(\STDIN)
+        ) {
             throw new CliInvalidArgumentsException('<path> required when input is a TTY');
         }
-        if (!$in || $in === ['-']) {
+
+        $in = array_values($in);
+        $out = $this->OutputFiles;
+
+        if ((!$in && !$dirCount && !$this->InputFiles) || $in === ['-']) {
             $in = ['php://stdin'];
             $out = ['-'];
-            if ($this->StdinFilename && !$this->IgnoreConfigFiles) {
-                $dirs[] = dirname($this->StdinFilename);
+            if ($this->StdinFilename !== null && !$this->IgnoreConfigFiles) {
+                $dir = dirname($this->StdinFilename);
+                $dirs[$dir] = $dir;
             }
-        } elseif ($out && $out !== ['-'] && ($dirCount || count($out) !== count($in))) {
+        } elseif (
+            $out &&
+            $out !== ['-'] &&
+            ($dirCount || count($out) !== count($in))
+        ) {
             throw new CliInvalidArgumentsException(
                 '--output is required once per input file'
                 . ($dirCount ? ' and cannot be given with directories' : '')
@@ -925,32 +932,55 @@ EOF,
         } elseif (!$out) {
             $out = $in;
         }
-        if ($out === ['-'] || $this->Diff || $this->Check || $this->PrintConfig) {
+
+        if (
+            $out === ['-'] ||
+            $this->Diff ||
+            $this->Check ||
+            $this->PrintConfig
+        ) {
             Console::registerStderrTarget(true);
         }
 
         if ($this->PrintConfig) {
-            printf("%s\n", Json::prettyPrint($this->getFormattingOptionValues(true)));
+            $values = $this->getOptionValues(true, true);
+            echo Json::prettyPrint(
+                $values,
+                $values ? 0 : \JSON_FORCE_OBJECT
+            ) . \PHP_EOL;
 
             return;
         }
 
-        // Resolve input file parent directories to their closest applicable
-        // configuration files after sorting by longest name
-        usort($dirs, fn($a, $b) => strlen($b) <=> strlen($a));
+        // Resolve input directories to the closest applicable configuration
+        // file after sorting by longest name
+        usort(
+            $dirs,
+            fn(string $a, string $b): int =>
+                strlen($b) <=> strlen($a)
+        );
+
         foreach ($dirs as $dir) {
-            if (array_key_exists($dir, $this->DirFormattingOptionValues)) {
+            if (array_key_exists($dir, $this->FormatterByDir)) {
                 continue;
             }
-            $options = null;
+            $formatter = null;
             do {
                 $last = $dir;
-                $this->DirFormattingOptionValues[$dir] = &$options;
-                if ($file = $this->maybeGetConfigFile($dir)) {
-                    Console::debug('Configuration file found:', $file);
-                    $options = $this->normaliseFormattingOptionValues(
-                        Json::parseObjectAsArray(File::getContents($file))
-                    );
+                $this->FormatterByDir[$dir] = &$formatter;
+                $configFile = $this->getConfigFile($dir);
+                if ($configFile !== null) {
+                    $configValues = $this->getFormattingConfigValues($configFile);
+                    $config = $this->getConfig($configValues);
+                    $config->validateOptions(InvalidConfigurationException::class, $configFile);
+                    if ($this->Debug) {
+                        Console::debug(sprintf(
+                            'Applied formatting options from %s to instance #%d:',
+                            $configFile,
+                            spl_object_id($config),
+                        ), Json::prettyPrint($configValues));
+                    }
+                    $formatter = $config->getFormatter();
                     break;
                 }
                 if (
@@ -958,86 +988,49 @@ EOF,
                     is_dir($dir . '/.hg') ||
                     is_dir($dir . '/.svn')
                 ) {
+                    Console::debug('No configuration file found in project:', $dir);
                     break;
                 }
                 if ($dir === '.') {
                     $dir = Sys::getCwd();
                 }
                 $dir = dirname($dir);
-                if (array_key_exists($dir, $this->DirFormattingOptionValues)) {
-                    $options = $this->DirFormattingOptionValues[$dir];
+                if (array_key_exists($dir, $this->FormatterByDir)) {
+                    $formatter = $this->FormatterByDir[$dir];
                     break;
                 }
             } while ($dir !== $last);
-            unset($options);
+            unset($formatter);
         }
-
-        /** @var Formatter|null */
-        $formatter = null;
-        $lastOptions = null;
-        $getFormatter =
-            function (?string $file) use (&$formatter, &$lastOptions): Formatter {
-                if ($file !== null) {
-                    $options = $this->DirFormattingOptionValues[dirname($file)] ?? null;
-                }
-                $options ??= $this->CliFormattingOptionValues;
-                if ($formatter && $options === $lastOptions) {
-                    return $formatter;
-                }
-                Console::debug('New formatter required for:', $file);
-                $this->applyFormattingOptionValues($options);
-                !$this->Verbose || Console::debug('Applying options:', Json::prettyPrint($options));
-
-                $flags = 0;
-                if ($this->Quiet < 2) {
-                    $flags |= FormatterFlag::REPORT_CODE_PROBLEMS;
-                }
-                if ($this->Verbose) {
-                    $flags |= FormatterFlag::LOG_PROGRESS;
-                }
-
-                $tokenTypeIndex =
-                    isset($this->TokenTypeIndex)
-                        ? [$this->TokenTypeIndex, 'create']()
-                        : ($this->OperatorsFirst
-                            ? (new TokenTypeIndex())->withLeadingOperators()
-                            : ($this->OperatorsLast
-                                ? (new TokenTypeIndex())->withTrailingOperators()
-                                : new TokenTypeIndex()));
-
-                $f = (new FormatterBuilder())
-                         ->insertSpaces(!$this->Tabs)
-                         ->tabSize($this->Tabs ?: $this->Spaces ?: 4)
-                         ->disable($this->DisableExtensions)
-                         ->enable($this->EnableExtensions)
-                         ->flags($flags)
-                         ->tokenTypeIndex($tokenTypeIndex)
-                         ->preferredEol(self::EOL_MAP[$this->Eol])
-                         ->preserveEol($this->Eol === 'auto')
-                         ->spacesBesideCode($this->SpacesBesideCode ?? 2)
-                         ->heredocIndent(self::HEREDOC_INDENT_MAP[$this->HeredocIndent])
-                         ->importSortOrder(self::IMPORT_SORT_ORDER_MAP[$this->SortImportsBy])
-                         ->oneTrueBraceStyle($this->OneTrueBraceStyle)
-                         ->psr12($this->Psr12)
-                         ->with('IncreaseIndentBetweenUnenclosedTags', $this->IncreaseIndentBetweenUnenclosedTags ?? true)
-                         ->with('RelaxAlignmentCriteria', $this->RelaxAlignmentCriteria ?? false);
-
-                $lastOptions = $options;
-
-                return $f;
-            };
 
         $i = 0;
         $count = count($in);
         $replaced = 0;
         $errors = [];
         foreach ($in as $key => $file) {
-            $inputFile = ($file === 'php://stdin' ? $this->StdinFilename : null) ?: $file;
-            if ($this->Quiet < 3 && ($file !== 'php://stdin' || !stream_isatty(\STDIN))) {
-                Console::logProgress(sprintf('Formatting %d of %d:', ++$i, $count), $inputFile);
+            $i++;
+
+            $inputFile = Str::coalesce(
+                $file === 'php://stdin' ? $this->StdinFilename : null,
+                $file,
+            );
+
+            if (
+                $this->Quiet < 4 &&
+                ($file !== 'php://stdin' || !stream_isatty(\STDIN))
+            ) {
+                Console::logProgress(sprintf(
+                    'Formatting %d of %d:',
+                    $i,
+                    $count,
+                ), $inputFile);
             }
+
+            $dir = dirname($inputFile);
+            $formatter = $this->FormatterByDir[$dir]
+                ??= $this->DefaultFormatter
+                ??= $this->getFormatter();
             $input = File::getContents($file);
-            $formatter = $getFormatter($inputFile);
             Profile::startTimer($inputFile, 'file');
             try {
                 $output = $formatter->format(
@@ -1062,6 +1055,7 @@ EOF,
             } finally {
                 Profile::stopTimer($inputFile, 'file');
             }
+
             if ($i === $count) {
                 $this->maybeDumpDebugOutput($input, $output, $formatter->Tokens, $formatter->Log, null);
             }
@@ -1070,7 +1064,7 @@ EOF,
                 if ($input === $output) {
                     continue;
                 }
-                if (!$this->Quiet) {
+                if ($this->Quiet < 2) {
                     Console::error('Input requires formatting');
                 }
 
@@ -1079,7 +1073,9 @@ EOF,
 
             if ($this->Diff) {
                 if ($input === $output) {
-                    !$this->Verbose || Console::log('Already formatted:', $inputFile);
+                    if ($this->Verbose) {
+                        Console::log('Already formatted:', $inputFile);
+                    }
                     continue;
                 }
                 Console::maybeClearLine();
@@ -1088,13 +1084,16 @@ EOF,
                         printf("%s\n", $inputFile);
                         break;
                     case 'unified':
-                        print (new Differ(new StrictUnifiedDiffOutputBuilder([
+                        $formatter = Console::getStdoutTarget()->getFormatter();
+                        $diff = (new Differ(new StrictUnifiedDiffOutputBuilder([
                             'fromFile' => "a/$inputFile",
                             'toFile' => "b/$inputFile",
                         ])))->diff($input, $output);
-                        if (!$this->Quiet) {
+                        print $formatter->formatDiff($diff);
+                        if ($this->Quiet < 1) {
                             Console::log('Would replace', $inputFile);
                         }
+                        break;
                 }
                 $replaced++;
                 continue;
@@ -1115,11 +1114,13 @@ EOF,
             }
 
             if ($input !== null && $input === $output) {
-                !$this->Verbose || Console::log('Already formatted:', $outFile);
+                if ($this->Verbose) {
+                    Console::log('Already formatted:', $outFile);
+                }
                 continue;
             }
 
-            if (!$this->Quiet) {
+            if ($this->Quiet < 1) {
                 Console::log('Replacing', $outFile);
             }
             File::putContents($outFile, $output);
@@ -1136,17 +1137,19 @@ EOF,
         }
 
         if ($this->Check) {
-            $this->Quiet || Console::log(sprintf(
-                '%d %s would be left unchanged',
-                $count,
-                Convert::plural($count, 'file')
-            ));
+            if ($this->Quiet < 2) {
+                Console::log(sprintf(
+                    '%d %s would be left unchanged',
+                    $count,
+                    Convert::plural($count, 'file')
+                ));
+            }
 
             return;
         }
 
         if ($this->Diff) {
-            if (!$this->Quiet) {
+            if ($this->Quiet < 2) {
                 if ($replaced) {
                     Console::out('', ConsoleLevel::INFO);
                 }
@@ -1164,7 +1167,7 @@ EOF,
             return $replaced ? 8 : 0;
         }
 
-        if (!$this->Quiet) {
+        if ($this->Quiet < 2) {
             Console::summary(sprintf(
                 $replaced ? 'Replaced %1$d of %2$d %3$s' : 'Formatted %2$d %3$s',
                 $replaced,
@@ -1174,250 +1177,318 @@ EOF,
         }
     }
 
-    private function maybeGetConfigFile(string $dir): ?string
+    /**
+     * @param mixed[] $values
+     */
+    private function getConfig(array $values): self
     {
-        $dir = dirname(($dir ?: '.') . '/.');
-        foreach ([
-            '.prettyphp',
-            'prettyphp.json',
-        ] as $file) {
+        $defaults = $this->getDefaultSchemaOptionValues();
+
+        /** @var self */
+        $clone = Get::copy($this);
+        $clone->applyOptionValues($values + $defaults, true, true, true);
+        return $clone;
+    }
+
+    /**
+     * @return array<string,array<string|int|bool>|string|int|bool|null>
+     */
+    private function getDefaultFormattingOptionValues(): array
+    {
+        return array_diff_key(
+            $this->getDefaultSchemaOptionValues(),
+            self::SRC_OPTION_INDEX,
+        );
+    }
+
+    /**
+     * @return array<string,array<string|int|bool>|string|int|bool|null>
+     */
+    private function getDefaultSchemaOptionValues(): array
+    {
+        return $this->DefaultSchemaOptionValues
+            ??= $this->getDefaultOptionValues(true);
+    }
+
+    /**
+     * @return mixed[]
+     */
+    private function getFormattingConfigValues(string $filename): array
+    {
+        return array_diff_key(
+            $this->getConfigValues($filename),
+            self::SRC_OPTION_INDEX,
+        );
+    }
+
+    /**
+     * @return mixed[]
+     */
+    private function getConfigValues(string $filename): array
+    {
+        Console::debug('Reading configuration file:', $filename);
+
+        $json = File::getContents($filename);
+
+        if ($json === '') {
+            throw new InvalidConfigurationException(sprintf(
+                'Empty configuration file: %s',
+                $filename,
+            ));
+        }
+
+        try {
+            $config = Json::parseObjectAsArray($json);
+        } catch (JsonException $ex) {
+            throw new InvalidConfigurationException(sprintf(
+                'Invalid JSON in configuration file: %s (%s)',
+                $filename,
+                $ex->getMessage(),
+            ), $ex);
+        }
+
+        if (!is_array($config)) {
+            throw new InvalidConfigurationException(sprintf(
+                'Invalid configuration file: %s',
+                $filename,
+            ));
+        }
+
+        return $config;
+    }
+
+    private function getConfigFile(string $dir): ?string
+    {
+        Console::debug('Looking for a configuration file:', $dir);
+
+        $dir = File::dir($dir);
+        $found = [];
+        foreach (self::CONFIG_FILE_NAME as $file) {
             $file = $dir . '/' . $file;
             if (is_file($file)) {
-                if ($found ?? null) {
-                    throw new InvalidConfigurationException(sprintf('Too many configuration files: %s', $dir));
-                }
-                $found = $file;
+                $found[] = $file;
             }
         }
 
-        return $found ?? null;
+        if (count($found) > 1) {
+            throw new InvalidConfigurationException(sprintf(
+                'Too many configuration files: %s',
+                implode(' ', $found),
+            ));
+        }
+
+        return $found ? $found[0] : null;
     }
 
     /**
-     * @return array<string,array<string|int>|string|int|bool|null>
+     * @param array<string,string> $files
+     * @param array<string,string> $dirs
      */
-    private function getFormattingOptionValues(bool $global, bool $internal = false): array
+    private function addDir(string $dir, array &$files, array &$dirs): void
     {
-        $options = $this->getOptionValues(true, [Str::class, 'toCamelCase']);
-        if ($this->Tabs || $this->Spaces) {
-            $options['insertSpaces'] = !$this->Tabs;
-            $options['tabSize'] = $this->Tabs ?: $this->Spaces ?: 4;
+        if ($this->Debug) {
+            Console::debug(sprintf(
+                '(#%d) Searching for files to format:',
+                spl_object_id($this),
+            ), Json::prettyPrint([
+                'in' => $dir,
+                'excludeRegex' => $this->ExcludeRegex,
+                'includeRegex' => $this->IncludeRegex,
+                'includeIfPhpRegex' => $this->IncludeIfPhpRegex,
+            ]));
         }
-        $options = array_intersect_key(
-            $options,
-            $this->getFormattingOptionNames($global)
-        );
-        // If a preset is enabled, remove every other formatting option
-        if ($this->Preset) {
-            $options = array_diff_key(
-                $options,
-                array_diff_key(
-                    $this->getFormattingOptionNames(false),
-                    ['preset' => null, 'psr12' => null]
-                )
+
+        $dir = File::dir($dir);
+        $finder = File::find()
+                      ->in($dir)
+                      ->exclude($this->ExcludeRegex)
+                      ->include($this->IncludeRegex);
+
+        if ($this->IncludeIfPhpRegex !== null) {
+            $finder = $finder->include(
+                fn(SplFileInfo $file, string $path) =>
+                    Pcre::match($this->IncludeIfPhpRegex, $path) &&
+                    File::isPhp((string) $file)
             );
         }
-        if ($internal) {
-            foreach (self::INTERNAL_OPTION_MAP as $name => $property) {
-                $options['@internal'][$name] = $this->{$property};
-            }
-        }
 
-        return $options;
+        foreach ($finder as $file) {
+            $this->addFile($file, $files, $dirs);
+        }
     }
 
     /**
-     * @param array<string,array<string|int>|string|int|bool|null> $values
-     * @return array<string,array<string|int>|string|int|bool|null>
+     * @param SplFileInfo|string $file
+     * @param array<string,string> $files
+     * @param array<string,string> $dirs
      */
-    private function normaliseFormattingOptionValues(array $values, bool $global = false, bool $internal = false, bool $expand = true): array
+    private function addFile($file, array &$files, array &$dirs): void
     {
-        unset($values['tab'], $values['space']);
-        if (array_key_exists('insertSpaces', $values)) {
-            if (!$values['insertSpaces']) {
-                $values['tab'] = $values['tabSize'] ?? 4;
-            } else {
-                $values['space'] = $values['tabSize'] ?? 4;
-            }
-        } elseif (array_key_exists('tabSize', $values)) {
-            $values['space'] = $values['tabSize'];
-        }
-        unset($values['insertSpaces'], $values['tabSize']);
-        $values = $this->normaliseOptionValues($values, $expand, [Str::class, 'toKebabCase']);
-        // If `$internal` is false, ignore `$values['@internal']` without
-        // suppressing `$this->DefaultFormattingOptionValues['@internal']`
-        $values = array_diff_key($values, $internal ? [] : ['@internal' => null]);
+        $key = $this->getFileKey($file);
 
-        return array_intersect_key(
-            $expand ? array_merge($this->DefaultFormattingOptionValues, $values) : $values,
-            ($global ? $this->GlobalFormattingOptionNames : $this->FormattingOptionNames)
-                + ['@internal' => null]
-        );
+        if (isset($files[$key])) {
+            Console::debug(sprintf('Skipping (already seen): %s', (string) $file));
+            return;
+        }
+
+        $files[$key] = (string) $file;
+
+        if ($this->IgnoreConfigFiles) {
+            return;
+        }
+
+        $dir = is_string($file)
+            ? dirname($file)
+            : (string) $file->getPathInfo();
+        $dirs[$dir] = $dir;
     }
 
     /**
-     * @param array<string,array<string|int>|string|int|bool|null>|null $values
-     * @return $this
+     * @param SplFileInfo|string $file
      */
-    private function applyFormattingOptionValues(?array $values = null, bool $asArguments = false)
+    private function getFileKey($file): string
     {
-        if ($values !== null) {
-            $this->applyOptionValues($values, false, false, $asArguments);
-            if ($internal = $values['@internal'] ?? null) {
-                /** @var array<array<class-string<Rule>>|class-string<TokenTypeIndex>|int|bool|null> $internal */
-                foreach ($internal as $name => $value) {
-                    $property = self::INTERNAL_OPTION_MAP[$name] ?? null;
-                    if (!$property) {
-                        throw new UnexpectedValueException(sprintf('@internal option not recognised: %s', $name));
-                    }
-                    $this->{$property} = $value;
-                }
+        $stat = File::stat((string) $file);
+        return $stat['dev'] . "\0" . $stat['ino'];
+    }
+
+    /**
+     * @param class-string<Throwable> $exception
+     */
+    private function validateOptions(
+        string $exception = CliInvalidArgumentsException::class,
+        ?string $configFile = null
+    ): void {
+        $throw = fn(string $message, string ...$names) =>
+                     $this->throwInvalidOptionsException(
+                         $exception, $configFile, $message, ...$names
+                     );
+
+        if ($this->OperatorsFirst && $this->OperatorsLast) {
+            $throw(
+                '%s and %s cannot both be given',
+                '--operators-first',
+                '--operators-last',
+            );
+        }
+
+        if (
+            $this->SortImportsBy &&
+            ($this->NoSortImports || in_array('sort-imports', $this->Disable, true))
+        ) {
+            $throw(
+                '%s and %s/%s=sort-imports cannot both be given',
+                '--sort-imports-by',
+                '--no-sort-imports',
+                '--disable',
+            );
+        }
+    }
+
+    /**
+     * @param class-string<Throwable> $exception
+     * @return never
+     */
+    private function throwInvalidOptionsException(
+        string $exception,
+        ?string $configFile,
+        string $message,
+        string ...$names
+    ): void {
+        if ($configFile !== null) {
+            foreach ($names as &$name) {
+                $name = Str::toCamelCase($name);
             }
+            $message .= ' in %s';
+            $names[] = $configFile;
         }
 
-        if ($this->Preset && array_key_exists('preset', $values)) {
-            return $this->applyFormattingOptionValues(self::PRESET_MAP[$this->Preset]);
+        throw new $exception(sprintf($message, ...$names));
+    }
+
+    private function getFormatter(): Formatter
+    {
+        $flags = 0;
+        if ($this->Quiet < 3) {
+            $flags |= FormatterFlag::REPORT_CODE_PROBLEMS;
+        }
+        if ($this->LogProgress) {
+            $flags |= FormatterFlag::LOG_PROGRESS;
         }
 
+        if ($this->Debug) {
+            Console::debug(sprintf(
+                '(#%d) Generating a formatter:',
+                spl_object_id($this),
+            ), Json::prettyPrint([
+                'flags' => $flags,
+                'tabs' => $this->Tabs,
+                'spaces' => $this->Spaces,
+                'eol' => $this->Eol,
+                'disable' => $this->Disable,
+                'enable' => $this->Enable,
+                'oneTrueBraceStyle' => $this->OneTrueBraceStyle,
+                'operatorsFirst' => $this->OperatorsFirst,
+                'operatorsLast' => $this->OperatorsLast,
+                'ignoreNewlines' => $this->IgnoreNewlines,
+                'noSimplifyStrings' => $this->NoSimplifyStrings,
+                'noSimplifyNumbers' => $this->NoSimplifyNumbers,
+                'heredocIndent' => $this->HeredocIndent,
+                'sortImportsBy' => $this->SortImportsBy,
+                'noSortImports' => $this->NoSortImports,
+                'psr12' => $this->Psr12,
+                'preset' => $this->Preset,
+            ]));
+        }
+
+        if ($this->Preset !== null) {
+            /** @var Formatter */
+            $formatter = self::PRESET_MAP[$this->Preset]::getFormatter($flags);
+            return $this->Psr12
+                ? $formatter->withPsr12()
+                : $formatter;
+        }
+
+        $disable = $this->Disable;
         if ($this->IgnoreNewlines) {
-            $this->Disable[] = 'preserve-newlines';
+            $disable[] = 'preserve-newlines';
         }
         if ($this->NoSimplifyStrings) {
-            $this->Disable[] = 'simplify-strings';
+            $disable[] = 'simplify-strings';
         }
         if ($this->NoSimplifyNumbers) {
-            $this->Disable[] = 'simplify-numbers';
+            $disable[] = 'simplify-numbers';
         }
         if ($this->NoSortImports) {
-            $this->Disable[] = 'sort-imports';
+            $disable[] = 'sort-imports';
         }
 
-        foreach (Formatter::INCOMPATIBLE_RULES as $rules) {
-            $rules = array_keys(array_intersect(self::ENABLE_MAP, $rules));
-            // If multiple rules from this group have been enabled, remove all
-            // but the last
-            $rules = array_intersect($this->Enable, $rules);
-            if (count($rules) > 1) {
-                array_pop($rules);
-                $this->Enable = array_diff_key($this->Enable, $rules);
-            }
+        $disable = array_values(array_intersect_key(self::DISABLE_MAP, array_flip($disable)));
+        $enable = array_values(array_intersect_key(self::ENABLE_MAP, array_flip($this->Enable)));
+
+        if ($this->OperatorsFirst) {
+            $tokenTypeIndex = (new TokenTypeIndex())->withLeadingOperators();
+        } elseif ($this->OperatorsLast) {
+            $tokenTypeIndex = (new TokenTypeIndex())->withTrailingOperators();
+        } else {
+            $tokenTypeIndex = new TokenTypeIndex();
         }
 
-        $this->DisableExtensions = array_values(array_intersect_key(self::DISABLE_MAP, array_flip($this->Disable)));
-        $this->EnableExtensions = array_values(array_intersect_key(self::ENABLE_MAP, array_flip($this->Enable)));
-        if (isset($this->PresetRules)) {
-            array_push($this->EnableExtensions, ...$this->PresetRules);
-        }
+        $f = (new FormatterBuilder())
+                 ->insertSpaces(!$this->Tabs)
+                 ->tabSize($this->Tabs ?: $this->Spaces ?: 4)
+                 ->disable($disable)
+                 ->enable($enable)
+                 ->flags($flags)
+                 ->preferredEol(self::EOL_MAP[$this->Eol])
+                 ->preserveEol($this->Eol === 'auto')
+                 ->heredocIndent(self::HEREDOC_INDENT_MAP[$this->HeredocIndent])
+                 ->importSortOrder(self::IMPORT_SORT_ORDER_MAP[$this->SortImportsBy])
+                 ->oneTrueBraceStyle($this->OneTrueBraceStyle)
+                 ->psr12($this->Psr12)
+                 ->go();
 
-        return $this;
-    }
-
-    /**
-     * @return array<string,null>
-     */
-    private function getFormattingOptionNames(bool $global, bool $kebabCase = false): array
-    {
-        $names = $global
-            ? ['src', 'include', 'exclude', 'includeIfPhp']
-            : [];
-        $names = [
-            ...$names,
-            'eol',
-            'disable',
-            'enable',
-            'oneTrueBraceStyle',
-            'operatorsFirst',
-            'operatorsLast',
-            'noSimplifyStrings',
-            'noSimplifyNumbers',
-            'heredocIndent',
-            'sortImportsBy',
-            'noSortImports',
-            'psr12',
-            'preset',
-        ];
-        $names = $kebabCase ? [
-            ...$names,
-            'tab',
-            'space'
-        ] : [
-            ...$names,
-            'insertSpaces',
-            'tabSize',
-        ];
-
-        return array_combine(
-            $kebabCase
-                ? array_map([Str::class, 'toKebabCase'], $names)
-                : $names,
-            array_fill(0, count($names), null)
-        );
-    }
-
-    /**
-     * @param string[] $paths
-     * @param string[] $files
-     * @param string[] $dirs
-     */
-    private function expandPaths(array $paths, ?array &$files, ?array &$dirs, ?int &$dirCount = null): void
-    {
-        if (!$paths) {
-            return;
-        }
-
-        Console::debug('Expanding paths:', implode(' ', $paths));
-
-        if ($paths === ['-']) {
-            $files[] = '-';
-
-            return;
-        }
-
-        $addFile = function (SplFileInfo $file) use (&$files, &$dirs): void {
-            // Don't format the same file multiple times
-            if ($files[$inode = $file->getInode()] ?? null) {
-                return;
-            }
-            $files[$inode] = (string) $file;
-            if ($this->IgnoreConfigFiles) {
-                return;
-            }
-            $dir = (string) $file->getPathInfo();
-            $dirs[$dir] = $dir;
-        };
-
-        foreach ($paths as $path) {
-            if (is_file($path)) {
-                $addFile(new SplFileInfo($path));
-                continue;
-            }
-
-            if (!is_dir($path)) {
-                throw new CliInvalidArgumentsException(sprintf('file not found: %s', $path));
-            }
-
-            $dirCount++;
-
-            $iterator = File::find()
-                            ->in($path)
-                            ->exclude($this->ExcludeRegex)
-                            ->include($this->IncludeRegex);
-
-            if ($this->IncludeIfPhpRegex !== null) {
-                $iterator = $iterator
-                    ->include(
-                        fn(SplFileInfo $file, string $path) =>
-                            Pcre::match($this->IncludeIfPhpRegex, $path) &&
-                            File::isPhp((string) $file)
-                    );
-            }
-
-            foreach ($iterator as $file) {
-                $addFile($file);
-            }
-        }
-
-        $files = array_values($files);
+        return $f;
     }
 
     /**
@@ -1475,7 +1546,10 @@ EOF,
                 continue;
             }
             if (!is_string($out)) {
-                $out = Json::prettyPrint($out, \JSON_FORCE_OBJECT | \JSON_INVALID_UTF8_IGNORE);
+                $out = Json::prettyPrint(
+                    $out,
+                    \JSON_FORCE_OBJECT | \JSON_INVALID_UTF8_IGNORE
+                ) . \PHP_EOL;
             }
             File::putContents($file, $out);
         }

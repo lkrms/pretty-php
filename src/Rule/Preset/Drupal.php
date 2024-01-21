@@ -2,12 +2,16 @@
 
 namespace Lkrms\PrettyPHP\Rule\Preset;
 
+use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Contract\Preset;
+use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
-use Lkrms\PrettyPHP\Rule\Contract\TokenRule;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Formatter;
+use Lkrms\PrettyPHP\FormatterBuilder;
 use Lkrms\Support\PhpDoc\PhpDoc;
 use Throwable;
 
@@ -20,9 +24,21 @@ use Throwable;
  * - Add a newline after close braces with a subsequent `catch`, `else`,
  *   `elseif` or `finally`
  */
-final class Drupal implements TokenRule
+final class Drupal implements Preset, TokenRule
 {
     use TokenRuleTrait;
+
+    public static function getFormatter(int $flags = 0): Formatter
+    {
+        return (new FormatterBuilder())
+                   ->insertSpaces()
+                   ->tabSize(2)
+                   ->enable([self::class])
+                   ->flags($flags)
+                   ->heredocIndent(HeredocIndent::NONE)
+                   ->oneTrueBraceStyle()
+                   ->go();
+    }
 
     public static function getPriority(string $method): ?int
     {

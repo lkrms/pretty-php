@@ -1,0 +1,8 @@
+{
+    "search.exclude": {
+        "**/tests/fixtures/**": true
+    },
+    "files.watcherExclude": {
+        "**/tests/fixtures/**": true
+    }
+}

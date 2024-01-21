@@ -3,11 +3,11 @@
 
 use Lkrms\Cli\CliApplication;
 use Lkrms\Facade\Console;
-use Lkrms\PrettyPHP\Rule\Contract\BlockRule;
-use Lkrms\PrettyPHP\Rule\Contract\ListRule;
-use Lkrms\PrettyPHP\Rule\Contract\MultiTokenRule;
-use Lkrms\PrettyPHP\Rule\Contract\Rule;
-use Lkrms\PrettyPHP\Rule\Contract\TokenRule;
+use Lkrms\PrettyPHP\Contract\BlockRule;
+use Lkrms\PrettyPHP\Contract\ListRule;
+use Lkrms\PrettyPHP\Contract\MultiTokenRule;
+use Lkrms\PrettyPHP\Contract\Rule;
+use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Get;

@@ -2,11 +2,16 @@
 
 namespace Lkrms\PrettyPHP\Rule\Preset;
 
+use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Contract\Preset;
+use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
-use Lkrms\PrettyPHP\Rule\Contract\TokenRule;
+use Lkrms\PrettyPHP\Rule\BlankLineBeforeReturn;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Formatter;
+use Lkrms\PrettyPHP\FormatterBuilder;
 
 /**
  * Apply Laravel's code style
@@ -16,9 +21,21 @@ use Lkrms\PrettyPHP\Token\Token;
  * - Suppress horizontal space before and after '.'
  * - Add a space after 'fn' in arrow functions
  */
-final class Laravel implements TokenRule
+final class Laravel implements Preset, TokenRule
 {
     use TokenRuleTrait;
+
+    public static function getFormatter(int $flags = 0): Formatter
+    {
+        return (new FormatterBuilder())
+                   ->enable([
+                       BlankLineBeforeReturn::class,
+                       self::class,
+                   ])
+                   ->flags($flags)
+                   ->heredocIndent(HeredocIndent::NONE)
+                   ->go();
+    }
 
     public static function getPriority(string $method): ?int
     {

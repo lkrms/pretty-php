@@ -21,10 +21,16 @@ license=('MIT')
 url="https://github.com/lkrms/pretty-php"
 depends=('php')
 makedepends=('php-sodium' 'git' 'composer' 'pandoc')
-source=("${pkgname}::git+https://github.com/lkrms/pretty-php.git#tag=v${pkgver}")
-sha256sums=('SKIP')
+source=("${pkgname}::git+https://github.com/lkrms/pretty-php.git#tag=v${pkgver}"
+        'https://phar.io/releases/phive.phar'
+        'https://phar.io/releases/phive.phar.asc')
+validpgpkeys=('6AF725270AB81E04D79442549D8A98B29B2D5D79')
+sha256sums=('SKIP'
+            'SKIP'
+            'SKIP')
 
 prepare() {
+    install -Dm755 "${srcdir}/phive.phar" "${srcdir}/bin/phive"
     cd "${srcdir}/${pkgname}"
     rm -rf build/dist
 }
@@ -32,7 +38,7 @@ prepare() {
 build() {
     _check_sodium
     cd "${srcdir}/${pkgname}"
-    scripts/build.sh man "v${pkgver}"
+    PATH="${srcdir}/bin${PATH:+:$PATH}" scripts/build.sh man "v${pkgver}"
 }
 
 check() {

@@ -4,7 +4,7 @@ pretty-php - Format a PHP file
 
 ## SYNOPSIS
 
-**`pretty-php`** \[*<u>option</u>*]... \[**`--`**] \[*<u>path</u>*...]
+**`pretty-php`** \[*<u>options</u>*] \[**`--`**] \[*<u>path</u>*...]
 
 ## OPTIONS
 
@@ -12,8 +12,8 @@ pretty-php - Format a PHP file
 
   Files and directories to format.
 
-  If the only path is a dash ('-'), or no paths are given, **`pretty-php`** reads
-  from the standard input and writes to the standard output.
+  If the only path is a dash ('-'), or no paths are given, **`pretty-php`**
+  reads from the standard input and writes to the standard output.
 
   Directories are searched recursively for files to format.
 
@@ -38,9 +38,9 @@ pretty-php - Format a PHP file
   A regular expression for pathnames to check for PHP code when searching a
   directory.
 
-  Use this option to format files not matched by **`-I/--include`** if they have a
-  pathname that matches *<u>regex</u>* and a PHP open tag ('\<?php') at the start of
-  the first line that is not a shebang ('#!').
+  Use this option to format files not matched by **`-I/--include`** if they have
+  a pathname that matches *<u>regex</u>* and a PHP open tag ('\<?php') at the
+  start of the first line that is not a shebang ('#!').
 
   The default regular expression matches files with no extension. Use
   **`--include-if-php=/./`** to check the first line of all files.
@@ -53,8 +53,8 @@ pretty-php - Format a PHP file
 
   Indent using tabs.
 
-  The `align-chains`, `align-fn`, `align-lists`, and `align-ternary` rules cannot be
-  enabled when using tabs for indentation.
+  The `align-chains`, `align-fn`, `align-lists`, and `align-ternary` rules
+  cannot be enabled when using tabs for indentation.
 
   The default size is: `4`
 
@@ -70,8 +70,8 @@ pretty-php - Format a PHP file
 
   Set the output file's end-of-line sequence.
 
-  In `platform` mode, **`pretty-php`** uses CRLF ("\\r\\n") line endings on Windows
-  and LF ("\\n") on other platforms.
+  In `platform` mode, **`pretty-php`** uses CRLF ("\\r\\n") line endings on
+  Windows and LF ("\\n") on other platforms.
 
   In `auto` mode, the input file's line endings are preserved, and `platform`
   mode is used as a fallback if there are no line breaks in the input.
@@ -180,8 +180,8 @@ pretty-php - Format a PHP file
 
   Read formatting options from a JSON configuration file.
 
-  Settings in *<u>file</u>* override formatting options given on the command line,
-  and any configuration files that would usually apply to the input are
+  Settings in *<u>file</u>* override formatting options given on the command
+  line, and any configuration files that would usually apply to the input are
   ignored.
 
   See **`CONFIGURATION`** below.
@@ -190,8 +190,8 @@ pretty-php - Format a PHP file
 
   Ignore configuration files.
 
-  Use this option to ignore any configuration files that would usually apply
-  to the input.
+  Use this option to ignore any configuration files that would usually apply to
+  the input.
 
   See **`CONFIGURATION`** below.
 
@@ -199,8 +199,9 @@ pretty-php - Format a PHP file
 
   Write output to a different file.
 
-  If *<u>file</u>* is a dash ('-'), **`pretty-php`** writes to the standard output.
-  Otherwise, **`-o/--output`** must be given once per input file, or not at all.
+  If *<u>file</u>* is a dash ('-'), **`pretty-php`** writes to the standard
+  output. Otherwise, **`-o/--output`** must be given once per input file, or not
+  at all.
 
 - **`--diff`**\[=`unified`|`name-only`]
 
@@ -229,9 +230,15 @@ pretty-php - Format a PHP file
 
   Create debug output in *<u>directory</u>*.
 
-  If combined with **`-v/--verbose`**, partially formatted code is written to a
+  Combine with **`--log-progress`** to write partially formatted code to a
   series of files in `<directory>/progress-log` that represent changes applied
   by enabled rules.
+
+- **`--log-progress`**
+
+  Write partially formatted code to files in the debug output directory.
+
+  This option has no effect if **`--debug`** is not given.
 
 - **`--timers`**
 
@@ -247,10 +254,13 @@ pretty-php - Format a PHP file
 
 - **`-q`**, **`--quiet`**
 
-  Only report warnings and errors.
+  Do not report files that require formatting.
 
-  If given twice, warnings are also suppressed. If given three or more
-  times, TTY-only progress updates are also suppressed.
+  May be given multiple times for less verbose output:
+
+  - **`-qq`**: do not print a summary of files formatted and replaced on exit.
+  - **`-qqq`**: suppress warnings.
+  - **`-qqqq`**: suppress TTY-only progress updates.
 
   Errors are always reported.
 
@@ -259,15 +269,15 @@ pretty-php - Format a PHP file
 **`pretty-php`** looks for a JSON configuration file named `.prettyphp` or
 `prettyphp.json` in the same directory as each input file, then in each of its
 parent directories. It stops looking when it finds a configuration file, a
-`.git`, `.hg` or `.svn` directory, or the root of the filesystem, whichever comes
-first.
+`.git`, `.hg` or `.svn` directory, or the root of the filesystem, whichever
+comes first.
 
 If a configuration file is found, **`pretty-php`** formats the input using
-formatting options read from the configuration file, and command-line
-formatting options other than **`-N/--ignore-newlines`** are ignored.
+formatting options read from the configuration file, and command-line formatting
+options other than **`-N/--ignore-newlines`** are ignored.
 
-The **`--print-config`** option can be used to generate a configuration file, for
-example:
+The **`--print-config`** option can be used to generate a configuration file,
+for example:
 
 ```console
 $ pretty-php --sort-imports-by=name --psr12 src tests --print-config
@@ -282,16 +292,16 @@ $ pretty-php --sort-imports-by=name --psr12 src tests --print-config
 ```
 
 The optional `src` array specifies files and directories to format when
-**`pretty-php`** is started in the same directory or when the directory is passed
-to **`pretty-php`** for formatting.
+**`pretty-php`** is started in the same directory or when the directory is
+passed to **`pretty-php`** for formatting.
 
-If a directory contains more than one configuration file, **`pretty-php`** reports
-an error and exits without formatting anything.
+If a directory contains more than one configuration file, **`pretty-php`**
+reports an error and exits without formatting anything.
 
 ## EXIT STATUS
 
-**`pretty-php`** returns 0 when formatting succeeds, 1 when invalid arguments are
-given, 2 when invalid configuration files are found, and 4 when one or more
-input files cannot be parsed. When **`--diff`** or **`--check`** are given, **`pretty-php`**
-returns 0 when the input is already formatted and 8 when formatting is
-required.
+**`pretty-php`** returns 0 when formatting succeeds, 1 when invalid arguments
+are given, 2 when invalid configuration files are found, and 4 when one or more
+input files cannot be parsed. When **`--diff`** or **`--check`** are given,
+**`pretty-php`** returns 0 when the input is already formatted and 8 when
+formatting is required.

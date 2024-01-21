@@ -100,7 +100,7 @@ if (isset($invalid)) {
     ksort($index);
 
     $json = Json::prettyPrint($index);
-    File::putContents($indexPath, $json);
+    File::putContents($indexPath, $json . \PHP_EOL);
 }
 
 Console::summary(sprintf(

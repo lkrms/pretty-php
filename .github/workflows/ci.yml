@@ -30,6 +30,7 @@ jobs:
         with:
           php-version: "8.3"
           coverage: none
+          tools: phive
 
       - name: Get Composer cache directory
         id: get-composer-cache
@@ -44,7 +45,12 @@ jobs:
           restore-keys: composer-cache-${{ runner.os }}-
 
       - name: Install dependencies
-        run: composer install --no-interaction --no-progress --no-dev
+        run: |
+          composer install --no-interaction --no-progress --no-dev
+          phive --no-progress install --trust-gpg-keys E82B2FB314E9906E,2DF45277AEF09A2F
+
+      - name: Run PHP CS Fixer
+        run: tools/php-cs-fixer check --diff --verbose
 
       - name: Run pretty-php
         run: bin/pretty-php --diff
@@ -164,6 +170,7 @@ jobs:
         with:
           php-version: "8.3"
           coverage: none
+          tools: phive
 
       - name: Get Composer cache directory
         id: get-composer-cache
@@ -303,4 +310,4 @@ jobs:
           artifact_path: ${{ needs.build.outputs.artifact_path }}
         run: |
           php "$artifact_path" --print-config ${{ matrix.args }} | tee .prettyphp
-          php "$artifact_path" --timers || { status=$? && [[ $status -eq 4 ]] || (exit $status); }
+          php "$artifact_path" --quiet --timers || { status=$? && [[ $status -eq 4 ]] || (exit $status); }

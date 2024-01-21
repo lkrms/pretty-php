@@ -2,6 +2,7 @@
 /.gitattributes export-ignore
 /.github export-ignore
 /.gitignore export-ignore
+/.phive export-ignore
 /.prettyphp export-ignore
 /box.json* export-ignore
 /docs export-ignore

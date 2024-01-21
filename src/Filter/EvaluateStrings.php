@@ -3,8 +3,8 @@
 namespace Lkrms\PrettyPHP\Filter;
 
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
+use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Exception\FilterException;
-use Lkrms\PrettyPHP\Filter\Contract\Filter;
 use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\Utility\Pcre;
 

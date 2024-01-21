@@ -3,8 +3,8 @@
 namespace Lkrms\PrettyPHP\Filter;
 
 use Lkrms\PrettyPHP\Catalog\TokenType;
+use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Filter\Concern\FilterTrait;
-use Lkrms\PrettyPHP\Filter\Contract\Filter;
 
 /**
  * Move comments with one or more subsequent delimiters to the position after
