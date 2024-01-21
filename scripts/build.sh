@@ -108,9 +108,6 @@ if ((BUILD_PHAR)); then
     printf '==> installing %s production dependencies in %s\n' "$PACKAGE" "$TEMP_DIR"
     composer install -d "$TEMP_DIR" --no-plugins --no-interaction --no-dev
 
-    printf '==> installing humbug/box in %s/tools/box\n' "$REPO"
-    phive --no-progress install --trust-gpg-keys 0x2DF45277AEF09A2F box
-
     printf "==> running 'box compile' in %s\\n" "$TEMP_DIR"
     { [[ -f $TEMP_DIR/box.json ]] ||
         [[ -f $TEMP_DIR/box.json.dist ]] ||

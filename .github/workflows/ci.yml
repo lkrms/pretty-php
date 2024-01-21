@@ -30,7 +30,6 @@ jobs:
         with:
           php-version: "8.3"
           coverage: none
-          tools: phive
 
       - name: Get Composer cache directory
         id: get-composer-cache
@@ -45,9 +44,7 @@ jobs:
           restore-keys: composer-cache-${{ runner.os }}-
 
       - name: Install dependencies
-        run: |
-          composer install --no-interaction --no-progress --no-dev
-          phive --no-progress install --trust-gpg-keys E82B2FB314E9906E,2DF45277AEF09A2F
+        run: composer install --no-interaction --no-progress --no-dev
 
       - name: Run PHP CS Fixer
         run: tools/php-cs-fixer check --diff --verbose
@@ -170,7 +167,6 @@ jobs:
         with:
           php-version: "8.3"
           coverage: none
-          tools: phive
 
       - name: Get Composer cache directory
         id: get-composer-cache
