@@ -52,7 +52,6 @@ use Lkrms\Utility\Get;
 use Lkrms\Utility\Json;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
-use Lkrms\Utility\Sys;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
 use SebastianBergmann\Diff\Differ;
 use JsonException;
@@ -992,7 +991,7 @@ EOF,
                     break;
                 }
                 if ($dir === '.') {
-                    $dir = Sys::getCwd();
+                    $dir = File::cwd();
                 }
                 $dir = dirname($dir);
                 if (array_key_exists($dir, $this->FormatterByDir)) {
