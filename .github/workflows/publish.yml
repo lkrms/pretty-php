@@ -39,7 +39,7 @@ jobs:
 
     steps:
       - name: Bump Homebrew formula and push to lkrms/misc tap
-        uses: mislav/bump-homebrew-formula-action@v2
+        uses: mislav/bump-homebrew-formula-action@v3
         with:
           formula-name: pretty-php
           tag-name: ${{ github.event.inputs.tag-name || github.ref_name }}
