@@ -161,7 +161,8 @@ EOF;
             $messages = [[Level::ERROR, (string) $message]];
         }
         if ($chdir) {
-            chdir(self::$FixturesPath . $dir);
+            File::chdir(self::$FixturesPath . $dir);
+            $this->App->setWorkingDirectory();
             $this->assertCommandProduces(null, null, $args, $exitStatus, $messages);
             return;
         }
