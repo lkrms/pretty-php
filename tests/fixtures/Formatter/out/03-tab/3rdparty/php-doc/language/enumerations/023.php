@@ -1,4 +1,5 @@
 <?php
+
 enum UserStatus: string
 {
 	case Pending = 'P';

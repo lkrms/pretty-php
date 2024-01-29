@@ -1,4 +1,5 @@
 <?php
+
 // Thought experiment code where enums are not final.
 // Note, this won't actually work in PHP.
 enum MoreErrorCode extends ErrorCode {

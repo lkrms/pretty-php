@@ -1,4 +1,5 @@
 <?php
+
 $a = Suit::Spades;
 $b = Suit::Spades;
 

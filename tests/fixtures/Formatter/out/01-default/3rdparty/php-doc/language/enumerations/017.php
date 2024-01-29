@@ -1,4 +1,5 @@
 <?php
+
 Suit::Hearts === unserialize(serialize(Suit::Hearts));
 
 print serialize(Suit::Hearts);

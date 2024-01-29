@@ -788,11 +788,17 @@ EOF,
 
         if ($this->ConfigFile !== null) {
             $this->IgnoreConfigFiles = true;
-            $config = $this->getFormattingConfigValues($this->ConfigFile);
+            // 1. Combine non-formatting options given on the command line with
+            //    formatting options from the configuration file to ensure the
+            //    former appear in `--print-config` output
+            $config = array_intersect_key(
+                $this->getOptionValues(true, true, true),
+                self::SRC_OPTION_INDEX,
+            ) + $this->getFormattingConfigValues($this->ConfigFile);
             $defaults = $this->getDefaultFormattingOptionValues();
-            // 1. Set the value of every formatting option
+            // 2. Set the value of every option
             $this->applyOptionValues($config + $defaults, true, true, true);
-            // 2. Set the value of configured options as if they had been given
+            // 3. Set the value of configured options as if they had been given
             //    on the command line
             $this->applyOptionValues($config, true, true, true, true, true);
             $this->validateOptions(InvalidConfigurationException::class, $this->ConfigFile);
@@ -843,7 +849,13 @@ EOF,
 
                 $dirCount++;
 
-                $config = $this->getConfig($configValues);
+                $dir = dirname($configFile);
+                File::chdir($dir);
+                try {
+                    $config = $this->getConfig($configValues);
+                } finally {
+                    $this->App->restoreWorkingDirectory();
+                }
                 $config->validateOptions(InvalidConfigurationException::class, $configFile);
                 if ($this->Debug) {
                     Console::debug(sprintf(
@@ -852,7 +864,6 @@ EOF,
                         spl_object_id($config),
                     ), Json::prettyPrint($configValues));
                 }
-                $dir = dirname($configFile);
                 $this->FormatterByDir[$dir] = $config->getFormatter();
 
                 if (!$config->InputFiles) {
@@ -942,7 +953,7 @@ EOF,
         }
 
         if ($this->PrintConfig) {
-            $values = $this->getOptionValues(true, true);
+            $values = $this->getOptionValues(true, true, true);
             echo Json::prettyPrint(
                 $values,
                 $values ? 0 : \JSON_FORCE_OBJECT
