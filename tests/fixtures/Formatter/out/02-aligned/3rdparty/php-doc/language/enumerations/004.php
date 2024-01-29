@@ -1,4 +1,5 @@
 <?php
+
 enum Suit: string
 {
     case Hearts   = 'H';

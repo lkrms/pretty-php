@@ -1,4 +1,5 @@
 <?php
+
 enum Size
 {
 	case Small;

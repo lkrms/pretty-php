@@ -1,4 +1,5 @@
 <?php
+
 interface Colorful
 {
     public function color(): string;
@@ -14,7 +15,7 @@ enum Suit implements Colorful
     // Fulfills the interface contract.
     public function color(): string
     {
-        return match($this) {
+        return match ($this) {
             Suit::Hearts, Suit::Diamonds => 'Red',
             Suit::Clubs, Suit::Spades => 'Black',
         };
@@ -23,13 +24,16 @@ enum Suit implements Colorful
     // Not part of an interface; that's fine.
     public function shape(): string
     {
-        return "Rectangle";
+        return 'Rectangle';
     }
 }
 
-function paint(Colorful $c) { ... }
+function paint(Colorful $c)
+{
+    /* ... */
+}
 
 paint(Suit::Clubs);  // Works
 
-print Suit::Diamonds->shape(); // prints "Rectangle"
+print Suit::Diamonds->shape();  // prints "Rectangle"
 ?>

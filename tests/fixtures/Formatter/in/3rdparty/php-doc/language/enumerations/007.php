@@ -1,4 +1,5 @@
 <?php
+
 $record = get_stuff_from_database($id);
 print $record['suit'];
 

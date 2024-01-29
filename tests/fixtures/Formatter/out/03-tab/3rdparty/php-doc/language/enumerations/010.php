@@ -1,4 +1,5 @@
 <?php
+
 interface Colorful
 {
 	public function color(): string;
