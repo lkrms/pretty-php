@@ -14,8 +14,8 @@ function dataState()
          * Comment 2
          */
         if (
-            ($cm === 'RCDATA' || $cm ===
-                'CDATA')
+            ($cm === 'RCDATA' || $cm
+                === 'CDATA')
             && $es === false
             && $tch >= 3
             && charfunc($tch - 4, 4) === '<!--'
