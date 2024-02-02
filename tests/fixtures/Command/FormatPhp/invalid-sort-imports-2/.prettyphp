@@ -1,0 +1,6 @@
+{
+    "disable": [
+        "sort-imports"
+    ],
+    "sortImportsBy": "name"
+}

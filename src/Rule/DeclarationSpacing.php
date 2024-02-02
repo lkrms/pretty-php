@@ -5,6 +5,7 @@ namespace Lkrms\PrettyPHP\Rule;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
+use Lkrms\PrettyPHP\Filter\SortImports;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
@@ -102,7 +103,7 @@ final class DeclarationSpacing implements MultiTokenRule
                 continue;
             }
 
-            $parts = $token->declarationParts(false, false);
+            $parts = $token->namedDeclarationParts(false);
 
             // Ignore anonymous functions
             if (!$parts->count()) {
@@ -131,6 +132,15 @@ final class DeclarationSpacing implements MultiTokenRule
             )) {
                 $this->maybeApplyBlankLineBefore($token);
                 continue;
+            }
+
+            // Don't separate `use`, `use function` and `use constant` if
+            // imports are not being sorted
+            if (!($this->Formatter->Enabled[SortImports::class] ?? false) && (
+                $types === [\T_USE, \T_FUNCTION] ||
+                $types === [\T_USE, \T_CONST]
+            )) {
+                $types = [\T_USE];
             }
 
             // - `$this->PrevTypes` contains the `$types` of the most recent
