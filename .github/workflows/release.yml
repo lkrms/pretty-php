@@ -6,8 +6,41 @@ on:
       - "v[0-9]*"
 
 jobs:
+  check-ci:
+    name: Check CI workflow runs
+    runs-on: ubuntu-latest
+    outputs:
+      ci_required: ${{ steps.get-ci-required.outputs.ci_required }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for a successful run with the same tree
+        id: get-ci-required
+        run: |
+          ci_required=1
+          while read -r ref; do
+              git diff-tree --quiet "$ref" HEAD || continue
+              printf 'CI checks passed: %s\n' "$ref"
+              ci_required=0
+              break
+          done < <(
+              git rev-list --no-merges HEAD |
+                  grep -Fxf <(gh run list --workflow CI --status success --json headSha --jq '.[].headSha')
+          )
+          ((!ci_required)) || printf 'CI checks required\n'
+          printf 'ci_required=%d\n' "$ci_required" >>"$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   ci:
     name: Run CI workflow
+    needs:
+      - check-ci
+    if: needs.check-ci.outputs.ci_required == 1
     uses: ./.github/workflows/ci.yml
 
   release:
@@ -28,7 +61,6 @@ jobs:
 
       - name: Get Composer cache directory
         id: get-composer-cache
-        shell: bash
         run: printf 'cache_dir=%s\n' "$(composer config cache-files-dir)" >>"$GITHUB_OUTPUT"
 
       - name: Cache PHP dependencies
