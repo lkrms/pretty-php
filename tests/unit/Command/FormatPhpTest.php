@@ -142,6 +142,59 @@ EOF;
     }
 
     /**
+     * @dataProvider runProvider
+     *
+     * @param string[] $args
+     * @param array<array{Level::*,string,2?:array<string,mixed>}>|null $messages
+     */
+    public function testRun(
+        int $exitStatus,
+        ?string $output,
+        ?string $outputFile,
+        ?string $inputFile,
+        array $args,
+        ?array $messages = null
+    ): void {
+        $dir = File::createTempDir($this->App->getTempPath());
+        $file = $dir . '/code.php';
+        File::createDir($dir . '/.git');
+        File::chdir($dir);
+        $this->App->setWorkingDirectory();
+
+        if ($inputFile !== null) {
+            File::putContents($file, $inputFile);
+        }
+
+        $this->assertCommandProduces($output, null, $args, $exitStatus, $messages);
+
+        if ($outputFile !== null) {
+            $this->assertSame($outputFile, File::getContents($file));
+        }
+    }
+
+    /**
+     * @return array<string,array{int,string|null,string|null,string|null,string[],5?:array<array{Level::*,string,2?:array<string,mixed>}>|null}>
+     */
+    public static function runProvider(): array
+    {
+        $dir = self::getFixturesPath(__CLASS__);
+        $noSortImportsFile = File::getContents(
+            $dir . '/no-sort-imports/Foo.php',
+        );
+
+        return [
+            'no-sort-imports' => [
+                0,
+                '',
+                $noSortImportsFile,
+                $noSortImportsFile,
+                ['-M', '.'],
+                [[Level::INFO, ' // Formatted 1 file successfully']],
+            ],
+        ];
+    }
+
+    /**
      * @dataProvider directoriesProvider
      */
     public function testDirectories(
@@ -212,6 +265,39 @@ EOF;
                 2,
                 'operatorsFirst and operatorsLast cannot both be given in ./.prettyphp',
                 '/operators-first-and-last',
+                true,
+            ],
+            'no-sort-imports' => [
+                0,
+                ' // Formatted 1 file successfully',
+                '/no-sort-imports',
+            ],
+            'no-sort-imports in cwd' => [
+                0,
+                ' // Formatted 1 file successfully',
+                '/no-sort-imports',
+                true,
+            ],
+            'invalid sort-imports #1' => [
+                2,
+                'sortImportsBy and noSortImports/disable=sort-imports cannot both be given in ',
+                '/invalid-sort-imports-1',
+            ],
+            'invalid sort-imports #1 in cwd' => [
+                2,
+                'sortImportsBy and noSortImports/disable=sort-imports cannot both be given in ./.prettyphp',
+                '/invalid-sort-imports-1',
+                true,
+            ],
+            'invalid sort-imports #2' => [
+                2,
+                'sortImportsBy and noSortImports/disable=sort-imports cannot both be given in ',
+                '/invalid-sort-imports-2',
+            ],
+            'invalid sort-imports #2 in cwd' => [
+                2,
+                'sortImportsBy and noSortImports/disable=sort-imports cannot both be given in ./.prettyphp',
+                '/invalid-sort-imports-2',
                 true,
             ],
         ];

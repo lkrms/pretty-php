@@ -789,8 +789,8 @@ EOF,
         if ($this->ConfigFile !== null) {
             $this->IgnoreConfigFiles = true;
             // 1. Combine non-formatting options given on the command line with
-            //    formatting options from the configuration file to ensure the
-            //    former appear in `--print-config` output
+            //    formatting options from the configuration file to ensure
+            //    non-formatting options appear in `--print-config` output
             $config = array_intersect_key(
                 $this->getOptionValues(true, true, true),
                 self::SRC_OPTION_INDEX,
@@ -1197,6 +1197,7 @@ EOF,
         /** @var self */
         $clone = Get::copy($this);
         $clone->applyOptionValues($values + $defaults, true, true, true);
+        $clone->applyOptionValues($values, true, true, true, true, true);
         return $clone;
     }
 
@@ -1383,7 +1384,7 @@ EOF,
         }
 
         if (
-            $this->SortImportsBy &&
+            $this->optionHasArgument('sort-imports-by') &&
             ($this->NoSortImports || in_array('sort-imports', $this->Disable, true))
         ) {
             $throw(
