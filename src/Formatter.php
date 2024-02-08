@@ -74,9 +74,9 @@ use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\Utility\Arr;
-use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Get;
+use Lkrms\Utility\Inflect;
 use Lkrms\Utility\Str;
 use CompileError;
 use LogicException;
@@ -1145,10 +1145,10 @@ final class Formatter implements Buildable
                     continue;
                 }
 
-                $values[] = Convert::pluralRange(
+                $values[] = Inflect::formatRange(
+                    '{{#:on:between}} {{#:line}} {{#:#:and}}',
                     $problem->Start->OutputLine,
                     $problem->End->OutputLine ?? $problem->Start->OutputLine,
-                    'line'
                 );
                 Console::warn(sprintf($problem->Message . ' %s', ...$problem->Values, ...$values));
             }

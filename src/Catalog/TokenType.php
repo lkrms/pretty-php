@@ -58,12 +58,22 @@ final class TokenType extends Dictionary
     ];
 
     public const OPERATOR_ASSIGNMENT = [
+        \T_EQUAL,           // =
         \T_COALESCE_EQUAL,  // ??=
-        ...self::OPERATOR_ASSIGNMENT_EXCEPT_COALESCE,
+        ...self::OPERATOR_ASSIGNMENT_EXCEPT_EQUAL_AND_COALESCE,
+    ];
+
+    public const OPERATOR_ASSIGNMENT_EXCEPT_EQUAL = [
+        \T_COALESCE_EQUAL,  // ??=
+        ...self::OPERATOR_ASSIGNMENT_EXCEPT_EQUAL_AND_COALESCE,
     ];
 
     public const OPERATOR_ASSIGNMENT_EXCEPT_COALESCE = [
-        \T_EQUAL,         // =
+        \T_EQUAL,  // =
+        ...self::OPERATOR_ASSIGNMENT_EXCEPT_EQUAL_AND_COALESCE,
+    ];
+
+    public const OPERATOR_ASSIGNMENT_EXCEPT_EQUAL_AND_COALESCE = [
         \T_PLUS_EQUAL,    // +=
         \T_MINUS_EQUAL,   // -=
         \T_MUL_EQUAL,     // *=
@@ -497,16 +507,6 @@ final class TokenType extends Dictionary
         \T_AND,
         \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
         \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
-    ];
-
-    public const OTHER = [
-        \T_CONSTANT_ENCAPSED_STRING,
-        \T_CURLY_OPEN,
-        \T_DNUMBER,
-        \T_DOLLAR_OPEN_CURLY_BRACES,
-        \T_LNUMBER,
-        \T_NUM_STRING,
-        \T_STRING_VARNAME,
     ];
 
     /**

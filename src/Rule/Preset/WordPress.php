@@ -18,8 +18,8 @@ use Lkrms\PrettyPHP\FormatterBuilder;
  * Apply the WordPress code style
  *
  * Specifically:
+ *
  * - Add a space before alternative syntax ':' operators
- * - Suppress horizontal space after `exit` and `die`
  * - Add a space after '!' unless it appears before another '!'
  * - Add a space inside non-empty parentheses
  * - Add a space inside non-empty square brackets unless their first inner token
@@ -66,7 +66,6 @@ final class WordPress implements Preset, TokenRule
             \T_COMMENT,
             \T_DOC_COMMENT,
             \T_COLON,
-            \T_EXIT,
             \T_LOGICAL_NOT,
             \T_OPEN_BRACE,
             \T_CLOSE_BRACE,
@@ -100,11 +99,6 @@ final class WordPress implements Preset, TokenRule
             }
             $token->WhitespaceBefore |= WhitespaceType::SPACE;
             $token->WhitespaceMaskPrev |= WhitespaceType::SPACE;
-            return;
-        }
-
-        if ($token->id === \T_EXIT) {
-            $token->WhitespaceMaskNext = WhitespaceType::NONE;
             return;
         }
 

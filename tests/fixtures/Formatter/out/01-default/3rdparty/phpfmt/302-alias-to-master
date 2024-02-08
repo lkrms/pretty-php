@@ -2,7 +2,7 @@
 // passes:Default,AliasToMaster
 chop();
 close();
-die ();
+die();
 doubleval();
 fputs();
 ini_alter();

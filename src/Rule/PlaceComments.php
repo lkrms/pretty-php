@@ -213,9 +213,8 @@ final class PlaceComments implements TokenRule
             //
             $indent = 0;
             if (
-                $next->id === \T_CASE ||
-                ($next->id === \T_DEFAULT &&
-                    $next->parent()->prevSibling(2)->id === \T_SWITCH)
+                ($next->id === \T_CASE || $next->id === \T_DEFAULT) &&
+                $next->parent()->prevSibling(2)->id === \T_SWITCH
             ) {
                 $prev = $token->_prevCode;
                 if (!(end($token->BracketStack) === $prev ||

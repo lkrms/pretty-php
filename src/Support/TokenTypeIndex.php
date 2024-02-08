@@ -542,7 +542,6 @@ class TokenTypeIndex implements IImmutable
             \T_ECHO,
             \T_ELSE,
             \T_ELSEIF,
-            \T_EXIT,
             \T_FOR,
             \T_FOREACH,
             \T_GOTO,
@@ -711,7 +710,9 @@ class TokenTypeIndex implements IImmutable
         $preserveBefore = TT::mergeIndexes(
             $this->_PreserveNewlineBefore,
             TT::getIndex(
-                ...TT::OPERATOR_LOGICAL_EXCEPT_NOT,
+                ...TT::OPERATOR_ASSIGNMENT_EXCEPT_EQUAL,
+                ...TT::OPERATOR_COMPARISON,
+                ...TT::OPERATOR_LOGICAL,
             ),
         );
         $preserveAfter = TT::mergeIndexes(
@@ -740,6 +741,7 @@ class TokenTypeIndex implements IImmutable
             $this->_PreserveNewlineAfter,
             TT::getIndex(
                 \T_COALESCE,
+                \T_COALESCE_EQUAL,
                 \T_CONCAT,
                 ...TT::OPERATOR_ARITHMETIC,
                 ...TT::OPERATOR_BITWISE,

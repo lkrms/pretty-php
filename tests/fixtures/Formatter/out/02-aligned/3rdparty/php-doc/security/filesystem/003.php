@@ -6,7 +6,7 @@ $homedir  = "/home/$username";
 $filepath = "$homedir/$userfile";
 
 if (!ctype_alnum($username) || !preg_match('/^(?:[a-z0-9_-]|\.(?!\.))+$/iD', $userfile)) {
-    die ('Bad username/filename');
+    die('Bad username/filename');
 }
 
 // etc...

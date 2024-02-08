@@ -5,8 +5,8 @@ use Lkrms\Cli\CliApplication;
 use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Facade\Console;
 use Lkrms\PrettyPHP\Tests\FormatterTest;
-use Lkrms\Utility\Convert;
 use Lkrms\Utility\File;
+use Lkrms\Utility\Inflect;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
 use Lkrms\Utility\Sys;
@@ -330,9 +330,8 @@ $count++;
 $fixtures++;
 $replaced++;
 
-Console::summary(sprintf(
-    $replaced !== $fixtures ? 'Updated %1$d of %2$d %3$s' : 'Generated %2$d %3$s',
-    $replaced,
+Console::summary(Inflect::format(
+    ($replaced !== $fixtures ? 'Updated %d of' : 'Generated') . ' {{#}} {{#:file}}',
     $fixtures,
-    Convert::plural($fixtures, 'file')
+    $replaced,
 ), 'successfully');

@@ -11,8 +11,8 @@ use Lkrms\PrettyPHP\Support\TokenIndentDelta;
 use Lkrms\PrettyPHP\Token\Concern\CollectibleTokenTrait;
 use Lkrms\PrettyPHP\Token\Concern\ContextAwareTokenTrait;
 use Lkrms\PrettyPHP\Token\Concern\NavigableTokenTrait;
-use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
+use Lkrms\Utility\Str;
 use JsonSerializable;
 use PhpToken;
 
@@ -1362,7 +1362,7 @@ class Token extends PhpToken implements JsonSerializable
     {
         $expanded = !$expandTabs || strpos($code, "\t") === false
             ? $code
-            : Convert::expandTabs($code, $this->Formatter->TabSize, $this->OutputColumn);
+            : Str::expandTabs($code, $this->Formatter->TabSize, $this->OutputColumn);
         $this->OutputLine += ($newlines = substr_count($code, "\n"));
         $this->OutputColumn = $newlines
             ? mb_strlen($expanded) - mb_strrpos($expanded, "\n")
@@ -1421,7 +1421,7 @@ column 1 despite starting in column 2 or above (like this comment) */
         }
 
         /** @todo Guess input tab size and use it instead */
-        return Convert::expandLeadingTabs(
+        return Str::expandLeadingTabs(
             $this->text, $this->Formatter->TabSize, !$this->wasFirstOnLine(), $this->column
         );
     }
@@ -1442,7 +1442,7 @@ column 1 despite starting in column 2 or above (like this comment) */
             'T%d:L%d:%s',
             $this->Index,
             $this->line,
-            Convert::ellipsize(var_export($this->text, true), 20)
+            Str::ellipsize(var_export($this->text, true), 20)
         );
     }
 }

@@ -22,7 +22,7 @@ class Service
 function redirect(string $uri): never
 {
 	header('Location: ' . $uri);
-	exit ();
+	exit();
 }
 
 array_map(strtoupper(...), $files);

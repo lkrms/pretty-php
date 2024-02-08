@@ -11,6 +11,7 @@ use Lkrms\Facade\Console;
 use Lkrms\PrettyPHP\Command\FormatPhp;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Json;
+use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
 use Generator;
 
@@ -196,15 +197,20 @@ EOF;
 
     /**
      * @dataProvider directoriesProvider
+     *
+     * @param array<array{Level::*,string,2?:array<string,mixed>}>|string|null $message
      */
     public function testDirectories(
         int $exitStatus,
-        ?string $message,
+        $message,
         string $dir,
         bool $chdir = false,
+        ?string $output = null,
         string ...$args
     ): void {
-        if (!$exitStatus) {
+        if (is_array($message)) {
+            $messages = $message;
+        } elseif (!$exitStatus) {
             $messages = $message === null
                 ? []
                 : [[Level::INFO, $message]];
@@ -216,18 +222,20 @@ EOF;
         if ($chdir) {
             File::chdir(self::$FixturesPath . $dir);
             $this->App->setWorkingDirectory();
-            $this->assertCommandProduces(null, null, $args, $exitStatus, $messages);
+            $this->assertCommandProduces($output, null, $args, $exitStatus, $messages);
             return;
         }
         $dir = self::$FixturesPath . $dir;
-        $this->assertCommandProduces(null, null, ['--', $dir, ...$args], $exitStatus, $messages);
+        $this->assertCommandProduces($output, null, [...$args, '--', $dir], $exitStatus, $messages);
     }
 
     /**
-     * @return array<string,array{int,string|null,string,3?:bool,...}>
+     * @return array<string,array{int,array<array{Level::*,string,2?:array<string,mixed>}>|string|null,string,3?:bool,4?:string|null,...}>
      */
     public static function directoriesProvider(): array
     {
+        $dir = self::getFixturesPath(__CLASS__);
+
         return [
             'empty' => [
                 0,
@@ -300,6 +308,131 @@ EOF;
                 '/invalid-sort-imports-2',
                 true,
             ],
+            'empty config + --check' => [
+                0,
+                ' -> 1 file would be left unchanged',
+                '/empty-config',
+                false,
+                null,
+                '--check',
+            ],
+            'empty config + --check in cwd' => [
+                0,
+                ' -> 1 file would be left unchanged',
+                '/empty-config',
+                true,
+                null,
+                '--check',
+            ],
+            'unformatted + --check' => [
+                8,
+                ' !! Input requires formatting',
+                '/unformatted',
+                false,
+                null,
+                '--check',
+            ],
+            'unformatted + --check in cwd' => [
+                8,
+                ' !! Input requires formatting',
+                '/unformatted',
+                true,
+                null,
+                '--check',
+            ],
+            'empty config + --diff' => [
+                0,
+                ' -> 1 file would be left unchanged',
+                '/empty-config',
+                false,
+                null,
+                '--diff',
+            ],
+            'empty config + --diff in cwd' => [
+                0,
+                ' -> 1 file would be left unchanged',
+                '/empty-config',
+                true,
+                null,
+                '--diff',
+            ],
+            'unformatted + --diff' => [
+                8,
+                [
+                    [Level::INFO, " -> Would replace $dir/unformatted/Foo.php"],
+                    [Level::INFO, ''],
+                    [Level::INFO, ' -> 1 of 2 files would be replaced'],
+                ],
+                '/unformatted',
+                false,
+                self::normaliseUnifiedDiff(<<<EOF
+--- a/$dir/unformatted/Foo.php
++++ b/$dir/unformatted/Foo.php
+@@ -11,9 +11,9 @@
+ 
+     public function __construct()
+     {
+-        \$a = 0;          // Short
+-        \$foo = 1;        // Long
+-        \$quuux = 2;      // Longer
++        \$a = 0;  // Short
++        \$foo = 1;  // Long
++        \$quuux = 2;  // Longer
+         \$this->Bar = 3;  // Longest
+     }
+ }
+
+EOF),
+                '--diff',
+            ],
+            'unformatted + --diff in cwd' => [
+                8,
+                [
+                    [Level::INFO, ' -> Would replace ./Foo.php'],
+                    [Level::INFO, ''],
+                    [Level::INFO, ' -> 1 of 2 files would be replaced'],
+                ],
+                '/unformatted',
+                true,
+                self::normaliseUnifiedDiff(<<<EOF
+--- a/./Foo.php
++++ b/./Foo.php
+@@ -11,9 +11,9 @@
+ 
+     public function __construct()
+     {
+-        \$a = 0;          // Short
+-        \$foo = 1;        // Long
+-        \$quuux = 2;      // Longer
++        \$a = 0;  // Short
++        \$foo = 1;  // Long
++        \$quuux = 2;  // Longer
+         \$this->Bar = 3;  // Longest
+     }
+ }
+
+EOF),
+                '--diff',
+            ],
+            'invalid syntax' => [
+                4,
+                [
+                    [Level::ERROR, ' !! InvalidSyntaxException:' . \PHP_EOL . "  Formatting failed: $dir/invalid-syntax/invalid.php cannot be parsed"],
+                    [Level::ERROR, " !! 1 file with invalid syntax not formatted: $dir/invalid-syntax/invalid.php"],
+                    [Level::ERROR, ' !! Formatted 2 files with 1 error'],
+                ],
+                '/invalid-syntax',
+            ],
+            'invalid syntax in cwd' => [
+                4,
+                [
+                    [Level::ERROR, ' !! InvalidSyntaxException:' . \PHP_EOL . '  Formatting failed: ./invalid.php cannot be parsed'],
+                    [Level::ERROR, ' !! 1 file with invalid syntax not formatted: ./invalid.php'],
+                    [Level::ERROR, ' !! Formatted 2 files with 1 error'],
+                ],
+                '/invalid-syntax',
+                true,
+            ],
         ];
     }
 
@@ -329,6 +462,19 @@ EOF;
                 '<path> does not accept the same value multiple times',
                 '--',
                 '-',
+                '-',
+            ],
+            'dash and path' => [
+                "<path> cannot be '-' when multiple paths are given",
+                '-',
+                __FILE__,
+            ],
+            'multiple outputs' => [
+                '--output cannot be given multiple times when reading from the standard input',
+                '-o',
+                __DIR__ . '/does_not_exist',
+                '-o',
+                __DIR__ . '/does_not_exist_either',
                 '-',
             ],
             'tab and space' => [
@@ -648,5 +794,14 @@ EOF,
             $path = substr($file, $offset);
             yield $path => [$file];
         }
+    }
+
+    private static function normaliseUnifiedDiff(string $diff): string
+    {
+        if (\PHP_EOL === "\n") {
+            return $diff;
+        }
+
+        return Pcre::replace('/^((?:[+-]{3}|@)\V*)\R/m', '$1' . "\n", $diff);
     }
 }

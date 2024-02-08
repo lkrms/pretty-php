@@ -4,8 +4,8 @@
         "src",
         "bin",
         "scripts",
-        "tests\/unit",
-        "tools\/apigen",
+        "tests/unit",
+        "tools/apigen",
         ".php-cs-fixer.dist.php"
     ],
     "includeIfPhp": true,
@@ -16,5 +16,6 @@
         "preserve-one-line",
         "strict-lists"
     ],
+    "operatorsFirst": true,
     "heredocIndent": "none"
 }

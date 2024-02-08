@@ -45,10 +45,10 @@ use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder;
 use Lkrms\Utility\Arr;
-use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Get;
+use Lkrms\Utility\Inflect;
 use Lkrms\Utility\Json;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
@@ -539,6 +539,7 @@ Otherwise, `-o/--output` must be given once per input file, or not at all.
 EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->multipleAllowed()
+                ->unique()
                 ->bindTo($this->OutputFiles),
             CliOption::build()
                 ->long('diff')
@@ -850,11 +851,19 @@ EOF,
                 $dirCount++;
 
                 $dir = dirname($configFile);
-                File::chdir($dir);
+                $restoreDir = false;
+                if (!File::same($dir, File::cwd())) {
+                    Console::debug('Changing to directory:', $dir);
+                    File::chdir($dir);
+                    $restoreDir = true;
+                }
                 try {
                     $config = $this->getConfig($configValues);
                 } finally {
-                    $this->App->restoreWorkingDirectory();
+                    if ($restoreDir) {
+                        Console::debug('Returning to:', $this->App->getWorkingDirectory());
+                        $this->App->restoreWorkingDirectory();
+                    }
                 }
                 $config->validateOptions(InvalidConfigurationException::class, $configFile);
                 if ($this->Debug) {
@@ -924,8 +933,13 @@ EOF,
         $out = $this->OutputFiles;
 
         if ((!$in && !$dirCount && !$this->InputFiles) || $in === ['-']) {
+            if (count($out) > 1) {
+                throw new CliInvalidArgumentsException(
+                    '--output cannot be given multiple times when reading from the standard input'
+                );
+            }
             $in = ['php://stdin'];
-            $out = ['-'];
+            $out = $out ?: ['-'];
             if ($this->StdinFilename !== null && !$this->IgnoreConfigFiles) {
                 $dir = dirname($this->StdinFilename);
                 $dirs[$dir] = $dir;
@@ -1027,7 +1041,9 @@ EOF,
 
             if (
                 $this->Quiet < 4 &&
-                ($file !== 'php://stdin' || !stream_isatty(\STDIN))
+                ($file !== 'php://stdin' || (
+                    $this->StdinFilename !== null && !stream_isatty(\STDIN)
+                ))
             ) {
                 Console::logProgress(sprintf(
                     'Formatting %d of %d:',
@@ -1046,7 +1062,9 @@ EOF,
                 $output = $formatter->format(
                     $input,
                     null,
-                    $inputFile,
+                    $file !== 'php://stdin' || $this->StdinFilename !== null
+                        ? $inputFile
+                        : null,
                     $this->Fast
                 );
             } catch (InvalidSyntaxException $ex) {
@@ -1138,20 +1156,17 @@ EOF,
         }
 
         if ($errors) {
-            Console::error(
-                Convert::plural(count($errors), 'file', null, true) . ' with invalid syntax not formatted:',
-                implode("\n", $errors),
-                null,
-                false
-            );
+            Console::error(Inflect::format(
+                '{{#}} {{#:file}} with invalid syntax not formatted:',
+                count($errors),
+            ), implode("\n", $errors), null, false);
         }
 
         if ($this->Check) {
             if ($this->Quiet < 2) {
-                Console::log(sprintf(
-                    '%d %s would be left unchanged',
+                Console::log(Inflect::format(
+                    '{{#}} {{#:file}} would be left unchanged',
                     $count,
-                    Convert::plural($count, 'file')
                 ));
             }
 
@@ -1163,14 +1178,12 @@ EOF,
                 if ($replaced) {
                     Console::out('', ConsoleLevel::INFO);
                 }
-                Console::log(sprintf(
+                Console::log(Inflect::format(
                     $replaced
-                        ? '%1$d of %2$d %3$s %4$s formatting'
-                        : '%2$d %3$s would be left unchanged',
-                    $replaced,
+                        ? '%d of {{#}} {{#:file}} would be replaced'
+                        : '{{#}} {{#:file}} would be left unchanged',
                     $count,
-                    Convert::plural($count, 'file'),
-                    Convert::plural($count, 'requires', 'require')
+                    $replaced,
                 ));
             }
 
@@ -1178,11 +1191,12 @@ EOF,
         }
 
         if ($this->Quiet < 2) {
-            Console::summary(sprintf(
-                $replaced ? 'Replaced %1$d of %2$d %3$s' : 'Formatted %2$d %3$s',
-                $replaced,
+            Console::summary(Inflect::format(
+                $replaced
+                    ? 'Replaced %d of {{#}} {{#:file}}'
+                    : 'Formatted {{#}} {{#:file}}',
                 $count,
-                Convert::plural($count, 'file')
+                $replaced,
             ), 'successfully');
         }
     }

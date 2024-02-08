@@ -8,8 +8,8 @@ use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
+use Lkrms\Utility\Str;
 
 /**
  * Apply sensible default spacing
@@ -141,7 +141,7 @@ final class StandardWhitespace implements MultiTokenRule
                 // Only perform pattern matching on the last line
                 $text = substr(strrchr("\n" . $text, "\n"), 1);
                 if (Pcre::match('/^\h++$/', $text)) {
-                    $indent = strlen(Convert::expandTabs($text, $this->Formatter->TabSize));
+                    $indent = strlen(Str::expandTabs($text, $this->Formatter->TabSize));
                     if ($indent % $this->Formatter->TabSize === 0) {
                         $token->TagIndent = $indent / $this->Formatter->TabSize;
 

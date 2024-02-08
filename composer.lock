@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "88f456aea65f4e11c6260c059933769c",
+    "content-hash": "73b3a002b404a493391ec25eb09b9887",
     "packages": [
         {
             "name": "lkrms/dice",
-            "version": "v4.1.8",
+            "version": "v4.1.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/Dice.git",
-                "reference": "08b5151cd9cf80771d8b45808a3e19de99f1ae12"
+                "reference": "202bef1d5a73c5bca4043f651dca686e77507974"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/Dice/zipball/08b5151cd9cf80771d8b45808a3e19de99f1ae12",
-                "reference": "08b5151cd9cf80771d8b45808a3e19de99f1ae12",
+                "url": "https://api.github.com/repos/lkrms/Dice/zipball/202bef1d5a73c5bca4043f651dca686e77507974",
+                "reference": "202bef1d5a73c5bca4043f651dca686e77507974",
                 "shasum": ""
             },
             "require": {
@@ -45,27 +45,27 @@
                 "ioc"
             ],
             "support": {
-                "source": "https://github.com/lkrms/Dice/tree/v4.1.8"
+                "source": "https://github.com/lkrms/Dice/tree/v4.1.9"
             },
-            "time": "2023-12-04T15:05:42+00:00"
+            "time": "2024-02-05T09:28:28+00:00"
         },
         {
             "name": "lkrms/util",
-            "version": "v0.21.32",
+            "version": "v0.21.37",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/php-util.git",
-                "reference": "9d30780ec087f28d31ec4603b9fcc34da2773739"
+                "reference": "b5c063dc3c1f67410ae173a59b11b54eae25322e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/php-util/zipball/9d30780ec087f28d31ec4603b9fcc34da2773739",
-                "reference": "9d30780ec087f28d31ec4603b9fcc34da2773739",
+                "url": "https://api.github.com/repos/lkrms/php-util/zipball/b5c063dc3c1f67410ae173a59b11b54eae25322e",
+                "reference": "b5c063dc3c1f67410ae173a59b11b54eae25322e",
                 "shasum": ""
             },
             "require": {
                 "composer-runtime-api": "^2.2",
-                "lkrms/dice": "^4.1.8",
+                "lkrms/dice": "^4.1.9",
                 "php": ">=7.4",
                 "psr/container": "^2",
                 "psr/event-dispatcher": "^1",
@@ -118,9 +118,9 @@
             "description": "A lightweight PHP toolkit for expressive backend/CLI apps",
             "support": {
                 "issues": "https://github.com/lkrms/php-util/issues",
-                "source": "https://github.com/lkrms/php-util/tree/v0.21.32"
+                "source": "https://github.com/lkrms/php-util/tree/v0.21.37"
             },
-            "time": "2024-01-29T03:22:31+00:00"
+            "time": "2024-02-07T14:45:31+00:00"
         },
         {
             "name": "psr/container",
