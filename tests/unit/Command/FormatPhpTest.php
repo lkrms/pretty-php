@@ -11,6 +11,7 @@ use Lkrms\Facade\Console;
 use Lkrms\PrettyPHP\Command\FormatPhp;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Json;
+use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
 use Generator;
 
@@ -364,7 +365,7 @@ EOF;
                 ],
                 '/unformatted',
                 false,
-                <<<EOF
+                self::normaliseUnifiedDiff(<<<EOF
 --- a/$dir/unformatted/Foo.php
 +++ b/$dir/unformatted/Foo.php
 @@ -11,9 +11,9 @@
@@ -381,7 +382,7 @@ EOF;
      }
  }
 
-EOF,
+EOF),
                 '--diff',
             ],
             'unformatted + --diff in cwd' => [
@@ -393,7 +394,7 @@ EOF,
                 ],
                 '/unformatted',
                 true,
-                <<<EOF
+                self::normaliseUnifiedDiff(<<<EOF
 --- a/./Foo.php
 +++ b/./Foo.php
 @@ -11,9 +11,9 @@
@@ -410,7 +411,7 @@ EOF,
      }
  }
 
-EOF,
+EOF),
                 '--diff',
             ],
             'invalid syntax' => [
@@ -793,5 +794,14 @@ EOF,
             $path = substr($file, $offset);
             yield $path => [$file];
         }
+    }
+
+    private static function normaliseUnifiedDiff(string $diff): string
+    {
+        if (\PHP_EOL === "\n") {
+            return $diff;
+        }
+
+        return Pcre::replace('/^((?:[+-]{3}|@)\V*)\R/m', '$1' . "\n", $diff);
     }
 }
