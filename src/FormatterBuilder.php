@@ -10,7 +10,7 @@ use Lkrms\PrettyPHP\Contract\Extension;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 
 /**
- * Creates Formatter objects via a fluent interface
+ * A fluent Formatter factory
  *
  * @method $this insertSpaces(bool $value = true) Use spaces for indentation? (default: true)
  * @method $this tabSize(int $value) The size of a tab, in spaces (see {@see Formatter::$TabSize})

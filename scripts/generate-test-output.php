@@ -5,8 +5,8 @@ use Lkrms\Cli\CliApplication;
 use Lkrms\Facade\Console;
 use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
 use Lkrms\PrettyPHP\Tests\FormatterTest;
-use Lkrms\Utility\Convert;
 use Lkrms\Utility\File;
+use Lkrms\Utility\Inflect;
 use Lkrms\Utility\Json;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
@@ -103,9 +103,8 @@ if (isset($invalid)) {
     File::putContents($indexPath, $json . \PHP_EOL);
 }
 
-Console::summary(sprintf(
-    $replaced ? 'Updated %1$d of %2$d %3$s' : 'Generated %2$d %3$s',
-    $replaced,
+Console::summary(Inflect::format(
+    ($replaced ? 'Updated %d of' : 'Generated') . ' {{#}} {{#:file}}',
     $count,
-    Convert::plural($count, 'file')
+    $replaced,
 ), 'successfully');

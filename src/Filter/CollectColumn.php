@@ -4,7 +4,7 @@ namespace Lkrms\PrettyPHP\Filter;
 
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Str;
 
 /**
  * Assign the starting column of each token to its $column property
@@ -24,7 +24,7 @@ final class CollectColumn implements Filter
                 !$this->TypeIndex->Expandable[$token->id] ||
                 strpos($token->text, "\t") === false
                     ? $token->text
-                    : Convert::expandTabs($token->text, $this->Formatter->TabSize, $column);
+                    : Str::expandTabs($token->text, $this->Formatter->TabSize, $column);
             if ($text !== $token->text) {
                 $token->ExpandedText = $text;
             }
