@@ -12,6 +12,6 @@ if (isset($_GET['width']) AND isset($_GET['height'])) {
 	echo "  location.href=\"${_SERVER['SCRIPT_NAME']}?${_SERVER['QUERY_STRING']}"
 		. "&width=\" + screen.width + \"&height=\" + screen.height;\n";
 	echo "</script>\n";
-	exit ();
+	exit();
 }
 ?>
