@@ -204,6 +204,7 @@ EOF;
         $message,
         string $dir,
         bool $chdir = false,
+        ?string $output = null,
         string ...$args
     ): void {
         if (is_array($message)) {
@@ -220,15 +221,15 @@ EOF;
         if ($chdir) {
             File::chdir(self::$FixturesPath . $dir);
             $this->App->setWorkingDirectory();
-            $this->assertCommandProduces(null, null, $args, $exitStatus, $messages);
+            $this->assertCommandProduces($output, null, $args, $exitStatus, $messages);
             return;
         }
         $dir = self::$FixturesPath . $dir;
-        $this->assertCommandProduces(null, null, [...$args, '--', $dir], $exitStatus, $messages);
+        $this->assertCommandProduces($output, null, [...$args, '--', $dir], $exitStatus, $messages);
     }
 
     /**
-     * @return array<string,array{int,array<array{Level::*,string,2?:array<string,mixed>}>|string|null,string,3?:bool,...}>
+     * @return array<string,array{int,array<array{Level::*,string,2?:array<string,mixed>}>|string|null,string,3?:bool,4?:string|null,...}>
      */
     public static function directoriesProvider(): array
     {
@@ -311,6 +312,7 @@ EOF;
                 ' -> 1 file would be left unchanged',
                 '/empty-config',
                 false,
+                null,
                 '--check',
             ],
             'empty config + --check in cwd' => [
@@ -318,6 +320,7 @@ EOF;
                 ' -> 1 file would be left unchanged',
                 '/empty-config',
                 true,
+                null,
                 '--check',
             ],
             'unformatted + --check' => [
@@ -325,6 +328,7 @@ EOF;
                 ' !! Input requires formatting',
                 '/unformatted',
                 false,
+                null,
                 '--check',
             ],
             'unformatted + --check in cwd' => [
@@ -332,7 +336,82 @@ EOF;
                 ' !! Input requires formatting',
                 '/unformatted',
                 true,
+                null,
                 '--check',
+            ],
+            'empty config + --diff' => [
+                0,
+                ' -> 1 file would be left unchanged',
+                '/empty-config',
+                false,
+                null,
+                '--diff',
+            ],
+            'empty config + --diff in cwd' => [
+                0,
+                ' -> 1 file would be left unchanged',
+                '/empty-config',
+                true,
+                null,
+                '--diff',
+            ],
+            'unformatted + --diff' => [
+                8,
+                [
+                    [Level::INFO, " -> Would replace $dir/unformatted/Foo.php"],
+                    [Level::INFO, ''],
+                    [Level::INFO, ' -> 1 of 2 files would be replaced'],
+                ],
+                '/unformatted',
+                false,
+                <<<EOF
+--- a/$dir/unformatted/Foo.php
++++ b/$dir/unformatted/Foo.php
+@@ -11,9 +11,9 @@
+ 
+     public function __construct()
+     {
+-        \$a = 0;          // Short
+-        \$foo = 1;        // Long
+-        \$quuux = 2;      // Longer
++        \$a = 0;  // Short
++        \$foo = 1;  // Long
++        \$quuux = 2;  // Longer
+         \$this->Bar = 3;  // Longest
+     }
+ }
+
+EOF,
+                '--diff',
+            ],
+            'unformatted + --diff in cwd' => [
+                8,
+                [
+                    [Level::INFO, ' -> Would replace ./Foo.php'],
+                    [Level::INFO, ''],
+                    [Level::INFO, ' -> 1 of 2 files would be replaced'],
+                ],
+                '/unformatted',
+                true,
+                <<<EOF
+--- a/./Foo.php
++++ b/./Foo.php
+@@ -11,9 +11,9 @@
+ 
+     public function __construct()
+     {
+-        \$a = 0;          // Short
+-        \$foo = 1;        // Long
+-        \$quuux = 2;      // Longer
++        \$a = 0;  // Short
++        \$foo = 1;  // Long
++        \$quuux = 2;  // Longer
+         \$this->Bar = 3;  // Longest
+     }
+ }
+
+EOF,
+                '--diff',
             ],
             'invalid syntax' => [
                 4,
@@ -382,6 +461,19 @@ EOF;
                 '<path> does not accept the same value multiple times',
                 '--',
                 '-',
+                '-',
+            ],
+            'dash and path' => [
+                "<path> cannot be '-' when multiple paths are given",
+                '-',
+                __FILE__,
+            ],
+            'multiple outputs' => [
+                '--output cannot be given multiple times when reading from the standard input',
+                '-o',
+                __DIR__ . '/does_not_exist',
+                '-o',
+                __DIR__ . '/does_not_exist_either',
                 '-',
             ],
             'tab and space' => [

@@ -539,6 +539,7 @@ Otherwise, `-o/--output` must be given once per input file, or not at all.
 EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->multipleAllowed()
+                ->unique()
                 ->bindTo($this->OutputFiles),
             CliOption::build()
                 ->long('diff')
