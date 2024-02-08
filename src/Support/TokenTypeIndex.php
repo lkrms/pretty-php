@@ -542,7 +542,6 @@ class TokenTypeIndex implements IImmutable
             \T_ECHO,
             \T_ELSE,
             \T_ELSEIF,
-            \T_EXIT,
             \T_FOR,
             \T_FOREACH,
             \T_GOTO,
