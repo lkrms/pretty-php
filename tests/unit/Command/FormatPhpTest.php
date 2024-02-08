@@ -196,15 +196,19 @@ EOF;
 
     /**
      * @dataProvider directoriesProvider
+     *
+     * @param array<array{Level::*,string,2?:array<string,mixed>}>|string|null $message
      */
     public function testDirectories(
         int $exitStatus,
-        ?string $message,
+        $message,
         string $dir,
         bool $chdir = false,
         string ...$args
     ): void {
-        if (!$exitStatus) {
+        if (is_array($message)) {
+            $messages = $message;
+        } elseif (!$exitStatus) {
             $messages = $message === null
                 ? []
                 : [[Level::INFO, $message]];
@@ -220,14 +224,16 @@ EOF;
             return;
         }
         $dir = self::$FixturesPath . $dir;
-        $this->assertCommandProduces(null, null, ['--', $dir, ...$args], $exitStatus, $messages);
+        $this->assertCommandProduces(null, null, [...$args, '--', $dir], $exitStatus, $messages);
     }
 
     /**
-     * @return array<string,array{int,string|null,string,3?:bool,...}>
+     * @return array<string,array{int,array<array{Level::*,string,2?:array<string,mixed>}>|string|null,string,3?:bool,...}>
      */
     public static function directoriesProvider(): array
     {
+        $dir = self::getFixturesPath(__CLASS__);
+
         return [
             'empty' => [
                 0,
@@ -298,6 +304,53 @@ EOF;
                 2,
                 'sortImportsBy and noSortImports/disable=sort-imports cannot both be given in ./.prettyphp',
                 '/invalid-sort-imports-2',
+                true,
+            ],
+            'empty config + --check' => [
+                0,
+                ' -> 1 file would be left unchanged',
+                '/empty-config',
+                false,
+                '--check',
+            ],
+            'empty config + --check in cwd' => [
+                0,
+                ' -> 1 file would be left unchanged',
+                '/empty-config',
+                true,
+                '--check',
+            ],
+            'unformatted + --check' => [
+                8,
+                ' !! Input requires formatting',
+                '/unformatted',
+                false,
+                '--check',
+            ],
+            'unformatted + --check in cwd' => [
+                8,
+                ' !! Input requires formatting',
+                '/unformatted',
+                true,
+                '--check',
+            ],
+            'invalid syntax' => [
+                4,
+                [
+                    [Level::ERROR, ' !! InvalidSyntaxException:' . \PHP_EOL . "  Formatting failed: $dir/invalid-syntax/invalid.php cannot be parsed"],
+                    [Level::ERROR, " !! 1 file with invalid syntax not formatted: $dir/invalid-syntax/invalid.php"],
+                    [Level::ERROR, ' !! Formatted 2 files with 1 error'],
+                ],
+                '/invalid-syntax',
+            ],
+            'invalid syntax in cwd' => [
+                4,
+                [
+                    [Level::ERROR, ' !! InvalidSyntaxException:' . \PHP_EOL . '  Formatting failed: ./invalid.php cannot be parsed'],
+                    [Level::ERROR, ' !! 1 file with invalid syntax not formatted: ./invalid.php'],
+                    [Level::ERROR, ' !! Formatted 2 files with 1 error'],
+                ],
+                '/invalid-syntax',
                 true,
             ],
         ];
