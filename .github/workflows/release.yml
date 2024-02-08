@@ -47,6 +47,7 @@ jobs:
     name: Build phar and create draft release
     needs:
       - ci
+    if: ${{ !cancelled() && !failure() }}
     runs-on: ubuntu-latest
 
     steps:
