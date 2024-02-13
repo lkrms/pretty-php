@@ -1146,9 +1146,9 @@ final class Formatter implements Buildable
                 }
 
                 $values[] = Inflect::formatRange(
-                    '{{#:on:between}} {{#:line}} {{#:#:and}}',
                     $problem->Start->OutputLine,
                     $problem->End->OutputLine ?? $problem->Start->OutputLine,
+                    '{{#:on:between}} {{#:line}} {{#:#:and}}',
                 );
                 Console::warn(sprintf($problem->Message . ' %s', ...$problem->Values, ...$values));
             }

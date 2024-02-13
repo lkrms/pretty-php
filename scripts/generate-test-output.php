@@ -104,7 +104,7 @@ if (isset($invalid)) {
 }
 
 Console::summary(Inflect::format(
-    ($replaced ? 'Updated %d of' : 'Generated') . ' {{#}} {{#:file}}',
     $count,
+    ($replaced ? 'Updated %d of' : 'Generated') . ' {{#}} {{#:file}}',
     $replaced,
 ), 'successfully');

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "73b3a002b404a493391ec25eb09b9887",
+    "content-hash": "b5f0d5591b631c0dfa57816a21f8acd7",
     "packages": [
         {
             "name": "lkrms/dice",
@@ -51,16 +51,16 @@
         },
         {
             "name": "lkrms/util",
-            "version": "v0.21.37",
+            "version": "v0.21.39",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/php-util.git",
-                "reference": "b5c063dc3c1f67410ae173a59b11b54eae25322e"
+                "reference": "87e822700f69882ed0137c0048fa91ac3daadd81"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/php-util/zipball/b5c063dc3c1f67410ae173a59b11b54eae25322e",
-                "reference": "b5c063dc3c1f67410ae173a59b11b54eae25322e",
+                "url": "https://api.github.com/repos/lkrms/php-util/zipball/87e822700f69882ed0137c0048fa91ac3daadd81",
+                "reference": "87e822700f69882ed0137c0048fa91ac3daadd81",
                 "shasum": ""
             },
             "require": {
@@ -105,7 +105,8 @@
                     "bootstrap.php"
                 ],
                 "psr-4": {
-                    "Lkrms\\": "src/"
+                    "Lkrms\\": "src/Util/",
+                    "Salient\\": "src/Toolkit/"
                 },
                 "classmap": [
                     "stubs/"
@@ -118,9 +119,9 @@
             "description": "A lightweight PHP toolkit for expressive backend/CLI apps",
             "support": {
                 "issues": "https://github.com/lkrms/php-util/issues",
-                "source": "https://github.com/lkrms/php-util/tree/v0.21.37"
+                "source": "https://github.com/lkrms/php-util/tree/v0.21.39"
             },
-            "time": "2024-02-07T14:45:31+00:00"
+            "time": "2024-02-12T23:48:24+00:00"
         },
         {
             "name": "psr/container",
