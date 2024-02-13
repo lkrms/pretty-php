@@ -1157,16 +1157,16 @@ EOF,
 
         if ($errors) {
             Console::error(Inflect::format(
+                $errors,
                 '{{#}} {{#:file}} with invalid syntax not formatted:',
-                count($errors),
             ), implode("\n", $errors), null, false);
         }
 
         if ($this->Check) {
             if ($this->Quiet < 2) {
                 Console::log(Inflect::format(
-                    '{{#}} {{#:file}} would be left unchanged',
                     $count,
+                    '{{#}} {{#:file}} would be left unchanged',
                 ));
             }
 
@@ -1179,10 +1179,10 @@ EOF,
                     Console::out('', ConsoleLevel::INFO);
                 }
                 Console::log(Inflect::format(
+                    $count,
                     $replaced
                         ? '%d of {{#}} {{#:file}} would be replaced'
                         : '{{#}} {{#:file}} would be left unchanged',
-                    $count,
                     $replaced,
                 ));
             }
@@ -1192,10 +1192,10 @@ EOF,
 
         if ($this->Quiet < 2) {
             Console::summary(Inflect::format(
+                $count,
                 $replaced
                     ? 'Replaced %d of {{#}} {{#:file}}'
                     : 'Formatted {{#}} {{#:file}}',
-                $count,
                 $replaced,
             ), 'successfully');
         }

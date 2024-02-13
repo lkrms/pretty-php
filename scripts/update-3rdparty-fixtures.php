@@ -331,7 +331,7 @@ $fixtures++;
 $replaced++;
 
 Console::summary(Inflect::format(
-    ($replaced !== $fixtures ? 'Updated %d of' : 'Generated') . ' {{#}} {{#:file}}',
     $fixtures,
+    ($replaced !== $fixtures ? 'Updated %d of' : 'Generated') . ' {{#}} {{#:file}}',
     $replaced,
 ), 'successfully');
