@@ -86,8 +86,8 @@ EOF;
     }
 
     /**
-     * @dataProvider laravelProvider
      * @requires PHP >= 8.1
+     * @dataProvider laravelProvider
      */
     public function testLaravel(string $file): void
     {
@@ -103,8 +103,8 @@ EOF;
     }
 
     /**
-     * @dataProvider symfonyProvider
      * @requires PHP >= 8.0
+     * @dataProvider symfonyProvider
      */
     public function testSymfony(string $file): void
     {

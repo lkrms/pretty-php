@@ -5,6 +5,7 @@
         "bin",
         "scripts",
         "tests/unit",
+        "tests/phpstan-conditional.php",
         "tools/apigen",
         ".php-cs-fixer.dist.php"
     ],

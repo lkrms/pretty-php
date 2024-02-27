@@ -44,6 +44,7 @@ $finder = (new PhpCsFixer\Finder())
               ->append([
                   __DIR__ . '/bin/pretty-php',
                   __DIR__ . '/bootstrap.php',
+                  __DIR__ . '/tests/phpstan-conditional.php',
               ]);
 
 return (new PhpCsFixer\Config())
@@ -55,7 +56,39 @@ return (new PhpCsFixer\Config())
                'no_unneeded_import_alias' => true,
                'no_unused_imports' => true,
                'phpdoc_no_useless_inheritdoc' => true,
+               'phpdoc_order' => ['order' => [
+                   'todo',
+                   'method',
+                   'property',
+                   'api',
+                   'internal',
+                   'requires',
+                   'dataProvider',
+                   'backupGlobals',
+                   'template',
+                   'extends',
+                   'implements',
+                   'readonly',
+                   'var',
+                   'param',
+                   'return',
+                   'throws',
+               ]],
+               // 'phpdoc_param_order' => true,
+               'phpdoc_separation' => ['groups' => [
+                   ['see', 'link'],
+                   ['property', 'property-read'],
+                   ['requires', 'dataProvider', 'backupGlobals'],
+                   ['template', 'template-covariant'],
+                   ['extends', 'implements'],
+                   ['readonly', 'var', 'phpstan-var', 'param', 'param-out', 'phpstan-param', 'return', 'phpstan-return', 'throws', 'phpstan-assert*', 'phpstan-ignore-next-line'],
+                   ['phpstan-*'],
+               ]],
+               'phpdoc_tag_casing' => true,
+               'phpdoc_trim_consecutive_blank_line_separation' => true,
+               'phpdoc_types_order' => ['null_adjustment' => 'always_last', 'sort_algorithm' => 'none'],
                'single_import_per_statement' => true,
+               'single_trait_insert_per_statement' => true,
                'yoda_style' => ['equal' => false, 'identical' => false],
            ])
            ->setFinder($finder)
