@@ -2,18 +2,18 @@
 
 namespace Lkrms\PrettyPHP\Support;
 
-use Lkrms\Concern\Immutable;
-use Lkrms\Contract\IImmutable;
 use Lkrms\PrettyPHP\Catalog\TokenType as TT;
+use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Contract\Immutable;
 
 /**
  * Indexed tokens by type
  *
  * @api
  */
-class TokenTypeIndex implements IImmutable
+class TokenTypeIndex implements Immutable
 {
-    use Immutable {
+    use HasImmutableProperties {
         withPropertyValue as protected with;
     }
 

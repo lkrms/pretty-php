@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Catalog;
 
-use Lkrms\Concept\Enumeration;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Alias/import statement sort orders
@@ -11,9 +11,9 @@ use Lkrms\Concept\Enumeration;
  *
  * @api
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-final class ImportSortOrder extends Enumeration
+final class ImportSortOrder extends AbstractEnumeration
 {
     /**
      * Do not sort imports

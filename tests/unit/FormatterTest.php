@@ -13,10 +13,10 @@ use Lkrms\PrettyPHP\Rule\AlignTernaryOperators;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
-use Lkrms\Utility\Arr;
-use Lkrms\Utility\File;
-use Lkrms\Utility\Json;
-use Lkrms\Utility\Pcre;
+use Salient\Core\Utility\Arr;
+use Salient\Core\Utility\File;
+use Salient\Core\Utility\Json;
+use Salient\Core\Utility\Pcre;
 use Generator;
 use SplFileInfo;
 

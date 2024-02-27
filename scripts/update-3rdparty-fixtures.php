@@ -1,15 +1,15 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
-use Lkrms\Cli\CliApplication;
-use Lkrms\Exception\UnexpectedValueException;
-use Lkrms\Facade\Console;
 use Lkrms\PrettyPHP\Tests\FormatterTest;
-use Lkrms\Utility\File;
-use Lkrms\Utility\Inflect;
-use Lkrms\Utility\Pcre;
-use Lkrms\Utility\Str;
-use Lkrms\Utility\Sys;
+use Salient\Cli\CliApplication;
+use Salient\Core\Exception\UnexpectedValueException;
+use Salient\Core\Facade\Console;
+use Salient\Core\Utility\File;
+use Salient\Core\Utility\Inflect;
+use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Str;
+use Salient\Core\Utility\Sys;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 

@@ -4,7 +4,7 @@ namespace Lkrms\PrettyPHP\Filter;
 
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
-use Lkrms\Utility\Str;
+use Salient\Core\Utility\Str;
 
 /**
  * Assign the starting column of each token to its $column property

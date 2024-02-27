@@ -2,18 +2,18 @@
 
 namespace Lkrms\PrettyPHP\Support;
 
-use Lkrms\Concept\TypedList;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Token\Token;
+use Salient\Collection\AbstractTypedList;
 use LogicException;
 use Stringable;
 
 /**
  * A collection of Tokens
  *
- * @extends TypedList<Token>
+ * @extends AbstractTypedList<Token>
  */
-final class TokenCollection extends TypedList implements Stringable
+final class TokenCollection extends AbstractTypedList implements Stringable
 {
     private bool $Collected = false;
 

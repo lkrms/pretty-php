@@ -2,16 +2,16 @@
 
 namespace Lkrms\PrettyPHP\Catalog;
 
-use Lkrms\Concept\ReflectiveEnumeration;
+use Salient\Core\AbstractReflectiveEnumeration;
 
 /**
  * Token sub-types
  *
  * @api
  *
- * @extends ReflectiveEnumeration<int>
+ * @extends AbstractReflectiveEnumeration<int>
  */
-final class TokenSubType extends ReflectiveEnumeration
+final class TokenSubType extends AbstractReflectiveEnumeration
 {
     public const COLON_TERNARY_OPERATOR = 0;
 

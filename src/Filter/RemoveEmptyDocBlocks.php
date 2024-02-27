@@ -4,7 +4,7 @@ namespace Lkrms\PrettyPHP\Filter;
 
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
-use Lkrms\Utility\Pcre;
+use Salient\Core\Utility\Pcre;
 
 /**
  * Remove empty DocBlocks

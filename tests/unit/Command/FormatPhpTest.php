@@ -2,17 +2,17 @@
 
 namespace Lkrms\PrettyPHP\Tests\Command;
 
-use Lkrms\Cli\CliApplication;
-use Lkrms\Console\Catalog\ConsoleLevel as Level;
-use Lkrms\Console\Catalog\ConsoleLevelGroup as LevelGroup;
-use Lkrms\Console\Target\MockTarget;
-use Lkrms\Exception\Contract\ExceptionInterface;
-use Lkrms\Facade\Console;
 use Lkrms\PrettyPHP\Command\FormatPhp;
-use Lkrms\Utility\File;
-use Lkrms\Utility\Json;
-use Lkrms\Utility\Pcre;
-use Lkrms\Utility\Str;
+use Salient\Cli\CliApplication;
+use Salient\Console\Catalog\ConsoleLevel as Level;
+use Salient\Console\Catalog\ConsoleLevelGroup as LevelGroup;
+use Salient\Console\Target\MockTarget;
+use Salient\Core\Contract\ExceptionInterface;
+use Salient\Core\Facade\Console;
+use Salient\Core\Utility\File;
+use Salient\Core\Utility\Json;
+use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Str;
 use Generator;
 
 /**

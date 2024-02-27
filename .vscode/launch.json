@@ -24,7 +24,7 @@
                 "max_data": 10000000
             },
             "skipFiles": [
-                "!**/vendor/lkrms/**",
+                "!**/vendor/salient/**",
                 "**/vendor/**"
             ],
             "args": [
@@ -62,7 +62,7 @@
                 "max_data": 10000000
             },
             "skipFiles": [
-                "!**/vendor/lkrms/**",
+                "!**/vendor/salient/**",
                 "**/vendor/**"
             ],
             "args": [
@@ -99,7 +99,7 @@
                 "max_data": 10000000
             },
             "skipFiles": [
-                "!**/vendor/lkrms/**",
+                "!**/vendor/salient/**",
                 "**/vendor/**"
             ],
             "args": [

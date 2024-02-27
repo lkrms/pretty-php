@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Catalog;
 
-use Lkrms\Concept\ConvertibleEnumeration;
+use Salient\Core\AbstractConvertibleEnumeration;
 
 /**
  * Custom tokens, including polyfills
@@ -11,9 +11,9 @@ use Lkrms\Concept\ConvertibleEnumeration;
  *
  * @api
  *
- * @extends ConvertibleEnumeration<int>
+ * @extends AbstractConvertibleEnumeration<int>
  */
-final class CustomToken extends ConvertibleEnumeration
+final class CustomToken extends AbstractConvertibleEnumeration
 {
     public const T_NULL = \T_NULL;
 

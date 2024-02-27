@@ -8,7 +8,7 @@ use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\Utility\Pcre;
+use Salient\Core\Utility\Pcre;
 
 /**
  * Normalise comments

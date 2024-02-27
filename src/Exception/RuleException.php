@@ -2,9 +2,9 @@
 
 namespace Lkrms\PrettyPHP\Exception;
 
-use Lkrms\Exception\Exception;
+use Salient\Core\AbstractException;
 
 /**
  * Thrown when rule processing fails
  */
-class RuleException extends Exception {}
+class RuleException extends AbstractException {}

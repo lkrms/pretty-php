@@ -6,7 +6,7 @@ use Lkrms\PrettyPHP\Catalog\CommentType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\Rule;
 use Lkrms\PrettyPHP\Rule\Concern\RuleTrait;
-use Lkrms\Utility\Pcre;
+use Salient\Core\Utility\Pcre;
 
 /**
  * Add whitespace after tokens that would otherwise fail to parse

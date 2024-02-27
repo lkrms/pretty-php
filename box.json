@@ -16,7 +16,7 @@
             ],
             "notPath": [
                 "/^bin\\//",
-                "/^lkrms\\/util\\/(?:bin|lk-util|src\\/(?:Curler|Db|Http|Sync))\\//",
+                "/^salient\\/toolkit\\/(?:bin|src\\/(?:Sli|Toolkit\\/(?:Curler|Db|Http|Sync)))\\//",
                 "/^lkrms\\/dice\\/src\\/Loader\\//",
                 "/^psr\\/(?:http-(?:factory|message)|log\\/Psr\\/Log\\/Test)\\//"
             ]

@@ -2,9 +2,9 @@
 
 namespace Lkrms\PrettyPHP\Exception;
 
-use Lkrms\Exception\Exception;
+use Salient\Core\AbstractException;
 
 /**
  * Thrown when the input cannot be parsed for formatting
  */
-class InvalidSyntaxException extends Exception {}
+class InvalidSyntaxException extends AbstractException {}

@@ -2,16 +2,16 @@
 
 namespace Lkrms\PrettyPHP\Catalog;
 
-use Lkrms\Concept\Enumeration;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Heredoc indentation types
  *
  * @api
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-final class HeredocIndent extends Enumeration
+final class HeredocIndent extends AbstractEnumeration
 {
     /**
      * Do not indent heredocs

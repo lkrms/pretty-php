@@ -2,16 +2,16 @@
 
 namespace Lkrms\PrettyPHP\Catalog;
 
-use Lkrms\Concept\Enumeration;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Formatter flags
  *
  * @api
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-final class FormatterFlag extends Enumeration
+final class FormatterFlag extends AbstractEnumeration
 {
     /**
      * Collect warnings about non-critical problems detected in formatted code
