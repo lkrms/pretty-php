@@ -9,7 +9,7 @@ use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\PrettyPHP\Formatter;
-use Lkrms\Utility\Pcre;
+use Salient\Core\Utility\Pcre;
 
 trait NavigableTokenTrait
 {

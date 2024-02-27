@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phive xmlns="https://phar.io/phive">
-  <phar name="php-cs-fixer" version="^3.0" installed="3.48.0" location="./tools/php-cs-fixer" copy="true"/>
+  <phar name="php-cs-fixer" version="^3.0" installed="3.50.0" location="./tools/php-cs-fixer" copy="true"/>
   <phar name="box" version="^4.0" installed="4.6.1" location="./tools/box" copy="true"/>
 </phive>

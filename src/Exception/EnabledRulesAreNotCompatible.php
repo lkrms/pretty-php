@@ -2,14 +2,14 @@
 
 namespace Lkrms\PrettyPHP\Exception;
 
-use Lkrms\Exception\Exception;
 use Lkrms\PrettyPHP\Contract\Rule;
-use Lkrms\Utility\Get;
+use Salient\Core\Utility\Get;
+use Salient\Core\AbstractException;
 
 /**
  * Thrown when incompatible rules are enabled
  */
-class EnabledRulesAreNotCompatible extends Exception
+class EnabledRulesAreNotCompatible extends AbstractException
 {
     /**
      * @var array<class-string<Rule>>

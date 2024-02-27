@@ -1,16 +1,16 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
-use Lkrms\Cli\CliApplication;
-use Lkrms\Facade\Console;
 use Lkrms\PrettyPHP\Contract\BlockRule;
 use Lkrms\PrettyPHP\Contract\ListRule;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Contract\Rule;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Formatter;
-use Lkrms\Utility\Arr;
-use Lkrms\Utility\Get;
+use Salient\Cli\CliApplication;
+use Salient\Core\Facade\Console;
+use Salient\Core\Utility\Arr;
+use Salient\Core\Utility\Get;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 

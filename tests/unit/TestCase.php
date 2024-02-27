@@ -2,11 +2,11 @@
 
 namespace Lkrms\PrettyPHP\Tests;
 
-use Lkrms\Facade\Profile;
 use Lkrms\PrettyPHP\Contract\Extension;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
-use Lkrms\Utility\Pcre;
+use Salient\Core\Facade\Profile;
+use Salient\Core\Utility\Pcre;
 
 abstract class TestCase extends \PHPUnit\Framework\TestCase
 {

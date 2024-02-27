@@ -2,12 +2,12 @@
 
 namespace Lkrms\PrettyPHP;
 
-use Lkrms\Concept\Builder;
 use Lkrms\PrettyPHP\Catalog\FormatterFlag;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Contract\Extension;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
+use Salient\Core\AbstractBuilder;
 
 /**
  * A fluent Formatter factory
@@ -30,14 +30,14 @@ use Lkrms\PrettyPHP\Support\TokenTypeIndex;
  * @method Formatter withExtensions(array<class-string<Extension>> $enable, array<class-string<Extension>> $disable = [], bool $preserveCurrent = true) Call Formatter::withExtensions() on a new instance
  * @method string format(string $code, string|null $eol = null, string|null $filename = null, bool $fast = false) Get formatted code (see {@see Formatter::format()})
  *
- * @extends Builder<Formatter>
+ * @extends AbstractBuilder<Formatter>
  *
  * @generated
  */
-final class FormatterBuilder extends Builder
+final class FormatterBuilder extends AbstractBuilder
 {
     /**
-     * @inheritDoc
+     * @internal
      */
     protected static function getService(): string
     {
@@ -45,7 +45,7 @@ final class FormatterBuilder extends Builder
     }
 
     /**
-     * @inheritDoc
+     * @internal
      */
     protected static function getTerminators(): array
     {

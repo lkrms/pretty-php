@@ -12,7 +12,7 @@ use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder;
-use Lkrms\Support\PhpDoc\PhpDoc;
+use Salient\PhpDoc\PhpDoc;
 use Throwable;
 
 /**

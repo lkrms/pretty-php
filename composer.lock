@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b5f0d5591b631c0dfa57816a21f8acd7",
+    "content-hash": "8ee2dd56a899246226a1d50a2f44d545",
     "packages": [
         {
             "name": "lkrms/dice",
@@ -48,80 +48,6 @@
                 "source": "https://github.com/lkrms/Dice/tree/v4.1.9"
             },
             "time": "2024-02-05T09:28:28+00:00"
-        },
-        {
-            "name": "lkrms/util",
-            "version": "v0.21.39",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/lkrms/php-util.git",
-                "reference": "87e822700f69882ed0137c0048fa91ac3daadd81"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/php-util/zipball/87e822700f69882ed0137c0048fa91ac3daadd81",
-                "reference": "87e822700f69882ed0137c0048fa91ac3daadd81",
-                "shasum": ""
-            },
-            "require": {
-                "composer-runtime-api": "^2.2",
-                "lkrms/dice": "^4.1.9",
-                "php": ">=7.4",
-                "psr/container": "^2",
-                "psr/event-dispatcher": "^1",
-                "psr/http-factory": "^1",
-                "psr/http-message": "^1.1 || ^2",
-                "psr/log": "^1"
-            },
-            "provide": {
-                "psr/event-dispatcher-implementation": "^1"
-            },
-            "require-dev": {
-                "adodb/adodb-php": "^5",
-                "analog/analog": "^1",
-                "clue/phar-composer": "^1",
-                "firebase/php-jwt": "^6",
-                "league/oauth2-client": "^2",
-                "php-http/psr7-integration-tests": "^1.3",
-                "phpstan/extension-installer": "^1",
-                "phpstan/phpstan": "^1",
-                "phpstan/phpstan-deprecation-rules": "^1",
-                "phpunit/phpunit": "^9",
-                "sebastian/diff": "^4 || ^5"
-            },
-            "suggest": {
-                "adodb/adodb-php": "Required for access to databases",
-                "analog/analog": "Allows Analog handlers to be used as console message targets",
-                "clue/phar-composer": "Simplifies creation of phar archives",
-                "firebase/php-jwt": "Required for validation of OAuth 2.0 access tokens",
-                "league/oauth2-client": "Required for integration with OAuth 2.0 service providers"
-            },
-            "bin": [
-                "bin/lk-util"
-            ],
-            "type": "library",
-            "autoload": {
-                "files": [
-                    "bootstrap.php"
-                ],
-                "psr-4": {
-                    "Lkrms\\": "src/Util/",
-                    "Salient\\": "src/Toolkit/"
-                },
-                "classmap": [
-                    "stubs/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "description": "A lightweight PHP toolkit for expressive backend/CLI apps",
-            "support": {
-                "issues": "https://github.com/lkrms/php-util/issues",
-                "source": "https://github.com/lkrms/php-util/tree/v0.21.39"
-            },
-            "time": "2024-02-12T23:48:24+00:00"
         },
         {
             "name": "psr/container",
@@ -385,6 +311,87 @@
             "time": "2021-05-03T11:20:27+00:00"
         },
         {
+            "name": "salient/toolkit",
+            "version": "v0.99.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/salient-labs/toolkit.git",
+                "reference": "e2076efb719e2cbb10a9753ffff22a4079695078"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/salient-labs/toolkit/zipball/e2076efb719e2cbb10a9753ffff22a4079695078",
+                "reference": "e2076efb719e2cbb10a9753ffff22a4079695078",
+                "shasum": ""
+            },
+            "require": {
+                "composer-runtime-api": "^2.2",
+                "lkrms/dice": "^4.1.9",
+                "php": ">=7.4",
+                "psr/container": "^2",
+                "psr/event-dispatcher": "^1",
+                "psr/http-factory": "^1",
+                "psr/http-message": "^1.1 || ^2",
+                "psr/log": "^1"
+            },
+            "provide": {
+                "psr/event-dispatcher-implementation": "^1"
+            },
+            "require-dev": {
+                "adodb/adodb-php": "^5",
+                "analog/analog": "^1",
+                "clue/phar-composer": "^1",
+                "ergebnis/phpunit-slow-test-detector": "^2",
+                "firebase/php-jwt": "^6",
+                "league/oauth2-client": "^2",
+                "php-http/psr7-integration-tests": "^1.3",
+                "phpstan/extension-installer": "^1",
+                "phpstan/phpstan": "^1",
+                "phpstan/phpstan-deprecation-rules": "^1",
+                "phpstan/phpstan-phpunit": "^1",
+                "phpunit/phpunit": "^9",
+                "sebastian/diff": "^4 || ^5"
+            },
+            "suggest": {
+                "adodb/adodb-php": "Required for access to databases",
+                "analog/analog": "Allows Analog handlers to be used as console message targets",
+                "clue/phar-composer": "Simplifies creation of phar archives",
+                "firebase/php-jwt": "Required for validation of OAuth 2.0 access tokens",
+                "league/oauth2-client": "Required for integration with OAuth 2.0 service providers"
+            },
+            "bin": [
+                "bin/sli"
+            ],
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "bootstrap.php"
+                ],
+                "psr-4": {
+                    "Salient\\": "src/Toolkit/"
+                },
+                "classmap": [
+                    "stubs/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Luke Arms",
+                    "email": "luke@linacreative.com"
+                }
+            ],
+            "description": "A lightweight PHP toolkit for expressive backend/CLI apps",
+            "support": {
+                "issues": "https://github.com/salient-labs/toolkit/issues",
+                "source": "https://github.com/salient-labs/toolkit"
+            },
+            "time": "2024-02-26T13:31:32+00:00"
+        },
+        {
             "name": "sebastian/diff",
             "version": "4.0.5",
             "source": {
@@ -583,16 +590,16 @@
         },
         {
             "name": "nikic/php-parser",
-            "version": "v5.0.0",
+            "version": "v5.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nikic/PHP-Parser.git",
-                "reference": "4a21235f7e56e713259a6f76bf4b5ea08502b9dc"
+                "reference": "2218c2252c874a4624ab2f613d86ac32d227bc69"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/4a21235f7e56e713259a6f76bf4b5ea08502b9dc",
-                "reference": "4a21235f7e56e713259a6f76bf4b5ea08502b9dc",
+                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/2218c2252c874a4624ab2f613d86ac32d227bc69",
+                "reference": "2218c2252c874a4624ab2f613d86ac32d227bc69",
                 "shasum": ""
             },
             "require": {
@@ -635,9 +642,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nikic/PHP-Parser/issues",
-                "source": "https://github.com/nikic/PHP-Parser/tree/v5.0.0"
+                "source": "https://github.com/nikic/PHP-Parser/tree/v5.0.1"
             },
-            "time": "2024-01-07T17:17:35+00:00"
+            "time": "2024-02-21T19:24:10+00:00"
         },
         {
             "name": "phar-io/manifest",
@@ -796,16 +803,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.10.57",
+            "version": "1.10.59",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "1627b1d03446904aaa77593f370c5201d2ecc34e"
+                "reference": "e607609388d3a6d418a50a49f7940e8086798281"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/1627b1d03446904aaa77593f370c5201d2ecc34e",
-                "reference": "1627b1d03446904aaa77593f370c5201d2ecc34e",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/e607609388d3a6d418a50a49f7940e8086798281",
+                "reference": "e607609388d3a6d418a50a49f7940e8086798281",
                 "shasum": ""
             },
             "require": {
@@ -854,7 +861,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-01-24T11:51:34+00:00"
+            "time": "2024-02-20T13:59:13+00:00"
         },
         {
             "name": "phpstan/phpstan-deprecation-rules",
@@ -1225,16 +1232,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "9.6.16",
+            "version": "9.6.17",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "3767b2c56ce02d01e3491046f33466a1ae60a37f"
+                "reference": "1a156980d78a6666721b7e8e8502fe210b587fcd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/3767b2c56ce02d01e3491046f33466a1ae60a37f",
-                "reference": "3767b2c56ce02d01e3491046f33466a1ae60a37f",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/1a156980d78a6666721b7e8e8502fe210b587fcd",
+                "reference": "1a156980d78a6666721b7e8e8502fe210b587fcd",
                 "shasum": ""
             },
             "require": {
@@ -1308,7 +1315,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/9.6.16"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/9.6.17"
             },
             "funding": [
                 {
@@ -1324,7 +1331,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-01-19T07:03:14+00:00"
+            "time": "2024-02-23T13:14:51+00:00"
         },
         {
             "name": "sebastian/cli-parser",

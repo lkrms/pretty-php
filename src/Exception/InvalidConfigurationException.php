@@ -2,13 +2,13 @@
 
 namespace Lkrms\PrettyPHP\Exception;
 
-use Lkrms\Exception\Exception;
+use Salient\Core\AbstractException;
 use Throwable;
 
 /**
  * Thrown when an invalid configuration file is found
  */
-class InvalidConfigurationException extends Exception
+class InvalidConfigurationException extends AbstractException
 {
     public function __construct(string $message = '', ?Throwable $previous = null)
     {

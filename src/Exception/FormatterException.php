@@ -2,15 +2,15 @@
 
 namespace Lkrms\PrettyPHP\Exception;
 
-use Lkrms\Exception\Exception;
 use Lkrms\PrettyPHP\Token\Token;
-use Lkrms\Utility\Json;
+use Salient\Core\Utility\Json;
+use Salient\Core\AbstractException;
 use Throwable;
 
 /**
  * Thrown when formatting fails
  */
-class FormatterException extends Exception
+class FormatterException extends AbstractException
 {
     protected ?string $Output;
 

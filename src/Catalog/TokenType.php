@@ -2,16 +2,16 @@
 
 namespace Lkrms\PrettyPHP\Catalog;
 
-use Lkrms\Concept\Dictionary;
+use Salient\Core\AbstractDictionary;
 
 /**
  * Tokens by type
  *
  * @api
  *
- * @extends Dictionary<int[]>
+ * @extends AbstractDictionary<int[]>
  */
-final class TokenType extends Dictionary
+final class TokenType extends AbstractDictionary
 {
     public const NOT_CODE = [
         \T_INLINE_HTML,

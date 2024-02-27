@@ -1,8 +1,8 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
-use Lkrms\Cli\CliApplication;
 use Lkrms\PrettyPHP\Command\FormatPhp;
+use Salient\Cli\CliApplication;
 
 require $_composer_autoload_path
     ?? dirname(__DIR__) . '/vendor/autoload.php';

@@ -6,8 +6,8 @@ use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Filter\Concern\FilterTrait;
 use Lkrms\PrettyPHP\Token\Token;
-use Lkrms\Utility\Arr;
-use Lkrms\Utility\Pcre;
+use Salient\Core\Utility\Arr;
+use Salient\Core\Utility\Pcre;
 
 /**
  * Sort consecutive alias/import statements

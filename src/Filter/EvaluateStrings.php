@@ -6,7 +6,7 @@ use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Exception\FilterException;
 use Lkrms\PrettyPHP\Token\Token;
-use Lkrms\Utility\Pcre;
+use Salient\Core\Utility\Pcre;
 
 /**
  * Evaluate strings for comparison

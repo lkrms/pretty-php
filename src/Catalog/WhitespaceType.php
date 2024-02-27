@@ -2,16 +2,16 @@
 
 namespace Lkrms\PrettyPHP\Catalog;
 
-use Lkrms\Concept\Enumeration;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Whitespace types applied before and after tokens
  *
  * @api
  *
- * @extends Enumeration<int>
+ * @extends AbstractEnumeration<int>
  */
-final class WhitespaceType extends Enumeration
+final class WhitespaceType extends AbstractEnumeration
 {
     /**
      * No whitespace

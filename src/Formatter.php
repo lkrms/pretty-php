@@ -2,12 +2,6 @@
 
 namespace Lkrms\PrettyPHP;
 
-use Lkrms\Concern\HasBuilder;
-use Lkrms\Concern\Immutable;
-use Lkrms\Contract\Buildable;
-use Lkrms\Exception\InvalidArgumentException;
-use Lkrms\Facade\Console;
-use Lkrms\Facade\Profile;
 use Lkrms\PrettyPHP\Catalog\FormatterFlag;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
@@ -73,11 +67,17 @@ use Lkrms\PrettyPHP\Support\CodeProblem;
 use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
-use Lkrms\Utility\Arr;
-use Lkrms\Utility\Env;
-use Lkrms\Utility\Get;
-use Lkrms\Utility\Inflect;
-use Lkrms\Utility\Str;
+use Salient\Core\Concern\HasBuilder;
+use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Contract\Buildable;
+use Salient\Core\Exception\InvalidArgumentException;
+use Salient\Core\Facade\Console;
+use Salient\Core\Facade\Profile;
+use Salient\Core\Utility\Arr;
+use Salient\Core\Utility\Env;
+use Salient\Core\Utility\Get;
+use Salient\Core\Utility\Inflect;
+use Salient\Core\Utility\Str;
 use CompileError;
 use LogicException;
 use Throwable;
@@ -89,8 +89,9 @@ use Throwable;
  */
 final class Formatter implements Buildable
 {
+    /** @use HasBuilder<FormatterBuilder> */
     use HasBuilder;
-    use Immutable;
+    use HasImmutableProperties;
 
     /**
      * Use spaces for indentation?

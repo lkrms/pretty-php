@@ -2,9 +2,9 @@
 
 namespace Lkrms\PrettyPHP\Exception;
 
-use Lkrms\Exception\Exception;
+use Salient\Core\AbstractException;
 
 /**
  * Thrown when filter processing fails
  */
-class FilterException extends Exception {}
+class FilterException extends AbstractException {}

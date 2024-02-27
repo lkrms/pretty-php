@@ -8,7 +8,7 @@ use Lkrms\PrettyPHP\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
-use Lkrms\Utility\Arr;
+use Salient\Core\Utility\Arr;
 use Closure;
 
 /**

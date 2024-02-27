@@ -85,6 +85,13 @@ jobs:
           key: composer-cache-${{ runner.os }}-${{ hashFiles('**/composer.json', '**/composer.lock') }}
           restore-keys: composer-cache-${{ runner.os }}-
 
+      - name: Persist PHPStan cache
+        uses: actions/cache@v4
+        with:
+          path: build/cache/phpstan
+          key: phpstan-cache-${{ runner.os }}-${{ matrix.php-version }}-${{ github.run_id }}
+          restore-keys: phpstan-cache-${{ runner.os }}-${{ matrix.php-version }}-
+
       - name: Install dependencies
         run: composer install --no-interaction --no-progress
 

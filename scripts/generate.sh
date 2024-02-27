@@ -60,9 +60,9 @@ while [[ ${1-} == -* ]]; do
     shift
 done
 
-if ((FIXTURES)); then
-    (($#)) || set -- php83 php82 php81 php80 php74
+(($#)) || set -- php83 php82 php81 php80 php74
 
+if ((FIXTURES)); then
     for PHP in "$@"; do
         type -P "$PHP" >/dev/null ||
             die "command not found: $PHP"
@@ -71,21 +71,21 @@ if ((FIXTURES)); then
     rm -rf tests/fixtures/Formatter/versions.json tests/fixtures/Formatter/out/*
 
     for PHP in "$@"; do
-        "$PHP" scripts/generate-test-output.php
+        "$PHP" -dshort_open_tag=on scripts/generate-test-output.php
     done
 
     for DIR in tests/fixtures/Command/FormatPhp/preset/*; do
         PRESET=${DIR##*/}
         for FILE in "$DIR"/*.in; do
-            bin/pretty-php --no-config --preset "$PRESET" --output "${FILE%.in}.out" "$FILE"
+            "$1" -dshort_open_tag=on bin/pretty-php --no-config --preset "$PRESET" --output "${FILE%.in}.out" "$FILE"
         done
     done
 fi
 
 if ((ASSETS)); then
     # yes = collapse options in synopsis to "[options]"
-    generate docs/Usage.md bin/pretty-php _md yes
-    generate resources/prettyphp-schema.json bin/pretty-php _json_schema "JSON schema for pretty-php configuration files"
+    generate docs/Usage.md "$1" bin/pretty-php _md yes
+    generate resources/prettyphp-schema.json "$1" bin/pretty-php _json_schema "JSON schema for pretty-php configuration files"
 
-    vendor/bin/lk-util generate builder --forward=format,with,withExtensions,withPsr12,withoutExtensions --force 'Lkrms\PrettyPHP\Formatter'
+    "$1" vendor/bin/sli generate builder --forward=format,with,withExtensions,withPsr12,withoutExtensions --force 'Lkrms\PrettyPHP\Formatter'
 fi

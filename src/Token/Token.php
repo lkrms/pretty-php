@@ -11,8 +11,8 @@ use Lkrms\PrettyPHP\Support\TokenIndentDelta;
 use Lkrms\PrettyPHP\Token\Concern\CollectibleTokenTrait;
 use Lkrms\PrettyPHP\Token\Concern\ContextAwareTokenTrait;
 use Lkrms\PrettyPHP\Token\Concern\NavigableTokenTrait;
-use Lkrms\Utility\Pcre;
-use Lkrms\Utility\Str;
+use Salient\Core\Utility\Pcre;
+use Salient\Core\Utility\Str;
 use JsonSerializable;
 use PhpToken;
 

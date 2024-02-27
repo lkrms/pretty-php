@@ -1,5 +1,6 @@
 includes:
   - phpstan-baseline.neon
+  - tests/phpstan-conditional.php
 
 parameters:
   level: 6
@@ -8,5 +9,6 @@ parameters:
     - bootstrap.php
     - src
     - tests/unit
+    - tests/phpstan-conditional.php
     - scripts
   bootstrapFiles:

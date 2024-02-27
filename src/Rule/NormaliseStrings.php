@@ -6,7 +6,7 @@ use Lkrms\PrettyPHP\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Exception\RuleException;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\Utility\Pcre;
+use Salient\Core\Utility\Pcre;
 
 /**
  * Normalise escape sequences in strings, and replace single- and double-quoted

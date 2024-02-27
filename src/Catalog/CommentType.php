@@ -2,16 +2,16 @@
 
 namespace Lkrms\PrettyPHP\Catalog;
 
-use Lkrms\Concept\Enumeration;
+use Salient\Core\AbstractEnumeration;
 
 /**
  * Comment types
  *
  * @api
  *
- * @extends Enumeration<string>
+ * @extends AbstractEnumeration<string>
  */
-final class CommentType extends Enumeration
+final class CommentType extends AbstractEnumeration
 {
     public const C = '/*';
 

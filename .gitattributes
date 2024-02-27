@@ -3,7 +3,9 @@
 /.github export-ignore
 /.gitignore export-ignore
 /.phive export-ignore
+/.php-cs-fixer.* export-ignore
 /.prettyphp export-ignore
+/.vscode export-ignore
 /box.json* export-ignore
 /docs export-ignore
 /phpstan* export-ignore
