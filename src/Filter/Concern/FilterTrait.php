@@ -3,21 +3,35 @@
 namespace Lkrms\PrettyPHP\Filter\Concern;
 
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
-use Lkrms\PrettyPHP\Token\Token;
+use PhpToken;
 
 trait FilterTrait
 {
     use ExtensionTrait;
 
     /**
-     * @var Token[]
+     * @var PhpToken[]
      */
     protected array $Tokens;
 
     /**
+     * Check if the given tokens are instances of the given class
+     *
+     * @template T of PhpToken
+     *
+     * @param PhpToken[] $tokens
+     * @param class-string<T> $class
+     * @phpstan-assert-if-true T[] $tokens
+     */
+    protected function isArrayOf(array $tokens, string $class): bool
+    {
+        return $tokens && reset($tokens) instanceof $class;
+    }
+
+    /**
      * Get the given token's previous code token
      */
-    protected function prevCode(int $i): ?Token
+    protected function prevCode(int $i): ?PhpToken
     {
         while ($i--) {
             $token = $this->Tokens[$i];

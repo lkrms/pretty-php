@@ -3,8 +3,8 @@
 namespace Lkrms\PrettyPHP\Support;
 
 use Lkrms\PrettyPHP\Catalog\TokenType as TT;
+use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasImmutableProperties;
-use Salient\Core\Contract\Immutable;
 
 /**
  * Indexed tokens by type

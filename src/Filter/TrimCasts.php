@@ -4,6 +4,7 @@ namespace Lkrms\PrettyPHP\Filter;
 
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
+use Lkrms\PrettyPHP\Token\Token;
 
 /**
  * Remove whitespace inside cast operators
@@ -24,7 +25,12 @@ final class TrimCasts implements Filter
                     $token->id === \T_ARRAY_CAST ||
                     $token->id === \T_OBJECT_CAST ||
                     $token->id === \T_UNSET_CAST) {
-                $token->setText('(' . trim($token->text, " \n\r\t\v\0()") . ')');
+                $text = '(' . trim($token->text, " \n\r\t\v\0()") . ')';
+                if ($token instanceof Token) {
+                    $token->setText($text);
+                } else {
+                    $token->text = $text;
+                }
             }
         }
 

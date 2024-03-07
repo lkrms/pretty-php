@@ -2,8 +2,9 @@
 
 namespace Lkrms\PrettyPHP\Filter;
 
-use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
+use Lkrms\PrettyPHP\Filter\Concern\FilterTrait;
+use Lkrms\PrettyPHP\Token\Token;
 use Salient\Core\Utility\Str;
 
 /**
@@ -11,10 +12,19 @@ use Salient\Core\Utility\Str;
  */
 final class CollectColumn implements Filter
 {
-    use ExtensionTrait;
+    use FilterTrait;
 
+    /**
+     * @inheritDoc
+     */
     public function filterTokens(array $tokens): array
     {
+        if (!$this->isArrayOf($tokens, Token::class)) {
+            // @codeCoverageIgnoreStart
+            return $tokens;
+            // @codeCoverageIgnoreEnd
+        }
+
         $tokens = array_values($tokens);
         $last = array_key_last($tokens);
         $column = 1;

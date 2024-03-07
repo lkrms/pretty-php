@@ -33,15 +33,15 @@ use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder;
-use Salient\Cli\Catalog\CliHelpSectionName;
-use Salient\Cli\Catalog\CliOptionType;
-use Salient\Cli\Catalog\CliOptionValueType;
-use Salient\Cli\Catalog\CliOptionValueUnknownPolicy;
-use Salient\Cli\Catalog\CliOptionVisibility as Visibility;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliCommand;
 use Salient\Cli\CliOption;
-use Salient\Console\Catalog\ConsoleLevel;
+use Salient\Contract\Cli\CliHelpSectionName;
+use Salient\Contract\Cli\CliOptionType;
+use Salient\Contract\Cli\CliOptionValueType;
+use Salient\Contract\Cli\CliOptionValueUnknownPolicy;
+use Salient\Contract\Cli\CliOptionVisibility as Visibility;
+use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Profile;
 use Salient\Core\Utility\Arr;
@@ -778,7 +778,7 @@ EOF,
         }
 
         if ($this->ReportTimers) {
-            $this->App->registerShutdownReport(ConsoleLevel::NOTICE);
+            $this->App->registerShutdownReport(Level::NOTICE);
         }
 
         if ($this->Tabs && $this->Spaces) {
@@ -1176,7 +1176,7 @@ EOF,
         if ($this->Diff) {
             if ($this->Quiet < 2) {
                 if ($replaced) {
-                    Console::out('', ConsoleLevel::INFO);
+                    Console::out('', Level::INFO);
                 }
                 Console::log(Inflect::format(
                     $count,

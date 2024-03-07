@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8ee2dd56a899246226a1d50a2f44d545",
+    "content-hash": "b995801f1a53e73f997c58924dc2d7f8",
     "packages": [
         {
             "name": "lkrms/dice",
@@ -312,16 +312,16 @@
         },
         {
             "name": "salient/toolkit",
-            "version": "v0.99.0",
+            "version": "v0.99.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/salient-labs/toolkit.git",
-                "reference": "e2076efb719e2cbb10a9753ffff22a4079695078"
+                "reference": "7e97d970dc09a72456851e746f7d7671ab2f9984"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/salient-labs/toolkit/zipball/e2076efb719e2cbb10a9753ffff22a4079695078",
-                "reference": "e2076efb719e2cbb10a9753ffff22a4079695078",
+                "url": "https://api.github.com/repos/salient-labs/toolkit/zipball/7e97d970dc09a72456851e746f7d7671ab2f9984",
+                "reference": "7e97d970dc09a72456851e746f7d7671ab2f9984",
                 "shasum": ""
             },
             "require": {
@@ -333,6 +333,9 @@
                 "psr/http-factory": "^1",
                 "psr/http-message": "^1.1 || ^2",
                 "psr/log": "^1"
+            },
+            "conflict": {
+                "lkrms/util": "*"
             },
             "provide": {
                 "psr/event-dispatcher-implementation": "^1"
@@ -389,7 +392,7 @@
                 "issues": "https://github.com/salient-labs/toolkit/issues",
                 "source": "https://github.com/salient-labs/toolkit"
             },
-            "time": "2024-02-26T13:31:32+00:00"
+            "time": "2024-03-06T17:41:46+00:00"
         },
         {
             "name": "sebastian/diff",

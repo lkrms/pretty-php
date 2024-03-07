@@ -18,6 +18,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         if ($formatter instanceof FormatterB) {
             $formatter = $formatter->go();
         }
+        // Preserve `$formatter->Tokens` for inspection
+        $formatter = $formatter->withDebug();
         $first = $formatter->format($code);
         $second = $formatter->format($first, null, null, true);
         self::assertSame($expected, $first, 'Output is not formatted correctly.');

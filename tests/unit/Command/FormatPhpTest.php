@@ -4,10 +4,10 @@ namespace Lkrms\PrettyPHP\Tests\Command;
 
 use Lkrms\PrettyPHP\Command\FormatPhp;
 use Salient\Cli\CliApplication;
-use Salient\Console\Catalog\ConsoleLevel as Level;
-use Salient\Console\Catalog\ConsoleLevelGroup as LevelGroup;
 use Salient\Console\Target\MockTarget;
-use Salient\Core\Contract\ExceptionInterface;
+use Salient\Contract\Core\ExceptionInterface;
+use Salient\Contract\Core\MessageLevel as Level;
+use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\File;
 use Salient\Core\Utility\Json;
