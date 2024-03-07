@@ -14,8 +14,8 @@ use Lkrms\PrettyPHP\Contract\ListRule;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Contract\Rule;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Exception\EnabledRulesAreNotCompatible;
 use Lkrms\PrettyPHP\Exception\FormatterException;
+use Lkrms\PrettyPHP\Exception\IncompatibleRulesException;
 use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
 use Lkrms\PrettyPHP\Filter\CollectColumn;
 use Lkrms\PrettyPHP\Filter\EvaluateNumbers;
@@ -67,9 +67,9 @@ use Lkrms\PrettyPHP\Support\CodeProblem;
 use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
+use Salient\Contract\Core\Buildable;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\HasImmutableProperties;
-use Salient\Core\Contract\Buildable;
 use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Profile;
@@ -80,6 +80,7 @@ use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Str;
 use CompileError;
 use LogicException;
+use PhpToken;
 use Throwable;
 
 /**
@@ -531,23 +532,6 @@ final class Formatter implements Buildable
     }
 
     /**
-     * Get an instance with a value applied to a given property
-     *
-     * @param mixed $value
-     * @return static
-     */
-    public function with(string $property, $value): self
-    {
-        return $this->withPropertyValue($property, $value)
-                    ->apply();
-    }
-
-    private function __clone()
-    {
-        $this->flush();
-    }
-
-    /**
      * @return static
      */
     private function apply(): self
@@ -604,10 +588,10 @@ final class Formatter implements Buildable
             $this->TokenTypeIndex = $this->TokenTypeIndex->withPreserveNewline();
         }
 
-        foreach (self::INCOMPATIBLE_RULES as $notCompatible) {
-            $notCompatible = array_intersect($notCompatible, $rules);
-            if (count($notCompatible) > 1) {
-                throw new EnabledRulesAreNotCompatible(...$notCompatible);
+        foreach (self::INCOMPATIBLE_RULES as $incompatible) {
+            $incompatible = array_intersect($incompatible, $rules);
+            if (count($incompatible) > 1) {
+                throw new IncompatibleRulesException(...$incompatible);
             }
         }
 
@@ -687,6 +671,22 @@ final class Formatter implements Buildable
     }
 
     /**
+     * Get an instance with a value applied to a given property
+     *
+     * @internal
+     *
+     * @param mixed $value
+     * @return static
+     */
+    public function with(string $property, $value): self
+    {
+        return $this->withPropertyValue($property, $value)
+                    ->apply();
+    }
+
+    /**
+     * Get an instance with the given extensions disabled
+     *
      * @param array<class-string<Extension>> $extensions
      * @return static
      */
@@ -696,6 +696,8 @@ final class Formatter implements Buildable
     }
 
     /**
+     * Get an instance with the given extensions enabled
+     *
      * @param array<class-string<Extension>> $enable
      * @param array<class-string<Extension>> $disable
      * @return static
@@ -736,11 +738,24 @@ final class Formatter implements Buildable
     }
 
     /**
+     * Get an instance with strict PSR-12 / PER Coding Style compliance enabled
+     *
      * @return static
      */
     public function withPsr12()
     {
         return $this->withPropertyValue('Psr12', true)
+                    ->apply();
+    }
+
+    /**
+     * @internal
+     *
+     * @return static
+     */
+    public function withDebug()
+    {
+        return $this->withPropertyValue('Debug', true)
                     ->apply();
     }
 
@@ -825,16 +840,9 @@ final class Formatter implements Buildable
             Profile::stopTimer(__METHOD__ . '#tokenize-input');
         }
 
-        Profile::startTimer(__METHOD__ . '#prepare-tokens');
-        try {
-            $last = end($this->Tokens);
-
-            if ($last->IsCode &&
-                    ($last->Statement ?: $last)->id !== \T_HALT_COMPILER) {
-                $last->WhitespaceAfter |= WhitespaceType::LINE;
-            }
-        } finally {
-            Profile::stopTimer(__METHOD__ . '#prepare-tokens');
+        $last = end($this->Tokens);
+        if ($last->IsCode && $last->Statement->id !== \T_HALT_COMPILER) {
+            $last->WhitespaceAfter |= WhitespaceType::LINE;
         }
 
         Profile::startTimer(__METHOD__ . '#index-tokens');
@@ -1074,19 +1082,21 @@ final class Formatter implements Buildable
         Profile::startTimer(__METHOD__ . '#render');
         try {
             $first = reset($this->Tokens);
-            $last = end($this->Tokens);
             $out = $first->render(false, $last, true);
         } catch (Throwable $ex) {
             throw new FormatterException(
                 'Formatting failed: output cannot be rendered',
                 null,
-                $this->Tokens,
+                $this->Debug ? $this->Tokens : null,
                 $this->Log,
                 null,
                 $ex
             );
         } finally {
             Profile::stopTimer(__METHOD__ . '#render');
+            if (!$this->Debug) {
+                $this->Tokens = null;
+            }
         }
 
         if ($fast) {
@@ -1097,9 +1107,10 @@ final class Formatter implements Buildable
 
         Profile::startTimer(__METHOD__ . '#parse-output');
         try {
-            $tokensOut = Token::onlyTokenize(
+            $after = Token::onlyTokenize(
                 $out,
                 \TOKEN_PARSE,
+                PhpToken::class,
                 ...$this->ComparisonFilterList
             );
         } catch (CompileError $ex) {
@@ -1115,14 +1126,15 @@ final class Formatter implements Buildable
             Profile::stopTimer(__METHOD__ . '#parse-output');
         }
 
-        $tokensIn = Token::onlyTokenize(
+        $before = Token::onlyTokenize(
             $code,
             \TOKEN_PARSE,
+            PhpToken::class,
             ...$this->ComparisonFilterList
         );
 
-        $before = $this->simplifyTokens($tokensIn);
-        $after = $this->simplifyTokens($tokensOut);
+        $before = $this->simplifyTokens($before);
+        $after = $this->simplifyTokens($after);
         if ($before !== $after) {
             throw new FormatterException(
                 "Formatting check failed: parsed output doesn't match input",
@@ -1220,7 +1232,7 @@ final class Formatter implements Buildable
     }
 
     /**
-     * @param Token[] $tokens
+     * @param PhpToken[] $tokens
      * @return array<array{int,string}>
      */
     private function simplifyTokens(array $tokens): array
@@ -1358,6 +1370,11 @@ final class Formatter implements Buildable
                 $disable,
             ),
         );
+    }
+
+    private function __clone()
+    {
+        $this->flush();
     }
 
     /**

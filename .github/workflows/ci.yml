@@ -44,7 +44,7 @@ jobs:
           key: composer-cache-${{ runner.os }}-${{ hashFiles('**/composer.json', '**/composer.lock') }}
           restore-keys: composer-cache-${{ runner.os }}-
 
-      - name: Install dependencies
+      - name: Install PHP dependencies
         run: composer install --no-interaction --no-progress --no-dev
 
       - name: Run PHP CS Fixer
@@ -92,7 +92,7 @@ jobs:
           key: phpstan-cache-${{ runner.os }}-${{ matrix.php-version }}-${{ github.run_id }}
           restore-keys: phpstan-cache-${{ runner.os }}-${{ matrix.php-version }}-
 
-      - name: Install dependencies
+      - name: Install PHP dependencies
         run: composer install --no-interaction --no-progress
 
       - name: Run PHPStan
@@ -145,7 +145,7 @@ jobs:
           key: composer-cache-${{ runner.os }}-${{ hashFiles('**/composer.json', '**/composer.lock') }}
           restore-keys: composer-cache-${{ runner.os }}-
 
-      - name: Install dependencies
+      - name: Install PHP dependencies
         run: composer install --no-interaction --no-progress
 
       - name: Run PHPUnit tests and generate code coverage report
@@ -193,7 +193,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install pandoc
 
-      - name: Install dependencies
+      - name: Install PHP dependencies
         run: composer install --no-interaction --no-progress
 
       # Run the phar and man builds separately and together to test each code

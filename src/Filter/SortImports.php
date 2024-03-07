@@ -5,9 +5,9 @@ namespace Lkrms\PrettyPHP\Filter;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Filter\Concern\FilterTrait;
-use Lkrms\PrettyPHP\Token\Token;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Pcre;
+use PhpToken;
 
 /**
  * Sort consecutive alias/import statements
@@ -34,7 +34,10 @@ final class SortImports implements Filter
     private array $SortableImports;
 
     /**
-     * @inheritDoc
+     * @template T of PhpToken
+     *
+     * @param T[] $tokens
+     * @return T[]
      */
     public function filterTokens(array $tokens): array
     {
@@ -44,7 +47,7 @@ final class SortImports implements Filter
 
         // Identify relevant `T_USE` tokens and exit early if possible
         $tokens = [];
-        /** @var array<int,Token> */
+        /** @var array<int,T> */
         $stack = [];
         foreach ($this->Tokens as $i => $token) {
             if ($this->TypeIndex->OpenBrace[$token->id]) {
@@ -79,11 +82,11 @@ final class SortImports implements Filter
         while ($tokens) {
             $i = array_shift($tokens);
 
-            /** @var array<non-empty-array<Token>> */
+            /** @var array<non-empty-array<T>> */
             $sort = [];
-            /** @var Token[] */
+            /** @var T[] */
             $current = [];
-            /** @var Token|null */
+            /** @var T|null */
             $terminator = null;
             while ($i < $count) {
                 $token = $this->Tokens[$i];
@@ -145,9 +148,11 @@ final class SortImports implements Filter
     }
 
     /**
-     * @param non-empty-array<non-empty-array<Token>> $sort
-     * @param Token[] $tokens
-     * @return Token[]
+     * @template T of PhpToken
+     *
+     * @param non-empty-array<non-empty-array<T>> $sort
+     * @param T[] $tokens
+     * @return T[]
      */
     private function sortImports(array $sort, array $tokens): array
     {
@@ -190,7 +195,9 @@ final class SortImports implements Filter
     }
 
     /**
-     * @param Token[] $tokens
+     * @template T of PhpToken
+     *
+     * @param T[] $tokens
      * @return array{int,string}
      */
     private function sortableImport(array $tokens): array

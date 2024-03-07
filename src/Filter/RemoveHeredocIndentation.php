@@ -6,6 +6,7 @@ use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Token\Token;
 use Salient\Core\Utility\Pcre;
+use PhpToken;
 
 /**
  * Remove indentation from heredocs
@@ -14,13 +15,19 @@ final class RemoveHeredocIndentation implements Filter
 {
     use ExtensionTrait;
 
+    /**
+     * @template T of PhpToken
+     *
+     * @param T[] $tokens
+     * @return T[]
+     */
     public function filterTokens(array $tokens): array
     {
-        /** @var array<int,Token[]> */
+        /** @var array<int,T[]> */
         $heredocTokens = [];
         /** @var array<int,string[]> */
         $heredocText = [];
-        /** @var array<int,Token> */
+        /** @var array<int,T> */
         $stack = [];
         foreach ($tokens as $i => $token) {
             if ($stack) {
@@ -73,7 +80,12 @@ final class RemoveHeredocIndentation implements Filter
 
             // Finally, update each token
             foreach ($stripped as $j => $code) {
-                $heredocTokens[$i][$j]->setText($code);
+                $token = $heredocTokens[$i][$j];
+                if ($token instanceof Token) {
+                    $token->setText($code);
+                } else {
+                    $token->text = $code;
+                }
             }
         }
 

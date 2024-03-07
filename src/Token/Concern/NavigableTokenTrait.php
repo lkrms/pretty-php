@@ -10,6 +10,7 @@ use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\PrettyPHP\Formatter;
 use Salient\Core\Utility\Pcre;
+use PhpToken;
 
 trait NavigableTokenTrait
 {
@@ -136,12 +137,18 @@ trait NavigableTokenTrait
     public TokenTypeIndex $TypeIndex;
 
     /**
-     * @return Token[]
+     * @template T of PhpToken
+     *
+     * @param class-string<T> $class
+     * @return T[]
      */
-    public static function onlyTokenize(string $code, int $flags = 0, Filter ...$filters): array
+    public static function onlyTokenize(string $code, int $flags = 0, string $class = PhpToken::class, Filter ...$filters): array
     {
-        /** @var Token[] */
-        $tokens = parent::tokenize($code, $flags);
+        if (is_a($class, static::class, true)) {
+            $tokens = parent::tokenize($code, $flags);
+        } else {
+            $tokens = $class::tokenize($code, $flags);
+        }
 
         if (!$tokens || !$filters) {
             return $tokens;
@@ -159,7 +166,7 @@ trait NavigableTokenTrait
      */
     public static function tokenize(string $code, int $flags = 0, ?Formatter $formatter = null, Filter ...$filters): array
     {
-        $tokens = static::onlyTokenize($code, $flags, ...$filters);
+        $tokens = static::onlyTokenize($code, $flags, Token::class, ...$filters);
 
         if (!$tokens || !$formatter) {
             return $tokens;

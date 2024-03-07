@@ -2,15 +2,17 @@
 
 namespace Lkrms\PrettyPHP\Contract;
 
-use Lkrms\PrettyPHP\Token\Token;
+use PhpToken;
 
 interface Filter extends Extension
 {
     /**
      * Apply the filter to an array of tokens
      *
-     * @param Token[] $tokens
-     * @return Token[]
+     * @template T of PhpToken
+     *
+     * @param T[] $tokens
+     * @return T[]
      */
     public function filterTokens(array $tokens): array;
 }

@@ -9,7 +9,7 @@ use Salient\Core\AbstractException;
 /**
  * Thrown when incompatible rules are enabled
  */
-class EnabledRulesAreNotCompatible extends AbstractException
+class IncompatibleRulesException extends AbstractException
 {
     /**
      * @var array<class-string<Rule>>
