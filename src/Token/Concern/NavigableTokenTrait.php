@@ -19,11 +19,6 @@ trait NavigableTokenTrait
      */
     public ?int $Index = null;
 
-    /**
-     * The starting column (1-based) of the token
-     */
-    public int $column = -1;
-
     public ?Token $Prev = null;
 
     public ?Token $Next = null;

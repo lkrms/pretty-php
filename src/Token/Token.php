@@ -18,9 +18,14 @@ use PhpToken;
 
 class Token extends PhpToken implements JsonSerializable
 {
-    use CollectibleTokenTrait;
-    use ContextAwareTokenTrait;
     use NavigableTokenTrait;
+    use ContextAwareTokenTrait;
+    use CollectibleTokenTrait;
+
+    /**
+     * The starting column (1-based) of the token
+     */
+    public int $column = -1;
 
     public bool $BodyIsUnenclosed = false;
 
