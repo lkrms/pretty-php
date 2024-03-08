@@ -295,7 +295,7 @@ final class StandardWhitespace implements MultiTokenRule
             // Add LINE after labels
             if (
                 $token->id === \T_COLON &&
-                $token->getColonType() === TokenSubType::COLON_LABEL_DELIMITER
+                $token->getSubType() === TokenSubType::COLON_LABEL_DELIMITER
             ) {
                 $token->WhitespaceAfter |= WhitespaceType::LINE;
                 continue;

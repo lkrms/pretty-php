@@ -135,7 +135,7 @@ final class NormaliseComments implements MultiTokenRule
                         $token->NextCode->id === \T_DECLARE ||
                         $token->NextCode->id === \T_NAMESPACE || (
                             $token->NextCode->id === \T_USE &&
-                            $token->NextCode->getUseType() === TokenSubType::USE_IMPORT
+                            $token->NextCode->getSubType() === TokenSubType::USE_IMPORT
                         )
                     )) && (
                         !($token->Next &&
@@ -143,7 +143,7 @@ final class NormaliseComments implements MultiTokenRule
                             $token->Next->isDeclaration() &&
                             $token->Next->id !== \T_DECLARE) ||
                         ($token->Next->id === \T_USE &&
-                            $token->Next->getUseType() === TokenSubType::USE_TRAIT)
+                            $token->Next->getSubType() === TokenSubType::USE_TRAIT)
                     )
                 ) {
                     $text = $text === '' ? ' */' : " $text */";

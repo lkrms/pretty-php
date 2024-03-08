@@ -112,6 +112,15 @@ class TokenTypeIndex implements Immutable
     public array $ContinuesControlStructure;
 
     /**
+     * T_ABSTRACT, T_FINAL, T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY,
+     * T_STATIC, T_VAR
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $VarOrModifier;
+
+    /**
      * Tokens that may contain tab characters
      *
      * @readonly
@@ -467,6 +476,11 @@ class TokenTypeIndex implements Immutable
             \T_ELSE,
             \T_CATCH,
             \T_FINALLY,
+        );
+
+        $this->VarOrModifier = TT::getIndex(
+            \T_VAR,
+            ...TT::KEYWORD_MODIFIER,
         );
 
         $this->Expandable = TT::getIndex(

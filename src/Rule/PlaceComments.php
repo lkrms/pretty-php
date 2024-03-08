@@ -138,7 +138,7 @@ final class PlaceComments implements TokenRule
                 $next->id === \T_DECLARE ||
                 $next->id === \T_NAMESPACE || (
                     $next->id === \T_USE &&
-                    $next->getUseType() === TokenSubType::USE_IMPORT
+                    $next->getSubType() === TokenSubType::USE_IMPORT
                 )
             )
         ) {

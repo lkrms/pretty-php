@@ -117,7 +117,7 @@ final class AlignData implements BlockRule
                     continue;
                 }
                 if ($token->id === \T_COLON &&
-                        $token->getColonType() === TokenSubType::COLON_SWITCH_CASE_DELIMITER) {
+                        $token->getSubType() === TokenSubType::COLON_SWITCH_CASE_DELIMITER) {
                     $addToIndex('case');
                     continue;
                 }

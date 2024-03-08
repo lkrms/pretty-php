@@ -654,9 +654,10 @@ trait NavigableTokenTrait
                 break;
             }
 
-            if ($token->id === \T_QUESTION &&
-                $token->getQuestionType() ===
-                    TokenSubType::QUESTION_TERNARY_OPERATOR) {
+            if (
+                $token->id === \T_QUESTION &&
+                $token->getSubType() === TokenSubType::QUESTION_TERNARY_OPERATOR
+            ) {
                 $current = $token;
                 $count = 0;
                 while (($current = $current->NextSibling) &&
@@ -665,13 +666,13 @@ trait NavigableTokenTrait
                         continue;
                     }
                     if ($current->id === \T_QUESTION &&
-                        $current->getQuestionType() ===
+                        $current->getSubType() ===
                             TokenSubType::QUESTION_TERNARY_OPERATOR) {
                         $count++;
                         continue;
                     }
                     if (!($current->id === \T_COLON &&
-                        $current->getColonType() ===
+                        $current->getSubType() ===
                             TokenSubType::COLON_TERNARY_OPERATOR)) {
                         continue;
                     }
@@ -911,33 +912,6 @@ trait NavigableTokenTrait
     final public function isStandardOpenBracket(): bool
     {
         return $this->TypeIndex->StandardOpenBracket[$this->id];
-    }
-
-    final public function startsAlternativeSyntax(): bool
-    {
-        if ($this->id !== \T_COLON) {
-            return false;
-        }
-        if ($this->ClosedBy) {
-            return true;
-        }
-        if ($this->TypeIndex->AltSyntaxContinueWithoutExpression[$this->PrevCode->id]) {
-            return true;
-        }
-
-        if ($this->PrevCode->id !== \T_CLOSE_PARENTHESIS) {
-            return false;
-        }
-
-        $prev = $this->PrevCode->PrevSibling;
-        if (
-            $this->TypeIndex->AltSyntaxStart[$prev->id] ||
-            $this->TypeIndex->AltSyntaxContinueWithExpression[$prev->id]
-        ) {
-            return true;
-        }
-
-        return false;
     }
 
     /**
