@@ -66,6 +66,7 @@ use Lkrms\PrettyPHP\Rule\VerticalWhitespace;
 use Lkrms\PrettyPHP\Support\CodeProblem;
 use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
+use Lkrms\PrettyPHP\Token\GenericToken;
 use Lkrms\PrettyPHP\Token\Token;
 use Salient\Contract\Core\Buildable;
 use Salient\Core\Concern\HasBuilder;
@@ -80,7 +81,6 @@ use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Str;
 use CompileError;
 use LogicException;
-use PhpToken;
 use Throwable;
 
 /**
@@ -1236,7 +1236,7 @@ final class Formatter implements Buildable
     }
 
     /**
-     * @param PhpToken[] $tokens
+     * @param GenericToken[] $tokens
      * @return array<array{int,string}>
      */
     private function simplifyTokens(array $tokens): array

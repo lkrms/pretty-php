@@ -5,7 +5,6 @@ namespace Lkrms\PrettyPHP\Token;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use LogicException;
-use PhpToken;
 
 trait ContextAwareTokenTrait
 {
@@ -21,7 +20,7 @@ trait ContextAwareTokenTrait
      */
     final public function isColonStatementDelimiter(): bool
     {
-        /** @var static&PhpToken $this */
+        /** @var static&GenericToken $this */
         return $this->id === \T_COLON && (
             $this->getSubType() === TokenSubType::COLON_SWITCH_CASE_DELIMITER ||
             $this->SubType === TokenSubType::COLON_LABEL_DELIMITER
@@ -33,7 +32,7 @@ trait ContextAwareTokenTrait
      */
     final public function isColonTypeDelimiter(): bool
     {
-        /** @var static&PhpToken $this */
+        /** @var static&GenericToken $this */
         return $this->id === \T_COLON && (
             $this->getSubType() === TokenSubType::COLON_RETURN_TYPE_DELIMITER ||
             $this->SubType === TokenSubType::COLON_BACKED_ENUM_TYPE_DELIMITER
@@ -47,7 +46,7 @@ trait ContextAwareTokenTrait
      */
     final public function getSubType(): int
     {
-        /** @var static&PhpToken $this */
+        /** @var static&GenericToken $this */
         return $this->SubType ??= (
             $this->id === \T_COLON
                 ? $this->getColonType()
@@ -64,7 +63,7 @@ trait ContextAwareTokenTrait
      */
     private function getColonType(): int
     {
-        /** @var static&PhpToken $this */
+        /** @var static&GenericToken $this */
         if ($this->startsAlternativeSyntax()) {
             return TokenSubType::COLON_ALT_SYNTAX_DELIMITER;
         }
@@ -117,12 +116,12 @@ trait ContextAwareTokenTrait
      */
     private function getQuestionType(): int
     {
-        /** @var static&PhpToken $this */
+        /** @var static&GenericToken $this */
         if (!$this->PrevCode) {
             throw new LogicException('Invalid T_QUESTION');
         }
 
-        /** @var static&PhpToken $prevCode */
+        /** @var static&GenericToken $prevCode */
         $prevCode = $this->PrevCode;
         if (
             $prevCode->id === \T_CONST ||
@@ -166,7 +165,7 @@ trait ContextAwareTokenTrait
      */
     final public function startsAlternativeSyntax(): bool
     {
-        /** @var static&PhpToken $this */
+        /** @var static&GenericToken $this */
         if ($this->id !== \T_COLON) {
             return false;
         }
@@ -204,7 +203,7 @@ trait ContextAwareTokenTrait
     final protected function inLabel(): bool
     {
         // Exclude named arguments
-        /** @var static&PhpToken $this */
+        /** @var static&GenericToken $this */
         if ($this->Parent && $this->Parent->id === \T_OPEN_PARENTHESIS) {
             return false;
         }
@@ -240,7 +239,7 @@ trait ContextAwareTokenTrait
      */
     final public function isParameterList(): bool
     {
-        /** @var static&PhpToken $this */
+        /** @var static&GenericToken $this */
         if ($this->id !== \T_OPEN_PARENTHESIS) {
             return false;
         }
@@ -267,7 +266,7 @@ trait ContextAwareTokenTrait
      */
     final public function inParameterList(): bool
     {
-        /** @var static&PhpToken $this */
+        /** @var static&GenericToken $this */
         if ($this->Parent && $this->Parent->isParameterList()) {
             return true;
         }
@@ -280,7 +279,7 @@ trait ContextAwareTokenTrait
      */
     final protected function inSwitchCaseList(): bool
     {
-        /** @var static&PhpToken $this */
+        /** @var static&GenericToken $this */
         if (
             $this->Parent &&
             $this->Parent->PrevSibling &&
@@ -303,7 +302,7 @@ trait ContextAwareTokenTrait
      */
     final protected function inSwitchCase(): bool
     {
-        /** @var static&PhpToken $this */
+        /** @var static&GenericToken $this */
         if (!$this->inSwitchCaseList()) {
             return false;
         }

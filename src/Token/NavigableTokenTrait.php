@@ -9,7 +9,6 @@ use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Formatter;
 use Salient\Core\Utility\Pcre;
-use PhpToken;
 
 trait NavigableTokenTrait
 {
@@ -136,17 +135,17 @@ trait NavigableTokenTrait
     }
 
     /**
-     * Same as tokenize(), but returns an array of lower-cost PhpToken instances
+     * Same as tokenize(), but returns lower-cost GenericToken instances
      *
-     * @return PhpToken[]
+     * @return GenericToken[]
      */
     public static function tokenizeForComparison(string $code, int $flags = 0, Filter ...$filters): array
     {
-        return self::filter(PhpToken::tokenize($code, $flags), ...$filters);
+        return self::filter(GenericToken::tokenize($code, $flags), ...$filters);
     }
 
     /**
-     * @template T of PhpToken
+     * @template T of GenericToken
      *
      * @param T[] $tokens
      * @return T[]

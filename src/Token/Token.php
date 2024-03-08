@@ -11,9 +11,8 @@ use Lkrms\PrettyPHP\Support\TokenIndentDelta;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use JsonSerializable;
-use PhpToken;
 
-class Token extends PhpToken implements JsonSerializable
+class Token extends GenericToken implements JsonSerializable
 {
     use NavigableTokenTrait;
     use ContextAwareTokenTrait;

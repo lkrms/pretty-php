@@ -2,14 +2,14 @@
 
 namespace Lkrms\PrettyPHP\Contract;
 
-use PhpToken;
+use Lkrms\PrettyPHP\Token\GenericToken;
 
 interface Filter extends Extension
 {
     /**
      * Apply the filter to an array of tokens
      *
-     * @template T of PhpToken
+     * @template T of GenericToken
      *
      * @param T[] $tokens
      * @return T[]

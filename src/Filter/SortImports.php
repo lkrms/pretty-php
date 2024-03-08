@@ -5,9 +5,9 @@ namespace Lkrms\PrettyPHP\Filter;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Filter\Concern\FilterTrait;
+use Lkrms\PrettyPHP\Token\GenericToken;
 use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Pcre;
-use PhpToken;
 
 /**
  * Sort consecutive alias/import statements
@@ -34,7 +34,7 @@ final class SortImports implements Filter
     private array $SortableImports;
 
     /**
-     * @template T of PhpToken
+     * @template T of GenericToken
      *
      * @param T[] $tokens
      * @return T[]
@@ -148,7 +148,7 @@ final class SortImports implements Filter
     }
 
     /**
-     * @template T of PhpToken
+     * @template T of GenericToken
      *
      * @param non-empty-array<non-empty-array<T>> $sort
      * @param T[] $tokens
@@ -195,7 +195,7 @@ final class SortImports implements Filter
     }
 
     /**
-     * @template T of PhpToken
+     * @template T of GenericToken
      *
      * @param T[] $tokens
      * @return array{int,string}
