@@ -36,7 +36,7 @@ trait CollectibleTokenTrait
 
         if ($skipToDeclaration) {
             while (!$index[$t->id]) {
-                $t = $t->_nextSibling;
+                $t = $t->NextSibling;
                 if (!$t || $t->Expression !== $this->Expression) {
                     return new TokenCollection();
                 }
@@ -44,12 +44,12 @@ trait CollectibleTokenTrait
         }
 
         $from = $t;
-        while ($t->_nextSibling &&
-            ($index[$t->_nextSibling->id] ||
+        while ($t->NextSibling &&
+            ($index[$t->NextSibling->id] ||
                 ($allowAnonymous &&
-                    $t->_nextSibling->id === \T_OPEN_PARENTHESIS &&
+                    $t->NextSibling->id === \T_OPEN_PARENTHESIS &&
                     $t->id === \T_CLASS))) {
-            $t = $t->_nextSibling;
+            $t = $t->NextSibling;
         }
 
         if (!$allowAnonymous && $t->id === \T_FUNCTION) {
@@ -151,7 +151,7 @@ trait CollectibleTokenTrait
             if ($to && $current === $to) {
                 break;
             }
-        } while ($current = $current->_nextSibling);
+        } while ($current = $current->NextSibling);
 
         return $tokens;
     }
@@ -180,7 +180,7 @@ trait CollectibleTokenTrait
                 throw new LogicException('Argument #1 ($to) is not a sibling');
             }
         }
-        while ($current = $current->_prevSibling) {
+        while ($current = $current->PrevSibling) {
             $tokens[] = $current;
             if ($to && $current === $to) {
                 break;
@@ -398,10 +398,10 @@ trait CollectibleTokenTrait
             $tokens[] = $this;
             $includeToken = false;
         }
-        $prev = $includeToken ? $this : $this->_prev;
+        $prev = $includeToken ? $this : $this->Prev;
         while ($prev && $prev->is($types)) {
             $tokens[] = $prev;
-            $prev = $prev->_prev;
+            $prev = $prev->Prev;
         }
 
         return $tokens;
@@ -415,10 +415,10 @@ trait CollectibleTokenTrait
             $tokens[] = $this;
             $includeToken = false;
         }
-        $next = $includeToken ? $this : $this->_next;
+        $next = $includeToken ? $this : $this->Next;
         while ($next && $next->is($types)) {
             $tokens[] = $next;
-            $next = $next->_next;
+            $next = $next->Next;
         }
 
         return $tokens;
@@ -432,10 +432,10 @@ trait CollectibleTokenTrait
             $tokens[] = $this;
             $includeToken = false;
         }
-        $prev = $includeToken ? $this : $this->_prevCode;
+        $prev = $includeToken ? $this : $this->PrevCode;
         while ($prev && $prev->is($types)) {
             $tokens[] = $prev;
-            $prev = $prev->_prevCode;
+            $prev = $prev->PrevCode;
         }
 
         return $tokens;
@@ -449,10 +449,10 @@ trait CollectibleTokenTrait
             $tokens[] = $this;
             $includeToken = false;
         }
-        $next = $includeToken ? $this : $this->_nextCode;
+        $next = $includeToken ? $this : $this->NextCode;
         while ($next && $next->is($types)) {
             $tokens[] = $next;
-            $next = $next->_nextCode;
+            $next = $next->NextCode;
         }
 
         return $tokens;
@@ -466,10 +466,10 @@ trait CollectibleTokenTrait
             $tokens[] = $this;
             $includeToken = false;
         }
-        $prev = $includeToken ? $this : $this->_prevSibling;
+        $prev = $includeToken ? $this : $this->PrevSibling;
         while ($prev && $prev->is($types)) {
             $tokens[] = $prev;
-            $prev = $prev->_prevSibling;
+            $prev = $prev->PrevSibling;
         }
 
         return $tokens;
@@ -483,10 +483,10 @@ trait CollectibleTokenTrait
             $tokens[] = $this;
             $includeToken = false;
         }
-        $next = $includeToken ? $this : $this->_nextSibling;
+        $next = $includeToken ? $this : $this->NextSibling;
         while ($next && $next->is($types)) {
             $tokens[] = $next;
-            $next = $next->_nextSibling;
+            $next = $next->NextSibling;
         }
 
         return $tokens;
@@ -503,10 +503,10 @@ trait CollectibleTokenTrait
             $tokens[] = $this;
             $includeToken = false;
         }
-        $prev = $includeToken ? $this : $this->_prevSibling;
+        $prev = $includeToken ? $this : $this->PrevSibling;
         while ($prev && !$callback($prev, $tokens)) {
             $tokens[] = $prev;
-            $prev = $prev->_prevSibling;
+            $prev = $prev->PrevSibling;
         }
 
         return $tokens;
@@ -523,10 +523,10 @@ trait CollectibleTokenTrait
             $tokens[] = $this;
             $includeToken = false;
         }
-        $next = $includeToken ? $this : $this->_nextSibling;
+        $next = $includeToken ? $this : $this->NextSibling;
         while ($next && !$callback($next, $tokens)) {
             $tokens[] = $next;
-            $next = $next->_nextSibling;
+            $next = $next->NextSibling;
         }
 
         return $tokens;

@@ -70,7 +70,7 @@ final class HeredocIndentation implements MultiTokenRule
                 $current = $current->Heredoc;
             }
 
-            $next = $heredoc->_next;
+            $next = $heredoc->Next;
             $indent = $next->renderIndent();
             $padding = str_repeat(' ', $next->LinePadding - $next->LineUnpadding);
             if (($indent[0] ?? null) === "\t" && $padding) {
@@ -92,7 +92,7 @@ final class HeredocIndentation implements MultiTokenRule
                 if ($current->id === \T_END_HEREDOC && $current->Heredoc === $heredoc) {
                     break;
                 }
-            } while ($current = $current->_next);
+            } while ($current = $current->Next);
         }
     }
 

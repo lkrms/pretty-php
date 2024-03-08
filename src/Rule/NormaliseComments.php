@@ -131,19 +131,19 @@ final class NormaliseComments implements MultiTokenRule
                     ($token->id === \T_DOC_COMMENT ||
                         strpos($token->OriginalText ?? $token->text, "\n") === false) &&
                     strpos($text, "\n") === false &&
-                    !($token->_nextCode && (
-                        $token->_nextCode->id === \T_DECLARE ||
-                        $token->_nextCode->id === \T_NAMESPACE || (
-                            $token->_nextCode->id === \T_USE &&
-                            $token->_nextCode->getUseType() === TokenSubType::USE_IMPORT
+                    !($token->NextCode && (
+                        $token->NextCode->id === \T_DECLARE ||
+                        $token->NextCode->id === \T_NAMESPACE || (
+                            $token->NextCode->id === \T_USE &&
+                            $token->NextCode->getUseType() === TokenSubType::USE_IMPORT
                         )
                     )) && (
-                        !($token->_next &&
-                            $token->_next->Statement === $token->_next &&
-                            $token->_next->isDeclaration() &&
-                            $token->_next->id !== \T_DECLARE) ||
-                        ($token->_next->id === \T_USE &&
-                            $token->_next->getUseType() === TokenSubType::USE_TRAIT)
+                        !($token->Next &&
+                            $token->Next->Statement === $token->Next &&
+                            $token->Next->isDeclaration() &&
+                            $token->Next->id !== \T_DECLARE) ||
+                        ($token->Next->id === \T_USE &&
+                            $token->Next->getUseType() === TokenSubType::USE_TRAIT)
                     )
                 ) {
                     $text = $text === '' ? ' */' : " $text */";

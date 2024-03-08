@@ -101,23 +101,23 @@ final class HangingIndentation implements MultiTokenRule
             $parent = $token->Parent;
             if ($token->IsCode &&
                     $parent &&
-                    $parent === $token->_prevCode &&
-                    $token->_nextCode->Index < $parent->ClosedBy->Index &&
+                    $parent === $token->PrevCode &&
+                    $token->NextCode->Index < $parent->ClosedBy->Index &&
                     ($parent->HangingIndentParentType & self::NO_INDENT)) {
-                $current = $token->_next;
+                $current = $token->Next;
                 $stack = [$token->BracketStack];
                 $stack[] = $token;
                 do {
                     $current->HangingIndentStack[] = $token;
                     $current->HangingIndentContextStack[] = $stack;
                     $current->HangingIndentParentStack[] = $parent;
-                } while (($current = $current->_next) &&
+                } while (($current = $current->Next) &&
                     $current !== $parent->ClosedBy);
                 continue;
             }
 
             // Ignore tokens aligned by other rules
-            $prevCode = $token->_prevCode;
+            $prevCode = $token->PrevCode;
             if ($token->AlignedWith ||
                     $this->TypeIndex->NotCode[$token->id] ||
                     $this->TypeIndex->CloseBracketOrEndAltSyntax[$token->id] ||
@@ -127,9 +127,9 @@ final class HangingIndentation implements MultiTokenRule
             }
 
             // Ignore tokens after attributes
-            if ($token->_prevSibling &&
-                ($token->_prevSibling->id === \T_ATTRIBUTE ||
-                    $token->_prevSibling->id === \T_ATTRIBUTE_COMMENT)) {
+            if ($token->PrevSibling &&
+                ($token->PrevSibling->id === \T_ATTRIBUTE ||
+                    $token->PrevSibling->id === \T_ATTRIBUTE_COMMENT)) {
                 continue;
             }
 
@@ -139,9 +139,9 @@ final class HangingIndentation implements MultiTokenRule
                 !($this->HeredocMayHaveHangingIndent &&
                     $prevCode->id === \T_START_HEREDOC &&
                     ($this->HeredocHasHangingIndent ||
-                        ($prevCode->_prevCode &&
+                        ($prevCode->PrevCode &&
                             !$prevCode->AlignedWith &&
-                            !$prevCode->_prevCode->hasNewlineBeforeNextCode())))) {
+                            !$prevCode->PrevCode->hasNewlineBeforeNextCode())))) {
                 continue;
             }
 
@@ -157,10 +157,10 @@ final class HangingIndentation implements MultiTokenRule
             // Suppress hanging indentation between aligned expressions in `for`
             // loops
             if ($parent &&
-                $parent->_prevCode &&
-                $parent->_prevCode->id === \T_FOR &&
-                ($token->_prevCode->id === \T_COMMA &&
-                    $token->prevSiblingOf(\T_SEMICOLON)->or($parent)->_nextCode->AlignedWith)) {
+                $parent->PrevCode &&
+                $parent->PrevCode->id === \T_FOR &&
+                ($token->PrevCode->id === \T_COMMA &&
+                    $token->prevSiblingOf(\T_SEMICOLON)->or($parent)->NextCode->AlignedWith)) {
                 continue;
             }
 
@@ -221,7 +221,7 @@ final class HangingIndentation implements MultiTokenRule
             } elseif ($token->ListParent) {
                 $stack[] = $token->ListParent;
             } elseif ($latest && $latest->BracketStack === $token->BracketStack) {
-                if ($this->TypeIndex->ExpressionDelimiter[$token->_prevCode->id]) {
+                if ($this->TypeIndex->ExpressionDelimiter[$token->PrevCode->id]) {
                     $stack[] = $token;
                 } elseif ($latest->id === \T_DOUBLE_ARROW) {
                     $stack[] = $latest;
@@ -237,7 +237,7 @@ final class HangingIndentation implements MultiTokenRule
                         if ($delimiter->IsNull) {
                             $stack[] = $latest;
                         } else {
-                            $startOfLine = $token->_prevCode->startOfLine();
+                            $startOfLine = $token->PrevCode->startOfLine();
                             if ($delimiter->Index < $startOfLine->Index) {
                                 $stack[] = $latest;
                             }
@@ -344,7 +344,7 @@ final class HangingIndentation implements MultiTokenRule
                 }
             } while (
                 $current !== $until &&
-                $current = $current->_next
+                $current = $current->Next
             );
         }
     }
@@ -364,7 +364,7 @@ final class HangingIndentation implements MultiTokenRule
      */
     public static function getTernaryContext(Token $token): ?Token
     {
-        $current = $token->_prevSibling;
+        $current = $token->PrevSibling;
         $prevTernary = null;
         while ($current &&
                 $current->Statement === $token->Statement) {
@@ -375,7 +375,7 @@ final class HangingIndentation implements MultiTokenRule
                         ($token->TernaryOperator1 ?: $token)->Index)) {
                 $prevTernary = $current;
             }
-            $current = $current->_prevSibling;
+            $current = $current->PrevSibling;
         }
 
         // Handle this scenario:
@@ -413,15 +413,15 @@ final class HangingIndentation implements MultiTokenRule
                 $until = $current->TernaryOperator2->EndExpression ?: $current;
             }
         } while ($until !== $current &&
-            ($current = $until->_nextSibling) &&
+            ($current = $until->NextSibling) &&
             ($current->id === \T_COALESCE ||
                 $current->id === \T_COALESCE_EQUAL ||
                 $current->TernaryOperator1 === $current));
 
         // And without breaking out of an unenclosed control structure
         // body, proceed to the end of the expression
-        if (!($until->_nextSibling &&
-                $until->_nextSibling->IsTernaryOperator)) {
+        if (!($until->NextSibling &&
+                $until->NextSibling->IsTernaryOperator)) {
             $until = $until->pragmaticEndOfExpression();
         }
 
@@ -465,12 +465,12 @@ final class HangingIndentation implements MultiTokenRule
                             if ($next->hasNewlineAfter()) {
                                 break;
                             }
-                            $next = $next->_next;
+                            $next = $next->Next;
                             if (!$next) {
                                 break 2;
                             }
                         } while (true);
-                        $next = $next->_next;
+                        $next = $next->Next;
                         if (!$next) {
                             break;
                         }

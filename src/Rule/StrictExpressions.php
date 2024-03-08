@@ -50,7 +50,7 @@ final class StrictExpressions implements MultiTokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            $first = $token->_nextCode;
+            $first = $token->NextCode;
             if ($first->hasNewlineAfter()) {
                 continue;
             }
@@ -58,10 +58,10 @@ final class StrictExpressions implements MultiTokenRule
             if ($first->collect($last)->hasNewline()) {
                 $first->WhitespaceAfter |= WhitespaceType::LINE;
                 $first->WhitespaceMaskNext |= WhitespaceType::LINE;
-                $first->_nextCode->WhitespaceMaskPrev |= WhitespaceType::LINE;
+                $first->NextCode->WhitespaceMaskPrev |= WhitespaceType::LINE;
                 $last->WhitespaceBefore |= WhitespaceType::LINE;
                 $last->WhitespaceMaskPrev |= WhitespaceType::LINE;
-                $last->_prevCode->WhitespaceMaskNext |= WhitespaceType::LINE;
+                $last->PrevCode->WhitespaceMaskNext |= WhitespaceType::LINE;
             }
         }
     }

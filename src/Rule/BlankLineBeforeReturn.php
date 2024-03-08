@@ -39,7 +39,7 @@ final class BlankLineBeforeReturn implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if (($prev = $token->_prevSibling->Statement ?? null) &&
+        if (($prev = $token->PrevSibling->Statement ?? null) &&
                 $prev->is([\T_RETURN, \T_YIELD, \T_YIELD_FROM])) {
             return;
         }

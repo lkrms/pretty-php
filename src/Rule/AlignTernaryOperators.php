@@ -63,7 +63,7 @@ final class AlignTernaryOperators implements MultiTokenRule
 
             $alignWith =
                 ($prevTernary ?: $token)
-                    ->_prevCode
+                    ->PrevCode
                     ->pragmaticStartOfExpression(true);
 
             $this->setAlignedWith($token, $alignWith);

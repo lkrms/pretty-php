@@ -65,7 +65,7 @@ final class AlignChains implements TokenRule
         if ($hasNewlineBefore) {
             // Find the start of the expression
             $current = $token;
-            while (($current = $current->_prevSibling) &&
+            while (($current = $current->PrevSibling) &&
                     $token->Expression === $current->Expression &&
                     $current->is([
                         \T_DOUBLE_COLON,
@@ -82,7 +82,7 @@ final class AlignChains implements TokenRule
             }
             $eol = $alignWith->endOfLine();
             if ($eol->IsCode &&
-                    $eol->_next === $token &&
+                    $eol->Next === $token &&
                     mb_strlen($alignWith->collect($eol)->render()) <= $this->Formatter->TabSize) {
                 $token->WhitespaceBefore = WhitespaceType::NONE;
                 $token->WhitespaceMaskPrev = WhitespaceType::NONE;
@@ -115,7 +115,7 @@ final class AlignChains implements TokenRule
         $callback =
             function (Token $t, ?Token $next) use ($delta) {
                 if ($next) {
-                    $until = $next->_prev;
+                    $until = $next->Prev;
                 } else {
                     $until = $t->pragmaticEndOfExpression();
                     if ($adjacent = $until->adjacentBeforeNewline()) {

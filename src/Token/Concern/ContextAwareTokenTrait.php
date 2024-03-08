@@ -43,7 +43,7 @@ trait ContextAwareTokenTrait
             return $type;
         }
 
-        if (!$this->_prevCode) {
+        if (!$this->PrevCode) {
             // @codeCoverageIgnoreStart
             throw new LogicException('Illegal T_COLON context');
             // @codeCoverageIgnoreEnd
@@ -56,20 +56,20 @@ trait ContextAwareTokenTrait
         } elseif ($this->inSwitchCase()) {
             $this->SubType = TokenSubType::COLON_SWITCH_CASE_DELIMITER;
         } elseif (
-            $this->_prevCode->id === \T_STRING &&
-            $this->_prevCode->_prevCode &&
-            $this->_prevCode->_prevCode->id === \T_ENUM
+            $this->PrevCode->id === \T_STRING &&
+            $this->PrevCode->PrevCode &&
+            $this->PrevCode->PrevCode->id === \T_ENUM
         ) {
             $this->SubType = TokenSubType::COLON_BACKED_ENUM_TYPE_DELIMITER;
-        } elseif ($this->_prevCode->id === \T_CLOSE_PARENTHESIS) {
-            $prev = $this->_prevCode->_prevSibling;
+        } elseif ($this->PrevCode->id === \T_CLOSE_PARENTHESIS) {
+            $prev = $this->PrevCode->PrevSibling;
             if (
                 $prev &&
                 $prev->id === \T_USE &&
-                $prev->_prevCode &&
-                $prev->_prevCode->id === \T_CLOSE_PARENTHESIS
+                $prev->PrevCode &&
+                $prev->PrevCode->id === \T_CLOSE_PARENTHESIS
             ) {
-                $prev = $prev->_prevCode->_prevSibling;
+                $prev = $prev->PrevCode->PrevSibling;
             }
             if ($prev) {
                 $prev = $prev->skipPrevSiblingsOf(
@@ -108,16 +108,16 @@ trait ContextAwareTokenTrait
             return $type;
         }
 
-        if (!$this->_prevCode) {
+        if (!$this->PrevCode) {
             // @codeCoverageIgnoreStart
             throw new LogicException('Illegal T_QUESTION context');
             // @codeCoverageIgnoreEnd
         }
 
-        if ($this->_prevCode->id === \T_CONST) {
+        if ($this->PrevCode->id === \T_CONST) {
             $this->SubType = TokenSubType::QUESTION_NULLABLE;
-        } elseif ($this->_prevCode->id === \T_COLON) {
-            $prevType = $this->_prevCode->getColonType();
+        } elseif ($this->PrevCode->id === \T_COLON) {
+            $prevType = $this->PrevCode->getColonType();
             if (
                 $prevType === TokenSubType::COLON_RETURN_TYPE_DELIMITER ||
                 $prevType === TokenSubType::COLON_BACKED_ENUM_TYPE_DELIMITER
@@ -125,7 +125,7 @@ trait ContextAwareTokenTrait
                 $this->SubType = TokenSubType::QUESTION_NULLABLE;
             }
         } elseif (
-            $this->_prevCode->is([\T_VAR, ...TokenType::KEYWORD_MODIFIER])
+            $this->PrevCode->is([\T_VAR, ...TokenType::KEYWORD_MODIFIER])
         ) {
             $this->SubType = TokenSubType::QUESTION_NULLABLE;
         } elseif ($this->inParameterList()) {
@@ -160,8 +160,8 @@ trait ContextAwareTokenTrait
         }
 
         if (
-            $this->_prevCode &&
-            $this->_prevCode->id === \T_CLOSE_PARENTHESIS
+            $this->PrevCode &&
+            $this->PrevCode->id === \T_CLOSE_PARENTHESIS
         ) {
             $this->SubType = TokenSubType::USE_VARIABLES;
         } elseif (
@@ -170,7 +170,7 @@ trait ContextAwareTokenTrait
         ) {
             $this->SubType = TokenSubType::USE_IMPORT;
         } else {
-            $t = $this->Parent->_prevSibling;
+            $t = $this->Parent->PrevSibling;
             while (
                 $t &&
                 $this->TypeIndex->DeclarationPart[$t->id]
@@ -179,7 +179,7 @@ trait ContextAwareTokenTrait
                     $this->SubType = TokenSubType::USE_TRAIT;
                     break;
                 }
-                $t = $t->_prevSibling;
+                $t = $t->PrevSibling;
             }
         }
 
@@ -208,11 +208,11 @@ trait ContextAwareTokenTrait
 
         if (
             $this->id === \T_COLON &&
-            $this->_prevCode &&
-            $this->_prevCode->id === \T_STRING && (
-                !$this->_prevCode->_prevSibling || (
-                    $this->_prevCode->_prevSibling->EndStatement &&
-                    $this->_prevCode->_prevSibling->EndStatement->_nextSibling === $this->_prevCode
+            $this->PrevCode &&
+            $this->PrevCode->id === \T_STRING && (
+                !$this->PrevCode->PrevSibling || (
+                    $this->PrevCode->PrevSibling->EndStatement &&
+                    $this->PrevCode->PrevSibling->EndStatement->NextSibling === $this->PrevCode
                 )
             )
         ) {
@@ -221,10 +221,10 @@ trait ContextAwareTokenTrait
 
         if (
             $this->id === \T_STRING &&
-            $this->_nextCode->id === \T_COLON &&
-            (!$this->_prevSibling ||
-                ($this->_prevSibling->EndStatement &&
-                    $this->_prevSibling->EndStatement->_nextSibling === $this))
+            $this->NextCode->id === \T_COLON &&
+            (!$this->PrevSibling ||
+                ($this->PrevSibling->EndStatement &&
+                    $this->PrevSibling->EndStatement->NextSibling === $this))
         ) {
             return true;
         }
@@ -242,11 +242,11 @@ trait ContextAwareTokenTrait
             return false;
         }
 
-        if (!$this->_prevCode) {
+        if (!$this->PrevCode) {
             return false;
         }
 
-        $prev = $this->_prevCode->skipPrevSiblingsOf(
+        $prev = $this->PrevCode->skipPrevSiblingsOf(
             \T_STRING,
             \T_READONLY,
             ...TokenType::AMPERSAND,
@@ -280,9 +280,9 @@ trait ContextAwareTokenTrait
         /** @var Token $this */
         if (
             $this->Parent &&
-            $this->Parent->_prevSibling &&
-            $this->Parent->_prevSibling->_prevSibling &&
-            $this->Parent->_prevSibling->_prevSibling->id === \T_SWITCH
+            $this->Parent->PrevSibling &&
+            $this->Parent->PrevSibling->PrevSibling &&
+            $this->Parent->PrevSibling->PrevSibling->id === \T_SWITCH
         ) {
             return true;
         }

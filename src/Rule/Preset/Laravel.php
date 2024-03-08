@@ -61,7 +61,7 @@ final class Laravel implements Preset, TokenRule
     {
         switch ($token->id) {
             case \T_LOGICAL_NOT:
-                if (($token->_next->id ?? null) === \T_LOGICAL_NOT) {
+                if (($token->Next->id ?? null) === \T_LOGICAL_NOT) {
                     return;
                 }
                 $token->WhitespaceAfter |= WhitespaceType::SPACE;

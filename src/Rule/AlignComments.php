@@ -81,7 +81,7 @@ final class AlignComments implements BlockRule
              *     echo "$key: $value\n";
              * ```
              */
-            $prev = $comment->_prev;
+            $prev = $comment->Prev;
             if ($prev !== $lastComment ||
                 $comment->line - $prev->line > 1 ||
                 $comment->CommentType !== $prev->CommentType ||
@@ -92,9 +92,9 @@ final class AlignComments implements BlockRule
                 $comment->column <= $lastStartOfLine->column + (
                     count($comment->BracketStack) - count($lastStartOfLine->BracketStack)
                 ) * $this->Formatter->TabSize ||
-                ($comment->_nextCode &&
-                    $comment->_nextCode->wasFirstOnLine() &&
-                    $comment->column <= $comment->_nextCode->column)) {
+                ($comment->NextCode &&
+                    $comment->NextCode->wasFirstOnLine() &&
+                    $comment->column <= $comment->NextCode->column)) {
                 continue;
             }
 
@@ -121,8 +121,8 @@ final class AlignComments implements BlockRule
                 /** @var Token */
                 $comment = $comments[$i];
                 // If $comment is the first token on the line, there won't be
-                // anything to collect between $token and $comment->_prev, so
-                // use $comment's leading whitespace for calculations
+                // anything to collect between $token and $comment->Prev, so use
+                // $comment's leading whitespace for calculations
                 if ($token === $comment) {
                     $length = strlen($comment->renderWhitespaceBefore(true));
                     // Compensate for lack of SPACE applied by PlaceComments
@@ -130,7 +130,7 @@ final class AlignComments implements BlockRule
                     $max = max($max, $length);
                     continue;
                 }
-                $text = $token->collect($comment->_prev)->render(true, false);
+                $text = $token->collect($comment->Prev)->render(true, false);
                 $length = mb_strlen(mb_substr($text, mb_strrpos("\n" . $text, "\n")));
                 $lengths[$i] = $length;
                 $max = max($max, $length);

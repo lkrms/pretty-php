@@ -34,7 +34,7 @@ final class EssentialWhitespace implements Rule
     public function beforeRender(array $tokens): void
     {
         foreach ($tokens as $token) {
-            $next = $token->_next;
+            $next = $token->Next;
             if (!$next ||
                     $token->String ||
                     $next->String ||

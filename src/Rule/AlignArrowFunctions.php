@@ -38,7 +38,7 @@ final class AlignArrowFunctions implements TokenRule
         $arrow = $token->nextSiblingOf(\T_DOUBLE_ARROW);
         $body = $this->Formatter->NewlineBeforeFnDoubleArrows
             ? $arrow
-            : $arrow->_nextCode;
+            : $arrow->NextCode;
 
         if (!$body->hasNewlineBefore()) {
             return;
@@ -46,7 +46,7 @@ final class AlignArrowFunctions implements TokenRule
 
         // If the arrow function's arguments break over multiple lines, align
         // with the start of the previous line
-        $alignWith = $token->collect($body->_prev)
+        $alignWith = $token->collect($body->Prev)
                            ->reverse()
                            ->find(fn(Token $t) =>
                                       $t->IsCode && $t->hasNewlineBefore() ||

@@ -60,14 +60,14 @@ final class ListSpacing implements ListRule
                 $first = $items->first();
                 $first->WhitespaceBefore |= WhitespaceType::LINE;
                 $first->WhitespaceMaskPrev |= WhitespaceType::LINE;
-                $first->_prev->WhitespaceMaskNext |= WhitespaceType::LINE;
+                $first->Prev->WhitespaceMaskNext |= WhitespaceType::LINE;
             }
             return;
         }
 
         // If the list has a "magic comma", add a newline before each item and
         // another after the last item
-        if ($owner->ClosedBy->_prevCode->id === \T_COMMA) {
+        if ($owner->ClosedBy->PrevCode->id === \T_COMMA) {
             $items->clone()
                   ->add($owner->ClosedBy)
                   ->addWhitespaceBefore(WhitespaceType::LINE, true);
@@ -90,7 +90,7 @@ final class ListSpacing implements ListRule
                     $hasAttributeWithNewline = true;
                     break 2;
                 }
-                if (!($current = $current->_nextSibling)) {
+                if (!($current = $current->NextSibling)) {
                     break;
                 }
             }
@@ -111,7 +111,7 @@ final class ListSpacing implements ListRule
             do {
                 $current->WhitespaceBefore |= WhitespaceType::LINE;
                 $current->WhitespaceMaskPrev |= WhitespaceType::LINE;
-                $current->_prev->WhitespaceMaskNext |= WhitespaceType::LINE;
+                $current->Prev->WhitespaceMaskNext |= WhitespaceType::LINE;
                 if ($current->id === \T_ATTRIBUTE) {
                     $current->ClosedBy->WhitespaceAfter |= WhitespaceType::LINE;
                 } elseif ($current->id === \T_ATTRIBUTE_COMMENT) {
@@ -119,7 +119,7 @@ final class ListSpacing implements ListRule
                 }
             } while (($current->id === \T_ATTRIBUTE ||
                     $current->id === \T_ATTRIBUTE_COMMENT) &&
-                ($current = $current->_nextSibling));
+                ($current = $current->NextSibling));
 
             // Continue if $token is a parameter with no attributes
             if ($current === $token) {

@@ -862,7 +862,7 @@ final class Formatter implements Buildable
         ]);
         $lists = [];
         foreach ($listParents as $i => $parent) {
-            if ($parent->ClosedBy === $parent->_nextCode) {
+            if ($parent->ClosedBy === $parent->NextCode) {
                 continue;
             }
             switch ($parent->id) {
@@ -871,7 +871,7 @@ final class Formatter implements Buildable
                     $items =
                         $parent->nextSiblingsWhile(...TokenType::DECLARATION_LIST)
                                ->filter(fn(Token $t, ?Token $next, ?Token $prev) =>
-                                            !$prev || $t->_prevCode->id === \T_COMMA);
+                                            !$prev || $t->PrevCode->id === \T_COMMA);
                     $count = $items->count();
                     if ($count > 1) {
                         $parent->IsListParent = true;
@@ -884,7 +884,7 @@ final class Formatter implements Buildable
                     continue 2;
 
                 case \T_OPEN_PARENTHESIS:
-                    $prev = $parent->_prevCode;
+                    $prev = $parent->PrevCode;
                     if (!$prev) {
                         continue 2;
                     }
@@ -892,9 +892,9 @@ final class Formatter implements Buildable
                             !$prev->isStructuralBrace(false)) {
                         break;
                     }
-                    if ($prev->_prevCode &&
+                    if ($prev->PrevCode &&
                             $prev->is(TokenType::AMPERSAND) &&
-                            $prev->_prevCode->is([\T_FN, \T_FUNCTION])) {
+                            $prev->PrevCode->is([\T_FN, \T_FUNCTION])) {
                         break;
                     }
                     if ($prev->is([
@@ -920,7 +920,7 @@ final class Formatter implements Buildable
                     if ($parent->Expression === $parent) {
                         break;
                     }
-                    $prev = $parent->_prevCode;
+                    $prev = $parent->PrevCode;
                     if ($prev && (
                         $prev->is([
                             \T_CLOSE_BRACE,
@@ -930,8 +930,8 @@ final class Formatter implements Buildable
                             ...TokenType::NAME,
                             ...TokenType::MAGIC_CONSTANT,
                         ]) || (
-                            $prev->_prevCode &&
-                            $prev->_prevCode->id === \T_DOUBLE_COLON &&
+                            $prev->PrevCode &&
+                            $prev->PrevCode->id === \T_DOUBLE_COLON &&
                             $prev->is(TokenType::SEMI_RESERVED)
                         )
                         // This check should never be necessary
@@ -941,14 +941,14 @@ final class Formatter implements Buildable
 
                     break;
             }
-            $delimiter = $parent->_prevCode && $parent->_prevCode->id === \T_FOR
+            $delimiter = $parent->PrevCode && $parent->PrevCode->id === \T_FOR
                 ? \T_SEMICOLON
                 : \T_COMMA;
             $items =
                 $parent->children()
                        ->filter(fn(Token $t, ?Token $next, ?Token $prev) =>
                                     $t->id !== $delimiter &&
-                                        (!$prev || $t->_prevCode->id === $delimiter));
+                                        (!$prev || $t->PrevCode->id === $delimiter));
             $count = $items->count();
             if (!$count) {
                 continue;
@@ -1051,7 +1051,7 @@ final class Formatter implements Buildable
             if ($keep) {
                 $line[] = $token;
             }
-            $token = $token->_next;
+            $token = $token->Next;
         }
 
         Profile::stopTimer(__METHOD__ . '#find-blocks');

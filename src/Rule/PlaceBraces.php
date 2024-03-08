@@ -80,7 +80,7 @@ final class PlaceBraces implements MultiTokenRule
                 if ($isMatch) {
                     continue;
                 }
-                $nextCode = $token->_nextCode;
+                $nextCode = $token->NextCode;
                 if ($nextCode &&
                     (($nextCode->OpenedBy && $nextCode->id !== \T_CLOSE_BRACE) ||
                         $nextCode === $token->EndStatement)) {
@@ -101,7 +101,7 @@ final class PlaceBraces implements MultiTokenRule
                 continue;
             }
 
-            $next = $token->_next;
+            $next = $token->Next;
             $parts = $token->Expression->declarationParts();
 
             // Move empty bodies to the end of the previous line

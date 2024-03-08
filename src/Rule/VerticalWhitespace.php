@@ -136,7 +136,7 @@ final class VerticalWhitespace implements MultiTokenRule
                         $startOfLine = $token->startOfLine();
                         if (
                             $startOfLine === $token ||
-                            $startOfLine->collect($token->_prev)->hasOneNotFrom($this->TypeIndex->CloseBracket)
+                            $startOfLine->collect($token->Prev)->hasOneNotFrom($this->TypeIndex->CloseBracket)
                         ) {
                             $token->WhitespaceBefore |= WhitespaceType::LINE;
                         }
@@ -149,7 +149,7 @@ final class VerticalWhitespace implements MultiTokenRule
                         $endOfLine = $token->endOfLine();
                         if (
                             $endOfLine === $token ||
-                            $token->_next->collect($endOfLine)->hasOneNotFrom($this->OpenBracketOrNotIndex)
+                            $token->Next->collect($endOfLine)->hasOneNotFrom($this->OpenBracketOrNotIndex)
                         ) {
                             $token->WhitespaceAfter |= WhitespaceType::LINE;
                         }
@@ -216,14 +216,14 @@ final class VerticalWhitespace implements MultiTokenRule
             }
 
             if ($token->id === \T_FOR) {
-                $children = $token->_nextCode->children();
+                $children = $token->NextCode->children();
                 $commas = $children->getAnyFrom($this->CommaIndex);
                 $semicolons = $children->getAnyFrom($this->SemicolonIndex);
                 $semi1 = $semicolons->first();
                 $semi2 = $semicolons->last();
-                $expr1 = $token->_nextCode->_next->collectSiblings($semi1);
-                $expr2 = $semi1->_next->collectSiblings($semi2);
-                $expr3 = $semi2->_next->collectSiblings($token->_nextCode->ClosedBy->_prev);
+                $expr1 = $token->NextCode->Next->collectSiblings($semi1);
+                $expr2 = $semi1->Next->collectSiblings($semi2);
+                $expr3 = $semi2->Next->collectSiblings($token->NextCode->ClosedBy->Prev);
 
                 // If an expression in a `for` loop breaks over multiple lines,
                 // add a newline after each comma-delimited expression and a
@@ -246,7 +246,7 @@ final class VerticalWhitespace implements MultiTokenRule
                             $expr->maskWhitespaceBefore(WhitespaceType::NONE);
                         } else {
                             $semi2->WhitespaceMaskNext = WhitespaceType::NONE;
-                            $semi2->_next->WhitespaceMaskPrev = WhitespaceType::NONE;
+                            $semi2->Next->WhitespaceMaskPrev = WhitespaceType::NONE;
                         }
                     }
                 }
@@ -258,7 +258,7 @@ final class VerticalWhitespace implements MultiTokenRule
             // declaration or an anonymous class declared over multiple lines
             if ($token->id === \T_OPEN_BRACE) {
                 if (!$token->isStructuralBrace() ||
-                        ($token->_next->id === \T_CLOSE_BRACE && !$token->hasNewlineAfter())) {
+                        ($token->Next->id === \T_CLOSE_BRACE && !$token->hasNewlineAfter())) {
                     continue;
                 }
                 $parts = $token->Expression->declarationParts();
@@ -268,7 +268,7 @@ final class VerticalWhitespace implements MultiTokenRule
                         $last->skipPrevSiblingsOf(...TokenType::AMPERSAND)->id !== \T_FUNCTION) {
                     $start = $parts->first();
                     if ($start->id !== \T_USE &&
-                        ((!($prevCode = $start->_prevCode) ||
+                        ((!($prevCode = $start->PrevCode) ||
                                 $prevCode->id === \T_SEMICOLON ||
                                 $prevCode->id === \T_OPEN_BRACE ||
                                 $prevCode->id === \T_CLOSE_BRACE ||
@@ -284,7 +284,7 @@ final class VerticalWhitespace implements MultiTokenRule
             // before the other
             if ($token->id === \T_QUESTION) {
                 if (!$token->IsTernaryOperator ||
-                        $token->TernaryOperator2 === $token->_next) {
+                        $token->TernaryOperator2 === $token->Next) {
                     continue;
                 }
 
