@@ -1,13 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Token\Concern;
+namespace Lkrms\PrettyPHP\Token;
 
 use Lkrms\PrettyPHP\Catalog\CommentType;
 use Lkrms\PrettyPHP\Catalog\CustomToken;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\PrettyPHP\Formatter;
 use Salient\Core\Utility\Pcre;
 use PhpToken;

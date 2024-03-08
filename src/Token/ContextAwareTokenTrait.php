@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Token\Concern;
+namespace Lkrms\PrettyPHP\Token;
 
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
