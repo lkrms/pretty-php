@@ -8,6 +8,7 @@ use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
+use Lkrms\PrettyPHP\Token\Token;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 
@@ -126,6 +127,7 @@ final class StandardWhitespace implements MultiTokenRule
             if ($token === $token->OpenTag) {
                 // Propagate indentation from `<?php` tags to subsequent tokens
                 $tagIndent = 0;
+                /** @var Token|null */
                 $sibling = null;
                 $siblingIndent = null;
 

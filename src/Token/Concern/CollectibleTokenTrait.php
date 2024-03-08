@@ -32,7 +32,6 @@ trait CollectibleTokenTrait
                 ? $this->TypeIndex->DeclarationPartWithNew
                 : $this->TypeIndex->DeclarationPart;
 
-        /** @var Token */
         $t = $this;
 
         if ($skipToDeclaration) {
@@ -77,6 +76,7 @@ trait CollectibleTokenTrait
      */
     final public function outer(): TokenCollection
     {
+        /** @var Token $this */
         return
             ($this->OpenedBy ?? $this)
                 ->collect($this->ClosedBy ?? $this);
@@ -87,6 +87,7 @@ trait CollectibleTokenTrait
      */
     final public function inner(): TokenCollection
     {
+        /** @var Token $this */
         return
             ($this->OpenedBy ?? $this)
                 ->next()
@@ -100,6 +101,7 @@ trait CollectibleTokenTrait
      */
     final public function children(): TokenCollection
     {
+        /** @var Token $this */
         return
             ($this->OpenedBy ?? $this)
                 ->nextCode()
@@ -115,10 +117,8 @@ trait CollectibleTokenTrait
      */
     final public function collect($to): TokenCollection
     {
-        /**
-         * @var Token $this
-         * @var Token $to
-         */
+        /** @var Token $this */
+        /** @var Token $to */
         return TokenCollection::collect($this, $to);
     }
 
@@ -130,6 +130,7 @@ trait CollectibleTokenTrait
      */
     final public function collectSiblings($to = null): TokenCollection
     {
+        /** @var Token $this */
         $tokens = new TokenCollection();
         if ($this->IsNull) {
             return $tokens;
@@ -146,7 +147,6 @@ trait CollectibleTokenTrait
             }
         }
         do {
-            /** @var Token $current */
             $tokens[] = $current;
             if ($to && $current === $to) {
                 break;
@@ -164,6 +164,7 @@ trait CollectibleTokenTrait
      */
     final public function prevSiblings($to = null): TokenCollection
     {
+        /** @var Token $this */
         $tokens = new TokenCollection();
         if ($this->IsNull) {
             return $tokens;
@@ -180,7 +181,6 @@ trait CollectibleTokenTrait
             }
         }
         while ($current = $current->_prevSibling) {
-            /** @var Token $current */
             $tokens[] = $current;
             if ($to && $current === $to) {
                 break;
@@ -392,15 +392,14 @@ trait CollectibleTokenTrait
 
     private function _prevWhile(bool $includeToken, bool $testToken, int ...$types): TokenCollection
     {
+        /** @var Token $this */
         $tokens = new TokenCollection();
         if ($includeToken && !$testToken) {
-            /** @var Token $this */
             $tokens[] = $this;
             $includeToken = false;
         }
         $prev = $includeToken ? $this : $this->_prev;
         while ($prev && $prev->is($types)) {
-            /** @var Token $prev */
             $tokens[] = $prev;
             $prev = $prev->_prev;
         }
@@ -410,15 +409,14 @@ trait CollectibleTokenTrait
 
     private function _nextWhile(bool $includeToken, bool $testToken, int ...$types): TokenCollection
     {
+        /** @var Token $this */
         $tokens = new TokenCollection();
         if ($includeToken && !$testToken) {
-            /** @var Token $this */
             $tokens[] = $this;
             $includeToken = false;
         }
         $next = $includeToken ? $this : $this->_next;
         while ($next && $next->is($types)) {
-            /** @var Token $next */
             $tokens[] = $next;
             $next = $next->_next;
         }
@@ -428,15 +426,14 @@ trait CollectibleTokenTrait
 
     private function _prevCodeWhile(bool $includeToken, bool $testToken, int ...$types): TokenCollection
     {
+        /** @var Token $this */
         $tokens = new TokenCollection();
         if ($includeToken && !$testToken) {
-            /** @var Token $this */
             $tokens[] = $this;
             $includeToken = false;
         }
         $prev = $includeToken ? $this : $this->_prevCode;
         while ($prev && $prev->is($types)) {
-            /** @var Token $prev */
             $tokens[] = $prev;
             $prev = $prev->_prevCode;
         }
@@ -446,15 +443,14 @@ trait CollectibleTokenTrait
 
     private function _nextCodeWhile(bool $includeToken, bool $testToken, int ...$types): TokenCollection
     {
+        /** @var Token $this */
         $tokens = new TokenCollection();
         if ($includeToken && !$testToken) {
-            /** @var Token $this */
             $tokens[] = $this;
             $includeToken = false;
         }
         $next = $includeToken ? $this : $this->_nextCode;
         while ($next && $next->is($types)) {
-            /** @var Token $next */
             $tokens[] = $next;
             $next = $next->_nextCode;
         }
@@ -464,9 +460,9 @@ trait CollectibleTokenTrait
 
     private function _prevSiblingsWhile(bool $includeToken, bool $testToken, int ...$types): TokenCollection
     {
+        /** @var Token $this */
         $tokens = new TokenCollection();
         if ($includeToken && !$testToken) {
-            /** @var Token $this */
             $tokens[] = $this;
             $includeToken = false;
         }
@@ -481,9 +477,9 @@ trait CollectibleTokenTrait
 
     private function _nextSiblingsWhile(bool $includeToken, bool $testToken, int ...$types): TokenCollection
     {
+        /** @var Token $this */
         $tokens = new TokenCollection();
         if ($includeToken && !$testToken) {
-            /** @var Token $this */
             $tokens[] = $this;
             $includeToken = false;
         }
@@ -501,15 +497,14 @@ trait CollectibleTokenTrait
      */
     private function _prevSiblingsUntil(callable $callback, bool $includeToken = false, bool $testToken = false): TokenCollection
     {
+        /** @var Token $this */
         $tokens = new TokenCollection();
         if ($includeToken && !$testToken) {
-            /** @var Token $this */
             $tokens[] = $this;
             $includeToken = false;
         }
         $prev = $includeToken ? $this : $this->_prevSibling;
         while ($prev && !$callback($prev, $tokens)) {
-            /** @var Token $prev */
             $tokens[] = $prev;
             $prev = $prev->_prevSibling;
         }
@@ -522,15 +517,14 @@ trait CollectibleTokenTrait
      */
     private function _nextSiblingsUntil(callable $callback, bool $includeToken = false, bool $testToken = false): TokenCollection
     {
+        /** @var Token $this */
         $tokens = new TokenCollection();
         if ($includeToken && !$testToken) {
-            /** @var Token $this */
             $tokens[] = $this;
             $includeToken = false;
         }
         $next = $includeToken ? $this : $this->_nextSibling;
         while ($next && !$callback($next, $tokens)) {
-            /** @var Token $next */
             $tokens[] = $next;
             $next = $next->_nextSibling;
         }
@@ -540,9 +534,9 @@ trait CollectibleTokenTrait
 
     private function _parentsWhile(bool $includeToken, bool $testToken, int ...$types): TokenCollection
     {
+        /** @var Token $this */
         $tokens = new TokenCollection();
         if ($includeToken && !$testToken) {
-            /** @var Token $this */
             $tokens[] = $this;
             $includeToken = false;
         }

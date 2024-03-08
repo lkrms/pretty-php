@@ -200,9 +200,8 @@ trait ContextAwareTokenTrait
      */
     final protected function inLabel(): bool
     {
-        /** @var Token $this */
-
         // Exclude named arguments
+        /** @var Token $this */
         if ($this->Parent && $this->Parent->id === \T_OPEN_PARENTHESIS) {
             return false;
         }
@@ -238,6 +237,7 @@ trait ContextAwareTokenTrait
      */
     final public function isParameterList(): bool
     {
+        /** @var Token $this */
         if ($this->id !== \T_OPEN_PARENTHESIS) {
             return false;
         }
@@ -264,6 +264,7 @@ trait ContextAwareTokenTrait
      */
     final public function inParameterList(): bool
     {
+        /** @var Token $this */
         if ($this->Parent && $this->Parent->isParameterList()) {
             return true;
         }
