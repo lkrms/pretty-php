@@ -141,7 +141,7 @@ trait CollectibleTokenTrait
             if ($this->Index > $to->Index) {
                 return $tokens;
             }
-            if ($current->BracketStack !== $to->BracketStack) {
+            if ($current->Parent !== $to->Parent) {
                 throw new LogicException('Argument #1 ($to) is not a sibling');
             }
         }
@@ -175,7 +175,7 @@ trait CollectibleTokenTrait
                 return $tokens;
             }
             $to = $to->OpenedBy ?? $to;
-            if ($current->BracketStack !== $to->BracketStack) {
+            if ($current->Parent !== $to->Parent) {
                 throw new LogicException('Argument #1 ($to) is not a sibling');
             }
         }
@@ -540,10 +540,10 @@ trait CollectibleTokenTrait
             $includeToken = false;
         }
         $current = $this->OpenedBy ?? $this;
-        $current = $includeToken ? $current : end($current->BracketStack);
+        $current = $includeToken ? $current : $current->Parent;
         while ($current && $current->is($types)) {
             $tokens[] = $current;
-            $current = end($current->BracketStack);
+            $current = $current->Parent;
         }
 
         return $tokens;

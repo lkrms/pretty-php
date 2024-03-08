@@ -217,7 +217,7 @@ final class PlaceComments implements TokenRule
                 $next->parent()->prevSibling(2)->id === \T_SWITCH
             ) {
                 $prev = $token->PrevCode;
-                if (!(end($token->BracketStack) === $prev ||
+                if (!($token->Parent === $prev ||
                     ($prev->collect($token)->hasBlankLineBetweenTokens() &&
                         !$token->collect($next)->hasBlankLineBetweenTokens()))) {
                     $indent = 1;

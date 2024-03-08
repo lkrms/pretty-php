@@ -86,8 +86,10 @@ final class AlignData implements BlockRule
             function (string $type, array $data = []) use (&$ctxIdx, &$ctxCounts, &$lineIdx, &$line, &$token) {
                 /** @var Token $token */
                 $brackets = '';
-                foreach ($token->BracketStack as $t) {
-                    $brackets .= $t->text;
+                $current = $token;
+                while ($current->Parent) {
+                    $current = $current->Parent;
+                    $brackets = $current->text . $brackets;
                 }
                 $index = "$type\0$brackets\0{$token->indent()}";
                 $ctxIdx[$index][$line][] = $token;

@@ -516,7 +516,7 @@ final class TokenType extends AbstractDictionary
      */
     public static function getIndex(int ...$types): array
     {
-        return array_combine($types, array_fill(0, count($types), true)) + [
+        return array_fill_keys($types, true) + [
             \T_ABSTRACT => false,
             \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG => false,
             \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG => false,

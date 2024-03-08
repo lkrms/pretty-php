@@ -169,6 +169,15 @@ class TokenTypeIndex implements Immutable
     public array $DoNotModifyRight;
 
     /**
+     * T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO, T_CLOSE_TAG, T_START_HEREDOC,
+     * T_END_HEREDOC, T_COMMENT, T_DOC_COMMENT, T_WHITESPACE
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $Trim;
+
+    /**
      * Tokens that require leading and trailing spaces
      *
      * @readonly
@@ -523,6 +532,16 @@ class TokenTypeIndex implements Immutable
         $this->DoNotModifyRight = TT::getIndex(
             \T_CLOSE_TAG,
             \T_START_HEREDOC,
+        );
+
+        $this->Trim = TT::mergeIndexes(
+            $this->DoNotModifyLeft,
+            $this->DoNotModifyRight,
+            TT::getIndex(
+                \T_ATTRIBUTE_COMMENT,
+                \T_WHITESPACE,
+                ...TT::COMMENT,
+            ),
         );
 
         $this->AddSpaceAround = TT::getIndex(

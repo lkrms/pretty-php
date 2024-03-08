@@ -90,7 +90,7 @@ final class AlignComments implements BlockRule
                 !$lastStartOfLine ||
                 /** @todo Guess input tab size and use it instead */
                 $comment->column <= $lastStartOfLine->column + (
-                    count($comment->BracketStack) - count($lastStartOfLine->BracketStack)
+                    $comment->Depth - $lastStartOfLine->Depth
                 ) * $this->Formatter->TabSize ||
                 ($comment->NextCode &&
                     $comment->NextCode->wasFirstOnLine() &&

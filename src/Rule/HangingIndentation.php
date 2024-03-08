@@ -105,7 +105,7 @@ final class HangingIndentation implements MultiTokenRule
                     $token->NextCode->Index < $parent->ClosedBy->Index &&
                     ($parent->HangingIndentParentType & self::NO_INDENT)) {
                 $current = $token->Next;
-                $stack = [$token->BracketStack];
+                $stack = [[$token->Parent]];
                 $stack[] = $token;
                 do {
                     $current->HangingIndentStack[] = $token;
@@ -175,7 +175,7 @@ final class HangingIndentation implements MultiTokenRule
                 continue;
             }
 
-            $stack = [$token->BracketStack];
+            $stack = [[$token->Parent]];
             $latest = end($token->HangingIndentStack);
             unset($until);
 
@@ -220,7 +220,7 @@ final class HangingIndentation implements MultiTokenRule
                 $stack[] = $token->Heredoc;
             } elseif ($token->ListParent) {
                 $stack[] = $token->ListParent;
-            } elseif ($latest && $latest->BracketStack === $token->BracketStack) {
+            } elseif ($latest && $latest->Parent === $token->Parent) {
                 if ($this->TypeIndex->ExpressionDelimiter[$token->PrevCode->id]) {
                     $stack[] = $token;
                 } elseif ($latest->id === \T_DOUBLE_ARROW) {
@@ -247,7 +247,7 @@ final class HangingIndentation implements MultiTokenRule
                         $latest->Statement !== $latest) {
                     $latest = end($latest->HangingIndentStack);
                     if ($latest &&
-                            $latest->BracketStack === $token->BracketStack &&
+                            $latest->Parent === $token->Parent &&
                             $latest->Statement === $latest) {
                         $stack[] = $latest;
                     }
@@ -494,7 +494,7 @@ final class HangingIndentation implements MultiTokenRule
                         (($next->Index <= $until->Index &&
                                 ($next->HangingIndentParentLevels[$index] ?? 0)) ||
                             ($next->Index > $until->Index &&
-                                $next->BracketStack === $token->BracketStack &&
+                                $next->Parent === $token->Parent &&
                                 $next->HangingIndentContextStack === $token->HangingIndentContextStack &&
                                 !(($next->Statement === $next) xor ($token->Statement === $token))))) {
                         $nextIndent--;

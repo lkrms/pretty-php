@@ -73,13 +73,13 @@ final class AlignLists implements ListRule
                 while (($adjacent = $to->lastSiblingBeforeNewline()) !== $to &&
                     ($adjacent->id !== \T_OPEN_BRACE ||
                         !$adjacent->isStructuralBrace() ||
-                        count($adjacent->BracketStack) > count($owner->BracketStack))) {
+                        $adjacent->Depth > $owner->Depth)) {
                     $to = $adjacent;
                 }
                 while (($adjacent = $to->adjacentBeforeNewline(false)) &&
                     ($adjacent->id !== \T_OPEN_BRACE ||
                         !$adjacent->isStructuralBrace() ||
-                        count($adjacent->BracketStack) > count($owner->BracketStack))) {
+                        $adjacent->Depth > $owner->Depth)) {
                     $to = $adjacent->pragmaticEndOfExpression();
                 }
                 $item->collect($to)->forEach(

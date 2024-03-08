@@ -47,10 +47,7 @@ trait NavigableTokenTrait
 
     public ?Token $Parent = null;
 
-    /**
-     * @var Token[]
-     */
-    public array $BracketStack = [];
+    public int $Depth = 0;
 
     public ?Token $OpenTag = null;
 
@@ -188,7 +185,7 @@ trait NavigableTokenTrait
 
         $idx = $formatter->TokenTypeIndex;
 
-        /** @var static|null */
+        /** @var (static&Token)|null */
         $prev = null;
         foreach ($tokens as $token) {
             if ($prev) {
@@ -241,15 +238,15 @@ trait NavigableTokenTrait
         // - trim the text of each token
         // - add virtual close brackets after alternative syntax bodies
         // - pair open brackets and tags with their counterparts
-        // - link siblings, parents and children (set `BracketStack`, `Parent`,
+        // - link siblings, parents and children (set `Parent`, `Depth`,
         //   `PrevCode`, `NextCode`, `PrevSibling`, `NextSibling`)
         // - set `Index`, `IsCode`, `CommentType`, `IsInformalDocComment`,
         //   `IsStatementTerminator`, `OpenedBy`, `ClosedBy`, `String`,
         //   `Heredoc`, `StringClosedBy`
 
-        /** @var static[] */
+        /** @var (static&Token)[] */
         $linked = [];
-        /** @var static|null */
+        /** @var (static&Token)|null */
         $prev = null;
         $index = 0;
 
@@ -266,17 +263,18 @@ trait NavigableTokenTrait
                 $token->id = \T_ATTRIBUTE_COMMENT;
             }
 
-            /** @todo Only trim tokens capable of holding whitespace */
             $text = $token->text;
-            if ($idx->DoNotModifyLeft[$token->id]) {
-                $text = rtrim($text);
-            } elseif ($idx->DoNotModifyRight[$token->id]) {
-                $text = ltrim($text);
-            } elseif (!$idx->DoNotModify[$token->id]) {
-                $text = trim($text);
-            }
-            if ($text !== $token->text) {
-                $token->setText($text);
+            if ($idx->Trim[$token->id]) {
+                if ($idx->DoNotModifyLeft[$token->id]) {
+                    $text = rtrim($text);
+                } elseif ($idx->DoNotModifyRight[$token->id]) {
+                    $text = ltrim($text);
+                } else {
+                    $text = trim($text);
+                }
+                if ($text !== $token->text) {
+                    $token->setText($text);
+                }
             }
 
             if ($idx->NotCode[$token->id]) {
@@ -306,18 +304,11 @@ trait NavigableTokenTrait
                 }
             }
 
-            if (
-                ($idx->AltSyntaxContinue[$token->id] ||
-                    $idx->AltSyntaxEnd[$token->id]) &&
-                $prev->id !== \T_END_ALT_SYNTAX
-            ) {
-                $stack = $prev->BracketStack;
-                // If the previous token is a close bracket, remove its opener
-                // from the top of the stack
-                if ($idx->CloseBracket[$prev->id]) {
-                    array_pop($stack);
-                }
-                $opener = array_pop($stack);
+            if ((
+                $idx->AltSyntaxContinue[$token->id] ||
+                $idx->AltSyntaxEnd[$token->id]
+            ) && $prev->id !== \T_END_ALT_SYNTAX) {
+                $opener = $prev->Parent;
                 if (($opener &&
                     $opener->id === \T_COLON &&
                     ($idx->AltSyntaxEnd[$token->id] ||
@@ -379,19 +370,19 @@ trait NavigableTokenTrait
                 $token->NextCode = &$prev->NextCode;
             }
 
-            $token->BracketStack = $prev->BracketStack;
-            $stackDelta = 0;
+            $token->Depth = $prev->Depth;
+            $depthDelta = 0;
             if (
                 $idx->OpenBracket[$prev->id] ||
                 ($prev->id === \T_COLON && $prev->startsAlternativeSyntax())
             ) {
-                $token->BracketStack[] = $prev;
                 $token->Parent = $prev;
-                $stackDelta++;
+                $token->Depth++;
+                $depthDelta++;
             } elseif ($idx->CloseBracketOrEndAltSyntax[$prev->id]) {
-                array_pop($token->BracketStack);
                 $token->Parent = $prev->Parent;
-                $stackDelta--;
+                $token->Depth--;
+                $depthDelta--;
             } else {
                 $token->Parent = $prev->Parent;
             }
@@ -415,7 +406,7 @@ trait NavigableTokenTrait
             if (
                 $idx->StringDelimiter[$token->id] &&
                 $token->String &&
-                $token->BracketStack === $token->String->BracketStack && (
+                $token->Parent === $token->String->Parent && (
                     ($token->String->id === \T_START_HEREDOC && $token->id === \T_END_HEREDOC) ||
                     ($token->String->id !== \T_START_HEREDOC && $token->String->id === $token->id)
                 )
@@ -424,7 +415,7 @@ trait NavigableTokenTrait
             }
 
             if ($idx->CloseBracketOrEndAltSyntax[$token->id]) {
-                $opener = end($token->BracketStack);
+                $opener = $token->Parent;
                 $opener->ClosedBy = $token;
                 $token->OpenedBy = $opener;
                 $token->PrevSibling = &$opener->PrevSibling;
@@ -470,9 +461,9 @@ trait NavigableTokenTrait
             // If $token continues the previous context ($stackDelta == 0) or is
             // the first token after a close bracket ($stackDelta < 0), set
             // $token->PrevSibling
-            if ($stackDelta <= 0 && $token->PrevCode) {
+            if ($depthDelta <= 0 && $token->PrevCode) {
                 $prevCode = $token->PrevCode->OpenedBy ?: $token->PrevCode;
-                if ($prevCode->BracketStack === $token->BracketStack) {
+                if ($prevCode->Parent === $token->Parent) {
                     $token->PrevSibling = $prevCode;
                 }
             }
@@ -490,7 +481,7 @@ trait NavigableTokenTrait
                     } while ($t !== $token->PrevSibling && $t->Prev);
                 } elseif (!$token->PrevSibling) {
                     $t = $token->Prev;
-                    while ($t && $t->BracketStack === $token->BracketStack) {
+                    while ($t && $t->Parent === $token->Parent) {
                         $t->NextSibling = $token;
                         $t = $t->Prev;
                     }
@@ -1038,7 +1029,10 @@ trait NavigableTokenTrait
      */
     final public function first()
     {
-        $current = reset($this->BracketStack) ?: $this;
+        $current = $this;
+        while ($current->Parent) {
+            $current = $current->Parent;
+        }
         while ($current->Prev) {
             $current = $current->PrevSibling ?: $current->Prev;
         }
@@ -1052,7 +1046,10 @@ trait NavigableTokenTrait
      */
     final public function last()
     {
-        $current = reset($this->BracketStack) ?: $this;
+        $current = $this;
+        while ($current->Parent) {
+            $current = $current->Parent;
+        }
         while ($current->Next) {
             $current = $current->NextSibling ?: $current->Next;
         }

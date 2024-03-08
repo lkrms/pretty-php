@@ -149,11 +149,11 @@ final class StandardWhitespace implements MultiTokenRule
 
                         /*
                          * Look for a `?>` tag in the same context, i.e. with
-                         * the same BracketStack
+                         * the same parent
                          */
                         $current = $token;
                         while ($current->CloseTag) {
-                            if ($current->CloseTag->BracketStack === $token->BracketStack) {
+                            if ($current->CloseTag->Parent === $token->Parent) {
                                 $sibling = $current->CloseTag;
                                 break;
                             }
@@ -166,7 +166,7 @@ final class StandardWhitespace implements MultiTokenRule
                             break;
                         }
 
-                        if ($sibling || (!$token->BracketStack && !$token->CloseTag)) {
+                        if ($sibling || (!$token->Parent && !$token->CloseTag)) {
                             $tagIndent = $token->TagIndent;
                             if ($sibling) {
                                 $siblingIndent = $tagIndent;
@@ -174,7 +174,7 @@ final class StandardWhitespace implements MultiTokenRule
                             // Increase the indentation level for tokens between
                             // unenclosed tags
                             if (
-                                !$token->BracketStack &&
+                                !$token->Parent &&
                                 $this->Formatter->IncreaseIndentBetweenUnenclosedTags
                             ) {
                                 $tagIndent++;
@@ -243,7 +243,7 @@ final class StandardWhitespace implements MultiTokenRule
                         // unenclosed tags don't start on a new line
                         if (
                             $tagIndent &&
-                            !$token->BracketStack &&
+                            !$token->Parent &&
                             $this->Formatter->IncreaseIndentBetweenUnenclosedTags
                         ) {
                             $tagIndent--;

@@ -456,7 +456,7 @@ class Token extends PhpToken implements JsonSerializable
     {
         $current = $this->OpenedBy ?: $this;
 
-        return end($current->BracketStack) ?: $this->null();
+        return $current->Parent ?: $this->null();
     }
 
     final public function startOfLine(bool $ignoreComments = true): Token
