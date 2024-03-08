@@ -475,9 +475,6 @@ final class Formatter implements Buildable
     /**
      * Creates a new Formatter object
      *
-     * Rules are processed from lowest to highest priority (smallest to biggest
-     * number).
-     *
      * @phpstan-param 2|4|8 $tabSize
      * @param array<class-string<Extension>> $disable Non-mandatory extensions to disable
      * @param array<class-string<Extension>> $enable Optional extensions to enable
@@ -762,25 +759,27 @@ final class Formatter implements Buildable
     /**
      * Get formatted code
      *
-     *  1. Call `reset()` on the formatter, filters and rules
-     *  2. Detect end-of-line sequence if not given and replace line breaks with
-     *     `"\n"` if needed
-     *  3. `tokenize()` input and apply formatting filters
-     *  4. `prepareTokens()` for formatting
-     *  5. Find lists, i.e. comma-delimited items between non-empty square or
-     *     round brackets, and interface names after `extends` or `implements`
-     *  6. Process enabled {@see TokenRule} and {@see ListRule} rules in one
-     *     loop, ordered by priority
-     *  7. Find blocks, i.e. groups of tokens representing two or more
-     *     consecutive non-blank lines
-     *  8. Process enabled {@see BlockRule} rules in priority order
-     *  9. Process registered callbacks in priority and token order
-     * 10. Process rules that implement `beforeRender()` in priority order
-     * 11. Render and validate output
+     * 1. Load enabled extensions (if not already loaded)
+     * 2. Reset the formatter and enabled extensions
+     * 3. Detect the end-of-line sequence used in `$code` (if not given)
+     * 4. Convert line breaks in `$code` to `"\n"` if needed
+     * 5. Tokenize, filter and parse `$code` (see {@see Token::parse()})
+     * 6. Find lists comprised of
+     *    - one or more comma-delimited items between `[]` or `()`, or
+     *    - two or more interfaces after `extends` or `implements`
+     * 7. Process enabled {@see TokenRule} and {@see ListRule} extensions in one
+     *    loop, ordered by priority
+     * 8. Find blocks comprised of two or more consecutive non-blank lines
+     * 9. Process enabled {@see BlockRule} extensions in priority order
+     * 10. Process callbacks registered in (7) or (9) in priority and token
+     *     order
+     * 11. Call enabled {@see Rule::beforeRender()} methods in priority order
+     * 12. Render output
+     * 13. Validate output (if `$fast` is `false`)
      *
      * @param string|null $eol The end-of-line sequence used in `$code`, if
      * known.
-     * @param string|null $filename For reporting purposes only. No file
+     * @param string|null $filename For reporting purposes only. No filesystem
      * operations are performed on `$filename`.
      */
     public function format(
@@ -794,55 +793,62 @@ final class Formatter implements Buildable
             error_reporting($errorLevel & ~\E_COMPILE_WARNING);
         }
 
-        Profile::startTimer(__METHOD__ . '#reset');
-
         if (!$this->ExtensionsLoaded) {
-            $this->RuleMap = array_combine($this->Rules, $this->getExtensions($this->Rules));
-            $this->FormatFilterList = $this->getExtensions($this->FormatFilters);
-            $this->ComparisonFilterList = $this->getExtensions($this->ComparisonFilters);
-            $this->ExtensionsLoaded = true;
+            Profile::startTimer(__METHOD__ . '#load-extensions');
+            try {
+                $this->RuleMap = array_combine($this->Rules, $this->getExtensions($this->Rules));
+                $this->FormatFilterList = $this->getExtensions($this->FormatFilters);
+                $this->ComparisonFilterList = $this->getExtensions($this->ComparisonFilters);
+                $this->ExtensionsLoaded = true;
+            } finally {
+                Profile::stopTimer(__METHOD__ . '#load-extensions');
+            }
         }
 
+        Profile::startTimer(__METHOD__ . '#reset');
         $this->reset();
         $this->resetExtensions();
-
         Profile::stopTimer(__METHOD__ . '#reset');
 
         Profile::startTimer(__METHOD__ . '#detect-eol');
-        $eol = Str::coalesce($eol, null);
-        $eol ??= Get::eol($code);
-        if ((string) $eol !== '' && $eol !== "\n") {
+        if ($eol === null || $eol === '') {
+            $eol = Get::eol($code);
+        }
+        if ($eol !== null && $eol !== "\n") {
             $code = str_replace($eol, "\n", $code);
         }
-        $eol = (string) $eol !== '' && $this->PreserveEol
-            ? $eol
-            : $this->PreferredEol;
+        if ($eol === null || !$this->PreserveEol) {
+            $eol = $this->PreferredEol;
+        }
         Profile::stopTimer(__METHOD__ . '#detect-eol');
 
-        Profile::startTimer(__METHOD__ . '#tokenize-input');
+        Profile::startTimer(__METHOD__ . '#parse-input');
         try {
-            $this->Tokens = Token::tokenize(
+            $this->Tokens = Token::parse(
                 $code, \TOKEN_PARSE, $this, ...$this->FormatFilterList
             );
 
             if (!$this->Tokens) {
+                if (!$this->Debug) {
+                    $this->Tokens = null;
+                }
                 return '';
+            }
+
+            $last = end($this->Tokens);
+            if ($last->IsCode && $last->Statement->id !== \T_HALT_COMPILER) {
+                $last->WhitespaceAfter |= WhitespaceType::LINE;
             }
         } catch (CompileError $ex) {
             throw new InvalidSyntaxException(
                 sprintf(
                     'Formatting failed: %s cannot be parsed',
-                    Str::coalesce($filename, 'input')
+                    Str::coalesce($filename, 'input'),
                 ),
                 $ex
             );
         } finally {
-            Profile::stopTimer(__METHOD__ . '#tokenize-input');
-        }
-
-        $last = end($this->Tokens);
-        if ($last->IsCode && $last->Statement->id !== \T_HALT_COMPILER) {
-            $last->WhitespaceAfter |= WhitespaceType::LINE;
+            Profile::stopTimer(__METHOD__ . '#parse-input');
         }
 
         Profile::startTimer(__METHOD__ . '#index-tokens');
@@ -1107,10 +1113,9 @@ final class Formatter implements Buildable
 
         Profile::startTimer(__METHOD__ . '#parse-output');
         try {
-            $after = Token::onlyTokenize(
+            $after = Token::tokenizeForComparison(
                 $out,
                 \TOKEN_PARSE,
-                PhpToken::class,
                 ...$this->ComparisonFilterList
             );
         } catch (CompileError $ex) {
@@ -1126,10 +1131,9 @@ final class Formatter implements Buildable
             Profile::stopTimer(__METHOD__ . '#parse-output');
         }
 
-        $before = Token::onlyTokenize(
+        $before = Token::tokenizeForComparison(
             $code,
             \TOKEN_PARSE,
-            PhpToken::class,
             ...$this->ComparisonFilterList
         );
 

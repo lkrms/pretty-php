@@ -132,19 +132,31 @@ trait NavigableTokenTrait
     public TokenTypeIndex $TypeIndex;
 
     /**
+     * @return static[]
+     */
+    public static function tokenize(string $code, int $flags = 0, Filter ...$filters): array
+    {
+        return self::filter(parent::tokenize($code, $flags), ...$filters);
+    }
+
+    /**
+     * Same as tokenize(), but returns an array of lower-cost PhpToken instances
+     *
+     * @return PhpToken[]
+     */
+    public static function tokenizeForComparison(string $code, int $flags = 0, Filter ...$filters): array
+    {
+        return self::filter(PhpToken::tokenize($code, $flags), ...$filters);
+    }
+
+    /**
      * @template T of PhpToken
      *
-     * @param class-string<T> $class
+     * @param T[] $tokens
      * @return T[]
      */
-    public static function onlyTokenize(string $code, int $flags = 0, string $class = PhpToken::class, Filter ...$filters): array
+    private static function filter(array $tokens, Filter ...$filters): array
     {
-        if (is_a($class, static::class, true)) {
-            $tokens = parent::tokenize($code, $flags);
-        } else {
-            $tokens = $class::tokenize($code, $flags);
-        }
-
         if (!$tokens || !$filters) {
             return $tokens;
         }
@@ -157,11 +169,13 @@ trait NavigableTokenTrait
     }
 
     /**
-     * @return Token[]
+     * Tokenize and parse PHP code
+     *
+     * @return static[]
      */
-    public static function tokenize(string $code, int $flags = 0, ?Formatter $formatter = null, Filter ...$filters): array
+    public static function parse(string $code, int $flags = 0, ?Formatter $formatter = null, Filter ...$filters): array
     {
-        $tokens = static::onlyTokenize($code, $flags, Token::class, ...$filters);
+        $tokens = static::tokenize($code, $flags, ...$filters);
 
         if (!$tokens || !$formatter) {
             return $tokens;
@@ -175,7 +189,7 @@ trait NavigableTokenTrait
 
         $idx = $formatter->TokenTypeIndex;
 
-        /** @var Token|null */
+        /** @var static|null */
         $prev = null;
         foreach ($tokens as $token) {
             if ($prev) {
@@ -234,9 +248,9 @@ trait NavigableTokenTrait
         //   `IsStatementTerminator`, `OpenedBy`, `ClosedBy`, `String`,
         //   `Heredoc`, `StringClosedBy`
 
-        /** @var Token[] */
+        /** @var static[] */
         $linked = [];
-        /** @var Token|null */
+        /** @var static|null */
         $prev = null;
         $index = 0;
 
