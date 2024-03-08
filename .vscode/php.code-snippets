@@ -5,15 +5,12 @@
 		"body": [
 			"<?php declare(strict_types=1);",
 			"",
-			"namespace Lkrms\\PrettyPHP${TM_DIRECTORY/^.*\\\\/src|^.*\\\\/(tests\\\\/unit)|\\\\/([A-Z][a-zA-Z0-9]*)/${1:+\\\\Tests}${2:+\\\\}$2/g};",
+			"namespace ${TM_DIRECTORY/^.*\\\\/(src|(tests\\\\/(?:unit|fixtures)))|\\\\/([a-zA-Z0-9]+)/${1:+Lkrms\\\\PrettyPHP}${2:+\\\\Tests}${3:+\\\\}$3/g};",
 			"",
-			"/**",
-			" * ${1:Summary}",
-			" *",
-			" */",
-			"class ${TM_FILENAME_BASE/[^a-zA-Z0-9]+//g} {",
+			"${RELATIVE_FILEPATH/(?:.*(?:(\\\\/Contract\\\\/.*|Interface\\.php$)|(\\\\/Concern\\\\/.*|Trait\\.php$))|(^(?:.(?!\\\\/(?:Contract|Concern)\\\\/|(?:Interface|Trait)\\.php$))*$))/${1:+interface}${2:+trait}${3:+class}/} ${TM_FILENAME_BASE/[^a-zA-Z0-9]+//g} {",
 			"    $0",
-			"}"
+			"}",
+			""
 		]
 	},
 	"Rule test (simple)": {
@@ -22,7 +19,7 @@
 		"body": [
 			"<?php declare(strict_types=1);",
 			"",
-			"namespace Lkrms\\PrettyPHP${TM_DIRECTORY/^.*\\\\/src|^.*\\\\/(tests\\\\/unit)|\\\\/([A-Z][a-zA-Z0-9]*)/${1:+\\\\Tests}${2:+\\\\}$2/g};",
+			"namespace ${TM_DIRECTORY/^.*\\\\/(src|(tests\\\\/(?:unit|fixtures)))|\\\\/([a-zA-Z0-9]+)/${1:+Lkrms\\\\PrettyPHP}${2:+\\\\Tests}${3:+\\\\}$3/g};",
 			"",
 			"final class ${TM_FILENAME_BASE/[^a-zA-Z0-9]+//g} extends \\Lkrms\\PrettyPHP\\Tests\\TestCase",
 			"{",
@@ -58,7 +55,7 @@
 		"body": [
 			"<?php declare(strict_types=1);",
 			"",
-			"namespace Lkrms\\PrettyPHP${TM_DIRECTORY/^.*\\\\/src|^.*\\\\/(tests\\\\/unit)|\\\\/([A-Z][a-zA-Z0-9]*)/${1:+\\\\Tests}${2:+\\\\}$2/g};",
+			"namespace ${TM_DIRECTORY/^.*\\\\/(src|(tests\\\\/(?:unit|fixtures)))|\\\\/([a-zA-Z0-9]+)/${1:+Lkrms\\\\PrettyPHP}${2:+\\\\Tests}${3:+\\\\}$3/g};",
 			"",
 			"use Lkrms\\PrettyPHP\\Formatter;",
 			"use Lkrms\\PrettyPHP\\FormatterBuilder as FormatterB;",
@@ -114,6 +111,13 @@
 			"    default:",
 			"        return null;",
 			"}",
+		]
+	},
+	"Namespace": {
+		"scope": "php",
+		"prefix": "namespace",
+		"body": [
+			"namespace ${TM_DIRECTORY/^.*\\\\/(src|(tests\\\\/(?:unit|fixtures)))|\\\\/([a-zA-Z0-9]+)/${1:+Lkrms\\\\PrettyPHP}${2:+\\\\Tests}${3:+\\\\}$3/g};"
 		]
 	}
 }
