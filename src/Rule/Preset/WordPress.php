@@ -94,7 +94,7 @@ final class WordPress implements Preset, TokenRule
         }
 
         if ($token->id === \T_COLON) {
-            if (!$token->startsAlternativeSyntax()) {
+            if (!$token->isColonAltSyntaxDelimiter()) {
                 return;
             }
             $token->WhitespaceBefore |= WhitespaceType::SPACE;

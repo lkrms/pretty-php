@@ -254,6 +254,14 @@ class TokenTypeIndex implements Immutable
     public array $ExpressionDelimiter;
 
     /**
+     * T_CASE, T_DEFAULT, T_COLON, T_SEMICOLON, T_CLOSE_TAG
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $SwitchCaseOrDelimiter;
+
+    /**
      * @readonly
      * @var array<int,bool>
      */
@@ -365,6 +373,14 @@ class TokenTypeIndex implements Immutable
      * @var array<int,bool>
      */
     public array $HasExpressionAndStatementWithOptionalBraces;
+
+    /**
+     * T_STRING, TokenType::SEMI_RESERVED
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $MaybeReserved;
 
     /**
      * @readonly
@@ -684,6 +700,14 @@ class TokenTypeIndex implements Immutable
             ...$expressionDelimiter,
         );
 
+        $this->SwitchCaseOrDelimiter = TT::getIndex(
+            \T_CASE,
+            \T_DEFAULT,
+            \T_COLON,
+            \T_SEMICOLON,
+            \T_CLOSE_TAG,
+        );
+
         $this->UnaryPredecessor = TT::getIndex(
             \T_OPEN_BRACE,
             \T_OPEN_BRACKET,
@@ -721,6 +745,7 @@ class TokenTypeIndex implements Immutable
         $this->HasStatement = TT::getIndex(...TT::HAS_STATEMENT);
         $this->HasStatementWithOptionalBraces = TT::getIndex(...TT::HAS_STATEMENT_WITH_OPTIONAL_BRACES);
         $this->HasExpressionAndStatementWithOptionalBraces = TT::getIndex(...TT::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES);
+        $this->MaybeReserved = TT::getIndex(\T_STRING, ...TT::SEMI_RESERVED);
         $this->NotCode = TT::getIndex(...TT::NOT_CODE);
         $this->OperatorBooleanExceptNot = TT::getIndex(...TT::OPERATOR_BOOLEAN_EXCEPT_NOT);
         $this->TypeDelimiter = TT::getIndex(...TT::TYPE_DELIMITER);

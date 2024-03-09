@@ -79,6 +79,7 @@ use Salient\Core\Utility\Env;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Str;
+use Closure;
 use CompileError;
 use LogicException;
 use Throwable;
@@ -452,7 +453,7 @@ final class Formatter implements Buildable
     /**
      * [ priority => [ token index => [ [ rule, callback ], ... ] ] ]
      *
-     * @var array<int,array<int,array<array{class-string<Rule>,callable}>>>|null
+     * @var array<int,array<int,array<array{class-string<Rule>,Closure}>>>|null
      */
     private ?array $Callbacks = null;
 
@@ -1258,7 +1259,7 @@ final class Formatter implements Buildable
     public function registerCallback(
         string $rule,
         Token $first,
-        callable $callback,
+        Closure $callback,
         bool $reverse = false
     ): void {
         if (!isset($this->CallbackPriorities[$rule])) {

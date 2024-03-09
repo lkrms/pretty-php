@@ -10,6 +10,7 @@ use Lkrms\PrettyPHP\Exception\InvalidTokenException;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Formatter;
 use Salient\Core\Utility\Pcre;
+use Closure;
 
 trait NavigableTokenTrait
 {
@@ -236,7 +237,7 @@ trait NavigableTokenTrait
         // - on PHP < 8.0, convert comments that appear to be PHP >= 8.0
         //   attributes to `T_ATTRIBUTE_COMMENT`
         // - trim the text of each token
-        // - add virtual close brackets after alternative syntax bodies
+        // - add virtual close brackets after alternative syntax blocks
         // - pair open brackets and tags with their counterparts
         // - link siblings, parents and children (set `Parent`, `Depth`,
         //   `PrevCode`, `NextCode`, `PrevSibling`, `NextSibling`)
@@ -316,7 +317,8 @@ trait NavigableTokenTrait
                             $token->nextSimpleSibling(2)->id === \T_COLON) ||
                         ($idx->AltSyntaxContinueWithoutExpression[$token->id] &&
                             $token->nextSimpleSibling()->id === \T_COLON))) ||
-                        $prev->startsAlternativeSyntax()) {
+                    ($prev->id === \T_COLON &&
+                        $prev->isColonAltSyntaxDelimiter())) {
                     $i--;
                     $virtual = new static(\T_END_ALT_SYNTAX, '');
                     $virtual->IsVirtual = true;
@@ -331,6 +333,7 @@ trait NavigableTokenTrait
                     $token = $virtual;
                 }
             }
+
             $linked[$index] = $token;
             $token->Index = $index++;
 
@@ -371,18 +374,18 @@ trait NavigableTokenTrait
             }
 
             $token->Depth = $prev->Depth;
-            $depthDelta = 0;
+            $delta = 0;
             if (
                 $idx->OpenBracket[$prev->id] ||
-                ($prev->id === \T_COLON && $prev->startsAlternativeSyntax())
+                ($prev->id === \T_COLON && $prev->isColonAltSyntaxDelimiter())
             ) {
                 $token->Parent = $prev;
                 $token->Depth++;
-                $depthDelta++;
+                $delta++;
             } elseif ($idx->CloseBracketOrEndAltSyntax[$prev->id]) {
                 $token->Parent = $prev->Parent;
                 $token->Depth--;
-                $depthDelta--;
+                $delta--;
             } else {
                 $token->Parent = $prev->Parent;
             }
@@ -458,10 +461,10 @@ trait NavigableTokenTrait
                 continue;
             }
 
-            // If $token continues the previous context ($stackDelta == 0) or is
-            // the first token after a close bracket ($stackDelta < 0), set
+            // If $token continues the previous context ($delta == 0) or is the
+            // first token after a close bracket ($delta < 0), set
             // $token->PrevSibling
-            if ($depthDelta <= 0 && $token->PrevCode) {
+            if ($delta <= 0 && $token->PrevCode) {
                 $prevCode = $token->PrevCode->OpenedBy ?: $token->PrevCode;
                 if ($prevCode->Parent === $token->Parent) {
                     $token->PrevSibling = $prevCode;
@@ -823,12 +826,9 @@ trait NavigableTokenTrait
     }
 
     /**
-     * Get a fallback token if the token is null, otherwise get the token
+     * Get the token if it is not null, otherwise get a fallback token
      *
-     * The token is returned if it is not null, otherwise `$token` is resolved
-     * and returned.
-     *
-     * @param Token|(callable(): Token) $token
+     * @param Token|(Closure(): Token) $token
      * @return Token
      */
     public function or($token)
@@ -836,10 +836,10 @@ trait NavigableTokenTrait
         if (!$this->IsNull) {
             return $this;
         }
-        if ($token instanceof static) {
-            return $token;
+        if ($token instanceof Closure) {
+            return $token();
         }
-        return $token();
+        return $token;
     }
 
     /**
@@ -853,6 +853,19 @@ trait NavigableTokenTrait
     {
         if ($this->IsNull) {
             return null;
+        }
+        return $this;
+    }
+
+    /**
+     * Get the token if it is not null, otherwise throw an InvalidTokenException
+     *
+     * @return $this|never
+     */
+    public function orThrow()
+    {
+        if ($this->IsNull) {
+            throw new InvalidTokenException($this);
         }
         return $this;
     }
@@ -918,6 +931,74 @@ trait NavigableTokenTrait
             $this->text = $text;
         }
         return $this;
+    }
+
+    /**
+     * Get the previous token that is one of the types in an index
+     *
+     * @param array<int,bool> $index
+     * @return Token
+     */
+    final public function prevFrom(array $index)
+    {
+        $t = $this;
+        while ($t = $t->Prev) {
+            if ($index[$t->id]) {
+                return $t;
+            }
+        }
+        return $this->null();
+    }
+
+    /**
+     * Get the next token that is one of the types in an index
+     *
+     * @param array<int,bool> $index
+     * @return Token
+     */
+    final public function nextFrom(array $index)
+    {
+        $t = $this;
+        while ($t = $t->Next) {
+            if ($index[$t->id]) {
+                return $t;
+            }
+        }
+        return $this->null();
+    }
+
+    /**
+     * Get the previous sibling that is one of the types in an index
+     *
+     * @param array<int,bool> $index
+     * @return Token
+     */
+    final public function prevSiblingFrom(array $index)
+    {
+        $t = $this;
+        while ($t = $t->PrevSibling) {
+            if ($index[$t->id]) {
+                return $t;
+            }
+        }
+        return $this->null();
+    }
+
+    /**
+     * Get the next sibling that is one of the types in an index
+     *
+     * @param array<int,bool> $index
+     * @return Token
+     */
+    final public function nextSiblingFrom(array $index)
+    {
+        $t = $this;
+        while ($t = $t->NextSibling) {
+            if ($index[$t->id]) {
+                return $t;
+            }
+        }
+        return $this->null();
     }
 
     /**

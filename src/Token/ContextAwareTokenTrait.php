@@ -4,7 +4,6 @@ namespace Lkrms\PrettyPHP\Token;
 
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
-use LogicException;
 
 trait ContextAwareTokenTrait
 {
@@ -16,15 +15,20 @@ trait ContextAwareTokenTrait
     public ?int $SubType = null;
 
     /**
+     * True if the token is the colon before an alternative syntax block
+     */
+    final public function isColonAltSyntaxDelimiter(): bool
+    {
+        return $this->getSubType() === TokenSubType::COLON_ALT_SYNTAX_DELIMITER;
+    }
+
+    /**
      * True if the token is the colon after a switch case or a label
      */
     final public function isColonStatementDelimiter(): bool
     {
-        /** @var static&GenericToken $this */
-        return $this->id === \T_COLON && (
-            $this->getSubType() === TokenSubType::COLON_SWITCH_CASE_DELIMITER ||
-            $this->SubType === TokenSubType::COLON_LABEL_DELIMITER
-        );
+        return $this->getSubType() === TokenSubType::COLON_SWITCH_CASE_DELIMITER ||
+            $this->SubType === TokenSubType::COLON_LABEL_DELIMITER;
     }
 
     /**
@@ -32,11 +36,8 @@ trait ContextAwareTokenTrait
      */
     final public function isColonTypeDelimiter(): bool
     {
-        /** @var static&GenericToken $this */
-        return $this->id === \T_COLON && (
-            $this->getSubType() === TokenSubType::COLON_RETURN_TYPE_DELIMITER ||
-            $this->SubType === TokenSubType::COLON_BACKED_ENUM_TYPE_DELIMITER
-        );
+        return $this->getSubType() === TokenSubType::COLON_RETURN_TYPE_DELIMITER ||
+            $this->SubType === TokenSubType::COLON_BACKED_ENUM_TYPE_DELIMITER;
     }
 
     /**
@@ -46,30 +47,62 @@ trait ContextAwareTokenTrait
      */
     final public function getSubType(): int
     {
+        if (isset($this->SubType)) {
+            return $this->SubType;
+        }
+
         /** @var static&GenericToken $this */
-        return $this->SubType ??= (
-            $this->id === \T_COLON
-                ? $this->getColonType()
-                : ($this->id === \T_QUESTION
-                    ? $this->getQuestionType()
-                    : ($this->id === \T_USE
-                        ? $this->getUseType()
-                        : -1))
-        );
+        $method = [
+            \T_COLON => 'getColonType',
+            \T_QUESTION => 'getQuestionType',
+            \T_USE => 'getUseType',
+        ][$this->id] ?? null;
+
+        if ($method === null) {
+            return $this->SubType = -1;
+        }
+
+        // If the method returns `null` because it's too early to determine the
+        // token's sub-type, save `null` to ensure the method is called again,
+        // but return `-1`
+        return ($this->SubType = $this->$method()) ?? -1;
     }
 
     /**
-     * @return TokenSubType::*
+     * @return TokenSubType::*|null
      */
-    private function getColonType(): int
+    private function getColonType(): ?int
     {
         /** @var static&GenericToken $this */
-        if ($this->startsAlternativeSyntax()) {
+        if (!$this->PrevCode) {
+            $this->throw();
+        }
+
+        $prevCode = $this->PrevCode;
+
+        if (
+            $this->ClosedBy ||
+            $this->TypeIndex->AltSyntaxContinueWithoutExpression[$prevCode->id] || (
+                $prevCode->id === \T_CLOSE_PARENTHESIS &&
+                $prevCode->PrevSibling && (
+                    $this->TypeIndex->AltSyntaxStart[$prevCode->PrevSibling->id] ||
+                    $this->TypeIndex->AltSyntaxContinueWithExpression[$prevCode->PrevSibling->id]
+                )
+            )
+        ) {
             return TokenSubType::COLON_ALT_SYNTAX_DELIMITER;
         }
 
-        if ($this->inLabel()) {
-            return TokenSubType::COLON_LABEL_DELIMITER;
+        if (
+            $this->Parent &&
+            $this->Parent->id === \T_OPEN_PARENTHESIS &&
+            $this->TypeIndex->MaybeReserved[$prevCode->id] &&
+            $prevCode->PrevCode && (
+                $prevCode->PrevCode === $this->Parent ||
+                $prevCode->PrevCode->id === \T_COMMA
+            )
+        ) {
+            return TokenSubType::COLON_NAMED_ARGUMENT_DELIMITER;
         }
 
         if ($this->inSwitchCase()) {
@@ -77,15 +110,15 @@ trait ContextAwareTokenTrait
         }
 
         if (
-            $this->PrevCode->id === \T_STRING &&
-            $this->PrevCode->PrevCode &&
-            $this->PrevCode->PrevCode->id === \T_ENUM
+            $prevCode->id === \T_STRING &&
+            $prevCode->PrevCode &&
+            $prevCode->PrevCode->id === \T_ENUM
         ) {
             return TokenSubType::COLON_BACKED_ENUM_TYPE_DELIMITER;
         }
 
-        if ($this->PrevCode->id === \T_CLOSE_PARENTHESIS) {
-            $prev = $this->PrevCode->PrevSibling;
+        if ($prevCode->id === \T_CLOSE_PARENTHESIS) {
+            $prev = $prevCode->PrevSibling;
             if (
                 $prev &&
                 $prev->id === \T_USE &&
@@ -108,6 +141,22 @@ trait ContextAwareTokenTrait
             }
         }
 
+        // The remaining possibilities require statements to have been parsed
+        if ($prevCode->PrevSibling && !$prevCode->PrevSibling->EndStatement) {
+            return null;
+        }
+
+        if (
+            $prevCode->id === \T_STRING && (
+                !$prevCode->PrevSibling || (
+                    $prevCode->PrevSibling->EndStatement &&
+                    $prevCode->PrevSibling->EndStatement->NextSibling === $prevCode
+                )
+            )
+        ) {
+            return TokenSubType::COLON_LABEL_DELIMITER;
+        }
+
         return TokenSubType::COLON_TERNARY_OPERATOR;
     }
 
@@ -118,15 +167,14 @@ trait ContextAwareTokenTrait
     {
         /** @var static&GenericToken $this */
         if (!$this->PrevCode) {
-            throw new LogicException('Invalid T_QUESTION');
+            $this->throw();
         }
 
-        /** @var static&GenericToken $prevCode */
         $prevCode = $this->PrevCode;
         if (
             $prevCode->id === \T_CONST ||
             ($prevCode->id === \T_COLON && $prevCode->isColonTypeDelimiter()) ||
-            $this->TypeIndex->VarOrModifier[$this->PrevCode->id] ||
+            $this->TypeIndex->VarOrModifier[$prevCode->id] ||
             $this->inParameterList()
         ) {
             return TokenSubType::QUESTION_NULLABLE;
@@ -144,90 +192,26 @@ trait ContextAwareTokenTrait
             return TokenSubType::USE_VARIABLES;
         }
 
-        if (!$this->Parent || $this->Parent->id !== \T_OPEN_BRACE) {
-            return TokenSubType::USE_IMPORT;
-        }
-
-        $t = $this->Parent->PrevSibling;
-        while ($t && $this->TypeIndex->DeclarationPart[$t->id]) {
-            if ($this->TypeIndex->DeclarationClass[$t->id]) {
-                return TokenSubType::USE_TRAIT;
+        if ($this->Parent && $this->Parent->id === \T_OPEN_BRACE) {
+            $t = $this->Parent->PrevSibling;
+            while ($t && $this->TypeIndex->DeclarationPart[$t->id]) {
+                if ($this->TypeIndex->DeclarationClass[$t->id]) {
+                    return TokenSubType::USE_TRAIT;
+                }
+                $t = $t->PrevSibling;
             }
-            $t = $t->PrevSibling;
         }
 
         return TokenSubType::USE_IMPORT;
     }
 
     /**
-     * True if the token is the colon at the start of an alternative syntax
-     * block
+     * True if the token is in a parameter list
      */
-    final public function startsAlternativeSyntax(): bool
+    final public function inParameterList(): bool
     {
         /** @var static&GenericToken $this */
-        if ($this->id !== \T_COLON) {
-            return false;
-        }
-
-        if (
-            $this->ClosedBy ||
-            $this->TypeIndex->AltSyntaxContinueWithoutExpression[$this->PrevCode->id]
-        ) {
-            return true;
-        }
-
-        if ($this->PrevCode->id !== \T_CLOSE_PARENTHESIS) {
-            return false;
-        }
-
-        $prev = $this->PrevCode->PrevSibling;
-        if (
-            $this->TypeIndex->AltSyntaxStart[$prev->id] ||
-            $this->TypeIndex->AltSyntaxContinueWithExpression[$prev->id]
-        ) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * True if the token is in a label
-     *
-     * Returns `true` if the token is a `T_STRING` or `T_COLON` comprising part
-     * of a label.
-     *
-     * @see ContextAwareTokenTrait::getColonType()
-     */
-    final protected function inLabel(): bool
-    {
-        // Exclude named arguments
-        /** @var static&GenericToken $this */
-        if ($this->Parent && $this->Parent->id === \T_OPEN_PARENTHESIS) {
-            return false;
-        }
-
-        if (
-            $this->id === \T_COLON &&
-            $this->PrevCode &&
-            $this->PrevCode->id === \T_STRING && (
-                !$this->PrevCode->PrevSibling || (
-                    $this->PrevCode->PrevSibling->EndStatement &&
-                    $this->PrevCode->PrevSibling->EndStatement->NextSibling === $this->PrevCode
-                )
-            )
-        ) {
-            return true;
-        }
-
-        if (
-            $this->id === \T_STRING &&
-            $this->NextCode->id === \T_COLON &&
-            (!$this->PrevSibling ||
-                ($this->PrevSibling->EndStatement &&
-                    $this->PrevSibling->EndStatement->NextSibling === $this))
-        ) {
+        if ($this->Parent && $this->Parent->isParameterList()) {
             return true;
         }
 
@@ -262,16 +246,21 @@ trait ContextAwareTokenTrait
     }
 
     /**
-     * True if the token is in a parameter list
+     * True if the token is in a T_CASE or T_DEFAULT statement in a T_SWITCH
+     *
+     * Returns `true` if the token is `T_CASE` or `T_DEFAULT`, part of the
+     * expression after `T_CASE`, or the subsequent `:` or `;` delimiter.
      */
-    final public function inParameterList(): bool
+    final protected function inSwitchCase(): bool
     {
         /** @var static&GenericToken $this */
-        if ($this->Parent && $this->Parent->isParameterList()) {
-            return true;
-        }
-
-        return false;
+        return
+            $this->inSwitchCaseList() && (
+                $this->id === \T_CASE ||
+                $this->id === \T_DEFAULT ||
+                (($prev = $this->prevSiblingFrom($this->TypeIndex->SwitchCaseOrDelimiter)->orNull()) &&
+                    ($prev->id === \T_CASE || $prev->id === \T_DEFAULT))
+            );
     }
 
     /**
@@ -280,52 +269,10 @@ trait ContextAwareTokenTrait
     final protected function inSwitchCaseList(): bool
     {
         /** @var static&GenericToken $this */
-        if (
+        return
             $this->Parent &&
             $this->Parent->PrevSibling &&
             $this->Parent->PrevSibling->PrevSibling &&
-            $this->Parent->PrevSibling->PrevSibling->id === \T_SWITCH
-        ) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * True if the token is in a T_CASE or T_DEFAULT statement in a T_SWITCH
-     *
-     * Returns `true` if the token is `T_CASE` or `T_DEFAULT`, part of the
-     * expression after `T_CASE`, or the subsequent `:` or `;` delimiter.
-     *
-     * @see ContextAwareTokenTrait::getColonType()
-     */
-    final protected function inSwitchCase(): bool
-    {
-        /** @var static&GenericToken $this */
-        if (!$this->inSwitchCaseList()) {
-            return false;
-        }
-
-        if ($this->id === \T_CASE || $this->id === \T_DEFAULT) {
-            return true;
-        }
-
-        $lastCaseOrDelimiter = $this->prevSiblingOf(
-            \T_CASE,
-            \T_DEFAULT,
-            \T_COLON,
-            \T_SEMICOLON,
-            \T_CLOSE_TAG,
-        );
-
-        if (
-            $lastCaseOrDelimiter->id === \T_CASE ||
-            $lastCaseOrDelimiter->id === \T_DEFAULT
-        ) {
-            return true;
-        }
-
-        return false;
+            $this->Parent->PrevSibling->PrevSibling->id === \T_SWITCH;
     }
 }

@@ -3,6 +3,7 @@
 namespace Lkrms\PrettyPHP\Token;
 
 use Lkrms\PrettyPHP\Support\TokenCollection;
+use Closure;
 use LogicException;
 
 trait CollectibleTokenTrait
@@ -325,9 +326,9 @@ trait CollectibleTokenTrait
      * Get preceding siblings in reverse document order, up to but not including
      * the first that satisfies a callback
      *
-     * @param callable(self, TokenCollection): bool $callback
+     * @param Closure(self, TokenCollection): bool $callback
      */
-    final public function prevSiblingsUntil(callable $callback): TokenCollection
+    final public function prevSiblingsUntil(Closure $callback): TokenCollection
     {
         return $this->_prevSiblingsUntil($callback);
     }
@@ -336,12 +337,12 @@ trait CollectibleTokenTrait
      * Get the token and its preceding siblings in reverse document order, up to
      * but not including the first that satisfies a callback
      *
-     * @param callable(self, TokenCollection): bool $callback
+     * @param Closure(self, TokenCollection): bool $callback
      * @param bool $testToken If `true` and the token doesn't satisfy the
      * callback, an empty collection is returned. Otherwise, the token is added
      * to the collection regardless.
      */
-    final public function withPrevSiblingsUntil(callable $callback, bool $testToken = false): TokenCollection
+    final public function withPrevSiblingsUntil(Closure $callback, bool $testToken = false): TokenCollection
     {
         return $this->_prevSiblingsUntil($callback, true, $testToken);
     }
@@ -350,9 +351,9 @@ trait CollectibleTokenTrait
      * Get following siblings, up to but not including the first that satisfies
      * a callback
      *
-     * @param callable(self, TokenCollection): bool $callback
+     * @param Closure(self, TokenCollection): bool $callback
      */
-    final public function nextSiblingsUntil(callable $callback): TokenCollection
+    final public function nextSiblingsUntil(Closure $callback): TokenCollection
     {
         return $this->_nextSiblingsUntil($callback);
     }
@@ -361,12 +362,12 @@ trait CollectibleTokenTrait
      * Get the token and its following siblings, up to but not including the
      * first that satisfies a callback
      *
-     * @param callable(self, TokenCollection): bool $callback
+     * @param Closure(self, TokenCollection): bool $callback
      * @param bool $testToken If `true` and the token doesn't satisfy the
      * callback, an empty collection is returned. Otherwise, the token is added
      * to the collection regardless.
      */
-    final public function withNextSiblingsUntil(callable $callback, bool $testToken = false): TokenCollection
+    final public function withNextSiblingsUntil(Closure $callback, bool $testToken = false): TokenCollection
     {
         return $this->_nextSiblingsUntil($callback, true, $testToken);
     }
@@ -492,9 +493,9 @@ trait CollectibleTokenTrait
     }
 
     /**
-     * @param callable(self, TokenCollection): bool $callback
+     * @param Closure(self, TokenCollection): bool $callback
      */
-    private function _prevSiblingsUntil(callable $callback, bool $includeToken = false, bool $testToken = false): TokenCollection
+    private function _prevSiblingsUntil(Closure $callback, bool $includeToken = false, bool $testToken = false): TokenCollection
     {
         /** @var Token $this */
         $tokens = new TokenCollection();
@@ -512,9 +513,9 @@ trait CollectibleTokenTrait
     }
 
     /**
-     * @param callable(self, TokenCollection): bool $callback
+     * @param Closure(self, TokenCollection): bool $callback
      */
-    private function _nextSiblingsUntil(callable $callback, bool $includeToken = false, bool $testToken = false): TokenCollection
+    private function _nextSiblingsUntil(Closure $callback, bool $includeToken = false, bool $testToken = false): TokenCollection
     {
         /** @var Token $this */
         $tokens = new TokenCollection();
