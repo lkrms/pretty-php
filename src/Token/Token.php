@@ -6,21 +6,21 @@ use Lkrms\PrettyPHP\Catalog\CommentType;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
-use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Support\TokenIndentDelta;
-use Lkrms\PrettyPHP\Token\Concern\CollectibleTokenTrait;
-use Lkrms\PrettyPHP\Token\Concern\ContextAwareTokenTrait;
-use Lkrms\PrettyPHP\Token\Concern\NavigableTokenTrait;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use JsonSerializable;
-use PhpToken;
 
-class Token extends PhpToken implements JsonSerializable
+class Token extends GenericToken implements JsonSerializable
 {
-    use CollectibleTokenTrait;
-    use ContextAwareTokenTrait;
     use NavigableTokenTrait;
+    use ContextAwareTokenTrait;
+    use CollectibleTokenTrait;
+
+    /**
+     * The starting column (1-based) of the token
+     */
+    public int $column = -1;
 
     public bool $BodyIsUnenclosed = false;
 
@@ -162,8 +162,8 @@ class Token extends PhpToken implements JsonSerializable
 
         return
             $current->id === \T_OPEN_BRACE &&
-            ($prev = $current->_prevSibling) &&
-            ($prev = $prev->_prevSibling) &&
+            ($prev = $current->PrevSibling) &&
+            ($prev = $prev->PrevSibling) &&
             $prev->id === \T_MATCH;
     }
 
@@ -204,8 +204,8 @@ class Token extends PhpToken implements JsonSerializable
             $a['SubType'] = TokenSubType::toName($this->SubType);
         }
 
-        $a['_prevSibling'] = $this->_prevSibling;
-        $a['_nextSibling'] = $this->_nextSibling;
+        $a['PrevSibling'] = $this->PrevSibling;
+        $a['NextSibling'] = $this->NextSibling;
         $a['Parent'] = $this->Parent;
         $a['String'] = $this->String;
         $a['Heredoc'] = $this->Heredoc;
@@ -285,11 +285,6 @@ class Token extends PhpToken implements JsonSerializable
         return $a;
     }
 
-    final public function canonical(): Token
-    {
-        return $this->OpenedBy ?: $this;
-    }
-
     final public function canonicalClose(): Token
     {
         return $this->ClosedBy ?: $this;
@@ -304,7 +299,7 @@ class Token extends PhpToken implements JsonSerializable
             return false;
         }
         do {
-            $prev = ($prev ?? $this)->_prev;
+            $prev = ($prev ?? $this)->Prev;
             if (!$prev) {
                 return true;
             }
@@ -325,7 +320,7 @@ class Token extends PhpToken implements JsonSerializable
             return false;
         }
         do {
-            $next = ($next ?? $this)->_next;
+            $next = ($next ?? $this)->Next;
             if (!$next) {
                 return true;
             }
@@ -335,31 +330,6 @@ class Token extends PhpToken implements JsonSerializable
 
         return ($this->line + $newlines) < $next->line ||
             $code[-1] === "\n";
-    }
-
-    /**
-     * True if the token is a reserved PHP word
-     *
-     * Aside from `enum`, "soft reserved words" are not considered PHP keywords,
-     * so `false` is returned for `resource` and `numeric`.
-     */
-    public function isKeyword(): bool
-    {
-        return $this->is(TokenType::KEYWORD) ||
-            ($this->id === \T_STRING && in_array($this->text, [
-                'bool',
-                'false',
-                'float',
-                'int',
-                'iterable',
-                'mixed',
-                'never',
-                'null',
-                'object',
-                'string',
-                'true',
-                'void',
-            ]));
     }
 
     private function byOffset(string $name, int $offset): Token
@@ -376,10 +346,10 @@ class Token extends PhpToken implements JsonSerializable
     {
         switch ($offset) {
             case 1:
-                return $this->_prev ?: $this->null();
+                return $this->Prev ?: $this->null();
 
             case 2:
-                return ($this->_prev->_prev ?? null) ?: $this->null();
+                return ($this->Prev->Prev ?? null) ?: $this->null();
         }
 
         return $this->byOffset(__FUNCTION__, $offset);
@@ -389,10 +359,10 @@ class Token extends PhpToken implements JsonSerializable
     {
         switch ($offset) {
             case 1:
-                return $this->_next ?: $this->null();
+                return $this->Next ?: $this->null();
 
             case 2:
-                return ($this->_next->_next ?? null) ?: $this->null();
+                return ($this->Next->Next ?? null) ?: $this->null();
         }
 
         return $this->byOffset(__FUNCTION__, $offset);
@@ -402,10 +372,10 @@ class Token extends PhpToken implements JsonSerializable
     {
         switch ($offset) {
             case 1:
-                return $this->_prevCode ?: $this->null();
+                return $this->PrevCode ?: $this->null();
 
             case 2:
-                return ($this->_prevCode->_prevCode ?? null) ?: $this->null();
+                return ($this->PrevCode->PrevCode ?? null) ?: $this->null();
         }
 
         return $this->byOffset(__FUNCTION__, $offset);
@@ -415,10 +385,10 @@ class Token extends PhpToken implements JsonSerializable
     {
         switch ($offset) {
             case 1:
-                return $this->_nextCode ?: $this->null();
+                return $this->NextCode ?: $this->null();
 
             case 2:
-                return ($this->_nextCode->_nextCode ?? null) ?: $this->null();
+                return ($this->NextCode->NextCode ?? null) ?: $this->null();
         }
 
         return $this->byOffset(__FUNCTION__, $offset);
@@ -428,10 +398,10 @@ class Token extends PhpToken implements JsonSerializable
     {
         switch ($offset) {
             case 1:
-                return $this->_prevSibling ?: $this->null();
+                return $this->PrevSibling ?: $this->null();
 
             case 2:
-                return ($this->_prevSibling->_prevSibling ?? null) ?: $this->null();
+                return ($this->PrevSibling->PrevSibling ?? null) ?: $this->null();
         }
 
         return $this->byOffset(__FUNCTION__, $offset);
@@ -441,10 +411,10 @@ class Token extends PhpToken implements JsonSerializable
     {
         switch ($offset) {
             case 1:
-                return $this->_nextSibling ?: $this->null();
+                return $this->NextSibling ?: $this->null();
 
             case 2:
-                return ($this->_nextSibling->_nextSibling ?? null) ?: $this->null();
+                return ($this->NextSibling->NextSibling ?? null) ?: $this->null();
         }
 
         return $this->byOffset(__FUNCTION__, $offset);
@@ -454,7 +424,7 @@ class Token extends PhpToken implements JsonSerializable
     {
         $current = $this->OpenedBy ?: $this;
 
-        return end($current->BracketStack) ?: $this->null();
+        return $current->Parent ?: $this->null();
     }
 
     final public function startOfLine(bool $ignoreComments = true): Token
@@ -464,8 +434,8 @@ class Token extends PhpToken implements JsonSerializable
                 ($ignoreComments ||
                     !($current->isMultiLineComment() && $current->hasNewline())) &&
                 $current->id !== \T_END_HEREDOC &&
-                $current->_prev) {
-            $current = $current->_prev;
+                $current->Prev) {
+            $current = $current->Prev;
         }
 
         return $current;
@@ -478,8 +448,8 @@ class Token extends PhpToken implements JsonSerializable
                 ($ignoreComments ||
                     !($current->isMultiLineComment() && $current->hasNewline())) &&
                 $current->id !== \T_START_HEREDOC &&
-                $current->_next) {
-            $current = $current->_next;
+                $current->Next) {
+            $current = $current->Next;
         }
 
         return $current;
@@ -530,26 +500,6 @@ class Token extends PhpToken implements JsonSerializable
         return $offset;
     }
 
-    public function startOfExpression(): Token
-    {
-        return $this->Expression ?: $this;
-    }
-
-    public function startOfStatement(): Token
-    {
-        return $this->Statement ?: $this;
-    }
-
-    public function endOfStatement(): Token
-    {
-        return $this->EndStatement ?: $this;
-    }
-
-    public function isStartOfExpression(): bool
-    {
-        return $this->Expression === $this;
-    }
-
     final public function continuesControlStructure(): bool
     {
         return $this->is([\T_CATCH, \T_FINALLY, \T_ELSEIF, \T_ELSE]) ||
@@ -569,7 +519,7 @@ class Token extends PhpToken implements JsonSerializable
         if ($this->TypeIndex->Chain[$this->id]) {
             $current = $this;
             $first = null;
-            while (($current = $current->_prevSibling) &&
+            while (($current = $current->PrevSibling) &&
                     $this->Expression === $current->Expression &&
                     $current->is([
                         \T_DOUBLE_COLON,
@@ -592,7 +542,7 @@ class Token extends PhpToken implements JsonSerializable
                  ->find(fn(Token $t) =>
                             $t === $t->TernaryOperator1);
         if ($ternary1 && $ternary1->TernaryOperator2->Index > $this->Index) {
-            return $ternary1->_nextCode->_pragmaticStartOfExpression($this);
+            return $ternary1->NextCode->_pragmaticStartOfExpression($this);
         }
 
         // Otherwise, traverse expressions until an appropriate terminator is
@@ -612,7 +562,7 @@ class Token extends PhpToken implements JsonSerializable
                 }
                 $i++;
                 [$last, $current] =
-                    [$current, $current->_prevSibling];
+                    [$current, $current->PrevSibling];
             }
             $current = $current->Expression ?? null;
             if (!$current) {
@@ -622,13 +572,13 @@ class Token extends PhpToken implements JsonSerializable
             // Honour imaginary braces around control structures with unenclosed
             // bodies if needed
             if ($containUnenclosed) {
-                if ($current->is(TokenType::HAS_STATEMENT_WITH_OPTIONAL_BRACES) &&
-                        ($body = $current->nextSibling())->id !== \T_OPEN_BRACE &&
+                if ($this->TypeIndex->HasStatementWithOptionalBraces[$current->id] &&
+                        ($body = $current->NextSibling)->id !== \T_OPEN_BRACE &&
                         $current->EndExpression->withTerminator()->Index >= $this->Index) {
                     return $body->_pragmaticStartOfExpression($this);
                 }
-                if ($current->is(TokenType::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES) &&
-                        ($body = $current->nextSibling(2))->id !== \T_OPEN_BRACE &&
+                if ($this->TypeIndex->HasExpressionAndStatementWithOptionalBraces[$current->id] &&
+                        ($body = $current->NextSibling->NextSibling)->id !== \T_OPEN_BRACE &&
                         $current->EndExpression->withTerminator()->Index >= $this->Index) {
                     return $body->_pragmaticStartOfExpression($this);
                 }
@@ -637,7 +587,7 @@ class Token extends PhpToken implements JsonSerializable
             // Preemptively traverse the boundary so subsequent code can simply
             // `continue`
             [$last, $current] =
-                [$current, $current->_prevSibling->_prevSibling ?? null];
+                [$current, $current->PrevSibling->PrevSibling ?? null];
 
             // Don't terminate if the current token continues a control
             // structure
@@ -646,7 +596,7 @@ class Token extends PhpToken implements JsonSerializable
             }
 
             // Undo the boundary traversal
-            $current = $last->_prevSibling;
+            $current = $last->PrevSibling;
         }
     }
 
@@ -654,7 +604,7 @@ class Token extends PhpToken implements JsonSerializable
     {
         if ($requester !== $this &&
                 $this->is([\T_RETURN, \T_YIELD, \T_YIELD_FROM])) {
-            return $this->_nextCode;
+            return $this->NextCode;
         }
 
         return $this;
@@ -726,12 +676,12 @@ class Token extends PhpToken implements JsonSerializable
             // ```
             (($first = $parts->first())->id !== \T_NEW ||
                 !(($class = $parts->getFirstOf(\T_CLASS)) &&
-                    $class->_prevCode->hasNewlineBeforeNextCode()) ||
-                $first->_nextCode !== $this) &&
+                    $class->PrevCode->hasNewlineBeforeNextCode()) ||
+                $first->NextCode !== $this) &&
             !($end = $last->nextSiblingOf(\T_OPEN_BRACE))->IsNull &&
             $end->Index < $this->EndStatement->Index
         ) {
-            return $end->_prevCode;
+            return $end->PrevCode;
         }
 
         // If the token is an expression boundary, return the last token in the
@@ -750,7 +700,7 @@ class Token extends PhpToken implements JsonSerializable
             $current = $this;
             do {
                 $last = $current;
-            } while (($current = $current->_nextSibling) &&
+            } while (($current = $current->NextSibling) &&
                 $this->Expression === $current->Expression &&
                 $this->TypeIndex->ChainPart[$current->id]);
 
@@ -760,10 +710,10 @@ class Token extends PhpToken implements JsonSerializable
         // If the token is between `?` and `:` in a ternary expression, return
         // the last token before `:`
         $current = $this;
-        while ($current = $current->_prevSibling) {
+        while ($current = $current->PrevSibling) {
             if ($current === $current->TernaryOperator1) {
                 if ($current->TernaryOperator2->Index > $this->Index) {
-                    return $current->TernaryOperator2->_prevCode;
+                    return $current->TernaryOperator2->PrevCode;
                 }
                 break;
             }
@@ -777,11 +727,11 @@ class Token extends PhpToken implements JsonSerializable
         while ($current->EndExpression) {
             $current = $current->EndExpression;
             $terminator =
-                $current->_nextSibling &&
-                $current->_nextSibling->Expression === false
-                    ? $current->_nextSibling
+                $current->NextSibling &&
+                $current->NextSibling->Expression === false
+                    ? $current->NextSibling
                     : $current;
-            $next = $terminator->_nextSibling;
+            $next = $terminator->NextSibling;
 
             if (!$next) {
                 return $current;
@@ -835,12 +785,12 @@ class Token extends PhpToken implements JsonSerializable
         }
         $outer = $current->withNextCodeWhile(true, ...$types)->last();
         if (!$outer ||
-                !$outer->_nextCode ||
+                !$outer->NextCode ||
                 !$outer->EndStatement ||
-                $outer->EndStatement->Index <= $outer->_nextCode->Index) {
+                $outer->EndStatement->Index <= $outer->NextCode->Index) {
             return null;
         }
-        return $outer->_nextCode;
+        return $outer->NextCode;
     }
 
     /**
@@ -890,21 +840,21 @@ class Token extends PhpToken implements JsonSerializable
         $next = $outer;
         while ($next &&
                 $next->Expression === false &&
-                $next->_nextSibling &&
-                $next->_nextSibling->Index <= $eol->Index) {
-            $next = $next->_nextSibling;
+                $next->NextSibling &&
+                $next->NextSibling->Index <= $eol->Index) {
+            $next = $next->NextSibling;
         }
 
         // Return `null` if the first code token after `$outer` is on a
         // subsequent line, or if neither `$outer` nor `$next` belong to a
         // statement that continues beyond their respective next code tokens
         if (!$outer ||
-            !$outer->_nextCode ||
-            $outer->_nextCode->Index > $eol->Index ||
+            !$outer->NextCode ||
+            $outer->NextCode->Index > $eol->Index ||
             ((!$outer->EndStatement ||
-                    $outer->EndStatement->Index <= $outer->_nextCode->Index) &&
+                    $outer->EndStatement->Index <= $outer->NextCode->Index) &&
                 ($next === $outer ||
-                    $next->EndStatement->Index <= $next->_nextCode->Index))) {
+                    $next->EndStatement->Index <= $next->NextCode->Index))) {
             return null;
         }
 
@@ -912,24 +862,15 @@ class Token extends PhpToken implements JsonSerializable
         // tokens between `$outer` and the end of the line where `AlignedWith`
         // is set
         if ($requireAlignedWith &&
-            !$outer->_nextCode
+            !$outer->NextCode
                    ->collect($eol)
                    ->find(fn(Token $t) => (bool) $t->AlignedWith)) {
             return null;
         }
 
         return $next === $outer
-            ? $outer->_nextCode
+            ? $outer->NextCode
             : $next;
-    }
-
-    public function withAdjacentBeforeNewline(?Token $from = null, bool $requireAlignedWith = true): TokenCollection
-    {
-        if ($adjacent = $this->adjacentBeforeNewline($requireAlignedWith)) {
-            $until = $adjacent->EndStatement;
-        }
-
-        return ($from ?: $this)->collect($until ?? $this);
     }
 
     /**
@@ -943,7 +884,7 @@ class Token extends PhpToken implements JsonSerializable
         $current = $this->ClosedBy ?: $this;
         do {
             $last = $current;
-            $current = $current->_nextSibling;
+            $current = $current->NextSibling;
         } while ($current &&
             $current->Index <= $eol->Index);
 
@@ -952,10 +893,10 @@ class Token extends PhpToken implements JsonSerializable
 
     final public function withoutTerminator(): Token
     {
-        if ($this->_prevCode &&
+        if ($this->PrevCode &&
             ($this->is([\T_SEMICOLON, \T_COMMA, \T_COLON]) ||
                 $this->IsStatementTerminator)) {
-            return $this->_prevCode;
+            return $this->PrevCode;
         }
 
         return $this;
@@ -963,12 +904,12 @@ class Token extends PhpToken implements JsonSerializable
 
     final public function withTerminator(): Token
     {
-        if ($this->_nextCode &&
+        if ($this->NextCode &&
             !($this->is([\T_SEMICOLON, \T_COMMA, \T_COLON]) ||
                 $this->IsStatementTerminator) &&
-            ($this->_nextCode->is([\T_SEMICOLON, \T_COMMA, \T_COLON]) ||
-                $this->_nextCode->IsStatementTerminator)) {
-            return $this->_nextCode;
+            ($this->NextCode->is([\T_SEMICOLON, \T_COMMA, \T_COLON]) ||
+                $this->NextCode->IsStatementTerminator)) {
+            return $this->NextCode;
         }
 
         return $this;
@@ -980,7 +921,7 @@ class Token extends PhpToken implements JsonSerializable
     final public function applyBlankLineBefore(bool $withMask = false): void
     {
         $current = $this;
-        $prev = $current->_prev;
+        $prev = $current->Prev;
         /** @var Token|null */
         $last = null;
         while (!$current->hasBlankLineBefore() &&
@@ -992,11 +933,11 @@ class Token extends PhpToken implements JsonSerializable
                 ($prev->wasFirstOnLine() &&
                     $prev->column <= $this->column)) &&
             (!$last ||
-                ($prev->CommentType === $last->_prev->CommentType &&
+                ($prev->CommentType === $last->Prev->CommentType &&
                     !$prev->isMultiLineComment()))) {
             $last = $current;
-            $current = $current->_prev;
-            $prev = $current->_prev;
+            $current = $current->Prev;
+            $prev = $current->Prev;
         }
         $current->WhitespaceBefore |= WhitespaceType::BLANK;
         if ($withMask) {
@@ -1007,11 +948,11 @@ class Token extends PhpToken implements JsonSerializable
     final public function effectiveWhitespaceBefore(): int
     {
         return $this->CriticalWhitespaceBefore
-            | ($this->_prev->CriticalWhitespaceAfter ?? 0)
+            | ($this->Prev->CriticalWhitespaceAfter ?? 0)
             | (($this->WhitespaceBefore
-                    | ($this->_prev->WhitespaceAfter ?? 0))
-                & ($this->_prev->WhitespaceMaskNext ?? WhitespaceType::ALL)
-                & ($this->_prev->CriticalWhitespaceMaskNext ?? WhitespaceType::ALL)
+                    | ($this->Prev->WhitespaceAfter ?? 0))
+                & ($this->Prev->WhitespaceMaskNext ?? WhitespaceType::ALL)
+                & ($this->Prev->CriticalWhitespaceMaskNext ?? WhitespaceType::ALL)
                 & $this->WhitespaceMaskPrev
                 & $this->CriticalWhitespaceMaskPrev);
     }
@@ -1019,11 +960,11 @@ class Token extends PhpToken implements JsonSerializable
     final public function effectiveWhitespaceAfter(): int
     {
         return $this->CriticalWhitespaceAfter
-            | ($this->_next->CriticalWhitespaceBefore ?? 0)
+            | ($this->Next->CriticalWhitespaceBefore ?? 0)
             | (($this->WhitespaceAfter
-                    | ($this->_next->WhitespaceBefore ?? 0))
-                & ($this->_next->WhitespaceMaskPrev ?? WhitespaceType::ALL)
-                & ($this->_next->CriticalWhitespaceMaskPrev ?? WhitespaceType::ALL)
+                    | ($this->Next->WhitespaceBefore ?? 0))
+                & ($this->Next->WhitespaceMaskPrev ?? WhitespaceType::ALL)
+                & ($this->Next->CriticalWhitespaceMaskPrev ?? WhitespaceType::ALL)
                 & $this->WhitespaceMaskNext
                 & $this->CriticalWhitespaceMaskNext);
     }
@@ -1067,13 +1008,13 @@ class Token extends PhpToken implements JsonSerializable
         if ($this->hasNewlineAfter()) {
             return true;
         }
-        if (!$this->_nextCode || $this->_nextCode === $this->_next) {
+        if (!$this->NextCode || $this->NextCode === $this->Next) {
             return false;
         }
         $current = $this;
         while (true) {
-            $current = $current->_next;
-            if ($current === $this->_nextCode) {
+            $current = $current->Next;
+            if ($current === $this->NextCode) {
                 break;
             }
             if ($current->hasNewlineAfter()) {
@@ -1091,60 +1032,36 @@ class Token extends PhpToken implements JsonSerializable
         return false;
     }
 
-    public function prevStatementStart(): Token
+    final public function isArrayOpenBracket(): bool
     {
-        $prev = $this->startOfStatement()->prevSibling();
-        while ($prev->id === \T_SEMICOLON) {
-            $prev = $prev->prevSibling();
+        if ($this->id === \T_OPEN_PARENTHESIS) {
+            return
+                $this->PrevCode &&
+                $this->PrevCode->id === \T_ARRAY;
         }
 
-        return $prev->startOfStatement();
+        return
+            $this->id === \T_OPEN_BRACKET && (
+                $this->Expression === $this ||
+                !$this->PrevCode ||
+                !$this->PrevCode->isDereferenceableTerminator()
+            );
     }
 
-    /**
-     * True if the next code token starts a new expression
-     */
-    final public function precedesExpression(): bool
+    final public function isDereferenceableTerminator(): bool
     {
-        return $this->_nextCode && $this->_nextCode->Expression === $this->_nextCode;
-    }
-
-    /**
-     * True if the next code token starts a new statement
-     */
-    final public function precedesStatement(): bool
-    {
-        return $this->_nextCode && $this->_nextCode->Statement === $this->_nextCode;
-    }
-
-    public function isArrayOpenBracket(): bool
-    {
-        return $this->id === \T_OPEN_BRACKET ||
-            ($this->id === \T_OPEN_PARENTHESIS && $this->prevCode()->id === \T_ARRAY);
-    }
-
-    public function isDestructuringConstruct(): bool
-    {
-        $current = $this->OpenedBy ?: $this;
-        return $current->id === \T_LIST ||
-            $current->prevCode()->id === \T_LIST ||
-            ($current->id === \T_OPEN_BRACKET &&
-                (($adjacent = $current->adjacent(\T_COMMA, \T_CLOSE_BRACKET)) &&
-                    $adjacent->id === \T_EQUAL) ||
-                (($root = $current->withParentsWhile(false, \T_OPEN_BRACKET)->last()) &&
-                    $root->prevCode()->id === \T_AS &&
-                    $root->parent()->prevCode()->id === \T_FOREACH));
-    }
-
-    final public function isBrace(): bool
-    {
-        return $this->id === \T_OPEN_BRACE || ($this->id === \T_CLOSE_BRACE && $this->OpenedBy->id === \T_OPEN_BRACE);
+        return
+            $this->TypeIndex->DereferenceableTerminator[$this->id] || (
+                $this->PrevCode &&
+                $this->PrevCode->id === \T_DOUBLE_COLON &&
+                $this->TypeIndex->MaybeReserved[$this->id]
+            );
     }
 
     public function isOneLineComment(): bool
     {
-        return $this->CommentType &&
-            !(($this->CommentType[1] ?? null) === '*');
+        return $this->CommentType !== null &&
+            ($this->CommentType[1] ?? null) !== '*';
     }
 
     public function isMultiLineComment(): bool
@@ -1155,11 +1072,6 @@ class Token extends PhpToken implements JsonSerializable
     public function isOperator(): bool
     {
         return $this->is(TokenType::OPERATOR_ALL);
-    }
-
-    public function isBinaryOrTernaryOperator(): bool
-    {
-        return $this->isOperator() && !$this->isUnaryOperator();
     }
 
     public function isUnaryOperator(): bool
@@ -1182,12 +1094,12 @@ class Token extends PhpToken implements JsonSerializable
             return true;
         }
 
-        if (!$this->_prevCode) {
+        if (!$this->PrevCode) {
             return false;
         }
 
-        return $this->_prevCode->IsTernaryOperator ||
-            $this->TypeIndex->UnaryPredecessor[$this->_prevCode->id];
+        return $this->PrevCode->IsTernaryOperator ||
+            $this->TypeIndex->UnaryPredecessor[$this->PrevCode->id];
     }
 
     public function isDeclaration(int ...$types): bool
@@ -1269,8 +1181,8 @@ class Token extends PhpToken implements JsonSerializable
                     // Don't indent close tags unless subsequent text is
                     // indented by at least the same amount
                     if ($current->id === \T_CLOSE_TAG &&
-                            $current->_next &&
-                            $current->_next->getIndentSpacesFromText() < $current->getIndentSpaces()) {
+                            $current->Next &&
+                            $current->Next->getIndentSpacesFromText() < $current->getIndentSpaces()) {
                         $before .= str_repeat(
                             $softTabs
                                 ? $this->Formatter->SoftTab
@@ -1296,16 +1208,16 @@ class Token extends PhpToken implements JsonSerializable
                 }
             }
 
-            if ((!$current->_next ||
-                    $this->TypeIndex->DoNotModify[$current->_next->id] ||
-                    $this->TypeIndex->DoNotModifyLeft[$current->_next->id]) &&
+            if ((!$current->Next ||
+                    $this->TypeIndex->DoNotModify[$current->Next->id] ||
+                    $this->TypeIndex->DoNotModifyLeft[$current->Next->id]) &&
                 !($this->TypeIndex->DoNotModify[$current->id] ||
                     $this->TypeIndex->DoNotModifyRight[$current->id])) {
                 $after = WhitespaceType::toWhitespace($current->effectiveWhitespaceAfter());
             }
 
             if ($setPosition) {
-                if (!$current->_prev) {
+                if (!$current->Prev) {
                     $current->OutputLine = 1;
                     $current->OutputColumn = 1;
                     $current->OutputPos = 0;
@@ -1318,10 +1230,10 @@ class Token extends PhpToken implements JsonSerializable
                 }
 
                 // And use it as the baseline for the next token's position
-                if ($current->_next) {
-                    $current->_next->OutputLine = $current->OutputLine;
-                    $current->_next->OutputColumn = $current->OutputColumn;
-                    $current->_next->OutputPos = $current->OutputPos;
+                if ($current->Next) {
+                    $current->Next->OutputLine = $current->OutputLine;
+                    $current->Next->OutputColumn = $current->OutputColumn;
+                    $current->Next->OutputPos = $current->OutputPos;
                 }
             }
 
@@ -1338,7 +1250,7 @@ class Token extends PhpToken implements JsonSerializable
                 $heredoc = $current->Heredoc ?: $current;
                 if ($heredoc->HeredocIndent) {
                     $text = Pcre::replace(
-                        ($current->_next->text[0] ?? null) === "\n"
+                        ($current->Next->text[0] ?? null) === "\n"
                             ? "/\\n{$heredoc->HeredocIndent}\$/m"
                             : "/\\n{$heredoc->HeredocIndent}(?=\\n)/",
                         "\n",
@@ -1348,12 +1260,12 @@ class Token extends PhpToken implements JsonSerializable
             }
 
             $output = ($text ?? $current->text) . ($after ?? '');
-            if ($output !== '' && $setPosition && $current->_next) {
-                $current->_next->movePosition($output, $this->TypeIndex->Expandable[$current->id]);
+            if ($output !== '' && $setPosition && $current->Next) {
+                $current->Next->movePosition($output, $this->TypeIndex->Expandable[$current->id]);
             }
 
             $code .= ($before ?? '') . $output;
-        } while ($current !== $to && ($current = $current->_next));
+        } while ($current !== $to && ($current = $current->Next));
 
         return $code;
     }
@@ -1405,7 +1317,7 @@ column 1 despite starting in column 2 or above (like this comment) */
                 . str_repeat(' ', $this->LinePadding - $this->LineUnpadding + $this->Padding);
         } else {
             $indent = "\n" . $start->renderWhitespaceBefore($softTabs)
-                . str_repeat(' ', mb_strlen($start->collect($this->_prev)->render($softTabs))
+                . str_repeat(' ', mb_strlen($start->collect($this->Prev)->render($softTabs))
                     + strlen(WhitespaceType::toWhitespace($this->effectiveWhitespaceBefore()))
                     + $this->Padding);
         }

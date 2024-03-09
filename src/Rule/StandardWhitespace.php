@@ -8,6 +8,7 @@ use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
+use Lkrms\PrettyPHP\Token\Token;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 
@@ -112,11 +113,11 @@ final class StandardWhitespace implements MultiTokenRule
                         // Only suppress SPACE before namespace separators in or
                         // immediately after an identifier
                         $token->id !== \T_NS_SEPARATOR ||
-                        $token->_prev->id === \T_NAMESPACE ||
-                        $token->_prev->id === \T_NAME_FULLY_QUALIFIED ||
-                        $token->_prev->id === \T_NAME_QUALIFIED ||
-                        $token->_prev->id === \T_NAME_RELATIVE ||
-                        $token->_prev->id === \T_STRING
+                        $token->Prev->id === \T_NAMESPACE ||
+                        $token->Prev->id === \T_NAME_FULLY_QUALIFIED ||
+                        $token->Prev->id === \T_NAME_QUALIFIED ||
+                        $token->Prev->id === \T_NAME_RELATIVE ||
+                        $token->Prev->id === \T_STRING
                     ))) {
                 $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::SPACE;
             } elseif ($token->id === \T_END_ALT_SYNTAX) {
@@ -126,12 +127,13 @@ final class StandardWhitespace implements MultiTokenRule
             if ($token === $token->OpenTag) {
                 // Propagate indentation from `<?php` tags to subsequent tokens
                 $tagIndent = 0;
+                /** @var Token|null */
                 $sibling = null;
                 $siblingIndent = null;
 
                 $text = '';
                 $current = $token;
-                while ($current = $current->_prev) {
+                while ($current = $current->Prev) {
                     $text = $current->text . $text;
                     if ($current->id === \T_CLOSE_TAG) {
                         break;
@@ -147,16 +149,16 @@ final class StandardWhitespace implements MultiTokenRule
 
                         /*
                          * Look for a `?>` tag in the same context, i.e. with
-                         * the same BracketStack
+                         * the same parent
                          */
                         $current = $token;
                         while ($current->CloseTag) {
-                            if ($current->CloseTag->BracketStack === $token->BracketStack) {
+                            if ($current->CloseTag->Parent === $token->Parent) {
                                 $sibling = $current->CloseTag;
                                 break;
                             }
                             $current = $current->CloseTag;
-                            while ($current = $current->_next) {
+                            while ($current = $current->Next) {
                                 if ($current === $current->OpenTag) {
                                     continue 2;
                                 }
@@ -164,7 +166,7 @@ final class StandardWhitespace implements MultiTokenRule
                             break;
                         }
 
-                        if ($sibling || (!$token->BracketStack && !$token->CloseTag)) {
+                        if ($sibling || (!$token->Parent && !$token->CloseTag)) {
                             $tagIndent = $token->TagIndent;
                             if ($sibling) {
                                 $siblingIndent = $tagIndent;
@@ -172,7 +174,7 @@ final class StandardWhitespace implements MultiTokenRule
                             // Increase the indentation level for tokens between
                             // unenclosed tags
                             if (
-                                !$token->BracketStack &&
+                                !$token->Parent &&
                                 $this->Formatter->IncreaseIndentBetweenUnenclosedTags
                             ) {
                                 $tagIndent++;
@@ -188,7 +190,7 @@ final class StandardWhitespace implements MultiTokenRule
                     $token->id === \T_OPEN_TAG &&
                     ($declare = $token->next())->id === \T_DECLARE &&
                     ($end = $declare->nextSibling(2)) === $declare->EndStatement &&
-                    (!$end->_nextCode || $end->_nextCode->id !== \T_DECLARE) && (
+                    (!$end->NextCode || $end->NextCode->id !== \T_DECLARE) && (
                         !$this->Formatter->Psr12 || (
                             !strcasecmp((string) $declare->nextSibling()->inner(), 'strict_types=1') &&
                             ($end->id === \T_CLOSE_TAG || $end->next()->id === \T_CLOSE_TAG)
@@ -226,11 +228,11 @@ final class StandardWhitespace implements MultiTokenRule
                 // adjacent code
                 if (
                     $token->CloseTag &&
-                    $token->_nextCode &&
-                    $token->_nextCode->Index < $token->CloseTag->Index
+                    $token->NextCode &&
+                    $token->NextCode->Index < $token->CloseTag->Index
                 ) {
-                    $nextCode = $token->_nextCode;
-                    $lastCode = $token->CloseTag->_prevCode;
+                    $nextCode = $token->NextCode;
+                    $lastCode = $token->CloseTag->PrevCode;
                     if (
                         $nextCode->line === $token->line &&
                         $lastCode->line === $token->CloseTag->line
@@ -241,7 +243,7 @@ final class StandardWhitespace implements MultiTokenRule
                         // unenclosed tags don't start on a new line
                         if (
                             $tagIndent &&
-                            !$token->BracketStack &&
+                            !$token->Parent &&
                             $this->Formatter->IncreaseIndentBetweenUnenclosedTags
                         ) {
                             $tagIndent--;
@@ -249,14 +251,14 @@ final class StandardWhitespace implements MultiTokenRule
                     }
                 }
 
-                // If the level of indentation applied to `$token->_next` by
+                // If the level of indentation applied to `$token->Next` by
                 // other rules is less than `$tagIndent`, apply the difference
                 // to tokens between `$token` and `$sibling`, or between
                 // `$token` and `$token->CloseTag ?: $token->last()` if no
                 // `$sibling` was found
-                if ($tagIndent && $token->_next) {
-                    $next = $token->_next;
-                    $last = $sibling ? $sibling->_prev : $last;
+                if ($tagIndent && $token->Next) {
+                    $next = $token->Next;
+                    $last = $sibling ? $sibling->Prev : $last;
                     $this->Formatter->registerCallback(
                         static::class,
                         $next,
@@ -293,7 +295,7 @@ final class StandardWhitespace implements MultiTokenRule
             // Add LINE after labels
             if (
                 $token->id === \T_COLON &&
-                $token->getColonType() === TokenSubType::COLON_LABEL_DELIMITER
+                $token->getSubType() === TokenSubType::COLON_LABEL_DELIMITER
             ) {
                 $token->WhitespaceAfter |= WhitespaceType::LINE;
                 continue;
@@ -301,8 +303,8 @@ final class StandardWhitespace implements MultiTokenRule
 
             // Add LINE between the arms of match expressions
             if ($token->id === \T_MATCH) {
-                $parent = $token->_nextSibling->_nextSibling;
-                $arm = $parent->_nextCode;
+                $parent = $token->NextSibling->NextSibling;
+                $arm = $parent->NextCode;
                 if ($arm === $parent->ClosedBy) {
                     continue;
                 }
@@ -344,8 +346,8 @@ final class StandardWhitespace implements MultiTokenRule
             // Suppress whitespace inside `declare()`
             if (
                 $token->id === \T_OPEN_PARENTHESIS &&
-                $token->_prevCode &&
-                $token->_prevCode->id === \T_DECLARE
+                $token->PrevCode &&
+                $token->PrevCode->id === \T_DECLARE
             ) {
                 $token->outer()->maskInnerWhitespace(WhitespaceType::NONE);
                 continue;

@@ -39,16 +39,16 @@ final class ProtectStrings implements MultiTokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            if (!$token->_next || $token->_next->String !== $token) {
+            if (!$token->Next || $token->Next->String !== $token) {
                 continue;
             }
 
-            foreach ($token->_nextSibling->collectSiblings($token->StringClosedBy) as $current) {
+            foreach ($token->NextSibling->collectSiblings($token->StringClosedBy) as $current) {
                 $current->CriticalWhitespaceMaskPrev = WhitespaceType::NONE;
                 // "$foo[0]" and "$foo[$bar]" fail to parse if there is any
                 // whitespace between the brackets
                 if ($current->id === \T_OPEN_BRACKET) {
-                    foreach ($current->_next->collect($current->ClosedBy) as $inner) {
+                    foreach ($current->Next->collect($current->ClosedBy) as $inner) {
                         $inner->CriticalWhitespaceMaskPrev = WhitespaceType::NONE;
                     }
                 }

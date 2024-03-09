@@ -4,11 +4,7 @@ namespace Lkrms\PrettyPHP\Exception;
 
 use Lkrms\PrettyPHP\Contract\Rule;
 use Salient\Core\Utility\Get;
-use Salient\Core\AbstractException;
 
-/**
- * Thrown when incompatible rules are enabled
- */
 class IncompatibleRulesException extends AbstractException
 {
     /**

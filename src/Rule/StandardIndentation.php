@@ -35,11 +35,11 @@ final class StandardIndentation implements TokenRule
             return;
         }
 
-        if (!$token->_prev) {
+        if (!$token->Prev) {
             return;
         }
 
-        $prev = $token->_prev;
+        $prev = $token->Prev;
         $token->Indent = $prev->Indent;
 
         if (!$prev->ClosedBy) {

@@ -4,9 +4,9 @@ namespace Lkrms\PrettyPHP\Filter;
 
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
+use Lkrms\PrettyPHP\Token\GenericToken;
 use Lkrms\PrettyPHP\Token\Token;
 use Salient\Core\Utility\Pcre;
-use PhpToken;
 
 /**
  * Remove indentation from heredocs
@@ -16,7 +16,7 @@ final class RemoveHeredocIndentation implements Filter
     use ExtensionTrait;
 
     /**
-     * @template T of PhpToken
+     * @template T of GenericToken
      *
      * @param T[] $tokens
      * @return T[]

@@ -84,22 +84,27 @@ final class DeclarationSpacing implements MultiTokenRule
             // After rewinding to the first attribute (if any), ignore tokens
             // other than the first in each declaration
             while ($token->Statement !== $token) {
-                if (!$token->_prevSibling ||
-                    !($token->_prevSibling->id === \T_ATTRIBUTE ||
-                        $token->_prevSibling->id === \T_ATTRIBUTE_COMMENT)) {
+                if (!$token->PrevSibling || !(
+                    $token->PrevSibling->id === \T_ATTRIBUTE ||
+                    $token->PrevSibling->id === \T_ATTRIBUTE_COMMENT
+                )) {
                     continue 2;
                 }
-                $token = $token->_prevSibling;
+                $token = $token->PrevSibling;
             }
 
             // Ignore `static` outside of declarations, `namespace` in the
             // context of relative names, and promoted constructor parameters
-            if (($token->id === \T_STATIC &&
-                    !$token->_nextCode->is([\T_VARIABLE, ...TokenType::DECLARATION])) ||
-                ($token->id === \T_NAMESPACE &&
-                    $token->_nextCode->id === \T_NS_SEPARATOR) ||
-                ($token->is(TokenType::VISIBILITY) &&
-                    $token->inParameterList())) {
+            if ((
+                $token->id === \T_STATIC &&
+                !$token->NextCode->is([\T_VARIABLE, ...TokenType::DECLARATION])
+            ) || (
+                $token->id === \T_NAMESPACE &&
+                $token->NextCode->id === \T_NS_SEPARATOR
+            ) || (
+                $token->is(TokenType::VISIBILITY) &&
+                $token->inParameterList()
+            )) {
                 continue;
             }
 
@@ -155,13 +160,20 @@ final class DeclarationSpacing implements MultiTokenRule
             // - `$this->PrevCondenseOneLine` is `true` when blank lines before
             //   declarations of the current `$types` are being suppressed
             //   unless they have inner newlines
-            $prev = end($this->Prev);
-            $prevSibling = $token->prevCode()->startOfStatement();
-            if ($types !== $this->PrevTypes || $prevSibling !== $prev) {
+            $prev = $this->Prev
+                ? end($this->Prev)
+                : null;
+            $prevSibling = $token->PrevCode
+                ? $token->PrevCode->Statement
+                : null;
+
+            if ($types !== $this->PrevTypes || !$prev || $prevSibling !== $prev) {
                 $this->Prev = [];
-                if (!$prevSibling->IsNull &&
-                        $prevSibling !== $prev &&
-                        $this->uniqueDeclarationTypes($prevSibling) === $types) {
+                if (
+                    $prevSibling &&
+                    $prevSibling !== $prev &&
+                    $this->uniqueDeclarationTypes($prevSibling) === $types
+                ) {
                     $this->Prev[] = $prevSibling;
                 }
 
@@ -224,7 +236,7 @@ final class DeclarationSpacing implements MultiTokenRule
 
             $expand = $this->PrevExpand ||
                 $token->collect($token->EndStatement)->hasNewline() ||
-                $prev->collect($token->_prev)->hasNewline() ||
+                $prev->collect($token->Prev)->hasNewline() ||
                 (!$this->PrevCondenseOneLine &&
                     ($this->hasComment($token) ||
                         ($count === 2 && $token->hasBlankLineBefore())));
@@ -283,7 +295,7 @@ final class DeclarationSpacing implements MultiTokenRule
 
     private function maybeApplyBlankLineBefore(Token $token, bool $withMask = false): void
     {
-        if ($token->OpenTag->_nextCode === $token &&
+        if ($token->OpenTag->NextCode === $token &&
                 !$this->Formatter->Psr12) {
             $token->WhitespaceBefore |= WhitespaceType::LINE;
             return;
@@ -293,7 +305,7 @@ final class DeclarationSpacing implements MultiTokenRule
 
     private function hasComment(Token $token): bool
     {
-        return ($prev = $token->_prev) &&
+        return ($prev = $token->Prev) &&
             $prev->CommentType &&
             $prev->hasNewlineBefore() &&
             !$prev->hasBlankLineAfter();

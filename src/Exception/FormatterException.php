@@ -4,12 +4,8 @@ namespace Lkrms\PrettyPHP\Exception;
 
 use Lkrms\PrettyPHP\Token\Token;
 use Salient\Core\Utility\Json;
-use Salient\Core\AbstractException;
 use Throwable;
 
-/**
- * Thrown when formatting fails
- */
 class FormatterException extends AbstractException
 {
     protected ?string $Output;
@@ -34,8 +30,14 @@ class FormatterException extends AbstractException
      * @param array<string,string>|null $log
      * @param mixed[]|object|null $data
      */
-    public function __construct(string $message = '', ?string $output = null, ?array $tokens = null, ?array $log = null, $data = null, ?Throwable $previous = null)
-    {
+    public function __construct(
+        string $message = '',
+        ?string $output = null,
+        ?array $tokens = null,
+        ?array $log = null,
+        $data = null,
+        ?Throwable $previous = null
+    ) {
         parent::__construct($message, $previous);
 
         $this->Output = $output;

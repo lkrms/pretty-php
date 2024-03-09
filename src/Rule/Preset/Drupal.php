@@ -79,13 +79,13 @@ final class Drupal implements Preset, TokenRule
             \T_INTERFACE,
             \T_TRAIT,
         ])) {
-            $parts = $token->Expression->declarationParts(false);
+            $parts = $token->Expression->declarationParts(true, false);
             if (!$parts->hasOneOf(...TokenType::DECLARATION)) {
                 return;
             }
 
             $open = $token->nextSiblingOf(\T_OPEN_BRACE);
-            if ($open->_next->id === \T_CLOSE_BRACE) {
+            if ($open->Next->id === \T_CLOSE_BRACE) {
                 return;
             }
 
@@ -115,7 +115,7 @@ final class Drupal implements Preset, TokenRule
 
         // Add a newline after close braces with a subsequent `catch`, `else`,
         // `elseif` or `finally`
-        if ($token->_prevCode->id === \T_CLOSE_BRACE) {
+        if ($token->PrevCode->id === \T_CLOSE_BRACE) {
             $token->WhitespaceBefore |= WhitespaceType::LINE;
             $token->WhitespaceMaskPrev |= WhitespaceType::LINE;
         }

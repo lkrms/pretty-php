@@ -456,6 +456,22 @@ final class TokenType extends AbstractDictionary
         \T_YIELD,
     ];
 
+    public const DEREFERENCEABLE_END = [
+        \T_CLOSE_BRACE,
+        \T_STRING_VARNAME,
+        \T_VARIABLE,
+        ...self::DEREFERENCEABLE_SCALAR_END,
+        ...self::NAME,
+        ...self::MAGIC_CONSTANT,
+    ];
+
+    public const DEREFERENCEABLE_SCALAR_END = [
+        \T_CLOSE_BRACKET,
+        \T_CLOSE_PARENTHESIS,
+        \T_CONSTANT_ENCAPSED_STRING,
+        \T_DOUBLE_QUOTE,
+    ];
+
     public const MAGIC_CONSTANT = [
         \T_CLASS_C,
         \T_DIR,
@@ -485,13 +501,6 @@ final class TokenType extends AbstractDictionary
         \T_PUBLIC,
     ];
 
-    public const DEREFERENCEABLE_SCALAR_END = [
-        \T_CLOSE_BRACKET,      // At the end of an array
-        \T_CLOSE_PARENTHESIS,  // At the end of an array
-        \T_CONSTANT_ENCAPSED_STRING,
-        \T_DOUBLE_QUOTE,
-    ];
-
     public const MAYBE_ANONYMOUS = [
         \T_CLASS,
         \T_FN,
@@ -516,7 +525,7 @@ final class TokenType extends AbstractDictionary
      */
     public static function getIndex(int ...$types): array
     {
-        return array_combine($types, array_fill(0, count($types), true)) + [
+        return array_fill_keys($types, true) + [
             \T_ABSTRACT => false,
             \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG => false,
             \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG => false,

@@ -54,8 +54,8 @@ final class PlaceComments implements TokenRule
     {
         if (
             $token->isOneLineComment() &&
-            $token->_next &&
-            $token->_next->id !== \T_CLOSE_TAG
+            $token->Next &&
+            $token->Next->id !== \T_CLOSE_TAG
         ) {
             $token->CriticalWhitespaceAfter |= WhitespaceType::LINE;
         }
@@ -65,9 +65,9 @@ final class PlaceComments implements TokenRule
             $token->IsInformalDocComment;
 
         $prevIsTopLevelCloseBrace =
-            $token->_prev->id === \T_CLOSE_BRACE &&
-            $token->_prev->isStructuralBrace(false) &&
-            $token->_prev->Expression->namedDeclarationParts()->hasOneOf(
+            $token->Prev->id === \T_CLOSE_BRACE &&
+            $token->Prev->isStructuralBrace(false) &&
+            $token->Prev->Expression->namedDeclarationParts()->hasOneOf(
                 ...TokenType::DECLARATION_CLASS
             );
 
@@ -79,7 +79,7 @@ final class PlaceComments implements TokenRule
             // Leave embedded comments alone
             $wasFirstOnLine = $token->wasFirstOnLine();
             if (!$wasFirstOnLine && !$token->wasLastOnLine()) {
-                if ($token->_prev->IsCode || $token->_prev->OpenTag === $token->_prev) {
+                if ($token->Prev->IsCode || $token->Prev->OpenTag === $token->Prev) {
                     $this->CommentsBesideCode[] = $token;
                     $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
                     return;
@@ -93,7 +93,7 @@ final class PlaceComments implements TokenRule
             // top-level close braces, don't move comments to the next line
             if (!$wasFirstOnLine) {
                 $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
-                if ($token->_prev->IsCode || $token->_prev->OpenTag === $token->_prev) {
+                if ($token->Prev->IsCode || $token->Prev->OpenTag === $token->Prev) {
                     $this->CommentsBesideCode[] = $token;
                     $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
                     return;
@@ -105,7 +105,7 @@ final class PlaceComments implements TokenRule
 
         // Copy indentation and padding from `$next` to `$token` in
         // `beforeRender()` unless `$next` is a close bracket
-        $next = $token->_nextCode;
+        $next = $token->NextCode;
         if ($next && !$this->TypeIndex->CloseBracketOrEndAltSyntax[$next->id]) {
             $this->Comments[] = [$token, $next];
         }
@@ -117,9 +117,9 @@ final class PlaceComments implements TokenRule
         if (
             $token->hasNewline() &&
             $isDocComment &&
-            (!$token->_prevSibling ||
-                !$token->_nextSibling ||
-                $token->_prevSibling->Statement !== $token->_nextSibling->Statement)
+            (!$token->PrevSibling ||
+                !$token->NextSibling ||
+                $token->PrevSibling->Statement !== $token->NextSibling->Statement)
         ) {
             $token->WhitespaceBefore |=
                 WhitespaceType::BLANK | WhitespaceType::LINE | WhitespaceType::SPACE;
@@ -138,7 +138,7 @@ final class PlaceComments implements TokenRule
                 $next->id === \T_DECLARE ||
                 $next->id === \T_NAMESPACE || (
                     $next->id === \T_USE &&
-                    $next->getUseType() === TokenSubType::USE_IMPORT
+                    $next->getSubType() === TokenSubType::USE_IMPORT
                 )
             )
         ) {
@@ -149,7 +149,7 @@ final class PlaceComments implements TokenRule
         // Otherwise, pin DocBlocks to subsequent code
         if (
             $next &&
-            $next === $token->_next &&
+            $next === $token->Next &&
             $token->id === \T_DOC_COMMENT
         ) {
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
@@ -162,7 +162,7 @@ final class PlaceComments implements TokenRule
             if (!$token->hasNewlineBefore()) {
                 $token->WhitespaceBefore |= WhitespaceType::SPACE;
                 if ($token->hasNewlineAfter()) {
-                    $token->_prev->WhitespaceMaskNext |= WhitespaceType::SPACE;
+                    $token->Prev->WhitespaceMaskNext |= WhitespaceType::SPACE;
                     $token->Padding = $this->Formatter->SpacesBesideCode - 1;
                 } else {
                     $token->WhitespaceAfter |= WhitespaceType::SPACE;
@@ -216,8 +216,8 @@ final class PlaceComments implements TokenRule
                 ($next->id === \T_CASE || $next->id === \T_DEFAULT) &&
                 $next->parent()->prevSibling(2)->id === \T_SWITCH
             ) {
-                $prev = $token->_prevCode;
-                if (!(end($token->BracketStack) === $prev ||
+                $prev = $token->PrevCode;
+                if (!($token->Parent === $prev ||
                     ($prev->collect($token)->hasBlankLineBetweenTokens() &&
                         !$token->collect($next)->hasBlankLineBetweenTokens()))) {
                     $indent = 1;

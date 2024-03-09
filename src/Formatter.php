@@ -66,6 +66,7 @@ use Lkrms\PrettyPHP\Rule\VerticalWhitespace;
 use Lkrms\PrettyPHP\Support\CodeProblem;
 use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
+use Lkrms\PrettyPHP\Token\GenericToken;
 use Lkrms\PrettyPHP\Token\Token;
 use Salient\Contract\Core\Buildable;
 use Salient\Core\Concern\HasBuilder;
@@ -78,9 +79,9 @@ use Salient\Core\Utility\Env;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Str;
+use Closure;
 use CompileError;
 use LogicException;
-use PhpToken;
 use Throwable;
 
 /**
@@ -437,6 +438,8 @@ final class Formatter implements Buildable
 
     // --
 
+    public ?string $Filename = null;
+
     /**
      * @var array<int,Token>|null
      */
@@ -450,7 +453,7 @@ final class Formatter implements Buildable
     /**
      * [ priority => [ token index => [ [ rule, callback ], ... ] ] ]
      *
-     * @var array<int,array<int,array<array{class-string<Rule>,callable}>>>|null
+     * @var array<int,array<int,array<array{class-string<Rule>,Closure}>>>|null
      */
     private ?array $Callbacks = null;
 
@@ -474,9 +477,6 @@ final class Formatter implements Buildable
 
     /**
      * Creates a new Formatter object
-     *
-     * Rules are processed from lowest to highest priority (smallest to biggest
-     * number).
      *
      * @phpstan-param 2|4|8 $tabSize
      * @param array<class-string<Extension>> $disable Non-mandatory extensions to disable
@@ -762,25 +762,27 @@ final class Formatter implements Buildable
     /**
      * Get formatted code
      *
-     *  1. Call `reset()` on the formatter, filters and rules
-     *  2. Detect end-of-line sequence if not given and replace line breaks with
-     *     `"\n"` if needed
-     *  3. `tokenize()` input and apply formatting filters
-     *  4. `prepareTokens()` for formatting
-     *  5. Find lists, i.e. comma-delimited items between non-empty square or
-     *     round brackets, and interface names after `extends` or `implements`
-     *  6. Process enabled {@see TokenRule} and {@see ListRule} rules in one
-     *     loop, ordered by priority
-     *  7. Find blocks, i.e. groups of tokens representing two or more
-     *     consecutive non-blank lines
-     *  8. Process enabled {@see BlockRule} rules in priority order
-     *  9. Process registered callbacks in priority and token order
-     * 10. Process rules that implement `beforeRender()` in priority order
-     * 11. Render and validate output
+     * 1. Load enabled extensions (if not already loaded)
+     * 2. Reset the formatter and enabled extensions
+     * 3. Detect the end-of-line sequence used in `$code` (if not given)
+     * 4. Convert line breaks in `$code` to `"\n"` if needed
+     * 5. Tokenize, filter and parse `$code` (see {@see Token::parse()})
+     * 6. Find lists comprised of
+     *    - one or more comma-delimited items between `[]` or `()`, or
+     *    - two or more interfaces after `extends` or `implements`
+     * 7. Process enabled {@see TokenRule} and {@see ListRule} extensions in one
+     *    loop, ordered by priority
+     * 8. Find blocks comprised of two or more consecutive non-blank lines
+     * 9. Process enabled {@see BlockRule} extensions in priority order
+     * 10. Process callbacks registered in (7) or (9) in priority and token
+     *     order
+     * 11. Call enabled {@see Rule::beforeRender()} methods in priority order
+     * 12. Render output
+     * 13. Validate output (if `$fast` is `false`)
      *
      * @param string|null $eol The end-of-line sequence used in `$code`, if
      * known.
-     * @param string|null $filename For reporting purposes only. No file
+     * @param string|null $filename For reporting purposes only. No filesystem
      * operations are performed on `$filename`.
      */
     public function format(
@@ -794,55 +796,63 @@ final class Formatter implements Buildable
             error_reporting($errorLevel & ~\E_COMPILE_WARNING);
         }
 
-        Profile::startTimer(__METHOD__ . '#reset');
-
         if (!$this->ExtensionsLoaded) {
-            $this->RuleMap = array_combine($this->Rules, $this->getExtensions($this->Rules));
-            $this->FormatFilterList = $this->getExtensions($this->FormatFilters);
-            $this->ComparisonFilterList = $this->getExtensions($this->ComparisonFilters);
-            $this->ExtensionsLoaded = true;
+            Profile::startTimer(__METHOD__ . '#load-extensions');
+            try {
+                $this->RuleMap = array_combine($this->Rules, $this->getExtensions($this->Rules));
+                $this->FormatFilterList = $this->getExtensions($this->FormatFilters);
+                $this->ComparisonFilterList = $this->getExtensions($this->ComparisonFilters);
+                $this->ExtensionsLoaded = true;
+            } finally {
+                Profile::stopTimer(__METHOD__ . '#load-extensions');
+            }
         }
 
+        Profile::startTimer(__METHOD__ . '#reset');
         $this->reset();
         $this->resetExtensions();
-
         Profile::stopTimer(__METHOD__ . '#reset');
 
         Profile::startTimer(__METHOD__ . '#detect-eol');
-        $eol = Str::coalesce($eol, null);
-        $eol ??= Get::eol($code);
-        if ((string) $eol !== '' && $eol !== "\n") {
+        if ($eol === null || $eol === '') {
+            $eol = Get::eol($code);
+        }
+        if ($eol !== null && $eol !== "\n") {
             $code = str_replace($eol, "\n", $code);
         }
-        $eol = (string) $eol !== '' && $this->PreserveEol
-            ? $eol
-            : $this->PreferredEol;
+        if ($eol === null || !$this->PreserveEol) {
+            $eol = $this->PreferredEol;
+        }
         Profile::stopTimer(__METHOD__ . '#detect-eol');
 
-        Profile::startTimer(__METHOD__ . '#tokenize-input');
+        Profile::startTimer(__METHOD__ . '#parse-input');
         try {
-            $this->Tokens = Token::tokenize(
+            $this->Filename = $filename;
+            $this->Tokens = Token::parse(
                 $code, \TOKEN_PARSE, $this, ...$this->FormatFilterList
             );
 
             if (!$this->Tokens) {
+                if (!$this->Debug) {
+                    $this->Tokens = null;
+                }
                 return '';
+            }
+
+            $last = end($this->Tokens);
+            if ($last->IsCode && $last->Statement->id !== \T_HALT_COMPILER) {
+                $last->WhitespaceAfter |= WhitespaceType::LINE;
             }
         } catch (CompileError $ex) {
             throw new InvalidSyntaxException(
                 sprintf(
                     'Formatting failed: %s cannot be parsed',
-                    Str::coalesce($filename, 'input')
+                    Str::coalesce($filename, 'input'),
                 ),
                 $ex
             );
         } finally {
-            Profile::stopTimer(__METHOD__ . '#tokenize-input');
-        }
-
-        $last = end($this->Tokens);
-        if ($last->IsCode && $last->Statement->id !== \T_HALT_COMPILER) {
-            $last->WhitespaceAfter |= WhitespaceType::LINE;
+            Profile::stopTimer(__METHOD__ . '#parse-input');
         }
 
         Profile::startTimer(__METHOD__ . '#index-tokens');
@@ -862,7 +872,7 @@ final class Formatter implements Buildable
         ]);
         $lists = [];
         foreach ($listParents as $i => $parent) {
-            if ($parent->ClosedBy === $parent->_nextCode) {
+            if ($parent->ClosedBy === $parent->NextCode) {
                 continue;
             }
             switch ($parent->id) {
@@ -871,7 +881,7 @@ final class Formatter implements Buildable
                     $items =
                         $parent->nextSiblingsWhile(...TokenType::DECLARATION_LIST)
                                ->filter(fn(Token $t, ?Token $next, ?Token $prev) =>
-                                            !$prev || $t->_prevCode->id === \T_COMMA);
+                                            !$prev || $t->PrevCode->id === \T_COMMA);
                     $count = $items->count();
                     if ($count > 1) {
                         $parent->IsListParent = true;
@@ -884,7 +894,7 @@ final class Formatter implements Buildable
                     continue 2;
 
                 case \T_OPEN_PARENTHESIS:
-                    $prev = $parent->_prevCode;
+                    $prev = $parent->PrevCode;
                     if (!$prev) {
                         continue 2;
                     }
@@ -892,9 +902,9 @@ final class Formatter implements Buildable
                             !$prev->isStructuralBrace(false)) {
                         break;
                     }
-                    if ($prev->_prevCode &&
+                    if ($prev->PrevCode &&
                             $prev->is(TokenType::AMPERSAND) &&
-                            $prev->_prevCode->is([\T_FN, \T_FUNCTION])) {
+                            $prev->PrevCode->is([\T_FN, \T_FUNCTION])) {
                         break;
                     }
                     if ($prev->is([
@@ -917,38 +927,25 @@ final class Formatter implements Buildable
                     continue 2;
 
                 case \T_OPEN_BRACKET:
-                    if ($parent->Expression === $parent) {
+                    if ($parent->isArrayOpenBracket()) {
                         break;
                     }
-                    $prev = $parent->_prevCode;
-                    if ($prev && (
-                        $prev->is([
-                            \T_CLOSE_BRACE,
-                            \T_STRING_VARNAME,
-                            \T_VARIABLE,
-                            ...TokenType::DEREFERENCEABLE_SCALAR_END,
-                            ...TokenType::NAME,
-                            ...TokenType::MAGIC_CONSTANT,
-                        ]) || (
-                            $prev->_prevCode &&
-                            $prev->_prevCode->id === \T_DOUBLE_COLON &&
-                            $prev->is(TokenType::SEMI_RESERVED)
-                        )
-                        // This check should never be necessary
-                    ) && !$parent->children()->hasOneOf(\T_COMMA)) {
-                        continue 2;
+
+                    if ($parent->children()->hasOneOf(\T_COMMA)) {
+                        // This line should never be reached
+                        break;
                     }
 
-                    break;
+                    continue 2;
             }
-            $delimiter = $parent->_prevCode && $parent->_prevCode->id === \T_FOR
+            $delimiter = $parent->PrevCode && $parent->PrevCode->id === \T_FOR
                 ? \T_SEMICOLON
                 : \T_COMMA;
             $items =
                 $parent->children()
                        ->filter(fn(Token $t, ?Token $next, ?Token $prev) =>
                                     $t->id !== $delimiter &&
-                                        (!$prev || $t->_prevCode->id === $delimiter));
+                                        (!$prev || $t->PrevCode->id === $delimiter));
             $count = $items->count();
             if (!$count) {
                 continue;
@@ -1051,7 +1048,7 @@ final class Formatter implements Buildable
             if ($keep) {
                 $line[] = $token;
             }
-            $token = $token->_next;
+            $token = $token->Next;
         }
 
         Profile::stopTimer(__METHOD__ . '#find-blocks');
@@ -1107,10 +1104,9 @@ final class Formatter implements Buildable
 
         Profile::startTimer(__METHOD__ . '#parse-output');
         try {
-            $after = Token::onlyTokenize(
+            $after = Token::tokenizeForComparison(
                 $out,
                 \TOKEN_PARSE,
-                PhpToken::class,
                 ...$this->ComparisonFilterList
             );
         } catch (CompileError $ex) {
@@ -1126,10 +1122,9 @@ final class Formatter implements Buildable
             Profile::stopTimer(__METHOD__ . '#parse-output');
         }
 
-        $before = Token::onlyTokenize(
+        $before = Token::tokenizeForComparison(
             $code,
             \TOKEN_PARSE,
-            PhpToken::class,
             ...$this->ComparisonFilterList
         );
 
@@ -1232,7 +1227,7 @@ final class Formatter implements Buildable
     }
 
     /**
-     * @param PhpToken[] $tokens
+     * @param GenericToken[] $tokens
      * @return array<array{int,string}>
      */
     private function simplifyTokens(array $tokens): array
@@ -1251,7 +1246,7 @@ final class Formatter implements Buildable
     public function registerCallback(
         string $rule,
         Token $first,
-        callable $callback,
+        Closure $callback,
         bool $reverse = false
     ): void {
         if (!isset($this->CallbackPriorities[$rule])) {
@@ -1406,6 +1401,7 @@ final class Formatter implements Buildable
      */
     private function reset(): void
     {
+        $this->Filename = null;
         $this->Tokens = null;
         $this->TokenIndex = null;
         $this->Callbacks = null;

@@ -26,8 +26,8 @@ final class TokenCollection extends AbstractTypedList implements Stringable
     {
         if ($from->Index <= $to->Index && !$from->IsNull && !$to->IsNull) {
             $tokens[] = $from;
-            while ($from !== $to && $from->_next) {
-                $tokens[] = $from = $from->_next;
+            while ($from !== $to && $from->Next) {
+                $tokens[] = $from = $from->Next;
             }
         }
 
@@ -312,8 +312,8 @@ final class TokenCollection extends AbstractTypedList implements Stringable
         foreach ($this as $token) {
             $token->WhitespaceBefore |= $type;
             $token->WhitespaceMaskPrev |= $type;
-            if ($token->_prev) {
-                $token->_prev->WhitespaceMaskNext |= $type;
+            if ($token->Prev) {
+                $token->Prev->WhitespaceMaskNext |= $type;
             }
         }
         return $this;
@@ -336,8 +336,8 @@ final class TokenCollection extends AbstractTypedList implements Stringable
         foreach ($this as $token) {
             $token->WhitespaceAfter |= $type;
             $token->WhitespaceMaskNext |= $type;
-            if ($token->_next) {
-                $token->_next->WhitespaceMaskPrev |= $type;
+            if ($token->Next) {
+                $token->Next->WhitespaceMaskPrev |= $type;
             }
         }
         return $this;
@@ -359,8 +359,8 @@ final class TokenCollection extends AbstractTypedList implements Stringable
             /** @var Token $token */
             foreach ($this as $token) {
                 $token->CriticalWhitespaceMaskPrev &= $mask;
-                if ($token->_prev) {
-                    $token->_prev->CriticalWhitespaceMaskNext &= $mask;
+                if ($token->Prev) {
+                    $token->Prev->CriticalWhitespaceMaskNext &= $mask;
                 }
             }
             return $this;
@@ -369,8 +369,8 @@ final class TokenCollection extends AbstractTypedList implements Stringable
         /** @var Token $token */
         foreach ($this as $token) {
             $token->WhitespaceMaskPrev &= $mask;
-            if ($token->_prev) {
-                $token->_prev->WhitespaceMaskNext &= $mask;
+            if ($token->Prev) {
+                $token->Prev->WhitespaceMaskNext &= $mask;
             }
         }
         return $this;

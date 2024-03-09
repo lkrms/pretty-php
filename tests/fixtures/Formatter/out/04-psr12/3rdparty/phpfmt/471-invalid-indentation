@@ -1,0 +1,51 @@
+<?php
+
+// passes:ReindentEnumBlocks
+// version:8.1.0
+enum ExampleEnum
+{
+    /** Note. */
+    case Foo;
+    // Note.
+    case Bar;
+    // Note.
+    case Qux;
+}
+
+enum ExampleEnum2: string
+{
+    /** Note. */
+    case Foo = 'a';
+    // Note.
+    case Bar = 'b';
+    // Note.
+    case Qux = 'c';
+}
+
+enum Suit implements Colorful
+{
+    // Fulfills the interface contract.
+    case Hearts;
+    /** Note. */
+    case Diamonds;
+
+    // Fulfills the interface contract.
+    public function color(): string
+    {
+        return match ($this) {
+            Suit::Hearts, Suit::Diamonds => 'Red',
+            Suit::Clubs, Suit::Spades => 'Black',
+        };
+    }
+
+    // Not part of an interface; that's fine.
+    public function shape(): string
+    {
+        return 'Rectangle';
+    }
+
+    // Note.
+    case Clubs;
+    /** a */
+    case Spades;
+}

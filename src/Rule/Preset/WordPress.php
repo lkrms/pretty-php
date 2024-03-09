@@ -87,14 +87,14 @@ final class WordPress implements Preset, TokenRule
 
         if ($token->id === \T_DOC_COMMENT || $token->id === \T_COMMENT) {
             if ($token->hasBlankLineBefore() &&
-                    $token->line - $token->_prev->line - substr_count($token->_prev->text, "\n") < 2) {
+                    $token->line - $token->Prev->line - substr_count($token->Prev->text, "\n") < 2) {
                 $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
             }
             return;
         }
 
         if ($token->id === \T_COLON) {
-            if (!$token->startsAlternativeSyntax()) {
+            if (!$token->isColonAltSyntaxDelimiter()) {
                 return;
             }
             $token->WhitespaceBefore |= WhitespaceType::SPACE;
@@ -103,7 +103,7 @@ final class WordPress implements Preset, TokenRule
         }
 
         if ($token->id === \T_LOGICAL_NOT) {
-            if ($token->_next->id === \T_LOGICAL_NOT) {
+            if ($token->Next->id === \T_LOGICAL_NOT) {
                 return;
             }
             $token->WhitespaceAfter |= WhitespaceType::SPACE;
@@ -122,20 +122,20 @@ final class WordPress implements Preset, TokenRule
         }
 
         // All that remains is T_OPEN_BRACKET and T_OPEN_PARENTHESIS
-        if ($token->ClosedBy === $token->_next ||
+        if ($token->ClosedBy === $token->Next ||
             ($token->id === \T_OPEN_BRACKET &&
                 ($token->String ||
-                    ($token->_next->_next === $token->ClosedBy &&
-                        $token->_next->id !== \T_VARIABLE)))) {
+                    ($token->Next->Next === $token->ClosedBy &&
+                        $token->Next->id !== \T_VARIABLE)))) {
             return;
         }
 
         $token->WhitespaceAfter |= WhitespaceType::SPACE;
         $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
-        $token->_next->WhitespaceMaskPrev |= WhitespaceType::SPACE;
+        $token->Next->WhitespaceMaskPrev |= WhitespaceType::SPACE;
         $token->ClosedBy->WhitespaceBefore |= WhitespaceType::SPACE;
         $token->ClosedBy->WhitespaceMaskPrev |= WhitespaceType::SPACE;
-        $token->ClosedBy->_prev->WhitespaceMaskNext |= WhitespaceType::SPACE;
+        $token->ClosedBy->Prev->WhitespaceMaskNext |= WhitespaceType::SPACE;
     }
 
     /**

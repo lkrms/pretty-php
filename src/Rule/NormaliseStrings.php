@@ -74,7 +74,7 @@ final class NormaliseStrings implements MultiTokenRule
             // Don't escape line breaks unless they are already escaped
             if (
                 !$token->hasNewline() || (
-                    $token->_next->id === \T_END_HEREDOC &&
+                    $token->Next->id === \T_END_HEREDOC &&
                     strpos(substr($token->text, 0, -1), "\n") === false
                 )
             ) {
@@ -118,7 +118,7 @@ final class NormaliseStrings implements MultiTokenRule
                 $start = trim($token->String->text);
                 $text = $token->text;
                 $end = trim($token->String->StringClosedBy->text);
-                if ($token->_next->id === \T_END_HEREDOC) {
+                if ($token->Next->id === \T_END_HEREDOC) {
                     $text = substr($text, 0, -1);
                     $suffix = "\n";
                 }
@@ -188,7 +188,7 @@ final class NormaliseStrings implements MultiTokenRule
             $reserved = "[nrtvef\\\\\${$reserved}]|[0-7]|x[0-9a-fA-F]|u\{[0-9a-fA-F]+\}";
 
             if ($token->id === \T_CONSTANT_ENCAPSED_STRING ||
-                    $token->_next !== $token->String->StringClosedBy ||
+                    $token->Next !== $token->String->StringClosedBy ||
                     $token->String->id !== \T_START_HEREDOC) {
                 $reserved .= '|$';
             }
@@ -202,7 +202,7 @@ final class NormaliseStrings implements MultiTokenRule
             // "\\\{$a}" becomes "\\\{", which escapes to "\\\\{", but we need
             // the brace to remain escaped lest it become a T_CURLY_OPEN
             if ($token->id !== \T_CONSTANT_ENCAPSED_STRING &&
-                    ($token->_next !== $token->String->StringClosedBy)) {
+                    ($token->Next !== $token->String->StringClosedBy)) {
                 $double = Pcre::replace(
                     '/(?<!\\\\)(\\\\(?:\\\\\\\\)*)\\\\(\{)$/',
                     '$1$2',

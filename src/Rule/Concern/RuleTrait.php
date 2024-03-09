@@ -17,8 +17,8 @@ trait RuleTrait
         }
 
         if ($oneStatement) {
-            $from = $start->IsCode ? $start : $start->_nextCode;
-            $to = $end->IsCode ? $end : $end->_prevCode;
+            $from = $start->IsCode ? $start : $start->NextCode;
+            $to = $end->IsCode ? $end : $end->PrevCode;
             if (
                 $from &&
                 $to &&

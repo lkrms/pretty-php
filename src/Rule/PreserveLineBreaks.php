@@ -36,7 +36,7 @@ final class PreserveLineBreaks implements MultiTokenRule
         );
 
         foreach ($tokens as $token) {
-            $prev = $token->_prev;
+            $prev = $token->Prev;
             if (!$prev ||
                 $prev->line === $token->line ||
                 (!$preserveTypeIndex[$token->id] &&
@@ -211,7 +211,7 @@ final class PreserveLineBreaks implements MultiTokenRule
         // ```
         if ($token->id === \T_COMMA &&
                 $token->isDelimiterBetweenMatchExpressions() &&
-                $token->_nextCode->id === \T_DOUBLE_ARROW) {
+                $token->NextCode->id === \T_DOUBLE_ARROW) {
             return false;
         }
 
@@ -221,12 +221,12 @@ final class PreserveLineBreaks implements MultiTokenRule
                     !$token->isDelimiterBetweenMatchArms()) ||
                 ($token->id === \T_SEMICOLON &&
                     $token->Parent &&
-                    $token->Parent->_prevCode &&
-                    $token->Parent->_prevCode->id === \T_FOR) ||
+                    $token->Parent->PrevCode &&
+                    $token->Parent->PrevCode->id === \T_FOR) ||
                 ($token->CommentType &&
-                    (($token->_prevCode &&
-                            !$token->_prevCode->ClosedBy &&
-                            $token->_prevCode->EndStatement !== $token->_prevCode) ||
+                    (($token->PrevCode &&
+                            !$token->PrevCode->ClosedBy &&
+                            $token->PrevCode->EndStatement !== $token->PrevCode) ||
                         ($token->Parent &&
                             !($token->Parent->id === \T_OPEN_BRACE &&
                                 $token->Parent->isStructuralBrace(false))))))) {

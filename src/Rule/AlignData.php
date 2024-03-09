@@ -86,8 +86,10 @@ final class AlignData implements BlockRule
             function (string $type, array $data = []) use (&$ctxIdx, &$ctxCounts, &$lineIdx, &$line, &$token) {
                 /** @var Token $token */
                 $brackets = '';
-                foreach ($token->BracketStack as $t) {
-                    $brackets .= $t->text;
+                $current = $token;
+                while ($current->Parent) {
+                    $current = $current->Parent;
+                    $brackets = $current->text . $brackets;
                 }
                 $index = "$type\0$brackets\0{$token->indent()}";
                 $ctxIdx[$index][$line][] = $token;
@@ -117,7 +119,7 @@ final class AlignData implements BlockRule
                     continue;
                 }
                 if ($token->id === \T_COLON &&
-                        $token->getColonType() === TokenSubType::COLON_SWITCH_CASE_DELIMITER) {
+                        $token->getSubType() === TokenSubType::COLON_SWITCH_CASE_DELIMITER) {
                     $addToIndex('case');
                     continue;
                 }
@@ -129,10 +131,10 @@ final class AlignData implements BlockRule
                         !$token->hasNewlineAfter() &&
                         $token->Parent &&
                         $token->Parent->isArrayOpenBracket() &&
-                        !$this->TypeIndex->CloseBracket[$token->_next->id]) {
+                        !$this->TypeIndex->CloseBracket[$token->Next->id]) {
                     $data = [
                         'prevTypes' => $token->prevSiblings($token->prevSiblingOf(\T_COMMA)->nextCode())->getTypes(),
-                        'nextTypes' => $token->_next->collectSiblings($token->nextSiblingOf(\T_COMMA)->prevCode())->getTypes(),
+                        'nextTypes' => $token->Next->collectSiblings($token->nextSiblingOf(\T_COMMA)->prevCode())->getTypes(),
                     ];
                     $type = array_map(fn(array $types): string => implode(',', $this->simplifyTokenTypes($types)), $data);
                     array_unshift($type, ',');
@@ -196,9 +198,9 @@ final class AlignData implements BlockRule
                             // aligned tokens (enforced in callback)
                             (($this->Formatter->RelaxAlignmentCriteria || $type !== '=') &&
                                 $block[$line - 1][0]->Index <=
-                                    $lastToken->_nextCode->pragmaticEndOfExpression()->Index) ||
+                                    $lastToken->NextCode->pragmaticEndOfExpression()->Index) ||
                             ($this->Formatter->RelaxAlignmentCriteria &&
-                                $block[$line - 1][0]->_prevCode === $block[$line][0]->_prevCode)) {
+                                $block[$line - 1][0]->PrevCode === $block[$line][0]->PrevCode)) {
                             $run[$line] = $token;
                             continue;
                         }
@@ -239,10 +241,10 @@ final class AlignData implements BlockRule
                 $group[$line] = [$token1, $token2];
                 $prev = $line;
             }
-            $end = $token2->_nextCode->pragmaticEndOfExpression();
+            $end = $token2->NextCode->pragmaticEndOfExpression();
             $current = $token2;
             while (++$line < $blockLines &&
-                    ($current = $current->endOfLine()->_next) &&
+                    ($current = $current->endOfLine()->Next) &&
                     $current->Index <= $end->Index) {
                 $innerLines[$prev][] = $block[$line][0];
             }
@@ -295,7 +297,7 @@ final class AlignData implements BlockRule
             if ($action === self::ALIGN_DATA &&
                     ($types = $this->TokenData[$token2->Index]['prevTypes'] ?? null) &&
                     // Exclude `null` from type detection heuristic
-                    !($types === [\T_STRING] && strcasecmp($token2->_prev->text, 'null'))) {
+                    !($types === [\T_STRING] && strcasecmp($token2->Prev->text, 'null'))) {
                 $prevTypes[] = $types;
             }
         }
@@ -334,19 +336,19 @@ final class AlignData implements BlockRule
         /** @var Token $token2 */
         foreach ($group as $i => [$token1, $token2]) {
             if ($action === self::ALIGN_PREV) {
-                $token2->_prev->Padding += $deltas[$i];
+                $token2->Prev->Padding += $deltas[$i];
             } elseif ($action === self::ALIGN_NEXT) {
                 if ($token2->hasNewlineAfter()) {
                     continue;
                 }
-                $token2->_next->Padding += $deltas[$i];
+                $token2->Next->Padding += $deltas[$i];
             } else {
                 $token2->Padding += $deltas[$i];
             }
             if ($innerLineIsOutdented || !($innerLines[$i] ?? null)) {
                 continue;
             }
-            $token2->collect($token2->_nextCode->pragmaticEndOfExpression())
+            $token2->collect($token2->NextCode->pragmaticEndOfExpression())
                    ->forEach(fn(Token $t) => $t->LinePadding += $deltas[$i]);
         }
     }

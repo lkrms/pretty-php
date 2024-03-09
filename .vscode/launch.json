@@ -29,7 +29,7 @@
             ],
             "args": [
                 "--debug",
-                "--verbose",
+                "--log-progress",
                 "--no-config",
                 "--output",
                 "-",
@@ -67,7 +67,7 @@
             ],
             "args": [
                 "--debug",
-                "--verbose",
+                "--log-progress",
                 "--no-config",
                 // This is expanded without quoting
                 "${input:prettyPhpArgs} \"${file}\""
@@ -104,7 +104,7 @@
             ],
             "args": [
                 "--debug",
-                "--verbose",
+                "--log-progress",
                 "--no-config",
                 // This is expanded without quoting
                 "${input:prettyPhpArgs} \"${file}\""

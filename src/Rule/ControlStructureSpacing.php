@@ -44,18 +44,18 @@ final class ControlStructureSpacing implements MultiTokenRule
         foreach ($tokens as $token) {
             // Ignore the second half of `elseif` expressed as `else if`
             if ($token->id === \T_IF &&
-                    $token->_prevCode &&
-                    $token->_prevCode->id === \T_ELSE) {
+                    $token->PrevCode &&
+                    $token->PrevCode->id === \T_ELSE) {
                 continue;
             }
 
             if ($token->id === \T_ELSE &&
-                    $token->_nextCode->id === \T_IF) {
-                $body = $token->_nextSibling->_nextSibling->_nextSibling;
+                    $token->NextCode->id === \T_IF) {
+                $body = $token->NextSibling->NextSibling->NextSibling;
             } elseif ($this->TypeIndex->HasStatementWithOptionalBraces[$token->id]) {
-                $body = $token->_nextSibling;
+                $body = $token->NextSibling;
             } else {
-                $body = $token->_nextSibling->_nextSibling;
+                $body = $token->NextSibling->NextSibling;
             }
 
             // Ignore enclosed and empty bodies
@@ -70,19 +70,19 @@ final class ControlStructureSpacing implements MultiTokenRule
 
             // Add a newline before the token unless it continues a control
             // structure where the previous body had enclosing braces
-            if (!$token->_prevCode ||
-                    $token->_prevCode->id !== \T_CLOSE_BRACE ||
+            if (!$token->PrevCode ||
+                    $token->PrevCode->id !== \T_CLOSE_BRACE ||
                     !$token->continuesControlStructure()) {
                 $token->WhitespaceBefore |= WhitespaceType::LINE;
                 $token->WhitespaceMaskPrev |= WhitespaceType::LINE;
-                $token->_prev->WhitespaceMaskNext |= WhitespaceType::LINE;
+                $token->Prev->WhitespaceMaskNext |= WhitespaceType::LINE;
             }
 
             // Add newlines and suppress blank lines before unenclosed bodies
             $body->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
             $body->WhitespaceMaskPrev |= WhitespaceType::LINE;
             $body->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
-            $body->_prev->WhitespaceMaskNext |= WhitespaceType::LINE;
+            $body->Prev->WhitespaceMaskNext |= WhitespaceType::LINE;
 
             // Find the last token in the body
             $end = null;
@@ -94,7 +94,7 @@ final class ControlStructureSpacing implements MultiTokenRule
                 if ($end->id === \T_IF) {
                     $end = $body->EndStatement;
                 } elseif (!$end->IsNull) {
-                    $end = $end->_prevCode;
+                    $end = $end->PrevCode;
                     $continues = true;
                 }
             }
