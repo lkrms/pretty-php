@@ -79,7 +79,7 @@ final class Drupal implements Preset, TokenRule
             \T_INTERFACE,
             \T_TRAIT,
         ])) {
-            $parts = $token->Expression->declarationParts(false);
+            $parts = $token->Expression->declarationParts(true, false);
             if (!$parts->hasOneOf(...TokenType::DECLARATION)) {
                 return;
             }

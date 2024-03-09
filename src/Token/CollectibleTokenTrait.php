@@ -15,7 +15,7 @@ trait CollectibleTokenTrait
     final public function namedDeclarationParts(
         bool $skipToDeclaration = true
     ): TokenCollection {
-        return $this->declarationParts(false, $skipToDeclaration);
+        return $this->declarationParts($skipToDeclaration, false);
     }
 
     /**
@@ -23,8 +23,8 @@ trait CollectibleTokenTrait
      * then get the token and any subsequent declaration tokens
      */
     final public function declarationParts(
-        bool $allowAnonymous = true,
-        bool $skipToDeclaration = true
+        bool $skipToDeclaration = true,
+        bool $allowAnonymous = true
     ): TokenCollection {
         /** @var Token $this */
         $index =
