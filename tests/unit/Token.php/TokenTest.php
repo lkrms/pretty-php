@@ -7,6 +7,9 @@ use Lkrms\PrettyPHP\Formatter;
 
 final class TokenTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
+    /**
+     * @requires PHP >= 8.1
+     */
     public function testColonSubTypes(): void
     {
         $code = <<<'PHP'
