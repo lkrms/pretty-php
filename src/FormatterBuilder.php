@@ -13,7 +13,7 @@ use Salient\Core\AbstractBuilder;
  * A fluent Formatter factory
  *
  * @method $this insertSpaces(bool $value = true) Use spaces for indentation? (default: true)
- * @method $this tabSize(int $value) The size of a tab, in spaces (see {@see Formatter::$TabSize})
+ * @method $this tabSize(int $value) The size of a tab, in spaces
  * @method $this disable(array<class-string<Extension>> $value) Non-mandatory extensions to disable
  * @method $this enable(array<class-string<Extension>> $value) Optional extensions to enable
  * @method $this flags(int-mask-of<FormatterFlag::*> $value) Debugging flags
@@ -26,8 +26,8 @@ use Salient\Core\AbstractBuilder;
  * @method $this oneTrueBraceStyle(bool $value = true) True if braces are formatted using the One True Brace Style (default: false)
  * @method $this psr12(bool $value = true) Enforce strict PSR-12 / PER Coding Style compliance? (default: false)
  * @method Formatter with(string $property, mixed $value) Get an instance with a value applied to a given property
- * @method Formatter withoutExtensions(array<class-string<Extension>> $extensions = []) Call Formatter::withoutExtensions() on a new instance
- * @method Formatter withExtensions(array<class-string<Extension>> $enable, array<class-string<Extension>> $disable = [], bool $preserveCurrent = true) Call Formatter::withExtensions() on a new instance
+ * @method Formatter withoutExtensions(array<class-string<Extension>> $extensions = []) Get an instance with the given extensions disabled
+ * @method Formatter withExtensions(array<class-string<Extension>> $enable, array<class-string<Extension>> $disable = [], bool $preserveCurrent = true) Get an instance with the given extensions enabled
  * @method string format(string $code, string|null $eol = null, string|null $filename = null, bool $fast = false) Get formatted code (see {@see Formatter::format()})
  *
  * @extends AbstractBuilder<Formatter>
