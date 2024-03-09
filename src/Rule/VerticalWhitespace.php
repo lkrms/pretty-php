@@ -159,9 +159,12 @@ final class VerticalWhitespace implements MultiTokenRule
 
         $this->CommaIndex = TokenType::getIndex(\T_COMMA);
         $this->SemicolonIndex = TokenType::getIndex(\T_SEMICOLON);
-        $this->OpenBracketOrNotIndex = TokenType::mergeIndexes(
-            $this->TypeIndex->StandardOpenBracket,
-            TokenType::getIndex(\T_LOGICAL_NOT, \T_NOT),
+        $this->OpenBracketOrNotIndex = TokenType::getIndex(
+            \T_OPEN_BRACE,
+            \T_OPEN_BRACKET,
+            \T_OPEN_PARENTHESIS,
+            \T_LOGICAL_NOT,
+            \T_NOT,
         );
         $this->BooleanHasLineBreakClosure = $hasLineBreak;
         $this->ApplyBooleanLineBreakClosure = $applyLineBreak;

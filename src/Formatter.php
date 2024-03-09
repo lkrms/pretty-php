@@ -927,29 +927,16 @@ final class Formatter implements Buildable
                     continue 2;
 
                 case \T_OPEN_BRACKET:
-                    if ($parent->Expression === $parent) {
+                    if ($parent->isArrayOpenBracket()) {
                         break;
                     }
-                    $prev = $parent->PrevCode;
-                    if ($prev && (
-                        $prev->is([
-                            \T_CLOSE_BRACE,
-                            \T_STRING_VARNAME,
-                            \T_VARIABLE,
-                            ...TokenType::DEREFERENCEABLE_SCALAR_END,
-                            ...TokenType::NAME,
-                            ...TokenType::MAGIC_CONSTANT,
-                        ]) || (
-                            $prev->PrevCode &&
-                            $prev->PrevCode->id === \T_DOUBLE_COLON &&
-                            $prev->is(TokenType::SEMI_RESERVED)
-                        )
-                        // This check should never be necessary
-                    ) && !$parent->children()->hasOneOf(\T_COMMA)) {
-                        continue 2;
+
+                    if ($parent->children()->hasOneOf(\T_COMMA)) {
+                        // This line should never be reached
+                        break;
                     }
 
-                    break;
+                    continue 2;
             }
             $delimiter = $parent->PrevCode && $parent->PrevCode->id === \T_FOR
                 ? \T_SEMICOLON

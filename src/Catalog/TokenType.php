@@ -456,6 +456,22 @@ final class TokenType extends AbstractDictionary
         \T_YIELD,
     ];
 
+    public const DEREFERENCEABLE_END = [
+        \T_CLOSE_BRACE,
+        \T_STRING_VARNAME,
+        \T_VARIABLE,
+        ...self::DEREFERENCEABLE_SCALAR_END,
+        ...self::NAME,
+        ...self::MAGIC_CONSTANT,
+    ];
+
+    public const DEREFERENCEABLE_SCALAR_END = [
+        \T_CLOSE_BRACKET,
+        \T_CLOSE_PARENTHESIS,
+        \T_CONSTANT_ENCAPSED_STRING,
+        \T_DOUBLE_QUOTE,
+    ];
+
     public const MAGIC_CONSTANT = [
         \T_CLASS_C,
         \T_DIR,
@@ -483,13 +499,6 @@ final class TokenType extends AbstractDictionary
         \T_PRIVATE,
         \T_PROTECTED,
         \T_PUBLIC,
-    ];
-
-    public const DEREFERENCEABLE_SCALAR_END = [
-        \T_CLOSE_BRACKET,      // At the end of an array
-        \T_CLOSE_PARENTHESIS,  // At the end of an array
-        \T_CONSTANT_ENCAPSED_STRING,
-        \T_DOUBLE_QUOTE,
     ];
 
     public const MAYBE_ANONYMOUS = [

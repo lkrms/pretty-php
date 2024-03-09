@@ -6,7 +6,6 @@ use Lkrms\PrettyPHP\Catalog\CommentType;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
-use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Support\TokenIndentDelta;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
@@ -286,11 +285,6 @@ class Token extends GenericToken implements JsonSerializable
         return $a;
     }
 
-    final public function canonical(): Token
-    {
-        return $this->OpenedBy ?: $this;
-    }
-
     final public function canonicalClose(): Token
     {
         return $this->ClosedBy ?: $this;
@@ -336,31 +330,6 @@ class Token extends GenericToken implements JsonSerializable
 
         return ($this->line + $newlines) < $next->line ||
             $code[-1] === "\n";
-    }
-
-    /**
-     * True if the token is a reserved PHP word
-     *
-     * Aside from `enum`, "soft reserved words" are not considered PHP keywords,
-     * so `false` is returned for `resource` and `numeric`.
-     */
-    public function isKeyword(): bool
-    {
-        return $this->is(TokenType::KEYWORD) ||
-            ($this->id === \T_STRING && in_array($this->text, [
-                'bool',
-                'false',
-                'float',
-                'int',
-                'iterable',
-                'mixed',
-                'never',
-                'null',
-                'object',
-                'string',
-                'true',
-                'void',
-            ]));
     }
 
     private function byOffset(string $name, int $offset): Token
@@ -531,26 +500,6 @@ class Token extends GenericToken implements JsonSerializable
         return $offset;
     }
 
-    public function startOfExpression(): Token
-    {
-        return $this->Expression ?: $this;
-    }
-
-    public function startOfStatement(): Token
-    {
-        return $this->Statement ?: $this;
-    }
-
-    public function endOfStatement(): Token
-    {
-        return $this->EndStatement ?: $this;
-    }
-
-    public function isStartOfExpression(): bool
-    {
-        return $this->Expression === $this;
-    }
-
     final public function continuesControlStructure(): bool
     {
         return $this->is([\T_CATCH, \T_FINALLY, \T_ELSEIF, \T_ELSE]) ||
@@ -623,13 +572,13 @@ class Token extends GenericToken implements JsonSerializable
             // Honour imaginary braces around control structures with unenclosed
             // bodies if needed
             if ($containUnenclosed) {
-                if ($current->is(TokenType::HAS_STATEMENT_WITH_OPTIONAL_BRACES) &&
-                        ($body = $current->nextSibling())->id !== \T_OPEN_BRACE &&
+                if ($this->TypeIndex->HasStatementWithOptionalBraces[$current->id] &&
+                        ($body = $current->NextSibling)->id !== \T_OPEN_BRACE &&
                         $current->EndExpression->withTerminator()->Index >= $this->Index) {
                     return $body->_pragmaticStartOfExpression($this);
                 }
-                if ($current->is(TokenType::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES) &&
-                        ($body = $current->nextSibling(2))->id !== \T_OPEN_BRACE &&
+                if ($this->TypeIndex->HasExpressionAndStatementWithOptionalBraces[$current->id] &&
+                        ($body = $current->NextSibling->NextSibling)->id !== \T_OPEN_BRACE &&
                         $current->EndExpression->withTerminator()->Index >= $this->Index) {
                     return $body->_pragmaticStartOfExpression($this);
                 }
@@ -924,15 +873,6 @@ class Token extends GenericToken implements JsonSerializable
             : $next;
     }
 
-    public function withAdjacentBeforeNewline(?Token $from = null, bool $requireAlignedWith = true): TokenCollection
-    {
-        if ($adjacent = $this->adjacentBeforeNewline($requireAlignedWith)) {
-            $until = $adjacent->EndStatement;
-        }
-
-        return ($from ?: $this)->collect($until ?? $this);
-    }
-
     /**
      * Get the token's last sibling before the end of the line
      *
@@ -1092,60 +1032,36 @@ class Token extends GenericToken implements JsonSerializable
         return false;
     }
 
-    public function prevStatementStart(): Token
+    final public function isArrayOpenBracket(): bool
     {
-        $prev = $this->startOfStatement()->prevSibling();
-        while ($prev->id === \T_SEMICOLON) {
-            $prev = $prev->prevSibling();
+        if ($this->id === \T_OPEN_PARENTHESIS) {
+            return
+                $this->PrevCode &&
+                $this->PrevCode->id === \T_ARRAY;
         }
 
-        return $prev->startOfStatement();
+        return
+            $this->id === \T_OPEN_BRACKET && (
+                $this->Expression === $this ||
+                !$this->PrevCode ||
+                !$this->PrevCode->isDereferenceableTerminator()
+            );
     }
 
-    /**
-     * True if the next code token starts a new expression
-     */
-    final public function precedesExpression(): bool
+    final public function isDereferenceableTerminator(): bool
     {
-        return $this->NextCode && $this->NextCode->Expression === $this->NextCode;
-    }
-
-    /**
-     * True if the next code token starts a new statement
-     */
-    final public function precedesStatement(): bool
-    {
-        return $this->NextCode && $this->NextCode->Statement === $this->NextCode;
-    }
-
-    public function isArrayOpenBracket(): bool
-    {
-        return $this->id === \T_OPEN_BRACKET ||
-            ($this->id === \T_OPEN_PARENTHESIS && $this->prevCode()->id === \T_ARRAY);
-    }
-
-    public function isDestructuringConstruct(): bool
-    {
-        $current = $this->OpenedBy ?: $this;
-        return $current->id === \T_LIST ||
-            $current->prevCode()->id === \T_LIST ||
-            ($current->id === \T_OPEN_BRACKET &&
-                (($adjacent = $current->adjacent(\T_COMMA, \T_CLOSE_BRACKET)) &&
-                    $adjacent->id === \T_EQUAL) ||
-                (($root = $current->withParentsWhile(false, \T_OPEN_BRACKET)->last()) &&
-                    $root->prevCode()->id === \T_AS &&
-                    $root->parent()->prevCode()->id === \T_FOREACH));
-    }
-
-    final public function isBrace(): bool
-    {
-        return $this->id === \T_OPEN_BRACE || ($this->id === \T_CLOSE_BRACE && $this->OpenedBy->id === \T_OPEN_BRACE);
+        return
+            $this->TypeIndex->DereferenceableTerminator[$this->id] || (
+                $this->PrevCode &&
+                $this->PrevCode->id === \T_DOUBLE_COLON &&
+                $this->TypeIndex->MaybeReserved[$this->id]
+            );
     }
 
     public function isOneLineComment(): bool
     {
-        return $this->CommentType &&
-            !(($this->CommentType[1] ?? null) === '*');
+        return $this->CommentType !== null &&
+            ($this->CommentType[1] ?? null) !== '*';
     }
 
     public function isMultiLineComment(): bool
@@ -1156,11 +1072,6 @@ class Token extends GenericToken implements JsonSerializable
     public function isOperator(): bool
     {
         return $this->is(TokenType::OPERATOR_ALL);
-    }
-
-    public function isBinaryOrTernaryOperator(): bool
-    {
-        return $this->isOperator() && !$this->isUnaryOperator();
     }
 
     public function isUnaryOperator(): bool

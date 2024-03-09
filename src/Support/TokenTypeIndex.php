@@ -28,15 +28,6 @@ class TokenTypeIndex implements Immutable
     public array $Bracket;
 
     /**
-     * T_OPEN_BRACE, T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_CLOSE_BRACE,
-     * T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $StandardBracket;
-
-    /**
      * T_OPEN_BRACE, T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_ATTRIBUTE,
      * T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES
      *
@@ -52,14 +43,6 @@ class TokenTypeIndex implements Immutable
      * @var array<int,bool>
      */
     public array $CloseBracket;
-
-    /**
-     * T_OPEN_BRACE, T_OPEN_BRACKET, T_OPEN_PARENTHESIS
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $StandardOpenBracket;
 
     /**
      * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_END_ALT_SYNTAX
@@ -254,6 +237,12 @@ class TokenTypeIndex implements Immutable
     public array $ExpressionDelimiter;
 
     /**
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $DereferenceableTerminator;
+
+    /**
      * T_CASE, T_DEFAULT, T_COLON, T_SEMICOLON, T_CLOSE_TAG
      *
      * @readonly
@@ -437,15 +426,6 @@ class TokenTypeIndex implements Immutable
             \T_DOLLAR_OPEN_CURLY_BRACES,
         );
 
-        $this->StandardBracket = TT::getIndex(
-            \T_OPEN_BRACE,
-            \T_OPEN_BRACKET,
-            \T_OPEN_PARENTHESIS,
-            \T_CLOSE_BRACE,
-            \T_CLOSE_BRACKET,
-            \T_CLOSE_PARENTHESIS,
-        );
-
         $this->OpenBracket = TT::getIndex(
             \T_OPEN_BRACE,
             \T_OPEN_BRACKET,
@@ -459,12 +439,6 @@ class TokenTypeIndex implements Immutable
             \T_CLOSE_BRACE,
             \T_CLOSE_BRACKET,
             \T_CLOSE_PARENTHESIS,
-        );
-
-        $this->StandardOpenBracket = TT::getIndex(
-            \T_OPEN_BRACE,
-            \T_OPEN_BRACKET,
-            \T_OPEN_PARENTHESIS,
         );
 
         $this->CloseBracketOrEndAltSyntax = TT::getIndex(
@@ -698,6 +672,10 @@ class TokenTypeIndex implements Immutable
 
         $this->ExpressionDelimiter = TT::getIndex(
             ...$expressionDelimiter,
+        );
+
+        $this->DereferenceableTerminator = TT::getIndex(
+            ...TT::DEREFERENCEABLE_END,
         );
 
         $this->SwitchCaseOrDelimiter = TT::getIndex(

@@ -84,9 +84,10 @@ final class DeclarationSpacing implements MultiTokenRule
             // After rewinding to the first attribute (if any), ignore tokens
             // other than the first in each declaration
             while ($token->Statement !== $token) {
-                if (!$token->PrevSibling ||
-                    !($token->PrevSibling->id === \T_ATTRIBUTE ||
-                        $token->PrevSibling->id === \T_ATTRIBUTE_COMMENT)) {
+                if (!$token->PrevSibling || !(
+                    $token->PrevSibling->id === \T_ATTRIBUTE ||
+                    $token->PrevSibling->id === \T_ATTRIBUTE_COMMENT
+                )) {
                     continue 2;
                 }
                 $token = $token->PrevSibling;
@@ -94,12 +95,16 @@ final class DeclarationSpacing implements MultiTokenRule
 
             // Ignore `static` outside of declarations, `namespace` in the
             // context of relative names, and promoted constructor parameters
-            if (($token->id === \T_STATIC &&
-                    !$token->NextCode->is([\T_VARIABLE, ...TokenType::DECLARATION])) ||
-                ($token->id === \T_NAMESPACE &&
-                    $token->NextCode->id === \T_NS_SEPARATOR) ||
-                ($token->is(TokenType::VISIBILITY) &&
-                    $token->inParameterList())) {
+            if ((
+                $token->id === \T_STATIC &&
+                !$token->NextCode->is([\T_VARIABLE, ...TokenType::DECLARATION])
+            ) || (
+                $token->id === \T_NAMESPACE &&
+                $token->NextCode->id === \T_NS_SEPARATOR
+            ) || (
+                $token->is(TokenType::VISIBILITY) &&
+                $token->inParameterList()
+            )) {
                 continue;
             }
 
@@ -155,13 +160,20 @@ final class DeclarationSpacing implements MultiTokenRule
             // - `$this->PrevCondenseOneLine` is `true` when blank lines before
             //   declarations of the current `$types` are being suppressed
             //   unless they have inner newlines
-            $prev = end($this->Prev);
-            $prevSibling = $token->prevCode()->startOfStatement();
-            if ($types !== $this->PrevTypes || $prevSibling !== $prev) {
+            $prev = $this->Prev
+                ? end($this->Prev)
+                : null;
+            $prevSibling = $token->PrevCode
+                ? $token->PrevCode->Statement
+                : null;
+
+            if ($types !== $this->PrevTypes || !$prev || $prevSibling !== $prev) {
                 $this->Prev = [];
-                if (!$prevSibling->IsNull &&
-                        $prevSibling !== $prev &&
-                        $this->uniqueDeclarationTypes($prevSibling) === $types) {
+                if (
+                    $prevSibling &&
+                    $prevSibling !== $prev &&
+                    $this->uniqueDeclarationTypes($prevSibling) === $types
+                ) {
                     $this->Prev[] = $prevSibling;
                 }
 

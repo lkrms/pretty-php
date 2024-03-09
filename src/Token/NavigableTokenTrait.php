@@ -876,48 +876,6 @@ trait NavigableTokenTrait
     }
 
     /**
-     * True if the token is '(', ')', '[', ']', '{', '}', T_ATTRIBUTE,
-     * T_CURLY_OPEN or T_DOLLAR_OPEN_CURLY_BRACES
-     */
-    final public function isBracket(): bool
-    {
-        return $this->TypeIndex->Bracket[$this->id];
-    }
-
-    /**
-     * True if the token is '(', ')', '[', ']', '{' or '}'
-     */
-    final public function isStandardBracket(): bool
-    {
-        return $this->TypeIndex->StandardBracket[$this->id];
-    }
-
-    /**
-     * True if the token is '(', '[', '{', T_ATTRIBUTE, T_CURLY_OPEN or
-     * T_DOLLAR_OPEN_CURLY_BRACES
-     */
-    final public function isOpenBracket(): bool
-    {
-        return $this->TypeIndex->OpenBracket[$this->id];
-    }
-
-    /**
-     * True if the token is ')', ']' or '}'
-     */
-    final public function isCloseBracket(): bool
-    {
-        return $this->TypeIndex->CloseBracket[$this->id];
-    }
-
-    /**
-     * True if the token is '(', '[' or '{'
-     */
-    final public function isStandardOpenBracket(): bool
-    {
-        return $this->TypeIndex->StandardOpenBracket[$this->id];
-    }
-
-    /**
      * Update the content of the token, setting OriginalText if needed
      *
      * @return $this
@@ -1176,9 +1134,9 @@ trait NavigableTokenTrait
         $depth = 0;
         $t = $this;
         while ($t->Next) {
-            if ($t->isOpenBracket()) {
+            if ($this->TypeIndex->OpenBracket[$t->id]) {
                 $depth++;
-            } elseif ($t->isCloseBracket()) {
+            } elseif ($this->TypeIndex->CloseBracket[$t->id]) {
                 $depth--;
             }
             $t = $t->Next;
