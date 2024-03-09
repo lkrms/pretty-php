@@ -1,0 +1,8 @@
+<?php
+//excludes:MergeParenCloseWithCurlyOpen
+if (true) {
+    // something
+}
+else {
+    // something
+}

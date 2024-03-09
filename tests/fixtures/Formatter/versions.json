@@ -104,6 +104,7 @@
         "3rdparty/phpfmt/445-php81-basic-test",
         "3rdparty/phpfmt/450-php81-readonly-property",
         "3rdparty/phpfmt/456-strip-space-within-control-structures-removes-return",
+        "3rdparty/phpfmt/471-invalid-indentation",
         "issues/0099-enum-comment-indentation.php",
         "standalone/functions-anonymous-03.php",
         "standalone/native-types-03.php",

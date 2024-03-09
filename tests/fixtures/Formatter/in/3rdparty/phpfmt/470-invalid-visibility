@@ -1,0 +1,12 @@
+<?php
+//passes:PSR2ModifierVisibilityStaticOrder
+Route::get('endpoint1', EndpointController::class);
+Route::group(['a'=>'a'], function() {
+    Route::get('/', function() {
+        return response()->view('errors.404', ['section' => '404 Error', 'externo' => true], 404);
+    });
+});
+Route::get('endpoint1', EndpointController::class);
+Route::group(['a'=>'a'], function() {
+    Route::get(function (){});
+});

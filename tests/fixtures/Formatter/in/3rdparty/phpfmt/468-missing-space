@@ -1,0 +1,8 @@
+<?php
+//excludes:AddMissingCurlyBraces
+if (true) return;
+if (true) return; else return;
+foreach ($a as $b) $a++;
+for ($a = 0; $a < 10; $a++) $a++;
+if (true) return;elseif (false) return;
+if ((true) && (false)) return;else return;
