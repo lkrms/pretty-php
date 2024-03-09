@@ -6,6 +6,7 @@ use Lkrms\PrettyPHP\Catalog\CommentType;
 use Lkrms\PrettyPHP\Catalog\CustomToken;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Contract\Filter;
+use Lkrms\PrettyPHP\Exception\InvalidTokenException;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Formatter;
 use Salient\Core\Utility\Pcre;
@@ -1108,5 +1109,15 @@ trait NavigableTokenTrait
             }
         }
         return $this->null();
+    }
+
+    /**
+     * Throw an InvalidTokenException
+     *
+     * @return never
+     */
+    final protected function throw(): void
+    {
+        throw new InvalidTokenException($this);
     }
 }

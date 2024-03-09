@@ -437,6 +437,8 @@ final class Formatter implements Buildable
 
     // --
 
+    public ?string $Filename = null;
+
     /**
      * @var array<int,Token>|null
      */
@@ -824,6 +826,7 @@ final class Formatter implements Buildable
 
         Profile::startTimer(__METHOD__ . '#parse-input');
         try {
+            $this->Filename = $filename;
             $this->Tokens = Token::parse(
                 $code, \TOKEN_PARSE, $this, ...$this->FormatFilterList
             );
@@ -1410,6 +1413,7 @@ final class Formatter implements Buildable
      */
     private function reset(): void
     {
+        $this->Filename = null;
         $this->Tokens = null;
         $this->TokenIndex = null;
         $this->Callbacks = null;
