@@ -1,4 +1,22 @@
 {
+    "intelephense.files.exclude": [
+        "**/.git/**",
+        "**/.svn/**",
+        "**/.hg/**",
+        "**/CVS/**",
+        "**/.DS_Store/**",
+        "**/node_modules/**",
+        "**/bower_components/**",
+        "**/vendor/**/{Tests,tests}/**",
+        "**/.history/**",
+        "**/vendor/**/vendor/**",
+        "**/.ci/**",
+        "**/build/**",
+        "**/docs/**",
+        "**/tests/fixtures/**",
+        "**/tools/**/vendor/**",
+        "**/var/**"
+    ],
     "search.exclude": {
         "**/tests/fixtures/**": true
     },
