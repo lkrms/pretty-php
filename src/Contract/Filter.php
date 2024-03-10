@@ -7,12 +7,12 @@ use Lkrms\PrettyPHP\Token\GenericToken;
 interface Filter extends Extension
 {
     /**
-     * Apply the filter to an array of tokens
+     * Apply the filter to a list of tokens
      *
      * @template T of GenericToken
      *
-     * @param T[] $tokens
-     * @return T[]
+     * @param list<T> $tokens
+     * @return list<T>
      */
     public function filterTokens(array $tokens): array;
 }

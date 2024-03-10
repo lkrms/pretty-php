@@ -15,11 +15,16 @@ final class RemoveWhitespace implements Filter
 {
     use ExtensionTrait;
 
+    /**
+     * @inheritDoc
+     */
     public function filterTokens(array $tokens): array
     {
         foreach ($tokens as $token) {
-            if ($token->id === \T_WHITESPACE ||
-                    $token->id === \T_BAD_CHARACTER) {
+            if (
+                $token->id === \T_WHITESPACE ||
+                $token->id === \T_BAD_CHARACTER
+            ) {
                 continue;
             }
             $filtered[] = $token;

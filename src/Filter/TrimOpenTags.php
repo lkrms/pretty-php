@@ -14,6 +14,9 @@ final class TrimOpenTags implements Filter
 {
     use ExtensionTrait;
 
+    /**
+     * @inheritDoc
+     */
     public function filterTokens(array $tokens): array
     {
         foreach ($tokens as $token) {

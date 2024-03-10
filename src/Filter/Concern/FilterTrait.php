@@ -15,20 +15,6 @@ trait FilterTrait
     protected array $Tokens;
 
     /**
-     * Check if the given tokens are instances of the given class
-     *
-     * @template T of GenericToken
-     *
-     * @param GenericToken[] $tokens
-     * @param class-string<T> $class
-     * @phpstan-assert-if-true T[] $tokens
-     */
-    protected function isArrayOf(array $tokens, string $class): bool
-    {
-        return $tokens && reset($tokens) instanceof $class;
-    }
-
-    /**
      * Get the given token's previous code token
      */
     protected function prevCode(int $i): ?GenericToken

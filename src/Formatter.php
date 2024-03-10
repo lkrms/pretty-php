@@ -1326,9 +1326,23 @@ final class Formatter implements Buildable
     private function getExtensions(array $extensions): array
     {
         foreach ($extensions as $ext) {
-            $result[] = $this->Extensions[$ext] ??= new $ext($this);
+            $result[] = $this->Extensions[$ext] ??= $this->getExtension($ext);
         }
         return $result ?? [];
+    }
+
+    /**
+     * @template T of Extension
+     *
+     * @param class-string<T> $extension
+     * @return T
+     */
+    private function getExtension(string $extension): Extension
+    {
+        /** @var T&Extension */
+        $ext = new $extension($this);
+        $ext->boot();
+        return $ext;
     }
 
     private function resetExtensions(): void
