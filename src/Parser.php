@@ -6,18 +6,37 @@ use Lkrms\PrettyPHP\Catalog\CommentType;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Token\Token;
+use Salient\Core\Concern\HasImmutableProperties;
 use Salient\Core\Utility\Pcre;
 
 final class Parser
 {
+    use HasImmutableProperties;
+
+    private Formatter $Formatter;
+
+    public function __construct(Formatter $formatter)
+    {
+        $this->Formatter = $formatter;
+    }
+
     /**
-     * Tokenize and parse PHP code
+     * Get an instance with the given formatter
+     *
+     * @return static
+     */
+    public function withFormatter(Formatter $formatter): self
+    {
+        return $this->withPropertyValue('Formatter', $formatter);
+    }
+
+    /**
+     * Tokenize, filter and parse PHP code
      *
      * @return Token[]
      */
     public function parse(
         string $code,
-        Formatter $formatter,
         Filter ...$filters
     ): array {
         $tokens = Token::tokenize($code, \TOKEN_PARSE, ...$filters);
@@ -26,26 +45,42 @@ final class Parser
             return $tokens;
         }
 
-        // Pass 1:
-        //
-        // - link adjacent tokens (set `Prev` and `Next`)
-        // - assign formatter and token type index
-        // - set `OpenTag`, `CloseTag`
+        $tokens = $this->linkTokens($tokens)
+                       ->buildHierarchy($tokens);
+        return $this->parseStatements($tokens)
+                    ->parseExpressions($tokens);
+    }
 
-        $idx = $formatter->TokenTypeIndex;
-
+    /**
+     * Pass 1: link adjacent tokens
+     *
+     * Token properties set:
+     *
+     * - `Prev`
+     * - `Next`
+     * - `OpenTag`
+     * - `CloseTag`
+     * - `Formatter`
+     * - `TypeIndex`
+     *
+     * @param Token[] $tokens
+     * @return $this
+     */
+    private function linkTokens(array $tokens)
+    {
         /** @var Token|null */
         $prev = null;
+
         foreach ($tokens as $token) {
+            $token->Formatter = $this->Formatter;
+            $token->TypeIndex = $this->Formatter->TokenTypeIndex;
+
             if ($prev) {
                 $token->Prev = $prev;
                 $prev->Next = $token;
             }
 
-            $token->Formatter = $formatter;
-            $token->TypeIndex = $formatter->TokenTypeIndex;
-
-            /**
+            /*
              * ```php
              * <!-- markup -->  // OpenTag = null,   CloseTag = null
              * <?php            // OpenTag = itself, CloseTag = Token
@@ -80,18 +115,42 @@ final class Parser
             $prev = $token;
         }
 
-        // Pass 2:
-        //
-        // - on PHP < 8.0, convert comments that appear to be PHP >= 8.0
-        //   attributes to `T_ATTRIBUTE_COMMENT`
-        // - trim the text of each token
-        // - add virtual close brackets after alternative syntax blocks
-        // - pair open brackets and tags with their counterparts
-        // - link siblings, parents and children (set `Parent`, `Depth`,
-        //   `PrevCode`, `NextCode`, `PrevSibling`, `NextSibling`)
-        // - set `Index`, `IsCode`, `CommentType`, `IsInformalDocComment`,
-        //   `IsStatementTerminator`, `OpenedBy`, `ClosedBy`, `String`,
-        //   `Heredoc`, `StringClosedBy`
+        return $this;
+    }
+
+    /**
+     * Pass 2: link brackets, siblings and parents
+     *
+     * - on PHP < 8.0, convert comments that appear to be PHP >= 8.0 attributes
+     *   to `T_ATTRIBUTE_COMMENT`
+     * - trim the text of each token
+     * - add virtual close brackets after alternative syntax blocks
+     * - pair open brackets and tags with their counterparts
+     *
+     * Token properties set:
+     * - `Index`
+     * - `PrevCode`
+     * - `NextCode`
+     * - `PrevSibling`
+     * - `NextSibling`
+     * - `OpenedBy`
+     * - `ClosedBy`
+     * - `Parent`
+     * - `Depth`
+     * - `String`
+     * - `StringClosedBy`
+     * - `Heredoc`
+     * - `IsCode`
+     * - `CommentType`
+     * - `IsInformalDocComment`
+     * - `IsStatementTerminator`
+     *
+     * @param Token[] $tokens
+     * @return Token[]
+     */
+    private function buildHierarchy(array $tokens): array
+    {
+        $idx = $this->Formatter->TokenTypeIndex;
 
         /** @var Token[] */
         $linked = [];
@@ -172,7 +231,7 @@ final class Parser
                     $virtual->IsVirtual = true;
                     $virtual->Prev = $prev;
                     $virtual->Next = $token;
-                    $virtual->Formatter = $formatter;
+                    $virtual->Formatter = $this->Formatter;
                     $virtual->TypeIndex = $idx;
                     $virtual->OpenTag = $token->OpenTag;
                     $virtual->CloseTag = &$virtual->OpenTag->CloseTag;
@@ -342,10 +401,21 @@ final class Parser
             $prev = $token;
         }
 
-        // Pass 3: resolve statements
+        return $linked;
+    }
+
+    /**
+     * Pass 3: resolve statements
+     *
+     * @param Token[] $tokens
+     * @return $this
+     */
+    private function parseStatements(array $tokens)
+    {
+        $idx = $this->Formatter->TokenTypeIndex;
 
         $endStatementOffset = 0;
-        $token = reset($linked);
+        $token = reset($tokens);
         while (true) {
             // If `$token` or its predecessor is a statement terminator, set the
             // `Statement` and `EndStatement` of siblings between the end of the
@@ -378,8 +448,9 @@ final class Parser
             }
 
             $token = $token->NextCode;
+
             if (!$token) {
-                break;
+                return $this;
             }
 
             // The following tokens are regarded as statement terminators:
@@ -435,16 +506,27 @@ final class Parser
                 continue;
             }
         }
+    }
 
-        // Pass 4:
-        //
-        // - resolve expressions
-        // - identify ternary operators and set `IsTernaryOperator`,
-        //   `TernaryOperator1`, `TernaryOperator2`
-        // - identify method chains and set `ChainOpenedBy`
+    /**
+     * Pass 4: resolve expressions
+     *
+     * Token properties set:
+     *
+     * - `IsTernaryOperator`
+     * - `TernaryOperator1`
+     * - `TernaryOperator2`
+     * - `ChainOpenedBy`
+     *
+     * @param Token[] $tokens
+     * @return Token[]
+     */
+    private function parseExpressions(array $tokens): array
+    {
+        $idx = $this->Formatter->TokenTypeIndex;
 
         $endExpressionOffsets = [];
-        $token = reset($linked);
+        $token = reset($tokens);
         while (true) {
             if ($endExpressionOffsets) {
                 foreach ($endExpressionOffsets as $endExpressionOffset) {
@@ -491,8 +573,9 @@ final class Parser
             }
 
             $token = $token->NextCode;
+
             if (!$token) {
-                break;
+                return $tokens;
             }
 
             if (
@@ -571,7 +654,5 @@ final class Parser
                 $endExpressionOffsets = [1];
             }
         }
-
-        return $linked;
     }
 }

@@ -539,7 +539,7 @@ final class Formatter implements Buildable
         $this->ReportCodeProblems = (bool) ($flags & FormatterFlag::REPORT_CODE_PROBLEMS);
         $this->CollectCodeProblems = $this->ReportCodeProblems || ($flags & FormatterFlag::COLLECT_CODE_PROBLEMS);
 
-        $this->Parser = new Parser();
+        $this->Parser = new Parser($this);
 
         $this->resolveExtensions($rules, $filters, $enable, $disable);
         $this->PreferredRules = $rules;
@@ -846,7 +846,8 @@ final class Formatter implements Buildable
         try {
             $this->Filename = $filename;
             $this->Tokens = $this->Parser->parse(
-                $code, $this, ...$this->FormatFilterList
+                $code,
+                ...$this->FormatFilterList
             );
 
             if (!$this->Tokens) {
@@ -1387,6 +1388,7 @@ final class Formatter implements Buildable
     private function __clone()
     {
         $this->flush();
+        $this->Parser = $this->Parser->withFormatter($this);
     }
 
     /**
