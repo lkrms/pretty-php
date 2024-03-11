@@ -1491,20 +1491,17 @@ EOF,
         $disable = array_values(array_intersect_key(self::DISABLE_MAP, array_flip($disable)));
         $enable = array_values(array_intersect_key(self::ENABLE_MAP, array_flip($this->Enable)));
 
-        if ($this->OperatorsFirst) {
-            $tokenTypeIndex = (new TokenTypeIndex())->withLeadingOperators();
-        } elseif ($this->OperatorsLast) {
-            $tokenTypeIndex = (new TokenTypeIndex())->withTrailingOperators();
-        } else {
-            $tokenTypeIndex = new TokenTypeIndex();
-        }
-
         $f = (new FormatterBuilder())
                  ->insertSpaces(!$this->Tabs)
                  ->tabSize($this->Tabs ?: $this->Spaces ?: 4)
                  ->disable($disable)
                  ->enable($enable)
                  ->flags($flags)
+                 ->tokenTypeIndex($this->OperatorsFirst
+                     ? (new TokenTypeIndex())->withLeadingOperators()
+                     : ($this->OperatorsLast
+                         ? (new TokenTypeIndex())->withTrailingOperators()
+                         : null))
                  ->preferredEol(self::EOL_MAP[$this->Eol])
                  ->preserveEol($this->Eol === 'auto')
                  ->heredocIndent(self::HEREDOC_INDENT_MAP[$this->HeredocIndent])
