@@ -161,21 +161,26 @@ and nothing in the original file other than whitespace is changed"), but
 exceptions are occasionally made and documented here.
 
 - **Newlines are preserved** \
-  Line breaks adjacent to most operators, separators and brackets are copied from
-  the input to the output. _Use **`-N/--ignore-newlines`** to disable this behaviour._
+  Line breaks adjacent to most operators, delimiters and brackets are copied from
+  the input to the output.
+
+  Use `-N/--ignore-newlines` to disable this behaviour.
 
 - **Strings and numbers are normalised** \
   Single-quoted strings are preferred unless the alternative is shorter or backslash
-  escapes are required. _Use **`-S/--no-simplify-strings`** and **`-n/--no-simplify-numbers`**
-  to disable or modify this behaviour._
+  escapes are required.
+
+  Use `-S/--no-simplify-strings` and `-n/--no-simplify-numbers` to disable or
+  modify this behaviour.
 
 - **Alias/import statements are grouped and sorted alphabetically** \
-  _Use **`-M/--no-sort-imports`** or **`-m/--sort-imports-by`** to disable or modify
-  this behaviour._
+  Use `-M/--no-sort-imports` or `-m/--sort-imports-by` to disable or modify this
+  behaviour.
 
-- **Comments are placed after adjacent delimiters** \
+- **Comments are moved if necessary for correct placement of adjacent tokens** \
   Relocated DocBlocks are converted to standard C-style comments as a precaution.
-  _Use **`--disable=move-comments`** to disable this behaviour._
+
+  Use `--disable=move-comments` to disable this behaviour.
 
 - **Comments beside code are not moved to the next line**
 
