@@ -9,8 +9,8 @@ use Lkrms\PrettyPHP\Token\GenericToken;
 use Closure;
 
 /**
- * Move comments with one or more subsequent delimiters to the position after
- * the last delimiter
+ * Move comments if necessary for correct placement of adjacent delimiters and
+ * operators
  *
  * @api
  */
