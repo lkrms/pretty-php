@@ -152,8 +152,8 @@ final class MoveComments implements Filter
 
                 if ($firstIdx[$token->id]) {
                     if (
-                        $token->id === \T_DOC_COMMENT &&
-                        !$this->checkDocComment($i, $tokens, $count)
+                        $token->id === \T_DOC_COMMENT
+                        && !$this->checkDocComment($i, $tokens, $count)
                     ) {
                         break;
                     }
@@ -163,8 +163,8 @@ final class MoveComments implements Filter
 
                 if ($lastIdx[$token->id]) {
                     if (
-                        $token->id === \T_DOC_COMMENT &&
-                        !$this->checkDocComment($i, $tokens, $count)
+                        $token->id === \T_DOC_COMMENT
+                        && !$this->checkDocComment($i, $tokens, $count)
                     ) {
                         break;
                     }
@@ -192,8 +192,8 @@ final class MoveComments implements Filter
             $firstTokens = array_slice($firstTokens, 0, $length - count($lastTokens), true);
 
             if (
-                ($firstCallback && $firstCallback($firstTokens) === false) ||
-                ($lastCallback && $lastCallback($lastTokens) === false)
+                ($firstCallback && $firstCallback($firstTokens) === false)
+                || ($lastCallback && $lastCallback($lastTokens) === false)
             ) {
                 continue;
             }

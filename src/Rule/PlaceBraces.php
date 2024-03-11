@@ -65,8 +65,8 @@ final class PlaceBraces implements MultiTokenRule
     {
         foreach ($tokens as $token) {
             $isMatch = $token->isMatchBrace();
-            if (!$isMatch &&
-                    !$token->isStructuralBrace(false)) {
+            if (!$isMatch
+                    && !$token->isStructuralBrace(false)) {
                 continue;
             }
 
@@ -81,9 +81,9 @@ final class PlaceBraces implements MultiTokenRule
                     continue;
                 }
                 $nextCode = $token->NextCode;
-                if ($nextCode &&
-                    (($nextCode->OpenedBy && $nextCode->id !== \T_CLOSE_BRACE) ||
-                        $nextCode === $token->EndStatement)) {
+                if ($nextCode
+                    && (($nextCode->OpenedBy && $nextCode->id !== \T_CLOSE_BRACE)
+                        || $nextCode === $token->EndStatement)) {
                     continue;
                 }
 
@@ -105,8 +105,8 @@ final class PlaceBraces implements MultiTokenRule
             $parts = $token->Expression->declarationParts();
 
             // Move empty bodies to the end of the previous line
-            if ($next->id === \T_CLOSE_BRACE &&
-                    $parts->hasOneOf(\T_CLASS, \T_ENUM, \T_FUNCTION, \T_INTERFACE, \T_TRAIT)) {
+            if ($next->id === \T_CLOSE_BRACE
+                    && $parts->hasOneOf(\T_CLASS, \T_ENUM, \T_FUNCTION, \T_INTERFACE, \T_TRAIT)) {
                 $token->WhitespaceBefore |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskPrev = WhitespaceType::SPACE;
                 $token->WhitespaceMaskNext = WhitespaceType::NONE;

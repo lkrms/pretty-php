@@ -54,9 +54,9 @@ final class NormaliseStrings implements MultiTokenRule
         foreach ($tokens as $token) {
             // Ignore nowdocs
             if (
-                $token->id !== \T_CONSTANT_ENCAPSED_STRING &&
-                $token->String->id === \T_START_HEREDOC &&
-                substr($token->String->text, 0, 4) === "<<<'"
+                $token->id !== \T_CONSTANT_ENCAPSED_STRING
+                && $token->String->id === \T_START_HEREDOC
+                && substr($token->String->text, 0, 4) === "<<<'"
             ) {
                 continue;
             }
@@ -74,8 +74,8 @@ final class NormaliseStrings implements MultiTokenRule
             // Don't escape line breaks unless they are already escaped
             if (
                 !$token->hasNewline() || (
-                    $token->Next->id === \T_END_HEREDOC &&
-                    strpos(substr($token->text, 0, -1), "\n") === false
+                    $token->Next->id === \T_END_HEREDOC
+                    && strpos(substr($token->text, 0, -1), "\n") === false
                 )
             ) {
                 $escape .= "\n\r";
@@ -187,9 +187,9 @@ final class NormaliseStrings implements MultiTokenRule
             // Remove unnecessary backslashes
             $reserved = "[nrtvef\\\\\${$reserved}]|[0-7]|x[0-9a-fA-F]|u\{[0-9a-fA-F]+\}";
 
-            if ($token->id === \T_CONSTANT_ENCAPSED_STRING ||
-                    $token->Next !== $token->String->StringClosedBy ||
-                    $token->String->id !== \T_START_HEREDOC) {
+            if ($token->id === \T_CONSTANT_ENCAPSED_STRING
+                    || $token->Next !== $token->String->StringClosedBy
+                    || $token->String->id !== \T_START_HEREDOC) {
                 $reserved .= '|$';
             }
 
@@ -201,8 +201,8 @@ final class NormaliseStrings implements MultiTokenRule
 
             // "\\\{$a}" becomes "\\\{", which escapes to "\\\\{", but we need
             // the brace to remain escaped lest it become a T_CURLY_OPEN
-            if ($token->id !== \T_CONSTANT_ENCAPSED_STRING &&
-                    ($token->Next !== $token->String->StringClosedBy)) {
+            if ($token->id !== \T_CONSTANT_ENCAPSED_STRING
+                    && ($token->Next !== $token->String->StringClosedBy)) {
                 $double = Pcre::replace(
                     '/(?<!\\\\)(\\\\(?:\\\\\\\\)*)\\\\(\{)$/',
                     '$1$2',
@@ -224,16 +224,16 @@ final class NormaliseStrings implements MultiTokenRule
                         str_replace('\t', "\t", $matches[0]),
                     $double,
                 );
-                if ($token->id !== \T_CONSTANT_ENCAPSED_STRING ||
-                        $utf8Escapes ||
-                        Pcre::match("/[\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f{$match}]/", $string) ||
-                        Pcre::match('/(?<!\\\\)(?:\\\\\\\\)*\\\\t/', $double)) {
+                if ($token->id !== \T_CONSTANT_ENCAPSED_STRING
+                        || $utf8Escapes
+                        || Pcre::match("/[\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f{$match}]/", $string)
+                        || Pcre::match('/(?<!\\\\)(?:\\\\\\\\)*\\\\t/', $double)) {
                     $token->setText($double);
                     continue;
                 }
-            } elseif ($token->id !== \T_CONSTANT_ENCAPSED_STRING ||
-                    $utf8Escapes ||
-                    Pcre::match("/[\\x00-\\x09\\x0b\\x0c\\x0e-\\x1f{$match}]/", $string)) {
+            } elseif ($token->id !== \T_CONSTANT_ENCAPSED_STRING
+                    || $utf8Escapes
+                    || Pcre::match("/[\\x00-\\x09\\x0b\\x0c\\x0e-\\x1f{$match}]/", $string)) {
                 $token->setText($double);
                 continue;
             }
@@ -258,11 +258,11 @@ final class NormaliseStrings implements MultiTokenRule
         // '\Name\\' is valid but confusing, so replace '\' with '\\' in strings
         // where every backslash other than the trailing '\\' is singular
         if (
-            $string !== '' &&
-            $string[-1] === '\\' &&
-            Pcre::matchAll('/(?<!\\\\)\\\\\\\\(?!\\\\)/', $string) === 1 &&
-            !Pcre::match("/(?<!\\\\)\\\\(?={$reserved})(?!\\\\\$)/", $string) &&
-            strpos($string, '\\\\\\') === false
+            $string !== ''
+            && $string[-1] === '\\'
+            && Pcre::matchAll('/(?<!\\\\)\\\\\\\\(?!\\\\)/', $string) === 1
+            && !Pcre::match("/(?<!\\\\)\\\\(?={$reserved})(?!\\\\\$)/", $string)
+            && strpos($string, '\\\\\\') === false
         ) {
             return Pcre::replace("/(?<!\\\\)\\\\(?!{$reserved})/", '\\\\$0', $string);
         }

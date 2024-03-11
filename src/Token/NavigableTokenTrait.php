@@ -194,10 +194,10 @@ trait NavigableTokenTrait
 
         // Braces cannot be empty in expression (dereferencing) contexts, but
         // trait adaptation braces can be
-        return $lastInner === $current ||                                            // `{}`
-            $lastInner->is([\T_COLON, \T_SEMICOLON]) ||                              // `{ statement; }`
-            $lastInner->IsStatementTerminator ||                                     /* `{ statement ?>...<?php }` */
-            ($lastInner->id === \T_CLOSE_BRACE && $lastInner->isStructuralBrace());  // `{ { statement; } }`
+        return $lastInner === $current                                                  // `{}`
+            || $lastInner->is([\T_COLON, \T_SEMICOLON])                                 // `{ statement; }`
+            || $lastInner->IsStatementTerminator                                        /* `{ statement ?>...<?php }` */
+            || ($lastInner->id === \T_CLOSE_BRACE && $lastInner->isStructuralBrace());  // `{ { statement; } }`
     }
 
     /**
@@ -207,9 +207,9 @@ trait NavigableTokenTrait
     {
         /** @var Token $this */
         if (
-            $this->id !== \T_WHILE ||
-            !$this->PrevSibling ||
-            !$this->PrevSibling->PrevSibling
+            $this->id !== \T_WHILE
+            || !$this->PrevSibling
+            || !$this->PrevSibling->PrevSibling
         ) {
             return false;
         }
@@ -235,8 +235,8 @@ trait NavigableTokenTrait
         $tokens = $do->NextSibling->NextSibling->collectSiblings($this);
         foreach ($tokens as $token) {
             if (
-                $token->id === \T_WHILE &&
-                $token->PrevSibling->PrevSibling->id !== \T_WHILE
+                $token->id === \T_WHILE
+                && $token->PrevSibling->PrevSibling->id !== \T_WHILE
             ) {
                 return $token === $this;
             }

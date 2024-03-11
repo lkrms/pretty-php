@@ -86,8 +86,8 @@ final class WordPress implements Preset, TokenRule
         }
 
         if ($token->id === \T_DOC_COMMENT || $token->id === \T_COMMENT) {
-            if ($token->hasBlankLineBefore() &&
-                    $token->line - $token->Prev->line - substr_count($token->Prev->text, "\n") < 2) {
+            if ($token->hasBlankLineBefore()
+                    && $token->line - $token->Prev->line - substr_count($token->Prev->text, "\n") < 2) {
                 $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
             }
             return;
@@ -122,11 +122,11 @@ final class WordPress implements Preset, TokenRule
         }
 
         // All that remains is T_OPEN_BRACKET and T_OPEN_PARENTHESIS
-        if ($token->ClosedBy === $token->Next ||
-            ($token->id === \T_OPEN_BRACKET &&
-                ($token->String ||
-                    ($token->Next->Next === $token->ClosedBy &&
-                        $token->Next->id !== \T_VARIABLE)))) {
+        if ($token->ClosedBy === $token->Next
+            || ($token->id === \T_OPEN_BRACKET
+                && ($token->String
+                    || ($token->Next->Next === $token->ClosedBy
+                        && $token->Next->id !== \T_VARIABLE)))) {
             return;
         }
 

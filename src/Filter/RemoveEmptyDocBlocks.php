@@ -21,8 +21,8 @@ final class RemoveEmptyDocBlocks implements Filter
     public function filterTokens(array $tokens): array
     {
         foreach ($tokens as $token) {
-            if ($token->id === \T_DOC_COMMENT &&
-                    Pcre::match('#^/\*\*[\s\*]*\*/$#', $token->text)) {
+            if ($token->id === \T_DOC_COMMENT
+                    && Pcre::match('#^/\*\*[\s\*]*\*/$#', $token->text)) {
                 continue;
             }
             $filtered[] = $token;

@@ -45,9 +45,9 @@ final class NormaliseNumbers implements MultiTokenRule
         foreach ($tokens as $token) {
             $text = str_replace('_', '', $token->text, $underscores);
             if (
-                $token->id === \T_LNUMBER ||
-                strpbrk($text, '.Ee') === false ||
-                strpbrk($text, 'xX') !== false
+                $token->id === \T_LNUMBER
+                || strpbrk($text, '.Ee') === false
+                || strpbrk($text, 'xX') !== false
             ) {
                 if (!Pcre::match(
                     '/^0(?<base>[xob]|(?=[0-7]))0*(?<number>[1-9a-f][0-9a-f]*|0)$/i',

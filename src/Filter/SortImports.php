@@ -100,10 +100,10 @@ final class SortImports implements Filter
                     if ($terminator) {
                         if ($this->TypeIndex->Comment[$token->id] && (
                             $token->line === $terminator->line || (
-                                $this->isOneLineComment($i) &&
-                                $this->isOneLineComment($i - 1) &&
-                                $token->text[0] === $this->Tokens[$i - 1]->text[0] &&
-                                $token->line - $this->Tokens[$i - 1]->line === 1
+                                $this->isOneLineComment($i)
+                                && $this->isOneLineComment($i - 1)
+                                && $token->text[0] === $this->Tokens[$i - 1]->text[0]
+                                && $token->line - $this->Tokens[$i - 1]->line === 1
                             )
                         )) {
                             $current[$i++] = $token;
@@ -217,8 +217,8 @@ final class SortImports implements Filter
         $import = [];
         foreach ($tokens as $token) {
             if (
-                $this->TypeIndex->Comment[$token->id] ||
-                $token->id === \T_SEMICOLON
+                $this->TypeIndex->Comment[$token->id]
+                || $token->id === \T_SEMICOLON
             ) {
                 continue;
             }

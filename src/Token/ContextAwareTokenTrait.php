@@ -27,8 +27,8 @@ trait ContextAwareTokenTrait
      */
     final public function isColonStatementDelimiter(): bool
     {
-        return $this->getSubType() === TokenSubType::COLON_SWITCH_CASE_DELIMITER ||
-            $this->SubType === TokenSubType::COLON_LABEL_DELIMITER;
+        return $this->getSubType() === TokenSubType::COLON_SWITCH_CASE_DELIMITER
+            || $this->SubType === TokenSubType::COLON_LABEL_DELIMITER;
     }
 
     /**
@@ -36,8 +36,8 @@ trait ContextAwareTokenTrait
      */
     final public function isColonTypeDelimiter(): bool
     {
-        return $this->getSubType() === TokenSubType::COLON_RETURN_TYPE_DELIMITER ||
-            $this->SubType === TokenSubType::COLON_BACKED_ENUM_TYPE_DELIMITER;
+        return $this->getSubType() === TokenSubType::COLON_RETURN_TYPE_DELIMITER
+            || $this->SubType === TokenSubType::COLON_BACKED_ENUM_TYPE_DELIMITER;
     }
 
     /**
@@ -81,12 +81,14 @@ trait ContextAwareTokenTrait
         $prevCode = $this->PrevCode;
 
         if (
-            $this->ClosedBy ||
-            $this->TypeIndex->AltSyntaxContinueWithoutExpression[$prevCode->id] || (
-                $prevCode->id === \T_CLOSE_PARENTHESIS &&
-                $prevCode->PrevSibling && (
-                    $this->TypeIndex->AltSyntaxStart[$prevCode->PrevSibling->id] ||
-                    $this->TypeIndex->AltSyntaxContinueWithExpression[$prevCode->PrevSibling->id]
+            $this->ClosedBy
+            || $this->TypeIndex->AltSyntaxContinueWithoutExpression[$prevCode->id]
+            || (
+                $prevCode->id === \T_CLOSE_PARENTHESIS
+                && $prevCode->PrevSibling
+                && (
+                    $this->TypeIndex->AltSyntaxStart[$prevCode->PrevSibling->id]
+                    || $this->TypeIndex->AltSyntaxContinueWithExpression[$prevCode->PrevSibling->id]
                 )
             )
         ) {
@@ -94,12 +96,13 @@ trait ContextAwareTokenTrait
         }
 
         if (
-            $this->Parent &&
-            $this->Parent->id === \T_OPEN_PARENTHESIS &&
-            $this->TypeIndex->MaybeReserved[$prevCode->id] &&
-            $prevCode->PrevCode && (
-                $prevCode->PrevCode === $this->Parent ||
-                $prevCode->PrevCode->id === \T_COMMA
+            $this->Parent
+            && $this->Parent->id === \T_OPEN_PARENTHESIS
+            && $this->TypeIndex->MaybeReserved[$prevCode->id]
+            && $prevCode->PrevCode
+            && (
+                $prevCode->PrevCode === $this->Parent
+                || $prevCode->PrevCode->id === \T_COMMA
             )
         ) {
             return TokenSubType::COLON_NAMED_ARGUMENT_DELIMITER;
@@ -110,9 +113,9 @@ trait ContextAwareTokenTrait
         }
 
         if (
-            $prevCode->id === \T_STRING &&
-            $prevCode->PrevCode &&
-            $prevCode->PrevCode->id === \T_ENUM
+            $prevCode->id === \T_STRING
+            && $prevCode->PrevCode
+            && $prevCode->PrevCode->id === \T_ENUM
         ) {
             return TokenSubType::COLON_BACKED_ENUM_TYPE_DELIMITER;
         }
@@ -120,10 +123,10 @@ trait ContextAwareTokenTrait
         if ($prevCode->id === \T_CLOSE_PARENTHESIS) {
             $prev = $prevCode->PrevSibling;
             if (
-                $prev &&
-                $prev->id === \T_USE &&
-                $prev->PrevCode &&
-                $prev->PrevCode->id === \T_CLOSE_PARENTHESIS
+                $prev
+                && $prev->id === \T_USE
+                && $prev->PrevCode
+                && $prev->PrevCode->id === \T_CLOSE_PARENTHESIS
             ) {
                 $prev = $prev->PrevCode->PrevSibling;
             }
@@ -149,8 +152,8 @@ trait ContextAwareTokenTrait
         if (
             $prevCode->id === \T_STRING && (
                 !$prevCode->PrevSibling || (
-                    $prevCode->PrevSibling->EndStatement &&
-                    $prevCode->PrevSibling->EndStatement->NextSibling === $prevCode
+                    $prevCode->PrevSibling->EndStatement
+                    && $prevCode->PrevSibling->EndStatement->NextSibling === $prevCode
                 )
             )
         ) {
@@ -172,10 +175,10 @@ trait ContextAwareTokenTrait
 
         $prevCode = $this->PrevCode;
         if (
-            $prevCode->id === \T_CONST ||
-            ($prevCode->id === \T_COLON && $prevCode->isColonTypeDelimiter()) ||
-            $this->TypeIndex->VarOrModifier[$prevCode->id] ||
-            $this->inParameterList()
+            $prevCode->id === \T_CONST
+            || ($prevCode->id === \T_COLON && $prevCode->isColonTypeDelimiter())
+            || $this->TypeIndex->VarOrModifier[$prevCode->id]
+            || $this->inParameterList()
         ) {
             return TokenSubType::QUESTION_NULLABLE;
         }
@@ -256,10 +259,10 @@ trait ContextAwareTokenTrait
         /** @var static&GenericToken $this */
         return
             $this->inSwitchCaseList() && (
-                $this->id === \T_CASE ||
-                $this->id === \T_DEFAULT ||
-                (($prev = $this->prevSiblingFrom($this->TypeIndex->SwitchCaseOrDelimiter)->orNull()) &&
-                    ($prev->id === \T_CASE || $prev->id === \T_DEFAULT))
+                $this->id === \T_CASE
+                || $this->id === \T_DEFAULT
+                || (($prev = $this->prevSiblingFrom($this->TypeIndex->SwitchCaseOrDelimiter)->orNull())
+                    && ($prev->id === \T_CASE || $prev->id === \T_DEFAULT))
             );
     }
 
@@ -270,9 +273,9 @@ trait ContextAwareTokenTrait
     {
         /** @var static&GenericToken $this */
         return
-            $this->Parent &&
-            $this->Parent->PrevSibling &&
-            $this->Parent->PrevSibling->PrevSibling &&
-            $this->Parent->PrevSibling->PrevSibling->id === \T_SWITCH;
+            $this->Parent
+            && $this->Parent->PrevSibling
+            && $this->Parent->PrevSibling->PrevSibling
+            && $this->Parent->PrevSibling->PrevSibling->id === \T_SWITCH;
     }
 }

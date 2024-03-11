@@ -820,9 +820,9 @@ EOF,
         } elseif (in_array('-', $this->InputFiles, true)) {
             throw new CliInvalidArgumentsException("<path> cannot be '-' when multiple paths are given");
         } elseif (
-            !$this->IgnoreConfigFiles &&
-            !$this->PrintConfig &&
-            ($this->InputFiles || $this->StdinFilename === null)
+            !$this->IgnoreConfigFiles
+            && !$this->PrintConfig
+            && ($this->InputFiles || $this->StdinFilename === null)
         ) {
             // Get files and directories to format from the current directory's
             // configuration file (if there are no paths on the command line and
@@ -919,12 +919,12 @@ EOF,
         }
 
         if (
-            !$in &&
-            !$dirCount &&
-            !$this->InputFiles &&
-            !$this->PrintConfig &&
-            $this->StdinFilename === null &&
-            stream_isatty(\STDIN)
+            !$in
+            && !$dirCount
+            && !$this->InputFiles
+            && !$this->PrintConfig
+            && $this->StdinFilename === null
+            && stream_isatty(\STDIN)
         ) {
             throw new CliInvalidArgumentsException('<path> required when input is a TTY');
         }
@@ -945,9 +945,9 @@ EOF,
                 $dirs[$dir] = $dir;
             }
         } elseif (
-            $out &&
-            $out !== ['-'] &&
-            ($dirCount || count($out) !== count($in))
+            $out
+            && $out !== ['-']
+            && ($dirCount || count($out) !== count($in))
         ) {
             throw new CliInvalidArgumentsException(
                 '--output is required once per input file'
@@ -958,10 +958,10 @@ EOF,
         }
 
         if (
-            $out === ['-'] ||
-            $this->Diff ||
-            $this->Check ||
-            $this->PrintConfig
+            $out === ['-']
+            || $this->Diff
+            || $this->Check
+            || $this->PrintConfig
         ) {
             Console::registerStderrTarget(true);
         }
@@ -1008,9 +1008,9 @@ EOF,
                     break;
                 }
                 if (
-                    is_dir($dir . '/.git') ||
-                    is_dir($dir . '/.hg') ||
-                    is_dir($dir . '/.svn')
+                    is_dir($dir . '/.git')
+                    || is_dir($dir . '/.hg')
+                    || is_dir($dir . '/.svn')
                 ) {
                     Console::debug('No configuration file found in project:', $dir);
                     break;
@@ -1040,8 +1040,8 @@ EOF,
             );
 
             if (
-                $this->Quiet < 4 &&
-                ($file !== 'php://stdin' || (
+                $this->Quiet < 4
+                && ($file !== 'php://stdin' || (
                     $this->StdinFilename !== null && !stream_isatty(\STDIN)
                 ))
             ) {
@@ -1332,8 +1332,8 @@ EOF,
         if ($this->IncludeIfPhpRegex !== null) {
             $finder = $finder->include(
                 fn(SplFileInfo $file, string $path) =>
-                    Pcre::match($this->IncludeIfPhpRegex, $path) &&
-                    File::isPhp((string) $file)
+                    Pcre::match($this->IncludeIfPhpRegex, $path)
+                    && File::isPhp((string) $file)
             );
         }
 
@@ -1398,8 +1398,8 @@ EOF,
         }
 
         if (
-            $this->optionHasArgument('sort-imports-by') &&
-            ($this->NoSortImports || in_array('sort-imports', $this->Disable, true))
+            $this->optionHasArgument('sort-imports-by')
+            && ($this->NoSortImports || in_array('sort-imports', $this->Disable, true))
         ) {
             $throw(
                 '%s and %s/%s=sort-imports cannot both be given',

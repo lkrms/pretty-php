@@ -31,8 +31,8 @@ final class CollectColumn implements Filter
         foreach ($tokens as $i => $token) {
             $token->column = $column;
             $text =
-                !$this->TypeIndex->Expandable[$token->id] ||
-                strpos($token->text, "\t") === false
+                !$this->TypeIndex->Expandable[$token->id]
+                || strpos($token->text, "\t") === false
                     ? $token->text
                     : Str::expandTabs($token->text, $this->Formatter->TabSize, $column);
             if ($text !== $token->text) {

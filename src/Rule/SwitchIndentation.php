@@ -43,9 +43,9 @@ final class SwitchIndentation implements TokenRule
             return;
         }
 
-        if (!$token->is([\T_CASE, \T_DEFAULT]) ||
-                $token->parent()->prevSibling(2)->id !== \T_SWITCH ||
-                ($separator = $token->nextSiblingOf(\T_COLON, \T_SEMICOLON, \T_CLOSE_TAG))->IsNull) {
+        if (!$token->is([\T_CASE, \T_DEFAULT])
+                || $token->parent()->prevSibling(2)->id !== \T_SWITCH
+                || ($separator = $token->nextSiblingOf(\T_COLON, \T_SEMICOLON, \T_CLOSE_TAG))->IsNull) {
             return;
         }
 

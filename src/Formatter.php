@@ -916,13 +916,13 @@ final class Formatter implements Buildable
                     if (!$prev) {
                         continue 2;
                     }
-                    if ($prev->id === \T_CLOSE_BRACE &&
-                            !$prev->isStructuralBrace(false)) {
+                    if ($prev->id === \T_CLOSE_BRACE
+                            && !$prev->isStructuralBrace(false)) {
                         break;
                     }
-                    if ($prev->PrevCode &&
-                            $prev->is(TokenType::AMPERSAND) &&
-                            $prev->PrevCode->is([\T_FN, \T_FUNCTION])) {
+                    if ($prev->PrevCode
+                            && $prev->is(TokenType::AMPERSAND)
+                            && $prev->PrevCode->is([\T_FN, \T_FUNCTION])) {
                         break;
                     }
                     if ($prev->is([
@@ -962,8 +962,8 @@ final class Formatter implements Buildable
             $items =
                 $parent->children()
                        ->filter(fn(Token $t, ?Token $next, ?Token $prev) =>
-                                    $t->id !== $delimiter &&
-                                        (!$prev || $t->PrevCode->id === $delimiter));
+                                    $t->id !== $delimiter
+                                        && (!$prev || $t->PrevCode->id === $delimiter));
             $count = $items->count();
             if (!$count) {
                 continue;

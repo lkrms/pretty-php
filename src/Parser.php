@@ -92,8 +92,8 @@ final class Parser
              * ```
              */
             if (
-                $token->id === \T_OPEN_TAG ||
-                $token->id === \T_OPEN_TAG_WITH_ECHO
+                $token->id === \T_OPEN_TAG
+                || $token->id === \T_OPEN_TAG_WITH_ECHO
             ) {
                 $token->OpenTag = $token;
                 $prev = $token;
@@ -164,9 +164,9 @@ final class Parser
             $token = $tokens[$keys[$i]];
 
             if (
-                \PHP_VERSION_ID < 80000 &&
-                $token->id === \T_COMMENT &&
-                substr($token->text, 0, 2) === '#['
+                \PHP_VERSION_ID < 80000
+                && $token->id === \T_COMMENT
+                && substr($token->text, 0, 2) === '#['
             ) {
                 $token->id = \T_ATTRIBUTE_COMMENT;
             }
@@ -200,32 +200,33 @@ final class Parser
                     // - every line starts with "*", or
                     // - at least one delimiter appears on its own line
                     $token->IsInformalDocComment =
-                        $token->CommentType === CommentType::C &&
-                        strpos($text, "\n") !== false && (
+                        $token->CommentType === CommentType::C
+                        && strpos($text, "\n") !== false
+                        && (
                             // Every line starts with "*"
-                            !Pcre::match('/\n\h*+(?!\*)\S/', $text) ||
+                            !Pcre::match('/\n\h*+(?!\*)\S/', $text)
                             // The first delimiter is followed by a newline
-                            !Pcre::match('/^\/\*++(\h++|(?!\*))\S/', $text) ||
+                            || !Pcre::match('/^\/\*++(\h++|(?!\*))\S/', $text)
                             // The last delimiter is preceded by a newline
-                            !Pcre::match('/\S((?<!\*)|\h++)\*++\/$/', $text)
+                            || !Pcre::match('/\S((?<!\*)|\h++)\*++\/$/', $text)
                         );
                 }
             }
 
             if ((
-                $idx->AltSyntaxContinue[$token->id] ||
-                $idx->AltSyntaxEnd[$token->id]
+                $idx->AltSyntaxContinue[$token->id]
+                || $idx->AltSyntaxEnd[$token->id]
             ) && $prev->id !== \T_END_ALT_SYNTAX) {
                 $opener = $prev->Parent;
-                if (($opener &&
-                    $opener->id === \T_COLON &&
-                    ($idx->AltSyntaxEnd[$token->id] ||
-                        ($idx->AltSyntaxContinueWithExpression[$token->id] &&
-                            $token->nextSimpleSibling(2)->id === \T_COLON) ||
-                        ($idx->AltSyntaxContinueWithoutExpression[$token->id] &&
-                            $token->nextSimpleSibling()->id === \T_COLON))) ||
-                    ($prev->id === \T_COLON &&
-                        $prev->isColonAltSyntaxDelimiter())) {
+                if (($opener
+                    && $opener->id === \T_COLON
+                    && ($idx->AltSyntaxEnd[$token->id]
+                        || ($idx->AltSyntaxContinueWithExpression[$token->id]
+                            && $token->nextSimpleSibling(2)->id === \T_COLON)
+                        || ($idx->AltSyntaxContinueWithoutExpression[$token->id]
+                            && $token->nextSimpleSibling()->id === \T_COLON)))
+                    || ($prev->id === \T_COLON
+                        && $prev->isColonAltSyntaxDelimiter())) {
                     $i--;
                     $virtual = new Token(\T_END_ALT_SYNTAX, '');
                     $virtual->IsVirtual = true;
@@ -254,19 +255,19 @@ final class Parser
             if ($token->id === \T_CLOSE_TAG) {
                 $t = $prev;
                 while (
-                    $t->id === \T_COMMENT ||
-                    $t->id === \T_DOC_COMMENT ||
-                    $t->id === \T_ATTRIBUTE_COMMENT
+                    $t->id === \T_COMMENT
+                    || $t->id === \T_DOC_COMMENT
+                    || $t->id === \T_ATTRIBUTE_COMMENT
                 ) {
                     $t = $t->Prev;
                 }
 
                 if (
-                    $t !== $token->OpenTag &&
-                    $t->id !== \T_COLON &&
-                    $t->id !== \T_SEMICOLON &&
-                    $t->id !== \T_OPEN_BRACE &&
-                    ($t->id !== \T_CLOSE_BRACE || !$t->IsStatementTerminator)
+                    $t !== $token->OpenTag
+                    && $t->id !== \T_COLON
+                    && $t->id !== \T_SEMICOLON
+                    && $t->id !== \T_OPEN_BRACE
+                    && ($t->id !== \T_CLOSE_BRACE || !$t->IsStatementTerminator)
                 ) {
                     $token->IsStatementTerminator = true;
                     $token->IsCode = true;
@@ -283,8 +284,8 @@ final class Parser
             $token->Depth = $prev->Depth;
             $delta = 0;
             if (
-                $idx->OpenBracket[$prev->id] ||
-                ($prev->id === \T_COLON && $prev->isColonAltSyntaxDelimiter())
+                $idx->OpenBracket[$prev->id]
+                || ($prev->id === \T_COLON && $prev->isColonAltSyntaxDelimiter())
             ) {
                 $token->Parent = $prev;
                 $token->Depth++;
@@ -314,11 +315,12 @@ final class Parser
             }
 
             if (
-                $idx->StringDelimiter[$token->id] &&
-                $token->String &&
-                $token->Parent === $token->String->Parent && (
-                    ($token->String->id === \T_START_HEREDOC && $token->id === \T_END_HEREDOC) ||
-                    ($token->String->id !== \T_START_HEREDOC && $token->String->id === $token->id)
+                $idx->StringDelimiter[$token->id]
+                && $token->String
+                && $token->Parent === $token->String->Parent
+                && (
+                    ($token->String->id === \T_START_HEREDOC && $token->id === \T_END_HEREDOC)
+                    || ($token->String->id !== \T_START_HEREDOC && $token->String->id === $token->id)
                 )
             ) {
                 $token->String->StringClosedBy = $token;
@@ -338,8 +340,8 @@ final class Parser
                 // `T_CLOSE_BRACE` that doesn't enclose an anonymous function or
                 // class
                 if (
-                    $token->id !== \T_CLOSE_BRACE ||
-                    !$token->isStructuralBrace(false)
+                    $token->id !== \T_CLOSE_BRACE
+                    || !$token->isStructuralBrace(false)
                 ) {
                     $prev = $token;
                     continue;
@@ -347,15 +349,15 @@ final class Parser
 
                 $_prev = $token->prevSiblingOf(\T_FUNCTION, \T_CLASS);
                 if (
-                    !$_prev->IsNull &&
-                    $_prev->nextSiblingOf(\T_OPEN_BRACE)->ClosedBy === $token
+                    !$_prev->IsNull
+                    && $_prev->nextSiblingOf(\T_OPEN_BRACE)->ClosedBy === $token
                 ) {
                     $_next = $_prev->NextSibling;
                     if (
-                        $_next->id === \T_OPEN_PARENTHESIS ||
-                        $_next->id === \T_OPEN_BRACE ||
-                        $_next->id === \T_EXTENDS ||
-                        $_next->id === \T_IMPLEMENTS
+                        $_next->id === \T_OPEN_PARENTHESIS
+                        || $_next->id === \T_OPEN_BRACE
+                        || $_next->id === \T_EXTENDS
+                        || $_next->id === \T_IMPLEMENTS
                     ) {
                         $prev = $token;
                         continue;
@@ -381,8 +383,8 @@ final class Parser
             // Then, if there are gaps between siblings, fill them in
             if ($token->IsCode) {
                 if (
-                    $token->PrevSibling &&
-                    !$token->PrevSibling->NextSibling
+                    $token->PrevSibling
+                    && !$token->PrevSibling->NextSibling
                 ) {
                     $t = $token;
                     do {
@@ -487,8 +489,8 @@ final class Parser
 
             if (
                 $idx->CloseBracketExceptBrace[$token->id] || (
-                    $token->id === \T_CLOSE_BRACE &&
-                    !$token->isStructuralBrace(false)
+                    $token->id === \T_CLOSE_BRACE
+                    && !$token->isStructuralBrace(false)
                 )
             ) {
                 $endStatementOffset = 2;
@@ -497,8 +499,8 @@ final class Parser
             if ($token->id === \T_COMMA) {
                 if (($parent = $token->Parent) && (
                     $idx->OpenBracketExceptBrace[$parent->id] || (
-                        $parent->id === \T_OPEN_BRACE &&
-                        !$parent->isStructuralBrace(false)
+                        $parent->id === \T_OPEN_BRACE
+                        && !$parent->isStructuralBrace(false)
                     )
                 )) {
                     $endStatementOffset = 1;
@@ -579,25 +581,25 @@ final class Parser
             }
 
             if (
-                $token->id === \T_QUESTION &&
-                $token->getSubType() === TokenSubType::QUESTION_TERNARY_OPERATOR
+                $token->id === \T_QUESTION
+                && $token->getSubType() === TokenSubType::QUESTION_TERNARY_OPERATOR
             ) {
                 $current = $token;
                 $count = 0;
-                while (($current = $current->NextSibling) &&
-                        $token->EndStatement !== ($current->ClosedBy ?: $current)) {
+                while (($current = $current->NextSibling)
+                        && $token->EndStatement !== ($current->ClosedBy ?: $current)) {
                     if ($current->IsTernaryOperator) {
                         continue;
                     }
-                    if ($current->id === \T_QUESTION &&
-                        $current->getSubType() ===
-                            TokenSubType::QUESTION_TERNARY_OPERATOR) {
+                    if ($current->id === \T_QUESTION
+                        && $current->getSubType()
+                            === TokenSubType::QUESTION_TERNARY_OPERATOR) {
                         $count++;
                         continue;
                     }
-                    if (!($current->id === \T_COLON &&
-                        $current->getSubType() ===
-                            TokenSubType::COLON_TERNARY_OPERATOR)) {
+                    if (!($current->id === \T_COLON
+                        && $current->getSubType()
+                            === TokenSubType::COLON_TERNARY_OPERATOR)) {
                         continue;
                     }
                     if ($count--) {
@@ -624,12 +626,12 @@ final class Parser
                 continue;
             }
 
-            if ($idx->ExpressionTerminator[$token->id] ||
-                    $token->IsStatementTerminator ||
-                    ($token->id === \T_COLON && $token->isColonStatementDelimiter()) ||
-                    ($token->id === \T_CLOSE_BRACE &&
-                        (!$token->isStructuralBrace() || $token->isMatchBrace())) ||
-                    $token->IsTernaryOperator) {
+            if ($idx->ExpressionTerminator[$token->id]
+                    || $token->IsStatementTerminator
+                    || ($token->id === \T_COLON && $token->isColonStatementDelimiter())
+                    || ($token->id === \T_CLOSE_BRACE
+                        && (!$token->isStructuralBrace() || $token->isMatchBrace()))
+                    || $token->IsTernaryOperator) {
                 // Expression terminators don't form part of the expression
                 $token->Expression = false;
                 if ($token->PrevCode) {
@@ -640,9 +642,9 @@ final class Parser
 
             if ($token->id === \T_COMMA) {
                 $parent = $token->parent();
-                if ($parent->is([\T_OPEN_BRACKET, \T_OPEN_PARENTHESIS, \T_ATTRIBUTE]) ||
-                    ($parent->id === \T_OPEN_BRACE &&
-                        (!$parent->isStructuralBrace() || $token->isMatchDelimiter()))) {
+                if ($parent->is([\T_OPEN_BRACKET, \T_OPEN_PARENTHESIS, \T_ATTRIBUTE])
+                    || ($parent->id === \T_OPEN_BRACE
+                        && (!$parent->isStructuralBrace() || $token->isMatchDelimiter()))) {
                     $token->Expression = false;
                     $endExpressionOffsets = [2];
                 }

@@ -46,11 +46,11 @@ trait CollectibleTokenTrait
         }
 
         $from = $t;
-        while ($t->NextSibling &&
-            ($index[$t->NextSibling->id] ||
-                ($allowAnonymous &&
-                    $t->NextSibling->id === \T_OPEN_PARENTHESIS &&
-                    $t->id === \T_CLASS))) {
+        while ($t->NextSibling
+            && ($index[$t->NextSibling->id]
+                || ($allowAnonymous
+                    && $t->NextSibling->id === \T_OPEN_PARENTHESIS
+                    && $t->id === \T_CLASS))) {
             $t = $t->NextSibling;
         }
 

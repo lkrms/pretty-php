@@ -43,14 +43,14 @@ final class ControlStructureSpacing implements MultiTokenRule
     {
         foreach ($tokens as $token) {
             // Ignore the second half of `elseif` expressed as `else if`
-            if ($token->id === \T_IF &&
-                    $token->PrevCode &&
-                    $token->PrevCode->id === \T_ELSE) {
+            if ($token->id === \T_IF
+                    && $token->PrevCode
+                    && $token->PrevCode->id === \T_ELSE) {
                 continue;
             }
 
-            if ($token->id === \T_ELSE &&
-                    $token->NextCode->id === \T_IF) {
+            if ($token->id === \T_ELSE
+                    && $token->NextCode->id === \T_IF) {
                 $body = $token->NextSibling->NextSibling->NextSibling;
             } elseif ($this->TypeIndex->HasStatementWithOptionalBraces[$token->id]) {
                 $body = $token->NextSibling;
@@ -59,10 +59,10 @@ final class ControlStructureSpacing implements MultiTokenRule
             }
 
             // Ignore enclosed and empty bodies
-            if ($body->id === \T_OPEN_BRACE ||
-                    $body->id === \T_COLON ||
-                    $body->id === \T_SEMICOLON ||
-                    $body->IsStatementTerminator) {
+            if ($body->id === \T_OPEN_BRACE
+                    || $body->id === \T_COLON
+                    || $body->id === \T_SEMICOLON
+                    || $body->IsStatementTerminator) {
                 continue;
             }
 
@@ -70,9 +70,9 @@ final class ControlStructureSpacing implements MultiTokenRule
 
             // Add a newline before the token unless it continues a control
             // structure where the previous body had enclosing braces
-            if (!$token->PrevCode ||
-                    $token->PrevCode->id !== \T_CLOSE_BRACE ||
-                    !$token->continuesControlStructure()) {
+            if (!$token->PrevCode
+                    || $token->PrevCode->id !== \T_CLOSE_BRACE
+                    || !$token->continuesControlStructure()) {
                 $token->WhitespaceBefore |= WhitespaceType::LINE;
                 $token->WhitespaceMaskPrev |= WhitespaceType::LINE;
                 $token->Prev->WhitespaceMaskNext |= WhitespaceType::LINE;
@@ -98,9 +98,9 @@ final class ControlStructureSpacing implements MultiTokenRule
                     $continues = true;
                 }
             }
-            if (!$end ||
-                    $end->IsNull ||
-                    $end->Index > $body->EndStatement->Index) {
+            if (!$end
+                    || $end->IsNull
+                    || $end->Index > $body->EndStatement->Index) {
                 $end = $body->pragmaticEndOfExpression()
                             ->withTerminator();
             }

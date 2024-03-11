@@ -44,8 +44,8 @@ final class AlignChains implements TokenRule
 
         // If the first `->` in the chain has a leading newline, and alignment
         // with the start of the expression is disabled, do nothing
-        if (($hasNewlineBefore = $token->hasNewlineBefore()) &&
-                !$this->Formatter->AlignFirstCallInChain) {
+        if (($hasNewlineBefore = $token->hasNewlineBefore())
+                && !$this->Formatter->AlignFirstCallInChain) {
             return;
         }
 
@@ -53,8 +53,8 @@ final class AlignChains implements TokenRule
                        ->filter(fn(Token $t) => $this->TypeIndex->Chain[$t->id]);
 
         // If there's no `->` in the chain with a leading newline, do nothing
-        if ($chain->count() < 2 ||
-                !$chain->find(fn(Token $t) => $t->hasNewlineBefore())) {
+        if ($chain->count() < 2
+                || !$chain->find(fn(Token $t) => $t->hasNewlineBefore())) {
             return;
         }
 
@@ -65,9 +65,9 @@ final class AlignChains implements TokenRule
         if ($hasNewlineBefore) {
             // Find the start of the expression
             $current = $token;
-            while (($current = $current->PrevSibling) &&
-                    $token->Expression === $current->Expression &&
-                    $current->is([
+            while (($current = $current->PrevSibling)
+                    && $token->Expression === $current->Expression
+                    && $current->is([
                         \T_DOUBLE_COLON,
                         \T_NAME_FULLY_QUALIFIED,
                         \T_NAME_QUALIFIED,
@@ -81,9 +81,9 @@ final class AlignChains implements TokenRule
                 return;
             }
             $eol = $alignWith->endOfLine();
-            if ($eol->IsCode &&
-                    $eol->Next === $token &&
-                    mb_strlen($alignWith->collect($eol)->render()) <= $this->Formatter->TabSize) {
+            if ($eol->IsCode
+                    && $eol->Next === $token
+                    && mb_strlen($alignWith->collect($eol)->render()) <= $this->Formatter->TabSize) {
                 $token->WhitespaceBefore = WhitespaceType::NONE;
                 $token->WhitespaceMaskPrev = WhitespaceType::NONE;
                 $alignWith = null;

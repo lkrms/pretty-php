@@ -57,8 +57,8 @@ trait FilterTrait
     {
         $token = $this->Tokens[$i];
         return $token->id === \T_COMMENT && (
-            $token->text[0] === '#' ||
-            $token->text[1] === '/'
+            $token->text[0] === '#'
+            || $token->text[1] === '/'
         );
     }
 }

@@ -22,8 +22,8 @@ final class RemoveWhitespace implements Filter
     {
         foreach ($tokens as $token) {
             if (
-                $token->id === \T_WHITESPACE ||
-                $token->id === \T_BAD_CHARACTER
+                $token->id === \T_WHITESPACE
+                || $token->id === \T_BAD_CHARACTER
             ) {
                 continue;
             }

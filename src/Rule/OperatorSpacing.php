@@ -51,28 +51,28 @@ final class OperatorSpacing implements MultiTokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            if ($token->Parent &&
-                    $token->Parent->PrevCode &&
-                    $token->Parent->PrevCode->id === \T_DECLARE) {
+            if ($token->Parent
+                    && $token->Parent->PrevCode
+                    && $token->Parent->PrevCode->id === \T_DECLARE) {
                 continue;
             }
 
             // Suppress whitespace after ampersands related to passing,
             // assigning and returning by reference
-            if ($this->TypeIndex->Ampersand[$token->id] &&
-                $token->Next->IsCode &&
+            if ($this->TypeIndex->Ampersand[$token->id]
+                && $token->Next->IsCode
                 // `function &getValue()`
-                (($token->PrevCode &&
-                    ($token->PrevCode->id === \T_FUNCTION ||
-                        $token->PrevCode->id === \T_FN)) ||
+                && (($token->PrevCode
+                    && ($token->PrevCode->id === \T_FUNCTION
+                        || $token->PrevCode->id === \T_FN))
                     // `[&$variable]`, `$a = &getValue()`
-                    $token->inUnaryContext() ||
+                    || $token->inUnaryContext()
                     // `function foo(&$bar)`, `function foo($bar, &...$baz)`
-                    (($token->Next->id === \T_VARIABLE ||
-                            $token->Next->id === \T_ELLIPSIS) &&
-                        $token->inParameterList() &&
+                    || (($token->Next->id === \T_VARIABLE
+                            || $token->Next->id === \T_ELLIPSIS)
+                        && $token->inParameterList()
                         // Not `function getValue($param = $a & $b)`
-                        !$token->sinceStartOfStatement()->hasOneOf(\T_VARIABLE)))) {
+                        && !$token->sinceStartOfStatement()->hasOneOf(\T_VARIABLE)))) {
                 $token->WhitespaceBefore |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskNext = WhitespaceType::NONE;
                 continue;
@@ -80,15 +80,15 @@ final class OperatorSpacing implements MultiTokenRule
 
             // Suppress whitespace around operators in union, intersection and
             // DNF types
-            if ($this->TypeIndex->TypeDelimiter[$token->id] &&
-                (($inTypeContext = $this->inTypeContext($token)) ||
-                    ($token->id === \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG &&
-                        $token->Parent &&
-                        $token->Parent->id === \T_OPEN_PARENTHESIS &&
-                        (($token->Parent->PrevCode &&
-                                $token->Parent->PrevCode->id === \T_OR) ||
-                            $token->Parent->ClosedBy->NextCode->id === \T_OR) &&
-                        $this->inTypeContext($token->Parent)))) {
+            if ($this->TypeIndex->TypeDelimiter[$token->id]
+                && (($inTypeContext = $this->inTypeContext($token))
+                    || ($token->id === \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
+                        && $token->Parent
+                        && $token->Parent->id === \T_OPEN_PARENTHESIS
+                        && (($token->Parent->PrevCode
+                                && $token->Parent->PrevCode->id === \T_OR)
+                            || $token->Parent->ClosedBy->NextCode->id === \T_OR)
+                        && $this->inTypeContext($token->Parent)))) {
                 $token->WhitespaceMaskNext = WhitespaceType::NONE;
                 $token->WhitespaceMaskPrev = WhitespaceType::NONE;
 
@@ -107,11 +107,11 @@ final class OperatorSpacing implements MultiTokenRule
 
             // Suppress whitespace around exception delimiters in `catch` blocks
             // (unless in strict PSR-12 mode)
-            if ($token->id === \T_OR &&
-                    $token->Parent &&
-                    $token->Parent->PrevCode &&
-                    $token->Parent->PrevCode->id === \T_CATCH &&
-                    !$this->Formatter->Psr12) {
+            if ($token->id === \T_OR
+                    && $token->Parent
+                    && $token->Parent->PrevCode
+                    && $token->Parent->PrevCode->id === \T_CATCH
+                    && !$this->Formatter->Psr12) {
                 $token->WhitespaceMaskNext = WhitespaceType::NONE;
                 $token->WhitespaceMaskPrev = WhitespaceType::NONE;
                 continue;
@@ -126,8 +126,8 @@ final class OperatorSpacing implements MultiTokenRule
 
             // Suppress whitespace between `++` and `--` and the variables they
             // operate on
-            if ($token->id === \T_INC ||
-                    $token->id === \T_DEC) {
+            if ($token->id === \T_INC
+                    || $token->id === \T_DEC) {
                 if ($token->Prev && $token->Prev->id === \T_VARIABLE) {
                     $token->WhitespaceMaskPrev = WhitespaceType::NONE;
                 } elseif ($token->Next && $token->Next->id === \T_VARIABLE) {
@@ -136,11 +136,11 @@ final class OperatorSpacing implements MultiTokenRule
             }
 
             // Suppress whitespace after unary operators
-            if ($token->isUnaryOperator() &&
-                $token->Next &&
-                $token->Next->IsCode &&
-                (!$token->Next->isOperator() ||
-                    $token->Next->isUnaryOperator())) {
+            if ($token->isUnaryOperator()
+                && $token->Next
+                && $token->Next->IsCode
+                && (!$token->Next->isOperator()
+                    || $token->Next->isUnaryOperator())) {
                 $token->WhitespaceMaskNext = WhitespaceType::NONE;
 
                 continue;
@@ -153,8 +153,8 @@ final class OperatorSpacing implements MultiTokenRule
             }
 
             // Collapse ternary operators with nothing between `?` and `:`
-            if ($token->IsTernaryOperator &&
-                    $token->TernaryOperator1 === $token->Prev) {
+            if ($token->IsTernaryOperator
+                    && $token->TernaryOperator1 === $token->Prev) {
                 $token->WhitespaceBefore = WhitespaceType::NONE;
                 $token->Prev->WhitespaceAfter = WhitespaceType::NONE;
 
@@ -171,11 +171,11 @@ final class OperatorSpacing implements MultiTokenRule
      */
     private function inTypeContext(Token $token): bool
     {
-        return $token->isDeclaration() ||
-            ($token->inParameterList() &&
-                !$token->sinceStartOfStatement()->hasOneOf(\T_VARIABLE)) ||
-            (($prev = $token->prevCodeWhile(...TokenType::VALUE_TYPE)->last()) &&
-                ($prev = $prev->prevCode())->id === \T_COLON &&
-                $prev->prevSibling(2)->skipPrevSiblingsOf(...TokenType::AMPERSAND)->id === \T_FN);
+        return $token->isDeclaration()
+            || ($token->inParameterList()
+                && !$token->sinceStartOfStatement()->hasOneOf(\T_VARIABLE))
+            || (($prev = $token->prevCodeWhile(...TokenType::VALUE_TYPE)->last())
+                && ($prev = $prev->prevCode())->id === \T_COLON
+                && $prev->prevSibling(2)->skipPrevSiblingsOf(...TokenType::AMPERSAND)->id === \T_FN);
     }
 }
