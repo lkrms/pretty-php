@@ -14,7 +14,7 @@ use Salient\Core\Concern\HasImmutableProperties;
 class TokenTypeIndex implements Immutable
 {
     use HasImmutableProperties {
-        withPropertyValue as protected with;
+        withPropertyValue as with;
     }
 
     /**
@@ -110,6 +110,24 @@ class TokenTypeIndex implements Immutable
      * @var array<int,bool>
      */
     public array $Expandable;
+
+    /**
+     * Tokens that may be swapped with adjacent comment tokens when operator
+     * position is changed
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $Movable;
+
+    /**
+     * Tokens where a preceding DocBlock can be demoted to a standard C-style
+     * comment without loss of information
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $Undocumentable;
 
     /**
      * T_LNUMBER, T_DNUMBER
@@ -496,6 +514,36 @@ class TokenTypeIndex implements Immutable
             \T_WHITESPACE,
         );
 
+        $this->Movable = TT::getIndex(
+            \T_CONCAT,
+            ...TT::OPERATOR_ASSIGNMENT_EXCEPT_EQUAL,
+            ...TT::OPERATOR_COMPARISON,
+            ...TT::OPERATOR_LOGICAL_EXCEPT_NOT,
+            ...TT::OPERATOR_ARITHMETIC,
+            ...TT::OPERATOR_BITWISE,
+        );
+
+        // Derived from operators in `$this->PreserveNewlineBefore` and
+        // `$this->PreserveNewlineAfter`
+        $this->Undocumentable = TT::getIndex(
+            \T_CLOSE_BRACE,
+            \T_CLOSE_BRACKET,
+            \T_CLOSE_PARENTHESIS,
+            \T_CLOSE_TAG,
+            \T_COMMA,
+            \T_CONCAT,
+            \T_DOUBLE_ARROW,
+            \T_NULLSAFE_OBJECT_OPERATOR,
+            \T_OBJECT_OPERATOR,
+            \T_SEMICOLON,
+            ...TT::OPERATOR_ARITHMETIC,
+            ...TT::OPERATOR_ASSIGNMENT,
+            ...TT::OPERATOR_BITWISE,
+            ...TT::OPERATOR_COMPARISON,
+            ...TT::OPERATOR_LOGICAL,
+            ...TT::OPERATOR_TERNARY,
+        );
+
         $this->Number = TT::getIndex(
             \T_LNUMBER,
             \T_DNUMBER,
@@ -748,7 +796,7 @@ class TokenTypeIndex implements Immutable
             TT::getIndex(
                 ...TT::OPERATOR_ASSIGNMENT_EXCEPT_EQUAL,
                 ...TT::OPERATOR_COMPARISON,
-                ...TT::OPERATOR_LOGICAL,
+                ...TT::OPERATOR_LOGICAL_EXCEPT_NOT,
             ),
         );
         $preserveAfter = TT::mergeIndexes(
