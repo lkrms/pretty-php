@@ -47,16 +47,16 @@ final class ListSpacing implements ListRule
     public function reset(): void
     {
         $this->ListRuleIsEnabled
-            ??= ($this->Formatter->Enabled[StrictLists::class] ?? null) ||
-                ($this->Formatter->Enabled[AlignLists::class] ?? null);
+            ??= ($this->Formatter->Enabled[StrictLists::class] ?? null)
+                || ($this->Formatter->Enabled[AlignLists::class] ?? null);
     }
 
     public function processList(Token $owner, TokenCollection $items): void
     {
         // If `$owner` has no `ClosedBy`, this is an interface list
         if (!$owner->ClosedBy) {
-            if (!$this->ListRuleIsEnabled &&
-                    $items->tokenHasNewlineBefore()) {
+            if (!$this->ListRuleIsEnabled
+                    && $items->tokenHasNewlineBefore()) {
                 $first = $items->first();
                 $first->WhitespaceBefore |= WhitespaceType::LINE;
                 $first->WhitespaceMaskPrev |= WhitespaceType::LINE;
@@ -73,18 +73,18 @@ final class ListSpacing implements ListRule
                   ->addWhitespaceBefore(WhitespaceType::LINE, true);
         }
 
-        if ($owner->id !== \T_OPEN_PARENTHESIS ||
-                !$owner->isParameterList()) {
+        if ($owner->id !== \T_OPEN_PARENTHESIS
+                || !$owner->isParameterList()) {
             return;
         }
 
         $hasAttributeWithNewline = false;
         foreach ($items as $item) {
             $current = $item;
-            while ($current->id === \T_ATTRIBUTE ||
-                    $current->id === \T_ATTRIBUTE_COMMENT) {
-                if ($current->hasNewlineBefore() ||
-                    ($current->id === \T_ATTRIBUTE
+            while ($current->id === \T_ATTRIBUTE
+                    || $current->id === \T_ATTRIBUTE_COMMENT) {
+                if ($current->hasNewlineBefore()
+                    || ($current->id === \T_ATTRIBUTE
                         ? $current->ClosedBy
                         : $current)->hasNewlineAfter()) {
                     $hasAttributeWithNewline = true;
@@ -117,9 +117,9 @@ final class ListSpacing implements ListRule
                 } elseif ($current->id === \T_ATTRIBUTE_COMMENT) {
                     $current->WhitespaceAfter |= WhitespaceType::LINE;
                 }
-            } while (($current->id === \T_ATTRIBUTE ||
-                    $current->id === \T_ATTRIBUTE_COMMENT) &&
-                ($current = $current->NextSibling));
+            } while (($current->id === \T_ATTRIBUTE
+                    || $current->id === \T_ATTRIBUTE_COMMENT)
+                && ($current = $current->NextSibling));
 
             // Continue if $token is a parameter with no attributes
             if ($current === $token) {

@@ -6,7 +6,6 @@ use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Filter\Concern\FilterTrait;
 use Lkrms\PrettyPHP\Token\GenericToken;
-use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Pcre;
 
 /**
@@ -36,12 +35,12 @@ final class SortImports implements Filter
     /**
      * @template T of GenericToken
      *
-     * @param T[] $tokens
-     * @return T[]
+     * @param list<T> $tokens
+     * @return list<T>
      */
     public function filterTokens(array $tokens): array
     {
-        $this->Tokens = array_values($tokens);
+        $this->Tokens = $tokens;
         $this->SortableImports = [];
         $count = count($this->Tokens);
 
@@ -89,6 +88,7 @@ final class SortImports implements Filter
             /** @var T|null */
             $terminator = null;
             while ($i < $count) {
+                /** @var T */
                 $token = $this->Tokens[$i];
                 // If `$current` is non-empty, `$token` may be part of a `use`
                 // statement that's being collected
@@ -98,12 +98,14 @@ final class SortImports implements Filter
                     // `$token` is a subsequent comment on the same line, or a
                     // continuation thereof
                     if ($terminator) {
-                        if ($this->TypeIndex->Comment[$token->id] &&
-                            ($token->line === $terminator->line ||
-                                ($this->isOneLineComment($i) &&
-                                    $this->isOneLineComment($i - 1) &&
-                                    $token->text[0] === $this->Tokens[$i - 1]->text[0] &&
-                                    $token->line - $this->Tokens[$i - 1]->line === 1))) {
+                        if ($this->TypeIndex->Comment[$token->id] && (
+                            $token->line === $terminator->line || (
+                                $this->isOneLineComment($i)
+                                && $this->isOneLineComment($i - 1)
+                                && $token->text[0] === $this->Tokens[$i - 1]->text[0]
+                                && $token->line - $this->Tokens[$i - 1]->line === 1
+                            )
+                        )) {
                             $current[$i++] = $token;
                             continue;
                         } else {
@@ -137,10 +139,17 @@ final class SortImports implements Filter
                 $sort[] = $current;
             }
             if (isset($sort[1])) {
-                $this->Tokens = $this->sortImports($sort, $this->Tokens);
+                $this->Tokens = $this->sortImports($this->Tokens, $sort);
             }
-            while ($tokens && $i > reset($tokens)) {
-                array_shift($tokens);
+            $offset = 0;
+            foreach ($tokens as $j) {
+                if ($i <= $j) {
+                    break;
+                }
+                $offset++;
+            }
+            if ($offset) {
+                $tokens = array_slice($tokens, $offset);
             }
         }
 
@@ -150,11 +159,11 @@ final class SortImports implements Filter
     /**
      * @template T of GenericToken
      *
+     * @param list<T> $tokens
      * @param non-empty-array<non-empty-array<T>> $sort
-     * @param T[] $tokens
-     * @return T[]
+     * @return list<T>
      */
-    private function sortImports(array $sort, array $tokens): array
+    private function sortImports(array $tokens, array $sort): array
     {
         $import = reset($sort);
         $nextLine = reset($import)->line;
@@ -165,14 +174,14 @@ final class SortImports implements Filter
         uasort(
             $sort,
             function (array $a, array $b): int {
-                $aIdx = array_key_first($a);
-                $bIdx = array_key_first($b);
-                $a = $this->SortableImports[$aIdx] ??= $this->sortableImport($a);
-                $b = $this->SortableImports[$bIdx] ??= $this->sortableImport($b);
+                $aKey = array_key_first($a);
+                $bKey = array_key_first($b);
+                $a = $this->SortableImports[$aKey] ??= $this->sortableImport($a);
+                $b = $this->SortableImports[$bKey] ??= $this->sortableImport($b);
 
                 return $a[0] <=> $b[0]           // 1 = `use function`, 2 = `use const`, otherwise 0
                     ?: strcasecmp($a[1], $b[1])  // e.g. "use 0A \ 2B" or "use A \ B"
-                    ?: $aIdx <=> $bIdx;
+                    ?: $aKey <=> $bKey;
             }
         );
 
@@ -191,7 +200,10 @@ final class SortImports implements Filter
             $nextLine += substr_count($t->text, "\n") + 1;
         }
 
-        return Arr::spliceByKey($tokens, $firstKey, count($sorted), $sorted);
+        return
+            array_slice($tokens, 0, $firstKey)
+            + $sorted
+            + $tokens;
     }
 
     /**
@@ -205,8 +217,8 @@ final class SortImports implements Filter
         $import = [];
         foreach ($tokens as $token) {
             if (
-                $this->TypeIndex->Comment[$token->id] ||
-                $token->id === \T_SEMICOLON
+                $this->TypeIndex->Comment[$token->id]
+                || $token->id === \T_SEMICOLON
             ) {
                 continue;
             }
@@ -240,11 +252,13 @@ final class SortImports implements Filter
     public function reset(): void
     {
         $this->SortableImports = [];
+    }
 
-        if (isset($this->Replace)) {
-            return;
-        }
-
+    /**
+     * @inheritDoc
+     */
+    public function boot(): void
+    {
         // If sorting depth-first, normalise to:
         //
         // ```

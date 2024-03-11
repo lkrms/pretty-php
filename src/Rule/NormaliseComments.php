@@ -128,22 +128,23 @@ final class NormaliseComments implements MultiTokenRule
                 // Collapse DocBlocks with one line of content to a single line
                 // unless they describe a file or are pinned to a declaration
                 if (
-                    ($token->id === \T_DOC_COMMENT ||
-                        strpos($token->OriginalText ?? $token->text, "\n") === false) &&
-                    strpos($text, "\n") === false &&
-                    !($token->NextCode && (
-                        $token->NextCode->id === \T_DECLARE ||
-                        $token->NextCode->id === \T_NAMESPACE || (
-                            $token->NextCode->id === \T_USE &&
-                            $token->NextCode->getSubType() === TokenSubType::USE_IMPORT
+                    ($token->id === \T_DOC_COMMENT
+                        || strpos($token->OriginalText ?? $token->text, "\n") === false)
+                    && strpos($text, "\n") === false
+                    && !($token->NextCode && (
+                        $token->NextCode->id === \T_DECLARE
+                        || $token->NextCode->id === \T_NAMESPACE
+                        || (
+                            $token->NextCode->id === \T_USE
+                            && $token->NextCode->getSubType() === TokenSubType::USE_IMPORT
                         )
                     )) && (
-                        !($token->Next &&
-                            $token->Next->Statement === $token->Next &&
-                            $token->Next->isDeclaration() &&
-                            $token->Next->id !== \T_DECLARE) ||
-                        ($token->Next->id === \T_USE &&
-                            $token->Next->getSubType() === TokenSubType::USE_TRAIT)
+                        !($token->Next
+                            && $token->Next->Statement === $token->Next
+                            && $token->Next->isDeclaration()
+                            && $token->Next->id !== \T_DECLARE)
+                        || ($token->Next->id === \T_USE
+                            && $token->Next->getSubType() === TokenSubType::USE_TRAIT)
                     )
                 ) {
                     $text = $text === '' ? ' */' : " $text */";

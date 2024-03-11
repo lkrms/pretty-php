@@ -18,11 +18,16 @@ final class RemoveHeredocIndentation implements Filter
     /**
      * @template T of GenericToken
      *
-     * @param T[] $tokens
-     * @return T[]
+     * @param list<T> $tokens
+     * @return list<T>
      */
     public function filterTokens(array $tokens): array
     {
+        // Heredocs can be nested, so tokens that belong to inner and outer
+        // heredocs are collected multiple times. Text is collected in a
+        // separate array with the same structure to ensure the only prefix
+        // removed is the innermost one.
+
         /** @var array<int,T[]> */
         $heredocTokens = [];
         /** @var array<int,string[]> */
@@ -48,7 +53,7 @@ final class RemoveHeredocIndentation implements Filter
         /** @var array<int,string[]> $heredocText */
         foreach ($heredocText as $i => $heredoc) {
             // Check for indentation to remove
-            if (!Pcre::match('/^\h+/', end($heredoc), $matches)) {
+            if (!Pcre::match('/^\h++/', end($heredoc), $matches)) {
                 continue;
             }
 
@@ -56,26 +61,23 @@ final class RemoveHeredocIndentation implements Filter
             $stripped = Pcre::replace("/\\n{$matches[0]}/", "\n", $heredoc);
 
             // And from the start of the first token and closing identifier,
-            // where there is no leading newline
-            switch ($count = count($heredoc)) {
-                case 1:
-                    $stripped[0] =
-                        Pcre::replace(
-                            "/^{$matches[0]}/",
-                            '',
-                            $stripped[0]
-                        );
-                    break;
-
-                default:
-                    $j = $count - 1;
-                    [$stripped[0], $stripped[$j]] =
-                        Pcre::replace(
-                            "/^{$matches[0]}/",
-                            '',
-                            [$stripped[0], $stripped[$j]]
-                        );
-                    break;
+            // where there is no leading newline and no chance the token is not
+            // at the start of a line
+            $last = count($heredoc) - 1;
+            if ($last === 0) {
+                $stripped[0] =
+                    Pcre::replace(
+                        "/^{$matches[0]}/",
+                        '',
+                        $stripped[0]
+                    );
+            } else {
+                [$stripped[0], $stripped[$last]] =
+                    Pcre::replace(
+                        "/^{$matches[0]}/",
+                        '',
+                        [$stripped[0], $stripped[$last]]
+                    );
             }
 
             // Finally, update each token

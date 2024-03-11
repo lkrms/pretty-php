@@ -14,6 +14,9 @@ final class EvaluateNumbers implements Filter
 {
     use ExtensionTrait;
 
+    /**
+     * @inheritDoc
+     */
     public function filterTokens(array $tokens): array
     {
         $number = 0;

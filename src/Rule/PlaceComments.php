@@ -53,27 +53,27 @@ final class PlaceComments implements TokenRule
     public function processToken(Token $token): void
     {
         if (
-            $token->isOneLineComment() &&
-            $token->Next &&
-            $token->Next->id !== \T_CLOSE_TAG
+            $token->isOneLineComment()
+            && $token->Next
+            && $token->Next->id !== \T_CLOSE_TAG
         ) {
             $token->CriticalWhitespaceAfter |= WhitespaceType::LINE;
         }
 
         $isDocComment =
-            $token->id === \T_DOC_COMMENT ||
-            $token->IsInformalDocComment;
+            $token->id === \T_DOC_COMMENT
+            || $token->IsInformalDocComment;
 
         $prevIsTopLevelCloseBrace =
-            $token->Prev->id === \T_CLOSE_BRACE &&
-            $token->Prev->isStructuralBrace(false) &&
-            $token->Prev->Expression->namedDeclarationParts()->hasOneOf(
+            $token->Prev->id === \T_CLOSE_BRACE
+            && $token->Prev->isStructuralBrace(false)
+            && $token->Prev->Expression->namedDeclarationParts()->hasOneOf(
                 ...TokenType::DECLARATION_CLASS
             );
 
         $needsNewlineBefore =
-            $token->id === \T_DOC_COMMENT ||
-            ($this->Formatter->Psr12 && $prevIsTopLevelCloseBrace);
+            $token->id === \T_DOC_COMMENT
+            || ($this->Formatter->Psr12 && $prevIsTopLevelCloseBrace);
 
         if (!$needsNewlineBefore) {
             // Leave embedded comments alone
@@ -115,14 +115,14 @@ final class PlaceComments implements TokenRule
         // Add a blank line before multi-line DocBlocks and C-style equivalents
         // unless they appear mid-statement
         if (
-            $token->hasNewline() &&
-            $isDocComment &&
-            (!$token->PrevSibling ||
-                !$token->NextSibling ||
-                $token->PrevSibling->Statement !== $token->NextSibling->Statement)
+            $token->hasNewline()
+            && $isDocComment
+            && (!$token->PrevSibling
+                || !$token->NextSibling
+                || $token->PrevSibling->Statement !== $token->NextSibling->Statement)
         ) {
-            $token->WhitespaceBefore |=
-                WhitespaceType::BLANK | WhitespaceType::LINE | WhitespaceType::SPACE;
+            $token->WhitespaceBefore
+                |= WhitespaceType::BLANK | WhitespaceType::LINE | WhitespaceType::SPACE;
         } else {
             $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
         }
@@ -135,10 +135,11 @@ final class PlaceComments implements TokenRule
         // comments
         if (
             $next && (
-                $next->id === \T_DECLARE ||
-                $next->id === \T_NAMESPACE || (
-                    $next->id === \T_USE &&
-                    $next->getSubType() === TokenSubType::USE_IMPORT
+                $next->id === \T_DECLARE
+                || $next->id === \T_NAMESPACE
+                || (
+                    $next->id === \T_USE
+                    && $next->getSubType() === TokenSubType::USE_IMPORT
                 )
             )
         ) {
@@ -148,9 +149,9 @@ final class PlaceComments implements TokenRule
 
         // Otherwise, pin DocBlocks to subsequent code
         if (
-            $next &&
-            $next === $token->Next &&
-            $token->id === \T_DOC_COMMENT
+            $next
+            && $next === $token->Next
+            && $token->id === \T_DOC_COMMENT
         ) {
             $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
         }
@@ -213,13 +214,13 @@ final class PlaceComments implements TokenRule
             //
             $indent = 0;
             if (
-                ($next->id === \T_CASE || $next->id === \T_DEFAULT) &&
-                $next->parent()->prevSibling(2)->id === \T_SWITCH
+                ($next->id === \T_CASE || $next->id === \T_DEFAULT)
+                && $next->parent()->prevSibling(2)->id === \T_SWITCH
             ) {
                 $prev = $token->PrevCode;
-                if (!($token->Parent === $prev ||
-                    ($prev->collect($token)->hasBlankLineBetweenTokens() &&
-                        !$token->collect($next)->hasBlankLineBetweenTokens()))) {
+                if (!($token->Parent === $prev
+                    || ($prev->collect($token)->hasBlankLineBetweenTokens()
+                        && !$token->collect($next)->hasBlankLineBetweenTokens()))) {
                     $indent = 1;
                 }
             }

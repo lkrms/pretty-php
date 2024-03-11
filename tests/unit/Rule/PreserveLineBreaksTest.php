@@ -579,9 +579,8 @@ class Foo
                     //
                     $key
                     //
-                ] % 5
+                ] % 5 ||
                 //
-                ||
                 //
                 $key === 'bravo'
             )
@@ -617,9 +616,8 @@ class Foo
                     =>
                         //
                         $this->baz
-                        *
                         //
-                        2,
+                        * 2,
 
                 //
                 default
@@ -720,9 +718,8 @@ class Foo
                     //
                     $key
                     //
-                ] % 5
+                ] % 5 ||
                 //
-                ||
                 //
                 $key === 'bravo'
             )
@@ -757,9 +754,9 @@ class Foo
                     //
                     =>
                         //
-                        $this->baz *
+                        $this->baz
                         //
-                        2,
+                        * 2,
 
                 //
                 default

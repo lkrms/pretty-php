@@ -49,8 +49,8 @@ final class AlignArrowFunctions implements TokenRule
         $alignWith = $token->collect($body->Prev)
                            ->reverse()
                            ->find(fn(Token $t) =>
-                                      $t->IsCode && $t->hasNewlineBefore() ||
-                                          $t === $token);
+                                      $t->IsCode && $t->hasNewlineBefore()
+                                          || $t === $token);
 
         $body->AlignedWith = $alignWith;
         $this->Formatter->registerCallback(
@@ -63,8 +63,8 @@ final class AlignArrowFunctions implements TokenRule
     private function alignBody(Token $body, Token $alignWith, Token $until): void
     {
         $delta = $body->getIndentDelta($alignWith);
-        $delta->LinePadding +=
-            $alignWith->alignmentOffset(false) + $this->Formatter->TabSize;
+        $delta->LinePadding
+            += $alignWith->alignmentOffset(false) + $this->Formatter->TabSize;
 
         foreach ($body->collect($until) as $token) {
             $delta->apply($token);

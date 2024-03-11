@@ -2,11 +2,14 @@
 
 namespace Lkrms\PrettyPHP\Concern;
 
+use Lkrms\PrettyPHP\Contract\Extension;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Formatter;
 
 /**
  * Implements the extension interface
+ *
+ * @phpstan-require-implements Extension
  */
 trait ExtensionTrait
 {
@@ -19,6 +22,11 @@ trait ExtensionTrait
         $this->Formatter = $formatter;
         $this->TypeIndex = $formatter->TokenTypeIndex;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function boot(): void {}
 
     /**
      * @inheritDoc

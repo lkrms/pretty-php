@@ -126,8 +126,6 @@ final class Formatter implements Buildable
     public string $Tab;
 
     /**
-     * Indexed token types
-     *
      * @readonly
      */
     public TokenTypeIndex $TokenTypeIndex;
@@ -157,11 +155,13 @@ final class Formatter implements Buildable
     /**
      * Indentation applied to heredocs and nowdocs
      *
+     * @readonly
      * @var HeredocIndent::*
      */
     public int $HeredocIndent;
 
     /**
+     * @readonly
      * @var ImportSortOrder::*
      */
     public int $ImportSortOrder;
@@ -175,6 +175,8 @@ final class Formatter implements Buildable
 
     /**
      * Enforce strict PSR-12 / PER Coding Style compliance?
+     *
+     * @readonly
      */
     public bool $Psr12;
 
@@ -206,10 +208,19 @@ final class Formatter implements Buildable
 
     // --
 
+    /**
+     * @readonly
+     */
     public bool $IncreaseIndentBetweenUnenclosedTags = true;
 
+    /**
+     * @readonly
+     */
     public bool $RelaxAlignmentCriteria = false;
 
+    /**
+     * @readonly
+     */
     public bool $NewlineBeforeFnDoubleArrows = false;
 
     /**
@@ -227,6 +238,8 @@ final class Formatter implements Buildable
      * $result = $object
      *               ->method1();
      * ```
+     *
+     * @readonly
      */
     public bool $AlignFirstCallInChain = true;
 
@@ -475,6 +488,8 @@ final class Formatter implements Buildable
 
     private bool $ReportCodeProblems;
 
+    private Parser $Parser;
+
     /**
      * Creates a new Formatter object
      *
@@ -523,6 +538,8 @@ final class Formatter implements Buildable
         $this->LogProgress = $this->Debug && ($flags & FormatterFlag::LOG_PROGRESS);
         $this->ReportCodeProblems = (bool) ($flags & FormatterFlag::REPORT_CODE_PROBLEMS);
         $this->CollectCodeProblems = $this->ReportCodeProblems || ($flags & FormatterFlag::COLLECT_CODE_PROBLEMS);
+
+        $this->Parser = new Parser($this);
 
         $this->resolveExtensions($rules, $filters, $enable, $disable);
         $this->PreferredRules = $rules;
@@ -766,7 +783,7 @@ final class Formatter implements Buildable
      * 2. Reset the formatter and enabled extensions
      * 3. Detect the end-of-line sequence used in `$code` (if not given)
      * 4. Convert line breaks in `$code` to `"\n"` if needed
-     * 5. Tokenize, filter and parse `$code` (see {@see Token::parse()})
+     * 5. Tokenize, filter and parse `$code` (see {@see Parser::parse()})
      * 6. Find lists comprised of
      *    - one or more comma-delimited items between `[]` or `()`, or
      *    - two or more interfaces after `extends` or `implements`
@@ -828,8 +845,9 @@ final class Formatter implements Buildable
         Profile::startTimer(__METHOD__ . '#parse-input');
         try {
             $this->Filename = $filename;
-            $this->Tokens = Token::parse(
-                $code, \TOKEN_PARSE, $this, ...$this->FormatFilterList
+            $this->Tokens = $this->Parser->parse(
+                $code,
+                ...$this->FormatFilterList
             );
 
             if (!$this->Tokens) {
@@ -898,13 +916,13 @@ final class Formatter implements Buildable
                     if (!$prev) {
                         continue 2;
                     }
-                    if ($prev->id === \T_CLOSE_BRACE &&
-                            !$prev->isStructuralBrace(false)) {
+                    if ($prev->id === \T_CLOSE_BRACE
+                            && !$prev->isStructuralBrace(false)) {
                         break;
                     }
-                    if ($prev->PrevCode &&
-                            $prev->is(TokenType::AMPERSAND) &&
-                            $prev->PrevCode->is([\T_FN, \T_FUNCTION])) {
+                    if ($prev->PrevCode
+                            && $prev->is(TokenType::AMPERSAND)
+                            && $prev->PrevCode->is([\T_FN, \T_FUNCTION])) {
                         break;
                     }
                     if ($prev->is([
@@ -944,8 +962,8 @@ final class Formatter implements Buildable
             $items =
                 $parent->children()
                        ->filter(fn(Token $t, ?Token $next, ?Token $prev) =>
-                                    $t->id !== $delimiter &&
-                                        (!$prev || $t->PrevCode->id === $delimiter));
+                                    $t->id !== $delimiter
+                                        && (!$prev || $t->PrevCode->id === $delimiter));
             $count = $items->count();
             if (!$count) {
                 continue;
@@ -1308,9 +1326,23 @@ final class Formatter implements Buildable
     private function getExtensions(array $extensions): array
     {
         foreach ($extensions as $ext) {
-            $result[] = $this->Extensions[$ext] ??= new $ext($this);
+            $result[] = $this->Extensions[$ext] ??= $this->getExtension($ext);
         }
         return $result ?? [];
+    }
+
+    /**
+     * @template T of Extension
+     *
+     * @param class-string<T> $extension
+     * @return T
+     */
+    private function getExtension(string $extension): Extension
+    {
+        /** @var T&Extension */
+        $ext = new $extension($this);
+        $ext->boot();
+        return $ext;
     }
 
     private function resetExtensions(): void
@@ -1370,6 +1402,7 @@ final class Formatter implements Buildable
     private function __clone()
     {
         $this->flush();
+        $this->Parser = $this->Parser->withFormatter($this);
     }
 
     /**

@@ -15,11 +15,14 @@ final class RemoveEmptyDocBlocks implements Filter
 {
     use ExtensionTrait;
 
+    /**
+     * @inheritDoc
+     */
     public function filterTokens(array $tokens): array
     {
         foreach ($tokens as $token) {
-            if ($token->id === \T_DOC_COMMENT &&
-                    Pcre::match('#^/\*\*[\s\*]*\*/$#', $token->text)) {
+            if ($token->id === \T_DOC_COMMENT
+                    && Pcre::match('#^/\*\*[\s\*]*\*/$#', $token->text)) {
                 continue;
             }
             $filtered[] = $token;

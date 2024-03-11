@@ -14,6 +14,9 @@ final class RemoveEmptyTokens implements Filter
 {
     use ExtensionTrait;
 
+    /**
+     * @inheritDoc
+     */
     public function filterTokens(array $tokens): array
     {
         $filtered = [];

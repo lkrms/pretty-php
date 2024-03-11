@@ -17,6 +17,9 @@ final class EvaluateStrings implements Filter
 {
     use ExtensionTrait;
 
+    /**
+     * @inheritDoc
+     */
     public function filterTokens(array $tokens): array
     {
         /** @var Token[] */

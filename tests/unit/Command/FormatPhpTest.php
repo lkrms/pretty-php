@@ -433,6 +433,31 @@ EOF),
                 '/invalid-syntax',
                 true,
             ],
+            'operators mixed' => [
+                0,
+                ' // Formatted 1 file successfully',
+                '/operators-mixed',
+            ],
+            'operators first' => [
+                0,
+                ' // Formatted 1 file successfully',
+                '/operators-first',
+            ],
+            'operators last' => [
+                0,
+                ' // Formatted 1 file successfully',
+                '/operators-last',
+            ],
+            'sort imports by depth' => [
+                0,
+                ' // Formatted 1 file successfully',
+                '/sort-imports-by-depth',
+            ],
+            'sort imports by name' => [
+                0,
+                ' // Formatted 1 file successfully',
+                '/sort-imports-by-name',
+            ],
         ];
     }
 

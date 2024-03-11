@@ -41,12 +41,12 @@ final class PreserveOneLineStatements implements TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->Statement === $token &&
-                !$this->preserveOneLine(
+        if ($token->Statement === $token
+                && !$this->preserveOneLine(
                     $token,
                     $until = $token->pragmaticEndOfExpression(false, false)
-                ) &&
-                $token->is([\T_ATTRIBUTE, \T_ATTRIBUTE_COMMENT])) {
+                )
+                && $token->is([\T_ATTRIBUTE, \T_ATTRIBUTE_COMMENT])) {
             $this->preserveOneLine(
                 $token->skipSiblingsOf(\T_ATTRIBUTE, \T_ATTRIBUTE_COMMENT),
                 $until

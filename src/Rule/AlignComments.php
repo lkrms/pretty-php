@@ -82,19 +82,20 @@ final class AlignComments implements BlockRule
              * ```
              */
             $prev = $comment->Prev;
-            if ($prev !== $lastComment ||
-                $comment->line - $prev->line > 1 ||
-                $comment->CommentType !== $prev->CommentType ||
-                $comment->isMultiLineComment() ||
-                $comment->column === 1 ||
-                !$lastStartOfLine ||
+            if ($prev !== $lastComment
+                || $comment->line - $prev->line > 1
+                || $comment->CommentType !== $prev->CommentType
+                || $comment->isMultiLineComment()
+                || $comment->column === 1
+                || !$lastStartOfLine
+                ||
                 /** @todo Guess input tab size and use it instead */
                 $comment->column <= $lastStartOfLine->column + (
                     $comment->Depth - $lastStartOfLine->Depth
-                ) * $this->Formatter->TabSize ||
-                ($comment->NextCode &&
-                    $comment->NextCode->wasFirstOnLine() &&
-                    $comment->column <= $comment->NextCode->column)) {
+                ) * $this->Formatter->TabSize
+                || ($comment->NextCode
+                    && $comment->NextCode->wasFirstOnLine()
+                    && $comment->column <= $comment->NextCode->column)) {
                 continue;
             }
 

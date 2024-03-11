@@ -1,12 +1,12 @@
 <?php
-$foo = $bar || /*
-                * comment
-                */ $baz;
+$foo = $bar /*
+             * comment
+             */ || $baz;
 
 if (
-    $foo || /*
-             * comment
-             */ $bar
+    $foo /*
+          * comment
+          */ || $bar
 ) {
 }
 
@@ -34,16 +34,16 @@ class Foo
     use Bar;
 }
 
-$foo = $bar || /*
-                * line 1
-                * line 2
-                */ $baz;
-
-if (
-    $foo || /*
+$foo = $bar /*
              * line 1
              * line 2
-             */ $bar
+             */ || $baz;
+
+if (
+    $foo /*
+          * line 1
+          * line 2
+          */ || $bar
 ) {
 }
 

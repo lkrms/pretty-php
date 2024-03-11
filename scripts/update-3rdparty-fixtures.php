@@ -117,9 +117,9 @@ foreach ($files as $xmlFile) {
         );
     }
     while ($reader->read()) {
-        if ($reader->nodeType === XMLReader::ELEMENT &&
-                $reader->name === 'programlisting' &&
-                $reader->getAttribute('role') === 'php') {
+        if ($reader->nodeType === XMLReader::ELEMENT
+                && $reader->name === 'programlisting'
+                && $reader->getAttribute('role') === 'php') {
             while ($reader->read()) {
                 if ($reader->nodeType === XMLReader::CDATA) {
                     $listings[$source][] = trim($reader->value);

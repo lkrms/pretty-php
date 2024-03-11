@@ -20,10 +20,10 @@ trait RuleTrait
             $from = $start->IsCode ? $start : $start->NextCode;
             $to = $end->IsCode ? $end : $end->PrevCode;
             if (
-                $from &&
-                $to &&
-                $from->Index <= $to->Index &&
-                $from->Statement !== $to->Statement
+                $from
+                && $to
+                && $from->Index <= $to->Index
+                && $from->Statement !== $to->Statement
             ) {
                 return false;
             }
@@ -38,8 +38,8 @@ trait RuleTrait
     protected function mirrorBracket(Token $openBracket, ?bool $hasNewlineBeforeNextCode = null): void
     {
         if (
-            $hasNewlineBeforeNextCode === false ||
-            !$openBracket->hasNewlineBeforeNextCode()
+            $hasNewlineBeforeNextCode === false
+            || !$openBracket->hasNewlineBeforeNextCode()
         ) {
             $openBracket->ClosedBy->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
             return;
