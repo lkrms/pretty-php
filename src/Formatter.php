@@ -79,6 +79,7 @@ use Salient\Core\Utility\Env;
 use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Str;
+use Salient\Core\Indentation;
 use Closure;
 use CompileError;
 use LogicException;
@@ -453,6 +454,8 @@ final class Formatter implements Buildable
 
     public ?string $Filename = null;
 
+    public ?Indentation $Indentation = null;
+
     /**
      * @var array<int,Token>|null
      */
@@ -688,6 +691,14 @@ final class Formatter implements Buildable
     }
 
     /**
+     * Get an Indentation object representing the formatter's configuration
+     */
+    public function getIndentation(): Indentation
+    {
+        return new Indentation($this->InsertSpaces, $this->TabSize);
+    }
+
+    /**
      * Get an instance with a value applied to a given property
      *
      * @internal
@@ -799,12 +810,15 @@ final class Formatter implements Buildable
      *
      * @param string|null $eol The end-of-line sequence used in `$code`, if
      * known.
+     * @param Indentation|null $indentation The indentation used in `$code`, if
+     * known.
      * @param string|null $filename For reporting purposes only. No filesystem
      * operations are performed on `$filename`.
      */
     public function format(
         string $code,
         ?string $eol = null,
+        ?Indentation $indentation = null,
         ?string $filename = null,
         bool $fast = false
     ): string {
@@ -845,6 +859,7 @@ final class Formatter implements Buildable
         Profile::startTimer(__METHOD__ . '#parse-input');
         try {
             $this->Filename = $filename;
+            $this->Indentation = $indentation;
             $this->Tokens = $this->Parser->parse(
                 $code,
                 ...$this->FormatFilterList

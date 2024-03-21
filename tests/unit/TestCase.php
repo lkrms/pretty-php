@@ -21,7 +21,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         // Preserve `$formatter->Tokens` for inspection
         $formatter = $formatter->withDebug();
         $first = $formatter->format($code);
-        $second = $formatter->format($first, null, null, true);
+        $second = $formatter->format($first, null, null, null, true);
         self::assertSame($expected, $first, 'Output is not formatted correctly.');
         self::assertSame($expected, $second, 'Output is not idempotent.');
         if ($code !== '') {
