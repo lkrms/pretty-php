@@ -275,6 +275,12 @@ class TokenTypeIndex implements Immutable
     public array $UnaryPredecessor;
 
     /**
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $T_DO;
+
+    /**
      * T_DECLARE, T_FOR, T_FOREACH, T_IF, T_SWITCH, T_WHILE
      *
      * @readonly
@@ -755,6 +761,8 @@ class TokenTypeIndex implements Immutable
             ...TT::CAST,
             ...TT::KEYWORD,
         );
+
+        $this->T_DO = TT::getIndex(\T_DO);
 
         $this->AltSyntaxStart = TT::getIndex(...TT::ALT_SYNTAX_START);
         $this->AltSyntaxContinue = TT::getIndex(...TT::ALT_SYNTAX_CONTINUE);
