@@ -85,11 +85,11 @@ final class HangingIndentation implements MultiTokenRule
                 $token->HangingIndentParentType =
                     $token->hasNewlineBeforeNextCode()
                         ? (($token->IsListParent && $token->ListItemCount > 1)
-                            || ($token->id === \T_OPEN_BRACE && $token->isStructuralBrace())
+                            || ($token->id === \T_OPEN_BRACE && $token->isStructuralBrace(true))
                                 ? self::NORMAL_INDENT
                                 : self::NO_INDENT)
                         : (($token->IsListParent && $token->ListItemCount > 1)
-                            || ($token->id === \T_OPEN_BRACE && $token->isStructuralBrace())
+                            || ($token->id === \T_OPEN_BRACE && $token->isStructuralBrace(true))
                             || ($token->id !== \T_OPEN_BRACE && $token->adjacent())
                                 ? self::OVERHANGING_INDENT | self::NO_INNER_NEWLINE
                                 : self::NORMAL_INDENT | self::NO_INNER_NEWLINE);

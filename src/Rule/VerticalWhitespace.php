@@ -260,7 +260,7 @@ final class VerticalWhitespace implements MultiTokenRule
             // Add a newline before an open brace that is part of a top-level
             // declaration or an anonymous class declared over multiple lines
             if ($token->id === \T_OPEN_BRACE) {
-                if (!$token->isStructuralBrace()
+                if (!$token->isStructuralBrace(true)
                         || ($token->Next->id === \T_CLOSE_BRACE && !$token->hasNewlineAfter())) {
                     continue;
                 }

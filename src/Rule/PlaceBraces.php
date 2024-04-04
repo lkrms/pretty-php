@@ -66,7 +66,7 @@ final class PlaceBraces implements MultiTokenRule
         foreach ($tokens as $token) {
             $isMatch = $token->isMatchBrace();
             if (!$isMatch
-                    && !$token->isStructuralBrace(false)) {
+                    && !$token->isStructuralBrace()) {
                 continue;
             }
 

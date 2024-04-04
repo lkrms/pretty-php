@@ -175,7 +175,7 @@ final class PreserveLineBreaks implements MultiTokenRule
         }
 
         if ($token->id === \T_CLOSE_BRACE
-                && !$token->isStructuralBrace(false)) {
+                && !$token->isStructuralBrace()) {
             return false;
         }
 
@@ -229,7 +229,7 @@ final class PreserveLineBreaks implements MultiTokenRule
                             && $token->PrevCode->EndStatement !== $token->PrevCode)
                         || ($token->Parent
                             && !($token->Parent->id === \T_OPEN_BRACE
-                                && $token->Parent->isStructuralBrace(false))))))) {
+                                && $token->Parent->isStructuralBrace())))))) {
             if (!$this->Formatter->PreserveLineBreaks) {
                 return false;
             }

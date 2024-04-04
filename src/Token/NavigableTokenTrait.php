@@ -167,26 +167,31 @@ trait NavigableTokenTrait
      * True if the token is a brace that delimits a code block
      *
      * Returns `false` for braces in:
+     *
      * - expressions (e.g. `$object->{$property}`)
      * - strings (e.g. `"{$object->property}"`)
      * - alias/import statements (e.g. `use A\{B, C}`)
      *
-     * Returns `true` for braces around trait adaptations, and for `match`
-     * expression braces if `$orMatch` is `true`.
+     * Returns `true` for braces in:
+     *
+     * - trait adaptations
+     * - `match` expressions (if `$orMatch` is `true`)
      */
-    final public function isStructuralBrace(bool $orMatch = true): bool
+    final public function isStructuralBrace(bool $orMatch = false): bool
     {
-        /** @var Token */
-        $current = $this->OpenedBy ?: $this;
+        /** @var Token $this */
+        $current = $this->OpenedBy === null ? $this : $this->OpenedBy;
 
         // Exclude T_CURLY_OPEN and T_DOLLAR_OPEN_CURLY_BRACES
         if ($current->id !== \T_OPEN_BRACE) {
             return false;
         }
 
-        /** @var Token|null */
-        $prev = $current->PrevSibling->PrevSibling ?? null;
-        if ($prev && $prev->id === \T_MATCH) {
+        if (
+            $current->PrevSibling
+            && $current->PrevSibling->PrevSibling
+            && $current->PrevSibling->PrevSibling->id === \T_MATCH
+        ) {
             return $orMatch;
         }
 
@@ -195,7 +200,8 @@ trait NavigableTokenTrait
         // Braces cannot be empty in expression (dereferencing) contexts, but
         // trait adaptation braces can be
         return $lastInner === $current                                                  // `{}`
-            || $lastInner->is([\T_COLON, \T_SEMICOLON])                                 // `{ statement; }`
+            || $lastInner->id === \T_SEMICOLON                                          // `{ statement; }`
+            || $lastInner->id === \T_COLON                                              // `{ label: }`
             || $lastInner->IsStatementTerminator                                        /* `{ statement ?>...<?php }` */
             || ($lastInner->id === \T_CLOSE_BRACE && $lastInner->isStructuralBrace());  // `{ { statement; } }`
     }

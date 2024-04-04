@@ -341,7 +341,7 @@ final class Parser
                 // class
                 if (
                     $token->id !== \T_CLOSE_BRACE
-                    || !$token->isStructuralBrace(false)
+                    || !$token->isStructuralBrace()
                 ) {
                     $prev = $token;
                     continue;
@@ -490,7 +490,7 @@ final class Parser
             if (
                 $idx->CloseBracketExceptBrace[$token->id] || (
                     $token->id === \T_CLOSE_BRACE
-                    && !$token->isStructuralBrace(false)
+                    && !$token->isStructuralBrace()
                 )
             ) {
                 $endStatementOffset = 2;
@@ -500,7 +500,7 @@ final class Parser
                 if (($parent = $token->Parent) && (
                     $idx->OpenBracketExceptBrace[$parent->id] || (
                         $parent->id === \T_OPEN_BRACE
-                        && !$parent->isStructuralBrace(false)
+                        && !$parent->isStructuralBrace()
                     )
                 )) {
                     $endStatementOffset = 1;
@@ -621,7 +621,7 @@ final class Parser
                 }
             }
 
-            if ($token->id === \T_CLOSE_BRACE && $token->isStructuralBrace()) {
+            if ($token->id === \T_CLOSE_BRACE && $token->isStructuralBrace(true)) {
                 $endExpressionOffsets = [2, 1];
                 continue;
             }
@@ -630,7 +630,7 @@ final class Parser
                     || $token->IsStatementTerminator
                     || ($token->id === \T_COLON && $token->isColonStatementDelimiter())
                     || ($token->id === \T_CLOSE_BRACE
-                        && (!$token->isStructuralBrace() || $token->isMatchBrace()))
+                        && (!$token->isStructuralBrace(true) || $token->isMatchBrace()))
                     || $token->IsTernaryOperator) {
                 // Expression terminators don't form part of the expression
                 $token->Expression = false;
@@ -644,7 +644,7 @@ final class Parser
                 $parent = $token->parent();
                 if ($parent->is([\T_OPEN_BRACKET, \T_OPEN_PARENTHESIS, \T_ATTRIBUTE])
                     || ($parent->id === \T_OPEN_BRACE
-                        && (!$parent->isStructuralBrace() || $token->isMatchDelimiter()))) {
+                        && (!$parent->isStructuralBrace(true) || $token->isMatchDelimiter()))) {
                     $token->Expression = false;
                     $endExpressionOffsets = [2];
                 }

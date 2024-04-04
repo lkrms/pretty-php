@@ -932,7 +932,7 @@ final class Formatter implements Buildable
                         continue 2;
                     }
                     if ($prev->id === \T_CLOSE_BRACE
-                            && !$prev->isStructuralBrace(false)) {
+                            && !$prev->isStructuralBrace()) {
                         break;
                     }
                     if ($prev->PrevCode

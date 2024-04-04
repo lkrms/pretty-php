@@ -107,7 +107,7 @@ final class AlignData implements BlockRule
                     continue;
                 }
                 if ($token->is(TokenType::OPERATOR_ASSIGNMENT)) {
-                    if (!$token->Parent || $token->Parent->isStructuralBrace(false)) {
+                    if (!$token->Parent || $token->Parent->isStructuralBrace()) {
                         $addToIndex('=');
                         continue;
                     }
