@@ -3,6 +3,7 @@
 namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
@@ -211,7 +212,11 @@ final class HangingIndentation implements MultiTokenRule
             //         : $a <=>
             //             $b;
             // ```
-            if ($token->IsTernaryOperator || $token->id === \T_COALESCE || $token->id === \T_COALESCE_EQUAL) {
+            if (
+                ($token->Flags & TokenFlag::TERNARY_OPERATOR)
+                || $token->id === \T_COALESCE
+                || $token->id === \T_COALESCE_EQUAL
+            ) {
                 $stack[] = self::getTernaryContext($token) ?: $token->TernaryOperator1 ?: $token;
                 $until = self::getTernaryEndOfExpression($token);
             } elseif ($token->ChainOpenedBy) {
@@ -421,8 +426,10 @@ final class HangingIndentation implements MultiTokenRule
 
         // And without breaking out of an unenclosed control structure
         // body, proceed to the end of the expression
-        if (!($until->NextSibling
-                && $until->NextSibling->IsTernaryOperator)) {
+        if (!(
+            $until->NextSibling
+            && ($until->NextSibling->Flags & TokenFlag::TERNARY_OPERATOR)
+        )) {
             $until = $until->pragmaticEndOfExpression();
         }
 

@@ -4,6 +4,7 @@ namespace Lkrms\PrettyPHP\Token;
 
 use Lkrms\PrettyPHP\Catalog\CommentType;
 use Lkrms\PrettyPHP\Catalog\CustomToken;
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Exception\InvalidTokenException;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
@@ -58,7 +59,10 @@ trait NavigableTokenTrait
 
     public ?Token $Heredoc = null;
 
-    public bool $IsTernaryOperator = false;
+    /**
+     * @var int-mask-of<TokenFlag::*>
+     */
+    public int $Flags = 0;
 
     public ?Token $TernaryOperator1 = null;
 
@@ -94,12 +98,6 @@ trait NavigableTokenTrait
      * or at least one delimiter appears on its own line
      */
     public bool $IsInformalDocComment = false;
-
-    /**
-     * True if the token is a T_CLOSE_BRACE or T_CLOSE_TAG that terminates a
-     * statement
-     */
-    public bool $IsStatementTerminator = false;
 
     /**
      * The original content of the token after expanding tabs if CollectColumn
@@ -202,7 +200,7 @@ trait NavigableTokenTrait
         return $lastInner === $current                                                  // `{}`
             || $lastInner->id === \T_SEMICOLON                                          // `{ statement; }`
             || $lastInner->id === \T_COLON                                              // `{ label: }`
-            || $lastInner->IsStatementTerminator                                        /* `{ statement ?>...<?php }` */
+            || ($lastInner->Flags & TokenFlag::STATEMENT_TERMINATOR)                    /* `{ statement ?>...<?php }` */
             || ($lastInner->id === \T_CLOSE_BRACE && $lastInner->isStructuralBrace());  // `{ { statement; } }`
     }
 

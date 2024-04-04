@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
@@ -62,7 +63,7 @@ final class ControlStructureSpacing implements MultiTokenRule
             if ($body->id === \T_OPEN_BRACE
                     || $body->id === \T_COLON
                     || $body->id === \T_SEMICOLON
-                    || $body->IsStatementTerminator) {
+                    || ($body->Flags & TokenFlag::STATEMENT_TERMINATOR)) {
                 continue;
             }
 

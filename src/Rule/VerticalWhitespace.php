@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
@@ -286,8 +287,10 @@ final class VerticalWhitespace implements MultiTokenRule
             // If one ternary operator is at the start of a line, add a newline
             // before the other
             if ($token->id === \T_QUESTION) {
-                if (!$token->IsTernaryOperator
-                        || $token->TernaryOperator2 === $token->Next) {
+                if (
+                    !($token->Flags & TokenFlag::TERNARY_OPERATOR)
+                    || $token->TernaryOperator2 === $token->Next
+                ) {
                     continue;
                 }
 

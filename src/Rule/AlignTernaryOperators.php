@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
@@ -41,7 +42,10 @@ final class AlignTernaryOperators implements MultiTokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            if ($token->id === \T_QUESTION && !$token->IsTernaryOperator) {
+            if (
+                $token->id === \T_QUESTION
+                && !($token->Flags & TokenFlag::TERNARY_OPERATOR)
+            ) {
                 continue;
             }
 

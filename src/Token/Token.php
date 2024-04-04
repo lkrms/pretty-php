@@ -3,6 +3,7 @@
 namespace Lkrms\PrettyPHP\Token;
 
 use Lkrms\PrettyPHP\Catalog\CommentType;
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
@@ -218,7 +219,6 @@ class Token extends GenericToken implements JsonSerializable
         $a['EndExpression'] = $this->EndExpression;
         $a['IsListParent'] = $this->IsListParent;
         $a['ListItemCount'] = $this->ListItemCount;
-        $a['IsTernaryOperator'] = $this->IsTernaryOperator;
         $a['TernaryOperator1'] = $this->TernaryOperator1;
         $a['TernaryOperator2'] = $this->TernaryOperator2;
         $a['CommentType'] = $this->CommentType;
@@ -259,7 +259,6 @@ class Token extends GenericToken implements JsonSerializable
         $a['CriticalWhitespaceAfter'] = $this->CriticalWhitespaceAfter;
         $a['CriticalWhitespaceMaskPrev'] = $this->CriticalWhitespaceMaskPrev;
         $a['CriticalWhitespaceMaskNext'] = $this->CriticalWhitespaceMaskNext;
-        $a['IsStatementTerminator'] = $this->IsStatementTerminator;
         $a['OutputLine'] = $this->OutputLine;
         $a['OutputPos'] = $this->OutputPos;
         $a['OutputColumn'] = $this->OutputColumn;
@@ -556,7 +555,7 @@ class Token extends GenericToken implements JsonSerializable
             // expression boundary, move back to a sibling that isn't a
             // terminator
             while ($current && $current->Expression === false) {
-                if ($i && !($current->IsTernaryOperator
+                if ($i && !(($current->Flags & TokenFlag::TERNARY_OPERATOR)
                         || $current->is(TokenType::OPERATOR_COMPARISON_EXCEPT_COALESCE))) {
                     break;
                 }
@@ -741,7 +740,7 @@ class Token extends GenericToken implements JsonSerializable
 
             // Don't terminate if the token between expressions is a ternary
             // operator or an expression terminator other than `)`, `]` and `;`
-            if ($terminator->IsTernaryOperator
+            if (($terminator->Flags & TokenFlag::TERNARY_OPERATOR)
                     || $this->TypeIndex->ExpressionDelimiter[$terminator->id]) {
                 continue;
             }
@@ -895,7 +894,7 @@ class Token extends GenericToken implements JsonSerializable
     {
         if ($this->PrevCode
             && ($this->is([\T_SEMICOLON, \T_COMMA, \T_COLON])
-                || $this->IsStatementTerminator)) {
+                || ($this->Flags & TokenFlag::STATEMENT_TERMINATOR))) {
             return $this->PrevCode;
         }
 
@@ -906,9 +905,9 @@ class Token extends GenericToken implements JsonSerializable
     {
         if ($this->NextCode
             && !($this->is([\T_SEMICOLON, \T_COMMA, \T_COLON])
-                || $this->IsStatementTerminator)
+                || ($this->Flags & TokenFlag::STATEMENT_TERMINATOR))
             && ($this->NextCode->is([\T_SEMICOLON, \T_COMMA, \T_COLON])
-                || $this->NextCode->IsStatementTerminator)) {
+                || ($this->NextCode->Flags & TokenFlag::STATEMENT_TERMINATOR))) {
             return $this->NextCode;
         }
 
@@ -1098,7 +1097,7 @@ class Token extends GenericToken implements JsonSerializable
             return false;
         }
 
-        return $this->PrevCode->IsTernaryOperator
+        return ($this->PrevCode->Flags & TokenFlag::TERNARY_OPERATOR)
             || $this->TypeIndex->UnaryPredecessor[$this->PrevCode->id];
     }
 

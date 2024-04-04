@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
@@ -118,7 +119,10 @@ final class OperatorSpacing implements MultiTokenRule
             }
 
             // Suppress whitespace after `?` in nullable types
-            if ($token->id === \T_QUESTION && !$token->IsTernaryOperator) {
+            if (
+                $token->id === \T_QUESTION
+                && !($token->Flags & TokenFlag::TERNARY_OPERATOR)
+            ) {
                 $token->WhitespaceBefore |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskNext = WhitespaceType::NONE;
                 continue;
@@ -148,13 +152,18 @@ final class OperatorSpacing implements MultiTokenRule
 
             $token->WhitespaceAfter |= WhitespaceType::SPACE;
 
-            if ($token->id === \T_COLON && !$token->IsTernaryOperator) {
+            if (
+                $token->id === \T_COLON
+                && !($token->Flags & TokenFlag::TERNARY_OPERATOR)
+            ) {
                 continue;
             }
 
             // Collapse ternary operators with nothing between `?` and `:`
-            if ($token->IsTernaryOperator
-                    && $token->TernaryOperator1 === $token->Prev) {
+            if (
+                ($token->Flags & TokenFlag::TERNARY_OPERATOR)
+                && $token->TernaryOperator1 === $token->Prev
+            ) {
                 $token->WhitespaceBefore = WhitespaceType::NONE;
                 $token->Prev->WhitespaceAfter = WhitespaceType::NONE;
 

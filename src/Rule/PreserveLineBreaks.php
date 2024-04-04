@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
@@ -121,7 +122,7 @@ final class PreserveLineBreaks implements MultiTokenRule
         }
 
         // Don't preserve newlines before `:` other than ternary operators
-        if ($token->id === \T_COLON && !$token->IsTernaryOperator) {
+        if ($token->id === \T_COLON && !($token->Flags & TokenFlag::TERNARY_OPERATOR)) {
             return false;
         }
 
