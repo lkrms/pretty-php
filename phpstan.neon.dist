@@ -3,7 +3,7 @@ includes:
   - tests/phpstan-conditional.php
 
 parameters:
-  level: 6
+  level: 9
   paths:
     - bin/pretty-php
     - bootstrap.php
