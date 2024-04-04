@@ -35,7 +35,7 @@ endswitch;
 PHP;
 
         $formatter = (new Formatter())->withDebug();
-        $formatter->format($code, \PHP_EOL, null, true);
+        $formatter->format($code, \PHP_EOL, null, null, true);
 
         $subTypes = [];
         foreach ($formatter->Tokens as $token) {

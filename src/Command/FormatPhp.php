@@ -840,6 +840,8 @@ EOF,
                     : $this->getConfigValues($configFile);
 
                 if ($configValues === null) {
+                    // Bail out if there are no paths on the command line, and
+                    // no configuration file in the current directory
                     if (!$this->InputFiles) {
                         break;
                     }
@@ -852,7 +854,7 @@ EOF,
 
                 $dir = dirname($configFile);
                 $restoreDir = false;
-                if (!File::same($dir, File::cwd())) {
+                if (!File::same($dir, File::getCwd())) {
                     Console::debug('Changing to directory:', $dir);
                     File::chdir($dir);
                     $restoreDir = true;
@@ -932,29 +934,53 @@ EOF,
         $in = array_values($in);
         $out = $this->OutputFiles;
 
+        $errors = [];
         if ((!$in && !$dirCount && !$this->InputFiles) || $in === ['-']) {
-            if (count($out) > 1) {
-                throw new CliInvalidArgumentsException(
-                    '--output cannot be given multiple times when reading from the standard input'
-                );
-            }
             $in = ['php://stdin'];
-            $out = $out ?: ['-'];
             if ($this->StdinFilename !== null && !$this->IgnoreConfigFiles) {
+                // `$this->StdinFilename` may not exist or even be a valid path,
+                // but `$this->getConfigFile()` doesn't expect it to be
                 $dir = dirname($this->StdinFilename);
                 $dirs[$dir] = $dir;
             }
-        } elseif (
-            $out
-            && $out !== ['-']
-            && ($dirCount || count($out) !== count($in))
-        ) {
-            throw new CliInvalidArgumentsException(
-                '--output is required once per input file'
-                . ($dirCount ? ' and cannot be given with directories' : '')
-            );
+            if (!$out) {
+                $out = ['-'];
+            } elseif (count($out) > 1) {
+                $errors[] = '--output cannot be given multiple times when reading from the standard input';
+                $out = ['-'];
+            }
+        } elseif ($out && $out !== ['-']) {
+            if (in_array('-', $out, true)) {
+                $errors[] = "--output cannot be '-' when given multiple times";
+            }
+            if ($dirCount) {
+                $errors[] = "--output must be '-' when formatting directories";
+            }
+            if (!$errors && count($out) !== count($in)) {
+                $errors[] = "--output must be '-' or given once per input file";
+            }
         } elseif (!$out) {
             $out = $in;
+        }
+
+        if ($out && $out !== ['-']) {
+            foreach ($out as $file) {
+                if (!file_exists($file)) {
+                    $dir = dirname($file);
+                    if (!is_dir($dir) || !is_writable($dir)) {
+                        $errors[] = sprintf('not a writable directory: %s', $dir);
+                    }
+                    continue;
+                }
+                if (!is_file($file) || !is_writable($file)) {
+                    $errors[] = sprintf('not a writable file: %s', $file);
+                }
+            }
+        }
+
+        if ($errors) {
+            $errors = Arr::unique($errors);
+            throw new CliInvalidArgumentsException(...$errors);
         }
 
         if (
@@ -1016,7 +1042,7 @@ EOF,
                     break;
                 }
                 if ($dir === '.') {
-                    $dir = File::cwd();
+                    $dir = File::getCwd();
                 }
                 $dir = dirname($dir);
                 if (array_key_exists($dir, $this->FormatterByDir)) {
@@ -1039,6 +1065,14 @@ EOF,
                 $file,
             );
 
+            if ($this->Debug) {
+                Console::debug(sprintf(
+                    'Formatting %d of %d:',
+                    $i,
+                    $count,
+                ), $inputFile);
+            }
+
             if (
                 $this->Quiet < 4
                 && ($file !== 'php://stdin' || (
@@ -1056,12 +1090,41 @@ EOF,
             $formatter = $this->FormatterByDir[$dir]
                 ??= $this->DefaultFormatter
                 ??= $this->getFormatter();
-            $input = File::getContents($file);
+
+            $inputStream = File::open($file, 'rb');
+
+            if (!File::isSeekable($inputStream)) {
+                Console::debug('Copying unseekable input to temporary stream');
+                $seekable = File::getSeekable($inputStream, $file);
+                File::close($inputStream, $file);
+                $inputStream = $seekable;
+            }
+
+            $defaultIndent = $formatter->getIndentation();
+            $indent = File::guessIndentation($inputStream, $defaultIndent, false, $file);
+            if ($indent !== $defaultIndent) {
+                Console::debug(
+                    'Input indentation appears to be:',
+                    sprintf(
+                        $indent->InsertSpaces ? '%d spaces' : 'tabs (size: %d)',
+                        $indent->TabSize,
+                    )
+                );
+            }
+
+            File::rewind($inputStream, $file);
+
+            $eol = File::getEol($inputStream, $file);
+            $input = File::getContents($inputStream, 0, $file);
+
+            File::close($inputStream, $file);
+
             Profile::startTimer($inputFile, 'file');
             try {
                 $output = $formatter->format(
                     $input,
-                    null,
+                    $eol,
+                    $indent,
                     $file !== 'php://stdin' || $this->StdinFilename !== null
                         ? $inputFile
                         : null,
