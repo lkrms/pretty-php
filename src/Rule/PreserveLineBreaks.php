@@ -117,7 +117,10 @@ final class PreserveLineBreaks implements MultiTokenRule
         }
 
         // Treat `?:` as one operator
-        if ($token->TernaryOperator1 === $prev) {
+        if (($token->Flags & TokenFlag::TERNARY_OPERATOR)
+            && ($token->id === \T_QUESTION
+                ? $token
+                : $token->OtherTernaryOperator) === $prev) {
             return false;
         }
 
@@ -171,7 +174,10 @@ final class PreserveLineBreaks implements MultiTokenRule
         }
 
         // Treat `?:` as one operator
-        if ($token->TernaryOperator2 === $next) {
+        if (($token->Flags & TokenFlag::TERNARY_OPERATOR)
+            && ($token->id === \T_COLON
+                ? $token
+                : $token->OtherTernaryOperator) === $next) {
             return false;
         }
 

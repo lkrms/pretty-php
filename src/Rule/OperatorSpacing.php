@@ -162,7 +162,9 @@ final class OperatorSpacing implements MultiTokenRule
             // Collapse ternary operators with nothing between `?` and `:`
             if (
                 ($token->Flags & TokenFlag::TERNARY_OPERATOR)
-                && $token->TernaryOperator1 === $token->Prev
+                && ($token->id === \T_QUESTION
+                    ? $token
+                    : $token->OtherTernaryOperator) === $token->Prev
             ) {
                 $token->WhitespaceBefore = WhitespaceType::NONE;
                 $token->Prev->WhitespaceAfter = WhitespaceType::NONE;

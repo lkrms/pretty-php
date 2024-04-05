@@ -289,15 +289,15 @@ final class VerticalWhitespace implements MultiTokenRule
             if ($token->id === \T_QUESTION) {
                 if (
                     !($token->Flags & TokenFlag::TERNARY_OPERATOR)
-                    || $token->TernaryOperator2 === $token->Next
+                    || $token->OtherTernaryOperator === $token->Next
                 ) {
                     continue;
                 }
 
                 $op1Newline = $token->hasNewlineBefore();
-                $op2Newline = $token->TernaryOperator2->hasNewlineBefore();
+                $op2Newline = $token->OtherTernaryOperator->hasNewlineBefore();
                 if ($op1Newline && !$op2Newline) {
-                    $token->TernaryOperator2->WhitespaceBefore |= WhitespaceType::LINE;
+                    $token->OtherTernaryOperator->WhitespaceBefore |= WhitespaceType::LINE;
                 } elseif (!$op1Newline && $op2Newline) {
                     $token->WhitespaceBefore |= WhitespaceType::LINE;
                 }

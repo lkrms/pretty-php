@@ -521,8 +521,7 @@ final class Parser
      *
      * Token properties set:
      *
-     * - `TernaryOperator1`
-     * - `TernaryOperator2`
+     * - `OtherTernaryOperator`
      * - `ChainOpenedBy`
      *
      * @param Token[] $tokens
@@ -612,8 +611,8 @@ final class Parser
                     }
                     $current->Flags |= TokenFlag::TERNARY_OPERATOR;
                     $token->Flags |= TokenFlag::TERNARY_OPERATOR;
-                    $current->TernaryOperator1 = $token->TernaryOperator1 = $token;
-                    $current->TernaryOperator2 = $token->TernaryOperator2 = $current;
+                    $current->OtherTernaryOperator = $token;
+                    $token->OtherTernaryOperator = $current;
                     break;
                 }
             }

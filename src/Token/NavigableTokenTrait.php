@@ -64,9 +64,7 @@ trait NavigableTokenTrait
      */
     public int $Flags = 0;
 
-    public ?Token $TernaryOperator1 = null;
-
-    public ?Token $TernaryOperator2 = null;
+    public ?Token $OtherTernaryOperator = null;
 
     public ?Token $ChainOpenedBy = null;
 

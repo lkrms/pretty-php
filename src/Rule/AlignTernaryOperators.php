@@ -53,7 +53,7 @@ final class AlignTernaryOperators implements MultiTokenRule
             // of a line
             if (!$token->hasNewlineBefore()
                 && ($token->id === \T_COALESCE
-                    || !$token->TernaryOperator2->hasNewlineBefore())) {
+                    || !$token->OtherTernaryOperator->hasNewlineBefore())) {
                 continue;
             }
 
@@ -84,8 +84,8 @@ final class AlignTernaryOperators implements MultiTokenRule
     private function setAlignedWith(Token $token, Token $alignWith): void
     {
         $token->AlignedWith = $alignWith;
-        if ($token->TernaryOperator2) {
-            $token->TernaryOperator2->AlignedWith = $alignWith;
+        if ($token->OtherTernaryOperator) {
+            $token->OtherTernaryOperator->AlignedWith = $alignWith;
         }
     }
 

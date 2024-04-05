@@ -219,8 +219,20 @@ class Token extends GenericToken implements JsonSerializable
         $a['EndExpression'] = $this->EndExpression;
         $a['IsListParent'] = $this->IsListParent;
         $a['ListItemCount'] = $this->ListItemCount;
-        $a['TernaryOperator1'] = $this->TernaryOperator1;
-        $a['TernaryOperator2'] = $this->TernaryOperator2;
+
+        if ($this->Flags) {
+            $flags = [];
+            foreach (TokenFlag::cases() as $name => $value) {
+                if ($this->Flags & $value) {
+                    $flags[] = $name;
+                }
+            }
+            if ($flags) {
+                $a['Flags'] = implode('|', $flags);
+            }
+        }
+
+        $a['OtherTernaryOperator'] = $this->OtherTernaryOperator;
         $a['CommentType'] = $this->CommentType;
         $a['NewlineAfterPreserved'] = $this->NewlineAfterPreserved;
         $a['TagIndent'] = $this->TagIndent;
@@ -539,8 +551,9 @@ class Token extends GenericToken implements JsonSerializable
         $ternary1 =
             $this->prevSiblings()
                  ->find(fn(Token $t) =>
-                            $t === $t->TernaryOperator1);
-        if ($ternary1 && $ternary1->TernaryOperator2->Index > $this->Index) {
+                            ($t->Flags & TokenFlag::TERNARY_OPERATOR)
+                                && $t->id === \T_QUESTION);
+        if ($ternary1 && $ternary1->OtherTernaryOperator->Index > $this->Index) {
             return $ternary1->NextCode->_pragmaticStartOfExpression($this);
         }
 
@@ -710,9 +723,10 @@ class Token extends GenericToken implements JsonSerializable
         // the last token before `:`
         $current = $this;
         while ($current = $current->PrevSibling) {
-            if ($current === $current->TernaryOperator1) {
-                if ($current->TernaryOperator2->Index > $this->Index) {
-                    return $current->TernaryOperator2->PrevCode;
+            if (($current->Flags & TokenFlag::TERNARY_OPERATOR)
+                    && $current->id === \T_QUESTION) {
+                if ($current->OtherTernaryOperator->Index > $this->Index) {
+                    return $current->OtherTernaryOperator->PrevCode;
                 }
                 break;
             }
