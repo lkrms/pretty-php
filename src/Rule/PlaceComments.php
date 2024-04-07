@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
@@ -62,7 +63,7 @@ final class PlaceComments implements TokenRule
 
         $isDocComment =
             $token->id === \T_DOC_COMMENT
-            || $token->IsInformalDocComment;
+            || ($token->Flags & TokenFlag::INFORMAL_DOC_COMMENT);
 
         $prevIsTopLevelCloseBrace =
             $token->Prev->id === \T_CLOSE_BRACE

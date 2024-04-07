@@ -341,11 +341,6 @@ parameters:
 			path: src/Parser.php
 
 		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:\\$Flags \\(int\\<0, 3\\>\\) does not accept int\\.$#"
-			count: 4
-			path: src/Parser.php
-
-		-
 			message: "#^Cannot access property \\$AlignedWith on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/AlignArrowFunctions.php

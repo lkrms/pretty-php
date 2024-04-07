@@ -3,6 +3,7 @@
 namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\CommentType;
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
@@ -40,7 +41,10 @@ final class NormaliseComments implements MultiTokenRule
         foreach ($tokens as $token) {
             // Extract DocBlock content, preserving indentation if any lines
             // start with characters other than "*", and normalise as per PSR-5
-            if ($token->id === \T_DOC_COMMENT || $token->IsInformalDocComment) {
+            if (
+                $token->id === \T_DOC_COMMENT
+                || ($token->Flags & TokenFlag::INFORMAL_DOC_COMMENT)
+            ) {
                 $preserveAsterisk = false;
                 $deindent = null;
                 $asterisksAreMissing = Pcre::match('/\n\h*+(?!\*)\S/', $token->text);

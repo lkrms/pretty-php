@@ -92,12 +92,6 @@ trait NavigableTokenTrait
     public ?string $CommentType = null;
 
     /**
-     * True if the token is a C-style comment where every line starts with "*"
-     * or at least one delimiter appears on its own line
-     */
-    public bool $IsInformalDocComment = false;
-
-    /**
      * The original content of the token after expanding tabs if CollectColumn
      * found tabs to expand
      */

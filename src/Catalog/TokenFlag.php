@@ -22,4 +22,10 @@ final class TokenFlag extends AbstractEnumeration
      * The token is a T_QUESTION or T_COLON belonging to a ternary operator
      */
     public const TERNARY_OPERATOR = 2;
+
+    /**
+     * The token is a C-style comment where every line starts with "*" or at
+     * least one delimiter appears on its own line
+     */
+    public const INFORMAL_DOC_COMMENT = 8;
 }

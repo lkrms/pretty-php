@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule\Preset;
 
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\Preset;
 use Lkrms\PrettyPHP\Contract\TokenRule;
@@ -76,7 +77,7 @@ final class WordPress implements Preset, TokenRule
 
     public function processToken(Token $token): void
     {
-        if ($token->id === \T_COMMENT && !$token->IsInformalDocComment) {
+        if ($token->id === \T_COMMENT && !($token->Flags & TokenFlag::INFORMAL_DOC_COMMENT)) {
             return;
         }
 

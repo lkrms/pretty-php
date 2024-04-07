@@ -143,7 +143,6 @@ final class Parser
      * - `Heredoc`
      * - `IsCode`
      * - `CommentType`
-     * - `IsInformalDocComment`
      *
      * @param Token[] $tokens
      * @return Token[]
@@ -199,17 +198,18 @@ final class Parser
                     // Make multi-line C-style comments honourary DocBlocks if:
                     // - every line starts with "*", or
                     // - at least one delimiter appears on its own line
-                    $token->IsInformalDocComment =
-                        $token->CommentType === CommentType::C
-                        && strpos($text, "\n") !== false
-                        && (
-                            // Every line starts with "*"
-                            !Pcre::match('/\n\h*+(?!\*)\S/', $text)
-                            // The first delimiter is followed by a newline
-                            || !Pcre::match('/^\/\*++(\h++|(?!\*))\S/', $text)
-                            // The last delimiter is preceded by a newline
-                            || !Pcre::match('/\S((?<!\*)|\h++)\*++\/$/', $text)
-                        );
+                    if ($token->CommentType === CommentType::C
+                            && strpos($text, "\n") !== false
+                            && (
+                                // Every line starts with "*"
+                                !Pcre::match('/\n\h*+(?!\*)\S/', $text)
+                                // The first delimiter is followed by a newline
+                                || !Pcre::match('/^\/\*++(\h++|(?!\*))\S/', $text)
+                                // The last delimiter is preceded by a newline
+                                || !Pcre::match('/\S((?<!\*)|\h++)\*++\/$/', $text)
+                            )) {
+                        $token->Flags |= TokenFlag::INFORMAL_DOC_COMMENT;
+                    }
                 }
             }
 

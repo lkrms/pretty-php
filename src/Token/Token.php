@@ -1301,7 +1301,7 @@ class Token extends GenericToken implements JsonSerializable
         // character other than "*", and neither delimiter is on its own line,
         // reindent it to preserve alignment
         if ($this->id === \T_COMMENT
-                && !$this->IsInformalDocComment) {
+                && !($this->Flags & TokenFlag::INFORMAL_DOC_COMMENT)) {
             $text = $this->expandedText();
             $delta = $this->OutputColumn - $this->column;
             /* Don't reindent if the comment hasn't moved, or if it has text in
