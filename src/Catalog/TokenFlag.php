@@ -28,4 +28,9 @@ final class TokenFlag extends AbstractEnumeration
      * least one delimiter appears on its own line
      */
     public const INFORMAL_DOC_COMMENT = 8;
+
+    /**
+     * The token is the first in a statement that declares a named entity
+     */
+    public const NAMED_DECLARATION = 16;
 }

@@ -350,9 +350,9 @@ class TokenTypeIndex implements Immutable
     public array $Comment;
 
     /**
-     * T_ABSTRACT, T_CLASS, T_CONST, T_DECLARE, T_ENUM, T_FINAL, T_FUNCTION,
-     * T_GLOBAL, T_INTERFACE, T_NAMESPACE, T_PRIVATE, T_PROTECTED, T_PUBLIC,
-     * T_READONLY, T_STATIC, T_TRAIT, T_USE, T_VAR
+     * T_ABSTRACT, T_CASE, T_CLASS, T_CONST, T_DECLARE, T_ENUM, T_FINAL,
+     * T_FUNCTION, T_GLOBAL, T_INTERFACE, T_NAMESPACE, T_PRIVATE, T_PROTECTED,
+     * T_PUBLIC, T_READONLY, T_STATIC, T_TRAIT, T_USE, T_VAR
      *
      * @readonly
      * @var array<int,bool>
@@ -360,7 +360,7 @@ class TokenTypeIndex implements Immutable
     public array $Declaration;
 
     /**
-     * T_CLASS, T_CONST, T_DECLARE, T_ENUM, T_FUNCTION, T_INTERFACE,
+     * T_CASE, T_CLASS, T_CONST, T_DECLARE, T_ENUM, T_FUNCTION, T_INTERFACE,
      * T_NAMESPACE, T_TRAIT, T_USE
      *
      * @readonly

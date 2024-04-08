@@ -289,6 +289,7 @@ final class TokenType extends AbstractDictionary
     public const DECLARATION_PART = [
         \T_ATTRIBUTE,
         \T_ATTRIBUTE_COMMENT,
+        \T_CASE,
         \T_EXTENDS,
         \T_FUNCTION,
         \T_IMPLEMENTS,
@@ -313,6 +314,7 @@ final class TokenType extends AbstractDictionary
     ];
 
     public const DECLARATION_EXCEPT_MODIFIERS = [
+        \T_CASE,
         \T_CLASS,
         \T_CONST,
         \T_DECLARE,
@@ -344,6 +346,7 @@ final class TokenType extends AbstractDictionary
     ];
 
     public const DECLARATION = [
+        \T_CASE,
         \T_FUNCTION,
         \T_NAMESPACE,
         \T_STATIC,
