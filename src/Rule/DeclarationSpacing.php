@@ -108,7 +108,7 @@ final class DeclarationSpacing implements MultiTokenRule
                 continue;
             }
 
-            $parts = $token->namedDeclarationParts(false);
+            $parts = $token->namedDeclarationParts();
 
             // Ignore anonymous functions
             if (!$parts->count()) {

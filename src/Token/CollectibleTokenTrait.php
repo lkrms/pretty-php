@@ -11,18 +11,18 @@ trait CollectibleTokenTrait
     use NavigableTokenTrait;
 
     /**
-     * Optionally skip to the next declaration token in the same expression,
-     * then get the token and any subsequent non-anonymous declaration tokens
+     * Get the token and any subsequent tokens that form part of a declaration,
+     * ignoring anonymous functions and classes
      */
-    final public function namedDeclarationParts(
-        bool $skipToDeclaration = true
-    ): TokenCollection {
-        return $this->declarationParts($skipToDeclaration, false);
+    final public function namedDeclarationParts(): TokenCollection
+    {
+        return $this->declarationParts(false, false);
     }
 
     /**
-     * Optionally skip to the next declaration token in the same expression,
-     * then get the token and any subsequent declaration tokens
+     * Get the token and any subsequent tokens that form part of a declaration
+     * after optionally skipping any tokens in the same expression that do not
+     * form part of a declaration
      */
     final public function declarationParts(
         bool $skipToDeclaration = true,

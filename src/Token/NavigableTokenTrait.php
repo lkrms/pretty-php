@@ -394,6 +394,23 @@ trait NavigableTokenTrait
     }
 
     /**
+     * Skip to the next sibling that is not one of the types in an index
+     *
+     * The token returns itself if it satisfies the criteria.
+     *
+     * @param array<int,bool> $index
+     * @return Token
+     */
+    final public function skipSiblingsFrom(array $index)
+    {
+        $t = $this->IsCode ? $this : $this->NextCode;
+        while ($t && $index[$t->id]) {
+            $t = $t->NextSibling;
+        }
+        return $t ?: $this->null();
+    }
+
+    /**
      * Get the previous token that is one of the listed types
      *
      * @return Token

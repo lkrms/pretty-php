@@ -254,7 +254,7 @@ trait ContextAwareTokenTrait
      * Returns `true` if the token is `T_CASE` or `T_DEFAULT`, part of the
      * expression after `T_CASE`, or the subsequent `:` or `;` delimiter.
      */
-    final protected function inSwitchCase(): bool
+    final public function inSwitchCase(): bool
     {
         /** @var static&GenericToken $this */
         return
@@ -269,7 +269,7 @@ trait ContextAwareTokenTrait
     /**
      * True if the token is in a T_SWITCH case list
      */
-    final protected function inSwitchCaseList(): bool
+    final public function inSwitchCaseList(): bool
     {
         /** @var static&GenericToken $this */
         return
