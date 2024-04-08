@@ -30,7 +30,12 @@ final class TokenFlag extends AbstractEnumeration
     public const INFORMAL_DOC_COMMENT = 8;
 
     /**
+     * The token is a collapsible one-line comment
+     */
+    public const COLLAPSIBLE_COMMENT = 16;
+
+    /**
      * The token is the first in a statement that declares a named entity
      */
-    public const NAMED_DECLARATION = 16;
+    public const NAMED_DECLARATION = 32;
 }

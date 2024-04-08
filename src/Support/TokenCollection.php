@@ -65,21 +65,20 @@ final class TokenCollection extends AbstractTypedList implements Stringable
         return $instance;
     }
 
-    public function getFirstOf(int $type, int ...$types): ?Token
+    public function getFirstOf(int $type): ?Token
     {
-        array_unshift($types, $type);
         /** @var Token $token */
         foreach ($this as $token) {
-            if ($token->is($types)) {
+            if ($token->id === $type) {
                 return $token;
             }
         }
         return null;
     }
 
-    public function getLastOf(int $type, int ...$types): ?Token
+    public function getLastOf(int $type): ?Token
     {
-        return $this->reverse()->getFirstOf($type, ...$types);
+        return $this->reverse()->getFirstOf($type);
     }
 
     /**

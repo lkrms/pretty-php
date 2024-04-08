@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
@@ -59,6 +60,11 @@ final class DeclarationSpacing implements MultiTokenRule
      */
     private array $AttributeIndex;
 
+    /**
+     * @var array<int,bool>
+     */
+    private array $LastExpand;
+
     public static function getPriority(string $method): ?int
     {
         switch ($method) {
@@ -104,6 +110,7 @@ final class DeclarationSpacing implements MultiTokenRule
         $currentType = [];
         /** @var Token|null */
         $last = null;
+        $currentShift = false;
         $currentExpand = false;
         $currentCondense = false;
         $currentCondenseOneLine = false;
@@ -180,37 +187,40 @@ final class DeclarationSpacing implements MultiTokenRule
             //   - a declaration of a different `$type`
             //   - code that is not a declaration
             // - `$last` contains the last declaration in `$current`
-            // - `$this->PrevExpand` is `true` when blank lines are being
-            //   applied before declarations of the current `$type`
-            // - `$this->PrevCondense` is `true` when blank lines before
+            // - `$currentExpand` is `true` when blank lines are being applied
+            //   before declarations of the current `$type`
+            // - `$currentCondense` is `true` when blank lines before
             //   declarations of the current `$type` are being suppressed
-            // - `$this->PrevCondenseOneLine` is `true` when blank lines before
+            // - `$currentCondenseOneLine` is `true` when blank lines before
             //   declarations of the current `$type` are being suppressed unless
             //   they have inner newlines
             $prev = $last;
-            $prevSibling = $token->PrevCode ? $token->PrevCode->Statement : null;
+            $prevCode = $token->PrevCode ? $token->PrevCode->Statement : null;
 
-            if (!$prev || $prevSibling !== $prev || $type !== $currentType) {
+            if (!$prev || $prevCode !== $prev || $type !== $currentType) {
+                $this->maybeCollapseComments($current, $currentShift, $currentExpand);
                 $current = [];
-                // If `$prevSibling` is a declaration of the same type (possible
-                // if it is a parent of `$prev`), add it to `$current`
+                $currentShift = false;
+                // If `$prevCode` is a declaration of the same type (possible if
+                // it is a parent of `$prev`), add it to `$current`
                 if (
-                    $prevSibling
-                    && $prevSibling !== $prev
-                    && $this->getDeclarationType($prevSibling) === $type
+                    $prevCode
+                    && $prevCode !== $prev
+                    && $this->getDeclarationType($prevCode) === $type
                 ) {
-                    $current[] = $prevSibling;
+                    $current[] = $prevCode;
+                    $currentShift = true;
                 }
 
                 $currentType = $type;
                 if ($this->hasComment($token)) {
                     $currentExpand = true;
                 } elseif ($current) {
-                    assert($prevSibling !== null);
-                    assert($prevSibling->EndStatement !== null);
-                    $currentExpand = $this->hasComment($prevSibling)
-                        || $prevSibling->hasBlankLineBefore()
-                        || $prevSibling->collect($prevSibling->EndStatement)->hasNewline();
+                    assert($prevCode !== null);
+                    assert($prevCode->EndStatement !== null);
+                    $currentExpand = $this->hasComment($prevCode)
+                        || $prevCode->hasBlankLineBefore()
+                        || $prevCode->collect($prevCode->EndStatement)->hasNewline();
                 } else {
                     $currentExpand = false;
                 }
@@ -256,14 +266,17 @@ final class DeclarationSpacing implements MultiTokenRule
             // ```
             if (!$currentExpand) {
                 $prevParts = $prev->namedDeclarationParts();
-                if (($parts->getFirstOf(...TokenType::VISIBILITY)->id ?? null) !== ($prevParts->getFirstOf(...TokenType::VISIBILITY)->id ?? null)
+                if (($parts->getFirstFrom($this->TypeIndex->Visibility)->id ?? null) !== ($prevParts->getFirstFrom($this->TypeIndex->Visibility)->id ?? null)
                         || ($parts->getFirstOf(\T_ABSTRACT)->id ?? null) !== ($prevParts->getFirstOf(\T_ABSTRACT)->id ?? null)
                         || ($parts->getFirstOf(\T_FINAL)->id ?? null) !== ($prevParts->getFirstOf(\T_FINAL)->id ?? null)
                         || ($parts->getFirstOf(\T_GLOBAL)->id ?? null) !== ($prevParts->getFirstOf(\T_GLOBAL)->id ?? null)
                         || ($parts->getFirstOf(\T_READONLY)->id ?? null) !== ($prevParts->getFirstOf(\T_READONLY)->id ?? null)
                         || ($parts->getFirstOf(\T_STATIC)->id ?? null) !== ($prevParts->getFirstOf(\T_STATIC)->id ?? null)
                         || ($parts->getFirstOf(\T_VAR)->id ?? null) !== ($prevParts->getFirstOf(\T_VAR)->id ?? null)) {
+                    array_pop($current);
+                    $this->maybeCollapseComments($current, $currentShift, $currentExpand);
                     $current = [$token];
+                    $currentShift = false;
                     $count = 1;
                 }
             }
@@ -283,7 +296,22 @@ final class DeclarationSpacing implements MultiTokenRule
                             $this->maybeApplyBlankLineBefore($t, true);
                         }
                     } else {
-                        $token->applyBlankLineBefore(true);
+                        $hasComment = false;
+                        foreach ($current as $t) {
+                            if (!$hasComment) {
+                                assert($t->Prev !== null);
+                                if (
+                                    $t === $token
+                                    || $t->Prev->id === \T_DOC_COMMENT
+                                    || $this->hasComment($t)
+                                ) {
+                                    $hasComment = true;
+                                }
+                            }
+                            if ($hasComment) {
+                                $this->maybeApplyBlankLineBefore($t, true);
+                            }
+                        }
                     }
                     $currentExpand = true;
                 } else {
@@ -299,6 +327,8 @@ final class DeclarationSpacing implements MultiTokenRule
                 $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
             }
         }
+
+        $this->maybeCollapseComments($current, $currentShift, $currentExpand);
     }
 
     /**
@@ -334,12 +364,60 @@ final class DeclarationSpacing implements MultiTokenRule
 
     private function hasComment(Token $token): bool
     {
+        /** @var Token */
         $prev = $token->Prev;
-        return $prev
-            && $this->TypeIndex->Comment[$prev->id]
-            && ($prev->id !== \T_DOC_COMMENT || $prev->hasNewline() || $prev->text[4] !== '@' || $prev->hasBlankLineBefore())
+        return $this->TypeIndex->Comment[$prev->id]
+            && ($prev->id !== \T_DOC_COMMENT || !$this->docCommentIsIgnorable($prev) || $prev->hasBlankLineBefore())
             && $prev->hasNewlineBefore()
             && !$prev->hasBlankLineAfter();
+    }
+
+    private function docCommentIsIgnorable(Token $token): bool
+    {
+        if ($token->Flags & TokenFlag::COLLAPSIBLE_COMMENT) {
+            assert(is_string($token->Data[TokenData::COMMENT_CONTENT]));
+            if (($token->Data[TokenData::COMMENT_CONTENT][0] ?? null) === '@') {
+                return true;
+            }
+        }
+        return !$token->hasNewline() && $token->text[4] === '@';
+    }
+
+    /**
+     * @param Token[] $tokens
+     */
+    private function maybeCollapseComments(array $tokens, bool $shift, bool $expand): void
+    {
+        if ($shift) {
+            array_shift($tokens);
+        }
+        if (!$tokens) {
+            return;
+        }
+        if (!$expand && count($tokens) === 1) {
+            $token = $tokens[0];
+            assert($token->EndStatement !== null);
+            if (
+                $token->collect($token->EndStatement)->hasNewline()
+                || ($this->LastExpand[$token->Parent->Index ?? -1]
+                    ??= !$this->Formatter->CollapseDocBlocksByDefault)
+            ) {
+                $expand = true;
+            }
+        }
+        $this->LastExpand[$token->Parent->Index ?? -1] = $expand;
+        if ($expand) {
+            return;
+        }
+        foreach ($tokens as $token) {
+            /** @var Token */
+            $prev = $token->Prev;
+            if ($prev->id === \T_DOC_COMMENT
+                    && $prev->Flags & TokenFlag::COLLAPSIBLE_COMMENT
+                    && isset($prev->Data[TokenData::COMMENT_CONTENT])) {
+                $prev->setText('/** ' . $prev->Data[TokenData::COMMENT_CONTENT] . ' */');
+            }
+        }
     }
 
     private function maybeApplyBlankLineBefore(Token $token, bool $withMask = false): void
@@ -351,5 +429,10 @@ final class DeclarationSpacing implements MultiTokenRule
             return;
         }
         $token->applyBlankLineBefore($withMask);
+    }
+
+    public function reset(): void
+    {
+        $this->LastExpand = [];
     }
 }

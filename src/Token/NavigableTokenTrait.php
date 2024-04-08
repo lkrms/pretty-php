@@ -4,6 +4,7 @@ namespace Lkrms\PrettyPHP\Token;
 
 use Lkrms\PrettyPHP\Catalog\CommentType;
 use Lkrms\PrettyPHP\Catalog\CustomToken;
+use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Exception\InvalidTokenException;
@@ -63,6 +64,11 @@ trait NavigableTokenTrait
      * @var int-mask-of<TokenFlag::*>
      */
     public int $Flags = 0;
+
+    /**
+     * @var array<TokenData::*,mixed>
+     */
+    public array $Data = [];
 
     public ?Token $OtherTernaryOperator = null;
 

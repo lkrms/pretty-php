@@ -32,6 +32,11 @@ final class PlaceComments implements TokenRule
      */
     private array $Comments = [];
 
+    /**
+     * @var Token[]
+     */
+    private array $CollapsibleComments = [];
+
     public static function getPriority(string $method): ?int
     {
         switch ($method) {
@@ -112,24 +117,23 @@ final class PlaceComments implements TokenRule
         }
 
         $token->WhitespaceAfter |= WhitespaceType::LINE;
+        $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
+
+        if (!$isDocComment) {
+            return;
+        }
 
         // Add a blank line before multi-line DocBlocks and C-style equivalents
         // unless they appear mid-statement
-        if (
+        if ($token->Flags & TokenFlag::COLLAPSIBLE_COMMENT) {
+            $this->CollapsibleComments[] = $token;
+        } elseif (
             $token->hasNewline()
-            && $isDocComment
             && (!$token->PrevSibling
                 || !$token->NextSibling
                 || $token->PrevSibling->Statement !== $token->NextSibling->Statement)
         ) {
-            $token->WhitespaceBefore
-                |= WhitespaceType::BLANK | WhitespaceType::LINE | WhitespaceType::SPACE;
-        } else {
-            $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
-        }
-
-        if (!$isDocComment) {
-            return;
+            $token->WhitespaceBefore |= WhitespaceType::BLANK;
         }
 
         // Add a blank line after file-level DocBlocks and multi-line C-style
@@ -246,6 +250,12 @@ final class PlaceComments implements TokenRule
                 $token->Padding = $next->Padding;
             }
         }
+
+        foreach ($this->CollapsibleComments as $token) {
+            if ($token->hasNewline()) {
+                $token->WhitespaceBefore |= WhitespaceType::BLANK;
+            }
+        }
     }
 
     /**
@@ -255,5 +265,6 @@ final class PlaceComments implements TokenRule
     {
         $this->CommentsBesideCode = [];
         $this->Comments = [];
+        $this->CollapsibleComments = [];
     }
 }

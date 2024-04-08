@@ -1345,9 +1345,10 @@ column 1 despite starting in column 2 or above (like this comment) */
             return $this->text;
         }
 
-        /** @todo Guess input tab size and use it instead */
+        $tabSize = $this->Formatter->Indentation->TabSize
+            ?? $this->Formatter->TabSize;
         return Str::expandLeadingTabs(
-            $this->text, $this->Formatter->TabSize, !$this->wasFirstOnLine(), $this->column
+            $this->text, $tabSize, !$this->wasFirstOnLine(), $this->column
         );
     }
 

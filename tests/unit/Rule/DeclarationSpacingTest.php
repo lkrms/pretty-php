@@ -53,6 +53,7 @@ class Foo
     }
 }
 PHP;
+
         return [
             [
                 <<<'PHP'
@@ -76,10 +77,7 @@ class Foo
 {
     public int $Bar;
     public string $Qux;
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     public array $Quux = [];
 
     public function __construct(int $bar, string $qux)
@@ -113,10 +111,7 @@ class Foo
 {
     public int $Bar;
     public string $Qux;
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     public array $Quux = [];
 
     public function __construct(int $bar, string $qux)
@@ -129,6 +124,102 @@ class Foo
 PHP,
                 $input,
                 $formatterB->disable([SortImports::class]),
+            ],
+            [
+                <<<'PHP'
+<?php
+class Foo
+{
+    /** @var string[] */
+    public array $Bar = [];
+    public string $Qux;
+    public int $Quux;
+
+    /**
+     * Summary
+     */
+    public function __construct(int $bar, string $qux)
+    {
+        $this->Bar = -1;
+        $this->Qux = $qux;
+    }
+}
+
+PHP,
+                <<<'PHP'
+<?php
+class Foo
+{
+    /**
+     * @var string[]
+     */
+    public array $Bar = [];
+    public string $Qux;
+    public int $Quux;
+    /**
+     * Summary
+     */
+    public function __construct(int $bar, string $qux)
+    {
+        $this->Bar = -1;
+        $this->Qux = $qux;
+    }
+}
+PHP,
+                $formatter,
+            ],
+            [
+                <<<'PHP'
+<?php
+class Foo
+{
+    /**
+     * @var string[]
+     */
+    public array $Bar = [];
+
+    public string $Qux;
+
+    /**
+     * Summary
+     */
+    public int $Quux;
+
+    /**
+     * Summary
+     */
+    public function __construct(int $bar, string $qux)
+    {
+        $this->Bar = -1;
+        $this->Qux = $qux;
+    }
+}
+
+PHP,
+                <<<'PHP'
+<?php
+class Foo
+{
+    /**
+     * @var string[]
+     */
+    public array $Bar = [];
+    public string $Qux;
+    /**
+     * Summary
+     */
+    public int $Quux;
+    /**
+     * Summary
+     */
+    public function __construct(int $bar, string $qux)
+    {
+        $this->Bar = -1;
+        $this->Qux = $qux;
+    }
+}
+PHP,
+                $formatter,
             ],
         ];
     }

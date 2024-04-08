@@ -273,9 +273,9 @@ final class HangingIndentation implements MultiTokenRule
             // depth, e.g. in line 2 here:
             //
             // ```php
-            // if (!(($comment = $line->getLastOf(...TokenType::COMMENT)) &&
-            //             $comment->hasNewlineAfter()) ||
-            //         $comment->hasNewline())
+            // if (!(($baz = $foo->bar(...$args)) &&
+            //             $baz->qux()) ||
+            //         $baz->quux())
             // ```
             $until = $until ?? $token->pragmaticEndOfExpression();
             $indent = 0;
