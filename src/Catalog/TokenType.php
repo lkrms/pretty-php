@@ -289,7 +289,9 @@ final class TokenType extends AbstractDictionary
     public const DECLARATION_PART = [
         \T_ATTRIBUTE,
         \T_ATTRIBUTE_COMMENT,
+        \T_EXTENDS,
         \T_FUNCTION,
+        \T_IMPLEMENTS,
         \T_STATIC,
         \T_USE,
         ...self::DECLARATION_EXCEPT_MULTI_PURPOSE,
@@ -310,7 +312,7 @@ final class TokenType extends AbstractDictionary
         \T_TRAIT,
     ];
 
-    public const DECLARATION_UNIQUE = [
+    public const DECLARATION_EXCEPT_MODIFIERS = [
         \T_CLASS,
         \T_CONST,
         \T_DECLARE,
@@ -355,10 +357,8 @@ final class TokenType extends AbstractDictionary
         \T_CONST,
         \T_DECLARE,
         \T_ENUM,
-        \T_EXTENDS,
         \T_FINAL,
         \T_GLOBAL,
-        \T_IMPLEMENTS,
         \T_INTERFACE,
         \T_READONLY,
         \T_TRAIT,
@@ -493,6 +493,11 @@ final class TokenType extends AbstractDictionary
         \T_NAME_QUALIFIED,
         \T_NAME_RELATIVE,
         \T_STRING,
+    ];
+
+    public const VISIBILITY_WITH_READONLY = [
+        \T_READONLY,
+        ...self::VISIBILITY,
     ];
 
     public const VISIBILITY = [

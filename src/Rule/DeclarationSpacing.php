@@ -124,10 +124,10 @@ final class DeclarationSpacing implements MultiTokenRule
                 $token->EndStatement->WhitespaceAfter |= WhitespaceType::BLANK;
             }
 
-            // If the same DECLARATION_UNIQUE tokens appear in consecutive
-            // one-line statements, propagate the gap between statements 1 and 2
-            // to subsequent statements
-            $types = $parts->getAnyOf(...TokenType::DECLARATION_UNIQUE)
+            // If the same DECLARATION_EXCEPT_MODIFIERS tokens appear in
+            // consecutive one-line statements, propagate the gap between
+            // statements 1 and 2 to subsequent statements
+            $types = $parts->getAnyOf(...TokenType::DECLARATION_EXCEPT_MODIFIERS)
                            ->getTypes();
 
             // Allow `$types` to be empty if this is a variable or property
@@ -269,8 +269,8 @@ final class DeclarationSpacing implements MultiTokenRule
     /**
      * @return int[]|null `null` if there is no declaration at `$token`, or if
      * the declaration at `$token` does not contain any
-     * {@see TokenType::DECLARATION_UNIQUE} tokens and is not a variable or
-     * property declaration.
+     * {@see TokenType::DECLARATION_EXCEPT_MODIFIERS} tokens and is not a
+     * variable or property declaration.
      */
     private function uniqueDeclarationTypes(Token $token): ?array
     {
@@ -281,7 +281,7 @@ final class DeclarationSpacing implements MultiTokenRule
             return null;
         }
 
-        $types = $parts->getAnyOf(...TokenType::DECLARATION_UNIQUE)
+        $types = $parts->getAnyOf(...TokenType::DECLARATION_EXCEPT_MODIFIERS)
                        ->getTypes();
 
         if (!$types && !$parts->hasOneOf(
