@@ -258,6 +258,12 @@ class TokenTypeIndex implements Immutable
      * @readonly
      * @var array<int,bool>
      */
+    public array $FunctionIdentifier;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
     public array $DereferenceableTerminator;
 
     /**
@@ -440,10 +446,22 @@ class TokenTypeIndex implements Immutable
     public array $OperatorBooleanExceptNot;
 
     /**
+     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_OR
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $TypeDelimiter;
+
+    /**
+     * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE, T_NAMESPACE,
+     * T_NS_SEPARATOR, T_STRING, T_OPEN_PARENTHESIS, T_CLOSE_PARENTHESIS,
+     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_OR
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $ValueType;
 
     /**
      * @readonly
@@ -763,6 +781,12 @@ class TokenTypeIndex implements Immutable
             ...$expressionDelimiter,
         );
 
+        $this->FunctionIdentifier = TT::getIndex(
+            \T_STRING,
+            \T_READONLY,
+            ...TT::AMPERSAND,
+        );
+
         $this->DereferenceableTerminator = TT::getIndex(
             ...TT::DEREFERENCEABLE_END,
         );
@@ -826,6 +850,7 @@ class TokenTypeIndex implements Immutable
         $this->NotCode = TT::getIndex(...TT::NOT_CODE);
         $this->OperatorBooleanExceptNot = TT::getIndex(...TT::OPERATOR_BOOLEAN_EXCEPT_NOT);
         $this->TypeDelimiter = TT::getIndex(...TT::TYPE_DELIMITER);
+        $this->ValueType = TT::getIndex(...TT::VALUE_TYPE);
         $this->Visibility = TT::getIndex(...TT::VISIBILITY);
         $this->VisibilityWithReadonly = TT::getIndex(...TT::VISIBILITY_WITH_READONLY);
 

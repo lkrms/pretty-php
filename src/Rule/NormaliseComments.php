@@ -154,6 +154,8 @@ final class NormaliseComments implements MultiTokenRule
 
                 // Collapse DocBlocks with one line of content to a single line
                 // unless they describe a file or are pinned to a declaration
+                // other than `use <trait>`, `global <variable>`, or `static
+                // <variable>` where <variable> is not a property
                 if ((
                     ($token->id === \T_DOC_COMMENT && strpos($text, "\n") === false)
                     || strpos($token->OriginalText ?? $token->text, "\n") === false
@@ -171,6 +173,11 @@ final class NormaliseComments implements MultiTokenRule
                 ) || (
                     $token->Next->id === \T_USE
                     && $token->Next->getSubType() === TokenSubType::USE_TRAIT
+                ) || (
+                    $token->Next->id === \T_GLOBAL
+                    || ($token->Next->id === \T_STATIC
+                        && $token->Parent
+                        && $token->Parent->isFunctionBrace())
                 ))) {
                     $text = $text === '' ? ' */' : " $text */";
                 } else {

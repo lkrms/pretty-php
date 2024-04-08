@@ -179,13 +179,10 @@ final class TokenType extends AbstractDictionary
     ];
 
     public const VALUE_TYPE = [
-        \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
-        \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
-        \T_AND,
-        \T_OR,
         \T_OPEN_PARENTHESIS,
         \T_CLOSE_PARENTHESIS,
         ...self::DECLARATION_TYPE,
+        ...self::TYPE_DELIMITER,
     ];
 
     public const CHAIN_PART = [

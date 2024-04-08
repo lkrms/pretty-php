@@ -351,22 +351,7 @@ parameters:
 			path: src/Rule/AlignArrowFunctions.php
 
 		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/AlignArrowFunctions.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/AlignArrowFunctions.php
-
-		-
 			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/AlignArrowFunctions.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/AlignArrowFunctions.php
 
@@ -394,26 +379,6 @@ parameters:
 			message: "#^Parameter \\#3 \\$until of method Lkrms\\\\PrettyPHP\\\\Rule\\\\AlignArrowFunctions\\:\\:alignBody\\(\\) expects Lkrms\\\\PrettyPHP\\\\Token\\\\Token, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null given\\.$#"
 			count: 1
 			path: src/Rule/AlignArrowFunctions.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/AlignChains.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/AlignChains.php
-
-		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/AlignChains.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/AlignChains.php
 
 		-
 			message: "#^Parameter \\#1 \\$to of method Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:collect\\(\\) expects Lkrms\\\\PrettyPHP\\\\Token\\\\Token, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null given\\.$#"
@@ -451,16 +416,6 @@ parameters:
 			path: src/Rule/AlignComments.php
 
 		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/AlignComments.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/AlignComments.php
-
-		-
 			message: "#^Cannot access property \\$column on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 3
 			path: src/Rule/AlignComments.php
@@ -472,16 +427,11 @@ parameters:
 
 		-
 			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/AlignComments.php
-
-		-
-			message: "#^Cannot call method isMultiLineComment\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/AlignComments.php
 
 		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
+			message: "#^Cannot call method isMultiLineComment\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/AlignComments.php
 
@@ -516,16 +466,6 @@ parameters:
 			path: src/Rule/AlignData.php
 
 		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/AlignData.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/AlignData.php
-
-		-
 			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/AlignData.php
@@ -541,18 +481,8 @@ parameters:
 			path: src/Rule/AlignData.php
 
 		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/AlignData.php
-
-		-
 			message: "#^Cannot call method pragmaticEndOfExpression\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 3
-			path: src/Rule/AlignData.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
 			path: src/Rule/AlignData.php
 
 		-
@@ -566,32 +496,12 @@ parameters:
 			path: src/Rule/AlignData.php
 
 		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/AlignLists.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/AlignLists.php
-
-		-
 			message: "#^Cannot call method collect\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/AlignLists.php
 
 		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/AlignLists.php
-
-		-
 			message: "#^Cannot call method pragmaticEndOfExpression\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/AlignLists.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/AlignLists.php
 
@@ -611,49 +521,14 @@ parameters:
 			path: src/Rule/AlignLists.php
 
 		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/AlignTernaryOperators.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/AlignTernaryOperators.php
-
-		-
 			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
+			count: 1
 			path: src/Rule/AlignTernaryOperators.php
 
 		-
 			message: "#^Cannot call method pragmaticStartOfExpression\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/AlignTernaryOperators.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/AlignTernaryOperators.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/BlankLineBeforeReturn.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/BlankLineBeforeReturn.php
-
-		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/BlankLineBeforeReturn.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/BlankLineBeforeReturn.php
 
 		-
 			message: "#^Cannot access property \\$EndStatement on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
@@ -682,7 +557,7 @@ parameters:
 
 		-
 			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
+			count: 1
 			path: src/Rule/ControlStructureSpacing.php
 
 		-
@@ -692,7 +567,7 @@ parameters:
 
 		-
 			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 4
+			count: 2
 			path: src/Rule/ControlStructureSpacing.php
 
 		-
@@ -706,17 +581,7 @@ parameters:
 			path: src/Rule/ControlStructureSpacing.php
 
 		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/ControlStructureSpacing.php
-
-		-
 			message: "#^Cannot call method pragmaticEndOfExpression\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/ControlStructureSpacing.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/ControlStructureSpacing.php
 
@@ -724,46 +589,6 @@ parameters:
 			message: "#^Cannot call method prevSibling\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/ControlStructureSpacing.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/DeclarationSpacing.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/DeclarationSpacing.php
-
-		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/DeclarationSpacing.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/DeclarationSpacing.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/EssentialWhitespace.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/EssentialWhitespace.php
-
-		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/EssentialWhitespace.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/EssentialWhitespace.php
 
 		-
 			message: "#^Cannot access property \\$AlignedWith on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
@@ -801,28 +626,8 @@ parameters:
 			path: src/Rule/HangingIndentation.php
 
 		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/HangingIndentation.php
-
-		-
 			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 2
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
 			path: src/Rule/HangingIndentation.php
 
 		-
@@ -861,26 +666,6 @@ parameters:
 			path: src/Rule/HeredocIndentation.php
 
 		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/HeredocIndentation.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/HeredocIndentation.php
-
-		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/HeredocIndentation.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/HeredocIndentation.php
-
-		-
 			message: "#^Cannot call method renderIndent\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 2
 			path: src/Rule/HeredocIndentation.php
@@ -897,7 +682,7 @@ parameters:
 
 		-
 			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
+			count: 1
 			path: src/Rule/ListSpacing.php
 
 		-
@@ -907,7 +692,7 @@ parameters:
 
 		-
 			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 3
+			count: 1
 			path: src/Rule/ListSpacing.php
 
 		-
@@ -921,57 +706,7 @@ parameters:
 			path: src/Rule/ListSpacing.php
 
 		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/ListSpacing.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/ListSpacing.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/NormaliseComments.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/NormaliseComments.php
-
-		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/NormaliseComments.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/NormaliseComments.php
-
-		-
 			message: "#^Cannot access offset 0 on non\\-falsy\\-string\\|false\\.$#"
-			count: 1
-			path: src/Rule/NormaliseNumbers.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/NormaliseNumbers.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/NormaliseNumbers.php
-
-		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/NormaliseNumbers.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/NormaliseNumbers.php
 
@@ -996,16 +731,6 @@ parameters:
 			path: src/Rule/NormaliseStrings.php
 
 		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/NormaliseStrings.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/NormaliseStrings.php
-
-		-
 			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 7
 			path: src/Rule/NormaliseStrings.php
@@ -1017,16 +742,6 @@ parameters:
 
 		-
 			message: "#^Cannot call method getTokenName\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/NormaliseStrings.php
-
-		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/NormaliseStrings.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/NormaliseStrings.php
 
@@ -1052,38 +767,13 @@ parameters:
 
 		-
 			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/OperatorSpacing.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
+			count: 1
 			path: src/Rule/OperatorSpacing.php
 
 		-
 			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 3
 			path: src/Rule/OperatorSpacing.php
-
-		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/OperatorSpacing.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/OperatorSpacing.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/PlaceBraces.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/PlaceBraces.php
 
 		-
 			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
@@ -1096,17 +786,7 @@ parameters:
 			path: src/Rule/PlaceBraces.php
 
 		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/PlaceBraces.php
-
-		-
 			message: "#^Cannot call method nextSibling\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/PlaceBraces.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/PlaceBraces.php
 
@@ -1126,18 +806,8 @@ parameters:
 			path: src/Rule/PlaceComments.php
 
 		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/PlaceComments.php
-
-		-
 			message: "#^Cannot access property \\$WhitespaceMaskNext on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
-			path: src/Rule/PlaceComments.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
 			path: src/Rule/PlaceComments.php
 
 		-
@@ -1147,11 +817,6 @@ parameters:
 
 		-
 			message: "#^Cannot call method collect\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/PlaceComments.php
-
-		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/PlaceComments.php
 
@@ -1166,63 +831,18 @@ parameters:
 			path: src/Rule/PlaceComments.php
 
 		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/PlaceComments.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/PreserveLineBreaks.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/PreserveLineBreaks.php
-
-		-
 			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/PreserveLineBreaks.php
 
 		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/PreserveLineBreaks.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/PreserveLineBreaks.php
-
-		-
 			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
-			path: src/Rule/PreserveOneLineStatements.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/PreserveOneLineStatements.php
-
-		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/PreserveOneLineStatements.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/PreserveOneLineStatements.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
 			path: src/Rule/Preset/Drupal.php
 
 		-
 			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 3
+			count: 1
 			path: src/Rule/Preset/Drupal.php
 
 		-
@@ -1236,56 +856,6 @@ parameters:
 			path: src/Rule/Preset/Drupal.php
 
 		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/Preset/Drupal.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/Preset/Drupal.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/Preset/Laravel.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/Preset/Laravel.php
-
-		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/Preset/Laravel.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/Preset/Laravel.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/Preset/Symfony.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/Preset/Symfony.php
-
-		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/Preset/Symfony.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/Preset/Symfony.php
-
-		-
 			message: "#^Cannot access property \\$Next on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/Preset/WordPress.php
@@ -1297,7 +867,7 @@ parameters:
 
 		-
 			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
+			count: 1
 			path: src/Rule/Preset/WordPress.php
 
 		-
@@ -1307,7 +877,7 @@ parameters:
 
 		-
 			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 4
+			count: 2
 			path: src/Rule/Preset/WordPress.php
 
 		-
@@ -1326,26 +896,6 @@ parameters:
 			path: src/Rule/Preset/WordPress.php
 
 		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/Preset/WordPress.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/Preset/WordPress.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/ProtectStrings.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/ProtectStrings.php
-
-		-
 			message: "#^Cannot call method collect\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/ProtectStrings.php
@@ -1354,36 +904,6 @@ parameters:
 			message: "#^Cannot call method collectSiblings\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/ProtectStrings.php
-
-		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/ProtectStrings.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/ProtectStrings.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/StandardIndentation.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/StandardIndentation.php
-
-		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/StandardIndentation.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/StandardIndentation.php
 
 		-
 			message: "#^Cannot access property \\$CloseTag on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
@@ -1412,7 +932,7 @@ parameters:
 
 		-
 			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
+			count: 1
 			path: src/Rule/StandardWhitespace.php
 
 		-
@@ -1422,7 +942,7 @@ parameters:
 
 		-
 			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 3
+			count: 1
 			path: src/Rule/StandardWhitespace.php
 
 		-
@@ -1436,17 +956,7 @@ parameters:
 			path: src/Rule/StandardWhitespace.php
 
 		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/StandardWhitespace.php
-
-		-
 			message: "#^Cannot call method nextSiblingOf\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/StandardWhitespace.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/StandardWhitespace.php
 
@@ -1476,28 +986,13 @@ parameters:
 			path: src/Rule/StandardWhitespace.php
 
 		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/StatementSpacing.php
-
-		-
 			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 3
+			count: 1
 			path: src/Rule/StatementSpacing.php
 
 		-
 			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 3
-			path: src/Rule/StatementSpacing.php
-
-		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/StatementSpacing.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
 			path: src/Rule/StatementSpacing.php
 
 		-
@@ -1522,7 +1017,7 @@ parameters:
 
 		-
 			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
+			count: 1
 			path: src/Rule/StrictExpressions.php
 
 		-
@@ -1532,7 +1027,7 @@ parameters:
 
 		-
 			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 4
+			count: 2
 			path: src/Rule/StrictExpressions.php
 
 		-
@@ -1548,72 +1043,7 @@ parameters:
 		-
 			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
-			path: src/Rule/StrictExpressions.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/StrictExpressions.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
 			path: src/Rule/StrictLists.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/StrictLists.php
-
-		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/StrictLists.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/StrictLists.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/SwitchIndentation.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/SwitchIndentation.php
-
-		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/SwitchIndentation.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/SwitchIndentation.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/SymmetricalBrackets.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/SymmetricalBrackets.php
-
-		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/SymmetricalBrackets.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/SymmetricalBrackets.php
 
 		-
 			message: "#^Cannot access property \\$ClosedBy on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
@@ -1642,7 +1072,7 @@ parameters:
 
 		-
 			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
+			count: 1
 			path: src/Rule/VerticalWhitespace.php
 
 		-
@@ -1652,7 +1082,7 @@ parameters:
 
 		-
 			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 3
+			count: 1
 			path: src/Rule/VerticalWhitespace.php
 
 		-
@@ -1682,11 +1112,6 @@ parameters:
 
 		-
 			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/VerticalWhitespace.php
-
-		-
-			message: "#^Cannot call method prev\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/VerticalWhitespace.php
 
