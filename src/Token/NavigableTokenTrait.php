@@ -36,10 +36,21 @@ trait NavigableTokenTrait
     public ?Token $EndStatement = null;
 
     /**
+     * The token at the start of the token's expression, or false if the token
+     * is an expression delimiter
+     *
      * @var Token|false|null
      */
     public $Expression = null;
 
+    /**
+     * The token at the end of the token's expression
+     *
+     * If the token is an expression delimiter and {@see Token::$NextSibling} is
+     * the token at the start of an expression, {@see Token::$EndExpression} is
+     * the token at the end of that expression, otherwise it is the token
+     * itself.
+     */
     public ?Token $EndExpression = null;
 
     public ?Token $OpenedBy = null;

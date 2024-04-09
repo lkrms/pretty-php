@@ -53,16 +53,6 @@ final class DeclarationSpacing implements MultiTokenRule
     /**
      * @var array<int,bool>
      */
-    private array $VariableOrDeclarationIndex;
-
-    /**
-     * @var array<int,bool>
-     */
-    private array $AttributeIndex;
-
-    /**
-     * @var array<int,bool>
-     */
     private array $LastExpand;
 
     public static function getPriority(string $method): ?int
@@ -90,16 +80,6 @@ final class DeclarationSpacing implements MultiTokenRule
         $this->SortImportsEnabled = isset(
             $this->Formatter->Enabled[SortImports::class]
         );
-
-        $this->VariableOrDeclarationIndex = TokenType::getIndex(
-            \T_VARIABLE,
-            ...TokenType::DECLARATION,
-        );
-
-        $this->AttributeIndex = TokenType::getIndex(
-            \T_ATTRIBUTE,
-            \T_ATTRIBUTE_COMMENT,
-        );
     }
 
     public function processTokens(array $tokens): void
@@ -122,7 +102,10 @@ final class DeclarationSpacing implements MultiTokenRule
             }
 
             // Get the first non-attribute
-            $first = $token->skipSiblingsFrom($this->AttributeIndex);
+            $first = $token->skipSiblingsFrom($this->TypeIndex->Attribute);
+
+            /** @var Token */
+            $next = $first->NextCode;
 
             // Ignore:
             // - `static` outside declarations
@@ -130,9 +113,9 @@ final class DeclarationSpacing implements MultiTokenRule
             // - `namespace` in relative names
             // - promoted constructor parameters
             if (
-                ($first->id === \T_STATIC && !($first->NextCode && $this->VariableOrDeclarationIndex[$first->NextCode->id]))
+                ($first->id === \T_STATIC && !($next->id === \T_VARIABLE || $this->TypeIndex->Declaration[$next->id]))
                 || ($first->id === \T_CASE && $first->inSwitchCaseList())
-                || ($first->id === \T_NAMESPACE && $first->NextCode && $first->NextCode->id === \T_NS_SEPARATOR)
+                || ($first->id === \T_NAMESPACE && $next->id === \T_NS_SEPARATOR)
                 || ($this->TypeIndex->VisibilityWithReadonly[$first->id] && $first->inParameterList())
             ) {
                 continue;
@@ -167,7 +150,7 @@ final class DeclarationSpacing implements MultiTokenRule
             // Add a blank line between declarations and subsequent
             // non-declarations
             assert($token->EndStatement !== null);
-            $next = $token->EndStatement->nextCode()->skipSiblingsFrom($this->AttributeIndex)->orNull();
+            $next = $token->EndStatement->nextCode()->skipSiblingsFrom($this->TypeIndex->Attribute)->orNull();
             if (
                 $next
                 && !$this->TypeIndex->Declaration[$next->id]
