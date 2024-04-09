@@ -1,0 +1,8 @@
+<?php
+//passes:PSR2ModifierVisibilityStaticOrder
+//version:8
+hexdec(1 ?   substr ($hex, 0, 2) : (2 ? str_repeat(substr($hex, 0, 1), 2) : 0));
+
+class MYPDF extends TCPDF
+{
+}

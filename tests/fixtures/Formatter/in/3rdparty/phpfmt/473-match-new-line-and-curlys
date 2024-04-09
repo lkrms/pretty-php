@@ -1,0 +1,28 @@
+<?php
+// case 1
+if (true) {return;}
+
+// case 2
+if (true) {return;
+}
+
+// case 3
+if (true) {
+    return;}
+
+if (1) {
+    if (2) {
+    
+    }
+}
+if (1) {
+    if (2) {
+    $a=1;   }
+}
+for ($i = 0; $i < 10; $i++):
+    for ($j = 0; $j < 10; $j++) {
+        echo $i;
+        echo $i + 1;
+        ?>content<?php
+    }
+endfor;

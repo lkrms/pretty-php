@@ -19,7 +19,7 @@ class Product
 
     public static function fromJson(string $json): static
     {
-        $data = json_decode($json);
+        $data = json_decode($json, true);
         return new static($data['id'], $data['name']);
     }
 

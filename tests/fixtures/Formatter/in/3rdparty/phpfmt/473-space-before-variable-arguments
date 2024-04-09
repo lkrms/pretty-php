@@ -1,0 +1,4 @@
+<?php
+function ( int | float ...$numbers ): int | float {
+    return array_sum( $numbers );
+};

@@ -1,0 +1,2 @@
+<?php
+Sleep::for(2)->seconds();
