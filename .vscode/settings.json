@@ -22,5 +22,9 @@
     },
     "files.watcherExclude": {
         "**/tests/fixtures/**": true
+    },
+    "files.exclude": {
+        "**/tests/fixtures/Formatter/**": true,
+        "**/var/cache/git/**": true
     }
 }
