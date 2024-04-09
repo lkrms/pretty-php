@@ -8,6 +8,8 @@ use Symfony\Component\Validator\Constraints\Ip;
 class User
 {
     private ?string $testP;
+    private ?int $testPA;
+    private ?array $testPB;
 
     #[Ip(groups: [])]
     public function test()

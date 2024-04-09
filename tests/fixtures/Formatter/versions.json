@@ -54,6 +54,7 @@
         "3rdparty/phpfmt/452-heredoc-format-breaking",
         "3rdparty/phpfmt/455-extra-semicolon",
         "3rdparty/phpfmt/460-space-between-methods",
+        "3rdparty/phpfmt/473-space-before-variable-arguments",
         "standalone/class-anonymous-attributes-01.php",
         "standalone/class-anonymous-attributes-02.php",
         "standalone/class-attributes-01.php",

@@ -1,0 +1,7 @@
+<?php
+// passes:Autosemicolon
+$obj = (new class {
+	private $field;
+
+	public function method(): void {}
+});

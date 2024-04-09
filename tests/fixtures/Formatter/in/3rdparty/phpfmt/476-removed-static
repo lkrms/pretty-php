@@ -1,0 +1,8 @@
+<?php
+//passes:PSR2ModifierVisibilityStaticOrder
+$routes->group('careers', static function ($routes) {
+    $routes->get('/', 'Users\Careers::index');
+    $routes->get('create', 'Users\Careers::manage');
+    $routes->get('update/(:num)', 'Users\Careers::manage/$1');
+    $routes->post('save', 'Users\Careers::save');
+});

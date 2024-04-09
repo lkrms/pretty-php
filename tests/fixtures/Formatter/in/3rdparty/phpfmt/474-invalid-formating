@@ -1,0 +1,10 @@
+<?php
+//passes:PSR2ModifierVisibilityStaticOrder
+$obj = (new class
+{
+    private $field;
+
+    public function method(): void
+    {
+    }
+});
