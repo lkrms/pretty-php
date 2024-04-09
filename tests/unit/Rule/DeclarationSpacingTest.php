@@ -140,8 +140,8 @@ class Foo
      */
     public function __construct(int $bar, string $qux)
     {
-        $this->Bar = -1;
         $this->Qux = $qux;
+        $this->Quux = -1;
     }
 }
 
@@ -161,8 +161,8 @@ class Foo
      */
     public function __construct(int $bar, string $qux)
     {
-        $this->Bar = -1;
         $this->Qux = $qux;
+        $this->Quux = -1;
     }
 }
 PHP,
@@ -190,8 +190,8 @@ class Foo
      */
     public function __construct(int $bar, string $qux)
     {
-        $this->Bar = -1;
         $this->Qux = $qux;
+        $this->Quux = -1;
     }
 }
 
@@ -214,9 +214,79 @@ class Foo
      */
     public function __construct(int $bar, string $qux)
     {
-        $this->Bar = -1;
         $this->Qux = $qux;
+        $this->Quux = -1;
     }
+}
+PHP,
+                $formatter,
+            ],
+            [
+                <<<'PHP'
+<?php
+class Foo
+{
+    public int $Bar;
+    public string $Qux;
+    /** @var string[] */
+    public array $Quux = [];
+    /** @var string[] */
+    public array $Quuux = [];
+}
+
+PHP,
+                <<<'PHP'
+<?php
+class Foo
+{
+    public int $Bar;
+    public string $Qux;
+
+    /**
+     * @var string[]
+     */
+    public array $Quux = [];
+
+    /**
+     * @var string[]
+     */
+    public array $Quuux = [];
+}
+PHP,
+                $formatter,
+            ],
+            [
+                <<<'PHP'
+<?php
+class Foo
+{
+    public int $Bar;
+
+    public string $Qux;
+
+    /**
+     * @var string[]
+     */
+    public array $Quux = [];
+
+    /**
+     * @var string[]
+     */
+    public array $Quuux = [];
+}
+
+PHP,
+                <<<'PHP'
+<?php
+class Foo
+{
+    public int $Bar;
+
+    public string $Qux;
+    /** @var string[] */
+    public array $Quux = [];
+    /** @var string[] */
+    public array $Quuux = [];
 }
 PHP,
                 $formatter,

@@ -218,7 +218,7 @@ final class DeclarationSpacing implements MultiTokenRule
                 } elseif ($current) {
                     assert($prevCode !== null);
                     assert($prevCode->EndStatement !== null);
-                    $currentExpand = $this->hasComment($prevCode)
+                    $currentExpand = $this->hasComment($prevCode, true)
                         || $prevCode->hasBlankLineBefore()
                         || $prevCode->collect($prevCode->EndStatement)->hasNewline();
                 } else {
@@ -286,12 +286,12 @@ final class DeclarationSpacing implements MultiTokenRule
                 || $token->collect($token->EndStatement)->hasNewline()
                 || $prev->collect($this->getWithoutDocComment($token->Prev))->hasNewline()
                 || (!$currentCondenseOneLine
-                    && ($this->hasComment($token)
+                    && ($this->hasComment($token, $count === 2)
                         || ($count === 2 && $token->hasBlankLineBefore())));
 
             if ($expand) {
                 if (!$currentExpand && !$currentCondenseOneLine) {
-                    if (!$this->hasComment($token)) {
+                    if (!$this->hasComment($token, $count === 2)) {
                         foreach ($current as $t) {
                             $this->maybeApplyBlankLineBefore($t, true);
                         }
@@ -325,6 +325,9 @@ final class DeclarationSpacing implements MultiTokenRule
 
             if ($count > 2) {
                 $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
+                if ($token->Prev->id === \T_DOC_COMMENT) {
+                    $token->Prev->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
+                }
             }
         }
 
@@ -362,12 +365,16 @@ final class DeclarationSpacing implements MultiTokenRule
         return $token;
     }
 
-    private function hasComment(Token $token): bool
+    private function hasComment(Token $token, bool $orBlankLineBefore = false): bool
     {
         /** @var Token */
         $prev = $token->Prev;
         return $this->TypeIndex->Comment[$prev->id]
-            && ($prev->id !== \T_DOC_COMMENT || !$this->docCommentIsIgnorable($prev) || $prev->hasBlankLineBefore())
+            && (
+                $prev->id !== \T_DOC_COMMENT
+                || !$this->docCommentIsIgnorable($prev)
+                || ($orBlankLineBefore && $prev->hasBlankLineBefore())
+            )
             && $prev->hasNewlineBefore()
             && !$prev->hasBlankLineAfter();
     }
