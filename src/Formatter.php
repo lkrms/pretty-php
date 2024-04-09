@@ -225,6 +225,11 @@ final class Formatter implements Buildable
     public bool $NewlineBeforeFnDoubleArrows = false;
 
     /**
+     * @readonly
+     */
+    public bool $CollapseDocBlocksByDefault = false;
+
+    /**
      * If the first object operator in a chain of method calls has a leading
      * newline, align with the start of the chain?
      *
@@ -454,6 +459,9 @@ final class Formatter implements Buildable
 
     public ?string $Filename = null;
 
+    /**
+     * Indentation used in the input, if known
+     */
     public ?Indentation $Indentation = null;
 
     /**
@@ -932,7 +940,7 @@ final class Formatter implements Buildable
                         continue 2;
                     }
                     if ($prev->id === \T_CLOSE_BRACE
-                            && !$prev->isStructuralBrace(false)) {
+                            && !$prev->isStructuralBrace()) {
                         break;
                     }
                     if ($prev->PrevCode

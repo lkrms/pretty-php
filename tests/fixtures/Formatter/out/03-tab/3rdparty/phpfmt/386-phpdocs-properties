@@ -3,14 +3,9 @@
 
 class Test
 {
-	/**
-	 * @var mixed
-	 */
+	/** @var mixed */
 	private $a;
-
-	/**
-	 * @var int
-	 */
+	/** @var int */
 	private $b = 1;
 
 	public function __construct(array $a, $b)

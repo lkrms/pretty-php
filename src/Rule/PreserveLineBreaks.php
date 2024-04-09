@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
@@ -116,12 +117,15 @@ final class PreserveLineBreaks implements MultiTokenRule
         }
 
         // Treat `?:` as one operator
-        if ($token->TernaryOperator1 === $prev) {
+        if (($token->Flags & TokenFlag::TERNARY_OPERATOR)
+            && ($token->id === \T_QUESTION
+                ? $token
+                : $token->OtherTernaryOperator) === $prev) {
             return false;
         }
 
         // Don't preserve newlines before `:` other than ternary operators
-        if ($token->id === \T_COLON && !$token->IsTernaryOperator) {
+        if ($token->id === \T_COLON && !($token->Flags & TokenFlag::TERNARY_OPERATOR)) {
             return false;
         }
 
@@ -170,12 +174,15 @@ final class PreserveLineBreaks implements MultiTokenRule
         }
 
         // Treat `?:` as one operator
-        if ($token->TernaryOperator2 === $next) {
+        if (($token->Flags & TokenFlag::TERNARY_OPERATOR)
+            && ($token->id === \T_COLON
+                ? $token
+                : $token->OtherTernaryOperator) === $next) {
             return false;
         }
 
         if ($token->id === \T_CLOSE_BRACE
-                && !$token->isStructuralBrace(false)) {
+                && !$token->isStructuralBrace()) {
             return false;
         }
 
@@ -229,7 +236,7 @@ final class PreserveLineBreaks implements MultiTokenRule
                             && $token->PrevCode->EndStatement !== $token->PrevCode)
                         || ($token->Parent
                             && !($token->Parent->id === \T_OPEN_BRACE
-                                && $token->Parent->isStructuralBrace(false))))))) {
+                                && $token->Parent->isStructuralBrace())))))) {
             if (!$this->Formatter->PreserveLineBreaks) {
                 return false;
             }

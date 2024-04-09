@@ -258,6 +258,12 @@ class TokenTypeIndex implements Immutable
      * @readonly
      * @var array<int,bool>
      */
+    public array $FunctionIdentifier;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
     public array $DereferenceableTerminator;
 
     /**
@@ -273,6 +279,12 @@ class TokenTypeIndex implements Immutable
      * @var array<int,bool>
      */
     public array $UnaryPredecessor;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $T_DO;
 
     /**
      * T_DECLARE, T_FOR, T_FOREACH, T_IF, T_SWITCH, T_WHILE
@@ -344,12 +356,39 @@ class TokenTypeIndex implements Immutable
     public array $Comment;
 
     /**
+     * T_ABSTRACT, T_CASE, T_CLASS, T_CONST, T_DECLARE, T_ENUM, T_FINAL,
+     * T_FUNCTION, T_GLOBAL, T_INTERFACE, T_NAMESPACE, T_PRIVATE, T_PROTECTED,
+     * T_PUBLIC, T_READONLY, T_STATIC, T_TRAIT, T_USE, T_VAR
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $Declaration;
+
+    /**
+     * T_CASE, T_CLASS, T_CONST, T_DECLARE, T_ENUM, T_FUNCTION, T_INTERFACE,
+     * T_NAMESPACE, T_TRAIT, T_USE
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $DeclarationExceptModifiers;
+
+    /**
      * T_CLASS, T_ENUM, T_INTERFACE, T_TRAIT
      *
      * @readonly
      * @var array<int,bool>
      */
     public array $DeclarationClass;
+
+    /**
+     * T_GLOBAL, T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY, T_STATIC, T_VAR
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $DeclarationPropertyOrVariable;
 
     /**
      * @readonly
@@ -407,16 +446,34 @@ class TokenTypeIndex implements Immutable
     public array $OperatorBooleanExceptNot;
 
     /**
+     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_OR
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $TypeDelimiter;
 
     /**
+     * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE, T_NAMESPACE,
+     * T_NS_SEPARATOR, T_STRING, T_OPEN_PARENTHESIS, T_CLOSE_PARENTHESIS,
+     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_OR
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $ValueType;
+
+    /**
      * @readonly
      * @var array<int,bool>
      */
     public array $Visibility;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $VisibilityWithReadonly;
 
     private string $LastOperatorsMethod;
 
@@ -593,7 +650,9 @@ class TokenTypeIndex implements Immutable
             \T_ARRAY,
             \T_CALLABLE,
             \T_ELLIPSIS,
+            \T_EXTENDS,
             \T_FN,
+            \T_IMPLEMENTS,
             \T_NAME_FULLY_QUALIFIED,
             \T_NAME_QUALIFIED,
             \T_NAME_RELATIVE,
@@ -722,6 +781,12 @@ class TokenTypeIndex implements Immutable
             ...$expressionDelimiter,
         );
 
+        $this->FunctionIdentifier = TT::getIndex(
+            \T_STRING,
+            \T_READONLY,
+            ...TT::AMPERSAND,
+        );
+
         $this->DereferenceableTerminator = TT::getIndex(
             ...TT::DEREFERENCEABLE_END,
         );
@@ -756,6 +821,8 @@ class TokenTypeIndex implements Immutable
             ...TT::KEYWORD,
         );
 
+        $this->T_DO = TT::getIndex(\T_DO);
+
         $this->AltSyntaxStart = TT::getIndex(...TT::ALT_SYNTAX_START);
         $this->AltSyntaxContinue = TT::getIndex(...TT::ALT_SYNTAX_CONTINUE);
         $this->AltSyntaxContinueWithExpression = TT::getIndex(...TT::ALT_SYNTAX_CONTINUE_WITH_EXPRESSION);
@@ -765,7 +832,15 @@ class TokenTypeIndex implements Immutable
         $this->Chain = TT::getIndex(...TT::CHAIN);
         $this->ChainPart = TT::getIndex(...TT::CHAIN_PART);
         $this->Comment = TT::getIndex(...TT::COMMENT);
+        $this->Declaration = TT::getIndex(...TT::DECLARATION);
+        $this->DeclarationExceptModifiers = TT::getIndex(...TT::DECLARATION_EXCEPT_MODIFIERS);
         $this->DeclarationClass = TT::getIndex(...TT::DECLARATION_CLASS);
+        $this->DeclarationPropertyOrVariable = TT::getIndex(
+            \T_GLOBAL,
+            \T_STATIC,
+            \T_VAR,
+            ...TT::VISIBILITY_WITH_READONLY,
+        );
         $this->DeclarationPart = TT::getIndex(...TT::DECLARATION_PART);
         $this->DeclarationPartWithNew = TT::getIndex(...TT::DECLARATION_PART_WITH_NEW);
         $this->HasStatement = TT::getIndex(...TT::HAS_STATEMENT);
@@ -775,7 +850,9 @@ class TokenTypeIndex implements Immutable
         $this->NotCode = TT::getIndex(...TT::NOT_CODE);
         $this->OperatorBooleanExceptNot = TT::getIndex(...TT::OPERATOR_BOOLEAN_EXCEPT_NOT);
         $this->TypeDelimiter = TT::getIndex(...TT::TYPE_DELIMITER);
+        $this->ValueType = TT::getIndex(...TT::VALUE_TYPE);
         $this->Visibility = TT::getIndex(...TT::VISIBILITY);
+        $this->VisibilityWithReadonly = TT::getIndex(...TT::VISIBILITY_WITH_READONLY);
 
         $this->LastOperatorsMethod = 'withMixedOperators';
         $this->_PreserveNewlineBefore = $this->PreserveNewlineBefore;

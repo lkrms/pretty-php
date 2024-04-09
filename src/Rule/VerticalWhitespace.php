@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
@@ -260,7 +261,7 @@ final class VerticalWhitespace implements MultiTokenRule
             // Add a newline before an open brace that is part of a top-level
             // declaration or an anonymous class declared over multiple lines
             if ($token->id === \T_OPEN_BRACE) {
-                if (!$token->isStructuralBrace()
+                if (!$token->isStructuralBrace(true)
                         || ($token->Next->id === \T_CLOSE_BRACE && !$token->hasNewlineAfter())) {
                     continue;
                 }
@@ -286,15 +287,17 @@ final class VerticalWhitespace implements MultiTokenRule
             // If one ternary operator is at the start of a line, add a newline
             // before the other
             if ($token->id === \T_QUESTION) {
-                if (!$token->IsTernaryOperator
-                        || $token->TernaryOperator2 === $token->Next) {
+                if (
+                    !($token->Flags & TokenFlag::TERNARY_OPERATOR)
+                    || $token->OtherTernaryOperator === $token->Next
+                ) {
                     continue;
                 }
 
                 $op1Newline = $token->hasNewlineBefore();
-                $op2Newline = $token->TernaryOperator2->hasNewlineBefore();
+                $op2Newline = $token->OtherTernaryOperator->hasNewlineBefore();
                 if ($op1Newline && !$op2Newline) {
-                    $token->TernaryOperator2->WhitespaceBefore |= WhitespaceType::LINE;
+                    $token->OtherTernaryOperator->WhitespaceBefore |= WhitespaceType::LINE;
                 } elseif (!$op1Newline && $op2Newline) {
                     $token->WhitespaceBefore |= WhitespaceType::LINE;
                 }

@@ -2,6 +2,8 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenData;
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
@@ -22,9 +24,8 @@ use Lkrms\PrettyPHP\Token\Token;
  *   gap between the first and second statements to subsequent statements
  *
  * For formatting purposes, the following constructs are treated as
- * declarations, and a declaration is comprised of every token in a declaration
- * statement, including any attributes, modifiers and statements (e.g.
- * `function` bodies).
+ * declarations, and a declaration includes any applicable attributes, modifiers
+ * and statements.
  *
  * - `declare` (`T_DECLARE`)
  * - `namespace` (`T_NAMESPACE`)
@@ -33,6 +34,7 @@ use Lkrms\PrettyPHP\Token\Token;
  * - `interface` (`T_INTERFACE`)
  * - `trait` (`T_TRAIT`)
  * - `function` (`T_FUNCTION`)): not including anonymous functions
+ * - `case` (`T_CASE`): in enumerations
  * - `const` (`T_CONST`)
  * - `public|protected|private`: when declaring a property
  * - `use` (`T_USE`): not including `use` in anonymous functions
@@ -46,21 +48,22 @@ final class DeclarationSpacing implements MultiTokenRule
 {
     use MultiTokenRuleTrait;
 
-    /**
-     * @var Token[]
-     */
-    private array $Prev = [];
+    private bool $SortImportsEnabled;
 
     /**
-     * @var int[]
+     * @var array<int,bool>
      */
-    private array $PrevTypes = [];
+    private array $VariableOrDeclarationIndex;
 
-    private bool $PrevExpand = false;
+    /**
+     * @var array<int,bool>
+     */
+    private array $AttributeIndex;
 
-    private bool $PrevCondense = false;
-
-    private bool $PrevCondenseOneLine = false;
+    /**
+     * @var array<int,bool>
+     */
+    private array $LastExpand;
 
     public static function getPriority(string $method): ?int
     {
@@ -75,118 +78,156 @@ final class DeclarationSpacing implements MultiTokenRule
 
     public static function getTokenTypes(TokenTypeIndex $typeIndex): array
     {
-        return TokenType::DECLARATION;
+        return [
+            \T_ATTRIBUTE,
+            \T_ATTRIBUTE_COMMENT,
+            ...TokenType::DECLARATION,
+        ];
+    }
+
+    public function boot(): void
+    {
+        $this->SortImportsEnabled = isset(
+            $this->Formatter->Enabled[SortImports::class]
+        );
+
+        $this->VariableOrDeclarationIndex = TokenType::getIndex(
+            \T_VARIABLE,
+            ...TokenType::DECLARATION,
+        );
+
+        $this->AttributeIndex = TokenType::getIndex(
+            \T_ATTRIBUTE,
+            \T_ATTRIBUTE_COMMENT,
+        );
     }
 
     public function processTokens(array $tokens): void
     {
-        foreach ($tokens as $token) {
-            // After rewinding to the first attribute (if any), ignore tokens
-            // other than the first in each declaration
-            while ($token->Statement !== $token) {
-                if (!$token->PrevSibling || !(
-                    $token->PrevSibling->id === \T_ATTRIBUTE
-                    || $token->PrevSibling->id === \T_ATTRIBUTE_COMMENT
-                )) {
-                    continue 2;
-                }
-                $token = $token->PrevSibling;
-            }
+        /** @var Token[] */
+        $current = [];
+        /** @var int[] */
+        $currentType = [];
+        /** @var Token|null */
+        $last = null;
+        $currentShift = false;
+        $currentExpand = false;
+        $currentCondense = false;
+        $currentCondenseOneLine = false;
 
-            // Ignore `static` outside of declarations, `namespace` in the
-            // context of relative names, and promoted constructor parameters
-            if ((
-                $token->id === \T_STATIC
-                && !$token->NextCode->is([\T_VARIABLE, ...TokenType::DECLARATION])
-            ) || (
-                $token->id === \T_NAMESPACE
-                && $token->NextCode->id === \T_NS_SEPARATOR
-            ) || (
-                $token->is(TokenType::VISIBILITY)
-                && $token->inParameterList()
-            )) {
+        foreach ($tokens as $token) {
+            // Ignore tokens other than the first in each declaration
+            if ($token->Statement !== $token) {
                 continue;
             }
 
-            $parts = $token->namedDeclarationParts(false);
+            // Get the first non-attribute
+            $first = $token->skipSiblingsFrom($this->AttributeIndex);
 
-            // Ignore anonymous functions
+            // Ignore:
+            // - `static` outside declarations
+            // - `case` in switch statements
+            // - `namespace` in relative names
+            // - promoted constructor parameters
+            if (
+                ($first->id === \T_STATIC && !($first->NextCode && $this->VariableOrDeclarationIndex[$first->NextCode->id]))
+                || ($first->id === \T_CASE && $first->inSwitchCaseList())
+                || ($first->id === \T_NAMESPACE && $first->NextCode && $first->NextCode->id === \T_NS_SEPARATOR)
+                || ($this->TypeIndex->VisibilityWithReadonly[$first->id] && $first->inParameterList())
+            ) {
+                continue;
+            }
+
+            $parts = $token->namedDeclarationParts();
+
+            // Ignore anonymous functions and classes
             if (!$parts->count()) {
                 continue;
             }
 
-            // Add a blank line between declarations and subsequent
-            // non-declarations
-            if (!$token->EndStatement->nextCode()->skipSiblingsOf(
-                \T_ATTRIBUTE, \T_ATTRIBUTE_COMMENT
-            )->is([\T_NULL, ...TokenType::DECLARATION])
-                    && $token->EndStatement->next()->id !== \T_CLOSE_TAG) {
-                $token->EndStatement->WhitespaceAfter |= WhitespaceType::BLANK;
-            }
+            $type = $parts->getAnyFrom($this->TypeIndex->DeclarationExceptModifiers)
+                          ->getTypes();
 
-            // If the same DECLARATION_UNIQUE tokens appear in consecutive
-            // one-line statements, propagate the gap between statements 1 and 2
-            // to subsequent statements
-            $types = $parts->getAnyOf(...TokenType::DECLARATION_UNIQUE)
-                           ->getTypes();
-
-            // Allow `$types` to be empty if this is a variable or property
-            // declaration
-            if (!$types && !$parts->hasOneOf(
-                \T_GLOBAL, \T_READONLY, \T_STATIC, \T_VAR, ...TokenType::VISIBILITY
-            )) {
-                $this->maybeApplyBlankLineBefore($token);
+            // Ignore declarations with no apparent type unless they are
+            // property or variable declarations
+            if (!$type && !$parts->hasOneFrom($this->TypeIndex->DeclarationPropertyOrVariable)) {
                 continue;
             }
 
             // Don't separate `use`, `use function` and `use constant` if
             // imports are not being sorted
-            if (!($this->Formatter->Enabled[SortImports::class] ?? false) && (
-                $types === [\T_USE, \T_FUNCTION]
-                || $types === [\T_USE, \T_CONST]
+            if (!$this->SortImportsEnabled && (
+                $type === [\T_USE, \T_FUNCTION] || $type === [\T_USE, \T_CONST]
             )) {
-                $types = [\T_USE];
+                $type = [\T_USE];
             }
 
-            // - `$this->PrevTypes` contains the `$types` of the most recent
-            //   declaration
-            // - `$this->Prev` contains the most recent declarations of the
-            //   current `$types` and is reset whenever a declaration with
-            //   different `$types` is encountered
-            // - `$this->PrevExpand` is `true` when blank lines are being
-            //   applied before declarations of the current `$types`
-            // - `$this->PrevCondense` is `true` when blank lines before
-            //   declarations of the current `$types` are being suppressed
-            // - `$this->PrevCondenseOneLine` is `true` when blank lines before
-            //   declarations of the current `$types` are being suppressed
-            //   unless they have inner newlines
-            $prev = $this->Prev
-                ? end($this->Prev)
-                : null;
-            $prevSibling = $token->PrevCode
-                ? $token->PrevCode->Statement
-                : null;
+            $token->Flags |= TokenFlag::NAMED_DECLARATION;
 
-            if ($types !== $this->PrevTypes || !$prev || $prevSibling !== $prev) {
-                $this->Prev = [];
+            // Add a blank line between declarations and subsequent
+            // non-declarations
+            assert($token->EndStatement !== null);
+            $next = $token->EndStatement->nextCode()->skipSiblingsFrom($this->AttributeIndex)->orNull();
+            if (
+                $next
+                && !$this->TypeIndex->Declaration[$next->id]
+                && $token->EndStatement->Next
+                && $token->EndStatement->Next->id !== \T_CLOSE_TAG
+            ) {
+                $token->EndStatement->WhitespaceAfter |= WhitespaceType::BLANK;
+            }
+
+            // If one-line declarations of the same type appear consecutively,
+            // propagate the gap between the first and second statements to
+            // subsequent statements
+
+            // - `$currentType` contains the `$type` of the last declaration
+            // - `$current` contains declarations of the current `$type` and is
+            //   reset when one of the following is encountered:
+            //   - a declaration of a different `$type`
+            //   - code that is not a declaration
+            // - `$last` contains the last declaration in `$current`
+            // - `$currentExpand` is `true` when blank lines are being applied
+            //   before declarations of the current `$type`
+            // - `$currentCondense` is `true` when blank lines before
+            //   declarations of the current `$type` are being suppressed
+            // - `$currentCondenseOneLine` is `true` when blank lines before
+            //   declarations of the current `$type` are being suppressed unless
+            //   they have inner newlines
+            $prev = $last;
+            $prevCode = $token->PrevCode ? $token->PrevCode->Statement : null;
+
+            if (!$prev || $prevCode !== $prev || $type !== $currentType) {
+                $this->maybeCollapseComments($current, $currentShift, $currentExpand);
+                $current = [];
+                $currentShift = false;
+                // If `$prevCode` is a declaration of the same type (possible if
+                // it is a parent of `$prev`), add it to `$current`
                 if (
-                    $prevSibling
-                    && $prevSibling !== $prev
-                    && $this->uniqueDeclarationTypes($prevSibling) === $types
+                    $prevCode
+                    && $prevCode !== $prev
+                    && $this->getDeclarationType($prevCode) === $type
                 ) {
-                    $this->Prev[] = $prevSibling;
+                    $current[] = $prevCode;
+                    $currentShift = true;
                 }
 
-                $this->PrevTypes = $types;
-                $this->PrevExpand =
-                    $this->hasComment($token)
-                    || ($this->Prev
-                        && ($this->hasComment($prevSibling)
-                            || $prevSibling->hasBlankLineBefore()
-                            || $prevSibling->collect($prevSibling->EndStatement)->hasNewline()));
+                $currentType = $type;
+                if ($this->hasComment($token)) {
+                    $currentExpand = true;
+                } elseif ($current) {
+                    assert($prevCode !== null);
+                    assert($prevCode->EndStatement !== null);
+                    $currentExpand = $this->hasComment($prevCode)
+                        || $prevCode->hasBlankLineBefore()
+                        || $prevCode->collect($prevCode->EndStatement)->hasNewline();
+                } else {
+                    $currentExpand = false;
+                }
             }
-            $this->Prev[] = $token;
-            $count = count($this->Prev);
+            $current[] = $token;
+            $last = $token;
+            $count = count($current);
 
             // Always add a blank line above the first declaration of each type
             if ($count < 2) {
@@ -194,15 +235,18 @@ final class DeclarationSpacing implements MultiTokenRule
                 continue;
             }
 
+            assert($prev !== null);
+            assert($prev->EndStatement !== null);
+
             // Suppress blank lines between DECLARATION_CONDENSE statements,
             // multi-line or otherwise, and between one-line
             // DECLARATION_CONDENSE_ONE_LINE statements, comments or not
             if ($count === 2) {
-                $this->PrevCondense = $parts->hasOneOf(...TokenType::DECLARATION_CONDENSE);
-                $this->PrevCondenseOneLine = $parts->hasOneOf(...TokenType::DECLARATION_CONDENSE_ONE_LINE);
+                $currentCondense = $parts->hasOneOf(...TokenType::DECLARATION_CONDENSE);
+                $currentCondenseOneLine = $parts->hasOneOf(...TokenType::DECLARATION_CONDENSE_ONE_LINE);
             }
-            if ($this->PrevCondense
-                || ($this->PrevCondenseOneLine
+            if ($currentCondense
+                || ($currentCondenseOneLine
                     && !$prev->collect($prev->EndStatement)->hasNewline()
                     && !$token->collect($token->EndStatement)->hasNewline())) {
                 $token->WhitespaceBefore |= WhitespaceType::LINE;
@@ -220,37 +264,56 @@ final class DeclarationSpacing implements MultiTokenRule
             //
             // private const C = 2;
             // ```
-            if (!$this->PrevExpand) {
-                $prevParts = $prev->declarationParts(false, false);
-                if (($parts->getFirstOf(...TokenType::VISIBILITY)->id ?? null) !== ($prevParts->getFirstOf(...TokenType::VISIBILITY)->id ?? null)
+            if (!$currentExpand) {
+                $prevParts = $prev->namedDeclarationParts();
+                if (($parts->getFirstFrom($this->TypeIndex->Visibility)->id ?? null) !== ($prevParts->getFirstFrom($this->TypeIndex->Visibility)->id ?? null)
                         || ($parts->getFirstOf(\T_ABSTRACT)->id ?? null) !== ($prevParts->getFirstOf(\T_ABSTRACT)->id ?? null)
                         || ($parts->getFirstOf(\T_FINAL)->id ?? null) !== ($prevParts->getFirstOf(\T_FINAL)->id ?? null)
                         || ($parts->getFirstOf(\T_GLOBAL)->id ?? null) !== ($prevParts->getFirstOf(\T_GLOBAL)->id ?? null)
                         || ($parts->getFirstOf(\T_READONLY)->id ?? null) !== ($prevParts->getFirstOf(\T_READONLY)->id ?? null)
                         || ($parts->getFirstOf(\T_STATIC)->id ?? null) !== ($prevParts->getFirstOf(\T_STATIC)->id ?? null)
                         || ($parts->getFirstOf(\T_VAR)->id ?? null) !== ($prevParts->getFirstOf(\T_VAR)->id ?? null)) {
-                    $this->Prev = [$token];
+                    array_pop($current);
+                    $this->maybeCollapseComments($current, $currentShift, $currentExpand);
+                    $current = [$token];
+                    $currentShift = false;
                     $count = 1;
                 }
             }
 
-            $expand = $this->PrevExpand
+            assert($token->Prev !== null);
+            $expand = $currentExpand
                 || $token->collect($token->EndStatement)->hasNewline()
-                || $prev->collect($token->Prev)->hasNewline()
-                || (!$this->PrevCondenseOneLine
+                || $prev->collect($this->getWithoutDocComment($token->Prev))->hasNewline()
+                || (!$currentCondenseOneLine
                     && ($this->hasComment($token)
                         || ($count === 2 && $token->hasBlankLineBefore())));
 
             if ($expand) {
-                if (!$this->PrevExpand && !$this->PrevCondenseOneLine) {
+                if (!$currentExpand && !$currentCondenseOneLine) {
                     if (!$this->hasComment($token)) {
-                        foreach ($this->Prev as $t) {
+                        foreach ($current as $t) {
                             $this->maybeApplyBlankLineBefore($t, true);
                         }
                     } else {
-                        $token->applyBlankLineBefore(true);
+                        $hasComment = false;
+                        foreach ($current as $t) {
+                            if (!$hasComment) {
+                                assert($t->Prev !== null);
+                                if (
+                                    $t === $token
+                                    || $t->Prev->id === \T_DOC_COMMENT
+                                    || $this->hasComment($t)
+                                ) {
+                                    $hasComment = true;
+                                }
+                            }
+                            if ($hasComment) {
+                                $this->maybeApplyBlankLineBefore($t, true);
+                            }
+                        }
                     }
-                    $this->PrevExpand = true;
+                    $currentExpand = true;
                 } else {
                     $token->applyBlankLineBefore(true);
                 }
@@ -264,37 +327,102 @@ final class DeclarationSpacing implements MultiTokenRule
                 $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
             }
         }
+
+        $this->maybeCollapseComments($current, $currentShift, $currentExpand);
     }
 
     /**
-     * @return int[]|null `null` if there is no declaration at `$token`, or if
-     * the declaration at `$token` does not contain any
-     * {@see TokenType::DECLARATION_UNIQUE} tokens and is not a variable or
-     * property declaration.
+     * @return int[]|null
      */
-    private function uniqueDeclarationTypes(Token $token): ?array
+    private function getDeclarationType(Token $token): ?array
     {
-        $parts = $token->declarationParts(false, false);
-
-        if (!$parts->count()
-                || !$parts->hasOneOf(...TokenType::DECLARATION)) {
+        if (!($token->Flags & TokenFlag::NAMED_DECLARATION)) {
             return null;
         }
 
-        $types = $parts->getAnyOf(...TokenType::DECLARATION_UNIQUE)
-                       ->getTypes();
+        $type = $token->namedDeclarationParts()
+                      ->getAnyFrom($this->TypeIndex->DeclarationExceptModifiers)
+                      ->getTypes();
 
-        if (!$types && !$parts->hasOneOf(
-            \T_GLOBAL, \T_READONLY, \T_STATIC, \T_VAR, ...TokenType::VISIBILITY
+        if (!$this->SortImportsEnabled && (
+            $type === [\T_USE, \T_FUNCTION] || $type === [\T_USE, \T_CONST]
         )) {
-            return null;
+            return [\T_USE];
         }
 
-        return $types;
+        return $type;
+    }
+
+    private function getWithoutDocComment(Token $token): Token
+    {
+        if ($token->id === \T_DOC_COMMENT) {
+            /** @var Token */
+            return $token->Prev;
+        }
+        return $token;
+    }
+
+    private function hasComment(Token $token): bool
+    {
+        /** @var Token */
+        $prev = $token->Prev;
+        return $this->TypeIndex->Comment[$prev->id]
+            && ($prev->id !== \T_DOC_COMMENT || !$this->docCommentIsIgnorable($prev) || $prev->hasBlankLineBefore())
+            && $prev->hasNewlineBefore()
+            && !$prev->hasBlankLineAfter();
+    }
+
+    private function docCommentIsIgnorable(Token $token): bool
+    {
+        if ($token->Flags & TokenFlag::COLLAPSIBLE_COMMENT) {
+            assert(is_string($token->Data[TokenData::COMMENT_CONTENT]));
+            if (($token->Data[TokenData::COMMENT_CONTENT][0] ?? null) === '@') {
+                return true;
+            }
+        }
+        return !$token->hasNewline() && $token->text[4] === '@';
+    }
+
+    /**
+     * @param Token[] $tokens
+     */
+    private function maybeCollapseComments(array $tokens, bool $shift, bool $expand): void
+    {
+        if ($shift) {
+            array_shift($tokens);
+        }
+        if (!$tokens) {
+            return;
+        }
+        if (!$expand && count($tokens) === 1) {
+            $token = $tokens[0];
+            assert($token->EndStatement !== null);
+            if (
+                $token->collect($token->EndStatement)->hasNewline()
+                || ($this->LastExpand[$token->Parent->Index ?? -1]
+                    ??= !$this->Formatter->CollapseDocBlocksByDefault)
+            ) {
+                $expand = true;
+            }
+        }
+        $this->LastExpand[$token->Parent->Index ?? -1] = $expand;
+        if ($expand) {
+            return;
+        }
+        foreach ($tokens as $token) {
+            /** @var Token */
+            $prev = $token->Prev;
+            if ($prev->id === \T_DOC_COMMENT
+                    && $prev->Flags & TokenFlag::COLLAPSIBLE_COMMENT
+                    && isset($prev->Data[TokenData::COMMENT_CONTENT])) {
+                $prev->setText('/** ' . $prev->Data[TokenData::COMMENT_CONTENT] . ' */');
+            }
+        }
     }
 
     private function maybeApplyBlankLineBefore(Token $token, bool $withMask = false): void
     {
+        assert($token->OpenTag !== null);
         if ($token->OpenTag->NextCode === $token
                 && !$this->Formatter->Psr12) {
             $token->WhitespaceBefore |= WhitespaceType::LINE;
@@ -303,22 +431,8 @@ final class DeclarationSpacing implements MultiTokenRule
         $token->applyBlankLineBefore($withMask);
     }
 
-    private function hasComment(Token $token): bool
-    {
-        return ($prev = $token->Prev)
-            && $prev->CommentType
-            && $prev->hasNewlineBefore()
-            && !$prev->hasBlankLineAfter();
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function reset(): void
     {
-        $this->Prev = [];
-        $this->PrevTypes = [];
-        $this->PrevCondense = false;
-        $this->PrevExpand = false;
+        $this->LastExpand = [];
     }
 }

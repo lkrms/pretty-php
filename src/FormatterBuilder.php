@@ -8,6 +8,7 @@ use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Contract\Extension;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Salient\Core\AbstractBuilder;
+use Salient\Core\Indentation;
 
 /**
  * A fluent Formatter factory
@@ -28,7 +29,7 @@ use Salient\Core\AbstractBuilder;
  * @method Formatter with(string $property, mixed $value) Get an instance with a value applied to a given property
  * @method Formatter withoutExtensions(array<class-string<Extension>> $extensions = []) Get an instance with the given extensions disabled
  * @method Formatter withExtensions(array<class-string<Extension>> $enable, array<class-string<Extension>> $disable = [], bool $preserveCurrent = true) Get an instance with the given extensions enabled
- * @method string format(string $code, string|null $eol = null, string|null $filename = null, bool $fast = false) Get formatted code (see {@see Formatter::format()})
+ * @method string format(string $code, string|null $eol = null, Indentation|null $indentation = null, string|null $filename = null, bool $fast = false) Get formatted code (see {@see Formatter::format()})
  *
  * @extends AbstractBuilder<Formatter>
  *

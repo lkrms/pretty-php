@@ -179,13 +179,10 @@ final class TokenType extends AbstractDictionary
     ];
 
     public const VALUE_TYPE = [
-        \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
-        \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
-        \T_AND,
-        \T_OR,
         \T_OPEN_PARENTHESIS,
         \T_CLOSE_PARENTHESIS,
         ...self::DECLARATION_TYPE,
+        ...self::TYPE_DELIMITER,
     ];
 
     public const CHAIN_PART = [
@@ -289,7 +286,10 @@ final class TokenType extends AbstractDictionary
     public const DECLARATION_PART = [
         \T_ATTRIBUTE,
         \T_ATTRIBUTE_COMMENT,
+        \T_CASE,
+        \T_EXTENDS,
         \T_FUNCTION,
+        \T_IMPLEMENTS,
         \T_STATIC,
         \T_USE,
         ...self::DECLARATION_EXCEPT_MULTI_PURPOSE,
@@ -310,7 +310,8 @@ final class TokenType extends AbstractDictionary
         \T_TRAIT,
     ];
 
-    public const DECLARATION_UNIQUE = [
+    public const DECLARATION_EXCEPT_MODIFIERS = [
+        \T_CASE,
         \T_CLASS,
         \T_CONST,
         \T_DECLARE,
@@ -342,6 +343,7 @@ final class TokenType extends AbstractDictionary
     ];
 
     public const DECLARATION = [
+        \T_CASE,
         \T_FUNCTION,
         \T_NAMESPACE,
         \T_STATIC,
@@ -355,10 +357,8 @@ final class TokenType extends AbstractDictionary
         \T_CONST,
         \T_DECLARE,
         \T_ENUM,
-        \T_EXTENDS,
         \T_FINAL,
         \T_GLOBAL,
-        \T_IMPLEMENTS,
         \T_INTERFACE,
         \T_READONLY,
         \T_TRAIT,
@@ -493,6 +493,11 @@ final class TokenType extends AbstractDictionary
         \T_NAME_QUALIFIED,
         \T_NAME_RELATIVE,
         \T_STRING,
+    ];
+
+    public const VISIBILITY_WITH_READONLY = [
+        \T_READONLY,
+        ...self::VISIBILITY,
     ];
 
     public const VISIBILITY = [

@@ -4,6 +4,8 @@ namespace Lkrms\PrettyPHP\Token;
 
 use Lkrms\PrettyPHP\Catalog\CommentType;
 use Lkrms\PrettyPHP\Catalog\CustomToken;
+use Lkrms\PrettyPHP\Catalog\TokenData;
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Exception\InvalidTokenException;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
@@ -58,11 +60,17 @@ trait NavigableTokenTrait
 
     public ?Token $Heredoc = null;
 
-    public bool $IsTernaryOperator = false;
+    /**
+     * @var int-mask-of<TokenFlag::*>
+     */
+    public int $Flags = 0;
 
-    public ?Token $TernaryOperator1 = null;
+    /**
+     * @var array<TokenData::*,mixed>
+     */
+    public array $Data = [];
 
-    public ?Token $TernaryOperator2 = null;
+    public ?Token $OtherTernaryOperator = null;
 
     public ?Token $ChainOpenedBy = null;
 
@@ -88,18 +96,6 @@ trait NavigableTokenTrait
      * @var CommentType::*|null
      */
     public ?string $CommentType = null;
-
-    /**
-     * True if the token is a C-style comment where every line starts with "*"
-     * or at least one delimiter appears on its own line
-     */
-    public bool $IsInformalDocComment = false;
-
-    /**
-     * True if the token is a T_CLOSE_BRACE or T_CLOSE_TAG that terminates a
-     * statement
-     */
-    public bool $IsStatementTerminator = false;
 
     /**
      * The original content of the token after expanding tabs if CollectColumn
@@ -167,26 +163,31 @@ trait NavigableTokenTrait
      * True if the token is a brace that delimits a code block
      *
      * Returns `false` for braces in:
+     *
      * - expressions (e.g. `$object->{$property}`)
      * - strings (e.g. `"{$object->property}"`)
      * - alias/import statements (e.g. `use A\{B, C}`)
      *
-     * Returns `true` for braces around trait adaptations, and for `match`
-     * expression braces if `$orMatch` is `true`.
+     * Returns `true` for braces in:
+     *
+     * - trait adaptations
+     * - `match` expressions (if `$orMatch` is `true`)
      */
-    final public function isStructuralBrace(bool $orMatch = true): bool
+    final public function isStructuralBrace(bool $orMatch = false): bool
     {
-        /** @var Token */
-        $current = $this->OpenedBy ?: $this;
+        /** @var Token $this */
+        $current = $this->OpenedBy === null ? $this : $this->OpenedBy;
 
         // Exclude T_CURLY_OPEN and T_DOLLAR_OPEN_CURLY_BRACES
         if ($current->id !== \T_OPEN_BRACE) {
             return false;
         }
 
-        /** @var Token|null */
-        $prev = $current->PrevSibling->PrevSibling ?? null;
-        if ($prev && $prev->id === \T_MATCH) {
+        if (
+            $current->PrevSibling
+            && $current->PrevSibling->PrevSibling
+            && $current->PrevSibling->PrevSibling->id === \T_MATCH
+        ) {
             return $orMatch;
         }
 
@@ -195,8 +196,9 @@ trait NavigableTokenTrait
         // Braces cannot be empty in expression (dereferencing) contexts, but
         // trait adaptation braces can be
         return $lastInner === $current                                                  // `{}`
-            || $lastInner->is([\T_COLON, \T_SEMICOLON])                                 // `{ statement; }`
-            || $lastInner->IsStatementTerminator                                        /* `{ statement ?>...<?php }` */
+            || $lastInner->id === \T_SEMICOLON                                          // `{ statement; }`
+            || $lastInner->id === \T_COLON                                              // `{ label: }`
+            || ($lastInner->Flags & TokenFlag::STATEMENT_TERMINATOR)                    /* `{ statement ?>...<?php }` */
             || ($lastInner->id === \T_CLOSE_BRACE && $lastInner->isStructuralBrace());  // `{ { statement; } }`
     }
 
@@ -225,7 +227,9 @@ trait NavigableTokenTrait
         // Starting from the previous sibling because `do` immediately before
         // `while` cannot be part of the same structure, look for a previous
         // `T_DO` the token could form a control structure with
-        $do = $this->PrevSibling->prevSiblingOf(\T_DO)->orNull();
+        $do = $this->PrevSibling
+                   ->prevSiblingFrom($this->TypeIndex->T_DO)
+                   ->orNull();
         if (!$do) {
             return false;
         }
@@ -393,6 +397,40 @@ trait NavigableTokenTrait
             }
         }
         return $this->null();
+    }
+
+    /**
+     * Skip to the next sibling that is not one of the types in an index
+     *
+     * The token returns itself if it satisfies the criteria.
+     *
+     * @param array<int,bool> $index
+     * @return Token
+     */
+    final public function skipSiblingsFrom(array $index)
+    {
+        $t = $this->IsCode ? $this : $this->NextCode;
+        while ($t && $index[$t->id]) {
+            $t = $t->NextSibling;
+        }
+        return $t ?: $this->null();
+    }
+
+    /**
+     * Skip to the previous sibling that is not one of the types in an index
+     *
+     * The token returns itself if it satisfies the criteria.
+     *
+     * @param array<int,bool> $index
+     * @return Token
+     */
+    final public function skipPrevSiblingsFrom(array $index)
+    {
+        $t = $this->IsCode ? $this : $this->PrevCode;
+        while ($t && $index[$t->id]) {
+            $t = $t->PrevSibling;
+        }
+        return $t ?: $this->null();
     }
 
     /**

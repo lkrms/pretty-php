@@ -3,6 +3,7 @@
 namespace Lkrms\PrettyPHP\Token;
 
 use Lkrms\PrettyPHP\Catalog\CommentType;
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
@@ -218,9 +219,20 @@ class Token extends GenericToken implements JsonSerializable
         $a['EndExpression'] = $this->EndExpression;
         $a['IsListParent'] = $this->IsListParent;
         $a['ListItemCount'] = $this->ListItemCount;
-        $a['IsTernaryOperator'] = $this->IsTernaryOperator;
-        $a['TernaryOperator1'] = $this->TernaryOperator1;
-        $a['TernaryOperator2'] = $this->TernaryOperator2;
+
+        if ($this->Flags) {
+            $flags = [];
+            foreach (TokenFlag::cases() as $name => $value) {
+                if ($this->Flags & $value) {
+                    $flags[] = $name;
+                }
+            }
+            if ($flags) {
+                $a['Flags'] = implode('|', $flags);
+            }
+        }
+
+        $a['OtherTernaryOperator'] = $this->OtherTernaryOperator;
         $a['CommentType'] = $this->CommentType;
         $a['NewlineAfterPreserved'] = $this->NewlineAfterPreserved;
         $a['TagIndent'] = $this->TagIndent;
@@ -259,7 +271,6 @@ class Token extends GenericToken implements JsonSerializable
         $a['CriticalWhitespaceAfter'] = $this->CriticalWhitespaceAfter;
         $a['CriticalWhitespaceMaskPrev'] = $this->CriticalWhitespaceMaskPrev;
         $a['CriticalWhitespaceMaskNext'] = $this->CriticalWhitespaceMaskNext;
-        $a['IsStatementTerminator'] = $this->IsStatementTerminator;
         $a['OutputLine'] = $this->OutputLine;
         $a['OutputPos'] = $this->OutputPos;
         $a['OutputColumn'] = $this->OutputColumn;
@@ -540,8 +551,9 @@ class Token extends GenericToken implements JsonSerializable
         $ternary1 =
             $this->prevSiblings()
                  ->find(fn(Token $t) =>
-                            $t === $t->TernaryOperator1);
-        if ($ternary1 && $ternary1->TernaryOperator2->Index > $this->Index) {
+                            ($t->Flags & TokenFlag::TERNARY_OPERATOR)
+                                && $t->id === \T_QUESTION);
+        if ($ternary1 && $ternary1->OtherTernaryOperator->Index > $this->Index) {
             return $ternary1->NextCode->_pragmaticStartOfExpression($this);
         }
 
@@ -556,7 +568,7 @@ class Token extends GenericToken implements JsonSerializable
             // expression boundary, move back to a sibling that isn't a
             // terminator
             while ($current && $current->Expression === false) {
-                if ($i && !($current->IsTernaryOperator
+                if ($i && !(($current->Flags & TokenFlag::TERNARY_OPERATOR)
                         || $current->is(TokenType::OPERATOR_COMPARISON_EXCEPT_COALESCE))) {
                     break;
                 }
@@ -711,9 +723,10 @@ class Token extends GenericToken implements JsonSerializable
         // the last token before `:`
         $current = $this;
         while ($current = $current->PrevSibling) {
-            if ($current === $current->TernaryOperator1) {
-                if ($current->TernaryOperator2->Index > $this->Index) {
-                    return $current->TernaryOperator2->PrevCode;
+            if (($current->Flags & TokenFlag::TERNARY_OPERATOR)
+                    && $current->id === \T_QUESTION) {
+                if ($current->OtherTernaryOperator->Index > $this->Index) {
+                    return $current->OtherTernaryOperator->PrevCode;
                 }
                 break;
             }
@@ -741,7 +754,7 @@ class Token extends GenericToken implements JsonSerializable
 
             // Don't terminate if the token between expressions is a ternary
             // operator or an expression terminator other than `)`, `]` and `;`
-            if ($terminator->IsTernaryOperator
+            if (($terminator->Flags & TokenFlag::TERNARY_OPERATOR)
                     || $this->TypeIndex->ExpressionDelimiter[$terminator->id]) {
                 continue;
             }
@@ -895,7 +908,7 @@ class Token extends GenericToken implements JsonSerializable
     {
         if ($this->PrevCode
             && ($this->is([\T_SEMICOLON, \T_COMMA, \T_COLON])
-                || $this->IsStatementTerminator)) {
+                || ($this->Flags & TokenFlag::STATEMENT_TERMINATOR))) {
             return $this->PrevCode;
         }
 
@@ -906,9 +919,9 @@ class Token extends GenericToken implements JsonSerializable
     {
         if ($this->NextCode
             && !($this->is([\T_SEMICOLON, \T_COMMA, \T_COLON])
-                || $this->IsStatementTerminator)
+                || ($this->Flags & TokenFlag::STATEMENT_TERMINATOR))
             && ($this->NextCode->is([\T_SEMICOLON, \T_COMMA, \T_COLON])
-                || $this->NextCode->IsStatementTerminator)) {
+                || ($this->NextCode->Flags & TokenFlag::STATEMENT_TERMINATOR))) {
             return $this->NextCode;
         }
 
@@ -1098,7 +1111,7 @@ class Token extends GenericToken implements JsonSerializable
             return false;
         }
 
-        return $this->PrevCode->IsTernaryOperator
+        return ($this->PrevCode->Flags & TokenFlag::TERNARY_OPERATOR)
             || $this->TypeIndex->UnaryPredecessor[$this->PrevCode->id];
     }
 
@@ -1288,7 +1301,7 @@ class Token extends GenericToken implements JsonSerializable
         // character other than "*", and neither delimiter is on its own line,
         // reindent it to preserve alignment
         if ($this->id === \T_COMMENT
-                && !$this->IsInformalDocComment) {
+                && !($this->Flags & TokenFlag::INFORMAL_DOC_COMMENT)) {
             $text = $this->expandedText();
             $delta = $this->OutputColumn - $this->column;
             /* Don't reindent if the comment hasn't moved, or if it has text in
@@ -1332,9 +1345,10 @@ column 1 despite starting in column 2 or above (like this comment) */
             return $this->text;
         }
 
-        /** @todo Guess input tab size and use it instead */
+        $tabSize = $this->Formatter->Indentation->TabSize
+            ?? $this->Formatter->TabSize;
         return Str::expandLeadingTabs(
-            $this->text, $this->Formatter->TabSize, !$this->wasFirstOnLine(), $this->column
+            $this->text, $tabSize, !$this->wasFirstOnLine(), $this->column
         );
     }
 

@@ -3,6 +3,7 @@
 namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
@@ -85,11 +86,11 @@ final class HangingIndentation implements MultiTokenRule
                 $token->HangingIndentParentType =
                     $token->hasNewlineBeforeNextCode()
                         ? (($token->IsListParent && $token->ListItemCount > 1)
-                            || ($token->id === \T_OPEN_BRACE && $token->isStructuralBrace())
+                            || ($token->id === \T_OPEN_BRACE && $token->isStructuralBrace(true))
                                 ? self::NORMAL_INDENT
                                 : self::NO_INDENT)
                         : (($token->IsListParent && $token->ListItemCount > 1)
-                            || ($token->id === \T_OPEN_BRACE && $token->isStructuralBrace())
+                            || ($token->id === \T_OPEN_BRACE && $token->isStructuralBrace(true))
                             || ($token->id !== \T_OPEN_BRACE && $token->adjacent())
                                 ? self::OVERHANGING_INDENT | self::NO_INNER_NEWLINE
                                 : self::NORMAL_INDENT | self::NO_INNER_NEWLINE);
@@ -211,8 +212,14 @@ final class HangingIndentation implements MultiTokenRule
             //         : $a <=>
             //             $b;
             // ```
-            if ($token->IsTernaryOperator || $token->id === \T_COALESCE || $token->id === \T_COALESCE_EQUAL) {
-                $stack[] = self::getTernaryContext($token) ?: $token->TernaryOperator1 ?: $token;
+            if (
+                ($token->Flags & TokenFlag::TERNARY_OPERATOR)
+                || $token->id === \T_COALESCE
+                || $token->id === \T_COALESCE_EQUAL
+            ) {
+                $stack[] = self::getTernaryContext($token)
+                    ?: self::getTernaryOperator1($token)
+                    ?: $token;
                 $until = self::getTernaryEndOfExpression($token);
             } elseif ($token->ChainOpenedBy) {
                 $stack[] = $token->ChainOpenedBy;
@@ -266,9 +273,9 @@ final class HangingIndentation implements MultiTokenRule
             // depth, e.g. in line 2 here:
             //
             // ```php
-            // if (!(($comment = $line->getLastOf(...TokenType::COMMENT)) &&
-            //             $comment->hasNewlineAfter()) ||
-            //         $comment->hasNewline())
+            // if (!(($baz = $foo->bar(...$args)) &&
+            //             $baz->qux()) ||
+            //         $baz->quux())
             // ```
             $until = $until ?? $token->pragmaticEndOfExpression();
             $indent = 0;
@@ -367,13 +374,15 @@ final class HangingIndentation implements MultiTokenRule
     {
         $current = $token->PrevSibling;
         $prevTernary = null;
-        while ($current
-                && $current->Statement === $token->Statement) {
-            if ($current->id === \T_COALESCE
+        while ($current && $current->Statement === $token->Statement) {
+            if (
+                $current->id === \T_COALESCE
                 || $current->id === \T_COALESCE_EQUAL
-                || ($current->TernaryOperator1 === $current
-                    && $current->TernaryOperator2->Index
-                        < ($token->TernaryOperator1 ?: $token)->Index)) {
+                || (($current->Flags & TokenFlag::TERNARY_OPERATOR)
+                    && self::getTernaryOperator1($current) === $current
+                    && $current->OtherTernaryOperator->Index
+                        < (self::getTernaryOperator1($token) ?: $token)->Index)
+            ) {
                 $prevTernary = $current;
             }
             $current = $current->PrevSibling;
@@ -387,8 +396,8 @@ final class HangingIndentation implements MultiTokenRule
         //     : $quux;
         // ```
         if ($prevTernary
-                && $token === $token->TernaryOperator2
-                && $prevTernary->Index > $token->TernaryOperator1->Index) {
+                && $token->id === \T_COLON
+                && $prevTernary->Index > $token->OtherTernaryOperator->Index) {
             return null;
         }
 
@@ -411,22 +420,39 @@ final class HangingIndentation implements MultiTokenRule
             ) {
                 $until = $current->EndExpression ?: $current;
             } else {
-                $until = $current->TernaryOperator2->EndExpression ?: $current;
+                $until = self::getTernaryOperator2($current)->EndExpression ?: $current;
             }
         } while ($until !== $current
             && ($current = $until->NextSibling)
             && ($current->id === \T_COALESCE
                 || $current->id === \T_COALESCE_EQUAL
-                || $current->TernaryOperator1 === $current));
+                || ($current->id === \T_QUESTION
+                    && ($current->Flags & TokenFlag::TERNARY_OPERATOR))));
 
         // And without breaking out of an unenclosed control structure
         // body, proceed to the end of the expression
-        if (!($until->NextSibling
-                && $until->NextSibling->IsTernaryOperator)) {
+        if (!(
+            $until->NextSibling
+            && ($until->NextSibling->Flags & TokenFlag::TERNARY_OPERATOR)
+        )) {
             $until = $until->pragmaticEndOfExpression();
         }
 
         return $until;
+    }
+
+    private static function getTernaryOperator1(Token $token): ?Token
+    {
+        return $token->id === \T_QUESTION
+            ? $token
+            : $token->OtherTernaryOperator;
+    }
+
+    private static function getTernaryOperator2(Token $token): ?Token
+    {
+        return $token->id === \T_COLON
+            ? $token
+            : $token->OtherTernaryOperator;
     }
 
     /**

@@ -3,20 +3,28 @@
 // version:8.1.0
 enum ExampleEnum
 {
-    /** Note. */
+    /**
+     * Note.
+     */
     case Foo;
+
     // Note.
     case Bar;
+
     // Note.
     case Qux;
 }
 
 enum ExampleEnum2: string
 {
-    /** Note. */
+    /**
+     * Note.
+     */
     case Foo = 'a';
+
     // Note.
     case Bar = 'b';
+
     // Note.
     case Qux = 'c';
 }
@@ -25,7 +33,10 @@ enum Suit implements Colorful
 {
     // Fulfills the interface contract.
     case Hearts;
-    /** Note. */
+
+    /**
+     * Note.
+     */
     case Diamonds;
 
     // Fulfills the interface contract.
@@ -45,6 +56,9 @@ enum Suit implements Colorful
 
     // Note.
     case Clubs;
-    /** a */
+
+    /**
+     * a
+     */
     case Spades;
 }

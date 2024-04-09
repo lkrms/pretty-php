@@ -119,3 +119,10 @@ foreach ($foo
 		+ $bar as $baz) {
 	qux($baz);
 }
+do
+	while (true)
+		while (true);
+while (true);
+do
+	foo();
+while (true);

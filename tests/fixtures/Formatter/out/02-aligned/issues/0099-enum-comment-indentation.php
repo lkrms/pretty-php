@@ -1,10 +1,14 @@
 <?php
 enum ExampleEnum
 {
-    /** Note. */
+    /**
+     * Note.
+     */
     case Foo;
+
     // Note.
     case Bar;
+
     // Note.
     case Qux;
 }

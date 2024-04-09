@@ -3,6 +3,7 @@
 namespace Lkrms\PrettyPHP;
 
 use Lkrms\PrettyPHP\Catalog\CommentType;
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Token\Token;
@@ -142,8 +143,6 @@ final class Parser
      * - `Heredoc`
      * - `IsCode`
      * - `CommentType`
-     * - `IsInformalDocComment`
-     * - `IsStatementTerminator`
      *
      * @param Token[] $tokens
      * @return Token[]
@@ -199,17 +198,18 @@ final class Parser
                     // Make multi-line C-style comments honourary DocBlocks if:
                     // - every line starts with "*", or
                     // - at least one delimiter appears on its own line
-                    $token->IsInformalDocComment =
-                        $token->CommentType === CommentType::C
-                        && strpos($text, "\n") !== false
-                        && (
-                            // Every line starts with "*"
-                            !Pcre::match('/\n\h*+(?!\*)\S/', $text)
-                            // The first delimiter is followed by a newline
-                            || !Pcre::match('/^\/\*++(\h++|(?!\*))\S/', $text)
-                            // The last delimiter is preceded by a newline
-                            || !Pcre::match('/\S((?<!\*)|\h++)\*++\/$/', $text)
-                        );
+                    if ($token->CommentType === CommentType::C
+                            && strpos($text, "\n") !== false
+                            && (
+                                // Every line starts with "*"
+                                !Pcre::match('/\n\h*+(?!\*)\S/', $text)
+                                // The first delimiter is followed by a newline
+                                || !Pcre::match('/^\/\*++(\h++|(?!\*))\S/', $text)
+                                // The last delimiter is preceded by a newline
+                                || !Pcre::match('/\S((?<!\*)|\h++)\*++\/$/', $text)
+                            )) {
+                        $token->Flags |= TokenFlag::INFORMAL_DOC_COMMENT;
+                    }
                 }
             }
 
@@ -267,9 +267,12 @@ final class Parser
                     && $t->id !== \T_COLON
                     && $t->id !== \T_SEMICOLON
                     && $t->id !== \T_OPEN_BRACE
-                    && ($t->id !== \T_CLOSE_BRACE || !$t->IsStatementTerminator)
+                    && (
+                        $t->id !== \T_CLOSE_BRACE
+                        || !($t->Flags & TokenFlag::STATEMENT_TERMINATOR)
+                    )
                 ) {
-                    $token->IsStatementTerminator = true;
+                    $token->Flags |= TokenFlag::STATEMENT_TERMINATOR;
                     $token->IsCode = true;
                 }
             }
@@ -341,7 +344,7 @@ final class Parser
                 // class
                 if (
                     $token->id !== \T_CLOSE_BRACE
-                    || !$token->isStructuralBrace(false)
+                    || !$token->isStructuralBrace()
                 ) {
                     $prev = $token;
                     continue;
@@ -364,7 +367,7 @@ final class Parser
                     }
                 }
 
-                $token->IsStatementTerminator = true;
+                $token->Flags |= TokenFlag::STATEMENT_TERMINATOR;
 
                 $prev = $token;
                 continue;
@@ -457,8 +460,8 @@ final class Parser
 
             // The following tokens are regarded as statement terminators:
             //
-            // - `T_SEMICOLON`, or `T_CLOSE_BRACE` / `T_CLOSE_TAG` where
-            //   `$IsStatementTerminator` is `true`, unless the next token
+            // - `T_SEMICOLON`, or `T_CLOSE_BRACE` / `T_CLOSE_TAG` where the
+            //   `STATEMENT_TERMINATOR` flag is set, unless the next token
             //   continues an open control structure
             // - `T_COLON` after a switch case or a label
             // - The last token between brackets other than structural braces
@@ -467,7 +470,10 @@ final class Parser
             //     lists, arrays, `for` expressions
             //   - between non-structural braces, e.g. in `match` expressions
 
-            if ($token->id === \T_SEMICOLON || $token->IsStatementTerminator) {
+            if (
+                $token->id === \T_SEMICOLON
+                || ($token->Flags & TokenFlag::STATEMENT_TERMINATOR)
+            ) {
                 if ($next = $token->NextCode) {
                     if ($idx->ContinuesControlStructure[$next->id]) {
                         continue;
@@ -490,7 +496,7 @@ final class Parser
             if (
                 $idx->CloseBracketExceptBrace[$token->id] || (
                     $token->id === \T_CLOSE_BRACE
-                    && !$token->isStructuralBrace(false)
+                    && !$token->isStructuralBrace()
                 )
             ) {
                 $endStatementOffset = 2;
@@ -500,7 +506,7 @@ final class Parser
                 if (($parent = $token->Parent) && (
                     $idx->OpenBracketExceptBrace[$parent->id] || (
                         $parent->id === \T_OPEN_BRACE
-                        && !$parent->isStructuralBrace(false)
+                        && !$parent->isStructuralBrace()
                     )
                 )) {
                     $endStatementOffset = 1;
@@ -515,9 +521,7 @@ final class Parser
      *
      * Token properties set:
      *
-     * - `IsTernaryOperator`
-     * - `TernaryOperator1`
-     * - `TernaryOperator2`
+     * - `OtherTernaryOperator`
      * - `ChainOpenedBy`
      *
      * @param Token[] $tokens
@@ -588,7 +592,7 @@ final class Parser
                 $count = 0;
                 while (($current = $current->NextSibling)
                         && $token->EndStatement !== ($current->ClosedBy ?: $current)) {
-                    if ($current->IsTernaryOperator) {
+                    if ($current->Flags & TokenFlag::TERNARY_OPERATOR) {
                         continue;
                     }
                     if ($current->id === \T_QUESTION
@@ -605,9 +609,10 @@ final class Parser
                     if ($count--) {
                         continue;
                     }
-                    $current->IsTernaryOperator = $token->IsTernaryOperator = true;
-                    $current->TernaryOperator1 = $token->TernaryOperator1 = $token;
-                    $current->TernaryOperator2 = $token->TernaryOperator2 = $current;
+                    $current->Flags |= TokenFlag::TERNARY_OPERATOR;
+                    $token->Flags |= TokenFlag::TERNARY_OPERATOR;
+                    $current->OtherTernaryOperator = $token;
+                    $token->OtherTernaryOperator = $current;
                     break;
                 }
             }
@@ -621,17 +626,17 @@ final class Parser
                 }
             }
 
-            if ($token->id === \T_CLOSE_BRACE && $token->isStructuralBrace()) {
+            if ($token->id === \T_CLOSE_BRACE && $token->isStructuralBrace(true)) {
                 $endExpressionOffsets = [2, 1];
                 continue;
             }
 
             if ($idx->ExpressionTerminator[$token->id]
-                    || $token->IsStatementTerminator
+                    || ($token->Flags & TokenFlag::STATEMENT_TERMINATOR)
                     || ($token->id === \T_COLON && $token->isColonStatementDelimiter())
                     || ($token->id === \T_CLOSE_BRACE
-                        && (!$token->isStructuralBrace() || $token->isMatchBrace()))
-                    || $token->IsTernaryOperator) {
+                        && (!$token->isStructuralBrace(true) || $token->isMatchBrace()))
+                    || ($token->Flags & TokenFlag::TERNARY_OPERATOR)) {
                 // Expression terminators don't form part of the expression
                 $token->Expression = false;
                 if ($token->PrevCode) {
@@ -644,7 +649,7 @@ final class Parser
                 $parent = $token->parent();
                 if ($parent->is([\T_OPEN_BRACKET, \T_OPEN_PARENTHESIS, \T_ATTRIBUTE])
                     || ($parent->id === \T_OPEN_BRACE
-                        && (!$parent->isStructuralBrace() || $token->isMatchDelimiter()))) {
+                        && (!$parent->isStructuralBrace(true) || $token->isMatchDelimiter()))) {
                     $token->Expression = false;
                     $endExpressionOffsets = [2];
                 }

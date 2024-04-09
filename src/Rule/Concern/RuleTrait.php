@@ -37,6 +37,7 @@ trait RuleTrait
 
     protected function mirrorBracket(Token $openBracket, ?bool $hasNewlineBeforeNextCode = null): void
     {
+        assert($openBracket->ClosedBy !== null);
         if (
             $hasNewlineBeforeNextCode === false
             || !$openBracket->hasNewlineBeforeNextCode()

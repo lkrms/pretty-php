@@ -227,11 +227,7 @@ trait ContextAwareTokenTrait
     final public function isParameterList(): bool
     {
         /** @var static&GenericToken $this */
-        if ($this->id !== \T_OPEN_PARENTHESIS) {
-            return false;
-        }
-
-        if (!$this->PrevCode) {
+        if ($this->id !== \T_OPEN_PARENTHESIS || !$this->PrevCode) {
             return false;
         }
 
@@ -249,12 +245,60 @@ trait ContextAwareTokenTrait
     }
 
     /**
+     * True if the token is the opening brace of a function
+     */
+    final public function isFunctionBrace(bool $allowAnonymous = true): bool
+    {
+        /** @var static&GenericToken $this */
+        if ($this->id !== \T_OPEN_BRACE || !$this->PrevCode) {
+            return false;
+        }
+
+        $prev = $this->PrevCode;
+        if ($prev->id !== \T_CLOSE_PARENTHESIS) {
+            $prev = $prev->skipPrevSiblingsFrom($this->TypeIndex->ValueType);
+            if (
+                $prev->id === \T_COLON
+                && $prev->PrevCode
+                && $prev->PrevCode->id === \T_CLOSE_PARENTHESIS
+            ) {
+                $prev = $prev->PrevCode;
+            } else {
+                return false;
+            }
+        }
+
+        $prev = $prev->PrevSibling;
+        if (
+            $prev
+            && $prev->id === \T_USE
+            && $prev->PrevCode
+            && $prev->PrevCode->id === \T_CLOSE_PARENTHESIS
+        ) {
+            $prev = $prev->PrevCode->PrevSibling;
+        }
+
+        if (!$prev || (
+            !$allowAnonymous && (
+                $prev->id === \T_FUNCTION
+                || $this->TypeIndex->Ampersand[$prev->id]
+            )
+        )) {
+            return false;
+        }
+
+        $prev = $prev->skipPrevSiblingsFrom($this->TypeIndex->FunctionIdentifier);
+
+        return $prev->id === \T_FUNCTION;
+    }
+
+    /**
      * True if the token is in a T_CASE or T_DEFAULT statement in a T_SWITCH
      *
      * Returns `true` if the token is `T_CASE` or `T_DEFAULT`, part of the
      * expression after `T_CASE`, or the subsequent `:` or `;` delimiter.
      */
-    final protected function inSwitchCase(): bool
+    final public function inSwitchCase(): bool
     {
         /** @var static&GenericToken $this */
         return
@@ -269,7 +313,7 @@ trait ContextAwareTokenTrait
     /**
      * True if the token is in a T_SWITCH case list
      */
-    final protected function inSwitchCaseList(): bool
+    final public function inSwitchCaseList(): bool
     {
         /** @var static&GenericToken $this */
         return
