@@ -49,8 +49,8 @@ final class TokenType extends AbstractDictionary
     ];
 
     public const OPERATOR_ARITHMETIC = [
-        \T_PLUS,   // Can be unary or binary
-        \T_MINUS,  // Can be unary or binary
+        \T_PLUS,   // May be unary or binary
+        \T_MINUS,  // May be unary or binary
         \T_MUL,    // *
         \T_DIV,    // /
         \T_MOD,    // %
@@ -64,12 +64,12 @@ final class TokenType extends AbstractDictionary
     ];
 
     public const OPERATOR_ASSIGNMENT_EXCEPT_EQUAL = [
-        \T_COALESCE_EQUAL,  // ??=
+        \T_COALESCE_EQUAL,
         ...self::OPERATOR_ASSIGNMENT_EXCEPT_EQUAL_AND_COALESCE,
     ];
 
     public const OPERATOR_ASSIGNMENT_EXCEPT_COALESCE = [
-        \T_EQUAL,  // =
+        \T_EQUAL,
         ...self::OPERATOR_ASSIGNMENT_EXCEPT_EQUAL_AND_COALESCE,
     ];
 
@@ -179,6 +179,8 @@ final class TokenType extends AbstractDictionary
     ];
 
     public const VALUE_TYPE = [
+        \T_ARRAY,
+        \T_CALLABLE,
         \T_OPEN_PARENTHESIS,
         \T_CLOSE_PARENTHESIS,
         ...self::DECLARATION_TYPE,
@@ -290,7 +292,6 @@ final class TokenType extends AbstractDictionary
         \T_EXTENDS,
         \T_FUNCTION,
         \T_IMPLEMENTS,
-        \T_STATIC,
         \T_USE,
         ...self::DECLARATION_EXCEPT_MULTI_PURPOSE,
         ...self::DECLARATION_LIST,
@@ -332,13 +333,14 @@ final class TokenType extends AbstractDictionary
     ];
 
     public const DECLARATION_LIST = [
-        \T_COMMA,  // ,
+        \T_COMMA,
         ...self::DECLARATION_TYPE,
     ];
 
     public const DECLARATION_TYPE = [
         \T_NAMESPACE,
         \T_NS_SEPARATOR,
+        \T_STATIC,
         ...self::NAME,
     ];
 
