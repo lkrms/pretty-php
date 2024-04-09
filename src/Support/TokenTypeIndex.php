@@ -336,6 +336,14 @@ class TokenTypeIndex implements Immutable
     public array $Ampersand;
 
     /**
+     * T_ATTRIBUTE, T_ATTRIBUTE_COMMENT
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $Attribute;
+
+    /**
      * @readonly
      * @var array<int,bool>
      */
@@ -829,6 +837,10 @@ class TokenTypeIndex implements Immutable
         $this->AltSyntaxContinueWithoutExpression = TT::getIndex(...TT::ALT_SYNTAX_CONTINUE_WITHOUT_EXPRESSION);
         $this->AltSyntaxEnd = TT::getIndex(...TT::ALT_SYNTAX_END);
         $this->Ampersand = TT::getIndex(...TT::AMPERSAND);
+        $this->Attribute = TT::getIndex(
+            \T_ATTRIBUTE,
+            \T_ATTRIBUTE_COMMENT,
+        );
         $this->Chain = TT::getIndex(...TT::CHAIN);
         $this->ChainPart = TT::getIndex(...TT::CHAIN_PART);
         $this->Comment = TT::getIndex(...TT::COMMENT);

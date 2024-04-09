@@ -618,7 +618,8 @@ final class Parser
             }
 
             if ($idx->Chain[$token->id] && !$token->ChainOpenedBy) {
-                $token->ChainOpenedBy = $current = $token;
+                $token->ChainOpenedBy = $token;
+                $current = $token;
                 while (($current = $current->NextSibling) && $idx->ChainPart[$current->id]) {
                     if ($idx->Chain[$current->id]) {
                         $current->ChainOpenedBy = $token;
@@ -626,17 +627,18 @@ final class Parser
                 }
             }
 
-            if ($token->id === \T_CLOSE_BRACE && $token->isStructuralBrace(true)) {
+            if ($token->id === \T_CLOSE_BRACE && $token->isStructuralBrace()) {
                 $endExpressionOffsets = [2, 1];
                 continue;
             }
 
-            if ($idx->ExpressionTerminator[$token->id]
-                    || ($token->Flags & TokenFlag::STATEMENT_TERMINATOR)
-                    || ($token->id === \T_COLON && $token->isColonStatementDelimiter())
-                    || ($token->id === \T_CLOSE_BRACE
-                        && (!$token->isStructuralBrace(true) || $token->isMatchBrace()))
-                    || ($token->Flags & TokenFlag::TERNARY_OPERATOR)) {
+            if (
+                $idx->ExpressionTerminator[$token->id]
+                || ($token->Flags & TokenFlag::STATEMENT_TERMINATOR)
+                || ($token->Flags & TokenFlag::TERNARY_OPERATOR)
+                || ($token->id === \T_COLON && $token->isColonStatementDelimiter())
+                || ($token->id === \T_CLOSE_BRACE && !$token->isStructuralBrace())
+            ) {
                 // Expression terminators don't form part of the expression
                 $token->Expression = false;
                 if ($token->PrevCode) {
@@ -646,10 +648,11 @@ final class Parser
             }
 
             if ($token->id === \T_COMMA) {
-                $parent = $token->parent();
-                if ($parent->is([\T_OPEN_BRACKET, \T_OPEN_PARENTHESIS, \T_ATTRIBUTE])
-                    || ($parent->id === \T_OPEN_BRACE
-                        && (!$parent->isStructuralBrace(true) || $token->isMatchDelimiter()))) {
+                $parent = $token->Parent;
+                if ($parent && (
+                    $idx->OpenBracketExceptBrace[$parent->id]
+                    || ($parent->id === \T_OPEN_BRACE && !$parent->isStructuralBrace())
+                )) {
                     $token->Expression = false;
                     $endExpressionOffsets = [2];
                 }

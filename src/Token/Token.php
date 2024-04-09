@@ -1115,15 +1115,30 @@ class Token extends GenericToken implements JsonSerializable
             || $this->TypeIndex->UnaryPredecessor[$this->PrevCode->id];
     }
 
-    public function isDeclaration(int ...$types): bool
+    public function isDeclaration(): bool
     {
         if (!$this->Expression) {
             return false;
         }
-        $parts = $this->Expression->declarationParts();
 
-        return $parts->hasOneOf(...TokenType::DECLARATION)
-            && (!$types || $parts->hasOneOf(...$types));
+        $first = $this->Expression
+                      ->declarationParts(false)
+                      ->getAnyFrom($this->TypeIndex->Declaration)
+                      ->first();
+
+        if (!$first) {
+            return false;
+        }
+
+        /** @var Token */
+        $next = $first->NextCode;
+
+        return !(
+            ($first->id === \T_STATIC && !($next->id === \T_VARIABLE || $this->TypeIndex->Declaration[$next->id]))
+            || ($first->id === \T_CASE && $first->inSwitchCaseList())
+            || ($first->id === \T_NAMESPACE && $next->id === \T_NS_SEPARATOR)
+            || ($this->TypeIndex->VisibilityWithReadonly[$first->id] && $first->inParameterList())
+        );
     }
 
     final public function getIndentDelta(Token $target): TokenIndentDelta
