@@ -360,6 +360,35 @@ class Foo {
 }
 PHP,
             ],
+            [
+                <<<'PHP'
+<?php
+class Foo
+{
+    public function bar(): array
+    {
+        /** @var int|null */
+        static $baz;
+
+        return [];
+    }
+}
+
+PHP,
+                <<<'PHP'
+<?php
+class Foo {
+    public function bar(): array
+    {
+        /**
+         * @var int|null
+         */
+        static $baz;
+        return [];
+    }
+}
+PHP,
+            ],
         ];
     }
 }
