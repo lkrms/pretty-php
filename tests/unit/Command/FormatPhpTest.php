@@ -163,7 +163,7 @@ EOF;
         $this->App->setWorkingDirectory();
 
         if ($inputFile !== null) {
-            File::putContents($file, $inputFile);
+            File::writeContents($file, $inputFile);
         }
 
         $this->assertCommandProduces($output, null, $args, $exitStatus, $messages);
@@ -582,7 +582,7 @@ EOF,
         $config[1] ??= $config[0];
         $dir = File::createTempDir($this->App->getTempPath());
         $file = $dir . '/.prettyphp';
-        File::putContents($file, $config[1] . \PHP_EOL);
+        File::writeContents($file, $config[1] . \PHP_EOL);
         $this->assertCommandProduces(
             $config[0] . \PHP_EOL,
             null,
@@ -750,10 +750,10 @@ EOF,
             }
 
             $temp = $this->App->getTempPath();
-            $src1 = tempnam($temp, 'src');
-            $src2 = tempnam($temp, 'src');
-            File::putContents($src1, $input);
-            File::putContents($src2, (string) $output);
+            $src1 = "$temp/src1";
+            $src2 = "$temp/src2";
+            File::writeContents($src1, $input);
+            File::writeContents($src2, (string) $output);
 
             $output .= $output;
             array_push($args, '--no-config', '-o', '-', '--');

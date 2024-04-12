@@ -96,16 +96,6 @@ parameters:
 			path: scripts/list-rules.php
 
 		-
-			message: "#^Parameter \\#1 \\$str of function ltrim expects string, string\\|null given\\.$#"
-			count: 1
-			path: scripts/update-3rdparty-fixtures.php
-
-		-
-			message: "#^Parameter \\#2 \\$data of static method Salient\\\\Core\\\\Utility\\\\File\\:\\:putContents\\(\\) expects array\\<bool\\|float\\|int\\|string\\|Stringable\\|null\\>\\|resource\\|string, string\\|null given\\.$#"
-			count: 1
-			path: scripts/update-3rdparty-fixtures.php
-
-		-
 			message: "#^Method Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:filterGetSchemaValues\\(\\) should return array\\<string, T\\> but returns array\\<string, bool\\|int\\<min, \\-1\\>\\|int\\<1, max\\>\\|T\\>\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
@@ -1351,18 +1341,8 @@ parameters:
 			path: tests/unit/Command/FormatPhpTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$filename of static method Salient\\\\Core\\\\Utility\\\\File\\:\\:putContents\\(\\) expects string, string\\|false given\\.$#"
-			count: 2
-			path: tests/unit/Command/FormatPhpTest.php
-
-		-
 			message: "#^Parameter \\#1 \\$string of function substr expects string, mixed given\\.$#"
 			count: 1
-			path: tests/unit/Command/FormatPhpTest.php
-
-		-
-			message: "#^Parameter \\#1 \\.\\.\\.\\$args of method Lkrms\\\\PrettyPHP\\\\Tests\\\\Command\\\\FormatPhpTest\\:\\:formatPhp\\(\\) expects string, string\\|false given\\.$#"
-			count: 2
 			path: tests/unit/Command/FormatPhpTest.php
 
 		-

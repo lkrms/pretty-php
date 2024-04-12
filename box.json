@@ -12,11 +12,11 @@
         {
             "in": "vendor",
             "notName": [
-                "/^(?:LICENSE|README|composer\\.(?:json|lock))$|\\.md$/"
+                "/^(?:LICENSE|README|composer\\.(?:json|lock))$|phpstan\\.|\\.md$/"
             ],
             "notPath": [
                 "/^bin\\//",
-                "/^salient\\/toolkit\\/(?:bin|src\\/(?:Sli|Toolkit\\/(?:Curler|Db|Http|Sync)))\\//",
+                "/^salient\\/toolkit\\/(?:bin|src\\/(?:Sli|Toolkit\\/(?:Contract\\/)?(?:Curler|Db|Http|PHPStan|Sync)))\\//",
                 "/^lkrms\\/dice\\/src\\/Loader\\//",
                 "/^psr\\/(?:http-(?:factory|message)|log\\/Psr\\/Log\\/Test)\\//"
             ]

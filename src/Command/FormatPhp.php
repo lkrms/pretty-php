@@ -52,6 +52,7 @@ use Salient\Core\Utility\Inflect;
 use Salient\Core\Utility\Json;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
+use Salient\Core\Indentation;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
 use SebastianBergmann\Diff\Differ;
 use JsonException;
@@ -1093,15 +1094,15 @@ EOF,
 
             $inputStream = File::open($file, 'rb');
 
-            if (!File::isSeekable($inputStream)) {
+            if (!File::isSeekableStream($inputStream)) {
                 Console::debug('Copying unseekable input to temporary stream');
-                $seekable = File::getSeekable($inputStream, $file);
+                $seekable = File::getSeekableStream($inputStream, $file);
                 File::close($inputStream, $file);
                 $inputStream = $seekable;
             }
 
             $defaultIndent = $formatter->getIndentation();
-            $indent = File::guessIndentation($inputStream, $defaultIndent, false, $file);
+            $indent = Indentation::from($inputStream, $defaultIndent, false, $file);
             if ($indent !== $defaultIndent) {
                 Console::debug(
                     'Input indentation appears to be:',
@@ -1214,7 +1215,7 @@ EOF,
             if ($this->Quiet < 1) {
                 Console::log('Replacing', $outFile);
             }
-            File::putContents($outFile, $output);
+            File::writeContents($outFile, $output);
             $replaced++;
         }
 
@@ -1260,7 +1261,7 @@ EOF,
                     ? 'Replaced %d of {{#}} {{#:file}}'
                     : 'Formatted {{#}} {{#:file}}',
                 $replaced,
-            ), 'successfully');
+            ), 'successfully', !$this->ReportTimers);
         }
     }
 
@@ -1349,7 +1350,7 @@ EOF,
     {
         Console::debug('Looking for a configuration file:', $dir);
 
-        $dir = File::dir($dir);
+        $dir = File::sanitiseDir($dir);
         $found = [];
         foreach (self::CONFIG_FILE_NAME as $file) {
             $file = $dir . '/' . $file;
@@ -1386,7 +1387,7 @@ EOF,
             ]));
         }
 
-        $dir = File::dir($dir);
+        $dir = File::sanitiseDir($dir);
         $finder = File::find()
                       ->in($dir)
                       ->exclude($this->ExcludeRegex)
@@ -1396,7 +1397,7 @@ EOF,
             $finder = $finder->include(
                 fn(SplFileInfo $file, string $path) =>
                     Pcre::match($this->IncludeIfPhpRegex, $path)
-                    && File::isPhp((string) $file)
+                    && File::hasPhp((string) $file)
             );
         }
 
@@ -1612,8 +1613,8 @@ EOF,
         if ($files) {
             File::createDir($dir);
             File::pruneDir($dir);
-        } else {
-            File::deleteDir($dir, true);
+        } elseif (is_dir($dir)) {
+            File::pruneDir($dir, true);
         }
 
         $files += [
@@ -1636,7 +1637,7 @@ EOF,
                     \JSON_FORCE_OBJECT | \JSON_INVALID_UTF8_IGNORE
                 ) . \PHP_EOL;
             }
-            File::putContents($file, $out);
+            File::writeContents($file, $out);
         }
 
         Profile::stopTimer(__METHOD__);
