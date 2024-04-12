@@ -249,7 +249,6 @@ final class PreserveLineBreaks implements MultiTokenRule
         }
 
         $token->WhitespaceAfter |= $line;
-        $token->NewlineAfterPreserved = true;
 
         return true;
     }

@@ -22,7 +22,6 @@ needed.
 | `PlaceBraces` (1)           | Y          | -        | 1    | `processTokens()` | 92       |
 | `PreserveLineBreaks`        | -          | Y        | 1    | `processTokens()` | 93       |
 | `PreserveOneLineStatements` | -          | -        | 1    | `processToken()`  | 95       |
-| `SymmetricalBrackets`       | Y          | -        | 1    | `processTokens()` | 96       |
 | `BlankLineBeforeReturn`     | -          | -        | 1    | `processToken()`  | 97       |
 | `VerticalWhitespace`        | Y          | -        | 1    | `processTokens()` | 98       |
 | `ListSpacing`               | Y          | -        | 1    | `processList()`   | 98       |
@@ -37,7 +36,7 @@ needed.
 | `AlignArrowFunctions` (1)   | -          | -        | 1    | `processToken()`  | 380      |
 | `AlignTernaryOperators` (1) | -          | -        | 1    | `processTokens()` | 380      |
 | `AlignLists` (1)            | -          | -        | 1    | `processList()`   | 400      |
-| `StandardIndentation`       | Y          | -        | 1    | `processToken()`  | 600      |
+| `StandardIndentation`       | Y          | -        | 1    | `processTokens()` | 600      |
 | `SwitchIndentation`         | Y          | -        | 1    | `processToken()`  | 600      |
 | `DeclarationSpacing`        | -          | Y        | 1    | `processTokens()` | 620      |
 | `HangingIndentation` (1)    | Y          | -        | 1    | `processTokens()` | 800      |

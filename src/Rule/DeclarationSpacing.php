@@ -50,11 +50,6 @@ final class DeclarationSpacing implements MultiTokenRule
 
     private bool $SortImportsEnabled;
 
-    /**
-     * @var array<int,bool>
-     */
-    private array $LastExpand;
-
     public static function getPriority(string $method): ?int
     {
         switch ($method) {
@@ -387,15 +382,9 @@ final class DeclarationSpacing implements MultiTokenRule
         if (!$expand && count($tokens) === 1) {
             $token = $tokens[0];
             assert($token->EndStatement !== null);
-            if (
-                $token->collect($token->EndStatement)->hasNewline()
-                || ($this->LastExpand[$token->Parent->Index ?? -1]
-                    ??= !$this->Formatter->CollapseDocBlocksByDefault)
-            ) {
-                $expand = true;
-            }
+            $expand = $token->collect($token->EndStatement)->hasNewline()
+                || !$this->Formatter->CollapseDocBlocksByDefault;
         }
-        $this->LastExpand[$token->Parent->Index ?? -1] = $expand;
         if ($expand) {
             return;
         }
@@ -419,10 +408,5 @@ final class DeclarationSpacing implements MultiTokenRule
             return;
         }
         $token->applyBlankLineBefore($withMask);
-    }
-
-    public function reset(): void
-    {
-        $this->LastExpand = [];
     }
 }

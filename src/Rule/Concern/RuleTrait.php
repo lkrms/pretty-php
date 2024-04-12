@@ -10,6 +10,16 @@ trait RuleTrait
 {
     use ExtensionTrait;
 
+    /**
+     * Suppress vertical whitespace between the given tokens if they were on the
+     * same line
+     *
+     * If `$force` is `true`, vertical whitespace is suppressed even if the
+     * tokens were on different lines. If `$oneStatement` is `true`, vertical
+     * whitespace is only suppressed if the tokens belong to the same statement.
+     *
+     * Returns `true` if vertical whitespace is suppressed, otherwise `false`.
+     */
     protected function preserveOneLine(Token $start, Token $end, bool $force = false, bool $oneStatement = false): bool
     {
         if (!$force && $start->line !== $end->line) {
@@ -35,21 +45,25 @@ trait RuleTrait
         return true;
     }
 
+    /**
+     * Copy an open bracket's inner whitespace to its closing bracket
+     */
     protected function mirrorBracket(Token $openBracket, ?bool $hasNewlineBeforeNextCode = null): void
     {
         assert($openBracket->ClosedBy !== null);
-        if (
-            $hasNewlineBeforeNextCode === false
-            || !$openBracket->hasNewlineBeforeNextCode()
-        ) {
+        if ($hasNewlineBeforeNextCode === false || (
+            $hasNewlineBeforeNextCode === null
+            && !$openBracket->hasNewlineBeforeNextCode()
+        )) {
             $openBracket->ClosedBy->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
             return;
         }
 
         $openBracket->ClosedBy->WhitespaceBefore |= WhitespaceType::LINE;
         if (!$openBracket->ClosedBy->hasNewlineBefore()) {
+            assert($openBracket->ClosedBy->Prev !== null);
             $openBracket->ClosedBy->WhitespaceMaskPrev |= WhitespaceType::LINE;
-            $openBracket->ClosedBy->prev()->WhitespaceMaskNext |= WhitespaceType::LINE;
+            $openBracket->ClosedBy->Prev->WhitespaceMaskNext |= WhitespaceType::LINE;
         }
     }
 }

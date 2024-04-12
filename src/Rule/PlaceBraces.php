@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
@@ -64,9 +65,7 @@ final class PlaceBraces implements MultiTokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            $isMatch = $token->isMatchBrace();
-            if (!$isMatch
-                    && !$token->isStructuralBrace()) {
+            if (!$token->isStructuralBrace(true)) {
                 continue;
             }
 
@@ -77,21 +76,19 @@ final class PlaceBraces implements MultiTokenRule
 
                 // Continue without moving subsequent code to the next line if
                 // the brace is part of an expression
-                if ($isMatch) {
-                    continue;
-                }
-                $nextCode = $token->NextCode;
-                if ($nextCode
-                    && (($nextCode->OpenedBy && $nextCode->id !== \T_CLOSE_BRACE)
-                        || $nextCode === $token->EndStatement)) {
+                if (!($token->Flags & TokenFlag::STATEMENT_TERMINATOR)) {
                     continue;
                 }
 
                 // Keep structures like `} else {` on the same line too
+                $nextCode = $token->NextCode;
                 if ($nextCode && $nextCode->continuesControlStructure()) {
                     $token->WhitespaceAfter |= WhitespaceType::SPACE;
                     if (!$nextCode->BodyIsUnenclosed) {
                         $nextCode->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
+                    } else {
+                        /** @todo Be more opinionated here */
+                        $nextCode->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
                     }
                     continue;
                 }
