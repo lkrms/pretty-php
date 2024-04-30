@@ -12,7 +12,7 @@ use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder;
-use Salient\PhpDoc\PhpDoc;
+use Salient\PHPDoc\PHPDoc;
 use Throwable;
 
 /**
@@ -100,7 +100,7 @@ final class Drupal implements Preset, TokenRule
         // Add a blank line after PHP DocBlocks with a `@file` tag
         if ($token->id === \T_DOC_COMMENT) {
             try {
-                $phpDoc = new PhpDoc($token->text);
+                $phpDoc = new PHPDoc($token->text);
             } catch (Throwable $ex) {
                 return;
             }

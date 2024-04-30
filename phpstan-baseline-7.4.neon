@@ -6,46 +6,6 @@ parameters:
 			path: scripts/dump-ast.php
 
 		-
-			message: "#^Argument of an invalid type mixed supplied for foreach, only iterables are supported\\.$#"
-			count: 2
-			path: scripts/generate-test-output.php
-
-		-
-			message: "#^Cannot access an offset on mixed\\.$#"
-			count: 1
-			path: scripts/generate-test-output.php
-
-		-
-			message: "#^Cannot access offset int\\<50208, 70499\\>\\|int\\<70501, max\\> on mixed\\.$#"
-			count: 1
-			path: scripts/generate-test-output.php
-
-		-
-			message: "#^Cannot access offset int\\|string on mixed\\.$#"
-			count: 1
-			path: scripts/generate-test-output.php
-
-		-
-			message: "#^Cannot access offset mixed on mixed\\.$#"
-			count: 1
-			path: scripts/generate-test-output.php
-
-		-
-			message: "#^Parameter \\#1 \\$array_arg of function ksort expects array, mixed given\\.$#"
-			count: 1
-			path: scripts/generate-test-output.php
-
-		-
-			message: "#^Parameter \\#1 \\$array_arg of function sort expects TArray of array\\<T\\>, mixed given\\.$#"
-			count: 1
-			path: scripts/generate-test-output.php
-
-		-
-			message: "#^Parameter \\#2 \\$haystack of function array_search expects array, mixed given\\.$#"
-			count: 1
-			path: scripts/generate-test-output.php
-
-		-
 			message: "#^Cannot access offset 'appearance' on mixed\\.$#"
 			count: 3
 			path: scripts/list-rules.php
@@ -109,11 +69,6 @@ parameters:
 			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$FormatterByDir \\(array\\<string, Lkrms\\\\PrettyPHP\\\\Formatter\\>\\) does not accept array\\<int\\|string, Lkrms\\\\PrettyPHP\\\\Formatter\\|null\\>\\.$#"
 			count: 1
 			path: src/Command/FormatPhp.php
-
-		-
-			message: "#^Method Lkrms\\\\PrettyPHP\\\\Exception\\\\FormatterException\\:\\:getDetail\\(\\) should return array\\<string, string\\> but returns array\\<string, string\\|null\\>\\.$#"
-			count: 1
-			path: src/Exception/FormatterException.php
 
 		-
 			message: "#^Method Lkrms\\\\PrettyPHP\\\\Filter\\\\CollectColumn\\:\\:filterTokens\\(\\) should return array\\<int, T of Lkrms\\\\PrettyPHP\\\\Token\\\\GenericToken\\> but returns array\\<Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>\\.$#"
@@ -1344,16 +1299,6 @@ parameters:
 			message: "#^Parameter \\#1 \\$string of function substr expects string, mixed given\\.$#"
 			count: 1
 			path: tests/unit/Command/FormatPhpTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$input of function array_filter expects array, mixed given\\.$#"
-			count: 1
-			path: tests/unit/FormatterTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$callback of function array_filter expects \\(callable\\(mixed\\)\\: bool\\)\\|null, Closure\\(int\\)\\: bool given\\.$#"
-			count: 1
-			path: tests/unit/FormatterTest.php
 
 		-
 			message: "#^Parameter \\#3 \\$enable of method Lkrms\\\\PrettyPHP\\\\Tests\\\\TestCase\\:\\:assertCodeFormatIs\\(\\) expects array\\<class\\-string\\<Lkrms\\\\PrettyPHP\\\\Contract\\\\Extension\\>\\>, array\\<string\\> given\\.$#"

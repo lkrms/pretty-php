@@ -583,9 +583,10 @@ PHP,
 
         $index = [];
         if (!$all && is_file($indexPath = self::getMinVersionIndexPath())) {
-            /** @var string[] */
+            /** @var array<int,string[]> */
+            $index = Json::parseObjectAsArray(File::getContents($indexPath));
             $index = array_merge(...array_filter(
-                Json::parseObjectAsArray(File::getContents($indexPath)),
+                $index,
                 fn(int $key) =>
                     \PHP_VERSION_ID < $key,
                 \ARRAY_FILTER_USE_KEY

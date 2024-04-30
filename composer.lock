@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bd1b69b8e142f321c62e011f32cc267e",
+    "content-hash": "f883f20318d6eded431eb2196e0410db",
     "packages": [
         {
             "name": "lkrms/dice",
@@ -151,6 +151,58 @@
                 "source": "https://github.com/php-fig/event-dispatcher/tree/1.0.0"
             },
             "time": "2019-01-08T18:20:26+00:00"
+        },
+        {
+            "name": "psr/http-client",
+            "version": "1.0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/http-client.git",
+                "reference": "bb5906edc1c324c9a05aa0873d40117941e5fa90"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/http-client/zipball/bb5906edc1c324c9a05aa0873d40117941e5fa90",
+                "reference": "bb5906edc1c324c9a05aa0873d40117941e5fa90",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.0 || ^8.0",
+                "psr/http-message": "^1.0 || ^2.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Http\\Client\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for HTTP clients",
+            "homepage": "https://github.com/php-fig/http-client",
+            "keywords": [
+                "http",
+                "http-client",
+                "psr",
+                "psr-18"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/http-client"
+            },
+            "time": "2023-09-23T14:17:50+00:00"
         },
         {
             "name": "psr/http-factory",
@@ -312,16 +364,16 @@
         },
         {
             "name": "salient/toolkit",
-            "version": "v0.99.14",
+            "version": "v0.99.16",
             "source": {
                 "type": "git",
                 "url": "https://github.com/salient-labs/toolkit.git",
-                "reference": "265ba0989fe828b414ffb635a9c9c40c8675164a"
+                "reference": "f3cc2dbae01030550d79ecb0c3e8842f1e1815ae"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/salient-labs/toolkit/zipball/265ba0989fe828b414ffb635a9c9c40c8675164a",
-                "reference": "265ba0989fe828b414ffb635a9c9c40c8675164a",
+                "url": "https://api.github.com/repos/salient-labs/toolkit/zipball/f3cc2dbae01030550d79ecb0c3e8842f1e1815ae",
+                "reference": "f3cc2dbae01030550d79ecb0c3e8842f1e1815ae",
                 "shasum": ""
             },
             "require": {
@@ -330,6 +382,7 @@
                 "php": ">=7.4",
                 "psr/container": "^2",
                 "psr/event-dispatcher": "^1",
+                "psr/http-client": "^1",
                 "psr/http-factory": "^1",
                 "psr/http-message": "^1.1 || ^2",
                 "psr/log": "^1"
@@ -349,6 +402,7 @@
                 "firebase/php-jwt": "^6",
                 "league/oauth2-client": "^2",
                 "mikey179/vfsstream": "^1",
+                "nikic/php-parser": "^4",
                 "php-http/psr7-integration-tests": "^1.3",
                 "phpstan/extension-installer": "^1",
                 "phpstan/phpdoc-parser": "^1",
@@ -401,7 +455,7 @@
                 "issues": "https://github.com/salient-labs/toolkit/issues",
                 "source": "https://github.com/salient-labs/toolkit"
             },
-            "time": "2024-04-11T18:15:08+00:00"
+            "time": "2024-04-30T12:44:28+00:00"
         },
         {
             "name": "sebastian/diff",
@@ -822,16 +876,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.10.66",
+            "version": "1.10.67",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "94779c987e4ebd620025d9e5fdd23323903950bd"
+                "reference": "16ddbe776f10da6a95ebd25de7c1dbed397dc493"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/94779c987e4ebd620025d9e5fdd23323903950bd",
-                "reference": "94779c987e4ebd620025d9e5fdd23323903950bd",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/16ddbe776f10da6a95ebd25de7c1dbed397dc493",
+                "reference": "16ddbe776f10da6a95ebd25de7c1dbed397dc493",
                 "shasum": ""
             },
             "require": {
@@ -874,13 +928,9 @@
                 {
                     "url": "https://github.com/phpstan",
                     "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/phpstan/phpstan",
-                    "type": "tidelift"
                 }
             ],
-            "time": "2024-03-28T16:17:31+00:00"
+            "time": "2024-04-16T07:22:02+00:00"
         },
         {
             "name": "phpstan/phpstan-deprecation-rules",

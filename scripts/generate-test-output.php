@@ -72,6 +72,7 @@ foreach (FormatterTest::getFileFormats() as $format => $formatter) {
 
 if (isset($invalid)) {
     $indexPath = FormatterTest::getMinVersionIndexPath();
+    /** @var array<int,string[]> */
     $index = file_exists($indexPath)
         ? Json::parseObjectAsArray(File::getContents($indexPath))
         : [];
