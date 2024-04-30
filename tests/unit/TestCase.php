@@ -10,6 +10,8 @@ use Salient\Core\Utility\Pcre;
 
 abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
+    protected const PHP_COMMAND = [\PHP_BINARY, '-ddisplay_startup_errors=0'];
+
     /**
      * @param Formatter|FormatterB $formatter
      */
@@ -63,6 +65,11 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
                 ['$1', '/'],
                 $class
             );
+    }
+
+    public static function getPackagePath(): string
+    {
+        return dirname(__DIR__, 2);
     }
 
     protected function setUp(): void

@@ -6,13 +6,17 @@ use Lkrms\PrettyPHP\Command\FormatPhp;
 use Salient\Cli\CliApplication;
 use Salient\Console\Target\MockTarget;
 use Salient\Contract\Core\ExceptionInterface;
+use Salient\Contract\Core\FileDescriptor;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
 use Salient\Core\Facade\Console;
 use Salient\Core\Utility\File;
+use Salient\Core\Utility\Get;
 use Salient\Core\Utility\Json;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
+use Salient\Core\Utility\Sys;
+use Salient\Core\Process;
 use Generator;
 
 /**
@@ -534,6 +538,44 @@ EOF),
                 'sort-imports',
             ],
         ];
+    }
+
+    public function testUnseekableInput(): void
+    {
+        $file = self::$FixturesPath . '/empty-config/Foo.php';
+        $input = File::getContents($file);
+        $process = new Process([
+            ...self::PHP_COMMAND,
+            self::getPackagePath() . '/bin/pretty-php',
+            '--debug',
+            '-F',
+            $file,
+            '--',
+            '-'
+        ]);
+        $pipe = $this->getUnseekableStream($input);
+        try {
+            $process->pipeInput($pipe);
+            $this->assertSame(0, $process->run());
+            $this->assertSame($input, $process->getOutput());
+            $this->assertStringContainsString('Copying unseekable input to temporary stream', $process->getOutput(FileDescriptor::ERR));
+        } finally {
+            File::closePipe($pipe);
+        }
+    }
+
+    /**
+     * @return resource
+     */
+    private function getUnseekableStream(string $content)
+    {
+        $command = Sys::escapeCommand([
+            ...self::PHP_COMMAND,
+            '-r',
+            sprintf('echo %s;', Get::code($content)),
+        ]);
+
+        return File::openPipe($command, 'r');
     }
 
     /**
