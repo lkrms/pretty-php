@@ -1,5 +1,4 @@
 includes:
-  - phpstan-baseline.neon
   - tests/phpstan-conditional.php
 
 parameters:

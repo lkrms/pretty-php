@@ -65,13 +65,14 @@ foreach (FormatterTest::getFileFormats() as $format => $formatter) {
             }
         }
         Console::log($message, $outPath);
-        File::putContents($outFile, $output);
+        File::writeContents($outFile, $output);
         $replaced++;
     }
 }
 
 if (isset($invalid)) {
     $indexPath = FormatterTest::getMinVersionIndexPath();
+    /** @var array<int,string[]> */
     $index = file_exists($indexPath)
         ? Json::parseObjectAsArray(File::getContents($indexPath))
         : [];
@@ -100,11 +101,11 @@ if (isset($invalid)) {
     ksort($index);
 
     $json = Json::prettyPrint($index);
-    File::putContents($indexPath, $json . \PHP_EOL);
+    File::writeContents($indexPath, $json . \PHP_EOL);
 }
 
 Console::summary(Inflect::format(
     $count,
     ($replaced ? 'Updated %d of' : 'Generated') . ' {{#}} {{#:file}}',
     $replaced,
-), 'successfully');
+), 'successfully', true);

@@ -152,7 +152,7 @@ foreach ($listings ?? [] as $source => $sourceListings) {
         }
         $outFile = sprintf('%s/%03d.php%s', $dir, $i, $ext);
         Console::logProgress('Creating', substr($outFile, strlen("$fixturesRoot/")));
-        File::putContents($outFile, $output);
+        File::writeContents($outFile, $output);
         $replaced++;
     }
 }
@@ -226,6 +226,7 @@ foreach (array_keys($matches[0]) as $i) {
         Console::warnOnce('PHP listing before heading:', $file, null, false);
         continue;
     }
+    assert($matches[2][$i] !== null);
     $byHeading[$heading][] = $matches[2][$i];
     $count++;
     $fixtures++;
@@ -266,7 +267,7 @@ foreach ($byHeading as $heading => $listings) {
         $index++;
         $outFile = sprintf('%s/%02d-%s.php%s', $dir, $index, $heading, $ext);
         Console::logProgress('Creating', substr($outFile, strlen("$fixturesRoot/")));
-        File::putContents($outFile, $listing);
+        File::writeContents($outFile, $listing);
         $replaced++;
     }
 }
@@ -325,7 +326,7 @@ foreach ($groups as $group => $sequences) {
 
 $outFile = $fixturesRoot . '/utf-8.php';
 Console::log('Creating', substr($outFile, strlen("$fixturesRoot/")));
-File::putContents($outFile, $output);
+File::writeContents($outFile, $output);
 $count++;
 $fixtures++;
 $replaced++;
@@ -334,4 +335,4 @@ Console::summary(Inflect::format(
     $fixtures,
     ($replaced !== $fixtures ? 'Updated %d of' : 'Generated') . ' {{#}} {{#:file}}',
     $replaced,
-), 'successfully');
+), 'successfully', true);

@@ -2,25 +2,26 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
-use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Contract\MultiTokenRule;
+use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 
 /**
- * Increase the indentation level of tokens enclosed in brackets
+ * Apply symmetrical whitespace to brackets and increase the indentation
+ * level of tokens between them
  *
- * Also, apply symmetrical vertical whitespace to brackets where inner newlines
- * have been added or removed by rules other than {@see PreserveLineBreaks} and
- * {@see PreserveOneLineStatements}.
+ * @api
  */
-final class StandardIndentation implements TokenRule
+final class StandardIndentation implements MultiTokenRule
 {
-    use TokenRuleTrait;
+    use MultiTokenRuleTrait;
 
+    /**
+     * @inheritDoc
+     */
     public static function getPriority(string $method): ?int
     {
         switch ($method) {
-            case self::PROCESS_TOKEN:
+            case self::PROCESS_TOKENS:
                 return 600;
 
             default:
@@ -28,33 +29,34 @@ final class StandardIndentation implements TokenRule
         }
     }
 
-    public function processToken(Token $token): void
+    /**
+     * @inheritDoc
+     */
+    public function processTokens(array $tokens): void
     {
-        if ($token->OpenedBy) {
-            $token->Indent = $token->OpenedBy->Indent;
-            return;
-        }
-
-        if (!$token->Prev) {
-            return;
-        }
-
-        $prev = $token->Prev;
-        $token->Indent = $prev->Indent;
-
-        if (!$prev->ClosedBy) {
-            return;
-        }
-
-        if ($prev->hasNewlineBeforeNextCode()) {
-            $token->Indent++;
-            if (!$prev->NewlineAfterPreserved) {
-                $this->mirrorBracket($prev, true);
+        foreach ($tokens as $token) {
+            if ($token->OpenedBy) {
+                $token->Indent = $token->OpenedBy->Indent;
+                continue;
             }
-            return;
-        }
 
-        if ($prev->NewlineAfterPreserved) {
+            if (!$token->Prev) {
+                continue;
+            }
+
+            $prev = $token->Prev;
+            $token->Indent = $prev->Indent;
+
+            if (!$prev->ClosedBy) {
+                continue;
+            }
+
+            if ($prev->hasNewlineBeforeNextCode()) {
+                $token->Indent++;
+                $this->mirrorBracket($prev, true);
+                continue;
+            }
+
             $this->mirrorBracket($prev, false);
         }
     }

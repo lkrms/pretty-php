@@ -46,7 +46,7 @@ class FormatterException extends AbstractException
         $this->Data = $data;
     }
 
-    public function getDetail(): array
+    public function getMetadata(): array
     {
         return [
             'output' => $this->Output,

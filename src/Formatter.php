@@ -61,7 +61,6 @@ use Lkrms\PrettyPHP\Rule\StatementSpacing;
 use Lkrms\PrettyPHP\Rule\StrictExpressions;
 use Lkrms\PrettyPHP\Rule\StrictLists;
 use Lkrms\PrettyPHP\Rule\SwitchIndentation;
-use Lkrms\PrettyPHP\Rule\SymmetricalBrackets;
 use Lkrms\PrettyPHP\Rule\VerticalWhitespace;
 use Lkrms\PrettyPHP\Support\CodeProblem;
 use Lkrms\PrettyPHP\Support\TokenCollection;
@@ -266,7 +265,6 @@ final class Formatter implements Buildable
         PlaceComments::class,
         PlaceBraces::class,
         PreserveLineBreaks::class,
-        SymmetricalBrackets::class,
         VerticalWhitespace::class,
         ListSpacing::class,
         StandardIndentation::class,

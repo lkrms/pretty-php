@@ -31,8 +31,6 @@ class Token extends GenericToken implements JsonSerializable
 
     public ?Token $ListParent = null;
 
-    public bool $NewlineAfterPreserved = false;
-
     public int $TagIndent = 0;
 
     /**
@@ -234,7 +232,6 @@ class Token extends GenericToken implements JsonSerializable
 
         $a['OtherTernaryOperator'] = $this->OtherTernaryOperator;
         $a['CommentType'] = $this->CommentType;
-        $a['NewlineAfterPreserved'] = $this->NewlineAfterPreserved;
         $a['TagIndent'] = $this->TagIndent;
         $a['PreIndent'] = $this->PreIndent;
         $a['Indent'] = $this->Indent;
