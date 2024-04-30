@@ -1097,7 +1097,6 @@ EOF,
             if (!File::isSeekableStream($inputStream)) {
                 Console::debug('Copying unseekable input to temporary stream');
                 $seekable = File::getSeekableStream($inputStream, $file);
-                File::close($inputStream, $file);
                 $inputStream = $seekable;
             }
 
