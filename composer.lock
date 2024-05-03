@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f883f20318d6eded431eb2196e0410db",
+    "content-hash": "018df358e786af12fb6f44648f78d92c",
     "packages": [
         {
             "name": "lkrms/dice",
@@ -364,16 +364,16 @@
         },
         {
             "name": "salient/toolkit",
-            "version": "v0.99.16",
+            "version": "v0.99.18",
             "source": {
                 "type": "git",
                 "url": "https://github.com/salient-labs/toolkit.git",
-                "reference": "f3cc2dbae01030550d79ecb0c3e8842f1e1815ae"
+                "reference": "bc6cfe6dd8340d1ede86db05b2c0c2c96eb967da"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/salient-labs/toolkit/zipball/f3cc2dbae01030550d79ecb0c3e8842f1e1815ae",
-                "reference": "f3cc2dbae01030550d79ecb0c3e8842f1e1815ae",
+                "url": "https://api.github.com/repos/salient-labs/toolkit/zipball/bc6cfe6dd8340d1ede86db05b2c0c2c96eb967da",
+                "reference": "bc6cfe6dd8340d1ede86db05b2c0c2c96eb967da",
                 "shasum": ""
             },
             "require": {
@@ -455,7 +455,7 @@
                 "issues": "https://github.com/salient-labs/toolkit/issues",
                 "source": "https://github.com/salient-labs/toolkit"
             },
-            "time": "2024-04-30T12:44:28+00:00"
+            "time": "2024-05-03T15:22:33+00:00"
         },
         {
             "name": "sebastian/diff",
