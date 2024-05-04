@@ -650,8 +650,8 @@ class Token extends GenericToken implements JsonSerializable
             && ($parts = $this->Expression->declarationParts())->has($this, true)
             && $parts->hasOneOf(...TokenType::DECLARATION_TOP_LEVEL)
             // Exclude anonymous functions, which can move as needed
-            && ($last = $parts->last()->skipPrevSiblingsOf(
-                ...TokenType::AMPERSAND
+            && ($last = $parts->last()->skipPrevSiblingsFrom(
+                $this->TypeIndex->Ampersand
             ))->id !== \T_FUNCTION
             // Anonymous classes are a special case where if there is a newline
             // before `class`, the first hanging indent in the declaration is

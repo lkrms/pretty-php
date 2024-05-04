@@ -2,7 +2,6 @@
 function () {
     return;
 };
-
 function &() {
     return;
 };
@@ -11,7 +10,6 @@ function ((Countable&ArrayAccess)|MyClass|string|null $foo,
     $baz) {
     return;
 };
-
 function &((Countable&ArrayAccess)|MyClass|string|null $foo,
     $bar,
     $baz) {

@@ -3,7 +3,6 @@
 namespace Lkrms\PrettyPHP\Token;
 
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
-use Lkrms\PrettyPHP\Catalog\TokenType;
 
 trait ContextAwareTokenTrait
 {
@@ -132,11 +131,7 @@ trait ContextAwareTokenTrait
             }
 
             if ($prev) {
-                $prev = $prev->skipPrevSiblingsOf(
-                    \T_STRING,
-                    \T_READONLY,
-                    ...TokenType::AMPERSAND,
-                );
+                $prev = $prev->skipPrevSiblingsFrom($this->TypeIndex->FunctionIdentifier);
 
                 if ($prev->id === \T_FUNCTION || $prev->id === \T_FN) {
                     return TokenSubType::COLON_RETURN_TYPE_DELIMITER;
@@ -231,11 +226,7 @@ trait ContextAwareTokenTrait
             return false;
         }
 
-        $prev = $this->PrevCode->skipPrevSiblingsOf(
-            \T_STRING,
-            \T_READONLY,
-            ...TokenType::AMPERSAND,
-        );
+        $prev = $this->PrevCode->skipPrevSiblingsFrom($this->TypeIndex->FunctionIdentifier);
 
         if ($prev->id === \T_FUNCTION || $prev->id === \T_FN) {
             return true;

@@ -1061,7 +1061,7 @@ parameters:
 			path: src/Rule/VerticalWhitespace.php
 
 		-
-			message: "#^Cannot call method skipPrevSiblingsOf\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
+			message: "#^Cannot call method skipPrevSiblingsFrom\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/VerticalWhitespace.php
 
@@ -1231,7 +1231,7 @@ parameters:
 			path: src/Token/Token.php
 
 		-
-			message: "#^Cannot call method skipPrevSiblingsOf\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
+			message: "#^Cannot call method skipPrevSiblingsFrom\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Token/Token.php
 

@@ -2,7 +2,6 @@
 function () {
     return;
 };
-
 function &() {
     return;
 };
@@ -13,7 +12,6 @@ function (
 ) {
     return;
 };
-
 function &(
     ?string $foo,
     $bar,
@@ -48,7 +46,6 @@ function () use (
 ) {
     return;
 };
-
 function &() use (
     $foo,
     $bar,
@@ -63,7 +60,6 @@ function (?string $alpha, $bravo) use (
 ) {
     return;
 };
-
 function &(?string $alpha, $bravo) use (
     $foo,
     $bar,
@@ -82,7 +78,6 @@ function (
 ) {
     return;
 };
-
 function &(
     ?string $alpha,
     $bravo,

@@ -513,40 +513,6 @@ trait NavigableTokenTrait
     }
 
     /**
-     * Skip to the next sibling that is not one of the listed types
-     *
-     * The token returns itself if it satisfies the criteria.
-     *
-     * @return Token
-     */
-    final public function skipSiblingsOf(int $type, int ...$types)
-    {
-        array_unshift($types, $type);
-        $t = $this->IsCode ? $this : $this->NextCode;
-        while ($t && $t->is($types)) {
-            $t = $t->NextSibling;
-        }
-        return $t ?: $this->null();
-    }
-
-    /**
-     * Skip to the previous sibling that is not one of the listed types
-     *
-     * The token returns itself if it satisfies the criteria.
-     *
-     * @return Token
-     */
-    final public function skipPrevSiblingsOf(int $type, int ...$types)
-    {
-        array_unshift($types, $type);
-        $t = $this->IsCode ? $this : $this->PrevCode;
-        while ($t && $t->is($types)) {
-            $t = $t->PrevSibling;
-        }
-        return $t ?: $this->null();
-    }
-
-    /**
      * Get the first reachable token
      *
      * @return Token

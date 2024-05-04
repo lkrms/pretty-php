@@ -54,7 +54,10 @@ trait CollectibleTokenTrait
             $t = $t->NextSibling;
         }
 
-        if (!$allowAnonymous && $t->id === \T_FUNCTION) {
+        if (
+            !$allowAnonymous
+            && $t->skipPrevSiblingsFrom($this->TypeIndex->Ampersand)->id === \T_FUNCTION
+        ) {
             return new TokenCollection();
         }
 

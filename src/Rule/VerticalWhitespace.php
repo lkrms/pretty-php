@@ -269,7 +269,7 @@ final class VerticalWhitespace implements MultiTokenRule
                 if (!$this->Formatter->OneTrueBraceStyle
                         && $parts->hasOneOf(...TokenType::DECLARATION)
                         && ($last = $parts->last())->id !== \T_DECLARE
-                        && $last->skipPrevSiblingsOf(...TokenType::AMPERSAND)->id !== \T_FUNCTION) {
+                        && $last->skipPrevSiblingsFrom($this->TypeIndex->Ampersand)->id !== \T_FUNCTION) {
                     $start = $parts->first();
                     if ($start->id !== \T_USE
                         && ((!($prevCode = $start->PrevCode)
