@@ -24,7 +24,7 @@
         "**/tests/fixtures/**": true
     },
     "files.exclude": {
-        "**/tests/fixtures/Formatter/**": true,
+        "**/tests/fixtures/Formatter/out/**": true,
         "**/var/cache/git/**": true
     }
 }
