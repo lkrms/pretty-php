@@ -1,0 +1,16 @@
+.github/workflows/**
+bin/**
+scripts/**
+src/**
+tests/**
+tools/**
+.ci-pathspec
+.gitattributes
+.php-cs-fixer.dist.php
+.prettyphp
+bootstrap.php
+box.json
+composer.json
+composer.lock
+phpstan*
+phpunit.xml.dist

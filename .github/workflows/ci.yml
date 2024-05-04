@@ -1,14 +1,11 @@
 name: CI
 
 on:
+  push:
+    branches:
+      - main
+
   pull_request:
-    paths:
-      - ".github/workflows/**"
-      - "bin/**"
-      - "src/**"
-      - "tests/**"
-      - "scripts/**"
-      - bootstrap.php
 
   workflow_call:
 
@@ -17,20 +14,23 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  check-ci-runs:
+    name: Check previous runs
+    if: ${{ github.event_name != 'workflow_call' }}
+    uses: ./.github/workflows/check-ci-runs.yml
+    with:
+      ci_workflow: CI
+
   format:
     name: Check formatting
+    needs:
+      - check-ci-runs
+    if: ${{ (github.event_name == 'workflow_call' || needs.check-ci-runs.outputs.ci_required == 1) && !cancelled() && !failure() }}
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup PHP and Composer
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.3"
-          coverage: none
 
       - name: Get Composer cache directory
         id: get-composer-cache
@@ -55,13 +55,18 @@ jobs:
 
   phpstan:
     name: PHPStan
-    runs-on: ubuntu-latest
+    needs:
+      - check-ci-runs
+    if: ${{ (github.event_name == 'workflow_call' || needs.check-ci-runs.outputs.ci_required == 1) && !cancelled() && !failure() }}
+
     strategy:
       fail-fast: false
       matrix:
         php-version:
           - "8.3"
           - "7.4"
+
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -100,6 +105,9 @@ jobs:
 
   unit-tests:
     name: PHPUnit tests
+    needs:
+      - check-ci-runs
+    if: ${{ (github.event_name == 'workflow_call' || needs.check-ci-runs.outputs.ci_required == 1) && !cancelled() && !failure() }}
 
     strategy:
       fail-fast: false
@@ -159,8 +167,10 @@ jobs:
   build:
     name: Build phar and man page
     needs:
+      - check-ci-runs
       - phpstan
       - unit-tests
+    if: ${{ (github.event_name == 'workflow_call' || needs.check-ci-runs.outputs.ci_required == 1) && !cancelled() && !failure() }}
     runs-on: ubuntu-latest
     outputs:
       artifact_name: ${{ steps.run-build-script.outputs.artifact_name }}
@@ -224,7 +234,9 @@ jobs:
   test-phar:
     name: Test phar
     needs:
+      - check-ci-runs
       - build
+    if: ${{ (github.event_name == 'workflow_call' || needs.check-ci-runs.outputs.ci_required == 1) && !cancelled() && !failure() }}
 
     strategy:
       fail-fast: false
@@ -272,9 +284,10 @@ jobs:
   integration-tests:
     name: Integration tests
     needs:
+      - check-ci-runs
       - build
       - test-phar
-    runs-on: ubuntu-latest
+    if: ${{ (github.event_name == 'workflow_call' || needs.check-ci-runs.outputs.ci_required == 1) && !cancelled() && !failure() }}
 
     strategy:
       fail-fast: false
@@ -290,6 +303,8 @@ jobs:
             args: --include-if-php --preset symfony .
           - repository: WordPress/WordPress
             args: --include-if-php --preset wordpress .
+
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout ${{ matrix.repository }}
