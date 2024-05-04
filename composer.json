@@ -21,7 +21,7 @@
         "ext-mbstring": "*",
         "ext-tokenizer": "*",
         "composer-runtime-api": "^2.2",
-        "salient/toolkit": "^0.99.16",
+        "salient/toolkit": "^0.99.18",
         "sebastian/diff": "^4 || ^5"
     },
     "autoload": {
