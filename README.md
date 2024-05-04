@@ -51,7 +51,7 @@ If you have questions or feedback, I'd love to [hear from you][discuss].
 - PHP's embedded tokenizer is used to parse input and validate output
 - Formatted and original code are compared for equivalence
 - Output is optionally compliant with [PSR-12][] and [PER][] (details
-  [here](docs/PSR-12.md) and [here][PSR-12 issue])
+  [here](docs/PSR-12.md))
 
 ## Installation
 
@@ -198,7 +198,6 @@ MIT
 [PER]: https://www.php-fig.org/per/coding-style/
 [PHIVE]: https://phar.io
 [PSR-12]: https://www.php-fig.org/psr/psr-12/
-[PSR-12 issue]: https://github.com/lkrms/pretty-php/issues/4
 [Visual Studio Marketplace]:
   https://marketplace.visualstudio.com/items?itemName=lkrms.pretty-php
 [vscode]: https://github.com/lkrms/vscode-pretty-php
