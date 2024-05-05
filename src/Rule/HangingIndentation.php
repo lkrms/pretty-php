@@ -3,6 +3,7 @@
 namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
+use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
@@ -85,11 +86,13 @@ final class HangingIndentation implements MultiTokenRule
             if ($this->TypeIndex->OpenBracket[$token->id]) {
                 $token->HangingIndentParentType =
                     $token->hasNewlineBeforeNextCode()
-                        ? (($token->IsListParent && $token->ListItemCount > 1)
+                        ? (($token->Flags & TokenFlag::LIST_PARENT
+                                && $token->Data[TokenData::LIST_ITEM_COUNT] > 1)
                             || ($token->id === \T_OPEN_BRACE && $token->isStructuralBrace(true))
                                 ? self::NORMAL_INDENT
                                 : self::NO_INDENT)
-                        : (($token->IsListParent && $token->ListItemCount > 1)
+                        : (($token->Flags & TokenFlag::LIST_PARENT
+                                && $token->Data[TokenData::LIST_ITEM_COUNT] > 1)
                             || ($token->id === \T_OPEN_BRACE && $token->isStructuralBrace(true))
                             || ($token->id !== \T_OPEN_BRACE && $token->adjacent())
                                 ? self::OVERHANGING_INDENT | self::NO_INNER_NEWLINE
@@ -225,8 +228,8 @@ final class HangingIndentation implements MultiTokenRule
                 $stack[] = $token->ChainOpenedBy;
             } elseif ($token->Heredoc && $token->Heredoc === $prevCode) {
                 $stack[] = $token->Heredoc;
-            } elseif ($token->ListParent) {
-                $stack[] = $token->ListParent;
+            } elseif (isset($token->Data[TokenData::LIST_PARENT])) {
+                $stack[] = $token->Data[TokenData::LIST_PARENT];
             } elseif ($latest && $latest->Parent === $token->Parent) {
                 if ($this->TypeIndex->ExpressionDelimiter[$token->PrevCode->id]
                         || $this->TypeIndex->ExpressionDelimiter[$token->id]) {

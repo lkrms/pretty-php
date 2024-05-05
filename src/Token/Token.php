@@ -8,6 +8,7 @@ use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Support\TokenIndentDelta;
+use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use JsonSerializable;
@@ -22,14 +23,6 @@ class Token extends GenericToken implements JsonSerializable
      * The starting column (1-based) of the token
      */
     public int $column = -1;
-
-    public bool $BodyIsUnenclosed = false;
-
-    public bool $IsListParent = false;
-
-    public ?int $ListItemCount = null;
-
-    public ?Token $ListParent = null;
 
     public int $TagIndent = 0;
 
@@ -210,13 +203,10 @@ class Token extends GenericToken implements JsonSerializable
         $a['Heredoc'] = $this->Heredoc;
         $a['ExpandedText'] = $this->ExpandedText;
         $a['OriginalText'] = $this->OriginalText;
-        $a['BodyIsUnenclosed'] = $this->BodyIsUnenclosed;
         $a['Statement'] = $this->Statement;
         $a['EndStatement'] = $this->EndStatement;
         $a['Expression'] = $this->Expression;
         $a['EndExpression'] = $this->EndExpression;
-        $a['IsListParent'] = $this->IsListParent;
-        $a['ListItemCount'] = $this->ListItemCount;
 
         if ($this->Flags) {
             $flags = [];
@@ -271,23 +261,27 @@ class Token extends GenericToken implements JsonSerializable
         $a['OutputPos'] = $this->OutputPos;
         $a['OutputColumn'] = $this->OutputColumn;
 
-        foreach ($a as $key => $value) {
-            if ($value === null
-                    || $value === []
-                    || ($value === false && $key !== 'Expression')) {
+        foreach ($a as $key => &$value) {
+            if (
+                $value === null
+                || $value === []
+                || ($value === false && $key !== 'Expression')
+            ) {
                 unset($a[$key]);
                 continue;
             }
             if ($value instanceof Token) {
-                $a[$key] = (string) $value;
+                $value = (string) $value;
                 continue;
             }
-            if (($value[0] ?? null) instanceof Token) {
-                foreach ($value as $i => $value) {
-                    $a[$key][$i] = (string) $value;
+            if (Arr::of($value, Token::class)) {
+                foreach ($value as &$token) {
+                    $token = (string) $token;
                 }
+                unset($token);
             }
         }
+        unset($value);
 
         return $a;
     }

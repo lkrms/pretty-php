@@ -68,4 +68,14 @@ final class TokenFlag extends AbstractEnumeration
      * The token is the first in a statement that declares a named entity
      */
     public const NAMED_DECLARATION = 256;
+
+    /**
+     * The token is the parent of a list of items
+     */
+    public const LIST_PARENT = 512;
+
+    /**
+     * The token is a control structure with an unenclosed body
+     */
+    public const HAS_UNENCLOSED_BODY = 1024;
 }

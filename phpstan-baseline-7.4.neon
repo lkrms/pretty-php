@@ -541,7 +541,7 @@ parameters:
 			path: src/Rule/HangingIndentation.php
 
 		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:\\$HangingIndentContextStack \\(array\\<array\\<array\\<Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>\\|Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>\\>\\) does not accept array\\<array\\<array\\<Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\>\\|Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>\\>\\.$#"
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:\\$HangingIndentContextStack \\(array\\<array\\<array\\<Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>\\|Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>\\>\\) does not accept array\\<array\\>\\.$#"
 			count: 1
 			path: src/Rule/HangingIndentation.php
 
@@ -1061,11 +1061,6 @@ parameters:
 			path: src/Support/TokenCollection.php
 
 		-
-			message: "#^Cannot access offset \\(int\\|string\\) on array\\<mixed\\>\\|bool\\|int\\|Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|string\\|null\\.$#"
-			count: 1
-			path: src/Token/Token.php
-
-		-
 			message: "#^Cannot access property \\$CloseTag on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Token/Token.php
@@ -1173,11 +1168,6 @@ parameters:
 		-
 			message: "#^Cannot call method withTerminator\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 2
-			path: src/Token/Token.php
-
-		-
-			message: "#^Cannot cast non\\-empty\\-array\\<non\\-empty\\-array\\<string\\>\\|string\\>\\|int\\|Lkrms\\\\PrettyPHP\\\\Token\\\\Token to string\\.$#"
-			count: 1
 			path: src/Token/Token.php
 
 		-

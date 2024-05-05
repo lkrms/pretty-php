@@ -5,6 +5,8 @@ namespace Lkrms\PrettyPHP;
 use Lkrms\PrettyPHP\Catalog\FormatterFlag;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
+use Lkrms\PrettyPHP\Catalog\TokenData;
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\BlockRule;
@@ -923,10 +925,11 @@ final class Formatter implements Buildable
                                             !$prev || $t->PrevCode->id === \T_COMMA);
                     $count = $items->count();
                     if ($count > 1) {
-                        $parent->IsListParent = true;
-                        $parent->ListItemCount = $count;
+                        // @phpstan-ignore-next-line
+                        $parent->Flags |= TokenFlag::LIST_PARENT;
+                        $parent->Data[TokenData::LIST_ITEM_COUNT] = $count;
                         foreach ($items as $token) {
-                            $token->ListParent = $parent;
+                            $token->Data[TokenData::LIST_PARENT] = $parent;
                         }
                         $lists[$i] = $items;
                     }
@@ -989,10 +992,11 @@ final class Formatter implements Buildable
             if (!$count) {
                 continue;
             }
-            $parent->IsListParent = true;
-            $parent->ListItemCount = $count;
+            // @phpstan-ignore-next-line
+            $parent->Flags |= TokenFlag::LIST_PARENT;
+            $parent->Data[TokenData::LIST_ITEM_COUNT] = $count;
             foreach ($items as $token) {
-                $token->ListParent = $parent;
+                $token->Data[TokenData::LIST_PARENT] = $parent;
             }
             $lists[$i] = $items;
         }

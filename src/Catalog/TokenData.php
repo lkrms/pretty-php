@@ -18,4 +18,14 @@ final class TokenData extends AbstractEnumeration
      * delimiters, trailing whitespace and leading asterisks
      */
     public const COMMENT_CONTENT = 0;
+
+    /**
+     * The number of items associated with a LIST_PARENT token
+     */
+    public const LIST_ITEM_COUNT = 1;
+
+    /**
+     * The LIST_PARENT of the first token in a list item
+     */
+    public const LIST_PARENT = 2;
 }

@@ -84,7 +84,7 @@ final class PlaceBraces implements MultiTokenRule
                 $nextCode = $token->NextCode;
                 if ($nextCode && $nextCode->continuesControlStructure()) {
                     $token->WhitespaceAfter |= WhitespaceType::SPACE;
-                    if (!$nextCode->BodyIsUnenclosed) {
+                    if (!($nextCode->Flags & TokenFlag::HAS_UNENCLOSED_BODY)) {
                         $nextCode->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
                     } else {
                         /** @todo Be more opinionated here */

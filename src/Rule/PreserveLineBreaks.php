@@ -202,9 +202,8 @@ final class PreserveLineBreaks implements MultiTokenRule
 
         // Only preserve newlines after `implements` and `extends` if they are
         // followed by a list of interfaces
-        if (($token->id === \T_IMPLEMENTS
-                    || $token->id === \T_EXTENDS)
-                && !$token->IsListParent) {
+        if (($token->id === \T_IMPLEMENTS || $token->id === \T_EXTENDS)
+                && !($token->Flags & TokenFlag::LIST_PARENT)) {
             return false;
         }
 
