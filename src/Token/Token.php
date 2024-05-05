@@ -2,8 +2,8 @@
 
 namespace Lkrms\PrettyPHP\Token;
 
-use Lkrms\PrettyPHP\Catalog\CommentType;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenFlagMask;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
@@ -221,7 +221,7 @@ class Token extends GenericToken implements JsonSerializable
         if ($this->Flags) {
             $flags = [];
             foreach (TokenFlag::cases() as $name => $value) {
-                if ($this->Flags & $value) {
+                if (($this->Flags & $value) === $value) {
                     $flags[] = $name;
                 }
             }
@@ -231,7 +231,6 @@ class Token extends GenericToken implements JsonSerializable
         }
 
         $a['OtherTernaryOperator'] = $this->OtherTernaryOperator;
-        $a['CommentType'] = $this->CommentType;
         $a['TagIndent'] = $this->TagIndent;
         $a['PreIndent'] = $this->PreIndent;
         $a['Indent'] = $this->Indent;
@@ -936,14 +935,14 @@ class Token extends GenericToken implements JsonSerializable
         $last = null;
         while (!$current->hasBlankLineBefore()
             && $prev
-            && $prev->CommentType
+            && $this->TypeIndex->Comment[$prev->id]
             && $prev->hasNewlineBefore()
-            && (($prev->CommentType === CommentType::DOC_COMMENT
-                    && $prev->hasNewline())
+            && (($prev->id === \T_DOC_COMMENT && $prev->hasNewline())
                 || ($prev->wasFirstOnLine()
                     && $prev->column <= $this->column))
             && (!$last
-                || ($prev->CommentType === $last->Prev->CommentType
+                || !$last->Prev
+                || (($prev->Flags & TokenFlagMask::COMMENT_TYPE) === ($last->Prev->Flags & TokenFlagMask::COMMENT_TYPE)
                     && !$prev->isMultiLineComment()))) {
             $last = $current;
             $current = $current->Prev;
@@ -1070,13 +1069,12 @@ class Token extends GenericToken implements JsonSerializable
 
     public function isOneLineComment(): bool
     {
-        return $this->CommentType !== null
-            && ($this->CommentType[1] ?? null) !== '*';
+        return (bool) ($this->Flags & TokenFlag::ONELINE_COMMENT);
     }
 
     public function isMultiLineComment(): bool
     {
-        return ($this->CommentType[1] ?? null) === '*';
+        return (bool) ($this->Flags & TokenFlag::MULTILINE_COMMENT);
     }
 
     public function isOperator(): bool
@@ -1265,7 +1263,7 @@ class Token extends GenericToken implements JsonSerializable
             // Multi-line comments are only formatted when output is being
             // generated
             if ($setPosition
-                    && $current->CommentType
+                    && $this->TypeIndex->Comment[$current->id]
                     && strpos($current->text, "\n") !== false) {
                 $text = $current->renderComment($softTabs);
             }

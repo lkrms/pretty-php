@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\CommentType;
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\Rule;
 use Lkrms\PrettyPHP\Rule\Concern\RuleTrait;
@@ -43,9 +43,7 @@ final class EssentialWhitespace implements Rule
             }
 
             /* Add newlines after one-line comments with no subsequent `?>` */
-            if ($token->CommentType
-                    && ($token->CommentType === CommentType::CPP
-                        || $token->CommentType === CommentType::SHELL)
+            if ($token->Flags & TokenFlag::ONELINE_COMMENT
                     && $next->id !== \T_CLOSE_TAG) {
                 $token->WhitespaceAfter |= WhitespaceType::LINE;
                 $token->WhitespaceMaskNext |= WhitespaceType::LINE;

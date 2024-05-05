@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenFlagMask;
 use Lkrms\PrettyPHP\Contract\BlockRule;
 use Lkrms\PrettyPHP\Rule\Concern\BlockRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenCollection;
@@ -45,13 +46,15 @@ final class AlignComments implements BlockRule
         $comments = [];
         /** @var Token|null */
         $lastStartOfLine = null;
+        $prevComment = null;
         foreach ($block as $i => $line) {
             /** @var Token|null */
-            $lastComment = $prevComment ?? null;
+            $lastComment = $prevComment;
             $prevComment = null;
 
+            /** @var Token */
             $comment = $line->last();
-            if (!$comment->CommentType) {
+            if (!$this->TypeIndex->Comment[$comment->id]) {
                 continue;
             }
 
@@ -81,10 +84,11 @@ final class AlignComments implements BlockRule
              *     echo "$key: $value\n";
              * ```
              */
+            /** @var Token */
             $prev = $comment->Prev;
             if ($prev !== $lastComment
                 || $comment->line - $prev->line > 1
-                || $comment->CommentType !== $prev->CommentType
+                || ($comment->Flags & TokenFlagMask::COMMENT_TYPE) !== ($prev->Flags & TokenFlagMask::COMMENT_TYPE)
                 || $comment->isMultiLineComment()
                 || $comment->column === 1
                 || !$lastStartOfLine

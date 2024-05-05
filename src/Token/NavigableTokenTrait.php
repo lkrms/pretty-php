@@ -2,7 +2,6 @@
 
 namespace Lkrms\PrettyPHP\Token;
 
-use Lkrms\PrettyPHP\Catalog\CommentType;
 use Lkrms\PrettyPHP\Catalog\CustomToken;
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
@@ -104,11 +103,6 @@ trait NavigableTokenTrait
     public bool $IsVirtual = false;
 
     /**
-     * @var CommentType::*|null
-     */
-    public ?string $CommentType = null;
-
-    /**
      * The original content of the token after expanding tabs if CollectColumn
      * found tabs to expand
      */
@@ -202,6 +196,7 @@ trait NavigableTokenTrait
             return $orMatch;
         }
 
+        /** @var Token */
         $lastInner = $current->ClosedBy->PrevCode;
 
         // Braces cannot be empty in expression (dereferencing) contexts, but

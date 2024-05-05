@@ -230,7 +230,7 @@ final class PreserveLineBreaks implements MultiTokenRule
                     && $token->Parent
                     && $token->Parent->PrevCode
                     && $token->Parent->PrevCode->id === \T_FOR)
-                || ($token->CommentType
+                || ($this->TypeIndex->Comment[$token->id]
                     && (($token->PrevCode
                             && !$token->PrevCode->ClosedBy
                             && $token->PrevCode->EndStatement !== $token->PrevCode)

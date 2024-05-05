@@ -2,9 +2,9 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\CommentType;
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenFlagMask;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
@@ -183,6 +183,7 @@ final class NormaliseComments implements MultiTokenRule
                     )) {
                         $collapse = true;
                     } else {
+                        // @phpstan-ignore-next-line
                         $token->Flags |= TokenFlag::COLLAPSIBLE_COMMENT;
                     }
                 }
@@ -202,8 +203,8 @@ final class NormaliseComments implements MultiTokenRule
                 continue;
             }
 
-            switch ($token->CommentType) {
-                case CommentType::C:
+            switch ($token->Flags & TokenFlagMask::COMMENT_TYPE) {
+                case TokenFlag::C_COMMENT:
                     if (strpos($token->text, "\n") !== false) {
                         continue 2;
                     }
@@ -218,10 +219,10 @@ final class NormaliseComments implements MultiTokenRule
 
                     break;
 
-                case CommentType::SHELL:
+                case TokenFlag::SHELL_COMMENT:
                     $token->setText('//' . substr($token->text, 1));
                     // No break
-                case CommentType::CPP:
+                case TokenFlag::CPP_COMMENT:
                     $token->setText(Pcre::replace('#^//(?=\S)#', '// ', $token->text));
 
                     break;

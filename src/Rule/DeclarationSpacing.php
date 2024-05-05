@@ -140,6 +140,7 @@ final class DeclarationSpacing implements MultiTokenRule
                 $type = [\T_USE];
             }
 
+            // @phpstan-ignore-next-line
             $token->Flags |= TokenFlag::NAMED_DECLARATION;
 
             // Add a blank line between declarations and subsequent
