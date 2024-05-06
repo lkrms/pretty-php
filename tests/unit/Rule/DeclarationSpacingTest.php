@@ -205,6 +205,7 @@ class Foo
      * @var string[]
      */
     public array $Bar = [];
+
     public string $Qux;
     /**
      * Summary
@@ -307,6 +308,245 @@ PHP,
 interface I{function foo();} class A{function foo(){}} class B{function foo(){}} class C{function foo(){}}
 PHP,
                 $formatterB->enable([PreserveOneLineStatements::class]),
+            ],
+            [
+                <<<'PHP'
+<?php
+class Foo
+{
+    public const A = 'a';
+    /** @var string[] */
+    public const B = [
+        'b',
+    ];
+
+    /**
+     * Comment
+     */
+    public const C = 'c';
+
+    public const D = 'd';
+    public const E = 'e';
+
+    // Comment
+    // Comment
+    public const F = 'f';
+
+    // Comment
+
+    // Comment
+    public const G = 'g';
+    public const H = 'h';
+    public const I = 'i';
+
+    // Comment
+
+    public const J = 'j';
+    public const K = 'k';
+    public const L = 'l';
+    // Comment
+
+    public const M = 'm';
+    public const N = 'n';
+    /** @var string */
+    public const O = 'o';
+}
+
+PHP,
+                <<<'PHP'
+<?php
+class Foo
+{
+    public const A = 'a';
+    /**
+     * @var string[]
+     */
+    public const B = [
+        'b',
+    ];
+    /**
+     * Comment
+     */
+    public const C = 'c';
+    public const D = 'd';
+    public const E = 'e';
+    // Comment
+    // Comment
+    public const F = 'f';
+
+    // Comment
+
+    // Comment
+    public const G = 'g';
+    public const H = 'h';
+    public const I = 'i';
+
+    // Comment
+
+    public const J = 'j';
+    public const K = 'k';
+    public const L = 'l';
+    // Comment
+
+    public const M = 'm';
+    public const N = 'n';
+    /**
+     * @var string
+     */
+    public const O = 'o';
+}
+PHP,
+                $formatter,
+            ],
+            [
+                <<<'PHP'
+<?php
+abstract class Foo
+{
+    public function callBar() { $this->bar(); }
+    abstract protected function bar();
+    public function baz() {}
+
+    public function qux()
+    {
+        global $a;
+        global $b;
+        static $c;
+
+        $this->bar();
+
+        global $d;
+        global $e;
+
+        static $f;
+
+        $this->bar();
+
+        global $g;
+
+        global $h;
+
+        static $i;
+
+        $this->bar();
+
+        static $j;
+        global $k;
+        global $l;
+        static $m;
+    }
+
+    public function callBar2() { $this->bar2(); }
+    abstract protected function bar2();
+    public function baz2() {}
+}
+
+abstract class Bar
+{
+    public function callFoo() { $this->foo(); }
+
+    abstract protected function foo();
+
+    public function baz() {}
+
+    public function qux()
+    {
+        $this->foo();
+    }
+
+    public function callFoo2() { $this->foo2(); }
+    abstract protected function foo2();
+    public function baz2() {}
+}
+
+PHP,
+                <<<'PHP'
+<?php
+abstract class Foo
+{
+    public function callBar() { $this->bar(); }
+    abstract protected function bar();
+    public function baz() {}
+    public function qux()
+    {
+        global $a;
+        global $b;
+        static $c;
+        $this->bar();
+        global $d;
+        global $e;
+
+        static $f;
+        $this->bar();
+        global $g;
+
+        global $h;
+        static $i;
+        $this->bar();
+        static $j;
+        global $k;
+        global $l;
+
+        static $m;
+    }
+    public function callBar2() { $this->bar2(); }
+    abstract protected function bar2();
+    public function baz2() {}
+}
+abstract class Bar
+{
+    public function callFoo() { $this->foo(); }
+
+    abstract protected function foo();
+    public function baz() {}
+    public function qux()
+    {
+        $this->foo();
+    }
+    public function callFoo2() { $this->foo2(); }
+    abstract protected function foo2();
+
+    public function baz2() {}
+}
+PHP,
+                $formatterB->enable([PreserveOneLineStatements::class]),
+            ],
+            [
+                <<<'PHP'
+<?php
+class Foo
+{
+    public const A = 0;
+    public const B = 1;
+
+    private const C = 2;
+}
+
+class Bar
+{
+    public const A = 0;
+
+    private const B = 1;
+    private const C = 2;
+}
+
+PHP,
+                <<<'PHP'
+<?php
+class Foo {
+    public const A = 0;
+    public const B = 1;
+
+    private const C = 2;
+}
+class Bar {
+    public const A = 0;
+
+    private const B = 1;
+    private const C = 2;
+}
+PHP,
+                $formatter,
             ],
         ];
     }

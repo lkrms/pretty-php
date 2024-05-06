@@ -179,6 +179,22 @@ class TokenTypeIndex implements Immutable
     public array $Trim;
 
     /**
+     * T_USE
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $SuppressBlankBetween;
+
+    /**
+     * T_DECLARE
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $SuppressBlankBetweenOneLine;
+
+    /**
      * Tokens that require leading and trailing spaces
      *
      * @readonly
@@ -677,6 +693,14 @@ class TokenTypeIndex implements Immutable
                 \T_WHITESPACE,
                 ...TT::COMMENT,
             ),
+        );
+
+        $this->SuppressBlankBetween = TT::getIndex(
+            \T_USE,
+        );
+
+        $this->SuppressBlankBetweenOneLine = TT::getIndex(
+            \T_DECLARE,
         );
 
         $this->AddSpaceAround = TT::getIndex(

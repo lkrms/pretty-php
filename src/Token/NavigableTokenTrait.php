@@ -16,7 +16,7 @@ trait NavigableTokenTrait
     /**
      * The token's position (0-based) in an array of token objects
      */
-    public ?int $Index = null;
+    public int $Index = -1;
 
     public ?Token $Prev = null;
 
@@ -77,8 +77,9 @@ trait NavigableTokenTrait
 
     /**
      * @var array<TokenData::*,mixed>
+     * @phpstan-var array{string,int,Token}
      */
-    public array $Data = [];
+    public array $Data;
 
     public ?Token $OtherTernaryOperator = null;
 

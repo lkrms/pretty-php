@@ -326,6 +326,8 @@ trait ContextAwareTokenTrait
     /**
      * True if a declaration starts at the token and is not an anonymous
      * function or class
+     *
+     * @phpstan-assert-if-true TokenCollection $parts
      */
     final public function isNamedDeclaration(?TokenCollection &$parts = null): bool
     {

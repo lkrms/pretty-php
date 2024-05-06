@@ -166,11 +166,6 @@ parameters:
 			path: src/Formatter.php
 
 		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Formatter\\:\\:\\$Callbacks \\(array\\<int, array\\<int, array\\<array\\{class\\-string\\<Lkrms\\\\PrettyPHP\\\\Contract\\\\Rule\\>, Closure\\}\\>\\>\\>\\|null\\) does not accept non\\-empty\\-array\\<int, array\\<''\\|int, array\\<array\\{class\\-string\\<Lkrms\\\\PrettyPHP\\\\Contract\\\\Rule\\>, Closure\\}\\>\\>\\>\\.$#"
-			count: 1
-			path: src/Formatter.php
-
-		-
 			message: "#^Property Lkrms\\\\PrettyPHP\\\\Formatter\\:\\:\\$RuleTokenTypes \\(array\\<class\\-string\\<Lkrms\\\\PrettyPHP\\\\Contract\\\\TokenRule\\>, array\\<int, '\\*'\\|true\\>\\>\\) does not accept array\\<class\\-string\\<Lkrms\\\\PrettyPHP\\\\Contract\\\\TokenRule\\>, array\\<'\\*'\\|bool\\|int\\>\\>\\.$#"
 			count: 1
 			path: src/Formatter.php
@@ -381,11 +376,6 @@ parameters:
 			path: src/Rule/AlignData.php
 
 		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Rule\\\\AlignData\\:\\:\\$TokenData \\(array\\<int, array\\>\\) does not accept array\\<int\\|string, array\\>\\.$#"
-			count: 1
-			path: src/Rule/AlignData.php
-
-		-
 			message: "#^Cannot call method collect\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/AlignLists.php
@@ -402,11 +392,6 @@ parameters:
 
 		-
 			message: "#^Parameter \\#3 \\$first of method Lkrms\\\\PrettyPHP\\\\Rule\\\\AlignLists\\:\\:alignList\\(\\) expects Lkrms\\\\PrettyPHP\\\\Token\\\\Token, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null given\\.$#"
-			count: 1
-			path: src/Rule/AlignLists.php
-
-		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Rule\\\\AlignLists\\:\\:\\$ListOwnersByIndex \\(array\\<int, true\\>\\) does not accept non\\-empty\\-array\\<''\\|int, true\\>\\.$#"
 			count: 1
 			path: src/Rule/AlignLists.php
 
@@ -526,22 +511,7 @@ parameters:
 			path: src/Rule/HangingIndentation.php
 
 		-
-			message: "#^Parameter \\#1 \\$key of function array_key_exists expects int\\|string, int\\|null given\\.$#"
-			count: 1
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Parameter \\#3 \\$hanging of method Lkrms\\\\PrettyPHP\\\\Rule\\\\HangingIndentation\\:\\:maybeCollapseOverhanging\\(\\) expects array\\<int, int\\>, array\\<int\\|string, int\\<1, max\\>\\> given\\.$#"
-			count: 1
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:\\$HangingIndentContextStack \\(array\\<array\\<array\\<Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>\\|Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>\\>\\) does not accept array\\<array\\>\\.$#"
-			count: 1
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:\\$HangingIndentParentLevels \\(array\\<int, int\\>\\) does not accept array\\<int\\|string, int\\>\\.$#"
+			message: "#^Property Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:\\$HangingIndentContextStack \\(array\\<array\\<array\\<Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>\\|Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>\\>\\) does not accept array\\<array\\<array\\<Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\>\\|Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>\\>\\.$#"
 			count: 1
 			path: src/Rule/HangingIndentation.php
 
@@ -962,11 +932,6 @@ parameters:
 
 		-
 			message: "#^Parameter \\#1 \\$to of method Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:collect\\(\\) expects Lkrms\\\\PrettyPHP\\\\Token\\\\Token, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null given\\.$#"
-			count: 1
-			path: src/Rule/VerticalWhitespace.php
-
-		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Rule\\\\VerticalWhitespace\\:\\:\\$Seen \\(array\\<int, true\\>\\) does not accept non\\-empty\\-array\\<''\\|int, true\\>\\.$#"
 			count: 1
 			path: src/Rule/VerticalWhitespace.php
 

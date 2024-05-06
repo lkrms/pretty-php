@@ -336,14 +336,6 @@ final class TokenType extends AbstractDictionary
         \T_USE,
     ];
 
-    public const DECLARATION_CONDENSE = [
-        \T_USE,
-    ];
-
-    public const DECLARATION_CONDENSE_ONE_LINE = [
-        \T_DECLARE,
-    ];
-
     public const DECLARATION_LIST = [
         \T_COMMA,
         ...self::DECLARATION_TYPE,
