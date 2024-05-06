@@ -85,7 +85,7 @@ final class DeclarationSpacing implements MultiTokenRule
         $currentType = [];
         /** @var Token|null */
         $last = null;
-        $currentShift = false;
+        $currentShift = 0;
         $currentExpand = false;
         $currentCondense = false;
         $currentCondenseOneLine = false;
@@ -140,6 +140,8 @@ final class DeclarationSpacing implements MultiTokenRule
             //   - a declaration of a different `$type`
             //   - code that is not a declaration
             // - `$last` contains the last declaration in `$current`
+            // - `$currentShift` contains the number of declarations in
+            //   `$current` that have already been processed
             // - `$currentExpand` is `true` when blank lines are being applied
             //   before declarations of the current `$type`
             // - `$currentCondense` is `true` when blank lines before
@@ -148,35 +150,50 @@ final class DeclarationSpacing implements MultiTokenRule
             //   declarations of the current `$type` are being suppressed unless
             //   they have inner newlines
             $prev = $last;
-            $prevCode = $token->PrevCode ? $token->PrevCode->Statement : null;
+            $prevStatement = $token->PrevSibling
+                ? $token->PrevSibling->Statement
+                : null;
 
-            if (!$prev || $prevCode !== $prev || $type !== $currentType) {
+            if (!$prev || $prevStatement !== $prev || $type !== $currentType) {
                 $this->maybeCollapseComments($current, $currentShift, $currentExpand);
+
                 $current = [];
-                $currentShift = false;
-                // If `$prevCode` is a declaration of the same type (possible if
-                // it is a parent of `$prev`), add it to `$current`
+                $currentType = $type;
+                $currentShift = 0;
+                $currentExpand = false;
+
+                // If they are declarations of the same type, add one or both of
+                // the preceding statements to `$current` so gaps between
+                // declarations with nested declarations are propagated
+                // correctly
                 if (
-                    $prevCode
-                    && $prevCode !== $prev
-                    && $this->getDeclarationType($prevCode) === $type
+                    $prevStatement
+                    && $prevStatement !== $prev
+                    && $this->getDeclarationType($prevStatement) === $type
                 ) {
-                    $current[] = $prevCode;
-                    $currentShift = true;
+                    $prevPrevStatement = $prevStatement->PrevSibling
+                        ? $prevStatement->PrevSibling->Statement
+                        : null;
+
+                    if (
+                        $prevPrevStatement
+                        && $this->getDeclarationType($prevPrevStatement) === $type
+                    ) {
+                        $current[] = $prevPrevStatement;
+                        $currentShift++;
+                        $currentExpand = $this->hasComment($prevStatement, true)
+                            || $prevStatement->hasBlankLineBefore();
+                    } else {
+                        assert($prevStatement->EndStatement !== null);
+                        $currentExpand = $this->hasComment($prevStatement)
+                            || $prevStatement->collect($prevStatement->EndStatement)->hasNewline();
+                    }
+
+                    $current[] = $prevStatement;
+                    $currentShift++;
                 }
 
-                $currentType = $type;
-                if ($this->hasComment($token)) {
-                    $currentExpand = true;
-                } elseif ($current) {
-                    assert($prevCode !== null);
-                    assert($prevCode->EndStatement !== null);
-                    $currentExpand = $this->hasComment($prevCode, true)
-                        || $prevCode->hasBlankLineBefore()
-                        || $prevCode->collect($prevCode->EndStatement)->hasNewline();
-                } else {
-                    $currentExpand = false;
-                }
+                $currentExpand = $currentExpand || $this->hasComment($token);
             }
             $current[] = $token;
             $last = $token;
@@ -229,7 +246,7 @@ final class DeclarationSpacing implements MultiTokenRule
                     array_pop($current);
                     $this->maybeCollapseComments($current, $currentShift, $currentExpand);
                     $current = [$token];
-                    $currentShift = false;
+                    $currentShift = 0;
                     $count = 1;
                 }
             }
@@ -345,9 +362,9 @@ final class DeclarationSpacing implements MultiTokenRule
     /**
      * @param Token[] $tokens
      */
-    private function maybeCollapseComments(array $tokens, bool $shift, bool $expand): void
+    private function maybeCollapseComments(array $tokens, int $shift, bool $expand): void
     {
-        if ($shift) {
+        while ($shift--) {
             array_shift($tokens);
         }
         if (!$tokens) {

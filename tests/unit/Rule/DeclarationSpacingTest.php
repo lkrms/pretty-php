@@ -3,6 +3,7 @@
 namespace Lkrms\PrettyPHP\Tests\Rule;
 
 use Lkrms\PrettyPHP\Filter\SortImports;
+use Lkrms\PrettyPHP\Rule\PreserveOneLineStatements;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
 
@@ -290,6 +291,22 @@ class Foo
 }
 PHP,
                 $formatter,
+            ],
+            [
+                <<<'PHP'
+<?php
+interface I { function foo(); }
+
+class A { function foo() {} }
+class B { function foo() {} }
+class C { function foo() {} }
+
+PHP,
+                <<<'PHP'
+<?php
+interface I{function foo();} class A{function foo(){}} class B{function foo(){}} class C{function foo(){}}
+PHP,
+                $formatterB->enable([PreserveOneLineStatements::class]),
             ],
         ];
     }
