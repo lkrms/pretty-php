@@ -265,7 +265,7 @@ final class VerticalWhitespace implements MultiTokenRule
                         || ($token->Next->id === \T_CLOSE_BRACE && !$token->hasNewlineAfter())) {
                     continue;
                 }
-                $parts = $token->Expression->declarationParts();
+                $parts = $token->skipPrevSiblingsToDeclarationStart()->declarationParts();
                 if (!$this->Formatter->OneTrueBraceStyle
                         && $parts->hasOneOf(...TokenType::DECLARATION)
                         && ($last = $parts->last())->id !== \T_DECLARE

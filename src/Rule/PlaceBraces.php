@@ -99,7 +99,7 @@ final class PlaceBraces implements MultiTokenRule
             }
 
             $next = $token->Next;
-            $parts = $token->Expression->declarationParts();
+            $parts = $token->skipPrevSiblingsToDeclarationStart()->declarationParts();
 
             // Move empty bodies to the end of the previous line
             if ($next->id === \T_CLOSE_BRACE

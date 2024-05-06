@@ -640,7 +640,7 @@ class Token extends GenericToken implements JsonSerializable
         if (
             $containDeclaration
             && $this->Expression
-            && ($parts = $this->Expression->declarationParts())->has($this, true)
+            && ($parts = $this->skipPrevSiblingsToDeclarationStart()->declarationParts())->has($this, true)
             && $parts->hasOneOf(...TokenType::DECLARATION_TOP_LEVEL)
             // Exclude anonymous functions, which can move as needed
             && ($last = $parts->last()->skipPrevSiblingsFrom(
@@ -1102,32 +1102,6 @@ class Token extends GenericToken implements JsonSerializable
 
         return ($this->PrevCode->Flags & TokenFlag::TERNARY_OPERATOR)
             || $this->TypeIndex->UnaryPredecessor[$this->PrevCode->id];
-    }
-
-    public function isDeclaration(): bool
-    {
-        if (!$this->Expression) {
-            return false;
-        }
-
-        $first = $this->Expression
-                      ->declarationParts(false)
-                      ->getAnyFrom($this->TypeIndex->Declaration)
-                      ->first();
-
-        if (!$first) {
-            return false;
-        }
-
-        /** @var Token */
-        $next = $first->NextCode;
-
-        return !(
-            ($first->id === \T_STATIC && !($next->id === \T_VARIABLE || $this->TypeIndex->Declaration[$next->id]))
-            || ($first->id === \T_CASE && $first->inSwitchCaseList())
-            || ($first->id === \T_NAMESPACE && $next->id === \T_NS_SEPARATOR)
-            || ($this->TypeIndex->VisibilityWithReadonly[$first->id] && $first->inParameterList())
-        );
     }
 
     final public function getIndentDelta(Token $target): TokenIndentDelta

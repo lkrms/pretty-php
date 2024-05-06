@@ -16,41 +16,29 @@ trait CollectibleTokenTrait
      */
     final public function namedDeclarationParts(): TokenCollection
     {
-        return $this->declarationParts(false, false);
+        return $this->declarationParts(false);
     }
 
     /**
      * Get the token and any subsequent tokens that form part of a declaration
-     * after optionally skipping any tokens in the same expression that do not
-     * form part of a declaration
      */
-    final public function declarationParts(
-        bool $skipToDeclaration = true,
-        bool $allowAnonymous = true
-    ): TokenCollection {
+    final public function declarationParts(bool $allowAnonymous = true): TokenCollection
+    {
         /** @var static&GenericToken $this */
-        $index =
-            $allowAnonymous
-                ? $this->TypeIndex->DeclarationPartWithNew
-                : $this->TypeIndex->DeclarationPart;
+        $index = $allowAnonymous
+            ? $this->TypeIndex->DeclarationPartWithNew
+            : $this->TypeIndex->DeclarationPart;
 
         $t = $this;
-
-        if ($skipToDeclaration) {
-            while (!$index[$t->id]) {
-                $t = $t->NextSibling;
-                if (!$t || $t->Expression !== $this->Expression) {
-                    return new TokenCollection();
-                }
-            }
-        }
-
-        $from = $t;
-        while ($t->NextSibling
-            && ($index[$t->NextSibling->id]
-                || ($allowAnonymous
+        while (
+            $t->NextSibling && (
+                $index[$t->NextSibling->id] || (
+                    $allowAnonymous
                     && $t->NextSibling->id === \T_OPEN_PARENTHESIS
-                    && $t->id === \T_CLASS))) {
+                    && $t->id === \T_CLASS
+                )
+            )
+        ) {
             $t = $t->NextSibling;
         }
 
@@ -61,7 +49,7 @@ trait CollectibleTokenTrait
             return new TokenCollection();
         }
 
-        return $from->collectSiblings($t);
+        return $this->collectSiblings($t);
     }
 
     /**

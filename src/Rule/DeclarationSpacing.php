@@ -96,30 +96,7 @@ final class DeclarationSpacing implements MultiTokenRule
                 continue;
             }
 
-            // Get the first non-attribute
-            $first = $token->skipSiblingsFrom($this->TypeIndex->Attribute);
-
-            /** @var Token */
-            $next = $first->NextCode;
-
-            // Ignore:
-            // - `static` outside declarations
-            // - `case` in switch statements
-            // - `namespace` in relative names
-            // - promoted constructor parameters
-            if (
-                ($first->id === \T_STATIC && !($next->id === \T_VARIABLE || $this->TypeIndex->Declaration[$next->id]))
-                || ($first->id === \T_CASE && $first->inSwitchCaseList())
-                || ($first->id === \T_NAMESPACE && $next->id === \T_NS_SEPARATOR)
-                || ($this->TypeIndex->VisibilityWithReadonly[$first->id] && $first->inParameterList())
-            ) {
-                continue;
-            }
-
-            $parts = $token->namedDeclarationParts();
-
-            // Ignore anonymous functions and classes
-            if (!$parts->count()) {
+            if (!$token->isNamedDeclaration($parts)) {
                 continue;
             }
 
@@ -140,16 +117,13 @@ final class DeclarationSpacing implements MultiTokenRule
                 $type = [\T_USE];
             }
 
-            // @phpstan-ignore-next-line
-            $token->Flags |= TokenFlag::NAMED_DECLARATION;
-
             // Add a blank line between declarations and subsequent
             // non-declarations
             assert($token->EndStatement !== null);
-            $next = $token->EndStatement->nextCode()->skipSiblingsFrom($this->TypeIndex->Attribute)->orNull();
+            $next = $token->EndStatement->NextCode;
             if (
                 $next
-                && !$this->TypeIndex->Declaration[$next->id]
+                && !$next->isNamedDeclaration()
                 && $token->EndStatement->Next
                 && $token->EndStatement->Next->id !== \T_CLOSE_TAG
             ) {
@@ -318,12 +292,11 @@ final class DeclarationSpacing implements MultiTokenRule
      */
     private function getDeclarationType(Token $token): ?array
     {
-        if (!($token->Flags & TokenFlag::NAMED_DECLARATION)) {
+        if (!$token->isNamedDeclaration($parts)) {
             return null;
         }
 
-        $type = $token->namedDeclarationParts()
-                      ->getAnyFrom($this->TypeIndex->DeclarationExceptModifiers)
+        $type = $parts->getAnyFrom($this->TypeIndex->DeclarationExceptModifiers)
                       ->getTypes();
 
         if (!$this->SortImportsEnabled && (

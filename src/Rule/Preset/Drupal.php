@@ -3,7 +3,6 @@
 namespace Lkrms\PrettyPHP\Rule\Preset;
 
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
-use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\Preset;
 use Lkrms\PrettyPHP\Contract\TokenRule;
@@ -79,8 +78,7 @@ final class Drupal implements Preset, TokenRule
             \T_INTERFACE,
             \T_TRAIT,
         ])) {
-            $parts = $token->Expression->declarationParts(true, false);
-            if (!$parts->hasOneOf(...TokenType::DECLARATION)) {
+            if (!$token->inDeclaration(false)) {
                 return;
             }
 

@@ -182,7 +182,7 @@ final class OperatorSpacing implements MultiTokenRule
      */
     private function inTypeContext(Token $token): bool
     {
-        return $token->isDeclaration()
+        return $token->inDeclaration()
             || ($token->inParameterList()
                 && !$token->sinceStartOfStatement()->hasOneOf(\T_VARIABLE))
             || (($prev = $token->prevCodeWhile(...TokenType::VALUE_TYPE)->last())
