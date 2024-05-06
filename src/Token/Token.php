@@ -58,7 +58,7 @@ class Token extends GenericToken implements JsonSerializable
     /**
      * The context of each level of hanging indentation applied to the token
      *
-     * @var array<array<Token[]|Token>>
+     * @var array<array<array<Token|null>|Token>>
      */
     public array $HangingIndentContextStack = [];
 

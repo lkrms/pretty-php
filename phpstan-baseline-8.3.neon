@@ -466,56 +466,6 @@ parameters:
 			path: src/Rule/ControlStructureSpacing.php
 
 		-
-			message: "#^Cannot access property \\$AlignedWith on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Cannot access property \\$EndExpression on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Cannot access property \\$HangingIndentContextStack on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Cannot access property \\$HangingIndentParentStack on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Cannot access property \\$HangingIndentStack on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Cannot access property \\$Index on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 4
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Cannot access property \\$Next on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Cannot call method startOfLine\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:\\$HangingIndentContextStack \\(array\\<array\\<array\\<Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>\\|Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>\\>\\) does not accept array\\<array\\<array\\<Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\>\\|Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>\\>\\.$#"
-			count: 1
-			path: src/Rule/HangingIndentation.php
-
-		-
 			message: "#^Cannot access property \\$LinePadding on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/HeredocIndentation.php
