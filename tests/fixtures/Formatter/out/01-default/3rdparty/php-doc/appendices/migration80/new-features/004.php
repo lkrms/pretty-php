@@ -14,11 +14,8 @@ class ChildClass extends ParentClass
     // All of the following are now allowed, even though the modifiers aren't
     // the same as for the private methods in the parent class.
     public abstract function method1() {}
-
     public static function method2() {}
-
     public function method3() {}
-
     public function method4() {}
 }
 ?>

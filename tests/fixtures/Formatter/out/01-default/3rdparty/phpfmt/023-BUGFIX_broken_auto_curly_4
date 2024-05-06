@@ -3,7 +3,6 @@ abstract class GenericContent
 {
     public $delivery_info = array();
     private $properties = array();
-
     protected static $PROPERTIES = array(
         'dummy' => 'shortstr',
     );

@@ -54,5 +54,4 @@ class qux
 }
 
 class quux {}
-
 class foo {}

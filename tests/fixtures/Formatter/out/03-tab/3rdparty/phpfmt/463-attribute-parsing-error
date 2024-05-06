@@ -15,9 +15,7 @@ class User
 	public function test() {}
 
 	private function test2() {}
-
 	protected function test4() {}
-
 	function test5() {}
 
 	function testOut(): ?string

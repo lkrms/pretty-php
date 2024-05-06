@@ -3,7 +3,6 @@
 class myIterator implements Iterator
 {
     private $position = 0;
-
     private $array = array(
         'firstelement',
         'secondelement',

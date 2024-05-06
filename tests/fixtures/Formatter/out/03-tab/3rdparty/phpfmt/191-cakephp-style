@@ -5,11 +5,9 @@ class A
 	public $__a;
 	private $__b;
 	protected $__c;
-
 	public $_a;
 	private $_b;
 	protected $_c;
-
 	public $a;
 	private $b;
 	protected $c;

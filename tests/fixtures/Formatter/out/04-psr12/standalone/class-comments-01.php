@@ -19,4 +19,5 @@ class bar
 // bar
 
 class qux {}
+
 // qux

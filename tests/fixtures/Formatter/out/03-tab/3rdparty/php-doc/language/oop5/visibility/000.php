@@ -30,7 +30,6 @@ class MyClass2 extends MyClass
 {
 	// We can redeclare the public and protected properties, but not private
 	public $public = 'Public2';
-
 	protected $protected = 'Protected2';
 
 	function printHello()

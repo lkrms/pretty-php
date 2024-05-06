@@ -21,5 +21,6 @@ class bar
 // continuation
 
 class qux {}
+
 // qux
 // continuation

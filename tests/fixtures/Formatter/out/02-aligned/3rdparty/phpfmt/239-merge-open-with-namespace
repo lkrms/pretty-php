@@ -1,4 +1,5 @@
 <?php
 
 namespace A;
+
 // passes: Default,MergeNamespaceWithOpenTag

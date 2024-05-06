@@ -7,7 +7,6 @@ use blah\blah as foo;
 const FOO = 1;
 
 function my() {}
-
 function foo() {}
 
 function sort(&$a)

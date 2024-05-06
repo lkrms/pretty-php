@@ -4,20 +4,14 @@
 class Test
 {
 	private $a;
-
 	private $b = 1;
-
 	private $c = 'c';
-
 	private $d = [
 		1,
 		2,
 		3,
 	];
-
-	/**
-	 * @var float
-	 */
+	/** @var float */
 	private $f = 1.25;
 
 	var $e = 10;
