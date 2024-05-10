@@ -558,7 +558,9 @@ abstract class Bar
     }
 
     public function callFoo2() { $this->foo2(); }
+
     abstract protected function foo2();
+
     public function baz2() {}
 }
 
