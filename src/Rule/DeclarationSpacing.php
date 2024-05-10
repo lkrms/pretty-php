@@ -50,6 +50,9 @@ final class DeclarationSpacing implements MultiTokenRule
      */
     private array $Declarations;
 
+    /**
+     * @inheritDoc
+     */
     public static function getPriority(string $method): ?int
     {
         switch ($method) {
@@ -61,6 +64,9 @@ final class DeclarationSpacing implements MultiTokenRule
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function getTokenTypes(TokenTypeIndex $typeIndex): array
     {
         return [
@@ -70,13 +76,25 @@ final class DeclarationSpacing implements MultiTokenRule
         ];
     }
 
+    /**
+     * @inheritDoc
+     */
     public function boot(): void
     {
-        $this->SortImportsEnabled = isset(
-            $this->Formatter->Enabled[SortImports::class]
-        );
+        $this->SortImportsEnabled = $this->Formatter->Enabled[SortImports::class] ?? false;
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function reset(): void
+    {
+        unset($this->Declarations);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function processTokens(array $tokens): void
     {
         $this->Declarations = [];
@@ -145,10 +163,10 @@ final class DeclarationSpacing implements MultiTokenRule
             // Add a blank line before the first declaration of each type
             $this->maybeApplyBlankLineBefore($token);
 
-            $noDeclaration = false;
+            $nextNotDeclaration = false;
             while (($prevEnd = ($prev = $token)->EndStatement) && ($token = $prevEnd->NextSibling)) {
                 if (!isset($this->Declarations[$token->Index])) {
-                    $noDeclaration = true;
+                    $nextNotDeclaration = true;
                     break;
                 }
                 [, $nextType, $modifiers] = $declarations[$token->Index];
@@ -175,7 +193,7 @@ final class DeclarationSpacing implements MultiTokenRule
                     // Propagate the gap between the first and second
                     // declarations to subsequent declarations
                     $expand = $this->hasDocComment($prev)
-                        || $this->hasDocComment($token, true)
+                        || $this->hasDocComment($token, !$this->Formatter->TightDeclarationSpacing)
                         || $this->isMultiLine($prev, $assignable)
                         || $this->isMultiLine($token, $assignable);
                 } elseif (
@@ -191,7 +209,7 @@ final class DeclarationSpacing implements MultiTokenRule
                     )
                     && !(
                         $this->hasDocComment($prev)
-                        || $this->hasDocComment($token, true)
+                        || $this->hasDocComment($token, !$this->Formatter->TightDeclarationSpacing)
                         || $this->isMultiLine($prev, $assignable)
                         || $this->isMultiLine($token, $assignable)
                     )
@@ -218,6 +236,7 @@ final class DeclarationSpacing implements MultiTokenRule
                     // private const C = 2;
                     // ```
                     !$expand
+                    && !$this->Formatter->TightDeclarationSpacing
                     && $this->hasDocComment($token, true)
                     && $modifiers !== $prevModifiers
                     && $this->isGroupedByModifier($token, $type, $assignable, $group)
@@ -236,6 +255,7 @@ final class DeclarationSpacing implements MultiTokenRule
                 // ```
                 if (
                     $expand
+                    && !$this->Formatter->TightDeclarationSpacing
                     && $modifiers !== $prevModifiers
                     && $this->isGroupedByModifier($token, $type, $assignable, $group)
                 ) {
@@ -257,8 +277,8 @@ final class DeclarationSpacing implements MultiTokenRule
 
                 $token->WhitespaceBefore |= WhitespaceType::LINE;
 
-                // Collapse DocBlocks and suppress blank lines before
-                // DocBlocks above tightly-spaced declarations
+                // Collapse DocBlocks and suppress blank lines before DocBlocks
+                // above tightly-spaced declarations
                 if ($count === 2 || $prevExpand) {
                     $this->maybeCollapseComment($prev);
                 }
@@ -274,7 +294,7 @@ final class DeclarationSpacing implements MultiTokenRule
 
             if (
                 $count === 1
-                && $this->Formatter->CollapseDocBlocksByDefault
+                && $this->Formatter->TightDeclarationSpacing
                 && !$this->hasDocComment($prev)
                 && !$this->isMultiLine($prev, $assignable)
             ) {
@@ -284,7 +304,7 @@ final class DeclarationSpacing implements MultiTokenRule
             // Add a blank line between declarations and subsequent statements
             // or comments
             if ($prevEnd && $prevEnd->Next && $prevEnd->Next->id !== \T_CLOSE_TAG && (
-                $noDeclaration || !$prevEnd->Next->IsCode
+                $nextNotDeclaration || !$prevEnd->Next->IsCode
             )) {
                 $prevEnd->WhitespaceAfter |= WhitespaceType::BLANK;
             }
@@ -296,7 +316,7 @@ final class DeclarationSpacing implements MultiTokenRule
      * have modifiers mutually exclusive with $group
      *
      * @param int[] $type
-     * @param int[][] $group
+     * @param non-empty-array<int[]> $group
      */
     private function isGroupedByModifier(Token $token, array $type, bool $assignable, array $group): bool
     {

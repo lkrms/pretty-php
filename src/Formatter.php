@@ -176,6 +176,14 @@ final class Formatter implements Buildable
     public bool $OneTrueBraceStyle;
 
     /**
+     * True if blank lines between declarations of the same type are removed
+     * where possible
+     *
+     * @readonly
+     */
+    public bool $TightDeclarationSpacing;
+
+    /**
      * Enforce strict PSR-12 / PER Coding Style compliance?
      *
      * @readonly
@@ -224,11 +232,6 @@ final class Formatter implements Buildable
      * @readonly
      */
     public bool $NewlineBeforeFnDoubleArrows = false;
-
-    /**
-     * @readonly
-     */
-    public bool $CollapseDocBlocksByDefault = false;
 
     /**
      * If the first object operator in a chain of method calls has a leading
@@ -525,6 +528,7 @@ final class Formatter implements Buildable
         int $heredocIndent = HeredocIndent::MIXED,
         int $importSortOrder = ImportSortOrder::DEPTH,
         bool $oneTrueBraceStyle = false,
+        bool $tightDeclarationSpacing = false,
         bool $psr12 = false
     ) {
         if (!in_array($tabSize, [2, 4, 8], true)) {
@@ -543,6 +547,7 @@ final class Formatter implements Buildable
         $this->HeredocIndent = $heredocIndent;
         $this->ImportSortOrder = $importSortOrder;
         $this->OneTrueBraceStyle = $oneTrueBraceStyle;
+        $this->TightDeclarationSpacing = $tightDeclarationSpacing;
         $this->Psr12 = $psr12;
 
         $this->Debug = ($flags & FormatterFlag::DEBUG) || Env::debug();

@@ -120,6 +120,10 @@ pretty-php - Format a PHP file
 
   Place newlines after operators when splitting code over multiple lines.
 
+- **`-T`**, **`--tight`**
+
+  Remove blank lines between declarations of the same type where possible.
+
 - **`-N`**, **`--ignore-newlines`**
 
   Ignore the position of newlines in the input.

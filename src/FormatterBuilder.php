@@ -25,6 +25,7 @@ use Salient\Core\Indentation;
  * @method $this heredocIndent(HeredocIndent::* $value) Indentation applied to heredocs and nowdocs
  * @method $this importSortOrder(ImportSortOrder::* $value) Set Formatter::$ImportSortOrder
  * @method $this oneTrueBraceStyle(bool $value = true) True if braces are formatted using the One True Brace Style (default: false)
+ * @method $this tightDeclarationSpacing(bool $value = true) True if blank lines between declarations of the same type are removed where possible (default: false)
  * @method $this psr12(bool $value = true) Enforce strict PSR-12 / PER Coding Style compliance? (default: false)
  * @method Formatter with(string $property, mixed $value) Get an instance with a value applied to a given property
  * @method Formatter withoutExtensions(array<class-string<Extension>> $extensions = []) Get an instance with the given extensions disabled
