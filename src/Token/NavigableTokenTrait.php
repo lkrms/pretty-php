@@ -2,7 +2,6 @@
 
 namespace Lkrms\PrettyPHP\Token;
 
-use Lkrms\PrettyPHP\Catalog\CommentType;
 use Lkrms\PrettyPHP\Catalog\CustomToken;
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
@@ -17,7 +16,7 @@ trait NavigableTokenTrait
     /**
      * The token's position (0-based) in an array of token objects
      */
-    public ?int $Index = null;
+    public int $Index = -1;
 
     public ?Token $Prev = null;
 
@@ -78,8 +77,9 @@ trait NavigableTokenTrait
 
     /**
      * @var array<TokenData::*,mixed>
+     * @phpstan-var array{string,int,Token}
      */
-    public array $Data = [];
+    public array $Data;
 
     public ?Token $OtherTernaryOperator = null;
 
@@ -102,11 +102,6 @@ trait NavigableTokenTrait
      * impostor
      */
     public bool $IsVirtual = false;
-
-    /**
-     * @var CommentType::*|null
-     */
-    public ?string $CommentType = null;
 
     /**
      * The original content of the token after expanding tabs if CollectColumn
@@ -202,6 +197,7 @@ trait NavigableTokenTrait
             return $orMatch;
         }
 
+        /** @var Token */
         $lastInner = $current->ClosedBy->PrevCode;
 
         // Braces cannot be empty in expression (dereferencing) contexts, but
@@ -510,40 +506,6 @@ trait NavigableTokenTrait
             }
         }
         return $this->null();
-    }
-
-    /**
-     * Skip to the next sibling that is not one of the listed types
-     *
-     * The token returns itself if it satisfies the criteria.
-     *
-     * @return Token
-     */
-    final public function skipSiblingsOf(int $type, int ...$types)
-    {
-        array_unshift($types, $type);
-        $t = $this->IsCode ? $this : $this->NextCode;
-        while ($t && $t->is($types)) {
-            $t = $t->NextSibling;
-        }
-        return $t ?: $this->null();
-    }
-
-    /**
-     * Skip to the previous sibling that is not one of the listed types
-     *
-     * The token returns itself if it satisfies the criteria.
-     *
-     * @return Token
-     */
-    final public function skipPrevSiblingsOf(int $type, int ...$types)
-    {
-        array_unshift($types, $type);
-        $t = $this->IsCode ? $this : $this->PrevCode;
-        while ($t && $t->is($types)) {
-            $t = $t->PrevSibling;
-        }
-        return $t ?: $this->null();
     }
 
     /**

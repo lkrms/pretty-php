@@ -103,6 +103,11 @@
             "type": "boolean",
             "default": false
         },
+        "tight": {
+            "description": "Remove blank lines between declarations of the same type where possible.",
+            "type": "boolean",
+            "default": false
+        },
         "noSimplifyStrings": {
             "description": "Don't normalise escape sequences in strings, and don't replace single- and double-quoted strings with the most readable and economical syntax.",
             "type": "boolean",

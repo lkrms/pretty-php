@@ -182,11 +182,11 @@ final class OperatorSpacing implements MultiTokenRule
      */
     private function inTypeContext(Token $token): bool
     {
-        return $token->isDeclaration()
+        return $token->inDeclaration()
             || ($token->inParameterList()
                 && !$token->sinceStartOfStatement()->hasOneOf(\T_VARIABLE))
             || (($prev = $token->prevCodeWhile(...TokenType::VALUE_TYPE)->last())
                 && ($prev = $prev->prevCode())->id === \T_COLON
-                && $prev->prevSibling(2)->skipPrevSiblingsOf(...TokenType::AMPERSAND)->id === \T_FN);
+                && $prev->prevSibling(2)->skipPrevSiblingsFrom($this->TypeIndex->Ampersand)->id === \T_FN);
     }
 }

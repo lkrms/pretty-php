@@ -166,11 +166,6 @@ parameters:
 			path: src/Formatter.php
 
 		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Formatter\\:\\:\\$Callbacks \\(array\\<int, array\\<int, array\\<array\\{class\\-string\\<Lkrms\\\\PrettyPHP\\\\Contract\\\\Rule\\>, Closure\\}\\>\\>\\>\\|null\\) does not accept non\\-empty\\-array\\<int, array\\<''\\|int, array\\<array\\{class\\-string\\<Lkrms\\\\PrettyPHP\\\\Contract\\\\Rule\\>, Closure\\}\\>\\>\\>\\.$#"
-			count: 1
-			path: src/Formatter.php
-
-		-
 			message: "#^Property Lkrms\\\\PrettyPHP\\\\Formatter\\:\\:\\$RuleMap \\(array\\<class\\-string\\<Lkrms\\\\PrettyPHP\\\\Contract\\\\Rule\\>, Lkrms\\\\PrettyPHP\\\\Contract\\\\Rule\\>\\) does not accept array\\<class\\-string\\<Lkrms\\\\PrettyPHP\\\\Contract\\\\Rule\\>, Lkrms\\\\PrettyPHP\\\\Contract\\\\Rule\\>\\|false\\.$#"
 			count: 1
 			path: src/Formatter.php
@@ -271,11 +266,6 @@ parameters:
 			path: src/Parser.php
 
 		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:\\$CommentType \\('\\#'\\|'/\\*'\\|'/\\*\\*'\\|'//'\\|null\\) does not accept \\(string\\|false\\)\\.$#"
-			count: 1
-			path: src/Parser.php
-
-		-
 			message: "#^Property Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:\\$EndExpression \\(Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\) does not accept Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|false\\|null\\.$#"
 			count: 2
 			path: src/Parser.php
@@ -341,57 +331,12 @@ parameters:
 			path: src/Rule/AlignChains.php
 
 		-
-			message: "#^Cannot access property \\$CommentType on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 3
-			path: src/Rule/AlignComments.php
-
-		-
-			message: "#^Cannot access property \\$Depth on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/AlignComments.php
-
-		-
-			message: "#^Cannot access property \\$NextCode on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 3
-			path: src/Rule/AlignComments.php
-
-		-
-			message: "#^Cannot access property \\$Prev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/AlignComments.php
-
-		-
-			message: "#^Cannot access property \\$column on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 3
-			path: src/Rule/AlignComments.php
-
-		-
-			message: "#^Cannot access property \\$line on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/AlignComments.php
-
-		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/AlignComments.php
-
-		-
-			message: "#^Cannot call method isMultiLineComment\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/AlignComments.php
-
-		-
 			message: "#^Parameter \\#1 \\$to of method Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:collect\\(\\) expects Lkrms\\\\PrettyPHP\\\\Token\\\\Token, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null given\\.$#"
 			count: 1
 			path: src/Rule/AlignComments.php
 
 		-
 			message: "#^Parameter \\#2 \\$start of function mb_substr expects int, int\\<0, max\\>\\|false given\\.$#"
-			count: 1
-			path: src/Rule/AlignComments.php
-
-		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Rule\\\\AlignComments\\:\\:\\$BlockComments \\(array\\<array\\{array\\<Lkrms\\\\PrettyPHP\\\\Support\\\\TokenCollection\\>, array\\<Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>\\}\\>\\) does not accept non\\-empty\\-array\\<array\\{array\\<Lkrms\\\\PrettyPHP\\\\Support\\\\TokenCollection\\>, array\\<Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\>\\}\\>\\.$#"
 			count: 1
 			path: src/Rule/AlignComments.php
 
@@ -436,11 +381,6 @@ parameters:
 			path: src/Rule/AlignData.php
 
 		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Rule\\\\AlignData\\:\\:\\$TokenData \\(array\\<int, array\\>\\) does not accept array\\<int\\|string, array\\>\\.$#"
-			count: 1
-			path: src/Rule/AlignData.php
-
-		-
 			message: "#^Cannot call method collect\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/AlignLists.php
@@ -457,11 +397,6 @@ parameters:
 
 		-
 			message: "#^Parameter \\#3 \\$first of method Lkrms\\\\PrettyPHP\\\\Rule\\\\AlignLists\\:\\:alignList\\(\\) expects Lkrms\\\\PrettyPHP\\\\Token\\\\Token, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null given\\.$#"
-			count: 1
-			path: src/Rule/AlignLists.php
-
-		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Rule\\\\AlignLists\\:\\:\\$ListOwnersByIndex \\(array\\<int, true\\>\\) does not accept non\\-empty\\-array\\<''\\|int, true\\>\\.$#"
 			count: 1
 			path: src/Rule/AlignLists.php
 
@@ -536,69 +471,9 @@ parameters:
 			path: src/Rule/ControlStructureSpacing.php
 
 		-
-			message: "#^Cannot access property \\$AlignedWith on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
+			message: "#^Function array_merge invoked with 0 parameters, at least 1 required\\.$#"
 			count: 1
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Cannot access property \\$EndExpression on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Cannot access property \\$HangingIndentContextStack on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Cannot access property \\$HangingIndentParentStack on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Cannot access property \\$HangingIndentStack on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Cannot access property \\$Index on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 4
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Cannot access property \\$Next on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Cannot call method startOfLine\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Parameter \\#1 \\$key of function array_key_exists expects int\\|string, int\\|null given\\.$#"
-			count: 1
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Parameter \\#3 \\$hanging of method Lkrms\\\\PrettyPHP\\\\Rule\\\\HangingIndentation\\:\\:maybeCollapseOverhanging\\(\\) expects array\\<int, int\\>, array\\<int\\|string, int\\<1, max\\>\\> given\\.$#"
-			count: 1
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:\\$HangingIndentContextStack \\(array\\<array\\<array\\<Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>\\|Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>\\>\\) does not accept array\\<array\\<array\\<Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\>\\|Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>\\>\\.$#"
-			count: 1
-			path: src/Rule/HangingIndentation.php
-
-		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:\\$HangingIndentParentLevels \\(array\\<int, int\\>\\) does not accept array\\<int\\|string, int\\>\\.$#"
-			count: 1
-			path: src/Rule/HangingIndentation.php
+			path: src/Rule/DeclarationSpacing.php
 
 		-
 			message: "#^Cannot access property \\$LinePadding on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
@@ -726,19 +601,9 @@ parameters:
 			path: src/Rule/PlaceBraces.php
 
 		-
-			message: "#^Cannot call method declarationParts\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|false\\|null\\.$#"
-			count: 1
-			path: src/Rule/PlaceBraces.php
-
-		-
 			message: "#^Cannot call method nextSibling\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/PlaceBraces.php
-
-		-
-			message: "#^Cannot access property \\$Expression on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/PlaceComments.php
 
 		-
 			message: "#^Cannot access property \\$IsCode on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
@@ -756,22 +621,7 @@ parameters:
 			path: src/Rule/PlaceComments.php
 
 		-
-			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/PlaceComments.php
-
-		-
 			message: "#^Cannot call method collect\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/PlaceComments.php
-
-		-
-			message: "#^Cannot call method isStructuralBrace\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/PlaceComments.php
-
-		-
-			message: "#^Cannot call method namedDeclarationParts\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|false\\|null\\.$#"
 			count: 1
 			path: src/Rule/PlaceComments.php
 
@@ -793,11 +643,6 @@ parameters:
 		-
 			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 2
-			path: src/Rule/Preset/Drupal.php
-
-		-
-			message: "#^Cannot call method declarationParts\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|false\\|null\\.$#"
-			count: 1
 			path: src/Rule/Preset/Drupal.php
 
 		-
@@ -1051,27 +896,17 @@ parameters:
 			path: src/Rule/VerticalWhitespace.php
 
 		-
-			message: "#^Cannot call method declarationParts\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|false\\|null\\.$#"
-			count: 1
-			path: src/Rule/VerticalWhitespace.php
-
-		-
 			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/VerticalWhitespace.php
 
 		-
-			message: "#^Cannot call method skipPrevSiblingsOf\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
+			message: "#^Cannot call method skipPrevSiblingsFrom\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/VerticalWhitespace.php
 
 		-
 			message: "#^Parameter \\#1 \\$to of method Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:collect\\(\\) expects Lkrms\\\\PrettyPHP\\\\Token\\\\Token, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null given\\.$#"
-			count: 1
-			path: src/Rule/VerticalWhitespace.php
-
-		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Rule\\\\VerticalWhitespace\\:\\:\\$Seen \\(array\\<int, true\\>\\) does not accept non\\-empty\\-array\\<''\\|int, true\\>\\.$#"
 			count: 1
 			path: src/Rule/VerticalWhitespace.php
 
@@ -1111,28 +946,13 @@ parameters:
 			path: src/Support/TokenCollection.php
 
 		-
-			message: "#^Cannot access offset \\(int\\|string\\) on array\\<mixed\\>\\|bool\\|int\\|Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|string\\|null\\.$#"
-			count: 1
-			path: src/Token/Token.php
-
-		-
 			message: "#^Cannot access property \\$CloseTag on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Token/Token.php
-
-		-
-			message: "#^Cannot access property \\$CommentType on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Token/Token.php
 
 		-
 			message: "#^Cannot access property \\$EndStatement on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
-			path: src/Token/Token.php
-
-		-
-			message: "#^Cannot access property \\$Flags on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 3
 			path: src/Token/Token.php
 
 		-
@@ -1192,7 +1012,7 @@ parameters:
 
 		-
 			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 16
+			count: 7
 			path: src/Token/Token.php
 
 		-
@@ -1226,23 +1046,13 @@ parameters:
 			path: src/Token/Token.php
 
 		-
-			message: "#^Cannot call method isStructuralBrace\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 3
-			path: src/Token/Token.php
-
-		-
-			message: "#^Cannot call method skipPrevSiblingsOf\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
+			message: "#^Cannot call method skipPrevSiblingsFrom\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Token/Token.php
 
 		-
 			message: "#^Cannot call method withTerminator\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 2
-			path: src/Token/Token.php
-
-		-
-			message: "#^Cannot cast non\\-empty\\-array\\<non\\-empty\\-array\\<string\\>\\|string\\>\\|int\\|Lkrms\\\\PrettyPHP\\\\Token\\\\Token to string\\.$#"
-			count: 1
 			path: src/Token/Token.php
 
 		-

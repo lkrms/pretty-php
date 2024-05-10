@@ -2,7 +2,6 @@
 function () {
     return;
 };
-
 function &() {
     return;
 };
@@ -13,7 +12,6 @@ function (
 ) {
     return;
 };
-
 function &(
     ?string $foo,
     $bar,
@@ -41,3 +39,53 @@ fn &(
     $bar,
     $baz
 ) => null;
+function () use (
+    $foo,
+    $bar,
+    $baz
+) {
+    return;
+};
+function &() use (
+    $foo,
+    $bar,
+    $baz
+) {
+    return;
+};
+function (?string $alpha, $bravo) use (
+    $foo,
+    $bar,
+    $baz
+) {
+    return;
+};
+function &(?string $alpha, $bravo) use (
+    $foo,
+    $bar,
+    $baz
+) {
+    return;
+};
+function (
+    ?string $alpha,
+    $bravo,
+    $charlie
+) use (
+    $foo,
+    $bar,
+    $baz
+) {
+    return;
+};
+function &(
+    ?string $alpha,
+    $bravo,
+    $charlie
+) use (
+    $foo,
+    $bar,
+    $baz
+) {
+    return;
+};

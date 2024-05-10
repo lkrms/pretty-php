@@ -1,0 +1,6 @@
+{
+    "disable": [
+        "declaration-spacing"
+    ],
+    "tight": true
+}

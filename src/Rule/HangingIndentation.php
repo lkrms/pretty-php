@@ -3,6 +3,7 @@
 namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
+use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
@@ -85,11 +86,13 @@ final class HangingIndentation implements MultiTokenRule
             if ($this->TypeIndex->OpenBracket[$token->id]) {
                 $token->HangingIndentParentType =
                     $token->hasNewlineBeforeNextCode()
-                        ? (($token->IsListParent && $token->ListItemCount > 1)
+                        ? (($token->Flags & TokenFlag::LIST_PARENT
+                                && $token->Data[TokenData::LIST_ITEM_COUNT] > 1)
                             || ($token->id === \T_OPEN_BRACE && $token->isStructuralBrace(true))
                                 ? self::NORMAL_INDENT
                                 : self::NO_INDENT)
-                        : (($token->IsListParent && $token->ListItemCount > 1)
+                        : (($token->Flags & TokenFlag::LIST_PARENT
+                                && $token->Data[TokenData::LIST_ITEM_COUNT] > 1)
                             || ($token->id === \T_OPEN_BRACE && $token->isStructuralBrace(true))
                             || ($token->id !== \T_OPEN_BRACE && $token->adjacent())
                                 ? self::OVERHANGING_INDENT | self::NO_INNER_NEWLINE
@@ -103,10 +106,13 @@ final class HangingIndentation implements MultiTokenRule
             if ($token->IsCode
                     && $parent
                     && $parent === $token->PrevCode
+                    && $token->NextCode
+                    && $parent->ClosedBy
                     && $token->NextCode->Index < $parent->ClosedBy->Index
                     && ($parent->HangingIndentParentType & self::NO_INDENT)) {
+                /** @var Token */
                 $current = $token->Next;
-                $stack = [[$token->Parent]];
+                $stack = [[$parent]];
                 $stack[] = $token;
                 do {
                     $current->HangingIndentStack[] = $token;
@@ -158,10 +164,11 @@ final class HangingIndentation implements MultiTokenRule
             // Suppress hanging indentation between aligned expressions in `for`
             // loops
             if ($parent
-                && $parent->PrevCode
-                && $parent->PrevCode->id === \T_FOR
-                && ($token->PrevCode->id === \T_COMMA
-                    && $token->prevSiblingOf(\T_SEMICOLON)->or($parent)->NextCode->AlignedWith)) {
+                    && $parent->PrevCode
+                    && $parent->PrevCode->id === \T_FOR
+                    && $prevCode->id === \T_COMMA
+                    && ($nextCode = $token->prevSiblingOf(\T_SEMICOLON)->or($parent)->NextCode)
+                    && $nextCode->AlignedWith) {
                 continue;
             }
 
@@ -218,17 +225,17 @@ final class HangingIndentation implements MultiTokenRule
                 || $token->id === \T_COALESCE_EQUAL
             ) {
                 $stack[] = self::getTernaryContext($token)
-                    ?: self::getTernaryOperator1($token)
-                    ?: $token;
+                    ?? self::getTernaryOperator1($token)
+                    ?? $token;
                 $until = self::getTernaryEndOfExpression($token);
             } elseif ($token->ChainOpenedBy) {
                 $stack[] = $token->ChainOpenedBy;
             } elseif ($token->Heredoc && $token->Heredoc === $prevCode) {
                 $stack[] = $token->Heredoc;
-            } elseif ($token->ListParent) {
-                $stack[] = $token->ListParent;
+            } elseif (isset($token->Data[TokenData::LIST_PARENT])) {
+                $stack[] = $token->Data[TokenData::LIST_PARENT];
             } elseif ($latest && $latest->Parent === $token->Parent) {
-                if ($this->TypeIndex->ExpressionDelimiter[$token->PrevCode->id]
+                if ($this->TypeIndex->ExpressionDelimiter[$prevCode->id]
                         || $this->TypeIndex->ExpressionDelimiter[$token->id]) {
                     $stack[] = $token;
                 } elseif ($latest->id === \T_DOUBLE_ARROW) {
@@ -245,7 +252,7 @@ final class HangingIndentation implements MultiTokenRule
                         if ($delimiter->IsNull) {
                             $stack[] = $latest;
                         } else {
-                            $startOfLine = $token->PrevCode->startOfLine();
+                            $startOfLine = $prevCode->startOfLine();
                             if ($delimiter->Index < $startOfLine->Index) {
                                 $stack[] = $latest;
                             }
@@ -380,6 +387,7 @@ final class HangingIndentation implements MultiTokenRule
                 || $current->id === \T_COALESCE_EQUAL
                 || (($current->Flags & TokenFlag::TERNARY_OPERATOR)
                     && self::getTernaryOperator1($current) === $current
+                    && $current->OtherTernaryOperator
                     && $current->OtherTernaryOperator->Index
                         < (self::getTernaryOperator1($token) ?: $token)->Index)
             ) {
@@ -397,6 +405,7 @@ final class HangingIndentation implements MultiTokenRule
         // ```
         if ($prevTernary
                 && $token->id === \T_COLON
+                && $token->OtherTernaryOperator
                 && $prevTernary->Index > $token->OtherTernaryOperator->Index) {
             return null;
         }
@@ -418,9 +427,11 @@ final class HangingIndentation implements MultiTokenRule
                 $current->id === \T_COALESCE
                 || $current->id === \T_COALESCE_EQUAL
             ) {
-                $until = $current->EndExpression ?: $current;
+                $until = $current->EndExpression ?? $current;
             } else {
-                $until = self::getTernaryOperator2($current)->EndExpression ?: $current;
+                /** @var Token */
+                $until = self::getTernaryOperator2($current);
+                $until = $until->EndExpression ?? $current;
             }
         } while ($until !== $current
             && ($current = $until->NextSibling)

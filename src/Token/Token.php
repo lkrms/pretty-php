@@ -2,12 +2,13 @@
 
 namespace Lkrms\PrettyPHP\Token;
 
-use Lkrms\PrettyPHP\Catalog\CommentType;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenFlagMask;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Support\TokenIndentDelta;
+use Salient\Core\Utility\Arr;
 use Salient\Core\Utility\Pcre;
 use Salient\Core\Utility\Str;
 use JsonSerializable;
@@ -22,14 +23,6 @@ class Token extends GenericToken implements JsonSerializable
      * The starting column (1-based) of the token
      */
     public int $column = -1;
-
-    public bool $BodyIsUnenclosed = false;
-
-    public bool $IsListParent = false;
-
-    public ?int $ListItemCount = null;
-
-    public ?Token $ListParent = null;
 
     public int $TagIndent = 0;
 
@@ -65,7 +58,7 @@ class Token extends GenericToken implements JsonSerializable
     /**
      * The context of each level of hanging indentation applied to the token
      *
-     * @var array<array<Token[]|Token>>
+     * @var array<array<array<Token|null>|Token>>
      */
     public array $HangingIndentContextStack = [];
 
@@ -210,18 +203,15 @@ class Token extends GenericToken implements JsonSerializable
         $a['Heredoc'] = $this->Heredoc;
         $a['ExpandedText'] = $this->ExpandedText;
         $a['OriginalText'] = $this->OriginalText;
-        $a['BodyIsUnenclosed'] = $this->BodyIsUnenclosed;
         $a['Statement'] = $this->Statement;
         $a['EndStatement'] = $this->EndStatement;
         $a['Expression'] = $this->Expression;
         $a['EndExpression'] = $this->EndExpression;
-        $a['IsListParent'] = $this->IsListParent;
-        $a['ListItemCount'] = $this->ListItemCount;
 
         if ($this->Flags) {
             $flags = [];
             foreach (TokenFlag::cases() as $name => $value) {
-                if ($this->Flags & $value) {
+                if (($this->Flags & $value) === $value) {
                     $flags[] = $name;
                 }
             }
@@ -231,7 +221,6 @@ class Token extends GenericToken implements JsonSerializable
         }
 
         $a['OtherTernaryOperator'] = $this->OtherTernaryOperator;
-        $a['CommentType'] = $this->CommentType;
         $a['TagIndent'] = $this->TagIndent;
         $a['PreIndent'] = $this->PreIndent;
         $a['Indent'] = $this->Indent;
@@ -272,23 +261,27 @@ class Token extends GenericToken implements JsonSerializable
         $a['OutputPos'] = $this->OutputPos;
         $a['OutputColumn'] = $this->OutputColumn;
 
-        foreach ($a as $key => $value) {
-            if ($value === null
-                    || $value === []
-                    || ($value === false && $key !== 'Expression')) {
+        foreach ($a as $key => &$value) {
+            if (
+                $value === null
+                || $value === []
+                || ($value === false && $key !== 'Expression')
+            ) {
                 unset($a[$key]);
                 continue;
             }
             if ($value instanceof Token) {
-                $a[$key] = (string) $value;
+                $value = (string) $value;
                 continue;
             }
-            if (($value[0] ?? null) instanceof Token) {
-                foreach ($value as $i => $value) {
-                    $a[$key][$i] = (string) $value;
+            if (Arr::of($value, Token::class)) {
+                foreach ($value as &$token) {
+                    $token = (string) $token;
                 }
+                unset($token);
             }
         }
+        unset($value);
 
         return $a;
     }
@@ -647,11 +640,11 @@ class Token extends GenericToken implements JsonSerializable
         if (
             $containDeclaration
             && $this->Expression
-            && ($parts = $this->Expression->declarationParts())->has($this, true)
+            && ($parts = $this->skipPrevSiblingsToDeclarationStart()->declarationParts())->has($this, true)
             && $parts->hasOneOf(...TokenType::DECLARATION_TOP_LEVEL)
             // Exclude anonymous functions, which can move as needed
-            && ($last = $parts->last()->skipPrevSiblingsOf(
-                ...TokenType::AMPERSAND
+            && ($last = $parts->last()->skipPrevSiblingsFrom(
+                $this->TypeIndex->Ampersand
             ))->id !== \T_FUNCTION
             // Anonymous classes are a special case where if there is a newline
             // before `class`, the first hanging indent in the declaration is
@@ -936,14 +929,14 @@ class Token extends GenericToken implements JsonSerializable
         $last = null;
         while (!$current->hasBlankLineBefore()
             && $prev
-            && $prev->CommentType
+            && $this->TypeIndex->Comment[$prev->id]
             && $prev->hasNewlineBefore()
-            && (($prev->CommentType === CommentType::DOC_COMMENT
-                    && $prev->hasNewline())
+            && (($prev->id === \T_DOC_COMMENT && $prev->hasNewline())
                 || ($prev->wasFirstOnLine()
                     && $prev->column <= $this->column))
             && (!$last
-                || ($prev->CommentType === $last->Prev->CommentType
+                || !$last->Prev
+                || (($prev->Flags & TokenFlagMask::COMMENT_TYPE) === ($last->Prev->Flags & TokenFlagMask::COMMENT_TYPE)
                     && !$prev->isMultiLineComment()))) {
             $last = $current;
             $current = $current->Prev;
@@ -1070,13 +1063,12 @@ class Token extends GenericToken implements JsonSerializable
 
     public function isOneLineComment(): bool
     {
-        return $this->CommentType !== null
-            && ($this->CommentType[1] ?? null) !== '*';
+        return (bool) ($this->Flags & TokenFlag::ONELINE_COMMENT);
     }
 
     public function isMultiLineComment(): bool
     {
-        return ($this->CommentType[1] ?? null) === '*';
+        return (bool) ($this->Flags & TokenFlag::MULTILINE_COMMENT);
     }
 
     public function isOperator(): bool
@@ -1110,32 +1102,6 @@ class Token extends GenericToken implements JsonSerializable
 
         return ($this->PrevCode->Flags & TokenFlag::TERNARY_OPERATOR)
             || $this->TypeIndex->UnaryPredecessor[$this->PrevCode->id];
-    }
-
-    public function isDeclaration(): bool
-    {
-        if (!$this->Expression) {
-            return false;
-        }
-
-        $first = $this->Expression
-                      ->declarationParts(false)
-                      ->getAnyFrom($this->TypeIndex->Declaration)
-                      ->first();
-
-        if (!$first) {
-            return false;
-        }
-
-        /** @var Token */
-        $next = $first->NextCode;
-
-        return !(
-            ($first->id === \T_STATIC && !($next->id === \T_VARIABLE || $this->TypeIndex->Declaration[$next->id]))
-            || ($first->id === \T_CASE && $first->inSwitchCaseList())
-            || ($first->id === \T_NAMESPACE && $next->id === \T_NS_SEPARATOR)
-            || ($this->TypeIndex->VisibilityWithReadonly[$first->id] && $first->inParameterList())
-        );
     }
 
     final public function getIndentDelta(Token $target): TokenIndentDelta
@@ -1265,7 +1231,7 @@ class Token extends GenericToken implements JsonSerializable
             // Multi-line comments are only formatted when output is being
             // generated
             if ($setPosition
-                    && $current->CommentType
+                    && $this->TypeIndex->Comment[$current->id]
                     && strpos($current->text, "\n") !== false) {
                 $text = $current->renderComment($softTabs);
             }

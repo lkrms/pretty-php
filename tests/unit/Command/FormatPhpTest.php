@@ -26,7 +26,7 @@ final class FormatPhpTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     private const SYNOPSIS = <<<'EOF'
 
-pretty-php [-1OLNSnMvq] [-I <regex>] [-X <regex>] [-P[<regex>]] [-i <rule>,...]
+pretty-php [-1OLTNSnMvq] [-I <regex>] [-X <regex>] [-P[<regex>]] [-i <rule>,...]
     [-r <rule>,...] [-h <level>] [-m <order>] [--psr12] [-c <file>]
     [--no-config] [-o <file>,...] [--diff[=<type>]] [--check] [--print-config]
     [--] [<path>...]
@@ -279,6 +279,17 @@ EOF;
                 '/operators-first-and-last',
                 true,
             ],
+            'tight and disable declaration spacing' => [
+                2,
+                'tight and disable=declaration-spacing cannot both be given in ',
+                '/tight-and-disable-declaration-spacing',
+            ],
+            'tight and disable declaration spacing in cwd' => [
+                2,
+                'tight and disable=declaration-spacing cannot both be given in ./.prettyphp',
+                '/tight-and-disable-declaration-spacing',
+                true,
+            ],
             'no-sort-imports' => [
                 0,
                 ' // Formatted 1 file successfully',
@@ -462,6 +473,32 @@ EOF),
                 ' // Formatted 1 file successfully',
                 '/sort-imports-by-name',
             ],
+            'tight' => [
+                8,
+                [
+                    [Level::INFO, " -> Would replace $dir/tight/Foo.php"],
+                    [Level::INFO, ''],
+                    [Level::INFO, ' -> 1 of 1 file would be replaced'],
+                ],
+                '/tight',
+                false,
+                self::normaliseUnifiedDiff(<<<EOF
+--- a/$dir/tight/Foo.php
++++ b/$dir/tight/Foo.php
+@@ -8,9 +8,7 @@
+ class Foo
+ {
+     public int \$Bar;
+-
+     public string \$Baz;
+-
+     private array \$Qux;
+ 
+     public function __construct()
+
+EOF),
+                '--diff',
+            ],
         ];
     }
 
@@ -523,6 +560,12 @@ EOF),
                 '--operators-first and --operators-last cannot both be given',
                 '--operators-first',
                 '--operators-last',
+            ],
+            'tight and disable declaration spacing' => [
+                '--tight and --disable=declaration-spacing cannot both be given',
+                '--tight',
+                '--disable',
+                'declaration-spacing',
             ],
             'invalid sort-imports #1' => [
                 '--sort-imports-by and --no-sort-imports/--disable=sort-imports cannot both be given',

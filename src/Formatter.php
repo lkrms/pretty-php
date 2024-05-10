@@ -5,6 +5,8 @@ namespace Lkrms\PrettyPHP;
 use Lkrms\PrettyPHP\Catalog\FormatterFlag;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
+use Lkrms\PrettyPHP\Catalog\TokenData;
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\BlockRule;
@@ -174,6 +176,14 @@ final class Formatter implements Buildable
     public bool $OneTrueBraceStyle;
 
     /**
+     * True if blank lines between declarations of the same type are removed
+     * where possible
+     *
+     * @readonly
+     */
+    public bool $TightDeclarationSpacing;
+
+    /**
      * Enforce strict PSR-12 / PER Coding Style compliance?
      *
      * @readonly
@@ -222,11 +232,6 @@ final class Formatter implements Buildable
      * @readonly
      */
     public bool $NewlineBeforeFnDoubleArrows = false;
-
-    /**
-     * @readonly
-     */
-    public bool $CollapseDocBlocksByDefault = false;
 
     /**
      * If the first object operator in a chain of method calls has a leading
@@ -523,6 +528,7 @@ final class Formatter implements Buildable
         int $heredocIndent = HeredocIndent::MIXED,
         int $importSortOrder = ImportSortOrder::DEPTH,
         bool $oneTrueBraceStyle = false,
+        bool $tightDeclarationSpacing = false,
         bool $psr12 = false
     ) {
         if (!in_array($tabSize, [2, 4, 8], true)) {
@@ -541,6 +547,7 @@ final class Formatter implements Buildable
         $this->HeredocIndent = $heredocIndent;
         $this->ImportSortOrder = $importSortOrder;
         $this->OneTrueBraceStyle = $oneTrueBraceStyle;
+        $this->TightDeclarationSpacing = $tightDeclarationSpacing;
         $this->Psr12 = $psr12;
 
         $this->Debug = ($flags & FormatterFlag::DEBUG) || Env::debug();
@@ -923,10 +930,11 @@ final class Formatter implements Buildable
                                             !$prev || $t->PrevCode->id === \T_COMMA);
                     $count = $items->count();
                     if ($count > 1) {
-                        $parent->IsListParent = true;
-                        $parent->ListItemCount = $count;
+                        // @phpstan-ignore-next-line
+                        $parent->Flags |= TokenFlag::LIST_PARENT;
+                        $parent->Data[TokenData::LIST_ITEM_COUNT] = $count;
                         foreach ($items as $token) {
-                            $token->ListParent = $parent;
+                            $token->Data[TokenData::LIST_PARENT] = $parent;
                         }
                         $lists[$i] = $items;
                     }
@@ -989,10 +997,11 @@ final class Formatter implements Buildable
             if (!$count) {
                 continue;
             }
-            $parent->IsListParent = true;
-            $parent->ListItemCount = $count;
+            // @phpstan-ignore-next-line
+            $parent->Flags |= TokenFlag::LIST_PARENT;
+            $parent->Data[TokenData::LIST_ITEM_COUNT] = $count;
             foreach ($items as $token) {
-                $token->ListParent = $parent;
+                $token->Data[TokenData::LIST_PARENT] = $parent;
             }
             $lists[$i] = $items;
         }

@@ -183,6 +183,7 @@ final class TokenType extends AbstractDictionary
         \T_CALLABLE,
         \T_OPEN_PARENTHESIS,
         \T_CLOSE_PARENTHESIS,
+        \T_QUESTION,
         ...self::DECLARATION_TYPE,
         ...self::TYPE_DELIMITER,
     ];
@@ -280,6 +281,17 @@ final class TokenType extends AbstractDictionary
         \T_ENDWHILE,
     ];
 
+    public const DECLARATION_PART_WITH_NEW_AND_VALUE_TYPE = [
+        \T_ARRAY,
+        \T_CALLABLE,
+        \T_OPEN_PARENTHESIS,
+        \T_CLOSE_PARENTHESIS,
+        \T_COLON,
+        \T_OR,
+        \T_QUESTION,
+        ...self::DECLARATION_PART_WITH_NEW,
+    ];
+
     public const DECLARATION_PART_WITH_NEW = [
         \T_NEW,
         ...self::DECLARATION_PART,
@@ -322,14 +334,6 @@ final class TokenType extends AbstractDictionary
         \T_NAMESPACE,
         \T_TRAIT,
         \T_USE,
-    ];
-
-    public const DECLARATION_CONDENSE = [
-        \T_USE,
-    ];
-
-    public const DECLARATION_CONDENSE_ONE_LINE = [
-        \T_DECLARE,
     ];
 
     public const DECLARATION_LIST = [

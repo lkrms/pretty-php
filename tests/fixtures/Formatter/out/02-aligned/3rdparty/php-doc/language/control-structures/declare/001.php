@@ -8,5 +8,6 @@ declare(ticks=1) {
 
 // or you can use this:
 declare(ticks=1);
+
 // entire script here
 ?>

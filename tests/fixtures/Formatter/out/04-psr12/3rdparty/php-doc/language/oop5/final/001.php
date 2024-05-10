@@ -15,5 +15,6 @@ final class BaseClass
 }
 
 class ChildClass extends BaseClass {}
+
 // Results in Fatal error: Class ChildClass may not inherit from final class (BaseClass)
 ?>

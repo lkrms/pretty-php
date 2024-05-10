@@ -2,7 +2,6 @@
 function () {
     return;
 };
-
 function &() {
     return;
 };
@@ -13,7 +12,6 @@ function (
 ) {
     return;
 };
-
 function &(
     MyClass|string|null $foo,
     $bar,

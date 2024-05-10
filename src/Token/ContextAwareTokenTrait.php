@@ -2,8 +2,9 @@
 
 namespace Lkrms\PrettyPHP\Token;
 
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
-use Lkrms\PrettyPHP\Catalog\TokenType;
+use Lkrms\PrettyPHP\Support\TokenCollection;
 
 trait ContextAwareTokenTrait
 {
@@ -47,25 +48,23 @@ trait ContextAwareTokenTrait
      */
     final public function getSubType(): int
     {
+        /** @var static&GenericToken $this */
         if (isset($this->SubType)) {
             return $this->SubType;
         }
 
-        /** @var static&GenericToken $this */
-        $method = [
-            \T_COLON => 'getColonType',
-            \T_QUESTION => 'getQuestionType',
-            \T_USE => 'getUseType',
-        ][$this->id] ?? null;
-
-        if ($method === null) {
-            return $this->SubType = -1;
+        switch ($this->id) {
+            case \T_COLON:
+                // If it's too early to determine the token's sub-type, save
+                // `null` to resolve it later and return `-1`
+                return ($this->SubType = $this->getColonType()) ?? -1;
+            case \T_QUESTION:
+                return $this->SubType = $this->getQuestionType();
+            case \T_USE:
+                return $this->SubType = $this->getUseType();
+            default:
+                return $this->SubType = -1;
         }
-
-        // If the method returns `null` because it's too early to determine the
-        // token's sub-type, save `null` to ensure the method is called again,
-        // but return `-1`
-        return ($this->SubType = $this->$method()) ?? -1;
     }
 
     /**
@@ -132,11 +131,7 @@ trait ContextAwareTokenTrait
             }
 
             if ($prev) {
-                $prev = $prev->skipPrevSiblingsOf(
-                    \T_STRING,
-                    \T_READONLY,
-                    ...TokenType::AMPERSAND,
-                );
+                $prev = $prev->skipPrevSiblingsFrom($this->TypeIndex->FunctionIdentifier);
 
                 if ($prev->id === \T_FUNCTION || $prev->id === \T_FN) {
                     return TokenSubType::COLON_RETURN_TYPE_DELIMITER;
@@ -231,11 +226,7 @@ trait ContextAwareTokenTrait
             return false;
         }
 
-        $prev = $this->PrevCode->skipPrevSiblingsOf(
-            \T_STRING,
-            \T_READONLY,
-            ...TokenType::AMPERSAND,
-        );
+        $prev = $this->PrevCode->skipPrevSiblingsFrom($this->TypeIndex->FunctionIdentifier);
 
         if ($prev->id === \T_FUNCTION || $prev->id === \T_FN) {
             return true;
@@ -321,5 +312,128 @@ trait ContextAwareTokenTrait
             && $this->Parent->PrevSibling
             && $this->Parent->PrevSibling->PrevSibling
             && $this->Parent->PrevSibling->PrevSibling->id === \T_SWITCH;
+    }
+
+    /**
+     * True if the token belongs to a declaration
+     */
+    final public function inDeclaration(bool $allowAnonymous = true): bool
+    {
+        return $this->skipPrevSiblingsToDeclarationStart()
+                    ->isDeclaration($allowAnonymous);
+    }
+
+    /**
+     * True if a declaration starts at the token and is not an anonymous
+     * function or class
+     *
+     * @phpstan-assert-if-true TokenCollection $parts
+     */
+    final public function isNamedDeclaration(?TokenCollection &$parts = null): bool
+    {
+        return func_num_args() > 0
+            ? $this->doIsDeclaration(false, $parts)
+            : $this->doIsDeclaration(false);
+    }
+
+    /**
+     * True if a declaration starts at the token
+     */
+    final public function isDeclaration(bool $allowAnonymous = true): bool
+    {
+        return $this->doIsDeclaration($allowAnonymous);
+    }
+
+    private function doIsDeclaration(
+        bool $allowAnonymous,
+        ?TokenCollection &$parts = null
+    ): bool {
+        /** @var Token $this */
+        if ($this->Flags & TokenFlag::NAMED_DECLARATION) {
+            if (func_num_args() > 1) {
+                $parts = $this->namedDeclarationParts();
+            }
+            return true;
+        }
+
+        // Exclude tokens other than the first in a possible declaration
+        if ($allowAnonymous) {
+            if (
+                !$this->Expression || (
+                    $this->PrevSibling
+                    && $this->PrevSibling->Expression === $this->Expression
+                    && $this->TypeIndex->DeclarationPartWithNewAndBody[$this->PrevSibling->id]
+                )
+            ) {
+                return false;
+            }
+        } elseif ($this->Statement !== $this) {
+            return false;
+        }
+
+        // Get the first non-attribute
+        $first = $this->skipSiblingsFrom($this->TypeIndex->Attribute);
+
+        // Exclude non-declarations
+        if (!$this->TypeIndex->Declaration[$first->id]) {
+            return false;
+        }
+
+        /** @var Token */
+        $next = $first->NextCode;
+
+        // Exclude:
+        // - `static` outside declarations
+        // - `case` in switch statements
+        // - `namespace` in relative names
+        // - promoted constructor parameters
+        if (
+            ($first->id === \T_STATIC && !($next->id === \T_VARIABLE || $this->TypeIndex->Declaration[$next->id]))
+            || ($first->id === \T_CASE && $first->inSwitchCaseList())
+            || ($first->id === \T_NAMESPACE && $next->id === \T_NS_SEPARATOR)
+            || ($this->TypeIndex->VisibilityWithReadonly[$first->id] && $first->inParameterList())
+        ) {
+            return false;
+        }
+
+        if ($allowAnonymous) {
+            return true;
+        }
+
+        $parts = $this->namedDeclarationParts();
+        if (!$parts->count()) {
+            return false;
+        }
+
+        // @phpstan-ignore-next-line
+        $this->Flags |= TokenFlag::NAMED_DECLARATION;
+
+        return true;
+    }
+
+    /**
+     * Get the first token in the sequence of declaration parts to which the
+     * token belongs, or the token itself
+     *
+     * The token returned by this method may not be part of a declaration. It
+     * should only be used as a starting point for further checks.
+     *
+     * @return Token
+     */
+    final public function skipPrevSiblingsToDeclarationStart()
+    {
+        if (!$this->Expression) {
+            return $this;
+        }
+
+        $t = $this;
+        while (
+            $t->PrevSibling
+            && $t->PrevSibling->Expression === $this->Expression
+            && $this->TypeIndex->DeclarationPartWithNewAndBody[$t->PrevSibling->id]
+        ) {
+            $t = $t->PrevSibling;
+        }
+        return $t;
     }
 }

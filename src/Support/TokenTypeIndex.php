@@ -179,6 +179,22 @@ class TokenTypeIndex implements Immutable
     public array $Trim;
 
     /**
+     * T_USE
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $SuppressBlankBetween;
+
+    /**
+     * T_DECLARE
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $SuppressBlankBetweenOneLine;
+
+    /**
      * Tokens that require leading and trailing spaces
      *
      * @readonly
@@ -399,16 +415,48 @@ class TokenTypeIndex implements Immutable
     public array $DeclarationPropertyOrVariable;
 
     /**
+     * T_ABSTRACT, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_AND, T_ATTRIBUTE_COMMENT,
+     * T_ATTRIBUTE, T_CASE, T_CLASS, T_COMMA, T_CONST, T_DECLARE, T_ENUM,
+     * T_EXTENDS, T_FINAL, T_FUNCTION, T_GLOBAL, T_IMPLEMENTS, T_INTERFACE,
+     * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE, T_NAMESPACE,
+     * T_NS_SEPARATOR, T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY, T_STATIC,
+     * T_STRING, T_TRAIT, T_USE, T_VAR
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $DeclarationPart;
 
     /**
+     * T_ABSTRACT, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_AND, T_ATTRIBUTE_COMMENT,
+     * T_ATTRIBUTE, T_CASE, T_CLASS, T_COMMA, T_CONST, T_DECLARE, T_ENUM,
+     * T_EXTENDS, T_FINAL, T_FUNCTION, T_GLOBAL, T_IMPLEMENTS, T_INTERFACE,
+     * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE, T_NAMESPACE,
+     * T_NEW, T_NS_SEPARATOR, T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY,
+     * T_STATIC, T_STRING, T_TRAIT, T_USE, T_VAR
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $DeclarationPartWithNew;
+
+    /**
+     * T_ABSTRACT, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_AND, T_ARRAY,
+     * T_ATTRIBUTE_COMMENT, T_ATTRIBUTE, T_CALLABLE, T_CASE, T_CLASS,
+     * T_CLOSE_BRACE, T_CLOSE_PARENTHESIS, T_COLON, T_COMMA, T_CONST, T_DECLARE,
+     * T_ENUM, T_EXTENDS, T_FINAL, T_FUNCTION, T_GLOBAL, T_IMPLEMENTS,
+     * T_INTERFACE, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE,
+     * T_NAMESPACE, T_NEW, T_NS_SEPARATOR, T_OPEN_BRACE, T_OPEN_PARENTHESIS,
+     * T_OR, T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY, T_STATIC, T_STRING,
+     * T_TRAIT, T_USE, T_VAR
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $DeclarationPartWithNewAndBody;
 
     /**
      * @readonly
@@ -647,6 +695,14 @@ class TokenTypeIndex implements Immutable
             ),
         );
 
+        $this->SuppressBlankBetween = TT::getIndex(
+            \T_USE,
+        );
+
+        $this->SuppressBlankBetweenOneLine = TT::getIndex(
+            \T_DECLARE,
+        );
+
         $this->AddSpaceAround = TT::getIndex(
             \T_AS,
             \T_FUNCTION,
@@ -855,6 +911,11 @@ class TokenTypeIndex implements Immutable
         );
         $this->DeclarationPart = TT::getIndex(...TT::DECLARATION_PART);
         $this->DeclarationPartWithNew = TT::getIndex(...TT::DECLARATION_PART_WITH_NEW);
+        $this->DeclarationPartWithNewAndBody = TT::getIndex(
+            \T_OPEN_BRACE,
+            \T_CLOSE_BRACE,
+            ...TT::DECLARATION_PART_WITH_NEW_AND_VALUE_TYPE,
+        );
         $this->HasStatement = TT::getIndex(...TT::HAS_STATEMENT);
         $this->HasStatementWithOptionalBraces = TT::getIndex(...TT::HAS_STATEMENT_WITH_OPTIONAL_BRACES);
         $this->HasExpressionAndStatementWithOptionalBraces = TT::getIndex(...TT::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES);

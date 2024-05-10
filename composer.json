@@ -2,19 +2,16 @@
     "name": "lkrms/pretty-php",
     "description": "The opinionated PHP code formatter",
     "license": "MIT",
-    "support": {
-        "issues": "https://github.com/lkrms/pretty-php/issues",
-        "source": "https://github.com/lkrms/pretty-php"
-    },
     "authors": [
         {
             "name": "Luke Arms",
             "email": "luke@linacreative.com"
         }
     ],
-    "bin": [
-        "bin/pretty-php"
-    ],
+    "support": {
+        "issues": "https://github.com/lkrms/pretty-php/issues",
+        "source": "https://github.com/lkrms/pretty-php"
+    },
     "require": {
         "php": ">=7.4",
         "ext-json": "*",
@@ -23,6 +20,13 @@
         "composer-runtime-api": "^2.2",
         "salient/toolkit": "^0.99.18",
         "sebastian/diff": "^4 || ^5"
+    },
+    "require-dev": {
+        "ergebnis/composer-normalize": "^2",
+        "phpstan/extension-installer": "^1",
+        "phpstan/phpstan": "^1",
+        "phpstan/phpstan-deprecation-rules": "^1",
+        "phpunit/phpunit": "^9"
     },
     "autoload": {
         "psr-4": {
@@ -37,19 +41,17 @@
             "Lkrms\\PrettyPHP\\Tests\\": "tests/unit/"
         }
     },
+    "bin": [
+        "bin/pretty-php"
+    ],
     "config": {
-        "sort-packages": true,
         "allow-plugins": {
+            "ergebnis/composer-normalize": true,
             "phpstan/extension-installer": true
         },
         "platform": {
             "php": "7.4.33"
-        }
-    },
-    "require-dev": {
-        "phpstan/extension-installer": "^1",
-        "phpstan/phpstan": "^1",
-        "phpstan/phpstan-deprecation-rules": "^1",
-        "phpunit/phpunit": "^9"
+        },
+        "sort-packages": true
     }
 }

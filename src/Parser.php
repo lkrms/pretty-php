@@ -2,7 +2,6 @@
 
 namespace Lkrms\PrettyPHP;
 
-use Lkrms\PrettyPHP\Catalog\CommentType;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Contract\Filter;
@@ -142,7 +141,6 @@ final class Parser
      * - `StringClosedBy`
      * - `Heredoc`
      * - `IsCode`
-     * - `CommentType`
      *
      * @param Token[] $tokens
      * @return Token[]
@@ -188,17 +186,21 @@ final class Parser
                 $token->IsCode = false;
 
                 if ($token->id === \T_DOC_COMMENT) {
-                    $token->CommentType = '/**';
+                    // @phpstan-ignore-next-line
+                    $token->Flags |= TokenFlag::DOC_COMMENT;
                 } elseif ($token->id === \T_COMMENT) {
                     // "//", "/*" or "#"
-                    $token->CommentType = $text[0] === '/'
-                        ? substr($text, 0, 2)
-                        : $text[0];
+                    // @phpstan-ignore-next-line
+                    $token->Flags |= (
+                        $text[0] === '/'
+                            ? ($text[1] === '/' ? TokenFlag::CPP_COMMENT : TokenFlag::C_COMMENT)
+                            : TokenFlag::SHELL_COMMENT
+                    );
 
                     // Make multi-line C-style comments honourary DocBlocks if:
                     // - every line starts with "*", or
                     // - at least one delimiter appears on its own line
-                    if ($token->CommentType === CommentType::C
+                    if (($token->Flags & TokenFlag::C_COMMENT) === TokenFlag::C_COMMENT
                             && strpos($text, "\n") !== false
                             && (
                                 // Every line starts with "*"
@@ -208,6 +210,7 @@ final class Parser
                                 // The last delimiter is preceded by a newline
                                 || !Pcre::match('/\S((?<!\*)|\h++)\*++\/$/', $text)
                             )) {
+                        // @phpstan-ignore-next-line
                         $token->Flags |= TokenFlag::INFORMAL_DOC_COMMENT;
                     }
                 }
@@ -272,6 +275,7 @@ final class Parser
                         || !($t->Flags & TokenFlag::STATEMENT_TERMINATOR)
                     )
                 ) {
+                    // @phpstan-ignore-next-line
                     $token->Flags |= TokenFlag::STATEMENT_TERMINATOR;
                     $token->IsCode = true;
                 }
@@ -366,7 +370,7 @@ final class Parser
                         continue;
                     }
                 }
-
+                // @phpstan-ignore-next-line
                 $token->Flags |= TokenFlag::STATEMENT_TERMINATOR;
 
                 $prev = $token;
@@ -609,7 +613,9 @@ final class Parser
                     if ($count--) {
                         continue;
                     }
+                    // @phpstan-ignore-next-line
                     $current->Flags |= TokenFlag::TERNARY_OPERATOR;
+                    // @phpstan-ignore-next-line
                     $token->Flags |= TokenFlag::TERNARY_OPERATOR;
                     $current->OtherTernaryOperator = $token;
                     $token->OtherTernaryOperator = $current;

@@ -163,6 +163,8 @@ final class FormatPhp extends CliCommand
 
     private bool $OperatorsLast = false;
 
+    private bool $Tight = false;
+
     private bool $IgnoreNewlines = false;
 
     private bool $NoSimplifyStrings = false;
@@ -410,6 +412,14 @@ Place newlines after operators when splitting code over multiple lines.
 EOF)
                 ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->OperatorsLast),
+            CliOption::build()
+                ->long('tight')
+                ->short('T')
+                ->description(<<<EOF
+Remove blank lines between declarations of the same type where possible.
+EOF)
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
+                ->bindTo($this->Tight),
             CliOption::build()
                 ->long('ignore-newlines')
                 ->short('N')
@@ -1460,15 +1470,32 @@ EOF,
             );
         }
 
-        if (
-            $this->optionHasArgument('sort-imports-by')
-            && ($this->NoSortImports || in_array('sort-imports', $this->Disable, true))
-        ) {
+        if ($this->Tight && in_array(
+            $key = Arr::keyOf(DeclarationSpacing::class, self::DISABLE_MAP),
+            $this->Disable,
+            true,
+        )) {
             $throw(
-                '%s and %s/%s=sort-imports cannot both be given',
+                '%s and %s=%s cannot both be given',
+                '--tight',
+                '--disable',
+                $key,
+            );
+        }
+
+        if ($this->optionHasArgument('sort-imports-by') && (
+            in_array(
+                $key = Arr::keyOf(SortImports::class, self::DISABLE_MAP),
+                $this->Disable,
+                true,
+            ) || $this->NoSortImports
+        )) {
+            $throw(
+                '%s and %s/%s=%s cannot both be given',
                 '--sort-imports-by',
                 '--no-sort-imports',
                 '--disable',
+                $key,
             );
         }
     }
@@ -1480,18 +1507,20 @@ EOF,
     private function throwInvalidOptionsException(
         string $exception,
         ?string $configFile,
-        string $message,
-        string ...$names
+        string $format,
+        string ...$values
     ): void {
         if ($configFile !== null) {
-            foreach ($names as &$name) {
-                $name = Str::toCamelCase($name);
+            foreach ($values as &$value) {
+                if (substr($value, 0, 2) === '--') {
+                    $value = Str::toCamelCase($value);
+                }
             }
-            $message .= ' in %s';
-            $names[] = $configFile;
+            $format .= ' in %s';
+            $values[] = $configFile;
         }
 
-        throw new $exception(sprintf($message, ...$names));
+        throw new $exception(sprintf($format, ...$values));
     }
 
     private function getFormatter(): Formatter
@@ -1518,6 +1547,7 @@ EOF,
                 'oneTrueBraceStyle' => $this->OneTrueBraceStyle,
                 'operatorsFirst' => $this->OperatorsFirst,
                 'operatorsLast' => $this->OperatorsLast,
+                'tight' => $this->Tight,
                 'ignoreNewlines' => $this->IgnoreNewlines,
                 'noSimplifyStrings' => $this->NoSimplifyStrings,
                 'noSimplifyNumbers' => $this->NoSimplifyNumbers,
@@ -1570,6 +1600,7 @@ EOF,
                  ->heredocIndent(self::HEREDOC_INDENT_MAP[$this->HeredocIndent])
                  ->importSortOrder(self::IMPORT_SORT_ORDER_MAP[$this->SortImportsBy])
                  ->oneTrueBraceStyle($this->OneTrueBraceStyle)
+                 ->tightDeclarationSpacing($this->Tight)
                  ->psr12($this->Psr12)
                  ->go();
 

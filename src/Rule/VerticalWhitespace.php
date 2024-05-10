@@ -265,11 +265,11 @@ final class VerticalWhitespace implements MultiTokenRule
                         || ($token->Next->id === \T_CLOSE_BRACE && !$token->hasNewlineAfter())) {
                     continue;
                 }
-                $parts = $token->Expression->declarationParts();
+                $parts = $token->skipPrevSiblingsToDeclarationStart()->declarationParts();
                 if (!$this->Formatter->OneTrueBraceStyle
                         && $parts->hasOneOf(...TokenType::DECLARATION)
                         && ($last = $parts->last())->id !== \T_DECLARE
-                        && $last->skipPrevSiblingsOf(...TokenType::AMPERSAND)->id !== \T_FUNCTION) {
+                        && $last->skipPrevSiblingsFrom($this->TypeIndex->Ampersand)->id !== \T_FUNCTION) {
                     $start = $parts->first();
                     if ($start->id !== \T_USE
                         && ((!($prevCode = $start->PrevCode)

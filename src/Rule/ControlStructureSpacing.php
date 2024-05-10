@@ -67,7 +67,8 @@ final class ControlStructureSpacing implements MultiTokenRule
                 continue;
             }
 
-            $token->BodyIsUnenclosed = true;
+            // @phpstan-ignore-next-line
+            $token->Flags |= TokenFlag::HAS_UNENCLOSED_BODY;
 
             // Add a newline before the token unless it continues a control
             // structure where the previous body had enclosing braces

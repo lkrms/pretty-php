@@ -31,7 +31,6 @@ abstract class FooX
 	final static function fooE() {}
 	static function fooEE() {}
 	abstract function fooF();
-
 	function fooG($foo) {}
 
 	function fooH()
