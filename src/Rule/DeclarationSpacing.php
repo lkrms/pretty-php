@@ -156,7 +156,6 @@ final class DeclarationSpacing implements MultiTokenRule
             [$token, $type, $modifiers, $tight, $tightOneLine] = reset($declarations);
             unset($declarations[$token->Index]);
 
-            $assignable = $type === [] || $type === [\T_CONST];
             $group = [$prevModifiers = $modifiers];
             $count = 1;
             $expand = false;
@@ -185,8 +184,8 @@ final class DeclarationSpacing implements MultiTokenRule
                 // between one-line `SuppressBlankBetweenOneLine` declarations
                 if ($tight || (
                     $tightOneLine
-                    && !$this->isMultiLine($prev, $assignable)
-                    && !$this->isMultiLine($token, $assignable)
+                    && !$this->isMultiLine($prev)
+                    && !$this->isMultiLine($token)
                 )) {
                     $prevEnd->collect($token)->maskWhitespaceBefore(~WhitespaceType::BLANK);
                     $expand = false;
@@ -195,9 +194,9 @@ final class DeclarationSpacing implements MultiTokenRule
                     // Apply unconditional "loose" spacing to multi-line
                     // declarations and their successors
                     $this->hasDocComment($token)
-                    || $this->isMultiLine($token, $assignable)
+                    || $this->isMultiLine($token)
                     || $this->hasDocComment($prev)
-                    || $this->isMultiLine($prev, $assignable)
+                    || $this->isMultiLine($prev)
                 ) {
                     $expand = true;
                 } elseif ($alwaysExpand === null) {
@@ -216,7 +215,7 @@ final class DeclarationSpacing implements MultiTokenRule
                     if (
                         !$expand
                         || $modifiers === $prevModifiers
-                        || !$this->isGroupedByModifier($token, $type, $assignable, $group)
+                        || !$this->isGroupedByModifier($token, $type, $group)
                     ) {
                         $alwaysExpand = $expand;
                     }
@@ -239,7 +238,7 @@ final class DeclarationSpacing implements MultiTokenRule
                     && $modifiers !== $prevModifiers
                     && !$this->Formatter->TightDeclarationSpacing
                     && $this->hasDocComment($token, true)
-                    && $this->isGroupedByModifier($token, $type, $assignable, $group)
+                    && $this->isGroupedByModifier($token, $type, $group)
                 ) {
                     $expandOnce = true;
                 }
@@ -288,7 +287,7 @@ final class DeclarationSpacing implements MultiTokenRule
                     && strpos($prev->Prev->OriginalText ?? $prev->Prev->text, "\n") === false
                 ))
                 && !$this->hasDocComment($prev)
-                && !$this->isMultiLine($prev, $assignable)
+                && !$this->isMultiLine($prev)
             ) {
                 $this->maybeCollapseComment($prev);
             }
@@ -310,7 +309,7 @@ final class DeclarationSpacing implements MultiTokenRule
      * @param int[] $type
      * @param non-empty-array<int[]> $group
      */
-    private function isGroupedByModifier(Token $token, array $type, bool $assignable, array $group): bool
+    private function isGroupedByModifier(Token $token, array $type, array $group): bool
     {
         $groups = [Arr::unique($group)];
         $group = null;
@@ -322,7 +321,7 @@ final class DeclarationSpacing implements MultiTokenRule
             if (
                 $nextType !== $type
                 || $this->hasDocComment($token)
-                || $this->isMultiLine($token, $assignable)
+                || $this->isMultiLine($token)
             ) {
                 break;
             }
@@ -390,16 +389,15 @@ final class DeclarationSpacing implements MultiTokenRule
         );
     }
 
-    private function isMultiLine(Token $token, bool $assignable): bool
+    private function isMultiLine(Token $token): bool
     {
         return $this->Declarations[$token->Index][7]
-            ??= $this->doIsMultiLine($token, $assignable);
+            ??= $this->doIsMultiLine($token);
     }
 
-    private function doIsMultiLine(Token $token, bool $assignable): bool
+    private function doIsMultiLine(Token $token): bool
     {
-        return (!$assignable || $this->TypeIndex->Attribute[$token->id])
-            && $token->EndStatement
+        return $token->EndStatement
             && $token->collect($token->EndStatement)->hasNewline();
     }
 
