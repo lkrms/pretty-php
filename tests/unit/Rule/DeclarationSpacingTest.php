@@ -418,10 +418,8 @@ PHP,
 class Foo
 {
     public const A = 'a';
-    /** @var string[] */
-    public const B = [
-        'b',
-    ];
+    /** @var string */
+    public const B = 'b';
 
     /**
      * Comment
@@ -462,11 +460,9 @@ class Foo
 {
     public const A = 'a';
     /**
-     * @var string[]
+     * @var string
      */
-    public const B = [
-        'b',
-    ];
+    public const B = 'b';
     /**
      * Comment
      */
@@ -691,6 +687,16 @@ class Bar
     private const C = 2;
 }
 
+class Baz
+{
+    public const A = 0;
+
+    protected const B = 1;
+
+    private const C = 2;
+    private const D = 3;
+}
+
 PHP,
                 <<<'PHP'
 <?php
@@ -705,6 +711,14 @@ class Bar {
 
     private const B = 1;
     private const C = 2;
+}
+class Baz {
+    public const A = 0;
+
+    protected const B = 1;
+
+    private const C = 2;
+    private const D = 3;
 }
 PHP,
                 $formatter,
@@ -722,6 +736,14 @@ class Bar
     public const A = 0;
     private const B = 1;
     private const C = 2;
+}
+
+class Baz
+{
+    public const A = 0;
+    protected const B = 1;
+    private const C = 2;
+    private const D = 3;
 }
 
 PHP,
