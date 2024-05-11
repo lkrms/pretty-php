@@ -14,7 +14,7 @@ final class DeclarationSpacingTest extends \Lkrms\PrettyPHP\Tests\TestCase
      *
      * @param Formatter|FormatterB $formatter
      */
-    public function testOutput(string $expected, string $code, $formatter, ?string $tightExpected = null): void
+    public function testOutput(string $expected, ?string $tightExpected, string $code, $formatter): void
     {
         if ($formatter instanceof FormatterB) {
             $formatter = $formatter->go();
@@ -27,14 +27,14 @@ final class DeclarationSpacingTest extends \Lkrms\PrettyPHP\Tests\TestCase
     }
 
     /**
-     * @return array<array{string,string,Formatter|FormatterB,3?:string|null}>
+     * @return array<array{string,string|null,string,Formatter|FormatterB}>
      */
     public static function outputProvider(): array
     {
         $formatterB = Formatter::build();
         $formatter = $formatterB->go();
 
-        $input = <<<'PHP'
+        $input1 = <<<'PHP'
 <?php declare(strict_types=1);
 namespace Foo\Bar;
 use const PREG_UNMATCHED_AS_NULL;
@@ -96,7 +96,8 @@ class Foo
 }
 
 PHP,
-                $input,
+                null,
+                $input1,
                 $formatter,
             ],
             [
@@ -130,7 +131,8 @@ class Foo
 }
 
 PHP,
-                $input,
+                null,
+                $input1,
                 $formatterB->disable([SortImports::class]),
             ],
             [
@@ -158,6 +160,24 @@ PHP,
 <?php
 class Foo
 {
+    /** @var string[] */
+    public array $Bar = [];
+
+    /**
+     * Summary
+     */
+    public function __construct(int $bar, string $qux)
+    {
+        $this->Qux = $qux;
+        $this->Quux = -1;
+    }
+}
+
+PHP,
+                <<<'PHP'
+<?php
+class Foo
+{
     /**
      * @var string[]
      */
@@ -173,24 +193,6 @@ class Foo
 }
 PHP,
                 $formatter,
-                <<<'PHP'
-<?php
-class Foo
-{
-    /** @var string[] */
-    public array $Bar = [];
-
-    /**
-     * Summary
-     */
-    public function __construct(int $bar, string $qux)
-    {
-        $this->Qux = $qux;
-        $this->Quux = -1;
-    }
-}
-
-PHP,
             ],
             [
                 <<<'PHP'
@@ -213,6 +215,7 @@ class Foo
 }
 
 PHP,
+                null,
                 <<<'PHP'
 <?php
 class Foo
@@ -267,6 +270,30 @@ PHP,
 <?php
 class Foo
 {
+    /** @var string[] */
+    public array $Bar = [];
+    public string $Qux;
+
+    /**
+     * Summary
+     */
+    public int $Quux;
+
+    /**
+     * Summary
+     */
+    public function __construct(int $bar, string $qux)
+    {
+        $this->Qux = $qux;
+        $this->Quux = -1;
+    }
+}
+
+PHP,
+                <<<'PHP'
+<?php
+class Foo
+{
     /**
      * @var string[]
      */
@@ -288,30 +315,6 @@ class Foo
 }
 PHP,
                 $formatter,
-                <<<'PHP'
-<?php
-class Foo
-{
-    /** @var string[] */
-    public array $Bar = [];
-    public string $Qux;
-
-    /**
-     * Summary
-     */
-    public int $Quux;
-
-    /**
-     * Summary
-     */
-    public function __construct(int $bar, string $qux)
-    {
-        $this->Qux = $qux;
-        $this->Quux = -1;
-    }
-}
-
-PHP,
             ],
             [
                 <<<'PHP'
@@ -327,6 +330,7 @@ class Foo
 }
 
 PHP,
+                null,
                 <<<'PHP'
 <?php
 class Foo
@@ -373,6 +377,19 @@ PHP,
 class Foo
 {
     public int $Bar;
+    public string $Qux;
+    /** @var string[] */
+    public array $Quux = [];
+    /** @var string[] */
+    public array $Quuux = [];
+}
+
+PHP,
+                <<<'PHP'
+<?php
+class Foo
+{
+    public int $Bar;
 
     public string $Qux;
     /** @var string[] */
@@ -382,19 +399,6 @@ class Foo
 }
 PHP,
                 $formatter,
-                <<<'PHP'
-<?php
-class Foo
-{
-    public int $Bar;
-    public string $Qux;
-    /** @var string[] */
-    public array $Quux = [];
-    /** @var string[] */
-    public array $Quuux = [];
-}
-
-PHP,
             ],
             [
                 <<<'PHP'
@@ -406,6 +410,7 @@ class B { function foo() {} }
 class C { function foo() {} }
 
 PHP,
+                null,
                 <<<'PHP'
 <?php
 interface I{function foo();} class A{function foo(){}} class B{function foo(){}} class C{function foo(){}}
@@ -454,6 +459,7 @@ class Foo
 }
 
 PHP,
+                null,
                 <<<'PHP'
 <?php
 class Foo
@@ -568,6 +574,62 @@ abstract class Foo
     public function callBar() { $this->bar(); }
     abstract protected function bar();
     public function baz() {}
+
+    public function qux()
+    {
+        global $a;
+        global $b;
+        static $c;
+
+        $this->bar();
+
+        global $d;
+        global $e;
+        static $f;
+
+        $this->bar();
+
+        global $g;
+        global $h;
+        static $i;
+
+        $this->bar();
+
+        static $j;
+        global $k;
+        global $l;
+        static $m;
+    }
+
+    public function callBar2() { $this->bar2(); }
+    abstract protected function bar2();
+    public function baz2() {}
+}
+
+abstract class Bar
+{
+    public function callFoo() { $this->foo(); }
+    abstract protected function foo();
+    public function baz() {}
+
+    public function qux()
+    {
+        $this->foo();
+    }
+
+    public function callFoo2() { $this->foo2(); }
+    abstract protected function foo2();
+    public function baz2() {}
+}
+
+PHP,
+                <<<'PHP'
+<?php
+abstract class Foo
+{
+    public function callBar() { $this->bar(); }
+    abstract protected function bar();
+    public function baz() {}
     public function qux()
     {
         global $a;
@@ -611,62 +673,6 @@ abstract class Bar
 }
 PHP,
                 $formatterB->enable([PreserveOneLineStatements::class]),
-                <<<'PHP'
-<?php
-abstract class Foo
-{
-    public function callBar() { $this->bar(); }
-    abstract protected function bar();
-    public function baz() {}
-
-    public function qux()
-    {
-        global $a;
-        global $b;
-        static $c;
-
-        $this->bar();
-
-        global $d;
-        global $e;
-        static $f;
-
-        $this->bar();
-
-        global $g;
-        global $h;
-        static $i;
-
-        $this->bar();
-
-        static $j;
-        global $k;
-        global $l;
-        static $m;
-    }
-
-    public function callBar2() { $this->bar2(); }
-    abstract protected function bar2();
-    public function baz2() {}
-}
-
-abstract class Bar
-{
-    public function callFoo() { $this->foo(); }
-    abstract protected function foo();
-    public function baz() {}
-
-    public function qux()
-    {
-        $this->foo();
-    }
-
-    public function callFoo2() { $this->foo2(); }
-    abstract protected function foo2();
-    public function baz2() {}
-}
-
-PHP,
             ],
             [
                 <<<'PHP'
@@ -700,30 +706,6 @@ class Baz
 PHP,
                 <<<'PHP'
 <?php
-class Foo {
-    public const A = 0;
-    public const B = 1;
-
-    private const C = 2;
-}
-class Bar {
-    public const A = 0;
-
-    private const B = 1;
-    private const C = 2;
-}
-class Baz {
-    public const A = 0;
-
-    protected const B = 1;
-
-    private const C = 2;
-    private const D = 3;
-}
-PHP,
-                $formatter,
-                <<<'PHP'
-<?php
 class Foo
 {
     public const A = 0;
@@ -747,6 +729,160 @@ class Baz
 }
 
 PHP,
+                <<<'PHP'
+<?php
+class Foo {
+    public const A = 0;
+    public const B = 1;
+
+    private const C = 2;
+}
+class Bar {
+    public const A = 0;
+
+    private const B = 1;
+    private const C = 2;
+}
+class Baz {
+    public const A = 0;
+
+    protected const B = 1;
+
+    private const C = 2;
+    private const D = 3;
+}
+PHP,
+                $formatter,
+            ],
+            [
+                <<<'PHP'
+<?php
+class Foo
+{
+    /** @var int */
+    public const A = 0;
+    /** @var int */
+    public const B = 1;
+
+    /** @var int */
+    private const C = 2;
+}
+
+class Bar
+{
+    /** @var int */
+    public const A = 0;
+
+    /** @var int */
+    private const B = 1;
+    /** @var int */
+    private const C = 2;
+}
+
+class Baz
+{
+    /** @var int */
+    public const A = 0;
+
+    /** @var int */
+    protected const B = 1;
+
+    /** @var int */
+    private const C = 2;
+    /** @var int */
+    private const D = 3;
+}
+
+PHP,
+                <<<'PHP'
+<?php
+class Foo
+{
+    /** @var int */
+    public const A = 0;
+    /** @var int */
+    public const B = 1;
+    /** @var int */
+    private const C = 2;
+}
+
+class Bar
+{
+    /** @var int */
+    public const A = 0;
+    /** @var int */
+    private const B = 1;
+    /** @var int */
+    private const C = 2;
+}
+
+class Baz
+{
+    /** @var int */
+    public const A = 0;
+    /** @var int */
+    protected const B = 1;
+    /** @var int */
+    private const C = 2;
+    /** @var int */
+    private const D = 3;
+}
+
+PHP,
+                <<<'PHP'
+<?php
+class Foo {
+    /**
+     * @var int
+     */
+    public const A = 0;
+    /**
+     * @var int
+     */
+    public const B = 1;
+
+    /**
+     * @var int
+     */
+    private const C = 2;
+}
+class Bar {
+    /**
+     * @var int
+     */
+    public const A = 0;
+
+    /**
+     * @var int
+     */
+    private const B = 1;
+    /**
+     * @var int
+     */
+    private const C = 2;
+}
+class Baz {
+    /**
+     * @var int
+     */
+    public const A = 0;
+
+    /**
+     * @var int
+     */
+    protected const B = 1;
+
+    /**
+     * @var int
+     */
+    private const C = 2;
+    /**
+     * @var int
+     */
+    private const D = 3;
+}
+PHP,
+                $formatter,
             ],
         ];
     }
