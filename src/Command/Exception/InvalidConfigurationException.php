@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Exception;
+namespace Lkrms\PrettyPHP\Command\Exception;
 
+use Lkrms\PrettyPHP\Exception\AbstractException;
 use Throwable;
 
 class InvalidConfigurationException extends AbstractException

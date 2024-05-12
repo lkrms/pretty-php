@@ -5,9 +5,10 @@ namespace Lkrms\PrettyPHP\Command;
 use Lkrms\PrettyPHP\Catalog\FormatterFlag;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
+use Lkrms\PrettyPHP\Command\Exception\InvalidConfigurationException;
 use Lkrms\PrettyPHP\Contract\Preset;
 use Lkrms\PrettyPHP\Exception\FormatterException;
-use Lkrms\PrettyPHP\Exception\InvalidConfigurationException;
+use Lkrms\PrettyPHP\Exception\InvalidFormatterException;
 use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
 use Lkrms\PrettyPHP\Filter\MoveComments;
 use Lkrms\PrettyPHP\Filter\SortImports;
@@ -417,6 +418,8 @@ EOF)
                 ->short('T')
                 ->description(<<<EOF
 Remove blank lines between declarations of the same type where possible.
+
+This option is not ignored when a configuration file is applied.
 EOF)
                 ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->Tight),
@@ -505,8 +508,8 @@ EOF)
                 ->description(<<<EOF
 Apply a formatting preset.
 
-Formatting options other than `-N/--ignore-newlines` are ignored when a preset
-is applied.
+Formatting options other than `-T/--tight`, `-N/--ignore-newlines` and `--psr12`
+are ignored when a preset is applied.
 EOF)
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys(self::PRESET_MAP))
@@ -519,8 +522,9 @@ EOF)
                 ->description(<<<EOF
 Read formatting options from a JSON configuration file.
 
-Settings in <file> override formatting options given on the command line, and
-any configuration files that would usually apply to the input are ignored.
+Settings in <file> override command-line formatting options other than
+`-T/--tight` and `-N/--ignore-newlines`, and any configuration files that would
+usually apply to the input are ignored.
 
 See `CONFIGURATION` below.
 EOF)
@@ -666,7 +670,7 @@ comes first.
 
 If a configuration file is found, `{{program}}` formats the input using
 formatting options read from the configuration file, and command-line formatting
-options other than `-N/--ignore-newlines` are ignored.
+options other than `-T/--tight` and `-N/--ignore-newlines` are ignored.
 
 The `--print-config` option can be used to generate a configuration file, for
 example:
@@ -728,11 +732,12 @@ EOF,
     protected function filterGetSchemaValues(array $values): array
     {
         // If a preset is given, remove every formatting option other than
-        // `--preset` and `--psr12`
+        // `--preset`, `--psr12` and `--tight`
         if (isset($values['preset'])) {
             return array_intersect_key($values, self::SRC_OPTION_INDEX + [
                 'preset' => true,
                 'psr12' => true,
+                'tight' => true,
             ]);
         }
 
@@ -806,7 +811,7 @@ EOF,
             $config = array_intersect_key(
                 $this->getOptionValues(true, true, true),
                 self::SRC_OPTION_INDEX,
-            ) + $this->getFormattingConfigValues($this->ConfigFile);
+            ) + $this->getFormattingConfigValues($this->ConfigFile, $this->PrintConfig);
             $defaults = $this->getDefaultFormattingOptionValues();
             // 2. Set the value of every option
             $this->applyOptionValues($config + $defaults, true, true, true);
@@ -886,7 +891,7 @@ EOF,
                         spl_object_id($config),
                     ), Json::prettyPrint($configValues));
                 }
-                $this->FormatterByDir[$dir] = $config->getFormatter();
+                $this->FormatterByDir[$dir] = $config->getFormatter(InvalidConfigurationException::class);
 
                 if (!$config->InputFiles) {
                     $this->addDir($path, $in, $dirs);
@@ -1041,7 +1046,7 @@ EOF,
                             spl_object_id($config),
                         ), Json::prettyPrint($configValues));
                     }
-                    $formatter = $config->getFormatter();
+                    $formatter = $config->getFormatter(InvalidConfigurationException::class);
                     break;
                 }
                 if (
@@ -1311,10 +1316,10 @@ EOF,
     /**
      * @return mixed[]
      */
-    private function getFormattingConfigValues(string $filename): array
+    private function getFormattingConfigValues(string $filename, bool $pristine = false): array
     {
         return array_diff_key(
-            $this->getConfigValues($filename),
+            $this->getConfigValues($filename, $pristine),
             self::SRC_OPTION_INDEX,
         );
     }
@@ -1322,7 +1327,7 @@ EOF,
     /**
      * @return mixed[]
      */
-    private function getConfigValues(string $filename): array
+    private function getConfigValues(string $filename, bool $pristine = false): array
     {
         Console::debug('Reading configuration file:', $filename);
 
@@ -1350,6 +1355,14 @@ EOF,
                 'Invalid configuration file: %s',
                 $filename,
             ));
+        }
+
+        if ($pristine) {
+            return $config;
+        }
+
+        if ($this->Tight) {
+            $config['tight'] = true;
         }
 
         return $config;
@@ -1523,7 +1536,19 @@ EOF,
         throw new $exception(sprintf($format, ...$values));
     }
 
-    private function getFormatter(): Formatter
+    /**
+     * @param class-string<Throwable> $exception
+     */
+    private function getFormatter(string $exception = CliInvalidArgumentsException::class): Formatter
+    {
+        try {
+            return $this->doGetFormatter();
+        } catch (InvalidFormatterException $ex) {
+            throw new $exception($ex->getMessage());
+        }
+    }
+
+    private function doGetFormatter(): Formatter
     {
         $flags = 0;
         if ($this->Quiet < 3) {
@@ -1562,9 +1587,13 @@ EOF,
         if ($this->Preset !== null) {
             /** @var Formatter */
             $formatter = self::PRESET_MAP[$this->Preset]::getFormatter($flags);
-            return $this->Psr12
-                ? $formatter->withPsr12()
-                : $formatter;
+            if ($this->Tight) {
+                $formatter = $formatter->withTightDeclarationSpacing();
+            }
+            if ($this->Psr12) {
+                $formatter = $formatter->withPsr12();
+            }
+            return $formatter;
         }
 
         $disable = $this->Disable;

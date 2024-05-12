@@ -18,6 +18,7 @@ use Lkrms\PrettyPHP\Contract\Rule;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Exception\FormatterException;
 use Lkrms\PrettyPHP\Exception\IncompatibleRulesException;
+use Lkrms\PrettyPHP\Exception\InvalidFormatterException;
 use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
 use Lkrms\PrettyPHP\Filter\CollectColumn;
 use Lkrms\PrettyPHP\Filter\EvaluateNumbers;
@@ -628,6 +629,16 @@ final class Formatter implements Buildable
             }
         }
 
+        if (
+            $this->TightDeclarationSpacing
+            && !in_array(DeclarationSpacing::class, $rules, true)
+        ) {
+            throw new InvalidFormatterException(sprintf(
+                '%s cannot be disabled when tight declaration spacing is enabled',
+                Get::basename(DeclarationSpacing::class),
+            ));
+        }
+
         Profile::startTimer(__METHOD__ . '#sort-rules');
 
         $tokenTypes = [];
@@ -779,11 +790,23 @@ final class Formatter implements Buildable
     }
 
     /**
+     * Get an instance that removes blank lines between declarations of the same
+     * type where possible
+     *
+     * @return static
+     */
+    public function withTightDeclarationSpacing(): self
+    {
+        return $this->withPropertyValue('TightDeclarationSpacing', true)
+                    ->apply();
+    }
+
+    /**
      * Get an instance with strict PSR-12 / PER Coding Style compliance enabled
      *
      * @return static
      */
-    public function withPsr12()
+    public function withPsr12(): self
     {
         return $this->withPropertyValue('Psr12', true)
                     ->apply();
@@ -794,7 +817,7 @@ final class Formatter implements Buildable
      *
      * @return static
      */
-    public function withDebug()
+    public function withDebug(): self
     {
         return $this->withPropertyValue('Debug', true)
                     ->apply();

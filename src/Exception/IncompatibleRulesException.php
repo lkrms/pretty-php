@@ -5,7 +5,7 @@ namespace Lkrms\PrettyPHP\Exception;
 use Lkrms\PrettyPHP\Contract\Rule;
 use Salient\Core\Utility\Get;
 
-class IncompatibleRulesException extends AbstractException
+class IncompatibleRulesException extends InvalidFormatterException
 {
     /**
      * @var array<class-string<Rule>>
@@ -19,14 +19,13 @@ class IncompatibleRulesException extends AbstractException
     {
         $this->Rules = $rules;
 
-        $rules = '';
-        foreach ($this->Rules as $rule) {
-            $rules .= ($rules === '' ? '' : ', ') . Get::basename($rule);
+        foreach ($rules as $rule) {
+            $names[] = Get::basename($rule);
         }
 
         parent::__construct(sprintf(
             'Enabled rules are not compatible: %s',
-            $rules
+            implode(', ', $names ?? []),
         ));
     }
 }
