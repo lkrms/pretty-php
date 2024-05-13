@@ -1,11 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Parameter \\#1 \\$node of method PhpParser\\\\NodeDumper\\:\\:dump\\(\\) expects array\\|PhpParser\\\\Node, array\\<PhpParser\\\\Node\\\\Stmt\\>\\|null given\\.$#"
-			count: 1
-			path: scripts/dump-ast.php
-
-		-
 			message: "#^Cannot access offset 'appearance' on mixed\\.$#"
 			count: 3
 			path: scripts/list-rules.php
