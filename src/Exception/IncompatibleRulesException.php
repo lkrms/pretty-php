@@ -7,9 +7,7 @@ use Salient\Core\Utility\Get;
 
 class IncompatibleRulesException extends InvalidFormatterException
 {
-    /**
-     * @var array<class-string<Rule>>
-     */
+    /** @var array<class-string<Rule>> */
     protected array $Rules;
 
     /**

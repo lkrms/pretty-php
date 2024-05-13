@@ -26,9 +26,7 @@ final class TrimCasts implements Filter
         \T_UNSET_CAST => '(unset)',
     ];
 
-    /**
-     * @var array<int,bool>
-     */
+    /** @var array<int,bool> */
     private array $CastIndex;
 
     /**

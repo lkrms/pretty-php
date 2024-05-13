@@ -16,11 +16,8 @@ final class AlignData implements BlockRule
     use BlockRuleTrait;
 
     private const ALIGN_TOKEN = 0;
-
     private const ALIGN_DATA = 1;
-
     private const ALIGN_PREV = 2;
-
     private const ALIGN_NEXT = 3;
 
     private const TOKEN_COMPARISON_MAP = [

@@ -20,9 +20,7 @@ final class PlaceComments implements TokenRule
 {
     use TokenRuleTrait;
 
-    /**
-     * @var Token[]
-     */
+    /** @var Token[] */
     private array $CommentsBesideCode = [];
 
     /**
@@ -32,9 +30,7 @@ final class PlaceComments implements TokenRule
      */
     private array $Comments = [];
 
-    /**
-     * @var Token[]
-     */
+    /** @var Token[] */
     private array $CollapsibleComments = [];
 
     public static function getPriority(string $method): ?int

@@ -131,82 +131,42 @@ final class FormatPhpCommand extends CliCommand
 
     private const PROGRESS_LOG_DIR = 'progress-log';
 
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $InputFiles = [];
-
     private string $IncludeRegex = '';
-
     private string $ExcludeRegex = '';
-
     private ?string $IncludeIfPhpRegex = null;
-
     private ?int $Tabs = null;
-
     private ?int $Spaces = null;
-
     private string $Eol = '';
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $Disable = [];
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $Enable = [];
-
     private bool $OneTrueBraceStyle = false;
-
     private bool $OperatorsFirst = false;
-
     private bool $OperatorsLast = false;
-
     private bool $Tight = false;
-
     private bool $IgnoreNewlines = false;
-
     private bool $NoSimplifyStrings = false;
-
     private bool $NoSimplifyNumbers = false;
-
     private string $HeredocIndent = '';
-
     private string $SortImportsBy = '';
-
     private bool $NoSortImports = false;
-
     private bool $Psr12 = false;
-
     private ?string $Preset = null;
-
     private ?string $ConfigFile = null;
-
     private bool $IgnoreConfigFiles = false;
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $OutputFiles = [];
-
     private ?string $Diff = null;
-
     private bool $Check = false;
-
     private bool $PrintConfig = false;
-
     private ?string $StdinFilename = null;
-
     private ?string $DebugDirectory = null;
-
     private bool $LogProgress = false;
-
     private bool $ReportTimers = false;
-
     private bool $Fast = false;
-
     private bool $Verbose = false;
 
     /**
@@ -220,18 +180,11 @@ final class FormatPhpCommand extends CliCommand
 
     // --
 
-    /**
-     * @var array<string,Formatter|null>
-     */
+    /** @var array<string,Formatter|null> */
     private array $FormatterByDir;
-
     private Formatter $DefaultFormatter;
-
-    /**
-     * @var array<string,array<string|int|bool>|string|int|bool|null>
-     */
+    /** @var array<string,array<string|int|bool>|string|int|bool|null> */
     private array $DefaultSchemaOptionValues;
-
     private bool $Debug;
 
     /**

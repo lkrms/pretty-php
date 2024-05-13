@@ -18,14 +18,9 @@ final class MoveComments implements Filter
 {
     use ExtensionTrait;
 
-    /**
-     * @var array<int,bool>
-     */
+    /** @var array<int,bool> */
     private array $BeforeCommentIndex;
-
-    /**
-     * @var array<int,bool>
-     */
+    /** @var array<int,bool> */
     private array $AfterCommentIndex;
 
     /**

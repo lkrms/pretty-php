@@ -17,19 +17,11 @@ final class SortImports implements Filter
 {
     use FilterTrait;
 
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $Search;
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $Replace;
-
-    /**
-     * @var array<int,array{int,string}>
-     */
+    /** @var array<int,array{int,string}> */
     private array $SortableImports;
 
     /**

@@ -44,7 +44,6 @@ class Token extends GenericToken implements JsonSerializable
     public int $Deindent = 0;
 
     public int $HangingIndent = 0;
-
     public ?int $HangingIndentParentType = null;
 
     /**
@@ -81,13 +80,9 @@ class Token extends GenericToken implements JsonSerializable
     public array $HangingIndentParentLevels = [];
 
     public int $LinePadding = 0;
-
     public int $LineUnpadding = 0;
-
     public int $Padding = 0;
-
     public ?string $HeredocIndent = null;
-
     public ?Token $AlignedWith = null;
 
     /**
@@ -143,9 +138,7 @@ class Token extends GenericToken implements JsonSerializable
     public int $CriticalWhitespaceMaskNext = WhitespaceType::ALL;
 
     public ?int $OutputLine = null;
-
     public ?int $OutputPos = null;
-
     public ?int $OutputColumn = null;
 
     final public function isMatchBrace(): bool

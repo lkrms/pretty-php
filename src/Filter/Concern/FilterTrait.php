@@ -9,9 +9,7 @@ trait FilterTrait
 {
     use ExtensionTrait;
 
-    /**
-     * @var GenericToken[]
-     */
+    /** @var GenericToken[] */
     protected array $Tokens;
 
     /**

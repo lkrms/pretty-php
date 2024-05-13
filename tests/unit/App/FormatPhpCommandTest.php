@@ -35,11 +35,8 @@ See 'pretty-php --help' for more information.
 EOF;
 
     private static string $FixturesPath;
-
     private static string $BasePath;
-
     private CliApplication $App;
-
     private MockTarget $ConsoleTarget;
 
     public static function setUpBeforeClass(): void
