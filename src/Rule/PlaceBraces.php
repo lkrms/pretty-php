@@ -35,9 +35,7 @@ final class PlaceBraces implements MultiTokenRule
 {
     use MultiTokenRuleTrait;
 
-    /**
-     * @var array<array{Token,Token}>
-     */
+    /** @var array<array{Token,Token}> */
     private array $BracketBracePairs = [];
 
     public static function getPriority(string $method): ?int

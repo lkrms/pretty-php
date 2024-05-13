@@ -18,11 +18,12 @@
         "ext-mbstring": "*",
         "ext-tokenizer": "*",
         "composer-runtime-api": "^2.2",
-        "salient/toolkit": "^0.99.18",
+        "salient/toolkit": "^0.99.19",
         "sebastian/diff": "^4 || ^5"
     },
     "require-dev": {
         "ergebnis/composer-normalize": "^2",
+        "nikic/php-parser": "^5",
         "phpstan/extension-installer": "^1",
         "phpstan/phpstan": "^1",
         "phpstan/phpstan-deprecation-rules": "^1",

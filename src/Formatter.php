@@ -18,6 +18,7 @@ use Lkrms\PrettyPHP\Contract\Rule;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Exception\FormatterException;
 use Lkrms\PrettyPHP\Exception\IncompatibleRulesException;
+use Lkrms\PrettyPHP\Exception\InvalidFormatterException;
 use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
 use Lkrms\PrettyPHP\Filter\CollectColumn;
 use Lkrms\PrettyPHP\Filter\EvaluateNumbers;
@@ -128,6 +129,8 @@ final class Formatter implements Buildable
     public string $Tab;
 
     /**
+     * Token type index
+     *
      * @readonly
      */
     public TokenTypeIndex $TokenTypeIndex;
@@ -218,19 +221,11 @@ final class Formatter implements Buildable
 
     // --
 
-    /**
-     * @readonly
-     */
+    /** @readonly */
     public bool $IncreaseIndentBetweenUnenclosedTags = true;
-
-    /**
-     * @readonly
-     */
+    /** @readonly */
     public bool $RelaxAlignmentCriteria = false;
-
-    /**
-     * @readonly
-     */
+    /** @readonly */
     public bool $NewlineBeforeFnDoubleArrows = false;
 
     /**
@@ -378,26 +373,16 @@ final class Formatter implements Buildable
 
     // --
 
-    /**
-     * @var array<class-string<Rule>>
-     */
+    /** @var array<class-string<Rule>> */
     private array $PreferredRules;
-
-    /**
-     * @var array<class-string<Filter>>
-     */
+    /** @var array<class-string<Filter>> */
     private array $PreferredFilters;
 
     // --
 
-    /**
-     * @var array<class-string<Rule>>
-     */
+    /** @var array<class-string<Rule>> */
     private array $Rules;
-
-    /**
-     * @var array<class-string<TokenRule>,array<int,true>|array{'*'}>
-     */
+    /** @var array<class-string<TokenRule>,array<int,true>|array{'*'}> */
     private array $RuleTokenTypes;
 
     /**
@@ -421,41 +406,20 @@ final class Formatter implements Buildable
      */
     private array $BeforeRender;
 
-    /**
-     * @var array<class-string<Rule>,int>
-     */
+    /** @var array<class-string<Rule>,int> */
     private array $CallbackPriorities;
-
-    /**
-     * @var array<class-string<Filter>>
-     */
+    /** @var array<class-string<Filter>> */
     private array $FormatFilters;
-
-    /**
-     * @var array<class-string<Filter>>
-     */
+    /** @var array<class-string<Filter>> */
     private array $ComparisonFilters;
-
-    /**
-     * @var array<class-string<Rule>,Rule>
-     */
+    /** @var array<class-string<Rule>,Rule> */
     private array $RuleMap;
-
-    /**
-     * @var Filter[]
-     */
+    /** @var Filter[] */
     private array $FormatFilterList;
-
-    /**
-     * @var Filter[]
-     */
+    /** @var Filter[] */
     private array $ComparisonFilterList;
-
-    /**
-     * @var array<class-string<Extension>,Extension>
-     */
+    /** @var array<class-string<Extension>,Extension> */
     private array $Extensions;
-
     private bool $ExtensionsLoaded = false;
 
     // --
@@ -467,14 +431,9 @@ final class Formatter implements Buildable
      */
     public ?Indentation $Indentation = null;
 
-    /**
-     * @var array<int,Token>|null
-     */
+    /** @var array<int,Token>|null */
     public ?array $Tokens = null;
-
-    /**
-     * @var array<int,array<int,Token>>|null
-     */
+    /** @var array<int,array<int,Token>>|null */
     private ?array $TokenIndex = null;
 
     /**
@@ -484,24 +443,16 @@ final class Formatter implements Buildable
      */
     private ?array $Callbacks = null;
 
-    /**
-     * @var CodeProblem[]|null
-     */
+    /** @var CodeProblem[]|null */
     public ?array $CodeProblems = null;
-
-    /**
-     * @var array<string,string>|null
-     */
+    /** @var array<string,string>|null */
     public ?array $Log = null;
 
     // --
 
     private bool $Debug;
-
     private bool $LogProgress;
-
     private bool $ReportCodeProblems;
-
     private Parser $Parser;
 
     /**
@@ -626,6 +577,16 @@ final class Formatter implements Buildable
             if (count($incompatible) > 1) {
                 throw new IncompatibleRulesException(...$incompatible);
             }
+        }
+
+        if (
+            $this->TightDeclarationSpacing
+            && !in_array(DeclarationSpacing::class, $rules, true)
+        ) {
+            throw new InvalidFormatterException(sprintf(
+                '%s cannot be disabled when tight declaration spacing is enabled',
+                Get::basename(DeclarationSpacing::class),
+            ));
         }
 
         Profile::startTimer(__METHOD__ . '#sort-rules');
@@ -779,11 +740,23 @@ final class Formatter implements Buildable
     }
 
     /**
+     * Get an instance that removes blank lines between declarations of the same
+     * type where possible
+     *
+     * @return static
+     */
+    public function withTightDeclarationSpacing(): self
+    {
+        return $this->withPropertyValue('TightDeclarationSpacing', true)
+                    ->apply();
+    }
+
+    /**
      * Get an instance with strict PSR-12 / PER Coding Style compliance enabled
      *
      * @return static
      */
-    public function withPsr12()
+    public function withPsr12(): self
     {
         return $this->withPropertyValue('Psr12', true)
                     ->apply();
@@ -794,7 +767,7 @@ final class Formatter implements Buildable
      *
      * @return static
      */
-    public function withDebug()
+    public function withDebug(): self
     {
         return $this->withPropertyValue('Debug', true)
                     ->apply();

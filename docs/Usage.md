@@ -124,6 +124,8 @@ pretty-php - Format a PHP file
 
   Remove blank lines between declarations of the same type where possible.
 
+  This option is not ignored when a configuration file is applied.
+
 - **`-N`**, **`--ignore-newlines`**
 
   Ignore the position of newlines in the input.
@@ -177,16 +179,16 @@ pretty-php - Format a PHP file
 
   Apply a formatting preset.
 
-  Formatting options other than **`-N/--ignore-newlines`** are ignored when a
-  preset is applied.
+  Formatting options other than **`-T/--tight`**, **`-N/--ignore-newlines`** and
+  **`--psr12`** are ignored when a preset is applied.
 
 - **`-c`**, **`--config`** *<u>file</u>*
 
   Read formatting options from a JSON configuration file.
 
-  Settings in *<u>file</u>* override formatting options given on the command
-  line, and any configuration files that would usually apply to the input are
-  ignored.
+  Settings in *<u>file</u>* override command-line formatting options other than
+  **`-T/--tight`** and **`-N/--ignore-newlines`**, and any configuration files
+  that would usually apply to the input are ignored.
 
   See **`CONFIGURATION`** below.
 
@@ -278,7 +280,7 @@ comes first.
 
 If a configuration file is found, **`pretty-php`** formats the input using
 formatting options read from the configuration file, and command-line formatting
-options other than **`-N/--ignore-newlines`** are ignored.
+options other than **`-T/--tight`** and **`-N/--ignore-newlines`** are ignored.
 
 The **`--print-config`** option can be used to generate a configuration file,
 for example:

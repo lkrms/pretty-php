@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Tests\Command;
+namespace Lkrms\PrettyPHP\Tests\App;
 
-use Lkrms\PrettyPHP\Command\FormatPhp;
+use Lkrms\PrettyPHP\App\FormatPhpCommand;
 use Salient\Cli\CliApplication;
 use Salient\Console\Target\MockTarget;
 use Salient\Contract\Core\ExceptionInterface;
@@ -22,7 +22,7 @@ use Generator;
 /**
  * @backupGlobals enabled
  */
-final class FormatPhpTest extends \Lkrms\PrettyPHP\Tests\TestCase
+final class FormatPhpCommandTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     private const SYNOPSIS = <<<'EOF'
 
@@ -35,11 +35,8 @@ See 'pretty-php --help' for more information.
 EOF;
 
     private static string $FixturesPath;
-
     private static string $BasePath;
-
     private CliApplication $App;
-
     private MockTarget $ConsoleTarget;
 
     public static function setUpBeforeClass(): void
@@ -56,7 +53,7 @@ EOF;
         $_SERVER['SCRIPT_FILENAME'] = 'pretty-php';
 
         $this->App = (new CliApplication(self::$BasePath))
-            ->oneCommand(FormatPhp::class);
+            ->oneCommand(FormatPhpCommand::class);
     }
 
     protected function tearDown(): void
@@ -137,6 +134,26 @@ EOF;
     public static function wordpressProvider(): Generator
     {
         yield from self::getInputFiles('preset/wordpress');
+    }
+
+    public function testWordpressWithTight(): void
+    {
+        $messages = [
+            [Level::WARNING, '  ! wordpress preset disabled tight declaration spacing'],
+            [Level::INFO, ' // Formatted 1 file successfully'],
+        ];
+        foreach (self::getInputFiles('preset/wordpress') as [$file]) {
+            $input = File::getContents($file);
+            $expected = File::getContents(substr($file, 0, -3) . '.out');
+            $this->assertCommandProduces(
+                $expected,
+                $input,
+                ['--preset', 'wordpress', '--tight'],
+                0,
+                [...$messages, ...$messages],
+            );
+            break;
+        }
     }
 
     private function makePresetAssertions(string $preset, string $file): void

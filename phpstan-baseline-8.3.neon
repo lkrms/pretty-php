@@ -1,11 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Parameter \\#1 \\$node of method PhpParser\\\\NodeDumper\\:\\:dump\\(\\) expects array\\|PhpParser\\\\Node, array\\<PhpParser\\\\Node\\\\Stmt\\>\\|null given\\.$#"
-			count: 1
-			path: scripts/dump-ast.php
-
-		-
 			message: "#^Cannot access offset 'appearance' on mixed\\.$#"
 			count: 3
 			path: scripts/list-rules.php
@@ -56,19 +51,14 @@ parameters:
 			path: scripts/list-rules.php
 
 		-
-			message: "#^Method Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:filterGetSchemaValues\\(\\) should return array\\<string, T\\> but returns array\\<string, bool\\|int\\<min, \\-1\\>\\|int\\<1, max\\>\\|T\\>\\.$#"
+			message: "#^Method Lkrms\\\\PrettyPHP\\\\App\\\\FormatPhpCommand\\:\\:filterGetSchemaValues\\(\\) should return array\\<string, T\\> but returns array\\<string, bool\\|int\\<min, \\-1\\>\\|int\\<1, max\\>\\|T\\>\\.$#"
 			count: 1
-			path: src/Command/FormatPhp.php
+			path: src/App/FormatPhpCommand.php
 
 		-
-			message: "#^Parameter \\#1 \\$values of method Salient\\\\Cli\\\\CliCommand\\:\\:applyOptionValues\\(\\) expects array\\<string, array\\<bool\\|int\\|string\\>\\|bool\\|int\\|string\\|null\\>, array given\\.$#"
-			count: 4
-			path: src/Command/FormatPhp.php
-
-		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Command\\\\FormatPhp\\:\\:\\$FormatterByDir \\(array\\<string, Lkrms\\\\PrettyPHP\\\\Formatter\\>\\) does not accept array\\<int\\|string, Lkrms\\\\PrettyPHP\\\\Formatter\\|null\\>\\.$#"
-			count: 1
-			path: src/Command/FormatPhp.php
+			message: "#^Parameter \\#1 \\$values of method Salient\\\\Cli\\\\CliCommand\\:\\:applyOptionValues\\(\\) expects array\\<string, array\\<bool\\|int\\|string\\>\\|bool\\|int\\|string\\|null\\>, array\\<string, mixed\\> given\\.$#"
+			count: 2
+			path: src/App/FormatPhpCommand.php
 
 		-
 			message: "#^Method Lkrms\\\\PrettyPHP\\\\Filter\\\\CollectColumn\\:\\:filterTokens\\(\\) should return array\\<int, T of Lkrms\\\\PrettyPHP\\\\Token\\\\GenericToken\\> but returns array\\<Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>\\.$#"
@@ -1068,22 +1058,22 @@ parameters:
 		-
 			message: "#^Cannot access offset 1 on mixed\\.$#"
 			count: 1
-			path: tests/unit/Command/FormatPhpTest.php
+			path: tests/unit/App/FormatPhpCommandTest.php
 
 		-
 			message: "#^Cannot access offset 2 on mixed\\.$#"
 			count: 1
-			path: tests/unit/Command/FormatPhpTest.php
+			path: tests/unit/App/FormatPhpCommandTest.php
 
 		-
-			message: "#^Method Lkrms\\\\PrettyPHP\\\\Tests\\\\Command\\\\FormatPhpTest\\:\\:configProvider\\(\\) should return array\\<string, array\\{string\\}\\> but returns array\\<string, array\\{array\\<string, mixed\\>\\|string\\}\\>\\.$#"
+			message: "#^Method Lkrms\\\\PrettyPHP\\\\Tests\\\\App\\\\FormatPhpCommandTest\\:\\:configProvider\\(\\) should return array\\<string, array\\{string\\}\\> but returns array\\<string, array\\{array\\<string, mixed\\>\\|string\\}\\>\\.$#"
 			count: 1
-			path: tests/unit/Command/FormatPhpTest.php
+			path: tests/unit/App/FormatPhpCommandTest.php
 
 		-
 			message: "#^Parameter \\#1 \\$string of function substr expects string, mixed given\\.$#"
 			count: 1
-			path: tests/unit/Command/FormatPhpTest.php
+			path: tests/unit/App/FormatPhpCommandTest.php
 
 		-
 			message: "#^Parameter \\#3 \\$enable of method Lkrms\\\\PrettyPHP\\\\Tests\\\\TestCase\\:\\:assertCodeFormatIs\\(\\) expects array\\<class\\-string\\<Lkrms\\\\PrettyPHP\\\\Contract\\\\Extension\\>\\>, array\\<string\\> given\\.$#"

@@ -16,10 +16,7 @@ use Stringable;
 final class TokenCollection extends AbstractTypedList implements Stringable
 {
     private bool $Collected = false;
-
-    /**
-     * @var array<int,Token>|null
-     */
+    /** @var array<int,Token>|null */
     private ?array $OriginalItems = null;
 
     public static function collect(Token $from, Token $to): self

@@ -19,19 +19,12 @@ trait NavigableTokenTrait
     public int $Index = -1;
 
     public ?Token $Prev = null;
-
     public ?Token $Next = null;
-
     public ?Token $PrevCode = null;
-
     public ?Token $NextCode = null;
-
     public ?Token $PrevSibling = null;
-
     public ?Token $NextSibling = null;
-
     public ?Token $Statement = null;
-
     public ?Token $EndStatement = null;
 
     /**
@@ -53,26 +46,15 @@ trait NavigableTokenTrait
     public ?Token $EndExpression = null;
 
     public ?Token $OpenedBy = null;
-
     public ?Token $ClosedBy = null;
-
     public ?Token $Parent = null;
-
     public int $Depth = 0;
-
     public ?Token $OpenTag = null;
-
     public ?Token $CloseTag = null;
-
     public ?Token $String = null;
-
     public ?Token $StringClosedBy = null;
-
     public ?Token $Heredoc = null;
-
-    /**
-     * @var int-mask-of<TokenFlag::*>
-     */
+    /** @var int-mask-of<TokenFlag::*> */
     public int $Flags = 0;
 
     /**
@@ -82,7 +64,6 @@ trait NavigableTokenTrait
     public array $Data;
 
     public ?Token $OtherTernaryOperator = null;
-
     public ?Token $ChainOpenedBy = null;
 
     /**
@@ -122,7 +103,7 @@ trait NavigableTokenTrait
     public Formatter $Formatter;
 
     /**
-     * Indexed token types
+     * Token type index
      *
      * @readonly
      */

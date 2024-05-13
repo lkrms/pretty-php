@@ -1,13 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Command;
+namespace Lkrms\PrettyPHP\App;
 
+use Lkrms\PrettyPHP\App\Exception\InvalidConfigurationException;
 use Lkrms\PrettyPHP\Catalog\FormatterFlag;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Contract\Preset;
 use Lkrms\PrettyPHP\Exception\FormatterException;
-use Lkrms\PrettyPHP\Exception\InvalidConfigurationException;
+use Lkrms\PrettyPHP\Exception\InvalidFormatterException;
 use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
 use Lkrms\PrettyPHP\Filter\MoveComments;
 use Lkrms\PrettyPHP\Filter\SortImports;
@@ -62,7 +63,7 @@ use Throwable;
 /**
  * Provides pretty-php's command-line interface
  */
-final class FormatPhp extends CliCommand
+final class FormatPhpCommand extends CliCommand
 {
     private const DISABLE_MAP = [
         'sort-imports' => SortImports::class,
@@ -130,82 +131,42 @@ final class FormatPhp extends CliCommand
 
     private const PROGRESS_LOG_DIR = 'progress-log';
 
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $InputFiles = [];
-
     private string $IncludeRegex = '';
-
     private string $ExcludeRegex = '';
-
     private ?string $IncludeIfPhpRegex = null;
-
     private ?int $Tabs = null;
-
     private ?int $Spaces = null;
-
     private string $Eol = '';
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $Disable = [];
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $Enable = [];
-
     private bool $OneTrueBraceStyle = false;
-
     private bool $OperatorsFirst = false;
-
     private bool $OperatorsLast = false;
-
     private bool $Tight = false;
-
     private bool $IgnoreNewlines = false;
-
     private bool $NoSimplifyStrings = false;
-
     private bool $NoSimplifyNumbers = false;
-
     private string $HeredocIndent = '';
-
     private string $SortImportsBy = '';
-
     private bool $NoSortImports = false;
-
     private bool $Psr12 = false;
-
     private ?string $Preset = null;
-
     private ?string $ConfigFile = null;
-
     private bool $IgnoreConfigFiles = false;
-
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $OutputFiles = [];
-
     private ?string $Diff = null;
-
     private bool $Check = false;
-
     private bool $PrintConfig = false;
-
     private ?string $StdinFilename = null;
-
     private ?string $DebugDirectory = null;
-
     private bool $LogProgress = false;
-
     private bool $ReportTimers = false;
-
     private bool $Fast = false;
-
     private bool $Verbose = false;
 
     /**
@@ -219,18 +180,11 @@ final class FormatPhp extends CliCommand
 
     // --
 
-    /**
-     * @var array<string,Formatter>
-     */
+    /** @var array<string,Formatter|null> */
     private array $FormatterByDir;
-
     private Formatter $DefaultFormatter;
-
-    /**
-     * @var array<string,array<string|int|bool>|string|int|bool|null>
-     */
+    /** @var array<string,array<string|int|bool>|string|int|bool|null> */
     private array $DefaultSchemaOptionValues;
-
     private bool $Debug;
 
     /**
@@ -417,6 +371,8 @@ EOF)
                 ->short('T')
                 ->description(<<<EOF
 Remove blank lines between declarations of the same type where possible.
+
+This option is not ignored when a configuration file is applied.
 EOF)
                 ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->Tight),
@@ -505,8 +461,8 @@ EOF)
                 ->description(<<<EOF
 Apply a formatting preset.
 
-Formatting options other than `-N/--ignore-newlines` are ignored when a preset
-is applied.
+Formatting options other than `-T/--tight`, `-N/--ignore-newlines` and `--psr12`
+are ignored when a preset is applied.
 EOF)
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys(self::PRESET_MAP))
@@ -519,8 +475,9 @@ EOF)
                 ->description(<<<EOF
 Read formatting options from a JSON configuration file.
 
-Settings in <file> override formatting options given on the command line, and
-any configuration files that would usually apply to the input are ignored.
+Settings in <file> override command-line formatting options other than
+`-T/--tight` and `-N/--ignore-newlines`, and any configuration files that would
+usually apply to the input are ignored.
 
 See `CONFIGURATION` below.
 EOF)
@@ -666,7 +623,7 @@ comes first.
 
 If a configuration file is found, `{{program}}` formats the input using
 formatting options read from the configuration file, and command-line formatting
-options other than `-N/--ignore-newlines` are ignored.
+options other than `-T/--tight` and `-N/--ignore-newlines` are ignored.
 
 The `--print-config` option can be used to generate a configuration file, for
 example:
@@ -728,11 +685,12 @@ EOF,
     protected function filterGetSchemaValues(array $values): array
     {
         // If a preset is given, remove every formatting option other than
-        // `--preset` and `--psr12`
+        // `--preset`, `--psr12` and `--tight`
         if (isset($values['preset'])) {
             return array_intersect_key($values, self::SRC_OPTION_INDEX + [
                 'preset' => true,
                 'psr12' => true,
+                'tight' => true,
             ]);
         }
 
@@ -806,7 +764,7 @@ EOF,
             $config = array_intersect_key(
                 $this->getOptionValues(true, true, true),
                 self::SRC_OPTION_INDEX,
-            ) + $this->getFormattingConfigValues($this->ConfigFile);
+            ) + $this->getFormattingConfigValues($this->ConfigFile, $this->PrintConfig);
             $defaults = $this->getDefaultFormattingOptionValues();
             // 2. Set the value of every option
             $this->applyOptionValues($config + $defaults, true, true, true);
@@ -886,7 +844,7 @@ EOF,
                         spl_object_id($config),
                     ), Json::prettyPrint($configValues));
                 }
-                $this->FormatterByDir[$dir] = $config->getFormatter();
+                $this->FormatterByDir[$dir] = $config->getFormatter(InvalidConfigurationException::class);
 
                 if (!$config->InputFiles) {
                     $this->addDir($path, $in, $dirs);
@@ -1041,7 +999,7 @@ EOF,
                             spl_object_id($config),
                         ), Json::prettyPrint($configValues));
                     }
-                    $formatter = $config->getFormatter();
+                    $formatter = $config->getFormatter(InvalidConfigurationException::class);
                     break;
                 }
                 if (
@@ -1275,7 +1233,7 @@ EOF,
     }
 
     /**
-     * @param mixed[] $values
+     * @param array<string,array<string|int|bool>|string|int|bool|null> $values
      */
     private function getConfig(array $values): self
     {
@@ -1309,20 +1267,20 @@ EOF,
     }
 
     /**
-     * @return mixed[]
+     * @return array<string,array<string|int|bool>|string|int|bool|null>
      */
-    private function getFormattingConfigValues(string $filename): array
+    private function getFormattingConfigValues(string $filename, bool $pristine = false): array
     {
         return array_diff_key(
-            $this->getConfigValues($filename),
+            $this->getConfigValues($filename, $pristine),
             self::SRC_OPTION_INDEX,
         );
     }
 
     /**
-     * @return mixed[]
+     * @return array<string,array<string|int|bool>|string|int|bool|null>
      */
-    private function getConfigValues(string $filename): array
+    private function getConfigValues(string $filename, bool $pristine = false): array
     {
         Console::debug('Reading configuration file:', $filename);
 
@@ -1345,11 +1303,19 @@ EOF,
             ), $ex);
         }
 
-        if (!is_array($config)) {
+        if (!is_array($config) || !$this->checkOptionValues($config)) {
             throw new InvalidConfigurationException(sprintf(
                 'Invalid configuration file: %s',
                 $filename,
             ));
+        }
+
+        if ($pristine) {
+            return $config;
+        }
+
+        if ($this->Tight) {
+            $config['tight'] = true;
         }
 
         return $config;
@@ -1380,7 +1346,9 @@ EOF,
 
     /**
      * @param array<string,string> $files
+     * @param-out array<string,string> $files
      * @param array<string,string> $dirs
+     * @param-out array<string,string> $dirs
      */
     private function addDir(string $dir, array &$files, array &$dirs): void
     {
@@ -1418,7 +1386,9 @@ EOF,
     /**
      * @param SplFileInfo|string $file
      * @param array<string,string> $files
+     * @param-out array<string,string> $files
      * @param array<string,string> $dirs
+     * @param-out array<string,string> $dirs
      */
     private function addFile($file, array &$files, array &$dirs): void
     {
@@ -1523,7 +1493,21 @@ EOF,
         throw new $exception(sprintf($format, ...$values));
     }
 
-    private function getFormatter(): Formatter
+    /**
+     * @param class-string<Throwable> $exception
+     */
+    private function getFormatter(string $exception = CliInvalidArgumentsException::class): Formatter
+    {
+        try {
+            return $this->doGetFormatter();
+            // @codeCoverageIgnoreStart
+        } catch (InvalidFormatterException $ex) {
+            throw new $exception($ex->getMessage());
+            // @codeCoverageIgnoreEnd
+        }
+    }
+
+    private function doGetFormatter(): Formatter
     {
         $flags = 0;
         if ($this->Quiet < 3) {
@@ -1562,9 +1546,20 @@ EOF,
         if ($this->Preset !== null) {
             /** @var Formatter */
             $formatter = self::PRESET_MAP[$this->Preset]::getFormatter($flags);
-            return $this->Psr12
-                ? $formatter->withPsr12()
-                : $formatter;
+            if ($this->Tight) {
+                if ($formatter->Enabled[DeclarationSpacing::class] ?? false) {
+                    $formatter = $formatter->withTightDeclarationSpacing();
+                } else {
+                    Console::warn(sprintf(
+                        '%s preset disabled tight declaration spacing',
+                        $this->Preset,
+                    ), null, null, false);
+                }
+            }
+            if ($this->Psr12) {
+                $formatter = $formatter->withPsr12();
+            }
+            return $formatter;
         }
 
         $disable = $this->Disable;

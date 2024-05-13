@@ -532,15 +532,9 @@ class TokenTypeIndex implements Immutable
     public array $VisibilityWithReadonly;
 
     private string $LastOperatorsMethod;
-
-    /**
-     * @var array<int,bool>
-     */
+    /** @var array<int,bool> */
     private array $_PreserveNewlineBefore;
-
-    /**
-     * @var array<int,bool>
-     */
+    /** @var array<int,bool> */
     private array $_PreserveNewlineAfter;
 
     public function __construct()

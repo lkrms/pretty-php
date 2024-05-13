@@ -15,9 +15,7 @@ final class AlignLists implements ListRule
 {
     use ListRuleTrait;
 
-    /**
-     * @var array<int,true>
-     */
+    /** @var array<int,true> */
     private array $ListOwnersByIndex = [];
 
     public static function getPriority(string $method): ?int

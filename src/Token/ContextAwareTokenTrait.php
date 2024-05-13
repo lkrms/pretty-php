@@ -10,9 +10,7 @@ trait ContextAwareTokenTrait
 {
     use NavigableTokenTrait;
 
-    /**
-     * @var TokenSubType::*|-1|null
-     */
+    /** @var TokenSubType::*|-1|null */
     public ?int $SubType = null;
 
     /**

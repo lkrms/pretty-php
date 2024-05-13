@@ -12,6 +12,7 @@ use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 use Salient\Core\Utility\Arr;
+use Salient\Core\Utility\Str;
 
 /**
  * Normalise vertical spacing between declarations
@@ -30,10 +31,6 @@ use Salient\Core\Utility\Arr;
  * - Normalises consecutive one-line declarations of the same type by
  *   propagating the gap between the first and second declarations
  * - Collapses DocBlocks as needed
- *
- * Properties, variables and constants are formatted as one-line declarations
- * unless they have one or more attributes, even if a multi-line value is
- * applied to them.
  *
  * @api
  */
@@ -155,10 +152,13 @@ final class DeclarationSpacing implements MultiTokenRule
             [$token, $type, $modifiers, $tight, $tightOneLine] = reset($declarations);
             unset($declarations[$token->Index]);
 
-            $assignable = $type === [] || $type === [\T_CONST];
             $group = [$prevModifiers = $modifiers];
-            $count = 1;
-            $expand = false;
+            $alwaysExpand = null;
+            $collapse = [];
+
+            if (!($this->hasDocComment($token) || $this->isMultiLine($token))) {
+                $collapse[] = $token;
+            }
 
             // Add a blank line before the first declaration of each type
             $this->maybeApplyBlankLineBefore($token);
@@ -174,8 +174,9 @@ final class DeclarationSpacing implements MultiTokenRule
                     break;
                 }
 
-                $prevExpand = $expand;
-                $expandOnce = false;
+                unset($declarations[$token->Index]);
+
+                $prevIsMultiLine = false;
                 $masked = false;
 
                 // Suppress blank lines between `SuppressBlankBetween`
@@ -183,48 +184,51 @@ final class DeclarationSpacing implements MultiTokenRule
                 // between one-line `SuppressBlankBetweenOneLine` declarations
                 if ($tight || (
                     $tightOneLine
-                    && !$this->isMultiLine($prev, $assignable)
-                    && !$this->isMultiLine($token, $assignable)
+                    && !$this->isMultiLine($prev)
+                    && !$this->isMultiLine($token)
                 )) {
                     $prevEnd->collect($token)->maskWhitespaceBefore(~WhitespaceType::BLANK);
                     $expand = false;
                     $masked = true;
-                } elseif ($count === 1) {
-                    // Propagate the gap between the first and second
-                    // declarations to subsequent declarations
-                    $expand = $this->hasDocComment($prev)
-                        || $this->hasDocComment($token, !$this->Formatter->TightDeclarationSpacing)
-                        || $this->isMultiLine($prev, $assignable)
-                        || $this->isMultiLine($token, $assignable);
                 } elseif (
-                    // Enable "tight" spacing if consecutive one-line
-                    // declarations appear immediately after a declaration that
-                    // breaks over multiple lines or has a multi-line DocBlock
-                    $expand
-                    && $prev->PrevSibling
-                    && ($prevPrev = $prev->PrevSibling->Statement)
-                    && (
-                        $this->hasDocComment($prevPrev)
-                        || $this->isMultiLine($prevPrev, $assignable)
-                    )
-                    && !(
-                        $this->hasDocComment($prev)
-                        || $this->hasDocComment($token, !$this->Formatter->TightDeclarationSpacing)
-                        || $this->isMultiLine($prev, $assignable)
-                        || $this->isMultiLine($token, $assignable)
-                    )
-                ) {
-                    $expand = false;
-                } elseif (
-                    // Enable "loose" spacing if declarations break over
-                    // multiple lines or have a multi-line DocBlock
-                    !$expand && (
-                        $this->hasDocComment($token)
-                        || $this->isMultiLine($token, $assignable)
-                    )
+                    // Apply unconditional "loose" spacing to multi-line
+                    // declarations and their successors
+                    $this->hasDocComment($token)
+                    || $this->isMultiLine($token)
+                    || ($prevIsMultiLine = $this->hasDocComment($prev)
+                        || $this->isMultiLine($prev))
                 ) {
                     $expand = true;
-                } elseif (
+                    if ($prevIsMultiLine) {
+                        $collapse[] = $token;
+                    }
+                } elseif ($alwaysExpand === null) {
+                    $expand = !$this->Formatter->TightDeclarationSpacing
+                        && $this->hasDocComment($token, true);
+                    // Propagate the gap between the first and second one-line
+                    // declarations to subsequent one-line declarations unless
+                    // they have different modifiers, e.g.:
+                    //
+                    // ```php
+                    // public const A = 0;
+                    //
+                    // private const B = 1;
+                    // private const C = 2;
+                    // ```
+                    if (
+                        !$expand
+                        || $modifiers === $prevModifiers
+                        || !$this->isGroupedByModifier($token, $type, $group)
+                    ) {
+                        $alwaysExpand = $expand;
+                    } elseif ($expand) {
+                        $collapse[] = $token;
+                    }
+                } else {
+                    $expand = $alwaysExpand;
+                }
+
+                if (!$expand && (
                     // Don't suppress blank lines between declarations with
                     // different modifiers, e.g. preserve the blank line before
                     // `private const` here:
@@ -235,39 +239,21 @@ final class DeclarationSpacing implements MultiTokenRule
                     //
                     // private const C = 2;
                     // ```
-                    !$expand
-                    && !$this->Formatter->TightDeclarationSpacing
-                    && $this->hasDocComment($token, true)
-                    && $modifiers !== $prevModifiers
-                    && $this->isGroupedByModifier($token, $type, $assignable, $group)
-                ) {
-                    $expandOnce = true;
+                    (
+                        $modifiers !== $prevModifiers
+                        && !$this->Formatter->TightDeclarationSpacing
+                        && $this->hasDocComment($token, true)
+                        && $this->isGroupedByModifier($token, $type, $group)
+                    )
+                    // If there are non-code tokens other than one DocBlock
+                    // between declarations, add a blank line for consistency
+                    || $this->hasNewlineSince($token, $prevEnd)
+                )) {
+                    $expand = true;
+                    $collapse[] = $token;
                 }
 
-                // Similarly, don't propagate blank lines between declarations
-                // with different modifiers, e.g.:
-                //
-                // ```php
-                // public const A = 0;
-                //
-                // private const B = 1;
-                // private const C = 2;
-                // ```
-                if (
-                    $expand
-                    && !$this->Formatter->TightDeclarationSpacing
-                    && $modifiers !== $prevModifiers
-                    && $this->isGroupedByModifier($token, $type, $assignable, $group)
-                ) {
-                    break;
-                }
-
-                unset($declarations[$token->Index]);
-                $count++;
-
-                // If there are non-code tokens other than one DocBlock between
-                // declarations, add a blank line for consistency
-                if ($expand || $expandOnce || $this->hasNewlineSince($token, $prevEnd)) {
+                if ($expand) {
                     $this->maybeApplyBlankLineBefore($token, true);
                     $group = [$prevModifiers = $modifiers];
                     continue;
@@ -279,9 +265,6 @@ final class DeclarationSpacing implements MultiTokenRule
 
                 // Collapse DocBlocks and suppress blank lines before DocBlocks
                 // above tightly-spaced declarations
-                if ($count === 2 || $prevExpand) {
-                    $this->maybeCollapseComment($prev);
-                }
                 $this->maybeCollapseComment($token);
                 if ($masked) {
                     continue;
@@ -292,21 +275,32 @@ final class DeclarationSpacing implements MultiTokenRule
                 }
             }
 
-            if (
-                $count === 1
-                && $this->Formatter->TightDeclarationSpacing
-                && !$this->hasDocComment($prev)
-                && !$this->isMultiLine($prev, $assignable)
-            ) {
-                $this->maybeCollapseComment($prev);
-            }
-
             // Add a blank line between declarations and subsequent statements
             // or comments
             if ($prevEnd && $prevEnd->Next && $prevEnd->Next->id !== \T_CLOSE_TAG && (
                 $nextNotDeclaration || !$prevEnd->Next->IsCode
             )) {
                 $prevEnd->WhitespaceAfter |= WhitespaceType::BLANK;
+            }
+
+            if ($alwaysExpand) {
+                continue;
+            }
+
+            foreach ($collapse as $token) {
+                if (
+                    $this->Formatter->TightDeclarationSpacing
+                    || $alwaysExpand === false
+                    || ($alwaysExpand === null && (
+                        // Collapse standalone DocBlocks if they were originally
+                        // collapsed
+                        $token->Prev
+                        && $token->Prev->id === \T_DOC_COMMENT
+                        && strpos($token->Prev->OriginalText ?? $token->Prev->text, "\n") === false
+                    ))
+                ) {
+                    $this->maybeCollapseComment($token);
+                }
             }
         }
     }
@@ -318,7 +312,7 @@ final class DeclarationSpacing implements MultiTokenRule
      * @param int[] $type
      * @param non-empty-array<int[]> $group
      */
-    private function isGroupedByModifier(Token $token, array $type, bool $assignable, array $group): bool
+    private function isGroupedByModifier(Token $token, array $type, array $group): bool
     {
         $groups = [Arr::unique($group)];
         $group = null;
@@ -330,7 +324,7 @@ final class DeclarationSpacing implements MultiTokenRule
             if (
                 $nextType !== $type
                 || $this->hasDocComment($token)
-                || $this->isMultiLine($token, $assignable)
+                || $this->isMultiLine($token)
             ) {
                 break;
             }
@@ -385,27 +379,24 @@ final class DeclarationSpacing implements MultiTokenRule
             (
                 $prev->Flags & TokenFlag::COLLAPSIBLE_COMMENT
                 && ($prev->Data[TokenData::COMMENT_CONTENT][0] ?? null) === '@'
+                && Str::lower($prev->Data[TokenData::COMMENT_CONTENT]) !== '@inheritdoc'
             ) || (
                 // Check for comments that are not collapsible because they have
                 // already been collapsed
-                !$prev->hasNewline() && $prev->text[4] === '@'
+                !$prev->hasNewline()
+                && $prev->text[4] === '@'
+                && Str::lower($prev->text) !== '/** @inheritdoc */'
             )
         ) || (
             $orBlankLineBefore && $prev->hasBlankLineBefore()
         );
     }
 
-    private function isMultiLine(Token $token, bool $assignable): bool
+    private function isMultiLine(Token $token): bool
     {
         return $this->Declarations[$token->Index][7]
-            ??= $this->doIsMultiLine($token, $assignable);
-    }
-
-    private function doIsMultiLine(Token $token, bool $assignable): bool
-    {
-        return (!$assignable || $this->TypeIndex->Attribute[$token->id])
-            && $token->EndStatement
-            && $token->collect($token->EndStatement)->hasNewline();
+            ??= $token->EndStatement
+                && $token->collect($token->EndStatement)->hasNewline();
     }
 
     private function hasNewlineSince(Token $token, Token $since): bool
@@ -444,6 +435,7 @@ final class DeclarationSpacing implements MultiTokenRule
             $token->WhitespaceBefore |= WhitespaceType::LINE;
             return;
         }
+
         $token->applyBlankLineBefore($withMask);
     }
 }

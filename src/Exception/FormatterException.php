@@ -9,20 +9,11 @@ use Throwable;
 class FormatterException extends AbstractException
 {
     protected ?string $Output;
-
-    /**
-     * @var Token[]|null
-     */
+    /** @var Token[]|null */
     protected ?array $Tokens;
-
-    /**
-     * @var array<string,string>|null
-     */
+    /** @var array<string,string>|null */
     protected ?array $Log;
-
-    /**
-     * @var mixed[]|object|null
-     */
+    /** @var mixed[]|object|null */
     protected $Data;
 
     /**

@@ -52,39 +52,19 @@ final class VerticalWhitespace implements MultiTokenRule
         \T_LOGICAL_OR => 7,
     ];
 
-    /**
-     * @var array<int,bool>
-     */
+    /** @var array<int,bool> */
     private array $CommaIndex;
-
-    /**
-     * @var array<int,bool>
-     */
+    /** @var array<int,bool> */
     private array $SemicolonIndex;
-
-    /**
-     * @var array<int,bool>
-     */
+    /** @var array<int,bool> */
     private array $OpenBracketOrNotIndex;
-
-    /**
-     * @var array<int,Closure(Token): bool>
-     */
+    /** @var array<int,Closure(Token): bool> */
     private array $BooleanHasLineBreakClosure;
-
-    /**
-     * @var array<int,Closure(Token): void>
-     */
+    /** @var array<int,Closure(Token): void> */
     private array $ApplyBooleanLineBreakClosure;
-
-    /**
-     * @var array<int,null>
-     */
+    /** @var array<int,null> */
     private array $EmptyBooleansByType;
-
-    /**
-     * @var array<int,true>
-     */
+    /** @var array<int,true> */
     private array $Seen;
 
     public static function getPriority(string $method): ?int

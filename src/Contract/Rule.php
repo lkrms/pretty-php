@@ -10,7 +10,6 @@ use Lkrms\PrettyPHP\Token\Token;
 interface Rule extends Extension
 {
     public const BEFORE_RENDER = 'beforeRender';
-
     public const CALLBACK = 'callback';
 
     /**
@@ -21,8 +20,6 @@ interface Rule extends Extension
      */
     public static function getPriority(string $method): ?int;
 
-    /**
-     * @param Token[] $tokens
-     */
+    /** @param Token[] $tokens */
     public function beforeRender(array $tokens): void;
 }

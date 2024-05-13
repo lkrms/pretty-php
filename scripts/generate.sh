@@ -74,7 +74,7 @@ if ((FIXTURES)); then
         "$PHP" -dshort_open_tag=on scripts/generate-test-output.php
     done
 
-    for DIR in tests/fixtures/Command/FormatPhp/preset/*; do
+    for DIR in tests/fixtures/App/FormatPhpCommand/preset/*; do
         PRESET=${DIR##*/}
         for FILE in "$DIR"/*.in; do
             "$1" -dshort_open_tag=on bin/pretty-php --no-config --preset "$PRESET" --output "${FILE%.in}.out" "$FILE"

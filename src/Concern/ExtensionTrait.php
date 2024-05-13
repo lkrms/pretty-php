@@ -14,7 +14,6 @@ use Lkrms\PrettyPHP\Formatter;
 trait ExtensionTrait
 {
     protected Formatter $Formatter;
-
     protected TokenTypeIndex $TypeIndex;
 
     public function __construct(Formatter $formatter)
