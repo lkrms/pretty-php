@@ -136,6 +136,26 @@ EOF;
         yield from self::getInputFiles('preset/wordpress');
     }
 
+    public function testWordpressWithTight(): void
+    {
+        $messages = [
+            [Level::WARNING, '  ! wordpress preset disabled tight declaration spacing'],
+            [Level::INFO, ' // Formatted 1 file successfully'],
+        ];
+        foreach (self::getInputFiles('preset/wordpress') as [$file]) {
+            $input = File::getContents($file);
+            $expected = File::getContents(substr($file, 0, -3) . '.out');
+            $this->assertCommandProduces(
+                $expected,
+                $input,
+                ['--preset', 'wordpress', '--tight'],
+                0,
+                [...$messages, ...$messages],
+            );
+            break;
+        }
+    }
+
     private function makePresetAssertions(string $preset, string $file): void
     {
         $input = File::getContents($file);

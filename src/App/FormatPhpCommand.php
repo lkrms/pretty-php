@@ -1500,8 +1500,10 @@ EOF,
     {
         try {
             return $this->doGetFormatter();
+            // @codeCoverageIgnoreStart
         } catch (InvalidFormatterException $ex) {
             throw new $exception($ex->getMessage());
+            // @codeCoverageIgnoreEnd
         }
     }
 
@@ -1545,7 +1547,14 @@ EOF,
             /** @var Formatter */
             $formatter = self::PRESET_MAP[$this->Preset]::getFormatter($flags);
             if ($this->Tight) {
-                $formatter = $formatter->withTightDeclarationSpacing();
+                if ($formatter->Enabled[DeclarationSpacing::class] ?? false) {
+                    $formatter = $formatter->withTightDeclarationSpacing();
+                } else {
+                    Console::warn(sprintf(
+                        '%s preset disabled tight declaration spacing',
+                        $this->Preset,
+                    ), null, null, false);
+                }
             }
             if ($this->Psr12) {
                 $formatter = $formatter->withPsr12();
