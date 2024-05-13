@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Tests\Command;
+namespace Lkrms\PrettyPHP\Tests\App;
 
 use Lkrms\PrettyPHP\App\FormatPhpCommand;
 use Salient\Cli\CliApplication;
@@ -22,7 +22,7 @@ use Generator;
 /**
  * @backupGlobals enabled
  */
-final class FormatPhpTest extends \Lkrms\PrettyPHP\Tests\TestCase
+final class FormatPhpCommandTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     private const SYNOPSIS = <<<'EOF'
 

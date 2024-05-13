@@ -1083,22 +1083,22 @@ parameters:
 		-
 			message: "#^Cannot access offset 1 on mixed\\.$#"
 			count: 1
-			path: tests/unit/Command/FormatPhpTest.php
+			path: tests/unit/App/FormatPhpCommandTest.php
 
 		-
 			message: "#^Cannot access offset 2 on mixed\\.$#"
 			count: 1
-			path: tests/unit/Command/FormatPhpTest.php
+			path: tests/unit/App/FormatPhpCommandTest.php
 
 		-
-			message: "#^Method Lkrms\\\\PrettyPHP\\\\Tests\\\\Command\\\\FormatPhpTest\\:\\:configProvider\\(\\) should return array\\<string, array\\{string\\}\\> but returns array\\<string, array\\{array\\<string, mixed\\>\\|string\\}\\>\\.$#"
+			message: "#^Method Lkrms\\\\PrettyPHP\\\\Tests\\\\App\\\\FormatPhpCommandTest\\:\\:configProvider\\(\\) should return array\\<string, array\\{string\\}\\> but returns array\\<string, array\\{array\\<string, mixed\\>\\|string\\}\\>\\.$#"
 			count: 1
-			path: tests/unit/Command/FormatPhpTest.php
+			path: tests/unit/App/FormatPhpCommandTest.php
 
 		-
 			message: "#^Parameter \\#1 \\$string of function substr expects string, mixed given\\.$#"
 			count: 1
-			path: tests/unit/Command/FormatPhpTest.php
+			path: tests/unit/App/FormatPhpCommandTest.php
 
 		-
 			message: "#^Parameter \\#3 \\$enable of method Lkrms\\\\PrettyPHP\\\\Tests\\\\TestCase\\:\\:assertCodeFormatIs\\(\\) expects array\\<class\\-string\\<Lkrms\\\\PrettyPHP\\\\Contract\\\\Extension\\>\\>, array\\<string\\> given\\.$#"
