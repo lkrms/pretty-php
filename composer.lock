@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0a858cae0db9e44207043f21622dfc60",
+    "content-hash": "e37be661f14c62baca68b2af2958329e",
     "packages": [
         {
             "name": "lkrms/dice",
@@ -364,16 +364,16 @@
         },
         {
             "name": "salient/toolkit",
-            "version": "v0.99.18",
+            "version": "v0.99.19",
             "source": {
                 "type": "git",
                 "url": "https://github.com/salient-labs/toolkit.git",
-                "reference": "bc6cfe6dd8340d1ede86db05b2c0c2c96eb967da"
+                "reference": "a80e9da315c4b730598299e02c55fc119a159f1e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/salient-labs/toolkit/zipball/bc6cfe6dd8340d1ede86db05b2c0c2c96eb967da",
-                "reference": "bc6cfe6dd8340d1ede86db05b2c0c2c96eb967da",
+                "url": "https://api.github.com/repos/salient-labs/toolkit/zipball/a80e9da315c4b730598299e02c55fc119a159f1e",
+                "reference": "a80e9da315c4b730598299e02c55fc119a159f1e",
                 "shasum": ""
             },
             "require": {
@@ -398,6 +398,7 @@
             "require-dev": {
                 "adodb/adodb-php": "^5",
                 "analog/analog": "^1",
+                "ergebnis/composer-normalize": "^2",
                 "ergebnis/phpunit-slow-test-detector": "^2",
                 "firebase/php-jwt": "^6",
                 "league/oauth2-client": "^2",
@@ -455,7 +456,7 @@
                 "issues": "https://github.com/salient-labs/toolkit/issues",
                 "source": "https://github.com/salient-labs/toolkit"
             },
-            "time": "2024-05-03T15:22:33+00:00"
+            "time": "2024-05-13T02:48:34+00:00"
         },
         {
             "name": "sebastian/diff",

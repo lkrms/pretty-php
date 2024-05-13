@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Tests\Command;
 
-use Lkrms\PrettyPHP\Command\FormatPhp;
+use Lkrms\PrettyPHP\App\FormatPhpCommand;
 use Salient\Cli\CliApplication;
 use Salient\Console\Target\MockTarget;
 use Salient\Contract\Core\ExceptionInterface;
@@ -56,7 +56,7 @@ EOF;
         $_SERVER['SCRIPT_FILENAME'] = 'pretty-php';
 
         $this->App = (new CliApplication(self::$BasePath))
-            ->oneCommand(FormatPhp::class);
+            ->oneCommand(FormatPhpCommand::class);
     }
 
     protected function tearDown(): void

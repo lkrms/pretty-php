@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Command;
+namespace Lkrms\PrettyPHP\App;
 
+use Lkrms\PrettyPHP\App\Exception\InvalidConfigurationException;
 use Lkrms\PrettyPHP\Catalog\FormatterFlag;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
-use Lkrms\PrettyPHP\Command\Exception\InvalidConfigurationException;
 use Lkrms\PrettyPHP\Contract\Preset;
 use Lkrms\PrettyPHP\Exception\FormatterException;
 use Lkrms\PrettyPHP\Exception\InvalidFormatterException;
@@ -63,7 +63,7 @@ use Throwable;
 /**
  * Provides pretty-php's command-line interface
  */
-final class FormatPhp extends CliCommand
+final class FormatPhpCommand extends CliCommand
 {
     private const DISABLE_MAP = [
         'sort-imports' => SortImports::class,
@@ -221,7 +221,7 @@ final class FormatPhp extends CliCommand
     // --
 
     /**
-     * @var array<string,Formatter>
+     * @var array<string,Formatter|null>
      */
     private array $FormatterByDir;
 
@@ -1280,7 +1280,7 @@ EOF,
     }
 
     /**
-     * @param mixed[] $values
+     * @param array<string,array<string|int|bool>|string|int|bool|null> $values
      */
     private function getConfig(array $values): self
     {
@@ -1314,7 +1314,7 @@ EOF,
     }
 
     /**
-     * @return mixed[]
+     * @return array<string,array<string|int|bool>|string|int|bool|null>
      */
     private function getFormattingConfigValues(string $filename, bool $pristine = false): array
     {
@@ -1325,7 +1325,7 @@ EOF,
     }
 
     /**
-     * @return mixed[]
+     * @return array<string,array<string|int|bool>|string|int|bool|null>
      */
     private function getConfigValues(string $filename, bool $pristine = false): array
     {
@@ -1350,7 +1350,7 @@ EOF,
             ), $ex);
         }
 
-        if (!is_array($config)) {
+        if (!is_array($config) || !$this->checkOptionValues($config)) {
             throw new InvalidConfigurationException(sprintf(
                 'Invalid configuration file: %s',
                 $filename,
@@ -1393,7 +1393,9 @@ EOF,
 
     /**
      * @param array<string,string> $files
+     * @param-out array<string,string> $files
      * @param array<string,string> $dirs
+     * @param-out array<string,string> $dirs
      */
     private function addDir(string $dir, array &$files, array &$dirs): void
     {
@@ -1431,7 +1433,9 @@ EOF,
     /**
      * @param SplFileInfo|string $file
      * @param array<string,string> $files
+     * @param-out array<string,string> $files
      * @param array<string,string> $dirs
+     * @param-out array<string,string> $dirs
      */
     private function addFile($file, array &$files, array &$dirs): void
     {

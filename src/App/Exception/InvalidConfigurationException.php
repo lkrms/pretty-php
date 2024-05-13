@@ -1,11 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Command\Exception;
+namespace Lkrms\PrettyPHP\App\Exception;
 
-use Lkrms\PrettyPHP\Exception\AbstractException;
 use Throwable;
 
-class InvalidConfigurationException extends AbstractException
+class InvalidConfigurationException extends AbstractAppException
 {
     public function __construct(string $message = '', ?Throwable $previous = null)
     {
