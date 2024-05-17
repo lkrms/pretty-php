@@ -68,7 +68,7 @@ jobs:
         with:
           pkgname: pretty-php
           pkgbuild: build/PKGBUILD
-          updpkgsums: true
+          updpkgsums: false
           test: true
           test_flags: --clean --cleanbuild --syncdeps --noconfirm
           commit_username: ${{ secrets.AUR_USERNAME }}
