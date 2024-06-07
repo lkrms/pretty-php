@@ -23,7 +23,7 @@ final class NormaliseStringsTest extends \Lkrms\PrettyPHP\Tests\TestCase
     public static function outputProvider(): array
     {
         $formatterB = Formatter::build();
-        $formatter = $formatterB->go();
+        $formatter = $formatterB->build();
 
         return [
             'leading tabs + tab indentation' => [

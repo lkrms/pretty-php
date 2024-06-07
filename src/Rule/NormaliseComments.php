@@ -10,7 +10,7 @@ use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Salient\Core\Utility\Pcre;
+use Salient\Utility\Regex;
 
 /**
  * Normalise comments
@@ -47,14 +47,14 @@ final class NormaliseComments implements MultiTokenRule
             ) {
                 // If any lines start with characters other than "*", detect and
                 // preserve the indentation of undelimited lines if possible
-                if (Pcre::match('/\n\h*+(?!\*)\S/', $token->text)) {
+                if (Regex::match('/\n\h*+(?!\*)\S/', $token->text)) {
                     $expanded = $token->ExpandedText ?? $token->text;
 
                     // Get the indent, in spaces, of the character closest to
                     // column 1 that isn't an asterisk
                     if (
-                        Pcre::match('/^(?!\A)(?!\*)\S/m', $expanded)
-                        || !Pcre::matchAll(
+                        Regex::match('/^(?!\A)(?!\*)\S/m', $expanded)
+                        || !Regex::matchAll(
                             '/^(?!\A)(\h++)(?!\*)\S/m',
                             $expanded,
                             $matches,
@@ -71,7 +71,7 @@ final class NormaliseComments implements MultiTokenRule
                         }
 
                         // Take any content on the first line into account
-                        if (Pcre::match('/^(\/\*++(?!\*)\h*+)\S/', $expanded, $matches)) {
+                        if (Regex::match('/^(\/\*++(?!\*)\h*+)\S/', $expanded, $matches)) {
                             $deindent = min($deindent, $token->column + strlen($matches[1]) - 1);
                         }
                     }
@@ -90,7 +90,7 @@ final class NormaliseComments implements MultiTokenRule
                         : '';
                     if (
                         $deindent > $token->column + 2
-                        && !Pcre::match(
+                        && !Regex::match(
                             "/^\/\*++\h*+\\n(?:\h*+(?:\*\h*+)?\\n)*$deindentRegex/",
                             $expanded,
                         )
@@ -102,7 +102,7 @@ final class NormaliseComments implements MultiTokenRule
                     // the opening "/*", whichever appears first
                     $indentRegex = $this->getIndentRegex($token->column);
                     $altRegex = $this->getIndentRegex($token->column - 1);
-                    if (Pcre::match(
+                    if (Regex::match(
                         "/\\n(?:$indentRegex|(?<alt>$altRegex))\*/",
                         $expanded,
                         $matches,
@@ -112,12 +112,12 @@ final class NormaliseComments implements MultiTokenRule
 
                     // Expand tabs to spaces if tabs don't appear first in every
                     // line where they are combined with spaces for indentation
-                    $text = Pcre::match('/\n(?=\h)(?!\t* *(?!\h))/', $token->text)
+                    $text = Regex::match('/\n(?=\h)(?!\t* *(?!\h))/', $token->text)
                         ? $token->expandedText()
                         : $token->text;
 
                     // Add missing asterisks
-                    $text = Pcre::replace(
+                    $text = Regex::replace(
                         "/\\n(?!$indentRegex\*)(\h*)$deindentRegex(?!\h)/",
                         "\n* \$1",
                         $text,
@@ -125,8 +125,8 @@ final class NormaliseComments implements MultiTokenRule
                 } else {
                     // In comments where every line starts with "*" and ends
                     // with "\h*", remove the trailing asterisks
-                    if (!Pcre::match('/(?<!\h\*)\h*(?!\z)$/m', $token->text)) {
-                        $text = Pcre::replace(
+                    if (!Regex::match('/(?<!\h\*)\h*(?!\z)$/m', $token->text)) {
+                        $text = Regex::replace(
                             '/\h+\*\h*(?!\z)$/m',
                             '',
                             $token->text,
@@ -143,7 +143,7 @@ final class NormaliseComments implements MultiTokenRule
 
                 // Remove comment delimiters, trailing whitespace, and "*" from
                 // the start of each line
-                $text = trim(Pcre::replace(
+                $text = trim(Regex::replace(
                     ['#^/\*+#', '#\*+/$#', '#\h++$#m', '#\n\h*+\* ?#'],
                     ['', '', '', "\n"],
                     $text,
@@ -209,7 +209,7 @@ final class NormaliseComments implements MultiTokenRule
                         continue 2;
                     }
 
-                    $token->setText(Pcre::replace([
+                    $token->setText(Regex::replace([
                         '#^/\*+(?!\*)\h*+(?=\H)(.*)(?<=\H)\h*(?<!\*)\**/$#',
                         '#^/\*+\h++\*+/$#',
                     ], [
@@ -223,7 +223,7 @@ final class NormaliseComments implements MultiTokenRule
                     $token->setText('//' . substr($token->text, 1));
                     // No break
                 case TokenFlag::CPP_COMMENT:
-                    $token->setText(Pcre::replace('#^//(?=\S)#', '// ', $token->text));
+                    $token->setText(Regex::replace('#^//(?=\S)#', '// ', $token->text));
 
                     break;
             }

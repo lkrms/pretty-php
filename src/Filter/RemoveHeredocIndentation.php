@@ -6,7 +6,7 @@ use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Token\GenericToken;
 use Lkrms\PrettyPHP\Token\Token;
-use Salient\Core\Utility\Pcre;
+use Salient\Utility\Regex;
 
 /**
  * Remove indentation from heredocs
@@ -53,12 +53,12 @@ final class RemoveHeredocIndentation implements Filter
         /** @var array<int,string[]> $heredocText */
         foreach ($heredocText as $i => $heredoc) {
             // Check for indentation to remove
-            if (!Pcre::match('/^\h++/', end($heredoc), $matches)) {
+            if (!Regex::match('/^\h++/', end($heredoc), $matches)) {
                 continue;
             }
 
             // Remove it from the collected tokens
-            $stripped = Pcre::replace("/\\n{$matches[0]}/", "\n", $heredoc);
+            $stripped = Regex::replace("/\\n{$matches[0]}/", "\n", $heredoc);
 
             // And from the start of the first token and closing identifier,
             // where there is no leading newline and no chance the token is not
@@ -66,14 +66,14 @@ final class RemoveHeredocIndentation implements Filter
             $last = count($heredoc) - 1;
             if ($last === 0) {
                 $stripped[0] =
-                    Pcre::replace(
+                    Regex::replace(
                         "/^{$matches[0]}/",
                         '',
                         $stripped[0]
                     );
             } else {
                 [$stripped[0], $stripped[$last]] =
-                    Pcre::replace(
+                    Regex::replace(
                         "/^{$matches[0]}/",
                         '',
                         [$stripped[0], $stripped[$last]]

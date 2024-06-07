@@ -26,8 +26,8 @@ final class FormatterFlag extends AbstractEnumeration
     /**
      * Enable debug mode
      *
-     * Debug mode is enabled automatically if {@see \Lkrms\Utility\Env::debug()}
-     * returns `true`.
+     * Debug mode is enabled automatically if
+     * {@see \Salient\Utility\Env::getDebug()} returns `true`.
      */
     public const DEBUG = 4;
 

@@ -11,8 +11,8 @@ use Lkrms\PrettyPHP\Filter\SortImports;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Str;
+use Salient\Utility\Arr;
+use Salient\Utility\Str;
 
 /**
  * Normalise vertical spacing between declarations

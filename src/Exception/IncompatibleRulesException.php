@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Exception;
 
 use Lkrms\PrettyPHP\Contract\Rule;
-use Salient\Core\Utility\Get;
+use Salient\Utility\Get;
 
 class IncompatibleRulesException extends InvalidFormatterException
 {

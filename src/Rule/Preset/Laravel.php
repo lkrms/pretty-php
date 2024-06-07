@@ -34,7 +34,7 @@ final class Laravel implements Preset, TokenRule
                    ])
                    ->flags($flags)
                    ->heredocIndent(HeredocIndent::NONE)
-                   ->go();
+                   ->build();
     }
 
     public static function getPriority(string $method): ?int

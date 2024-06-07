@@ -4,7 +4,7 @@ namespace Lkrms\PrettyPHP\Filter;
 
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
-use Salient\Core\Utility\Pcre;
+use Salient\Utility\Regex;
 
 /**
  * Remove empty DocBlocks
@@ -22,7 +22,7 @@ final class RemoveEmptyDocBlocks implements Filter
     {
         foreach ($tokens as $token) {
             if ($token->id === \T_DOC_COMMENT
-                    && Pcre::match('#^/\*\*[\s\*]*\*/$#', $token->text)) {
+                    && Regex::match('#^/\*\*[\s\*]*\*/$#', $token->text)) {
                 continue;
             }
             $filtered[] = $token;

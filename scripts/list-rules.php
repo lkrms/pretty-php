@@ -9,8 +9,8 @@ use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Formatter;
 use Salient\Cli\CliApplication;
 use Salient\Core\Facade\Console;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Get;
+use Salient\Utility\Arr;
+use Salient\Utility\Get;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
@@ -45,7 +45,7 @@ function maybeAddRule(
 }
 
 $app = new CliApplication(dirname(__DIR__));
-Console::registerStderrTarget(true);
+Console::registerStderrTarget();
 
 $mainLoop = [];
 $blockLoop = [];

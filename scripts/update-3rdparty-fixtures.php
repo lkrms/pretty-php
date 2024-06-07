@@ -3,13 +3,13 @@
 
 use Lkrms\PrettyPHP\Tests\FormatterTest;
 use Salient\Cli\CliApplication;
-use Salient\Core\Exception\UnexpectedValueException;
 use Salient\Core\Facade\Console;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Inflect;
-use Salient\Core\Utility\Pcre;
-use Salient\Core\Utility\Str;
-use Salient\Core\Utility\Sys;
+use Salient\Utility\File;
+use Salient\Utility\Inflect;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
+use Salient\Utility\Sys;
+use UnexpectedValueException;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
@@ -95,13 +95,13 @@ foreach ($files as $xmlFile) {
 
     // Remove entities without changing anything between CDATA tags
     /** @var string[] */
-    $split = Pcre::split('/(<!\[CDATA\[.*?\]\]>)/s', $xml, -1, \PREG_SPLIT_DELIM_CAPTURE);
+    $split = Regex::split('/(<!\[CDATA\[.*?\]\]>)/s', $xml, -1, \PREG_SPLIT_DELIM_CAPTURE);
     if (count($split) < 2) {
         continue;
     }
     $xml = '';
     while ($split) {
-        $xml .= Pcre::replace(
+        $xml .= Regex::replace(
             '/&[[:alpha:]_][[:alnum:]_.-]*;/', '', array_shift($split)
         );
         if ($split) {
@@ -205,7 +205,7 @@ if (!is_file($file)) {
     throw new RuntimeException(sprintf('File not found: %s', $file));
 }
 
-if (!Pcre::matchAll(
+if (!Regex::matchAll(
     "/$markdownRegex/",
     Str::setEol(File::getContents($file)),
     $matches,
@@ -241,7 +241,7 @@ File::pruneDir($dir);
 
 $index = 0;
 foreach ($byHeading as $heading => $listings) {
-    $heading = trim(Pcre::replace(
+    $heading = trim(Regex::replace(
         '/(?:\.(?![0-9])|[^a-z0-9.])+/i',
         '-',
         Str::lower($heading)
@@ -283,7 +283,7 @@ $ignorable = "\u{00ad}\u{202a}\u{202b}\u{202c}\u{202d}\u{202e}\u{2066}\u{2067}\u
 
 PHP;
 
-Pcre::matchAll(
+Regex::matchAll(
     "/\"[^\"]*(?:[\0-\x08\x0e-\x1f\x7f-\xff][^\"]*)+\"/",
     File::getContents($data['utf-8.txt']),
     $matches,
@@ -291,7 +291,7 @@ Pcre::matchAll(
 );
 
 foreach ($matches as $match) {
-    $match = Pcre::replace('/^"|\s{2,}|\|\s*\n|"$/', '', $match[0]);
+    $match = Regex::replace('/^"|\s{2,}|\|\s*\n|"$/', '', $match[0]);
     $output .= quote($match) . ';' . \PHP_EOL;
 }
 
@@ -307,11 +307,11 @@ while (true) {
         }
         break;
     }
-    if (Pcre::match('/^\h*+#\h*+subgroup:\h*+(?<subgroup>.+)(?<!\h)/', $line, $matches)) {
+    if (Regex::match('/^\h*+#\h*+subgroup:\h*+(?<subgroup>.+)(?<!\h)/', $line, $matches)) {
         $group = $matches['subgroup'];
         continue;
     }
-    if (!Pcre::match('/^[0-9a-f]+(?: [0-9a-f]+)*/i', $line, $matches)) {
+    if (!Regex::match('/^[0-9a-f]+(?: [0-9a-f]+)*/i', $line, $matches)) {
         continue;
     }
     $sequence = '';

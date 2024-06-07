@@ -6,8 +6,8 @@ use Lkrms\PrettyPHP\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Exception\RuleException;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Salient\Core\Utility\Pcre;
-use Salient\Core\Utility\Str;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
 
 /**
  * Normalise integers and floats
@@ -49,7 +49,7 @@ final class NormaliseNumbers implements MultiTokenRule
                 || strpbrk($text, '.Ee') === false
                 || strpbrk($text, 'xX') !== false
             ) {
-                if (!Pcre::match(
+                if (!Regex::match(
                     '/^0(?<base>[xob]|(?=[0-7]))0*(?<number>[1-9a-f][0-9a-f]*|0)$/i',
                     $text,
                     $matches,
@@ -115,7 +115,7 @@ final class NormaliseNumbers implements MultiTokenRule
                 continue;
             }
 
-            if (!Pcre::match(
+            if (!Regex::match(
                 '/^0*+(?<integer>[0-9]+)?(?:\.(?<fractional>[0-9]+(?<!0))?0*)?(?:e(?<sign>[-+])?0*(?<exponent>[0-9]+))?$/i',
                 $text,
                 $matches,

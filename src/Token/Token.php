@@ -8,9 +8,9 @@ use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Support\TokenIndentDelta;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Pcre;
-use Salient\Core\Utility\Str;
+use Salient\Utility\Arr;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
 use JsonSerializable;
 
 class Token extends GenericToken implements JsonSerializable
@@ -633,7 +633,7 @@ class Token extends GenericToken implements JsonSerializable
         if (
             $containDeclaration
             && $this->Expression
-            && ($parts = $this->skipPrevSiblingsToDeclarationStart()->declarationParts())->has($this, true)
+            && ($parts = $this->skipPrevSiblingsToDeclarationStart()->declarationParts())->hasValue($this, true)
             && $parts->hasOneOf(...TokenType::DECLARATION_TOP_LEVEL)
             // Exclude anonymous functions, which can move as needed
             && ($last = $parts->last()->skipPrevSiblingsFrom(
@@ -1111,7 +1111,7 @@ class Token extends GenericToken implements JsonSerializable
 
     private function getIndentSpacesFromText(): int
     {
-        if (!Pcre::match('/^(?:\s*\n)?(?<indent>\h*)\S/', $this->text, $matches)) {
+        if (!Regex::match('/^(?:\s*\n)?(?<indent>\h*)\S/', $this->text, $matches)) {
             return 0;
         }
 
@@ -1233,7 +1233,7 @@ class Token extends GenericToken implements JsonSerializable
                     || ($current->Heredoc && $current->id !== \T_END_HEREDOC)) {
                 $heredoc = $current->Heredoc ?: $current;
                 if ($heredoc->HeredocIndent) {
-                    $text = Pcre::replace(
+                    $text = Regex::replace(
                         ($current->Next->text[0] ?? null) === "\n"
                             ? "/\\n{$heredoc->HeredocIndent}\$/m"
                             : "/\\n{$heredoc->HeredocIndent}(?=\\n)/",
@@ -1279,7 +1279,7 @@ class Token extends GenericToken implements JsonSerializable
 column 1 despite starting in column 2 or above (like this comment) */
             if (!$delta || (
                 $this->column > 1
-                && Pcre::match('/\n(?!\*)\S/', $text)
+                && Regex::match('/\n(?!\*)\S/', $text)
             )) {
                 return $this->maybeUnexpandTabs($text, $softTabs);
             }
@@ -1287,7 +1287,7 @@ column 1 despite starting in column 2 or above (like this comment) */
             if ($delta < 0) {
                 // Don't deindent if any non-empty lines have insufficient
                 // whitespace
-                if (Pcre::match("/\\n(?!{$spaces}|\h*+\\n)/", $text)) {
+                if (Regex::match("/\\n(?!{$spaces}|\h*+\\n)/", $text)) {
                     return $this->maybeUnexpandTabs($text, $softTabs);
                 }
                 return $this->maybeUnexpandTabs(str_replace("\n" . $spaces, "\n", $text), $softTabs);
@@ -1326,9 +1326,9 @@ column 1 despite starting in column 2 or above (like this comment) */
     private function maybeUnexpandTabs(string $text, bool $softTabs): string
     {
         // Remove trailing whitespace
-        $text = Pcre::replace('/\h++$/m', '', $text);
+        $text = Regex::replace('/\h++$/m', '', $text);
         if ($this->Formatter->Tab === "\t" && !$softTabs) {
-            return Pcre::replace("/(?<=\\n|\G){$this->Formatter->SoftTab}/", "\t", $text);
+            return Regex::replace("/(?<=\\n|\G){$this->Formatter->SoftTab}/", "\t", $text);
         }
         return $text;
     }

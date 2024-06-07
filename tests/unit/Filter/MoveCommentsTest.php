@@ -24,7 +24,7 @@ final class MoveCommentsTest extends \Lkrms\PrettyPHP\Tests\TestCase
     public static function outputProvider(): array
     {
         $formatterB = Formatter::build();
-        $formatter = $formatterB->go();
+        $formatter = $formatterB->build();
 
         $idx = new TokenTypeIndex();
         $mixed = $idx->withMixedOperators();

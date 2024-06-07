@@ -7,7 +7,7 @@ use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Token\Token;
 use Salient\Core\Concern\HasImmutableProperties;
-use Salient\Core\Utility\Pcre;
+use Salient\Utility\Regex;
 
 final class Parser
 {
@@ -204,11 +204,11 @@ final class Parser
                             && strpos($text, "\n") !== false
                             && (
                                 // Every line starts with "*"
-                                !Pcre::match('/\n\h*+(?!\*)\S/', $text)
+                                !Regex::match('/\n\h*+(?!\*)\S/', $text)
                                 // The first delimiter is followed by a newline
-                                || !Pcre::match('/^\/\*++(\h++|(?!\*))\S/', $text)
+                                || !Regex::match('/^\/\*++(\h++|(?!\*))\S/', $text)
                                 // The last delimiter is preceded by a newline
-                                || !Pcre::match('/\S((?<!\*)|\h++)\*++\/$/', $text)
+                                || !Regex::match('/\S((?<!\*)|\h++)\*++\/$/', $text)
                             )) {
                         // @phpstan-ignore-next-line
                         $token->Flags |= TokenFlag::INFORMAL_DOC_COMMENT;

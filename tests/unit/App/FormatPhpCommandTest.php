@@ -10,13 +10,13 @@ use Salient\Contract\Core\FileDescriptor;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
 use Salient\Core\Facade\Console;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Json;
-use Salient\Core\Utility\Pcre;
-use Salient\Core\Utility\Str;
-use Salient\Core\Utility\Sys;
 use Salient\Core\Process;
+use Salient\Utility\File;
+use Salient\Utility\Get;
+use Salient\Utility\Json;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
+use Salient\Utility\Sys;
 use Generator;
 
 /**
@@ -929,6 +929,6 @@ EOF,
             return $diff;
         }
 
-        return Pcre::replace('/^((?:[+-]{3}|@)\V*)\R/m', '$1' . "\n", $diff);
+        return Regex::replace('/^((?:[+-]{3}|@)\V*)\R/m', '$1' . "\n", $diff);
     }
 }

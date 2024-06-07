@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Exception;
 
 use Lkrms\PrettyPHP\Token\Token;
-use Salient\Core\Utility\Json;
+use Salient\Utility\Json;
 use Throwable;
 
 class FormatterException extends AbstractException

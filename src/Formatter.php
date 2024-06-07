@@ -73,17 +73,17 @@ use Lkrms\PrettyPHP\Token\Token;
 use Salient\Contract\Core\Buildable;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\HasImmutableProperties;
-use Salient\Core\Exception\InvalidArgumentException;
 use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Profile;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Env;
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Inflect;
-use Salient\Core\Utility\Str;
 use Salient\Core\Indentation;
+use Salient\Utility\Arr;
+use Salient\Utility\Env;
+use Salient\Utility\Get;
+use Salient\Utility\Inflect;
+use Salient\Utility\Str;
 use Closure;
 use CompileError;
+use InvalidArgumentException;
 use LogicException;
 use Throwable;
 
@@ -501,7 +501,7 @@ final class Formatter implements Buildable
         $this->TightDeclarationSpacing = $tightDeclarationSpacing;
         $this->Psr12 = $psr12;
 
-        $this->Debug = ($flags & FormatterFlag::DEBUG) || Env::debug();
+        $this->Debug = ($flags & FormatterFlag::DEBUG) || Env::getDebug();
         $this->LogProgress = $this->Debug && ($flags & FormatterFlag::LOG_PROGRESS);
         $this->ReportCodeProblems = (bool) ($flags & FormatterFlag::REPORT_CODE_PROBLEMS);
         $this->CollectCodeProblems = $this->ReportCodeProblems || ($flags & FormatterFlag::COLLECT_CODE_PROBLEMS);

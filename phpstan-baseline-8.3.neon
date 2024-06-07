@@ -41,7 +41,7 @@ parameters:
 			path: scripts/list-rules.php
 
 		-
-			message: "#^Parameter \\#1 \\$class of static method Salient\\\\Core\\\\Utility\\\\Get\\:\\:basename\\(\\) expects string, mixed given\\.$#"
+			message: "#^Parameter \\#1 \\$class of static method Salient\\\\Utility\\\\Get\\:\\:basename\\(\\) expects string, mixed given\\.$#"
 			count: 1
 			path: scripts/list-rules.php
 
@@ -66,7 +66,7 @@ parameters:
 			path: src/Filter/EvaluateStrings.php
 
 		-
-			message: "#^Parameter \\#2 \\$subject of static method Salient\\\\Core\\\\Utility\\\\Pcre\\:\\:match\\(\\) expects string, string\\|false given\\.$#"
+			message: "#^Parameter \\#2 \\$subject of static method Salient\\\\Utility\\\\Regex\\:\\:match\\(\\) expects string, string\\|false given\\.$#"
 			count: 1
 			path: src/Filter/RemoveHeredocIndentation.php
 
@@ -106,7 +106,7 @@ parameters:
 			path: src/Formatter.php
 
 		-
-			message: "#^Parameter \\#1 \\$from of static method Salient\\\\Core\\\\Utility\\\\Inflect\\:\\:formatRange\\(\\) expects float\\|int, int\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$from of static method Salient\\\\Utility\\\\Inflect\\:\\:formatRange\\(\\) expects float\\|int, int\\|null given\\.$#"
 			count: 1
 			path: src/Formatter.php
 
@@ -126,7 +126,7 @@ parameters:
 			path: src/Formatter.php
 
 		-
-			message: "#^Parameter \\#2 \\$to of static method Salient\\\\Core\\\\Utility\\\\Inflect\\:\\:formatRange\\(\\) expects float\\|int, int\\|null given\\.$#"
+			message: "#^Parameter \\#2 \\$to of static method Salient\\\\Utility\\\\Inflect\\:\\:formatRange\\(\\) expects float\\|int, int\\|null given\\.$#"
 			count: 1
 			path: src/Formatter.php
 
@@ -1041,7 +1041,7 @@ parameters:
 			path: src/Token/Token.php
 
 		-
-			message: "#^Parameter \\#3 \\$column of static method Salient\\\\Core\\\\Utility\\\\Str\\:\\:expandTabs\\(\\) expects int, int\\|null given\\.$#"
+			message: "#^Parameter \\#3 \\$column of static method Salient\\\\Utility\\\\Str\\:\\:expandTabs\\(\\) expects int, int\\|null given\\.$#"
 			count: 1
 			path: src/Token/Token.php
 

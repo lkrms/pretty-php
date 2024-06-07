@@ -36,7 +36,7 @@ final class Drupal implements Preset, TokenRule
                    ->flags($flags)
                    ->heredocIndent(HeredocIndent::NONE)
                    ->oneTrueBraceStyle()
-                   ->go();
+                   ->build();
     }
 
     public static function getPriority(string $method): ?int

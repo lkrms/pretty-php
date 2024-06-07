@@ -6,7 +6,7 @@ use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Filter\Concern\FilterTrait;
 use Lkrms\PrettyPHP\Token\GenericToken;
-use Salient\Core\Utility\Pcre;
+use Salient\Utility\Regex;
 
 /**
  * Sort consecutive alias/import statements
@@ -234,7 +234,7 @@ final class SortImports implements Filter
 
         return [
             $order,
-            Pcre::replace($this->Search, $this->Replace, $import),
+            Regex::replace($this->Search, $this->Replace, $import),
         ];
     }
 

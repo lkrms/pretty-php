@@ -45,15 +45,15 @@ use Salient\Contract\Cli\CliOptionVisibility as Visibility;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Profile;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Env;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Inflect;
-use Salient\Core\Utility\Json;
-use Salient\Core\Utility\Pcre;
-use Salient\Core\Utility\Str;
 use Salient\Core\Indentation;
+use Salient\Utility\Arr;
+use Salient\Utility\Env;
+use Salient\Utility\File;
+use Salient\Utility\Get;
+use Salient\Utility\Inflect;
+use Salient\Utility\Json;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
 use SebastianBergmann\Diff\Differ;
 use JsonException;
@@ -739,11 +739,11 @@ EOF,
         if ($this->DebugDirectory !== null) {
             File::createDir($this->DebugDirectory);
             $this->DebugDirectory = File::realpath($this->DebugDirectory);
-            Env::debug(true);
+            Env::setDebug(true);
             $this->App->logOutput();
             $this->Debug = true;
         } else {
-            $this->Debug = Env::debug();
+            $this->Debug = Env::getDebug();
         }
 
         if ($this->ReportTimers) {
@@ -958,7 +958,7 @@ EOF,
             || $this->Check
             || $this->PrintConfig
         ) {
-            Console::registerStderrTarget(true);
+            Console::registerStderrTarget();
         }
 
         if ($this->PrintConfig) {
@@ -1137,7 +1137,7 @@ EOF,
                     }
                     continue;
                 }
-                Console::maybeClearLine();
+                Console::clearProgress();
                 switch ($this->Diff) {
                     case 'name-only':
                         printf("%s\n", $inputFile);
@@ -1160,10 +1160,10 @@ EOF,
 
             $outFile = $out[$key] ?? '-';
             if ($outFile === '-') {
-                Console::maybeClearLine();
+                Console::clearProgress();
                 print $output;
                 if (stream_isatty(\STDOUT)) {
-                    Console::tty('');
+                    Console::printTty('');
                 }
                 continue;
             }
@@ -1207,7 +1207,7 @@ EOF,
         if ($this->Diff) {
             if ($this->Quiet < 2) {
                 if ($replaced) {
-                    Console::out('', Level::INFO);
+                    Console::printOut('');
                 }
                 Console::log(Inflect::format(
                     $count,
@@ -1373,7 +1373,7 @@ EOF,
         if ($this->IncludeIfPhpRegex !== null) {
             $finder = $finder->include(
                 fn(SplFileInfo $file, string $path) =>
-                    Pcre::match($this->IncludeIfPhpRegex, $path)
+                    Regex::match($this->IncludeIfPhpRegex, $path)
                     && File::hasPhp((string) $file)
             );
         }
@@ -1597,7 +1597,7 @@ EOF,
                  ->oneTrueBraceStyle($this->OneTrueBraceStyle)
                  ->tightDeclarationSpacing($this->Tight)
                  ->psr12($this->Psr12)
-                 ->go();
+                 ->build();
 
         return $f;
     }

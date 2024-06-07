@@ -13,10 +13,10 @@ use Lkrms\PrettyPHP\Rule\AlignTernaryOperators;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Json;
-use Salient\Core\Utility\Pcre;
+use Salient\Utility\Arr;
+use Salient\Utility\File;
+use Salient\Utility\Json;
+use Salient\Utility\Regex;
 use Generator;
 use SplFileInfo;
 
@@ -40,7 +40,7 @@ final class FormatterTest extends TestCase
     public static function formatProvider(): array
     {
         $formatterB = Formatter::build();
-        $formatter = $formatterB->go();
+        $formatter = $formatterB->build();
 
         return [
             'empty string' => [
@@ -622,9 +622,9 @@ PHP,
                 continue;
             }
 
-            $outFile = Pcre::replace('/\.fails$/', '', "$outDir/$path");
+            $outFile = Regex::replace('/\.fails$/', '', "$outDir/$path");
             if ($versionSuffix) {
-                $versionOutFile = Pcre::replace('/(?<!\G)(\.php)?$/', "$versionSuffix\$1", $outFile);
+                $versionOutFile = Regex::replace('/(?<!\G)(\.php)?$/', "$versionSuffix\$1", $outFile);
                 if (!$all && file_exists($versionOutFile)) {
                     $outFile = $versionOutFile;
                 }
@@ -646,7 +646,7 @@ PHP,
         return [
             '01-default' =>
                 Formatter::build()
-                    ->go(),
+                    ->build(),
             '02-aligned' =>
                 Formatter::build()
                     ->enable([
@@ -657,18 +657,18 @@ PHP,
                         AlignLists::class,
                         AlignTernaryOperators::class,
                     ])
-                    ->go(),
+                    ->build(),
             '03-tab' =>
                 Formatter::build()
                     ->insertSpaces(false)
                     ->tabSize(8)
-                    ->go(),
+                    ->build(),
             '04-psr12' =>
                 Formatter::build()
                     ->tokenTypeIndex((new TokenTypeIndex())->withLeadingOperators())
                     ->importSortOrder(ImportSortOrder::NONE)
                     ->psr12()
-                    ->go(),
+                    ->build(),
         ];
     }
 

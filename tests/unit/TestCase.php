@@ -6,7 +6,7 @@ use Lkrms\PrettyPHP\Contract\Extension;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
 use Salient\Core\Facade\Profile;
-use Salient\Core\Utility\Pcre;
+use Salient\Utility\Regex;
 
 abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
@@ -18,7 +18,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     public static function assertFormatterOutputIs(string $expected, string $code, $formatter): void
     {
         if ($formatter instanceof FormatterB) {
-            $formatter = $formatter->go();
+            $formatter = $formatter->build();
         }
         // Preserve `$formatter->Tokens` for inspection
         $formatter = $formatter->withDebug();
@@ -60,7 +60,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     {
         return dirname(__DIR__)
             . '/fixtures/'
-            . Pcre::replace(
+            . Regex::replace(
                 ['/^Lkrms\\\\PrettyPHP\\\\(?|Tests\\\\(.+)Test$|(.+))/', '/\\\\/'],
                 ['$1', '/'],
                 $class
