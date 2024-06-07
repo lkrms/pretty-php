@@ -22,7 +22,7 @@ final class CodeProblem implements Stringable
      * Values for the sprintf() format string
      *
      * @readonly
-     * @var mixed[]
+     * @var array<int|float|string|bool|null>
      */
     public array $Values;
 
@@ -50,7 +50,7 @@ final class CodeProblem implements Stringable
     public ?Token $End;
 
     /**
-     * @param mixed ...$values
+     * @param int|float|string|bool|null ...$values
      */
     public function __construct(
         string $format,

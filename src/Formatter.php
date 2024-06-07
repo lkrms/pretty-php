@@ -1296,7 +1296,8 @@ final class Formatter implements Buildable
      * @param Token $start The start of the range of tokens with the problem.
      * @param Token|null $end The end of the range of tokens with the problem,
      * or `null` if the problem only affects one token.
-     * @param mixed $values Values for the sprintf() format string.
+     * @param int|float|string|bool|null ...$values Values for the sprintf()
+     * format string.
      */
     public function reportCodeProblem(
         string $message,

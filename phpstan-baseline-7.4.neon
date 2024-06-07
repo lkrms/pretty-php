@@ -106,11 +106,6 @@ parameters:
 			path: src/Formatter.php
 
 		-
-			message: "#^Parameter \\#1 \\$from of static method Salient\\\\Utility\\\\Inflect\\:\\:formatRange\\(\\) expects float\\|int, int\\|null given\\.$#"
-			count: 1
-			path: src/Formatter.php
-
-		-
 			message: "#^Parameter \\#1 \\$tokens of method Lkrms\\\\PrettyPHP\\\\Contract\\\\Rule\\:\\:beforeRender\\(\\) expects array\\<Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>, array\\<int, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>\\|null given\\.$#"
 			count: 1
 			path: src/Formatter.php
@@ -123,16 +118,6 @@ parameters:
 		-
 			message: "#^Parameter \\#1 \\$types of method Lkrms\\\\PrettyPHP\\\\Formatter\\:\\:sortTokens\\(\\) expects array\\<int, true\\>, non\\-empty\\-array\\<int, '\\*'\\|true\\> given\\.$#"
 			count: 1
-			path: src/Formatter.php
-
-		-
-			message: "#^Parameter \\#2 \\$to of static method Salient\\\\Utility\\\\Inflect\\:\\:formatRange\\(\\) expects float\\|int, int\\|null given\\.$#"
-			count: 1
-			path: src/Formatter.php
-
-		-
-			message: "#^Parameter \\#2 \\.\\.\\.\\$values of function sprintf expects bool\\|float\\|int\\|string\\|null, mixed given\\.$#"
-			count: 2
 			path: src/Formatter.php
 
 		-
