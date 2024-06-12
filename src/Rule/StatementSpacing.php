@@ -70,7 +70,10 @@ final class StatementSpacing implements TokenRule
                 // follow a close bracket or semicolon
                 if ($token->Statement === $token) {
                     if ($this->Formatter->CollectCodeProblems) {
-                        $this->Formatter->reportCodeProblem($this, 'Empty statement', $token);
+                        $this->Formatter->reportCodeProblem(
+                            'Empty statement',
+                            $token,
+                        );
                     }
                     if (!$this->TypeIndex->CloseBracket[$token->Prev->id]
                             && $token->Prev->id !== \T_SEMICOLON) {

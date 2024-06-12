@@ -79,8 +79,6 @@ use Salient\Core\Indentation;
 use Salient\Utility\Arr;
 use Salient\Utility\Env;
 use Salient\Utility\Get;
-use Salient\Utility\Inflect;
-use Salient\Utility\Str;
 use Closure;
 use CompileError;
 use InvalidArgumentException;
@@ -863,13 +861,12 @@ final class Formatter implements Buildable
                 $last->WhitespaceAfter |= WhitespaceType::LINE;
             }
         } catch (CompileError $ex) {
-            throw new InvalidSyntaxException(
-                sprintf(
-                    'Formatting failed: %s cannot be parsed',
-                    Str::coalesce($filename, 'input'),
-                ),
-                $ex
-            );
+            throw new InvalidSyntaxException(sprintf(
+                '%s in %s:%d',
+                Get::basename(get_class($ex)),
+                $filename ?? '<input>',
+                $ex->getLine(),
+            ), $ex);
         } finally {
             Profile::stopTimer(__METHOD__ . '#parse-input');
         }
@@ -1103,7 +1100,7 @@ final class Formatter implements Buildable
             $out = $first->render(false, $last, true);
         } catch (Throwable $ex) {
             throw new FormatterException(
-                'Formatting failed: output cannot be rendered',
+                'Unable to render output',
                 null,
                 $this->Debug ? $this->Tokens : null,
                 $this->Log,
@@ -1132,7 +1129,7 @@ final class Formatter implements Buildable
             );
         } catch (CompileError $ex) {
             throw new FormatterException(
-                'Formatting check failed: output cannot be parsed',
+                'Unable to parse output',
                 $out,
                 $this->Tokens,
                 $this->Log,
@@ -1153,7 +1150,7 @@ final class Formatter implements Buildable
         $after = $this->simplifyTokens($after);
         if ($before !== $after) {
             throw new FormatterException(
-                "Formatting check failed: parsed output doesn't match input",
+                "Parsed output doesn't match input",
                 $out,
                 $this->Tokens,
                 $this->Log,
@@ -1162,24 +1159,8 @@ final class Formatter implements Buildable
         }
 
         if ($this->ReportCodeProblems && $this->CodeProblems) {
-            /** @var CodeProblem $problem */
             foreach ($this->CodeProblems as $problem) {
-                $values = [];
-
-                if ((string) $filename !== '') {
-                    $values[] = $filename;
-                    $values[] = $problem->Start->OutputLine;
-                    $values[] = $problem->Start->OutputColumn;
-                    Console::warn(sprintf($problem->Message . ': %s:%d:%d', ...$problem->Values, ...$values));
-                    continue;
-                }
-
-                $values[] = Inflect::formatRange(
-                    $problem->Start->OutputLine,
-                    $problem->End->OutputLine ?? $problem->Start->OutputLine,
-                    '{{#:on:between}} {{#:line}} {{#:#:and}}',
-                );
-                Console::warn(sprintf($problem->Message . ' %s', ...$problem->Values, ...$values));
+                Console::warn(Console::escape((string) $problem));
             }
         }
 
@@ -1309,15 +1290,31 @@ final class Formatter implements Buildable
     }
 
     /**
-     * @param string $message e.g. `"Unnecessary parentheses"`
-     * @param mixed ...$values
+     * Report a non-critical problem detected in formatted code
+     *
+     * @param string $message An sprintf() format string describing the problem.
+     * @param Token $start The start of the range of tokens with the problem.
+     * @param Token|null $end The end of the range of tokens with the problem,
+     * or `null` if the problem only affects one token.
+     * @param mixed $values Values for the sprintf() format string.
      */
-    public function reportCodeProblem(Rule $rule, string $message, Token $start, ?Token $end = null, ...$values): void
-    {
+    public function reportCodeProblem(
+        string $message,
+        Token $start,
+        ?Token $end = null,
+        ...$values
+    ): void {
         if (!$this->CollectCodeProblems) {
             return;
         }
-        $this->CodeProblems[] = new CodeProblem($rule, $message, $start, $end, ...$values);
+
+        $this->CodeProblems[] = new CodeProblem(
+            $message,
+            $this->Filename,
+            $start,
+            $end,
+            ...$values,
+        );
     }
 
     /**
@@ -1454,7 +1451,7 @@ final class Formatter implements Buildable
             $out = $first->render(false, $last);
         } catch (Throwable $ex) {
             throw new FormatterException(
-                'Formatting failed: unable to render unresolved output',
+                'Unable to render partially formatted output',
                 null,
                 $this->Tokens,
                 $this->Log,

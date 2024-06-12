@@ -128,11 +128,10 @@ final class ControlStructureSpacing implements MultiTokenRule
             }
 
             $this->Formatter->reportCodeProblem(
-                $this,
                 'Braces not used in %s control structure',
                 $token,
                 $end,
-                $token->getTokenName()
+                $token->getTokenName(),
             );
         }
     }
