@@ -739,6 +739,7 @@ EOF,
     protected function run(...$params)
     {
         $this->FormatterByDir = [];
+        unset($this->DefaultFormatter);
 
         if ($this->DebugDirectory !== null) {
             File::createDir($this->DebugDirectory);
@@ -749,6 +750,8 @@ EOF,
         } else {
             $this->Debug = Env::getDebug();
         }
+
+        Console::registerStderrTarget();
 
         if ($this->ReportTimers) {
             $this->App->registerShutdownReport(Level::NOTICE);
@@ -963,15 +966,6 @@ EOF,
             throw new CliInvalidArgumentsException(...$errors);
         }
 
-        if (
-            $out === ['-']
-            || $this->Diff !== null
-            || $this->Check
-            || $this->PrintConfig
-        ) {
-            Console::registerStderrTarget();
-        }
-
         if ($this->PrintConfig) {
             $values = $this->getOptionValues(true, true, true);
             echo Json::prettyPrint(
@@ -1036,6 +1030,7 @@ EOF,
         $i = 0;
         $count = count($in);
         $replaced = 0;
+        $unchanged = 0;
         /** @var array<Throwable|string> */
         $errors = [];
 
@@ -1177,6 +1172,7 @@ EOF,
             if ($input !== null && $input === $output) {
                 if ($this->Verbose) {
                     Console::log('Already formatted:', $outFile);
+                    $unchanged++;
                 }
                 continue;
             }
@@ -1224,7 +1220,7 @@ EOF,
         }
 
         if ($this->Quiet < 2) {
-            if ($replaced || $errors) {
+            if ($replaced || $unchanged || $errors) {
                 Console::printOut('');
             }
             $this->printSummary(

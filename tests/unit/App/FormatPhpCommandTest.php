@@ -28,6 +28,7 @@ final class FormatPhpCommandTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     private const ERROR = ConsoleFormatter::DEFAULT_LEVEL_PREFIX_MAP[Level::ERROR];
     private const WARNING = ConsoleFormatter::DEFAULT_LEVEL_PREFIX_MAP[Level::WARNING];
+    private const DEBUG = ConsoleFormatter::DEFAULT_LEVEL_PREFIX_MAP[Level::DEBUG];
     private const SUMMARY = ConsoleFormatter::DEFAULT_TYPE_PREFIX_MAP[MessageType::SUMMARY];
     private const SUCCESS = ConsoleFormatter::DEFAULT_TYPE_PREFIX_MAP[MessageType::SUCCESS];
 
@@ -812,7 +813,14 @@ EOF,
     public function testDebug(): void
     {
         $file = self::$FixturesPath . '/empty-config/Foo.php';
-        $messages = [[Level::INFO, self::SUCCESS . 'Formatted 1 file successfully']];
+        $messages = [
+            [Level::DEBUG, self::DEBUG . '{' . FormatPhpCommand::class . '->getConfigFile:'],
+            [Level::DEBUG, self::DEBUG . '{' . FormatPhpCommand::class . '->getConfigValues:'],
+            [Level::DEBUG, self::DEBUG . '{' . FormatPhpCommand::class . '->run:'],
+            [Level::DEBUG, self::DEBUG . '{' . FormatPhpCommand::class . '->doGetFormatter:'],
+            [Level::DEBUG, self::DEBUG . '{' . FormatPhpCommand::class . '->run:'],
+            [Level::INFO, self::SUCCESS . 'Formatted 1 file successfully in '],
+        ];
         $dir = $this->App->getTempPath() . '/debug';
 
         $this->assertCommandProduces(null, null, ['--debug', $file], 0, $messages);
