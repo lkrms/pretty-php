@@ -18,7 +18,7 @@
         "ext-mbstring": "*",
         "ext-tokenizer": "*",
         "composer-runtime-api": "^2.2",
-        "salient/toolkit": "^0.99.26",
+        "salient/toolkit": "^0.99.27",
         "sebastian/diff": "^4 || ^5"
     },
     "require-dev": {
