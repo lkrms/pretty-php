@@ -9,7 +9,7 @@ use Stringable;
 /**
  * A non-critical problem detected in formatted code
  */
-final class CodeProblem implements Stringable
+final class Problem implements Stringable
 {
     /**
      * An sprintf() format string describing the problem

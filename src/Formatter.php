@@ -65,7 +65,7 @@ use Lkrms\PrettyPHP\Rule\StrictExpressions;
 use Lkrms\PrettyPHP\Rule\StrictLists;
 use Lkrms\PrettyPHP\Rule\SwitchIndentation;
 use Lkrms\PrettyPHP\Rule\VerticalWhitespace;
-use Lkrms\PrettyPHP\Support\CodeProblem;
+use Lkrms\PrettyPHP\Support\Problem;
 use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\GenericToken;
@@ -73,7 +73,6 @@ use Lkrms\PrettyPHP\Token\Token;
 use Salient\Contract\Core\Buildable;
 use Salient\Core\Concern\HasBuilder;
 use Salient\Core\Concern\HasImmutableProperties;
-use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Profile;
 use Salient\Core\Indentation;
 use Salient\Utility\Arr;
@@ -192,11 +191,11 @@ final class Formatter implements Buildable
     public bool $Psr12;
 
     /**
-     * False if calls to reportCodeProblem() are ignored
+     * False if calls to registerProblem() are ignored
      *
      * @readonly
      */
-    public bool $CollectCodeProblems;
+    public bool $DetectProblems;
 
     /**
      * False if line breaks are only preserved between statements
@@ -441,8 +440,8 @@ final class Formatter implements Buildable
      */
     private ?array $Callbacks = null;
 
-    /** @var CodeProblem[]|null */
-    public ?array $CodeProblems = null;
+    /** @var Problem[]|null */
+    public ?array $Problems = null;
     /** @var array<string,string>|null */
     public ?array $Log = null;
 
@@ -450,7 +449,6 @@ final class Formatter implements Buildable
 
     private bool $Debug;
     private bool $LogProgress;
-    private bool $ReportCodeProblems;
     private Parser $Parser;
 
     /**
@@ -501,8 +499,7 @@ final class Formatter implements Buildable
 
         $this->Debug = ($flags & FormatterFlag::DEBUG) || Env::getDebug();
         $this->LogProgress = $this->Debug && ($flags & FormatterFlag::LOG_PROGRESS);
-        $this->ReportCodeProblems = (bool) ($flags & FormatterFlag::REPORT_CODE_PROBLEMS);
-        $this->CollectCodeProblems = $this->ReportCodeProblems || ($flags & FormatterFlag::COLLECT_CODE_PROBLEMS);
+        $this->DetectProblems = (bool) ($flags & FormatterFlag::DETECT_PROBLEMS);
 
         $this->Parser = new Parser($this);
 
@@ -1099,6 +1096,7 @@ final class Formatter implements Buildable
             $first = reset($this->Tokens);
             $out = $first->render(false, $last, true);
         } catch (Throwable $ex) {
+            // @codeCoverageIgnoreStart
             throw new FormatterException(
                 'Unable to render output',
                 null,
@@ -1107,6 +1105,7 @@ final class Formatter implements Buildable
                 null,
                 $ex
             );
+            // @codeCoverageIgnoreEnd
         } finally {
             Profile::stopTimer(__METHOD__ . '#render');
             if (!$this->Debug) {
@@ -1128,6 +1127,7 @@ final class Formatter implements Buildable
                 ...$this->ComparisonFilterList
             );
         } catch (CompileError $ex) {
+            // @codeCoverageIgnoreStart
             throw new FormatterException(
                 'Unable to parse output',
                 $out,
@@ -1136,6 +1136,7 @@ final class Formatter implements Buildable
                 null,
                 $ex
             );
+            // @codeCoverageIgnoreEnd
         } finally {
             Profile::stopTimer(__METHOD__ . '#parse-output');
         }
@@ -1149,6 +1150,7 @@ final class Formatter implements Buildable
         $before = $this->simplifyTokens($before);
         $after = $this->simplifyTokens($after);
         if ($before !== $after) {
+            // @codeCoverageIgnoreStart
             throw new FormatterException(
                 "Parsed output doesn't match input",
                 $out,
@@ -1156,12 +1158,7 @@ final class Formatter implements Buildable
                 $this->Log,
                 ['before' => $before, 'after' => $after]
             );
-        }
-
-        if ($this->ReportCodeProblems && $this->CodeProblems) {
-            foreach ($this->CodeProblems as $problem) {
-                Console::warn(Console::escape((string) $problem));
-            }
+            // @codeCoverageIgnoreEnd
         }
 
         return $eol === "\n"
@@ -1299,17 +1296,17 @@ final class Formatter implements Buildable
      * @param int|float|string|bool|null ...$values Values for the sprintf()
      * format string.
      */
-    public function reportCodeProblem(
+    public function registerProblem(
         string $message,
         Token $start,
         ?Token $end = null,
         ...$values
     ): void {
-        if (!$this->CollectCodeProblems) {
+        if (!$this->DetectProblems) {
             return;
         }
 
-        $this->CodeProblems[] = new CodeProblem(
+        $this->Problems[] = new Problem(
             $message,
             $this->Filename,
             $start,
@@ -1439,7 +1436,7 @@ final class Formatter implements Buildable
         $this->Tokens = null;
         $this->TokenIndex = null;
         $this->Callbacks = null;
-        $this->CodeProblems = null;
+        $this->Problems = null;
         $this->Log = null;
     }
 

@@ -14,25 +14,20 @@ use Salient\Core\AbstractEnumeration;
 final class FormatterFlag extends AbstractEnumeration
 {
     /**
-     * Collect warnings about non-critical problems detected in formatted code
-     */
-    public const COLLECT_CODE_PROBLEMS = 1;
-
-    /**
-     * Print warnings about non-critical problems detected in formatted code
-     */
-    public const REPORT_CODE_PROBLEMS = 2;
-
-    /**
      * Enable debug mode
      *
      * Debug mode is enabled automatically if
      * {@see \Salient\Utility\Env::getDebug()} returns `true`.
      */
-    public const DEBUG = 4;
+    public const DEBUG = 1;
 
     /**
      * In debug mode, render output after processing each pass of each rule
      */
-    public const LOG_PROGRESS = 8;
+    public const LOG_PROGRESS = 2;
+
+    /**
+     * Enable detection of non-critical problems in formatted code
+     */
+    public const DETECT_PROBLEMS = 4;
 }

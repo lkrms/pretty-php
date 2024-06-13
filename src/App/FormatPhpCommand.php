@@ -1119,8 +1119,8 @@ EOF,
                 Profile::stopTimer($inputFile, 'file');
             }
 
-            if ($formatter->CodeProblems) {
-                foreach ($formatter->CodeProblems as $problem) {
+            if ($formatter->Problems) {
+                foreach ($formatter->Problems as $problem) {
                     $errors[] = (string) $problem;
                 }
             }
@@ -1535,7 +1535,7 @@ EOF,
     {
         $flags = 0;
         if ($this->Quiet < 3) {
-            $flags |= FormatterFlag::COLLECT_CODE_PROBLEMS;
+            $flags |= FormatterFlag::DETECT_PROBLEMS;
         }
         if ($this->LogProgress) {
             $flags |= FormatterFlag::LOG_PROGRESS;

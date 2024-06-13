@@ -13,7 +13,7 @@ use Lkrms\PrettyPHP\Support\TokenTypeIndex;
  * Apply whitespace to control structures where the body has no enclosing braces
  *
  * Control structures that meet this criteria are also reported to the user via
- * {@see Formatter::reportCodeProblem()}.
+ * {@see Formatter::registerProblem()}.
  *
  * @api
  */
@@ -123,11 +123,11 @@ final class ControlStructureSpacing implements MultiTokenRule
                 $end->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
             }
 
-            if (!$this->Formatter->CollectCodeProblems) {
+            if (!$this->Formatter->DetectProblems) {
                 continue;
             }
 
-            $this->Formatter->reportCodeProblem(
+            $this->Formatter->registerProblem(
                 'Braces not used in %s control structure',
                 $token,
                 $end,
