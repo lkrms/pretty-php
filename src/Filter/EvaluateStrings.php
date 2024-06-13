@@ -6,7 +6,7 @@ use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Exception\FilterException;
 use Lkrms\PrettyPHP\Token\Token;
-use Salient\Core\Utility\Pcre;
+use Salient\Utility\Regex;
 
 /**
  * Evaluate strings for comparison
@@ -62,7 +62,7 @@ final class EvaluateStrings implements Filter
             } elseif ($lastString->id === \T_DOUBLE_QUOTE) {
                 eval("\$string = \"{$token->text}\";");
             } elseif ($lastString->id === \T_BACKTICK) {
-                $text = Pcre::replaceCallback(
+                $text = Regex::replaceCallback(
                     '/((?<!\\\\)(?:\\\\\\\\)*)(\\\\?"|\\\\`)/',
                     fn(array $matches) =>
                         $matches[1]
@@ -80,7 +80,7 @@ final class EvaluateStrings implements Filter
                 if (substr($start, 0, 4) === "<<<'") {
                     continue;
                 }
-                $end = Pcre::replace('/[^a-zA-Z0-9_]+/', '', $start);
+                $end = Regex::replace('/[^a-zA-Z0-9_]+/', '', $start);
                 eval("\$string = {$start}\n{$token->text}\n{$end};");
             } else {
                 throw new FilterException('Error parsing string');

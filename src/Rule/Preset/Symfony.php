@@ -38,7 +38,7 @@ final class Symfony implements Preset, MultiTokenRule, ListRule
                    ->flags($flags)
                    ->tokenTypeIndex((new TokenTypeIndex())->withLeadingOperators())
                    ->heredocIndent(HeredocIndent::NONE)
-                   ->go();
+                   ->build();
     }
 
     public static function getPriority(string $method): ?int

@@ -5,18 +5,20 @@ namespace Lkrms\PrettyPHP\Tests\App;
 use Lkrms\PrettyPHP\App\FormatPhpCommand;
 use Salient\Cli\CliApplication;
 use Salient\Console\Target\MockTarget;
+use Salient\Console\ConsoleFormatter;
+use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Core\ExceptionInterface;
 use Salient\Contract\Core\FileDescriptor;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
 use Salient\Core\Facade\Console;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Json;
-use Salient\Core\Utility\Pcre;
-use Salient\Core\Utility\Str;
-use Salient\Core\Utility\Sys;
 use Salient\Core\Process;
+use Salient\Utility\File;
+use Salient\Utility\Get;
+use Salient\Utility\Json;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
+use Salient\Utility\Sys;
 use Generator;
 
 /**
@@ -24,6 +26,12 @@ use Generator;
  */
 final class FormatPhpCommandTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
+    private const ERROR = ConsoleFormatter::DEFAULT_LEVEL_PREFIX_MAP[Level::ERROR];
+    private const WARNING = ConsoleFormatter::DEFAULT_LEVEL_PREFIX_MAP[Level::WARNING];
+    private const DEBUG = ConsoleFormatter::DEFAULT_LEVEL_PREFIX_MAP[Level::DEBUG];
+    private const SUMMARY = ConsoleFormatter::DEFAULT_TYPE_PREFIX_MAP[MessageType::SUMMARY];
+    private const SUCCESS = ConsoleFormatter::DEFAULT_TYPE_PREFIX_MAP[MessageType::SUCCESS];
+
     private const SYNOPSIS = <<<'EOF'
 
 pretty-php [-1OLTNSnMvq] [-I <regex>] [-X <regex>] [-P[<regex>]] [-i <rule>,...]
@@ -139,8 +147,8 @@ EOF;
     public function testWordpressWithTight(): void
     {
         $messages = [
-            [Level::WARNING, '  ! wordpress preset disabled tight declaration spacing'],
-            [Level::INFO, ' // Formatted 1 file successfully'],
+            [Level::WARNING, self::WARNING . 'wordpress preset disabled tight declaration spacing'],
+            [Level::INFO, self::SUCCESS . 'Formatted 1 file successfully'],
         ];
         foreach (self::getInputFiles('preset/wordpress') as [$file]) {
             $input = File::getContents($file);
@@ -211,7 +219,7 @@ EOF;
                 $noSortImportsFile,
                 $noSortImportsFile,
                 ['-M', '.'],
-                [[Level::INFO, ' // Formatted 1 file successfully']],
+                [[Level::INFO, self::SUCCESS . 'Formatted 1 file successfully']],
             ],
         ];
     }
@@ -236,7 +244,7 @@ EOF;
                 ? []
                 : [[Level::INFO, $message]];
         } elseif ($exitStatus === 2) {
-            $messages = [[Level::ERROR, ' !! InvalidConfigurationException: ' . $message]];
+            $messages = [[Level::ERROR, self::ERROR . 'InvalidConfigurationException: ' . $message]];
         } else {
             $messages = [[Level::ERROR, (string) $message]];
         }
@@ -260,17 +268,17 @@ EOF;
         return [
             'empty' => [
                 0,
-                ' // Formatted 0 files successfully',
+                self::SUCCESS . 'Formatted 0 files successfully',
                 '/empty',
             ],
             'empty config' => [
                 0,
-                ' // Formatted 1 file successfully',
+                self::SUCCESS . 'Formatted 1 file successfully',
                 '/empty-config',
             ],
             'empty config in cwd' => [
                 0,
-                ' // Formatted 1 file successfully',
+                self::SUCCESS . 'Formatted 1 file successfully',
                 '/empty-config',
                 true,
             ],
@@ -309,12 +317,12 @@ EOF;
             ],
             'no-sort-imports' => [
                 0,
-                ' // Formatted 1 file successfully',
+                self::SUCCESS . 'Formatted 1 file successfully',
                 '/no-sort-imports',
             ],
             'no-sort-imports in cwd' => [
                 0,
-                ' // Formatted 1 file successfully',
+                self::SUCCESS . 'Formatted 1 file successfully',
                 '/no-sort-imports',
                 true,
             ],
@@ -342,7 +350,7 @@ EOF;
             ],
             'empty config + --check' => [
                 0,
-                ' -> 1 file would be left unchanged',
+                self::SUMMARY . 'Found no unformatted files after checking 1 file in ',
                 '/empty-config',
                 false,
                 null,
@@ -350,7 +358,7 @@ EOF;
             ],
             'empty config + --check in cwd' => [
                 0,
-                ' -> 1 file would be left unchanged',
+                self::SUMMARY . 'Found no unformatted files after checking 1 file in ',
                 '/empty-config',
                 true,
                 null,
@@ -358,7 +366,7 @@ EOF;
             ],
             'unformatted + --check' => [
                 8,
-                ' !! Input requires formatting',
+                [[Level::INFO, self::SUMMARY . 'Found 1 unformatted file after checking 2 files in ']],
                 '/unformatted',
                 false,
                 null,
@@ -366,7 +374,7 @@ EOF;
             ],
             'unformatted + --check in cwd' => [
                 8,
-                ' !! Input requires formatting',
+                [[Level::INFO, self::SUMMARY . 'Found 1 unformatted file after checking 2 files in ']],
                 '/unformatted',
                 true,
                 null,
@@ -374,7 +382,7 @@ EOF;
             ],
             'empty config + --diff' => [
                 0,
-                ' -> 1 file would be left unchanged',
+                self::SUMMARY . 'Found no unformatted files after checking 1 file in ',
                 '/empty-config',
                 false,
                 null,
@@ -382,7 +390,7 @@ EOF;
             ],
             'empty config + --diff in cwd' => [
                 0,
-                ' -> 1 file would be left unchanged',
+                self::SUMMARY . 'Found no unformatted files after checking 1 file in ',
                 '/empty-config',
                 true,
                 null,
@@ -391,9 +399,7 @@ EOF;
             'unformatted + --diff' => [
                 8,
                 [
-                    [Level::INFO, " -> Would replace $dir/unformatted/Foo.php"],
-                    [Level::INFO, ''],
-                    [Level::INFO, ' -> 1 of 2 files would be replaced'],
+                    [Level::INFO, self::SUMMARY . 'Found 1 unformatted file after checking 2 files in '],
                 ],
                 '/unformatted',
                 false,
@@ -420,9 +426,7 @@ EOF),
             'unformatted + --diff in cwd' => [
                 8,
                 [
-                    [Level::INFO, ' -> Would replace ./Foo.php'],
-                    [Level::INFO, ''],
-                    [Level::INFO, ' -> 1 of 2 files would be replaced'],
+                    [Level::INFO, self::SUMMARY . 'Found 1 unformatted file after checking 2 files in '],
                 ],
                 '/unformatted',
                 true,
@@ -449,53 +453,51 @@ EOF),
             'invalid syntax' => [
                 4,
                 [
-                    [Level::ERROR, ' !! InvalidSyntaxException:' . \PHP_EOL . "  Formatting failed: $dir/invalid-syntax/invalid.php cannot be parsed"],
-                    [Level::ERROR, " !! 1 file with invalid syntax not formatted: $dir/invalid-syntax/invalid.php"],
-                    [Level::ERROR, ' !! Formatted 2 files with 1 error'],
+                    [Level::ERROR, self::ERROR . "ParseError in $dir/invalid-syntax/invalid.php:4: "],
+                    [Level::INFO, ''],
+                    [Level::INFO, self::SUMMARY . 'Formatted 2 files with 1 error in '],
                 ],
                 '/invalid-syntax',
             ],
             'invalid syntax in cwd' => [
                 4,
                 [
-                    [Level::ERROR, ' !! InvalidSyntaxException:' . \PHP_EOL . '  Formatting failed: ./invalid.php cannot be parsed'],
-                    [Level::ERROR, ' !! 1 file with invalid syntax not formatted: ./invalid.php'],
-                    [Level::ERROR, ' !! Formatted 2 files with 1 error'],
+                    [Level::ERROR, self::ERROR . 'ParseError in ./invalid.php:4: '],
+                    [Level::INFO, ''],
+                    [Level::INFO, self::SUMMARY . 'Formatted 2 files with 1 error in '],
                 ],
                 '/invalid-syntax',
                 true,
             ],
             'operators mixed' => [
                 0,
-                ' // Formatted 1 file successfully',
+                self::SUCCESS . 'Formatted 1 file successfully',
                 '/operators-mixed',
             ],
             'operators first' => [
                 0,
-                ' // Formatted 1 file successfully',
+                self::SUCCESS . 'Formatted 1 file successfully',
                 '/operators-first',
             ],
             'operators last' => [
                 0,
-                ' // Formatted 1 file successfully',
+                self::SUCCESS . 'Formatted 1 file successfully',
                 '/operators-last',
             ],
             'sort imports by depth' => [
                 0,
-                ' // Formatted 1 file successfully',
+                self::SUCCESS . 'Formatted 1 file successfully',
                 '/sort-imports-by-depth',
             ],
             'sort imports by name' => [
                 0,
-                ' // Formatted 1 file successfully',
+                self::SUCCESS . 'Formatted 1 file successfully',
                 '/sort-imports-by-name',
             ],
             'tight' => [
                 8,
                 [
-                    [Level::INFO, " -> Would replace $dir/tight/Foo.php"],
-                    [Level::INFO, ''],
-                    [Level::INFO, ' -> 1 of 1 file would be replaced'],
+                    [Level::INFO, self::SUMMARY . 'Found 1 unformatted file after checking 1 file in '],
                 ],
                 '/tight',
                 false,
@@ -811,7 +813,14 @@ EOF,
     public function testDebug(): void
     {
         $file = self::$FixturesPath . '/empty-config/Foo.php';
-        $messages = [[Level::INFO, ' // Formatted 1 file successfully']];
+        $messages = [
+            [Level::DEBUG, self::DEBUG . '{' . FormatPhpCommand::class . '->getConfigFile:'],
+            [Level::DEBUG, self::DEBUG . '{' . FormatPhpCommand::class . '->getConfigValues:'],
+            [Level::DEBUG, self::DEBUG . '{' . FormatPhpCommand::class . '->run:'],
+            [Level::DEBUG, self::DEBUG . '{' . FormatPhpCommand::class . '->doGetFormatter:'],
+            [Level::DEBUG, self::DEBUG . '{' . FormatPhpCommand::class . '->run:'],
+            [Level::INFO, self::SUCCESS . 'Formatted 1 file successfully in '],
+        ];
         $dir = $this->App->getTempPath() . '/debug';
 
         $this->assertCommandProduces(null, null, ['--debug', $file], 0, $messages);
@@ -929,6 +938,6 @@ EOF,
             return $diff;
         }
 
-        return Pcre::replace('/^((?:[+-]{3}|@)\V*)\R/m', '$1' . "\n", $diff);
+        return Regex::replace('/^((?:[+-]{3}|@)\V*)\R/m', '$1' . "\n", $diff);
     }
 }

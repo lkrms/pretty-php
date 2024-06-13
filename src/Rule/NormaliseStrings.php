@@ -6,8 +6,7 @@ use Lkrms\PrettyPHP\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Exception\RuleException;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Salient\Contract\Core\Regex;
-use Salient\Core\Utility\Pcre;
+use Salient\Utility\Regex;
 
 /**
  * Normalise escape sequences in strings, and replace single- and double-quoted
@@ -94,7 +93,7 @@ final class NormaliseStrings implements MultiTokenRule
             } elseif ($token->String->id === \T_BACKTICK) {
                 // Convert backtick-enclosed substrings to double-quoted
                 // equivalents by escaping '\"' and '"', and unescaping '\`'
-                $text = Pcre::replaceCallback(
+                $text = Regex::replaceCallback(
                     '/((?<!\\\\)(?:\\\\\\\\)*)(\\\\?"|\\\\`)/',
                     fn(array $matches) =>
                         $matches[1]
@@ -144,10 +143,10 @@ final class NormaliseStrings implements MultiTokenRule
             // an extended grapheme cluster, i.e. a recognised Unicode sequence
             $utf8Escapes = 0;
             if ($utf8) {
-                $double = Pcre::replaceCallback(
+                $double = Regex::replaceCallback(
                     '/(?![\x00-\x7f])\X/u',
                     function (array $matches) use (&$utf8Escapes): string {
-                        if (!Pcre::match(self::INVISIBLE, $matches[0])) {
+                        if (!Regex::match(self::INVISIBLE, $matches[0])) {
                             return $matches[0];
                         }
                         $utf8Escapes++;
@@ -161,7 +160,7 @@ final class NormaliseStrings implements MultiTokenRule
             // correct for differences between C and PHP escape sequences:
             // - recognised by PHP: \0 \e \f \n \r \t \v
             // - applied by addcslashes: \000 \033 \a \b \f \n \r \t \v
-            $double = Pcre::replaceCallback(
+            $double = Regex::replaceCallback(
                 '/((?<!\\\\)(?:\\\\\\\\)*)\\\\(?:(?<NUL>000(?![0-7]))|(?<octal>[0-7]{3})|(?<cslash>[ab]))/',
                 fn(array $matches): string =>
                     $matches[1]
@@ -187,7 +186,7 @@ final class NormaliseStrings implements MultiTokenRule
                 $reserved .= '|$';
             }
 
-            $double = Pcre::replace(
+            $double = Regex::replace(
                 "/(?<!\\\\)\\\\\\\\(?!{$reserved})/",
                 '\\',
                 $double
@@ -197,7 +196,7 @@ final class NormaliseStrings implements MultiTokenRule
             // the brace to remain escaped lest it become a T_CURLY_OPEN
             if ($token->id !== \T_CONSTANT_ENCAPSED_STRING
                     && ($token->Next !== $token->String->StringClosedBy)) {
-                $double = Pcre::replace(
+                $double = Regex::replace(
                     '/(?<!\\\\)(\\\\(?:\\\\\\\\)*)\\\\(\{)$/',
                     '$1$2',
                     $double
@@ -212,7 +211,7 @@ final class NormaliseStrings implements MultiTokenRule
             // Use the double-quoted variant if escape sequences remain after
             // unescaping tabs used for indentation
             if ($this->Formatter->Tab === "\t") {
-                $double = Pcre::replaceCallback(
+                $double = Regex::replaceCallback(
                     '/^(?:\\\\t)+(?=\S|$)/m',
                     fn(array $matches) =>
                         str_replace('\t', "\t", $matches[0]),
@@ -220,19 +219,19 @@ final class NormaliseStrings implements MultiTokenRule
                 );
                 if ($token->id !== \T_CONSTANT_ENCAPSED_STRING
                         || $utf8Escapes
-                        || Pcre::match("/[\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f{$match}]/", $string)
-                        || Pcre::match('/(?<!\\\\)(?:\\\\\\\\)*\\\\t/', $double)) {
+                        || Regex::match("/[\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f{$match}]/", $string)
+                        || Regex::match('/(?<!\\\\)(?:\\\\\\\\)*\\\\t/', $double)) {
                     $token->setText($double);
                     continue;
                 }
             } elseif ($token->id !== \T_CONSTANT_ENCAPSED_STRING
                     || $utf8Escapes
-                    || Pcre::match("/[\\x00-\\x09\\x0b\\x0c\\x0e-\\x1f{$match}]/", $string)) {
+                    || Regex::match("/[\\x00-\\x09\\x0b\\x0c\\x0e-\\x1f{$match}]/", $string)) {
                 $token->setText($double);
                 continue;
             }
 
-            $single = "'" . $this->maybeEscapeEscapes(Pcre::replace(
+            $single = "'" . $this->maybeEscapeEscapes(Regex::replace(
                 "/(?:\\\\(?=\\\\)|(?<=\\\\)\\\\)|\\\\(?='|\$)|'/",
                 '\\\\$0',
                 $string
@@ -254,11 +253,11 @@ final class NormaliseStrings implements MultiTokenRule
         if (
             $string !== ''
             && $string[-1] === '\\'
-            && Pcre::matchAll('/(?<!\\\\)\\\\\\\\(?!\\\\)/', $string) === 1
-            && !Pcre::match("/(?<!\\\\)\\\\(?={$reserved})(?!\\\\\$)/", $string)
+            && Regex::matchAll('/(?<!\\\\)\\\\\\\\(?!\\\\)/', $string) === 1
+            && !Regex::match("/(?<!\\\\)\\\\(?={$reserved})(?!\\\\\$)/", $string)
             && strpos($string, '\\\\\\') === false
         ) {
-            return Pcre::replace("/(?<!\\\\)\\\\(?!{$reserved})/", '\\\\$0', $string);
+            return Regex::replace("/(?<!\\\\)\\\\(?!{$reserved})/", '\\\\$0', $string);
         }
         return $string;
     }

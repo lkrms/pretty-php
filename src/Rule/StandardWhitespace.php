@@ -9,8 +9,8 @@ use Lkrms\PrettyPHP\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
-use Salient\Core\Utility\Pcre;
-use Salient\Core\Utility\Str;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
 
 /**
  * Apply sensible default spacing
@@ -142,7 +142,7 @@ final class StandardWhitespace implements MultiTokenRule
 
                 // Only perform pattern matching on the last line
                 $text = substr(strrchr("\n" . $text, "\n"), 1);
-                if (Pcre::match('/^\h++$/', $text)) {
+                if (Regex::match('/^\h++$/', $text)) {
                     $indent = strlen(Str::expandTabs($text, $this->Formatter->TabSize));
                     if ($indent % $this->Formatter->TabSize === 0) {
                         $token->TagIndent = $indent / $this->Formatter->TabSize;

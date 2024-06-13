@@ -9,7 +9,7 @@ use Lkrms\PrettyPHP\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
-use Salient\Core\Utility\Arr;
+use Salient\Utility\Arr;
 use Closure;
 
 /**

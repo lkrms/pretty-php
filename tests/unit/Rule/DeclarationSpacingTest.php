@@ -17,7 +17,7 @@ final class DeclarationSpacingTest extends \Lkrms\PrettyPHP\Tests\TestCase
     public function testOutput(string $expected, ?string $tightExpected, string $code, $formatter): void
     {
         if ($formatter instanceof FormatterB) {
-            $formatter = $formatter->go();
+            $formatter = $formatter->build();
         }
 
         $this->assertFormatterOutputIs($expected, $code, $formatter);
@@ -32,7 +32,7 @@ final class DeclarationSpacingTest extends \Lkrms\PrettyPHP\Tests\TestCase
     public static function outputProvider(): array
     {
         $formatterB = Formatter::build();
-        $formatter = $formatterB->go();
+        $formatter = $formatterB->build();
 
         $input1 = <<<'PHP'
 <?php declare(strict_types=1);

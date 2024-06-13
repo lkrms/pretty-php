@@ -70,8 +70,8 @@ pretty-php - Format a PHP file
 
   Set the output file's end-of-line sequence.
 
-  In `platform` mode, **`pretty-php`** uses CRLF ("\\r\\n") line endings on
-  Windows and LF ("\\n") on other platforms.
+  In `platform` mode, **`pretty-php`** uses CRLF ("\r\n") line endings on
+  Windows and LF ("\n") on other platforms.
 
   In `auto` mode, the input file's line endings are preserved, and `platform`
   mode is used as a fallback if there are no line breaks in the input.

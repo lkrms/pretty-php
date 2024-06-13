@@ -45,15 +45,15 @@ use Salient\Contract\Cli\CliOptionVisibility as Visibility;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Profile;
-use Salient\Core\Utility\Arr;
-use Salient\Core\Utility\Env;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Get;
-use Salient\Core\Utility\Inflect;
-use Salient\Core\Utility\Json;
-use Salient\Core\Utility\Pcre;
-use Salient\Core\Utility\Str;
 use Salient\Core\Indentation;
+use Salient\Utility\Arr;
+use Salient\Utility\Env;
+use Salient\Utility\File;
+use Salient\Utility\Get;
+use Salient\Utility\Inflect;
+use Salient\Utility\Json;
+use Salient\Utility\Regex;
+use Salient\Utility\Str;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
 use SebastianBergmann\Diff\Differ;
 use JsonException;
@@ -185,6 +185,10 @@ final class FormatPhpCommand extends CliCommand
     private Formatter $DefaultFormatter;
     /** @var array<string,array<string|int|bool>|string|int|bool|null> */
     private array $DefaultSchemaOptionValues;
+
+    /**
+     * Write verbose debug output to the console?
+     */
     private bool $Debug;
 
     /**
@@ -735,16 +739,19 @@ EOF,
     protected function run(...$params)
     {
         $this->FormatterByDir = [];
+        unset($this->DefaultFormatter);
 
         if ($this->DebugDirectory !== null) {
             File::createDir($this->DebugDirectory);
             $this->DebugDirectory = File::realpath($this->DebugDirectory);
-            Env::debug(true);
+            Env::setDebug(true);
             $this->App->logOutput();
             $this->Debug = true;
         } else {
-            $this->Debug = Env::debug();
+            $this->Debug = Env::getDebug();
         }
+
+        Console::registerStderrTarget();
 
         if ($this->ReportTimers) {
             $this->App->registerShutdownReport(Level::NOTICE);
@@ -791,13 +798,16 @@ EOF,
         } elseif (
             !$this->IgnoreConfigFiles
             && !$this->PrintConfig
-            && ($this->InputFiles || $this->StdinFilename === null)
+            && ($this->InputFiles !== [] || $this->StdinFilename === null)
         ) {
             // Get files and directories to format from the current directory's
             // configuration file (if there are no paths on the command line and
             // a configuration file exists), or from the configuration files of
             // any directories on the command line (if they exist)
-            foreach ($this->InputFiles ?: ['.'] as $path) {
+            $paths = $this->InputFiles === []
+                ? ['.']
+                : $this->InputFiles;
+            foreach ($paths as $path) {
                 if (!is_dir($path)) {
                     $this->addFile($path, $in, $dirs);
                     continue;
@@ -811,7 +821,7 @@ EOF,
                 if ($configValues === null) {
                     // Bail out if there are no paths on the command line, and
                     // no configuration file in the current directory
-                    if (!$this->InputFiles) {
+                    if ($this->InputFiles === []) {
                         break;
                     }
                     $dirCount++;
@@ -859,15 +869,17 @@ EOF,
                             $path,
                         ));
                     }
-                    $path = $dir . '/' . $path;
-                    if ($path === './.') {
-                        $path = '.';
+                    $path = File::resolvePath($path);
+                    if ($path !== '') {
+                        $path = $dir . '/' . $path;
+                        if (is_file($path)) {
+                            $config->addFile($path, $in, $dirs);
+                            continue;
+                        }
+                    } else {
+                        $path = $dir;
                     }
-                    if (is_file($path)) {
-                        $config->addFile($path, $in, $dirs);
-                        continue;
-                    }
-                    if (is_dir($path)) {
+                    if ($path === $dir || is_dir($path)) {
                         $config->addDir($path, $in, $dirs);
                         continue;
                     }
@@ -885,14 +897,16 @@ EOF,
                     continue;
                 }
                 $dirCount++;
-                $this->addDir($path, $in, $dirs);
+                if (!$this->PrintConfig) {
+                    $this->addDir($path, $in, $dirs);
+                }
             }
         }
 
         if (
             !$in
             && !$dirCount
-            && !$this->InputFiles
+            && $this->InputFiles === []
             && !$this->PrintConfig
             && $this->StdinFilename === null
             && stream_isatty(\STDIN)
@@ -904,7 +918,7 @@ EOF,
         $out = $this->OutputFiles;
 
         $errors = [];
-        if ((!$in && !$dirCount && !$this->InputFiles) || $in === ['-']) {
+        if ((!$in && !$dirCount && $this->InputFiles === []) || $in === ['-']) {
             $in = ['php://stdin'];
             if ($this->StdinFilename !== null && !$this->IgnoreConfigFiles) {
                 // `$this->StdinFilename` may not exist or even be a valid path,
@@ -950,15 +964,6 @@ EOF,
         if ($errors) {
             $errors = Arr::unique($errors);
             throw new CliInvalidArgumentsException(...$errors);
-        }
-
-        if (
-            $out === ['-']
-            || $this->Diff
-            || $this->Check
-            || $this->PrintConfig
-        ) {
-            Console::registerStderrTarget(true);
         }
 
         if ($this->PrintConfig) {
@@ -1025,7 +1030,10 @@ EOF,
         $i = 0;
         $count = count($in);
         $replaced = 0;
+        $unchanged = 0;
+        /** @var array<Throwable|string> */
         $errors = [];
+
         foreach ($in as $key => $file) {
             $i++;
 
@@ -1064,8 +1072,7 @@ EOF,
 
             if (!File::isSeekableStream($inputStream)) {
                 Console::debug('Copying unseekable input to temporary stream');
-                $seekable = File::getSeekableStream($inputStream, $file);
-                $inputStream = $seekable;
+                $inputStream = File::getSeekableStream($inputStream, $file);
             }
 
             $defaultIndent = $formatter->getIndentation();
@@ -1081,10 +1088,8 @@ EOF,
             }
 
             File::rewind($inputStream, $file);
-
             $eol = File::getEol($inputStream, $file);
             $input = File::getContents($inputStream, 0, $file);
-
             File::close($inputStream, $file);
 
             Profile::startTimer($inputFile, 'file');
@@ -1096,12 +1101,11 @@ EOF,
                     $file !== 'php://stdin' || $this->StdinFilename !== null
                         ? $inputFile
                         : null,
-                    $this->Fast
+                    $this->Fast,
                 );
             } catch (InvalidSyntaxException $ex) {
-                Console::exception($ex);
+                $errors[] = $ex;
                 $this->setExitStatus(4);
-                $errors[] = $inputFile;
                 continue;
             } catch (FormatterException $ex) {
                 Console::error('Unable to format:', $inputFile);
@@ -1115,55 +1119,48 @@ EOF,
                 Profile::stopTimer($inputFile, 'file');
             }
 
+            if ($formatter->Problems) {
+                foreach ($formatter->Problems as $problem) {
+                    $errors[] = (string) $problem;
+                }
+            }
+
             if ($i === $count) {
                 $this->maybeDumpDebugOutput($input, $output, $formatter->Tokens, $formatter->Log, null);
             }
 
-            if ($this->Check) {
+            if ($this->Diff !== null || $this->Check) {
                 if ($input === $output) {
                     continue;
-                }
-                if ($this->Quiet < 2) {
-                    Console::error('Input requires formatting');
-                }
-
-                return 8;
-            }
-
-            if ($this->Diff) {
-                if ($input === $output) {
-                    if ($this->Verbose) {
-                        Console::log('Already formatted:', $inputFile);
-                    }
-                    continue;
-                }
-                Console::maybeClearLine();
-                switch ($this->Diff) {
-                    case 'name-only':
-                        printf("%s\n", $inputFile);
-                        break;
-                    case 'unified':
-                        $formatter = Console::getStdoutTarget()->getFormatter();
-                        $diff = (new Differ(new StrictUnifiedDiffOutputBuilder([
-                            'fromFile' => "a/$inputFile",
-                            'toFile' => "b/$inputFile",
-                        ])))->diff($input, $output);
-                        print $formatter->formatDiff($diff);
-                        if ($this->Quiet < 1) {
-                            Console::log('Would replace', $inputFile);
-                        }
-                        break;
                 }
                 $replaced++;
+                if ($this->Diff === null) {
+                    continue;
+                }
+                if ($this->Diff === 'unified') {
+                    $diff = (new Differ(new StrictUnifiedDiffOutputBuilder([
+                        'fromFile' => "a/$inputFile",
+                        'toFile' => "b/$inputFile",
+                    ])))->diff($input, $output);
+                    $diff = Console::getStdoutTarget()
+                                ->getFormatter()
+                                ->formatDiff($diff);
+                } else {
+                    $diff = $inputFile . "\n";
+                }
+                Console::clearProgress();
+                print $diff;
                 continue;
             }
 
             $outFile = $out[$key] ?? '-';
             if ($outFile === '-') {
-                Console::maybeClearLine();
+                Console::clearProgress();
                 print $output;
+                // If output is being written to a TTY, add a blank line between
+                // files and messages
                 if (stream_isatty(\STDOUT)) {
-                    Console::tty('');
+                    Console::printTty('');
                 }
                 continue;
             }
@@ -1175,6 +1172,7 @@ EOF,
             if ($input !== null && $input === $output) {
                 if ($this->Verbose) {
                     Console::log('Already formatted:', $outFile);
+                    $unchanged++;
                 }
                 continue;
             }
@@ -1186,50 +1184,76 @@ EOF,
             $replaced++;
         }
 
+        $invalid = 0;
         if ($errors) {
-            Console::error(Inflect::format(
-                $errors,
-                '{{#}} {{#:file}} with invalid syntax not formatted:',
-            ), implode("\n", $errors), null, false);
-        }
-
-        if ($this->Check) {
-            if ($this->Quiet < 2) {
-                Console::log(Inflect::format(
-                    $count,
-                    '{{#}} {{#:file}} would be left unchanged',
-                ));
-            }
-
-            return;
-        }
-
-        if ($this->Diff) {
-            if ($this->Quiet < 2) {
-                if ($replaced) {
-                    Console::out('', Level::INFO);
+            foreach ($errors as $error) {
+                if (!$error instanceof Throwable) {
+                    Console::warn(Console::escape($error));
+                    continue;
                 }
-                Console::log(Inflect::format(
-                    $count,
-                    $replaced
-                        ? '%d of {{#}} {{#:file}} would be replaced'
-                        : '{{#}} {{#:file}} would be left unchanged',
-                    $replaced,
-                ));
+                $invalid++;
+                $prev = $error->getPrevious();
+                if ($prev) {
+                    Console::error(Console::escape($error->getMessage() . ': ' . $prev->getMessage()));
+                    continue;
+                }
+                Console::error(Console::escape($error->getMessage()));
+            }
+        }
+
+        if ($this->Diff !== null || $this->Check) {
+            if ($this->Quiet < 2) {
+                if (($this->Diff !== null && $replaced && stream_isatty(\STDOUT))) {
+                    Console::printTty('');
+                } elseif ($errors) {
+                    Console::printOut('');
+                }
+                $format = 'Found ' . Arr::implode(' and ', [
+                    $invalid ? Inflect::format($invalid, '{{#}} invalid {{#:file}}') : null,
+                    $replaced ? Inflect::format($replaced, '{{#}} unformatted {{#:file}}') : null,
+                    !$replaced && !$invalid ? 'no unformatted files' : null,
+                ]) . ' after checking {{#}} {{#:file}}';
+                $this->printSummary($count, $format);
             }
 
-            return $replaced ? 8 : 0;
+            return $invalid ? 4 : ($replaced ? 8 : 0);
         }
 
         if ($this->Quiet < 2) {
-            Console::summary(Inflect::format(
+            if ($replaced || $unchanged || $errors) {
+                Console::printOut('');
+            }
+            $this->printSummary(
                 $count,
                 $replaced
                     ? 'Replaced %d of {{#}} {{#:file}}'
                     : 'Formatted {{#}} {{#:file}}',
+                'successfully',
+                false,
+                Console::getErrorCount() || Console::getWarningCount(),
                 $replaced,
-            ), 'successfully', !$this->ReportTimers);
+            );
         }
+    }
+
+    /**
+     * @param mixed ...$values
+     */
+    private function printSummary(
+        int $count,
+        string $format,
+        string $successText = '',
+        bool $withoutErrorCount = true,
+        bool $withStandardMessageType = true,
+        ...$values
+    ): void {
+        Console::summary(
+            Inflect::format($count, $format, ...$values),
+            $successText,
+            true,
+            $withoutErrorCount,
+            $withStandardMessageType,
+        );
     }
 
     /**
@@ -1373,7 +1397,7 @@ EOF,
         if ($this->IncludeIfPhpRegex !== null) {
             $finder = $finder->include(
                 fn(SplFileInfo $file, string $path) =>
-                    Pcre::match($this->IncludeIfPhpRegex, $path)
+                    Regex::match($this->IncludeIfPhpRegex, $path)
                     && File::hasPhp((string) $file)
             );
         }
@@ -1511,7 +1535,7 @@ EOF,
     {
         $flags = 0;
         if ($this->Quiet < 3) {
-            $flags |= FormatterFlag::REPORT_CODE_PROBLEMS;
+            $flags |= FormatterFlag::DETECT_PROBLEMS;
         }
         if ($this->LogProgress) {
             $flags |= FormatterFlag::LOG_PROGRESS;
@@ -1597,7 +1621,7 @@ EOF,
                  ->oneTrueBraceStyle($this->OneTrueBraceStyle)
                  ->tightDeclarationSpacing($this->Tight)
                  ->psr12($this->Psr12)
-                 ->go();
+                 ->build();
 
         return $f;
     }

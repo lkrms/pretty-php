@@ -5,9 +5,9 @@ use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
 use Lkrms\PrettyPHP\Tests\FormatterTest;
 use Salient\Cli\CliApplication;
 use Salient\Core\Facade\Console;
-use Salient\Core\Utility\File;
-use Salient\Core\Utility\Inflect;
-use Salient\Core\Utility\Json;
+use Salient\Utility\File;
+use Salient\Utility\Inflect;
+use Salient\Utility\Json;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 

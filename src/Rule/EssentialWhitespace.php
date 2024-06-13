@@ -6,7 +6,7 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\Rule;
 use Lkrms\PrettyPHP\Rule\Concern\RuleTrait;
-use Salient\Core\Utility\Pcre;
+use Salient\Utility\Regex;
 
 /**
  * Add whitespace after tokens that would otherwise fail to parse
@@ -58,7 +58,7 @@ final class EssentialWhitespace implements Rule
             }
 
             if ($token->id === \T_OPEN_TAG
-                    || Pcre::match(
+                    || Regex::match(
                         '/^[a-zA-Z0-9\\\\_\x80-\xff]{2}$/',
                         ($token->text[-1] ?? '') . ($next->text[0] ?? '')
                     )) {

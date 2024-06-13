@@ -69,8 +69,11 @@ final class StatementSpacing implements TokenRule
                 // Don't collapse whitespace before empty statements unless they
                 // follow a close bracket or semicolon
                 if ($token->Statement === $token) {
-                    if ($this->Formatter->CollectCodeProblems) {
-                        $this->Formatter->reportCodeProblem($this, 'Empty statement', $token);
+                    if ($this->Formatter->DetectProblems) {
+                        $this->Formatter->registerProblem(
+                            'Empty statement',
+                            $token,
+                        );
                     }
                     if (!$this->TypeIndex->CloseBracket[$token->Prev->id]
                             && $token->Prev->id !== \T_SEMICOLON) {

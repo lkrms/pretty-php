@@ -25,7 +25,7 @@ final class SortImportsTest extends \Lkrms\PrettyPHP\Tests\TestCase
     public static function outputProvider(): array
     {
         $formatterB = Formatter::build();
-        $formatter = $formatterB->go();
+        $formatter = $formatterB->build();
 
         return [
             'with comments #1' => [
