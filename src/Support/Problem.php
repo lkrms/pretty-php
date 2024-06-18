@@ -78,8 +78,8 @@ final class Problem implements Stringable
             $locations[] = $this->End;
         }
 
-        // Use lines and columns from `OutputLine` and `OutputColumn` if they
-        // are never `null`, otherwise fall back to `line` and `column`
+        // Use lines and columns from `OutputLine` and `OutputColumn` if none
+        // are `-1`, otherwise fall back to `line` and `column`
         $out = [];
         foreach ($locations as $loc) {
             $in[] = $loc->line;
@@ -87,7 +87,7 @@ final class Problem implements Stringable
             if ($out === null) {
                 continue;
             }
-            if ($loc->OutputLine === null || $loc->OutputColumn === null) {
+            if ($loc->OutputLine === -1 || $loc->OutputColumn === -1) {
                 $out = null;
                 continue;
             }

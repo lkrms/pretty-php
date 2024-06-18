@@ -674,21 +674,16 @@ PHP,
 
     public static function getMinVersionIndexPath(): string
     {
-        return self::getFixturesPath() . '/versions.json';
+        return self::getFixturesPath(__CLASS__) . '/versions.json';
     }
 
     public static function getInputFixturesPath(): string
     {
-        return self::getFixturesPath() . '/in';
+        return self::getFixturesPath(__CLASS__) . '/in';
     }
 
     public static function getOutputFixturesPath(string $format): string
     {
-        return self::getFixturesPath() . "/out/{$format}";
-    }
-
-    public static function getFixturesPath(string $class = __CLASS__): string
-    {
-        return parent::getFixturesPath($class);
+        return self::getFixturesPath(__CLASS__) . "/out/{$format}";
     }
 }

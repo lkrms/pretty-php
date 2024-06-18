@@ -22,7 +22,7 @@ final class DeclarationSpacingTest extends \Lkrms\PrettyPHP\Tests\TestCase
 
         $this->assertFormatterOutputIs($expected, $code, $formatter);
 
-        $formatter = $formatter->with('TightDeclarationSpacing', true);
+        $formatter = $formatter->withTightDeclarationSpacing();
         $this->assertFormatterOutputIs($tightExpected ?? $expected, $code, $formatter);
     }
 

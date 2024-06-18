@@ -115,6 +115,7 @@ final class AlignComments implements BlockRule
 
     public function beforeRender(array $tokens): void
     {
+        $renderer = $this->Formatter->Renderer;
         foreach ($this->BlockComments as [$block, $comments]) {
             $lengths = [];
             $max = 0;
@@ -127,7 +128,7 @@ final class AlignComments implements BlockRule
                 // anything to collect between $token and $comment->Prev, so use
                 // $comment's leading whitespace for calculations
                 if ($token === $comment) {
-                    $length = strlen($comment->renderWhitespaceBefore(true));
+                    $length = strlen(ltrim($renderer->renderWhitespaceBefore($comment, true), "\n"));
                     // Compensate for lack of SPACE applied by PlaceComments
                     $lengths[$i] = $length - 1;
                     $max = max($max, $length);

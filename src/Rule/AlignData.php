@@ -304,10 +304,11 @@ final class AlignData implements BlockRule
         }
 
         $innerLineIsOutdented = false;
+        $renderer = $this->Formatter->Renderer;
         foreach ($innerLines as $i => $lines) {
             /** @var Token $token1 */
             foreach ($lines as $token1) {
-                $indent = mb_strlen($token1->renderWhitespaceBefore(true));
+                $indent = strlen(ltrim($renderer->renderWhitespaceBefore($token1, true), "\n"));
                 if ($indent + $deltas[$i] < $maxLength) {
                     if (!$this->Formatter->RelaxAlignmentCriteria) {
                         return;

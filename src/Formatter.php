@@ -17,7 +17,6 @@ use Lkrms\PrettyPHP\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Contract\Rule;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Exception\FormatterException;
-use Lkrms\PrettyPHP\Exception\IncompatibleRulesException;
 use Lkrms\PrettyPHP\Exception\InvalidFormatterException;
 use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
 use Lkrms\PrettyPHP\Filter\CollectColumn;
@@ -111,9 +110,10 @@ final class Formatter implements Buildable
     public int $TabSize;
 
     /**
-     * A series of spaces equivalent to an indent
+     * A series of spaces equivalent to a tab
      *
      * @readonly
+     * @phpstan-var ("  "|"    "|"        ")
      */
     public string $SoftTab;
 
@@ -121,7 +121,7 @@ final class Formatter implements Buildable
      * The string used for indentation
      *
      * @readonly
-     * @var ("  "|"    "|"        "|"	")
+     * @phpstan-var ("  "|"    "|"        "|"	")
      */
     public string $Tab;
 
@@ -428,10 +428,10 @@ final class Formatter implements Buildable
      */
     public ?Indentation $Indentation = null;
 
-    /** @var array<int,Token>|null */
-    public ?array $Tokens = null;
-    /** @var array<int,array<int,Token>>|null */
-    private ?array $TokenIndex = null;
+    /** @var array<int,Token> */
+    public array $Tokens;
+    /** @var array<int,array<int,Token>> */
+    private array $TokenIndex;
 
     /**
      * [ priority => [ token index => [ [ rule, callback ], ... ] ] ]
@@ -450,6 +450,8 @@ final class Formatter implements Buildable
     private bool $Debug;
     private bool $LogProgress;
     private Parser $Parser;
+    /** @readonly */
+    public Renderer $Renderer;
 
     /**
      * Creates a new Formatter object
@@ -487,7 +489,7 @@ final class Formatter implements Buildable
 
         $this->InsertSpaces = $insertSpaces;
         $this->TabSize = $tabSize;
-        $this->TokenTypeIndex = $tokenTypeIndex ?: new TokenTypeIndex();
+        $this->TokenTypeIndex = $tokenTypeIndex ?? new TokenTypeIndex();
         $this->PreferredEol = $preferredEol;
         $this->PreserveEol = $preserveEol;
         $this->SpacesBesideCode = $spacesBesideCode;
@@ -500,8 +502,6 @@ final class Formatter implements Buildable
         $this->Debug = ($flags & FormatterFlag::DEBUG) || Env::getDebug();
         $this->LogProgress = $this->Debug && ($flags & FormatterFlag::LOG_PROGRESS);
         $this->DetectProblems = (bool) ($flags & FormatterFlag::DETECT_PROBLEMS);
-
-        $this->Parser = new Parser($this);
 
         $this->resolveExtensions($rules, $filters, $enable, $disable);
         $this->PreferredRules = $rules;
@@ -521,8 +521,8 @@ final class Formatter implements Buildable
             $this->PreferredEol = "\n";
             $this->PreserveEol = false;
             $this->HeredocIndent = HeredocIndent::HANGING;
-            $this->NewlineBeforeFnDoubleArrows = true;
             $this->OneTrueBraceStyle = false;
+            $this->NewlineBeforeFnDoubleArrows = true;
 
             $enable = array_merge(
                 self::PSR12_ENABLE,
@@ -544,8 +544,10 @@ final class Formatter implements Buildable
             $filters = $this->PreferredFilters;
         }
 
-        $this->SoftTab = str_repeat(' ', $this->TabSize);
-        $this->Tab = $this->InsertSpaces ? $this->SoftTab : "\t";
+        /** @var ("  "|"    "|"        ") */
+        $spaces = str_repeat(' ', $this->TabSize);
+        $this->SoftTab = $spaces;
+        $this->Tab = $this->InsertSpaces ? $spaces : "\t";
 
         if ($this->SpacesBesideCode < 1) {
             $this->SpacesBesideCode = 1;
@@ -570,7 +572,14 @@ final class Formatter implements Buildable
         foreach (self::INCOMPATIBLE_RULES as $incompatible) {
             $incompatible = array_intersect($incompatible, $rules);
             if (count($incompatible) > 1) {
-                throw new IncompatibleRulesException(...$incompatible);
+                $names = [];
+                foreach ($incompatible as $rule) {
+                    $names[] = Get::basename($rule);
+                }
+                throw new InvalidFormatterException(sprintf(
+                    'Enabled rules are not compatible: %s',
+                    implode(', ', $names),
+                ));
             }
         }
 
@@ -596,11 +605,12 @@ final class Formatter implements Buildable
             if (is_a($rule, TokenRule::class, true)) {
                 /** @var int[]|array<int,bool>|array{'*'} */
                 $types = $rule::getTokenTypes($this->TokenTypeIndex);
-                $first = $types ? reset($types) : null;
+                $first = Arr::first($types);
                 if (is_bool($first)) {
                     // Reduce an index to entries with a value of `true`
                     $index = $types;
                     $types = [];
+                    /** @var int $type */
                     foreach ($index as $type => $value) {
                         if ($value) {
                             $types[$type] = true;
@@ -608,9 +618,13 @@ final class Formatter implements Buildable
                     }
                 } elseif (is_int($first)) {
                     // Convert a list of types to an index
-                    /** @var int[] */
-                    $list = $types;
-                    $types = Arr::toIndex($list);
+                    /** @var array<int,true> */
+                    $types = array_fill_keys($types, true);
+                } elseif ($types !== ['*']) {
+                    throw new LogicException(sprintf(
+                        'Invalid return value: %s::getTokenTypes()',
+                        $rule,
+                    ));
                 }
                 $tokenTypes[$rule] = $types;
 
@@ -656,11 +670,14 @@ final class Formatter implements Buildable
         $enabled = Arr::toIndex(Arr::extend($rules, ...$withComparison));
         $this->Enabled = $enabled;
 
+        $this->Parser = new Parser($this);
+        $this->Renderer = new Renderer($this);
+
         return $this;
     }
 
     /**
-     * Get an Indentation object representing the formatter's configuration
+     * Get the formatter's indentation settings
      */
     public function getIndentation(): Indentation
     {
@@ -668,8 +685,16 @@ final class Formatter implements Buildable
     }
 
     /**
-     * Get an instance with a value applied to a given property
+     * Get the formatter's token array
      *
+     * @return Token[]|null
+     */
+    public function getTokens(): ?array
+    {
+        return $this->Tokens ?? null;
+    }
+
+    /**
      * @internal
      *
      * @param mixed $value
@@ -677,6 +702,19 @@ final class Formatter implements Buildable
      */
     public function with(string $property, $value): self
     {
+        if (!isset([
+            'IncreaseIndentBetweenUnenclosedTags' => true,
+            'RelaxAlignmentCriteria' => true,
+            'NewlineBeforeFnDoubleArrows' => true,
+            'AlignFirstCallInChain' => true,
+        ][$property])) {
+            // @codeCoverageIgnoreStart
+            throw new InvalidArgumentException(
+                sprintf('Invalid property: %s', $property)
+            );
+            // @codeCoverageIgnoreEnd
+        }
+
         return $this->withPropertyValue($property, $value)
                     ->apply();
     }
@@ -848,13 +886,17 @@ final class Formatter implements Buildable
 
             if (!$this->Tokens) {
                 if (!$this->Debug) {
-                    $this->Tokens = null;
+                    unset($this->Tokens);
                 }
                 return '';
             }
 
             $last = end($this->Tokens);
-            if ($last->IsCode && $last->Statement->id !== \T_HALT_COMPILER) {
+            if (
+                $last->IsCode
+                && $last->Statement
+                && $last->Statement->id !== \T_HALT_COMPILER
+            ) {
                 $last->WhitespaceAfter |= WhitespaceType::LINE;
             }
         } catch (CompileError $ex) {
@@ -876,7 +918,7 @@ final class Formatter implements Buildable
 
         Profile::startTimer(__METHOD__ . '#find-lists');
         // Get non-empty open brackets
-        $listParents = $this->sortTokens([
+        $listParents = $this->sortTokensByType([
             \T_OPEN_BRACKET => true,
             \T_OPEN_PARENTHESIS => true,
             \T_ATTRIBUTE => true,
@@ -891,10 +933,11 @@ final class Formatter implements Buildable
             switch ($parent->id) {
                 case \T_EXTENDS:
                 case \T_IMPLEMENTS:
-                    $items =
-                        $parent->nextSiblingsWhile(...TokenType::DECLARATION_LIST)
-                               ->filter(fn(Token $t, ?Token $next, ?Token $prev) =>
-                                            !$prev || $t->PrevCode->id === \T_COMMA);
+                    $items = $parent->nextSiblingsWhile(...TokenType::DECLARATION_LIST)
+                                    ->filter(
+                                        fn(Token $t, ?Token $next, ?Token $prev) =>
+                                            !$prev || ($t->PrevCode && $t->PrevCode->id === \T_COMMA)
+                                    );
                     $count = $items->count();
                     if ($count > 1) {
                         // @phpstan-ignore-next-line
@@ -955,11 +998,14 @@ final class Formatter implements Buildable
             $delimiter = $parent->PrevCode && $parent->PrevCode->id === \T_FOR
                 ? \T_SEMICOLON
                 : \T_COMMA;
-            $items =
-                $parent->children()
-                       ->filter(fn(Token $t, ?Token $next, ?Token $prev) =>
-                                    $t->id !== $delimiter
-                                        && (!$prev || $t->PrevCode->id === $delimiter));
+            $items = $parent->children()
+                            ->filter(fn(Token $t, ?Token $next, ?Token $prev) =>
+                                         $t->id !== $delimiter && (
+                                             !$prev || (
+                                                 $t->PrevCode
+                                                 && $t->PrevCode->id === $delimiter
+                                             )
+                                         ));
             $count = $items->count();
             if (!$count) {
                 continue;
@@ -974,6 +1020,10 @@ final class Formatter implements Buildable
         }
         Profile::stopTimer(__METHOD__ . '#find-lists');
 
+        $logProgress = $this->LogProgress
+            ? fn(string $rule, string $after) => $this->logProgress($rule, $after)
+            : fn() => null;
+
         foreach ($this->MainLoop as [$_class, $method]) {
             /** @var TokenRule|ListRule */
             $rule = $this->RuleMap[$_class];
@@ -986,10 +1036,11 @@ final class Formatter implements Buildable
                     $rule->processList($listParents[$i], clone $list);
                 }
                 Profile::stopTimer($_rule, 'rule');
-                !$this->LogProgress || $this->logProgress($_rule, ListRule::PROCESS_LIST);
+                $logProgress($_rule, ListRule::PROCESS_LIST);
                 continue;
             }
 
+            /** @var TokenRule $rule */
             $types = $this->RuleTokenTypes[$_class];
             if ($types === []) {
                 Profile::stopTimer($_rule, 'rule');
@@ -998,9 +1049,11 @@ final class Formatter implements Buildable
             if ($types === ['*']) {
                 $tokens = $this->Tokens;
             } elseif ($rule->getRequiresSortedTokens()) {
-                $tokens = $this->sortTokens($types);
+                /** @var array<int,true> $types */
+                $tokens = $this->sortTokensByType($types);
             } else {
-                $tokens = $this->getTokens($types);
+                /** @var array<int,true> $types */
+                $tokens = $this->getTokensByType($types);
             }
             if (!$tokens) {
                 Profile::stopTimer($_rule, 'rule');
@@ -1015,7 +1068,7 @@ final class Formatter implements Buildable
                 }
             }
             Profile::stopTimer($_rule, 'rule');
-            !$this->LogProgress || $this->logProgress($_rule, TokenRule::PROCESS_TOKEN);
+            $logProgress($_rule, TokenRule::PROCESS_TOKEN);
         }
 
         Profile::startTimer(__METHOD__ . '#find-blocks');
@@ -1077,10 +1130,26 @@ final class Formatter implements Buildable
                 $rule->processBlock($block);
             }
             Profile::stopTimer($_rule, 'rule');
-            !$this->LogProgress || $this->logProgress($_rule, BlockRule::PROCESS_BLOCK);
+            $logProgress($_rule, BlockRule::PROCESS_BLOCK);
         }
 
-        $this->processCallbacks();
+        if ($this->Callbacks) {
+            ksort($this->Callbacks);
+            foreach ($this->Callbacks as $priority => &$tokenCallbacks) {
+                ksort($tokenCallbacks);
+                foreach ($tokenCallbacks as $index => $callbacks) {
+                    foreach ($callbacks as $i => [$rule, $callback]) {
+                        $_rule = Get::basename($rule);
+                        Profile::startTimer($_rule, 'rule');
+                        $callback();
+                        Profile::stopTimer($_rule, 'rule');
+                        $logProgress($_rule, "{closure:$index:$i}");
+                    }
+                    unset($tokenCallbacks[$index]);
+                }
+                unset($this->Callbacks[$priority]);
+            }
+        }
 
         foreach ($this->BeforeRender as [$_class]) {
             $rule = $this->RuleMap[$_class];
@@ -1088,13 +1157,14 @@ final class Formatter implements Buildable
             Profile::startTimer($_rule, 'rule');
             $rule->beforeRender($this->Tokens);
             Profile::stopTimer($_rule, 'rule');
-            !$this->LogProgress || $this->logProgress($_rule, Rule::BEFORE_RENDER);
+            $logProgress($_rule, Rule::BEFORE_RENDER);
         }
 
         Profile::startTimer(__METHOD__ . '#render');
         try {
+            /** @var Token */
             $first = reset($this->Tokens);
-            $out = $first->render(false, $last, true);
+            $out = $this->Renderer->render($first, $last, false, true, true);
         } catch (Throwable $ex) {
             // @codeCoverageIgnoreStart
             throw new FormatterException(
@@ -1109,7 +1179,7 @@ final class Formatter implements Buildable
         } finally {
             Profile::stopTimer(__METHOD__ . '#render');
             if (!$this->Debug) {
-                $this->Tokens = null;
+                unset($this->Tokens);
             }
         }
 
@@ -1131,7 +1201,7 @@ final class Formatter implements Buildable
             throw new FormatterException(
                 'Unable to parse output',
                 $out,
-                $this->Tokens,
+                $this->Tokens ?? null,
                 $this->Log,
                 null,
                 $ex
@@ -1154,7 +1224,7 @@ final class Formatter implements Buildable
             throw new FormatterException(
                 "Parsed output doesn't match input",
                 $out,
-                $this->Tokens,
+                $this->Tokens ?? null,
                 $this->Log,
                 ['before' => $before, 'after' => $after]
             );
@@ -1170,9 +1240,20 @@ final class Formatter implements Buildable
      * @param array<int,true> $types
      * @return array<int,Token>
      */
-    private function getTokens(array $types): array
+    private function sortTokensByType(array $types): array
     {
-        $tokens = array_intersect_key($this->TokenIndex ?: [], $types);
+        $tokens = $this->getTokensByType($types);
+        ksort($tokens, \SORT_NUMERIC);
+        return $tokens;
+    }
+
+    /**
+     * @param array<int,true> $types
+     * @return array<int,Token>
+     */
+    private function getTokensByType(array $types): array
+    {
+        $tokens = array_intersect_key($this->TokenIndex, $types);
         if ($base = array_shift($tokens)) {
             return array_replace($base, ...$tokens);
         }
@@ -1180,19 +1261,6 @@ final class Formatter implements Buildable
     }
 
     /**
-     * @param array<int,true> $types
-     * @return array<int,Token>
-     */
-    private function sortTokens(array $types): array
-    {
-        $tokens = $this->getTokens($types);
-        ksort($tokens, \SORT_NUMERIC);
-        return $tokens;
-    }
-
-    /**
-     * Sort rules by priority
-     *
      * @template TRule of Rule
      *
      * @param array<string,array{class-string<TRule>,string,int}> $rules
@@ -1200,25 +1268,25 @@ final class Formatter implements Buildable
      */
     private function sortRules(array $rules): array
     {
-        foreach ($rules as $key => [$rule, $method]) {
+        $sorted = [];
+        foreach ($rules as $key => $value) {
+            [$rule, $method] = $value;
             /** @var int|null */
             $priority = $rule::getPriority($method);
             if ($priority === null) {
-                unset($rules[$key]);
                 continue;
             }
-            $rules[$key][3] = $priority;
+            $value[3] = $priority;
+            $sorted[$key] = $value;
         }
 
         // Sort by priority, then index
         uasort(
-            $rules,
-            fn(array $a, array $b) =>
-                $a[3] <=> $b[3]
-                    ?: $a[2] <=> $b[2]
+            $sorted,
+            fn($a, $b) => $a[3] <=> $b[3] ?: $a[2] <=> $b[2],
         );
 
-        foreach ($rules as $key => [$rule, $method]) {
+        foreach ($sorted as $key => [$rule, $method]) {
             $result[$key] = [$rule, $method];
         }
 
@@ -1264,28 +1332,6 @@ final class Formatter implements Buildable
         $this->Callbacks[$priority][$index][] = [$rule, $callback];
     }
 
-    private function processCallbacks(): void
-    {
-        if (!$this->Callbacks) {
-            return;
-        }
-        ksort($this->Callbacks);
-        foreach ($this->Callbacks as $priority => &$tokenCallbacks) {
-            ksort($tokenCallbacks);
-            foreach ($tokenCallbacks as $index => $callbacks) {
-                foreach ($callbacks as $i => [$rule, $callback]) {
-                    $_rule = Get::basename($rule);
-                    Profile::startTimer($_rule, 'rule');
-                    $callback();
-                    Profile::stopTimer($_rule, 'rule');
-                    !$this->LogProgress || $this->logProgress($_rule, "{closure:$index:$i}");
-                }
-                unset($tokenCallbacks[$index]);
-            }
-            unset($this->Callbacks[$priority]);
-        }
-    }
-
     /**
      * Report a non-critical problem detected in formatted code
      *
@@ -1326,6 +1372,7 @@ final class Formatter implements Buildable
         foreach ($extensions as $ext) {
             $result[] = $this->Extensions[$ext] ??= $this->getExtension($ext);
         }
+        /** @var array<T> */
         return $result ?? [];
     }
 
@@ -1433,8 +1480,8 @@ final class Formatter implements Buildable
     private function reset(): void
     {
         $this->Filename = null;
-        $this->Tokens = null;
-        $this->TokenIndex = null;
+        unset($this->Tokens);
+        unset($this->TokenIndex);
         $this->Callbacks = null;
         $this->Problems = null;
         $this->Log = null;
@@ -1444,9 +1491,13 @@ final class Formatter implements Buildable
     {
         Profile::startTimer(__METHOD__ . '#render');
         try {
-            $first = reset($this->Tokens);
-            $last = end($this->Tokens);
-            $out = $first->render(false, $last);
+            if ($this->Tokens) {
+                $first = reset($this->Tokens);
+                $last = end($this->Tokens);
+                $out = $this->Renderer->render($first, $last, false);
+            } else {
+                $out = '';
+            }
         } catch (Throwable $ex) {
             throw new FormatterException(
                 'Unable to render partially formatted output',

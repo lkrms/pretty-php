@@ -26,8 +26,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         $second = $formatter->format($first, null, null, null, true);
         self::assertSame($expected, $first, 'Output is not formatted correctly.');
         self::assertSame($expected, $second, 'Output is not idempotent.');
-        if ($code !== '') {
-            $last = end($formatter->Tokens);
+        if ($last = end($formatter->Tokens)) {
             self::assertSame($last->pos, $last->OutputPos, 'pos and OutputPos do not match.');
         }
     }
@@ -56,8 +55,10 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         );
     }
 
-    public static function getFixturesPath(string $class): string
+    public static function getFixturesPath(?string $class = null): string
     {
+        $class ??= static::class;
+
         return dirname(__DIR__)
             . '/fixtures/'
             . Regex::replace(

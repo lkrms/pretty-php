@@ -71,76 +71,6 @@ parameters:
 			path: src/Filter/RemoveHeredocIndentation.php
 
 		-
-			message: "#^Call to an undefined method Lkrms\\\\PrettyPHP\\\\Contract\\\\ListRule\\|Lkrms\\\\PrettyPHP\\\\Contract\\\\TokenRule\\:\\:getRequiresSortedTokens\\(\\)\\.$#"
-			count: 1
-			path: src/Formatter.php
-
-		-
-			message: "#^Call to an undefined method Lkrms\\\\PrettyPHP\\\\Contract\\\\ListRule\\|Lkrms\\\\PrettyPHP\\\\Contract\\\\TokenRule\\:\\:processToken\\(\\)\\.$#"
-			count: 1
-			path: src/Formatter.php
-
-		-
-			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 3
-			path: src/Formatter.php
-
-		-
-			message: "#^Method Lkrms\\\\PrettyPHP\\\\Formatter\\:\\:getExtensions\\(\\) should return array\\<T of Lkrms\\\\PrettyPHP\\\\Contract\\\\Extension\\> but returns array\\<int\\<0, max\\>, Lkrms\\\\PrettyPHP\\\\Contract\\\\Extension\\>\\.$#"
-			count: 1
-			path: src/Formatter.php
-
-		-
-			message: "#^Offset 3 does not exist on array\\{0\\: class\\-string\\<TRule of Lkrms\\\\PrettyPHP\\\\Contract\\\\Rule\\>, 1\\: string, 2\\: int, 3\\?\\: int\\}\\.$#"
-			count: 2
-			path: src/Formatter.php
-
-		-
-			message: "#^Parameter \\#1 \\$array of function end expects array\\|object, array\\<int, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>\\|null given\\.$#"
-			count: 1
-			path: src/Formatter.php
-
-		-
-			message: "#^Parameter \\#1 \\$array of function reset expects array\\|object, array\\<int, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>\\|null given\\.$#"
-			count: 3
-			path: src/Formatter.php
-
-		-
-			message: "#^Parameter \\#1 \\$tokens of method Lkrms\\\\PrettyPHP\\\\Contract\\\\Rule\\:\\:beforeRender\\(\\) expects array\\<Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>, array\\<int, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>\\|null given\\.$#"
-			count: 1
-			path: src/Formatter.php
-
-		-
-			message: "#^Parameter \\#1 \\$types of method Lkrms\\\\PrettyPHP\\\\Formatter\\:\\:getTokens\\(\\) expects array\\<int, true\\>, non\\-empty\\-array\\<int, '\\*'\\|true\\> given\\.$#"
-			count: 1
-			path: src/Formatter.php
-
-		-
-			message: "#^Parameter \\#1 \\$types of method Lkrms\\\\PrettyPHP\\\\Formatter\\:\\:sortTokens\\(\\) expects array\\<int, true\\>, non\\-empty\\-array\\<int, '\\*'\\|true\\> given\\.$#"
-			count: 1
-			path: src/Formatter.php
-
-		-
-			message: "#^Parameter \\#4 \\$disable of method Lkrms\\\\PrettyPHP\\\\Formatter\\:\\:resolveExtensions\\(\\) expects array\\<class\\-string\\<Lkrms\\\\PrettyPHP\\\\Contract\\\\Extension\\>\\>, array\\<int, string\\> given\\.$#"
-			count: 1
-			path: src/Formatter.php
-
-		-
-			message: "#^Parameter \\#4 \\$disable of method Lkrms\\\\PrettyPHP\\\\Formatter\\:\\:resolveExtensions\\(\\) expects array\\<class\\-string\\<Lkrms\\\\PrettyPHP\\\\Contract\\\\Extension\\>\\>, array\\<string\\> given\\.$#"
-			count: 1
-			path: src/Formatter.php
-
-		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Formatter\\:\\:\\$RuleTokenTypes \\(array\\<class\\-string\\<Lkrms\\\\PrettyPHP\\\\Contract\\\\TokenRule\\>, array\\<int, '\\*'\\|true\\>\\>\\) does not accept array\\<class\\-string\\<Lkrms\\\\PrettyPHP\\\\Contract\\\\TokenRule\\>, array\\<'\\*'\\|bool\\|int\\>\\>\\.$#"
-			count: 1
-			path: src/Formatter.php
-
-		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Formatter\\:\\:\\$Tab \\(\"\\\\t\"\\|'  '\\|'    '\\|'        '\\) does not accept literal\\-string&non\\-falsy\\-string\\.$#"
-			count: 1
-			path: src/Formatter.php
-
-		-
 			message: "#^Cannot access property \\$ClosedBy on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|false\\|null\\.$#"
 			count: 4
 			path: src/Parser.php
@@ -876,16 +806,6 @@ parameters:
 			path: src/Support/TokenCollection.php
 
 		-
-			message: "#^Cannot call method render\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Support/TokenCollection.php
-
-		-
-			message: "#^Cannot call method renderWhitespaceBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Support/TokenCollection.php
-
-		-
 			message: "#^Cannot access property \\$CloseTag on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Token/Token.php
@@ -933,11 +853,6 @@ parameters:
 		-
 			message: "#^Cannot access property \\$PrevSibling on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 3
-			path: src/Token/Token.php
-
-		-
-			message: "#^Cannot access property \\$TagIndent on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
 			path: src/Token/Token.php
 
 		-
@@ -1016,17 +931,7 @@ parameters:
 			path: src/Token/Token.php
 
 		-
-			message: "#^Parameter \\#1 \\$code of method Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:movePosition\\(\\) expects string, int\\<min, \\-1\\>\\|int\\<1, max\\>\\|string given\\.$#"
-			count: 1
-			path: src/Token/Token.php
-
-		-
 			message: "#^Parameter \\#1 \\$to of method Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:collect\\(\\) expects Lkrms\\\\PrettyPHP\\\\Token\\\\Token, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null given\\.$#"
-			count: 1
-			path: src/Token/Token.php
-
-		-
-			message: "#^Parameter \\#3 \\$column of static method Salient\\\\Utility\\\\Str\\:\\:expandTabs\\(\\) expects int, int\\|null given\\.$#"
 			count: 1
 			path: src/Token/Token.php
 
@@ -1054,13 +959,3 @@ parameters:
 			message: "#^Parameter \\#3 \\$enable of method Lkrms\\\\PrettyPHP\\\\Tests\\\\TestCase\\:\\:assertCodeFormatIs\\(\\) expects array\\<class\\-string\\<Lkrms\\\\PrettyPHP\\\\Contract\\\\Extension\\>\\>, array\\<string\\> given\\.$#"
 			count: 1
 			path: tests/unit/Rule/StandardWhitespaceTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$array of function end expects array\\|object, array\\<int, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>\\|null given\\.$#"
-			count: 1
-			path: tests/unit/TestCase.php
-
-		-
-			message: "#^Argument of an invalid type array\\<int, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\>\\|null supplied for foreach, only iterables are supported\\.$#"
-			count: 1
-			path: tests/unit/Token.php/TokenTest.php

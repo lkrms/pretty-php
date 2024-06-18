@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e4ae0d2b7f9f2f645599f986b86cb818",
+    "content-hash": "23ad38dcd8088b7d426fd8737c540139",
     "packages": [
         {
             "name": "lkrms/dice",
@@ -415,16 +415,16 @@
         },
         {
             "name": "salient/toolkit",
-            "version": "v0.99.27",
+            "version": "v0.99.29",
             "source": {
                 "type": "git",
                 "url": "https://github.com/salient-labs/toolkit.git",
-                "reference": "2c062ec349da04c69e2d73ee7038ddca76892120"
+                "reference": "9859f04916d3afbc6606085c9944015d386a87c0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/salient-labs/toolkit/zipball/2c062ec349da04c69e2d73ee7038ddca76892120",
-                "reference": "2c062ec349da04c69e2d73ee7038ddca76892120",
+                "url": "https://api.github.com/repos/salient-labs/toolkit/zipball/9859f04916d3afbc6606085c9944015d386a87c0",
+                "reference": "9859f04916d3afbc6606085c9944015d386a87c0",
                 "shasum": ""
             },
             "require": {
@@ -514,7 +514,7 @@
                 "issues": "https://github.com/salient-labs/toolkit/issues",
                 "source": "https://github.com/salient-labs/toolkit"
             },
-            "time": "2024-06-13T04:17:41+00:00"
+            "time": "2024-06-18T03:24:37+00:00"
         },
         {
             "name": "sebastian/diff",
@@ -1577,6 +1577,58 @@
                 "source": "https://github.com/phpstan/phpstan-deprecation-rules/tree/1.2.0"
             },
             "time": "2024-04-20T06:39:48+00:00"
+        },
+        {
+            "name": "phpstan/phpstan-phpunit",
+            "version": "1.4.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phpstan/phpstan-phpunit.git",
+                "reference": "f3ea021866f4263f07ca3636bf22c64be9610c11"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phpstan/phpstan-phpunit/zipball/f3ea021866f4263f07ca3636bf22c64be9610c11",
+                "reference": "f3ea021866f4263f07ca3636bf22c64be9610c11",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.2 || ^8.0",
+                "phpstan/phpstan": "^1.11"
+            },
+            "conflict": {
+                "phpunit/phpunit": "<7.0"
+            },
+            "require-dev": {
+                "nikic/php-parser": "^4.13.0",
+                "php-parallel-lint/php-parallel-lint": "^1.2",
+                "phpstan/phpstan-strict-rules": "^1.5.1",
+                "phpunit/phpunit": "^9.5"
+            },
+            "type": "phpstan-extension",
+            "extra": {
+                "phpstan": {
+                    "includes": [
+                        "extension.neon",
+                        "rules.neon"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "PHPStan\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "PHPUnit extensions and rules for PHPStan",
+            "support": {
+                "issues": "https://github.com/phpstan/phpstan-phpunit/issues",
+                "source": "https://github.com/phpstan/phpstan-phpunit/tree/1.4.0"
+            },
+            "time": "2024-04-20T06:39:00+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
