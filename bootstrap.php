@@ -1,115 +1,120 @@
 <?php declare(strict_types=1);
 
-// As of PHP 7.4 (but still missing from widely-used stubs)
-defined('T_BAD_CHARACTER') || define('T_BAD_CHARACTER', 10001);
+(function () {
+    $maybeDefined = [
+        // PHP 8.0
+        'T_ATTRIBUTE' => true,
+        'T_MATCH' => true,
+        'T_NAME_FULLY_QUALIFIED' => true,
+        'T_NAME_QUALIFIED' => true,
+        'T_NAME_RELATIVE' => true,
+        'T_NULLSAFE_OBJECT_OPERATOR' => true,
+        // PHP 8.1
+        'T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG' => true,
+        'T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG' => true,
+        'T_ENUM' => true,
+        'T_READONLY' => true,
+        // Custom
+        'T_ATTRIBUTE_COMMENT' => false,
+        'T_END_ALT_SYNTAX' => false,
+        'T_NULL' => false,
+    ];
 
-// As of PHP 8.0
-defined('T_ATTRIBUTE') || define('T_ATTRIBUTE', 10002);
-defined('T_MATCH') || define('T_MATCH', 10003);
-defined('T_NAME_FULLY_QUALIFIED') || define('T_NAME_FULLY_QUALIFIED', 10004);
-defined('T_NAME_QUALIFIED') || define('T_NAME_QUALIFIED', 10005);
-defined('T_NAME_RELATIVE') || define('T_NAME_RELATIVE', 10006);
-defined('T_NULLSAFE_OBJECT_OPERATOR') || define('T_NULLSAFE_OBJECT_OPERATOR', 10007);
+    $defined = [];
+    $toDefine = [];
+    foreach ($maybeDefined as $token => $defineIfMissing) {
+        if (!defined($token)) {
+            if ($defineIfMissing) {
+                $toDefine[] = $token;
+            }
+            continue;
+        }
 
-// As of PHP 8.1
-defined('T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG') || define('T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG', 10008);
-defined('T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG') || define('T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG', 10009);
-defined('T_ENUM') || define('T_ENUM', 10010);
-defined('T_READONLY') || define('T_READONLY', 10011);
+        /** @var mixed */
+        $id = constant($token);
 
-/** Returned when there aren't any real tokens to return */
-define('T_NULL', 20001);
+        // Fail if tokens defined by other libraries are invalid or do not have
+        // unique IDs
+        if (!is_int($id) || !($id < 0 || $id > 255)) {
+            throw new Error(sprintf('%s is invalid', $token));
+        }
 
-/** Inserted before 'endif', 'endfor', etc. in lieu of a closing brace */
-define('T_END_ALT_SYNTAX', 20002);
+        if (isset($defined[$id])) {
+            throw new Error(sprintf(
+                '%s and %s have the same ID',
+                $token,
+                $defined[$id],
+            ));
+        }
 
-/** Used when a T_COMMENT starts with '#[' */
-define('T_ATTRIBUTE_COMMENT', 20003);
+        $defined[$id] = $token;
+    }
 
-// The following constants are used to avoid, say, `$token->is('}')` returning
-// `true` when `$token` is actually a `T_ENCAPSED_AND_WHITESPACE` that happens
-// to contain a single "}"
+    $getNextId = function () use ($defined, &$id): int {
+        $id++;
+        while (isset($defined[$id])) {
+            $id++;
+        }
+        return $id;
+    };
 
-/** '!' */
-define('T_LOGICAL_NOT', 33);
+    // Define missing tokens, skipping IDs already in use
+    $id = 10000;
+    foreach ($toDefine as $token) {
+        define($token, $getNextId());
+    }
 
-/** '"' */
-define('T_DOUBLE_QUOTE', 34);
+    // Define custom tokens
+    $id = 20000;
+    defined('T_ATTRIBUTE_COMMENT') || define('T_ATTRIBUTE_COMMENT', $getNextId());
+    defined('T_END_ALT_SYNTAX') || define('T_END_ALT_SYNTAX', $getNextId());
+    defined('T_NULL') || define('T_NULL', $getNextId());
 
-/** '$' */
-define('T_DOLLAR', 36);
+    // Define single-character tokens because the text of a token cannot be
+    // relied upon to determine its type, e.g. the following tests may be true
+    // when `$token->id === T_ENCAPSED_AND_WHITESPACE`, which means they are not
+    // equivalent to `$token->id === ord('}')`:
+    //
+    // ```
+    // $token->is('}');
+    // $token->text === '}';
+    // ```
+    $isValid = function (string $token, string $char): bool {
+        if (!defined($token)) {
+            return false;
+        }
+        if (constant($token) === ord($char)) {
+            return true;
+        }
+        throw new Error(sprintf('%s is invalid', $token));
+    };
 
-/** '%' */
-define('T_MOD', 37);
-
-/** '&' */
-define('T_AND', 38);
-
-/** '(' */
-define('T_OPEN_PARENTHESIS', 40);
-
-/** ')' */
-define('T_CLOSE_PARENTHESIS', 41);
-
-/** '*' */
-define('T_MUL', 42);
-
-/** '+' */
-define('T_PLUS', 43);
-
-/** ',' */
-define('T_COMMA', 44);
-
-/** '-' */
-define('T_MINUS', 45);
-
-/** '.' */
-define('T_CONCAT', 46);
-
-/** '/' */
-define('T_DIV', 47);
-
-/** ':' */
-define('T_COLON', 58);
-
-/** ';' */
-define('T_SEMICOLON', 59);
-
-/** '<' */
-define('T_SMALLER', 60);
-
-/** '=' */
-define('T_EQUAL', 61);
-
-/** '>' */
-define('T_GREATER', 62);
-
-/** '?' */
-define('T_QUESTION', 63);
-
-/** '@' */
-define('T_AT', 64);
-
-/** '[' */
-define('T_OPEN_BRACKET', 91);
-
-/** ']' */
-define('T_CLOSE_BRACKET', 93);
-
-/** '^' */
-define('T_XOR', 94);
-
-/** '`' */
-define('T_BACKTICK', 96);
-
-/** '{' */
-define('T_OPEN_BRACE', 123);
-
-/** '|' */
-define('T_OR', 124);
-
-/** '}' */
-define('T_CLOSE_BRACE', 125);
-
-/** '~' */
-define('T_NOT', 126);
+    $isValid('T_LOGICAL_NOT', '!') || define('T_LOGICAL_NOT', ord('!'));
+    $isValid('T_DOUBLE_QUOTE', '"') || define('T_DOUBLE_QUOTE', ord('"'));
+    $isValid('T_DOLLAR', '$') || define('T_DOLLAR', ord('$'));
+    $isValid('T_MOD', '%') || define('T_MOD', ord('%'));
+    $isValid('T_AND', '&') || define('T_AND', ord('&'));
+    $isValid('T_OPEN_PARENTHESIS', '(') || define('T_OPEN_PARENTHESIS', ord('('));
+    $isValid('T_CLOSE_PARENTHESIS', ')') || define('T_CLOSE_PARENTHESIS', ord(')'));
+    $isValid('T_MUL', '*') || define('T_MUL', ord('*'));
+    $isValid('T_PLUS', '+') || define('T_PLUS', ord('+'));
+    $isValid('T_COMMA', ',') || define('T_COMMA', ord(','));
+    $isValid('T_MINUS', '-') || define('T_MINUS', ord('-'));
+    $isValid('T_CONCAT', '.') || define('T_CONCAT', ord('.'));
+    $isValid('T_DIV', '/') || define('T_DIV', ord('/'));
+    $isValid('T_COLON', ':') || define('T_COLON', ord(':'));
+    $isValid('T_SEMICOLON', ';') || define('T_SEMICOLON', ord(';'));
+    $isValid('T_SMALLER', '<') || define('T_SMALLER', ord('<'));
+    $isValid('T_EQUAL', '=') || define('T_EQUAL', ord('='));
+    $isValid('T_GREATER', '>') || define('T_GREATER', ord('>'));
+    $isValid('T_QUESTION', '?') || define('T_QUESTION', ord('?'));
+    $isValid('T_AT', '@') || define('T_AT', ord('@'));
+    $isValid('T_OPEN_BRACKET', '[') || define('T_OPEN_BRACKET', ord('['));
+    $isValid('T_CLOSE_BRACKET', ']') || define('T_CLOSE_BRACKET', ord(']'));
+    $isValid('T_XOR', '^') || define('T_XOR', ord('^'));
+    $isValid('T_BACKTICK', '`') || define('T_BACKTICK', ord('`'));
+    $isValid('T_OPEN_BRACE', '{') || define('T_OPEN_BRACE', ord('{'));
+    $isValid('T_OR', '|') || define('T_OR', ord('|'));
+    $isValid('T_CLOSE_BRACE', '}') || define('T_CLOSE_BRACE', ord('}'));
+    $isValid('T_NOT', '~') || define('T_NOT', ord('~'));
+})();

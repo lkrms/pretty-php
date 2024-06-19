@@ -4,13 +4,12 @@ namespace Lkrms\PrettyPHP\Tests\Support;
 
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Support\Problem;
-use Lkrms\PrettyPHP\Tests\TestCase;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\Parser;
 use Salient\Utility\Arr;
 use Salient\Utility\File;
 
-final class ProblemTest extends TestCase
+final class ProblemTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     public function testConstructor(): void
     {

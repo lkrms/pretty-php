@@ -40,7 +40,10 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Lkrms\\PrettyPHP\\Tests\\": "tests/unit/"
+            "Lkrms\\PrettyPHP\\Tests\\": [
+                "tests/unit/",
+                "tests/integration/"
+            ]
         }
     },
     "bin": [

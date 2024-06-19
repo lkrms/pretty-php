@@ -3,7 +3,6 @@
 namespace Lkrms\PrettyPHP\Tests;
 
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
-use Lkrms\PrettyPHP\Contract\Extension;
 use Lkrms\PrettyPHP\Rule\AlignArrowFunctions;
 use Lkrms\PrettyPHP\Rule\AlignChains;
 use Lkrms\PrettyPHP\Rule\AlignComments;
