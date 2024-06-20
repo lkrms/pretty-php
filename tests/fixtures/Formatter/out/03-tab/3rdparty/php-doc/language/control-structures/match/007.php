@@ -1,11 +1,12 @@
 <?php
 
-$text = 'Bienvenue chez nous';
+$age = 23;
 
 $result = match (true) {
-	str_contains($text, 'Welcome') || str_contains($text, 'Hello') => 'en',
-	str_contains($text, 'Bienvenue') || str_contains($text, 'Bonjour') => 'fr',
-	// ...
+	$age >= 65 => 'senior',
+	$age >= 25 => 'adult',
+	$age >= 18 => 'young adult',
+	default => 'kid',
 };
 
 var_dump($result);

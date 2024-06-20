@@ -1,5 +1,6 @@
 <?php
 
+// passes:FOO
 function a()
 {
     $a = 0;

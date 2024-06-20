@@ -1,0 +1,7 @@
+<?php
+// passes:SpaceAroundParentheses
+if (($min <= $cart_item['data']->get_weight()) && ($cart_item['data']->get_weight() < $max)) {
+}
+$a = ($b);
+$a = ($b);
+$a = (($b));

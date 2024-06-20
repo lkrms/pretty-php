@@ -1,0 +1,4 @@
+<?php
+$a = 1 === 1 ? 1 : 2; 
+$c = $isTrue ? self::getAltText($id) : '';
+$c = $isTrue ? static::getAltText($id) : '';

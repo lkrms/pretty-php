@@ -1,13 +1,12 @@
 <?php
+$condition = 5;
 
-$age = 23;
-
-$result = match (true) {
-    $age >= 65 => 'senior',
-    $age >= 25 => 'adult',
-    $age >= 18 => 'young adult',
-    default => 'kid',
-};
-
-var_dump($result);
+try {
+    match ($condition) {
+        1, 2 => foo(),
+        3, 4 => bar(),
+    };
+} catch (\UnhandledMatchError $e) {
+    var_dump($e);
+}
 ?>
