@@ -1,7 +1,10 @@
 <?php
-$expressionResult = match ($condition) {
-	1, 2 => foo(),
-	3, 4 => bar(),
-	default => baz(),
+$result = match ($x) {
+	// This match arm:
+	$a, $b, $c => 5,
+	// Is equivalent to these three match arms:
+	$a => 5,
+	$b => 5,
+	$c => 5,
 };
 ?>

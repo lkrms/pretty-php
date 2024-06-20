@@ -18,10 +18,11 @@ class myData implements IteratorAggregate
     }
 }
 
-$obj = new myData;
+$obj = new myData();
 
 foreach ($obj as $key => $value) {
     var_dump($key, $value);
     echo "\n";
 }
+
 ?>
