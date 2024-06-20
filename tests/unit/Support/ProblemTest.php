@@ -4,13 +4,12 @@ namespace Lkrms\PrettyPHP\Tests\Support;
 
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Support\Problem;
-use Lkrms\PrettyPHP\Tests\TestCase;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\Parser;
 use Salient\Utility\Arr;
 use Salient\Utility\File;
 
-final class ProblemTest extends TestCase
+final class ProblemTest extends \Lkrms\PrettyPHP\Tests\TestCase
 {
     public function testConstructor(): void
     {
@@ -32,8 +31,8 @@ final class ProblemTest extends TestCase
         $this->assertNotNull($first = $tokens[0] ?? null);
         $this->assertNotNull($second = $tokens[1] ?? null);
         $this->assertNotNull($last = Arr::last($tokens));
-        $this->assertNull($first->OutputLine);
-        $this->assertNull($second->OutputLine);
+        $this->assertSame(-1, $first->OutputLine);
+        $this->assertSame(-1, $second->OutputLine);
         $last->OutputLine = 7;
         $last->OutputColumn = 2;
 
@@ -44,7 +43,7 @@ final class ProblemTest extends TestCase
         $this->assertSame([$value], $problem->Values);
         $this->assertSame($file, $problem->Filename);
         $this->assertSame($first, $problem->Start);
-        $this->assertSame(null, $problem->End);
+        $this->assertNull($problem->End);
         $this->assertSame(
             sprintf($format . ': %s:1:1', $value, $file),
             (string) $problem,

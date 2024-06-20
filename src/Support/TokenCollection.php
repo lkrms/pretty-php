@@ -258,23 +258,38 @@ final class TokenCollection extends AbstractTypedList implements Stringable
     }
 
     /**
-     * Render tokens in the collection, optionally removing leading
-     * whitespace from the first token
+     * Render tokens in the collection, optionally removing whitespace before
+     * the first and after the last token
      *
      * Leading newlines are always trimmed.
      */
-    public function render(bool $softTabs = false, bool $trim = true): string
-    {
+    public function render(
+        bool $softTabs = false,
+        bool $trimBefore = true,
+        bool $trimAfter = true
+    ): string {
         $this->assertCollected();
 
-        $first = $this->first();
-        $last = $this->last();
-        $code = $first->render($softTabs, $last);
-        if ($trim) {
-            if ($before = $first->renderWhitespaceBefore($softTabs, true)) {
-                return substr($code, strlen($before));
-            }
-            return $code;
+        if (!$this->Items) {
+            return '';
+        }
+
+        $first = reset($this->Items);
+        $last = end($this->Items);
+
+        $renderer = $first->Formatter->Renderer;
+        $code = $renderer->render($first, $last, $softTabs);
+        if (
+            !$trimAfter
+            && ($after = $renderer->renderWhitespaceAfter($last))
+        ) {
+            $code .= $after;
+        }
+        if (
+            $trimBefore
+            && ($before = $renderer->renderWhitespaceBefore($first, $softTabs))
+        ) {
+            return substr($code, strlen($before));
         }
         return ltrim($code, "\n");
     }

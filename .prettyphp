@@ -1,15 +1,15 @@
 {
     "src": [
-        "bootstrap.php",
-        "src",
-        "bin",
+        "bin/pretty-php",
         "scripts",
+        "src",
+        "tests/integration",
         "tests/unit",
         "tests/phpstan-conditional.php",
-        "tools/apigen",
-        ".php-cs-fixer.dist.php"
+        "tools/apigen/src",
+        ".php-cs-fixer.dist.php",
+        "bootstrap.php"
     ],
-    "includeIfPhp": true,
     "enable": [
         "align-chains",
         "align-comments",

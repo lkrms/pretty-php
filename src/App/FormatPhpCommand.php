@@ -1113,7 +1113,7 @@ EOF,
                 throw $ex;
             } catch (Throwable $ex) {
                 Console::error('Unable to format:', $inputFile);
-                $this->maybeDumpDebugOutput($input, null, $formatter->Tokens, $formatter->Log, (string) $ex);
+                $this->maybeDumpDebugOutput($input, null, $formatter->getTokens(), $formatter->Log, (string) $ex);
                 throw $ex;
             } finally {
                 Profile::stopTimer($inputFile, 'file');
@@ -1126,7 +1126,7 @@ EOF,
             }
 
             if ($i === $count) {
-                $this->maybeDumpDebugOutput($input, $output, $formatter->Tokens, $formatter->Log, null);
+                $this->maybeDumpDebugOutput($input, $output, $formatter->getTokens(), $formatter->Log, null);
             }
 
             if ($this->Diff !== null || $this->Check) {

@@ -36,15 +36,17 @@ $customTokens = [
 
 $finder = (new PhpCsFixer\Finder())
               ->in([
-                  __DIR__ . '/src',
                   __DIR__ . '/scripts',
+                  __DIR__ . '/src',
+                  __DIR__ . '/tests/integration',
                   __DIR__ . '/tests/unit',
                   __DIR__ . '/tools/apigen/src',
               ])
               ->append([
                   __DIR__ . '/bin/pretty-php',
-                  __DIR__ . '/bootstrap.php',
                   __DIR__ . '/tests/phpstan-conditional.php',
+                  __DIR__ . '/.php-cs-fixer.dist.php',
+                  __DIR__ . '/bootstrap.php',
               ]);
 
 return (new PhpCsFixer\Config())

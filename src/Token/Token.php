@@ -9,7 +9,6 @@ use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Support\TokenIndentDelta;
 use Salient\Utility\Arr;
-use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use JsonSerializable;
 
@@ -137,9 +136,9 @@ class Token extends GenericToken implements JsonSerializable
      */
     public int $CriticalWhitespaceMaskNext = WhitespaceType::ALL;
 
-    public ?int $OutputLine = null;
-    public ?int $OutputPos = null;
-    public ?int $OutputColumn = null;
+    public int $OutputLine = -1;
+    public int $OutputPos = -1;
+    public int $OutputColumn = -1;
 
     final public function isMatchBrace(): bool
     {
@@ -477,10 +476,10 @@ class Token extends GenericToken implements JsonSerializable
                             && $next === $this->AlignedWith)
                 ) ?: $startOfLine;
 
-        $code = $from->collect($this)->render(true);
-        if (!$includeToken
-                && ($remove = ltrim($this->render(true))) !== '') {
-            $code = substr($code, 0, -strlen($remove));
+        if ($includeToken) {
+            $code = $from->collect($this)->render(true);
+        } else {
+            $code = $from->collect($this->Prev)->render(true, true, false);
         }
         $offset = mb_strlen($code);
         // Handle strings with embedded newlines
@@ -1102,25 +1101,13 @@ class Token extends GenericToken implements JsonSerializable
         return TokenIndentDelta::between($this, $target);
     }
 
-    private function getIndentSpaces(): int
-    {
-        return $this->Formatter->TabSize
-            * ($this->TagIndent + $this->PreIndent + $this->Indent + $this->HangingIndent - $this->Deindent)
-            + $this->LinePadding - $this->LineUnpadding;
-    }
-
-    private function getIndentSpacesFromText(): int
-    {
-        if (!Regex::match('/^(?:\s*\n)?(?<indent>\h*)\S/', $this->text, $matches)) {
-            return 0;
-        }
-
-        return strlen(str_replace("\t", $this->Formatter->SoftTab, $matches['indent']));
-    }
-
     public function indent(): int
     {
-        return $this->TagIndent + $this->PreIndent + $this->Indent + $this->HangingIndent - $this->Deindent;
+        return $this->TagIndent
+            + $this->PreIndent
+            + $this->Indent
+            + $this->HangingIndent
+            - $this->Deindent;
     }
 
     public function renderIndent(bool $softTabs = false): string
@@ -1128,186 +1115,6 @@ class Token extends GenericToken implements JsonSerializable
         return ($indent = $this->TagIndent + $this->PreIndent + $this->Indent + $this->HangingIndent - $this->Deindent)
             ? str_repeat($softTabs ? $this->Formatter->SoftTab : $this->Formatter->Tab, $indent)
             : '';
-    }
-
-    public function renderWhitespaceBefore(bool $softTabs = false, bool $withNewlines = false): string
-    {
-        $before = WhitespaceType::toWhitespace($this->effectiveWhitespaceBefore());
-        $padding = $this->Padding;
-        if ($before && $before[0] === "\n") {
-            if (!$withNewlines) {
-                $before = ltrim($before, "\n");
-            }
-            $before .= $this->renderIndent($softTabs);
-            $padding += $this->LinePadding - $this->LineUnpadding;
-        }
-        if ($padding) {
-            $before .= str_repeat(' ', $padding);
-        }
-        return $before;
-    }
-
-    public function render(bool $softTabs = false, ?Token $to = null, bool $setPosition = false): string
-    {
-        if (!$to) {
-            $to = $this;
-        }
-
-        $current = $this;
-        $code = '';
-        do {
-            unset($before, $after, $text);
-            if (!($this->TypeIndex->DoNotModify[$current->id]
-                    || $this->TypeIndex->DoNotModifyLeft[$current->id])) {
-                if (($before = $current->effectiveWhitespaceBefore() ?: '')
-                        && ($before = WhitespaceType::toWhitespace($before))
-                        && $before[0] === "\n") {
-                    // Don't indent close tags unless subsequent text is
-                    // indented by at least the same amount
-                    if ($current->id === \T_CLOSE_TAG
-                            && $current->Next
-                            && $current->Next->getIndentSpacesFromText() < $current->getIndentSpaces()) {
-                        $before .= str_repeat(
-                            $softTabs
-                                ? $this->Formatter->SoftTab
-                                : $this->Formatter->Tab,
-                            $current->OpenTag->TagIndent
-                        );
-                    } else {
-                        if ($indent = $current->indent()) {
-                            $before .= str_repeat(
-                                $softTabs
-                                    ? $this->Formatter->SoftTab
-                                    : $this->Formatter->Tab,
-                                $indent
-                            );
-                        }
-                        if ($padding = $current->LinePadding - $current->LineUnpadding) {
-                            $before .= str_repeat(' ', $padding);
-                        }
-                    }
-                }
-                if ($current->Padding) {
-                    $before .= str_repeat(' ', $current->Padding);
-                }
-            }
-
-            if ((!$current->Next
-                    || $this->TypeIndex->DoNotModify[$current->Next->id]
-                    || $this->TypeIndex->DoNotModifyLeft[$current->Next->id])
-                && !($this->TypeIndex->DoNotModify[$current->id]
-                    || $this->TypeIndex->DoNotModifyRight[$current->id])) {
-                $after = WhitespaceType::toWhitespace($current->effectiveWhitespaceAfter());
-            }
-
-            if ($setPosition) {
-                if (!$current->Prev) {
-                    $current->OutputLine = 1;
-                    $current->OutputColumn = 1;
-                    $current->OutputPos = 0;
-                }
-
-                // Adjust the token's position to account for any leading
-                // whitespace
-                if (isset($before)) {
-                    $current->movePosition($before, $this->Formatter->Tab === "\t");
-                }
-
-                // And use it as the baseline for the next token's position
-                if ($current->Next) {
-                    $current->Next->OutputLine = $current->OutputLine;
-                    $current->Next->OutputColumn = $current->OutputColumn;
-                    $current->Next->OutputPos = $current->OutputPos;
-                }
-            }
-
-            // Multi-line comments are only formatted when output is being
-            // generated
-            if ($setPosition
-                    && $this->TypeIndex->Comment[$current->id]
-                    && strpos($current->text, "\n") !== false) {
-                $text = $current->renderComment($softTabs);
-            }
-
-            if ($current->id === \T_START_HEREDOC
-                    || ($current->Heredoc && $current->id !== \T_END_HEREDOC)) {
-                $heredoc = $current->Heredoc ?: $current;
-                if ($heredoc->HeredocIndent) {
-                    $text = Regex::replace(
-                        ($current->Next->text[0] ?? null) === "\n"
-                            ? "/\\n{$heredoc->HeredocIndent}\$/m"
-                            : "/\\n{$heredoc->HeredocIndent}(?=\\n)/",
-                        "\n",
-                        $text ?? $current->text
-                    );
-                }
-            }
-
-            $output = ($text ?? $current->text) . ($after ?? '');
-            if ($output !== '' && $setPosition && $current->Next) {
-                $current->Next->movePosition($output, $this->TypeIndex->Expandable[$current->id]);
-            }
-
-            $code .= ($before ?? '') . $output;
-        } while ($current !== $to && ($current = $current->Next));
-
-        return $code;
-    }
-
-    private function movePosition(string $code, bool $expandTabs): void
-    {
-        $expanded = !$expandTabs || strpos($code, "\t") === false
-            ? $code
-            : Str::expandTabs($code, $this->Formatter->TabSize, $this->OutputColumn);
-        $this->OutputLine += ($newlines = substr_count($code, "\n"));
-        $this->OutputColumn = $newlines
-            ? mb_strlen($expanded) - mb_strrpos($expanded, "\n")
-            : $this->OutputColumn + mb_strlen($expanded);
-        $this->OutputPos += strlen($code);
-    }
-
-    private function renderComment(bool $softTabs): string
-    {
-        // If this is a C-style comment where at least one line starts with a
-        // character other than "*", and neither delimiter is on its own line,
-        // reindent it to preserve alignment
-        if ($this->id === \T_COMMENT
-                && !($this->Flags & TokenFlag::INFORMAL_DOC_COMMENT)) {
-            $text = $this->expandedText();
-            $delta = $this->OutputColumn - $this->column;
-            /* Don't reindent if the comment hasn't moved, or if it has text in
-column 1 despite starting in column 2 or above (like this comment) */
-            if (!$delta || (
-                $this->column > 1
-                && Regex::match('/\n(?!\*)\S/', $text)
-            )) {
-                return $this->maybeUnexpandTabs($text, $softTabs);
-            }
-            $spaces = str_repeat(' ', abs($delta));
-            if ($delta < 0) {
-                // Don't deindent if any non-empty lines have insufficient
-                // whitespace
-                if (Regex::match("/\\n(?!{$spaces}|\h*+\\n)/", $text)) {
-                    return $this->maybeUnexpandTabs($text, $softTabs);
-                }
-                return $this->maybeUnexpandTabs(str_replace("\n" . $spaces, "\n", $text), $softTabs);
-            }
-            return $this->maybeUnexpandTabs(str_replace("\n", "\n" . $spaces, $text), $softTabs);
-        }
-
-        $start = $this->startOfLine();
-        if ($start === $this) {
-            $indent = "\n" . $this->renderIndent($softTabs)
-                . str_repeat(' ', $this->LinePadding - $this->LineUnpadding + $this->Padding);
-        } else {
-            $indent = "\n" . $start->renderWhitespaceBefore($softTabs)
-                . str_repeat(' ', mb_strlen($start->collect($this->Prev)->render($softTabs))
-                    + strlen(WhitespaceType::toWhitespace($this->effectiveWhitespaceBefore()))
-                    + $this->Padding);
-        }
-        $text = str_replace("\n", $indent, $this->text);
-
-        return $text;
     }
 
     public function expandedText(): string
@@ -1321,16 +1128,6 @@ column 1 despite starting in column 2 or above (like this comment) */
         return Str::expandLeadingTabs(
             $this->text, $tabSize, !$this->wasFirstOnLine(), $this->column
         );
-    }
-
-    private function maybeUnexpandTabs(string $text, bool $softTabs): string
-    {
-        // Remove trailing whitespace
-        $text = Regex::replace('/\h++$/m', '', $text);
-        if ($this->Formatter->Tab === "\t" && !$softTabs) {
-            return Regex::replace("/(?<=\\n|\G){$this->Formatter->SoftTab}/", "\t", $text);
-        }
-        return $text;
     }
 
     public function __toString(): string

@@ -18,7 +18,7 @@
         "ext-mbstring": "*",
         "ext-tokenizer": "*",
         "composer-runtime-api": "^2.2",
-        "salient/toolkit": "^0.99.27",
+        "salient/toolkit": "^0.99.29",
         "sebastian/diff": "^4 || ^5"
     },
     "require-dev": {
@@ -27,6 +27,7 @@
         "phpstan/extension-installer": "^1",
         "phpstan/phpstan": "^1",
         "phpstan/phpstan-deprecation-rules": "^1",
+        "phpstan/phpstan-phpunit": "^1",
         "phpunit/phpunit": "^9"
     },
     "autoload": {
@@ -39,7 +40,10 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Lkrms\\PrettyPHP\\Tests\\": "tests/unit/"
+            "Lkrms\\PrettyPHP\\Tests\\": [
+                "tests/unit/",
+                "tests/integration/"
+            ]
         }
     },
     "bin": [

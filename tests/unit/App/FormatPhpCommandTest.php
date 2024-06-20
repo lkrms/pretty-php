@@ -55,6 +55,8 @@ EOF;
 
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->ConsoleTarget = new MockTarget(null, true, true, false);
         Console::registerTarget($this->ConsoleTarget, LevelGroup::ALL_EXCEPT_DEBUG);
 
@@ -68,14 +70,14 @@ EOF;
     {
         $this->App->unload();
 
-        Console::deregisterTarget($this->ConsoleTarget);
         Console::unload();
+
+        parent::tearDown();
     }
 
     public static function tearDownAfterClass(): void
     {
-        File::pruneDir(self::$BasePath);
-        rmdir(self::$BasePath);
+        File::pruneDir(self::$BasePath, true);
     }
 
     /**
@@ -937,7 +939,6 @@ EOF,
         if (\PHP_EOL === "\n") {
             return $diff;
         }
-
-        return Regex::replace('/^((?:[+-]{3}|@)\V*)\R/m', '$1' . "\n", $diff);
+        return Regex::replace('/^((?:-{3}|\+{3}|@)\V*+)\R/m', '$1' . "\n", $diff);
     }
 }

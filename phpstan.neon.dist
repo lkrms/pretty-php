@@ -5,9 +5,14 @@ parameters:
   level: 9
   paths:
     - bin/pretty-php
-    - bootstrap.php
+    - scripts
     - src
+    - tests/integration
     - tests/unit
     - tests/phpstan-conditional.php
-    - scripts
-  bootstrapFiles:
+    - bootstrap.php
+  excludePaths:
+    analyseAndScan:
+      - tests/integration/Bootstrap/invalid-single-character-tokens.php
+      - tests/integration/Bootstrap/invalid-tokens.php
+      - tests/integration/Bootstrap/tokens-with-same-id.php

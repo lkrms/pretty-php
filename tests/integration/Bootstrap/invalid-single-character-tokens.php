@@ -1,0 +1,32 @@
+<?php declare(strict_types=1);
+
+define('T_LOGICAL_NOT', 30001);
+define('T_DOUBLE_QUOTE', 30002);
+define('T_DOLLAR', 30003);
+define('T_MOD', 30004);
+define('T_AND', 30005);
+define('T_OPEN_PARENTHESIS', 30006);
+define('T_CLOSE_PARENTHESIS', 30007);
+define('T_MUL', 30008);
+define('T_PLUS', 30009);
+define('T_COMMA', 30010);
+define('T_MINUS', 30011);
+define('T_CONCAT', 30012);
+define('T_DIV', 30013);
+define('T_COLON', 30014);
+define('T_SEMICOLON', 30015);
+define('T_SMALLER', 30016);
+define('T_EQUAL', 30017);
+define('T_GREATER', 30018);
+define('T_QUESTION', 30019);
+define('T_AT', 30020);
+define('T_OPEN_BRACKET', 30021);
+define('T_CLOSE_BRACKET', 30022);
+define('T_XOR', 30023);
+define('T_BACKTICK', 30024);
+define('T_OPEN_BRACE', 30025);
+define('T_OR', 30026);
+define('T_CLOSE_BRACE', 30027);
+define('T_NOT', 30028);
+
+require dirname(__DIR__, 3) . '/vendor/autoload.php';
