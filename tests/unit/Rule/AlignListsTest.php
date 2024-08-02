@@ -4,8 +4,9 @@ namespace Lkrms\PrettyPHP\Tests\Rule;
 
 use Lkrms\PrettyPHP\Rule\AlignChains;
 use Lkrms\PrettyPHP\Rule\AlignLists;
+use Lkrms\PrettyPHP\Tests\TestCase;
 
-final class AlignListsTest extends \Lkrms\PrettyPHP\Tests\TestCase
+final class AlignListsTest extends TestCase
 {
     /**
      * @dataProvider outputProvider

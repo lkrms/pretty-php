@@ -2,7 +2,9 @@
 
 namespace Lkrms\PrettyPHP\Tests\Rule;
 
-final class VerticalWhitespaceTest extends \Lkrms\PrettyPHP\Tests\TestCase
+use Lkrms\PrettyPHP\Tests\TestCase;
+
+final class VerticalWhitespaceTest extends TestCase
 {
     /**
      * @dataProvider outputProvider

@@ -2,7 +2,9 @@
 
 namespace Lkrms\PrettyPHP\Tests\Rule;
 
-final class NormaliseCommentsTest extends \Lkrms\PrettyPHP\Tests\TestCase
+use Lkrms\PrettyPHP\Tests\TestCase;
+
+final class NormaliseCommentsTest extends TestCase
 {
     /**
      * @dataProvider outputProvider

@@ -3,9 +3,10 @@
 namespace Lkrms\PrettyPHP\Tests\Rule;
 
 use Lkrms\PrettyPHP\Rule\PreserveLineBreaks;
+use Lkrms\PrettyPHP\Tests\TestCase;
 use Generator;
 
-final class PreserveLineBreaksTest extends \Lkrms\PrettyPHP\Tests\TestCase
+final class PreserveLineBreaksTest extends TestCase
 {
     /**
      * @dataProvider outputProvider

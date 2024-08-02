@@ -3,8 +3,9 @@
 namespace Lkrms\PrettyPHP\Tests\Rule;
 
 use Lkrms\PrettyPHP\Rule\AlignData;
+use Lkrms\PrettyPHP\Tests\TestCase;
 
-final class StandardWhitespaceTest extends \Lkrms\PrettyPHP\Tests\TestCase
+final class StandardWhitespaceTest extends TestCase
 {
     /**
      * @dataProvider outputProvider

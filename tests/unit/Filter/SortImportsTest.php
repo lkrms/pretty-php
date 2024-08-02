@@ -4,10 +4,11 @@ namespace Lkrms\PrettyPHP\Tests\Filter;
 
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Rule\AlignComments;
+use Lkrms\PrettyPHP\Tests\TestCase;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
 
-final class SortImportsTest extends \Lkrms\PrettyPHP\Tests\TestCase
+final class SortImportsTest extends TestCase
 {
     /**
      * @dataProvider outputProvider
