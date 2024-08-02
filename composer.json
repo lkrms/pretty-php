@@ -18,7 +18,14 @@
         "ext-mbstring": "*",
         "ext-tokenizer": "*",
         "composer-runtime-api": "^2.2",
-        "salient/toolkit": "^0.99.30",
+        "salient/cli": "^0.99",
+        "salient/collections": "^0.99",
+        "salient/console": "^0.99",
+        "salient/contracts": "^0.99",
+        "salient/core": "^0.99",
+        "salient/phpdoc": "^0.99",
+        "salient/polyfills": "^0.99",
+        "salient/utils": "^0.99",
         "sebastian/diff": "^4 || ^5"
     },
     "require-dev": {
@@ -28,7 +35,9 @@
         "phpstan/phpstan": "^1",
         "phpstan/phpstan-deprecation-rules": "^1",
         "phpstan/phpstan-phpunit": "^1",
-        "phpunit/phpunit": "^9"
+        "phpunit/phpunit": "^9",
+        "salient/phpstan": "^0.99",
+        "salient/sli": "^0.99"
     },
     "autoload": {
         "psr-4": {

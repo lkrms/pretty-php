@@ -2,7 +2,9 @@
 
 namespace Lkrms\PrettyPHP\Tests\Rule;
 
-final class OperatorSpacingTest extends \Lkrms\PrettyPHP\Tests\TestCase
+use Lkrms\PrettyPHP\Tests\TestCase;
+
+final class OperatorSpacingTest extends TestCase
 {
     /**
      * @dataProvider outputProvider

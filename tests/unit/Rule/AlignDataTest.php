@@ -4,8 +4,9 @@ namespace Lkrms\PrettyPHP\Tests\Rule;
 
 use Lkrms\PrettyPHP\Rule\AlignData;
 use Lkrms\PrettyPHP\Rule\PreserveOneLineStatements;
+use Lkrms\PrettyPHP\Tests\TestCase;
 
-final class AlignDataTest extends \Lkrms\PrettyPHP\Tests\TestCase
+final class AlignDataTest extends TestCase
 {
     /**
      * @dataProvider outputProvider

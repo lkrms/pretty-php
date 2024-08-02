@@ -2,7 +2,9 @@
 
 namespace Lkrms\PrettyPHP\Tests\Rule;
 
-final class ListSpacingTest extends \Lkrms\PrettyPHP\Tests\TestCase
+use Lkrms\PrettyPHP\Tests\TestCase;
+
+final class ListSpacingTest extends TestCase
 {
     /**
      * @dataProvider outputProvider

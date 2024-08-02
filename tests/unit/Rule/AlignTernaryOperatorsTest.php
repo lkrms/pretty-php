@@ -3,8 +3,9 @@
 namespace Lkrms\PrettyPHP\Tests\Rule;
 
 use Lkrms\PrettyPHP\Rule\AlignTernaryOperators;
+use Lkrms\PrettyPHP\Tests\TestCase;
 
-final class AlignTernaryOperatorsTest extends \Lkrms\PrettyPHP\Tests\TestCase
+final class AlignTernaryOperatorsTest extends TestCase
 {
     /**
      * @dataProvider outputProvider

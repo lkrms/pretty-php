@@ -3,10 +3,11 @@
 namespace Lkrms\PrettyPHP\Tests\Filter;
 
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
+use Lkrms\PrettyPHP\Tests\TestCase;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
 
-final class MoveCommentsTest extends \Lkrms\PrettyPHP\Tests\TestCase
+final class MoveCommentsTest extends TestCase
 {
     /**
      * @dataProvider outputProvider

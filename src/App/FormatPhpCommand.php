@@ -194,7 +194,7 @@ final class FormatPhpCommand extends CliCommand
     /**
      * @codeCoverageIgnore
      */
-    public function description(): string
+    public function getDescription(): string
     {
         return 'Format a PHP file';
     }
@@ -202,7 +202,7 @@ final class FormatPhpCommand extends CliCommand
     /**
      * @inheritDoc
      */
-    protected function getOptionList(): array
+    protected function getOptionList(): iterable
     {
         return [
             CliOption::build()

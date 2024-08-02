@@ -4,10 +4,11 @@ namespace Lkrms\PrettyPHP\Tests\Rule;
 
 use Lkrms\PrettyPHP\Filter\SortImports;
 use Lkrms\PrettyPHP\Rule\PreserveOneLineStatements;
+use Lkrms\PrettyPHP\Tests\TestCase;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
 
-final class DeclarationSpacingTest extends \Lkrms\PrettyPHP\Tests\TestCase
+final class DeclarationSpacingTest extends TestCase
 {
     /**
      * @dataProvider outputProvider

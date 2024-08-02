@@ -3,10 +3,11 @@
 namespace Lkrms\PrettyPHP\Tests\Rule;
 
 use Lkrms\PrettyPHP\Rule\AlignArrowFunctions;
+use Lkrms\PrettyPHP\Tests\TestCase;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
 
-final class AlignArrowFunctionsTest extends \Lkrms\PrettyPHP\Tests\TestCase
+final class AlignArrowFunctionsTest extends TestCase
 {
     /**
      * @dataProvider outputProvider

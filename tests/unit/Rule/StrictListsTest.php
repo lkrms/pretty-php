@@ -3,8 +3,9 @@
 namespace Lkrms\PrettyPHP\Tests\Rule;
 
 use Lkrms\PrettyPHP\Rule\StrictLists;
+use Lkrms\PrettyPHP\Tests\TestCase;
 
-final class StrictListsTest extends \Lkrms\PrettyPHP\Tests\TestCase
+final class StrictListsTest extends TestCase
 {
     /**
      * @dataProvider outputProvider

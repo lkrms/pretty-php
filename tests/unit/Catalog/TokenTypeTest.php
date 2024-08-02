@@ -4,10 +4,11 @@ namespace Lkrms\PrettyPHP\Tests\Catalog;
 
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
+use Lkrms\PrettyPHP\Tests\TestCase;
 use Generator;
 use ReflectionClass;
 
-final class TokenTypeTest extends \Lkrms\PrettyPHP\Tests\TestCase
+final class TokenTypeTest extends TestCase
 {
     /**
      * @dataProvider uniquenessProvider

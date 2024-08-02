@@ -2,7 +2,9 @@
 
 namespace Lkrms\PrettyPHP\Tests\Rule;
 
-final class PlaceCommentsTest extends \Lkrms\PrettyPHP\Tests\TestCase
+use Lkrms\PrettyPHP\Tests\TestCase;
+
+final class PlaceCommentsTest extends TestCase
 {
     /**
      * @dataProvider outputProvider

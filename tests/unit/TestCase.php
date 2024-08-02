@@ -5,10 +5,11 @@ namespace Lkrms\PrettyPHP\Tests;
 use Lkrms\PrettyPHP\Contract\Extension;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
+use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use Salient\Core\Facade\Profile;
 use Salient\Utility\Regex;
 
-abstract class TestCase extends \PHPUnit\Framework\TestCase
+abstract class TestCase extends PHPUnitTestCase
 {
     protected const PHP_COMMAND = [\PHP_BINARY, '-ddisplay_startup_errors=0'];
 

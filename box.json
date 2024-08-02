@@ -15,10 +15,9 @@
                 "/^(?:LICENSE|README|composer\\.(?:json|lock))$|phpstan\\.|\\.md$/"
             ],
             "notPath": [
-                "/^bin\\//",
-                "/^salient\\/toolkit\\/(?:bin|src\\/(?:Sli|Toolkit\\/(?:Contract\\/)?(?:Curler|Db|Http|PHPStan|Sync)))\\//",
+                "/^salient\\/contracts\\/(?:Curler|Db|Http|Sync)\\//",
                 "/^lkrms\\/dice\\/src\\/Loader\\//",
-                "/^psr\\/(?:http-(?:client|factory|message)|log\\/Psr\\/Log\\/Test)\\//"
+                "/^psr\\/(?:http-(?:client|message)|log\\/Psr\\/Log\\/Test)\\//"
             ]
         }
     ],

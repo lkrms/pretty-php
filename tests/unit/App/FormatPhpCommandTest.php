@@ -3,6 +3,7 @@
 namespace Lkrms\PrettyPHP\Tests\App;
 
 use Lkrms\PrettyPHP\App\FormatPhpCommand;
+use Lkrms\PrettyPHP\Tests\TestCase;
 use Salient\Cli\CliApplication;
 use Salient\Console\Target\MockTarget;
 use Salient\Console\ConsoleFormatter;
@@ -24,7 +25,7 @@ use Generator;
 /**
  * @backupGlobals enabled
  */
-final class FormatPhpCommandTest extends \Lkrms\PrettyPHP\Tests\TestCase
+final class FormatPhpCommandTest extends TestCase
 {
     private const ERROR = ConsoleFormatter::DEFAULT_LEVEL_PREFIX_MAP[Level::ERROR];
     private const WARNING = ConsoleFormatter::DEFAULT_LEVEL_PREFIX_MAP[Level::WARNING];

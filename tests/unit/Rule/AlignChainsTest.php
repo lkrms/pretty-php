@@ -3,8 +3,9 @@
 namespace Lkrms\PrettyPHP\Tests\Rule;
 
 use Lkrms\PrettyPHP\Rule\AlignChains;
+use Lkrms\PrettyPHP\Tests\TestCase;
 
-final class AlignChainsTest extends \Lkrms\PrettyPHP\Tests\TestCase
+final class AlignChainsTest extends TestCase
 {
     /**
      * @dataProvider outputProvider

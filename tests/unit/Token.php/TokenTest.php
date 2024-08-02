@@ -3,9 +3,10 @@
 namespace Lkrms\PrettyPHP\Tests\Token;
 
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
+use Lkrms\PrettyPHP\Tests\TestCase;
 use Lkrms\PrettyPHP\Formatter;
 
-final class TokenTest extends \Lkrms\PrettyPHP\Tests\TestCase
+final class TokenTest extends TestCase
 {
     /**
      * @requires PHP >= 8.1

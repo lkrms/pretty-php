@@ -3,6 +3,7 @@
 namespace Lkrms\PrettyPHP\Catalog;
 
 use Salient\Core\AbstractEnumeration;
+use Salient\Utility\Env;
 
 /**
  * Formatter flags
@@ -16,8 +17,8 @@ final class FormatterFlag extends AbstractEnumeration
     /**
      * Enable debug mode
      *
-     * Debug mode is enabled automatically if
-     * {@see \Salient\Utility\Env::getDebug()} returns `true`.
+     * Debug mode is enabled automatically if {@see Env::getDebug()} returns
+     * `true`.
      */
     public const DEBUG = 1;
 

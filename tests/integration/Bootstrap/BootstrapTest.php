@@ -2,10 +2,11 @@
 
 namespace Lkrms\PrettyPHP\Tests\Bootstrap;
 
+use Lkrms\PrettyPHP\Tests\TestCase;
 use Salient\Contract\Core\FileDescriptor;
 use Salient\Core\Process;
 
-final class BootstrapTest extends \Lkrms\PrettyPHP\Tests\TestCase
+final class BootstrapTest extends TestCase
 {
     /**
      * @dataProvider bootstrapProvider
