@@ -7,6 +7,9 @@ class A
 
 	// adsa
 	function c() {}
-	/** @return something */
+
+	/**
+	 * @return something
+	 */
 	function d() {}
 }

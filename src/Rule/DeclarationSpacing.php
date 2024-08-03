@@ -12,7 +12,7 @@ use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 use Salient\Utility\Arr;
-use Salient\Utility\Str;
+use Salient\Utility\Regex;
 
 /**
  * Normalise vertical spacing between declarations
@@ -37,6 +37,8 @@ use Salient\Utility\Str;
 final class DeclarationSpacing implements MultiTokenRule
 {
     use MultiTokenRuleTrait;
+
+    private const EXPANDABLE_TAG = '@(?:phan-|psalm-|phpstan-)?(?:api|internal|method|property(?:-read|-write)?|param|return|throws|(?:(?i)inheritDoc))(?=\s|$)';
 
     private bool $SortImportsEnabled;
 
@@ -375,17 +377,24 @@ final class DeclarationSpacing implements MultiTokenRule
         if (!$prev->hasNewlineBefore() || $prev->hasBlankLineAfter()) {
             return false;
         }
+
         return !(
             (
                 $prev->Flags & TokenFlag::COLLAPSIBLE_COMMENT
                 && ($prev->Data[TokenData::COMMENT_CONTENT][0] ?? null) === '@'
-                && Str::lower($prev->Data[TokenData::COMMENT_CONTENT]) !== '@inheritdoc'
+                && !Regex::match(
+                    '/^' . self::EXPANDABLE_TAG . '/',
+                    $prev->Data[TokenData::COMMENT_CONTENT],
+                )
             ) || (
                 // Check for comments that are not collapsible because they have
                 // already been collapsed
                 !$prev->hasNewline()
                 && $prev->text[4] === '@'
-                && Str::lower($prev->text) !== '/** @inheritdoc */'
+                && !Regex::match(
+                    '/^\/\*\* ' . self::EXPANDABLE_TAG . '/',
+                    $prev->text,
+                )
             )
         ) || (
             $orBlankLineBefore && $prev->hasBlankLineBefore()
