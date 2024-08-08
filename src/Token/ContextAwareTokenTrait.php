@@ -46,7 +46,6 @@ trait ContextAwareTokenTrait
      */
     final public function getSubType(): int
     {
-        /** @var static&GenericToken $this */
         if (isset($this->SubType)) {
             return $this->SubType;
         }
@@ -70,7 +69,6 @@ trait ContextAwareTokenTrait
      */
     private function getColonType(): ?int
     {
-        /** @var static&GenericToken $this */
         if (!$this->PrevCode) {
             $this->throw();
         }
@@ -161,7 +159,6 @@ trait ContextAwareTokenTrait
      */
     private function getQuestionType(): int
     {
-        /** @var static&GenericToken $this */
         if (!$this->PrevCode) {
             $this->throw();
         }
@@ -206,7 +203,6 @@ trait ContextAwareTokenTrait
      */
     final public function inParameterList(): bool
     {
-        /** @var static&GenericToken $this */
         if ($this->Parent && $this->Parent->isParameterList()) {
             return true;
         }
@@ -219,7 +215,6 @@ trait ContextAwareTokenTrait
      */
     final public function isParameterList(): bool
     {
-        /** @var static&GenericToken $this */
         if ($this->id !== \T_OPEN_PARENTHESIS || !$this->PrevCode) {
             return false;
         }
@@ -238,7 +233,6 @@ trait ContextAwareTokenTrait
      */
     final public function isFunctionBrace(bool $allowAnonymous = true): bool
     {
-        /** @var static&GenericToken $this */
         if ($this->id !== \T_OPEN_BRACE || !$this->PrevCode) {
             return false;
         }
@@ -289,7 +283,6 @@ trait ContextAwareTokenTrait
      */
     final public function inSwitchCase(): bool
     {
-        /** @var static&GenericToken $this */
         return
             $this->inSwitchCaseList() && (
                 $this->id === \T_CASE
@@ -304,7 +297,6 @@ trait ContextAwareTokenTrait
      */
     final public function inSwitchCaseList(): bool
     {
-        /** @var static&GenericToken $this */
         return
             $this->Parent
             && $this->Parent->PrevSibling
