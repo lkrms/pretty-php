@@ -17,8 +17,7 @@ function foo()
 
     static $qux = 0;
 
-    new class($qux)
-    {
+    new class($qux) {
         function __construct(&$qux)
         {
             $qux++;
