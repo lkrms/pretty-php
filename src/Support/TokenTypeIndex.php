@@ -37,6 +37,15 @@ class TokenTypeIndex implements Immutable
     public array $OpenBracket;
 
     /**
+     * T_OPEN_BRACE, T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_ATTRIBUTE,
+     * T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES, T_LOGICAL_NOT, T_NOT
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $OpenBracketOrNot;
+
+    /**
      * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS
      *
      * @readonly
@@ -352,6 +361,22 @@ class TokenTypeIndex implements Immutable
     public array $Ampersand;
 
     /**
+     * T_COMMA
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $Comma;
+
+    /**
+     * T_SEMICOLON
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $Semicolon;
+
+    /**
      * T_ATTRIBUTE, T_ATTRIBUTE_COMMENT
      *
      * @readonly
@@ -558,6 +583,17 @@ class TokenTypeIndex implements Immutable
             \T_ATTRIBUTE,
             \T_CURLY_OPEN,
             \T_DOLLAR_OPEN_CURLY_BRACES,
+        );
+
+        $this->OpenBracketOrNot = TT::getIndex(
+            \T_OPEN_BRACE,
+            \T_OPEN_BRACKET,
+            \T_OPEN_PARENTHESIS,
+            \T_ATTRIBUTE,
+            \T_CURLY_OPEN,
+            \T_DOLLAR_OPEN_CURLY_BRACES,
+            \T_LOGICAL_NOT,
+            \T_NOT,
         );
 
         $this->CloseBracket = TT::getIndex(
@@ -887,6 +923,8 @@ class TokenTypeIndex implements Immutable
         $this->AltSyntaxContinueWithoutExpression = TT::getIndex(...TT::ALT_SYNTAX_CONTINUE_WITHOUT_EXPRESSION);
         $this->AltSyntaxEnd = TT::getIndex(...TT::ALT_SYNTAX_END);
         $this->Ampersand = TT::getIndex(...TT::AMPERSAND);
+        $this->Comma = TT::getIndex(\T_COMMA);
+        $this->Semicolon = TT::getIndex(\T_SEMICOLON);
         $this->Attribute = TT::getIndex(
             \T_ATTRIBUTE,
             \T_ATTRIBUTE_COMMENT,
