@@ -28,7 +28,7 @@ final class ListSpacing implements ListRule
 {
     use ListRuleTrait;
 
-    private bool $ListRuleIsEnabled;
+    private bool $ListRuleEnabled;
 
     public static function getPriority(string $method): ?int
     {
@@ -44,18 +44,18 @@ final class ListSpacing implements ListRule
     /**
      * @inheritDoc
      */
-    public function reset(): void
+    public function boot(): void
     {
-        $this->ListRuleIsEnabled
-            ??= ($this->Formatter->Enabled[StrictLists::class] ?? null)
-                || ($this->Formatter->Enabled[AlignLists::class] ?? null);
+        $this->ListRuleEnabled = $this->Formatter->Enabled[StrictLists::class]
+            ?? $this->Formatter->Enabled[AlignLists::class]
+            ?? false;
     }
 
     public function processList(Token $owner, TokenCollection $items): void
     {
         // If `$owner` has no `ClosedBy`, this is an interface list
         if (!$owner->ClosedBy) {
-            if (!$this->ListRuleIsEnabled
+            if (!$this->ListRuleEnabled
                     && $items->tokenHasNewlineBefore()) {
                 $first = $items->first();
                 $first->WhitespaceBefore |= WhitespaceType::LINE;
