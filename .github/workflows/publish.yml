@@ -64,7 +64,7 @@ jobs:
           scripts/create-PKGBUILD.sh ${{ github.event.inputs.tag-name || github.ref_name }} >build/PKGBUILD
 
       - name: Publish PKGBUILD to the AUR
-        uses: KSXGitHub/github-actions-deploy-aur@v2.7.1
+        uses: KSXGitHub/github-actions-deploy-aur@v2.7.2
         with:
           pkgname: pretty-php
           pkgbuild: build/PKGBUILD
