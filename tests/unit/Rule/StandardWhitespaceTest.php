@@ -47,7 +47,8 @@ PHP,
                 <<<'PHP'
 <?php
 if ($a):
-    function f() {
+    function f()
+    {
         ?>
         <div id="content">
             <?php
