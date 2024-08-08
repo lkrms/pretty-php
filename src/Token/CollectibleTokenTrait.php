@@ -28,6 +28,10 @@ trait CollectibleTokenTrait
             ? $this->TypeIndex->DeclarationPartWithNew
             : $this->TypeIndex->DeclarationPart;
 
+        if (!$index[$this->id]) {
+            return new TokenCollection();
+        }
+
         $t = $this;
         while (
             $t->NextSibling && (
