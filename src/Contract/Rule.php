@@ -20,6 +20,8 @@ interface Rule extends Extension
      */
     public static function getPriority(string $method): ?int;
 
-    /** @param Token[] $tokens */
+    /**
+     * @param Token[] $tokens
+     */
     public function beforeRender(array $tokens): void;
 }
