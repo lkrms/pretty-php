@@ -5,7 +5,6 @@ namespace Lkrms\PrettyPHP\Rule;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\PrettyPHP\Token\Token;
 
 /**
  * Add a blank line before return and yield statements unless they appear
@@ -13,14 +12,14 @@ use Lkrms\PrettyPHP\Token\Token;
  *
  * @api
  */
-final class BlankLineBeforeReturn implements TokenRule
+final class BlankBeforeReturn implements TokenRule
 {
     use TokenRuleTrait;
 
     public static function getPriority(string $method): ?int
     {
         switch ($method) {
-            case self::PROCESS_TOKEN:
+            case self::PROCESS_TOKENS:
                 return 97;
 
             default:
@@ -37,12 +36,14 @@ final class BlankLineBeforeReturn implements TokenRule
         ];
     }
 
-    public function processToken(Token $token): void
+    public function processTokens(array $tokens): void
     {
-        if (($prev = $token->PrevSibling->Statement ?? null)
-                && $prev->is([\T_RETURN, \T_YIELD, \T_YIELD_FROM])) {
-            return;
+        foreach ($tokens as $token) {
+            if (($prev = $token->PrevSibling->Statement ?? null)
+                    && $prev->is([\T_RETURN, \T_YIELD, \T_YIELD_FROM])) {
+                continue;
+            }
+            $token->applyBlankLineBefore();
         }
-        $token->applyBlankLineBefore();
     }
 }

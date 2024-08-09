@@ -2,9 +2,9 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Contract\MultiTokenRule;
+use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Exception\RuleException;
-use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
+use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Salient\Utility\Regex;
 
@@ -17,9 +17,9 @@ use Salient\Utility\Regex;
  *
  * @api
  */
-final class NormaliseStrings implements MultiTokenRule
+final class SimplifyStrings implements TokenRule
 {
-    use MultiTokenRuleTrait;
+    use TokenRuleTrait;
 
     private const INVISIBLE = '/^' . Regex::INVISIBLE_CHAR . '$/u';
 

@@ -5,8 +5,8 @@ namespace Lkrms\PrettyPHP\Rule;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
-use Lkrms\PrettyPHP\Contract\MultiTokenRule;
-use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
+use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Token\Token;
 
 /**
@@ -14,9 +14,9 @@ use Lkrms\PrettyPHP\Token\Token;
  *
  * @api
  */
-final class PreserveLineBreaks implements MultiTokenRule
+final class PreserveNewlines implements TokenRule
 {
-    use MultiTokenRuleTrait;
+    use TokenRuleTrait;
 
     public static function getPriority(string $method): ?int
     {
@@ -129,7 +129,7 @@ final class PreserveLineBreaks implements MultiTokenRule
             return false;
         }
 
-        if (!$this->Formatter->PreserveLineBreaks
+        if (!$this->Formatter->PreserveNewlines
                 && !$token->hasNewlineBefore()) {
             return false;
         }
@@ -236,13 +236,13 @@ final class PreserveLineBreaks implements MultiTokenRule
                         || ($token->Parent
                             && !($token->Parent->id === \T_OPEN_BRACE
                                 && $token->Parent->isStructuralBrace())))))) {
-            if (!$this->Formatter->PreserveLineBreaks) {
+            if (!$this->Formatter->PreserveNewlines) {
                 return false;
             }
             $line = WhitespaceType::LINE;
         }
 
-        if (!$this->Formatter->PreserveLineBreaks
+        if (!$this->Formatter->PreserveNewlines
                 && !$token->hasNewlineAfter()) {
             return false;
         }

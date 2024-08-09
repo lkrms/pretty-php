@@ -166,46 +166,6 @@ parameters:
 			path: src/Parser.php
 
 		-
-			message: "#^Cannot access property \\$AlignedWith on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/AlignArrowFunctions.php
-
-		-
-			message: "#^Cannot access property \\$Prev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/AlignArrowFunctions.php
-
-		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/AlignArrowFunctions.php
-
-		-
-			message: "#^Parameter \\#1 \\$body of method Lkrms\\\\PrettyPHP\\\\Rule\\\\AlignArrowFunctions\\:\\:alignBody\\(\\) expects Lkrms\\\\PrettyPHP\\\\Token\\\\Token, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null given\\.$#"
-			count: 1
-			path: src/Rule/AlignArrowFunctions.php
-
-		-
-			message: "#^Parameter \\#1 \\$to of method Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:collect\\(\\) expects Lkrms\\\\PrettyPHP\\\\Token\\\\Token, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null given\\.$#"
-			count: 1
-			path: src/Rule/AlignArrowFunctions.php
-
-		-
-			message: "#^Parameter \\#2 \\$alignWith of method Lkrms\\\\PrettyPHP\\\\Rule\\\\AlignArrowFunctions\\:\\:alignBody\\(\\) expects Lkrms\\\\PrettyPHP\\\\Token\\\\Token, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null given\\.$#"
-			count: 1
-			path: src/Rule/AlignArrowFunctions.php
-
-		-
-			message: "#^Parameter \\#2 \\$first of method Lkrms\\\\PrettyPHP\\\\Formatter\\:\\:registerCallback\\(\\) expects Lkrms\\\\PrettyPHP\\\\Token\\\\Token, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null given\\.$#"
-			count: 1
-			path: src/Rule/AlignArrowFunctions.php
-
-		-
-			message: "#^Parameter \\#3 \\$until of method Lkrms\\\\PrettyPHP\\\\Rule\\\\AlignArrowFunctions\\:\\:alignBody\\(\\) expects Lkrms\\\\PrettyPHP\\\\Token\\\\Token, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null given\\.$#"
-			count: 1
-			path: src/Rule/AlignArrowFunctions.php
-
-		-
 			message: "#^Parameter \\#1 \\$to of method Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:collect\\(\\) expects Lkrms\\\\PrettyPHP\\\\Token\\\\Token, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null given\\.$#"
 			count: 1
 			path: src/Rule/AlignChains.php
@@ -411,31 +371,6 @@ parameters:
 			path: src/Rule/ListSpacing.php
 
 		-
-			message: "#^Parameter \\#2 \\$length of function str_split expects int\\<1, max\\>, int given\\.$#"
-			count: 1
-			path: src/Rule/NormaliseNumbers.php
-
-		-
-			message: "#^Cannot access property \\$StringClosedBy on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 3
-			path: src/Rule/NormaliseStrings.php
-
-		-
-			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 7
-			path: src/Rule/NormaliseStrings.php
-
-		-
-			message: "#^Cannot access property \\$text on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 3
-			path: src/Rule/NormaliseStrings.php
-
-		-
-			message: "#^Cannot call method getTokenName\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/NormaliseStrings.php
-
-		-
 			message: "#^Cannot access property \\$IsCode on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/OperatorSpacing.php
@@ -498,7 +433,7 @@ parameters:
 		-
 			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
-			path: src/Rule/PreserveLineBreaks.php
+			path: src/Rule/PreserveNewlines.php
 
 		-
 			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
@@ -564,6 +499,31 @@ parameters:
 			message: "#^Cannot call method collectSiblings\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/ProtectStrings.php
+
+		-
+			message: "#^Parameter \\#2 \\$length of function str_split expects int\\<1, max\\>, int given\\.$#"
+			count: 1
+			path: src/Rule/SimplifyNumbers.php
+
+		-
+			message: "#^Cannot access property \\$StringClosedBy on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
+			count: 3
+			path: src/Rule/SimplifyStrings.php
+
+		-
+			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
+			count: 7
+			path: src/Rule/SimplifyStrings.php
+
+		-
+			message: "#^Cannot access property \\$text on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
+			count: 3
+			path: src/Rule/SimplifyStrings.php
+
+		-
+			message: "#^Cannot call method getTokenName\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
+			count: 1
+			path: src/Rule/SimplifyStrings.php
 
 		-
 			message: "#^Cannot access property \\$CloseTag on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"

@@ -2,11 +2,11 @@
 
 namespace Lkrms\PrettyPHP\Tests\Rule;
 
-use Lkrms\PrettyPHP\Rule\PreserveLineBreaks;
+use Lkrms\PrettyPHP\Rule\PreserveNewlines;
 use Lkrms\PrettyPHP\Tests\TestCase;
 use Generator;
 
-final class PreserveLineBreaksTest extends TestCase
+final class PreserveNewlinesTest extends TestCase
 {
     /**
      * @dataProvider outputProvider
@@ -19,7 +19,7 @@ final class PreserveLineBreaksTest extends TestCase
             [],
             $preserve
                 ? []
-                : [PreserveLineBreaks::class]
+                : [PreserveNewlines::class]
         );
     }
 

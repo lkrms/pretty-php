@@ -2,9 +2,9 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Contract\MultiTokenRule;
+use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Exception\RuleException;
-use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
+use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
@@ -12,9 +12,9 @@ use Salient\Utility\Str;
 /**
  * Normalise integers and floats
  */
-final class NormaliseNumbers implements MultiTokenRule
+final class SimplifyNumbers implements TokenRule
 {
-    use MultiTokenRuleTrait;
+    use TokenRuleTrait;
 
     public static function getPriority(string $method): ?int
     {

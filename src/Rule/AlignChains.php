@@ -20,7 +20,7 @@ final class AlignChains implements TokenRule
     public static function getPriority(string $method): ?int
     {
         switch ($method) {
-            case self::PROCESS_TOKEN:
+            case self::PROCESS_TOKENS:
                 return 340;
 
             case self::CALLBACK:
@@ -36,77 +36,80 @@ final class AlignChains implements TokenRule
         return TokenType::CHAIN;
     }
 
-    public function processToken(Token $token): void
+    public function processTokens(array $tokens): void
     {
-        if ($token !== $token->ChainOpenedBy) {
-            return;
-        }
-
-        // If the first `->` in the chain has a leading newline, and alignment
-        // with the start of the expression is disabled, do nothing
-        if (($hasNewlineBefore = $token->hasNewlineBefore())
-                && !$this->Formatter->AlignFirstCallInChain) {
-            return;
-        }
-
-        $chain = $token->withNextSiblingsWhile(false, ...TokenType::CHAIN_PART)
-                       ->filter(fn(Token $t) => $this->TypeIndex->Chain[$t->id]);
-
-        // If there's no `->` in the chain with a leading newline, do nothing
-        if ($chain->count() < 2
-                || !$chain->find(fn(Token $t) => $t->hasNewlineBefore())) {
-            return;
-        }
-
-        /** @var Token|null $alignWith */
-        $alignWith = null;
-        $adjust = 2;
-
-        if ($hasNewlineBefore) {
-            // Find the start of the expression
-            $current = $token;
-            while (($current = $current->PrevSibling)
-                    && $token->Expression === $current->Expression
-                    && $current->is([
-                        \T_DOUBLE_COLON,
-                        \T_NAME_FULLY_QUALIFIED,
-                        \T_NAME_QUALIFIED,
-                        \T_NAME_RELATIVE,
-                        \T_NS_SEPARATOR,
-                        ...TokenType::CHAIN_PART
-                    ])) {
-                $alignWith = $current;
+        foreach ($tokens as $token) {
+            if ($token !== $token->ChainOpenedBy) {
+                continue;
             }
+
+            // If the first `->` in the chain has a leading newline, and alignment
+            // with the start of the expression is disabled, do nothing
+            if (($hasNewlineBefore = $token->hasNewlineBefore())
+                    && !$this->Formatter->AlignFirstCallInChain) {
+                continue;
+            }
+
+            $chain = $token->withNextSiblingsWhile(false, ...TokenType::CHAIN_PART)
+                           ->filter(fn(Token $t) => $this->TypeIndex->Chain[$t->id]);
+
+            // If there's no `->` in the chain with a leading newline, do nothing
+            if ($chain->count() < 2
+                    || !$chain->find(fn(Token $t) => $t->hasNewlineBefore())) {
+                continue;
+            }
+
+            /** @var Token|null $alignWith */
+            $alignWith = null;
+            $adjust = 2;
+
+            if ($hasNewlineBefore) {
+                // Find the start of the expression
+                $current = $token;
+                while (($current = $current->PrevSibling)
+                        && $token->Expression === $current->Expression
+                        && $current->is([
+                            \T_DOUBLE_COLON,
+                            \T_NAME_FULLY_QUALIFIED,
+                            \T_NAME_QUALIFIED,
+                            \T_NAME_RELATIVE,
+                            \T_NS_SEPARATOR,
+                            ...TokenType::CHAIN_PART
+                        ])) {
+                    $alignWith = $current;
+                }
+                if (!$alignWith) {
+                    continue;
+                }
+                $eol = $alignWith->endOfLine();
+                if ($eol->IsCode
+                        && $eol->Next === $token
+                        && mb_strlen($alignWith->collect($eol)->render()) <= $this->Formatter->TabSize) {
+                    $token->WhitespaceBefore = WhitespaceType::NONE;
+                    $token->WhitespaceMaskPrev = WhitespaceType::NONE;
+                    $alignWith = null;
+                } else {
+                    // This is safe because $alignWith->text will never contain newlines
+                    $adjust = mb_strlen($alignWith->text) - $this->Formatter->TabSize;
+                }
+            }
+
+            $first = null;
             if (!$alignWith) {
-                return;
+                $token->AlignedWith = $alignWith = $token;
+                $first = $token;
+                $chain->shift();
             }
-            $eol = $alignWith->endOfLine();
-            if ($eol->IsCode
-                    && $eol->Next === $token
-                    && mb_strlen($alignWith->collect($eol)->render()) <= $this->Formatter->TabSize) {
-                $token->WhitespaceBefore = WhitespaceType::NONE;
-                $token->WhitespaceMaskPrev = WhitespaceType::NONE;
-                $alignWith = null;
-            } else {
-                // This is safe because $alignWith->text will never contain newlines
-                $adjust = mb_strlen($alignWith->text) - $this->Formatter->TabSize;
-            }
+
+            $alignFirst = $chain->first();
+            $chain->forEach(fn(Token $t) => $t->AlignedWith = $alignWith);
+
+            $this->Formatter->registerCallback(
+                static::class,
+                $first ?? $alignFirst,
+                fn() => $this->alignChain($chain, $alignFirst, $alignWith, $adjust)
+            );
         }
-
-        if (!$alignWith) {
-            $token->AlignedWith = $alignWith = $token;
-            $first = $token;
-            $chain->shift();
-        }
-
-        $alignFirst = $chain->first();
-        $chain->forEach(fn(Token $t) => $t->AlignedWith = $alignWith);
-
-        $this->Formatter->registerCallback(
-            static::class,
-            $first ?? $alignFirst,
-            fn() => $this->alignChain($chain, $alignFirst, $alignWith, $adjust)
-        );
     }
 
     private function alignChain(TokenCollection $chain, Token $first, Token $alignWith, int $adjust): void

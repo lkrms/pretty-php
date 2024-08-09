@@ -36,7 +36,7 @@ final class PlaceComments implements TokenRule
     public static function getPriority(string $method): ?int
     {
         switch ($method) {
-            case self::PROCESS_TOKEN:
+            case self::PROCESS_TOKENS:
                 return 90;
 
             case self::BEFORE_RENDER:
@@ -52,110 +52,112 @@ final class PlaceComments implements TokenRule
         return TokenType::COMMENT;
     }
 
-    public function processToken(Token $token): void
+    public function processTokens(array $tokens): void
     {
-        if (
-            $token->isOneLineComment()
-            && $token->Next
-            && $token->Next->id !== \T_CLOSE_TAG
-        ) {
-            $token->CriticalWhitespaceAfter |= WhitespaceType::LINE;
-        }
-
-        $isDocComment =
-            $token->id === \T_DOC_COMMENT
-            || ($token->Flags & TokenFlag::INFORMAL_DOC_COMMENT);
-
-        $prevIsTopLevelCloseBrace =
-            $token->Prev
-            && $token->Prev->id === \T_CLOSE_BRACE
-            && $token->Prev->isStructuralBrace()
-            && $token->Prev->skipPrevSiblingsToDeclarationStart()->namedDeclarationParts()->hasOneOf(
-                ...TokenType::DECLARATION_CLASS
-            );
-
-        $needsNewlineBefore =
-            $token->id === \T_DOC_COMMENT
-            || ($this->Formatter->Psr12 && $prevIsTopLevelCloseBrace);
-
-        if (!$needsNewlineBefore) {
-            // Leave embedded comments alone
-            $wasFirstOnLine = $token->wasFirstOnLine();
-            if (!$wasFirstOnLine && !$token->wasLastOnLine()) {
-                if ($token->Prev->IsCode || $token->Prev->OpenTag === $token->Prev) {
-                    $this->CommentsBesideCode[] = $token;
-                    $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
-                    return;
-                }
-                $token->WhitespaceBefore |= WhitespaceType::SPACE;
-                $token->WhitespaceAfter |= WhitespaceType::SPACE;
-                return;
+        foreach ($tokens as $token) {
+            if (
+                $token->isOneLineComment()
+                && $token->Next
+                && $token->Next->id !== \T_CLOSE_TAG
+            ) {
+                $token->CriticalWhitespaceAfter |= WhitespaceType::LINE;
             }
 
-            // Aside from DocBlocks and, in strict PSR-12 mode, comments after
-            // top-level close braces, don't move comments to the next line
-            if (!$wasFirstOnLine) {
-                $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
-                if ($token->Prev->IsCode || $token->Prev->OpenTag === $token->Prev) {
-                    $this->CommentsBesideCode[] = $token;
-                    $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
-                    return;
+            $isDocComment =
+                $token->id === \T_DOC_COMMENT
+                || ($token->Flags & TokenFlag::INFORMAL_DOC_COMMENT);
+
+            $prevIsTopLevelCloseBrace =
+                $token->Prev
+                && $token->Prev->id === \T_CLOSE_BRACE
+                && $token->Prev->isStructuralBrace()
+                && $token->Prev->skipPrevSiblingsToDeclarationStart()->namedDeclarationParts()->hasOneOf(
+                    ...TokenType::DECLARATION_CLASS
+                );
+
+            $needsNewlineBefore =
+                $token->id === \T_DOC_COMMENT
+                || ($this->Formatter->Psr12 && $prevIsTopLevelCloseBrace);
+
+            if (!$needsNewlineBefore) {
+                // Leave embedded comments alone
+                $wasFirstOnLine = $token->wasFirstOnLine();
+                if (!$wasFirstOnLine && !$token->wasLastOnLine()) {
+                    if ($token->Prev->IsCode || $token->Prev->OpenTag === $token->Prev) {
+                        $this->CommentsBesideCode[] = $token;
+                        $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
+                        continue;
+                    }
+                    $token->WhitespaceBefore |= WhitespaceType::SPACE;
+                    $token->WhitespaceAfter |= WhitespaceType::SPACE;
+                    continue;
                 }
-                $token->WhitespaceBefore |= WhitespaceType::SPACE;
-                return;
+
+                // Aside from DocBlocks and, in strict PSR-12 mode, comments after
+                // top-level close braces, don't move comments to the next line
+                if (!$wasFirstOnLine) {
+                    $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
+                    if ($token->Prev->IsCode || $token->Prev->OpenTag === $token->Prev) {
+                        $this->CommentsBesideCode[] = $token;
+                        $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
+                        continue;
+                    }
+                    $token->WhitespaceBefore |= WhitespaceType::SPACE;
+                    continue;
+                }
             }
-        }
 
-        // Copy indentation and padding from `$next` to `$token` in
-        // `beforeRender()` unless `$next` is a close bracket
-        $next = $token->NextCode;
-        if ($next && !$this->TypeIndex->CloseBracketOrEndAltSyntax[$next->id]) {
-            $this->Comments[] = [$token, $next];
-        }
+            // Copy indentation and padding from `$next` to `$token` in
+            // `beforeRender()` unless `$next` is a close bracket
+            $next = $token->NextCode;
+            if ($next && !$this->TypeIndex->CloseBracketOrEndAltSyntax[$next->id]) {
+                $this->Comments[] = [$token, $next];
+            }
 
-        $token->WhitespaceAfter |= WhitespaceType::LINE;
-        $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
+            $token->WhitespaceAfter |= WhitespaceType::LINE;
+            $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
 
-        if (!$isDocComment) {
-            return;
-        }
+            if (!$isDocComment) {
+                continue;
+            }
 
-        // Add a blank line before multi-line DocBlocks and C-style equivalents
-        // unless they appear mid-statement
-        if ($token->Flags & TokenFlag::COLLAPSIBLE_COMMENT) {
-            $this->CollapsibleComments[] = $token;
-        } elseif (
-            $token->hasNewline()
-            && (!$token->PrevSibling
-                || !$token->NextSibling
-                || $token->PrevSibling->Statement !== $token->NextSibling->Statement)
-        ) {
-            $token->WhitespaceBefore |= WhitespaceType::BLANK;
-        }
+            // Add a blank line before multi-line DocBlocks and C-style equivalents
+            // unless they appear mid-statement
+            if ($token->Flags & TokenFlag::COLLAPSIBLE_COMMENT) {
+                $this->CollapsibleComments[] = $token;
+            } elseif (
+                $token->hasNewline()
+                && (!$token->PrevSibling
+                    || !$token->NextSibling
+                    || $token->PrevSibling->Statement !== $token->NextSibling->Statement)
+            ) {
+                $token->WhitespaceBefore |= WhitespaceType::BLANK;
+            }
 
-        // Add a blank line after file-level DocBlocks and multi-line C-style
-        // comments
-        if (
-            $next && (
-                $next->id === \T_DECLARE
-                || $next->id === \T_NAMESPACE
-                || (
-                    $next->id === \T_USE
-                    && $next->getSubType() === TokenSubType::USE_IMPORT
+            // Add a blank line after file-level DocBlocks and multi-line C-style
+            // comments
+            if (
+                $next && (
+                    $next->id === \T_DECLARE
+                    || $next->id === \T_NAMESPACE
+                    || (
+                        $next->id === \T_USE
+                        && $next->getSubType() === TokenSubType::USE_IMPORT
+                    )
                 )
-            )
-        ) {
-            $token->WhitespaceAfter |= WhitespaceType::BLANK;
-            return;
-        }
+            ) {
+                $token->WhitespaceAfter |= WhitespaceType::BLANK;
+                continue;
+            }
 
-        // Otherwise, pin DocBlocks to subsequent code
-        if (
-            $next
-            && $next === $token->Next
-            && $token->id === \T_DOC_COMMENT
-        ) {
-            $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
+            // Otherwise, pin DocBlocks to subsequent code
+            if (
+                $next
+                && $next === $token->Next
+                && $token->id === \T_DOC_COMMENT
+            ) {
+                $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
+            }
         }
     }
 

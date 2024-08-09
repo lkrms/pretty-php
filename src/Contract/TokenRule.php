@@ -8,14 +8,12 @@ use Lkrms\PrettyPHP\Token\Token;
 
 interface TokenRule extends Rule
 {
-    public const PROCESS_TOKEN = 'processToken';
+    public const PROCESS_TOKENS = 'processTokens';
 
     /**
      * Return token types the rule is interested in
      *
-     * Tokens of these types are passed to
-     * {@see MultiTokenRule::processTokens()} if implemented,
-     * {@see TokenRule::processToken()} otherwise.
+     * Tokens of these types are passed to {@see TokenRule::processTokens()}.
      *
      * To receive all tokens, return `['*']`, otherwise return either a list of
      * token types, or an index returned by {@see TokenType::getIndex()}.
@@ -30,11 +28,13 @@ interface TokenRule extends Rule
     public static function getRequiresSortedTokens(): bool;
 
     /**
-     * Apply the rule to a token
+     * Apply the rule to an array of tokens
      *
-     * Non-whitespace tokens of the types returned by
-     * {@see TokenRule::getTokenTypes()} are passed to
-     * {@see TokenRule::processToken()}.
+     * An array of non-whitespace tokens of the types returned by
+     * {@see TokenRule::getTokenTypes()} is passed to
+     * {@see TokenRule::processTokens()} once per run.
+     *
+     * @param array<int,Token> $tokens
      */
-    public function processToken(Token $token): void;
+    public function processTokens(array $tokens): void;
 }

@@ -22,12 +22,12 @@ use Lkrms\PrettyPHP\Rule\AlignComments;
 use Lkrms\PrettyPHP\Rule\AlignData;
 use Lkrms\PrettyPHP\Rule\AlignLists;
 use Lkrms\PrettyPHP\Rule\AlignTernaryOperators;
-use Lkrms\PrettyPHP\Rule\BlankLineBeforeReturn;
+use Lkrms\PrettyPHP\Rule\BlankBeforeReturn;
 use Lkrms\PrettyPHP\Rule\DeclarationSpacing;
-use Lkrms\PrettyPHP\Rule\NormaliseNumbers;
-use Lkrms\PrettyPHP\Rule\NormaliseStrings;
-use Lkrms\PrettyPHP\Rule\PreserveLineBreaks;
+use Lkrms\PrettyPHP\Rule\PreserveNewlines;
 use Lkrms\PrettyPHP\Rule\PreserveOneLineStatements;
+use Lkrms\PrettyPHP\Rule\SimplifyNumbers;
+use Lkrms\PrettyPHP\Rule\SimplifyStrings;
 use Lkrms\PrettyPHP\Rule\StrictExpressions;
 use Lkrms\PrettyPHP\Rule\StrictLists;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
@@ -68,9 +68,9 @@ final class FormatPhpCommand extends CliCommand
     private const DISABLE_MAP = [
         'sort-imports' => SortImports::class,
         'move-comments' => MoveComments::class,
-        'simplify-strings' => NormaliseStrings::class,
-        'simplify-numbers' => NormaliseNumbers::class,
-        'preserve-newlines' => PreserveLineBreaks::class,
+        'simplify-strings' => SimplifyStrings::class,
+        'simplify-numbers' => SimplifyNumbers::class,
+        'preserve-newlines' => PreserveNewlines::class,
         'declaration-spacing' => DeclarationSpacing::class,
     ];
 
@@ -81,7 +81,7 @@ final class FormatPhpCommand extends CliCommand
         'align-ternary' => AlignTernaryOperators::class,
         'align-data' => AlignData::class,
         'align-lists' => AlignLists::class,
-        'blank-before-return' => BlankLineBeforeReturn::class,
+        'blank-before-return' => BlankBeforeReturn::class,
         'strict-expressions' => StrictExpressions::class,
         'strict-lists' => StrictLists::class,
         'preserve-one-line' => PreserveOneLineStatements::class,
@@ -557,7 +557,7 @@ EOF)
 Create debug output in <directory>.
 
 Combine with `--log-progress` to write partially formatted code to a series of
-files in *\<directory>/{}* that represent changes applied by enabled rules.
+files in *\<directory>/{}* that represent changes applied by each enabled rule.
 EOF))
                 ->optionType(CliOptionType::VALUE_OPTIONAL)
                 ->defaultValue($this->App->getTempPath() . '/debug')
@@ -652,11 +652,11 @@ If a directory contains more than one configuration file, `{{program}}` reports
 an error and exits without formatting anything.
 EOF,
             CliHelpSectionName::EXIT_STATUS => <<<EOF
-`{{program}}` returns 0 when formatting succeeds, 1 when invalid arguments are
-given, 2 when invalid configuration files are found, and 4 when one or more
-input files cannot be parsed. When `--diff` or `--check` are given,
-`{{program}}` returns 0 when the input is already formatted and 8 when
-formatting is required.
+- *0* when formatting succeeds or the input is already formatted
+- *1* when invalid arguments are given
+- *2* when invalid configuration files are found
+- *4* when one or more input files cannot be parsed
+- *8* when formatting is required and `--diff` or `--check` are given
 EOF,
         ];
     }
@@ -1349,7 +1349,7 @@ EOF,
     {
         Console::debug('Looking for a configuration file:', $dir);
 
-        $dir = File::sanitiseDir($dir);
+        $dir = File::getCleanDir($dir);
         $found = [];
         foreach (self::CONFIG_FILE_NAME as $file) {
             $file = $dir . '/' . $file;
@@ -1388,7 +1388,7 @@ EOF,
             ]));
         }
 
-        $dir = File::sanitiseDir($dir);
+        $dir = File::getCleanDir($dir);
         $finder = File::find()
                       ->in($dir)
                       ->exclude($this->ExcludeRegex)
@@ -1465,7 +1465,7 @@ EOF,
         }
 
         if ($this->Tight && in_array(
-            $key = Arr::keyOf(DeclarationSpacing::class, self::DISABLE_MAP),
+            $key = Arr::keyOf(self::DISABLE_MAP, DeclarationSpacing::class),
             $this->Disable,
             true,
         )) {
@@ -1479,7 +1479,7 @@ EOF,
 
         if ($this->optionHasArgument('sort-imports-by') && (
             in_array(
-                $key = Arr::keyOf(SortImports::class, self::DISABLE_MAP),
+                $key = Arr::keyOf(self::DISABLE_MAP, SortImports::class),
                 $this->Disable,
                 true,
             ) || $this->NoSortImports

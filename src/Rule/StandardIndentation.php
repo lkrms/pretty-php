@@ -2,8 +2,8 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Contract\MultiTokenRule;
-use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
+use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 
 /**
  * Apply symmetrical whitespace to brackets and increase the indentation
@@ -11,9 +11,9 @@ use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
  *
  * @api
  */
-final class StandardIndentation implements MultiTokenRule
+final class StandardIndentation implements TokenRule
 {
-    use MultiTokenRuleTrait;
+    use TokenRuleTrait;
 
     /**
      * @inheritDoc

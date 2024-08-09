@@ -7,9 +7,8 @@ use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\Preset;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
-use Lkrms\PrettyPHP\Rule\BlankLineBeforeReturn;
+use Lkrms\PrettyPHP\Rule\BlankBeforeReturn;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder;
 
@@ -29,7 +28,7 @@ final class Laravel implements Preset, TokenRule
     {
         return (new FormatterBuilder())
                    ->enable([
-                       BlankLineBeforeReturn::class,
+                       BlankBeforeReturn::class,
                        self::class,
                    ])
                    ->flags($flags)
@@ -40,7 +39,7 @@ final class Laravel implements Preset, TokenRule
     public static function getPriority(string $method): ?int
     {
         switch ($method) {
-            case self::PROCESS_TOKEN:
+            case self::PROCESS_TOKENS:
                 return 100;
 
             default:
@@ -57,26 +56,28 @@ final class Laravel implements Preset, TokenRule
         ];
     }
 
-    public function processToken(Token $token): void
+    public function processTokens(array $tokens): void
     {
-        switch ($token->id) {
-            case \T_LOGICAL_NOT:
-                if (($token->Next->id ?? null) === \T_LOGICAL_NOT) {
-                    return;
-                }
-                $token->WhitespaceAfter |= WhitespaceType::SPACE;
-                $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
-                return;
+        foreach ($tokens as $token) {
+            switch ($token->id) {
+                case \T_LOGICAL_NOT:
+                    if (($token->Next->id ?? null) === \T_LOGICAL_NOT) {
+                        continue 2;
+                    }
+                    $token->WhitespaceAfter |= WhitespaceType::SPACE;
+                    $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
+                    continue 2;
 
-            case \T_CONCAT:
-                $token->WhitespaceMaskPrev &= ~WhitespaceType::SPACE;
-                $token->WhitespaceMaskNext &= ~WhitespaceType::SPACE;
-                return;
+                case \T_CONCAT:
+                    $token->WhitespaceMaskPrev &= ~WhitespaceType::SPACE;
+                    $token->WhitespaceMaskNext &= ~WhitespaceType::SPACE;
+                    continue 2;
 
-            case \T_FN:
-                $token->WhitespaceAfter |= WhitespaceType::SPACE;
-                $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
-                return;
+                case \T_FN:
+                    $token->WhitespaceAfter |= WhitespaceType::SPACE;
+                    $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
+                    continue 2;
+            }
         }
     }
 }

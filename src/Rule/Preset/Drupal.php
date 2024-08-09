@@ -8,7 +8,6 @@ use Lkrms\PrettyPHP\Contract\Preset;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder;
 use Salient\PHPDoc\PHPDoc;
@@ -42,7 +41,7 @@ final class Drupal implements Preset, TokenRule
     public static function getPriority(string $method): ?int
     {
         switch ($method) {
-            case self::PROCESS_TOKEN:
+            case self::PROCESS_TOKENS:
                 return 100;
 
             default:
@@ -68,54 +67,56 @@ final class Drupal implements Preset, TokenRule
         ];
     }
 
-    public function processToken(Token $token): void
+    public function processTokens(array $tokens): void
     {
-        // Add blank lines before and after non-empty `class`, `enum`,
-        // `interface` and `trait` bodies
-        if ($token->is([
-            \T_CLASS,
-            \T_ENUM,
-            \T_INTERFACE,
-            \T_TRAIT,
-        ])) {
-            if (!$token->inDeclaration(false)) {
-                return;
+        foreach ($tokens as $token) {
+            // Add blank lines before and after non-empty `class`, `enum`,
+            // `interface` and `trait` bodies
+            if ($token->is([
+                \T_CLASS,
+                \T_ENUM,
+                \T_INTERFACE,
+                \T_TRAIT,
+            ])) {
+                if (!$token->inDeclaration(false)) {
+                    continue;
+                }
+
+                $open = $token->nextSiblingOf(\T_OPEN_BRACE);
+                if ($open->Next->id === \T_CLOSE_BRACE) {
+                    continue;
+                }
+
+                $open->WhitespaceAfter |= WhitespaceType::BLANK;
+                $open->WhitespaceMaskNext |= WhitespaceType::BLANK;
+                $open->ClosedBy->WhitespaceBefore |= WhitespaceType::BLANK;
+                $open->ClosedBy->WhitespaceMaskPrev |= WhitespaceType::BLANK;
+
+                continue;
             }
 
-            $open = $token->nextSiblingOf(\T_OPEN_BRACE);
-            if ($open->Next->id === \T_CLOSE_BRACE) {
-                return;
+            // Add a blank line after PHP DocBlocks with a `@file` tag
+            if ($token->id === \T_DOC_COMMENT) {
+                try {
+                    $phpDoc = new PHPDoc($token->text);
+                } catch (Throwable $ex) {
+                    continue;
+                }
+
+                if (array_key_exists('file', $phpDoc->TagsByName)) {
+                    $token->WhitespaceAfter |= WhitespaceType::BLANK;
+                    $token->WhitespaceMaskNext |= WhitespaceType::BLANK;
+                }
+
+                continue;
             }
 
-            $open->WhitespaceAfter |= WhitespaceType::BLANK;
-            $open->WhitespaceMaskNext |= WhitespaceType::BLANK;
-            $open->ClosedBy->WhitespaceBefore |= WhitespaceType::BLANK;
-            $open->ClosedBy->WhitespaceMaskPrev |= WhitespaceType::BLANK;
-
-            return;
-        }
-
-        // Add a blank line after PHP DocBlocks with a `@file` tag
-        if ($token->id === \T_DOC_COMMENT) {
-            try {
-                $phpDoc = new PHPDoc($token->text);
-            } catch (Throwable $ex) {
-                return;
+            // Add a newline after close braces with a subsequent `catch`, `else`,
+            // `elseif` or `finally`
+            if ($token->PrevCode->id === \T_CLOSE_BRACE) {
+                $token->WhitespaceBefore |= WhitespaceType::LINE;
+                $token->WhitespaceMaskPrev |= WhitespaceType::LINE;
             }
-
-            if (array_key_exists('file', $phpDoc->TagsByName)) {
-                $token->WhitespaceAfter |= WhitespaceType::BLANK;
-                $token->WhitespaceMaskNext |= WhitespaceType::BLANK;
-            }
-
-            return;
-        }
-
-        // Add a newline after close braces with a subsequent `catch`, `else`,
-        // `elseif` or `finally`
-        if ($token->PrevCode->id === \T_CLOSE_BRACE) {
-            $token->WhitespaceBefore |= WhitespaceType::LINE;
-            $token->WhitespaceMaskPrev |= WhitespaceType::LINE;
         }
     }
 }

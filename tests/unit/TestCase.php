@@ -11,7 +11,7 @@ use Salient\Utility\Regex;
 
 abstract class TestCase extends PHPUnitTestCase
 {
-    protected const PHP_COMMAND = [\PHP_BINARY, '-ddisplay_startup_errors=0'];
+    protected const PHP_COMMAND = [\PHP_BINARY, '-ddisplay_errors=stderr', '-ddisplay_startup_errors=0'];
 
     /**
      * @param Formatter|FormatterB $formatter

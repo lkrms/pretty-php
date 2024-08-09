@@ -369,6 +369,14 @@ class TokenTypeIndex implements Immutable
     public array $Comma;
 
     /**
+     * T_DOUBLE_ARROW
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $DoubleArrow;
+
+    /**
      * T_SEMICOLON
      *
      * @readonly
@@ -924,6 +932,7 @@ class TokenTypeIndex implements Immutable
         $this->AltSyntaxEnd = TT::getIndex(...TT::ALT_SYNTAX_END);
         $this->Ampersand = TT::getIndex(...TT::AMPERSAND);
         $this->Comma = TT::getIndex(\T_COMMA);
+        $this->DoubleArrow = TT::getIndex(\T_DOUBLE_ARROW);
         $this->Semicolon = TT::getIndex(\T_SEMICOLON);
         $this->Attribute = TT::getIndex(
             \T_ATTRIBUTE,
