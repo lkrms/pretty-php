@@ -4,9 +4,9 @@ namespace Lkrms\PrettyPHP\Rule\Preset;
 
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Contract\Preset;
-use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
+use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 use Lkrms\PrettyPHP\Rule\Support\WordPressTokenTypeIndex;
 use Lkrms\PrettyPHP\Rule\AlignData;
 use Lkrms\PrettyPHP\Rule\DeclarationSpacing;
@@ -26,9 +26,9 @@ use Lkrms\PrettyPHP\FormatterBuilder;
  * - Add a space inside non-empty square brackets unless their first inner token
  *   is a T_CONSTANT_ENCAPSED_STRING
  */
-final class WordPress implements Preset, TokenRule
+final class WordPress implements Preset, MultiTokenRule
 {
-    use TokenRuleTrait;
+    use MultiTokenRuleTrait;
 
     private bool $DocCommentUnpinned = false;
 
@@ -53,7 +53,7 @@ final class WordPress implements Preset, TokenRule
     public static function getPriority(string $method): ?int
     {
         switch ($method) {
-            case self::PROCESS_TOKEN:
+            case self::PROCESS_TOKENS:
                 return 100;
 
             default:
@@ -75,68 +75,70 @@ final class WordPress implements Preset, TokenRule
         ];
     }
 
-    public function processToken(Token $token): void
+    public function processTokens(array $tokens): void
     {
-        if ($token->id === \T_COMMENT && !($token->Flags & TokenFlag::INFORMAL_DOC_COMMENT)) {
-            return;
-        }
-
-        if ($token->id === \T_DOC_COMMENT && !$this->DocCommentUnpinned) {
-            $token->WhitespaceMaskNext |= WhitespaceType::BLANK;
-            $this->DocCommentUnpinned = true;
-        }
-
-        if ($token->id === \T_DOC_COMMENT || $token->id === \T_COMMENT) {
-            if ($token->hasBlankLineBefore()
-                    && $token->line - $token->Prev->line - substr_count($token->Prev->text, "\n") < 2) {
-                $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
+        foreach ($tokens as $token) {
+            if ($token->id === \T_COMMENT && !($token->Flags & TokenFlag::INFORMAL_DOC_COMMENT)) {
+                continue;
             }
-            return;
-        }
 
-        if ($token->id === \T_COLON) {
-            if (!$token->isColonAltSyntaxDelimiter()) {
-                return;
+            if ($token->id === \T_DOC_COMMENT && !$this->DocCommentUnpinned) {
+                $token->WhitespaceMaskNext |= WhitespaceType::BLANK;
+                $this->DocCommentUnpinned = true;
             }
-            $token->WhitespaceBefore |= WhitespaceType::SPACE;
-            $token->WhitespaceMaskPrev |= WhitespaceType::SPACE;
-            return;
-        }
 
-        if ($token->id === \T_LOGICAL_NOT) {
-            if ($token->Next->id === \T_LOGICAL_NOT) {
-                return;
+            if ($token->id === \T_DOC_COMMENT || $token->id === \T_COMMENT) {
+                if ($token->hasBlankLineBefore()
+                        && $token->line - $token->Prev->line - substr_count($token->Prev->text, "\n") < 2) {
+                    $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
+                }
+                continue;
             }
+
+            if ($token->id === \T_COLON) {
+                if (!$token->isColonAltSyntaxDelimiter()) {
+                    continue;
+                }
+                $token->WhitespaceBefore |= WhitespaceType::SPACE;
+                $token->WhitespaceMaskPrev |= WhitespaceType::SPACE;
+                continue;
+            }
+
+            if ($token->id === \T_LOGICAL_NOT) {
+                if ($token->Next->id === \T_LOGICAL_NOT) {
+                    continue;
+                }
+                $token->WhitespaceAfter |= WhitespaceType::SPACE;
+                $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
+                continue;
+            }
+
+            if ($token->id === \T_OPEN_BRACE) {
+                $token->WhitespaceMaskNext |= WhitespaceType::BLANK;
+                continue;
+            }
+
+            if ($token->id === \T_CLOSE_BRACE) {
+                $token->WhitespaceMaskPrev |= WhitespaceType::BLANK;
+                continue;
+            }
+
+            // All that remains is T_OPEN_BRACKET and T_OPEN_PARENTHESIS
+            if ($token->ClosedBy === $token->Next
+                || ($token->id === \T_OPEN_BRACKET
+                    && ($token->String
+                        || ($token->Next->Next === $token->ClosedBy
+                            && $token->Next->id !== \T_VARIABLE)))) {
+                continue;
+            }
+
             $token->WhitespaceAfter |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
-            return;
+            $token->Next->WhitespaceMaskPrev |= WhitespaceType::SPACE;
+            $token->ClosedBy->WhitespaceBefore |= WhitespaceType::SPACE;
+            $token->ClosedBy->WhitespaceMaskPrev |= WhitespaceType::SPACE;
+            $token->ClosedBy->Prev->WhitespaceMaskNext |= WhitespaceType::SPACE;
         }
-
-        if ($token->id === \T_OPEN_BRACE) {
-            $token->WhitespaceMaskNext |= WhitespaceType::BLANK;
-            return;
-        }
-
-        if ($token->id === \T_CLOSE_BRACE) {
-            $token->WhitespaceMaskPrev |= WhitespaceType::BLANK;
-            return;
-        }
-
-        // All that remains is T_OPEN_BRACKET and T_OPEN_PARENTHESIS
-        if ($token->ClosedBy === $token->Next
-            || ($token->id === \T_OPEN_BRACKET
-                && ($token->String
-                    || ($token->Next->Next === $token->ClosedBy
-                        && $token->Next->id !== \T_VARIABLE)))) {
-            return;
-        }
-
-        $token->WhitespaceAfter |= WhitespaceType::SPACE;
-        $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
-        $token->Next->WhitespaceMaskPrev |= WhitespaceType::SPACE;
-        $token->ClosedBy->WhitespaceBefore |= WhitespaceType::SPACE;
-        $token->ClosedBy->WhitespaceMaskPrev |= WhitespaceType::SPACE;
-        $token->ClosedBy->Prev->WhitespaceMaskNext |= WhitespaceType::SPACE;
     }
 
     /**

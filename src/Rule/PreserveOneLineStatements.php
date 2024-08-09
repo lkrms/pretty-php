@@ -2,9 +2,8 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
-use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Contract\MultiTokenRule;
+use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
 
 /**
  * Suppress newlines in statements and control structures that start and end on
@@ -24,14 +23,14 @@ use Lkrms\PrettyPHP\Token\Token;
  * }
  * ```
  */
-final class PreserveOneLineStatements implements TokenRule
+final class PreserveOneLineStatements implements MultiTokenRule
 {
-    use TokenRuleTrait;
+    use MultiTokenRuleTrait;
 
     public static function getPriority(string $method): ?int
     {
         switch ($method) {
-            case self::PROCESS_TOKEN:
+            case self::PROCESS_TOKENS:
                 return 95;
 
             default:
@@ -39,18 +38,20 @@ final class PreserveOneLineStatements implements TokenRule
         }
     }
 
-    public function processToken(Token $token): void
+    public function processTokens(array $tokens): void
     {
-        if ($token->Statement === $token
-                && !$this->preserveOneLine(
-                    $token,
-                    $until = $token->pragmaticEndOfExpression(false, false)
-                )
-                && $this->TypeIndex->Attribute[$token->id]) {
-            $this->preserveOneLine(
-                $token->skipSiblingsFrom($this->TypeIndex->Attribute),
-                $until
-            );
+        foreach ($tokens as $token) {
+            if ($token->Statement === $token
+                    && !$this->preserveOneLine(
+                        $token,
+                        $until = $token->pragmaticEndOfExpression(false, false)
+                    )
+                    && $this->TypeIndex->Attribute[$token->id]) {
+                $this->preserveOneLine(
+                    $token->skipSiblingsFrom($this->TypeIndex->Attribute),
+                    $until
+                );
+            }
         }
     }
 }
