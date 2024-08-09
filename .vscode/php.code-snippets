@@ -102,7 +102,6 @@
 		"prefix": "switch",
 		"body": [
 			"switch (\\$method) {",
-			"    case self::PROCESS_TOKEN:",
 			"    case self::PROCESS_TOKENS:",
 			"    case self::PROCESS_LIST:",
 			"    case self::PROCESS_BLOCK:",

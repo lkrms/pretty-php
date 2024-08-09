@@ -5,7 +5,6 @@ use Lkrms\PrettyPHP\Contract\BlockRule;
 use Lkrms\PrettyPHP\Contract\ListRule;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Contract\Rule;
-use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Formatter;
 use Salient\Cli\CliApplication;
 use Salient\Core\Facade\Console;
@@ -57,8 +56,6 @@ foreach (Arr::extend(Formatter::DEFAULT_RULES, ...Formatter::OPTIONAL_RULES) as 
     $isDefault = in_array($rule, Formatter::DEFAULT_RULES, true);
     if (is_a($rule, MultiTokenRule::class, true)) {
         maybeAddRule($mainLoop, 1, $rule, $isMandatory, $isDefault, MultiTokenRule::PROCESS_TOKENS, true);
-    } elseif (is_a($rule, TokenRule::class, true)) {
-        maybeAddRule($mainLoop, 1, $rule, $isMandatory, $isDefault, TokenRule::PROCESS_TOKEN, true);
     }
     if (is_a($rule, ListRule::class, true)) {
         maybeAddRule($mainLoop, 1, $rule, $isMandatory, $isDefault, ListRule::PROCESS_LIST, true);

@@ -2,11 +2,21 @@
 
 namespace Lkrms\PrettyPHP\Rule\Concern;
 
-use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 
 trait MultiTokenRuleTrait
 {
-    use TokenRuleTrait;
+    use RuleTrait;
 
-    public function processToken(Token $token): void {}
+    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
+    {
+        return ['*'];
+    }
+
+    public static function getRequiresSortedTokens(): bool
+    {
+        return true;
+    }
+
+    public function beforeRender(array $tokens): void {}
 }
