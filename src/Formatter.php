@@ -13,8 +13,8 @@ use Lkrms\PrettyPHP\Contract\BlockRule;
 use Lkrms\PrettyPHP\Contract\Extension;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Contract\ListRule;
-use Lkrms\PrettyPHP\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Contract\Rule;
+use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Exception\FormatterException;
 use Lkrms\PrettyPHP\Exception\InvalidFormatterException;
 use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
@@ -378,13 +378,13 @@ final class Formatter implements Buildable
 
     /** @var array<class-string<Rule>> */
     private array $Rules;
-    /** @var array<class-string<MultiTokenRule>,array<int,true>|array{'*'}> */
+    /** @var array<class-string<TokenRule>,array<int,true>|array{'*'}> */
     private array $RuleTokenTypes;
 
     /**
      * [ key => [ rule, method ] ]
      *
-     * @var array<string,array{class-string<MultiTokenRule|ListRule>,string}>
+     * @var array<string,array{class-string<TokenRule|ListRule>,string}>
      */
     private array $MainLoop;
 
@@ -601,7 +601,7 @@ final class Formatter implements Buildable
         $callbackPriorities = [];
         $i = 0;
         foreach ($rules as $rule) {
-            if (is_a($rule, MultiTokenRule::class, true)) {
+            if (is_a($rule, TokenRule::class, true)) {
                 /** @var int[]|array<int,bool>|array{'*'} */
                 $types = $rule::getTokenTypes($this->TokenTypeIndex);
                 $first = Arr::first($types);
@@ -626,7 +626,7 @@ final class Formatter implements Buildable
                     ));
                 }
                 $tokenTypes[$rule] = $types;
-                $mainLoop[$rule . '#token'] = [$rule, MultiTokenRule::PROCESS_TOKENS, $i];
+                $mainLoop[$rule . '#token'] = [$rule, TokenRule::PROCESS_TOKENS, $i];
             }
             if (is_a($rule, ListRule::class, true)) {
                 $mainLoop[$rule . '#list'] = [$rule, ListRule::PROCESS_LIST, $i];
@@ -811,8 +811,8 @@ final class Formatter implements Buildable
      * 6. Find lists comprised of
      *    - one or more comma-delimited items between `[]` or `()`, or
      *    - two or more interfaces after `extends` or `implements`
-     * 7. Process enabled {@see MultiTokenRule} and {@see ListRule} extensions
-     *    in one loop, ordered by priority
+     * 7. Process enabled {@see TokenRule} and {@see ListRule} extensions in one
+     *    loop, ordered by priority
      * 8. Find blocks comprised of two or more consecutive non-blank lines
      * 9. Process enabled {@see BlockRule} extensions in priority order
      * 10. Process callbacks registered in (7) or (9) in priority and token
@@ -1019,7 +1019,7 @@ final class Formatter implements Buildable
             : fn() => null;
 
         foreach ($this->MainLoop as [$_class, $method]) {
-            /** @var MultiTokenRule|ListRule */
+            /** @var TokenRule|ListRule */
             $rule = $this->RuleMap[$_class];
             $_rule = Get::basename($_class);
             Profile::startTimer($_rule, 'rule');
@@ -1034,7 +1034,7 @@ final class Formatter implements Buildable
                 continue;
             }
 
-            /** @var MultiTokenRule $rule */
+            /** @var TokenRule $rule */
             $types = $this->RuleTokenTypes[$_class];
             if ($types === []) {
                 Profile::stopTimer($_rule, 'rule');
@@ -1055,7 +1055,7 @@ final class Formatter implements Buildable
             }
             $rule->processTokens($tokens);
             Profile::stopTimer($_rule, 'rule');
-            $logProgress($_rule, MultiTokenRule::PROCESS_TOKENS);
+            $logProgress($_rule, TokenRule::PROCESS_TOKENS);
         }
 
         Profile::startTimer(__METHOD__ . '#find-blocks');

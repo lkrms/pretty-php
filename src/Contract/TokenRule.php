@@ -6,15 +6,14 @@ use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 
-interface MultiTokenRule extends Rule
+interface TokenRule extends Rule
 {
     public const PROCESS_TOKENS = 'processTokens';
 
     /**
      * Return token types the rule is interested in
      *
-     * Tokens of these types are passed to
-     * {@see MultiTokenRule::processTokens()}.
+     * Tokens of these types are passed to {@see TokenRule::processTokens()}.
      *
      * To receive all tokens, return `['*']`, otherwise return either a list of
      * token types, or an index returned by {@see TokenType::getIndex()}.
@@ -32,8 +31,8 @@ interface MultiTokenRule extends Rule
      * Apply the rule to an array of tokens
      *
      * An array of non-whitespace tokens of the types returned by
-     * {@see MultiTokenRule::getTokenTypes()} is passed to
-     * {@see MultiTokenRule::processTokens()} once per run.
+     * {@see TokenRule::getTokenTypes()} is passed to
+     * {@see TokenRule::processTokens()} once per run.
      *
      * @param array<int,Token> $tokens
      */

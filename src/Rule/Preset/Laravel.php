@@ -4,9 +4,9 @@ namespace Lkrms\PrettyPHP\Rule\Preset;
 
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
-use Lkrms\PrettyPHP\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Contract\Preset;
-use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
+use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Rule\BlankBeforeReturn;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Formatter;
@@ -20,9 +20,9 @@ use Lkrms\PrettyPHP\FormatterBuilder;
  * - Suppress horizontal space before and after '.'
  * - Add a space after 'fn' in arrow functions
  */
-final class Laravel implements Preset, MultiTokenRule
+final class Laravel implements Preset, TokenRule
 {
-    use MultiTokenRuleTrait;
+    use TokenRuleTrait;
 
     public static function getFormatter(int $flags = 0): Formatter
     {

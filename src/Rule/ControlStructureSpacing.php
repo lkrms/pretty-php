@@ -5,8 +5,8 @@ namespace Lkrms\PrettyPHP\Rule;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
-use Lkrms\PrettyPHP\Contract\MultiTokenRule;
-use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
+use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 
 /**
@@ -17,9 +17,9 @@ use Lkrms\PrettyPHP\Support\TokenTypeIndex;
  *
  * @api
  */
-final class ControlStructureSpacing implements MultiTokenRule
+final class ControlStructureSpacing implements TokenRule
 {
-    use MultiTokenRuleTrait;
+    use TokenRuleTrait;
 
     public static function getPriority(string $method): ?int
     {

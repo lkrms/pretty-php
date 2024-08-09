@@ -3,17 +3,17 @@
 namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
-use Lkrms\PrettyPHP\Contract\MultiTokenRule;
-use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
+use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 
 /**
  * Apply sensible indentation to switch statements
  */
-final class SwitchIndentation implements MultiTokenRule
+final class SwitchIndentation implements TokenRule
 {
-    use MultiTokenRuleTrait;
+    use TokenRuleTrait;
 
     public static function getPriority(string $method): ?int
     {

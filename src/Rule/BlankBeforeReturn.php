@@ -2,8 +2,8 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Contract\MultiTokenRule;
-use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
+use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 
 /**
@@ -12,9 +12,9 @@ use Lkrms\PrettyPHP\Support\TokenTypeIndex;
  *
  * @api
  */
-final class BlankBeforeReturn implements MultiTokenRule
+final class BlankBeforeReturn implements TokenRule
 {
-    use MultiTokenRuleTrait;
+    use TokenRuleTrait;
 
     public static function getPriority(string $method): ?int
     {

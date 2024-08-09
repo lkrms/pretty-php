@@ -5,9 +5,9 @@ namespace Lkrms\PrettyPHP\Rule\Preset;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\ListRule;
-use Lkrms\PrettyPHP\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Contract\Preset;
-use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
+use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Rule\BlankBeforeReturn;
 use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
@@ -24,9 +24,9 @@ use Lkrms\PrettyPHP\FormatterBuilder;
  *   more are promoted
  * - Suppress newlines between parameters in other function declarations
  */
-final class Symfony implements Preset, MultiTokenRule, ListRule
+final class Symfony implements Preset, TokenRule, ListRule
 {
-    use MultiTokenRuleTrait;
+    use TokenRuleTrait;
 
     public static function getFormatter(int $flags = 0): Formatter
     {

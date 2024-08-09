@@ -4,9 +4,9 @@ namespace Lkrms\PrettyPHP\Rule\Preset;
 
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
-use Lkrms\PrettyPHP\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Contract\Preset;
-use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
+use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Rule\Support\WordPressTokenTypeIndex;
 use Lkrms\PrettyPHP\Rule\AlignData;
 use Lkrms\PrettyPHP\Rule\DeclarationSpacing;
@@ -26,9 +26,9 @@ use Lkrms\PrettyPHP\FormatterBuilder;
  * - Add a space inside non-empty square brackets unless their first inner token
  *   is a T_CONSTANT_ENCAPSED_STRING
  */
-final class WordPress implements Preset, MultiTokenRule
+final class WordPress implements Preset, TokenRule
 {
-    use MultiTokenRuleTrait;
+    use TokenRuleTrait;
 
     private bool $DocCommentUnpinned = false;
 

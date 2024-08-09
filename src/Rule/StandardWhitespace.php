@@ -5,8 +5,8 @@ namespace Lkrms\PrettyPHP\Rule;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
-use Lkrms\PrettyPHP\Contract\MultiTokenRule;
-use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
+use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 use Salient\Utility\Regex;
@@ -37,9 +37,9 @@ use Salient\Utility\Str;
  * - Suppress whitespace inside `declare()`
  * - In strict PSR-12 mode, suppress BLANK and LINE before heredocs
  */
-final class StandardWhitespace implements MultiTokenRule
+final class StandardWhitespace implements TokenRule
 {
-    use MultiTokenRuleTrait;
+    use TokenRuleTrait;
 
     public static function getPriority(string $method): ?int
     {

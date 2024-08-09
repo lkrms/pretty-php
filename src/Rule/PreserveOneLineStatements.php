@@ -2,8 +2,8 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Contract\MultiTokenRule;
-use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
+use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 
 /**
  * Suppress newlines in statements and control structures that start and end on
@@ -23,9 +23,9 @@ use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
  * }
  * ```
  */
-final class PreserveOneLineStatements implements MultiTokenRule
+final class PreserveOneLineStatements implements TokenRule
 {
-    use MultiTokenRuleTrait;
+    use TokenRuleTrait;
 
     public static function getPriority(string $method): ?int
     {

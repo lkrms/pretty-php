@@ -4,7 +4,7 @@ namespace Lkrms\PrettyPHP\Rule\Concern;
 
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 
-trait MultiTokenRuleTrait
+trait TokenRuleTrait
 {
     use RuleTrait;
 

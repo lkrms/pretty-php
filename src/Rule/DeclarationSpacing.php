@@ -6,9 +6,9 @@ use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
-use Lkrms\PrettyPHP\Contract\MultiTokenRule;
+use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Filter\SortImports;
-use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
+use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 use Salient\Utility\Arr;
@@ -34,9 +34,9 @@ use Salient\Utility\Regex;
  *
  * @api
  */
-final class DeclarationSpacing implements MultiTokenRule
+final class DeclarationSpacing implements TokenRule
 {
-    use MultiTokenRuleTrait;
+    use TokenRuleTrait;
 
     private const EXPANDABLE_TAG = '@(?:phan-|psalm-|phpstan-)?(?:api|internal|method|property(?:-read|-write)?|param|return|throws|(?:(?i)inheritDoc))(?=\s|$)';
 
