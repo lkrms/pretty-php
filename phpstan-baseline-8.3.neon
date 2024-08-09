@@ -166,46 +166,6 @@ parameters:
 			path: src/Parser.php
 
 		-
-			message: "#^Cannot access property \\$AlignedWith on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/AlignArrowFunctions.php
-
-		-
-			message: "#^Cannot access property \\$Prev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/AlignArrowFunctions.php
-
-		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/AlignArrowFunctions.php
-
-		-
-			message: "#^Parameter \\#1 \\$body of method Lkrms\\\\PrettyPHP\\\\Rule\\\\AlignArrowFunctions\\:\\:alignBody\\(\\) expects Lkrms\\\\PrettyPHP\\\\Token\\\\Token, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null given\\.$#"
-			count: 1
-			path: src/Rule/AlignArrowFunctions.php
-
-		-
-			message: "#^Parameter \\#1 \\$to of method Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:collect\\(\\) expects Lkrms\\\\PrettyPHP\\\\Token\\\\Token, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null given\\.$#"
-			count: 1
-			path: src/Rule/AlignArrowFunctions.php
-
-		-
-			message: "#^Parameter \\#2 \\$alignWith of method Lkrms\\\\PrettyPHP\\\\Rule\\\\AlignArrowFunctions\\:\\:alignBody\\(\\) expects Lkrms\\\\PrettyPHP\\\\Token\\\\Token, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null given\\.$#"
-			count: 1
-			path: src/Rule/AlignArrowFunctions.php
-
-		-
-			message: "#^Parameter \\#2 \\$first of method Lkrms\\\\PrettyPHP\\\\Formatter\\:\\:registerCallback\\(\\) expects Lkrms\\\\PrettyPHP\\\\Token\\\\Token, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null given\\.$#"
-			count: 1
-			path: src/Rule/AlignArrowFunctions.php
-
-		-
-			message: "#^Parameter \\#3 \\$until of method Lkrms\\\\PrettyPHP\\\\Rule\\\\AlignArrowFunctions\\:\\:alignBody\\(\\) expects Lkrms\\\\PrettyPHP\\\\Token\\\\Token, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null given\\.$#"
-			count: 1
-			path: src/Rule/AlignArrowFunctions.php
-
-		-
 			message: "#^Parameter \\#1 \\$to of method Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:collect\\(\\) expects Lkrms\\\\PrettyPHP\\\\Token\\\\Token, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null given\\.$#"
 			count: 1
 			path: src/Rule/AlignChains.php
