@@ -15,29 +15,29 @@ needed.
 | `SimplifyStrings`           | -          | Y        | 1    | `processTokens()` | 60       |
 | `NormaliseComments`         | Y          | -        | 1    | `processTokens()` | 70       |
 | `StandardWhitespace` (1)    | Y          | -        | 1    | `processTokens()` | 80       |
-| `StatementSpacing`          | Y          | -        | 1    | `processToken()`  | 80       |
+| `StatementSpacing`          | Y          | -        | 1    | `processTokens()` | 80       |
 | `OperatorSpacing`           | Y          | -        | 1    | `processTokens()` | 80       |
 | `ControlStructureSpacing`   | Y          | -        | 1    | `processTokens()` | 83       |
-| `PlaceComments` (1)         | Y          | -        | 1    | `processToken()`  | 90       |
+| `PlaceComments` (1)         | Y          | -        | 1    | `processTokens()` | 90       |
 | `PlaceBraces` (1)           | Y          | -        | 1    | `processTokens()` | 92       |
 | `PreserveNewlines`          | -          | Y        | 1    | `processTokens()` | 93       |
-| `PreserveOneLineStatements` | -          | -        | 1    | `processToken()`  | 95       |
-| `BlankBeforeReturn`         | -          | -        | 1    | `processToken()`  | 97       |
+| `PreserveOneLineStatements` | -          | -        | 1    | `processTokens()` | 95       |
+| `BlankBeforeReturn`         | -          | -        | 1    | `processTokens()` | 97       |
 | `VerticalWhitespace`        | Y          | -        | 1    | `processTokens()` | 98       |
 | `ListSpacing`               | Y          | -        | 1    | `processList()`   | 98       |
 | `StrictExpressions`         | -          | -        | 1    | `processTokens()` | 98       |
-| `Drupal`                    | -          | -        | 1    | `processToken()`  | 100      |
-| `Laravel`                   | -          | -        | 1    | `processToken()`  | 100      |
+| `Drupal`                    | -          | -        | 1    | `processTokens()` | 100      |
+| `Laravel`                   | -          | -        | 1    | `processTokens()` | 100      |
 | `Symfony` (1)               | -          | -        | 1    | `processTokens()` | 100      |
 | `Symfony` (2)               | -          | -        | 1    | `processList()`   | 100      |
-| `WordPress`                 | -          | -        | 1    | `processToken()`  | 100      |
-| `AlignChains` (1)           | -          | -        | 1    | `processToken()`  | 340      |
+| `WordPress`                 | -          | -        | 1    | `processTokens()` | 100      |
+| `AlignChains` (1)           | -          | -        | 1    | `processTokens()` | 340      |
 | `StrictLists`               | -          | -        | 1    | `processList()`   | 370      |
-| `AlignArrowFunctions` (1)   | -          | -        | 1    | `processToken()`  | 380      |
+| `AlignArrowFunctions` (1)   | -          | -        | 1    | `processTokens()` | 380      |
 | `AlignTernaryOperators` (1) | -          | -        | 1    | `processTokens()` | 380      |
 | `AlignLists` (1)            | -          | -        | 1    | `processList()`   | 400      |
 | `StandardIndentation`       | Y          | -        | 1    | `processTokens()` | 600      |
-| `SwitchIndentation`         | Y          | -        | 1    | `processToken()`  | 600      |
+| `SwitchIndentation`         | Y          | -        | 1    | `processTokens()` | 600      |
 | `DeclarationSpacing`        | -          | Y        | 1    | `processTokens()` | 620      |
 | `HangingIndentation` (1)    | Y          | -        | 1    | `processTokens()` | 800      |
 | `HeredocIndentation` (1)    | Y          | -        | 1    | `processTokens()` | 900      |
