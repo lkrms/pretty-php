@@ -13,7 +13,7 @@ use Lkrms\PrettyPHP\Token\Token;
  *
  * @api
  */
-final class BlankLineBeforeReturn implements TokenRule
+final class BlankBeforeReturn implements TokenRule
 {
     use TokenRuleTrait;
 

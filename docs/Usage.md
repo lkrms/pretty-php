@@ -238,7 +238,7 @@ pretty-php - Format a PHP file
 
   Combine with **`--log-progress`** to write partially formatted code to a
   series of files in `<directory>/progress-log` that represent changes applied
-  by enabled rules.
+  by each enabled rule.
 
 - **`--log-progress`**
 
@@ -306,8 +306,8 @@ reports an error and exits without formatting anything.
 
 ## EXIT STATUS
 
-**`pretty-php`** returns 0 when formatting succeeds, 1 when invalid arguments
-are given, 2 when invalid configuration files are found, and 4 when one or more
-input files cannot be parsed. When **`--diff`** or **`--check`** are given,
-**`pretty-php`** returns 0 when the input is already formatted and 8 when
-formatting is required.
+- `0` when formatting succeeds or the input is already formatted
+- `1` when invalid arguments are given
+- `2` when invalid configuration files are found
+- `4` when one or more input files cannot be parsed
+- `8` when formatting is required and **`--diff`** or **`--check`** are given

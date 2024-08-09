@@ -11,8 +11,8 @@ needed.
 | Rule                        | Mandatory? | Default? | Pass | Method            | Priority |
 | --------------------------- | ---------- | -------- | ---- | ----------------- | -------- |
 | `ProtectStrings`            | Y          | -        | 1    | `processTokens()` | 40       |
-| `NormaliseNumbers`          | -          | Y        | 1    | `processTokens()` | 60       |
-| `NormaliseStrings`          | -          | Y        | 1    | `processTokens()` | 60       |
+| `SimplifyNumbers`           | -          | Y        | 1    | `processTokens()` | 60       |
+| `SimplifyStrings`           | -          | Y        | 1    | `processTokens()` | 60       |
 | `NormaliseComments`         | Y          | -        | 1    | `processTokens()` | 70       |
 | `StandardWhitespace` (1)    | Y          | -        | 1    | `processTokens()` | 80       |
 | `StatementSpacing`          | Y          | -        | 1    | `processToken()`  | 80       |
@@ -20,9 +20,9 @@ needed.
 | `ControlStructureSpacing`   | Y          | -        | 1    | `processTokens()` | 83       |
 | `PlaceComments` (1)         | Y          | -        | 1    | `processToken()`  | 90       |
 | `PlaceBraces` (1)           | Y          | -        | 1    | `processTokens()` | 92       |
-| `PreserveLineBreaks`        | -          | Y        | 1    | `processTokens()` | 93       |
+| `PreserveNewlines`          | -          | Y        | 1    | `processTokens()` | 93       |
 | `PreserveOneLineStatements` | -          | -        | 1    | `processToken()`  | 95       |
-| `BlankLineBeforeReturn`     | -          | -        | 1    | `processToken()`  | 97       |
+| `BlankBeforeReturn`         | -          | -        | 1    | `processToken()`  | 97       |
 | `VerticalWhitespace`        | Y          | -        | 1    | `processTokens()` | 98       |
 | `ListSpacing`               | Y          | -        | 1    | `processList()`   | 98       |
 | `StrictExpressions`         | -          | -        | 1    | `processTokens()` | 98       |

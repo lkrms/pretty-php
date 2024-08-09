@@ -41,7 +41,7 @@ use Lkrms\PrettyPHP\Rule\AlignComments;
 use Lkrms\PrettyPHP\Rule\AlignData;
 use Lkrms\PrettyPHP\Rule\AlignLists;
 use Lkrms\PrettyPHP\Rule\AlignTernaryOperators;
-use Lkrms\PrettyPHP\Rule\BlankLineBeforeReturn;
+use Lkrms\PrettyPHP\Rule\BlankBeforeReturn;
 use Lkrms\PrettyPHP\Rule\ControlStructureSpacing;
 use Lkrms\PrettyPHP\Rule\DeclarationSpacing;
 use Lkrms\PrettyPHP\Rule\EssentialWhitespace;
@@ -49,14 +49,14 @@ use Lkrms\PrettyPHP\Rule\HangingIndentation;
 use Lkrms\PrettyPHP\Rule\HeredocIndentation;
 use Lkrms\PrettyPHP\Rule\ListSpacing;
 use Lkrms\PrettyPHP\Rule\NormaliseComments;
-use Lkrms\PrettyPHP\Rule\NormaliseNumbers;
-use Lkrms\PrettyPHP\Rule\NormaliseStrings;
 use Lkrms\PrettyPHP\Rule\OperatorSpacing;
 use Lkrms\PrettyPHP\Rule\PlaceBraces;
 use Lkrms\PrettyPHP\Rule\PlaceComments;
-use Lkrms\PrettyPHP\Rule\PreserveLineBreaks;
+use Lkrms\PrettyPHP\Rule\PreserveNewlines;
 use Lkrms\PrettyPHP\Rule\PreserveOneLineStatements;
 use Lkrms\PrettyPHP\Rule\ProtectStrings;
+use Lkrms\PrettyPHP\Rule\SimplifyNumbers;
+use Lkrms\PrettyPHP\Rule\SimplifyStrings;
 use Lkrms\PrettyPHP\Rule\StandardIndentation;
 use Lkrms\PrettyPHP\Rule\StandardWhitespace;
 use Lkrms\PrettyPHP\Rule\StatementSpacing;
@@ -200,13 +200,13 @@ final class Formatter implements Buildable
     /**
      * False if line breaks are only preserved between statements
      *
-     * When the {@see PreserveLineBreaks} rule is disabled, `false` is assigned
-     * to this property and the rule is reinstated to preserve blank lines
-     * between statements.
+     * When the {@see PreserveNewlines} rule is disabled, `false` is assigned to
+     * this property and the rule is reinstated to preserve blank lines between
+     * statements.
      *
      * @readonly
      */
-    public bool $PreserveLineBreaks;
+    public bool $PreserveNewlines;
 
     /**
      * An index of enabled extensions
@@ -252,8 +252,8 @@ final class Formatter implements Buildable
      */
     public const DEFAULT_RULES = [
         ProtectStrings::class,
-        NormaliseNumbers::class,
-        NormaliseStrings::class,
+        SimplifyNumbers::class,
+        SimplifyStrings::class,
         NormaliseComments::class,
         StandardWhitespace::class,
         StatementSpacing::class,
@@ -261,7 +261,7 @@ final class Formatter implements Buildable
         ControlStructureSpacing::class,
         PlaceComments::class,
         PlaceBraces::class,
-        PreserveLineBreaks::class,
+        PreserveNewlines::class,
         VerticalWhitespace::class,
         ListSpacing::class,
         StandardIndentation::class,
@@ -276,11 +276,11 @@ final class Formatter implements Buildable
      * @var array<class-string<Rule>>
      */
     public const OPTIONAL_RULES = [
-        NormaliseNumbers::class,
-        NormaliseStrings::class,
-        PreserveLineBreaks::class,
+        SimplifyNumbers::class,
+        SimplifyStrings::class,
+        PreserveNewlines::class,
         PreserveOneLineStatements::class,
-        BlankLineBeforeReturn::class,
+        BlankBeforeReturn::class,
         StrictExpressions::class,
         Drupal::class,
         Laravel::class,
@@ -558,14 +558,14 @@ final class Formatter implements Buildable
             $rules = array_diff($rules, self::NO_TAB_RULES);
         }
 
-        // Enable `PreserveLineBreaks` if disabled, but limit its scope to blank
+        // Enable `PreserveNewlines` if disabled, but limit its scope to blank
         // lines between statements
-        if (!in_array(PreserveLineBreaks::class, $rules, true)) {
-            $this->PreserveLineBreaks = false;
+        if (!in_array(PreserveNewlines::class, $rules, true)) {
+            $this->PreserveNewlines = false;
             $this->TokenTypeIndex = $this->TokenTypeIndex->withoutPreserveNewline();
-            $rules[] = PreserveLineBreaks::class;
+            $rules[] = PreserveNewlines::class;
         } else {
-            $this->PreserveLineBreaks = true;
+            $this->PreserveNewlines = true;
             $this->TokenTypeIndex = $this->TokenTypeIndex->withPreserveNewline();
         }
 

@@ -12,7 +12,7 @@ use Salient\Utility\Str;
 /**
  * Normalise integers and floats
  */
-final class NormaliseNumbers implements MultiTokenRule
+final class SimplifyNumbers implements MultiTokenRule
 {
     use MultiTokenRuleTrait;
 

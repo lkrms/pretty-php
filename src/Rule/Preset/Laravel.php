@@ -7,7 +7,7 @@ use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\Preset;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
-use Lkrms\PrettyPHP\Rule\BlankLineBeforeReturn;
+use Lkrms\PrettyPHP\Rule\BlankBeforeReturn;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\PrettyPHP\Formatter;
@@ -29,7 +29,7 @@ final class Laravel implements Preset, TokenRule
     {
         return (new FormatterBuilder())
                    ->enable([
-                       BlankLineBeforeReturn::class,
+                       BlankBeforeReturn::class,
                        self::class,
                    ])
                    ->flags($flags)

@@ -8,7 +8,7 @@ use Lkrms\PrettyPHP\Contract\ListRule;
 use Lkrms\PrettyPHP\Contract\MultiTokenRule;
 use Lkrms\PrettyPHP\Contract\Preset;
 use Lkrms\PrettyPHP\Rule\Concern\MultiTokenRuleTrait;
-use Lkrms\PrettyPHP\Rule\BlankLineBeforeReturn;
+use Lkrms\PrettyPHP\Rule\BlankBeforeReturn;
 use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
@@ -32,7 +32,7 @@ final class Symfony implements Preset, MultiTokenRule, ListRule
     {
         return (new FormatterBuilder())
                    ->enable([
-                       BlankLineBeforeReturn::class,
+                       BlankBeforeReturn::class,
                        self::class,
                    ])
                    ->flags($flags)

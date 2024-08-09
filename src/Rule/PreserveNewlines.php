@@ -14,7 +14,7 @@ use Lkrms\PrettyPHP\Token\Token;
  *
  * @api
  */
-final class PreserveLineBreaks implements MultiTokenRule
+final class PreserveNewlines implements MultiTokenRule
 {
     use MultiTokenRuleTrait;
 
@@ -129,7 +129,7 @@ final class PreserveLineBreaks implements MultiTokenRule
             return false;
         }
 
-        if (!$this->Formatter->PreserveLineBreaks
+        if (!$this->Formatter->PreserveNewlines
                 && !$token->hasNewlineBefore()) {
             return false;
         }
@@ -236,13 +236,13 @@ final class PreserveLineBreaks implements MultiTokenRule
                         || ($token->Parent
                             && !($token->Parent->id === \T_OPEN_BRACE
                                 && $token->Parent->isStructuralBrace())))))) {
-            if (!$this->Formatter->PreserveLineBreaks) {
+            if (!$this->Formatter->PreserveNewlines) {
                 return false;
             }
             $line = WhitespaceType::LINE;
         }
 
-        if (!$this->Formatter->PreserveLineBreaks
+        if (!$this->Formatter->PreserveNewlines
                 && !$token->hasNewlineAfter()) {
             return false;
         }

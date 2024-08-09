@@ -17,7 +17,7 @@ use Salient\Utility\Regex;
  *
  * @api
  */
-final class NormaliseStrings implements MultiTokenRule
+final class SimplifyStrings implements MultiTokenRule
 {
     use MultiTokenRuleTrait;
 
