@@ -219,7 +219,10 @@ final class PlaceComments implements TokenRule
             $indent = 0;
             if (
                 ($next->id === \T_CASE || $next->id === \T_DEFAULT)
-                && $next->parent()->prevSibling(2)->id === \T_SWITCH
+                && $next->Parent
+                && $next->Parent->PrevSibling
+                && $next->Parent->PrevSibling->PrevSibling
+                && $next->Parent->PrevSibling->PrevSibling->id === \T_SWITCH
             ) {
                 $prev = $token->PrevCode;
                 if (!($token->Parent === $prev

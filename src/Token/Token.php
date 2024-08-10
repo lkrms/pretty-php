@@ -325,49 +325,6 @@ class Token extends GenericToken implements JsonSerializable
             || $code[-1] === "\n";
     }
 
-    private function byOffset(string $name, int $offset): Token
-    {
-        $t = $this;
-        for ($i = 0; $i < $offset; $i++) {
-            $t = $t->{"_$name"} ?? null;
-        }
-
-        return $t ?: $this->null();
-    }
-
-    public function prevSibling(int $offset = 1): Token
-    {
-        switch ($offset) {
-            case 1:
-                return $this->PrevSibling ?: $this->null();
-
-            case 2:
-                return ($this->PrevSibling->PrevSibling ?? null) ?: $this->null();
-        }
-
-        return $this->byOffset(__FUNCTION__, $offset);
-    }
-
-    public function nextSibling(int $offset = 1): Token
-    {
-        switch ($offset) {
-            case 1:
-                return $this->NextSibling ?: $this->null();
-
-            case 2:
-                return ($this->NextSibling->NextSibling ?? null) ?: $this->null();
-        }
-
-        return $this->byOffset(__FUNCTION__, $offset);
-    }
-
-    final public function parent(): Token
-    {
-        $current = $this->OpenedBy ?: $this;
-
-        return $current->Parent ?: $this->null();
-    }
-
     final public function startOfLine(bool $ignoreComments = true): Token
     {
         $current = $this;

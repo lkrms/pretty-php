@@ -261,63 +261,13 @@ parameters:
 			path: src/Rule/AlignTernaryOperators.php
 
 		-
-			message: "#^Cannot access property \\$EndStatement on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/ControlStructureSpacing.php
-
-		-
-			message: "#^Cannot access property \\$Flags on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/ControlStructureSpacing.php
-
-		-
 			message: "#^Cannot access property \\$Index on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/ControlStructureSpacing.php
-
-		-
-			message: "#^Cannot access property \\$NextSibling on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 3
-			path: src/Rule/ControlStructureSpacing.php
-
-		-
-			message: "#^Cannot access property \\$Prev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/ControlStructureSpacing.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/ControlStructureSpacing.php
 
 		-
 			message: "#^Cannot access property \\$WhitespaceMaskNext on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 2
-			path: src/Rule/ControlStructureSpacing.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/ControlStructureSpacing.php
-
-		-
-			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 4
-			path: src/Rule/ControlStructureSpacing.php
-
-		-
-			message: "#^Cannot call method collect\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/ControlStructureSpacing.php
-
-		-
-			message: "#^Cannot call method pragmaticEndOfExpression\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/ControlStructureSpacing.php
-
-		-
-			message: "#^Cannot call method prevSibling\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
 			path: src/Rule/ControlStructureSpacing.php
 
 		-

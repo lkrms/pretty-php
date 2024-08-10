@@ -50,14 +50,19 @@ final class ControlStructureSpacing implements TokenRule
                 continue;
             }
 
+            assert($token->NextCode !== null);
+
             if ($token->id === \T_ELSE
                     && $token->NextCode->id === \T_IF) {
-                $body = $token->NextSibling->NextSibling->NextSibling;
+                assert($token->NextCode->NextCode !== null);
+                $body = $token->NextCode->NextCode->NextSibling;
             } elseif ($this->TypeIndex->HasStatementWithOptionalBraces[$token->id]) {
-                $body = $token->NextSibling;
+                $body = $token->NextCode;
             } else {
-                $body = $token->NextSibling->NextSibling;
+                $body = $token->NextCode->NextSibling;
             }
+
+            assert($body !== null);
 
             // Ignore enclosed and empty bodies
             if ($body->id === \T_OPEN_BRACE
@@ -92,7 +97,8 @@ final class ControlStructureSpacing implements TokenRule
             if ($token->id === \T_DO) {
                 $continues = true;
             } elseif ($token->is([\T_IF, \T_ELSEIF])) {
-                $end = $body->prevSibling()->nextSiblingOf(\T_IF, \T_ELSEIF, \T_ELSE);
+                assert($body->PrevSibling !== null);
+                $end = $body->PrevSibling->nextSiblingOf(\T_IF, \T_ELSEIF, \T_ELSE);
                 if ($end->id === \T_IF) {
                     $end = $body->EndStatement;
                 } elseif (!$end->IsNull) {
