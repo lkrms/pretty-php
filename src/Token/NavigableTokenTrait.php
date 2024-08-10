@@ -75,6 +75,8 @@ trait NavigableTokenTrait
 
     /**
      * True if the token is a T_NULL
+     *
+     * @todo Remove this property
      */
     public bool $IsNull = false;
 

@@ -772,13 +772,10 @@ class Token extends GenericToken implements JsonSerializable
         return $current;
     }
 
-    final public function adjacent(int ...$types): ?Token
+    final public function adjacent(): ?Token
     {
         $current = $this->ClosedBy ?: $this;
-        if (!$types) {
-            $types = [\T_CLOSE_BRACE, \T_CLOSE_BRACKET, \T_CLOSE_PARENTHESIS, \T_COMMA];
-        }
-        $outer = $current->withNextCodeWhile(true, ...$types)->last();
+        $outer = $current->withNextCodeWhile(true, $this->TypeIndex->CloseBracketOrComma)->last();
         if (!$outer
                 || !$outer->NextCode
                 || !$outer->EndStatement
@@ -826,7 +823,7 @@ class Token extends GenericToken implements JsonSerializable
         // Find the last `)`, `]`, `}`, or `,` on the same line as the close
         // bracket and assign it to `$outer`
         $eol = $this->endOfLine();
-        $outer = $current->withNextCodeWhile(false, \T_CLOSE_BRACE, \T_CLOSE_BRACKET, \T_CLOSE_PARENTHESIS, \T_COMMA)
+        $outer = $current->withNextCodeWhile(false, $this->TypeIndex->CloseBracketOrComma)
                          ->filter(fn(Token $t) => $t->Index <= $eol->Index)
                          ->last();
 
@@ -919,6 +916,7 @@ class Token extends GenericToken implements JsonSerializable
         $prev = $current->Prev;
         /** @var Token|null */
         $last = null;
+        /** @disregard P1006 */
         while (!$current->hasBlankLineBefore()
             && $prev
             && $this->TypeIndex->Comment[$prev->id]

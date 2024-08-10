@@ -62,6 +62,14 @@ class TokenTypeIndex implements Immutable
     public array $CloseBracketOrEndAltSyntax;
 
     /**
+     * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_COMMA
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $CloseBracketOrComma;
+
+    /**
      * T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_ATTRIBUTE
      *
      * @readonly
@@ -440,6 +448,15 @@ class TokenTypeIndex implements Immutable
     public array $DeclarationClass;
 
     /**
+     * T_COMMA, T_NAMESPACE, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED,
+     * T_NAME_RELATIVE, T_NS_SEPARATOR, T_STATIC, T_STRING
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $DeclarationList;
+
+    /**
      * T_GLOBAL, T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY, T_STATIC, T_VAR
      *
      * @readonly
@@ -615,6 +632,13 @@ class TokenTypeIndex implements Immutable
             \T_CLOSE_BRACKET,
             \T_CLOSE_PARENTHESIS,
             \T_END_ALT_SYNTAX,
+        );
+
+        $this->CloseBracketOrComma = TT::getIndex(
+            \T_CLOSE_BRACE,
+            \T_CLOSE_BRACKET,
+            \T_CLOSE_PARENTHESIS,
+            \T_COMMA,
         );
 
         $this->OpenBracketExceptBrace = TT::getIndex(
@@ -944,6 +968,7 @@ class TokenTypeIndex implements Immutable
         $this->Declaration = TT::getIndex(...TT::DECLARATION);
         $this->DeclarationExceptModifiers = TT::getIndex(...TT::DECLARATION_EXCEPT_MODIFIERS);
         $this->DeclarationClass = TT::getIndex(...TT::DECLARATION_CLASS);
+        $this->DeclarationList = TT::getIndex(...TT::DECLARATION_LIST);
         $this->DeclarationPropertyOrVariable = TT::getIndex(
             \T_GLOBAL,
             \T_STATIC,

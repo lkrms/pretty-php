@@ -927,7 +927,7 @@ final class Formatter implements Buildable
             switch ($parent->id) {
                 case \T_EXTENDS:
                 case \T_IMPLEMENTS:
-                    $items = $parent->nextSiblingsWhile(...TokenType::DECLARATION_LIST)
+                    $items = $parent->nextSiblingsWhile($this->TokenTypeIndex->DeclarationList)
                                     ->filter(
                                         fn(Token $t, ?Token $next, ?Token $prev) =>
                                             !$prev || ($t->PrevCode && $t->PrevCode->id === \T_COMMA)
