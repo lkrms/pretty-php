@@ -3,8 +3,12 @@
 namespace Lkrms\PrettyPHP\Filter\Concern;
 
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
+use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Token\GenericToken;
 
+/**
+ * @phpstan-require-implements Filter
+ */
 trait FilterTrait
 {
     use ExtensionTrait;
@@ -28,7 +32,7 @@ trait FilterTrait
     }
 
     /**
-     * True if the given token, together with previous tokens in the same
+     * Check if the given token, together with previous tokens in the same
      * statement, form a declaration of the given type
      */
     protected function isDeclarationOf(int $i, int $type): bool
@@ -49,7 +53,7 @@ trait FilterTrait
     }
 
     /**
-     * True if the given token is a comment that starts with '//' or '#'
+     * Check if the given token is a comment that starts with '//' or '#'
      */
     protected function isOneLineComment(int $i): bool
     {

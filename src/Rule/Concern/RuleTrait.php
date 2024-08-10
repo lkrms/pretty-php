@@ -4,8 +4,12 @@ namespace Lkrms\PrettyPHP\Rule\Concern;
 
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
+use Lkrms\PrettyPHP\Contract\Rule;
 use Lkrms\PrettyPHP\Token\Token;
 
+/**
+ * @phpstan-require-implements Rule
+ */
 trait RuleTrait
 {
     use ExtensionTrait;

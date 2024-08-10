@@ -149,7 +149,7 @@ trait NavigableTokenTrait
     }
 
     /**
-     * True if the token is a brace that delimits a code block
+     * Check if the token is a brace that delimits a code block
      *
      * Returns `false` for braces in:
      *
@@ -193,7 +193,7 @@ trait NavigableTokenTrait
     }
 
     /**
-     * True if the token is a T_WHILE that belongs to a do ... while structure
+     * Check if the token is a T_WHILE that belongs to a do ... while structure
      */
     final public function isWhileAfterDo(): bool
     {

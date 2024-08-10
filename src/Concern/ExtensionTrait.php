@@ -7,8 +7,6 @@ use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Formatter;
 
 /**
- * Implements the extension interface
- *
  * @phpstan-require-implements Extension
  */
 trait ExtensionTrait

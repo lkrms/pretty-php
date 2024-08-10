@@ -14,7 +14,7 @@ trait ContextAwareTokenTrait
     public ?int $SubType = null;
 
     /**
-     * True if the token is the colon before an alternative syntax block
+     * Check if the token is the colon before an alternative syntax block
      */
     final public function isColonAltSyntaxDelimiter(): bool
     {
@@ -22,7 +22,7 @@ trait ContextAwareTokenTrait
     }
 
     /**
-     * True if the token is the colon after a switch case or a label
+     * Check if the token is the colon after a switch case or a label
      */
     final public function isColonStatementDelimiter(): bool
     {
@@ -31,7 +31,7 @@ trait ContextAwareTokenTrait
     }
 
     /**
-     * True if the token is the colon before a type declaration
+     * Check if the token is the colon before a type declaration
      */
     final public function isColonTypeDelimiter(): bool
     {
@@ -199,7 +199,7 @@ trait ContextAwareTokenTrait
     }
 
     /**
-     * True if the token is in a parameter list
+     * Check if the token is in a parameter list
      */
     final public function inParameterList(): bool
     {
@@ -211,7 +211,7 @@ trait ContextAwareTokenTrait
     }
 
     /**
-     * True if the token encloses a parameter list
+     * Check if the token encloses a parameter list
      */
     final public function isParameterList(): bool
     {
@@ -229,7 +229,7 @@ trait ContextAwareTokenTrait
     }
 
     /**
-     * True if the token is the opening brace of a function
+     * Check if the token is the opening brace of a function
      */
     final public function isFunctionBrace(bool $allowAnonymous = true): bool
     {
@@ -276,7 +276,7 @@ trait ContextAwareTokenTrait
     }
 
     /**
-     * True if the token is in a T_CASE or T_DEFAULT statement in a T_SWITCH
+     * Check if the token is in a T_CASE or T_DEFAULT statement in a T_SWITCH
      *
      * Returns `true` if the token is `T_CASE` or `T_DEFAULT`, part of the
      * expression after `T_CASE`, or the subsequent `:` or `;` delimiter.
@@ -293,7 +293,7 @@ trait ContextAwareTokenTrait
     }
 
     /**
-     * True if the token is in a T_SWITCH case list
+     * Check if the token is in a T_SWITCH case list
      */
     final public function inSwitchCaseList(): bool
     {
@@ -305,7 +305,7 @@ trait ContextAwareTokenTrait
     }
 
     /**
-     * True if the token belongs to a declaration
+     * Check if the token belongs to a declaration
      */
     final public function inDeclaration(bool $allowAnonymous = true): bool
     {
@@ -314,7 +314,7 @@ trait ContextAwareTokenTrait
     }
 
     /**
-     * True if a declaration starts at the token and is not an anonymous
+     * Check if a declaration starts at the token and is not an anonymous
      * function or class
      *
      * @phpstan-assert-if-true TokenCollection $parts
@@ -327,7 +327,7 @@ trait ContextAwareTokenTrait
     }
 
     /**
-     * True if a declaration starts at the token
+     * Check if a declaration starts at the token
      */
     final public function isDeclaration(bool $allowAnonymous = true): bool
     {

@@ -890,7 +890,7 @@ class Token extends GenericToken implements JsonSerializable
     }
 
     /**
-     * True if the token contains a newline
+     * Check if the token contains a newline
      */
     final public function hasNewline(): bool
     {
@@ -898,7 +898,7 @@ class Token extends GenericToken implements JsonSerializable
     }
 
     /**
-     * True if, between the token and the next code token, there's a newline
+     * Check if, between the token and the next code token, there's a newline
      * between tokens
      */
     final public function hasNewlineBeforeNextCode(bool $orInHtml = true): bool

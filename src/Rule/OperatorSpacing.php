@@ -177,7 +177,7 @@ final class OperatorSpacing implements TokenRule
     }
 
     /**
-     * True if the token is part of a declaration (i.e. a property type or
+     * Check if the token is part of a declaration (i.e. a property type or
      * function return type), parameter type, or arrow function return type
      */
     private function inTypeContext(Token $token): bool
