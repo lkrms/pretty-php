@@ -61,7 +61,7 @@ final class Parser
      * - `OpenTag`
      * - `CloseTag`
      * - `Formatter`
-     * - `TypeIndex`
+     * - `Idx`
      *
      * @param Token[] $tokens
      * @return $this
@@ -73,7 +73,7 @@ final class Parser
 
         foreach ($tokens as $token) {
             $token->Formatter = $this->Formatter;
-            $token->TypeIndex = $this->Formatter->TokenTypeIndex;
+            $token->Idx = $this->Formatter->TokenTypeIndex;
 
             if ($prev) {
                 $token->Prev = $prev;
@@ -236,7 +236,7 @@ final class Parser
                     $virtual->Prev = $prev;
                     $virtual->Next = $token;
                     $virtual->Formatter = $this->Formatter;
-                    $virtual->TypeIndex = $idx;
+                    $virtual->Idx = $idx;
                     $virtual->OpenTag = $token->OpenTag;
                     $virtual->CloseTag = &$virtual->OpenTag->CloseTag;
                     $prev->Next = $virtual;

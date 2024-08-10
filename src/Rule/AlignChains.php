@@ -50,8 +50,8 @@ final class AlignChains implements TokenRule
                 continue;
             }
 
-            $chain = $token->withNextSiblingsWhile(false, $this->TypeIndex->ChainPart)
-                           ->filter(fn(Token $t) => $this->TypeIndex->Chain[$t->id]);
+            $chain = $token->withNextSiblingsWhile(false, $this->Idx->ChainPart)
+                           ->filter(fn(Token $t) => $this->Idx->Chain[$t->id]);
 
             // If there's no `->` in the chain with a leading newline, do nothing
             if ($chain->count() < 2
@@ -136,7 +136,7 @@ final class AlignChains implements TokenRule
                   );
             };
         // Apply $delta to code between $alignWith and $first
-        if ($this->TypeIndex->Chain[$alignWith->id] && $alignWith->Next) {
+        if ($this->Idx->Chain[$alignWith->id] && $alignWith->Next) {
             $callback($alignWith->Next, $first);
         }
         $chain->forEach($callback);

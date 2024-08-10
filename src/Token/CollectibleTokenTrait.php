@@ -30,8 +30,8 @@ trait CollectibleTokenTrait
     private function getDeclarationParts(bool $allowAnonymous): TokenCollection
     {
         $index = $allowAnonymous
-            ? $this->TypeIndex->DeclarationPartWithNew
-            : $this->TypeIndex->DeclarationPart;
+            ? $this->Idx->DeclarationPartWithNew
+            : $this->Idx->DeclarationPart;
 
         if (!$index[$this->id]) {
             return new TokenCollection();
@@ -50,7 +50,7 @@ trait CollectibleTokenTrait
 
         if (
             !$allowAnonymous
-            && $t->skipPrevSiblingsFrom($this->TypeIndex->Ampersand)->id === \T_FUNCTION
+            && $t->skipPrevSiblingsFrom($this->Idx->Ampersand)->id === \T_FUNCTION
         ) {
             return new TokenCollection();
         }

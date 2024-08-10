@@ -56,7 +56,7 @@ final class ControlStructureSpacing implements TokenRule
                     && $token->NextCode->id === \T_IF) {
                 assert($token->NextCode->NextCode !== null);
                 $body = $token->NextCode->NextCode->NextSibling;
-            } elseif ($this->TypeIndex->HasStatementWithOptionalBraces[$token->id]) {
+            } elseif ($this->Idx->HasStatementWithOptionalBraces[$token->id]) {
                 $body = $token->NextCode;
             } else {
                 $body = $token->NextCode->NextSibling;

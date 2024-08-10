@@ -80,7 +80,7 @@ final class StandardWhitespace implements TokenRule
 
     public function processTokens(array $tokens): void
     {
-        $idx = $this->TypeIndex;
+        $idx = $this->Idx;
 
         foreach ($tokens as $token) {
             // Add SPACE as per:

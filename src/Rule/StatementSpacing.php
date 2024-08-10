@@ -75,7 +75,7 @@ final class StatementSpacing implements TokenRule
                                 $token,
                             );
                         }
-                        if (!$this->TypeIndex->CloseBracket[$token->Prev->id]
+                        if (!$this->Idx->CloseBracket[$token->Prev->id]
                                 && $token->Prev->id !== \T_SEMICOLON) {
                             continue 2;
                         }

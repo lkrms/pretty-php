@@ -109,7 +109,7 @@ trait NavigableTokenTrait
      *
      * @readonly
      */
-    public TokenTypeIndex $TypeIndex;
+    public TokenTypeIndex $Idx;
 
     /**
      * @return static[]
@@ -218,7 +218,7 @@ trait NavigableTokenTrait
         // `while` cannot be part of the same structure, look for a previous
         // `T_DO` the token could form a control structure with
         $do = $this->PrevSibling
-                   ->prevSiblingFrom($this->TypeIndex->T_DO)
+                   ->prevSiblingFrom($this->Idx->T_DO)
                    ->orNull();
         if (!$do) {
             return false;
@@ -249,8 +249,8 @@ trait NavigableTokenTrait
         $token->IsCode = false;
         $token->IsNull = true;
         $token->IsVirtual = true;
-        if (isset($this->TypeIndex)) {
-            $token->TypeIndex = $this->TypeIndex;
+        if (isset($this->Idx)) {
+            $token->Idx = $this->Idx;
         }
         return $token;
     }
@@ -564,9 +564,9 @@ trait NavigableTokenTrait
         $depth = 0;
         $t = $this;
         while ($t->Next) {
-            if ($this->TypeIndex->OpenBracket[$t->id]) {
+            if ($this->Idx->OpenBracket[$t->id]) {
                 $depth++;
-            } elseif ($this->TypeIndex->CloseBracket[$t->id]) {
+            } elseif ($this->Idx->CloseBracket[$t->id]) {
                 $depth--;
             }
             $t = $t->Next;

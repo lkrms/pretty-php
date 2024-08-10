@@ -87,7 +87,7 @@ final class Symfony implements Preset, TokenRule, ListRule
         }
 
         foreach ($items as $item) {
-            if ($this->TypeIndex->Visibility[$item->id]) {
+            if ($this->Idx->Visibility[$item->id]) {
                 foreach ($items as $item) {
                     $item->WhitespaceBefore |= WhitespaceType::LINE;
                 }

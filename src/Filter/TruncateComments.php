@@ -20,7 +20,7 @@ final class TruncateComments implements Filter
     public function filterTokens(array $tokens): array
     {
         foreach ($tokens as $token) {
-            if ($this->TypeIndex->Comment[$token->id]) {
+            if ($this->Idx->Comment[$token->id]) {
                 $token->text = '';
             }
         }

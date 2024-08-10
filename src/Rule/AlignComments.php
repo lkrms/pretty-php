@@ -52,7 +52,7 @@ final class AlignComments implements BlockRule
 
             /** @var Token */
             $comment = $line->last();
-            if (!$this->TypeIndex->Comment[$comment->id]) {
+            if (!$this->Idx->Comment[$comment->id]) {
                 continue;
             }
 

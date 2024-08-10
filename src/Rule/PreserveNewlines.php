@@ -32,8 +32,8 @@ final class PreserveNewlines implements TokenRule
     public function processTokens(array $tokens): void
     {
         $preserveTypeIndex = TokenType::mergeIndexes(
-            $this->TypeIndex->PreserveNewlineBefore,
-            $this->TypeIndex->PreserveNewlineAfter,
+            $this->Idx->PreserveNewlineBefore,
+            $this->Idx->PreserveNewlineAfter,
         );
 
         foreach ($tokens as $token) {
@@ -48,8 +48,8 @@ final class PreserveNewlines implements TokenRule
             if ($prev->OriginalText === null) {
                 $text = $prev->text;
             } elseif (
-                $this->TypeIndex->DoNotModify[$prev->id]
-                || $this->TypeIndex->DoNotModifyRight[$prev->id]
+                $this->Idx->DoNotModify[$prev->id]
+                || $this->Idx->DoNotModifyRight[$prev->id]
             ) {
                 $text = $prev->OriginalText;
             } else {
@@ -96,10 +96,10 @@ final class PreserveNewlines implements TokenRule
         int $max,
         bool $ignoreBrackets = false
     ): bool {
-        if (!$this->TypeIndex->PreserveNewlineBefore[$token->id]
+        if (!$this->Idx->PreserveNewlineBefore[$token->id]
                 || $token->line < $min
                 || $token->line > $max
-                || ($ignoreBrackets && $this->TypeIndex->Bracket[$token->id])) {
+                || ($ignoreBrackets && $this->Idx->Bracket[$token->id])) {
             return false;
         }
 
@@ -134,7 +134,7 @@ final class PreserveNewlines implements TokenRule
             return false;
         }
 
-        if (!$this->TypeIndex->PreserveBlankBefore[$token->id]) {
+        if (!$this->Idx->PreserveBlankBefore[$token->id]) {
             $line = WhitespaceType::LINE;
         }
 
@@ -161,10 +161,10 @@ final class PreserveNewlines implements TokenRule
             $tokenId = \T_ATTRIBUTE;
         }
 
-        if (!$this->TypeIndex->PreserveNewlineAfter[$tokenId ?? $token->id]
+        if (!$this->Idx->PreserveNewlineAfter[$tokenId ?? $token->id]
                 || $next->line < $min
                 || $next->line > $max
-                || ($ignoreBrackets && $this->TypeIndex->Bracket[$token->id])) {
+                || ($ignoreBrackets && $this->Idx->Bracket[$token->id])) {
             return false;
         }
 
@@ -222,14 +222,14 @@ final class PreserveNewlines implements TokenRule
         }
 
         if ($line & WhitespaceType::BLANK
-            && (!$this->TypeIndex->PreserveBlankAfter[$token->id]
+            && (!$this->Idx->PreserveBlankAfter[$token->id]
                 || ($token->id === \T_COMMA
                     && !$token->isDelimiterBetweenMatchArms())
                 || ($token->id === \T_SEMICOLON
                     && $token->Parent
                     && $token->Parent->PrevCode
                     && $token->Parent->PrevCode->id === \T_FOR)
-                || ($this->TypeIndex->Comment[$token->id]
+                || ($this->Idx->Comment[$token->id]
                     && (($token->PrevCode
                             && !$token->PrevCode->ClosedBy
                             && $token->PrevCode->EndStatement !== $token->PrevCode)

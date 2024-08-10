@@ -12,12 +12,12 @@ use Lkrms\PrettyPHP\Formatter;
 trait ExtensionTrait
 {
     protected Formatter $Formatter;
-    protected TokenTypeIndex $TypeIndex;
+    protected TokenTypeIndex $Idx;
 
     public function __construct(Formatter $formatter)
     {
         $this->Formatter = $formatter;
-        $this->TypeIndex = $formatter->TokenTypeIndex;
+        $this->Idx = $formatter->TokenTypeIndex;
     }
 
     /**

@@ -60,7 +60,7 @@ final class OperatorSpacing implements TokenRule
 
             // Suppress whitespace after ampersands related to passing,
             // assigning and returning by reference
-            if ($this->TypeIndex->Ampersand[$token->id]
+            if ($this->Idx->Ampersand[$token->id]
                 && $token->Next->IsCode
                 // `function &getValue()`
                 && (($token->PrevCode
@@ -81,7 +81,7 @@ final class OperatorSpacing implements TokenRule
 
             // Suppress whitespace around operators in union, intersection and
             // DNF types
-            if ($this->TypeIndex->TypeDelimiter[$token->id]
+            if ($this->Idx->TypeDelimiter[$token->id]
                 && (($inTypeContext = $this->inTypeContext($token))
                     || ($token->id === \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
                         && $token->Parent
@@ -185,11 +185,11 @@ final class OperatorSpacing implements TokenRule
         return $token->inDeclaration()
             || ($token->inParameterList()
                 && !$token->sinceStartOfStatement()->hasOneOf(\T_VARIABLE))
-            || (($prev = $token->prevCodeWhile($this->TypeIndex->ValueType)->last())
+            || (($prev = $token->prevCodeWhile($this->Idx->ValueType)->last())
                 && ($prev = $prev->PrevCode)
                 && $prev->id === \T_COLON
                 && ($prev = $prev->PrevSibling)
                 && ($prev = $prev->PrevSibling)
-                && $prev->skipPrevSiblingsFrom($this->TypeIndex->Ampersand)->id === \T_FN);
+                && $prev->skipPrevSiblingsFrom($this->Idx->Ampersand)->id === \T_FN);
     }
 }

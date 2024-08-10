@@ -129,7 +129,7 @@ final class AlignData implements BlockRule
                         && !$token->hasNewlineAfter()
                         && $token->Parent
                         && $token->Parent->isArrayOpenBracket()
-                        && !$this->TypeIndex->CloseBracket[$token->Next->id]) {
+                        && !$this->Idx->CloseBracket[$token->Next->id]) {
                     $data = [
                         'prevTypes' => $token->prevSiblings($token->prevSiblingOf(\T_COMMA)->NextCode)->getTypes(),
                         'nextTypes' => $token->Next->collectSiblings($token->nextSiblingOf(\T_COMMA)->PrevCode)->getTypes(),

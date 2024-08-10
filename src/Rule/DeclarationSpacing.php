@@ -108,12 +108,12 @@ final class DeclarationSpacing implements TokenRule
                 continue;
             }
 
-            $type = $parts->getAnyFrom($this->TypeIndex->DeclarationExceptModifiers)
+            $type = $parts->getAnyFrom($this->Idx->DeclarationExceptModifiers)
                           ->getTypes();
 
             // Ignore declarations with no apparent type unless they are
             // property or variable declarations
-            if (!$type && !$parts->hasOneFrom($this->TypeIndex->DeclarationPropertyOrVariable)) {
+            if (!$type && !$parts->hasOneFrom($this->Idx->DeclarationPropertyOrVariable)) {
                 continue;
             }
 
@@ -126,7 +126,7 @@ final class DeclarationSpacing implements TokenRule
             }
 
             $modifiers = [];
-            $modifier = $parts->getFirstFrom($this->TypeIndex->Visibility);
+            $modifier = $parts->getFirstFrom($this->Idx->Visibility);
             if ($modifier) {
                 $modifiers[] = $modifier->id;
             }
@@ -141,8 +141,8 @@ final class DeclarationSpacing implements TokenRule
                 $token,
                 $type,
                 $modifiers,
-                $parts->hasOneFrom($this->TypeIndex->SuppressBlankBetween),
-                $parts->hasOneFrom($this->TypeIndex->SuppressBlankBetweenOneLine),
+                $parts->hasOneFrom($this->Idx->SuppressBlankBetween),
+                $parts->hasOneFrom($this->Idx->SuppressBlankBetweenOneLine),
                 null,
                 null,
                 null,

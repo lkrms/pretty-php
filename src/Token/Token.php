@@ -414,7 +414,7 @@ class Token extends GenericToken implements JsonSerializable
     {
         // If the token is an object operator, return the first token in the
         // chain
-        if ($this->TypeIndex->Chain[$this->id]) {
+        if ($this->Idx->Chain[$this->id]) {
             $current = $this;
             $first = null;
             while (($current = $current->PrevSibling)
@@ -471,12 +471,12 @@ class Token extends GenericToken implements JsonSerializable
             // Honour imaginary braces around control structures with unenclosed
             // bodies if needed
             if ($containUnenclosed) {
-                if ($this->TypeIndex->HasStatementWithOptionalBraces[$current->id]
+                if ($this->Idx->HasStatementWithOptionalBraces[$current->id]
                         && ($body = $current->NextSibling)->id !== \T_OPEN_BRACE
                         && $current->EndExpression->withTerminator()->Index >= $this->Index) {
                     return $body->_pragmaticStartOfExpression($this);
                 }
-                if ($this->TypeIndex->HasExpressionAndStatementWithOptionalBraces[$current->id]
+                if ($this->Idx->HasExpressionAndStatementWithOptionalBraces[$current->id]
                         && ($body = $current->NextSibling->NextSibling)->id !== \T_OPEN_BRACE
                         && $current->EndExpression->withTerminator()->Index >= $this->Index) {
                     return $body->_pragmaticStartOfExpression($this);
@@ -541,7 +541,7 @@ class Token extends GenericToken implements JsonSerializable
             && $parts->hasOneOf(...TokenType::DECLARATION_TOP_LEVEL)
             // Exclude anonymous functions, which can move as needed
             && ($last = $parts->last()->skipPrevSiblingsFrom(
-                $this->TypeIndex->Ampersand
+                $this->Idx->Ampersand
             ))->id !== \T_FUNCTION
             // Anonymous classes are a special case where if there is a newline
             // before `class`, the first hanging indent in the declaration is
@@ -595,13 +595,13 @@ class Token extends GenericToken implements JsonSerializable
 
         // If the token is an object operator, return the last token in the
         // chain
-        if ($this->TypeIndex->Chain[$this->id]) {
+        if ($this->Idx->Chain[$this->id]) {
             $current = $this;
             do {
                 $last = $current;
             } while (($current = $current->NextSibling)
                 && $this->Expression === $current->Expression
-                && $this->TypeIndex->ChainPart[$current->id]);
+                && $this->Idx->ChainPart[$current->id]);
 
             return $last->ClosedBy ?: $last;
         }
@@ -642,7 +642,7 @@ class Token extends GenericToken implements JsonSerializable
             // Don't terminate if the token between expressions is a ternary
             // operator or an expression terminator other than `)`, `]` and `;`
             if (($terminator->Flags & TokenFlag::TERNARY_OPERATOR)
-                    || $this->TypeIndex->ExpressionDelimiter[$terminator->id]) {
+                    || $this->Idx->ExpressionDelimiter[$terminator->id]) {
                 continue;
             }
 
@@ -680,7 +680,7 @@ class Token extends GenericToken implements JsonSerializable
     final public function adjacent(): ?Token
     {
         $current = $this->ClosedBy ?: $this;
-        $outer = $current->withNextCodeWhile(true, $this->TypeIndex->CloseBracketOrComma)->last();
+        $outer = $current->withNextCodeWhile(true, $this->Idx->CloseBracketOrComma)->last();
         if (!$outer
                 || !$outer->NextCode
                 || !$outer->EndStatement
@@ -728,7 +728,7 @@ class Token extends GenericToken implements JsonSerializable
         // Find the last `)`, `]`, `}`, or `,` on the same line as the close
         // bracket and assign it to `$outer`
         $eol = $this->endOfLine();
-        $outer = $current->withNextCodeWhile(false, $this->TypeIndex->CloseBracketOrComma)
+        $outer = $current->withNextCodeWhile(false, $this->Idx->CloseBracketOrComma)
                          ->filter(fn(Token $t) => $t->Index <= $eol->Index)
                          ->last();
 
@@ -824,7 +824,7 @@ class Token extends GenericToken implements JsonSerializable
         /** @disregard P1006 */
         while (!$current->hasBlankLineBefore()
             && $prev
-            && $this->TypeIndex->Comment[$prev->id]
+            && $this->Idx->Comment[$prev->id]
             && $prev->hasNewlineBefore()
             && (($prev->id === \T_DOC_COMMENT && $prev->hasNewline())
                 || ($prev->wasFirstOnLine()
@@ -949,10 +949,10 @@ class Token extends GenericToken implements JsonSerializable
     final public function isDereferenceableTerminator(): bool
     {
         return
-            $this->TypeIndex->DereferenceableTerminator[$this->id] || (
+            $this->Idx->DereferenceableTerminator[$this->id] || (
                 $this->PrevCode
                 && $this->PrevCode->id === \T_DOUBLE_COLON
-                && $this->TypeIndex->MaybeReserved[$this->id]
+                && $this->Idx->MaybeReserved[$this->id]
             );
     }
 
@@ -996,7 +996,7 @@ class Token extends GenericToken implements JsonSerializable
         }
 
         return ($this->PrevCode->Flags & TokenFlag::TERNARY_OPERATOR)
-            || $this->TypeIndex->UnaryPredecessor[$this->PrevCode->id];
+            || $this->Idx->UnaryPredecessor[$this->PrevCode->id];
     }
 
     final public function getIndentDelta(Token $target): TokenIndentDelta

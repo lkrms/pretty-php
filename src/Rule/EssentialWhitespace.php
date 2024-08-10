@@ -52,8 +52,8 @@ final class EssentialWhitespace implements Rule
             }
 
             if ($token->effectiveWhitespaceAfter()
-                    || $this->TypeIndex->SuppressSpaceAfter[$token->id]
-                    || $this->TypeIndex->SuppressSpaceBefore[$next->id]) {
+                    || $this->Idx->SuppressSpaceAfter[$token->id]
+                    || $this->Idx->SuppressSpaceBefore[$next->id]) {
                 continue;
             }
 

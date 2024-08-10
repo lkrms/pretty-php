@@ -104,7 +104,7 @@ final class VerticalWhitespace implements TokenRule
             // where `)` is at the start of a line
             if ($sol === $t || (
                 $t->Prev
-                && $sol->collect($t->Prev)->hasOneNotFrom($this->TypeIndex->CloseBracket)
+                && $sol->collect($t->Prev)->hasOneNotFrom($this->Idx->CloseBracket)
             )) {
                 $t->WhitespaceBefore |= WhitespaceType::LINE;
             }
@@ -115,7 +115,7 @@ final class VerticalWhitespace implements TokenRule
             // where `(` is at the end of a line
             if ($eol === $t || (
                 $t->Next
-                && $t->Next->collect($eol)->hasOneNotFrom($this->TypeIndex->OpenBracketOrNot)
+                && $t->Next->collect($eol)->hasOneNotFrom($this->Idx->OpenBracketOrNot)
             )) {
                 $t->WhitespaceAfter |= WhitespaceType::LINE;
             }
@@ -123,8 +123,8 @@ final class VerticalWhitespace implements TokenRule
 
         foreach (array_keys(self::PRECEDENCE_MAP) as $id) {
             if (
-                $this->TypeIndex->PreserveNewlineBefore[$id]
-                || !$this->TypeIndex->PreserveNewlineAfter[$id]
+                $this->Idx->PreserveNewlineBefore[$id]
+                || !$this->Idx->PreserveNewlineAfter[$id]
             ) {
                 $this->HasNewline[$id] = $hasNewlineBefore;
                 $this->ApplyNewline[$id] = $applyNewlineBefore;
@@ -148,7 +148,7 @@ final class VerticalWhitespace implements TokenRule
         foreach ($tokens as $token) {
             // Propagate newlines adjacent to boolean operators to others of
             // equal or lower precedence in the same statement
-            if ($this->TypeIndex->OperatorBooleanExceptNot[$token->id]) {
+            if ($this->Idx->OperatorBooleanExceptNot[$token->id]) {
                 $id = self::TOKEN_MAP[$token->id];
 
                 assert($token->Statement !== null);
@@ -171,7 +171,7 @@ final class VerticalWhitespace implements TokenRule
                 $minPrecedence = self::PRECEDENCE_MAP[$id];
 
                 foreach ($token->Statement->collectSiblings($token->EndStatement) as $t) {
-                    if (!$this->TypeIndex->OperatorBooleanExceptNot[$t->id]) {
+                    if (!$this->Idx->OperatorBooleanExceptNot[$t->id]) {
                         continue;
                     }
                     $id = self::TOKEN_MAP[$t->id];
@@ -202,8 +202,8 @@ final class VerticalWhitespace implements TokenRule
                 );
 
                 $children = $token->NextCode->children();
-                $commas = $children->getAnyFrom($this->TypeIndex->Comma);
-                $semicolons = $children->getAnyFrom($this->TypeIndex->Semicolon);
+                $commas = $children->getAnyFrom($this->Idx->Comma);
+                $semicolons = $children->getAnyFrom($this->Idx->Semicolon);
                 $semi1 = $semicolons->first();
                 $semi2 = $semicolons->last();
 
@@ -263,7 +263,7 @@ final class VerticalWhitespace implements TokenRule
                         // Exclude `declare` blocks
                         $last->id === \T_DECLARE
                         // Exclude anonymous functions
-                        || $last->skipPrevSiblingsFrom($this->TypeIndex->Ampersand)->id === \T_FUNCTION
+                        || $last->skipPrevSiblingsFrom($this->Idx->Ampersand)->id === \T_FUNCTION
                     ))
                     || (($start = $parts->first()) && (
                         // Exclude grouped imports and trait adaptations
@@ -309,8 +309,8 @@ final class VerticalWhitespace implements TokenRule
                 continue;
             }
 
-            $chain = $token->withNextSiblingsWhile(false, $this->TypeIndex->ChainPart)
-                           ->getAnyFrom($this->TypeIndex->Chain);
+            $chain = $token->withNextSiblingsWhile(false, $this->Idx->ChainPart)
+                           ->getAnyFrom($this->Idx->Chain);
 
             if (
                 $chain->count() < 2

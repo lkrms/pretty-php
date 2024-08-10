@@ -23,7 +23,7 @@ trait FilterTrait
     {
         while ($i--) {
             $token = $this->Tokens[$i];
-            if ($this->TypeIndex->NotCode[$token->id]) {
+            if ($this->Idx->NotCode[$token->id]) {
                 continue;
             }
             return $token;
@@ -39,10 +39,10 @@ trait FilterTrait
     {
         while ($i--) {
             $token = $this->Tokens[$i];
-            if ($this->TypeIndex->NotCode[$token->id]) {
+            if ($this->Idx->NotCode[$token->id]) {
                 continue;
             }
-            if (!$this->TypeIndex->DeclarationPart[$token->id]) {
+            if (!$this->Idx->DeclarationPart[$token->id]) {
                 return false;
             }
             if ($token->id === $type) {

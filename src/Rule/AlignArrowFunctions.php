@@ -47,7 +47,7 @@ final class AlignArrowFunctions implements TokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            $arrow = $token->nextSiblingFrom($this->TypeIndex->DoubleArrow);
+            $arrow = $token->nextSiblingFrom($this->Idx->DoubleArrow);
             /** @var Token */
             $body = $this->Formatter->NewlineBeforeFnDoubleArrows
                 ? $arrow

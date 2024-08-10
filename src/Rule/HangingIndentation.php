@@ -83,7 +83,7 @@ final class HangingIndentation implements TokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            if ($this->TypeIndex->OpenBracket[$token->id]) {
+            if ($this->Idx->OpenBracket[$token->id]) {
                 $token->HangingIndentParentType =
                     $token->hasNewlineBeforeNextCode()
                         ? (($token->Flags & TokenFlag::LIST_PARENT
@@ -126,9 +126,9 @@ final class HangingIndentation implements TokenRule
             // Ignore tokens aligned by other rules
             $prevCode = $token->PrevCode;
             if ($token->AlignedWith
-                    || $this->TypeIndex->NotCode[$token->id]
-                    || $this->TypeIndex->CloseBracketOrEndAltSyntax[$token->id]
-                    || $this->TypeIndex->HasStatement[$token->id]
+                    || $this->Idx->NotCode[$token->id]
+                    || $this->Idx->CloseBracketOrEndAltSyntax[$token->id]
+                    || $this->Idx->HasStatement[$token->id]
                     || !$prevCode) {
                 continue;
             }
@@ -235,8 +235,8 @@ final class HangingIndentation implements TokenRule
             } elseif (isset($token->Data[TokenData::LIST_PARENT])) {
                 $stack[] = $token->Data[TokenData::LIST_PARENT];
             } elseif ($latest && $latest->Parent === $token->Parent) {
-                if ($this->TypeIndex->ExpressionDelimiter[$prevCode->id]
-                        || $this->TypeIndex->ExpressionDelimiter[$token->id]) {
+                if ($this->Idx->ExpressionDelimiter[$prevCode->id]
+                        || $this->Idx->ExpressionDelimiter[$token->id]) {
                     $stack[] = $token;
                 } elseif ($latest->id === \T_DOUBLE_ARROW) {
                     $stack[] = $latest;
