@@ -335,32 +335,6 @@ class Token extends GenericToken implements JsonSerializable
         return $t ?: $this->null();
     }
 
-    public function prev(int $offset = 1): Token
-    {
-        switch ($offset) {
-            case 1:
-                return $this->Prev ?: $this->null();
-
-            case 2:
-                return ($this->Prev->Prev ?? null) ?: $this->null();
-        }
-
-        return $this->byOffset(__FUNCTION__, $offset);
-    }
-
-    public function next(int $offset = 1): Token
-    {
-        switch ($offset) {
-            case 1:
-                return $this->Next ?: $this->null();
-
-            case 2:
-                return ($this->Next->Next ?? null) ?: $this->null();
-        }
-
-        return $this->byOffset(__FUNCTION__, $offset);
-    }
-
     public function prevCode(int $offset = 1): Token
     {
         switch ($offset) {

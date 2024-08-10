@@ -188,13 +188,16 @@ final class StandardWhitespace implements TokenRule
                 $current = $token;
                 if (
                     $token->id === \T_OPEN_TAG
-                    && ($declare = $token->next())->id === \T_DECLARE
-                    && ($end = $declare->nextSibling(2)) === $declare->EndStatement
+                    && ($declare = $token->Next)
+                    && $declare->id === \T_DECLARE
+                    && $declare->NextSibling
+                    && ($end = $declare->NextSibling->NextSibling)
+                    && $end === $declare->EndStatement
                     && (!$end->NextCode || $end->NextCode->id !== \T_DECLARE)
                     && (
                         !$this->Formatter->Psr12 || (
-                            !strcasecmp((string) $declare->nextSibling()->inner(), 'strict_types=1')
-                            && ($end->id === \T_CLOSE_TAG || $end->next()->id === \T_CLOSE_TAG)
+                            !strcasecmp((string) $declare->NextSibling->inner(), 'strict_types=1')
+                            && ($end->id === \T_CLOSE_TAG || ($end->Next && $end->Next->id === \T_CLOSE_TAG))
                         )
                     )
                 ) {
@@ -204,7 +207,7 @@ final class StandardWhitespace implements TokenRule
                     if (
                         $this->Formatter->Psr12
                         || $end->id === \T_CLOSE_TAG
-                        || $end->next()->id === \T_CLOSE_TAG
+                        || ($end->Next && $end->Next->id === \T_CLOSE_TAG)
                     ) {
                         $token->CloseTag->WhitespaceBefore |= WhitespaceType::SPACE;
                         $token->CloseTag->WhitespaceMaskPrev = WhitespaceType::SPACE;

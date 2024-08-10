@@ -80,11 +80,11 @@ final class PreserveNewlines implements TokenRule
             // 1. Is a newline after $prev OK?
             $this->maybePreserveNewlineAfter($prev, $token, $line, $min, $max)
                 // 2. If $prev moved to the next line, would a newline before it be OK?
-                || $this->maybePreserveNewlineBefore($prev, $prev->prev(), $line, $min, $max, true)
+                || ($prev->Prev && $this->maybePreserveNewlineBefore($prev, $prev->Prev, $line, $min, $max, true))
                 // 3. Is a newline before $token OK?
                 || $this->maybePreserveNewlineBefore($token, $prev, $line, $min, $max)
                 // 4. If $token moved to the previous line, would a newline after it be OK?
-                || $this->maybePreserveNewlineAfter($token, $token->next(), $line, $min, $max, true);
+                || ($token->Next && $this->maybePreserveNewlineAfter($token, $token->Next, $line, $min, $max, true));
         }
     }
 

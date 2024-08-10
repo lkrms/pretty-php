@@ -136,8 +136,8 @@ final class AlignChains implements TokenRule
                   );
             };
         // Apply $delta to code between $alignWith and $first
-        if ($this->TypeIndex->Chain[$alignWith->id]) {
-            $callback($alignWith->next(), $first);
+        if ($this->TypeIndex->Chain[$alignWith->id] && $alignWith->Next) {
+            $callback($alignWith->Next, $first);
         }
         $chain->forEach($callback);
     }
