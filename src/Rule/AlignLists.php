@@ -94,10 +94,10 @@ final class AlignLists implements ListRule
             fn(Token $item, ?Token $next) =>
                 $callback(
                     $item,
-                    $next
-                        ? $next->prevCode(2)
-                        : ($owner->ClosedBy
-                            ? $owner->ClosedBy->prevCode()
+                    $next && $next->PrevCode && $next->PrevCode->PrevCode
+                        ? $next->PrevCode->PrevCode
+                        : ($owner->ClosedBy && $owner->ClosedBy->PrevCode
+                            ? $owner->ClosedBy->PrevCode
                             : $item->pragmaticEndOfExpression()),
                     $item->alignmentOffset(false, $this->ListOwnersByIndex[$item->Index] ?? false)
                 )

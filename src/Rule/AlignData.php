@@ -100,6 +100,7 @@ final class AlignData implements BlockRule
 
         foreach ($block as $line => $tokens) {
             foreach ($tokens as $token) {
+                /** @var Token $token for Intelephense */
                 if ($token->hasNewlineBefore()) {
                     continue;
                 }
@@ -130,8 +131,8 @@ final class AlignData implements BlockRule
                         && $token->Parent->isArrayOpenBracket()
                         && !$this->TypeIndex->CloseBracket[$token->Next->id]) {
                     $data = [
-                        'prevTypes' => $token->prevSiblings($token->prevSiblingOf(\T_COMMA)->nextCode())->getTypes(),
-                        'nextTypes' => $token->Next->collectSiblings($token->nextSiblingOf(\T_COMMA)->prevCode())->getTypes(),
+                        'prevTypes' => $token->prevSiblings($token->prevSiblingOf(\T_COMMA)->NextCode)->getTypes(),
+                        'nextTypes' => $token->Next->collectSiblings($token->nextSiblingOf(\T_COMMA)->PrevCode)->getTypes(),
                     ];
                     $type = array_map(fn(array $types): string => implode(',', $this->simplifyTokenTypes($types)), $data);
                     array_unshift($type, ',');

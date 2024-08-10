@@ -186,7 +186,10 @@ final class OperatorSpacing implements TokenRule
             || ($token->inParameterList()
                 && !$token->sinceStartOfStatement()->hasOneOf(\T_VARIABLE))
             || (($prev = $token->prevCodeWhile($this->TypeIndex->ValueType)->last())
-                && ($prev = $prev->prevCode())->id === \T_COLON
-                && $prev->prevSibling(2)->skipPrevSiblingsFrom($this->TypeIndex->Ampersand)->id === \T_FN);
+                && ($prev = $prev->PrevCode)
+                && $prev->id === \T_COLON
+                && ($prev = $prev->PrevSibling)
+                && ($prev = $prev->PrevSibling)
+                && $prev->skipPrevSiblingsFrom($this->TypeIndex->Ampersand)->id === \T_FN);
     }
 }

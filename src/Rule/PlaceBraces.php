@@ -119,9 +119,11 @@ final class PlaceBraces implements TokenRule
             }
 
             $prev = $parts->hasOneOf(\T_FUNCTION)
-                ? $parts->last()->nextSibling()->canonicalClose()
-                : $token->prevCode();
-            if ($prev->id === \T_CLOSE_PARENTHESIS) {
+                && ($t = $parts->last())
+                && ($t = $t->NextSibling)
+                    ? $t->canonicalClose()
+                    : $token->PrevCode;
+            if ($prev && $prev->id === \T_CLOSE_PARENTHESIS) {
                 $this->BracketBracePairs[] = [$prev, $token];
             }
         }
