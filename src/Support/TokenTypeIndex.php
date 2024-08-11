@@ -581,6 +581,14 @@ class TokenTypeIndex implements Immutable
      */
     public array $VisibilityWithReadonly;
 
+    /**
+     * T_END_ALT_SYNTAX, T_NULL
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $Virtual;
+
     private string $LastOperatorsMethod;
     /** @var array<int,bool> */
     private array $_PreserveNewlineBefore;
@@ -992,6 +1000,10 @@ class TokenTypeIndex implements Immutable
         $this->ValueType = TT::getIndex(...TT::VALUE_TYPE);
         $this->Visibility = TT::getIndex(...TT::VISIBILITY);
         $this->VisibilityWithReadonly = TT::getIndex(...TT::VISIBILITY_WITH_READONLY);
+        $this->Virtual = TT::getIndex(
+            \T_END_ALT_SYNTAX,
+            \T_NULL,
+        );
 
         $this->LastOperatorsMethod = 'withMixedOperators';
         $this->_PreserveNewlineBefore = $this->PreserveNewlineBefore;

@@ -887,7 +887,7 @@ final class Formatter implements Buildable
 
             $last = end($this->Tokens);
             if (
-                $last->IsCode
+                $last->Flags & TokenFlag::CODE
                 && $last->Statement
                 && $last->Statement->id !== \T_HALT_COMPILER
             ) {

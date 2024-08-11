@@ -83,7 +83,7 @@ final class PlaceComments implements TokenRule
                 // Leave embedded comments alone
                 $wasFirstOnLine = $token->wasFirstOnLine();
                 if (!$wasFirstOnLine && !$token->wasLastOnLine()) {
-                    if ($token->Prev->IsCode || $token->Prev->OpenTag === $token->Prev) {
+                    if ($token->Prev->Flags & TokenFlag::CODE || $token->Prev->OpenTag === $token->Prev) {
                         $this->CommentsBesideCode[] = $token;
                         $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
                         continue;
@@ -97,7 +97,7 @@ final class PlaceComments implements TokenRule
                 // top-level close braces, don't move comments to the next line
                 if (!$wasFirstOnLine) {
                     $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
-                    if ($token->Prev->IsCode || $token->Prev->OpenTag === $token->Prev) {
+                    if ($token->Prev->Flags & TokenFlag::CODE || $token->Prev->OpenTag === $token->Prev) {
                         $this->CommentsBesideCode[] = $token;
                         $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
                         continue;

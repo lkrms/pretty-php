@@ -103,7 +103,7 @@ final class HangingIndentation implements TokenRule
             // hanging indent context for it to prevent siblings on subsequent
             // lines being indented
             $parent = $token->Parent;
-            if ($token->IsCode
+            if ($token->Flags & TokenFlag::CODE
                     && $parent
                     && $parent === $token->PrevCode
                     && $token->NextCode

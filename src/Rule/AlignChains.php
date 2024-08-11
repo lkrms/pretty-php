@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\TokenRule;
@@ -82,7 +83,7 @@ final class AlignChains implements TokenRule
                     continue;
                 }
                 $eol = $alignWith->endOfLine();
-                if ($eol->IsCode
+                if ($eol->Flags & TokenFlag::CODE
                         && $eol->Next === $token
                         && mb_strlen($alignWith->collect($eol)->render()) <= $this->Formatter->TabSize) {
                     $token->WhitespaceBefore = WhitespaceType::NONE;

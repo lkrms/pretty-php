@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule\Concern;
 
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Rule;
@@ -31,8 +32,8 @@ trait RuleTrait
         }
 
         if ($oneStatement) {
-            $from = $start->IsCode ? $start : $start->NextCode;
-            $to = $end->IsCode ? $end : $end->PrevCode;
+            $from = $start->Flags & TokenFlag::CODE ? $start : $start->NextCode;
+            $to = $end->Flags & TokenFlag::CODE ? $end : $end->PrevCode;
             if (
                 $from
                 && $to

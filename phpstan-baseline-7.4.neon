@@ -331,7 +331,7 @@ parameters:
 			path: src/Rule/ListSpacing.php
 
 		-
-			message: "#^Cannot access property \\$IsCode on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
+			message: "#^Cannot access property \\$Flags on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/OperatorSpacing.php
 
@@ -366,7 +366,7 @@ parameters:
 			path: src/Rule/PlaceBraces.php
 
 		-
-			message: "#^Cannot access property \\$IsCode on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
+			message: "#^Cannot access property \\$Flags on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 2
 			path: src/Rule/PlaceComments.php
 

@@ -67,24 +67,11 @@ trait NavigableTokenTrait
     public ?Token $ChainOpenedBy = null;
 
     /**
-     * True unless the token is a tag, comment, whitespace or inline markup
-     *
-     * Also `true` if the token is a `T_CLOSE_TAG` that terminates a statement.
-     */
-    public bool $IsCode = true;
-
-    /**
      * True if the token is a T_NULL
      *
      * @todo Remove this property
      */
     public bool $IsNull = false;
-
-    /**
-     * True if the token is a T_NULL, T_END_ALT_SYNTAX or some other zero-width
-     * impostor
-     */
-    public bool $IsVirtual = false;
 
     /**
      * The original content of the token after expanding tabs if CollectColumn
@@ -246,9 +233,7 @@ trait NavigableTokenTrait
     public function null()
     {
         $token = new static(\T_NULL, '');
-        $token->IsCode = false;
         $token->IsNull = true;
-        $token->IsVirtual = true;
         if (isset($this->Idx)) {
             $token->Idx = $this->Idx;
         }
@@ -399,7 +384,7 @@ trait NavigableTokenTrait
      */
     final public function skipSiblingsFrom(array $index)
     {
-        $t = $this->IsCode ? $this : $this->NextCode;
+        $t = $this->Flags & TokenFlag::CODE ? $this : $this->NextCode;
         while ($t && $index[$t->id]) {
             $t = $t->NextSibling;
         }
@@ -416,7 +401,7 @@ trait NavigableTokenTrait
      */
     final public function skipPrevSiblingsFrom(array $index)
     {
-        $t = $this->IsCode ? $this : $this->PrevCode;
+        $t = $this->Flags & TokenFlag::CODE ? $this : $this->PrevCode;
         while ($t && $index[$t->id]) {
             $t = $t->PrevSibling;
         }

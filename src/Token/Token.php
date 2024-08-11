@@ -296,7 +296,7 @@ class Token extends GenericToken implements JsonSerializable
             if (!$prev) {
                 return true;
             }
-        } while ($prev->IsVirtual);
+        } while ($this->Idx->Virtual[$prev->id]);
         $prevCode = $prev->OriginalText ?: $prev->text;
         $prevNewlines = substr_count($prevCode, "\n");
 
@@ -317,7 +317,7 @@ class Token extends GenericToken implements JsonSerializable
             if (!$next) {
                 return true;
             }
-        } while ($next->IsVirtual);
+        } while ($this->Idx->Virtual[$next->id]);
         $code = $this->OriginalText ?: $this->text;
         $newlines = substr_count($code, "\n");
 

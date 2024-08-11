@@ -280,7 +280,7 @@ final class DeclarationSpacing implements TokenRule
             // Add a blank line between declarations and subsequent statements
             // or comments
             if ($prevEnd && $prevEnd->Next && $prevEnd->Next->id !== \T_CLOSE_TAG && (
-                $nextNotDeclaration || !$prevEnd->Next->IsCode
+                $nextNotDeclaration || !($prevEnd->Next->Flags & TokenFlag::CODE)
             )) {
                 $prevEnd->WhitespaceAfter |= WhitespaceType::BLANK;
             }

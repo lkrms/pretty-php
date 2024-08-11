@@ -140,7 +140,6 @@ final class Parser
      * - `String`
      * - `StringClosedBy`
      * - `Heredoc`
-     * - `IsCode`
      *
      * @param Token[] $tokens
      * @return Token[]
@@ -183,14 +182,12 @@ final class Parser
             }
 
             if ($idx->NotCode[$token->id]) {
-                $token->IsCode = false;
-
                 if ($token->id === \T_DOC_COMMENT) {
-                    // @phpstan-ignore-next-line
+                    // @phpstan-ignore assign.propertyType
                     $token->Flags |= TokenFlag::DOC_COMMENT;
                 } elseif ($token->id === \T_COMMENT) {
                     // "//", "/*" or "#"
-                    // @phpstan-ignore-next-line
+                    // @phpstan-ignore assign.propertyType
                     $token->Flags |= (
                         $text[0] === '/'
                             ? ($text[1] === '/' ? TokenFlag::CPP_COMMENT : TokenFlag::C_COMMENT)
@@ -210,10 +207,13 @@ final class Parser
                                 // The last delimiter is preceded by a newline
                                 || !Regex::match('/\S((?<!\*)|\h++)\*++\/$/', $text)
                             )) {
-                        // @phpstan-ignore-next-line
+                        // @phpstan-ignore assign.propertyType
                         $token->Flags |= TokenFlag::INFORMAL_DOC_COMMENT;
                     }
                 }
+            } else {
+                // @phpstan-ignore assign.propertyType
+                $token->Flags |= TokenFlag::CODE;
             }
 
             if ((
@@ -232,13 +232,14 @@ final class Parser
                         && $prev->isColonAltSyntaxDelimiter())) {
                     $i--;
                     $virtual = new Token(\T_END_ALT_SYNTAX, '');
-                    $virtual->IsVirtual = true;
                     $virtual->Prev = $prev;
                     $virtual->Next = $token;
                     $virtual->Formatter = $this->Formatter;
                     $virtual->Idx = $idx;
                     $virtual->OpenTag = $token->OpenTag;
                     $virtual->CloseTag = &$virtual->OpenTag->CloseTag;
+                    // @phpstan-ignore assign.propertyType
+                    $virtual->Flags |= TokenFlag::CODE;
                     $prev->Next = $virtual;
                     $token->Prev = $virtual;
                     $token = $virtual;
@@ -275,14 +276,13 @@ final class Parser
                         || !($t->Flags & TokenFlag::STATEMENT_TERMINATOR)
                     )
                 ) {
-                    // @phpstan-ignore-next-line
-                    $token->Flags |= TokenFlag::STATEMENT_TERMINATOR;
-                    $token->IsCode = true;
+                    // @phpstan-ignore assign.propertyType
+                    $token->Flags |= TokenFlag::CODE | TokenFlag::STATEMENT_TERMINATOR;
                 }
             }
 
-            $token->PrevCode = $prev->IsCode ? $prev : $prev->PrevCode;
-            if ($token->IsCode) {
+            $token->PrevCode = $prev->Flags & TokenFlag::CODE ? $prev : $prev->PrevCode;
+            if ($token->Flags & TokenFlag::CODE) {
                 $prev->NextCode = $token;
             } else {
                 $token->NextCode = &$prev->NextCode;
@@ -370,7 +370,7 @@ final class Parser
                         continue;
                     }
                 }
-                // @phpstan-ignore-next-line
+                // @phpstan-ignore assign.propertyType
                 $token->Flags |= TokenFlag::STATEMENT_TERMINATOR;
 
                 $prev = $token;
@@ -388,7 +388,7 @@ final class Parser
             }
 
             // Then, if there are gaps between siblings, fill them in
-            if ($token->IsCode) {
+            if ($token->Flags & TokenFlag::CODE) {
                 if (
                     $token->PrevSibling
                     && !$token->PrevSibling->NextSibling
@@ -613,9 +613,9 @@ final class Parser
                     if ($count--) {
                         continue;
                     }
-                    // @phpstan-ignore-next-line
+                    // @phpstan-ignore assign.propertyType
                     $current->Flags |= TokenFlag::TERNARY_OPERATOR;
-                    // @phpstan-ignore-next-line
+                    // @phpstan-ignore assign.propertyType
                     $token->Flags |= TokenFlag::TERNARY_OPERATOR;
                     $current->OtherTernaryOperator = $token;
                     $token->OtherTernaryOperator = $current;

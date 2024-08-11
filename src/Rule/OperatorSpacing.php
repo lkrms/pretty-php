@@ -61,7 +61,7 @@ final class OperatorSpacing implements TokenRule
             // Suppress whitespace after ampersands related to passing,
             // assigning and returning by reference
             if ($this->Idx->Ampersand[$token->id]
-                && $token->Next->IsCode
+                && $token->Next->Flags & TokenFlag::CODE
                 // `function &getValue()`
                 && (($token->PrevCode
                     && ($token->PrevCode->id === \T_FUNCTION
@@ -142,7 +142,7 @@ final class OperatorSpacing implements TokenRule
             // Suppress whitespace after unary operators
             if ($token->isUnaryOperator()
                 && $token->Next
-                && $token->Next->IsCode
+                && $token->Next->Flags & TokenFlag::CODE
                 && (!$token->Next->isOperator()
                     || $token->Next->isUnaryOperator())) {
                 $token->WhitespaceMaskNext = WhitespaceType::NONE;
