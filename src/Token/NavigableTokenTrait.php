@@ -145,7 +145,7 @@ trait NavigableTokenTrait
     final public function isStructuralBrace(bool $orMatch = false): bool
     {
         /** @var Token $this */
-        $current = $this->OpenedBy === null ? $this : $this->OpenedBy;
+        $current = $this->OpenedBy ?? $this;
 
         // Exclude T_CURLY_OPEN and T_DOLLAR_OPEN_CURLY_BRACES
         if ($current->id !== \T_OPEN_BRACE) {
@@ -528,33 +528,6 @@ trait NavigableTokenTrait
             $current = $current->Next;
         }
         return $current;
-    }
-
-    /**
-     * Get the next sibling via token traversal, without accounting for PHP's
-     * alternative syntax
-     *
-     * @return Token
-     */
-    final public function nextSimpleSibling(int $offset = 1)
-    {
-        $depth = 0;
-        $t = $this;
-        while ($t->Next) {
-            if ($this->Idx->OpenBracket[$t->id]) {
-                $depth++;
-            } elseif ($this->Idx->CloseBracket[$t->id]) {
-                $depth--;
-            }
-            $t = $t->Next;
-            if (!$depth) {
-                $offset--;
-                if (!$offset) {
-                    return $t;
-                }
-            }
-        }
-        return $this->null();
     }
 
     /**
