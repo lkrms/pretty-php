@@ -21,7 +21,7 @@ final class TokenCollection extends AbstractTypedList implements Stringable
 
     public static function collect(Token $from, Token $to): self
     {
-        if ($from->Index <= $to->Index && !$from->IsNull && !$to->IsNull) {
+        if ($from->Index <= $to->Index && $from->id !== \T_NULL && $to->id !== \T_NULL) {
             $tokens[] = $from;
             while ($from !== $to && $from->Next) {
                 $tokens[] = $from = $from->Next;

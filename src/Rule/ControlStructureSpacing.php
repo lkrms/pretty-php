@@ -101,13 +101,13 @@ final class ControlStructureSpacing implements TokenRule
                 $end = $body->PrevSibling->nextSiblingOf(\T_IF, \T_ELSEIF, \T_ELSE);
                 if ($end->id === \T_IF) {
                     $end = $body->EndStatement;
-                } elseif (!$end->IsNull) {
+                } elseif ($end->id !== \T_NULL) {
                     $end = $end->PrevCode;
                     $continues = true;
                 }
             }
             if (!$end
-                    || $end->IsNull
+                    || $end->id === \T_NULL
                     || $end->Index > $body->EndStatement->Index) {
                 $end = $body->pragmaticEndOfExpression()
                             ->withTerminator();

@@ -315,7 +315,7 @@ final class StandardWhitespace implements TokenRule
                 while (true) {
                     $arm = $arm->nextSiblingOf(\T_DOUBLE_ARROW)
                                ->nextSiblingOf(\T_COMMA);
-                    if ($arm->IsNull) {
+                    if ($arm->id === \T_NULL) {
                         break;
                     }
                     $arm->WhitespaceAfter |= WhitespaceType::LINE;

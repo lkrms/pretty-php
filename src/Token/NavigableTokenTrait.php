@@ -67,13 +67,6 @@ trait NavigableTokenTrait
     public ?Token $ChainOpenedBy = null;
 
     /**
-     * True if the token is a T_NULL
-     *
-     * @todo Remove this property
-     */
-    public bool $IsNull = false;
-
-    /**
      * The original content of the token after expanding tabs if CollectColumn
      * found tabs to expand
      */
@@ -233,7 +226,6 @@ trait NavigableTokenTrait
     public function null()
     {
         $token = new static(\T_NULL, '');
-        $token->IsNull = true;
         if (isset($this->Idx)) {
             $token->Idx = $this->Idx;
         }
@@ -248,7 +240,7 @@ trait NavigableTokenTrait
      */
     public function or($token)
     {
-        if (!$this->IsNull) {
+        if ($this->id !== \T_NULL) {
             return $this;
         }
         if ($token instanceof Closure) {
@@ -266,7 +258,7 @@ trait NavigableTokenTrait
      */
     public function orNull()
     {
-        if ($this->IsNull) {
+        if ($this->id === \T_NULL) {
             return null;
         }
         return $this;
@@ -279,7 +271,7 @@ trait NavigableTokenTrait
      */
     public function orThrow()
     {
-        if ($this->IsNull) {
+        if ($this->id === \T_NULL) {
             throw new InvalidTokenException($this);
         }
         return $this;

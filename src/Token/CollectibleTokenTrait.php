@@ -125,10 +125,10 @@ trait CollectibleTokenTrait
     final public function collectSiblings($to = null): TokenCollection
     {
         $tokens = new TokenCollection();
-        if ($this->IsNull) {
+        if ($this->id === \T_NULL) {
             return $tokens;
         }
-        !$to || !$to->IsNull || $to = null;
+        !$to || $to->id !== \T_NULL || $to = null;
         $current = $this->OpenedBy ?? $this;
         if ($to) {
             if ($this->Parent !== $to->Parent) {
@@ -158,10 +158,10 @@ trait CollectibleTokenTrait
     final public function prevSiblings($to = null): TokenCollection
     {
         $tokens = new TokenCollection();
-        if ($this->IsNull) {
+        if ($this->id === \T_NULL) {
             return $tokens;
         }
-        !$to || !$to->IsNull || $to = null;
+        !$to || $to->id !== \T_NULL || $to = null;
         $current = $this->OpenedBy ?? $this;
         if ($to) {
             if ($this->Parent !== $to->Parent) {

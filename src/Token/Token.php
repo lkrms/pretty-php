@@ -288,7 +288,7 @@ class Token extends GenericToken implements JsonSerializable
      */
     final public function wasFirstOnLine(): bool
     {
-        if ($this->IsNull) {
+        if ($this->id === \T_NULL) {
             return false;
         }
         do {
@@ -309,7 +309,7 @@ class Token extends GenericToken implements JsonSerializable
      */
     final public function wasLastOnLine(): bool
     {
-        if ($this->IsNull) {
+        if ($this->id === \T_NULL) {
             return false;
         }
         do {
@@ -577,7 +577,7 @@ class Token extends GenericToken implements JsonSerializable
                 || !(($class = $parts->getFirstOf(\T_CLASS))
                     && $class->PrevCode->hasNewlineBeforeNextCode())
                 || $first->NextCode !== $this)
-            && !($end = $last->nextSiblingOf(\T_OPEN_BRACE))->IsNull
+            && ($end = $last->nextSiblingOf(\T_OPEN_BRACE))->id !== \T_NULL
             && $end->Index < $this->EndStatement->Index
         ) {
             return $end->PrevCode;

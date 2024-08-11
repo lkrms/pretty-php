@@ -249,7 +249,7 @@ final class HangingIndentation implements TokenRule
                             \T_DOUBLE_ARROW,
                             ...TokenType::OPERATOR_ASSIGNMENT,
                         );
-                        if ($delimiter->IsNull) {
+                        if ($delimiter->id === \T_NULL) {
                             $stack[] = $latest;
                         } else {
                             $startOfLine = $prevCode->startOfLine();
