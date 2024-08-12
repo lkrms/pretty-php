@@ -46,8 +46,8 @@ final class Parser
         }
 
         $this->linkTokens($tokens);
-        $this->buildHierarchy($tokens);
-        $this->parseStatements($tokens);
+        $this->buildHierarchy($tokens, $scopes);
+        $this->parseStatements($scopes, $statements);
         $this->parseExpressions($tokens);
 
         return $tokens;
@@ -65,7 +65,7 @@ final class Parser
      * - `Formatter`
      * - `Idx`
      *
-     * @param Token[] $tokens
+     * @param non-empty-array<Token> $tokens
      */
     private function linkTokens(array $tokens): void
     {
@@ -127,6 +127,7 @@ final class Parser
      * - pair open brackets and tags with their counterparts
      *
      * Token properties set:
+     *
      * - `Index`
      * - `PrevCode`
      * - `NextCode`
@@ -140,15 +141,19 @@ final class Parser
      * - `StringClosedBy`
      * - `Heredoc`
      *
-     * @param Token[] $tokens
-     * @param-out Token[] $tokens
+     * @param non-empty-array<Token> $tokens
+     * @param-out non-empty-array<Token> $tokens
+     * @param Token[]|null $scopes
+     * @param-out non-empty-array<Token> $scopes
      */
-    private function buildHierarchy(array &$tokens): void
+    private function buildHierarchy(array &$tokens, ?array &$scopes): void
     {
         $idx = $this->Formatter->TokenTypeIndex;
 
         /** @var Token[] */
         $linked = [];
+        /** @var Token[] */
+        $scopes = [reset($tokens)];
         /** @var Token|null */
         $prev = null;
         $index = 0;
@@ -347,8 +352,6 @@ final class Parser
                 $token->PrevSibling = &$opener->PrevSibling;
                 $token->NextSibling = &$opener->NextSibling;
                 $token->Parent = &$opener->Parent;
-                $token->Statement = &$opener->Statement;
-                $token->EndStatement = &$opener->EndStatement;
 
                 // Treat `$token` as a statement terminator if it's a structural
                 // `T_CLOSE_BRACE` that doesn't enclose an anonymous function or
@@ -394,6 +397,8 @@ final class Parser
                 if ($prevCode->Parent === $token->Parent) {
                     $token->PrevSibling = $prevCode;
                 }
+            } elseif ($token->Depth > $prev->Depth) {
+                $scopes[] = $token;
             }
 
             // Then, if there are gaps between siblings, fill them in
@@ -426,105 +431,90 @@ final class Parser
     /**
      * Pass 3: resolve statements
      *
-     * @param Token[] $tokens
+     * Token properties set:
+     *
+     * - `Statement`
+     * - `EndStatement`
+     *
+     * @param non-empty-array<Token> $scopes
+     * @param Token[]|null $statements
+     * @param-out Token[] $statements
      */
-    private function parseStatements(array $tokens): void
+    private function parseStatements(array $scopes, ?array &$statements): void
     {
         $idx = $this->Formatter->TokenTypeIndex;
 
-        $endStatementOffset = 0;
-        $token = reset($tokens);
-        while (true) {
-            // If `$token` or its predecessor is a statement terminator, set the
-            // `Statement` and `EndStatement` of siblings between the end of the
-            // previous statement (or the start of the context, if there is no
-            // previous statement) and `$token`
-            if ($endStatementOffset) {
-                $end = $token;
-                while (--$endStatementOffset) {
-                    $end = $end->PrevCode;
+        /** @var Token[] */
+        $statements = [];
+
+        foreach ($scopes as $scope) {
+            if (!($scope->Flags & TokenFlag::CODE)) {
+                if (
+                    !$scope->NextCode
+                    || $scope->NextCode->Parent !== $scope->Parent
+                ) {
+                    continue;
+                }
+                $scope = $scope->NextCode;
+            }
+
+            $statements[] = $statement = $scope;
+            $token = $statement;
+            while (true) {
+                $token->Statement = $statement;
+                if ($token !== $statement) {
+                    $token->EndStatement = &$statement->EndStatement;
+                }
+                if ($token->ClosedBy) {
+                    $token->ClosedBy->Statement = $statement;
+                    $token->ClosedBy->EndStatement = &$statement->EndStatement;
                 }
 
-                // Skip empty brackets
-                if ($end->ClosedBy && $end->NextCode === $end->ClosedBy) {
+                // The following tokens are regarded as statement terminators:
+                //
+                // - `T_SEMICOLON`, or `T_CLOSE_BRACE` / `T_CLOSE_TAG` where the
+                //   `STATEMENT_TERMINATOR` flag is set, unless the next token
+                //   continues an open control structure
+                // - `T_COLON` after a switch case or a label
+                // - `T_COMMA`:
+                //   - between parentheses and square brackets, e.g. in argument
+                //     lists, arrays, `for` expressions
+                //   - between non-structural braces, e.g. in `match`
+                //     expressions
+
+                if (!$token->NextSibling || (
+                    (
+                        $token->id === \T_SEMICOLON
+                        || $token->Flags & TokenFlag::STATEMENT_TERMINATOR
+                        || ($token->ClosedBy && $token->ClosedBy->Flags & TokenFlag::STATEMENT_TERMINATOR)
+                    ) && (
+                        !($next = ($token->ClosedBy ?? $token)->NextCode)
+                        || !($idx->ContinuesControlStructure[$next->id] || (
+                            $next->id === \T_WHILE
+                            && $next->isWhileAfterDo()
+                        ))
+                    )
+                ) || (
+                    $token->id === \T_COLON
+                    && $token->isColonStatementDelimiter()
+                ) || (
+                    $token->id === \T_COMMA
+                    && ($parent = $token->Parent)
+                    && ($idx->OpenBracketExceptBrace[$parent->id] || (
+                        $parent->id === \T_OPEN_BRACE
+                        && !$parent->isStructuralBrace()
+                    ))
+                )) {
+                    $statement->EndStatement = $token->ClosedBy ?? $token;
+                    if (!$token->NextSibling) {
+                        break;
+                    }
+                    $statements[] = $statement = $token->NextSibling;
+                    $token = $statement;
                     continue;
                 }
 
-                $current = $end->OpenedBy ?: $end;
-                while ($current && !$current->EndStatement) {
-                    $current->EndStatement = $end;
-                    $start = $current;
-                    $current = $current->PrevSibling;
-                }
-
-                $start ??= $token;
-                $current = $start;
-                do {
-                    $current->Statement = $start;
-                    $current = $current->NextSibling;
-                } while ($current && $current->EndStatement === $end);
-            }
-
-            $token = $token->NextCode;
-
-            if (!$token) {
-                return;
-            }
-
-            // The following tokens are regarded as statement terminators:
-            //
-            // - `T_SEMICOLON`, or `T_CLOSE_BRACE` / `T_CLOSE_TAG` where the
-            //   `STATEMENT_TERMINATOR` flag is set, unless the next token
-            //   continues an open control structure
-            // - `T_COLON` after a switch case or a label
-            // - The last token between brackets other than structural braces
-            // - `T_COMMA`:
-            //   - between parentheses and square brackets, e.g. in argument
-            //     lists, arrays, `for` expressions
-            //   - between non-structural braces, e.g. in `match` expressions
-
-            if (
-                $token->id === \T_SEMICOLON
-                || ($token->Flags & TokenFlag::STATEMENT_TERMINATOR)
-            ) {
-                if ($next = $token->NextCode) {
-                    if ($idx->ContinuesControlStructure[$next->id]) {
-                        continue;
-                    }
-                    if ($next->id === \T_WHILE && $next->isWhileAfterDo()) {
-                        continue;
-                    }
-                }
-                $endStatementOffset = 1;
-                continue;
-            }
-
-            if ($token->id === \T_COLON) {
-                if ($token->isColonStatementDelimiter()) {
-                    $endStatementOffset = 1;
-                }
-                continue;
-            }
-
-            if (
-                $idx->CloseBracketExceptBrace[$token->id] || (
-                    $token->id === \T_CLOSE_BRACE
-                    && !$token->isStructuralBrace()
-                )
-            ) {
-                $endStatementOffset = 2;
-            }
-
-            if ($token->id === \T_COMMA) {
-                if (($parent = $token->Parent) && (
-                    $idx->OpenBracketExceptBrace[$parent->id] || (
-                        $parent->id === \T_OPEN_BRACE
-                        && !$parent->isStructuralBrace()
-                    )
-                )) {
-                    $endStatementOffset = 1;
-                }
-                continue;
+                $token = $token->NextSibling;
             }
         }
     }
@@ -534,10 +524,12 @@ final class Parser
      *
      * Token properties set:
      *
+     * - `Expression`
+     * - `EndExpression`
      * - `OtherTernaryOperator`
      * - `ChainOpenedBy`
      *
-     * @param Token[] $tokens
+     * @param non-empty-array<Token> $tokens
      */
     private function parseExpressions(array $tokens): void
     {
