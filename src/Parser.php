@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP;
 
+use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Contract\Filter;
@@ -33,22 +34,27 @@ final class Parser
     /**
      * Tokenize, filter and parse PHP code
      *
+     * @param Filter[] $filters
+     * @param Token[]|null $statements
+     * @param-out Token[] $statements
      * @return Token[]
      */
     public function parse(
         string $code,
-        Filter ...$filters
+        array $filters = [],
+        ?array &$statements = null
     ): array {
         $tokens = Token::tokenize($code, \TOKEN_PARSE, ...$filters);
 
         if (!$tokens) {
+            $statements = [];
             return $tokens;
         }
 
         $this->linkTokens($tokens);
         $this->buildHierarchy($tokens, $scopes);
         $this->parseStatements($scopes, $statements);
-        $this->parseExpressions($tokens);
+        $this->parseExpressions($statements);
 
         return $tokens;
     }
@@ -526,148 +532,124 @@ final class Parser
      *
      * - `Expression`
      * - `EndExpression`
-     * - `OtherTernaryOperator`
-     * - `ChainOpenedBy`
+     * - `Data[TokenData::OTHER_TERNARY_OPERATOR]`
+     * - `Data[TokenData::CHAIN_OPENED_BY]`
      *
-     * @param non-empty-array<Token> $tokens
+     * @param Token[] $statements
      */
-    private function parseExpressions(array $tokens): void
+    private function parseExpressions(array $statements): void
     {
         $idx = $this->Formatter->TokenTypeIndex;
 
-        $endExpressionOffsets = [];
-        $token = reset($tokens);
-        while (true) {
-            if ($endExpressionOffsets) {
-                foreach ($endExpressionOffsets as $endExpressionOffset) {
-                    $end = $token;
-                    while (--$endExpressionOffset) {
-                        $end = $end->PrevCode;
-                    }
-
-                    // Skip empty brackets
-                    if ($end->ClosedBy && $end->NextCode === $end->ClosedBy) {
-                        continue;
-                    }
-
-                    unset($start);
-
-                    $current = $end->OpenedBy ?: $end;
-                    while ($current && !$current->EndExpression) {
-                        $current->EndExpression = $end;
-                        if ($current->ClosedBy) {
-                            $current->ClosedBy->EndExpression = $end;
+        foreach ($statements as $statement) {
+            /** @var Token */
+            $end = $statement->EndStatement;
+            $end = $end->OpenedBy ?? $end;
+            $expression = $statement;
+            $token = $expression;
+            while (true) {
+                // Flag and link ternary operators
+                if (
+                    $token->id === \T_QUESTION
+                    && $token->getSubType() === TokenSubType::QUESTION_TERNARY_OPERATOR
+                ) {
+                    $current = $token;
+                    $count = 0;
+                    while (
+                        ($current = $current->NextSibling)
+                        && $token->EndStatement !== ($current->ClosedBy ?? $current)
+                    ) {
+                        if ($current->Flags & TokenFlag::TERNARY_OPERATOR) {
+                            continue;
                         }
-                        if ($current->Expression === false) {
-                            break;
+                        if (
+                            $current->id === \T_QUESTION
+                            && $current->getSubType() === TokenSubType::QUESTION_TERNARY_OPERATOR
+                        ) {
+                            $count++;
+                            continue;
                         }
-                        $start = $current;
-                        $current = $current->PrevSibling;
-                    }
-
-                    if (!isset($start)) {
-                        continue;
-                    }
-
-                    $current = $start;
-                    do {
-                        $current->Expression = $start;
-                        if ($current->ClosedBy) {
-                            $current->ClosedBy->Expression = $start;
+                        if (!(
+                            $current->id === \T_COLON
+                            && $current->getSubType() === TokenSubType::COLON_TERNARY_OPERATOR
+                        )) {
+                            continue;
                         }
-                        $current = $current->NextSibling;
-                    } while ($current && $current->EndExpression === $end);
+                        if ($count--) {
+                            continue;
+                        }
+                        // @phpstan-ignore assign.propertyType
+                        $current->Flags |= TokenFlag::TERNARY_OPERATOR;
+                        // @phpstan-ignore assign.propertyType
+                        $token->Flags |= TokenFlag::TERNARY_OPERATOR;
+                        $current->Data[TokenData::OTHER_TERNARY_OPERATOR] = $token;
+                        $token->Data[TokenData::OTHER_TERNARY_OPERATOR] = $current;
+                        break;
+                    }
                 }
 
-                $endExpressionOffsets = [];
-            }
+                // Link chained object operators
+                if ($idx->Chain[$token->id] && !isset($token->Data[TokenData::CHAIN_OPENED_BY])) {
+                    $token->Data[TokenData::CHAIN_OPENED_BY] = $token;
+                    $current = $token;
+                    while (
+                        ($current = $current->NextSibling)
+                        && $idx->ChainPart[$current->id]
+                    ) {
+                        if ($idx->Chain[$current->id]) {
+                            $current->Data[TokenData::CHAIN_OPENED_BY] = $token;
+                        }
+                    }
+                }
 
-            $token = $token->NextCode;
+                $isTerminator = false;
+                if (
+                    !$token->NextSibling
+                    || $token === $end
+                    || $idx->ExpressionTerminator[$token->id]
+                    || $token->Flags & TokenFlag::TERNARY_OPERATOR
+                ) {
+                    // Exclude terminators from expressions
+                    if (!$token->ClosedBy && (
+                        $idx->ExpressionTerminator[$token->id]
+                        || $token->Flags & (TokenFlag::STATEMENT_TERMINATOR | TokenFlag::TERNARY_OPERATOR)
+                        || $token->id === \T_COLON
+                        || $token->id === \T_COMMA
+                    )) {
+                        $isTerminator = true;
+                        $last = $token->PrevCode;
+                        // Do nothing if the expression is empty
+                        if ($last && $last->Index >= $expression->Index) {
+                            $expression->EndExpression = $last;
+                        }
+                    } else {
+                        $expression->EndExpression = $token->ClosedBy ?? $token;
+                    }
+                }
 
-            if (!$token) {
-                return;
-            }
+                if (!$isTerminator) {
+                    $token->Expression = $expression;
+                    if ($token !== $expression) {
+                        $token->EndExpression = &$expression->EndExpression;
+                    }
+                    if ($token->ClosedBy) {
+                        $token->ClosedBy->Expression = $expression;
+                        $token->ClosedBy->EndExpression = &$expression->EndExpression;
+                    }
+                }
 
-            if (
-                $token->id === \T_QUESTION
-                && $token->getSubType() === TokenSubType::QUESTION_TERNARY_OPERATOR
-            ) {
-                $current = $token;
-                $count = 0;
-                while (($current = $current->NextSibling)
-                        && $token->EndStatement !== ($current->ClosedBy ?: $current)) {
-                    if ($current->Flags & TokenFlag::TERNARY_OPERATOR) {
-                        continue;
-                    }
-                    if ($current->id === \T_QUESTION
-                        && $current->getSubType()
-                            === TokenSubType::QUESTION_TERNARY_OPERATOR) {
-                        $count++;
-                        continue;
-                    }
-                    if (!($current->id === \T_COLON
-                        && $current->getSubType()
-                            === TokenSubType::COLON_TERNARY_OPERATOR)) {
-                        continue;
-                    }
-                    if ($count--) {
-                        continue;
-                    }
-                    // @phpstan-ignore assign.propertyType
-                    $current->Flags |= TokenFlag::TERNARY_OPERATOR;
-                    // @phpstan-ignore assign.propertyType
-                    $token->Flags |= TokenFlag::TERNARY_OPERATOR;
-                    $current->OtherTernaryOperator = $token;
-                    $token->OtherTernaryOperator = $current;
+                if (!$token->NextSibling || $token === $end) {
                     break;
                 }
-            }
 
-            if ($idx->Chain[$token->id] && !$token->ChainOpenedBy) {
-                $token->ChainOpenedBy = $token;
-                $current = $token;
-                while (($current = $current->NextSibling) && $idx->ChainPart[$current->id]) {
-                    if ($idx->Chain[$current->id]) {
-                        $current->ChainOpenedBy = $token;
+                $prev = $token;
+                $token = $token->NextSibling;
+                if ($expression->EndExpression || $isTerminator) {
+                    $expression = $token;
+                    if ($isTerminator) {
+                        $prev->EndExpression = &$expression->EndExpression;
                     }
                 }
-            }
-
-            if ($token->id === \T_CLOSE_BRACE && $token->isStructuralBrace()) {
-                $endExpressionOffsets = [2, 1];
-                continue;
-            }
-
-            if (
-                $idx->ExpressionTerminator[$token->id]
-                || ($token->Flags & TokenFlag::STATEMENT_TERMINATOR)
-                || ($token->Flags & TokenFlag::TERNARY_OPERATOR)
-                || ($token->id === \T_COLON && $token->isColonStatementDelimiter())
-                || ($token->id === \T_CLOSE_BRACE && !$token->isStructuralBrace())
-            ) {
-                // Expression terminators don't form part of the expression
-                $token->Expression = false;
-                if ($token->PrevCode) {
-                    $endExpressionOffsets = [2];
-                }
-                continue;
-            }
-
-            if ($token->id === \T_COMMA) {
-                $parent = $token->Parent;
-                if ($parent && (
-                    $idx->OpenBracketExceptBrace[$parent->id]
-                    || ($parent->id === \T_OPEN_BRACE && !$parent->isStructuralBrace())
-                )) {
-                    $token->Expression = false;
-                    $endExpressionOffsets = [2];
-                }
-                continue;
-            }
-
-            // Catch the last global expression
-            if (!$token->Next) {
-                $endExpressionOffsets = [1];
             }
         }
     }

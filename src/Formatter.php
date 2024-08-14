@@ -429,6 +429,8 @@ final class Formatter implements Buildable
 
     /** @var array<int,Token> */
     public array $Tokens;
+    /** @var array<int,Token> */
+    public array $Statements;
     /** @var array<int,array<int,Token>> */
     private array $TokenIndex;
 
@@ -873,14 +875,17 @@ final class Formatter implements Buildable
         try {
             $this->Filename = $filename;
             $this->Indentation = $indentation;
+            $this->Statements = [];
             $this->Tokens = $this->Parser->parse(
                 $code,
-                ...$this->FormatFilterList
+                $this->FormatFilterList,
+                $this->Statements,
             );
 
             if (!$this->Tokens) {
                 if (!$this->Debug) {
                     unset($this->Tokens);
+                    unset($this->Statements);
                 }
                 return '';
             }
@@ -1167,6 +1172,7 @@ final class Formatter implements Buildable
             Profile::stopTimer(__METHOD__ . '#render');
             if (!$this->Debug) {
                 unset($this->Tokens);
+                unset($this->Statements);
             }
         }
 
@@ -1468,6 +1474,7 @@ final class Formatter implements Buildable
     {
         $this->Filename = null;
         unset($this->Tokens);
+        unset($this->Statements);
         unset($this->TokenIndex);
         $this->Callbacks = null;
         $this->Problems = null;

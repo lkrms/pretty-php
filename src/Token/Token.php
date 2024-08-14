@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Token;
 
+use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenFlagMask;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
@@ -212,7 +213,7 @@ class Token extends GenericToken implements JsonSerializable
             }
         }
 
-        $a['OtherTernaryOperator'] = $this->OtherTernaryOperator;
+        $a['Data'] = $this->Data ?? [];
         $a['TagIndent'] = $this->TagIndent;
         $a['PreIndent'] = $this->PreIndent;
         $a['Indent'] = $this->Indent;
@@ -240,7 +241,6 @@ class Token extends GenericToken implements JsonSerializable
         $a['Padding'] = $this->Padding;
         $a['HeredocIndent'] = $this->HeredocIndent;
         $a['AlignedWith'] = $this->AlignedWith;
-        $a['ChainOpenedBy'] = $this->ChainOpenedBy;
         $a['WhitespaceBefore'] = WhitespaceType::toWhitespace($this->WhitespaceBefore);
         $a['WhitespaceAfter'] = WhitespaceType::toWhitespace($this->WhitespaceAfter);
         $a['WhitespaceMaskPrev'] = $this->WhitespaceMaskPrev;
@@ -254,11 +254,7 @@ class Token extends GenericToken implements JsonSerializable
         $a['OutputColumn'] = $this->OutputColumn;
 
         foreach ($a as $key => &$value) {
-            if (
-                $value === null
-                || $value === []
-                || ($value === false && $key !== 'Expression')
-            ) {
+            if ($value === null || $value === []) {
                 unset($a[$key]);
                 continue;
             }
@@ -440,7 +436,7 @@ class Token extends GenericToken implements JsonSerializable
                  ->find(fn(Token $t) =>
                             ($t->Flags & TokenFlag::TERNARY_OPERATOR)
                                 && $t->id === \T_QUESTION);
-        if ($ternary1 && $ternary1->OtherTernaryOperator->Index > $this->Index) {
+        if ($ternary1 && $ternary1->Data[TokenData::OTHER_TERNARY_OPERATOR]->Index > $this->Index) {
             return $ternary1->NextCode->_pragmaticStartOfExpression($this);
         }
 
@@ -454,7 +450,7 @@ class Token extends GenericToken implements JsonSerializable
             // If this is the first iteration, or `$current` is an ignored
             // expression boundary, move back to a sibling that isn't a
             // terminator
-            while ($current && $current->Expression === false) {
+            while ($current && !$current->Expression) {
                 if ($i && !(($current->Flags & TokenFlag::TERNARY_OPERATOR)
                         || $current->is(TokenType::OPERATOR_COMPARISON_EXCEPT_COALESCE))) {
                     break;
@@ -526,7 +522,7 @@ class Token extends GenericToken implements JsonSerializable
     ): Token {
         // If the token is a statement terminator, there is no expression to
         // move
-        if ($this->EndStatement === $this && $this->Expression === false) {
+        if ($this->EndStatement === $this && !$this->Expression) {
             return $this;
         }
 
@@ -585,7 +581,7 @@ class Token extends GenericToken implements JsonSerializable
 
         // If the token is an expression boundary, return the last token in the
         // statement
-        if (!$containUnenclosed && $this->Expression === false) {
+        if (!$containUnenclosed && !$this->Expression) {
             $end = $this->EndStatement ?: $this;
             return
                 $end === $this
@@ -612,8 +608,8 @@ class Token extends GenericToken implements JsonSerializable
         while ($current = $current->PrevSibling) {
             if (($current->Flags & TokenFlag::TERNARY_OPERATOR)
                     && $current->id === \T_QUESTION) {
-                if ($current->OtherTernaryOperator->Index > $this->Index) {
-                    return $current->OtherTernaryOperator->PrevCode;
+                if ($current->Data[TokenData::OTHER_TERNARY_OPERATOR]->Index > $this->Index) {
+                    return $current->Data[TokenData::OTHER_TERNARY_OPERATOR]->PrevCode;
                 }
                 break;
             }
@@ -628,7 +624,7 @@ class Token extends GenericToken implements JsonSerializable
             $current = $current->EndExpression;
             $terminator =
                 $current->NextSibling
-                && $current->NextSibling->Expression === false
+                && !$current->NextSibling->Expression
                     ? $current->NextSibling
                     : $current;
             $next = $terminator->NextSibling;
@@ -736,7 +732,7 @@ class Token extends GenericToken implements JsonSerializable
         // same line and assign it to `$next`
         $next = $outer;
         while ($next
-                && $next->Expression === false
+                && !$next->Expression
                 && $next->NextSibling
                 && $next->NextSibling->Index <= $eol->Index) {
             $next = $next->NextSibling;

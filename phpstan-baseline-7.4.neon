@@ -76,26 +76,6 @@ parameters:
 			path: src/Formatter.php
 
 		-
-			message: "#^Cannot access property \\$ClosedBy on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Parser.php
-
-		-
-			message: "#^Cannot access property \\$NextCode on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Parser.php
-
-		-
-			message: "#^Cannot access property \\$OpenedBy on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Parser.php
-
-		-
-			message: "#^Cannot access property \\$PrevCode on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Parser.php
-
-		-
 			message: "#^Parameter \\#1 \\$to of method Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:collect\\(\\) expects Lkrms\\\\PrettyPHP\\\\Token\\\\Token, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null given\\.$#"
 			count: 1
 			path: src/Rule/AlignChains.php
@@ -181,11 +161,6 @@ parameters:
 			path: src/Rule/AlignLists.php
 
 		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/AlignTernaryOperators.php
-
-		-
 			message: "#^Cannot call method pragmaticStartOfExpression\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/AlignTernaryOperators.php
@@ -268,11 +243,6 @@ parameters:
 		-
 			message: "#^Cannot access property \\$PrevCode on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 2
-			path: src/Rule/OperatorSpacing.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceAfter on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
 			path: src/Rule/OperatorSpacing.php
 
 		-
@@ -597,7 +567,7 @@ parameters:
 
 		-
 			message: "#^Cannot access property \\$Index on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 6
+			count: 4
 			path: src/Token/Token.php
 
 		-
@@ -627,7 +597,7 @@ parameters:
 
 		-
 			message: "#^Cannot access property \\$PrevCode on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 4
+			count: 3
 			path: src/Token/Token.php
 
 		-

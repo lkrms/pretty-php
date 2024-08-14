@@ -28,20 +28,14 @@ trait NavigableTokenTrait
     public ?Token $EndStatement = null;
 
     /**
-     * The token at the start of the token's expression, or false if the token
-     * is an expression delimiter
-     *
-     * @var Token|false|null
+     * The token at the start of the token's expression, or null if the token is
+     * an expression delimiter
      */
-    public $Expression = null;
+    public ?Token $Expression = null;
 
     /**
-     * The token at the end of the token's expression
-     *
-     * If the token is an expression delimiter and {@see Token::$NextSibling} is
-     * the token at the start of an expression, {@see Token::$EndExpression} is
-     * the token at the end of that expression, otherwise it is the token
-     * itself.
+     * The token at the end of the token's expression, or null if the token is a
+     * statement delimiter
      */
     public ?Token $EndExpression = null;
 
@@ -59,12 +53,9 @@ trait NavigableTokenTrait
 
     /**
      * @var array<TokenData::*,mixed>
-     * @phpstan-var array{string,int,Token}
+     * @phpstan-var array{string,int,Token,Token,Token}
      */
     public array $Data;
-
-    public ?Token $OtherTernaryOperator = null;
-    public ?Token $ChainOpenedBy = null;
 
     /**
      * The original content of the token after expanding tabs if CollectColumn

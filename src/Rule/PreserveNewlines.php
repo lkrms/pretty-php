@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
@@ -120,7 +121,7 @@ final class PreserveNewlines implements TokenRule
         if (($token->Flags & TokenFlag::TERNARY_OPERATOR)
             && ($token->id === \T_QUESTION
                 ? $token
-                : $token->OtherTernaryOperator) === $prev) {
+                : $token->Data[TokenData::OTHER_TERNARY_OPERATOR]) === $prev) {
             return false;
         }
 
@@ -177,7 +178,7 @@ final class PreserveNewlines implements TokenRule
         if (($token->Flags & TokenFlag::TERNARY_OPERATOR)
             && ($token->id === \T_COLON
                 ? $token
-                : $token->OtherTernaryOperator) === $next) {
+                : $token->Data[TokenData::OTHER_TERNARY_OPERATOR]) === $next) {
             return false;
         }
 

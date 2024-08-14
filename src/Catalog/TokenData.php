@@ -28,4 +28,16 @@ final class TokenData extends AbstractEnumeration
      * The LIST_PARENT of the first token in a list item
      */
     public const LIST_PARENT = 2;
+
+    /**
+     * The T_COLON or T_QUESTION associated with a T_QUESTION or T_COLON flagged
+     * as a TERNARY_OPERATOR
+     */
+    public const OTHER_TERNARY_OPERATOR = 3;
+
+    /**
+     * The first T_OBJECT_OPERATOR or T_NULLSAFE_OBJECT_OPERATOR in a chain
+     * thereof
+     */
+    public const CHAIN_OPENED_BY = 4;
 }

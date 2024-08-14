@@ -228,8 +228,8 @@ final class HangingIndentation implements TokenRule
                     ?? self::getTernaryOperator1($token)
                     ?? $token;
                 $until = self::getTernaryEndOfExpression($token);
-            } elseif ($token->ChainOpenedBy) {
-                $stack[] = $token->ChainOpenedBy;
+            } elseif ($this->Idx->Chain[$token->id]) {
+                $stack[] = $token->Data[TokenData::CHAIN_OPENED_BY];
             } elseif ($token->Heredoc && $token->Heredoc === $prevCode) {
                 $stack[] = $token->Heredoc;
             } elseif (isset($token->Data[TokenData::LIST_PARENT])) {
@@ -385,11 +385,10 @@ final class HangingIndentation implements TokenRule
             if (
                 $current->id === \T_COALESCE
                 || $current->id === \T_COALESCE_EQUAL
-                || (($current->Flags & TokenFlag::TERNARY_OPERATOR)
+                || ($current->Flags & TokenFlag::TERNARY_OPERATOR
                     && self::getTernaryOperator1($current) === $current
-                    && $current->OtherTernaryOperator
-                    && $current->OtherTernaryOperator->Index
-                        < (self::getTernaryOperator1($token) ?: $token)->Index)
+                    && $current->Data[TokenData::OTHER_TERNARY_OPERATOR]->Index
+                        < (self::getTernaryOperator1($token) ?? $token)->Index)
             ) {
                 $prevTernary = $current;
             }
@@ -405,8 +404,8 @@ final class HangingIndentation implements TokenRule
         // ```
         if ($prevTernary
                 && $token->id === \T_COLON
-                && $token->OtherTernaryOperator
-                && $prevTernary->Index > $token->OtherTernaryOperator->Index) {
+                && $token->Flags & TokenFlag::TERNARY_OPERATOR
+                && $prevTernary->Index > $token->Data[TokenData::OTHER_TERNARY_OPERATOR]->Index) {
             return null;
         }
 
@@ -456,14 +455,18 @@ final class HangingIndentation implements TokenRule
     {
         return $token->id === \T_QUESTION
             ? $token
-            : $token->OtherTernaryOperator;
+            : ($token->Flags & TokenFlag::TERNARY_OPERATOR
+                ? $token->Data[TokenData::OTHER_TERNARY_OPERATOR]
+                : null);
     }
 
     private static function getTernaryOperator2(Token $token): ?Token
     {
         return $token->id === \T_COLON
             ? $token
-            : $token->OtherTernaryOperator;
+            : ($token->Flags & TokenFlag::TERNARY_OPERATOR
+                ? $token->Data[TokenData::OTHER_TERNARY_OPERATOR]
+                : null);
     }
 
     /**

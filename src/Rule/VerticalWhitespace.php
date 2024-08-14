@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
@@ -283,19 +284,20 @@ final class VerticalWhitespace implements TokenRule
             // If one ternary operator is at the start of a line, add a newline
             // before the other
             if ($token->id === \T_QUESTION) {
-                if (
-                    !($token->Flags & TokenFlag::TERNARY_OPERATOR)
-                    || $token->OtherTernaryOperator === $token->Next
-                ) {
+                if (!($token->Flags & TokenFlag::TERNARY_OPERATOR)) {
                     continue;
                 }
 
-                assert($token->OtherTernaryOperator !== null);
+                $other = $token->Data[TokenData::OTHER_TERNARY_OPERATOR];
+
+                if ($other === $token->Next) {
+                    continue;
+                }
 
                 $op1Newline = $token->hasNewlineBefore();
-                $op2Newline = $token->OtherTernaryOperator->hasNewlineBefore();
+                $op2Newline = $other->hasNewlineBefore();
                 if ($op1Newline && !$op2Newline) {
-                    $token->OtherTernaryOperator->WhitespaceBefore |= WhitespaceType::LINE;
+                    $other->WhitespaceBefore |= WhitespaceType::LINE;
                 } elseif (!$op1Newline && $op2Newline) {
                     $token->WhitespaceBefore |= WhitespaceType::LINE;
                 }
@@ -303,9 +305,11 @@ final class VerticalWhitespace implements TokenRule
                 continue;
             }
 
+            // if ($this->Idx->Chain[$token->id]) {
+
             // If an object operator (`->` or `?->`) is at the start of a line,
             // add a newline before other object operators in the same chain
-            if ($token !== $token->ChainOpenedBy) {
+            if ($token !== $token->Data[TokenData::CHAIN_OPENED_BY]) {
                 continue;
             }
 
@@ -326,6 +330,8 @@ final class VerticalWhitespace implements TokenRule
             }
 
             $chain->addWhitespaceBefore(WhitespaceType::LINE);
+
+            // }
         }
     }
 }

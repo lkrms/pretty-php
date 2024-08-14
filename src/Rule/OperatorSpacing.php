@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
@@ -164,7 +165,7 @@ final class OperatorSpacing implements TokenRule
                 ($token->Flags & TokenFlag::TERNARY_OPERATOR)
                 && ($token->id === \T_QUESTION
                     ? $token
-                    : $token->OtherTernaryOperator) === $token->Prev
+                    : $token->Data[TokenData::OTHER_TERNARY_OPERATOR]) === $token->Prev
             ) {
                 $token->WhitespaceBefore = WhitespaceType::NONE;
                 $token->Prev->WhitespaceAfter = WhitespaceType::NONE;

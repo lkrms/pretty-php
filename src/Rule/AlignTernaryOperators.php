@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
@@ -53,7 +54,7 @@ final class AlignTernaryOperators implements TokenRule
             // of a line
             if (!$token->hasNewlineBefore()
                 && ($token->id === \T_COALESCE
-                    || !$token->OtherTernaryOperator->hasNewlineBefore())) {
+                    || !$token->Data[TokenData::OTHER_TERNARY_OPERATOR]->hasNewlineBefore())) {
                 continue;
             }
 
@@ -84,8 +85,8 @@ final class AlignTernaryOperators implements TokenRule
     private function setAlignedWith(Token $token, Token $alignWith): void
     {
         $token->AlignedWith = $alignWith;
-        if ($token->OtherTernaryOperator) {
-            $token->OtherTernaryOperator->AlignedWith = $alignWith;
+        if ($token->Flags & TokenFlag::TERNARY_OPERATOR) {
+            $token->Data[TokenData::OTHER_TERNARY_OPERATOR]->AlignedWith = $alignWith;
         }
     }
 
