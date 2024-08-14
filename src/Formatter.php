@@ -429,6 +429,8 @@ final class Formatter implements Buildable
 
     /** @var array<int,Token> */
     public array $Tokens;
+    /** @var array<int,Token> */
+    public array $Statements;
     /** @var array<int,array<int,Token>> */
     private array $TokenIndex;
 
@@ -873,21 +875,24 @@ final class Formatter implements Buildable
         try {
             $this->Filename = $filename;
             $this->Indentation = $indentation;
+            $this->Statements = [];
             $this->Tokens = $this->Parser->parse(
                 $code,
-                ...$this->FormatFilterList
+                $this->FormatFilterList,
+                $this->Statements,
             );
 
             if (!$this->Tokens) {
                 if (!$this->Debug) {
                     unset($this->Tokens);
+                    unset($this->Statements);
                 }
                 return '';
             }
 
             $last = end($this->Tokens);
             if (
-                $last->IsCode
+                $last->Flags & TokenFlag::CODE
                 && $last->Statement
                 && $last->Statement->id !== \T_HALT_COMPILER
             ) {
@@ -927,7 +932,7 @@ final class Formatter implements Buildable
             switch ($parent->id) {
                 case \T_EXTENDS:
                 case \T_IMPLEMENTS:
-                    $items = $parent->nextSiblingsWhile(...TokenType::DECLARATION_LIST)
+                    $items = $parent->nextSiblingsWhile($this->TokenTypeIndex->DeclarationList)
                                     ->filter(
                                         fn(Token $t, ?Token $next, ?Token $prev) =>
                                             !$prev || ($t->PrevCode && $t->PrevCode->id === \T_COMMA)
@@ -1167,6 +1172,7 @@ final class Formatter implements Buildable
             Profile::stopTimer(__METHOD__ . '#render');
             if (!$this->Debug) {
                 unset($this->Tokens);
+                unset($this->Statements);
             }
         }
 
@@ -1468,6 +1474,7 @@ final class Formatter implements Buildable
     {
         $this->Filename = null;
         unset($this->Tokens);
+        unset($this->Statements);
         unset($this->TokenIndex);
         $this->Callbacks = null;
         $this->Problems = null;

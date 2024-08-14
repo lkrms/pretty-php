@@ -2,8 +2,12 @@
 
 namespace Lkrms\PrettyPHP\Rule\Concern;
 
+use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 
+/**
+ * @phpstan-require-implements TokenRule
+ */
 trait TokenRuleTrait
 {
     use RuleTrait;

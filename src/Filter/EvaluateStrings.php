@@ -29,7 +29,7 @@ final class EvaluateStrings implements Filter
 
         $string = '';
         foreach ($tokens as $token) {
-            if ($this->TypeIndex->StringDelimiter[$token->id]) {
+            if ($this->Idx->StringDelimiter[$token->id]) {
                 if (!$lastString) {
                     $stack[] = $token;
                     $lastString = $token;
@@ -40,16 +40,16 @@ final class EvaluateStrings implements Filter
                 continue;
             }
 
-            if ($this->TypeIndex->OpenBracket[$token->id]) {
+            if ($this->Idx->OpenBracket[$token->id]) {
                 $stack[] = $token;
                 $lastString = null;
                 continue;
             }
 
-            if ($this->TypeIndex->CloseBracket[$token->id]) {
+            if ($this->Idx->CloseBracket[$token->id]) {
                 array_pop($stack);
                 $end = end($stack);
-                if ($end && $this->TypeIndex->StringDelimiter[$end->id]) {
+                if ($end && $this->Idx->StringDelimiter[$end->id]) {
                     $lastString = $end;
                 }
                 continue;

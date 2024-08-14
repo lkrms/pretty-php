@@ -21,7 +21,7 @@ final class TokenCollection extends AbstractTypedList implements Stringable
 
     public static function collect(Token $from, Token $to): self
     {
-        if ($from->Index <= $to->Index && !$from->IsNull && !$to->IsNull) {
+        if ($from->Index <= $to->Index && $from->id !== \T_NULL && $to->id !== \T_NULL) {
             $tokens[] = $from;
             while ($from !== $to && $from->Next) {
                 $tokens[] = $from = $from->Next;
@@ -177,7 +177,7 @@ final class TokenCollection extends AbstractTypedList implements Stringable
     }
 
     /**
-     * True if there is a newline before one of the tokens in the collection
+     * Check if there is a newline before one of the tokens in the collection
      */
     public function tokenHasNewlineBefore(): bool
     {
@@ -191,7 +191,7 @@ final class TokenCollection extends AbstractTypedList implements Stringable
     }
 
     /**
-     * True if there is a newline after one of the tokens in the collection
+     * Check if there is a newline after one of the tokens in the collection
      */
     public function tokenHasNewlineAfter(): bool
     {
@@ -205,7 +205,7 @@ final class TokenCollection extends AbstractTypedList implements Stringable
     }
 
     /**
-     * True if any tokens in the collection are separated by one or more line
+     * Check if any tokens in the collection are separated by one or more line
      * breaks
      */
     public function hasNewlineBetweenTokens(): bool
@@ -221,7 +221,7 @@ final class TokenCollection extends AbstractTypedList implements Stringable
     }
 
     /**
-     * True if any tokens in the collection are separated by a blank line
+     * Check if any tokens in the collection are separated by a blank line
      */
     public function hasBlankLineBetweenTokens(): bool
     {
@@ -236,7 +236,7 @@ final class TokenCollection extends AbstractTypedList implements Stringable
     }
 
     /**
-     * True if the collection will render over multiple lines, not including
+     * Check if the collection will render over multiple lines, not including
      * leading or trailing whitespace
      */
     public function hasNewline(): bool

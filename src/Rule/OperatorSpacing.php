@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
@@ -60,8 +61,8 @@ final class OperatorSpacing implements TokenRule
 
             // Suppress whitespace after ampersands related to passing,
             // assigning and returning by reference
-            if ($this->TypeIndex->Ampersand[$token->id]
-                && $token->Next->IsCode
+            if ($this->Idx->Ampersand[$token->id]
+                && $token->Next->Flags & TokenFlag::CODE
                 // `function &getValue()`
                 && (($token->PrevCode
                     && ($token->PrevCode->id === \T_FUNCTION
@@ -81,7 +82,7 @@ final class OperatorSpacing implements TokenRule
 
             // Suppress whitespace around operators in union, intersection and
             // DNF types
-            if ($this->TypeIndex->TypeDelimiter[$token->id]
+            if ($this->Idx->TypeDelimiter[$token->id]
                 && (($inTypeContext = $this->inTypeContext($token))
                     || ($token->id === \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
                         && $token->Parent
@@ -142,7 +143,7 @@ final class OperatorSpacing implements TokenRule
             // Suppress whitespace after unary operators
             if ($token->isUnaryOperator()
                 && $token->Next
-                && $token->Next->IsCode
+                && $token->Next->Flags & TokenFlag::CODE
                 && (!$token->Next->isOperator()
                     || $token->Next->isUnaryOperator())) {
                 $token->WhitespaceMaskNext = WhitespaceType::NONE;
@@ -164,7 +165,7 @@ final class OperatorSpacing implements TokenRule
                 ($token->Flags & TokenFlag::TERNARY_OPERATOR)
                 && ($token->id === \T_QUESTION
                     ? $token
-                    : $token->OtherTernaryOperator) === $token->Prev
+                    : $token->Data[TokenData::OTHER_TERNARY_OPERATOR]) === $token->Prev
             ) {
                 $token->WhitespaceBefore = WhitespaceType::NONE;
                 $token->Prev->WhitespaceAfter = WhitespaceType::NONE;
@@ -177,7 +178,7 @@ final class OperatorSpacing implements TokenRule
     }
 
     /**
-     * True if the token is part of a declaration (i.e. a property type or
+     * Check if the token is part of a declaration (i.e. a property type or
      * function return type), parameter type, or arrow function return type
      */
     private function inTypeContext(Token $token): bool
@@ -185,8 +186,11 @@ final class OperatorSpacing implements TokenRule
         return $token->inDeclaration()
             || ($token->inParameterList()
                 && !$token->sinceStartOfStatement()->hasOneOf(\T_VARIABLE))
-            || (($prev = $token->prevCodeWhile(...TokenType::VALUE_TYPE)->last())
-                && ($prev = $prev->prevCode())->id === \T_COLON
-                && $prev->prevSibling(2)->skipPrevSiblingsFrom($this->TypeIndex->Ampersand)->id === \T_FN);
+            || (($prev = $token->prevCodeWhile($this->Idx->ValueType)->last())
+                && ($prev = $prev->PrevCode)
+                && $prev->id === \T_COLON
+                && ($prev = $prev->PrevSibling)
+                && ($prev = $prev->PrevSibling)
+                && $prev->skipPrevSiblingsFrom($this->Idx->Ampersand)->id === \T_FN);
     }
 }

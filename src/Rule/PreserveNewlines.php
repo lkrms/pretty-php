@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
@@ -32,8 +33,8 @@ final class PreserveNewlines implements TokenRule
     public function processTokens(array $tokens): void
     {
         $preserveTypeIndex = TokenType::mergeIndexes(
-            $this->TypeIndex->PreserveNewlineBefore,
-            $this->TypeIndex->PreserveNewlineAfter,
+            $this->Idx->PreserveNewlineBefore,
+            $this->Idx->PreserveNewlineAfter,
         );
 
         foreach ($tokens as $token) {
@@ -48,8 +49,8 @@ final class PreserveNewlines implements TokenRule
             if ($prev->OriginalText === null) {
                 $text = $prev->text;
             } elseif (
-                $this->TypeIndex->DoNotModify[$prev->id]
-                || $this->TypeIndex->DoNotModifyRight[$prev->id]
+                $this->Idx->DoNotModify[$prev->id]
+                || $this->Idx->DoNotModifyRight[$prev->id]
             ) {
                 $text = $prev->OriginalText;
             } else {
@@ -80,11 +81,11 @@ final class PreserveNewlines implements TokenRule
             // 1. Is a newline after $prev OK?
             $this->maybePreserveNewlineAfter($prev, $token, $line, $min, $max)
                 // 2. If $prev moved to the next line, would a newline before it be OK?
-                || $this->maybePreserveNewlineBefore($prev, $prev->prev(), $line, $min, $max, true)
+                || ($prev->Prev && $this->maybePreserveNewlineBefore($prev, $prev->Prev, $line, $min, $max, true))
                 // 3. Is a newline before $token OK?
                 || $this->maybePreserveNewlineBefore($token, $prev, $line, $min, $max)
                 // 4. If $token moved to the previous line, would a newline after it be OK?
-                || $this->maybePreserveNewlineAfter($token, $token->next(), $line, $min, $max, true);
+                || ($token->Next && $this->maybePreserveNewlineAfter($token, $token->Next, $line, $min, $max, true));
         }
     }
 
@@ -96,10 +97,10 @@ final class PreserveNewlines implements TokenRule
         int $max,
         bool $ignoreBrackets = false
     ): bool {
-        if (!$this->TypeIndex->PreserveNewlineBefore[$token->id]
+        if (!$this->Idx->PreserveNewlineBefore[$token->id]
                 || $token->line < $min
                 || $token->line > $max
-                || ($ignoreBrackets && $this->TypeIndex->Bracket[$token->id])) {
+                || ($ignoreBrackets && $this->Idx->Bracket[$token->id])) {
             return false;
         }
 
@@ -120,7 +121,7 @@ final class PreserveNewlines implements TokenRule
         if (($token->Flags & TokenFlag::TERNARY_OPERATOR)
             && ($token->id === \T_QUESTION
                 ? $token
-                : $token->OtherTernaryOperator) === $prev) {
+                : $token->Data[TokenData::OTHER_TERNARY_OPERATOR]) === $prev) {
             return false;
         }
 
@@ -134,7 +135,7 @@ final class PreserveNewlines implements TokenRule
             return false;
         }
 
-        if (!$this->TypeIndex->PreserveBlankBefore[$token->id]) {
+        if (!$this->Idx->PreserveBlankBefore[$token->id]) {
             $line = WhitespaceType::LINE;
         }
 
@@ -161,10 +162,10 @@ final class PreserveNewlines implements TokenRule
             $tokenId = \T_ATTRIBUTE;
         }
 
-        if (!$this->TypeIndex->PreserveNewlineAfter[$tokenId ?? $token->id]
+        if (!$this->Idx->PreserveNewlineAfter[$tokenId ?? $token->id]
                 || $next->line < $min
                 || $next->line > $max
-                || ($ignoreBrackets && $this->TypeIndex->Bracket[$token->id])) {
+                || ($ignoreBrackets && $this->Idx->Bracket[$token->id])) {
             return false;
         }
 
@@ -177,7 +178,7 @@ final class PreserveNewlines implements TokenRule
         if (($token->Flags & TokenFlag::TERNARY_OPERATOR)
             && ($token->id === \T_COLON
                 ? $token
-                : $token->OtherTernaryOperator) === $next) {
+                : $token->Data[TokenData::OTHER_TERNARY_OPERATOR]) === $next) {
             return false;
         }
 
@@ -222,14 +223,14 @@ final class PreserveNewlines implements TokenRule
         }
 
         if ($line & WhitespaceType::BLANK
-            && (!$this->TypeIndex->PreserveBlankAfter[$token->id]
+            && (!$this->Idx->PreserveBlankAfter[$token->id]
                 || ($token->id === \T_COMMA
                     && !$token->isDelimiterBetweenMatchArms())
                 || ($token->id === \T_SEMICOLON
                     && $token->Parent
                     && $token->Parent->PrevCode
                     && $token->Parent->PrevCode->id === \T_FOR)
-                || ($this->TypeIndex->Comment[$token->id]
+                || ($this->Idx->Comment[$token->id]
                     && (($token->PrevCode
                             && !$token->PrevCode->ClosedBy
                             && $token->PrevCode->EndStatement !== $token->PrevCode)

@@ -2,6 +2,8 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenData;
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\TokenRule;
@@ -39,7 +41,7 @@ final class AlignChains implements TokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            if ($token !== $token->ChainOpenedBy) {
+            if ($token !== $token->Data[TokenData::CHAIN_OPENED_BY]) {
                 continue;
             }
 
@@ -50,8 +52,8 @@ final class AlignChains implements TokenRule
                 continue;
             }
 
-            $chain = $token->withNextSiblingsWhile(false, ...TokenType::CHAIN_PART)
-                           ->filter(fn(Token $t) => $this->TypeIndex->Chain[$t->id]);
+            $chain = $token->withNextSiblingsWhile(false, $this->Idx->ChainPart)
+                           ->filter(fn(Token $t) => $this->Idx->Chain[$t->id]);
 
             // If there's no `->` in the chain with a leading newline, do nothing
             if ($chain->count() < 2
@@ -82,7 +84,7 @@ final class AlignChains implements TokenRule
                     continue;
                 }
                 $eol = $alignWith->endOfLine();
-                if ($eol->IsCode
+                if ($eol->Flags & TokenFlag::CODE
                         && $eol->Next === $token
                         && mb_strlen($alignWith->collect($eol)->render()) <= $this->Formatter->TabSize) {
                     $token->WhitespaceBefore = WhitespaceType::NONE;
@@ -136,8 +138,8 @@ final class AlignChains implements TokenRule
                   );
             };
         // Apply $delta to code between $alignWith and $first
-        if ($this->TypeIndex->Chain[$alignWith->id]) {
-            $callback($alignWith->next(), $first);
+        if ($this->Idx->Chain[$alignWith->id] && $alignWith->Next) {
+            $callback($alignWith->Next, $first);
         }
         $chain->forEach($callback);
     }

@@ -20,7 +20,7 @@ final class TrimOpenTags implements Filter
     public function filterTokens(array $tokens): array
     {
         foreach ($tokens as $token) {
-            if ($this->TypeIndex->OpenTag[$token->id]) {
+            if ($this->Idx->OpenTag[$token->id]) {
                 $token->text = rtrim($token->text);
             }
         }

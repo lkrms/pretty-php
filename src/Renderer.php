@@ -17,14 +17,14 @@ final class Renderer
     private Formatter $Formatter;
     private string $SoftTab;
     private string $Tab;
-    private TokenTypeIndex $TypeIndex;
+    private TokenTypeIndex $Idx;
 
     public function __construct(Formatter $formatter)
     {
         $this->Formatter = $formatter;
         $this->SoftTab = $formatter->SoftTab;
         $this->Tab = $formatter->Tab;
-        $this->TypeIndex = $formatter->TokenTypeIndex;
+        $this->Idx = $formatter->TokenTypeIndex;
     }
 
     /**
@@ -37,7 +37,7 @@ final class Renderer
         return $this->withPropertyValue('Formatter', $formatter)
                     ->withPropertyValue('SoftTab', $formatter->SoftTab)
                     ->withPropertyValue('Tab', $formatter->Tab)
-                    ->withPropertyValue('TypeIndex', $formatter->TokenTypeIndex);
+                    ->withPropertyValue('Idx', $formatter->TokenTypeIndex);
     }
 
     public function render(
@@ -59,8 +59,8 @@ final class Renderer
             // iteration, render it now
             $after = (
                 !$t->Next
-                || $this->TypeIndex->DoNotModify[$t->Next->id]
-                || $this->TypeIndex->DoNotModifyLeft[$t->Next->id]
+                || $this->Idx->DoNotModify[$t->Next->id]
+                || $this->Idx->DoNotModifyLeft[$t->Next->id]
             )
                 ? $this->renderWhitespaceAfter($t)
                 : '';
@@ -88,7 +88,7 @@ final class Renderer
 
             if (
                 $final
-                && $this->TypeIndex->Comment[$t->id]
+                && $this->Idx->Comment[$t->id]
                 && strpos($t->text, "\n") !== false
             ) {
                 $text = $this->getMultiLineComment($t, $softTabs);
@@ -112,7 +112,7 @@ final class Renderer
                 $this->setPosition(
                     $t->Next,
                     $output,
-                    $this->TypeIndex->Expandable[$t->id]
+                    $this->Idx->Expandable[$t->id]
                 );
             }
             $code .= $before . $output;
@@ -126,8 +126,8 @@ final class Renderer
         bool $softTabs = false
     ): string {
         if (
-            $this->TypeIndex->DoNotModify[$token->id]
-            || $this->TypeIndex->DoNotModifyLeft[$token->id]
+            $this->Idx->DoNotModify[$token->id]
+            || $this->Idx->DoNotModifyLeft[$token->id]
         ) {
             return '';
         }
@@ -166,8 +166,8 @@ final class Renderer
     public function renderWhitespaceAfter(Token $token): string
     {
         if (
-            $this->TypeIndex->DoNotModify[$token->id]
-            || $this->TypeIndex->DoNotModifyRight[$token->id]
+            $this->Idx->DoNotModify[$token->id]
+            || $this->Idx->DoNotModifyRight[$token->id]
         ) {
             return '';
         }

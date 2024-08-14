@@ -14,7 +14,7 @@ trait ContextAwareTokenTrait
     public ?int $SubType = null;
 
     /**
-     * True if the token is the colon before an alternative syntax block
+     * Check if the token is the colon before an alternative syntax block
      */
     final public function isColonAltSyntaxDelimiter(): bool
     {
@@ -22,7 +22,7 @@ trait ContextAwareTokenTrait
     }
 
     /**
-     * True if the token is the colon after a switch case or a label
+     * Check if the token is the colon after a switch case or a label
      */
     final public function isColonStatementDelimiter(): bool
     {
@@ -31,7 +31,7 @@ trait ContextAwareTokenTrait
     }
 
     /**
-     * True if the token is the colon before a type declaration
+     * Check if the token is the colon before a type declaration
      */
     final public function isColonTypeDelimiter(): bool
     {
@@ -77,13 +77,13 @@ trait ContextAwareTokenTrait
 
         if (
             $this->ClosedBy
-            || $this->TypeIndex->AltSyntaxContinueWithoutExpression[$prevCode->id]
+            || $this->Idx->AltSyntaxContinueWithoutExpression[$prevCode->id]
             || (
                 $prevCode->id === \T_CLOSE_PARENTHESIS
                 && $prevCode->PrevSibling
                 && (
-                    $this->TypeIndex->AltSyntaxStart[$prevCode->PrevSibling->id]
-                    || $this->TypeIndex->AltSyntaxContinueWithExpression[$prevCode->PrevSibling->id]
+                    $this->Idx->AltSyntaxStart[$prevCode->PrevSibling->id]
+                    || $this->Idx->AltSyntaxContinueWithExpression[$prevCode->PrevSibling->id]
                 )
             )
         ) {
@@ -93,7 +93,7 @@ trait ContextAwareTokenTrait
         if (
             $this->Parent
             && $this->Parent->id === \T_OPEN_PARENTHESIS
-            && $this->TypeIndex->MaybeReserved[$prevCode->id]
+            && $this->Idx->MaybeReserved[$prevCode->id]
             && $prevCode->PrevCode
             && (
                 $prevCode->PrevCode === $this->Parent
@@ -127,7 +127,7 @@ trait ContextAwareTokenTrait
             }
 
             if ($prev) {
-                $prev = $prev->skipPrevSiblingsFrom($this->TypeIndex->FunctionIdentifier);
+                $prev = $prev->skipPrevSiblingsFrom($this->Idx->FunctionIdentifier);
 
                 if ($prev->id === \T_FUNCTION || $prev->id === \T_FN) {
                     return TokenSubType::COLON_RETURN_TYPE_DELIMITER;
@@ -167,7 +167,7 @@ trait ContextAwareTokenTrait
         if (
             $prevCode->id === \T_CONST
             || ($prevCode->id === \T_COLON && $prevCode->isColonTypeDelimiter())
-            || $this->TypeIndex->VarOrModifier[$prevCode->id]
+            || $this->Idx->VarOrModifier[$prevCode->id]
             || $this->inParameterList()
         ) {
             return TokenSubType::QUESTION_NULLABLE;
@@ -187,8 +187,8 @@ trait ContextAwareTokenTrait
 
         if ($this->Parent && $this->Parent->id === \T_OPEN_BRACE) {
             $t = $this->Parent->PrevSibling;
-            while ($t && $this->TypeIndex->DeclarationPart[$t->id]) {
-                if ($this->TypeIndex->DeclarationClass[$t->id]) {
+            while ($t && $this->Idx->DeclarationPart[$t->id]) {
+                if ($this->Idx->DeclarationClass[$t->id]) {
                     return TokenSubType::USE_TRAIT;
                 }
                 $t = $t->PrevSibling;
@@ -199,7 +199,7 @@ trait ContextAwareTokenTrait
     }
 
     /**
-     * True if the token is in a parameter list
+     * Check if the token is in a parameter list
      */
     final public function inParameterList(): bool
     {
@@ -211,7 +211,7 @@ trait ContextAwareTokenTrait
     }
 
     /**
-     * True if the token encloses a parameter list
+     * Check if the token encloses a parameter list
      */
     final public function isParameterList(): bool
     {
@@ -219,7 +219,7 @@ trait ContextAwareTokenTrait
             return false;
         }
 
-        $prev = $this->PrevCode->skipPrevSiblingsFrom($this->TypeIndex->FunctionIdentifier);
+        $prev = $this->PrevCode->skipPrevSiblingsFrom($this->Idx->FunctionIdentifier);
 
         if ($prev->id === \T_FUNCTION || $prev->id === \T_FN) {
             return true;
@@ -229,7 +229,7 @@ trait ContextAwareTokenTrait
     }
 
     /**
-     * True if the token is the opening brace of a function
+     * Check if the token is the opening brace of a function
      */
     final public function isFunctionBrace(bool $allowAnonymous = true): bool
     {
@@ -239,7 +239,7 @@ trait ContextAwareTokenTrait
 
         $prev = $this->PrevCode;
         if ($prev->id !== \T_CLOSE_PARENTHESIS) {
-            $prev = $prev->skipPrevSiblingsFrom($this->TypeIndex->ValueType);
+            $prev = $prev->skipPrevSiblingsFrom($this->Idx->ValueType);
             if (
                 $prev->id === \T_COLON
                 && $prev->PrevCode
@@ -264,19 +264,19 @@ trait ContextAwareTokenTrait
         if (!$prev || (
             !$allowAnonymous && (
                 $prev->id === \T_FUNCTION
-                || $this->TypeIndex->Ampersand[$prev->id]
+                || $this->Idx->Ampersand[$prev->id]
             )
         )) {
             return false;
         }
 
-        $prev = $prev->skipPrevSiblingsFrom($this->TypeIndex->FunctionIdentifier);
+        $prev = $prev->skipPrevSiblingsFrom($this->Idx->FunctionIdentifier);
 
         return $prev->id === \T_FUNCTION;
     }
 
     /**
-     * True if the token is in a T_CASE or T_DEFAULT statement in a T_SWITCH
+     * Check if the token is in a T_CASE or T_DEFAULT statement in a T_SWITCH
      *
      * Returns `true` if the token is `T_CASE` or `T_DEFAULT`, part of the
      * expression after `T_CASE`, or the subsequent `:` or `;` delimiter.
@@ -287,13 +287,13 @@ trait ContextAwareTokenTrait
             $this->inSwitchCaseList() && (
                 $this->id === \T_CASE
                 || $this->id === \T_DEFAULT
-                || (($prev = $this->prevSiblingFrom($this->TypeIndex->SwitchCaseOrDelimiter)->orNull())
+                || (($prev = $this->prevSiblingFrom($this->Idx->SwitchCaseOrDelimiter)->orNull())
                     && ($prev->id === \T_CASE || $prev->id === \T_DEFAULT))
             );
     }
 
     /**
-     * True if the token is in a T_SWITCH case list
+     * Check if the token is in a T_SWITCH case list
      */
     final public function inSwitchCaseList(): bool
     {
@@ -305,7 +305,7 @@ trait ContextAwareTokenTrait
     }
 
     /**
-     * True if the token belongs to a declaration
+     * Check if the token belongs to a declaration
      */
     final public function inDeclaration(bool $allowAnonymous = true): bool
     {
@@ -314,7 +314,7 @@ trait ContextAwareTokenTrait
     }
 
     /**
-     * True if a declaration starts at the token and is not an anonymous
+     * Check if a declaration starts at the token and is not an anonymous
      * function or class
      *
      * @phpstan-assert-if-true TokenCollection $parts
@@ -327,7 +327,7 @@ trait ContextAwareTokenTrait
     }
 
     /**
-     * True if a declaration starts at the token
+     * Check if a declaration starts at the token
      */
     final public function isDeclaration(bool $allowAnonymous = true): bool
     {
@@ -352,7 +352,7 @@ trait ContextAwareTokenTrait
                 !$this->Expression || (
                     $this->PrevSibling
                     && $this->PrevSibling->Expression === $this->Expression
-                    && $this->TypeIndex->DeclarationPartWithNewAndBody[$this->PrevSibling->id]
+                    && $this->Idx->DeclarationPartWithNewAndBody[$this->PrevSibling->id]
                 )
             ) {
                 return false;
@@ -362,10 +362,10 @@ trait ContextAwareTokenTrait
         }
 
         // Get the first non-attribute
-        $first = $this->skipSiblingsFrom($this->TypeIndex->Attribute);
+        $first = $this->skipSiblingsFrom($this->Idx->Attribute);
 
         // Exclude non-declarations
-        if (!$this->TypeIndex->Declaration[$first->id]) {
+        if (!$this->Idx->Declaration[$first->id]) {
             return false;
         }
 
@@ -378,10 +378,10 @@ trait ContextAwareTokenTrait
         // - `namespace` in relative names
         // - promoted constructor parameters
         if (
-            ($first->id === \T_STATIC && !($next->id === \T_VARIABLE || $this->TypeIndex->Declaration[$next->id]))
+            ($first->id === \T_STATIC && !($next->id === \T_VARIABLE || $this->Idx->Declaration[$next->id]))
             || ($first->id === \T_CASE && $first->inSwitchCaseList())
             || ($first->id === \T_NAMESPACE && $next->id === \T_NS_SEPARATOR)
-            || ($this->TypeIndex->VisibilityWithReadonly[$first->id] && $first->inParameterList())
+            || ($this->Idx->VisibilityWithReadonly[$first->id] && $first->inParameterList())
         ) {
             return false;
         }
@@ -420,7 +420,7 @@ trait ContextAwareTokenTrait
         while (
             $t->PrevSibling
             && $t->PrevSibling->Expression === $this->Expression
-            && $this->TypeIndex->DeclarationPartWithNewAndBody[$t->PrevSibling->id]
+            && $this->Idx->DeclarationPartWithNewAndBody[$t->PrevSibling->id]
         ) {
             $t = $t->PrevSibling;
         }

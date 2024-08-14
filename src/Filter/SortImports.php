@@ -41,7 +41,7 @@ final class SortImports implements Filter
         /** @var array<int,T> */
         $stack = [];
         foreach ($this->Tokens as $i => $token) {
-            if ($this->TypeIndex->OpenBrace[$token->id]) {
+            if ($this->Idx->OpenBrace[$token->id]) {
                 $stack[$i] = $token;
                 continue;
             }
@@ -90,7 +90,7 @@ final class SortImports implements Filter
                     // `$token` is a subsequent comment on the same line, or a
                     // continuation thereof
                     if ($terminator) {
-                        if ($this->TypeIndex->Comment[$token->id] && (
+                        if ($this->Idx->Comment[$token->id] && (
                             $token->line === $terminator->line || (
                                 $this->isOneLineComment($i)
                                 && $this->isOneLineComment($i - 1)
@@ -209,7 +209,7 @@ final class SortImports implements Filter
         $import = [];
         foreach ($tokens as $token) {
             if (
-                $this->TypeIndex->Comment[$token->id]
+                $this->Idx->Comment[$token->id]
                 || $token->id === \T_SEMICOLON
             ) {
                 continue;

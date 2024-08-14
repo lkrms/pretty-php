@@ -28,20 +28,14 @@ trait NavigableTokenTrait
     public ?Token $EndStatement = null;
 
     /**
-     * The token at the start of the token's expression, or false if the token
-     * is an expression delimiter
-     *
-     * @var Token|false|null
+     * The token at the start of the token's expression, or null if the token is
+     * an expression delimiter
      */
-    public $Expression = null;
+    public ?Token $Expression = null;
 
     /**
-     * The token at the end of the token's expression
-     *
-     * If the token is an expression delimiter and {@see Token::$NextSibling} is
-     * the token at the start of an expression, {@see Token::$EndExpression} is
-     * the token at the end of that expression, otherwise it is the token
-     * itself.
+     * The token at the end of the token's expression, or null if the token is a
+     * statement delimiter
      */
     public ?Token $EndExpression = null;
 
@@ -59,30 +53,9 @@ trait NavigableTokenTrait
 
     /**
      * @var array<TokenData::*,mixed>
-     * @phpstan-var array{string,int,Token}
+     * @phpstan-var array{string,int,Token,Token,Token}
      */
     public array $Data;
-
-    public ?Token $OtherTernaryOperator = null;
-    public ?Token $ChainOpenedBy = null;
-
-    /**
-     * True unless the token is a tag, comment, whitespace or inline markup
-     *
-     * Also `true` if the token is a `T_CLOSE_TAG` that terminates a statement.
-     */
-    public bool $IsCode = true;
-
-    /**
-     * True if the token is a T_NULL
-     */
-    public bool $IsNull = false;
-
-    /**
-     * True if the token is a T_NULL, T_END_ALT_SYNTAX or some other zero-width
-     * impostor
-     */
-    public bool $IsVirtual = false;
 
     /**
      * The original content of the token after expanding tabs if CollectColumn
@@ -107,7 +80,7 @@ trait NavigableTokenTrait
      *
      * @readonly
      */
-    public TokenTypeIndex $TypeIndex;
+    public TokenTypeIndex $Idx;
 
     /**
      * @return static[]
@@ -147,7 +120,7 @@ trait NavigableTokenTrait
     }
 
     /**
-     * True if the token is a brace that delimits a code block
+     * Check if the token is a brace that delimits a code block
      *
      * Returns `false` for braces in:
      *
@@ -163,7 +136,7 @@ trait NavigableTokenTrait
     final public function isStructuralBrace(bool $orMatch = false): bool
     {
         /** @var Token $this */
-        $current = $this->OpenedBy === null ? $this : $this->OpenedBy;
+        $current = $this->OpenedBy ?? $this;
 
         // Exclude T_CURLY_OPEN and T_DOLLAR_OPEN_CURLY_BRACES
         if ($current->id !== \T_OPEN_BRACE) {
@@ -191,7 +164,7 @@ trait NavigableTokenTrait
     }
 
     /**
-     * True if the token is a T_WHILE that belongs to a do ... while structure
+     * Check if the token is a T_WHILE that belongs to a do ... while structure
      */
     final public function isWhileAfterDo(): bool
     {
@@ -216,7 +189,7 @@ trait NavigableTokenTrait
         // `while` cannot be part of the same structure, look for a previous
         // `T_DO` the token could form a control structure with
         $do = $this->PrevSibling
-                   ->prevSiblingFrom($this->TypeIndex->T_DO)
+                   ->prevSiblingFrom($this->Idx->T_DO)
                    ->orNull();
         if (!$do) {
             return false;
@@ -244,11 +217,8 @@ trait NavigableTokenTrait
     public function null()
     {
         $token = new static(\T_NULL, '');
-        $token->IsCode = false;
-        $token->IsNull = true;
-        $token->IsVirtual = true;
-        if (isset($this->TypeIndex)) {
-            $token->TypeIndex = $this->TypeIndex;
+        if (isset($this->Idx)) {
+            $token->Idx = $this->Idx;
         }
         return $token;
     }
@@ -261,7 +231,7 @@ trait NavigableTokenTrait
      */
     public function or($token)
     {
-        if (!$this->IsNull) {
+        if ($this->id !== \T_NULL) {
             return $this;
         }
         if ($token instanceof Closure) {
@@ -279,7 +249,7 @@ trait NavigableTokenTrait
      */
     public function orNull()
     {
-        if ($this->IsNull) {
+        if ($this->id === \T_NULL) {
             return null;
         }
         return $this;
@@ -292,7 +262,7 @@ trait NavigableTokenTrait
      */
     public function orThrow()
     {
-        if ($this->IsNull) {
+        if ($this->id === \T_NULL) {
             throw new InvalidTokenException($this);
         }
         return $this;
@@ -397,7 +367,7 @@ trait NavigableTokenTrait
      */
     final public function skipSiblingsFrom(array $index)
     {
-        $t = $this->IsCode ? $this : $this->NextCode;
+        $t = $this->Flags & TokenFlag::CODE ? $this : $this->NextCode;
         while ($t && $index[$t->id]) {
             $t = $t->NextSibling;
         }
@@ -414,7 +384,7 @@ trait NavigableTokenTrait
      */
     final public function skipPrevSiblingsFrom(array $index)
     {
-        $t = $this->IsCode ? $this : $this->PrevCode;
+        $t = $this->Flags & TokenFlag::CODE ? $this : $this->PrevCode;
         while ($t && $index[$t->id]) {
             $t = $t->PrevSibling;
         }
@@ -549,33 +519,6 @@ trait NavigableTokenTrait
             $current = $current->Next;
         }
         return $current;
-    }
-
-    /**
-     * Get the next sibling via token traversal, without accounting for PHP's
-     * alternative syntax
-     *
-     * @return Token
-     */
-    final public function nextSimpleSibling(int $offset = 1)
-    {
-        $depth = 0;
-        $t = $this;
-        while ($t->Next) {
-            if ($this->TypeIndex->OpenBracket[$t->id]) {
-                $depth++;
-            } elseif ($this->TypeIndex->CloseBracket[$t->id]) {
-                $depth--;
-            }
-            $t = $t->Next;
-            if (!$depth) {
-                $offset--;
-                if (!$offset) {
-                    return $t;
-                }
-            }
-        }
-        return $this->null();
     }
 
     /**

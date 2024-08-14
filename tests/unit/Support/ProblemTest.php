@@ -28,7 +28,7 @@ final class ProblemTest extends TestCase
 
         $file = self::getFixturesPath(__CLASS__) . '/valid.php';
 
-        $tokens = $parser->parse(File::getContents($file), ...$filters);
+        $tokens = $parser->parse(File::getContents($file), $filters);
         $this->assertNotNull($first = $tokens[0] ?? null);
         $this->assertNotNull($second = $tokens[1] ?? null);
         $this->assertNotNull($last = Arr::last($tokens));

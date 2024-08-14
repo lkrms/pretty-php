@@ -83,7 +83,7 @@ final class HangingIndentation implements TokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            if ($this->TypeIndex->OpenBracket[$token->id]) {
+            if ($this->Idx->OpenBracket[$token->id]) {
                 $token->HangingIndentParentType =
                     $token->hasNewlineBeforeNextCode()
                         ? (($token->Flags & TokenFlag::LIST_PARENT
@@ -103,7 +103,7 @@ final class HangingIndentation implements TokenRule
             // hanging indent context for it to prevent siblings on subsequent
             // lines being indented
             $parent = $token->Parent;
-            if ($token->IsCode
+            if ($token->Flags & TokenFlag::CODE
                     && $parent
                     && $parent === $token->PrevCode
                     && $token->NextCode
@@ -126,9 +126,9 @@ final class HangingIndentation implements TokenRule
             // Ignore tokens aligned by other rules
             $prevCode = $token->PrevCode;
             if ($token->AlignedWith
-                    || $this->TypeIndex->NotCode[$token->id]
-                    || $this->TypeIndex->CloseBracketOrEndAltSyntax[$token->id]
-                    || $this->TypeIndex->HasStatement[$token->id]
+                    || $this->Idx->NotCode[$token->id]
+                    || $this->Idx->CloseBracketOrEndAltSyntax[$token->id]
+                    || $this->Idx->HasStatement[$token->id]
                     || !$prevCode) {
                 continue;
             }
@@ -228,15 +228,15 @@ final class HangingIndentation implements TokenRule
                     ?? self::getTernaryOperator1($token)
                     ?? $token;
                 $until = self::getTernaryEndOfExpression($token);
-            } elseif ($token->ChainOpenedBy) {
-                $stack[] = $token->ChainOpenedBy;
+            } elseif ($this->Idx->Chain[$token->id]) {
+                $stack[] = $token->Data[TokenData::CHAIN_OPENED_BY];
             } elseif ($token->Heredoc && $token->Heredoc === $prevCode) {
                 $stack[] = $token->Heredoc;
             } elseif (isset($token->Data[TokenData::LIST_PARENT])) {
                 $stack[] = $token->Data[TokenData::LIST_PARENT];
             } elseif ($latest && $latest->Parent === $token->Parent) {
-                if ($this->TypeIndex->ExpressionDelimiter[$prevCode->id]
-                        || $this->TypeIndex->ExpressionDelimiter[$token->id]) {
+                if ($this->Idx->ExpressionDelimiter[$prevCode->id]
+                        || $this->Idx->ExpressionDelimiter[$token->id]) {
                     $stack[] = $token;
                 } elseif ($latest->id === \T_DOUBLE_ARROW) {
                     $stack[] = $latest;
@@ -249,7 +249,7 @@ final class HangingIndentation implements TokenRule
                             \T_DOUBLE_ARROW,
                             ...TokenType::OPERATOR_ASSIGNMENT,
                         );
-                        if ($delimiter->IsNull) {
+                        if ($delimiter->id === \T_NULL) {
                             $stack[] = $latest;
                         } else {
                             $startOfLine = $prevCode->startOfLine();
@@ -385,11 +385,10 @@ final class HangingIndentation implements TokenRule
             if (
                 $current->id === \T_COALESCE
                 || $current->id === \T_COALESCE_EQUAL
-                || (($current->Flags & TokenFlag::TERNARY_OPERATOR)
+                || ($current->Flags & TokenFlag::TERNARY_OPERATOR
                     && self::getTernaryOperator1($current) === $current
-                    && $current->OtherTernaryOperator
-                    && $current->OtherTernaryOperator->Index
-                        < (self::getTernaryOperator1($token) ?: $token)->Index)
+                    && $current->Data[TokenData::OTHER_TERNARY_OPERATOR]->Index
+                        < (self::getTernaryOperator1($token) ?? $token)->Index)
             ) {
                 $prevTernary = $current;
             }
@@ -405,8 +404,8 @@ final class HangingIndentation implements TokenRule
         // ```
         if ($prevTernary
                 && $token->id === \T_COLON
-                && $token->OtherTernaryOperator
-                && $prevTernary->Index > $token->OtherTernaryOperator->Index) {
+                && $token->Flags & TokenFlag::TERNARY_OPERATOR
+                && $prevTernary->Index > $token->Data[TokenData::OTHER_TERNARY_OPERATOR]->Index) {
             return null;
         }
 
@@ -456,14 +455,18 @@ final class HangingIndentation implements TokenRule
     {
         return $token->id === \T_QUESTION
             ? $token
-            : $token->OtherTernaryOperator;
+            : ($token->Flags & TokenFlag::TERNARY_OPERATOR
+                ? $token->Data[TokenData::OTHER_TERNARY_OPERATOR]
+                : null);
     }
 
     private static function getTernaryOperator2(Token $token): ?Token
     {
         return $token->id === \T_COLON
             ? $token
-            : $token->OtherTernaryOperator;
+            : ($token->Flags & TokenFlag::TERNARY_OPERATOR
+                ? $token->Data[TokenData::OTHER_TERNARY_OPERATOR]
+                : null);
     }
 
     /**

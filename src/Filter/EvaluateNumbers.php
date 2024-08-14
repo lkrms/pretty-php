@@ -21,7 +21,7 @@ final class EvaluateNumbers implements Filter
     {
         $number = 0;
         foreach ($tokens as $token) {
-            if ($this->TypeIndex->Number[$token->id]) {
+            if ($this->Idx->Number[$token->id]) {
                 eval("\$number = {$token->text};");
                 $token->text = var_export($number, true);
             }

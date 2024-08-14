@@ -2,6 +2,11 @@
 
 namespace Lkrms\PrettyPHP\Rule\Concern;
 
+use Lkrms\PrettyPHP\Contract\BlockRule;
+
+/**
+ * @phpstan-require-implements BlockRule
+ */
 trait BlockRuleTrait
 {
     use RuleTrait;

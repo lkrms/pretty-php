@@ -62,6 +62,14 @@ class TokenTypeIndex implements Immutable
     public array $CloseBracketOrEndAltSyntax;
 
     /**
+     * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_COMMA
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $CloseBracketOrComma;
+
+    /**
      * T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_ATTRIBUTE
      *
      * @readonly
@@ -268,12 +276,26 @@ class TokenTypeIndex implements Immutable
     public array $PreserveBlankAfter;
 
     /**
+     * T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_SEMICOLON, T_DOUBLE_ARROW,
+     * T_AND_EQUAL, T_COALESCE_EQUAL, T_CONCAT_EQUAL, T_DIV_EQUAL, T_EQUAL,
+     * T_GREATER, T_IS_EQUAL, T_IS_GREATER_OR_EQUAL, T_IS_IDENTICAL,
+     * T_IS_NOT_EQUAL, T_IS_NOT_IDENTICAL, T_IS_SMALLER_OR_EQUAL, T_MINUS_EQUAL,
+     * T_MOD_EQUAL, T_MUL_EQUAL, T_OR_EQUAL, T_PLUS_EQUAL, T_POW_EQUAL,
+     * T_SL_EQUAL, T_SMALLER, T_SPACESHIP, T_SR_EQUAL, T_XOR_EQUAL
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $ExpressionTerminator;
 
     /**
+     * T_DOUBLE_ARROW, T_AND_EQUAL, T_COALESCE_EQUAL, T_CONCAT_EQUAL,
+     * T_DIV_EQUAL, T_EQUAL, T_GREATER, T_IS_EQUAL, T_IS_GREATER_OR_EQUAL,
+     * T_IS_IDENTICAL, T_IS_NOT_EQUAL, T_IS_NOT_IDENTICAL,
+     * T_IS_SMALLER_OR_EQUAL, T_MINUS_EQUAL, T_MOD_EQUAL, T_MUL_EQUAL,
+     * T_OR_EQUAL, T_PLUS_EQUAL, T_POW_EQUAL, T_SL_EQUAL, T_SMALLER,
+     * T_SPACESHIP, T_SR_EQUAL, T_XOR_EQUAL
+     *
      * @readonly
      * @var array<int,bool>
      */
@@ -361,6 +383,14 @@ class TokenTypeIndex implements Immutable
     public array $Ampersand;
 
     /**
+     * T_CLASS, T_FUNCTION
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $ClassOrFunction;
+
+    /**
      * T_COMMA
      *
      * @readonly
@@ -375,6 +405,14 @@ class TokenTypeIndex implements Immutable
      * @var array<int,bool>
      */
     public array $DoubleArrow;
+
+    /**
+     * T_OPEN_BRACE
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $T_OPEN_BRACE;
 
     /**
      * T_SEMICOLON
@@ -438,6 +476,15 @@ class TokenTypeIndex implements Immutable
      * @var array<int,bool>
      */
     public array $DeclarationClass;
+
+    /**
+     * T_COMMA, T_NAMESPACE, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED,
+     * T_NAME_RELATIVE, T_NS_SEPARATOR, T_STATIC, T_STRING
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $DeclarationList;
 
     /**
      * T_GLOBAL, T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY, T_STATIC, T_VAR
@@ -564,6 +611,14 @@ class TokenTypeIndex implements Immutable
      */
     public array $VisibilityWithReadonly;
 
+    /**
+     * T_END_ALT_SYNTAX, T_NULL
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $Virtual;
+
     private string $LastOperatorsMethod;
     /** @var array<int,bool> */
     private array $_PreserveNewlineBefore;
@@ -615,6 +670,13 @@ class TokenTypeIndex implements Immutable
             \T_CLOSE_BRACKET,
             \T_CLOSE_PARENTHESIS,
             \T_END_ALT_SYNTAX,
+        );
+
+        $this->CloseBracketOrComma = TT::getIndex(
+            \T_CLOSE_BRACE,
+            \T_CLOSE_BRACKET,
+            \T_CLOSE_PARENTHESIS,
+            \T_COMMA,
         );
 
         $this->OpenBracketExceptBrace = TT::getIndex(
@@ -931,8 +993,13 @@ class TokenTypeIndex implements Immutable
         $this->AltSyntaxContinueWithoutExpression = TT::getIndex(...TT::ALT_SYNTAX_CONTINUE_WITHOUT_EXPRESSION);
         $this->AltSyntaxEnd = TT::getIndex(...TT::ALT_SYNTAX_END);
         $this->Ampersand = TT::getIndex(...TT::AMPERSAND);
+        $this->ClassOrFunction = TT::getIndex(
+            \T_CLASS,
+            \T_FUNCTION,
+        );
         $this->Comma = TT::getIndex(\T_COMMA);
         $this->DoubleArrow = TT::getIndex(\T_DOUBLE_ARROW);
+        $this->T_OPEN_BRACE = TT::getIndex(\T_OPEN_BRACE);
         $this->Semicolon = TT::getIndex(\T_SEMICOLON);
         $this->Attribute = TT::getIndex(
             \T_ATTRIBUTE,
@@ -944,6 +1011,7 @@ class TokenTypeIndex implements Immutable
         $this->Declaration = TT::getIndex(...TT::DECLARATION);
         $this->DeclarationExceptModifiers = TT::getIndex(...TT::DECLARATION_EXCEPT_MODIFIERS);
         $this->DeclarationClass = TT::getIndex(...TT::DECLARATION_CLASS);
+        $this->DeclarationList = TT::getIndex(...TT::DECLARATION_LIST);
         $this->DeclarationPropertyOrVariable = TT::getIndex(
             \T_GLOBAL,
             \T_STATIC,
@@ -967,6 +1035,10 @@ class TokenTypeIndex implements Immutable
         $this->ValueType = TT::getIndex(...TT::VALUE_TYPE);
         $this->Visibility = TT::getIndex(...TT::VISIBILITY);
         $this->VisibilityWithReadonly = TT::getIndex(...TT::VISIBILITY_WITH_READONLY);
+        $this->Virtual = TT::getIndex(
+            \T_END_ALT_SYNTAX,
+            \T_NULL,
+        );
 
         $this->LastOperatorsMethod = 'withMixedOperators';
         $this->_PreserveNewlineBefore = $this->PreserveNewlineBefore;

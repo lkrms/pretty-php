@@ -39,14 +39,18 @@ final class SwitchIndentation implements TokenRule
     {
         foreach ($tokens as $token) {
             if ($token->id === \T_SWITCH) {
-                $token->nextSibling(2)->inner()->forEach(fn(Token $t) => $t->PreIndent++);
+                assert($token->NextSibling && $token->NextSibling->NextSibling);
+                $token->NextSibling->NextSibling->inner()->forEach(fn(Token $t) => $t->PreIndent++);
 
                 continue;
             }
 
             if (!$token->is([\T_CASE, \T_DEFAULT])
-                    || $token->parent()->prevSibling(2)->id !== \T_SWITCH
-                    || ($separator = $token->nextSiblingOf(\T_COLON, \T_SEMICOLON, \T_CLOSE_TAG))->IsNull) {
+                    || !($token->Parent
+                        && $token->Parent->PrevSibling
+                        && $token->Parent->PrevSibling->PrevSibling
+                        && $token->Parent->PrevSibling->PrevSibling->id === \T_SWITCH)
+                    || ($separator = $token->nextSiblingOf(\T_COLON, \T_SEMICOLON, \T_CLOSE_TAG))->id === \T_NULL) {
                 continue;
             }
 

@@ -76,101 +76,6 @@ parameters:
 			path: src/Formatter.php
 
 		-
-			message: "#^Cannot access property \\$ClosedBy on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|false\\|null\\.$#"
-			count: 4
-			path: src/Parser.php
-
-		-
-			message: "#^Cannot access property \\$ClosedBy on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Parser.php
-
-		-
-			message: "#^Cannot access property \\$Flags on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Parser.php
-
-		-
-			message: "#^Cannot access property \\$Heredoc on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Parser.php
-
-		-
-			message: "#^Cannot access property \\$Next on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Parser.php
-
-		-
-			message: "#^Cannot access property \\$NextCode on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|false\\.$#"
-			count: 2
-			path: src/Parser.php
-
-		-
-			message: "#^Cannot access property \\$NextCode on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|false\\|null\\.$#"
-			count: 2
-			path: src/Parser.php
-
-		-
-			message: "#^Cannot access property \\$NextSibling on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|false\\.$#"
-			count: 1
-			path: src/Parser.php
-
-		-
-			message: "#^Cannot access property \\$NextSibling on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Parser.php
-
-		-
-			message: "#^Cannot access property \\$OpenedBy on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|false\\|null\\.$#"
-			count: 2
-			path: src/Parser.php
-
-		-
-			message: "#^Cannot access property \\$OpenedBy on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Parser.php
-
-		-
-			message: "#^Cannot access property \\$Parent on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Parser.php
-
-		-
-			message: "#^Cannot access property \\$Prev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 4
-			path: src/Parser.php
-
-		-
-			message: "#^Cannot access property \\$PrevCode on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|false\\|null\\.$#"
-			count: 2
-			path: src/Parser.php
-
-		-
-			message: "#^Cannot access property \\$Statement on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|false\\.$#"
-			count: 1
-			path: src/Parser.php
-
-		-
-			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 13
-			path: src/Parser.php
-
-		-
-			message: "#^Cannot call method isColonAltSyntaxDelimiter\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Parser.php
-
-		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:\\$EndExpression \\(Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\) does not accept Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|false\\|null\\.$#"
-			count: 2
-			path: src/Parser.php
-
-		-
-			message: "#^Property Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:\\$EndStatement \\(Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\) does not accept Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|false\\|null\\.$#"
-			count: 1
-			path: src/Parser.php
-
-		-
 			message: "#^Parameter \\#1 \\$to of method Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:collect\\(\\) expects Lkrms\\\\PrettyPHP\\\\Token\\\\Token, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null given\\.$#"
 			count: 1
 			path: src/Rule/AlignChains.php
@@ -256,24 +161,9 @@ parameters:
 			path: src/Rule/AlignLists.php
 
 		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/AlignTernaryOperators.php
-
-		-
 			message: "#^Cannot call method pragmaticStartOfExpression\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/AlignTernaryOperators.php
-
-		-
-			message: "#^Cannot access property \\$EndStatement on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/ControlStructureSpacing.php
-
-		-
-			message: "#^Cannot access property \\$Flags on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/ControlStructureSpacing.php
 
 		-
 			message: "#^Cannot access property \\$Index on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
@@ -281,48 +171,8 @@ parameters:
 			path: src/Rule/ControlStructureSpacing.php
 
 		-
-			message: "#^Cannot access property \\$NextSibling on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 3
-			path: src/Rule/ControlStructureSpacing.php
-
-		-
-			message: "#^Cannot access property \\$Prev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/ControlStructureSpacing.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/ControlStructureSpacing.php
-
-		-
 			message: "#^Cannot access property \\$WhitespaceMaskNext on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 2
-			path: src/Rule/ControlStructureSpacing.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/ControlStructureSpacing.php
-
-		-
-			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 4
-			path: src/Rule/ControlStructureSpacing.php
-
-		-
-			message: "#^Cannot call method collect\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/ControlStructureSpacing.php
-
-		-
-			message: "#^Cannot call method pragmaticEndOfExpression\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/ControlStructureSpacing.php
-
-		-
-			message: "#^Cannot call method prevSibling\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
 			path: src/Rule/ControlStructureSpacing.php
 
 		-
@@ -381,7 +231,7 @@ parameters:
 			path: src/Rule/ListSpacing.php
 
 		-
-			message: "#^Cannot access property \\$IsCode on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
+			message: "#^Cannot access property \\$Flags on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/OperatorSpacing.php
 
@@ -393,11 +243,6 @@ parameters:
 		-
 			message: "#^Cannot access property \\$PrevCode on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 2
-			path: src/Rule/OperatorSpacing.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceAfter on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
 			path: src/Rule/OperatorSpacing.php
 
 		-
@@ -416,12 +261,7 @@ parameters:
 			path: src/Rule/PlaceBraces.php
 
 		-
-			message: "#^Cannot call method nextSibling\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/PlaceBraces.php
-
-		-
-			message: "#^Cannot access property \\$IsCode on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
+			message: "#^Cannot access property \\$Flags on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 2
 			path: src/Rule/PlaceComments.php
 
@@ -727,7 +567,7 @@ parameters:
 
 		-
 			message: "#^Cannot access property \\$Index on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 6
+			count: 4
 			path: src/Token/Token.php
 
 		-
@@ -757,7 +597,7 @@ parameters:
 
 		-
 			message: "#^Cannot access property \\$PrevCode on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 4
+			count: 3
 			path: src/Token/Token.php
 
 		-

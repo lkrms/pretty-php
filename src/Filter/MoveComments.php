@@ -29,11 +29,11 @@ final class MoveComments implements Filter
     public function boot(): void
     {
         /** @todo Add support for ternary operators, `T_DOUBLE_ARROW` */
-        $idx = $this->TypeIndex->withPreserveNewline();
+        $idx = $this->Idx->withPreserveNewline();
 
         $this->BeforeCommentIndex = TokenType::intersectIndexes(
             TokenType::mergeIndexes(
-                $this->TypeIndex->Movable,
+                $this->Idx->Movable,
                 TokenType::getIndex(
                     \T_COMMA,
                     \T_SEMICOLON,
@@ -45,7 +45,7 @@ final class MoveComments implements Filter
 
         $this->AfterCommentIndex = TokenType::intersectIndexes(
             TokenType::mergeIndexes(
-                $this->TypeIndex->Movable,
+                $this->Idx->Movable,
                 TokenType::getIndex(
                     \T_LOGICAL_NOT,
                 ),
@@ -74,7 +74,7 @@ final class MoveComments implements Filter
         //
         $tokens = $this->swapTokens(
             $tokens,
-            $this->TypeIndex->Comment,
+            $this->Idx->Comment,
             $this->BeforeCommentIndex,
             // Moving a DocBlock to the other side of a delimiter risks side
             // effects like documenting previously undocumented structural
@@ -93,13 +93,13 @@ final class MoveComments implements Filter
             null,
             // For consistency, also demote DocBlocks found before close
             // brackets etc., without moving the close brackets
-            $this->TypeIndex->Undocumentable,
+            $this->Idx->Undocumentable,
         );
 
         return $this->swapTokens(
             $tokens,
             $this->AfterCommentIndex,
-            $this->TypeIndex->Comment,
+            $this->Idx->Comment,
             null,
             $callback,
         );
@@ -226,12 +226,12 @@ final class MoveComments implements Filter
                 return false;
             }
 
-            if (!$this->TypeIndex->NotCode[$tokens[$i]->id]) {
+            if (!$this->Idx->NotCode[$tokens[$i]->id]) {
                 break;
             }
         } while (true);
 
         // Return `true` if the DocBlock can be safely demoted
-        return $this->TypeIndex->Undocumentable[$tokens[$i]->id];
+        return $this->Idx->Undocumentable[$tokens[$i]->id];
     }
 }
