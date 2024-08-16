@@ -25,11 +25,13 @@ $foo = bar()
 $foo = bar()
 	->${'baz'}();
 
-$_foo = bar()->${baz()}()
+$_foo = bar()
+	->${baz()}()
 	->qux()
 	->quux();
 
-$_foo = bar()->${baz()}()
+$_foo = bar()
+	->${baz()}()
 	->qux();
 
 $foo = BAR::${baz()}()
@@ -46,11 +48,13 @@ $foo = 'BAR'::${baz()}()
 $foo = 'BAR'::${baz()}()
 	->qux();
 
-$foo = 'BAR'->${baz()}()
+$foo = 'BAR'
+	->${baz()}()
 	->qux()
 	->quux();
 
-$foo = 'BAR'->${baz()}()
+$foo = 'BAR'
+	->${baz()}()
 	->qux();
 
 $foo = (

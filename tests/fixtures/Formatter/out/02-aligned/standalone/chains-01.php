@@ -5,96 +5,93 @@ $foo = bar()
            ->qux();
 
 $foo = bar()
-    ->baz();
+           ->baz();
 
 $foo = b()->baz()
           ->qux();
 
-$foo = b()
-    ->baz();
+$foo = b()->baz();
 
 $foo = b()->baz()
           ->qux();
 
 $foo = bar()
-    ->${'baz'}()
-    ->${'qux'}();
+           ->${'baz'}()
+           ->${'qux'}();
 
 $foo = bar()
-    ->${'baz'}();
+           ->${'baz'}();
 
 $_foo = bar()->${baz()}()
-                    ->qux()
-                    ->quux();
+             ->qux()
+             ->quux();
 
 $_foo = bar()->${baz()}()
-    ->qux();
+             ->qux();
 
 $foo = BAR::${baz()}()
-                 ->qux()
-                 ->quux();
+           ->qux()
+           ->quux();
 
 $foo = BAR::${baz()}()
-    ->qux();
+           ->qux();
 
 $foo = 'BAR'::${baz()}()
-                   ->qux()
-                   ->quux();
+           ->qux()
+           ->quux();
 
 $foo = 'BAR'::${baz()}()
-    ->qux();
+           ->qux();
 
 $foo = 'BAR'->${baz()}()
-                   ->qux()
-                   ->quux();
+            ->qux()
+            ->quux();
 
 $foo = 'BAR'->${baz()}()
-    ->qux();
+            ->qux();
 
 $foo = (
     bar()
-)
-           ->baz()
-           ->qux();
+)->baz()
+ ->qux();
 
 $foo = (
     bar()
-)
-    ->baz();
+)->baz();
 
 $foo = bar('foo',
            'bar')
-           ->baz()
-           ->qux();
+               ->baz()
+               ->qux();
 
 $foo = bar('foo',
            'bar')
-    ->baz();
+               ->baz();
 
 $foo = ['bar']
            ->baz()
            ->qux();
 
 $foo = ['bar']
-    ->baz();
+           ->baz();
 
 $foo = array('bar')
-                ->baz()
-                ->qux();
+           ->baz()
+           ->qux();
 
 $foo = array('bar')
-    ->baz();
+           ->baz();
 
 $foo = static::bar()
-                 ->baz()
-                 ->qux();
+           ->baz()
+           ->qux();
 
 $foo = static::bar()
-    ->baz();
+           ->baz();
 
 $foo = readonly()
            ->baz()
            ->qux();
 
 $foo = readonly()
-    ->baz();
+           ->baz();

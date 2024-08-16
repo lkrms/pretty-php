@@ -1,15 +1,15 @@
 <?php
 
 $foo = "B{$A}R"::${baz()}()
-                      ->qux()
-                      ->quux();
+           ->qux()
+           ->quux();
 
 $foo = "B{$A}R"::${baz()}()
-    ->qux();
+           ->qux();
 
 $foo = "B${A}R"::${baz()}()
-                      ->qux()
-                      ->quux();
+           ->qux()
+           ->quux();
 
 $foo = "B${A}R"::${baz()}()
-    ->qux();
+           ->qux();

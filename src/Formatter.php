@@ -22,6 +22,7 @@ use Lkrms\PrettyPHP\Filter\CollectColumn;
 use Lkrms\PrettyPHP\Filter\EvaluateNumbers;
 use Lkrms\PrettyPHP\Filter\EvaluateStrings;
 use Lkrms\PrettyPHP\Filter\MoveComments;
+use Lkrms\PrettyPHP\Filter\NormaliseNames;
 use Lkrms\PrettyPHP\Filter\RemoveEmptyDocBlocks;
 use Lkrms\PrettyPHP\Filter\RemoveEmptyTokens;
 use Lkrms\PrettyPHP\Filter\RemoveHeredocIndentation;
@@ -319,6 +320,7 @@ final class Formatter implements Buildable
      * @var array<class-string<Filter>>
      */
     public const DEFAULT_FILTERS = [
+        NormaliseNames::class,
         CollectColumn::class,
         RemoveWhitespace::class,
         RemoveHeredocIndentation::class,
@@ -656,8 +658,11 @@ final class Formatter implements Buildable
         Profile::stopTimer(__METHOD__ . '#sort-rules');
 
         $withComparison = array_merge($filters, self::COMPARISON_FILTERS);
-        // Column numbers are unnecessary when comparing tokens
-        $withoutColumn = array_diff($withComparison, [CollectColumn::class]);
+        // Column numbers and PHP 8.0 name tokens are unnecessary for comparison
+        $withoutColumn = array_diff($withComparison, [
+            CollectColumn::class,
+            NormaliseNames::class,
+        ]);
 
         $this->FormatFilters = $filters;
         $this->ComparisonFilters = $withoutColumn;

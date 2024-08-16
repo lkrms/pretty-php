@@ -16,7 +16,7 @@ trait ContextAwareTokenTrait
     /**
      * Check if the token is the colon before an alternative syntax block
      */
-    final public function isColonAltSyntaxDelimiter(): bool
+    public function isColonAltSyntaxDelimiter(): bool
     {
         return $this->getSubType() === TokenSubType::COLON_ALT_SYNTAX_DELIMITER;
     }
@@ -24,7 +24,7 @@ trait ContextAwareTokenTrait
     /**
      * Check if the token is the colon after a switch case or a label
      */
-    final public function isColonStatementDelimiter(): bool
+    public function isColonStatementDelimiter(): bool
     {
         return $this->getSubType() === TokenSubType::COLON_SWITCH_CASE_DELIMITER
             || $this->SubType === TokenSubType::COLON_LABEL_DELIMITER;
@@ -33,7 +33,7 @@ trait ContextAwareTokenTrait
     /**
      * Check if the token is the colon before a type declaration
      */
-    final public function isColonTypeDelimiter(): bool
+    public function isColonTypeDelimiter(): bool
     {
         return $this->getSubType() === TokenSubType::COLON_RETURN_TYPE_DELIMITER
             || $this->SubType === TokenSubType::COLON_BACKED_ENUM_TYPE_DELIMITER;
@@ -44,7 +44,7 @@ trait ContextAwareTokenTrait
      *
      * @return TokenSubType::*|-1
      */
-    final public function getSubType(): int
+    public function getSubType(): int
     {
         if (isset($this->SubType)) {
             return $this->SubType;
@@ -201,7 +201,7 @@ trait ContextAwareTokenTrait
     /**
      * Check if the token is in a parameter list
      */
-    final public function inParameterList(): bool
+    public function inParameterList(): bool
     {
         if ($this->Parent && $this->Parent->isParameterList()) {
             return true;
@@ -213,7 +213,7 @@ trait ContextAwareTokenTrait
     /**
      * Check if the token encloses a parameter list
      */
-    final public function isParameterList(): bool
+    public function isParameterList(): bool
     {
         if ($this->id !== \T_OPEN_PARENTHESIS || !$this->PrevCode) {
             return false;
@@ -231,7 +231,7 @@ trait ContextAwareTokenTrait
     /**
      * Check if the token is the opening brace of a function
      */
-    final public function isFunctionBrace(bool $allowAnonymous = true): bool
+    public function isFunctionBrace(bool $allowAnonymous = true): bool
     {
         if ($this->id !== \T_OPEN_BRACE || !$this->PrevCode) {
             return false;
@@ -281,7 +281,7 @@ trait ContextAwareTokenTrait
      * Returns `true` if the token is `T_CASE` or `T_DEFAULT`, part of the
      * expression after `T_CASE`, or the subsequent `:` or `;` delimiter.
      */
-    final public function inSwitchCase(): bool
+    public function inSwitchCase(): bool
     {
         return
             $this->inSwitchCaseList() && (
@@ -295,7 +295,7 @@ trait ContextAwareTokenTrait
     /**
      * Check if the token is in a T_SWITCH case list
      */
-    final public function inSwitchCaseList(): bool
+    public function inSwitchCaseList(): bool
     {
         return
             $this->Parent
@@ -307,7 +307,7 @@ trait ContextAwareTokenTrait
     /**
      * Check if the token belongs to a declaration
      */
-    final public function inDeclaration(bool $allowAnonymous = true): bool
+    public function inDeclaration(bool $allowAnonymous = true): bool
     {
         return $this->skipPrevSiblingsToDeclarationStart()
                     ->isDeclaration($allowAnonymous);
@@ -319,7 +319,7 @@ trait ContextAwareTokenTrait
      *
      * @phpstan-assert-if-true TokenCollection $parts
      */
-    final public function isNamedDeclaration(?TokenCollection &$parts = null): bool
+    public function isNamedDeclaration(?TokenCollection &$parts = null): bool
     {
         return func_num_args() > 0
             ? $this->doIsDeclaration(false, $parts)
@@ -329,7 +329,7 @@ trait ContextAwareTokenTrait
     /**
      * Check if a declaration starts at the token
      */
-    final public function isDeclaration(bool $allowAnonymous = true): bool
+    public function isDeclaration(bool $allowAnonymous = true): bool
     {
         return $this->doIsDeclaration($allowAnonymous);
     }
@@ -375,12 +375,10 @@ trait ContextAwareTokenTrait
         // Exclude:
         // - `static` outside declarations
         // - `case` in switch statements
-        // - `namespace` in relative names
         // - promoted constructor parameters
         if (
             ($first->id === \T_STATIC && !($next->id === \T_VARIABLE || $this->Idx->Declaration[$next->id]))
             || ($first->id === \T_CASE && $first->inSwitchCaseList())
-            || ($first->id === \T_NAMESPACE && $next->id === \T_NS_SEPARATOR)
             || ($this->Idx->VisibilityWithReadonly[$first->id] && $first->inParameterList())
         ) {
             return false;
@@ -410,7 +408,7 @@ trait ContextAwareTokenTrait
      *
      * @return Token
      */
-    final public function skipPrevSiblingsToDeclarationStart()
+    public function skipPrevSiblingsToDeclarationStart()
     {
         if (!$this->Expression) {
             return $this;
