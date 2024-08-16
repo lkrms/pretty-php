@@ -27,24 +27,28 @@ class Token extends GenericToken implements JsonSerializable
     public int $TagIndent = 0;
 
     /**
-     * Indentation levels to ignore until the token is rendered, e.g. those
-     * applied to unenclosed control structure bodies
+     * Indentation levels ignored until the token is rendered
+     *
+     * Applied to unenclosed control structure bodies and `switch` constructs.
      */
     public int $PreIndent = 0;
 
     /**
-     * Indentation levels implied by the token's enclosing brackets
+     * Indentation levels associated with the token's enclosing brackets
      */
     public int $Indent = 0;
 
     /**
-     * Indentation levels to remove when the token is rendered and to ignore
-     * otherwise, e.g. to indent `case` and `default` statements correctly
+     * Indentation levels removed when the token is rendered, ignored otherwise
+     *
+     * Applied to `case` and `default` statements in `switch` constructs.
      */
     public int $Deindent = 0;
 
+    /**
+     * Indentation levels applied by HangingIndentation
+     */
     public int $HangingIndent = 0;
-    public ?int $HangingIndentParentType = null;
 
     /**
      * The token that triggered each level of hanging indentation applied to the
@@ -219,7 +223,6 @@ class Token extends GenericToken implements JsonSerializable
         $a['Indent'] = $this->Indent;
         $a['Deindent'] = $this->Deindent;
         $a['HangingIndent'] = $this->HangingIndent;
-        $a['HangingIndentParentType'] = $this->HangingIndentParentType;
         $a['HangingIndentStack'] = $this->HangingIndentStack;
         $a['HangingIndentParentStack'] = $this->HangingIndentParentStack;
 

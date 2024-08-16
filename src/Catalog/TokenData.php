@@ -40,4 +40,9 @@ final class TokenData extends AbstractEnumeration
      * thereof
      */
     public const CHAIN_OPENED_BY = 4;
+
+    /**
+     * The type applied to an open bracket by the HangingIndentation rule
+     */
+    public const HANGING_INDENT_PARENT_TYPE = 5;
 }

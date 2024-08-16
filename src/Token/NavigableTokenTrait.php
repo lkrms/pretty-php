@@ -53,7 +53,7 @@ trait NavigableTokenTrait
 
     /**
      * @var array<TokenData::*,mixed>
-     * @phpstan-var array{string,int,Token,Token,Token}
+     * @phpstan-var array{string,int,Token,Token,Token,int}
      */
     public array $Data;
 

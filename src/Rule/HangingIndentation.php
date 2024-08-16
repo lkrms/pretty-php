@@ -41,13 +41,15 @@ final class HangingIndentation implements TokenRule
      */
     private const NO_INNER_NEWLINE = 8;
 
+    private const PARENT_TYPE = TokenData::HANGING_INDENT_PARENT_TYPE;
+
     /**
-     * True if `$this->Formatter->HeredocIndent` is MIXED or HANGING
+     * True if heredoc indentation is MIXED or HANGING
      */
     private bool $HeredocMayHaveHangingIndent;
 
     /**
-     * True if `$this->Formatter->HeredocIndent` is HANGING
+     * True if heredoc indentation is HANGING
      */
     private bool $HeredocHasHangingIndent;
 
@@ -66,25 +68,18 @@ final class HangingIndentation implements TokenRule
     /**
      * @inheritDoc
      */
-    public function reset(): void
+    public function boot(): void
     {
-        if (isset($this->HeredocHasHangingIndent)) {
-            return;
-        }
-
-        /** @var int&HeredocIndent::* */
         $indent = $this->Formatter->HeredocIndent;
-        $this->HeredocMayHaveHangingIndent =
-            (bool) ($indent & (HeredocIndent::MIXED | HeredocIndent::HANGING));
-        $this->HeredocHasHangingIndent =
-            (bool) ($indent & HeredocIndent::HANGING);
+        $this->HeredocHasHangingIndent = (bool) ($indent & HeredocIndent::HANGING);
+        $this->HeredocMayHaveHangingIndent = $this->HeredocHasHangingIndent || $indent & HeredocIndent::MIXED;
     }
 
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
             if ($this->Idx->OpenBracket[$token->id]) {
-                $token->HangingIndentParentType =
+                $token->Data[self::PARENT_TYPE] =
                     $token->hasNewlineBeforeNextCode()
                         ? (($token->Flags & TokenFlag::LIST_PARENT
                                 && $token->Data[TokenData::LIST_ITEM_COUNT] > 1)
@@ -109,7 +104,8 @@ final class HangingIndentation implements TokenRule
                     && $token->NextCode
                     && $parent->ClosedBy
                     && $token->NextCode->Index < $parent->ClosedBy->Index
-                    && ($parent->HangingIndentParentType & self::NO_INDENT)) {
+                    && $this->Idx->OpenBracket[$parent->id]
+                    && $parent->Data[self::PARENT_TYPE] & self::NO_INDENT) {
                 /** @var Token */
                 $current = $token->Next;
                 $stack = [[$parent]];
@@ -178,7 +174,8 @@ final class HangingIndentation implements TokenRule
             if ($token->id === \T_OPEN_BRACE
                     || ($token->Statement === $token
                         && (!$parent
-                            || !($parent->HangingIndentParentType & self::OVERHANGING_INDENT)))
+                            || !$this->Idx->OpenBracket[$parent->id]
+                            || !($parent->Data[self::PARENT_TYPE] & self::OVERHANGING_INDENT)))
                     || $this->indent($prevCode) !== $this->indent($token)) {
                 continue;
             }
@@ -220,7 +217,7 @@ final class HangingIndentation implements TokenRule
             //             $b;
             // ```
             if (
-                ($token->Flags & TokenFlag::TERNARY_OPERATOR)
+                $token->Flags & TokenFlag::TERNARY_OPERATOR
                 || $token->id === \T_COALESCE
                 || $token->id === \T_COALESCE_EQUAL
             ) {
@@ -294,14 +291,15 @@ final class HangingIndentation implements TokenRule
             $current = $parent;
             while ($current
                     && ($current = $current->Parent)
-                    && ($current->HangingIndentParentType & self::NO_INNER_NEWLINE)) {
+                    && $this->Idx->OpenBracket[$current->id]
+                    && $current->Data[self::PARENT_TYPE] & self::NO_INNER_NEWLINE) {
                 if (in_array($current, $token->HangingIndentParentStack, true)) {
                     continue;
                 }
                 $parents[] = $current;
                 $indent++;
                 $hanging[$current->Index] = 1;
-                if ($current->HangingIndentParentType & self::OVERHANGING_INDENT) {
+                if ($current->Data[self::PARENT_TYPE] & self::OVERHANGING_INDENT) {
                     $indent++;
                     $hanging[$current->Index]++;
                 }
@@ -313,7 +311,8 @@ final class HangingIndentation implements TokenRule
             // And another if the token is mid-statement and has an
             // OVERHANGING_INDENT parent
             if ($parent
-                    && ($parent->HangingIndentParentType & self::OVERHANGING_INDENT)
+                    && $this->Idx->OpenBracket[$parent->id]
+                    && $parent->Data[self::PARENT_TYPE] & self::OVERHANGING_INDENT
                     && $token->Statement !== $token) {
                 $indent++;
                 $hanging[$parent->Index] = 1;
@@ -437,13 +436,13 @@ final class HangingIndentation implements TokenRule
             && ($current->id === \T_COALESCE
                 || $current->id === \T_COALESCE_EQUAL
                 || ($current->id === \T_QUESTION
-                    && ($current->Flags & TokenFlag::TERNARY_OPERATOR))));
+                    && $current->Flags & TokenFlag::TERNARY_OPERATOR)));
 
         // And without breaking out of an unenclosed control structure
         // body, proceed to the end of the expression
         if (!(
             $until->NextSibling
-            && ($until->NextSibling->Flags & TokenFlag::TERNARY_OPERATOR)
+            && $until->NextSibling->Flags & TokenFlag::TERNARY_OPERATOR
         )) {
             $until = $until->pragmaticEndOfExpression();
         }
