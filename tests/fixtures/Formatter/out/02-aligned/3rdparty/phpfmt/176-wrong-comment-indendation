@@ -6,7 +6,7 @@ class ClassName
     public function b()
     {
         return StaticClass::do('something')
-            ->with('string');
+                   ->with('string');
     }
 
     public function c()

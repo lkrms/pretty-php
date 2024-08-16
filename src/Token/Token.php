@@ -27,24 +27,28 @@ class Token extends GenericToken implements JsonSerializable
     public int $TagIndent = 0;
 
     /**
-     * Indentation levels to ignore until the token is rendered, e.g. those
-     * applied to unenclosed control structure bodies
+     * Indentation levels ignored until the token is rendered
+     *
+     * Applied to unenclosed control structure bodies and `switch` constructs.
      */
     public int $PreIndent = 0;
 
     /**
-     * Indentation levels implied by the token's enclosing brackets
+     * Indentation levels associated with the token's enclosing brackets
      */
     public int $Indent = 0;
 
     /**
-     * Indentation levels to remove when the token is rendered and to ignore
-     * otherwise, e.g. to indent `case` and `default` statements correctly
+     * Indentation levels removed when the token is rendered, ignored otherwise
+     *
+     * Applied to `case` and `default` statements in `switch` constructs.
      */
     public int $Deindent = 0;
 
+    /**
+     * Indentation levels applied by HangingIndentation
+     */
     public int $HangingIndent = 0;
-    public ?int $HangingIndentParentType = null;
 
     /**
      * The token that triggered each level of hanging indentation applied to the
@@ -141,7 +145,7 @@ class Token extends GenericToken implements JsonSerializable
     public int $OutputPos = -1;
     public int $OutputColumn = -1;
 
-    final public function isMatchBrace(): bool
+    public function isMatchBrace(): bool
     {
         $current = $this->OpenedBy ?: $this;
 
@@ -152,7 +156,7 @@ class Token extends GenericToken implements JsonSerializable
             && $prev->id === \T_MATCH;
     }
 
-    final public function isMatchDelimiter(): bool
+    public function isMatchDelimiter(): bool
     {
         return
             $this->id === \T_COMMA
@@ -160,14 +164,14 @@ class Token extends GenericToken implements JsonSerializable
             && $this->Parent->isMatchBrace();
     }
 
-    final public function isDelimiterBetweenMatchArms(): bool
+    public function isDelimiterBetweenMatchArms(): bool
     {
         return
             $this->isMatchDelimiter()
             && $this->prevSiblingOf(\T_COMMA, \T_DOUBLE_ARROW)->id === \T_DOUBLE_ARROW;
     }
 
-    final public function isDelimiterBetweenMatchExpressions(): bool
+    public function isDelimiterBetweenMatchExpressions(): bool
     {
         return
             $this->isMatchDelimiter()
@@ -219,7 +223,6 @@ class Token extends GenericToken implements JsonSerializable
         $a['Indent'] = $this->Indent;
         $a['Deindent'] = $this->Deindent;
         $a['HangingIndent'] = $this->HangingIndent;
-        $a['HangingIndentParentType'] = $this->HangingIndentParentType;
         $a['HangingIndentStack'] = $this->HangingIndentStack;
         $a['HangingIndentParentStack'] = $this->HangingIndentParentStack;
 
@@ -274,15 +277,12 @@ class Token extends GenericToken implements JsonSerializable
         return $a;
     }
 
-    final public function canonicalClose(): Token
+    public function canonicalClose(): Token
     {
         return $this->ClosedBy ?: $this;
     }
 
-    /**
-     * @api
-     */
-    final public function wasFirstOnLine(): bool
+    public function wasFirstOnLine(): bool
     {
         if ($this->id === \T_NULL) {
             return false;
@@ -300,10 +300,7 @@ class Token extends GenericToken implements JsonSerializable
             || $prevCode[-1] === "\n";
     }
 
-    /**
-     * @api
-     */
-    final public function wasLastOnLine(): bool
+    public function wasLastOnLine(): bool
     {
         if ($this->id === \T_NULL) {
             return false;
@@ -321,7 +318,7 @@ class Token extends GenericToken implements JsonSerializable
             || $code[-1] === "\n";
     }
 
-    final public function startOfLine(bool $ignoreComments = true): Token
+    public function startOfLine(bool $ignoreComments = true): Token
     {
         $current = $this;
         while (!$current->hasNewlineBefore()
@@ -335,7 +332,7 @@ class Token extends GenericToken implements JsonSerializable
         return $current;
     }
 
-    final public function endOfLine(bool $ignoreComments = true): Token
+    public function endOfLine(bool $ignoreComments = true): Token
     {
         $current = $this;
         while (!$current->hasNewlineAfter()
@@ -394,7 +391,7 @@ class Token extends GenericToken implements JsonSerializable
         return $offset;
     }
 
-    final public function continuesControlStructure(): bool
+    public function continuesControlStructure(): bool
     {
         return $this->is([\T_CATCH, \T_FINALLY, \T_ELSEIF, \T_ELSE])
             || ($this->id === \T_WHILE && $this->Statement !== $this);
@@ -406,27 +403,22 @@ class Token extends GenericToken implements JsonSerializable
      * @param bool $containUnenclosed If `true`, braces are imagined around
      * control structures with unenclosed bodies. The default is `false`.
      */
-    final public function pragmaticStartOfExpression(bool $containUnenclosed = false): Token
+    public function pragmaticStartOfExpression(bool $containUnenclosed = false): Token
     {
-        // If the token is an object operator, return the first token in the
-        // chain
         if ($this->Idx->Chain[$this->id]) {
+            // Get the first token in the expression dereferenced by the first
+            // `->` or `?->` in the chain
             $current = $this;
             $first = null;
-            while (($current = $current->PrevSibling)
-                    && $this->Expression === $current->Expression
-                    && $current->is([
-                        \T_DOUBLE_COLON,
-                        \T_NAME_FULLY_QUALIFIED,
-                        \T_NAME_QUALIFIED,
-                        \T_NAME_RELATIVE,
-                        \T_VARIABLE,
-                        ...TokenType::CHAIN_PART
-                    ])) {
+            while (
+                ($current = $current->PrevSibling)
+                && $this->Expression === $current->Expression
+                && $this->Idx->ChainExpression[$current->id]
+            ) {
                 $first = $current;
             }
-
-            return $first->_pragmaticStartOfExpression($this);
+            assert($first !== null);
+            return $first;
         }
 
         // If the token is between `?` and `:` in a ternary expression, return
@@ -516,7 +508,7 @@ class Token extends GenericToken implements JsonSerializable
      * @param bool $containUnenclosed If `true` (the default), braces are
      * imagined around control structures with unenclosed bodies.
      */
-    final public function pragmaticEndOfExpression(
+    public function pragmaticEndOfExpression(
         bool $containUnenclosed = true,
         bool $containDeclaration = true
     ): Token {
@@ -673,17 +665,24 @@ class Token extends GenericToken implements JsonSerializable
         return $current;
     }
 
-    final public function adjacent(): ?Token
+    /**
+     * If the token belongs to a sequence of one or more consecutive close
+     * brackets or commas in any combination, and the last of these has a
+     * subsequent token in the same statement, return it
+     *
+     * @api
+     */
+    public function adjacent(): ?Token
     {
-        $current = $this->ClosedBy ?: $this;
-        $outer = $current->withNextCodeWhile(true, $this->Idx->CloseBracketOrComma)->last();
-        if (!$outer
-                || !$outer->NextCode
-                || !$outer->EndStatement
-                || $outer->EndStatement->Index <= $outer->NextCode->Index) {
-            return null;
-        }
-        return $outer->NextCode;
+        $t = $this->ClosedBy ?? $this;
+        $outer = $t->withNextCodeWhile($this->Idx->CloseBracketOrComma, true)
+                   ->last();
+        return !$outer
+            || !$outer->NextCode
+            || !$outer->EndStatement
+            || $outer->EndStatement->Index <= $outer->NextCode->Index
+                ? null
+                : $outer->NextCode;
     }
 
     /**
@@ -708,7 +707,7 @@ class Token extends GenericToken implements JsonSerializable
      *   between the adjacent token and the end of the line with an
      *   {@see Token::$AlignedWith} token
      */
-    final public function adjacentBeforeNewline(bool $requireAlignedWith = true): ?Token
+    public function adjacentBeforeNewline(bool $requireAlignedWith = true): ?Token
     {
         // Return `null` if neither the token nor its parent have a close
         // bracket
@@ -724,7 +723,7 @@ class Token extends GenericToken implements JsonSerializable
         // Find the last `)`, `]`, `}`, or `,` on the same line as the close
         // bracket and assign it to `$outer`
         $eol = $this->endOfLine();
-        $outer = $current->withNextCodeWhile(false, $this->Idx->CloseBracketOrComma)
+        $outer = $current->withNextCodeWhile($this->Idx->CloseBracketOrComma)
                          ->filter(fn(Token $t) => $t->Index <= $eol->Index)
                          ->last();
 
@@ -771,7 +770,7 @@ class Token extends GenericToken implements JsonSerializable
      *
      * The token returns itself if it satisfies the criteria.
      */
-    final public function lastSiblingBeforeNewline(): Token
+    public function lastSiblingBeforeNewline(): Token
     {
         $eol = $this->endOfLine();
         $current = $this->ClosedBy ?: $this;
@@ -784,7 +783,7 @@ class Token extends GenericToken implements JsonSerializable
         return $last;
     }
 
-    final public function withoutTerminator(): Token
+    public function withoutTerminator(): Token
     {
         if ($this->PrevCode
             && ($this->is([\T_SEMICOLON, \T_COMMA, \T_COLON])
@@ -795,7 +794,7 @@ class Token extends GenericToken implements JsonSerializable
         return $this;
     }
 
-    final public function withTerminator(): Token
+    public function withTerminator(): Token
     {
         if ($this->NextCode
             && !($this->is([\T_SEMICOLON, \T_COMMA, \T_COLON])
@@ -808,10 +807,7 @@ class Token extends GenericToken implements JsonSerializable
         return $this;
     }
 
-    /**
-     * @api
-     */
-    final public function applyBlankLineBefore(bool $withMask = false): void
+    public function applyBlankLineBefore(bool $withMask = false): void
     {
         $current = $this;
         $prev = $current->Prev;
@@ -839,7 +835,7 @@ class Token extends GenericToken implements JsonSerializable
         }
     }
 
-    final public function effectiveWhitespaceBefore(): int
+    public function effectiveWhitespaceBefore(): int
     {
         return $this->CriticalWhitespaceBefore
             | ($this->Prev->CriticalWhitespaceAfter ?? 0)
@@ -851,7 +847,7 @@ class Token extends GenericToken implements JsonSerializable
                 & $this->CriticalWhitespaceMaskPrev);
     }
 
-    final public function effectiveWhitespaceAfter(): int
+    public function effectiveWhitespaceAfter(): int
     {
         return $this->CriticalWhitespaceAfter
             | ($this->Next->CriticalWhitespaceBefore ?? 0)
@@ -863,24 +859,24 @@ class Token extends GenericToken implements JsonSerializable
                 & $this->CriticalWhitespaceMaskNext);
     }
 
-    final public function hasNewlineBefore(): bool
+    public function hasNewlineBefore(): bool
     {
         return !!($this->effectiveWhitespaceBefore()
             & (WhitespaceType::LINE | WhitespaceType::BLANK));
     }
 
-    final public function hasNewlineAfter(): bool
+    public function hasNewlineAfter(): bool
     {
         return !!($this->effectiveWhitespaceAfter()
             & (WhitespaceType::LINE | WhitespaceType::BLANK));
     }
 
-    final public function hasBlankLineBefore(): bool
+    public function hasBlankLineBefore(): bool
     {
         return !!($this->effectiveWhitespaceBefore() & WhitespaceType::BLANK);
     }
 
-    final public function hasBlankLineAfter(): bool
+    public function hasBlankLineAfter(): bool
     {
         return !!($this->effectiveWhitespaceAfter() & WhitespaceType::BLANK);
     }
@@ -888,7 +884,7 @@ class Token extends GenericToken implements JsonSerializable
     /**
      * Check if the token contains a newline
      */
-    final public function hasNewline(): bool
+    public function hasNewline(): bool
     {
         return strpos($this->text, "\n") !== false;
     }
@@ -897,7 +893,7 @@ class Token extends GenericToken implements JsonSerializable
      * Check if, between the token and the next code token, there's a newline
      * between tokens
      */
-    final public function hasNewlineBeforeNextCode(bool $orInHtml = true): bool
+    public function hasNewlineBeforeNextCode(bool $orInHtml = true): bool
     {
         if ($this->hasNewlineAfter()) {
             return true;
@@ -926,7 +922,7 @@ class Token extends GenericToken implements JsonSerializable
         return false;
     }
 
-    final public function isArrayOpenBracket(): bool
+    public function isArrayOpenBracket(): bool
     {
         if ($this->id === \T_OPEN_PARENTHESIS) {
             return
@@ -942,7 +938,7 @@ class Token extends GenericToken implements JsonSerializable
             );
     }
 
-    final public function isDereferenceableTerminator(): bool
+    public function isDereferenceableTerminator(): bool
     {
         return
             $this->Idx->DereferenceableTerminator[$this->id] || (
@@ -981,7 +977,7 @@ class Token extends GenericToken implements JsonSerializable
         );
     }
 
-    final public function inUnaryContext(): bool
+    public function inUnaryContext(): bool
     {
         if ($this->Expression === $this) {
             return true;
@@ -995,7 +991,7 @@ class Token extends GenericToken implements JsonSerializable
             || $this->Idx->UnaryPredecessor[$this->PrevCode->id];
     }
 
-    final public function getIndentDelta(Token $target): TokenIndentDelta
+    public function getIndentDelta(Token $target): TokenIndentDelta
     {
         return TokenIndentDelta::between($this, $target);
     }

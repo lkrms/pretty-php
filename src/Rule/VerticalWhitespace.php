@@ -313,7 +313,7 @@ final class VerticalWhitespace implements TokenRule
                 continue;
             }
 
-            $chain = $token->withNextSiblingsWhile(false, $this->Idx->ChainPart)
+            $chain = $token->withNextSiblingsWhile($this->Idx->ChainPart)
                            ->getAnyFrom($this->Idx->Chain);
 
             if (

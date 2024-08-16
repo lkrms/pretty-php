@@ -109,16 +109,15 @@ final class StandardWhitespace implements TokenRule
             }
 
             if (($idx->CloseBracket[$token->id] && !$token->isStructuralBrace(true))
-                    || ($idx->SuppressSpaceBefore[$token->id] && (
-                        // Only suppress SPACE before namespace separators in or
-                        // immediately after an identifier
-                        $token->id !== \T_NS_SEPARATOR
-                        || $token->Prev->id === \T_NAMESPACE
-                        || $token->Prev->id === \T_NAME_FULLY_QUALIFIED
+                || ($idx->SuppressSpaceBefore[$token->id]
+                    // Only suppress SPACE before namespace separators in or
+                    // immediately after an identifier
+                    && ($token->id !== \T_NS_SEPARATOR || ($token->Prev && (
+                        $token->Prev->id === \T_NAME_FULLY_QUALIFIED
                         || $token->Prev->id === \T_NAME_QUALIFIED
                         || $token->Prev->id === \T_NAME_RELATIVE
                         || $token->Prev->id === \T_STRING
-                    ))) {
+                    ))))) {
                 $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::SPACE;
             } elseif ($token->id === \T_END_ALT_SYNTAX) {
                 $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
@@ -187,7 +186,8 @@ final class StandardWhitespace implements TokenRule
                 // construct in the global scope
                 $current = $token;
                 if (
-                    $token->id === \T_OPEN_TAG
+                    $this->Formatter->CollapseDeclareHeaders
+                    && $token->id === \T_OPEN_TAG
                     && ($declare = $token->Next)
                     && $declare->id === \T_DECLARE
                     && $declare->NextSibling

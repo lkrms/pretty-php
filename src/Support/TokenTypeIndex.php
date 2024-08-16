@@ -443,6 +443,12 @@ class TokenTypeIndex implements Immutable
     public array $ChainPart;
 
     /**
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $ChainExpression;
+
+    /**
      * T_COMMENT, T_DOC_COMMENT
      *
      * @readonly
@@ -478,8 +484,8 @@ class TokenTypeIndex implements Immutable
     public array $DeclarationClass;
 
     /**
-     * T_COMMA, T_NAMESPACE, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED,
-     * T_NAME_RELATIVE, T_NS_SEPARATOR, T_STATIC, T_STRING
+     * T_COMMA, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE,
+     * T_STATIC, T_STRING
      *
      * @readonly
      * @var array<int,bool>
@@ -590,9 +596,9 @@ class TokenTypeIndex implements Immutable
     public array $TypeDelimiter;
 
     /**
-     * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE, T_NAMESPACE,
-     * T_NS_SEPARATOR, T_STRING, T_OPEN_PARENTHESIS, T_CLOSE_PARENTHESIS,
-     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_OR
+     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_CLOSE_PARENTHESIS,
+     * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE,
+     * T_OPEN_PARENTHESIS, T_OR, T_STRING
      *
      * @readonly
      * @var array<int,bool>
@@ -1007,6 +1013,7 @@ class TokenTypeIndex implements Immutable
         );
         $this->Chain = TT::getIndex(...TT::CHAIN);
         $this->ChainPart = TT::getIndex(...TT::CHAIN_PART);
+        $this->ChainExpression = TT::getIndex(...TT::CHAIN_EXPRESSION);
         $this->Comment = TT::getIndex(...TT::COMMENT);
         $this->Declaration = TT::getIndex(...TT::DECLARATION);
         $this->DeclarationExceptModifiers = TT::getIndex(...TT::DECLARATION_EXCEPT_MODIFIERS);
@@ -1028,7 +1035,7 @@ class TokenTypeIndex implements Immutable
         $this->HasStatement = TT::getIndex(...TT::HAS_STATEMENT);
         $this->HasStatementWithOptionalBraces = TT::getIndex(...TT::HAS_STATEMENT_WITH_OPTIONAL_BRACES);
         $this->HasExpressionAndStatementWithOptionalBraces = TT::getIndex(...TT::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES);
-        $this->MaybeReserved = TT::getIndex(\T_STRING, ...TT::SEMI_RESERVED);
+        $this->MaybeReserved = TT::getIndex(...TT::MAYBE_RESERVED);
         $this->NotCode = TT::getIndex(...TT::NOT_CODE);
         $this->OperatorBooleanExceptNot = TT::getIndex(...TT::OPERATOR_BOOLEAN_EXCEPT_NOT);
         $this->TypeDelimiter = TT::getIndex(...TT::TYPE_DELIMITER);

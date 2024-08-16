@@ -22,6 +22,7 @@ use Lkrms\PrettyPHP\Filter\CollectColumn;
 use Lkrms\PrettyPHP\Filter\EvaluateNumbers;
 use Lkrms\PrettyPHP\Filter\EvaluateStrings;
 use Lkrms\PrettyPHP\Filter\MoveComments;
+use Lkrms\PrettyPHP\Filter\NormaliseNames;
 use Lkrms\PrettyPHP\Filter\RemoveEmptyDocBlocks;
 use Lkrms\PrettyPHP\Filter\RemoveEmptyTokens;
 use Lkrms\PrettyPHP\Filter\RemoveHeredocIndentation;
@@ -175,6 +176,30 @@ final class Formatter implements Buildable
     public bool $OneTrueBraceStyle;
 
     /**
+     * True if empty declaration bodies are collapsed to the end of the
+     * declaration
+     *
+     * @readonly
+     */
+    public bool $CollapseEmptyDeclarationBodies;
+
+    /**
+     * True if headers like "<?php declare(strict_types=1);" are collapsed to
+     * one line
+     *
+     * @readonly
+     */
+    public bool $CollapseDeclareHeaders;
+
+    /**
+     * True if blank lines are applied between "<?php" and subsequent
+     * declarations
+     *
+     * @readonly
+     */
+    public bool $ExpandHeaders;
+
+    /**
      * True if blank lines between declarations of the same type are removed
      * where possible
      *
@@ -319,6 +344,7 @@ final class Formatter implements Buildable
      * @var array<class-string<Filter>>
      */
     public const DEFAULT_FILTERS = [
+        NormaliseNames::class,
         CollectColumn::class,
         RemoveWhitespace::class,
         RemoveHeredocIndentation::class,
@@ -478,6 +504,9 @@ final class Formatter implements Buildable
         int $heredocIndent = HeredocIndent::MIXED,
         int $importSortOrder = ImportSortOrder::DEPTH,
         bool $oneTrueBraceStyle = false,
+        bool $collapseEmptyDeclarationBodies = true,
+        bool $collapseDeclareHeaders = true,
+        bool $expandHeaders = false,
         bool $tightDeclarationSpacing = false,
         bool $psr12 = false
     ) {
@@ -497,6 +526,9 @@ final class Formatter implements Buildable
         $this->HeredocIndent = $heredocIndent;
         $this->ImportSortOrder = $importSortOrder;
         $this->OneTrueBraceStyle = $oneTrueBraceStyle;
+        $this->CollapseEmptyDeclarationBodies = $collapseEmptyDeclarationBodies;
+        $this->CollapseDeclareHeaders = $collapseDeclareHeaders;
+        $this->ExpandHeaders = $expandHeaders;
         $this->TightDeclarationSpacing = $tightDeclarationSpacing;
         $this->Psr12 = $psr12;
 
@@ -656,8 +688,11 @@ final class Formatter implements Buildable
         Profile::stopTimer(__METHOD__ . '#sort-rules');
 
         $withComparison = array_merge($filters, self::COMPARISON_FILTERS);
-        // Column numbers are unnecessary when comparing tokens
-        $withoutColumn = array_diff($withComparison, [CollectColumn::class]);
+        // Column numbers and PHP 8.0 name tokens are unnecessary for comparison
+        $withoutColumn = array_diff($withComparison, [
+            CollectColumn::class,
+            NormaliseNames::class,
+        ]);
 
         $this->FormatFilters = $filters;
         $this->ComparisonFilters = $withoutColumn;

@@ -53,7 +53,7 @@ trait NavigableTokenTrait
 
     /**
      * @var array<TokenData::*,mixed>
-     * @phpstan-var array{string,int,Token,Token,Token}
+     * @phpstan-var array{string,int,Token,Token,Token,int}
      */
     public array $Data;
 
@@ -133,7 +133,7 @@ trait NavigableTokenTrait
      * - trait adaptations
      * - `match` expressions (if `$orMatch` is `true`)
      */
-    final public function isStructuralBrace(bool $orMatch = false): bool
+    public function isStructuralBrace(bool $orMatch = false): bool
     {
         /** @var Token $this */
         $current = $this->OpenedBy ?? $this;
@@ -166,7 +166,7 @@ trait NavigableTokenTrait
     /**
      * Check if the token is a T_WHILE that belongs to a do ... while structure
      */
-    final public function isWhileAfterDo(): bool
+    public function isWhileAfterDo(): bool
     {
         /** @var Token $this */
         if (
@@ -278,7 +278,7 @@ trait NavigableTokenTrait
      *
      * @return $this
      */
-    final public function setText(string $text)
+    public function setText(string $text)
     {
         if ($this->text !== $text) {
             if ($this->OriginalText === null) {
@@ -295,7 +295,7 @@ trait NavigableTokenTrait
      * @param array<int,bool> $index
      * @return Token
      */
-    final public function prevFrom(array $index)
+    public function prevFrom(array $index)
     {
         $t = $this;
         while ($t = $t->Prev) {
@@ -312,7 +312,7 @@ trait NavigableTokenTrait
      * @param array<int,bool> $index
      * @return Token
      */
-    final public function nextFrom(array $index)
+    public function nextFrom(array $index)
     {
         $t = $this;
         while ($t = $t->Next) {
@@ -329,7 +329,7 @@ trait NavigableTokenTrait
      * @param array<int,bool> $index
      * @return Token
      */
-    final public function prevSiblingFrom(array $index)
+    public function prevSiblingFrom(array $index)
     {
         $t = $this;
         while ($t = $t->PrevSibling) {
@@ -346,7 +346,7 @@ trait NavigableTokenTrait
      * @param array<int,bool> $index
      * @return Token
      */
-    final public function nextSiblingFrom(array $index)
+    public function nextSiblingFrom(array $index)
     {
         $t = $this;
         while ($t = $t->NextSibling) {
@@ -365,7 +365,7 @@ trait NavigableTokenTrait
      * @param array<int,bool> $index
      * @return Token
      */
-    final public function skipSiblingsFrom(array $index)
+    public function skipSiblingsFrom(array $index)
     {
         $t = $this->Flags & TokenFlag::CODE ? $this : $this->NextCode;
         while ($t && $index[$t->id]) {
@@ -382,7 +382,7 @@ trait NavigableTokenTrait
      * @param array<int,bool> $index
      * @return Token
      */
-    final public function skipPrevSiblingsFrom(array $index)
+    public function skipPrevSiblingsFrom(array $index)
     {
         $t = $this->Flags & TokenFlag::CODE ? $this : $this->PrevCode;
         while ($t && $index[$t->id]) {
@@ -396,7 +396,7 @@ trait NavigableTokenTrait
      *
      * @return Token
      */
-    final public function prevOf(int $type, int ...$types)
+    public function prevOf(int $type, int ...$types)
     {
         array_unshift($types, $type);
         $t = $this;
@@ -413,7 +413,7 @@ trait NavigableTokenTrait
      *
      * @return Token
      */
-    final public function nextOf(int $type, int ...$types)
+    public function nextOf(int $type, int ...$types)
     {
         array_unshift($types, $type);
         $t = $this;
@@ -430,7 +430,7 @@ trait NavigableTokenTrait
      *
      * @return Token
      */
-    final public function prevSiblingOf(int $type, int ...$types)
+    public function prevSiblingOf(int $type, int ...$types)
     {
         array_unshift($types, $type);
         $t = $this;
@@ -447,7 +447,7 @@ trait NavigableTokenTrait
      *
      * @return Token
      */
-    final public function nextSiblingOf(int $type, int ...$types)
+    public function nextSiblingOf(int $type, int ...$types)
     {
         array_unshift($types, $type);
         $t = $this;
@@ -464,7 +464,7 @@ trait NavigableTokenTrait
      *
      * @return Token
      */
-    final public function first()
+    public function first()
     {
         $current = $this;
         while ($current->Parent) {
@@ -481,7 +481,7 @@ trait NavigableTokenTrait
      *
      * @return Token
      */
-    final public function last()
+    public function last()
     {
         $current = $this;
         while ($current->Parent) {
@@ -498,7 +498,7 @@ trait NavigableTokenTrait
      *
      * @return Token
      */
-    final public function startOfOriginalLine()
+    public function startOfOriginalLine()
     {
         $current = $this;
         while (($current->Prev->line ?? null) === $this->line) {
@@ -512,7 +512,7 @@ trait NavigableTokenTrait
      *
      * @return Token
      */
-    final public function endOfOriginalLine()
+    public function endOfOriginalLine()
     {
         $current = $this;
         while (($current->Next->line ?? null) === $this->line) {
@@ -526,7 +526,7 @@ trait NavigableTokenTrait
      *
      * @return never
      */
-    final protected function throw(): void
+    protected function throw(): void
     {
         throw new InvalidTokenException($this);
     }

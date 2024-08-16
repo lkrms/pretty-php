@@ -13,7 +13,7 @@ trait CollectibleTokenTrait
      * Get the token and any subsequent tokens that could be part of a
      * non-anonymous declaration
      */
-    final public function namedDeclarationParts(): TokenCollection
+    public function namedDeclarationParts(): TokenCollection
     {
         return $this->getDeclarationParts(false);
     }
@@ -22,7 +22,7 @@ trait CollectibleTokenTrait
      * Get the token and any subsequent tokens that could be part of a
      * declaration
      */
-    final public function declarationParts(): TokenCollection
+    public function declarationParts(): TokenCollection
     {
         return $this->getDeclarationParts(true);
     }
@@ -62,7 +62,7 @@ trait CollectibleTokenTrait
      * Get the token and its preceding tokens in the same statement, in document
      * order
      */
-    final public function sinceStartOfStatement(): TokenCollection
+    public function sinceStartOfStatement(): TokenCollection
     {
         return $this->Statement
             ? $this->Statement->collect($this)
@@ -72,16 +72,16 @@ trait CollectibleTokenTrait
     /**
      * Get the token and its nested tokens
      */
-    final public function outer(): TokenCollection
+    public function outer(): TokenCollection
     {
         return ($this->OpenedBy ?? $this)
-            ->collect($this->ClosedBy ?? $this);
+                   ->collect($this->ClosedBy ?? $this);
     }
 
     /**
      * Get the token's nested tokens
      */
-    final public function inner(): TokenCollection
+    public function inner(): TokenCollection
     {
         $t = $this->OpenedBy ?? $this;
         return $t->ClosedBy
@@ -95,7 +95,7 @@ trait CollectibleTokenTrait
     /**
      * Get the token's nested siblings
      */
-    final public function children(): TokenCollection
+    public function children(): TokenCollection
     {
         $t = $this->OpenedBy ?? $this;
         return $t->ClosedBy
@@ -111,7 +111,7 @@ trait CollectibleTokenTrait
      *
      * @param static $to
      */
-    final public function collect($to): TokenCollection
+    public function collect($to): TokenCollection
     {
         return TokenCollection::collect($this, $to);
     }
@@ -122,7 +122,7 @@ trait CollectibleTokenTrait
      *
      * @param static|null $to
      */
-    final public function collectSiblings($to = null): TokenCollection
+    public function collectSiblings($to = null): TokenCollection
     {
         $tokens = new TokenCollection();
         if ($this->id === \T_NULL) {
@@ -155,7 +155,7 @@ trait CollectibleTokenTrait
      *
      * @param static|null $to
      */
-    final public function prevSiblings($to = null): TokenCollection
+    public function prevSiblings($to = null): TokenCollection
     {
         $tokens = new TokenCollection();
         if ($this->id === \T_NULL) {
@@ -188,7 +188,7 @@ trait CollectibleTokenTrait
      *
      * @param array<int,bool> $index
      */
-    final public function prevCodeWhile(array $index): TokenCollection
+    public function prevCodeWhile(array $index): TokenCollection
     {
         return $this->_prevCodeWhile(false, false, $index);
     }
@@ -197,12 +197,12 @@ trait CollectibleTokenTrait
      * Get the token and its preceding code tokens in reverse document order, up
      * to but not including the first that isn't one of the types in an index
      *
+     * @param array<int,bool> $index
      * @param bool $testToken If `true` and the token isn't one of the types in
      * `$index`, an empty collection is returned. Otherwise, the token is added
      * to the collection regardless.
-     * @param array<int,bool> $index
      */
-    final public function withPrevCodeWhile(bool $testToken, array $index): TokenCollection
+    public function withPrevCodeWhile(array $index, bool $testToken = false): TokenCollection
     {
         return $this->_prevCodeWhile(true, $testToken, $index);
     }
@@ -213,7 +213,7 @@ trait CollectibleTokenTrait
      *
      * @param array<int,bool> $index
      */
-    final public function nextCodeWhile(array $index): TokenCollection
+    public function nextCodeWhile(array $index): TokenCollection
     {
         return $this->_nextCodeWhile(false, false, $index);
     }
@@ -222,12 +222,12 @@ trait CollectibleTokenTrait
      * Get the token and its following code tokens, up to but not including the
      * first that isn't one of the types in an index
      *
+     * @param array<int,bool> $index
      * @param bool $testToken If `true` and the token isn't one of the types in
      * `$index`, an empty collection is returned. Otherwise, the token is added
      * to the collection regardless.
-     * @param array<int,bool> $index
      */
-    final public function withNextCodeWhile(bool $testToken, array $index): TokenCollection
+    public function withNextCodeWhile(array $index, bool $testToken = false): TokenCollection
     {
         return $this->_nextCodeWhile(true, $testToken, $index);
     }
@@ -238,7 +238,7 @@ trait CollectibleTokenTrait
      *
      * @param array<int,bool> $index
      */
-    final public function prevSiblingsWhile(array $index): TokenCollection
+    public function prevSiblingsWhile(array $index): TokenCollection
     {
         return $this->_prevSiblingsWhile(false, false, $index);
     }
@@ -247,12 +247,12 @@ trait CollectibleTokenTrait
      * Get the token and its preceding siblings in reverse document order, up to
      * but not including the first that isn't one of the types in an index
      *
+     * @param array<int,bool> $index
      * @param bool $testToken If `true` and the token isn't one of the types in
      * `$index`, an empty collection is returned. Otherwise, the token is added
      * to the collection regardless.
-     * @param array<int,bool> $index
      */
-    final public function withPrevSiblingsWhile(bool $testToken, array $index): TokenCollection
+    public function withPrevSiblingsWhile(array $index, bool $testToken = false): TokenCollection
     {
         return $this->_prevSiblingsWhile(true, $testToken, $index);
     }
@@ -263,7 +263,7 @@ trait CollectibleTokenTrait
      *
      * @param array<int,bool> $index
      */
-    final public function nextSiblingsWhile(array $index): TokenCollection
+    public function nextSiblingsWhile(array $index): TokenCollection
     {
         return $this->_nextSiblingsWhile(false, false, $index);
     }
@@ -272,12 +272,12 @@ trait CollectibleTokenTrait
      * Get the token and its following siblings, up to but not including the
      * first that isn't one of the types in an index
      *
+     * @param array<int,bool> $index
      * @param bool $testToken If `true` and the token isn't one of the types in
      * `$index`, an empty collection is returned. Otherwise, the token is added
      * to the collection regardless.
-     * @param array<int,bool> $index
      */
-    final public function withNextSiblingsWhile(bool $testToken, array $index): TokenCollection
+    public function withNextSiblingsWhile(array $index, bool $testToken = false): TokenCollection
     {
         return $this->_nextSiblingsWhile(true, $testToken, $index);
     }
@@ -288,7 +288,7 @@ trait CollectibleTokenTrait
      *
      * @param Closure(self, TokenCollection): bool $callback
      */
-    final public function prevSiblingsUntil(Closure $callback): TokenCollection
+    public function prevSiblingsUntil(Closure $callback): TokenCollection
     {
         return $this->_prevSiblingsUntil($callback);
     }
@@ -302,7 +302,7 @@ trait CollectibleTokenTrait
      * callback, an empty collection is returned. Otherwise, the token is added
      * to the collection regardless.
      */
-    final public function withPrevSiblingsUntil(Closure $callback, bool $testToken = false): TokenCollection
+    public function withPrevSiblingsUntil(Closure $callback, bool $testToken = false): TokenCollection
     {
         return $this->_prevSiblingsUntil($callback, true, $testToken);
     }
@@ -313,7 +313,7 @@ trait CollectibleTokenTrait
      *
      * @param Closure(self, TokenCollection): bool $callback
      */
-    final public function nextSiblingsUntil(Closure $callback): TokenCollection
+    public function nextSiblingsUntil(Closure $callback): TokenCollection
     {
         return $this->_nextSiblingsUntil($callback);
     }
@@ -327,7 +327,7 @@ trait CollectibleTokenTrait
      * callback, an empty collection is returned. Otherwise, the token is added
      * to the collection regardless.
      */
-    final public function withNextSiblingsUntil(Closure $callback, bool $testToken = false): TokenCollection
+    public function withNextSiblingsUntil(Closure $callback, bool $testToken = false): TokenCollection
     {
         return $this->_nextSiblingsUntil($callback, true, $testToken);
     }
@@ -338,7 +338,7 @@ trait CollectibleTokenTrait
      *
      * @param array<int,bool> $index
      */
-    final public function parentsWhile(array $index): TokenCollection
+    public function parentsWhile(array $index): TokenCollection
     {
         return $this->_parentsWhile(false, false, $index);
     }
@@ -349,7 +349,7 @@ trait CollectibleTokenTrait
      *
      * @param array<int,bool> $index
      */
-    final public function withParentsWhile(bool $testToken, array $index): TokenCollection
+    public function withParentsWhile(array $index, bool $testToken = false): TokenCollection
     {
         return $this->_parentsWhile(true, $testToken, $index);
     }

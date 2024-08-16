@@ -38,6 +38,9 @@ final class Symfony implements Preset, TokenRule, ListRule
                    ->flags($flags)
                    ->tokenTypeIndex((new TokenTypeIndex())->withLeadingOperators())
                    ->heredocIndent(HeredocIndent::NONE)
+                   ->collapseEmptyDeclarationBodies(false)
+                   ->collapseDeclareHeaders(false)
+                   ->expandHeaders()
                    ->build();
     }
 

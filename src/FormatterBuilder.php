@@ -25,6 +25,9 @@ use Salient\Core\Indentation;
  * @method $this heredocIndent(HeredocIndent::* $value) Indentation applied to heredocs and nowdocs
  * @method $this importSortOrder(ImportSortOrder::* $value) Set Formatter::$ImportSortOrder
  * @method $this oneTrueBraceStyle(bool $value = true) True if braces are formatted using the One True Brace Style (default: false)
+ * @method $this collapseEmptyDeclarationBodies(bool $value = true) True if empty declaration bodies are collapsed to the end of the declaration (default: true)
+ * @method $this collapseDeclareHeaders(bool $value = true) True if headers like "<?php declare(strict_types=1);" are collapsed to one line (default: true)
+ * @method $this expandHeaders(bool $value = true) True if blank lines are applied between "<?php" and subsequent declarations (default: false)
  * @method $this tightDeclarationSpacing(bool $value = true) True if blank lines between declarations of the same type are removed where possible (default: false)
  * @method $this psr12(bool $value = true) Enforce strict PSR-12 / PER Coding Style compliance? (default: false)
  * @method Formatter with(string $property, mixed $value) Call Formatter::with() on a new instance

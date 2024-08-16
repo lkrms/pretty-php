@@ -64,7 +64,7 @@ EOF;
         $_SERVER['SCRIPT_FILENAME'] = 'pretty-php';
 
         $this->App = (new CliApplication(self::$BasePath))
-            ->oneCommand(FormatPhpCommand::class);
+                         ->oneCommand(FormatPhpCommand::class);
     }
 
     protected function tearDown(): void

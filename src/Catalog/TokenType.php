@@ -27,25 +27,18 @@ final class TokenType extends AbstractDictionary
         \T_DOC_COMMENT,
     ];
 
-    /**
-     * All operator tokens
-     *
-     * {@see TokenType::OPERATOR_EXECUTION} is excluded because for formatting
-     * purposes, commands between backticks are equivalent to double-quoted
-     * strings.
-     */
     public const OPERATOR_ALL = [
-        ...TokenType::OPERATOR_ARITHMETIC,
-        ...TokenType::OPERATOR_ASSIGNMENT,
-        ...TokenType::OPERATOR_BITWISE,
-        ...TokenType::OPERATOR_COMPARISON,
-        ...TokenType::OPERATOR_TERNARY,
-        ...TokenType::OPERATOR_ERROR_CONTROL,
-        ...TokenType::OPERATOR_INCREMENT_DECREMENT,
-        ...TokenType::OPERATOR_LOGICAL,
-        ...TokenType::OPERATOR_STRING,
-        ...TokenType::OPERATOR_DOUBLE_ARROW,
-        ...TokenType::OPERATOR_INSTANCEOF,
+        ...self::OPERATOR_ARITHMETIC,
+        ...self::OPERATOR_ASSIGNMENT,
+        ...self::OPERATOR_BITWISE,
+        ...self::OPERATOR_COMPARISON,
+        ...self::OPERATOR_TERNARY,
+        ...self::OPERATOR_ERROR_CONTROL,
+        ...self::OPERATOR_INCREMENT_DECREMENT,
+        ...self::OPERATOR_LOGICAL,
+        ...self::OPERATOR_STRING,
+        ...self::OPERATOR_DOUBLE_ARROW,
+        ...self::OPERATOR_INSTANCEOF,
     ];
 
     public const OPERATOR_ARITHMETIC = [
@@ -89,23 +82,19 @@ final class TokenType extends AbstractDictionary
     ];
 
     public const OPERATOR_BOOLEAN_EXCEPT_NOT = [
-        \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
-        \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
-        \T_AND,
         \T_OR,
         \T_XOR,
+        ...self::AMPERSAND,
         ...self::OPERATOR_LOGICAL_EXCEPT_NOT,
     ];
 
     public const OPERATOR_BITWISE = [
-        \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
-        \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
-        \T_AND,  // &
         \T_OR,   // |
         \T_XOR,  // ^
         \T_NOT,  // ~
         \T_SL,   // <<
         \T_SR,   // >>
+        ...self::AMPERSAND,
     ];
 
     public const OPERATOR_COMPARISON = [
@@ -132,10 +121,6 @@ final class TokenType extends AbstractDictionary
 
     public const OPERATOR_ERROR_CONTROL = [
         \T_AT,  // @
-    ];
-
-    public const OPERATOR_EXECUTION = [
-        \T_BACKTICK,  // `
     ];
 
     public const OPERATOR_INCREMENT_DECREMENT = [
@@ -188,7 +173,26 @@ final class TokenType extends AbstractDictionary
         ...self::TYPE_DELIMITER,
     ];
 
+    public const CHAIN_EXPRESSION = [
+        // '"' ... '"'
+        \T_CURLY_OPEN,
+        \T_DOLLAR_OPEN_CURLY_BRACES,
+        \T_DOUBLE_QUOTE,
+        \T_ENCAPSED_AND_WHITESPACE,
+        // Other dereferenceables
+        \T_ARRAY,
+        \T_CONSTANT_ENCAPSED_STRING,
+        \T_DOUBLE_COLON,
+        \T_NAME_FULLY_QUALIFIED,
+        \T_NAME_QUALIFIED,
+        \T_NAME_RELATIVE,
+        \T_STATIC,
+        ...self::CHAIN_PART,
+        ...self::MAGIC_CONSTANT,
+    ];
+
     public const CHAIN_PART = [
+        \T_DOLLAR,
         \T_OPEN_BRACE,
         \T_OPEN_BRACKET,
         \T_OPEN_PARENTHESIS,
@@ -304,6 +308,8 @@ final class TokenType extends AbstractDictionary
         \T_EXTENDS,
         \T_FUNCTION,
         \T_IMPLEMENTS,
+        \T_NAMESPACE,
+        \T_NS_SEPARATOR,
         \T_USE,
         ...self::DECLARATION_EXCEPT_MULTI_PURPOSE,
         ...self::DECLARATION_LIST,
@@ -342,8 +348,6 @@ final class TokenType extends AbstractDictionary
     ];
 
     public const DECLARATION_TYPE = [
-        \T_NAMESPACE,
-        \T_NS_SEPARATOR,
         \T_STATIC,
         ...self::NAME,
     ];
@@ -372,11 +376,25 @@ final class TokenType extends AbstractDictionary
         ...self::VISIBILITY,
     ];
 
+    /**
+     * identifier_maybe_reserved
+     */
+    public const MAYBE_RESERVED = [
+        \T_STRING,
+        ...self::SEMI_RESERVED,
+    ];
+
+    /**
+     * semi_reserved
+     */
     public const SEMI_RESERVED = [
         ...self::RESERVED_NON_MODIFIER,
         ...self::KEYWORD_MODIFIER,
     ];
 
+    /**
+     * reserved_non_modifiers
+     */
     public const RESERVED_NON_MODIFIER = [
         ...self::KEYWORD_NON_MODIFIER,
         ...self::MAGIC_CONSTANT,
@@ -494,6 +512,9 @@ final class TokenType extends AbstractDictionary
         ...self::NAME,
     ];
 
+    /**
+     * name
+     */
     public const NAME = [
         \T_NAME_FULLY_QUALIFIED,
         \T_NAME_QUALIFIED,
