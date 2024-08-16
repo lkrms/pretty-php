@@ -186,7 +186,8 @@ final class StandardWhitespace implements TokenRule
                 // construct in the global scope
                 $current = $token;
                 if (
-                    $token->id === \T_OPEN_TAG
+                    $this->Formatter->CollapseDeclareHeaders
+                    && $token->id === \T_OPEN_TAG
                     && ($declare = $token->Next)
                     && $declare->id === \T_DECLARE
                     && $declare->NextSibling

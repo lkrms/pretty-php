@@ -438,6 +438,7 @@ final class DeclarationSpacing implements TokenRule
 
         if (
             !$this->Formatter->Psr12
+            && !$this->Formatter->ExpandHeaders
             && $token->OpenTag
             && $token->OpenTag->NextCode === $token
         ) {

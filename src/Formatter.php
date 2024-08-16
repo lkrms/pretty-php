@@ -176,6 +176,30 @@ final class Formatter implements Buildable
     public bool $OneTrueBraceStyle;
 
     /**
+     * True if empty declaration bodies are collapsed to the end of the
+     * declaration
+     *
+     * @readonly
+     */
+    public bool $CollapseEmptyDeclarationBodies;
+
+    /**
+     * True if headers like "<?php declare(strict_types=1);" are collapsed to
+     * one line
+     *
+     * @readonly
+     */
+    public bool $CollapseDeclareHeaders;
+
+    /**
+     * True if blank lines are applied between "<?php" and subsequent
+     * declarations
+     *
+     * @readonly
+     */
+    public bool $ExpandHeaders;
+
+    /**
      * True if blank lines between declarations of the same type are removed
      * where possible
      *
@@ -480,6 +504,9 @@ final class Formatter implements Buildable
         int $heredocIndent = HeredocIndent::MIXED,
         int $importSortOrder = ImportSortOrder::DEPTH,
         bool $oneTrueBraceStyle = false,
+        bool $collapseEmptyDeclarationBodies = true,
+        bool $collapseDeclareHeaders = true,
+        bool $expandHeaders = false,
         bool $tightDeclarationSpacing = false,
         bool $psr12 = false
     ) {
@@ -499,6 +526,9 @@ final class Formatter implements Buildable
         $this->HeredocIndent = $heredocIndent;
         $this->ImportSortOrder = $importSortOrder;
         $this->OneTrueBraceStyle = $oneTrueBraceStyle;
+        $this->CollapseEmptyDeclarationBodies = $collapseEmptyDeclarationBodies;
+        $this->CollapseDeclareHeaders = $collapseDeclareHeaders;
+        $this->ExpandHeaders = $expandHeaders;
         $this->TightDeclarationSpacing = $tightDeclarationSpacing;
         $this->Psr12 = $psr12;
 
