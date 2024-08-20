@@ -23,6 +23,8 @@ interface HasTokenNames
         \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG => 'T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG',
         \T_ENUM => 'T_ENUM',
         \T_READONLY => 'T_READONLY',
+        // PHP 8.4
+        \T_PROPERTY_C => 'T_PROPERTY_C',
         // Custom
         \T_ATTRIBUTE_COMMENT => 'T_ATTRIBUTE_COMMENT',
         \T_END_ALT_SYNTAX => 'T_END_ALT_SYNTAX',

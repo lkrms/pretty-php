@@ -504,6 +504,7 @@ final class TokenType extends AbstractDictionary
         \T_LINE,
         \T_METHOD_C,
         \T_NS_C,
+        \T_PROPERTY_C,
         \T_TRAIT_C,
     ];
 
@@ -700,6 +701,7 @@ final class TokenType extends AbstractDictionary
             \T_POW_EQUAL => false,
             \T_PRINT => false,
             \T_PRIVATE => false,
+            \T_PROPERTY_C => false,
             \T_PROTECTED => false,
             \T_PUBLIC => false,
             \T_QUESTION => false,

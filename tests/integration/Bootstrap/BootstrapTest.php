@@ -27,7 +27,9 @@ final class BootstrapTest extends TestCase
             ? ['T_MATCH', 'T_ATTRIBUTE']
             : (\PHP_VERSION_ID < 80100
                 ? ['T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG', 'T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG']
-                : ['T_END_ALT_SYNTAX', 'T_ATTRIBUTE_COMMENT']);
+                : (\PHP_VERSION_ID < 80400
+                    ? ['T_ATTRIBUTE_COMMENT', 'T_PROPERTY_C']
+                    : ['T_END_ALT_SYNTAX', 'T_ATTRIBUTE_COMMENT']));
 
         return [
             [
