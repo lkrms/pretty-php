@@ -7,7 +7,6 @@ use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\BlockRule;
 use Lkrms\PrettyPHP\Contract\Extension;
@@ -889,6 +888,8 @@ final class Formatter implements Buildable
             }
         }
 
+        $idx = $this->TokenTypeIndex;
+
         Profile::startTimer(__METHOD__ . '#reset');
         $this->reset();
         $this->resetExtensions();
@@ -967,7 +968,7 @@ final class Formatter implements Buildable
             switch ($parent->id) {
                 case \T_EXTENDS:
                 case \T_IMPLEMENTS:
-                    $items = $parent->nextSiblingsWhile($this->TokenTypeIndex->DeclarationList)
+                    $items = $parent->nextSiblingsWhile($idx->DeclarationList)
                                     ->filter(
                                         fn(Token $t, ?Token $next, ?Token $prev) =>
                                             !$prev || ($t->PrevCode && $t->PrevCode->id === \T_COMMA)
@@ -986,32 +987,16 @@ final class Formatter implements Buildable
 
                 case \T_OPEN_PARENTHESIS:
                     $prev = $parent->PrevCode;
-                    if (!$prev) {
-                        continue 2;
-                    }
-                    if ($prev->id === \T_CLOSE_BRACE
-                            && !$prev->isStructuralBrace()) {
-                        break;
-                    }
-                    if ($prev->PrevCode
-                            && $prev->is(TokenType::AMPERSAND)
-                            && $prev->PrevCode->is([\T_FN, \T_FUNCTION])) {
-                        break;
-                    }
-                    if ($prev->is([
-                        \T_ARRAY,
-                        \T_DECLARE,
-                        \T_FOR,
-                        \T_ISSET,
-                        \T_LIST,
-                        \T_STATIC,
-                        \T_UNSET,
-                        \T_USE,
-                        \T_VARIABLE,
-                        ...TokenType::MAYBE_ANONYMOUS,
-                        ...TokenType::DEREFERENCEABLE_SCALAR_END,
-                        ...TokenType::NAME_WITH_READONLY,
-                    ])) {
+                    if ($prev && (
+                        $idx->ListParenthesisPredecessor[$prev->id] || (
+                            $prev->id === \T_CLOSE_BRACE
+                            && !$prev->isStructuralBrace()
+                        ) || (
+                            $prev->PrevCode
+                            && $idx->Ampersand[$prev->id]
+                            && $idx->FunctionOrFn[$prev->PrevCode->id]
+                        )
+                    )) {
                         break;
                     }
 

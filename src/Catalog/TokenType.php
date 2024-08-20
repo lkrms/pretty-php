@@ -739,17 +739,6 @@ final class TokenType extends AbstractDictionary
     }
 
     /**
-     * Get the names of the token types in an index
-     *
-     * @param array<int,bool> $index
-     * @return string[]
-     */
-    public static function getIndexNames(array $index): array
-    {
-        return self::getNames(...self::reduceIndex($index));
-    }
-
-    /**
      * Reduce an index to the token types it contains
      *
      * @param array<int,bool> $index
@@ -852,22 +841,5 @@ final class TokenType extends AbstractDictionary
             }
         }
         return $index;
-    }
-
-    /**
-     * Get a list of token type names from a list of token types
-     *
-     * @return string[]
-     */
-    public static function getNames(int ...$types): array
-    {
-        foreach ($types as $type) {
-            $name = token_name($type);
-            if (substr($name, 0, 2) !== 'T_') {
-                $name = CustomToken::toName($type);
-            }
-            $names[] = $name;
-        }
-        return $names ?? [];
     }
 }

@@ -259,7 +259,7 @@ final class VerticalWhitespace implements TokenRule
                 $parts = $token->skipPrevSiblingsToDeclarationStart()->declarationParts();
                 if (
                     // Exclude non-declarations
-                    !$parts->hasOneOf(...TokenType::DECLARATION)
+                    !$parts->hasOneFrom($this->Idx->Declaration)
                     || (($last = $parts->last()) && (
                         // Exclude `declare` blocks
                         $last->id === \T_DECLARE

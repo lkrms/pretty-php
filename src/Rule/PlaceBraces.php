@@ -102,7 +102,7 @@ final class PlaceBraces implements TokenRule
             // Move empty bodies to the end of the previous line
             if ($this->Formatter->CollapseEmptyDeclarationBodies
                     && $next->id === \T_CLOSE_BRACE
-                    && $parts->hasOneOf(\T_CLASS, \T_ENUM, \T_FUNCTION, \T_INTERFACE, \T_TRAIT)) {
+                    && $parts->hasOneFrom($this->Idx->DeclarationClassOrFunction)) {
                 $token->WhitespaceBefore |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskPrev = WhitespaceType::SPACE;
                 $token->WhitespaceMaskNext = WhitespaceType::NONE;

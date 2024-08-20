@@ -50,7 +50,7 @@ final class SwitchIndentation implements TokenRule
                         && $token->Parent->PrevSibling
                         && $token->Parent->PrevSibling->PrevSibling
                         && $token->Parent->PrevSibling->PrevSibling->id === \T_SWITCH)
-                    || ($separator = $token->nextSiblingOf(\T_COLON, \T_SEMICOLON, \T_CLOSE_TAG))->id === \T_NULL) {
+                    || ($separator = $token->nextSiblingFrom($this->Idx->SwitchCaseDelimiter))->id === \T_NULL) {
                 continue;
             }
 

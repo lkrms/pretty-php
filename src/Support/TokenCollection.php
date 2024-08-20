@@ -2,7 +2,6 @@
 
 namespace Lkrms\PrettyPHP\Support;
 
-use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Token\Token;
 use Salient\Collection\AbstractTypedList;
 use LogicException;
@@ -35,31 +34,15 @@ final class TokenCollection extends AbstractTypedList implements Stringable
         return $instance;
     }
 
-    public function hasOneOf(int $type, int ...$types): bool
+    public function hasOneOf(int $type): bool
     {
-        array_unshift($types, $type);
         /** @var Token $token */
         foreach ($this as $token) {
-            if ($token->is($types)) {
+            if ($token->id === $type) {
                 return true;
             }
         }
         return false;
-    }
-
-    public function getAnyOf(int $type, int ...$types): self
-    {
-        array_unshift($types, $type);
-        /** @var Token $token */
-        foreach ($this as $token) {
-            if ($token->is($types)) {
-                $tokens[] = $token;
-            }
-        }
-        $instance = new self($tokens ?? []);
-        $instance->Collected = $this->Collected;
-
-        return $instance;
     }
 
     public function getFirstOf(int $type): ?Token
@@ -97,7 +80,13 @@ final class TokenCollection extends AbstractTypedList implements Stringable
      */
     public function hasOneNotFrom(array $index): bool
     {
-        return $this->hasOneFrom(TokenType::invertIndex($index));
+        /** @var Token $token */
+        foreach ($this as $token) {
+            if (!$index[$token->id]) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -120,14 +109,6 @@ final class TokenCollection extends AbstractTypedList implements Stringable
     /**
      * @param array<int,bool> $index
      */
-    public function getAnyNotFrom(array $index): self
-    {
-        return $this->getAnyFrom(TokenType::invertIndex($index));
-    }
-
-    /**
-     * @param array<int,bool> $index
-     */
     public function getFirstFrom(array $index): ?Token
     {
         /** @var Token $token */
@@ -142,25 +123,9 @@ final class TokenCollection extends AbstractTypedList implements Stringable
     /**
      * @param array<int,bool> $index
      */
-    public function getFirstNotFrom(array $index): ?Token
-    {
-        return $this->getFirstFrom(TokenType::invertIndex($index));
-    }
-
-    /**
-     * @param array<int,bool> $index
-     */
     public function getLastFrom(array $index): ?Token
     {
         return $this->reverse()->getFirstFrom($index);
-    }
-
-    /**
-     * @param array<int,bool> $index
-     */
-    public function getLastNotFrom(array $index): ?Token
-    {
-        return $this->reverse()->getFirstFrom(TokenType::invertIndex($index));
     }
 
     /**

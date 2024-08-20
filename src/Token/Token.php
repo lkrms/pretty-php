@@ -8,12 +8,13 @@ use Lkrms\PrettyPHP\Catalog\TokenFlagMask;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Contract\HasTokenNames;
 use Lkrms\PrettyPHP\Support\TokenIndentDelta;
 use Salient\Utility\Arr;
 use Salient\Utility\Str;
 use JsonSerializable;
 
-class Token extends GenericToken implements JsonSerializable
+class Token extends GenericToken implements HasTokenNames, JsonSerializable
 {
     use NavigableTokenTrait;
     use ContextAwareTokenTrait;
@@ -168,14 +169,14 @@ class Token extends GenericToken implements JsonSerializable
     {
         return
             $this->isMatchDelimiter()
-            && $this->prevSiblingOf(\T_COMMA, \T_DOUBLE_ARROW)->id === \T_DOUBLE_ARROW;
+            && $this->prevSiblingFrom($this->Idx->CommaOrDoubleArrow)->id === \T_DOUBLE_ARROW;
     }
 
     public function isDelimiterBetweenMatchExpressions(): bool
     {
         return
             $this->isMatchDelimiter()
-            && $this->prevSiblingOf(\T_COMMA, \T_DOUBLE_ARROW)->id !== \T_DOUBLE_ARROW;
+            && $this->prevSiblingFrom($this->Idx->CommaOrDoubleArrow)->id !== \T_DOUBLE_ARROW;
     }
 
     /**
@@ -526,7 +527,7 @@ class Token extends GenericToken implements JsonSerializable
             $containDeclaration
             && $this->Expression
             && ($parts = $this->skipPrevSiblingsToDeclarationStart()->declarationParts())->hasValue($this, true)
-            && $parts->hasOneOf(...TokenType::DECLARATION_TOP_LEVEL)
+            && $parts->hasOneFrom($this->Idx->DeclarationTopLevel)
             // Exclude anonymous functions, which can move as needed
             && ($last = $parts->last()->skipPrevSiblingsFrom(
                 $this->Idx->Ampersand
@@ -647,7 +648,7 @@ class Token extends GenericToken implements JsonSerializable
             if (($next->id === \T_ELSEIF || $next->id === \T_ELSE)
                 && (!$containUnenclosed
                     || $terminator->id === \T_CLOSE_BRACE
-                    || $terminator->prevSiblingOf(\T_IF, \T_ELSEIF)->Index >= $this->Index)) {
+                    || $terminator->prevSiblingFrom($this->Idx->IfOrElseIf)->Index >= $this->Index)) {
                 continue;
             }
             if ($next->id === \T_WHILE

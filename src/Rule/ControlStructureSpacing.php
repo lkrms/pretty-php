@@ -96,9 +96,9 @@ final class ControlStructureSpacing implements TokenRule
             $continues = false;
             if ($token->id === \T_DO) {
                 $continues = true;
-            } elseif ($token->is([\T_IF, \T_ELSEIF])) {
+            } elseif ($this->Idx->IfOrElseIf[$token->id]) {
                 assert($body->PrevSibling !== null);
-                $end = $body->PrevSibling->nextSiblingOf(\T_IF, \T_ELSEIF, \T_ELSE);
+                $end = $body->PrevSibling->nextSiblingFrom($this->Idx->IfElseIfOrElse);
                 if ($end->id === \T_IF) {
                     $end = $body->EndStatement;
                 } elseif ($end->id !== \T_NULL) {

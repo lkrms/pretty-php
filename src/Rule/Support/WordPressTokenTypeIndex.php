@@ -5,19 +5,18 @@ namespace Lkrms\PrettyPHP\Rule\Support;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 
 /**
- * Indexed tokens by type, for use with the WordPress preset
- *
- * @api
+ * @internal
  */
-class WordPressTokenTypeIndex extends TokenTypeIndex
+final class WordPressTokenTypeIndex extends TokenTypeIndex
 {
-    public static function create(): WordPressTokenTypeIndex
+    public function __construct()
     {
-        $instance = (new self())->withLeadingOperators();
-        $instance->PreserveBlankAfter[\T_OPEN_BRACE] = true;
-        $instance->PreserveBlankBefore[\T_CLOSE_BRACE] = true;
-        $instance->PreserveNewlineAfter[\T_CONCAT] = true;
+        parent::__construct();
 
-        return $instance;
+        $this->applyLeadingOperators();
+
+        $this->PreserveBlankAfter[\T_OPEN_BRACE] = true;
+        $this->PreserveBlankBefore[\T_CLOSE_BRACE] = true;
+        $this->PreserveNewlineAfter[\T_CONCAT] = true;
     }
 }

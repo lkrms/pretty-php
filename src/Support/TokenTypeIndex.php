@@ -17,6 +17,10 @@ class TokenTypeIndex implements Immutable
         withPropertyValue as with;
     }
 
+    private const LEADING = 0;
+    private const TRAILING = 1;
+    private const MIXED = 2;
+
     /**
      * T_OPEN_BRACE, T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_CLOSE_BRACE,
      * T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_ATTRIBUTE, T_CURLY_OPEN,
@@ -121,7 +125,11 @@ class TokenTypeIndex implements Immutable
     public array $VarOrModifier;
 
     /**
-     * Tokens that may contain tab characters
+     * T_ATTRIBUTE_COMMENT, T_COMMENT, T_CONSTANT_ENCAPSED_STRING,
+     * T_DOC_COMMENT, T_ENCAPSED_AND_WHITESPACE, T_END_HEREDOC, T_INLINE_HTML,
+     * T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO, T_START_HEREDOC, T_WHITESPACE
+     *
+     * Tokens that may contain tab characters.
      *
      * @readonly
      * @var array<int,bool>
@@ -302,6 +310,17 @@ class TokenTypeIndex implements Immutable
     public array $ExpressionDelimiter;
 
     /**
+     * T_AND_EQUAL, T_COALESCE_EQUAL, T_CONCAT_EQUAL, T_DIV_EQUAL,
+     * T_DOUBLE_ARROW,, T_EQUAL,, T_MINUS_EQUAL, T_MOD_EQUAL, T_MUL_EQUAL,
+     * T_OR_EQUAL, T_PLUS_EQUAL, T_POW_EQUAL, T_SL_EQUAL, T_SR_EQUAL,
+     * T_XOR_EQUAL
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $ExpressionDelimiterExceptComparison;
+
+    /**
      * @readonly
      * @var array<int,bool>
      */
@@ -314,12 +333,26 @@ class TokenTypeIndex implements Immutable
     public array $DereferenceableTerminator;
 
     /**
+     * T_COLON, T_SEMICOLON, T_CLOSE_TAG
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $SwitchCaseDelimiter;
+
+    /**
      * T_CASE, T_DEFAULT, T_COLON, T_SEMICOLON, T_CLOSE_TAG
      *
      * @readonly
      * @var array<int,bool>
      */
     public array $SwitchCaseOrDelimiter;
+
+    /**
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $ListParenthesisPredecessor;
 
     /**
      * @readonly
@@ -399,12 +432,44 @@ class TokenTypeIndex implements Immutable
     public array $Comma;
 
     /**
+     * T_COMMA, T_DOUBLE_ARROW
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $CommaOrDoubleArrow;
+
+    /**
      * T_DOUBLE_ARROW
      *
      * @readonly
      * @var array<int,bool>
      */
     public array $DoubleArrow;
+
+    /**
+     * T_FN, T_FUNCTION
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $FunctionOrFn;
+
+    /**
+     * T_IF, T_ELSEIF
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $IfOrElseIf;
+
+    /**
+     * T_IF, T_ELSEIF, T_ELSE
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $IfElseIfOrElse;
 
     /**
      * T_OPEN_BRACE
@@ -484,6 +549,14 @@ class TokenTypeIndex implements Immutable
     public array $DeclarationClass;
 
     /**
+     * T_CLASS, T_ENUM, T_FUNCTION, T_INTERFACE, T_TRAIT
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $DeclarationClassOrFunction;
+
+    /**
      * T_COMMA, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE,
      * T_STATIC, T_STRING
      *
@@ -543,6 +616,14 @@ class TokenTypeIndex implements Immutable
      * @var array<int,bool>
      */
     public array $DeclarationPartWithNewAndBody;
+
+    /**
+     * T_CLASS, T_ENUM, T_FUNCTION, T_INTERFACE, T_NAMESPACE, T_TRAIT
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $DeclarationTopLevel;
 
     /**
      * @readonly
@@ -625,7 +706,8 @@ class TokenTypeIndex implements Immutable
      */
     public array $Virtual;
 
-    private string $LastOperatorsMethod;
+    /** @var self::LEADING|self::TRAILING|self::MIXED */
+    private int $LastOperators;
     /** @var array<int,bool> */
     private array $_PreserveNewlineBefore;
     /** @var array<int,bool> */
@@ -951,6 +1033,11 @@ class TokenTypeIndex implements Immutable
             ...$expressionDelimiter,
         );
 
+        $this->ExpressionDelimiterExceptComparison = TT::getIndex(
+            \T_DOUBLE_ARROW,
+            ...TT::OPERATOR_ASSIGNMENT,
+        );
+
         $this->FunctionIdentifier = TT::getIndex(
             \T_STRING,
             \T_READONLY,
@@ -961,12 +1048,33 @@ class TokenTypeIndex implements Immutable
             ...TT::DEREFERENCEABLE_END,
         );
 
+        $this->SwitchCaseDelimiter = TT::getIndex(
+            \T_COLON,
+            \T_SEMICOLON,
+            \T_CLOSE_TAG,
+        );
+
         $this->SwitchCaseOrDelimiter = TT::getIndex(
             \T_CASE,
             \T_DEFAULT,
             \T_COLON,
             \T_SEMICOLON,
             \T_CLOSE_TAG,
+        );
+
+        $this->ListParenthesisPredecessor = TT::getIndex(
+            \T_ARRAY,
+            \T_DECLARE,
+            \T_FOR,
+            \T_ISSET,
+            \T_LIST,
+            \T_STATIC,
+            \T_UNSET,
+            \T_USE,
+            \T_VARIABLE,
+            ...TT::MAYBE_ANONYMOUS,
+            ...TT::DEREFERENCEABLE_SCALAR_END,
+            ...TT::NAME,
         );
 
         $this->UnaryPredecessor = TT::getIndex(
@@ -1004,7 +1112,11 @@ class TokenTypeIndex implements Immutable
             \T_FUNCTION,
         );
         $this->Comma = TT::getIndex(\T_COMMA);
+        $this->CommaOrDoubleArrow = TT::getIndex(\T_COMMA, \T_DOUBLE_ARROW);
         $this->DoubleArrow = TT::getIndex(\T_DOUBLE_ARROW);
+        $this->FunctionOrFn = TT::getIndex(\T_FN, \T_FUNCTION);
+        $this->IfOrElseIf = TT::getIndex(\T_IF, \T_ELSEIF);
+        $this->IfElseIfOrElse = TT::getIndex(\T_IF, \T_ELSEIF, \T_ELSE);
         $this->T_OPEN_BRACE = TT::getIndex(\T_OPEN_BRACE);
         $this->Semicolon = TT::getIndex(\T_SEMICOLON);
         $this->Attribute = TT::getIndex(
@@ -1018,6 +1130,10 @@ class TokenTypeIndex implements Immutable
         $this->Declaration = TT::getIndex(...TT::DECLARATION);
         $this->DeclarationExceptModifiers = TT::getIndex(...TT::DECLARATION_EXCEPT_MODIFIERS);
         $this->DeclarationClass = TT::getIndex(...TT::DECLARATION_CLASS);
+        $this->DeclarationClassOrFunction = TT::getIndex(
+            \T_FUNCTION,
+            ...TT::DECLARATION_CLASS,
+        );
         $this->DeclarationList = TT::getIndex(...TT::DECLARATION_LIST);
         $this->DeclarationPropertyOrVariable = TT::getIndex(
             \T_GLOBAL,
@@ -1032,6 +1148,7 @@ class TokenTypeIndex implements Immutable
             \T_CLOSE_BRACE,
             ...TT::DECLARATION_PART_WITH_NEW_AND_VALUE_TYPE,
         );
+        $this->DeclarationTopLevel = TT::getIndex(...TT::DECLARATION_TOP_LEVEL);
         $this->HasStatement = TT::getIndex(...TT::HAS_STATEMENT);
         $this->HasStatementWithOptionalBraces = TT::getIndex(...TT::HAS_STATEMENT_WITH_OPTIONAL_BRACES);
         $this->HasExpressionAndStatementWithOptionalBraces = TT::getIndex(...TT::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES);
@@ -1047,7 +1164,7 @@ class TokenTypeIndex implements Immutable
             \T_NULL,
         );
 
-        $this->LastOperatorsMethod = 'withMixedOperators';
+        $this->LastOperators = self::MIXED;
         $this->_PreserveNewlineBefore = $this->PreserveNewlineBefore;
         $this->_PreserveNewlineAfter = $this->PreserveNewlineAfter;
     }
@@ -1056,6 +1173,14 @@ class TokenTypeIndex implements Immutable
      * @return static
      */
     public function withLeadingOperators()
+    {
+        return $this->clone()->applyLeadingOperators();
+    }
+
+    /**
+     * @return static
+     */
+    protected function applyLeadingOperators()
     {
         $both = TT::intersectIndexes(
             $this->_PreserveNewlineBefore,
@@ -1077,15 +1202,24 @@ class TokenTypeIndex implements Immutable
             $both
         );
 
-        return $this->with('PreserveNewlineBefore', $preserveBefore)
-                    ->with('PreserveNewlineAfter', $preserveAfter)
-                    ->with('LastOperatorsMethod', __FUNCTION__);
+        $this->PreserveNewlineBefore = $preserveBefore;
+        $this->PreserveNewlineAfter = $preserveAfter;
+        $this->LastOperators = self::LEADING;
+        return $this;
     }
 
     /**
      * @return static
      */
     public function withTrailingOperators()
+    {
+        return $this->clone()->applyTrailingOperators();
+    }
+
+    /**
+     * @return static
+     */
+    protected function applyTrailingOperators()
     {
         $both = TT::intersectIndexes(
             $this->_PreserveNewlineBefore,
@@ -1109,9 +1243,10 @@ class TokenTypeIndex implements Immutable
             $both
         );
 
-        return $this->with('PreserveNewlineBefore', $preserveBefore)
-                    ->with('PreserveNewlineAfter', $preserveAfter)
-                    ->with('LastOperatorsMethod', __FUNCTION__);
+        $this->PreserveNewlineBefore = $preserveBefore;
+        $this->PreserveNewlineAfter = $preserveAfter;
+        $this->LastOperators = self::TRAILING;
+        return $this;
     }
 
     /**
@@ -1119,9 +1254,18 @@ class TokenTypeIndex implements Immutable
      */
     public function withMixedOperators()
     {
-        return $this->with('PreserveNewlineBefore', $this->_PreserveNewlineBefore)
-                    ->with('PreserveNewlineAfter', $this->_PreserveNewlineAfter)
-                    ->with('LastOperatorsMethod', __FUNCTION__);
+        return $this->clone()->applyMixedOperators();
+    }
+
+    /**
+     * @return static
+     */
+    protected function applyMixedOperators()
+    {
+        $this->PreserveNewlineBefore = $this->_PreserveNewlineBefore;
+        $this->PreserveNewlineAfter = $this->_PreserveNewlineAfter;
+        $this->LastOperators = self::MIXED;
+        return $this;
     }
 
     /**
@@ -1129,7 +1273,14 @@ class TokenTypeIndex implements Immutable
      */
     public function withPreserveNewline()
     {
-        return $this->{$this->LastOperatorsMethod}();
+        switch ($this->LastOperators) {
+            case self::LEADING:
+                return $this->withLeadingOperators();
+            case self::TRAILING:
+                return $this->withTrailingOperators();
+            case self::MIXED:
+                return $this->withMixedOperators();
+        }
     }
 
     /**
@@ -1139,10 +1290,5 @@ class TokenTypeIndex implements Immutable
     {
         return $this->with('PreserveNewlineBefore', $this->PreserveBlankBefore)
                     ->with('PreserveNewlineAfter', $this->PreserveBlankAfter);
-    }
-
-    public static function create(): TokenTypeIndex
-    {
-        return new self();
     }
 }
