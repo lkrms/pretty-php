@@ -373,7 +373,7 @@ final class Parser
                 $_prev = $token->prevSiblingFrom($idx->ClassOrFunction);
                 if (
                     $_prev->id !== \T_NULL
-                    && $_prev->nextSiblingFrom($idx->T_OPEN_BRACE)->ClosedBy === $token
+                    && $_prev->nextSiblingOf(\T_OPEN_BRACE)->ClosedBy === $token
                 ) {
                     assert($_prev->NextSibling !== null);
                     $_next = $_prev->NextSibling;

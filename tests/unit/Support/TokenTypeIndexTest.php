@@ -7,6 +7,7 @@ use Lkrms\PrettyPHP\Tests\TestCase;
 use Salient\PHPDoc\PHPDoc;
 use Salient\Utility\Arr;
 use Salient\Utility\Reflect;
+use Salient\Utility\Regex;
 use Generator;
 use ReflectionClass;
 use ReflectionProperty;
@@ -42,6 +43,19 @@ class TokenTypeIndexTest extends TestCase
             get_class($index),
             implode('; ', $notUnique),
         ));
+    }
+
+    /**
+     * @dataProvider propertyProvider
+     */
+    public function testIndexes(ReflectionProperty $property, TokenTypeIndex $index, string $name): void
+    {
+        $filtered = array_filter($index->$name);
+        if (Regex::match('/^(?:Suppress|Preserve|AltSyntax)/', $name)) {
+            $this->assertNotEmpty($filtered, 'Index cannot be empty');
+            return;
+        }
+        $this->assertGreaterThan(1, count($filtered), 'Index must have two or more token types');
     }
 
     /**

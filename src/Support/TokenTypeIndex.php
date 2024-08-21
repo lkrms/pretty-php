@@ -434,14 +434,6 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $UnaryPredecessor;
 
     /**
-     * T_DO
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $T_DO;
-
-    /**
      * T_DECLARE, T_FOR, T_FOREACH, T_IF, T_SWITCH, T_WHILE
      *
      * @readonly
@@ -499,28 +491,12 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $ClassOrFunction;
 
     /**
-     * T_COMMA
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $Comma;
-
-    /**
      * T_COMMA, T_DOUBLE_ARROW
      *
      * @readonly
      * @var array<int,bool>
      */
     public array $CommaOrDoubleArrow;
-
-    /**
-     * T_DOUBLE_ARROW
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $DoubleArrow;
 
     /**
      * T_FN, T_FUNCTION
@@ -545,22 +521,6 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @var array<int,bool>
      */
     public array $IfElseIfOrElse;
-
-    /**
-     * T_OPEN_BRACE
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $T_OPEN_BRACE;
-
-    /**
-     * T_SEMICOLON
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $Semicolon;
 
     /**
      * T_ATTRIBUTE, T_ATTRIBUTE_COMMENT
@@ -1204,8 +1164,6 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             ...TT::KEYWORD,
         );
 
-        $this->T_DO = self::get(\T_DO);
-
         $this->AltSyntaxStart = self::get(...TT::ALT_SYNTAX_START);
         $this->AltSyntaxContinue = self::get(...TT::ALT_SYNTAX_CONTINUE);
         $this->AltSyntaxContinueWithExpression = self::get(...TT::ALT_SYNTAX_CONTINUE_WITH_EXPRESSION);
@@ -1216,14 +1174,10 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             \T_CLASS,
             \T_FUNCTION,
         );
-        $this->Comma = self::get(\T_COMMA);
         $this->CommaOrDoubleArrow = self::get(\T_COMMA, \T_DOUBLE_ARROW);
-        $this->DoubleArrow = self::get(\T_DOUBLE_ARROW);
         $this->FunctionOrFn = self::get(\T_FN, \T_FUNCTION);
         $this->IfOrElseIf = self::get(\T_IF, \T_ELSEIF);
         $this->IfElseIfOrElse = self::get(\T_IF, \T_ELSEIF, \T_ELSE);
-        $this->T_OPEN_BRACE = self::get(\T_OPEN_BRACE);
-        $this->Semicolon = self::get(\T_SEMICOLON);
         $this->Attribute = self::get(
             \T_ATTRIBUTE,
             \T_ATTRIBUTE_COMMENT,

@@ -192,7 +192,7 @@ trait NavigableTokenTrait
         // `while` cannot be part of the same structure, look for a previous
         // `T_DO` the token could form a control structure with
         $do = $this->PrevSibling
-                   ->prevSiblingFrom($this->Idx->T_DO)
+                   ->prevSiblingOf(\T_DO)
                    ->orNull();
         if (!$do) {
             return false;
