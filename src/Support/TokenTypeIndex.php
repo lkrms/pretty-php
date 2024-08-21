@@ -3,6 +3,7 @@
 namespace Lkrms\PrettyPHP\Support;
 
 use Lkrms\PrettyPHP\Catalog\TokenType as TT;
+use Lkrms\PrettyPHP\Contract\HasTokenIndex;
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasImmutableProperties;
 
@@ -11,7 +12,7 @@ use Salient\Core\Concern\HasImmutableProperties;
  *
  * @api
  */
-class TokenTypeIndex implements Immutable
+class TokenTypeIndex implements HasTokenIndex, Immutable
 {
     use HasImmutableProperties {
         withPropertyValue as with;
@@ -715,7 +716,7 @@ class TokenTypeIndex implements Immutable
 
     public function __construct()
     {
-        $this->Bracket = TT::getIndex(
+        $this->Bracket = self::get(
             \T_OPEN_BRACE,
             \T_OPEN_BRACKET,
             \T_OPEN_PARENTHESIS,
@@ -727,7 +728,7 @@ class TokenTypeIndex implements Immutable
             \T_DOLLAR_OPEN_CURLY_BRACES,
         );
 
-        $this->OpenBracket = TT::getIndex(
+        $this->OpenBracket = self::get(
             \T_OPEN_BRACE,
             \T_OPEN_BRACKET,
             \T_OPEN_PARENTHESIS,
@@ -736,7 +737,7 @@ class TokenTypeIndex implements Immutable
             \T_DOLLAR_OPEN_CURLY_BRACES,
         );
 
-        $this->OpenBracketOrNot = TT::getIndex(
+        $this->OpenBracketOrNot = self::get(
             \T_OPEN_BRACE,
             \T_OPEN_BRACKET,
             \T_OPEN_PARENTHESIS,
@@ -747,61 +748,61 @@ class TokenTypeIndex implements Immutable
             \T_NOT,
         );
 
-        $this->CloseBracket = TT::getIndex(
+        $this->CloseBracket = self::get(
             \T_CLOSE_BRACE,
             \T_CLOSE_BRACKET,
             \T_CLOSE_PARENTHESIS,
         );
 
-        $this->CloseBracketOrEndAltSyntax = TT::getIndex(
+        $this->CloseBracketOrEndAltSyntax = self::get(
             \T_CLOSE_BRACE,
             \T_CLOSE_BRACKET,
             \T_CLOSE_PARENTHESIS,
             \T_END_ALT_SYNTAX,
         );
 
-        $this->CloseBracketOrComma = TT::getIndex(
+        $this->CloseBracketOrComma = self::get(
             \T_CLOSE_BRACE,
             \T_CLOSE_BRACKET,
             \T_CLOSE_PARENTHESIS,
             \T_COMMA,
         );
 
-        $this->OpenBracketExceptBrace = TT::getIndex(
+        $this->OpenBracketExceptBrace = self::get(
             \T_OPEN_BRACKET,
             \T_OPEN_PARENTHESIS,
             \T_ATTRIBUTE,
         );
 
-        $this->CloseBracketExceptBrace = TT::getIndex(
+        $this->CloseBracketExceptBrace = self::get(
             \T_CLOSE_BRACKET,
             \T_CLOSE_PARENTHESIS,
         );
 
-        $this->OpenBrace = TT::getIndex(
+        $this->OpenBrace = self::get(
             \T_OPEN_BRACE,
             \T_CURLY_OPEN,
             \T_DOLLAR_OPEN_CURLY_BRACES,
         );
 
-        $this->OpenTag = TT::getIndex(
+        $this->OpenTag = self::get(
             \T_OPEN_TAG,
             \T_OPEN_TAG_WITH_ECHO,
         );
 
-        $this->ContinuesControlStructure = TT::getIndex(
+        $this->ContinuesControlStructure = self::get(
             \T_ELSEIF,
             \T_ELSE,
             \T_CATCH,
             \T_FINALLY,
         );
 
-        $this->VarOrModifier = TT::getIndex(
+        $this->VarOrModifier = self::get(
             \T_VAR,
             ...TT::KEYWORD_MODIFIER,
         );
 
-        $this->Expandable = TT::getIndex(
+        $this->Expandable = self::get(
             \T_OPEN_TAG,
             \T_OPEN_TAG_WITH_ECHO,
             \T_COMMENT,
@@ -815,7 +816,7 @@ class TokenTypeIndex implements Immutable
             \T_WHITESPACE,
         );
 
-        $this->Movable = TT::getIndex(
+        $this->Movable = self::get(
             \T_CONCAT,
             ...TT::OPERATOR_ASSIGNMENT_EXCEPT_EQUAL,
             ...TT::OPERATOR_COMPARISON,
@@ -826,7 +827,7 @@ class TokenTypeIndex implements Immutable
 
         // Derived from operators in `$this->PreserveNewlineBefore` and
         // `$this->PreserveNewlineAfter`
-        $this->Undocumentable = TT::getIndex(
+        $this->Undocumentable = self::get(
             \T_CLOSE_BRACE,
             \T_CLOSE_BRACKET,
             \T_CLOSE_PARENTHESIS,
@@ -845,60 +846,60 @@ class TokenTypeIndex implements Immutable
             ...TT::OPERATOR_TERNARY,
         );
 
-        $this->Number = TT::getIndex(
+        $this->Number = self::get(
             \T_LNUMBER,
             \T_DNUMBER,
         );
 
-        $this->StringDelimiter = TT::getIndex(
+        $this->StringDelimiter = self::get(
             \T_DOUBLE_QUOTE,
             \T_START_HEREDOC,
             \T_END_HEREDOC,
             \T_BACKTICK,
         );
 
-        $this->DoNotModify = TT::getIndex(
+        $this->DoNotModify = self::get(
             \T_ENCAPSED_AND_WHITESPACE,
             \T_INLINE_HTML,
         );
 
-        $this->DoNotModifyLeft = TT::getIndex(
+        $this->DoNotModifyLeft = self::get(
             \T_OPEN_TAG,
             \T_OPEN_TAG_WITH_ECHO,
             \T_END_HEREDOC,
         );
 
-        $this->DoNotModifyRight = TT::getIndex(
+        $this->DoNotModifyRight = self::get(
             \T_CLOSE_TAG,
             \T_START_HEREDOC,
         );
 
-        $this->Trim = TT::mergeIndexes(
+        $this->Trim = self::merge(
             $this->DoNotModifyLeft,
             $this->DoNotModifyRight,
-            TT::getIndex(
+            self::get(
                 \T_ATTRIBUTE_COMMENT,
                 \T_WHITESPACE,
                 ...TT::COMMENT,
             ),
         );
 
-        $this->SuppressBlankBetween = TT::getIndex(
+        $this->SuppressBlankBetween = self::get(
             \T_USE,
         );
 
-        $this->SuppressBlankBetweenOneLine = TT::getIndex(
+        $this->SuppressBlankBetweenOneLine = self::get(
             \T_DECLARE,
         );
 
-        $this->AddSpaceAround = TT::getIndex(
+        $this->AddSpaceAround = self::get(
             \T_AS,
             \T_FUNCTION,
             \T_INSTEADOF,
             \T_USE,
         );
 
-        $this->AddSpaceBefore = TT::getIndex(
+        $this->AddSpaceBefore = self::get(
             \T_ARRAY,
             \T_CALLABLE,
             \T_ELLIPSIS,
@@ -915,7 +916,7 @@ class TokenTypeIndex implements Immutable
             ...TT::DECLARATION_EXCEPT_MULTI_PURPOSE,
         );
 
-        $this->AddSpaceAfter = TT::getIndex(
+        $this->AddSpaceAfter = self::get(
             \T_BREAK,
             \T_CASE,
             \T_CATCH,
@@ -944,11 +945,11 @@ class TokenTypeIndex implements Immutable
             ...TT::CAST,
         );
 
-        $this->SuppressSpaceBefore = TT::getIndex(
+        $this->SuppressSpaceBefore = self::get(
             \T_NS_SEPARATOR,
         );
 
-        $this->SuppressSpaceAfter = TT::getIndex(
+        $this->SuppressSpaceAfter = self::get(
             \T_DOUBLE_COLON,
             \T_ELLIPSIS,
             \T_NS_SEPARATOR,
@@ -970,7 +971,7 @@ class TokenTypeIndex implements Immutable
             \T_SEMICOLON,
         ];
 
-        $this->PreserveNewlineBefore = TT::getIndex(
+        $this->PreserveNewlineBefore = self::get(
             \T_ATTRIBUTE,
             \T_ATTRIBUTE_COMMENT,
             \T_CLOSE_BRACKET,
@@ -988,7 +989,7 @@ class TokenTypeIndex implements Immutable
             ...TT::OPERATOR_TERNARY,
         );
 
-        $this->PreserveNewlineAfter = TT::getIndex(
+        $this->PreserveNewlineAfter = self::get(
             \T_ATTRIBUTE,
             \T_ATTRIBUTE_COMMENT,
             \T_COLON,
@@ -1008,11 +1009,11 @@ class TokenTypeIndex implements Immutable
             ...TT::OPERATOR_LOGICAL_EXCEPT_NOT,
         );
 
-        $this->PreserveBlankBefore = TT::getIndex(
+        $this->PreserveBlankBefore = self::get(
             ...$preserveBlankBefore,
         );
 
-        $this->PreserveBlankAfter = TT::getIndex(
+        $this->PreserveBlankAfter = self::get(
             ...$preserveBlankAfter,
         );
 
@@ -1022,39 +1023,39 @@ class TokenTypeIndex implements Immutable
             ...TT::OPERATOR_COMPARISON_EXCEPT_COALESCE,
         ];
 
-        $this->ExpressionTerminator = TT::getIndex(
+        $this->ExpressionTerminator = self::get(
             \T_CLOSE_BRACKET,
             \T_CLOSE_PARENTHESIS,
             \T_SEMICOLON,
             ...$expressionDelimiter,
         );
 
-        $this->ExpressionDelimiter = TT::getIndex(
+        $this->ExpressionDelimiter = self::get(
             ...$expressionDelimiter,
         );
 
-        $this->ExpressionDelimiterExceptComparison = TT::getIndex(
+        $this->ExpressionDelimiterExceptComparison = self::get(
             \T_DOUBLE_ARROW,
             ...TT::OPERATOR_ASSIGNMENT,
         );
 
-        $this->FunctionIdentifier = TT::getIndex(
+        $this->FunctionIdentifier = self::get(
             \T_STRING,
             \T_READONLY,
             ...TT::AMPERSAND,
         );
 
-        $this->DereferenceableTerminator = TT::getIndex(
+        $this->DereferenceableTerminator = self::get(
             ...TT::DEREFERENCEABLE_END,
         );
 
-        $this->SwitchCaseDelimiter = TT::getIndex(
+        $this->SwitchCaseDelimiter = self::get(
             \T_COLON,
             \T_SEMICOLON,
             \T_CLOSE_TAG,
         );
 
-        $this->SwitchCaseOrDelimiter = TT::getIndex(
+        $this->SwitchCaseOrDelimiter = self::get(
             \T_CASE,
             \T_DEFAULT,
             \T_COLON,
@@ -1062,7 +1063,7 @@ class TokenTypeIndex implements Immutable
             \T_CLOSE_TAG,
         );
 
-        $this->ListParenthesisPredecessor = TT::getIndex(
+        $this->ListParenthesisPredecessor = self::get(
             \T_ARRAY,
             \T_DECLARE,
             \T_FOR,
@@ -1077,7 +1078,7 @@ class TokenTypeIndex implements Immutable
             ...TT::NAME,
         );
 
-        $this->UnaryPredecessor = TT::getIndex(
+        $this->UnaryPredecessor = self::get(
             \T_OPEN_BRACE,
             \T_OPEN_BRACKET,
             \T_OPEN_PARENTHESIS,
@@ -1099,67 +1100,67 @@ class TokenTypeIndex implements Immutable
             ...TT::KEYWORD,
         );
 
-        $this->T_DO = TT::getIndex(\T_DO);
+        $this->T_DO = self::get(\T_DO);
 
-        $this->AltSyntaxStart = TT::getIndex(...TT::ALT_SYNTAX_START);
-        $this->AltSyntaxContinue = TT::getIndex(...TT::ALT_SYNTAX_CONTINUE);
-        $this->AltSyntaxContinueWithExpression = TT::getIndex(...TT::ALT_SYNTAX_CONTINUE_WITH_EXPRESSION);
-        $this->AltSyntaxContinueWithoutExpression = TT::getIndex(...TT::ALT_SYNTAX_CONTINUE_WITHOUT_EXPRESSION);
-        $this->AltSyntaxEnd = TT::getIndex(...TT::ALT_SYNTAX_END);
-        $this->Ampersand = TT::getIndex(...TT::AMPERSAND);
-        $this->ClassOrFunction = TT::getIndex(
+        $this->AltSyntaxStart = self::get(...TT::ALT_SYNTAX_START);
+        $this->AltSyntaxContinue = self::get(...TT::ALT_SYNTAX_CONTINUE);
+        $this->AltSyntaxContinueWithExpression = self::get(...TT::ALT_SYNTAX_CONTINUE_WITH_EXPRESSION);
+        $this->AltSyntaxContinueWithoutExpression = self::get(...TT::ALT_SYNTAX_CONTINUE_WITHOUT_EXPRESSION);
+        $this->AltSyntaxEnd = self::get(...TT::ALT_SYNTAX_END);
+        $this->Ampersand = self::get(...TT::AMPERSAND);
+        $this->ClassOrFunction = self::get(
             \T_CLASS,
             \T_FUNCTION,
         );
-        $this->Comma = TT::getIndex(\T_COMMA);
-        $this->CommaOrDoubleArrow = TT::getIndex(\T_COMMA, \T_DOUBLE_ARROW);
-        $this->DoubleArrow = TT::getIndex(\T_DOUBLE_ARROW);
-        $this->FunctionOrFn = TT::getIndex(\T_FN, \T_FUNCTION);
-        $this->IfOrElseIf = TT::getIndex(\T_IF, \T_ELSEIF);
-        $this->IfElseIfOrElse = TT::getIndex(\T_IF, \T_ELSEIF, \T_ELSE);
-        $this->T_OPEN_BRACE = TT::getIndex(\T_OPEN_BRACE);
-        $this->Semicolon = TT::getIndex(\T_SEMICOLON);
-        $this->Attribute = TT::getIndex(
+        $this->Comma = self::get(\T_COMMA);
+        $this->CommaOrDoubleArrow = self::get(\T_COMMA, \T_DOUBLE_ARROW);
+        $this->DoubleArrow = self::get(\T_DOUBLE_ARROW);
+        $this->FunctionOrFn = self::get(\T_FN, \T_FUNCTION);
+        $this->IfOrElseIf = self::get(\T_IF, \T_ELSEIF);
+        $this->IfElseIfOrElse = self::get(\T_IF, \T_ELSEIF, \T_ELSE);
+        $this->T_OPEN_BRACE = self::get(\T_OPEN_BRACE);
+        $this->Semicolon = self::get(\T_SEMICOLON);
+        $this->Attribute = self::get(
             \T_ATTRIBUTE,
             \T_ATTRIBUTE_COMMENT,
         );
-        $this->Chain = TT::getIndex(...TT::CHAIN);
-        $this->ChainPart = TT::getIndex(...TT::CHAIN_PART);
-        $this->ChainExpression = TT::getIndex(...TT::CHAIN_EXPRESSION);
-        $this->Comment = TT::getIndex(...TT::COMMENT);
-        $this->Declaration = TT::getIndex(...TT::DECLARATION);
-        $this->DeclarationExceptModifiers = TT::getIndex(...TT::DECLARATION_EXCEPT_MODIFIERS);
-        $this->DeclarationClass = TT::getIndex(...TT::DECLARATION_CLASS);
-        $this->DeclarationClassOrFunction = TT::getIndex(
+        $this->Chain = self::get(...TT::CHAIN);
+        $this->ChainPart = self::get(...TT::CHAIN_PART);
+        $this->ChainExpression = self::get(...TT::CHAIN_EXPRESSION);
+        $this->Comment = self::get(...TT::COMMENT);
+        $this->Declaration = self::get(...TT::DECLARATION);
+        $this->DeclarationExceptModifiers = self::get(...TT::DECLARATION_EXCEPT_MODIFIERS);
+        $this->DeclarationClass = self::get(...TT::DECLARATION_CLASS);
+        $this->DeclarationClassOrFunction = self::get(
             \T_FUNCTION,
             ...TT::DECLARATION_CLASS,
         );
-        $this->DeclarationList = TT::getIndex(...TT::DECLARATION_LIST);
-        $this->DeclarationPropertyOrVariable = TT::getIndex(
+        $this->DeclarationList = self::get(...TT::DECLARATION_LIST);
+        $this->DeclarationPropertyOrVariable = self::get(
             \T_GLOBAL,
             \T_STATIC,
             \T_VAR,
             ...TT::VISIBILITY_WITH_READONLY,
         );
-        $this->DeclarationPart = TT::getIndex(...TT::DECLARATION_PART);
-        $this->DeclarationPartWithNew = TT::getIndex(...TT::DECLARATION_PART_WITH_NEW);
-        $this->DeclarationPartWithNewAndBody = TT::getIndex(
+        $this->DeclarationPart = self::get(...TT::DECLARATION_PART);
+        $this->DeclarationPartWithNew = self::get(...TT::DECLARATION_PART_WITH_NEW);
+        $this->DeclarationPartWithNewAndBody = self::get(
             \T_OPEN_BRACE,
             \T_CLOSE_BRACE,
             ...TT::DECLARATION_PART_WITH_NEW_AND_VALUE_TYPE,
         );
-        $this->DeclarationTopLevel = TT::getIndex(...TT::DECLARATION_TOP_LEVEL);
-        $this->HasStatement = TT::getIndex(...TT::HAS_STATEMENT);
-        $this->HasStatementWithOptionalBraces = TT::getIndex(...TT::HAS_STATEMENT_WITH_OPTIONAL_BRACES);
-        $this->HasExpressionAndStatementWithOptionalBraces = TT::getIndex(...TT::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES);
-        $this->MaybeReserved = TT::getIndex(...TT::MAYBE_RESERVED);
-        $this->NotCode = TT::getIndex(...TT::NOT_CODE);
-        $this->OperatorBooleanExceptNot = TT::getIndex(...TT::OPERATOR_BOOLEAN_EXCEPT_NOT);
-        $this->TypeDelimiter = TT::getIndex(...TT::TYPE_DELIMITER);
-        $this->ValueType = TT::getIndex(...TT::VALUE_TYPE);
-        $this->Visibility = TT::getIndex(...TT::VISIBILITY);
-        $this->VisibilityWithReadonly = TT::getIndex(...TT::VISIBILITY_WITH_READONLY);
-        $this->Virtual = TT::getIndex(
+        $this->DeclarationTopLevel = self::get(...TT::DECLARATION_TOP_LEVEL);
+        $this->HasStatement = self::get(...TT::HAS_STATEMENT);
+        $this->HasStatementWithOptionalBraces = self::get(...TT::HAS_STATEMENT_WITH_OPTIONAL_BRACES);
+        $this->HasExpressionAndStatementWithOptionalBraces = self::get(...TT::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES);
+        $this->MaybeReserved = self::get(...TT::MAYBE_RESERVED);
+        $this->NotCode = self::get(...TT::NOT_CODE);
+        $this->OperatorBooleanExceptNot = self::get(...TT::OPERATOR_BOOLEAN_EXCEPT_NOT);
+        $this->TypeDelimiter = self::get(...TT::TYPE_DELIMITER);
+        $this->ValueType = self::get(...TT::VALUE_TYPE);
+        $this->Visibility = self::get(...TT::VISIBILITY);
+        $this->VisibilityWithReadonly = self::get(...TT::VISIBILITY_WITH_READONLY);
+        $this->Virtual = self::get(
             \T_END_ALT_SYNTAX,
             \T_NULL,
         );
@@ -1182,20 +1183,20 @@ class TokenTypeIndex implements Immutable
      */
     protected function applyLeadingOperators()
     {
-        $both = TT::intersectIndexes(
+        $both = self::intersect(
             $this->_PreserveNewlineBefore,
             $this->_PreserveNewlineAfter,
         );
-        $preserveBefore = TT::mergeIndexes(
+        $preserveBefore = self::merge(
             $this->_PreserveNewlineBefore,
-            TT::getIndex(
+            self::get(
                 ...TT::OPERATOR_ASSIGNMENT_EXCEPT_EQUAL,
                 ...TT::OPERATOR_COMPARISON,
                 ...TT::OPERATOR_LOGICAL_EXCEPT_NOT,
             ),
         );
-        $preserveAfter = TT::mergeIndexes(
-            TT::diffIndexes(
+        $preserveAfter = self::merge(
+            self::diff(
                 $this->_PreserveNewlineAfter,
                 $preserveBefore,
             ),
@@ -1221,13 +1222,13 @@ class TokenTypeIndex implements Immutable
      */
     protected function applyTrailingOperators()
     {
-        $both = TT::intersectIndexes(
+        $both = self::intersect(
             $this->_PreserveNewlineBefore,
             $this->_PreserveNewlineAfter,
         );
-        $preserveAfter = TT::mergeIndexes(
+        $preserveAfter = self::merge(
             $this->_PreserveNewlineAfter,
-            TT::getIndex(
+            self::get(
                 \T_COALESCE,
                 \T_COALESCE_EQUAL,
                 \T_CONCAT,
@@ -1235,8 +1236,8 @@ class TokenTypeIndex implements Immutable
                 ...TT::OPERATOR_BITWISE,
             ),
         );
-        $preserveBefore = TT::mergeIndexes(
-            TT::diffIndexes(
+        $preserveBefore = self::merge(
+            self::diff(
                 $this->_PreserveNewlineBefore,
                 $preserveAfter,
             ),
@@ -1290,5 +1291,70 @@ class TokenTypeIndex implements Immutable
     {
         return $this->with('PreserveNewlineBefore', $this->PreserveBlankBefore)
                     ->with('PreserveNewlineAfter', $this->PreserveBlankAfter);
+    }
+
+    /**
+     * Get an index of the given token types
+     *
+     * @return array<int,bool>
+     */
+    public static function get(int ...$types): array
+    {
+        return array_fill_keys($types, true) + self::TOKEN_INDEX;
+    }
+
+    /**
+     * Get an index of every token type in the given indexes
+     *
+     * @param array<int,bool> ...$indexes
+     * @return array<int,bool>
+     */
+    public static function merge(array ...$indexes): array
+    {
+        $index = self::TOKEN_INDEX;
+        foreach ($indexes as $idx) {
+            $index = array_filter($idx) + $index;
+        }
+        return $index;
+    }
+
+    /**
+     * Get an index of every token type in a given index that is not present in
+     * any of the others
+     *
+     * @param array<int,bool> $index
+     * @param array<int,bool> ...$indexes
+     * @return array<int,bool>
+     */
+    public static function diff(array $index, array ...$indexes): array
+    {
+        if (!$indexes) {
+            return $index + self::TOKEN_INDEX;
+        }
+        $index = array_filter($index);
+        foreach ($indexes as $idx) {
+            $filtered[] = array_filter($idx);
+        }
+        return array_diff_key($index, ...$filtered) + self::TOKEN_INDEX;
+    }
+
+    /**
+     * Get an index of every token type in a given index that is present in all
+     * of the others
+     *
+     * @param array<int,bool> $index
+     * @param array<int,bool> ...$indexes
+     * @return array<int,bool>
+     */
+    public static function intersect(array $index, array ...$indexes): array
+    {
+        if (!$indexes) {
+            return $index + self::TOKEN_INDEX;
+        }
+        $index = array_filter($index);
+        foreach ($indexes as $idx) {
+            $filtered[] = array_filter($idx);
+        }
+        return array_intersect_key($index, ...$filtered) + self::TOKEN_INDEX;
     }
 }

@@ -2,7 +2,6 @@
 
 namespace Lkrms\PrettyPHP\Tests\Support;
 
-use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Tests\TestCase;
 use Salient\Utility\Arr;
@@ -59,9 +58,9 @@ class TokenTypeIndexTest extends TestCase
     public static function addSpaceProvider(): array
     {
         $index = static::getIndex();
-        $around = TokenType::reduceIndex($index->AddSpaceAround);
-        $before = TokenType::reduceIndex($index->AddSpaceBefore);
-        $after = TokenType::reduceIndex($index->AddSpaceAfter);
+        $around = self::getIndexTokens($index->AddSpaceAround);
+        $before = self::getIndexTokens($index->AddSpaceBefore);
+        $after = self::getIndexTokens($index->AddSpaceAfter);
 
         return [
             'Intersection of $AddSpaceBefore and $AddSpaceAfter' => [
@@ -106,12 +105,12 @@ class TokenTypeIndexTest extends TestCase
         $first = $idx->withLeadingOperators();
         $last = $idx->withTrailingOperators();
 
-        $mixedBefore = TokenType::reduceIndex($mixed->PreserveNewlineBefore);
-        $mixedAfter = TokenType::reduceIndex($mixed->PreserveNewlineAfter);
-        $firstBefore = TokenType::reduceIndex($first->PreserveNewlineBefore);
-        $firstAfter = TokenType::reduceIndex($first->PreserveNewlineAfter);
-        $lastBefore = TokenType::reduceIndex($last->PreserveNewlineBefore);
-        $lastAfter = TokenType::reduceIndex($last->PreserveNewlineAfter);
+        $mixedBefore = self::getIndexTokens($mixed->PreserveNewlineBefore);
+        $mixedAfter = self::getIndexTokens($mixed->PreserveNewlineAfter);
+        $firstBefore = self::getIndexTokens($first->PreserveNewlineBefore);
+        $firstAfter = self::getIndexTokens($first->PreserveNewlineAfter);
+        $lastBefore = self::getIndexTokens($last->PreserveNewlineBefore);
+        $lastAfter = self::getIndexTokens($last->PreserveNewlineAfter);
 
         $maybeFirst = array_diff(
             array_unique(array_merge($mixedBefore, $firstBefore, $lastBefore)),
@@ -153,32 +152,32 @@ class TokenTypeIndexTest extends TestCase
             ],
             'Difference between [leading] $PreserveNewlineBefore and [mixed] $PreserveNewlineBefore' => [
                 [
-                    \T_AND_EQUAL,
-                    \T_BOOLEAN_AND,
-                    \T_BOOLEAN_OR,
-                    \T_CONCAT_EQUAL,
+                    \T_PLUS_EQUAL,
+                    \T_MINUS_EQUAL,
+                    \T_MUL_EQUAL,
                     \T_DIV_EQUAL,
+                    \T_MOD_EQUAL,
+                    \T_POW_EQUAL,
+                    \T_AND_EQUAL,
+                    \T_OR_EQUAL,
+                    \T_XOR_EQUAL,
+                    \T_SL_EQUAL,
+                    \T_SR_EQUAL,
+                    \T_CONCAT_EQUAL,
+                    \T_SMALLER,
                     \T_GREATER,
                     \T_IS_EQUAL,
-                    \T_IS_GREATER_OR_EQUAL,
                     \T_IS_IDENTICAL,
                     \T_IS_NOT_EQUAL,
                     \T_IS_NOT_IDENTICAL,
                     \T_IS_SMALLER_OR_EQUAL,
+                    \T_IS_GREATER_OR_EQUAL,
+                    \T_SPACESHIP,
                     \T_LOGICAL_AND,
                     \T_LOGICAL_OR,
                     \T_LOGICAL_XOR,
-                    \T_MINUS_EQUAL,
-                    \T_MOD_EQUAL,
-                    \T_MUL_EQUAL,
-                    \T_OR_EQUAL,
-                    \T_PLUS_EQUAL,
-                    \T_POW_EQUAL,
-                    \T_SL_EQUAL,
-                    \T_SMALLER,
-                    \T_SPACESHIP,
-                    \T_SR_EQUAL,
-                    \T_XOR_EQUAL,
+                    \T_BOOLEAN_AND,
+                    \T_BOOLEAN_OR,
                 ],
                 array_diff($firstBefore, $mixedBefore),
             ],
@@ -237,33 +236,33 @@ class TokenTypeIndexTest extends TestCase
             ],
             'Difference between [trailing] $PreserveNewlineAfter and [mixed] $PreserveNewlineAfter' => [
                 [
-                    \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
-                    \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
-                    \T_AND,
                     \T_COALESCE,
                     \T_COALESCE_EQUAL,
                     \T_CONCAT,
-                    \T_DIV,
-                    \T_MINUS,
-                    \T_MOD,
-                    \T_MUL,
-                    \T_NOT,
-                    \T_OR,
                     \T_PLUS,
+                    \T_MINUS,
+                    \T_MUL,
+                    \T_DIV,
+                    \T_MOD,
                     \T_POW,
+                    \T_OR,
+                    \T_XOR,
+                    \T_NOT,
                     \T_SL,
                     \T_SR,
-                    \T_XOR,
+                    \T_AND,
+                    \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+                    \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
                 ],
                 array_diff($lastAfter, $mixedAfter),
             ],
             'Difference between $Movable and $maybeFirst (calculated)' => [
                 [],
-                array_diff(TokenType::reduceIndex($mixed->Movable), $maybeFirst),
+                array_diff(self::getIndexTokens($mixed->Movable), $maybeFirst),
             ],
             'Difference between $Movable and $maybeLast (calculated)' => [
                 [],
-                array_diff(TokenType::reduceIndex($mixed->Movable), $maybeLast),
+                array_diff(self::getIndexTokens($mixed->Movable), $maybeLast),
             ],
             'Intersection of *::$PreserveNewlineBefore' => [
                 [
@@ -331,5 +330,19 @@ class TokenTypeIndexTest extends TestCase
     protected static function getIndex(): TokenTypeIndex
     {
         return new TokenTypeIndex();
+    }
+
+    /**
+     * @param array<int,bool> $index
+     * @return int[]
+     */
+    private static function getIndexTokens(array $index): array
+    {
+        foreach ($index as $type => $value) {
+            if ($value) {
+                $types[] = $type;
+            }
+        }
+        return $types ?? [];
     }
 }

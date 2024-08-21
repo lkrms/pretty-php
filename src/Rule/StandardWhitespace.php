@@ -3,7 +3,6 @@
 namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
-use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
@@ -57,8 +56,8 @@ final class StandardWhitespace implements TokenRule
 
     public static function getTokenTypes(TokenTypeIndex $typeIndex): array
     {
-        return TokenType::mergeIndexes(
-            TokenType::getIndex(
+        return TokenTypeIndex::merge(
+            TokenTypeIndex::get(
                 \T_COLON,
                 \T_COMMA,
                 \T_MATCH,

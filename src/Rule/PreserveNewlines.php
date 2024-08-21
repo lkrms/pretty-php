@@ -4,10 +4,10 @@ namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
+use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 
 /**
@@ -32,7 +32,7 @@ final class PreserveNewlines implements TokenRule
 
     public function processTokens(array $tokens): void
     {
-        $preserveTypeIndex = TokenType::mergeIndexes(
+        $preserveTypeIndex = TokenTypeIndex::merge(
             $this->Idx->PreserveNewlineBefore,
             $this->Idx->PreserveNewlineAfter,
         );
