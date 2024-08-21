@@ -8,7 +8,7 @@ use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasImmutableProperties;
 
 /**
- * Indexed tokens by type
+ * Token type indexes
  *
  * @api
  */
@@ -77,6 +77,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     /**
      * T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_ATTRIBUTE
      *
+     * Also excludes `T_CURLY_OPEN` and `T_DOLLAR_OPEN_CURLY_BRACES`.
+     *
      * @readonly
      * @var array<int,bool>
      */
@@ -138,8 +140,18 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $Expandable;
 
     /**
+     * T_AND, T_AND_EQUAL, T_BOOLEAN_AND, T_BOOLEAN_OR, T_COALESCE,
+     * T_COALESCE_EQUAL, T_CONCAT, T_CONCAT_EQUAL, T_DIV, T_DIV_EQUAL,
+     * T_GREATER, T_IS_EQUAL, T_IS_GREATER_OR_EQUAL, T_IS_IDENTICAL,
+     * T_IS_NOT_EQUAL, T_IS_NOT_IDENTICAL, T_IS_SMALLER_OR_EQUAL, T_LOGICAL_AND,
+     * T_LOGICAL_OR, T_LOGICAL_XOR, T_MINUS, T_MINUS_EQUAL, T_MOD, T_MOD_EQUAL,
+     * T_MUL, T_MUL_EQUAL, T_NOT, T_OR, T_OR_EQUAL, T_PLUS, T_PLUS_EQUAL, T_POW,
+     * T_POW_EQUAL, T_SL, T_SL_EQUAL, T_SMALLER, T_SPACESHIP, T_SR, T_SR_EQUAL,
+     * T_XOR, T_XOR_EQUAL, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
+     *
      * Tokens that may be swapped with adjacent comment tokens when operator
-     * position is changed
+     * placement is changed.
      *
      * @readonly
      * @var array<int,bool>
@@ -147,8 +159,21 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $Movable;
 
     /**
+     * T_AND, T_AND_EQUAL, T_BOOLEAN_AND, T_BOOLEAN_OR, T_CLOSE_BRACE,
+     * T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_CLOSE_TAG, T_COALESCE,
+     * T_COALESCE_EQUAL, T_COLON, T_COMMA, T_CONCAT, T_CONCAT_EQUAL, T_DIV,
+     * T_DIV_EQUAL, T_DOUBLE_ARROW, T_EQUAL, T_GREATER, T_IS_EQUAL,
+     * T_IS_GREATER_OR_EQUAL, T_IS_IDENTICAL, T_IS_NOT_EQUAL,
+     * T_IS_NOT_IDENTICAL, T_IS_SMALLER_OR_EQUAL, T_LOGICAL_AND, T_LOGICAL_NOT,
+     * T_LOGICAL_OR, T_LOGICAL_XOR, T_MINUS, T_MINUS_EQUAL, T_MOD, T_MOD_EQUAL,
+     * T_MUL, T_MUL_EQUAL, T_NOT, T_NULLSAFE_OBJECT_OPERATOR, T_OBJECT_OPERATOR,
+     * T_OR, T_OR_EQUAL, T_PLUS, T_PLUS_EQUAL, T_POW, T_POW_EQUAL, T_QUESTION,
+     * T_SEMICOLON, T_SL, T_SL_EQUAL, T_SMALLER, T_SPACESHIP, T_SR, T_SR_EQUAL,
+     * T_XOR, T_XOR_EQUAL, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
+     *
      * Tokens where a preceding DocBlock can be demoted to a standard C-style
-     * comment without loss of information
+     * comment without loss of information.
      *
      * @readonly
      * @var array<int,bool>
@@ -197,7 +222,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
 
     /**
      * T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO, T_CLOSE_TAG, T_START_HEREDOC,
-     * T_END_HEREDOC, T_COMMENT, T_DOC_COMMENT, T_WHITESPACE
+     * T_END_HEREDOC, T_COMMENT, T_DOC_COMMENT, T_ATTRIBUTE_COMMENT,
+     * T_WHITESPACE
      *
      * @readonly
      * @var array<int,bool>
@@ -223,6 +249,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     /**
      * Tokens that require leading and trailing spaces
      *
+     * @internal
+     *
      * @readonly
      * @var array<int,bool>
      */
@@ -230,6 +258,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
 
     /**
      * Tokens that require leading spaces
+     *
+     * @internal
      *
      * @readonly
      * @var array<int,bool>
@@ -239,6 +269,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     /**
      * Tokens that require trailing spaces
      *
+     * @internal
+     *
      * @readonly
      * @var array<int,bool>
      */
@@ -246,6 +278,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
 
     /**
      * Tokens that require suppression of leading spaces
+     *
+     * @internal
      *
      * @readonly
      * @var array<int,bool>
@@ -255,30 +289,48 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     /**
      * Tokens that require suppression of trailing spaces
      *
+     * @internal
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $SuppressSpaceAfter;
 
     /**
+     * Tokens that may appear after a newline
+     *
+     * @internal
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $PreserveNewlineBefore;
 
     /**
+     * Tokens that may appear before a newline
+     *
+     * @internal
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $PreserveNewlineAfter;
 
     /**
+     * Tokens that may appear after a blank line
+     *
+     * @internal
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $PreserveBlankBefore;
 
     /**
+     * Tokens that may appear before a blank line
+     *
+     * @internal
+     *
      * @readonly
      * @var array<int,bool>
      */
@@ -312,7 +364,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
 
     /**
      * T_AND_EQUAL, T_COALESCE_EQUAL, T_CONCAT_EQUAL, T_DIV_EQUAL,
-     * T_DOUBLE_ARROW,, T_EQUAL,, T_MINUS_EQUAL, T_MOD_EQUAL, T_MUL_EQUAL,
+     * T_DOUBLE_ARROW, T_EQUAL, T_MINUS_EQUAL, T_MOD_EQUAL, T_MUL_EQUAL,
      * T_OR_EQUAL, T_PLUS_EQUAL, T_POW_EQUAL, T_SL_EQUAL, T_SR_EQUAL,
      * T_XOR_EQUAL
      *
@@ -322,12 +374,21 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $ExpressionDelimiterExceptComparison;
 
     /**
+     * T_AND, T_READONLY, T_STRING, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $FunctionIdentifier;
 
     /**
+     * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS,
+     * T_CONSTANT_ENCAPSED_STRING, T_DOUBLE_QUOTE, T_NAME_FULLY_QUALIFIED,
+     * T_NAME_QUALIFIED, T_NAME_RELATIVE, T_STRING, T_STRING_VARNAME,
+     * T_VARIABLE, T_CLASS_C, T_DIR, T_FILE, T_FUNC_C, T_LINE, T_METHOD_C,
+     * T_NS_C, T_PROPERTY_C, T_TRAIT_C
+     *
      * @readonly
      * @var array<int,bool>
      */
@@ -350,18 +411,31 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $SwitchCaseOrDelimiter;
 
     /**
+     * T_ARRAY, T_CLASS, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS,
+     * T_CONSTANT_ENCAPSED_STRING, T_DECLARE, T_DOUBLE_QUOTE, T_FN, T_FOR,
+     * T_FUNCTION, T_ISSET, T_LIST, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED,
+     * T_NAME_RELATIVE, T_STATIC, T_STRING, T_UNSET, T_USE, T_VARIABLE
+     *
+     * Tokens that may appear before open parentheses with delimited lists.
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $ListParenthesisPredecessor;
 
     /**
+     * Tokens that may appear before unary operators
+     *
+     * @internal
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $UnaryPredecessor;
 
     /**
+     * T_DO
+     *
      * @readonly
      * @var array<int,bool>
      */
@@ -497,18 +571,31 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $Attribute;
 
     /**
+     * T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $Chain;
 
     /**
+     * T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR, T_OPEN_BRACE,
+     * T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_DOLLAR, T_STRING, T_VARIABLE
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $ChainPart;
 
     /**
+     * T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR, T_OPEN_BRACE,
+     * T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_DOLLAR, T_STRING, T_VARIABLE,
+     * T_ARRAY, T_CONSTANT_ENCAPSED_STRING, T_CURLY_OPEN,
+     * T_DOLLAR_OPEN_CURLY_BRACES, T_DOUBLE_COLON, T_DOUBLE_QUOTE,
+     * T_ENCAPSED_AND_WHITESPACE, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED,
+     * T_NAME_RELATIVE, T_STATIC, T_CLASS_C, T_DIR, T_FILE, T_FUNC_C, T_LINE,
+     * T_METHOD_C, T_NS_C, T_PROPERTY_C, T_TRAIT_C
+     *
      * @readonly
      * @var array<int,bool>
      */
@@ -604,13 +691,13 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
 
     /**
      * T_ABSTRACT, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
-     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_AND, T_ARRAY,
-     * T_ATTRIBUTE_COMMENT, T_ATTRIBUTE, T_CALLABLE, T_CASE, T_CLASS,
-     * T_CLOSE_BRACE, T_CLOSE_PARENTHESIS, T_COLON, T_COMMA, T_CONST, T_DECLARE,
-     * T_ENUM, T_EXTENDS, T_FINAL, T_FUNCTION, T_GLOBAL, T_IMPLEMENTS,
-     * T_INTERFACE, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE,
-     * T_NAMESPACE, T_NEW, T_NS_SEPARATOR, T_OPEN_BRACE, T_OPEN_PARENTHESIS,
-     * T_OR, T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY, T_STATIC, T_STRING,
+     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_AND, T_ARRAY, T_ATTRIBUTE,
+     * T_ATTRIBUTE_COMMENT, T_CALLABLE, T_CASE, T_CLASS, T_CLOSE_BRACE,
+     * T_CLOSE_PARENTHESIS, T_COLON, T_COMMA, T_CONST, T_DECLARE, T_ENUM,
+     * T_EXTENDS, T_FINAL, T_FUNCTION, T_GLOBAL, T_IMPLEMENTS, T_INTERFACE,
+     * T_NAMESPACE, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE,
+     * T_NEW, T_NS_SEPARATOR, T_OPEN_BRACE, T_OPEN_PARENTHESIS, T_OR, T_PRIVATE,
+     * T_PROTECTED, T_PUBLIC, T_QUESTION, T_READONLY, T_STATIC, T_STRING,
      * T_TRAIT, T_USE, T_VAR
      *
      * @readonly
@@ -627,25 +714,34 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $DeclarationTopLevel;
 
     /**
+     * T_CATCH, T_DECLARE, T_DO, T_ELSE, T_ELSEIF, T_FINALLY, T_FOR, T_FOREACH,
+     * T_IF, T_SWITCH, T_TRY, T_WHILE
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $HasStatement;
 
     /**
+     * T_DO, T_ELSE
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $HasStatementWithOptionalBraces;
 
     /**
+     * T_ELSEIF, T_FOR, T_FOREACH, T_IF, T_WHILE
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $HasExpressionAndStatementWithOptionalBraces;
 
     /**
-     * T_STRING, TokenType::SEMI_RESERVED
+     * identifier_maybe_reserved
+     *
+     * @internal
      *
      * @readonly
      * @var array<int,bool>
@@ -653,6 +749,9 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $MaybeReserved;
 
     /**
+     * T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO, T_CLOSE_TAG, T_COMMENT, T_DOC_COMMENT,
+     * T_INLINE_HTML, T_WHITESPACE
+     *
      * @readonly
      * @var array<int,bool>
      */
@@ -660,7 +759,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
 
     /**
      * T_AND, T_OR, T_XOR, T_BOOLEAN_AND, T_BOOLEAN_OR, T_LOGICAL_AND,
-     * T_LOGICAL_OR, T_LOGICAL_XOR
+     * T_LOGICAL_OR, T_LOGICAL_XOR, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
      *
      * `&`, `|`, `^`, `&&`, `||`, `and`, `or`, `xor`
      *
@@ -678,9 +778,9 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $TypeDelimiter;
 
     /**
-     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_CLOSE_PARENTHESIS,
-     * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE,
-     * T_OPEN_PARENTHESIS, T_OR, T_STRING
+     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_ARRAY, T_CALLABLE,
+     * T_CLOSE_PARENTHESIS, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED,
+     * T_NAME_RELATIVE, T_OPEN_PARENTHESIS, T_OR, T_QUESTION, T_STATIC, T_STRING
      *
      * @readonly
      * @var array<int,bool>
@@ -688,12 +788,16 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $ValueType;
 
     /**
+     * T_PRIVATE, T_PROTECTED, T_PUBLIC
+     *
      * @readonly
      * @var array<int,bool>
      */
     public array $Visibility;
 
     /**
+     * T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY
+     *
      * @readonly
      * @var array<int,bool>
      */

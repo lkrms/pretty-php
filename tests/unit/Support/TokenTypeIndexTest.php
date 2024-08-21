@@ -4,8 +4,10 @@ namespace Lkrms\PrettyPHP\Tests\Support;
 
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Tests\TestCase;
+use Salient\PHPDoc\PHPDoc;
 use Salient\Utility\Arr;
 use Salient\Utility\Reflect;
+use Generator;
 use ReflectionClass;
 use ReflectionProperty;
 
@@ -40,6 +42,24 @@ class TokenTypeIndexTest extends TestCase
             get_class($index),
             implode('; ', $notUnique),
         ));
+    }
+
+    /**
+     * @dataProvider propertyProvider
+     */
+    public function testDocBlocks(ReflectionProperty $property, TokenTypeIndex $index, string $name): void
+    {
+        $expected = Arr::sort(self::getTokenNames(self::getIndexTokens($index->$name)));
+        $message = sprintf('PHPDoc summary could be: %s', implode(', ', $expected));
+        $comment = $property->getDocComment();
+        $this->assertIsString($comment, $message);
+        $phpDoc = new PHPDoc($comment);
+        if (array_key_exists('internal', $phpDoc->TagsByName)) {
+            return;
+        }
+        $this->assertNotEmpty($phpDoc->Summary, $message);
+        $actual = Arr::sort(explode(', ', $phpDoc->Summary));
+        $this->assertSame($expected, $actual, $message);
     }
 
     /**
@@ -316,6 +336,18 @@ class TokenTypeIndexTest extends TestCase
                 array_intersect($mixedBefore, $firstBefore, $lastBefore, $mixedAfter, $firstAfter, $lastAfter),
             ],
         ];
+    }
+
+    /**
+     * @return Generator<string,array{ReflectionProperty,TokenTypeIndex,string}>
+     */
+    public static function propertyProvider(): Generator
+    {
+        $index = static::getIndex();
+        foreach (static::getProperties() as $property) {
+            $name = $property->getName();
+            yield $name => [$property, $index, $name];
+        }
     }
 
     /**
