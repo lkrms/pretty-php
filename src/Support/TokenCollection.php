@@ -70,11 +70,6 @@ final class TokenCollection extends AbstractTypedList implements Stringable
         return null;
     }
 
-    public function getLastOf(int $type): ?Token
-    {
-        return $this->reverse()->getFirstOf($type);
-    }
-
     /**
      * @param array<int,bool> $index
      */
@@ -130,14 +125,6 @@ final class TokenCollection extends AbstractTypedList implements Stringable
             }
         }
         return null;
-    }
-
-    /**
-     * @param array<int,bool> $index
-     */
-    public function getLastFrom(array $index): ?Token
-    {
-        return $this->reverse()->getFirstFrom($index);
     }
 
     /**
@@ -428,10 +415,12 @@ final class TokenCollection extends AbstractTypedList implements Stringable
     private function assertCollected(): void
     {
         if (!$this->Collected) {
+            // @codeCoverageIgnoreStart
             throw new LogicException(sprintf(
                 'Tokens were not collected by %s::collect()',
                 static::class,
             ));
+            // @codeCoverageIgnoreEnd
         }
     }
 }

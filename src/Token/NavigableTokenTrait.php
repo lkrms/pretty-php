@@ -396,38 +396,6 @@ trait NavigableTokenTrait
     }
 
     /**
-     * Get the previous token that is of the given type
-     *
-     * @return Token
-     */
-    public function prevOf(int $type)
-    {
-        $t = $this;
-        while ($t = $t->Prev) {
-            if ($t->id === $type) {
-                return $t;
-            }
-        }
-        return $this->null();
-    }
-
-    /**
-     * Get the next token that is of the given type
-     *
-     * @return Token
-     */
-    public function nextOf(int $type)
-    {
-        $t = $this;
-        while ($t = $t->Next) {
-            if ($t->id === $type) {
-                return $t;
-            }
-        }
-        return $this->null();
-    }
-
-    /**
      * Get the previous sibling that is of the given type
      *
      * @return Token

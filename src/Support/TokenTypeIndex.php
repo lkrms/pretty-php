@@ -1387,7 +1387,9 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public static function diff(array $index, array ...$indexes): array
     {
         if (!$indexes) {
+            // @codeCoverageIgnoreStart
             return $index + self::TOKEN_INDEX;
+            // @codeCoverageIgnoreEnd
         }
         $index = array_filter($index);
         foreach ($indexes as $idx) {
@@ -1407,7 +1409,9 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public static function intersect(array $index, array ...$indexes): array
     {
         if (!$indexes) {
+            // @codeCoverageIgnoreStart
             return $index + self::TOKEN_INDEX;
+            // @codeCoverageIgnoreEnd
         }
         $index = array_filter($index);
         foreach ($indexes as $idx) {
