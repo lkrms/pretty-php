@@ -236,16 +236,6 @@ parameters:
 			path: src/Rule/PlaceBraces.php
 
 		-
-			message: "#^Cannot access property \\$Flags on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/PlaceComments.php
-
-		-
-			message: "#^Cannot access property \\$OpenTag on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/PlaceComments.php
-
-		-
 			message: "#^Cannot access property \\$WhitespaceMaskNext on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/PlaceComments.php
@@ -639,26 +629,6 @@ parameters:
 			message: "#^Parameter \\#1 \\$to of method Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:collect\\(\\) expects Lkrms\\\\PrettyPHP\\\\Token\\\\Token, Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null given\\.$#"
 			count: 1
 			path: src/Token/Token.php
-
-		-
-			message: "#^Cannot access offset 1 on mixed\\.$#"
-			count: 1
-			path: tests/unit/App/FormatPhpCommandTest.php
-
-		-
-			message: "#^Cannot access offset 2 on mixed\\.$#"
-			count: 1
-			path: tests/unit/App/FormatPhpCommandTest.php
-
-		-
-			message: "#^Method Lkrms\\\\PrettyPHP\\\\Tests\\\\App\\\\FormatPhpCommandTest\\:\\:configProvider\\(\\) should return array\\<string, array\\{string\\}\\> but returns array\\<string, array\\{array\\<string, mixed\\>\\|string\\}\\>\\.$#"
-			count: 1
-			path: tests/unit/App/FormatPhpCommandTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$string of function substr expects string, mixed given\\.$#"
-			count: 1
-			path: tests/unit/App/FormatPhpCommandTest.php
 
 		-
 			message: "#^Parameter \\#3 \\$enable of method Lkrms\\\\PrettyPHP\\\\Tests\\\\TestCase\\:\\:assertCodeFormatIs\\(\\) expects array\\<class\\-string\\<Lkrms\\\\PrettyPHP\\\\Contract\\\\Extension\\>\\>, array\\<string\\> given\\.$#"

@@ -43,7 +43,7 @@ final class WordPress implements Preset, TokenRule
                        self::class,
                    ])
                    ->flags($flags)
-                   ->tokenTypeIndex(WordPressTokenTypeIndex::create())
+                   ->tokenTypeIndex(new WordPressTokenTypeIndex())
                    ->oneTrueBraceStyle()
                    ->spacesBesideCode(1)
                    ->with('IncreaseIndentBetweenUnenclosedTags', false)

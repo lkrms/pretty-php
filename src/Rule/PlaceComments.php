@@ -67,13 +67,14 @@ final class PlaceComments implements TokenRule
                 $token->id === \T_DOC_COMMENT
                 || ($token->Flags & TokenFlag::INFORMAL_DOC_COMMENT);
 
+            $prev = $token->Prev;
             $prevIsTopLevelCloseBrace =
-                $token->Prev
-                && $token->Prev->id === \T_CLOSE_BRACE
-                && $token->Prev->isStructuralBrace()
-                && $token->Prev->skipPrevSiblingsToDeclarationStart()->namedDeclarationParts()->hasOneOf(
-                    ...TokenType::DECLARATION_CLASS
-                );
+                $prev
+                && $prev->id === \T_CLOSE_BRACE
+                && $prev->isStructuralBrace()
+                && $prev->skipPrevSiblingsToDeclarationStart()
+                        ->namedDeclarationParts()
+                        ->hasOneFrom($this->Idx->DeclarationClass);
 
             $needsNewlineBefore =
                 $token->id === \T_DOC_COMMENT
@@ -83,7 +84,10 @@ final class PlaceComments implements TokenRule
                 // Leave embedded comments alone
                 $wasFirstOnLine = $token->wasFirstOnLine();
                 if (!$wasFirstOnLine && !$token->wasLastOnLine()) {
-                    if ($token->Prev->Flags & TokenFlag::CODE || $token->Prev->OpenTag === $token->Prev) {
+                    if ($prev && (
+                        $prev->Flags & TokenFlag::CODE
+                        || $prev->OpenTag === $prev
+                    )) {
                         $this->CommentsBesideCode[] = $token;
                         $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
                         continue;
@@ -97,7 +101,10 @@ final class PlaceComments implements TokenRule
                 // top-level close braces, don't move comments to the next line
                 if (!$wasFirstOnLine) {
                     $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
-                    if ($token->Prev->Flags & TokenFlag::CODE || $token->Prev->OpenTag === $token->Prev) {
+                    if ($prev && (
+                        $prev->Flags & TokenFlag::CODE
+                        || $prev->OpenTag === $prev
+                    )) {
                         $this->CommentsBesideCode[] = $token;
                         $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
                         continue;

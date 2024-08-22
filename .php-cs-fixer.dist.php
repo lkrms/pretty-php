@@ -1,9 +1,10 @@
 <?php
 
 $customTokens = [
-    'T_NULL',
-    'T_END_ALT_SYNTAX',
+    'T_PROPERTY_C',
     'T_ATTRIBUTE_COMMENT',
+    'T_END_ALT_SYNTAX',
+    'T_NULL',
     'T_LOGICAL_NOT',
     'T_DOUBLE_QUOTE',
     'T_DOLLAR',

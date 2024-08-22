@@ -2,7 +2,6 @@
 
 namespace Lkrms\PrettyPHP\Contract;
 
-use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 
@@ -16,7 +15,7 @@ interface TokenRule extends Rule
      * Tokens of these types are passed to {@see TokenRule::processTokens()}.
      *
      * To receive all tokens, return `['*']`, otherwise return either a list of
-     * token types, or an index returned by {@see TokenType::getIndex()}.
+     * token types, or an index returned by {@see TokenTypeIndex::get()}.
      *
      * @return int[]|array<int,bool>|array{'*'}
      */

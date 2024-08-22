@@ -2,15 +2,18 @@
 
 namespace Lkrms\PrettyPHP\Token;
 
-use Lkrms\PrettyPHP\Catalog\CustomToken;
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Contract\Filter;
+use Lkrms\PrettyPHP\Contract\HasTokenNames;
 use Lkrms\PrettyPHP\Exception\InvalidTokenException;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Formatter;
 use Closure;
 
+/**
+ * @phpstan-require-implements HasTokenNames
+ */
 trait NavigableTokenTrait
 {
     /**
@@ -189,7 +192,7 @@ trait NavigableTokenTrait
         // `while` cannot be part of the same structure, look for a previous
         // `T_DO` the token could form a control structure with
         $do = $this->PrevSibling
-                   ->prevSiblingFrom($this->Idx->T_DO)
+                   ->prevSiblingOf(\T_DO)
                    ->orNull();
         if (!$do) {
             return false;
@@ -270,7 +273,8 @@ trait NavigableTokenTrait
 
     public function getTokenName(): ?string
     {
-        return parent::getTokenName() ?: CustomToken::toName($this->id);
+        /** @disregard P1012 */
+        return parent::getTokenName() ?? self::TOKEN_NAME[$this->id] ?? null;
     }
 
     /**
@@ -392,50 +396,15 @@ trait NavigableTokenTrait
     }
 
     /**
-     * Get the previous token that is one of the listed types
+     * Get the previous sibling that is of the given type
      *
      * @return Token
      */
-    public function prevOf(int $type, int ...$types)
+    public function prevSiblingOf(int $type)
     {
-        array_unshift($types, $type);
-        $t = $this;
-        while ($t = $t->Prev) {
-            if ($t->is($types)) {
-                return $t;
-            }
-        }
-        return $this->null();
-    }
-
-    /**
-     * Get the next token that is one of the listed types
-     *
-     * @return Token
-     */
-    public function nextOf(int $type, int ...$types)
-    {
-        array_unshift($types, $type);
-        $t = $this;
-        while ($t = $t->Next) {
-            if ($t->is($types)) {
-                return $t;
-            }
-        }
-        return $this->null();
-    }
-
-    /**
-     * Get the previous sibling that is one of the listed types
-     *
-     * @return Token
-     */
-    public function prevSiblingOf(int $type, int ...$types)
-    {
-        array_unshift($types, $type);
         $t = $this;
         while ($t = $t->PrevSibling) {
-            if ($t->is($types)) {
+            if ($t->id === $type) {
                 return $t;
             }
         }
@@ -443,16 +412,15 @@ trait NavigableTokenTrait
     }
 
     /**
-     * Get the next sibling that is one of the listed types
+     * Get the next sibling that is of the given type
      *
      * @return Token
      */
-    public function nextSiblingOf(int $type, int ...$types)
+    public function nextSiblingOf(int $type)
     {
-        array_unshift($types, $type);
         $t = $this;
         while ($t = $t->NextSibling) {
-            if ($t->is($types)) {
+            if ($t->id === $type) {
                 return $t;
             }
         }

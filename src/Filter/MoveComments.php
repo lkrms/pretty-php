@@ -2,9 +2,9 @@
 
 namespace Lkrms\PrettyPHP\Filter;
 
-use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
+use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\GenericToken;
 use Closure;
 
@@ -31,10 +31,10 @@ final class MoveComments implements Filter
         /** @todo Add support for ternary operators, `T_DOUBLE_ARROW` */
         $idx = $this->Idx->withPreserveNewline();
 
-        $this->BeforeCommentIndex = TokenType::intersectIndexes(
-            TokenType::mergeIndexes(
+        $this->BeforeCommentIndex = TokenTypeIndex::intersect(
+            TokenTypeIndex::merge(
                 $this->Idx->Movable,
-                TokenType::getIndex(
+                TokenTypeIndex::get(
                     \T_COMMA,
                     \T_SEMICOLON,
                     \T_EQUAL,
@@ -43,10 +43,10 @@ final class MoveComments implements Filter
             $idx->PreserveNewlineAfter,
         );
 
-        $this->AfterCommentIndex = TokenType::intersectIndexes(
-            TokenType::mergeIndexes(
+        $this->AfterCommentIndex = TokenTypeIndex::intersect(
+            TokenTypeIndex::merge(
                 $this->Idx->Movable,
-                TokenType::getIndex(
+                TokenTypeIndex::get(
                     \T_LOGICAL_NOT,
                 ),
             ),

@@ -5,7 +5,6 @@ namespace Lkrms\PrettyPHP\Rule;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Token\Token;
@@ -232,20 +231,21 @@ final class HangingIndentation implements TokenRule
             } elseif (isset($token->Data[TokenData::LIST_PARENT])) {
                 $stack[] = $token->Data[TokenData::LIST_PARENT];
             } elseif ($latest && $latest->Parent === $token->Parent) {
-                if ($this->Idx->ExpressionDelimiter[$prevCode->id]
-                        || $this->Idx->ExpressionDelimiter[$token->id]) {
+                if (
+                    $this->Idx->ExpressionDelimiter[$prevCode->id]
+                    || $this->Idx->ExpressionDelimiter[$token->id]
+                ) {
                     $stack[] = $token;
                 } elseif ($latest->id === \T_DOUBLE_ARROW) {
                     $stack[] = $latest;
-                } elseif ($token->Statement !== $token
-                        && $latest->Statement === $latest) {
+                } elseif (
+                    $token->Statement !== $token
+                    && $latest->Statement === $latest
+                ) {
                     if ($token->Expression === $latest->Expression) {
                         $stack[] = $latest;
                     } else {
-                        $delimiter = $token->prevSiblingOf(
-                            \T_DOUBLE_ARROW,
-                            ...TokenType::OPERATOR_ASSIGNMENT,
-                        );
+                        $delimiter = $token->prevSiblingFrom($this->Idx->ExpressionDelimiterExceptComparison);
                         if ($delimiter->id === \T_NULL) {
                             $stack[] = $latest;
                         } else {
@@ -255,12 +255,16 @@ final class HangingIndentation implements TokenRule
                             }
                         }
                     }
-                } elseif ($token->Statement !== $token
-                        && $latest->Statement !== $latest) {
+                } elseif (
+                    $token->Statement !== $token
+                    && $latest->Statement !== $latest
+                ) {
                     $latest = end($latest->HangingIndentStack);
-                    if ($latest
-                            && $latest->Parent === $token->Parent
-                            && $latest->Statement === $latest) {
+                    if (
+                        $latest
+                        && $latest->Parent === $token->Parent
+                        && $latest->Statement === $latest
+                    ) {
                         $stack[] = $latest;
                     }
                 }

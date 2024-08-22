@@ -14,6 +14,8 @@
         'T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG' => true,
         'T_ENUM' => true,
         'T_READONLY' => true,
+        // PHP 8.4
+        'T_PROPERTY_C' => false,
         // Custom
         'T_ATTRIBUTE_COMMENT' => false,
         'T_END_ALT_SYNTAX' => false,
@@ -63,6 +65,9 @@
     foreach ($toDefine as $token) {
         define($token, $getNextId());
     }
+
+    // Define PHP 8.4 tokens
+    defined('T_PROPERTY_C') || define('T_PROPERTY_C', $getNextId());
 
     // Define custom tokens
     $id = 20000;

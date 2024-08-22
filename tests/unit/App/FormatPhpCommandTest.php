@@ -740,17 +740,17 @@ EOF,
      */
     public static function configProvider(): array
     {
-        $data = self::getConfigData();
-        foreach ($data as &$args) {
-            if (!is_string($args[0])) {
-                $args[0] = Json::prettyPrint($args[0]);
+        foreach (self::getConfigData() as $name => $config) {
+            if (!is_string($config[0])) {
+                $config[0] = Json::prettyPrint($config[0]);
             }
+            $data[$name] = $config;
         }
         return $data;
     }
 
     /**
-     * @return array<string,array{array<string,mixed>|string,...}>
+     * @return non-empty-array<string,array{array<string,mixed>|string,...}>
      */
     private static function getConfigData(): array
     {
@@ -893,7 +893,7 @@ EOF,
 
     /**
      * @param array<array{Level::*,string,2?:array<string,mixed>}> $expected
-     * @param mixed[] $actual
+     * @param array<array{Level::*,string,2?:array<string,mixed>}> $actual
      */
     private function assertSameMessages(array $expected, array $actual): void
     {

@@ -5,6 +5,7 @@ namespace Lkrms\PrettyPHP\Filter;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
+use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 
 /**
@@ -34,7 +35,7 @@ final class TrimCasts implements Filter
      */
     public function boot(): void
     {
-        $this->CastIndex = TokenType::getIndex(
+        $this->CastIndex = TokenTypeIndex::get(
             ...TokenType::CAST,
         );
     }

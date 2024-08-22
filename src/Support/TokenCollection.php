@@ -2,64 +2,61 @@
 
 namespace Lkrms\PrettyPHP\Support;
 
-use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Token\Token;
 use Salient\Collection\AbstractTypedList;
 use LogicException;
 use Stringable;
 
 /**
- * A collection of Tokens
- *
  * @extends AbstractTypedList<Token>
  */
 final class TokenCollection extends AbstractTypedList implements Stringable
 {
     private bool $Collected = false;
-    /** @var array<int,Token>|null */
-    private ?array $OriginalItems = null;
 
-    public static function collect(Token $from, Token $to): self
+    /**
+     * @return static
+     */
+    public static function collect(Token $from, Token $to)
     {
-        if ($from->Index <= $to->Index && $from->id !== \T_NULL && $to->id !== \T_NULL) {
-            $tokens[] = $from;
-            while ($from !== $to && $from->Next) {
-                $tokens[] = $from = $from->Next;
-            }
+        if (
+            $from->id !== \T_NULL
+            && $to->id !== \T_NULL
+            && $from->Index <= $to->Index
+        ) {
+            do {
+                $tokens[] = $from;
+            } while ($from !== $to && ($from = $from->Next));
         }
 
         $instance = new self($tokens ?? []);
         $instance->Collected = true;
-        $instance->OriginalItems = $instance->Items;
-
         return $instance;
     }
 
-    public function hasOneOf(int $type, int ...$types): bool
+    public function hasOneOf(int $type): bool
     {
-        array_unshift($types, $type);
         /** @var Token $token */
         foreach ($this as $token) {
-            if ($token->is($types)) {
+            if ($token->id === $type) {
                 return true;
             }
         }
         return false;
     }
 
-    public function getAnyOf(int $type, int ...$types): self
+    /**
+     * @return static
+     */
+    public function getAnyOf(int $type)
     {
-        array_unshift($types, $type);
         /** @var Token $token */
         foreach ($this as $token) {
-            if ($token->is($types)) {
+            if ($token->id === $type) {
                 $tokens[] = $token;
             }
         }
-        $instance = new self($tokens ?? []);
-        $instance->Collected = $this->Collected;
-
-        return $instance;
+        return $this->maybeReplaceItems($tokens ?? [], true);
     }
 
     public function getFirstOf(int $type): ?Token
@@ -71,11 +68,6 @@ final class TokenCollection extends AbstractTypedList implements Stringable
             }
         }
         return null;
-    }
-
-    public function getLastOf(int $type): ?Token
-    {
-        return $this->reverse()->getFirstOf($type);
     }
 
     /**
@@ -97,13 +89,20 @@ final class TokenCollection extends AbstractTypedList implements Stringable
      */
     public function hasOneNotFrom(array $index): bool
     {
-        return $this->hasOneFrom(TokenType::invertIndex($index));
+        /** @var Token $token */
+        foreach ($this as $token) {
+            if (!$index[$token->id]) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
      * @param array<int,bool> $index
+     * @return static
      */
-    public function getAnyFrom(array $index): self
+    public function getAnyFrom(array $index)
     {
         /** @var Token $token */
         foreach ($this as $token) {
@@ -111,18 +110,7 @@ final class TokenCollection extends AbstractTypedList implements Stringable
                 $tokens[] = $token;
             }
         }
-        $instance = new self($tokens ?? []);
-        $instance->Collected = $this->Collected;
-
-        return $instance;
-    }
-
-    /**
-     * @param array<int,bool> $index
-     */
-    public function getAnyNotFrom(array $index): self
-    {
-        return $this->getAnyFrom(TokenType::invertIndex($index));
+        return $this->maybeReplaceItems($tokens ?? [], true);
     }
 
     /**
@@ -137,30 +125,6 @@ final class TokenCollection extends AbstractTypedList implements Stringable
             }
         }
         return null;
-    }
-
-    /**
-     * @param array<int,bool> $index
-     */
-    public function getFirstNotFrom(array $index): ?Token
-    {
-        return $this->getFirstFrom(TokenType::invertIndex($index));
-    }
-
-    /**
-     * @param array<int,bool> $index
-     */
-    public function getLastFrom(array $index): ?Token
-    {
-        return $this->reverse()->getFirstFrom($index);
-    }
-
-    /**
-     * @param array<int,bool> $index
-     */
-    public function getLastNotFrom(array $index): ?Token
-    {
-        return $this->reverse()->getFirstFrom(TokenType::invertIndex($index));
     }
 
     /**
@@ -432,13 +396,31 @@ final class TokenCollection extends AbstractTypedList implements Stringable
         return $this;
     }
 
+    /**
+     * @internal
+     */
+    public function __clone()
+    {
+        $this->Collected = false;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function handleItemsReplaced(): void
+    {
+        $this->Collected = false;
+    }
+
     private function assertCollected(): void
     {
         if (!$this->Collected) {
-            throw new LogicException(sprintf('Not collected by %s::collect()', static::class));
-        }
-        if ($this->Items !== $this->OriginalItems) {
-            throw new LogicException(sprintf('Modified since collection by %s::collect()', static::class));
+            // @codeCoverageIgnoreStart
+            throw new LogicException(sprintf(
+                'Tokens were not collected by %s::collect()',
+                static::class,
+            ));
+            // @codeCoverageIgnoreEnd
         }
     }
 }

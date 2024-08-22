@@ -203,8 +203,8 @@ final class VerticalWhitespace implements TokenRule
                 );
 
                 $children = $token->NextCode->children();
-                $commas = $children->getAnyFrom($this->Idx->Comma);
-                $semicolons = $children->getAnyFrom($this->Idx->Semicolon);
+                $commas = $children->getAnyOf(\T_COMMA);
+                $semicolons = $children->getAnyOf(\T_SEMICOLON);
                 $semi1 = $semicolons->first();
                 $semi2 = $semicolons->last();
 
@@ -259,7 +259,7 @@ final class VerticalWhitespace implements TokenRule
                 $parts = $token->skipPrevSiblingsToDeclarationStart()->declarationParts();
                 if (
                     // Exclude non-declarations
-                    !$parts->hasOneOf(...TokenType::DECLARATION)
+                    !$parts->hasOneFrom($this->Idx->Declaration)
                     || (($last = $parts->last()) && (
                         // Exclude `declare` blocks
                         $last->id === \T_DECLARE

@@ -3,13 +3,14 @@
 namespace Lkrms\PrettyPHP\Tests;
 
 use Lkrms\PrettyPHP\Contract\Extension;
+use Lkrms\PrettyPHP\Contract\HasTokenNames;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use Salient\Core\Facade\Profile;
 use Salient\Utility\Regex;
 
-abstract class TestCase extends PHPUnitTestCase
+abstract class TestCase extends PHPUnitTestCase implements HasTokenNames
 {
     protected const PHP_COMMAND = [\PHP_BINARY, '-ddisplay_errors=stderr', '-ddisplay_startup_errors=0'];
 
@@ -72,6 +73,22 @@ abstract class TestCase extends PHPUnitTestCase
     public static function getPackagePath(): string
     {
         return dirname(__DIR__, 2);
+    }
+
+    /**
+     * @param int[] $types
+     * @return string[]
+     */
+    public static function getTokenNames(array $types): array
+    {
+        foreach ($types as $type) {
+            $name = token_name($type);
+            if (substr($name, 0, 2) !== 'T_') {
+                $name = self::TOKEN_NAME[$type] ?? $name;
+            }
+            $names[] = $name;
+        }
+        return $names ?? [];
     }
 
     protected function setUp(): void
