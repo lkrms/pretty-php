@@ -12,7 +12,6 @@ use Lkrms\PrettyPHP\Rule\AlignTernaryOperators;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
-use Salient\Utility\Arr;
 use Salient\Utility\File;
 use Salient\Utility\Json;
 use Salient\Utility\Regex;
@@ -581,16 +580,11 @@ PHP,
         $pathOffset = strlen($inDir) + 1;
 
         $index = [];
-        if (!$all && is_file($indexPath = self::getMinVersionIndexPath())) {
+        if (!$all && is_file($indexPath = self::getIndexFixturePath())) {
             /** @var array<int,string[]> */
             $index = Json::parseObjectAsArray(File::getContents($indexPath));
-            $index = array_merge(...array_filter(
-                $index,
-                fn(int $key) =>
-                    \PHP_VERSION_ID < $key,
-                \ARRAY_FILTER_USE_KEY
-            ));
-            $index = Arr::toIndex($index);
+            $index = $index[\PHP_VERSION_ID - \PHP_VERSION_ID % 100] ?? [];
+            $index = array_fill_keys($index, true);
         }
 
         $versionSuffix =
@@ -602,7 +596,9 @@ PHP,
                         ? '.PHP81'
                         : (\PHP_VERSION_ID < 80300
                             ? '.PHP82'
-                            : null)));
+                            : (\PHP_VERSION_ID < 80400
+                                ? '.PHP83'
+                                : null))));
 
         // Include:
         // - .php files
@@ -671,7 +667,7 @@ PHP,
         ];
     }
 
-    public static function getMinVersionIndexPath(): string
+    public static function getIndexFixturePath(): string
     {
         return self::getFixturesPath(__CLASS__) . '/versions.json';
     }

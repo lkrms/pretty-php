@@ -60,7 +60,7 @@ while [[ ${1-} == -* ]]; do
     shift
 done
 
-(($#)) || set -- php83 php82 php81 php80 php74
+(($#)) || set -- php83 php84 php82 php81 php80 php74
 
 if ((FIXTURES)); then
     for PHP in "$@"; do

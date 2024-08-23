@@ -31,16 +31,15 @@ foreach (FormatterTest::getFileFormats() as $format => $formatter) {
 
         Console::logProgress('Generating', $outPath);
 
-        File::createDir(dirname($outFile));
+        if (isset($invalid[$path])) {
+            continue;
+        }
+
         $code = File::getContents($inFile);
         try {
             $output = $formatter->format($code);
         } catch (InvalidSyntaxException $ex) {
-            if (\PHP_VERSION_ID >= FormatterTest::TARGET_VERSION_ID) {
-                Console::error('Unable to generate:', $outPath);
-                throw $ex;
-            }
-            $invalid[] = $path;
+            $invalid[$path] = true;
             continue;
         } catch (Throwable $ex) {
             Console::error('Unable to generate:', $outPath);
@@ -63,6 +62,8 @@ foreach (FormatterTest::getFileFormats() as $format => $formatter) {
             } else {
                 $message = 'Replacing';
             }
+        } else {
+            File::createDir(dirname($outFile));
         }
         Console::log($message, $outPath);
         File::writeContents($outFile, $output);
@@ -71,33 +72,15 @@ foreach (FormatterTest::getFileFormats() as $format => $formatter) {
 }
 
 if (isset($invalid)) {
-    $indexPath = FormatterTest::getMinVersionIndexPath();
+    $indexPath = FormatterTest::getIndexFixturePath();
     /** @var array<int,string[]> */
     $index = file_exists($indexPath)
         ? Json::parseObjectAsArray(File::getContents($indexPath))
         : [];
 
-    $version = (\PHP_VERSION_ID - \PHP_VERSION_ID % 100) + 100;
-    if ($version === 70500) {
-        $version = 80000;
-    }
-
-    foreach ($invalid as $path) {
-        foreach ($index as $_version => $_paths) {
-            if (($_key = array_search($path, $_paths, true)) !== false) {
-                if ($_version >= $version) {
-                    continue 2;
-                }
-                unset($index[$_version][$_key]);
-                break;
-            }
-        }
-        $index[$version][] = $path;
-    }
-
-    foreach ($index as &$paths) {
-        sort($paths);
-    }
+    $invalid = array_keys($invalid);
+    sort($invalid);
+    $index[\PHP_VERSION_ID - \PHP_VERSION_ID % 100] = $invalid;
     ksort($index);
 
     $json = Json::prettyPrint($index);
