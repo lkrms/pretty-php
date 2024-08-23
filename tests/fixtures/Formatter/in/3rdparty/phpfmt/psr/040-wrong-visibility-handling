@@ -1,0 +1,23 @@
+<?php
+namespace A {
+    class Test {
+	protected static $rules = array();
+
+        public static function show() {
+            echo "Test::show\n";
+        }
+    }
+
+if ($a){
+	function a(){
+
+	}
+}
+
+}
+
+if ($a){
+	function a(){
+
+	}
+}

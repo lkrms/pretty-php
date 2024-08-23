@@ -1,0 +1,43 @@
+<?php
+//skipHHVM
+$x = new /** comment */True();
+
+$x = False::/** comment */Someclass();
+
+class /** comment */True {
+
+}
+class /** comment */ False {
+
+}
+class /** comment */ Null {
+
+}
+
+class Someclass /** comment */ extends True {}
+
+class Someclass /** comment */ implements False {}
+
+Class /** comment */ Null {
+	use True;
+}
+
+interface /** comment */ True {
+
+}
+
+trait /* comment */ False {
+
+}
+
+$Someclass instanceof /* comment */ True;
+$Someclass instanceof /* comment */ False;
+$Someclass instanceof /* comment */ Null;
+
+class Null {
+        use True, False {
+            False::bar insteadof True;
+            True::baz insteadof False;
+            False::baz as Null;
+        }
+}

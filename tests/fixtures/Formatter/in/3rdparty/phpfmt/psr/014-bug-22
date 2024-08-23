@@ -1,0 +1,15 @@
+<?php
+class StdClassA
+{
+    public function a()
+    {
+            switch ($mC["{$i}"]) {
+            }
+    }
+
+    public function b()
+    {
+
+    }
+
+}

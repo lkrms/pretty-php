@@ -1,0 +1,22 @@
+<?php
+
+namespace Fdw\Core\Libraries\Helpage\Traits;
+
+trait SingletonTrait
+{
+
+    protected static $singleton = null;
+
+    public static function getInstance()
+    {
+        if (!self::$singleton) {
+            self::$singleton = new self();
+        }
+
+        return self::$singleton;
+    }
+}
+
+interface ISingletonTrait {
+	public static function getInstance();
+}

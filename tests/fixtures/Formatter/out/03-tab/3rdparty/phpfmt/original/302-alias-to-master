@@ -15,7 +15,6 @@ join();
 key_exists();
 magic_quotes_runtime();
 pos();
-rewind();
 show_source();
 sizeof();
 strchr();

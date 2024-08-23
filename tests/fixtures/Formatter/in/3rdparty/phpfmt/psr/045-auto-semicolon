@@ -1,0 +1,41 @@
+<?php
+if ($permissions_user > PermissionsScope::VIEW) {?>
+<form>
+
+<b><?=$t->gettext($translation->bulkActions);?>: </b>
+<select name="actions" id="actions" size="1">
+    <option value="1"><?=$t->gettext($translation->bulkNone);?></option>
+    <option value="2"><?=$t->gettext($translation->bulkChangeGroup);?></option>
+    <option value="3"><?=$t->gettext($translation->changePolicyGroup);?></option>
+    <option value="4"><?=$t->gettext($translation->bulkSendSms);?></option>
+</select>
+
+<span id="sitebox" name="sitebox" style="display:none;">
+To Group:
+    <select name="sites" id="sites" size="1">
+    <?=$siteList;?>
+    </select>
+</span>
+
+<span id="groupbox" name="groupbox" style="display:none;">
+To Policy Group:
+    <select name="groups" id="groups" size="1">
+        <?=$groupList;?>
+    </select>
+</span>
+
+<span id="smsbox" name="smsbox" style="display:none;">
+Custom SMS:
+    <textarea name="mysms" id="mysms" cols="55" rows="3"></textarea>
+</span>
+
+<input type="submit" value="<?=$t->gettext($translation->execute);?>">
+<div id="InfoHolder" class="alert alert-info fade in hide">
+<i class="fa-fw fa fa-info"></i>
+<div id="InfoContent"></div>
+
+</form>
+
+<?php
+}
+?>

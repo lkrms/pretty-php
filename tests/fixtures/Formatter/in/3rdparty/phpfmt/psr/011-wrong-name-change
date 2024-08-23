@@ -1,0 +1,16 @@
+<?php
+
+class test
+{
+
+    public function test(array $test)
+    {
+        $redirects = array_filter($redirects, function ($redirect) {
+
+        });
+
+        $redirects = array_map(function ($redirect) {
+
+        }, $redirects);
+    }
+}

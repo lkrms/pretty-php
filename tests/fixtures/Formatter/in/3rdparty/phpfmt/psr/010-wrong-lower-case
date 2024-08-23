@@ -1,0 +1,4 @@
+<?php
+
+exec($this->config['video']['binaries']['mediainfo'] . " \"$file\" | grep Video", $video);
+

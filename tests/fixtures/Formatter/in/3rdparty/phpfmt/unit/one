@@ -1,0 +1,22 @@
+<?php
+
+class TestClass 
+implements MyInterface{
+
+
+
+/** @var string */
+private $var;
+
+/** @param string $var */
+public function __construct($var)
+{
+if ($var === 'hi')
+
+{
+    throw new \Exception;
+}
+
+$this->var =     $var;
+}
+}

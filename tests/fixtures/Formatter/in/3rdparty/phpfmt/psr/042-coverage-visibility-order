@@ -1,0 +1,9 @@
+<?php
+
+echo "$hello";
+
+echo <<<EOT
+
+WORLD;
+
+EOT;

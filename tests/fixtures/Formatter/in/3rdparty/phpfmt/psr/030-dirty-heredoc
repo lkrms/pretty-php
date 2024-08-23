@@ -1,0 +1,12 @@
+<?php
+class SomeClass {
+	protected function configure() {
+		$this
+			->setHelp(<<<EOF
+{$this->method()}
+EOF
+			);
+	}
+	protected function execute() {
+	}
+}

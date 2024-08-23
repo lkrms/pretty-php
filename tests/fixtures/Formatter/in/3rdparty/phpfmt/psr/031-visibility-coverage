@@ -1,0 +1,7 @@
+<?php
+
+$a = <<<EOT
+
+EOT;
+
+static $c;

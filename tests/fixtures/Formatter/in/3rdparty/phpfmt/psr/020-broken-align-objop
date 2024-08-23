@@ -1,0 +1,11 @@
+<?php
+class AppointmentFactory
+{
+    public function aaa(SomeType $somevar)
+    {
+        func(array(
+			 $somevar->getServiceLocator()
+                                                              ->get('STRING')->getRepository('STRING'),
+        ));
+    }
+}

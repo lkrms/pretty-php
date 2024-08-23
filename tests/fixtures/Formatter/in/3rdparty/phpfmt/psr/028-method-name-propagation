@@ -1,0 +1,7 @@
+<?php
+
+function snake_case(){
+
+}
+
+snake_case();

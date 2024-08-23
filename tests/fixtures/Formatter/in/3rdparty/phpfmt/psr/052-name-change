@@ -1,0 +1,33 @@
+<?php
+//passes: default,PSR1MethodNames,PSR1ClassNames
+
+class Test {
+    public function allCorrect() {
+        $x = class_exists($class);
+
+        $y = str_replace($search, $replace, $subject);
+
+        $z = array_search($needle, $haystack);
+    }
+
+    public function noneCorrect() {
+        echo Demo::class;
+        $x = class_exists($class);
+
+        echo Demo::class;
+        $y = str_replace($search, $replace, $subject);
+
+        echo Demo::class;
+        $z = array_search($needle, $haystack);
+    }
+
+    public function someCorrect() {
+        echo Demo::class;
+        $x = class_exists($class);
+
+        $y = str_replace($search, $replace, $subject);
+
+        echo Demo::class;
+        $z = array_search($needle, $haystack);
+    }
+}

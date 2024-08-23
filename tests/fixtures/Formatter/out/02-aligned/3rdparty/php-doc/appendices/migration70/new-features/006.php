@@ -1,3 +1,12 @@
-echo "\u{aa}";
-echo "\u{0000aa}";
-echo "\u{9999}";
+<?php
+
+echo 'ª', PHP_EOL;
+echo 'ª', PHP_EOL;
+
+echo '香', PHP_EOL;
+
+echo <<<EOT
+    🐘
+    EOT;
+
+?>

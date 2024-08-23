@@ -1,0 +1,11 @@
+<?php
+
+final class SomeClass
+{
+    public function &methodReturnRef($pass)
+    {
+        $a = function &() {};
+    }
+}
+
+$a = function &() {};

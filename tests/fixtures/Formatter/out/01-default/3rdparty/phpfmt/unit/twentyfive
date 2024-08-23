@@ -1,0 +1,5 @@
+<?php
+namespace Foo;
+
+Route::middleware()->namespace('App\Http\Controllers\Admin\Leads');
+Route::namespace('App\Http\Controllers\Admin\Leads');

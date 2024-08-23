@@ -1,0 +1,12 @@
+<?php
+
+function () {
+    
+}
+
+match ($x) {
+    $a => function () {
+    },
+    $b => function () {
+    }
+}

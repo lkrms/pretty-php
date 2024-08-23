@@ -1,0 +1,6 @@
+<?php
+
+mb_strtolower ("a");
+\mb_strtolower ("a");
+throw new \Exception ('a');
+throw new Exception ('a');

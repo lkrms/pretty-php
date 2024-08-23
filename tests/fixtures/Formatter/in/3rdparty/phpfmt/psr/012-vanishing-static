@@ -1,0 +1,9 @@
+<?php
+class SomeService {
+	static private function doA() {
+		return true;
+	}
+	protected static function doB($var) {
+			$v = static::doA( $var);
+	}
+}
