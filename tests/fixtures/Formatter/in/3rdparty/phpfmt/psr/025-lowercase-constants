@@ -1,0 +1,43 @@
+<?php
+//skipHHVM
+$x = new True();
+
+$x = False::Someclass();
+
+class True {
+
+}
+class False {
+
+}
+class Null {
+
+}
+
+class Someclass extends True {}
+
+class Someclass implements False {}
+
+Class Null {
+	use True;
+}
+
+interface True {
+
+}
+
+trait False {
+
+}
+
+$Someclass instanceof True;
+$Someclass instanceof False;
+$Someclass instanceof Null;
+
+class Null {
+        use True, False {
+            False::bar insteadof True;
+            True::baz insteadof False;
+            False::baz as Null;
+        }
+}

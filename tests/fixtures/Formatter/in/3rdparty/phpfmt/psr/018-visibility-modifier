@@ -1,0 +1,7 @@
+<?php
+abstract class A {
+
+	public $a;
+
+	abstract function a();
+}

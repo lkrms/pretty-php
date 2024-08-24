@@ -1,0 +1,26 @@
+<?php
+
+switch ($a) {
+	case 1:
+		break;
+	case 2:
+		break;
+}
+switch ($a) {
+	default:
+		break;
+	case 2:
+		break;
+}
+switch ($a) {
+	case 1:
+		break;
+	default:
+		echo 'a';
+}
+while (list(, $val) = each($arr)) {
+	if ($val == 'pare') {
+		break;
+	}
+	echo "$val<br />\n";
+}

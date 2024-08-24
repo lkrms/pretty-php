@@ -1,0 +1,22 @@
+<?php
+
+namespace Fdw\Core\Models\Traits;
+
+use Fdw\Core\Models\WarehouseItem;
+use Fdw\Core\Models\Warehouse;
+
+trait WarehouseTrait
+{
+    public static $cache = [];
+
+    public function assignWarehouses($warehouses, $update = false)
+    {
+        if ($update) {
+            $this->warehouses()->delete();
+        }
+
+        $warehouses = is_array($warehouses) ? $warehouses : [$warehouses];
+        $warehouse = WarehouseItem::saveWarehouseItems($warehouses);
+        $this->warehouses()->saveMany($warehouse);
+    }
+}

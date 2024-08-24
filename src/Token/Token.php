@@ -9,6 +9,7 @@ use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\HasTokenNames;
+use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Support\TokenIndentDelta;
 use Salient\Utility\Arr;
 use Salient\Utility\Str;
@@ -218,7 +219,19 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             }
         }
 
-        $a['Data'] = $this->Data ?? [];
+        if (isset($this->Data)) {
+            static $dataTypes;
+            $dataTypes ??= array_flip(TokenData::cases());
+            foreach ($this->Data as $type => $value) {
+                $a['Data'][$dataTypes[$type] ?? $type] =
+                    $value instanceof Token
+                        ? (string) $value
+                        : ($value instanceof TokenCollection
+                            ? $value->toString(' ')
+                            : $value);
+            }
+        }
+
         $a['TagIndent'] = $this->TagIndent;
         $a['PreIndent'] = $this->PreIndent;
         $a['Indent'] = $this->Indent;

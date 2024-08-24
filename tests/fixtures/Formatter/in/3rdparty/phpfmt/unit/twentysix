@@ -1,0 +1,17 @@
+<?php
+
+namespace App\Enums;
+
+enum Mq:string {
+                case ORDER_PAYMENT_EXPIRED = 'order-payment-expired';
+
+                public function getExchangeName(Mq $queue)
+    {
+            return 'ex-' . $queue->value;
+        }
+
+        public function getExchangeName2(Mq $queue)
+    {
+            return 'ex-' . $queue->value;
+        }
+}

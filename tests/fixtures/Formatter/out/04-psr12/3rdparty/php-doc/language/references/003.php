@@ -5,7 +5,6 @@ $var2 = '';
 function global_references($use_globals)
 {
     global $var1, $var2;
-
     if (!$use_globals) {
         $var2 = &$var1;  // visible only inside the function
     } else {

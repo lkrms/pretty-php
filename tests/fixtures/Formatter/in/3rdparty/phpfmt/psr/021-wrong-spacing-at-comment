@@ -1,0 +1,52 @@
+<?php
+
+class A {
+
+    public function index()
+    {
+
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     * GET /user/create
+     *
+     * @return Response
+     */
+}
+
+class B {
+
+    public function index()
+    {
+
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     * GET /user/create
+     *
+     * @return Response
+     */
+    function b(){
+
+    }
+}
+
+class C {
+
+    public function index()
+    {
+
+    }
+
+
+    function b(){
+    /**
+     * Show the form for creating a new resource.
+     * GET /user/create
+     *
+     * @return Response
+     */
+    }
+}

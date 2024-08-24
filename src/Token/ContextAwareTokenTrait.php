@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Token;
 
+use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Support\TokenCollection;
@@ -46,7 +47,7 @@ trait ContextAwareTokenTrait
      */
     public function getSubType(): int
     {
-        if (isset($this->SubType)) {
+        if ($this->SubType !== null) {
             return $this->SubType;
         }
 
@@ -203,11 +204,7 @@ trait ContextAwareTokenTrait
      */
     public function inParameterList(): bool
     {
-        if ($this->Parent && $this->Parent->isParameterList()) {
-            return true;
-        }
-
-        return false;
+        return $this->Parent && $this->Parent->isParameterList();
     }
 
     /**
@@ -305,56 +302,57 @@ trait ContextAwareTokenTrait
     }
 
     /**
-     * Check if the token belongs to a declaration
+     * Check if the token is part of a non-anonymous declaration
      */
-    public function inDeclaration(bool $allowAnonymous = true): bool
+    public function inNamedDeclaration(): bool
     {
         return $this->skipPrevSiblingsToDeclarationStart()
-                    ->isDeclaration($allowAnonymous);
+                    ->doIsDeclaration(false);
     }
 
     /**
-     * Check if a declaration starts at the token and is not an anonymous
-     * function or class
+     * Check if the token is part of a declaration
+     */
+    public function inDeclaration(): bool
+    {
+        return $this->skipPrevSiblingsToDeclarationStart()
+                    ->doIsDeclaration(true);
+    }
+
+    /**
+     * Check if the token is the first in a non-anonymous declaration
      *
      * @phpstan-assert-if-true TokenCollection $parts
      */
     public function isNamedDeclaration(?TokenCollection &$parts = null): bool
     {
-        return func_num_args() > 0
-            ? $this->doIsDeclaration(false, $parts)
-            : $this->doIsDeclaration(false);
+        return $this->doIsDeclaration(false, $parts);
     }
 
     /**
-     * Check if a declaration starts at the token
+     * Check if the token is the first in a declaration
      */
-    public function isDeclaration(bool $allowAnonymous = true): bool
+    public function isDeclaration(): bool
     {
-        return $this->doIsDeclaration($allowAnonymous);
+        return $this->doIsDeclaration(true);
     }
 
     private function doIsDeclaration(
         bool $allowAnonymous,
         ?TokenCollection &$parts = null
     ): bool {
-        /** @var Token $this */
         if ($this->Flags & TokenFlag::NAMED_DECLARATION) {
-            if (func_num_args() > 1) {
-                $parts = $this->namedDeclarationParts();
-            }
+            $parts = $this->Data[TokenData::NAMED_DECLARATION_PARTS];
             return true;
         }
 
-        // Exclude tokens other than the first in a possible declaration
+        // Exclude tokens other than the first in a declaration
         if ($allowAnonymous) {
-            if (
-                !$this->Expression || (
-                    $this->PrevSibling
-                    && $this->PrevSibling->Expression === $this->Expression
-                    && $this->Idx->DeclarationPartWithNewAndBody[$this->PrevSibling->id]
-                )
-            ) {
+            if (!$this->Expression || (
+                $this->PrevSibling
+                && $this->PrevSibling->Expression === $this->Expression
+                && $this->Idx->DeclarationPartWithNewAndBody[$this->PrevSibling->id]
+            )) {
                 return false;
             }
         } elseif ($this->Statement !== $this) {
@@ -377,7 +375,23 @@ trait ContextAwareTokenTrait
         // - `case` in switch statements
         // - promoted constructor parameters
         if (
-            ($first->id === \T_STATIC && !($next->id === \T_VARIABLE || $this->Idx->Declaration[$next->id]))
+            (
+                $first->id === \T_STATIC
+                && !$this->Idx->Declaration[$next->id]  // `static function`
+                && !(                                   // `static $foo` in a property context
+                    $next->id === \T_VARIABLE
+                    && $first->Parent
+                    && $first->Parent->id === \T_OPEN_BRACE
+                    && $first->Parent
+                             ->skipPrevSiblingsToDeclarationStart()
+                             ->collectSiblings($first->Parent)
+                             ->hasOneFrom($this->Idx->DeclarationClass)
+                )
+                && !(                                   // `static int $foo`
+                    $this->Idx->ValueTypeStart[$next->id]
+                    && $next->skipSiblingsFrom($this->Idx->ValueType)->id === \T_VARIABLE
+                )
+            )
             || ($first->id === \T_CASE && $first->inSwitchCaseList())
             || ($this->Idx->VisibilityWithReadonly[$first->id] && $first->inParameterList())
         ) {
@@ -393,8 +407,9 @@ trait ContextAwareTokenTrait
             return false;
         }
 
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore assign.propertyType
         $this->Flags |= TokenFlag::NAMED_DECLARATION;
+        $this->Data[TokenData::NAMED_DECLARATION_PARTS] = $parts;
 
         return true;
     }
@@ -406,7 +421,9 @@ trait ContextAwareTokenTrait
      * The token returned by this method may not be part of a declaration. It
      * should only be used as a starting point for further checks.
      *
-     * @return Token
+     * @api
+     *
+     * @return static
      */
     public function skipPrevSiblingsToDeclarationStart()
     {
@@ -422,6 +439,7 @@ trait ContextAwareTokenTrait
         ) {
             $t = $t->PrevSibling;
         }
+        /** @var static */
         return $t;
     }
 }

@@ -1,0 +1,12 @@
+<?php
+class AbstractFindAdapter
+{
+    public function Func()
+    {
+            $this->ignoreUnreadableDirs
+                ? function ($stderr) { return; }
+                : function ($stderr) { throw new AccessDeniedException($stderr); };
+
+    }
+
+}

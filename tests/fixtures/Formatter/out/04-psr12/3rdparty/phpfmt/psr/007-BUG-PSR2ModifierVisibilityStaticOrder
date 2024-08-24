@@ -1,0 +1,9 @@
+<?php
+
+class ClassName extends AnotherClass
+{
+    function __construct()
+    {
+        return new static;
+    }
+}

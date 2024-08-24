@@ -1,0 +1,13 @@
+<?php
+class SomeClass
+{
+	public function methodA()
+	{
+		a(AAA::class);
+	}
+
+	public function methodB()
+	{
+		b();
+	}
+}

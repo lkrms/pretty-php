@@ -78,7 +78,7 @@ final class Drupal implements Preset, TokenRule
                 \T_INTERFACE,
                 \T_TRAIT,
             ])) {
-                if (!$token->inDeclaration(false)) {
+                if (!$token->inNamedDeclaration()) {
                     continue;
                 }
 

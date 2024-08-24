@@ -571,8 +571,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
 
     /**
      * T_ABSTRACT, T_CASE, T_CLASS, T_CONST, T_DECLARE, T_ENUM, T_FINAL,
-     * T_FUNCTION, T_GLOBAL, T_INTERFACE, T_NAMESPACE, T_PRIVATE, T_PROTECTED,
-     * T_PUBLIC, T_READONLY, T_STATIC, T_TRAIT, T_USE, T_VAR
+     * T_FUNCTION, T_INTERFACE, T_NAMESPACE, T_PRIVATE, T_PROTECTED, T_PUBLIC,
+     * T_READONLY, T_STATIC, T_TRAIT, T_USE, T_VAR
      *
      * @readonly
      * @var array<int,bool>
@@ -614,7 +614,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $DeclarationList;
 
     /**
-     * T_GLOBAL, T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY, T_STATIC, T_VAR
+     * T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY, T_STATIC, T_VAR
      *
      * @readonly
      * @var array<int,bool>
@@ -625,7 +625,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * T_ABSTRACT, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
      * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_AND, T_ATTRIBUTE_COMMENT,
      * T_ATTRIBUTE, T_CASE, T_CLASS, T_COMMA, T_CONST, T_DECLARE, T_ENUM,
-     * T_EXTENDS, T_FINAL, T_FUNCTION, T_GLOBAL, T_IMPLEMENTS, T_INTERFACE,
+     * T_EXTENDS, T_FINAL, T_FUNCTION, T_IMPLEMENTS, T_INTERFACE,
      * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE, T_NAMESPACE,
      * T_NS_SEPARATOR, T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY, T_STATIC,
      * T_STRING, T_TRAIT, T_USE, T_VAR
@@ -639,7 +639,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * T_ABSTRACT, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
      * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_AND, T_ATTRIBUTE_COMMENT,
      * T_ATTRIBUTE, T_CASE, T_CLASS, T_COMMA, T_CONST, T_DECLARE, T_ENUM,
-     * T_EXTENDS, T_FINAL, T_FUNCTION, T_GLOBAL, T_IMPLEMENTS, T_INTERFACE,
+     * T_EXTENDS, T_FINAL, T_FUNCTION, T_IMPLEMENTS, T_INTERFACE,
      * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE, T_NAMESPACE,
      * T_NEW, T_NS_SEPARATOR, T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY,
      * T_STATIC, T_STRING, T_TRAIT, T_USE, T_VAR
@@ -654,9 +654,9 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_AND, T_ARRAY, T_ATTRIBUTE,
      * T_ATTRIBUTE_COMMENT, T_CALLABLE, T_CASE, T_CLASS, T_CLOSE_BRACE,
      * T_CLOSE_PARENTHESIS, T_COLON, T_COMMA, T_CONST, T_DECLARE, T_ENUM,
-     * T_EXTENDS, T_FINAL, T_FUNCTION, T_GLOBAL, T_IMPLEMENTS, T_INTERFACE,
-     * T_NAMESPACE, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE,
-     * T_NEW, T_NS_SEPARATOR, T_OPEN_BRACE, T_OPEN_PARENTHESIS, T_OR, T_PRIVATE,
+     * T_EXTENDS, T_FINAL, T_FUNCTION, T_IMPLEMENTS, T_INTERFACE, T_NAMESPACE,
+     * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE, T_NEW,
+     * T_NS_SEPARATOR, T_OPEN_BRACE, T_OPEN_PARENTHESIS, T_OR, T_PRIVATE,
      * T_PROTECTED, T_PUBLIC, T_QUESTION, T_READONLY, T_STATIC, T_STRING,
      * T_TRAIT, T_USE, T_VAR
      *
@@ -746,6 +746,15 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @var array<int,bool>
      */
     public array $ValueType;
+
+    /**
+     * T_ARRAY, T_CALLABLE, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED,
+     * T_NAME_RELATIVE, T_OPEN_PARENTHESIS, T_QUESTION, T_STATIC, T_STRING
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $ValueTypeStart;
 
     /**
      * T_PRIVATE, T_PROTECTED, T_PUBLIC
@@ -969,6 +978,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             \T_ELLIPSIS,
             \T_EXTENDS,
             \T_FN,
+            \T_GLOBAL,
             \T_IMPLEMENTS,
             \T_NAME_FULLY_QUALIFIED,
             \T_NAME_QUALIFIED,
@@ -1195,7 +1205,6 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         );
         $this->DeclarationList = self::get(...TT::DECLARATION_LIST);
         $this->DeclarationPropertyOrVariable = self::get(
-            \T_GLOBAL,
             \T_STATIC,
             \T_VAR,
             ...TT::VISIBILITY_WITH_READONLY,
@@ -1216,6 +1225,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         $this->OperatorBooleanExceptNot = self::get(...TT::OPERATOR_BOOLEAN_EXCEPT_NOT);
         $this->TypeDelimiter = self::get(...TT::TYPE_DELIMITER);
         $this->ValueType = self::get(...TT::VALUE_TYPE);
+        $this->ValueTypeStart = self::get(...TT::VALUE_TYPE_START);
         $this->Visibility = self::get(...TT::VISIBILITY);
         $this->VisibilityWithReadonly = self::get(...TT::VISIBILITY_WITH_READONLY);
         $this->Virtual = self::get(

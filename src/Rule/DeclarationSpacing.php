@@ -130,7 +130,7 @@ final class DeclarationSpacing implements TokenRule
             if ($modifier) {
                 $modifiers[] = $modifier->id;
             }
-            foreach ([\T_ABSTRACT, \T_FINAL, \T_GLOBAL, \T_READONLY, \T_STATIC, \T_VAR] as $id) {
+            foreach ([\T_ABSTRACT, \T_FINAL, \T_READONLY, \T_STATIC, \T_VAR] as $id) {
                 $modifier = $parts->getFirstOf($id);
                 if ($modifier) {
                     $modifiers[] = $modifier->id;

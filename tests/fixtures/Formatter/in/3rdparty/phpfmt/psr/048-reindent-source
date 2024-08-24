@@ -1,0 +1,18 @@
+<?php
+//passes:default,DocBlockToComment
+
+$x = [
+    /**
+     * TEST
+     */
+    'a' => 'bbb',
+    'ddd' => 'a',
+];
+
+$x = [
+    /*
+     * TEST
+     */
+    'a'   => 'bbb',
+    'ddd' => 'a',
+];

@@ -1,0 +1,3 @@
+<?php
+
+$level = current(explode('\\', substr(get_called_class(), strlen(__NAMESPACE__))));

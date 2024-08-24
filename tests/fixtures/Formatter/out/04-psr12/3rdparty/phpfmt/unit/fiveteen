@@ -1,0 +1,7 @@
+<?php
+
+class Foo
+{
+    public const BAR = 'bar';
+    private const BAZ = 'baz';
+}

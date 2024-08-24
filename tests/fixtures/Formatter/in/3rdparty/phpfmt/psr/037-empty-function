@@ -1,0 +1,10 @@
+<?php
+//passes: Default,PSR2EmptyFunction
+function f()
+{
+}
+
+function g()
+{
+// Comment
+}

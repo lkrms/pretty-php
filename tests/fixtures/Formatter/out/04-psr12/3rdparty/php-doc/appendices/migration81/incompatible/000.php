@@ -5,7 +5,6 @@ class A
     public static function counter()
     {
         static $counter = 0;
-
         $counter++;
         return $counter;
     }

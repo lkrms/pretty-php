@@ -164,13 +164,17 @@ final class TokenType extends AbstractDictionary
     ];
 
     public const VALUE_TYPE = [
+        \T_CLOSE_PARENTHESIS,
+        ...self::TYPE_DELIMITER,
+        ...self::VALUE_TYPE_START,
+    ];
+
+    public const VALUE_TYPE_START = [
         \T_ARRAY,
         \T_CALLABLE,
         \T_OPEN_PARENTHESIS,
-        \T_CLOSE_PARENTHESIS,
         \T_QUESTION,
         ...self::DECLARATION_TYPE,
-        ...self::TYPE_DELIMITER,
     ];
 
     public const CHAIN_EXPRESSION = [
@@ -368,7 +372,6 @@ final class TokenType extends AbstractDictionary
         \T_DECLARE,
         \T_ENUM,
         \T_FINAL,
-        \T_GLOBAL,
         \T_INTERFACE,
         \T_READONLY,
         \T_TRAIT,

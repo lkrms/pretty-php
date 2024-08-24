@@ -3,7 +3,6 @@
 function test_global_ref()
 {
     global $obj;
-
     $new = new stdClass;
     $obj = &$new;
 }
@@ -11,7 +10,6 @@ function test_global_ref()
 function test_global_noref()
 {
     global $obj;
-
     $new = new stdClass;
     $obj = $new;
 }

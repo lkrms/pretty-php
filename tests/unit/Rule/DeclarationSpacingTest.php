@@ -518,27 +518,21 @@ abstract class Foo
         global $a;
         global $b;
         static $c;
-
         $this->bar();
-
         global $d;
         global $e;
 
         static $f;
-
         $this->bar();
-
         global $g;
 
         global $h;
-
         static $i;
-
         $this->bar();
-
         static $j;
         global $k;
         global $l;
+
         static $m;
     }
 
@@ -581,24 +575,21 @@ abstract class Foo
         global $a;
         global $b;
         static $c;
-
         $this->bar();
-
         global $d;
         global $e;
+
         static $f;
-
         $this->bar();
-
         global $g;
+
         global $h;
         static $i;
-
         $this->bar();
-
         static $j;
         global $k;
         global $l;
+
         static $m;
     }
 

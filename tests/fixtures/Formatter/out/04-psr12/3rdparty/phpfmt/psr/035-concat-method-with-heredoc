@@ -1,0 +1,12 @@
+<?php
+
+class Child extends ParentClass
+{
+    protected function method()
+    {
+        return <<<EOF
+            HEREDOC
+            EOF
+                . parent::parentalMethod();
+    }
+}

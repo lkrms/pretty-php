@@ -84,7 +84,6 @@ class AES_CBC
 	private static function calculate_hmac_after_32bytes($password, $hsalt, $filename)
 	{
 		static $init = 0;
-
 		$init or $init = stream_filter_register('user-filter.skipfirst32bytes', 'FileSkip32Bytes');
 		$stream = 'php://filter/read=user-filter.skipfirst32bytes/resource=' . $filename;
 		$hkey = hash_pbkdf2('sha256', $password, $hsalt, $iterations = 1000, 24, $raw = true);

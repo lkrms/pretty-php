@@ -1,0 +1,13 @@
+<?php
+
+class A{
+public function __construct(
+    Router $router,
+    Request $request,
+    Client $httpClient
+) {
+    $this->httpClient = $httpClient;
+    $this->router = $router;
+    $this->request = $request;
+}
+}

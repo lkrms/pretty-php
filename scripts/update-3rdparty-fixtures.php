@@ -40,6 +40,7 @@ File::createDir($repoRoot);
 
 $skipUpdate = in_array('--skip-update', $argv);
 $fixturesRoot = FormatterTest::getFixturesPath() . '/in/3rdparty';
+$rootLength = strlen("$fixturesRoot/");
 
 $repos = [
     'php-doc' => 'https://github.com/php/doc-en.git',
@@ -88,6 +89,7 @@ $files = File::find()
              ->exclude("/^$exclude/")
              ->include('/\.xml$/');
 
+$repoLength = strlen("$repoRoot/php-doc/");
 $count = 0;
 foreach ($files as $xmlFile) {
     $xml = File::getContents((string) $xmlFile);
@@ -108,7 +110,7 @@ foreach ($files as $xmlFile) {
         }
     }
 
-    $source = substr((string) $xmlFile, strlen("$repoRoot/php-doc/"), -4);
+    $source = substr((string) $xmlFile, $repoLength, -4);
     $reader = new XMLReader();
     if (!$reader->XML($xml)) {
         throw new UnexpectedValueException(
@@ -150,7 +152,7 @@ foreach ($listings ?? [] as $source => $sourceListings) {
             $ext = '.invalid';
         }
         $outFile = sprintf('%s/%03d.php%s', $dir, $i, $ext);
-        Console::logProgress('Creating', substr($outFile, strlen("$fixturesRoot/")));
+        Console::logProgress('Creating', substr($outFile, $rootLength));
         File::writeContents($outFile, $output);
         $replaced++;
     }
@@ -158,27 +160,53 @@ foreach ($listings ?? [] as $source => $sourceListings) {
 
 Console::info('Updating phpfmt fixtures');
 
-$files = File::find()
-             ->in("$repoRoot/phpfmt/tests/Original")
-             ->include('/\.in$/');
-
 $dir = "$fixturesRoot/phpfmt";
 Console::log('Updating:', $dir);
 File::createDir($dir);
 File::pruneDir($dir);
 
+$finders = [
+    'original' => [
+        File::find()
+            ->in("$repoRoot/phpfmt/tests/Original")
+            ->include('/\.in$/'),
+        '.in',
+    ],
+    'psr' => [
+        File::find()
+            ->in("$repoRoot/phpfmt/tests/PSR")
+            ->include('/\.in$/'),
+        '.in',
+    ],
+    'unit' => [
+        File::find()
+            ->in("$repoRoot/phpfmt/tests/Unit/fixtures")
+            ->include('/\.txt$/'),
+        '.txt',
+    ],
+];
+
+$files = [];
+foreach ($finders as $subdir => [$finder, $suffix]) {
+    File::createDir("$dir/$subdir", 0755);
+    /** @var SplFileInfo $file */
+    foreach ($finder as $file) {
+        $files[(string) $file] = "$subdir/" . $file->getBasename($suffix);
+    }
+}
+
 $count = 0;
-foreach ($files as $file) {
+foreach ($files as $file => $outFile) {
     $ext = '';
     try {
-        // @phpstan-ignore-next-line
-        token_get_all(File::getContents((string) $file), \TOKEN_PARSE);
+        // @phpstan-ignore function.resultUnused
+        token_get_all(File::getContents($file), \TOKEN_PARSE);
     } catch (CompileError $ex) {
         $ext = '.invalid';
     }
-    $outFile = "$dir/" . $file->getBasename('.in') . $ext;
-    Console::logProgress('Creating', substr($outFile, strlen("$fixturesRoot/")));
-    File::copy((string) $file, $outFile);
+    $outFile = "$dir/" . $outFile . $ext;
+    Console::logProgress('Creating', substr($outFile, $rootLength));
+    File::copy($file, $outFile);
     $count++;
     $fixtures++;
     $replaced++;
@@ -265,7 +293,7 @@ foreach ($byHeading as $heading => $listings) {
 
         $index++;
         $outFile = sprintf('%s/%02d-%s.php%s', $dir, $index, $heading, $ext);
-        Console::logProgress('Creating', substr($outFile, strlen("$fixturesRoot/")));
+        Console::logProgress('Creating', substr($outFile, $rootLength));
         File::writeContents($outFile, $listing);
         $replaced++;
     }
@@ -325,7 +353,7 @@ foreach ($groups as $group => $sequences) {
 }
 
 $outFile = $fixturesRoot . '/utf-8.php';
-Console::log('Creating', substr($outFile, strlen("$fixturesRoot/")));
+Console::log('Creating', substr($outFile, $rootLength));
 File::writeContents($outFile, $output);
 $count++;
 $fixtures++;

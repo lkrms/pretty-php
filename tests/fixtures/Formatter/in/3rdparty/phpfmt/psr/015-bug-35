@@ -1,0 +1,4 @@
+<?php
+interface Identity{
+public static function hello();
+}
