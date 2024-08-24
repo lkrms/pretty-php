@@ -260,14 +260,16 @@ final class TokenCollection extends AbstractTypedList implements Stringable
 
     public function __toString(): string
     {
-        $code = '';
+        return $this->toString();
+    }
 
+    public function toString(string $delimiter = ''): string
+    {
         /** @var Token $token */
         foreach ($this as $token) {
-            $code .= $token->text;
+            $code[] = $token->text;
         }
-
-        return $code;
+        return implode($delimiter, $code ?? []);
     }
 
     /**

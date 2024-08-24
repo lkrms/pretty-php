@@ -42,7 +42,12 @@ final class TokenData extends AbstractEnumeration
     public const CHAIN_OPENED_BY = 4;
 
     /**
+     * A collection of tokens that form a NAMED_DECLARATION
+     */
+    public const NAMED_DECLARATION_PARTS = 5;
+
+    /**
      * The type applied to an open bracket by the HangingIndentation rule
      */
-    public const HANGING_INDENT_PARENT_TYPE = 5;
+    public const HANGING_INDENT_PARENT_TYPE = 6;
 }

@@ -371,7 +371,6 @@ class Foo
     {
         /** @var int|null */
         static $baz;
-
         return [];
     }
 }

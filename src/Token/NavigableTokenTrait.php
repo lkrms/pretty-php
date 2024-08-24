@@ -7,6 +7,7 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Contract\HasTokenNames;
 use Lkrms\PrettyPHP\Exception\InvalidTokenException;
+use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Formatter;
 use Closure;
@@ -56,7 +57,7 @@ trait NavigableTokenTrait
 
     /**
      * @var array<TokenData::*,mixed>
-     * @phpstan-var array{string,int,Token,Token,Token,int}
+     * @phpstan-var array{string,int,Token,Token,Token,TokenCollection,int}
      */
     public array $Data;
 
