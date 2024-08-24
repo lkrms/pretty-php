@@ -36,7 +36,6 @@ abstract class FooX
     function fooH()
     {
         static $foo;
-
         $bar = function ($baz) {};
     }
 }
@@ -44,7 +43,6 @@ abstract class FooX
 function foo412()
 {
     static $class;
-
     $interface = 'foo';
     $trait = 'bar';
 }

@@ -3,7 +3,6 @@
 function loadView($name, $data = array())
 {
 	global $config, $params, $lw;
-
 	if (!empty($data)) {
 		foreach ($data as $key => $d) {
 			$$key = $d;
@@ -16,7 +15,6 @@ function loadView($name, $data = array())
 function loadController($name, $view = '')
 {
 	global $config, $params, $lw;
-
 	include $config['path'] . 'controllers/' . $name . '.php';
 	include ($config['path'] . 'controllers/' . $name . '.php');
 	if (isset($data)) {

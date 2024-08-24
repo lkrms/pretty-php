@@ -3,7 +3,6 @@
 function &collector()
 {
     static $collection = array();
-
     return $collection;
 }
 

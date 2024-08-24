@@ -12,9 +12,7 @@ class B
     public static null|MyClass $h;
     public static MyClass $i;
     public App\MyClass $j;
-
-    static null | \stdClass $ee;
-
+    static null|\stdClass $ee;
     public \stdClass $ff;
     public MyClass $gg;
     public namespace\MyClass $hh;

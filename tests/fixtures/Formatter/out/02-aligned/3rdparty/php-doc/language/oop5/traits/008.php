@@ -4,8 +4,7 @@ trait Counter
     public function inc()
     {
         static $c = 0;
-
-        $c = $c + 1;
+        $c        = $c + 1;
         echo "$c\n";
     }
 }
