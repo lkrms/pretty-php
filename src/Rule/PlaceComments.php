@@ -71,7 +71,7 @@ final class PlaceComments implements TokenRule
             $prevIsTopLevelCloseBrace =
                 $prev
                 && $prev->id === \T_CLOSE_BRACE
-                && $prev->isStructuralBrace()
+                && $prev->Flags & TokenFlag::STRUCTURAL_BRACE
                 && $prev->skipPrevSiblingsToDeclarationStart()
                         ->namedDeclarationParts()
                         ->hasOneFrom($this->Idx->DeclarationClass);

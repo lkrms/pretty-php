@@ -82,12 +82,18 @@ final class HangingIndentation implements TokenRule
                     $token->hasNewlineBeforeNextCode()
                         ? (($token->Flags & TokenFlag::LIST_PARENT
                                 && $token->Data[TokenData::LIST_ITEM_COUNT] > 1)
-                            || ($token->id === \T_OPEN_BRACE && $token->isStructuralBrace(true))
+                            || ($token->id === \T_OPEN_BRACE && (
+                                $token->Flags & TokenFlag::STRUCTURAL_BRACE
+                                || $token->isMatchBrace()
+                            ))
                                 ? self::NORMAL_INDENT
                                 : self::NO_INDENT)
                         : (($token->Flags & TokenFlag::LIST_PARENT
                                 && $token->Data[TokenData::LIST_ITEM_COUNT] > 1)
-                            || ($token->id === \T_OPEN_BRACE && $token->isStructuralBrace(true))
+                            || ($token->id === \T_OPEN_BRACE && (
+                                $token->Flags & TokenFlag::STRUCTURAL_BRACE
+                                || $token->isMatchBrace()
+                            ))
                             || ($token->id !== \T_OPEN_BRACE && $token->adjacent())
                                 ? self::OVERHANGING_INDENT | self::NO_INNER_NEWLINE
                                 : self::NORMAL_INDENT | self::NO_INNER_NEWLINE);

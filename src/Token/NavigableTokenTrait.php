@@ -124,50 +124,6 @@ trait NavigableTokenTrait
     }
 
     /**
-     * Check if the token is a brace that delimits a code block
-     *
-     * Returns `false` for braces in:
-     *
-     * - expressions (e.g. `$object->{$property}`)
-     * - strings (e.g. `"{$object->property}"`)
-     * - alias/import statements (e.g. `use A\{B, C}`)
-     *
-     * Returns `true` for braces in:
-     *
-     * - trait adaptations
-     * - `match` expressions (if `$orMatch` is `true`)
-     */
-    public function isStructuralBrace(bool $orMatch = false): bool
-    {
-        /** @var Token $this */
-        $current = $this->OpenedBy ?? $this;
-
-        // Exclude T_CURLY_OPEN and T_DOLLAR_OPEN_CURLY_BRACES
-        if ($current->id !== \T_OPEN_BRACE) {
-            return false;
-        }
-
-        if (
-            $current->PrevSibling
-            && $current->PrevSibling->PrevSibling
-            && $current->PrevSibling->PrevSibling->id === \T_MATCH
-        ) {
-            return $orMatch;
-        }
-
-        /** @var Token */
-        $lastInner = $current->ClosedBy->PrevCode;
-
-        // Braces cannot be empty in expression (dereferencing) contexts, but
-        // trait adaptation braces can be
-        return $lastInner === $current                                                  // `{}`
-            || $lastInner->id === \T_SEMICOLON                                          // `{ statement; }`
-            || $lastInner->id === \T_COLON                                              // `{ label: }`
-            || ($lastInner->Flags & TokenFlag::STATEMENT_TERMINATOR)                    /* `{ statement ?>...<?php }` */
-            || ($lastInner->id === \T_CLOSE_BRACE && $lastInner->isStructuralBrace());  // `{ { statement; } }`
-    }
-
-    /**
      * Check if the token is a T_WHILE that belongs to a do ... while structure
      */
     public function isWhileAfterDo(): bool
@@ -192,10 +148,8 @@ trait NavigableTokenTrait
         // Starting from the previous sibling because `do` immediately before
         // `while` cannot be part of the same structure, look for a previous
         // `T_DO` the token could form a control structure with
-        $do = $this->PrevSibling
-                   ->prevSiblingOf(\T_DO)
-                   ->orNull();
-        if (!$do) {
+        $do = $this->PrevSibling->prevSiblingOf(\T_DO);
+        if ($do->id === \T_NULL) {
             return false;
         }
         // Now look for its `T_WHILE` counterpart, starting from the first token
@@ -242,34 +196,6 @@ trait NavigableTokenTrait
             return $token();
         }
         return $token;
-    }
-
-    /**
-     * Get the token if it is not null
-     *
-     * Returns `null` if the token is a null token.
-     *
-     * @return $this|null
-     */
-    public function orNull()
-    {
-        if ($this->id === \T_NULL) {
-            return null;
-        }
-        return $this;
-    }
-
-    /**
-     * Get the token if it is not null, otherwise throw an InvalidTokenException
-     *
-     * @return $this|never
-     */
-    public function orThrow()
-    {
-        if ($this->id === \T_NULL) {
-            throw new InvalidTokenException($this);
-        }
-        return $this;
     }
 
     public function getTokenName(): ?string
@@ -458,34 +384,6 @@ trait NavigableTokenTrait
         }
         while ($current->Next) {
             $current = $current->NextSibling ?: $current->Next;
-        }
-        return $current;
-    }
-
-    /**
-     * Get the token at the beginning of the token's original line
-     *
-     * @return Token
-     */
-    public function startOfOriginalLine()
-    {
-        $current = $this;
-        while (($current->Prev->line ?? null) === $this->line) {
-            $current = $current->Prev;
-        }
-        return $current;
-    }
-
-    /**
-     * Get the token at the end of the token's original line
-     *
-     * @return Token
-     */
-    public function endOfOriginalLine()
-    {
-        $current = $this;
-        while (($current->Next->line ?? null) === $this->line) {
-            $current = $current->Next;
         }
         return $current;
     }

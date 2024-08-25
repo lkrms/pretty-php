@@ -491,6 +491,14 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $ClassOrFunction;
 
     /**
+     * T_OPEN_BRACE, T_OPEN_PARENTHESIS, T_EXTENDS, T_IMPLEMENTS
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $AfterAnonymousClassOrFunction;
+
+    /**
      * T_COMMA, T_DOUBLE_ARROW
      *
      * @readonly
@@ -1183,6 +1191,12 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         $this->ClassOrFunction = self::get(
             \T_CLASS,
             \T_FUNCTION,
+        );
+        $this->AfterAnonymousClassOrFunction = self::get(
+            \T_OPEN_BRACE,
+            \T_OPEN_PARENTHESIS,
+            \T_EXTENDS,
+            \T_IMPLEMENTS,
         );
         $this->CommaOrDoubleArrow = self::get(\T_COMMA, \T_DOUBLE_ARROW);
         $this->FunctionOrFn = self::get(\T_FN, \T_FUNCTION);

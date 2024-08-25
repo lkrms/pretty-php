@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Contract\BlockRule;
@@ -105,7 +106,7 @@ final class AlignData implements BlockRule
                     continue;
                 }
                 if ($token->is(TokenType::OPERATOR_ASSIGNMENT)) {
-                    if (!$token->Parent || $token->Parent->isStructuralBrace()) {
+                    if (!$token->Parent || $token->Parent->Flags & TokenFlag::STRUCTURAL_BRACE) {
                         $addToIndex('=');
                         continue;
                     }

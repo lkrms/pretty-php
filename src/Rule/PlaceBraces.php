@@ -63,7 +63,10 @@ final class PlaceBraces implements TokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            if (!$token->isStructuralBrace(true)) {
+            if (!(
+                $token->Flags & TokenFlag::STRUCTURAL_BRACE
+                || $token->isMatchBrace()
+            )) {
                 continue;
             }
 

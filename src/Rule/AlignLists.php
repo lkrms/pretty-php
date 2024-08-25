@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Contract\ListRule;
 use Lkrms\PrettyPHP\Rule\Concern\ListRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenCollection;
@@ -70,13 +71,15 @@ final class AlignLists implements ListRule
                 }
                 while (($adjacent = $to->lastSiblingBeforeNewline()) !== $to
                     && ($adjacent->id !== \T_OPEN_BRACE
-                        || !$adjacent->isStructuralBrace(true)
+                        || !($adjacent->Flags & TokenFlag::STRUCTURAL_BRACE
+                            || $adjacent->isMatchBrace())
                         || $adjacent->Depth > $owner->Depth)) {
                     $to = $adjacent;
                 }
                 while (($adjacent = $to->adjacentBeforeNewline(false))
                     && ($adjacent->id !== \T_OPEN_BRACE
-                        || !$adjacent->isStructuralBrace(true)
+                        || !($adjacent->Flags & TokenFlag::STRUCTURAL_BRACE
+                            || $adjacent->isMatchBrace())
                         || $adjacent->Depth > $owner->Depth)) {
                     $to = $adjacent->pragmaticEndOfExpression();
                 }

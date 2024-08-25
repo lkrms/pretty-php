@@ -517,7 +517,7 @@ parameters:
 
 		-
 			message: "#^Cannot access property \\$Next on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 4
+			count: 1
 			path: src/Token/Token.php
 
 		-
@@ -537,12 +537,7 @@ parameters:
 
 		-
 			message: "#^Cannot access property \\$Prev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 5
-			path: src/Token/Token.php
-
-		-
-			message: "#^Cannot access property \\$PrevCode on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 3
+			count: 2
 			path: src/Token/Token.php
 
 		-
@@ -611,18 +606,8 @@ parameters:
 			path: src/Token/Token.php
 
 		-
-			message: "#^Method Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:endOfOriginalLine\\(\\) should return Lkrms\\\\PrettyPHP\\\\Token\\\\Token but returns Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 3
-			path: src/Token/Token.php
-
-		-
 			message: "#^Method Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:pragmaticEndOfExpression\\(\\) should return Lkrms\\\\PrettyPHP\\\\Token\\\\Token but returns Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 2
-			path: src/Token/Token.php
-
-		-
-			message: "#^Method Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\:\\:startOfOriginalLine\\(\\) should return Lkrms\\\\PrettyPHP\\\\Token\\\\Token but returns Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 3
 			path: src/Token/Token.php
 
 		-

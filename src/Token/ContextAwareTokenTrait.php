@@ -280,13 +280,12 @@ trait ContextAwareTokenTrait
      */
     public function inSwitchCase(): bool
     {
-        return
-            $this->inSwitchCaseList() && (
-                $this->id === \T_CASE
-                || $this->id === \T_DEFAULT
-                || (($prev = $this->prevSiblingFrom($this->Idx->SwitchCaseOrDelimiter)->orNull())
-                    && ($prev->id === \T_CASE || $prev->id === \T_DEFAULT))
-            );
+        return $this->inSwitchCaseList() && (
+            $this->id === \T_CASE
+            || $this->id === \T_DEFAULT
+            || ($prev = $this->prevSiblingFrom($this->Idx->SwitchCaseOrDelimiter))->id === \T_CASE
+            || $prev->id === \T_DEFAULT
+        );
     }
 
     /**

@@ -183,7 +183,7 @@ final class PreserveNewlines implements TokenRule
         }
 
         if ($token->id === \T_CLOSE_BRACE
-                && !$token->isStructuralBrace()) {
+                && !($token->Flags & TokenFlag::STRUCTURAL_BRACE)) {
             return false;
         }
 
@@ -236,7 +236,7 @@ final class PreserveNewlines implements TokenRule
                             && $token->PrevCode->EndStatement !== $token->PrevCode)
                         || ($token->Parent
                             && !($token->Parent->id === \T_OPEN_BRACE
-                                && $token->Parent->isStructuralBrace())))))) {
+                                && $token->Parent->Flags & TokenFlag::STRUCTURAL_BRACE)))))) {
             if (!$this->Formatter->PreserveNewlines) {
                 return false;
             }

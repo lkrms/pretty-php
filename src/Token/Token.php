@@ -147,36 +147,42 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     public int $OutputPos = -1;
     public int $OutputColumn = -1;
 
+    /**
+     * @api
+     */
     public function isMatchBrace(): bool
     {
-        $current = $this->OpenedBy ?: $this;
-
-        return
-            $current->id === \T_OPEN_BRACE
-            && ($prev = $current->PrevSibling)
-            && ($prev = $prev->PrevSibling)
-            && $prev->id === \T_MATCH;
+        return ($t = $this->OpenedBy ?? $this)->id === \T_OPEN_BRACE
+            && ($t = $t->PrevSibling)
+            && ($t = $t->PrevSibling)
+            && $t->id === \T_MATCH;
     }
 
+    /**
+     * @api
+     */
     public function isMatchDelimiter(): bool
     {
-        return
-            $this->id === \T_COMMA
+        return $this->id === \T_COMMA
             && $this->Parent
             && $this->Parent->isMatchBrace();
     }
 
+    /**
+     * @api
+     */
     public function isDelimiterBetweenMatchArms(): bool
     {
-        return
-            $this->isMatchDelimiter()
+        return $this->isMatchDelimiter()
             && $this->prevSiblingFrom($this->Idx->CommaOrDoubleArrow)->id === \T_DOUBLE_ARROW;
     }
 
+    /**
+     * @api
+     */
     public function isDelimiterBetweenMatchExpressions(): bool
     {
-        return
-            $this->isMatchDelimiter()
+        return $this->isMatchDelimiter()
             && $this->prevSiblingFrom($this->Idx->CommaOrDoubleArrow)->id !== \T_DOUBLE_ARROW;
     }
 
