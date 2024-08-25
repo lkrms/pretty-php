@@ -45,12 +45,12 @@ final class SwitchIndentation implements TokenRule
                 continue;
             }
 
-            if (!$token->is([\T_CASE, \T_DEFAULT])
-                    || !($token->Parent
-                        && $token->Parent->PrevSibling
-                        && $token->Parent->PrevSibling->PrevSibling
-                        && $token->Parent->PrevSibling->PrevSibling->id === \T_SWITCH)
-                    || ($separator = $token->nextSiblingFrom($this->Idx->SwitchCaseDelimiter))->id === \T_NULL) {
+            if (!$token->inSwitchCaseList()) {
+                continue;
+            }
+
+            $separator = $token->nextSiblingFrom($this->Idx->SwitchCaseDelimiter);
+            if ($separator->id === \T_NULL) {
                 continue;
             }
 

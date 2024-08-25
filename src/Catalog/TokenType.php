@@ -553,4 +553,10 @@ final class TokenType extends AbstractDictionary
         \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
         \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
     ];
+
+    public const RETURN = [
+        \T_RETURN,
+        \T_YIELD,
+        \T_YIELD_FROM,
+    ];
 }

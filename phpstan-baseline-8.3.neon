@@ -527,7 +527,7 @@ parameters:
 
 		-
 			message: "#^Cannot access property \\$NextSibling on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 4
+			count: 1
 			path: src/Token/Token.php
 
 		-
@@ -538,11 +538,6 @@ parameters:
 		-
 			message: "#^Cannot access property \\$Prev on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 2
-			path: src/Token/Token.php
-
-		-
-			message: "#^Cannot access property \\$PrevSibling on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 3
 			path: src/Token/Token.php
 
 		-
@@ -557,16 +552,11 @@ parameters:
 
 		-
 			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 7
+			count: 4
 			path: src/Token/Token.php
 
 		-
 			message: "#^Cannot call method _pragmaticStartOfExpression\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
-			count: 3
-			path: src/Token/Token.php
-
-		-
-			message: "#^Cannot call method collectSiblings\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\\\Token\\|null\\.$#"
 			count: 3
 			path: src/Token/Token.php
 

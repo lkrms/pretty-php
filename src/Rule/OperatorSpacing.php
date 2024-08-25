@@ -144,7 +144,7 @@ final class OperatorSpacing implements TokenRule
             if ($token->isUnaryOperator()
                 && $token->Next
                 && $token->Next->Flags & TokenFlag::CODE
-                && (!$token->Next->isOperator()
+                && (!$this->Idx->Operator[$token->Next->id]
                     || $token->Next->isUnaryOperator())) {
                 $token->WhitespaceMaskNext = WhitespaceType::NONE;
 

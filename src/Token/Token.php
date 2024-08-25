@@ -6,25 +6,95 @@ use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenFlagMask;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
-use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Contract\HasTokenNames;
 use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Support\TokenIndentDelta;
-use Salient\Utility\Arr;
+use Lkrms\PrettyPHP\Support\TokenTypeIndex;
+use Lkrms\PrettyPHP\Formatter;
+use Lkrms\PrettyPHP\TokenUtility;
 use Salient\Utility\Str;
+use Closure;
 use JsonSerializable;
 
 class Token extends GenericToken implements HasTokenNames, JsonSerializable
 {
-    use NavigableTokenTrait;
-    use ContextAwareTokenTrait;
-    use CollectibleTokenTrait;
-
     /**
      * The starting column (1-based) of the token
      */
     public int $column = -1;
+
+    /**
+     * The token's position (0-based) in an array of token objects
+     */
+    public int $Index = -1;
+
+    /** @var TokenSubType::*|-1|null */
+    public ?int $SubType = null;
+    public ?Token $Prev = null;
+    public ?Token $Next = null;
+    public ?Token $PrevCode = null;
+    public ?Token $NextCode = null;
+    public ?Token $PrevSibling = null;
+    public ?Token $NextSibling = null;
+    public ?Token $Statement = null;
+    public ?Token $EndStatement = null;
+
+    /**
+     * The token at the start of the token's expression, or null if the token is
+     * an expression delimiter
+     */
+    public ?Token $Expression = null;
+
+    /**
+     * The token at the end of the token's expression, or null if the token is a
+     * statement delimiter
+     */
+    public ?Token $EndExpression = null;
+
+    public ?Token $OpenedBy = null;
+    public ?Token $ClosedBy = null;
+    public ?Token $Parent = null;
+    public int $Depth = 0;
+    public ?Token $OpenTag = null;
+    public ?Token $CloseTag = null;
+    public ?Token $String = null;
+    public ?Token $StringClosedBy = null;
+    public ?Token $Heredoc = null;
+    /** @var int-mask-of<TokenFlag::*> */
+    public int $Flags = 0;
+
+    /**
+     * @var array<TokenData::*,mixed>
+     * @phpstan-var array{string,int,Token,Token,Token,TokenCollection,int}
+     */
+    public array $Data;
+
+    /**
+     * The original content of the token after expanding tabs if CollectColumn
+     * found tabs to expand
+     */
+    public ?string $ExpandedText = null;
+
+    /**
+     * The original content of the token if its content was changed by setText()
+     */
+    public ?string $OriginalText = null;
+
+    /**
+     * The formatter to which the token belongs
+     *
+     * @readonly
+     */
+    public Formatter $Formatter;
+
+    /**
+     * Token type index
+     *
+     * @readonly
+     */
+    public TokenTypeIndex $Idx;
 
     public int $TagIndent = 0;
 
@@ -148,8 +218,611 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     public int $OutputColumn = -1;
 
     /**
-     * @api
+     * @inheritDoc
      */
+    public static function tokenize(
+        string $code,
+        int $flags = 0,
+        Filter ...$filters
+    ): array {
+        return self::filter(parent::tokenize($code, $flags), ...$filters);
+    }
+
+    /**
+     * Same as tokenize(), but returns lower-cost GenericToken instances
+     *
+     * @return GenericToken[]
+     */
+    public static function tokenizeForComparison(
+        string $code,
+        int $flags = 0,
+        Filter ...$filters
+    ): array {
+        return self::filter(GenericToken::tokenize($code, $flags), ...$filters);
+    }
+
+    /**
+     * @template T of GenericToken
+     *
+     * @param T[] $tokens
+     * @return T[]
+     */
+    private static function filter(array $tokens, Filter ...$filters): array
+    {
+        if (!$tokens || !$filters) {
+            return $tokens;
+        }
+        foreach ($filters as $filter) {
+            $tokens = $filter->filterTokens($tokens);
+        }
+        return $tokens;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getTokenName(): ?string
+    {
+        return parent::getTokenName() ?? self::TOKEN_NAME[$this->id] ?? null;
+    }
+
+    /**
+     * Update the content of the token, setting OriginalText if needed
+     */
+    public function setText(string $text): void
+    {
+        if ($this->text !== $text) {
+            if ($this->OriginalText === null) {
+                $this->OriginalText = $this->text;
+            }
+            $this->text = $text;
+        }
+    }
+
+    // Navigation methods:
+
+    /**
+     * Get the previous sibling that is one of the types in an index
+     *
+     * @param array<int,bool> $index
+     */
+    public function prevSiblingFrom(array $index): Token
+    {
+        $t = $this;
+        while ($t = $t->PrevSibling) {
+            if ($index[$t->id]) {
+                return $t;
+            }
+        }
+        return $this->null();
+    }
+
+    /**
+     * Get the next sibling that is one of the types in an index
+     *
+     * @param array<int,bool> $index
+     */
+    public function nextSiblingFrom(array $index): Token
+    {
+        $t = $this;
+        while ($t = $t->NextSibling) {
+            if ($index[$t->id]) {
+                return $t;
+            }
+        }
+        return $this->null();
+    }
+
+    /**
+     * Skip to the next sibling that is not one of the types in an index
+     *
+     * The token returns itself if it satisfies the criteria.
+     *
+     * @param array<int,bool> $index
+     */
+    public function skipSiblingsFrom(array $index): Token
+    {
+        $t = $this->Flags & TokenFlag::CODE ? $this : $this->NextCode;
+        while ($t && $index[$t->id]) {
+            $t = $t->NextSibling;
+        }
+        return $t ?? $this->null();
+    }
+
+    /**
+     * Skip to the previous sibling that is not one of the types in an index
+     *
+     * The token returns itself if it satisfies the criteria.
+     *
+     * @param array<int,bool> $index
+     */
+    public function skipPrevSiblingsFrom(array $index): Token
+    {
+        $t = $this->Flags & TokenFlag::CODE ? $this : $this->PrevCode;
+        while ($t && $index[$t->id]) {
+            $t = $t->PrevSibling;
+        }
+        return $t ?? $this->null();
+    }
+
+    /**
+     * Get the previous sibling that is of the given type
+     */
+    public function prevSiblingOf(int $type): Token
+    {
+        $t = $this;
+        while ($t = $t->PrevSibling) {
+            if ($t->id === $type) {
+                return $t;
+            }
+        }
+        return $this->null();
+    }
+
+    /**
+     * Get the next sibling that is of the given type
+     */
+    public function nextSiblingOf(int $type): Token
+    {
+        $t = $this;
+        while ($t = $t->NextSibling) {
+            if ($t->id === $type) {
+                return $t;
+            }
+        }
+        return $this->null();
+    }
+
+    /**
+     * Get the last reachable token
+     */
+    public function last(): Token
+    {
+        $t = $this;
+        while ($t->Parent) {
+            $t = $t->Parent;
+        }
+        while ($t->Next) {
+            $t = $t->NextSibling ?? $t->NextCode ?? $t->Next;
+        }
+        return $t;
+    }
+
+    /**
+     * Get the token, or a fallback if it is T_NULL
+     *
+     * @param Token|(Closure(): Token) $token
+     */
+    public function or($token): Token
+    {
+        if ($this->id !== \T_NULL) {
+            return $this;
+        }
+        if ($token instanceof Closure) {
+            return $token();
+        }
+        return $token;
+    }
+
+    // Context-aware methods:
+
+    /**
+     * Check if the token is the colon before an alternative syntax block
+     */
+    public function isColonAltSyntaxDelimiter(): bool
+    {
+        return $this->getSubType() === TokenSubType::COLON_ALT_SYNTAX_DELIMITER;
+    }
+
+    /**
+     * Check if the token is the colon after a switch case or a label
+     */
+    public function isColonStatementDelimiter(): bool
+    {
+        return $this->getSubType() === TokenSubType::COLON_SWITCH_CASE_DELIMITER
+            || $this->SubType === TokenSubType::COLON_LABEL_DELIMITER;
+    }
+
+    /**
+     * Check if the token is the colon before a type declaration
+     */
+    public function isColonTypeDelimiter(): bool
+    {
+        return $this->getSubType() === TokenSubType::COLON_RETURN_TYPE_DELIMITER
+            || $this->SubType === TokenSubType::COLON_BACKED_ENUM_TYPE_DELIMITER;
+    }
+
+    /**
+     * Get the sub-type of a T_COLON, T_QUESTION or T_USE token
+     *
+     * @return TokenSubType::*|-1
+     */
+    public function getSubType(): int
+    {
+        if ($this->SubType !== null) {
+            return $this->SubType;
+        }
+
+        switch ($this->id) {
+            case \T_COLON:
+                // If it's too early to determine the token's sub-type, save
+                // `null` to resolve it later and return `-1`
+                return ($this->SubType = $this->getColonType()) ?? -1;
+            case \T_QUESTION:
+                return $this->SubType = $this->getQuestionType();
+            case \T_USE:
+                return $this->SubType = $this->getUseType();
+            default:
+                return $this->SubType = -1;
+        }
+    }
+
+    /**
+     * @return TokenSubType::COLON_*|null
+     */
+    private function getColonType(): ?int
+    {
+        /** @var Token */
+        $prevCode = $this->PrevCode;
+
+        if (
+            $this->ClosedBy
+            || $this->Idx->AltSyntaxContinueWithoutExpression[$prevCode->id]
+            || (
+                $prevCode->id === \T_CLOSE_PARENTHESIS
+                && $prevCode->PrevSibling
+                && (
+                    $this->Idx->AltSyntaxStart[$prevCode->PrevSibling->id]
+                    || $this->Idx->AltSyntaxContinueWithExpression[$prevCode->PrevSibling->id]
+                )
+            )
+        ) {
+            return TokenSubType::COLON_ALT_SYNTAX_DELIMITER;
+        }
+
+        if (
+            $this->Parent
+            && $this->Parent->id === \T_OPEN_PARENTHESIS
+            && $prevCode->id === \T_STRING
+            && $prevCode->PrevCode
+            && (
+                $prevCode->PrevCode === $this->Parent
+                || $prevCode->PrevCode->id === \T_COMMA
+            )
+        ) {
+            return TokenSubType::COLON_NAMED_ARGUMENT_DELIMITER;
+        }
+
+        if ($this->inSwitchCase()) {
+            return TokenSubType::COLON_SWITCH_CASE_DELIMITER;
+        }
+
+        if (
+            $prevCode->id === \T_STRING
+            && $prevCode->PrevCode
+            && $prevCode->PrevCode->id === \T_ENUM
+        ) {
+            return TokenSubType::COLON_BACKED_ENUM_TYPE_DELIMITER;
+        }
+
+        if ($prevCode->id === \T_CLOSE_PARENTHESIS) {
+            $prev = $prevCode->PrevSibling;
+            if (
+                $prev
+                && $prev->id === \T_USE
+                && $prev->PrevCode
+                && $prev->PrevCode->id === \T_CLOSE_PARENTHESIS
+            ) {
+                $prev = $prev->PrevCode->PrevSibling;
+            }
+
+            if ($prev) {
+                $prev = $prev->skipPrevSiblingsFrom($this->Idx->FunctionIdentifier);
+
+                if ($prev->id === \T_FUNCTION || $prev->id === \T_FN) {
+                    return TokenSubType::COLON_RETURN_TYPE_DELIMITER;
+                }
+            }
+        }
+
+        // The remaining possibilities require statements to have been parsed
+        if ($prevCode->PrevSibling && !$prevCode->PrevSibling->EndStatement) {
+            return null;
+        }
+
+        if ($prevCode->id === \T_STRING && (
+            !$prevCode->PrevSibling || (
+                $prevCode->PrevSibling->EndStatement
+                && $prevCode->PrevSibling->EndStatement->NextSibling === $prevCode
+            )
+        )) {
+            return TokenSubType::COLON_LABEL_DELIMITER;
+        }
+
+        return TokenSubType::COLON_TERNARY_OPERATOR;
+    }
+
+    /**
+     * @return TokenSubType::QUESTION_*
+     */
+    private function getQuestionType(): int
+    {
+        /** @var Token */
+        $prevCode = $this->PrevCode;
+        if (
+            $prevCode->id === \T_CONST
+            || ($prevCode->id === \T_COLON && $prevCode->isColonTypeDelimiter())
+            || $this->Idx->VarOrModifier[$prevCode->id]
+            || $this->inParameterList()
+        ) {
+            return TokenSubType::QUESTION_NULLABLE;
+        }
+
+        return TokenSubType::QUESTION_TERNARY_OPERATOR;
+    }
+
+    /**
+     * @return TokenSubType::USE_*
+     */
+    private function getUseType(): int
+    {
+        if ($this->PrevCode && $this->PrevCode->id === \T_CLOSE_PARENTHESIS) {
+            return TokenSubType::USE_VARIABLES;
+        }
+
+        if ($this->Parent && $this->Parent->id === \T_OPEN_BRACE) {
+            $t = $this->Parent->PrevSibling;
+            while ($t && $this->Idx->DeclarationPart[$t->id]) {
+                if ($this->Idx->DeclarationClass[$t->id]) {
+                    return TokenSubType::USE_TRAIT;
+                }
+                $t = $t->PrevSibling;
+            }
+        }
+
+        return TokenSubType::USE_IMPORT;
+    }
+
+    /**
+     * Check if the token is in a parameter list
+     */
+    public function inParameterList(): bool
+    {
+        return $this->Parent && $this->Parent->isParameterList();
+    }
+
+    /**
+     * Check if the token encloses a parameter list
+     */
+    public function isParameterList(): bool
+    {
+        if ($this->id !== \T_OPEN_PARENTHESIS || !$this->PrevCode) {
+            return false;
+        }
+
+        $prev = $this->PrevCode->skipPrevSiblingsFrom($this->Idx->FunctionIdentifier);
+
+        if ($prev->id === \T_FUNCTION || $prev->id === \T_FN) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if the token is the opening brace of a function
+     */
+    public function isFunctionBrace(bool $allowAnonymous = true): bool
+    {
+        if ($this->id !== \T_OPEN_BRACE || !$this->PrevCode) {
+            return false;
+        }
+
+        $prev = $this->PrevCode;
+        if ($prev->id !== \T_CLOSE_PARENTHESIS) {
+            $prev = $prev->skipPrevSiblingsFrom($this->Idx->ValueType);
+            if (
+                $prev->id === \T_COLON
+                && $prev->PrevCode
+                && $prev->PrevCode->id === \T_CLOSE_PARENTHESIS
+            ) {
+                $prev = $prev->PrevCode;
+            } else {
+                return false;
+            }
+        }
+
+        $prev = $prev->PrevSibling;
+        if (
+            $prev
+            && $prev->id === \T_USE
+            && $prev->PrevCode
+            && $prev->PrevCode->id === \T_CLOSE_PARENTHESIS
+        ) {
+            $prev = $prev->PrevCode->PrevSibling;
+        }
+
+        if (!$prev || (
+            !$allowAnonymous && (
+                $prev->id === \T_FUNCTION
+                || $this->Idx->Ampersand[$prev->id]
+            )
+        )) {
+            return false;
+        }
+
+        $prev = $prev->skipPrevSiblingsFrom($this->Idx->FunctionIdentifier);
+
+        return $prev->id === \T_FUNCTION;
+    }
+
+    /**
+     * Check if the token is in a T_CASE or T_DEFAULT statement in a T_SWITCH
+     *
+     * Returns `true` if the token is `T_CASE` or `T_DEFAULT`, part of the
+     * expression after `T_CASE`, or the subsequent `:` or `;` delimiter.
+     */
+    public function inSwitchCase(): bool
+    {
+        return $this->inSwitchCaseList() && (
+            $this->id === \T_CASE
+            || $this->id === \T_DEFAULT
+            || ($prev = $this->prevSiblingFrom($this->Idx->SwitchCaseOrDelimiter))->id === \T_CASE
+            || $prev->id === \T_DEFAULT
+        );
+    }
+
+    /**
+     * Check if the token is in a T_SWITCH case list
+     */
+    public function inSwitchCaseList(): bool
+    {
+        return
+            $this->Parent
+            && $this->Parent->PrevSibling
+            && $this->Parent->PrevSibling->PrevSibling
+            && $this->Parent->PrevSibling->PrevSibling->id === \T_SWITCH;
+    }
+
+    /**
+     * Check if the token is part of a non-anonymous declaration
+     */
+    public function inNamedDeclaration(): bool
+    {
+        return $this->skipPrevSiblingsToDeclarationStart()
+                    ->doIsDeclaration(false);
+    }
+
+    /**
+     * Check if the token is part of a declaration
+     */
+    public function inDeclaration(): bool
+    {
+        return $this->skipPrevSiblingsToDeclarationStart()
+                    ->doIsDeclaration(true);
+    }
+
+    /**
+     * Check if the token is the first in a non-anonymous declaration
+     *
+     * @phpstan-assert-if-true TokenCollection $parts
+     */
+    public function isNamedDeclaration(?TokenCollection &$parts = null): bool
+    {
+        return $this->doIsDeclaration(false, $parts);
+    }
+
+    /**
+     * Check if the token is the first in a declaration
+     */
+    public function isDeclaration(): bool
+    {
+        return $this->doIsDeclaration(true);
+    }
+
+    private function doIsDeclaration(
+        bool $allowAnonymous,
+        ?TokenCollection &$parts = null
+    ): bool {
+        if ($this->Flags & TokenFlag::NAMED_DECLARATION) {
+            $parts = $this->Data[TokenData::NAMED_DECLARATION_PARTS];
+            return true;
+        }
+
+        // Exclude tokens other than the first in a declaration
+        if ($allowAnonymous) {
+            if (!$this->Expression || (
+                $this->PrevSibling
+                && $this->PrevSibling->Expression === $this->Expression
+                && $this->Idx->DeclarationPartWithNewAndBody[$this->PrevSibling->id]
+            )) {
+                return false;
+            }
+        } elseif ($this->Statement !== $this) {
+            return false;
+        }
+
+        // Get the first non-attribute
+        $first = $this->skipSiblingsFrom($this->Idx->Attribute);
+
+        // Exclude non-declarations
+        if (!$this->Idx->Declaration[$first->id]) {
+            return false;
+        }
+
+        /** @var Token */
+        $next = $first->NextCode;
+
+        // Exclude:
+        // - `static` outside declarations
+        // - `case` in switch statements
+        // - promoted constructor parameters
+        if (
+            (
+                $first->id === \T_STATIC
+                && !$this->Idx->Declaration[$next->id]  // `static function`
+                && !(                                   // `static $foo` in a property context
+                    $next->id === \T_VARIABLE
+                    && $first->Parent
+                    && $first->Parent->id === \T_OPEN_BRACE
+                    && $first->Parent
+                             ->skipPrevSiblingsToDeclarationStart()
+                             ->collectSiblings($first->Parent)
+                             ->hasOneFrom($this->Idx->DeclarationClass)
+                )
+                && !(                                   // `static int $foo`
+                    $this->Idx->ValueTypeStart[$next->id]
+                    && $next->skipSiblingsFrom($this->Idx->ValueType)->id === \T_VARIABLE
+                )
+            )
+            || ($first->id === \T_CASE && $first->inSwitchCaseList())
+            || ($this->Idx->VisibilityWithReadonly[$first->id] && $first->inParameterList())
+        ) {
+            return false;
+        }
+
+        if ($allowAnonymous) {
+            return true;
+        }
+
+        $parts = $this->namedDeclarationParts();
+        if (!$parts->count()) {
+            return false;
+        }
+
+        // @phpstan-ignore assign.propertyType
+        $this->Flags |= TokenFlag::NAMED_DECLARATION;
+        $this->Data[TokenData::NAMED_DECLARATION_PARTS] = $parts;
+
+        return true;
+    }
+
+    /**
+     * Get the first token in the sequence of declaration parts to which the
+     * token belongs, or the token itself
+     *
+     * The token returned by this method may not be part of a declaration. It
+     * should only be used as a starting point for further checks.
+     */
+    public function skipPrevSiblingsToDeclarationStart(): Token
+    {
+        if (!$this->Expression) {
+            return $this;
+        }
+
+        $t = $this;
+        while (
+            $t->PrevSibling
+            && $t->PrevSibling->Expression === $this->Expression
+            && $this->Idx->DeclarationPartWithNewAndBody[$t->PrevSibling->id]
+        ) {
+            $t = $t->PrevSibling;
+        }
+        return $t;
+    }
+
+    // --
+
     public function isMatchBrace(): bool
     {
         return ($t = $this->OpenedBy ?? $this)->id === \T_OPEN_BRACE
@@ -158,9 +831,6 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             && $t->id === \T_MATCH;
     }
 
-    /**
-     * @api
-     */
     public function isMatchDelimiter(): bool
     {
         return $this->id === \T_COMMA
@@ -168,138 +838,16 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             && $this->Parent->isMatchBrace();
     }
 
-    /**
-     * @api
-     */
     public function isDelimiterBetweenMatchArms(): bool
     {
         return $this->isMatchDelimiter()
             && $this->prevSiblingFrom($this->Idx->CommaOrDoubleArrow)->id === \T_DOUBLE_ARROW;
     }
 
-    /**
-     * @api
-     */
     public function isDelimiterBetweenMatchExpressions(): bool
     {
         return $this->isMatchDelimiter()
             && $this->prevSiblingFrom($this->Idx->CommaOrDoubleArrow)->id !== \T_DOUBLE_ARROW;
-    }
-
-    /**
-     * @return array<string,mixed>
-     */
-    public function jsonSerialize(): array
-    {
-        $a['id'] = $this->getTokenName();
-        $a['text'] = $this->text;
-        $a['line'] = $this->line;
-        $a['pos'] = $this->pos;
-        $a['column'] = $this->column;
-
-        if ($this->SubType !== null) {
-            $a['SubType'] = TokenSubType::toName($this->SubType);
-        }
-
-        $a['PrevSibling'] = $this->PrevSibling;
-        $a['NextSibling'] = $this->NextSibling;
-        $a['Parent'] = $this->Parent;
-        $a['String'] = $this->String;
-        $a['Heredoc'] = $this->Heredoc;
-        $a['ExpandedText'] = $this->ExpandedText;
-        $a['OriginalText'] = $this->OriginalText;
-        $a['Statement'] = $this->Statement;
-        $a['EndStatement'] = $this->EndStatement;
-        $a['Expression'] = $this->Expression;
-        $a['EndExpression'] = $this->EndExpression;
-
-        if ($this->Flags) {
-            $flags = [];
-            foreach (TokenFlag::cases() as $name => $value) {
-                if (($this->Flags & $value) === $value) {
-                    $flags[] = $name;
-                }
-            }
-            if ($flags) {
-                $a['Flags'] = implode('|', $flags);
-            }
-        }
-
-        if (isset($this->Data)) {
-            static $dataTypes;
-            $dataTypes ??= array_flip(TokenData::cases());
-            foreach ($this->Data as $type => $value) {
-                $a['Data'][$dataTypes[$type] ?? $type] =
-                    $value instanceof Token
-                        ? (string) $value
-                        : ($value instanceof TokenCollection
-                            ? $value->toString(' ')
-                            : $value);
-            }
-        }
-
-        $a['TagIndent'] = $this->TagIndent;
-        $a['PreIndent'] = $this->PreIndent;
-        $a['Indent'] = $this->Indent;
-        $a['Deindent'] = $this->Deindent;
-        $a['HangingIndent'] = $this->HangingIndent;
-        $a['HangingIndentStack'] = $this->HangingIndentStack;
-        $a['HangingIndentParentStack'] = $this->HangingIndentParentStack;
-
-        foreach ($this->HangingIndentContextStack as $i => $entry) {
-            foreach ($entry as $j => $entry) {
-                if (is_array($entry)) {
-                    foreach ($entry as $k => $entry) {
-                        $a['HangingIndentContextStack'][$i][$j][$k] = (string) $entry;
-                    }
-                    continue;
-                }
-                $a['HangingIndentContextStack'][$i][$j] = (string) $entry;
-            }
-        }
-
-        $a['HangingIndentParentLevels'] = $this->HangingIndentParentLevels;
-        $a['LinePadding'] = $this->LinePadding;
-        $a['LineUnpadding'] = $this->LineUnpadding;
-        $a['Padding'] = $this->Padding;
-        $a['HeredocIndent'] = $this->HeredocIndent;
-        $a['AlignedWith'] = $this->AlignedWith;
-        $a['WhitespaceBefore'] = WhitespaceType::toWhitespace($this->WhitespaceBefore);
-        $a['WhitespaceAfter'] = WhitespaceType::toWhitespace($this->WhitespaceAfter);
-        $a['WhitespaceMaskPrev'] = $this->WhitespaceMaskPrev;
-        $a['WhitespaceMaskNext'] = $this->WhitespaceMaskNext;
-        $a['CriticalWhitespaceBefore'] = $this->CriticalWhitespaceBefore;
-        $a['CriticalWhitespaceAfter'] = $this->CriticalWhitespaceAfter;
-        $a['CriticalWhitespaceMaskPrev'] = $this->CriticalWhitespaceMaskPrev;
-        $a['CriticalWhitespaceMaskNext'] = $this->CriticalWhitespaceMaskNext;
-        $a['OutputLine'] = $this->OutputLine;
-        $a['OutputPos'] = $this->OutputPos;
-        $a['OutputColumn'] = $this->OutputColumn;
-
-        foreach ($a as $key => &$value) {
-            if ($value === null || $value === []) {
-                unset($a[$key]);
-                continue;
-            }
-            if ($value instanceof Token) {
-                $value = (string) $value;
-                continue;
-            }
-            if (Arr::of($value, Token::class)) {
-                foreach ($value as &$token) {
-                    $token = (string) $token;
-                }
-                unset($token);
-            }
-        }
-        unset($value);
-
-        return $a;
-    }
-
-    public function canonicalClose(): Token
-    {
-        return $this->ClosedBy ?: $this;
     }
 
     public function wasFirstOnLine(): bool
@@ -413,7 +961,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
     public function continuesControlStructure(): bool
     {
-        return $this->is([\T_CATCH, \T_FINALLY, \T_ELSEIF, \T_ELSE])
+        return $this->Idx->ContinuesControlStructure[$this->id]
             || ($this->id === \T_WHILE && $this->Statement !== $this);
     }
 
@@ -463,8 +1011,10 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             // expression boundary, move back to a sibling that isn't a
             // terminator
             while ($current && !$current->Expression) {
-                if ($i && !(($current->Flags & TokenFlag::TERNARY_OPERATOR)
-                        || $current->is(TokenType::OPERATOR_COMPARISON_EXCEPT_COALESCE))) {
+                if ($i && !(
+                    $current->Flags & TokenFlag::TERNARY_OPERATOR
+                    || $this->Idx->OperatorComparison[$current->id]
+                )) {
                     break;
                 }
                 $i++;
@@ -510,7 +1060,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     private function _pragmaticStartOfExpression(Token $requester): Token
     {
         if ($requester !== $this
-                && $this->is([\T_RETURN, \T_YIELD, \T_YIELD_FROM])) {
+                && $this->Idx->Return[$this->id]) {
             return $this->NextCode;
         }
 
@@ -689,8 +1239,6 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      * If the token belongs to a sequence of one or more consecutive close
      * brackets or commas in any combination, and the last of these has a
      * subsequent token in the same statement, return it
-     *
-     * @api
      */
     public function adjacent(): ?Token
     {
@@ -805,25 +1353,26 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
     public function withoutTerminator(): Token
     {
-        if ($this->PrevCode
-            && ($this->is([\T_SEMICOLON, \T_COMMA, \T_COLON])
-                || ($this->Flags & TokenFlag::STATEMENT_TERMINATOR))) {
+        if ($this->PrevCode && (
+            $this->Idx->StatementTerminator[$this->id]
+            || $this->Flags & TokenFlag::STATEMENT_TERMINATOR
+        )) {
             return $this->PrevCode;
         }
-
         return $this;
     }
 
     public function withTerminator(): Token
     {
-        if ($this->NextCode
-            && !($this->is([\T_SEMICOLON, \T_COMMA, \T_COLON])
-                || ($this->Flags & TokenFlag::STATEMENT_TERMINATOR))
-            && ($this->NextCode->is([\T_SEMICOLON, \T_COMMA, \T_COLON])
-                || ($this->NextCode->Flags & TokenFlag::STATEMENT_TERMINATOR))) {
+        if ($this->NextCode && !(
+            $this->Idx->StatementTerminator[$this->id]
+            || $this->Flags & TokenFlag::STATEMENT_TERMINATOR
+        ) && (
+            $this->Idx->StatementTerminator[$this->NextCode->id]
+            || $this->NextCode->Flags & TokenFlag::STATEMENT_TERMINATOR
+        )) {
             return $this->NextCode;
         }
-
         return $this;
     }
 
@@ -978,42 +1527,30 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         return (bool) ($this->Flags & TokenFlag::MULTILINE_COMMENT);
     }
 
-    public function isOperator(): bool
-    {
-        return $this->is(TokenType::OPERATOR_ALL);
-    }
-
     public function isUnaryOperator(): bool
     {
-        return $this->is([
-            \T_NOT,
-            \T_DOLLAR,
-            \T_LOGICAL_NOT,
-            ...TokenType::OPERATOR_ERROR_CONTROL,
-            ...TokenType::OPERATOR_INCREMENT_DECREMENT
-        ]) || (
-            $this->is([\T_PLUS, \T_MINUS])
+        return $this->Idx->OperatorUnary[$this->id] || (
+            $this->Idx->PlusOrMinus[$this->id]
             && $this->inUnaryContext()
         );
     }
 
     public function inUnaryContext(): bool
     {
-        if ($this->Expression === $this) {
-            return true;
-        }
-
-        if (!$this->PrevCode) {
-            return false;
-        }
-
-        return ($this->PrevCode->Flags & TokenFlag::TERNARY_OPERATOR)
-            || $this->Idx->UnaryPredecessor[$this->PrevCode->id];
+        return $this->Expression === $this
+            || ($this->PrevCode && (
+                $this->PrevCode->Flags & TokenFlag::TERNARY_OPERATOR
+                || $this->Idx->UnaryPredecessor[$this->PrevCode->id]
+            ));
     }
 
-    public function getIndentDelta(Token $target): TokenIndentDelta
+    /**
+     * Get the difference in indentation between the token and a token being
+     * used for alignment
+     */
+    public function indentDelta(Token $token): TokenIndentDelta
     {
-        return TokenIndentDelta::between($this, $target);
+        return TokenIndentDelta::between($this, $token);
     }
 
     public function indent(): int
@@ -1045,13 +1582,375 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         );
     }
 
-    public function __toString(): string
+    // Collection methods:
+
+    /**
+     * Get the token and any subsequent tokens that could be part of a
+     * non-anonymous declaration
+     */
+    public function namedDeclarationParts(): TokenCollection
     {
-        return sprintf(
-            'T%d:L%d:%s',
-            $this->Index,
-            $this->line,
-            Str::ellipsize(var_export($this->text, true), 20)
-        );
+        return $this->getDeclarationParts(false);
+    }
+
+    /**
+     * Get the token and any subsequent tokens that could be part of a
+     * declaration
+     */
+    public function declarationParts(): TokenCollection
+    {
+        return $this->getDeclarationParts(true);
+    }
+
+    private function getDeclarationParts(bool $allowAnonymous): TokenCollection
+    {
+        $index = $allowAnonymous
+            ? $this->Idx->DeclarationPartWithNew
+            : $this->Idx->DeclarationPart;
+
+        if (!$index[$this->id]) {
+            return new TokenCollection();
+        }
+
+        $t = $this;
+        while ($t->NextSibling && (
+            $index[$t->NextSibling->id] || (
+                $allowAnonymous
+                && $t->NextSibling->id === \T_OPEN_PARENTHESIS
+                && $t->id === \T_CLASS
+            )
+        )) {
+            $t = $t->NextSibling;
+        }
+
+        if (
+            !$allowAnonymous
+            && $t->skipPrevSiblingsFrom($this->Idx->Ampersand)->id === \T_FUNCTION
+        ) {
+            return new TokenCollection();
+        }
+
+        return $this->collectSiblings($t);
+    }
+
+    /**
+     * Get the token and its preceding tokens in the same statement, in document
+     * order
+     */
+    public function sinceStartOfStatement(): TokenCollection
+    {
+        return $this->Statement
+            ? $this->Statement->collect($this)
+            : $this->collect($this);
+    }
+
+    /**
+     * Get the token and its nested tokens
+     */
+    public function outer(): TokenCollection
+    {
+        return ($this->OpenedBy ?? $this)
+                   ->collect($this->ClosedBy ?? $this);
+    }
+
+    /**
+     * Get the token's nested tokens
+     */
+    public function inner(): TokenCollection
+    {
+        $t = $this->OpenedBy ?? $this;
+        return $t->ClosedBy
+            && $t->ClosedBy->Prev
+            && $t->Next
+            && $t->Next !== $t->ClosedBy
+                ? $t->Next->collect($t->ClosedBy->Prev)
+                : new TokenCollection();
+    }
+
+    /**
+     * Get the token's nested siblings
+     */
+    public function children(): TokenCollection
+    {
+        $t = $this->OpenedBy ?? $this;
+        return $t->ClosedBy
+            && $t->ClosedBy->PrevCode
+            && $t->NextCode
+            && $t->NextCode !== $t->ClosedBy
+                ? $t->NextCode->collectSiblings($t->ClosedBy->PrevCode)
+                : new TokenCollection();
+    }
+
+    /**
+     * Get the token and its following tokens up to and including a given token
+     */
+    public function collect(Token $to): TokenCollection
+    {
+        return TokenCollection::collect($this, $to);
+    }
+
+    /**
+     * Get the token and its following siblings, optionally stopping at a given
+     * sibling
+     */
+    public function collectSiblings(?Token $to = null): TokenCollection
+    {
+        $tokens = new TokenCollection();
+        if ($this->id === \T_NULL) {
+            return $tokens;
+        }
+        !$to || $to->id !== \T_NULL || $to = null;
+        $current = $this->OpenedBy ?? $this;
+        if ($to) {
+            if ($this->Parent !== $to->Parent) {
+                return $tokens;
+            }
+            $to = $to->OpenedBy ?? $to;
+            if ($this->Index > $to->Index) {
+                return $tokens;
+            }
+        }
+        do {
+            $tokens[] = $current;
+            if ($to && $current === $to) {
+                break;
+            }
+        } while ($current = $current->NextSibling);
+
+        return $tokens;
+    }
+
+    /**
+     * Get preceding siblings in reverse document order, optionally stopping at
+     * a given sibling
+     */
+    public function prevSiblings(?Token $to = null): TokenCollection
+    {
+        $tokens = new TokenCollection();
+        if ($this->id === \T_NULL) {
+            return $tokens;
+        }
+        !$to || $to->id !== \T_NULL || $to = null;
+        $current = $this->OpenedBy ?? $this;
+        if ($to) {
+            if ($this->Parent !== $to->Parent) {
+                return $tokens;
+            }
+            $to = $to->OpenedBy ?? $to;
+            if ($this->Index < $to->Index) {
+                return $tokens;
+            }
+        }
+        while ($current = $current->PrevSibling) {
+            $tokens[] = $current;
+            if ($to && $current === $to) {
+                break;
+            }
+        }
+
+        return $tokens;
+    }
+
+    /**
+     * Get preceding code tokens in reverse document order, up to but not
+     * including the first that isn't one of the types in an index
+     *
+     * @param array<int,bool> $index
+     */
+    public function prevCodeWhile(array $index): TokenCollection
+    {
+        return $this->_prevCodeWhile(false, false, $index);
+    }
+
+    /**
+     * Get the token and its preceding code tokens in reverse document order, up
+     * to but not including the first that isn't one of the types in an index
+     *
+     * @param array<int,bool> $index
+     * @param bool $testToken If `true` and the token isn't one of the types in
+     * `$index`, an empty collection is returned. Otherwise, the token is added
+     * to the collection regardless.
+     */
+    public function withPrevCodeWhile(array $index, bool $testToken = false): TokenCollection
+    {
+        return $this->_prevCodeWhile(true, $testToken, $index);
+    }
+
+    /**
+     * @param array<int,bool> $index
+     */
+    private function _prevCodeWhile(bool $includeToken, bool $testToken, array $index): TokenCollection
+    {
+        $tokens = new TokenCollection();
+        if ($includeToken && !$testToken) {
+            $tokens[] = $this;
+            $includeToken = false;
+        }
+        $prev = $includeToken ? $this : $this->PrevCode;
+        while ($prev && $index[$prev->id]) {
+            $tokens[] = $prev;
+            $prev = $prev->PrevCode;
+        }
+
+        return $tokens;
+    }
+
+    /**
+     * Get following code tokens, up to but not including the first that isn't
+     * one of the types in an index
+     *
+     * @param array<int,bool> $index
+     */
+    public function nextCodeWhile(array $index): TokenCollection
+    {
+        return $this->_nextCodeWhile(false, false, $index);
+    }
+
+    /**
+     * Get the token and its following code tokens, up to but not including the
+     * first that isn't one of the types in an index
+     *
+     * @param array<int,bool> $index
+     * @param bool $testToken If `true` and the token isn't one of the types in
+     * `$index`, an empty collection is returned. Otherwise, the token is added
+     * to the collection regardless.
+     */
+    public function withNextCodeWhile(array $index, bool $testToken = false): TokenCollection
+    {
+        return $this->_nextCodeWhile(true, $testToken, $index);
+    }
+
+    /**
+     * @param array<int,bool> $index
+     */
+    private function _nextCodeWhile(bool $includeToken, bool $testToken, array $index): TokenCollection
+    {
+        $tokens = new TokenCollection();
+        if ($includeToken && !$testToken) {
+            $tokens[] = $this;
+            $includeToken = false;
+        }
+        $next = $includeToken ? $this : $this->NextCode;
+        while ($next && $index[$next->id]) {
+            $tokens[] = $next;
+            $next = $next->NextCode;
+        }
+
+        return $tokens;
+    }
+
+    /**
+     * Get preceding siblings in reverse document order, up to but not including
+     * the first that isn't one of the types in an index
+     *
+     * @param array<int,bool> $index
+     */
+    public function prevSiblingsWhile(array $index): TokenCollection
+    {
+        return $this->_prevSiblingsWhile(false, false, $index);
+    }
+
+    /**
+     * Get the token and its preceding siblings in reverse document order, up to
+     * but not including the first that isn't one of the types in an index
+     *
+     * @param array<int,bool> $index
+     * @param bool $testToken If `true` and the token isn't one of the types in
+     * `$index`, an empty collection is returned. Otherwise, the token is added
+     * to the collection regardless.
+     */
+    public function withPrevSiblingsWhile(array $index, bool $testToken = false): TokenCollection
+    {
+        return $this->_prevSiblingsWhile(true, $testToken, $index);
+    }
+
+    /**
+     * @param array<int,bool> $index
+     */
+    private function _prevSiblingsWhile(bool $includeToken, bool $testToken, array $index): TokenCollection
+    {
+        $tokens = new TokenCollection();
+        if ($includeToken && !$testToken) {
+            $tokens[] = $this;
+            $includeToken = false;
+        }
+        $prev = $includeToken ? $this : $this->PrevSibling;
+        while ($prev && $index[$prev->id]) {
+            $tokens[] = $prev;
+            $prev = $prev->PrevSibling;
+        }
+
+        return $tokens;
+    }
+
+    /**
+     * Get following siblings, up to but not including the first that isn't one
+     * of the types in an index
+     *
+     * @param array<int,bool> $index
+     */
+    public function nextSiblingsWhile(array $index): TokenCollection
+    {
+        return $this->_nextSiblingsWhile(false, false, $index);
+    }
+
+    /**
+     * Get the token and its following siblings, up to but not including the
+     * first that isn't one of the types in an index
+     *
+     * @param array<int,bool> $index
+     * @param bool $testToken If `true` and the token isn't one of the types in
+     * `$index`, an empty collection is returned. Otherwise, the token is added
+     * to the collection regardless.
+     */
+    public function withNextSiblingsWhile(array $index, bool $testToken = false): TokenCollection
+    {
+        return $this->_nextSiblingsWhile(true, $testToken, $index);
+    }
+
+    /**
+     * @param array<int,bool> $index
+     */
+    private function _nextSiblingsWhile(bool $includeToken, bool $testToken, array $index): TokenCollection
+    {
+        $tokens = new TokenCollection();
+        if ($includeToken && !$testToken) {
+            $tokens[] = $this;
+            $includeToken = false;
+        }
+        $next = $includeToken ? $this : $this->NextSibling;
+        while ($next && $index[$next->id]) {
+            $tokens[] = $next;
+            $next = $next->NextSibling;
+        }
+
+        return $tokens;
+    }
+
+    // --
+
+    /**
+     * Get a new T_NULL token
+     *
+     * @return static
+     */
+    public function null(): Token
+    {
+        $token = new static(\T_NULL, '');
+        if (isset($this->Formatter)) {
+            $token->Formatter = $this->Formatter;
+        }
+        if (isset($this->Idx)) {
+            $token->Idx = $this->Idx;
+        }
+        return $token;
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    public function jsonSerialize(): array
+    {
+        return TokenUtility::serialize($this);
     }
 }

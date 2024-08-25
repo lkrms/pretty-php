@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
@@ -29,20 +30,20 @@ final class BlankBeforeReturn implements TokenRule
 
     public static function getTokenTypes(TokenTypeIndex $typeIndex): array
     {
-        return [
-            \T_RETURN,
-            \T_YIELD,
-            \T_YIELD_FROM,
-        ];
+        return TokenType::RETURN;
     }
 
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            if (($prev = $token->PrevSibling->Statement ?? null)
-                    && $prev->is([\T_RETURN, \T_YIELD, \T_YIELD_FROM])) {
+            if (
+                $token->PrevSibling
+                && $token->PrevSibling->Statement
+                && $this->Idx->Return[$token->PrevSibling->Statement->id]
+            ) {
                 continue;
             }
+
             $token->applyBlankLineBefore();
         }
     }

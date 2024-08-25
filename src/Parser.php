@@ -507,7 +507,7 @@ final class Parser
                         !($next = ($token->ClosedBy ?? $token)->NextCode)
                         || !($idx->ContinuesControlStructure[$next->id] || (
                             $next->id === \T_WHILE
-                            && $next->isWhileAfterDo()
+                            && $this->isWhileAfterDo($next)
                         ))
                     )
                 ) || (
@@ -715,5 +715,46 @@ final class Parser
                 && $t->OpenedBy->id === \T_OPEN_BRACE
                 && $this->isStructuralBrace($t->OpenedBy)
             );
+    }
+
+    private function isWhileAfterDo(Token $token): bool
+    {
+        if (
+            !$token->PrevSibling
+            || !$token->PrevSibling->PrevSibling
+        ) {
+            return false;
+        }
+
+        // Check for `do { ... } while ();`
+        if ($token->PrevSibling->PrevSibling->id === \T_DO) {
+            return true;
+        }
+
+        // Check for `do ... while ();` by looking for a previous `T_DO` the
+        // token could pair with, starting from its previous sibling because
+        // `do` immediately before `while` cannot belong to the same structure
+        $do = $token->PrevSibling->prevSiblingOf(\T_DO);
+        if ($do->id === \T_NULL) {
+            return false;
+        }
+        // Now look for its `T_WHILE` counterpart, starting from the first token
+        // it could be and allowing for nested unenclosed `T_WHILE` loops, i.e.
+        // `do while () while (); while ();`
+        /** @var Token */
+        $next = $do->NextSibling;
+        /** @var Token */
+        $next = $next->NextSibling;
+        foreach ($next->collectSiblings($token) as $t) {
+            if ($t->id === \T_WHILE && !(
+                $t->PrevSibling
+                && $t->PrevSibling->PrevSibling
+                && $t->PrevSibling->PrevSibling->id !== \T_WHILE
+            )) {
+                return $t === $token;
+            }
+        }
+
+        return false;
     }
 }

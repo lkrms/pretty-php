@@ -4,7 +4,6 @@ namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
-use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Contract\BlockRule;
 use Lkrms\PrettyPHP\Rule\Concern\BlockRuleTrait;
 use Lkrms\PrettyPHP\Token\Token;
@@ -105,7 +104,7 @@ final class AlignData implements BlockRule
                 if ($token->hasNewlineBefore()) {
                     continue;
                 }
-                if ($token->is(TokenType::OPERATOR_ASSIGNMENT)) {
+                if ($this->Idx->OperatorAssignment[$token->id]) {
                     if (!$token->Parent || $token->Parent->Flags & TokenFlag::STRUCTURAL_BRACE) {
                         $addToIndex('=');
                         continue;

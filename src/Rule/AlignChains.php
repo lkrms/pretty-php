@@ -123,7 +123,7 @@ final class AlignChains implements TokenRule
         /** @var Token */
         $first = $chain->first();
         $offset = $alignWith->alignmentOffset() + $offset;
-        $delta = $first->getIndentDelta($alignWith);
+        $delta = $first->indentDelta($alignWith);
         $delta->LinePadding += $offset;
         $callback = function (Token $t, ?Token $next) use ($delta) {
             if ($next) {
