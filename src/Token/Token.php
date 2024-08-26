@@ -930,22 +930,23 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     public function alignmentOffset(bool $includeToken = true, bool $allowSelfAlignment = false): int
     {
         $startOfLine = $this->startOfLine();
-        $from =
-            $startOfLine
-                ->collect($this)
-                ->reverse()
-                ->find(
-                    fn(Token $t, ?Token $next) =>
-                        ($t->AlignedWith
-                            && ($allowSelfAlignment || $t !== $this))
-                        || ($next
-                            && $next === $this->AlignedWith)
-                ) ?: $startOfLine;
+        $from = $startOfLine
+                    ->collect($this)
+                    ->reverse()
+                    ->find(
+                        fn(Token $t, ?Token $next) =>
+                            ($t->AlignedWith
+                                && ($allowSelfAlignment || $t !== $this))
+                            || ($next
+                                && $next === $this->AlignedWith)
+                    ) ?? $startOfLine;
 
         if ($includeToken) {
             $code = $from->collect($this)->render(true);
         } else {
-            $code = $from->collect($this->Prev)->render(true, true, false);
+            /** @var Token */
+            $prev = $this->Prev;
+            $code = $from->collect($prev)->render(true, true, false);
         }
         $offset = mb_strlen($code);
         // Handle strings with embedded newlines
@@ -997,7 +998,9 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
                             ($t->Flags & TokenFlag::TERNARY_OPERATOR)
                                 && $t->id === \T_QUESTION);
         if ($ternary1 && $ternary1->Data[TokenData::OTHER_TERNARY_OPERATOR]->Index > $this->Index) {
-            return $ternary1->NextCode->_pragmaticStartOfExpression($this);
+            /** @var Token */
+            $next = $ternary1->NextCode;
+            return $next->_pragmaticStartOfExpression($this);
         }
 
         // Otherwise, traverse expressions until an appropriate terminator is
@@ -1028,14 +1031,17 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
             // Honour imaginary braces around control structures with unenclosed
             // bodies if needed
-            if ($containUnenclosed) {
+            if ($containUnenclosed && $current->EndExpression) {
                 if ($this->Idx->HasStatementWithOptionalBraces[$current->id]
-                        && ($body = $current->NextSibling)->id !== \T_OPEN_BRACE
+                        && ($body = $current->NextSibling)
+                        && $body->id !== \T_OPEN_BRACE
                         && $current->EndExpression->withTerminator()->Index >= $this->Index) {
                     return $body->_pragmaticStartOfExpression($this);
                 }
                 if ($this->Idx->HasExpressionAndStatementWithOptionalBraces[$current->id]
-                        && ($body = $current->NextSibling->NextSibling)->id !== \T_OPEN_BRACE
+                        && $current->NextSibling
+                        && ($body = $current->NextSibling->NextSibling)
+                        && $body->id !== \T_OPEN_BRACE
                         && $current->EndExpression->withTerminator()->Index >= $this->Index) {
                     return $body->_pragmaticStartOfExpression($this);
                 }
@@ -1059,8 +1065,8 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
     private function _pragmaticStartOfExpression(Token $requester): Token
     {
-        if ($requester !== $this
-                && $this->Idx->Return[$this->id]) {
+        if ($requester !== $this && $this->Idx->Return[$this->id]) {
+            /** @var Token */
             return $this->NextCode;
         }
 
@@ -1098,9 +1104,8 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             && ($parts = $this->skipPrevSiblingsToDeclarationStart()->declarationParts())->hasValue($this, true)
             && $parts->hasOneFrom($this->Idx->DeclarationTopLevel)
             // Exclude anonymous functions, which can move as needed
-            && ($last = $parts->last()->skipPrevSiblingsFrom(
-                $this->Idx->Ampersand
-            ))->id !== \T_FUNCTION
+            && ($last = $parts->last())
+            && ($last = $last->skipPrevSiblingsFrom($this->Idx->Ampersand))->id !== \T_FUNCTION
             // Anonymous classes are a special case where if there is a newline
             // before `class`, the first hanging indent in the declaration is
             // propagated to the whole class, and a subsequent indent for the
@@ -1131,12 +1136,16 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             //     // ...
             // };
             // ```
-            && (($first = $parts->first())->id !== \T_NEW
+            && ($first = $parts->first())
+            && ($first->id !== \T_NEW
                 || !(($class = $parts->getFirstOf(\T_CLASS))
+                    && $class->PrevCode
                     && $class->PrevCode->hasNewlineBeforeNextCode())
                 || $first->NextCode !== $this)
             && ($end = $last->nextSiblingOf(\T_OPEN_BRACE))->id !== \T_NULL
+            && $this->EndStatement
             && $end->Index < $this->EndStatement->Index
+            && $end->PrevCode
         ) {
             return $end->PrevCode;
         }
@@ -1171,6 +1180,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             if (($current->Flags & TokenFlag::TERNARY_OPERATOR)
                     && $current->id === \T_QUESTION) {
                 if ($current->Data[TokenData::OTHER_TERNARY_OPERATOR]->Index > $this->Index) {
+                    /** @var Token */
                     return $current->Data[TokenData::OTHER_TERNARY_OPERATOR]->PrevCode;
                 }
                 break;
@@ -1224,7 +1234,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
                 && $next->Statement !== $next
                 && (!$containUnenclosed
                     || $terminator->id === \T_CLOSE_BRACE
-                    || $next->Statement->Index >= $this->Index)) {
+                    || ($next->Statement && $next->Statement->Index >= $this->Index))) {
                 continue;
             }
 
@@ -1314,6 +1324,9 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             || ((!$outer->EndStatement
                     || $outer->EndStatement->Index <= $outer->NextCode->Index)
                 && ($next === $outer
+                    || !$next
+                    || !$next->EndStatement
+                    || !$next->NextCode
                     || $next->EndStatement->Index <= $next->NextCode->Index))) {
             return null;
         }
@@ -1378,29 +1391,29 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
     public function applyBlankLineBefore(bool $withMask = false): void
     {
-        $current = $this;
-        $prev = $current->Prev;
-        /** @var Token|null */
-        $last = null;
-        /** @disregard P1006 */
-        while (!$current->hasBlankLineBefore()
-            && $prev
-            && $this->Idx->Comment[$prev->id]
-            && $prev->hasNewlineBefore()
-            && (($prev->id === \T_DOC_COMMENT && $prev->hasNewline())
-                || ($prev->wasFirstOnLine()
-                    && $prev->column <= $this->column))
-            && (!$last
-                || !$last->Prev
-                || (($prev->Flags & TokenFlagMask::COMMENT_TYPE) === ($last->Prev->Flags & TokenFlagMask::COMMENT_TYPE)
-                    && !$prev->isMultiLineComment()))) {
-            $last = $current;
-            $current = $current->Prev;
-            $prev = $current->Prev;
+        $t = $this;
+        $i = 0;
+        while (
+            !$t->hasBlankLineBefore()
+            && $t->Prev
+            && $this->Idx->Comment[$t->Prev->id]
+            && $t->Prev->hasNewlineBefore()
+            && ($t->Prev->id === \T_DOC_COMMENT || (
+                $t->Prev->wasFirstOnLine()
+                && $t->Prev->column <= $this->column
+            ))
+            && (!$i || (
+                !($t->Flags & TokenFlag::MULTILINE_COMMENT)
+                && ($t->Flags & TokenFlagMask::COMMENT_TYPE)
+                    === ($t->Prev->Flags & TokenFlagMask::COMMENT_TYPE)
+            ))
+        ) {
+            $i++;
+            $t = $t->Prev;
         }
-        $current->WhitespaceBefore |= WhitespaceType::BLANK;
+        $t->WhitespaceBefore |= WhitespaceType::BLANK;
         if ($withMask) {
-            $current->WhitespaceMaskPrev |= WhitespaceType::BLANK;
+            $t->WhitespaceMaskPrev |= WhitespaceType::BLANK;
         }
     }
 
@@ -1470,20 +1483,21 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         if (!$this->NextCode || $this->NextCode === $this->Next) {
             return false;
         }
-        $current = $this;
+        $t = $this;
         while (true) {
-            $current = $current->Next;
-            if ($current === $this->NextCode) {
+            /** @var Token */
+            $t = $t->Next;
+            if ($t === $this->NextCode) {
                 break;
             }
-            if ($current->hasNewlineAfter()) {
+            if ($t->hasNewlineAfter()) {
                 return true;
             }
             if ($orInHtml && (
-                $current->id === \T_INLINE_HTML
-                || $current === $current->OpenTag
-                || $current === $current->CloseTag
-            ) && $current->hasNewline()) {
+                $t->id === \T_INLINE_HTML
+                || $t->id === \T_CLOSE_TAG
+                || $t->id === \T_OPEN_TAG
+            ) && $t->hasNewline()) {
                 return true;
             }
         }
