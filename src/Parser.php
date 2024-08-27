@@ -685,7 +685,9 @@ final class Parser
             }
         }
 
+        // @codeCoverageIgnoreStart
         return $token->null();
+        // @codeCoverageIgnoreEnd
     }
 
     private function isStructuralBrace(Token $token): bool
@@ -723,7 +725,9 @@ final class Parser
             !$token->PrevSibling
             || !$token->PrevSibling->PrevSibling
         ) {
+            // @codeCoverageIgnoreStart
             return false;
+            // @codeCoverageIgnoreEnd
         }
 
         // Check for `do { ... } while ();`

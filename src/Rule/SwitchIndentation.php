@@ -49,11 +49,8 @@ final class SwitchIndentation implements TokenRule
                 continue;
             }
 
-            $separator = $token->nextSiblingFrom($this->Idx->SwitchCaseDelimiter);
-            if ($separator->id === \T_NULL) {
-                continue;
-            }
-
+            /** @var Token */
+            $separator = $token->EndStatement;
             $token->WhitespaceBefore |= WhitespaceType::LINE;
             $separator->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
             $separator->WhitespaceMaskNext &= ~WhitespaceType::BLANK;

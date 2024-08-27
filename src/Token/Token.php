@@ -612,55 +612,6 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     }
 
     /**
-     * Check if the token is the opening brace of a function
-     */
-    public function isFunctionBrace(bool $allowAnonymous = true): bool
-    {
-        if ($this->id !== \T_OPEN_BRACE || !$this->PrevCode) {
-            return false;
-        }
-
-        $prev = $this->PrevCode;
-        if ($prev->id !== \T_CLOSE_PARENTHESIS) {
-            $prev = $prev->skipPrevSiblingsFrom($this->Idx->ValueType);
-            if (
-                $prev->id === \T_COLON
-                && $prev->PrevCode
-                && $prev->PrevCode->id === \T_CLOSE_PARENTHESIS
-            ) {
-                $prev = $prev->PrevCode;
-            } else {
-                return false;
-            }
-        }
-
-        $prev = $prev->PrevSibling;
-        if (!$prev) {
-            return false;
-        }
-        if (
-            $prev->id === \T_USE
-            && $prev->getSubType() === TokenSubType::USE_VARIABLES
-        ) {
-            /** @var Token */
-            $prev = $prev->PrevCode;
-            /** @var Token */
-            $prev = $prev->PrevSibling;
-        }
-
-        if (!$allowAnonymous && (
-            $prev->id === \T_FUNCTION
-            || $this->Idx->Ampersand[$prev->id]
-        )) {
-            return false;
-        }
-
-        $prev = $prev->skipPrevSiblingsFrom($this->Idx->FunctionIdentifier);
-
-        return $prev->id === \T_FUNCTION;
-    }
-
-    /**
      * Check if the token is in a T_CASE or T_DEFAULT statement in a T_SWITCH
      */
     public function inSwitchCase(): bool
@@ -710,14 +661,6 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     public function isNamedDeclaration(?TokenCollection &$parts = null): bool
     {
         return $this->doIsDeclaration(false, $parts);
-    }
-
-    /**
-     * Check if the token is the first in a declaration
-     */
-    public function isDeclaration(): bool
-    {
-        return $this->doIsDeclaration(true);
     }
 
     private function doIsDeclaration(
@@ -807,7 +750,9 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     public function skipPrevSiblingsToDeclarationStart(): Token
     {
         if (!$this->Expression) {
+            // @codeCoverageIgnoreStart
             return $this;
+            // @codeCoverageIgnoreEnd
         }
 
         $t = $this;
@@ -853,37 +798,41 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     public function wasFirstOnLine(): bool
     {
         if ($this->id === \T_NULL) {
+            // @codeCoverageIgnoreStart
             return false;
+            // @codeCoverageIgnoreEnd
         }
+        $prev = $this;
         do {
-            $prev = ($prev ?? $this)->Prev;
+            $prev = $prev->Prev;
             if (!$prev) {
                 return true;
             }
         } while ($this->Idx->Virtual[$prev->id]);
-        $prevCode = $prev->OriginalText ?: $prev->text;
-        $prevNewlines = substr_count($prevCode, "\n");
-
+        $prevText = $prev->OriginalText ?? $prev->text;
+        $prevNewlines = substr_count($prevText, "\n");
         return $this->line > ($prev->line + $prevNewlines)
-            || $prevCode[-1] === "\n";
+            || $prevText[-1] === "\n";
     }
 
     public function wasLastOnLine(): bool
     {
         if ($this->id === \T_NULL) {
+            // @codeCoverageIgnoreStart
             return false;
+            // @codeCoverageIgnoreEnd
         }
+        $next = $this;
         do {
-            $next = ($next ?? $this)->Next;
+            $next = $next->Next;
             if (!$next) {
                 return true;
             }
         } while ($this->Idx->Virtual[$next->id]);
-        $code = $this->OriginalText ?: $this->text;
-        $newlines = substr_count($code, "\n");
-
+        $text = $this->OriginalText ?? $this->text;
+        $newlines = substr_count($text, "\n");
         return ($this->line + $newlines) < $next->line
-            || $code[-1] === "\n";
+            || $text[-1] === "\n";
     }
 
     public function startOfLine(bool $ignoreComments = true): Token
@@ -1088,76 +1037,32 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         bool $containUnenclosed = true,
         bool $containDeclaration = true
     ): Token {
-        // If the token is a statement terminator, there is no expression to
-        // move
-        if ($this->EndStatement === $this && !$this->Expression) {
+        // If the token is a statement terminator, there is nothing else to move
+        if (!$this->EndExpression) {
+            // @codeCoverageIgnoreStart
             return $this;
+            // @codeCoverageIgnoreEnd
         }
 
         // If the token is part of a declaration with an adjacent body (class,
         // function, interface, etc.), return the token that precedes the
-        // opening brace of the body to ensure it maintains its original
-        // position
+        // opening brace of the body so the body is not moved
         if (
             $containDeclaration
             && $this->Expression
-            && ($parts = $this->skipPrevSiblingsToDeclarationStart()->declarationParts())->hasValue($this, true)
-            && $parts->hasOneFrom($this->Idx->DeclarationTopLevel)
-            // Exclude anonymous functions, which can move as needed
-            && ($last = $parts->last())
-            && ($last = $last->skipPrevSiblingsFrom($this->Idx->Ampersand))->id !== \T_FUNCTION
-            // Anonymous classes are a special case where if there is a newline
-            // before `class`, the first hanging indent in the declaration is
-            // propagated to the whole class, and a subsequent indent for the
-            // `implements` list is only propagated to other interfaces in the
-            // list:
-            //
-            // ```php
-            // <?php
-            // $foo = new
-            //     #[Attribute]
-            //     class implements
-            //         Bar,
-            //         Baz
-            //     {
-            //         // ...
-            //     };
-            // ```
-            //
-            // But if there is no newline before `class`, no indents are
-            // propagated to the whole class:
-            //
-            // ```php
-            // <?php
-            // $foo = new class implements
-            //     Bar,
-            //     Baz
-            // {
-            //     // ...
-            // };
-            // ```
-            && ($first = $parts->first())
-            && ($first->id !== \T_NEW
-                || !(($class = $parts->getFirstOf(\T_CLASS))
-                    && $class->PrevCode
-                    && $class->PrevCode->hasNewlineBeforeNextCode())
-                || $first->NextCode !== $this)
-            && ($end = $last->nextSiblingOf(\T_OPEN_BRACE))->id !== \T_NULL
-            && $this->EndStatement
-            && $end->Index < $this->EndStatement->Index
-            && $end->PrevCode
+            && ($end = $this->getEndOfDeclaration())
         ) {
-            return $end->PrevCode;
+            return $end;
         }
 
-        // If the token is an expression boundary, return the last token in the
+        // If the token is an expression delimiter, return the last token in the
         // statement
         if (!$containUnenclosed && !$this->Expression) {
-            $end = $this->EndStatement ?: $this;
-            return
-                $end === $this
-                    ? $end
-                    : $end->withoutTerminator();
+            /** @var Token */
+            $end = $this->EndStatement;
+            return $end === $this
+                ? $end
+                : $end->withoutTerminator();
         }
 
         // If the token is an object operator, return the last token in the
@@ -1243,6 +1148,70 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         }
 
         return $current;
+    }
+
+    private function getEndOfDeclaration(): ?Token
+    {
+        $parts = $this->skipPrevSiblingsToDeclarationStart()
+                      ->declarationParts();
+        if (!$parts->hasOneFrom($this->Idx->DeclarationTopLevel)) {
+            return null;
+        }
+
+        /** @var Token */
+        $last = $parts->last();
+        if ($last->Index < $this->Index) {
+            return null;
+        }
+
+        // Exclude anonymous functions, which can move as needed
+        if ($last->skipPrevSiblingsFrom($this->Idx->Ampersand)->id === \T_FUNCTION) {
+            return null;
+        }
+
+        // Exclude anonymous classes with newlines before `class`, i.e.
+        //
+        // ```php
+        // $foo = new
+        //     #[Attribute]
+        //     class implements
+        //         Bar,
+        //         Baz
+        //     {
+        //         // ...
+        //     };
+        // ```
+        //
+        // vs.:
+        //
+        // ```php
+        // $foo = new class implements
+        //     Bar,
+        //     Baz
+        // {
+        //     // ...
+        // };
+        // ```
+        /** @var Token */
+        $first = $parts->first();
+        if ($first->id === \T_NEW && $first->NextCode === $this) {
+            /** @var Token */
+            $class = $parts->getFirstOf(\T_CLASS);
+            /** @var Token */
+            $prev = $class->PrevCode;
+            if ($prev->hasNewlineBeforeNextCode()) {
+                return null;
+            }
+        }
+
+        $body = $last->nextSiblingOf(\T_OPEN_BRACE);
+        /** @var Token */
+        $end = $this->EndStatement;
+        if ($body->id === \T_NULL || $body->Index >= $end->Index) {
+            return null;
+        }
+
+        return $body->PrevCode;
     }
 
     /**
@@ -1711,7 +1680,9 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     {
         $tokens = new TokenCollection();
         if ($this->id === \T_NULL) {
+            // @codeCoverageIgnoreStart
             return $tokens;
+            // @codeCoverageIgnoreEnd
         }
         !$to || $to->id !== \T_NULL || $to = null;
         $current = $this->OpenedBy ?? $this;
@@ -1742,7 +1713,9 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     {
         $tokens = new TokenCollection();
         if ($this->id === \T_NULL) {
+            // @codeCoverageIgnoreStart
             return $tokens;
+            // @codeCoverageIgnoreEnd
         }
         !$to || $to->id !== \T_NULL || $to = null;
         $current = $this->OpenedBy ?? $this;
