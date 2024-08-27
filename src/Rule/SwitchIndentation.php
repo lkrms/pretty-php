@@ -45,7 +45,7 @@ final class SwitchIndentation implements TokenRule
                 continue;
             }
 
-            if (!$token->inSwitchCaseList()) {
+            if (!$token->inSwitch()) {
                 continue;
             }
 

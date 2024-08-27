@@ -453,7 +453,9 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             case \T_USE:
                 return $this->SubType = $this->getUseType();
             default:
+                // @codeCoverageIgnoreStart
                 return $this->SubType = -1;
+                // @codeCoverageIgnoreEnd
         }
     }
 
@@ -633,20 +635,22 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         }
 
         $prev = $prev->PrevSibling;
+        if (!$prev) {
+            return false;
+        }
         if (
-            $prev
-            && $prev->id === \T_USE
-            && $prev->PrevCode
-            && $prev->PrevCode->id === \T_CLOSE_PARENTHESIS
+            $prev->id === \T_USE
+            && $prev->getSubType() === TokenSubType::USE_VARIABLES
         ) {
-            $prev = $prev->PrevCode->PrevSibling;
+            /** @var Token */
+            $prev = $prev->PrevCode;
+            /** @var Token */
+            $prev = $prev->PrevSibling;
         }
 
-        if (!$prev || (
-            !$allowAnonymous && (
-                $prev->id === \T_FUNCTION
-                || $this->Idx->Ampersand[$prev->id]
-            )
+        if (!$allowAnonymous && (
+            $prev->id === \T_FUNCTION
+            || $this->Idx->Ampersand[$prev->id]
         )) {
             return false;
         }
@@ -658,13 +662,10 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
     /**
      * Check if the token is in a T_CASE or T_DEFAULT statement in a T_SWITCH
-     *
-     * Returns `true` if the token is `T_CASE` or `T_DEFAULT`, part of the
-     * expression after `T_CASE`, or the subsequent `:` or `;` delimiter.
      */
     public function inSwitchCase(): bool
     {
-        return $this->inSwitchCaseList() && (
+        return $this->inSwitch() && (
             $this->id === \T_CASE
             || $this->id === \T_DEFAULT
             || ($prev = $this->prevSiblingFrom($this->Idx->SwitchCaseOrDelimiter))->id === \T_CASE
@@ -673,12 +674,11 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     }
 
     /**
-     * Check if the token is in a T_SWITCH case list
+     * Check if the token is in a T_SWITCH
      */
-    public function inSwitchCaseList(): bool
+    public function inSwitch(): bool
     {
-        return
-            $this->Parent
+        return $this->Parent
             && $this->Parent->PrevSibling
             && $this->Parent->PrevSibling->PrevSibling
             && $this->Parent->PrevSibling->PrevSibling->id === \T_SWITCH;
@@ -687,10 +687,10 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     /**
      * Check if the token is part of a non-anonymous declaration
      */
-    public function inNamedDeclaration(): bool
+    public function inNamedDeclaration(?TokenCollection &$parts = null): bool
     {
         return $this->skipPrevSiblingsToDeclarationStart()
-                    ->doIsDeclaration(false);
+                    ->doIsDeclaration(false, $parts);
     }
 
     /**
@@ -761,6 +761,10 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             (
                 $first->id === \T_STATIC
                 && !$this->Idx->Declaration[$next->id]  // `static function`
+                && !(                                   // `static int $foo`
+                    $this->Idx->ValueTypeStart[$next->id]
+                    && $next->skipSiblingsFrom($this->Idx->ValueType)->id === \T_VARIABLE
+                )
                 && !(                                   // `static $foo` in a property context
                     $next->id === \T_VARIABLE
                     && $first->Parent
@@ -770,12 +774,8 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
                              ->collectSiblings($first->Parent)
                              ->hasOneFrom($this->Idx->DeclarationClass)
                 )
-                && !(                                   // `static int $foo`
-                    $this->Idx->ValueTypeStart[$next->id]
-                    && $next->skipSiblingsFrom($this->Idx->ValueType)->id === \T_VARIABLE
-                )
             )
-            || ($first->id === \T_CASE && $first->inSwitchCaseList())
+            || ($first->id === \T_CASE && $first->inSwitch())
             || ($this->Idx->VisibilityWithReadonly[$first->id] && $first->inParameterList())
         ) {
             return false;

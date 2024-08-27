@@ -374,7 +374,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $ExpressionDelimiterExceptComparison;
 
     /**
-     * T_AND, T_READONLY, T_STRING, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+     * T_AND, T_STRING, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
      * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
      *
      * @readonly
@@ -1198,7 +1198,6 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
 
         $this->FunctionIdentifier = self::get(
             \T_STRING,
-            \T_READONLY,
             ...TT::AMPERSAND,
         );
 
