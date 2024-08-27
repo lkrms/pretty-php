@@ -170,16 +170,10 @@ final class NormaliseComments implements TokenRule
                 )) {
                     if (!(
                         $token->Next
-                        && $token->Next->Statement === $token->Next
-                        && $token->Next->isDeclaration()
+                        && $token->Next->isNamedDeclaration()
                     ) || (
                         $token->Next->id === \T_USE
                         && $token->Next->getSubType() === TokenSubType::USE_TRAIT
-                    ) || (
-                        $token->Next->id === \T_GLOBAL
-                        || ($token->Next->id === \T_STATIC
-                            && $token->Parent
-                            && $token->Parent->isFunctionBrace())
                     )) {
                         $collapse = true;
                     } else {

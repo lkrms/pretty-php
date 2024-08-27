@@ -990,7 +990,7 @@ final class Formatter implements Buildable
                     if ($prev && (
                         $idx->ListParenthesisPredecessor[$prev->id] || (
                             $prev->id === \T_CLOSE_BRACE
-                            && !$prev->isStructuralBrace()
+                            && !($prev->Flags & TokenFlag::STRUCTURAL_BRACE)
                         ) || (
                             $prev->PrevCode
                             && $idx->Ampersand[$prev->id]

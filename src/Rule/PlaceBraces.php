@@ -63,7 +63,10 @@ final class PlaceBraces implements TokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            if (!$token->isStructuralBrace(true)) {
+            if (!(
+                $token->Flags & TokenFlag::STRUCTURAL_BRACE
+                || $token->isMatchBrace()
+            )) {
                 continue;
             }
 
@@ -122,7 +125,7 @@ final class PlaceBraces implements TokenRule
             $prev = $parts->hasOneOf(\T_FUNCTION)
                 && ($t = $parts->last())
                 && ($t = $t->NextSibling)
-                    ? $t->canonicalClose()
+                    ? $t->ClosedBy ?? $t
                     : $token->PrevCode;
             if ($prev && $prev->id === \T_CLOSE_PARENTHESIS) {
                 $this->BracketBracePairs[] = [$prev, $token];

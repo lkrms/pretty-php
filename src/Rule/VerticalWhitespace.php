@@ -250,7 +250,7 @@ final class VerticalWhitespace implements TokenRule
             if ($token->id === \T_OPEN_BRACE) {
                 if (
                     $this->Formatter->OneTrueBraceStyle
-                    || !$token->isStructuralBrace()
+                    || !($token->Flags & TokenFlag::STRUCTURAL_BRACE)
                     || ($token->Next && $token->Next->id === \T_CLOSE_BRACE && !$token->hasNewlineAfter())
                 ) {
                     continue;

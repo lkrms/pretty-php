@@ -65,9 +65,16 @@ final class TokenFlag extends AbstractEnumeration
     public const INFORMAL_DOC_COMMENT = 128;
 
     /**
-     * The token is a collapsible one-line comment
+     * The token is a T_OPEN_BRACE or T_CLOSE_BRACE that delimits a code block
+     * or trait adaptation
+     *
+     * Not applied to braces in:
+     *
+     * - expressions (e.g. `$object->{$property}`, `match ($value) {}`)
+     * - strings (e.g. `"{$object->property}"`)
+     * - alias/import statements (e.g. `use A\{B, C}`)
      */
-    public const COLLAPSIBLE_COMMENT = 256;
+    public const STRUCTURAL_BRACE = 256;
 
     /**
      * The token is the first in a statement that declares a named entity
@@ -80,7 +87,12 @@ final class TokenFlag extends AbstractEnumeration
     public const LIST_PARENT = 1024;
 
     /**
+     * The token is a collapsible one-line comment
+     */
+    public const COLLAPSIBLE_COMMENT = 2048;
+
+    /**
      * The token is a control structure with an unenclosed body
      */
-    public const HAS_UNENCLOSED_BODY = 2048;
+    public const HAS_UNENCLOSED_BODY = 4096;
 }

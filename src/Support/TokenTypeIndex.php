@@ -85,14 +85,6 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $OpenBracketExceptBrace;
 
     /**
-     * T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $CloseBracketExceptBrace;
-
-    /**
      * T_OPEN_BRACE, T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES
      *
      * @readonly
@@ -337,6 +329,14 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $PreserveBlankAfter;
 
     /**
+     * T_COLON, T_COMMA, T_SEMICOLON
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $StatementTerminator;
+
+    /**
      * T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_SEMICOLON, T_DOUBLE_ARROW,
      * T_AND_EQUAL, T_COALESCE_EQUAL, T_CONCAT_EQUAL, T_DIV_EQUAL, T_EQUAL,
      * T_GREATER, T_IS_EQUAL, T_IS_GREATER_OR_EQUAL, T_IS_IDENTICAL,
@@ -374,7 +374,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $ExpressionDelimiterExceptComparison;
 
     /**
-     * T_AND, T_READONLY, T_STRING, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+     * T_AND, T_STRING, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
      * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
      *
      * @readonly
@@ -491,6 +491,14 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $ClassOrFunction;
 
     /**
+     * T_OPEN_BRACE, T_OPEN_PARENTHESIS, T_EXTENDS, T_IMPLEMENTS
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $AfterAnonymousClassOrFunction;
+
+    /**
      * T_COMMA, T_DOUBLE_ARROW
      *
      * @readonly
@@ -521,6 +529,14 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @var array<int,bool>
      */
     public array $IfElseIfOrElse;
+
+    /**
+     * T_PLUS, T_MINUS
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $PlusOrMinus;
 
     /**
      * T_ATTRIBUTE, T_ATTRIBUTE_COMMENT
@@ -699,9 +715,20 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $HasExpressionAndStatementWithOptionalBraces;
 
     /**
-     * identifier_maybe_reserved
+     * T_ABSTRACT, T_ARRAY, T_AS, T_BREAK, T_CALLABLE, T_CASE, T_CATCH, T_CLASS,
+     * T_CLASS_C, T_CLONE, T_CONST, T_CONTINUE, T_DECLARE, T_DEFAULT, T_DIR,
+     * T_DO, T_ECHO, T_ELSE, T_ELSEIF, T_EMPTY, T_ENDDECLARE, T_ENDFOR,
+     * T_ENDFOREACH, T_ENDIF, T_ENDSWITCH, T_ENDWHILE, T_ENUM, T_EVAL, T_EXIT,
+     * T_EXTENDS, T_FILE, T_FINAL, T_FINALLY, T_FN, T_FOR, T_FOREACH,
+     * T_FUNCTION, T_FUNC_C, T_GLOBAL, T_GOTO, T_HALT_COMPILER, T_IF,
+     * T_IMPLEMENTS, T_INCLUDE, T_INCLUDE_ONCE, T_INSTANCEOF, T_INSTEADOF,
+     * T_INTERFACE, T_ISSET, T_LINE, T_LIST, T_LOGICAL_AND, T_LOGICAL_OR,
+     * T_LOGICAL_XOR, T_MATCH, T_METHOD_C, T_NAMESPACE, T_NEW, T_NS_C, T_PRINT,
+     * T_PRIVATE, T_PROPERTY_C, T_PROTECTED, T_PUBLIC, T_READONLY, T_REQUIRE,
+     * T_REQUIRE_ONCE, T_RETURN, T_STATIC, T_STRING, T_SWITCH, T_THROW, T_TRAIT,
+     * T_TRAIT_C, T_TRY, T_UNSET, T_USE, T_VAR, T_WHILE, T_YIELD
      *
-     * @internal
+     * identifier_maybe_reserved
      *
      * @readonly
      * @var array<int,bool>
@@ -718,6 +745,33 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $NotCode;
 
     /**
+     * T_AND, T_AND_EQUAL, T_AT, T_BOOLEAN_AND, T_BOOLEAN_OR, T_COALESCE,
+     * T_COALESCE_EQUAL, T_COLON, T_CONCAT, T_CONCAT_EQUAL, T_DEC, T_DIV,
+     * T_DIV_EQUAL, T_DOUBLE_ARROW, T_EQUAL, T_GREATER, T_INC, T_INSTANCEOF,
+     * T_IS_EQUAL, T_IS_GREATER_OR_EQUAL, T_IS_IDENTICAL, T_IS_NOT_EQUAL,
+     * T_IS_NOT_IDENTICAL, T_IS_SMALLER_OR_EQUAL, T_LOGICAL_AND, T_LOGICAL_NOT,
+     * T_LOGICAL_OR, T_LOGICAL_XOR, T_MINUS, T_MINUS_EQUAL, T_MOD, T_MOD_EQUAL,
+     * T_MUL, T_MUL_EQUAL, T_NOT, T_OR, T_OR_EQUAL, T_PLUS, T_PLUS_EQUAL, T_POW,
+     * T_POW_EQUAL, T_QUESTION, T_SL, T_SL_EQUAL, T_SMALLER, T_SPACESHIP, T_SR,
+     * T_SR_EQUAL, T_XOR, T_XOR_EQUAL, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $Operator;
+
+    /**
+     * T_AND_EQUAL, T_COALESCE_EQUAL, T_CONCAT_EQUAL, T_DIV_EQUAL, T_EQUAL,
+     * T_MINUS_EQUAL, T_MOD_EQUAL, T_MUL_EQUAL, T_OR_EQUAL, T_PLUS_EQUAL,
+     * T_POW_EQUAL, T_SL_EQUAL, T_SR_EQUAL, T_XOR_EQUAL
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $OperatorAssignment;
+
+    /**
      * T_AND, T_OR, T_XOR, T_BOOLEAN_AND, T_BOOLEAN_OR, T_LOGICAL_AND,
      * T_LOGICAL_OR, T_LOGICAL_XOR, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
      * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
@@ -728,6 +782,34 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @var array<int,bool>
      */
     public array $OperatorBooleanExceptNot;
+
+    /**
+     * T_GREATER, T_IS_EQUAL, T_IS_GREATER_OR_EQUAL, T_IS_IDENTICAL,
+     * T_IS_NOT_EQUAL, T_IS_NOT_IDENTICAL, T_IS_SMALLER_OR_EQUAL, T_SMALLER,
+     * T_SPACESHIP
+     *
+     * Excludes `T_COALESCE`.
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $OperatorComparison;
+
+    /**
+     * T_AT, T_DEC, T_DOLLAR, T_INC, T_LOGICAL_NOT, T_NOT
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $OperatorUnary;
+
+    /**
+     * T_RETURN, T_YIELD, T_YIELD_FROM
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $Return;
 
     /**
      * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_OR
@@ -845,11 +927,6 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             \T_OPEN_BRACKET,
             \T_OPEN_PARENTHESIS,
             \T_ATTRIBUTE,
-        );
-
-        $this->CloseBracketExceptBrace = self::get(
-            \T_CLOSE_BRACKET,
-            \T_CLOSE_PARENTHESIS,
         );
 
         $this->OpenBrace = self::get(
@@ -1091,6 +1168,12 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             ...$preserveBlankAfter,
         );
 
+        $this->StatementTerminator = self::get(
+            \T_COLON,
+            \T_COMMA,
+            \T_SEMICOLON,
+        );
+
         $expressionDelimiter = [
             \T_DOUBLE_ARROW,
             ...TT::OPERATOR_ASSIGNMENT,
@@ -1115,7 +1198,6 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
 
         $this->FunctionIdentifier = self::get(
             \T_STRING,
-            \T_READONLY,
             ...TT::AMPERSAND,
         );
 
@@ -1184,10 +1266,17 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             \T_CLASS,
             \T_FUNCTION,
         );
+        $this->AfterAnonymousClassOrFunction = self::get(
+            \T_OPEN_BRACE,
+            \T_OPEN_PARENTHESIS,
+            \T_EXTENDS,
+            \T_IMPLEMENTS,
+        );
         $this->CommaOrDoubleArrow = self::get(\T_COMMA, \T_DOUBLE_ARROW);
         $this->FunctionOrFn = self::get(\T_FN, \T_FUNCTION);
         $this->IfOrElseIf = self::get(\T_IF, \T_ELSEIF);
         $this->IfElseIfOrElse = self::get(\T_IF, \T_ELSEIF, \T_ELSE);
+        $this->PlusOrMinus = self::get(\T_PLUS, \T_MINUS);
         $this->Attribute = self::get(
             \T_ATTRIBUTE,
             \T_ATTRIBUTE_COMMENT,
@@ -1222,7 +1311,18 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         $this->HasExpressionAndStatementWithOptionalBraces = self::get(...TT::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES);
         $this->MaybeReserved = self::get(...TT::MAYBE_RESERVED);
         $this->NotCode = self::get(...TT::NOT_CODE);
+        $this->Operator = self::get(...TT::OPERATOR_ALL);
+        $this->OperatorAssignment = self::get(...TT::OPERATOR_ASSIGNMENT);
         $this->OperatorBooleanExceptNot = self::get(...TT::OPERATOR_BOOLEAN_EXCEPT_NOT);
+        $this->OperatorComparison = self::get(...TT::OPERATOR_COMPARISON_EXCEPT_COALESCE);
+        $this->OperatorUnary = self::get(
+            \T_NOT,
+            \T_DOLLAR,
+            \T_LOGICAL_NOT,
+            ...TT::OPERATOR_ERROR_CONTROL,
+            ...TT::OPERATOR_INCREMENT_DECREMENT,
+        );
+        $this->Return = self::get(...TT::RETURN);
         $this->TypeDelimiter = self::get(...TT::TYPE_DELIMITER);
         $this->ValueType = self::get(...TT::VALUE_TYPE);
         $this->ValueTypeStart = self::get(...TT::VALUE_TYPE_START);

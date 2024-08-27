@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\TokenRule;
@@ -100,14 +101,20 @@ final class StandardWhitespace implements TokenRule
             //   - {@see TokenTypeIndex::$SuppressSpaceBefore}
             // - Suppress SPACE and BLANK after open brackets and before close
             //   brackets
-            if (($idx->OpenBracket[$token->id] && !$token->isStructuralBrace(true))
+            if (($idx->OpenBracket[$token->id] && !(
+                $token->Flags & TokenFlag::STRUCTURAL_BRACE
+                || $token->isMatchBrace()
+            ))
                     || $idx->SuppressSpaceAfter[$token->id]) {
                 $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK & ~WhitespaceType::SPACE;
             } elseif ($token->id === \T_COLON && $token->ClosedBy) {
                 $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
             }
 
-            if (($idx->CloseBracket[$token->id] && !$token->isStructuralBrace(true))
+            if (($idx->CloseBracket[$token->id] && !(
+                $token->Flags & TokenFlag::STRUCTURAL_BRACE
+                || $token->isMatchBrace()
+            ))
                 || ($idx->SuppressSpaceBefore[$token->id]
                     // Only suppress SPACE before namespace separators in or
                     // immediately after an identifier

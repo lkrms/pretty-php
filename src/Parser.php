@@ -364,28 +364,38 @@ final class Parser
                 // class
                 if (
                     $token->id !== \T_CLOSE_BRACE
-                    || !$token->isStructuralBrace()
+                    // Exclude T_CURLY_OPEN and T_DOLLAR_OPEN_CURLY_BRACES
+                    || $opener->id !== \T_OPEN_BRACE
+                    || !$this->isStructuralBrace($opener)
                 ) {
                     $prev = $token;
                     continue;
                 }
 
-                $_prev = $token->prevSiblingFrom($idx->ClassOrFunction);
-                if (
-                    $_prev->id !== \T_NULL
-                    && $_prev->nextSiblingOf(\T_OPEN_BRACE)->ClosedBy === $token
-                ) {
-                    assert($_prev->NextSibling !== null);
-                    $_next = $_prev->NextSibling;
-                    if (
-                        $_next->id === \T_OPEN_PARENTHESIS
-                        || $_next->id === \T_OPEN_BRACE
-                        || $_next->id === \T_EXTENDS
-                        || $_next->id === \T_IMPLEMENTS
-                    ) {
-                        $prev = $token;
+                // @phpstan-ignore assign.propertyType
+                $opener->Flags |= TokenFlag::STRUCTURAL_BRACE;
+                // @phpstan-ignore assign.propertyType
+                $token->Flags |= TokenFlag::STRUCTURAL_BRACE;
+
+                $t = $token->PrevSibling;
+                while ($t && $idx->DeclarationPartWithNewAndBody[$t->id]) {
+                    if (!$idx->ClassOrFunction[$t->id]) {
+                        $t = $t->PrevSibling;
                         continue;
                     }
+                    if ($t->nextSiblingOf(\T_OPEN_BRACE)->ClosedBy === $token) {
+                        /** @var Token */
+                        $_next = $t->NextSibling;
+                        if ($idx->AfterAnonymousClassOrFunction[$_next->id] || (
+                            $idx->Ampersand[$_next->id]
+                            // @phpstan-ignore property.nonObject
+                            && $idx->AfterAnonymousClassOrFunction[$_next->NextSibling->id]
+                        )) {
+                            $prev = $token;
+                            continue 2;
+                        }
+                    }
+                    break;
                 }
 
                 // @phpstan-ignore assign.propertyType
@@ -497,7 +507,7 @@ final class Parser
                         !($next = ($token->ClosedBy ?? $token)->NextCode)
                         || !($idx->ContinuesControlStructure[$next->id] || (
                             $next->id === \T_WHILE
-                            && $next->isWhileAfterDo()
+                            && $this->isWhileAfterDo($next)
                         ))
                     )
                 ) || (
@@ -508,7 +518,7 @@ final class Parser
                     && ($parent = $token->Parent)
                     && ($idx->OpenBracketExceptBrace[$parent->id] || (
                         $parent->id === \T_OPEN_BRACE
-                        && !$parent->isStructuralBrace()
+                        && !($parent->Flags & TokenFlag::STRUCTURAL_BRACE)
                     ))
                 )) {
                     $statement->EndStatement = $token->ClosedBy ?? $token;
@@ -675,6 +685,80 @@ final class Parser
             }
         }
 
+        // @codeCoverageIgnoreStart
         return $token->null();
+        // @codeCoverageIgnoreEnd
+    }
+
+    private function isStructuralBrace(Token $token): bool
+    {
+        if (
+            $token->PrevSibling
+            && $token->PrevSibling->PrevSibling
+            && $token->PrevSibling->PrevSibling->id === \T_MATCH
+        ) {
+            return false;
+        }
+
+        /** @var Token */
+        $t = $token->ClosedBy;
+        /** @var Token */
+        $t = $t->PrevCode;
+
+        // Braces cannot be empty in dereferencing contexts, but trait
+        // adaptation braces can be
+        return $t === $token                                  // `{}`
+            || $t->id === \T_SEMICOLON                        // `{ statement; }`
+            || $t->id === \T_COLON                            // `{ label: }`
+            || ($t->Flags & TokenFlag::STATEMENT_TERMINATOR)  /* `{ statement ?>...<?php }` */
+            || (                                              // `{ { statement; } }`
+                $t->id === \T_CLOSE_BRACE
+                && $t->OpenedBy
+                && $t->OpenedBy->id === \T_OPEN_BRACE
+                && $this->isStructuralBrace($t->OpenedBy)
+            );
+    }
+
+    private function isWhileAfterDo(Token $token): bool
+    {
+        if (
+            !$token->PrevSibling
+            || !$token->PrevSibling->PrevSibling
+        ) {
+            // @codeCoverageIgnoreStart
+            return false;
+            // @codeCoverageIgnoreEnd
+        }
+
+        // Check for `do { ... } while ();`
+        if ($token->PrevSibling->PrevSibling->id === \T_DO) {
+            return true;
+        }
+
+        // Check for `do ... while ();` by looking for a previous `T_DO` the
+        // token could pair with, starting from its previous sibling because
+        // `do` immediately before `while` cannot belong to the same structure
+        $do = $token->PrevSibling->prevSiblingOf(\T_DO);
+        if ($do->id === \T_NULL) {
+            return false;
+        }
+        // Now look for its `T_WHILE` counterpart, starting from the first token
+        // it could be and allowing for nested unenclosed `T_WHILE` loops, i.e.
+        // `do while () while (); while ();`
+        /** @var Token */
+        $next = $do->NextSibling;
+        /** @var Token */
+        $next = $next->NextSibling;
+        foreach ($next->collectSiblings($token) as $t) {
+            if ($t->id === \T_WHILE && !(
+                $t->PrevSibling
+                && $t->PrevSibling->PrevSibling
+                && $t->PrevSibling->PrevSibling->id !== \T_WHILE
+            )) {
+                return $t === $token;
+            }
+        }
+
+        return false;
     }
 }

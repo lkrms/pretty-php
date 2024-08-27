@@ -14,7 +14,8 @@
 | 5      | 32    | `STATEMENT_TERMINATOR`  | `Parser`                  |
 | 6      | 64    | `TERNARY_OPERATOR`      | `Parser`                  |
 | 7      | 128   | `INFORMAL_DOC_COMMENT`  | `Parser`                  |
-| 8      | 256   | `COLLAPSIBLE_COMMENT`   | `NormaliseComments`       |
+| 8      | 256   | `STRUCTURAL_BRACE`      | `Parser`                  |
 | 9      | 512   | `NAMED_DECLARATION`     | `Token`                   |
 | 10     | 1024  | `LIST_PARENT`           | `Formatter`               |
-| 11     | 2048  | `HAS_UNENCLOSED_BODY`   | `ControlStructureSpacing` |
+| 11     | 2048  | `COLLAPSIBLE_COMMENT`   | `NormaliseComments`       |
+| 12     | 4096  | `HAS_UNENCLOSED_BODY`   | `ControlStructureSpacing` |

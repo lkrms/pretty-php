@@ -14,8 +14,9 @@ use Salient\Utility\Get;
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 /**
- * @param array<int,array<string,string|int|bool>> $array
- * @param-out array<int,array<string,string|int|bool>> $array
+ * @param array<int,array<array{rule:class-string<Rule>,is_mandatory:bool,is_default:bool,pass:int,method:string,priority:int}>> $array
+ * @param-out array<int,array<array{rule:class-string<Rule>,is_mandatory:bool,is_default:bool,pass:int,method:string,priority:int}>> $array
+ * @param class-string<Rule> $rule
  */
 function maybeAddRule(
     array &$array,
@@ -76,12 +77,12 @@ $rules = Arr::flatten(array_merge($mainLoop, $blockLoop, $callback, $beforeRende
 $index = [];
 foreach ($rules as $key => $rule) {
     $index[$rule['rule']][] = $key;
+    $rules[$key]['appearance'] = null;
 }
 
 foreach ($index as $rule => $keys) {
     $count = count($keys);
     if ($count === 1) {
-        $rules[reset($keys)]['appearance'] = null;
         continue;
     }
     $i = 1;

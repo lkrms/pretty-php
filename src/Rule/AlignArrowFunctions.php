@@ -80,7 +80,7 @@ final class AlignArrowFunctions implements TokenRule
     private function alignBody(Token $body, Token $alignWith, Token $until): void
     {
         $offset = $alignWith->alignmentOffset(false) + $this->Formatter->TabSize;
-        $delta = $body->getIndentDelta($alignWith);
+        $delta = $body->indentDelta($alignWith);
         $delta->LinePadding += $offset;
 
         foreach ($body->collect($until) as $token) {

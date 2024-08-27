@@ -72,12 +72,7 @@ final class Drupal implements Preset, TokenRule
         foreach ($tokens as $token) {
             // Add blank lines before and after non-empty `class`, `enum`,
             // `interface` and `trait` bodies
-            if ($token->is([
-                \T_CLASS,
-                \T_ENUM,
-                \T_INTERFACE,
-                \T_TRAIT,
-            ])) {
+            if ($this->Idx->DeclarationClass[$token->id]) {
                 if (!$token->inNamedDeclaration()) {
                     continue;
                 }
