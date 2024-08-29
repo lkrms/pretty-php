@@ -28,5 +28,8 @@
         "**/docs/api/**": true,
         "**/tools/**/vendor/**": true,
         "**/var/cache/git/**": true
-    }
+    },
+    "[php]":{
+        "files.trimTrailingWhitespace": false,
+    },
 }

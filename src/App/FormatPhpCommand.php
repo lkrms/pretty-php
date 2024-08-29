@@ -1567,25 +1567,6 @@ EOF,
             ]));
         }
 
-        if ($this->Preset !== null) {
-            /** @var Formatter */
-            $formatter = self::PRESET_MAP[$this->Preset]::getFormatter($flags);
-            if ($this->Tight) {
-                if ($formatter->Enabled[DeclarationSpacing::class] ?? false) {
-                    $formatter = $formatter->withTightDeclarationSpacing();
-                } else {
-                    Console::warn(sprintf(
-                        '%s preset disabled tight declaration spacing',
-                        $this->Preset,
-                    ), null, null, false);
-                }
-            }
-            if ($this->Psr12) {
-                $formatter = $formatter->withPsr12();
-            }
-            return $formatter;
-        }
-
         $disable = $this->Disable;
         if ($this->IgnoreNewlines) {
             $disable[] = 'preserve-newlines';
@@ -1602,6 +1583,28 @@ EOF,
 
         $disable = array_values(array_intersect_key(self::DISABLE_MAP, array_flip($disable)));
         $enable = array_values(array_intersect_key(self::ENABLE_MAP, array_flip($this->Enable)));
+
+        if ($this->Preset !== null) {
+            /** @var Formatter */
+            $formatter = self::PRESET_MAP[$this->Preset]::getFormatter($flags);
+            if ($this->Tight) {
+                if ($formatter->Enabled[DeclarationSpacing::class] ?? false) {
+                    $formatter = $formatter->withTightDeclarationSpacing();
+                } else {
+                    Console::warn(sprintf(
+                        '%s preset disabled tight declaration spacing',
+                        $this->Preset,
+                    ), null, null, false);
+                }
+            }
+            if ($this->Psr12) {
+                $formatter = $formatter->withPsr12();
+            }
+            if ($disable) {
+                $formatter = $formatter->withoutExtensions($disable);
+            }
+            return $formatter;
+        }
 
         $f = (new FormatterBuilder())
                  ->insertSpaces(!$this->Tabs)

@@ -521,6 +521,28 @@ EOF),
 EOF),
                 '--diff',
             ],
+            'symfony preset without extension' => [
+                8,
+                [
+                    [Level::INFO, self::SUMMARY . 'Found 1 unformatted file after checking 1 file in '],
+                ],
+                '/symfony-without-extension',
+                false,
+                self::normaliseUnifiedDiff(<<<EOF
+--- a/$dir/symfony-without-extension/Foo.php
++++ b/$dir/symfony-without-extension/Foo.php
+@@ -1,3 +1,4 @@
+ <?php
++
+ use B;
+ use A;
+
+EOF),
+                '--no-config',
+                '--preset=symfony',
+                '--no-sort-imports',
+                '--diff',
+            ],
         ];
     }
 
