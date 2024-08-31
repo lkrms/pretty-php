@@ -131,11 +131,10 @@ final class OperatorSpacing implements TokenRule
 
             // Suppress whitespace between `++` and `--` and the variables they
             // operate on
-            if ($token->id === \T_INC
-                    || $token->id === \T_DEC) {
-                if ($token->Prev && $token->Prev->id === \T_VARIABLE) {
+            if ($token->id === \T_INC || $token->id === \T_DEC) {
+                if ($token->Prev && $this->Idx->VariableEnd[$token->Prev->id]) {
                     $token->WhitespaceMaskPrev = WhitespaceType::NONE;
-                } elseif ($token->Next && $token->Next->id === \T_VARIABLE) {
+                } else {
                     $token->WhitespaceMaskNext = WhitespaceType::NONE;
                 }
             }
