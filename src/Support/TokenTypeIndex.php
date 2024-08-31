@@ -839,6 +839,14 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $ValueTypeStart;
 
     /**
+     * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_STRING, T_VARIABLE
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $VariableEnd;
+
+    /**
      * T_PRIVATE, T_PROTECTED, T_PUBLIC
      *
      * @readonly
@@ -1326,6 +1334,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         $this->TypeDelimiter = self::get(...TT::TYPE_DELIMITER);
         $this->ValueType = self::get(...TT::VALUE_TYPE);
         $this->ValueTypeStart = self::get(...TT::VALUE_TYPE_START);
+        $this->VariableEnd = self::get(...TT::VARIABLE_END);
         $this->Visibility = self::get(...TT::VISIBILITY);
         $this->VisibilityWithReadonly = self::get(...TT::VISIBILITY_WITH_READONLY);
         $this->Virtual = self::get(

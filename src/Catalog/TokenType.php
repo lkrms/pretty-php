@@ -499,6 +499,14 @@ final class TokenType extends AbstractDictionary
         \T_DOUBLE_QUOTE,
     ];
 
+    public const VARIABLE_END = [
+        \T_CLOSE_BRACE,
+        \T_CLOSE_BRACKET,
+        \T_CLOSE_PARENTHESIS,
+        \T_STRING,
+        \T_VARIABLE,
+    ];
+
     public const MAGIC_CONSTANT = [
         \T_CLASS_C,
         \T_DIR,

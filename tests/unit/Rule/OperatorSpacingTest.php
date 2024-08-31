@@ -47,6 +47,39 @@ case $flags&E_WARNING:
 }
 PHP,
             ],
+            [
+                <<<'PHP'
+<?php
+$foo++ . 'baz';
+$foo->Bar++ . 'baz';
+$foo->{'bar'}++ . 'baz';
+Foo::$Bar++ . 'baz';
+$foo['bar']++ . 'baz';
+foo()++ . 'baz';
+'baz' . --$foo;
+'baz' . --($foo)->Bar;
+'baz' . --[$foo][0]->{'bar'};
+'baz' . --${Foo::$Bar};
+'baz' . --array($foo)[0];
+'baz' . --foo();
+
+PHP,
+                <<<'PHP'
+<?php
+$foo++.'baz';
+$foo->Bar++.'baz';
+$foo->{'bar'}++.'baz';
+Foo::$Bar++.'baz';
+$foo['bar']++.'baz';
+foo()++.'baz';
+'baz'.--$foo;
+'baz'.--($foo)->Bar;
+'baz'.--[$foo][0]->{'bar'};
+'baz'.--${Foo::$Bar};
+'baz'.--array($foo)[0];
+'baz'.--foo();
+PHP,
+            ],
         ];
     }
 }
