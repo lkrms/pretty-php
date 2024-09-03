@@ -3,6 +3,7 @@
 namespace Lkrms\PrettyPHP\Rule\Preset;
 
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
+use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\ListRule;
 use Lkrms\PrettyPHP\Contract\Preset;
@@ -38,6 +39,7 @@ final class Symfony implements Preset, TokenRule, ListRule
                    ->flags($flags)
                    ->tokenTypeIndex((new TokenTypeIndex())->withLeadingOperators())
                    ->heredocIndent(HeredocIndent::NONE)
+                   ->importSortOrder(ImportSortOrder::NAME)
                    ->collapseEmptyDeclarationBodies(false)
                    ->collapseDeclareHeaders(false)
                    ->expandHeaders()
@@ -69,17 +71,13 @@ final class Symfony implements Preset, TokenRule, ListRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            switch ($token->id) {
-                case \T_CONCAT;
-                    $token->WhitespaceMaskPrev &= ~WhitespaceType::SPACE;
-                    $token->WhitespaceMaskNext &= ~WhitespaceType::SPACE;
-                    continue 2;
-
-                case \T_FN:
-                    $token->WhitespaceAfter |= WhitespaceType::SPACE;
-                    $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
-                    continue 2;
+            if ($token->id === \T_CONCAT) {
+                $token->WhitespaceMaskPrev &= ~WhitespaceType::SPACE;
+                $token->WhitespaceMaskNext &= ~WhitespaceType::SPACE;
+                continue;
             }
+            $token->WhitespaceAfter |= WhitespaceType::SPACE;
+            $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
         }
     }
 

@@ -28,6 +28,9 @@ class FooBar {
         trigger_deprecation('symfony/package-name', '5.1', 'The %s() method is deprecated, use Acme\Baz::someMethod() instead.', __METHOD__);
         return Baz::someMethod();
     }
+    public function getClosure(): \Closure {
+        return fn() => null;
+    }
     /**
      * Transforms the input given as the first argument.
      *
@@ -53,7 +56,7 @@ class FooBar {
         $mergedOptions = array_merge($defaultOptions, $options);
 
         if (true === $dummy) {
-            return 'something';
+            return 'something' . ' or other';
         }
 
         if (\is_string($dummy)) {

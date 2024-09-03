@@ -44,6 +44,11 @@ class FooBar
         return Baz::someMethod();
     }
 
+    public function getClosure(): \Closure
+    {
+        return fn () => null;
+    }
+
     /**
      * Transforms the input given as the first argument.
      *
@@ -67,7 +72,7 @@ class FooBar
         $mergedOptions = array_merge($defaultOptions, $options);
 
         if (true === $dummy) {
-            return 'something';
+            return 'something'.' or other';
         }
 
         if (\is_string($dummy)) {

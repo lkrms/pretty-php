@@ -98,25 +98,65 @@ use A;
 PHP,
                 $formatter,
             ],
-            'sorted by depth' => [
+            'with comments #3' => [
                 <<<'PHP'
 <?php
-use B\C\F\{H, I};
-use B\C\F\G;
-use B\C\F\J;
-use B\C\E;
-use B\D;
+// Comment 1
+use B;
+use C;
+// Comment 2
 use A;
 
 PHP,
                 <<<'PHP'
 <?php
-use B\C\F\J;
+// Comment 1
+use C;
+use B;
+// Comment 2
+use A;
+PHP,
+                $formatter,
+            ],
+            'sorted by depth' => [
+                <<<'PHP'
+<?php
+use B\C\F\H\A as AA;
+use B\C\F\H\H as HHHH;
+use B\C\F\H\M;
+use B\C\F\{H, J};
+use B\C\F\{H as HH, K};
+use B\C\F\G;
+use B\C\F\H as HHH;
+use B\C\F\I;
+use B\C\E;
+use B\C\F as FF;
+use B\C;
+use B\D;
+use S\T\U\F\F;
+use A;
+use B;
+use L;
+
+PHP,
+                <<<'PHP'
+<?php
+use B\C\F\I;
 use B\D;
 use A;
 use B\C\E;
-use B\C\F\{H, I};
+use B\C\F\{H,J};
 use B\C\F\G;
+use B\C\F\H as HHH;
+use B\C\F\H\M;
+use B\C\F\H\H as HHHH;
+use B\C\F\H\A as AA;
+use B\C\F\{H as HH,K};
+use L;
+use S\T\U\F\F;
+use B;
+use B\C;
+use B\C\F as FF;
 PHP,
                 $formatter,
             ],
@@ -124,21 +164,41 @@ PHP,
                 <<<'PHP'
 <?php
 use A;
+use B;
+use B\C;
 use B\C\E;
+use B\C\F as FF;
 use B\C\F\G;
-use B\C\F\{H, I};
-use B\C\F\J;
+use B\C\F\{H, J};
+use B\C\F\{H as HH, K};
+use B\C\F\H as HHH;
+use B\C\F\H\A as AA;
+use B\C\F\H\H as HHHH;
+use B\C\F\H\M;
+use B\C\F\I;
 use B\D;
+use L;
+use S\T\U\F\F;
 
 PHP,
                 <<<'PHP'
 <?php
-use B\C\F\J;
+use B\C\F\I;
 use B\D;
-use B\C\F\{H, I};
+use B\C\F\{H,J};
 use A;
 use B\C\F\G;
 use B\C\E;
+use B\C\F\H\M;
+use B\C\F\H\H as HHHH;
+use B\C\F\H\A as AA;
+use B\C\F\H as HHH;
+use B\C\F\{H as HH,K};
+use S\T\U\F\F;
+use L;
+use B\C\F as FF;
+use B\C;
+use B;
 PHP,
                 $formatterB
                     ->importSortOrder(ImportSortOrder::NAME),
@@ -182,6 +242,39 @@ use B { C::value insteadof D; }
 }
 PHP,
                 $formatter,
+            ],
+            'with close tag terminator' => [
+                <<<'PHP'
+<?php
+use A;
+use B;
+use C
+?>
+PHP,
+                <<<'PHP'
+<?php
+use C;
+use B;
+use A?>
+PHP,
+                $formatter,
+            ],
+            'with close tag terminator and comments' => [
+                <<<'PHP'
+<?php
+use A;  // Comment 3
+use B;  // Comment 2
+use C   // Comment 1
+?>
+PHP,
+                <<<'PHP'
+<?php
+use C;  // Comment 1
+use B;  // Comment 2
+use A   // Comment 3 ?>
+PHP,
+                $formatterB
+                    ->enable([AlignComments::class]),
             ],
         ];
     }
