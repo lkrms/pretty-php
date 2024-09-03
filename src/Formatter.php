@@ -348,8 +348,8 @@ final class Formatter implements Buildable
         RemoveWhitespace::class,
         RemoveHeredocIndentation::class,
         RemoveEmptyDocBlocks::class,
-        MoveComments::class,
         SortImports::class,
+        MoveComments::class,
         TrimCasts::class,
     ];
 
@@ -358,8 +358,8 @@ final class Formatter implements Buildable
      */
     public const OPTIONAL_FILTERS = [
         RemoveEmptyDocBlocks::class,
-        MoveComments::class,
         SortImports::class,
+        MoveComments::class,
         TrimCasts::class,
     ];
 
@@ -1203,6 +1203,7 @@ final class Formatter implements Buildable
         }
 
         Profile::startTimer(__METHOD__ . '#parse-output');
+        $this->resetExtensions($this->ComparisonFilterList);
         try {
             $after = Token::tokenizeForComparison(
                 $out,
@@ -1224,6 +1225,7 @@ final class Formatter implements Buildable
             Profile::stopTimer(__METHOD__ . '#parse-output');
         }
 
+        $this->resetExtensions($this->ComparisonFilterList);
         $before = Token::tokenizeForComparison(
             $code,
             \TOKEN_PARSE,
@@ -1403,9 +1405,13 @@ final class Formatter implements Buildable
         return $ext;
     }
 
-    private function resetExtensions(): void
+    /**
+     * @param Extension[]|null $extensions
+     */
+    private function resetExtensions(?array $extensions = null): void
     {
-        foreach ($this->Extensions as $ext) {
+        $extensions ??= $this->Extensions;
+        foreach ($extensions as $ext) {
             $ext->reset();
         }
     }

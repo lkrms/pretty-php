@@ -2,8 +2,8 @@
 
 namespace Lkrms\PrettyPHP\Filter;
 
+use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
-use Lkrms\PrettyPHP\Filter\Concern\FilterTrait;
 
 /**
  * Convert namespaced names to PHP 8.0 name tokens
@@ -12,7 +12,7 @@ use Lkrms\PrettyPHP\Filter\Concern\FilterTrait;
  */
 final class NormaliseNames implements Filter
 {
-    use FilterTrait;
+    use ExtensionTrait;
 
     /**
      * @inheritDoc

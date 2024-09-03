@@ -32,15 +32,19 @@ final class SortImports implements Filter
      */
     public function filterTokens(array $tokens): array
     {
-        $this->Tokens = $tokens;
-        $this->SortableImports = [];
-        $count = count($this->Tokens);
+        if (!$tokens) {
+            return $tokens;
+        }
 
-        // Identify relevant `T_USE` tokens and exit early if possible
-        $tokens = [];
-        /** @var array<int,T> */
+        $class = get_class($tokens[0]);
+
+        $this->Tokens = $tokens;
+        $count = count($tokens);
+
+        $useTokens = [];
         $stack = [];
-        foreach ($this->Tokens as $i => $token) {
+        $isNamespace = [];
+        foreach ($tokens as $i => $token) {
             if ($this->Idx->OpenBrace[$token->id]) {
                 $stack[$i] = $token;
                 continue;
@@ -52,100 +56,74 @@ final class SortImports implements Filter
             if ($token->id !== \T_USE) {
                 continue;
             }
-            // Exclude `use` in:
-            // - anonymous function declarations
-            // - scopes other than the global scope and inside namespace
-            //   declarations
-            $prevCode = $this->prevCode($i);
+            // Exclude `function () use (<variable>) {}`
+            $prevCode = $this->getPrevCode($i);
             if ($prevCode && $prevCode->id === \T_CLOSE_PARENTHESIS) {
                 continue;
             }
+            // Exclude `class <name> { use <trait>; }`
             $parent = array_key_last($stack);
-            if ($parent === null || $this->isDeclarationOf($parent, \T_NAMESPACE)) {
-                $tokens[] = $i;
+            if ($parent === null || (
+                $isNamespace[$parent]
+                    ??= $this->isDeclarationOf($parent, \T_NAMESPACE)
+            )) {
+                $useTokens[] = $i;
             }
         }
 
-        if (!$tokens) {
-            return $this->Tokens;
+        if (!$useTokens) {
+            return $tokens;
         }
 
-        while ($tokens) {
-            $i = array_shift($tokens);
+        $seen = -1;
+        foreach ($useTokens as $i) {
+            if ($i <= $seen) {
+                continue;
+            }
 
-            /** @var array<non-empty-array<T>> */
             $sort = [];
-            /** @var T[] */
-            $current = [];
-            /** @var T|null */
-            $terminator = null;
-            while ($i < $count) {
-                /** @var T */
-                $token = $this->Tokens[$i];
-                // If `$current` is non-empty, `$token` may be part of a `use`
-                // statement that's being collected
-                if ($current) {
-                    // If `$terminator` is set, a `use` statement has been
-                    // terminated, and token collection should only continue if
-                    // `$token` is a subsequent comment on the same line, or a
-                    // continuation thereof
-                    if ($terminator) {
-                        if ($this->Idx->Comment[$token->id] && (
-                            $token->line === $terminator->line || (
-                                $this->isOneLineComment($i)
-                                && $this->isOneLineComment($i - 1)
-                                && $token->text[0] === $this->Tokens[$i - 1]->text[0]
-                                && $token->line - $this->Tokens[$i - 1]->line === 1
-                            )
-                        )) {
-                            $current[$i++] = $token;
-                            continue;
-                        } else {
-                            // Otherwise, finalise the `use` statement and add
-                            // it to the sorting queue
-                            $sort[] = $current;
-                            $current = [];
-                            $terminator = null;
-                        }
-                    } elseif ($token->id === \T_CLOSE_TAG) {
-                        /* Exclude statements like `use A\B\C ?>` */
-                        $current = [];
-                        break;
-                    } else {
-                        if ($token->id === \T_SEMICOLON) {
-                            $terminator = $token;
-                        }
-                        $current[$i++] = $token;
+            $current = [$i => $tokens[$i]];
+            $removeLastSemicolon = false;
+            while (++$i < $count) {
+                $token = $tokens[$i];
+                if ($token->id === \T_SEMICOLON) {
+                    $current[$i] = $token;
+                    // Collect subsequent comments on the same line and
+                    // continuations thereof
+                    while (
+                        ++$i < $count
+                        && $this->Idx->Comment[$tokens[$i]->id]
+                        && ($tokens[$i]->line === $token->line || (
+                            $this->isOneLineComment($i)
+                            && $this->isOneLineComment($i - 1)
+                            && $tokens[$i]->text[0] === $tokens[$i - 1]->text[0]
+                            && $tokens[$i]->line - $tokens[$i - 1]->line === 1
+                        ))
+                    ) {
+                        $current[$i] = $tokens[$i];
+                    }
+                    $sort[] = $current;
+                    if ($i < $count && $tokens[$i]->id === \T_USE) {
+                        $current = [$i => $tokens[$i]];
+                        $seen = $i;
                         continue;
                     }
-                }
-                // This point is only reached when `$token` is:
-                // - the first `T_USE` in a possible series of `use` statements
-                // - the first token after a `use` statement is finalised
-                if ($token->id !== \T_USE) {
+                    break;
+                } elseif ($token->id === \T_CLOSE_TAG) {
+                    /* Handle imports like `use A\B\C ?>` */
+                    $current[$i] = new $class(\T_SEMICOLON, ';', $token->line, $token->pos);
+                    $sort[] = $current;
+                    $removeLastSemicolon = true;
                     break;
                 }
-                $current[$i++] = $token;
+                $current[$i] = $token;
             }
-            if ($current) {
-                $sort[] = $current;
-            }
-            if (isset($sort[1])) {
-                $this->Tokens = $this->sortImports($this->Tokens, $sort);
-            }
-            $offset = 0;
-            foreach ($tokens as $j) {
-                if ($i <= $j) {
-                    break;
-                }
-                $offset++;
-            }
-            if ($offset) {
-                $tokens = array_slice($tokens, $offset);
+            if (count($sort) > 1) {
+                $tokens = $this->sortImports($tokens, $sort, $removeLastSemicolon);
             }
         }
 
-        return $this->Tokens;
+        return $tokens;
     }
 
     /**
@@ -155,25 +133,24 @@ final class SortImports implements Filter
      * @param non-empty-array<non-empty-array<T>> $sort
      * @return list<T>
      */
-    private function sortImports(array $tokens, array $sort): array
+    private function sortImports(array $tokens, array $sort, bool $removeLastSemicolon): array
     {
         $import = reset($sort);
         $nextLine = reset($import)->line;
         $nextKey = $firstKey = key($import);
         $unsorted = $sort;
 
-        // Sort the alias/import statements
-        uasort(
+        usort(
             $sort,
             function (array $a, array $b): int {
-                $aKey = array_key_first($a);
-                $bKey = array_key_first($b);
-                $a = $this->SortableImports[$aKey] ??= $this->sortableImport($a);
-                $b = $this->SortableImports[$bKey] ??= $this->sortableImport($b);
+                $ai = array_key_first($a);
+                $bi = array_key_first($b);
+                $a = $this->SortableImports[$ai] ??= $this->sortableImport($a);
+                $b = $this->SortableImports[$bi] ??= $this->sortableImport($b);
 
                 return $a[0] <=> $b[0]           // 1 = `use function`, 2 = `use const`, otherwise 0
                     ?: strcasecmp($a[1], $b[1])  // e.g. "use 0A \ 2B" or "use A \ B"
-                    ?: $aKey <=> $bKey;
+                    ?: $ai <=> $bi;
             }
         );
 
@@ -182,18 +159,23 @@ final class SortImports implements Filter
         }
 
         // Flatten, reindex, and update line numbers
+        if ($removeLastSemicolon) {
+            $last = array_key_last($sort);
+        }
         $sorted = [];
-        foreach ($sort as $import) {
+        foreach ($sort as $i => $import) {
             $delta = $nextLine - reset($import)->line;
             foreach ($import as $t) {
+                if ($removeLastSemicolon && $i === $last && $t->id === \T_SEMICOLON) {
+                    continue;
+                }
                 $sorted[$nextKey++] = $t;
                 $t->line += $delta;
             }
             $nextLine += substr_count($t->text, "\n") + 1;
         }
 
-        return
-            array_slice($tokens, 0, $firstKey)
+        return array_slice($tokens, 0, $firstKey)
             + $sorted
             + $tokens;
     }
@@ -214,6 +196,9 @@ final class SortImports implements Filter
             ) {
                 continue;
             }
+            if ($token->id === \T_COMMA) {
+                break;
+            }
             $import[] = $token;
         }
 
@@ -228,6 +213,10 @@ final class SortImports implements Filter
 
         $text = [];
         foreach ($import as $token) {
+            if ($token->id === \T_AS) {
+                $text[] = '[';
+                continue;
+            }
             $text[] = $token->text;
         }
         $import = implode(' ', $text);
@@ -255,7 +244,7 @@ final class SortImports implements Filter
         //
         // ```
         // use 2A
-        // use 0A \ 0B \ 1{ D , E }
+        // use 0A \ 0B \ 1{ D
         // use 0A \ 0B \ 2C
         // use 0A \ 2B
         // ```
@@ -264,7 +253,7 @@ final class SortImports implements Filter
         //
         // ```
         // use A
-        // use A \ B \ D , E
+        // use A \ B \ D
         // use A \ B \ C
         // use A \ B
         // ```

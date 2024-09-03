@@ -13,13 +13,13 @@ trait FilterTrait
 {
     use ExtensionTrait;
 
-    /** @var GenericToken[] */
+    /** @var list<GenericToken> */
     protected array $Tokens;
 
     /**
      * Get the given token's previous code token
      */
-    protected function prevCode(int $i): ?GenericToken
+    protected function getPrevCode(int $i): ?GenericToken
     {
         while ($i--) {
             $token = $this->Tokens[$i];
