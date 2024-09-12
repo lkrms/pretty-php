@@ -17,9 +17,17 @@ jobs:
   check-ci-runs:
     name: Check previous runs
     if: ${{ github.event_name != 'workflow_call' }}
-    uses: ./.github/workflows/check-ci-runs.yml
-    with:
-      ci_workflow: CI
+    runs-on: ubuntu-latest
+    outputs:
+      ci_required: ${{ steps.check-ci-runs.outputs.ci_required }}
+    steps:
+      - name: Check CI runs
+        id: check-ci-runs
+        uses: lkrms/check-ci-runs@v1
+        with:
+          ci_workflows: "CI,Release"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   format:
     name: Check formatting
