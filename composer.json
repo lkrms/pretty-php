@@ -37,7 +37,8 @@
         "phpstan/phpstan-phpunit": "^1",
         "phpunit/phpunit": "^9",
         "salient/phpstan": "^0.99",
-        "salient/sli": "^0.99"
+        "salient/sli": "^0.99",
+        "salient/testing": "^0.99"
     },
     "autoload": {
         "psr-4": {
