@@ -39,7 +39,7 @@ jobs:
           key: composer-cache-${{ runner.os }}-${{ hashFiles('**/composer.json', '**/composer.lock') }}
           restore-keys: composer-cache-${{ runner.os }}-
 
-      - name: Install dependencies
+      - name: Install PHP dependencies
         run: composer install --no-interaction --no-progress
 
       - name: Install ApiGen and its dependencies
