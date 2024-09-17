@@ -360,16 +360,16 @@
         },
         {
             "name": "salient/cli",
-            "version": "v0.99.50",
+            "version": "v0.99.52",
             "source": {
                 "type": "git",
                 "url": "https://github.com/salient-labs/toolkit-cli.git",
-                "reference": "7c793db32a4ad46206c60f515dba0198dbbb499e"
+                "reference": "c6778098859718031f1aa6ee307acc38606763dd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/salient-labs/toolkit-cli/zipball/7c793db32a4ad46206c60f515dba0198dbbb499e",
-                "reference": "7c793db32a4ad46206c60f515dba0198dbbb499e",
+                "url": "https://api.github.com/repos/salient-labs/toolkit-cli/zipball/c6778098859718031f1aa6ee307acc38606763dd",
+                "reference": "c6778098859718031f1aa6ee307acc38606763dd",
                 "shasum": ""
             },
             "require": {
@@ -401,20 +401,20 @@
                 "issues": "https://github.com/salient-labs/toolkit/issues",
                 "source": "https://github.com/salient-labs/toolkit"
             },
-            "time": "2024-08-31T11:58:24+00:00"
+            "time": "2024-09-17T06:40:19+00:00"
         },
         {
             "name": "salient/collections",
-            "version": "v0.99.50",
+            "version": "v0.99.52",
             "source": {
                 "type": "git",
                 "url": "https://github.com/salient-labs/toolkit-collections.git",
-                "reference": "db64efb063e5d1c9352725c41c797332b3f2ec4f"
+                "reference": "b6e5a94a46183605424788247292f14417c8d118"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/salient-labs/toolkit-collections/zipball/db64efb063e5d1c9352725c41c797332b3f2ec4f",
-                "reference": "db64efb063e5d1c9352725c41c797332b3f2ec4f",
+                "url": "https://api.github.com/repos/salient-labs/toolkit-collections/zipball/b6e5a94a46183605424788247292f14417c8d118",
+                "reference": "b6e5a94a46183605424788247292f14417c8d118",
                 "shasum": ""
             },
             "require": {
@@ -444,20 +444,20 @@
                 "issues": "https://github.com/salient-labs/toolkit/issues",
                 "source": "https://github.com/salient-labs/toolkit"
             },
-            "time": "2024-08-05T01:36:42+00:00"
+            "time": "2024-09-16T03:27:04+00:00"
         },
         {
             "name": "salient/console",
-            "version": "v0.99.50",
+            "version": "v0.99.52",
             "source": {
                 "type": "git",
                 "url": "https://github.com/salient-labs/toolkit-console.git",
-                "reference": "4337cbfb3c6f965beab147052d842b1934635504"
+                "reference": "909c1048b48680037226693bb9086bb58c9a1895"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/salient-labs/toolkit-console/zipball/4337cbfb3c6f965beab147052d842b1934635504",
-                "reference": "4337cbfb3c6f965beab147052d842b1934635504",
+                "url": "https://api.github.com/repos/salient-labs/toolkit-console/zipball/909c1048b48680037226693bb9086bb58c9a1895",
+                "reference": "909c1048b48680037226693bb9086bb58c9a1895",
                 "shasum": ""
             },
             "require": {
@@ -494,11 +494,11 @@
                 "issues": "https://github.com/salient-labs/toolkit/issues",
                 "source": "https://github.com/salient-labs/toolkit"
             },
-            "time": "2024-09-10T03:19:13+00:00"
+            "time": "2024-09-17T00:03:36+00:00"
         },
         {
             "name": "salient/container",
-            "version": "v0.99.50",
+            "version": "v0.99.52",
             "source": {
                 "type": "git",
                 "url": "https://github.com/salient-labs/toolkit-container.git",
@@ -552,16 +552,16 @@
         },
         {
             "name": "salient/contracts",
-            "version": "v0.99.50",
+            "version": "v0.99.52",
             "source": {
                 "type": "git",
                 "url": "https://github.com/salient-labs/toolkit-contracts.git",
-                "reference": "8946d28ebe0be0dbe9f7bce98915069302987e53"
+                "reference": "2de3a741d8b473c571a154516ef95b5c749eae82"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/salient-labs/toolkit-contracts/zipball/8946d28ebe0be0dbe9f7bce98915069302987e53",
-                "reference": "8946d28ebe0be0dbe9f7bce98915069302987e53",
+                "url": "https://api.github.com/repos/salient-labs/toolkit-contracts/zipball/2de3a741d8b473c571a154516ef95b5c749eae82",
+                "reference": "2de3a741d8b473c571a154516ef95b5c749eae82",
                 "shasum": ""
             },
             "require": {
@@ -597,20 +597,20 @@
                 "issues": "https://github.com/salient-labs/toolkit/issues",
                 "source": "https://github.com/salient-labs/toolkit"
             },
-            "time": "2024-09-11T05:42:01+00:00"
+            "time": "2024-09-17T06:40:19+00:00"
         },
         {
             "name": "salient/core",
-            "version": "v0.99.50",
+            "version": "v0.99.52",
             "source": {
                 "type": "git",
                 "url": "https://github.com/salient-labs/toolkit-core.git",
-                "reference": "f988baaa72fcb7f576986699180694306d6ce975"
+                "reference": "2606eecb30b7d2abbf20e37f24d6e5e49d951326"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/salient-labs/toolkit-core/zipball/f988baaa72fcb7f576986699180694306d6ce975",
-                "reference": "f988baaa72fcb7f576986699180694306d6ce975",
+                "url": "https://api.github.com/repos/salient-labs/toolkit-core/zipball/2606eecb30b7d2abbf20e37f24d6e5e49d951326",
+                "reference": "2606eecb30b7d2abbf20e37f24d6e5e49d951326",
                 "shasum": ""
             },
             "require": {
@@ -645,11 +645,11 @@
                 "issues": "https://github.com/salient-labs/toolkit/issues",
                 "source": "https://github.com/salient-labs/toolkit"
             },
-            "time": "2024-09-11T05:42:01+00:00"
+            "time": "2024-09-17T00:03:36+00:00"
         },
         {
             "name": "salient/iterators",
-            "version": "v0.99.50",
+            "version": "v0.99.52",
             "source": {
                 "type": "git",
                 "url": "https://github.com/salient-labs/toolkit-iterators.git",
@@ -691,16 +691,16 @@
         },
         {
             "name": "salient/phpdoc",
-            "version": "v0.99.50",
+            "version": "v0.99.52",
             "source": {
                 "type": "git",
                 "url": "https://github.com/salient-labs/toolkit-phpdoc.git",
-                "reference": "143fa6e361696fcb35a6e1b305e9ad7758b19e8d"
+                "reference": "3c9a78030206a8c531e9d41c8260136ce8bb7033"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/salient-labs/toolkit-phpdoc/zipball/143fa6e361696fcb35a6e1b305e9ad7758b19e8d",
-                "reference": "143fa6e361696fcb35a6e1b305e9ad7758b19e8d",
+                "url": "https://api.github.com/repos/salient-labs/toolkit-phpdoc/zipball/3c9a78030206a8c531e9d41c8260136ce8bb7033",
+                "reference": "3c9a78030206a8c531e9d41c8260136ce8bb7033",
                 "shasum": ""
             },
             "require": {
@@ -730,11 +730,11 @@
                 "issues": "https://github.com/salient-labs/toolkit/issues",
                 "source": "https://github.com/salient-labs/toolkit"
             },
-            "time": "2024-08-05T01:36:42+00:00"
+            "time": "2024-09-16T03:27:04+00:00"
         },
         {
             "name": "salient/polyfills",
-            "version": "v0.99.50",
+            "version": "v0.99.52",
             "source": {
                 "type": "git",
                 "url": "https://github.com/salient-labs/toolkit-polyfills.git",
@@ -778,7 +778,7 @@
         },
         {
             "name": "salient/utils",
-            "version": "v0.99.50",
+            "version": "v0.99.52",
             "source": {
                 "type": "git",
                 "url": "https://github.com/salient-labs/toolkit-utils.git",
@@ -1557,16 +1557,16 @@
         },
         {
             "name": "nikic/php-parser",
-            "version": "v5.1.0",
+            "version": "v5.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nikic/PHP-Parser.git",
-                "reference": "683130c2ff8c2739f4822ff7ac5c873ec529abd1"
+                "reference": "23c79fbbfb725fb92af9bcf41065c8e9a0d49ddb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/683130c2ff8c2739f4822ff7ac5c873ec529abd1",
-                "reference": "683130c2ff8c2739f4822ff7ac5c873ec529abd1",
+                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/23c79fbbfb725fb92af9bcf41065c8e9a0d49ddb",
+                "reference": "23c79fbbfb725fb92af9bcf41065c8e9a0d49ddb",
                 "shasum": ""
             },
             "require": {
@@ -1609,9 +1609,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nikic/PHP-Parser/issues",
-                "source": "https://github.com/nikic/PHP-Parser/tree/v5.1.0"
+                "source": "https://github.com/nikic/PHP-Parser/tree/v5.2.0"
             },
-            "time": "2024-07-01T20:03:41+00:00"
+            "time": "2024-09-15T16:40:33+00:00"
         },
         {
             "name": "phar-io/manifest",
@@ -2360,16 +2360,16 @@
         },
         {
             "name": "salient/phpstan",
-            "version": "v0.99.50",
+            "version": "v0.99.52",
             "source": {
                 "type": "git",
                 "url": "https://github.com/salient-labs/toolkit-phpstan.git",
-                "reference": "5632f1e79e2f4285646b7db7e4b6df062e6a75c6"
+                "reference": "19c82bcaf9848e6eaeda71ee846f436f67d037ca"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/salient-labs/toolkit-phpstan/zipball/5632f1e79e2f4285646b7db7e4b6df062e6a75c6",
-                "reference": "5632f1e79e2f4285646b7db7e4b6df062e6a75c6",
+                "url": "https://api.github.com/repos/salient-labs/toolkit-phpstan/zipball/19c82bcaf9848e6eaeda71ee846f436f67d037ca",
+                "reference": "19c82bcaf9848e6eaeda71ee846f436f67d037ca",
                 "shasum": ""
             },
             "require": {
@@ -2405,20 +2405,20 @@
                 "issues": "https://github.com/salient-labs/toolkit/issues",
                 "source": "https://github.com/salient-labs/toolkit"
             },
-            "time": "2024-08-26T07:01:16+00:00"
+            "time": "2024-09-17T01:49:43+00:00"
         },
         {
             "name": "salient/sli",
-            "version": "v0.99.50",
+            "version": "v0.99.52",
             "source": {
                 "type": "git",
                 "url": "https://github.com/salient-labs/toolkit-sli.git",
-                "reference": "e4d7f03d1f0ff048a1195d56534792fb43584de0"
+                "reference": "4cccb2e47b55a3a4f07918317bf527bf315a5816"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/salient-labs/toolkit-sli/zipball/e4d7f03d1f0ff048a1195d56534792fb43584de0",
-                "reference": "e4d7f03d1f0ff048a1195d56534792fb43584de0",
+                "url": "https://api.github.com/repos/salient-labs/toolkit-sli/zipball/4cccb2e47b55a3a4f07918317bf527bf315a5816",
+                "reference": "4cccb2e47b55a3a4f07918317bf527bf315a5816",
                 "shasum": ""
             },
             "require": {
@@ -2457,20 +2457,20 @@
                 "issues": "https://github.com/salient-labs/toolkit/issues",
                 "source": "https://github.com/salient-labs/toolkit"
             },
-            "time": "2024-09-07T04:16:18+00:00"
+            "time": "2024-09-17T03:44:22+00:00"
         },
         {
             "name": "salient/sync",
-            "version": "v0.99.50",
+            "version": "v0.99.52",
             "source": {
                 "type": "git",
                 "url": "https://github.com/salient-labs/toolkit-sync.git",
-                "reference": "5d2237c4d79ad9009baeee508281c41a82f16a54"
+                "reference": "d629cf6329648875cb41dddd863ed1c266e85b5b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/salient-labs/toolkit-sync/zipball/5d2237c4d79ad9009baeee508281c41a82f16a54",
-                "reference": "5d2237c4d79ad9009baeee508281c41a82f16a54",
+                "url": "https://api.github.com/repos/salient-labs/toolkit-sync/zipball/d629cf6329648875cb41dddd863ed1c266e85b5b",
+                "reference": "d629cf6329648875cb41dddd863ed1c266e85b5b",
                 "shasum": ""
             },
             "require": {
@@ -2509,11 +2509,11 @@
                 "issues": "https://github.com/salient-labs/toolkit/issues",
                 "source": "https://github.com/salient-labs/toolkit"
             },
-            "time": "2024-09-11T05:38:44+00:00"
+            "time": "2024-09-17T03:39:59+00:00"
         },
         {
             "name": "salient/testing",
-            "version": "v0.99.50",
+            "version": "v0.99.52",
             "source": {
                 "type": "git",
                 "url": "https://github.com/salient-labs/toolkit-testing.git",

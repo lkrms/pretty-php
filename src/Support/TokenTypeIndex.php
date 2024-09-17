@@ -5,7 +5,7 @@ namespace Lkrms\PrettyPHP\Support;
 use Lkrms\PrettyPHP\Catalog\TokenType as TT;
 use Lkrms\PrettyPHP\Contract\HasTokenIndex;
 use Salient\Contract\Core\Immutable;
-use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Concern\HasMutator;
 
 /**
  * Token type indexes
@@ -14,9 +14,7 @@ use Salient\Core\Concern\HasImmutableProperties;
  */
 class TokenTypeIndex implements HasTokenIndex, Immutable
 {
-    use HasImmutableProperties {
-        withPropertyValue as with;
-    }
+    use HasMutator;
 
     private const LEADING = 0;
     private const TRAILING = 1;
@@ -1352,7 +1350,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      */
     public function withLeadingOperators()
     {
-        return $this->clone()->applyLeadingOperators();
+        return (clone $this)->applyLeadingOperators();
     }
 
     /**
@@ -1391,7 +1389,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      */
     public function withTrailingOperators()
     {
-        return $this->clone()->applyTrailingOperators();
+        return (clone $this)->applyTrailingOperators();
     }
 
     /**
@@ -1432,7 +1430,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      */
     public function withMixedOperators()
     {
-        return $this->clone()->applyMixedOperators();
+        return (clone $this)->applyMixedOperators();
     }
 
     /**

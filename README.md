@@ -190,10 +190,11 @@ exceptions are occasionally made and documented here.
 
 ## License
 
-MIT
+This project is licensed under the [MIT License][].
 
 [discuss]: https://github.com/lkrms/pretty-php/discussions
 [editor]: #editor-integrations
+[MIT License]: LICENSE
 [Open VSX Registry]: https://open-vsx.org/extension/lkrms/pretty-php
 [PER]: https://www.php-fig.org/per/coding-style/
 [PHIVE]: https://phar.io

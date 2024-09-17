@@ -165,9 +165,15 @@ jobs:
         run: composer install --no-interaction --no-progress
 
       - name: Run PHPUnit tests and generate code coverage report
-        run: php -dshort_open_tag=On vendor/bin/phpunit --no-coverage --coverage-clover=coverage.xml
+        id: run-phpunit-tests
+        shell: bash
+        run: |
+          php -dshort_open_tag=On vendor/bin/phpunit ${RUNNER_DEBUG+--debug} --no-coverage --coverage-clover=coverage.xml && status=0 || status=$?
+          printf 'coverage_report_generated=%d\n' "$([[ -s coverage.xml ]] && echo 1 || echo 0)" >>"$GITHUB_OUTPUT"
+          (exit $status)
 
       - name: Upload code coverage report to Codecov
+        if: ${{ !cancelled() && steps.run-phpunit-tests.outputs.coverage_report_generated == 1 }}
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

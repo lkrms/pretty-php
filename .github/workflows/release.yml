@@ -46,6 +46,7 @@ jobs:
 
       - name: Get Composer cache directory
         id: get-composer-cache
+        shell: bash
         run: printf 'cache_dir=%s\n' "$(composer config cache-files-dir)" >>"$GITHUB_OUTPUT"
 
       - name: Cache PHP dependencies
@@ -55,7 +56,7 @@ jobs:
           key: composer-cache-${{ runner.os }}-${{ hashFiles('**/composer.json', '**/composer.lock') }}
           restore-keys: composer-cache-${{ runner.os }}-
 
-      - name: Install dependencies
+      - name: Install PHP dependencies
         run: composer install --no-interaction --no-progress
 
       - name: Run build script
@@ -74,7 +75,7 @@ jobs:
 
       - name: Create draft release or update existing release
         run: |
-          ${{ env.artifact_path }} --version | grep -F '${{ env.artifact_name }} ${{ github.ref_name }}-'
+          ${{ env.artifact_path }} --version | grep -F '${{ env.artifact_name }} ${{ github.ref_name }} ('
           gh release view ${{ github.ref_name }} --json 'tagName,isDraft,assets' ||
             gh release create ${{ github.ref_name }} --draft --generate-notes --verify-tag
           gh release upload ${{ github.ref_name }} ${{ env.artifact_path }} ${{ env.artifact_path }}.asc --clobber
