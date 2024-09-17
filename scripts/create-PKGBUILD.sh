@@ -40,7 +40,7 @@ check() {
     local phar
     phar=$(_phar)
     echo "Checking output of \`$phar --version\`"
-    "$phar" --version | grep -F "${pkgname} v${pkgver}-"
+    "$phar" --version | grep -F "${pkgname} v${pkgver} ("
 }
 
 package() {

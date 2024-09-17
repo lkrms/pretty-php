@@ -6,13 +6,14 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
-use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Contract\Core\Immutable;
+use Salient\Core\Concern\HasMutator;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 
-final class Renderer
+final class Renderer implements Immutable
 {
-    use HasImmutableProperties;
+    use HasMutator;
 
     private Formatter $Formatter;
     private string $SoftTab;
@@ -34,10 +35,10 @@ final class Renderer
      */
     public function withFormatter(Formatter $formatter): self
     {
-        return $this->withPropertyValue('Formatter', $formatter)
-                    ->withPropertyValue('SoftTab', $formatter->SoftTab)
-                    ->withPropertyValue('Tab', $formatter->Tab)
-                    ->withPropertyValue('Idx', $formatter->TokenTypeIndex);
+        return $this->with('Formatter', $formatter)
+                    ->with('SoftTab', $formatter->SoftTab)
+                    ->with('Tab', $formatter->Tab)
+                    ->with('Idx', $formatter->TokenTypeIndex);
     }
 
     public function render(

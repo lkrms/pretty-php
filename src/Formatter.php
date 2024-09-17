@@ -69,8 +69,9 @@ use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\GenericToken;
 use Lkrms\PrettyPHP\Token\Token;
 use Salient\Contract\Core\Buildable;
+use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasBuilder;
-use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Core\Concern\HasMutator;
 use Salient\Core\Facade\Profile;
 use Salient\Core\Indentation;
 use Salient\Utility\Arr;
@@ -87,11 +88,13 @@ use Throwable;
  *
  * @implements Buildable<FormatterBuilder>
  */
-final class Formatter implements Buildable
+final class Formatter implements Buildable, Immutable
 {
     /** @use HasBuilder<FormatterBuilder> */
     use HasBuilder;
-    use HasImmutableProperties;
+    use HasMutator {
+        with as withPropertyValue;
+    }
 
     /**
      * Use spaces for indentation?

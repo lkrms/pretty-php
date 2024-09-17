@@ -7,12 +7,13 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Token\Token;
-use Salient\Core\Concern\HasImmutableProperties;
+use Salient\Contract\Core\Immutable;
+use Salient\Core\Concern\HasMutator;
 use Salient\Utility\Regex;
 
-final class Parser
+final class Parser implements Immutable
 {
-    use HasImmutableProperties;
+    use HasMutator;
 
     private Formatter $Formatter;
 
@@ -28,7 +29,7 @@ final class Parser
      */
     public function withFormatter(Formatter $formatter): self
     {
-        return $this->withPropertyValue('Formatter', $formatter);
+        return $this->with('Formatter', $formatter);
     }
 
     /**
