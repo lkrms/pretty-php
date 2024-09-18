@@ -1534,11 +1534,14 @@ EOF,
     private function doGetFormatter(): Formatter
     {
         $flags = 0;
+        if ($this->Debug) {
+            $flags |= FormatterFlag::DEBUG;
+            if ($this->LogProgress) {
+                $flags |= FormatterFlag::LOG_PROGRESS;
+            }
+        }
         if ($this->Quiet < 3) {
             $flags |= FormatterFlag::DETECT_PROBLEMS;
-        }
-        if ($this->LogProgress) {
-            $flags |= FormatterFlag::LOG_PROGRESS;
         }
 
         if ($this->Debug) {

@@ -1,5 +1,69 @@
 # Indentation
 
+## Heredoc indentation
+
+Heredocs and nowdocs are indented in one of four ways. [Mixed
+indentation][mixed] is enabled by default.
+
+### No indentation
+
+Enabled when `--heredoc-indent none` is given.
+
+```php
+<?php
+$foo = [
+    'bar' => <<<EOF
+Content
+EOF,
+];
+```
+
+### Line indentation
+
+Enabled when `--heredoc-indent line` is given.
+
+```php
+<?php
+$foo = [
+    'bar' => <<<EOF
+    Content
+    EOF,
+];
+```
+
+### Mixed indentation
+
+Line indentation is applied to heredocs that start on their own line, otherwise
+hanging indentation is applied.
+
+Enabled by default and when `--heredoc-indent mixed` is given.
+
+```php
+<?php
+$foo = <<<EOF
+    Content
+    EOF;
+$bar =
+    <<<EOF
+    Content
+    EOF;
+```
+
+### Hanging indentation
+
+Enabled when `--heredoc-indent hanging` is given.
+
+```php
+<?php
+$foo = <<<EOF
+    Content
+    EOF;
+$bar =
+    <<<EOF
+        Content
+        EOF;
+```
+
 ## Standard indentation
 
 Code between brackets (`()`, `[]`, `{}`) is always indented when the open
@@ -146,5 +210,6 @@ indentation scenarios.
 Overhanging indentation is also applied to blocks that form part of a continuing
 structure, e.g. the [`if` block above](#hanging-indentation).
 
+[mixed]: #mixed-indentation
 [PSR-12]: https://www.php-fig.org/psr/psr-12/
 [PER]: https://www.php-fig.org/per/coding-style/

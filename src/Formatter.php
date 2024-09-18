@@ -75,7 +75,6 @@ use Salient\Core\Concern\HasMutator;
 use Salient\Core\Facade\Profile;
 use Salient\Core\Indentation;
 use Salient\Utility\Arr;
-use Salient\Utility\Env;
 use Salient\Utility\Get;
 use Closure;
 use CompileError;
@@ -534,7 +533,7 @@ final class Formatter implements Buildable, Immutable
         $this->TightDeclarationSpacing = $tightDeclarationSpacing;
         $this->Psr12 = $psr12;
 
-        $this->Debug = ($flags & FormatterFlag::DEBUG) || Env::getDebug();
+        $this->Debug = (bool) ($flags & FormatterFlag::DEBUG);
         $this->LogProgress = $this->Debug && ($flags & FormatterFlag::LOG_PROGRESS);
         $this->DetectProblems = (bool) ($flags & FormatterFlag::DETECT_PROBLEMS);
 

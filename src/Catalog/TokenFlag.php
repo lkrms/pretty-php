@@ -2,16 +2,12 @@
 
 namespace Lkrms\PrettyPHP\Catalog;
 
-use Salient\Core\AbstractEnumeration;
-
 /**
  * Token flags
  *
  * @api
- *
- * @extends AbstractEnumeration<int>
  */
-final class TokenFlag extends AbstractEnumeration
+interface TokenFlag
 {
     /**
      * The token is a C++- or shell-style comment
