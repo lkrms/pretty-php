@@ -5,6 +5,7 @@ namespace Lkrms\PrettyPHP\Tests\Token;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Tests\TestCase;
 use Lkrms\PrettyPHP\Formatter;
+use Salient\Utility\Reflect;
 
 final class TokenTest extends TestCase
 {
@@ -41,25 +42,22 @@ PHP;
         $subTypes = [];
         foreach ($formatter->Tokens as $token) {
             if ($token->id === \T_COLON) {
-                $subTypes[] = $token->getSubType();
+                $subTypes[] = Reflect::getConstantName(TokenSubType::class, $token->getSubType());
             }
         }
 
-        $this->assertSame(
-            TokenSubType::toNames([
-                TokenSubType::COLON_BACKED_ENUM_TYPE_DELIMITER,
-                TokenSubType::COLON_RETURN_TYPE_DELIMITER,
-                TokenSubType::COLON_NAMED_ARGUMENT_DELIMITER,
-                TokenSubType::COLON_TERNARY_OPERATOR,
-                TokenSubType::COLON_NAMED_ARGUMENT_DELIMITER,
-                TokenSubType::COLON_NAMED_ARGUMENT_DELIMITER,
-                TokenSubType::COLON_LABEL_DELIMITER,
-                TokenSubType::COLON_ALT_SYNTAX_DELIMITER,
-                TokenSubType::COLON_SWITCH_CASE_DELIMITER,
-                TokenSubType::COLON_SWITCH_CASE_DELIMITER,
-            ]),
-            TokenSubType::toNames($subTypes),
-        );
+        $this->assertSame([
+            'COLON_BACKED_ENUM_TYPE_DELIMITER',
+            'COLON_RETURN_TYPE_DELIMITER',
+            'COLON_NAMED_ARGUMENT_DELIMITER',
+            'COLON_TERNARY_OPERATOR',
+            'COLON_NAMED_ARGUMENT_DELIMITER',
+            'COLON_NAMED_ARGUMENT_DELIMITER',
+            'COLON_LABEL_DELIMITER',
+            'COLON_ALT_SYNTAX_DELIMITER',
+            'COLON_SWITCH_CASE_DELIMITER',
+            'COLON_SWITCH_CASE_DELIMITER',
+        ], $subTypes);
         $this->assertCount(7, array_unique($subTypes));
     }
 }

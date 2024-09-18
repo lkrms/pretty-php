@@ -9,10 +9,25 @@ use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Token\Token;
 use Salient\Utility\Arr;
+use Salient\Utility\Reflect;
 use Salient\Utility\Str;
 
 final class TokenUtility
 {
+    public static function getWhitespace(int $type): string
+    {
+        if ($type & WhitespaceType::BLANK) {
+            return "\n\n";
+        }
+        if ($type & WhitespaceType::LINE) {
+            return "\n";
+        }
+        if ($type & WhitespaceType::SPACE) {
+            return ' ';
+        }
+        return '';
+    }
+
     /**
      * @return array<string,mixed>
      */
@@ -26,7 +41,7 @@ final class TokenUtility
 
         if ($token->SubType !== null) {
             $t['SubType'] = $token->SubType !== -1
-                ? TokenSubType::toName($token->SubType)
+                ? Reflect::getConstantName(TokenSubType::class, $token->SubType)
                 : '<unknown>';
         }
 
@@ -42,7 +57,8 @@ final class TokenUtility
 
         if ($token->Flags) {
             $flags = [];
-            foreach (TokenFlag::cases() as $name => $value) {
+            /** @var int $value */
+            foreach (Reflect::getConstants(TokenFlag::class) as $name => $value) {
                 if (($token->Flags & $value) === $value) {
                     $flags[] = $name;
                 }
@@ -54,11 +70,11 @@ final class TokenUtility
 
         if (isset($token->Data)) {
             static $dataTypes;
-            $dataTypes ??= array_flip(TokenData::cases());
+            $dataTypes ??= array_flip(self::getTokenDataValues());
             foreach ($token->Data as $type => $value) {
                 $t['Data'][$dataTypes[$type] ?? $type] =
                     $value instanceof Token
-                        ? self::identify($value)
+                        ? self::describe($value)
                         : ($value instanceof TokenCollection
                             ? $value->toString(' ')
                             : $value);
@@ -79,13 +95,13 @@ final class TokenUtility
                 if (is_array($entry)) {
                     foreach ($entry as $k => $entry) {
                         if ($entry) {
-                            $entry = self::identify($entry);
+                            $entry = self::describe($entry);
                         }
                         $t['HangingIndentContextStack'][$i][$j][$k] = $entry;
                     }
                     continue;
                 }
-                $t['HangingIndentContextStack'][$i][$j] = self::identify($entry);
+                $t['HangingIndentContextStack'][$i][$j] = self::describe($entry);
             }
         }
 
@@ -96,8 +112,8 @@ final class TokenUtility
         $t['Padding'] = $token->Padding;
         $t['HeredocIndent'] = $token->HeredocIndent;
         $t['AlignedWith'] = $token->AlignedWith;
-        $t['WhitespaceBefore'] = WhitespaceType::toWhitespace($token->WhitespaceBefore);
-        $t['WhitespaceAfter'] = WhitespaceType::toWhitespace($token->WhitespaceAfter);
+        $t['WhitespaceBefore'] = self::getWhitespace($token->WhitespaceBefore);
+        $t['WhitespaceAfter'] = self::getWhitespace($token->WhitespaceAfter);
         $t['WhitespaceMaskPrev'] = $token->WhitespaceMaskPrev;
         $t['WhitespaceMaskNext'] = $token->WhitespaceMaskNext;
         $t['CriticalWhitespaceBefore'] = $token->CriticalWhitespaceBefore;
@@ -114,13 +130,13 @@ final class TokenUtility
                 continue;
             }
             if ($value instanceof Token) {
-                $value = self::identify($value);
+                $value = self::describe($value);
                 continue;
             }
             if (Arr::of($value, Token::class)) {
                 /** @var Token[] $value */
                 foreach ($value as &$token) {
-                    $token = self::identify($token);
+                    $token = self::describe($token);
                 }
                 unset($token);
             }
@@ -130,7 +146,16 @@ final class TokenUtility
         return $t;
     }
 
-    public static function identify(Token $token): string
+    /**
+     * @return array<string,int>
+     */
+    private static function getTokenDataValues(): array
+    {
+        /** @var array<string,int> */
+        return Reflect::getConstants(TokenData::class);
+    }
+
+    public static function describe(Token $token): string
     {
         return sprintf(
             'T%d:L%d:%s',

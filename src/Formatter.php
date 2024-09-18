@@ -21,13 +21,13 @@ use Lkrms\PrettyPHP\Filter\CollectColumn;
 use Lkrms\PrettyPHP\Filter\EvaluateNumbers;
 use Lkrms\PrettyPHP\Filter\EvaluateStrings;
 use Lkrms\PrettyPHP\Filter\MoveComments;
+use Lkrms\PrettyPHP\Filter\NormaliseCasts;
 use Lkrms\PrettyPHP\Filter\NormaliseNames;
 use Lkrms\PrettyPHP\Filter\RemoveEmptyDocBlocks;
 use Lkrms\PrettyPHP\Filter\RemoveEmptyTokens;
 use Lkrms\PrettyPHP\Filter\RemoveHeredocIndentation;
 use Lkrms\PrettyPHP\Filter\RemoveWhitespace;
 use Lkrms\PrettyPHP\Filter\SortImports;
-use Lkrms\PrettyPHP\Filter\TrimCasts;
 use Lkrms\PrettyPHP\Filter\TrimOpenTags;
 use Lkrms\PrettyPHP\Filter\TruncateComments;
 use Lkrms\PrettyPHP\Rule\Preset\Drupal;
@@ -75,7 +75,6 @@ use Salient\Core\Concern\HasMutator;
 use Salient\Core\Facade\Profile;
 use Salient\Core\Indentation;
 use Salient\Utility\Arr;
-use Salient\Utility\Env;
 use Salient\Utility\Get;
 use Closure;
 use CompileError;
@@ -353,7 +352,7 @@ final class Formatter implements Buildable, Immutable
         RemoveEmptyDocBlocks::class,
         SortImports::class,
         MoveComments::class,
-        TrimCasts::class,
+        NormaliseCasts::class,
     ];
 
     /**
@@ -363,7 +362,7 @@ final class Formatter implements Buildable, Immutable
         RemoveEmptyDocBlocks::class,
         SortImports::class,
         MoveComments::class,
-        TrimCasts::class,
+        NormaliseCasts::class,
     ];
 
     /**
@@ -534,7 +533,7 @@ final class Formatter implements Buildable, Immutable
         $this->TightDeclarationSpacing = $tightDeclarationSpacing;
         $this->Psr12 = $psr12;
 
-        $this->Debug = ($flags & FormatterFlag::DEBUG) || Env::getDebug();
+        $this->Debug = (bool) ($flags & FormatterFlag::DEBUG);
         $this->LogProgress = $this->Debug && ($flags & FormatterFlag::LOG_PROGRESS);
         $this->DetectProblems = (bool) ($flags & FormatterFlag::DETECT_PROBLEMS);
 
@@ -638,28 +637,10 @@ final class Formatter implements Buildable, Immutable
         $i = 0;
         foreach ($rules as $rule) {
             if (is_a($rule, TokenRule::class, true)) {
-                /** @var int[]|array<int,bool>|array{'*'} */
+                /** @var array<int,bool>|array{'*'} */
                 $types = $rule::getTokenTypes($this->TokenTypeIndex);
-                $first = Arr::first($types);
-                if (is_bool($first)) {
-                    // Reduce an index to entries with a value of `true`
-                    $index = $types;
-                    $types = [];
-                    /** @var int $type */
-                    foreach ($index as $type => $value) {
-                        if ($value) {
-                            $types[$type] = true;
-                        }
-                    }
-                } elseif (is_int($first)) {
-                    // Convert a list of types to an index
-                    /** @var array<int,true> */
-                    $types = array_fill_keys($types, true);
-                } elseif ($types !== ['*']) {
-                    throw new LogicException(sprintf(
-                        'Invalid return value: %s::getTokenTypes()',
-                        $rule,
-                    ));
+                if ($types !== ['*']) {
+                    $types = array_filter($types);
                 }
                 $tokenTypes[$rule] = $types;
                 $mainLoop[$rule . '#token'] = [$rule, TokenRule::PROCESS_TOKENS, $i];

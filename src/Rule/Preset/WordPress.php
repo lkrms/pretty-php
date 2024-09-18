@@ -4,9 +4,9 @@ namespace Lkrms\PrettyPHP\Rule\Preset;
 
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\Preset;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Rule\Support\WordPressTokenTypeIndex;
 use Lkrms\PrettyPHP\Rule\AlignData;
 use Lkrms\PrettyPHP\Rule\DeclarationSpacing;
@@ -61,17 +61,17 @@ final class WordPress implements Preset, TokenRule
         }
     }
 
-    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
+    public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return [
-            \T_COMMENT,
-            \T_DOC_COMMENT,
-            \T_COLON,
-            \T_LOGICAL_NOT,
-            \T_OPEN_BRACE,
-            \T_CLOSE_BRACE,
-            \T_OPEN_BRACKET,
-            \T_OPEN_PARENTHESIS,
+            \T_COMMENT => true,
+            \T_DOC_COMMENT => true,
+            \T_COLON => true,
+            \T_LOGICAL_NOT => true,
+            \T_OPEN_BRACE => true,
+            \T_CLOSE_BRACE => true,
+            \T_OPEN_BRACKET => true,
+            \T_OPEN_PARENTHESIS => true,
         ];
     }
 

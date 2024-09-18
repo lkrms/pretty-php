@@ -2,16 +2,12 @@
 
 namespace Lkrms\PrettyPHP\Catalog;
 
-use Salient\Core\AbstractEnumeration;
-
 /**
  * Token data types
  *
  * @api
- *
- * @extends AbstractEnumeration<int>
  */
-final class TokenData extends AbstractEnumeration
+interface TokenData
 {
     /**
      * The content of a normalised T_COMMENT or T_DOC_COMMENT after removal of

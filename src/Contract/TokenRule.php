@@ -10,28 +10,39 @@ interface TokenRule extends Rule
     public const PROCESS_TOKENS = 'processTokens';
 
     /**
-     * Return token types the rule is interested in
+     * Get token types the rule is interested in
      *
-     * Tokens of these types are passed to {@see TokenRule::processTokens()}.
+     * Tokens of these types are passed to {@see TokenRule::processTokens()}
+     * during formatting.
      *
-     * To receive all tokens, return `['*']`, otherwise return either a list of
-     * token types, or an index returned by {@see TokenTypeIndex::get()}.
+     * Returns an index of token types, or `['*']` for all tokens.
      *
-     * @return int[]|array<int,bool>|array{'*'}
+     * Example:
+     *
+     * ```php
+     * class MyRule implements TokenRule
+     * {
+     *     public static function getTokenTypes(TokenTypeIndex $idx): array
+     *     {
+     *         return [\T_FN => true];
+     *     }
+     * }
+     * ```
+     *
+     * @return array<int,bool>|array{'*'}
      */
-    public static function getTokenTypes(TokenTypeIndex $typeIndex): array;
+    public static function getTokenTypes(TokenTypeIndex $idx): array;
 
     /**
-     * Return true if tokens must be passed to the rule in document order
+     * Check if tokens must be passed to the rule in document order
      */
     public static function getRequiresSortedTokens(): bool;
 
     /**
-     * Apply the rule to an array of tokens
+     * Apply the rule to the given tokens
      *
-     * An array of non-whitespace tokens of the types returned by
-     * {@see TokenRule::getTokenTypes()} is passed to
-     * {@see TokenRule::processTokens()} once per run.
+     * Tokens of the types returned by {@see TokenRule::getTokenTypes()} are
+     * passed to this method once per run.
      *
      * @param array<int,Token> $tokens
      */

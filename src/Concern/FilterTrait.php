@@ -1,8 +1,7 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Filter\Concern;
+namespace Lkrms\PrettyPHP\Concern;
 
-use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Token\GenericToken;
 

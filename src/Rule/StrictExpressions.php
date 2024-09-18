@@ -3,8 +3,8 @@
 namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 
 /**
@@ -30,15 +30,15 @@ final class StrictExpressions implements TokenRule
         }
     }
 
-    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
+    public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return [
-            \T_IF,
-            \T_ELSEIF,
-            \T_SWITCH,
-            \T_WHILE,
-            \T_FOR,
-            \T_FOREACH,
+            \T_IF => true,
+            \T_ELSEIF => true,
+            \T_SWITCH => true,
+            \T_WHILE => true,
+            \T_FOR => true,
+            \T_FOREACH => true,
         ];
     }
 

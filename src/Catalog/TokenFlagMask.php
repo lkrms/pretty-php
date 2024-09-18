@@ -2,16 +2,12 @@
 
 namespace Lkrms\PrettyPHP\Catalog;
 
-use Salient\Core\AbstractEnumeration;
-
 /**
  * Token flag masks
  *
  * @api
- *
- * @extends AbstractEnumeration<int>
  */
-final class TokenFlagMask extends AbstractEnumeration
+interface TokenFlagMask
 {
     public const COMMENT_TYPE =
         TokenFlag::CPP_COMMENT

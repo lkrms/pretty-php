@@ -4,9 +4,9 @@ namespace Lkrms\PrettyPHP\Rule\Preset;
 
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\Preset;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder;
@@ -49,21 +49,21 @@ final class Drupal implements Preset, TokenRule
         }
     }
 
-    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
+    public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return [
             // --
-            \T_CLASS,
-            \T_ENUM,
-            \T_INTERFACE,
-            \T_TRAIT,
+            \T_CLASS => true,
+            \T_ENUM => true,
+            \T_INTERFACE => true,
+            \T_TRAIT => true,
             // --
-            \T_DOC_COMMENT,
+            \T_DOC_COMMENT => true,
             // --
-            \T_CATCH,
-            \T_ELSE,
-            \T_ELSEIF,
-            \T_FINALLY,
+            \T_CATCH => true,
+            \T_ELSE => true,
+            \T_ELSEIF => true,
+            \T_FINALLY => true,
         ];
     }
 

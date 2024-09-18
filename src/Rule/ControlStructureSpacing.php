@@ -3,10 +3,9 @@
 namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 
 /**
@@ -32,12 +31,12 @@ final class ControlStructureSpacing implements TokenRule
         }
     }
 
-    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
+    public static function getTokenTypes(TokenTypeIndex $idx): array
     {
-        return [
-            ...TokenType::HAS_STATEMENT_WITH_OPTIONAL_BRACES,
-            ...TokenType::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES,
-        ];
+        return TokenTypeIndex::merge(
+            $idx->HasStatementWithOptionalBraces,
+            $idx->HasExpressionAndStatementWithOptionalBraces,
+        );
     }
 
     public function processTokens(array $tokens): void

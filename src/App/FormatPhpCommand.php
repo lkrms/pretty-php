@@ -601,7 +601,7 @@ Do not report files that require formatting.
 
 May be given multiple times for less verbose output:
 
-- `-qq`: do not print a summary of files formatted and replaced on exit.
+- `-qq`: do not print version information or provide a summary of files formatted and replaced on exit.
 - `-qqq`: suppress warnings.
 - `-qqqq`: suppress TTY-only progress updates.
 
@@ -964,6 +964,10 @@ EOF,
         if ($errors) {
             $errors = Arr::unique($errors);
             throw new CliInvalidArgumentsException(...$errors);
+        }
+
+        if ($this->Quiet < 2) {
+            $this->App->reportVersion();
         }
 
         if ($this->PrintConfig) {
@@ -1534,11 +1538,14 @@ EOF,
     private function doGetFormatter(): Formatter
     {
         $flags = 0;
+        if ($this->Debug) {
+            $flags |= FormatterFlag::DEBUG;
+            if ($this->LogProgress) {
+                $flags |= FormatterFlag::LOG_PROGRESS;
+            }
+        }
         if ($this->Quiet < 3) {
             $flags |= FormatterFlag::DETECT_PROBLEMS;
-        }
-        if ($this->LogProgress) {
-            $flags |= FormatterFlag::LOG_PROGRESS;
         }
 
         if ($this->Debug) {

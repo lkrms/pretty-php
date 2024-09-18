@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Support;
 
-use Lkrms\PrettyPHP\Catalog\TokenType as TT;
+use Lkrms\PrettyPHP\Catalog\TokenGroup as TG;
 use Lkrms\PrettyPHP\Contract\HasTokenIndex;
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasMutator;
@@ -545,6 +545,15 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $Attribute;
 
     /**
+     * T_ARRAY_CAST, T_BOOL_CAST, T_DOUBLE_CAST, T_INT_CAST, T_OBJECT_CAST,
+     * T_STRING_CAST, T_UNSET_CAST
+     *
+     * @readonly
+     * @var array<int,bool>
+     */
+    public array $Cast;
+
+    /**
      * T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR
      *
      * @readonly
@@ -745,13 +754,14 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     /**
      * T_AND, T_AND_EQUAL, T_AT, T_BOOLEAN_AND, T_BOOLEAN_OR, T_COALESCE,
      * T_COALESCE_EQUAL, T_COLON, T_CONCAT, T_CONCAT_EQUAL, T_DEC, T_DIV,
-     * T_DIV_EQUAL, T_DOUBLE_ARROW, T_EQUAL, T_GREATER, T_INC, T_INSTANCEOF,
-     * T_IS_EQUAL, T_IS_GREATER_OR_EQUAL, T_IS_IDENTICAL, T_IS_NOT_EQUAL,
-     * T_IS_NOT_IDENTICAL, T_IS_SMALLER_OR_EQUAL, T_LOGICAL_AND, T_LOGICAL_NOT,
-     * T_LOGICAL_OR, T_LOGICAL_XOR, T_MINUS, T_MINUS_EQUAL, T_MOD, T_MOD_EQUAL,
-     * T_MUL, T_MUL_EQUAL, T_NOT, T_OR, T_OR_EQUAL, T_PLUS, T_PLUS_EQUAL, T_POW,
-     * T_POW_EQUAL, T_QUESTION, T_SL, T_SL_EQUAL, T_SMALLER, T_SPACESHIP, T_SR,
-     * T_SR_EQUAL, T_XOR, T_XOR_EQUAL, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+     * T_DIV_EQUAL, T_DOLLAR, T_DOUBLE_ARROW, T_EQUAL, T_GREATER, T_INC,
+     * T_INSTANCEOF, T_IS_EQUAL, T_IS_GREATER_OR_EQUAL, T_IS_IDENTICAL,
+     * T_IS_NOT_EQUAL, T_IS_NOT_IDENTICAL, T_IS_SMALLER_OR_EQUAL, T_LOGICAL_AND,
+     * T_LOGICAL_NOT, T_LOGICAL_OR, T_LOGICAL_XOR, T_MINUS, T_MINUS_EQUAL,
+     * T_MOD, T_MOD_EQUAL, T_MUL, T_MUL_EQUAL, T_NOT, T_OR, T_OR_EQUAL, T_PLUS,
+     * T_PLUS_EQUAL, T_POW, T_POW_EQUAL, T_QUESTION, T_SL, T_SL_EQUAL,
+     * T_SMALLER, T_SPACESHIP, T_SR, T_SR_EQUAL, T_XOR, T_XOR_EQUAL,
+     * T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
      * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
      *
      * @readonly
@@ -955,7 +965,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
 
         $this->VarOrModifier = self::get(
             \T_VAR,
-            ...TT::KEYWORD_MODIFIER,
+            ...TG::KEYWORD_MODIFIER,
         );
 
         $this->Expandable = self::get(
@@ -974,11 +984,11 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
 
         $this->Movable = self::get(
             \T_CONCAT,
-            ...TT::OPERATOR_ASSIGNMENT_EXCEPT_EQUAL,
-            ...TT::OPERATOR_COMPARISON,
-            ...TT::OPERATOR_LOGICAL_EXCEPT_NOT,
-            ...TT::OPERATOR_ARITHMETIC,
-            ...TT::OPERATOR_BITWISE,
+            ...TG::OPERATOR_ASSIGNMENT_EXCEPT_EQUAL,
+            ...TG::OPERATOR_COMPARISON,
+            ...TG::OPERATOR_LOGICAL_EXCEPT_NOT,
+            ...TG::OPERATOR_ARITHMETIC,
+            ...TG::OPERATOR_BITWISE,
         );
 
         // Derived from operators in `$this->PreserveNewlineBefore` and
@@ -994,12 +1004,12 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             \T_NULLSAFE_OBJECT_OPERATOR,
             \T_OBJECT_OPERATOR,
             \T_SEMICOLON,
-            ...TT::OPERATOR_ARITHMETIC,
-            ...TT::OPERATOR_ASSIGNMENT,
-            ...TT::OPERATOR_BITWISE,
-            ...TT::OPERATOR_COMPARISON,
-            ...TT::OPERATOR_LOGICAL,
-            ...TT::OPERATOR_TERNARY,
+            ...TG::OPERATOR_ARITHMETIC,
+            ...TG::OPERATOR_ASSIGNMENT,
+            ...TG::OPERATOR_BITWISE,
+            ...TG::OPERATOR_COMPARISON,
+            ...TG::OPERATOR_LOGICAL,
+            ...TG::OPERATOR_TERNARY,
         );
 
         $this->Number = self::get(
@@ -1036,7 +1046,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             self::get(
                 \T_ATTRIBUTE_COMMENT,
                 \T_WHITESPACE,
-                ...TT::COMMENT,
+                ...TG::COMMENT,
             ),
         );
 
@@ -1070,7 +1080,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             \T_STATIC,
             \T_STRING,
             \T_VARIABLE,
-            ...TT::DECLARATION_EXCEPT_MULTI_PURPOSE,
+            ...TG::DECLARATION_EXCEPT_MULTI_PURPOSE,
         );
 
         $this->AddSpaceAfter = self::get(
@@ -1099,7 +1109,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             \T_WHILE,
             \T_YIELD,
             \T_YIELD_FROM,
-            ...TT::CAST,
+            ...TG::CAST,
         );
 
         $this->SuppressSpaceBefore = self::get(
@@ -1141,9 +1151,9 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             \T_NULLSAFE_OBJECT_OPERATOR,
             \T_OBJECT_OPERATOR,
             ...$preserveBlankBefore,
-            ...TT::OPERATOR_ARITHMETIC,
-            ...TT::OPERATOR_BITWISE,
-            ...TT::OPERATOR_TERNARY,
+            ...TG::OPERATOR_ARITHMETIC,
+            ...TG::OPERATOR_BITWISE,
+            ...TG::OPERATOR_TERNARY,
         );
 
         $this->PreserveNewlineAfter = self::get(
@@ -1161,9 +1171,9 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             \T_YIELD,
             \T_YIELD_FROM,
             ...$preserveBlankAfter,
-            ...TT::OPERATOR_ASSIGNMENT_EXCEPT_COALESCE,
-            ...TT::OPERATOR_COMPARISON_EXCEPT_COALESCE,
-            ...TT::OPERATOR_LOGICAL_EXCEPT_NOT,
+            ...TG::OPERATOR_ASSIGNMENT_EXCEPT_COALESCE,
+            ...TG::OPERATOR_COMPARISON_EXCEPT_COALESCE,
+            ...TG::OPERATOR_LOGICAL_EXCEPT_NOT,
         );
 
         $this->PreserveBlankBefore = self::get(
@@ -1182,8 +1192,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
 
         $expressionDelimiter = [
             \T_DOUBLE_ARROW,
-            ...TT::OPERATOR_ASSIGNMENT,
-            ...TT::OPERATOR_COMPARISON_EXCEPT_COALESCE,
+            ...TG::OPERATOR_ASSIGNMENT,
+            ...TG::OPERATOR_COMPARISON_EXCEPT_COALESCE,
         ];
 
         $this->ExpressionTerminator = self::get(
@@ -1199,16 +1209,16 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
 
         $this->ExpressionDelimiterExceptComparison = self::get(
             \T_DOUBLE_ARROW,
-            ...TT::OPERATOR_ASSIGNMENT,
+            ...TG::OPERATOR_ASSIGNMENT,
         );
 
         $this->FunctionIdentifier = self::get(
             \T_STRING,
-            ...TT::AMPERSAND,
+            ...TG::AMPERSAND,
         );
 
         $this->DereferenceableTerminator = self::get(
-            ...TT::DEREFERENCEABLE_END,
+            ...TG::DEREFERENCEABLE_END,
         );
 
         $this->SwitchCaseDelimiter = self::get(
@@ -1235,9 +1245,9 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             \T_UNSET,
             \T_USE,
             \T_VARIABLE,
-            ...TT::MAYBE_ANONYMOUS,
-            ...TT::DEREFERENCEABLE_SCALAR_END,
-            ...TT::NAME,
+            ...TG::MAYBE_ANONYMOUS,
+            ...TG::DEREFERENCEABLE_SCALAR_END,
+            ...TG::NAME,
         );
 
         $this->UnaryPredecessor = self::get(
@@ -1253,21 +1263,21 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             \T_DOUBLE_ARROW,
             \T_ELLIPSIS,
             \T_SEMICOLON,
-            ...TT::OPERATOR_ARITHMETIC,
-            ...TT::OPERATOR_ASSIGNMENT,
-            ...TT::OPERATOR_BITWISE,
-            ...TT::OPERATOR_COMPARISON,
-            ...TT::OPERATOR_LOGICAL,
-            ...TT::CAST,
-            ...TT::KEYWORD,
+            ...TG::OPERATOR_ARITHMETIC,
+            ...TG::OPERATOR_ASSIGNMENT,
+            ...TG::OPERATOR_BITWISE,
+            ...TG::OPERATOR_COMPARISON,
+            ...TG::OPERATOR_LOGICAL,
+            ...TG::CAST,
+            ...TG::KEYWORD,
         );
 
-        $this->AltSyntaxStart = self::get(...TT::ALT_SYNTAX_START);
-        $this->AltSyntaxContinue = self::get(...TT::ALT_SYNTAX_CONTINUE);
-        $this->AltSyntaxContinueWithExpression = self::get(...TT::ALT_SYNTAX_CONTINUE_WITH_EXPRESSION);
-        $this->AltSyntaxContinueWithoutExpression = self::get(...TT::ALT_SYNTAX_CONTINUE_WITHOUT_EXPRESSION);
-        $this->AltSyntaxEnd = self::get(...TT::ALT_SYNTAX_END);
-        $this->Ampersand = self::get(...TT::AMPERSAND);
+        $this->AltSyntaxStart = self::get(...TG::ALT_SYNTAX_START);
+        $this->AltSyntaxContinue = self::get(...TG::ALT_SYNTAX_CONTINUE);
+        $this->AltSyntaxContinueWithExpression = self::get(...TG::ALT_SYNTAX_CONTINUE_WITH_EXPRESSION);
+        $this->AltSyntaxContinueWithoutExpression = self::get(...TG::ALT_SYNTAX_CONTINUE_WITHOUT_EXPRESSION);
+        $this->AltSyntaxEnd = self::get(...TG::ALT_SYNTAX_END);
+        $this->Ampersand = self::get(...TG::AMPERSAND);
         $this->ClassOrFunction = self::get(
             \T_CLASS,
             \T_FUNCTION,
@@ -1287,54 +1297,55 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             \T_ATTRIBUTE,
             \T_ATTRIBUTE_COMMENT,
         );
-        $this->Chain = self::get(...TT::CHAIN);
-        $this->ChainPart = self::get(...TT::CHAIN_PART);
-        $this->ChainExpression = self::get(...TT::CHAIN_EXPRESSION);
-        $this->Comment = self::get(...TT::COMMENT);
-        $this->Declaration = self::get(...TT::DECLARATION);
-        $this->DeclarationExceptModifiers = self::get(...TT::DECLARATION_EXCEPT_MODIFIERS);
-        $this->DeclarationClass = self::get(...TT::DECLARATION_CLASS);
+        $this->Cast = self::get(...TG::CAST);
+        $this->Chain = self::get(...TG::CHAIN);
+        $this->ChainPart = self::get(...TG::CHAIN_PART);
+        $this->ChainExpression = self::get(...TG::CHAIN_EXPRESSION);
+        $this->Comment = self::get(...TG::COMMENT);
+        $this->Declaration = self::get(...TG::DECLARATION);
+        $this->DeclarationExceptModifiers = self::get(...TG::DECLARATION_EXCEPT_MODIFIERS);
+        $this->DeclarationClass = self::get(...TG::DECLARATION_CLASS);
         $this->DeclarationClassOrFunction = self::get(
             \T_FUNCTION,
-            ...TT::DECLARATION_CLASS,
+            ...TG::DECLARATION_CLASS,
         );
-        $this->DeclarationList = self::get(...TT::DECLARATION_LIST);
+        $this->DeclarationList = self::get(...TG::DECLARATION_LIST);
         $this->DeclarationPropertyOrVariable = self::get(
             \T_STATIC,
             \T_VAR,
-            ...TT::VISIBILITY_WITH_READONLY,
+            ...TG::VISIBILITY_WITH_READONLY,
         );
-        $this->DeclarationPart = self::get(...TT::DECLARATION_PART);
-        $this->DeclarationPartWithNew = self::get(...TT::DECLARATION_PART_WITH_NEW);
+        $this->DeclarationPart = self::get(...TG::DECLARATION_PART);
+        $this->DeclarationPartWithNew = self::get(...TG::DECLARATION_PART_WITH_NEW);
         $this->DeclarationPartWithNewAndBody = self::get(
             \T_OPEN_BRACE,
             \T_CLOSE_BRACE,
-            ...TT::DECLARATION_PART_WITH_NEW_AND_VALUE_TYPE,
+            ...TG::DECLARATION_PART_WITH_NEW_AND_VALUE_TYPE,
         );
-        $this->DeclarationTopLevel = self::get(...TT::DECLARATION_TOP_LEVEL);
-        $this->HasStatement = self::get(...TT::HAS_STATEMENT);
-        $this->HasStatementWithOptionalBraces = self::get(...TT::HAS_STATEMENT_WITH_OPTIONAL_BRACES);
-        $this->HasExpressionAndStatementWithOptionalBraces = self::get(...TT::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES);
-        $this->MaybeReserved = self::get(...TT::MAYBE_RESERVED);
-        $this->NotCode = self::get(...TT::NOT_CODE);
-        $this->Operator = self::get(...TT::OPERATOR_ALL);
-        $this->OperatorAssignment = self::get(...TT::OPERATOR_ASSIGNMENT);
-        $this->OperatorBooleanExceptNot = self::get(...TT::OPERATOR_BOOLEAN_EXCEPT_NOT);
-        $this->OperatorComparison = self::get(...TT::OPERATOR_COMPARISON_EXCEPT_COALESCE);
+        $this->DeclarationTopLevel = self::get(...TG::DECLARATION_TOP_LEVEL);
+        $this->HasStatement = self::get(...TG::HAS_STATEMENT);
+        $this->HasStatementWithOptionalBraces = self::get(...TG::HAS_STATEMENT_WITH_OPTIONAL_BRACES);
+        $this->HasExpressionAndStatementWithOptionalBraces = self::get(...TG::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES);
+        $this->MaybeReserved = self::get(...TG::MAYBE_RESERVED);
+        $this->NotCode = self::get(...TG::NOT_CODE);
+        $this->Operator = self::get(...TG::OPERATOR_ALL);
+        $this->OperatorAssignment = self::get(...TG::OPERATOR_ASSIGNMENT);
+        $this->OperatorBooleanExceptNot = self::get(...TG::OPERATOR_BOOLEAN_EXCEPT_NOT);
+        $this->OperatorComparison = self::get(...TG::OPERATOR_COMPARISON_EXCEPT_COALESCE);
         $this->OperatorUnary = self::get(
-            \T_NOT,
             \T_DOLLAR,
             \T_LOGICAL_NOT,
-            ...TT::OPERATOR_ERROR_CONTROL,
-            ...TT::OPERATOR_INCREMENT_DECREMENT,
+            \T_NOT,
+            ...TG::OPERATOR_ERROR_CONTROL,
+            ...TG::OPERATOR_INCREMENT_DECREMENT,
         );
-        $this->Return = self::get(...TT::RETURN);
-        $this->TypeDelimiter = self::get(...TT::TYPE_DELIMITER);
-        $this->ValueType = self::get(...TT::VALUE_TYPE);
-        $this->ValueTypeStart = self::get(...TT::VALUE_TYPE_START);
-        $this->VariableEnd = self::get(...TT::VARIABLE_END);
-        $this->Visibility = self::get(...TT::VISIBILITY);
-        $this->VisibilityWithReadonly = self::get(...TT::VISIBILITY_WITH_READONLY);
+        $this->Return = self::get(...TG::RETURN);
+        $this->TypeDelimiter = self::get(...TG::TYPE_DELIMITER);
+        $this->ValueType = self::get(...TG::VALUE_TYPE);
+        $this->ValueTypeStart = self::get(...TG::VALUE_TYPE_START);
+        $this->VariableEnd = self::get(...TG::VARIABLE_END);
+        $this->Visibility = self::get(...TG::VISIBILITY);
+        $this->VisibilityWithReadonly = self::get(...TG::VISIBILITY_WITH_READONLY);
         $this->Virtual = self::get(
             \T_END_ALT_SYNTAX,
             \T_NULL,
@@ -1365,9 +1376,9 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         $preserveBefore = self::merge(
             $this->_PreserveNewlineBefore,
             self::get(
-                ...TT::OPERATOR_ASSIGNMENT_EXCEPT_EQUAL,
-                ...TT::OPERATOR_COMPARISON,
-                ...TT::OPERATOR_LOGICAL_EXCEPT_NOT,
+                ...TG::OPERATOR_ASSIGNMENT_EXCEPT_EQUAL,
+                ...TG::OPERATOR_COMPARISON,
+                ...TG::OPERATOR_LOGICAL_EXCEPT_NOT,
             ),
         );
         $preserveAfter = self::merge(
@@ -1407,8 +1418,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
                 \T_COALESCE,
                 \T_COALESCE_EQUAL,
                 \T_CONCAT,
-                ...TT::OPERATOR_ARITHMETIC,
-                ...TT::OPERATOR_BITWISE,
+                ...TG::OPERATOR_ARITHMETIC,
+                ...TG::OPERATOR_BITWISE,
             ),
         );
         $preserveBefore = self::merge(

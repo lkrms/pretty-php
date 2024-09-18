@@ -4,10 +4,9 @@ namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 use Closure;
@@ -79,15 +78,17 @@ final class VerticalWhitespace implements TokenRule
         }
     }
 
-    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
+    public static function getTokenTypes(TokenTypeIndex $idx): array
     {
-        return [
-            \T_FOR,
-            \T_OPEN_BRACE,
-            \T_QUESTION,
-            ...TokenType::CHAIN,
-            ...TokenType::OPERATOR_BOOLEAN_EXCEPT_NOT,
-        ];
+        return TokenTypeIndex::merge(
+            TokenTypeIndex::get(
+                \T_FOR,
+                \T_OPEN_BRACE,
+                \T_QUESTION,
+            ),
+            $idx->Chain,
+            $idx->OperatorBooleanExceptNot,
+        );
     }
 
     /**

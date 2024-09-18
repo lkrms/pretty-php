@@ -24,100 +24,96 @@ final class HeredocIndentationTest extends TestCase
      */
     public static function outputProvider(): array
     {
-        $formatterB = Formatter::build();
+        $builder = Formatter::build();
 
         return [
             'NONE' => [
                 <<<'PHP'
 <?php
-$array = [
-    <<<EOF
-Fugiat magna laborum ut occaecat sit nostrud non eiusmod laboris nisi.
-EOF
+$foo = [
+    'bar' => <<<EOF
+Content
+EOF,
 ];
 
 PHP,
                 <<<'PHP'
 <?php
-$array = [
-<<<EOF
-Fugiat magna laborum ut occaecat sit nostrud non eiusmod laboris nisi.
-EOF
+$foo = [
+'bar' => <<<EOF
+Content
+EOF,
 ];
 PHP,
-                $formatterB
-                    ->heredocIndent(HeredocIndent::NONE),
+                $builder->heredocIndent(HeredocIndent::NONE),
             ],
             'LINE' => [
                 <<<'PHP'
 <?php
-$getString = function () {
-    return <<<EOF
-    Incididunt in sint sit aliqua pariatur ad.
-    EOF;
-};
+$foo = [
+    'bar' => <<<EOF
+    Content
+    EOF,
+];
 
 PHP,
                 <<<'PHP'
 <?php
-$getString = function () {
-return <<<EOF
-Incididunt in sint sit aliqua pariatur ad.
-EOF;
-};
+$foo = [
+'bar' => <<<EOF
+Content
+EOF,
+];
 PHP,
-                $formatterB
-                    ->heredocIndent(HeredocIndent::LINE),
+                $builder->heredocIndent(HeredocIndent::LINE),
             ],
             'MIXED' => [
                 <<<'PHP'
 <?php
-$string1 = <<<EOF
-    Enim Lorem nostrud pariatur aliqua.
+$foo = <<<EOF
+    Content
     EOF;
-$string2 =
+$bar =
     <<<EOF
-    Aliquip mollit elit consectetur nulla laborum minim amet.
+    Content
     EOF;
 
 PHP,
                 <<<'PHP'
 <?php
-$string1 = <<<EOF
-Enim Lorem nostrud pariatur aliqua.
+$foo = <<<EOF
+Content
 EOF;
-$string2 =
+$bar =
 <<<EOF
-Aliquip mollit elit consectetur nulla laborum minim amet.
+Content
 EOF;
 PHP,
-                $formatterB
-                    ->heredocIndent(HeredocIndent::MIXED),
+                $builder->heredocIndent(HeredocIndent::MIXED),
             ],
             'HANGING' => [
                 <<<'PHP'
 <?php
-$string1 = <<<EOF
-    Enim Lorem nostrud pariatur aliqua.
+$foo = <<<EOF
+    Content
     EOF;
-$string2 =
+$bar =
     <<<EOF
-        Aliquip mollit elit consectetur nulla laborum minim amet.
+        Content
         EOF;
 
 PHP,
                 <<<'PHP'
 <?php
-$string1 = <<<EOF
-Enim Lorem nostrud pariatur aliqua.
+$foo = <<<EOF
+Content
 EOF;
-$string2 =
+$bar =
 <<<EOF
-Aliquip mollit elit consectetur nulla laborum minim amet.
+Content
 EOF;
 PHP,
-                $formatterB
-                    ->heredocIndent(HeredocIndent::HANGING),
+                $builder->heredocIndent(HeredocIndent::HANGING),
             ],
         ];
     }

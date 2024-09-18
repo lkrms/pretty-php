@@ -4,8 +4,8 @@ namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Concern\RuleTrait;
 use Lkrms\PrettyPHP\Contract\Rule;
-use Lkrms\PrettyPHP\Rule\Concern\RuleTrait;
 use Salient\Utility\Regex;
 
 /**

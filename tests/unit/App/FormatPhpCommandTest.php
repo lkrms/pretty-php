@@ -885,7 +885,8 @@ EOF,
             if ($messages !== null) {
                 $this->assertSameMessages(
                     $messages,
-                    $this->ConsoleTarget->getMessages()
+                    $this->ConsoleTarget->getMessages(),
+                    !$exitStatus || $exitStatus === 4 || $exitStatus === 8,
                 );
             }
         }
@@ -895,8 +896,22 @@ EOF,
      * @param array<array{Level::*,string,2?:array<string,mixed>}> $expected
      * @param array<array{Level::*,string,2?:array<string,mixed>}> $actual
      */
-    private function assertSameMessages(array $expected, array $actual): void
-    {
+    private function assertSameMessages(
+        array $expected,
+        array $actual,
+        bool $filterVersion
+    ): void {
+        if ($filterVersion) {
+            foreach ($actual as $message) {
+                if (!(
+                    $message[0] === Level::INFO
+                    && Regex::match('/^pretty-php /', $message[1])
+                )) {
+                    $filtered[] = $message;
+                }
+            }
+            $actual = $filtered ?? [];
+        }
         foreach ($expected as $i => &$message) {
             $message[1] = Str::eolFromNative($message[1]);
             if (isset($actual[$i][1])) {

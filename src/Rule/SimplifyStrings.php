@@ -2,9 +2,9 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Exception\RuleException;
-use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Salient\Utility\Regex;
 
@@ -34,11 +34,11 @@ final class SimplifyStrings implements TokenRule
         }
     }
 
-    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
+    public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return [
-            \T_CONSTANT_ENCAPSED_STRING,
-            \T_ENCAPSED_AND_WHITESPACE,
+            \T_CONSTANT_ENCAPSED_STRING => true,
+            \T_ENCAPSED_AND_WHITESPACE => true,
         ];
     }
 

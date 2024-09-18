@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Rule\Concern;
+namespace Lkrms\PrettyPHP\Concern;
 
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
@@ -12,15 +12,24 @@ trait TokenRuleTrait
 {
     use RuleTrait;
 
-    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
+    /**
+     * @inheritDoc
+     */
+    public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return ['*'];
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function getRequiresSortedTokens(): bool
     {
         return true;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function beforeRender(array $tokens): void {}
 }
