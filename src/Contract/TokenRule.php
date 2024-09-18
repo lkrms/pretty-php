@@ -19,7 +19,7 @@ interface TokenRule extends Rule
      *
      * @return int[]|array<int,bool>|array{'*'}
      */
-    public static function getTokenTypes(TokenTypeIndex $typeIndex): array;
+    public static function getTokenTypes(TokenTypeIndex $idx): array;
 
     /**
      * Return true if tokens must be passed to the rule in document order

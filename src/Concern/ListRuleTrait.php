@@ -11,5 +11,8 @@ trait ListRuleTrait
 {
     use RuleTrait;
 
+    /**
+     * @inheritDoc
+     */
     public function beforeRender(array $tokens): void {}
 }

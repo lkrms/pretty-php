@@ -11,5 +11,8 @@ trait BlockRuleTrait
 {
     use RuleTrait;
 
+    /**
+     * @inheritDoc
+     */
     public function beforeRender(array $tokens): void {}
 }

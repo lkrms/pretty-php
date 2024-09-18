@@ -34,9 +34,9 @@ final class AlignChains implements TokenRule
         }
     }
 
-    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
+    public static function getTokenTypes(TokenTypeIndex $idx): array
     {
-        return $typeIndex->Chain;
+        return $idx->Chain;
     }
 
     public function processTokens(array $tokens): void

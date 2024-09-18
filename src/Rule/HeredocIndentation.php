@@ -38,7 +38,7 @@ final class HeredocIndentation implements TokenRule
         }
     }
 
-    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
+    public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return [
             \T_START_HEREDOC,

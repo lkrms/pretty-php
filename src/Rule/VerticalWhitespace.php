@@ -78,7 +78,7 @@ final class VerticalWhitespace implements TokenRule
         }
     }
 
-    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
+    public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return TokenTypeIndex::merge(
             TokenTypeIndex::get(
@@ -86,8 +86,8 @@ final class VerticalWhitespace implements TokenRule
                 \T_OPEN_BRACE,
                 \T_QUESTION,
             ),
-            $typeIndex->Chain,
-            $typeIndex->OperatorBooleanExceptNot,
+            $idx->Chain,
+            $idx->OperatorBooleanExceptNot,
         );
     }
 

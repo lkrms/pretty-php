@@ -27,9 +27,9 @@ final class BlankBeforeReturn implements TokenRule
         }
     }
 
-    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
+    public static function getTokenTypes(TokenTypeIndex $idx): array
     {
-        return $typeIndex->Return;
+        return $idx->Return;
     }
 
     public function processTokens(array $tokens): void

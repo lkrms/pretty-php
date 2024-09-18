@@ -34,7 +34,7 @@ final class SimplifyStrings implements TokenRule
         }
     }
 
-    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
+    public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return [
             \T_CONSTANT_ENCAPSED_STRING,

@@ -61,7 +61,7 @@ final class WordPress implements Preset, TokenRule
         }
     }
 
-    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
+    public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return [
             \T_COMMENT,

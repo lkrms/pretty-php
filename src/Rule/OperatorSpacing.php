@@ -41,9 +41,9 @@ final class OperatorSpacing implements TokenRule
         }
     }
 
-    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
+    public static function getTokenTypes(TokenTypeIndex $idx): array
     {
-        return $typeIndex->Operator;
+        return $idx->Operator;
     }
 
     public function processTokens(array $tokens): void

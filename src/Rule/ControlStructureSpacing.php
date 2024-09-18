@@ -31,11 +31,11 @@ final class ControlStructureSpacing implements TokenRule
         }
     }
 
-    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
+    public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return TokenTypeIndex::merge(
-            $typeIndex->HasStatementWithOptionalBraces,
-            $typeIndex->HasExpressionAndStatementWithOptionalBraces,
+            $idx->HasStatementWithOptionalBraces,
+            $idx->HasExpressionAndStatementWithOptionalBraces,
         );
     }
 

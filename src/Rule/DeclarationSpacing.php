@@ -65,11 +65,11 @@ final class DeclarationSpacing implements TokenRule
     /**
      * @inheritDoc
      */
-    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
+    public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return TokenTypeIndex::merge(
-            $typeIndex->Attribute,
-            $typeIndex->Declaration,
+            $idx->Attribute,
+            $idx->Declaration,
         );
     }
 

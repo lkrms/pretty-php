@@ -55,7 +55,7 @@ final class StandardWhitespace implements TokenRule
         }
     }
 
-    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
+    public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return TokenTypeIndex::merge(
             TokenTypeIndex::get(
@@ -68,13 +68,13 @@ final class StandardWhitespace implements TokenRule
                 \T_ATTRIBUTE_COMMENT,
                 \T_START_HEREDOC,
             ),
-            $typeIndex->OpenBracket,
-            $typeIndex->CloseBracketOrEndAltSyntax,
-            $typeIndex->AddSpaceAround,
-            $typeIndex->AddSpaceBefore,
-            $typeIndex->AddSpaceAfter,
-            $typeIndex->SuppressSpaceBefore,
-            $typeIndex->SuppressSpaceAfter,
+            $idx->OpenBracket,
+            $idx->CloseBracketOrEndAltSyntax,
+            $idx->AddSpaceAround,
+            $idx->AddSpaceBefore,
+            $idx->AddSpaceAfter,
+            $idx->SuppressSpaceBefore,
+            $idx->SuppressSpaceAfter,
         );
     }
 

@@ -12,15 +12,24 @@ trait TokenRuleTrait
 {
     use RuleTrait;
 
-    public static function getTokenTypes(TokenTypeIndex $typeIndex): array
+    /**
+     * @inheritDoc
+     */
+    public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return ['*'];
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function getRequiresSortedTokens(): bool
     {
         return true;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function beforeRender(array $tokens): void {}
 }
