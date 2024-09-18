@@ -11,7 +11,7 @@ use Lkrms\PrettyPHP\Token\Token;
  *
  * @api
  */
-final class TrimCasts implements Filter
+final class NormaliseCasts implements Filter
 {
     use ExtensionTrait;
 

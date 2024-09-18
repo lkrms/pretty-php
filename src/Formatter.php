@@ -21,13 +21,13 @@ use Lkrms\PrettyPHP\Filter\CollectColumn;
 use Lkrms\PrettyPHP\Filter\EvaluateNumbers;
 use Lkrms\PrettyPHP\Filter\EvaluateStrings;
 use Lkrms\PrettyPHP\Filter\MoveComments;
+use Lkrms\PrettyPHP\Filter\NormaliseCasts;
 use Lkrms\PrettyPHP\Filter\NormaliseNames;
 use Lkrms\PrettyPHP\Filter\RemoveEmptyDocBlocks;
 use Lkrms\PrettyPHP\Filter\RemoveEmptyTokens;
 use Lkrms\PrettyPHP\Filter\RemoveHeredocIndentation;
 use Lkrms\PrettyPHP\Filter\RemoveWhitespace;
 use Lkrms\PrettyPHP\Filter\SortImports;
-use Lkrms\PrettyPHP\Filter\TrimCasts;
 use Lkrms\PrettyPHP\Filter\TrimOpenTags;
 use Lkrms\PrettyPHP\Filter\TruncateComments;
 use Lkrms\PrettyPHP\Rule\Preset\Drupal;
@@ -352,7 +352,7 @@ final class Formatter implements Buildable, Immutable
         RemoveEmptyDocBlocks::class,
         SortImports::class,
         MoveComments::class,
-        TrimCasts::class,
+        NormaliseCasts::class,
     ];
 
     /**
@@ -362,7 +362,7 @@ final class Formatter implements Buildable, Immutable
         RemoveEmptyDocBlocks::class,
         SortImports::class,
         MoveComments::class,
-        TrimCasts::class,
+        NormaliseCasts::class,
     ];
 
     /**
