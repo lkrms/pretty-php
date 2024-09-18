@@ -7,7 +7,7 @@ namespace Lkrms\PrettyPHP\Catalog;
  *
  * @api
  */
-interface TokenType
+interface TokenGroup
 {
     public const NOT_CODE = [
         \T_INLINE_HTML,
@@ -24,6 +24,7 @@ interface TokenType
     ];
 
     public const OPERATOR_ALL = [
+        \T_DOLLAR,
         ...self::OPERATOR_ARITHMETIC,
         ...self::OPERATOR_ASSIGNMENT,
         ...self::OPERATOR_BITWISE,

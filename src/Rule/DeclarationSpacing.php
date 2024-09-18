@@ -4,7 +4,6 @@ namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Filter\SortImports;
@@ -68,11 +67,10 @@ final class DeclarationSpacing implements TokenRule
      */
     public static function getTokenTypes(TokenTypeIndex $typeIndex): array
     {
-        return [
-            \T_ATTRIBUTE,
-            \T_ATTRIBUTE_COMMENT,
-            ...TokenType::DECLARATION,
-        ];
+        return TokenTypeIndex::merge(
+            $typeIndex->Attribute,
+            $typeIndex->Declaration,
+        );
     }
 
     /**

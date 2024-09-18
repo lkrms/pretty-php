@@ -2,17 +2,17 @@
 
 namespace Lkrms\PrettyPHP\Tests\Catalog;
 
-use Lkrms\PrettyPHP\Catalog\TokenType;
+use Lkrms\PrettyPHP\Catalog\TokenGroup;
 use Lkrms\PrettyPHP\Tests\TestCase;
 use Salient\Utility\Arr;
 use Generator;
 use ReflectionClass;
 
-final class TokenTypeTest extends TestCase
+final class TokenGroupTest extends TestCase
 {
     public function testValues(): void
     {
-        $constants = (new ReflectionClass(TokenType::class))->getConstants();
+        $constants = (new ReflectionClass(TokenGroup::class))->getConstants();
         foreach ($constants as $name => $value) {
             if (is_array($value)) {
                 sort($value);
@@ -34,7 +34,7 @@ final class TokenTypeTest extends TestCase
         }
         $this->assertEmpty($notUnique, sprintf(
             '%s constants do not have unique values: %s',
-            TokenType::class,
+            TokenGroup::class,
             implode('; ', $notUnique),
         ));
     }
@@ -57,7 +57,7 @@ final class TokenTypeTest extends TestCase
      */
     public static function uniquenessProvider(): Generator
     {
-        $constants = (new ReflectionClass(TokenType::class))->getConstants();
+        $constants = (new ReflectionClass(TokenGroup::class))->getConstants();
         foreach ($constants as $name => $value) {
             if (is_array($value)) {
                 yield $name => [$value];

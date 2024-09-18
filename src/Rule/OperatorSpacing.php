@@ -4,7 +4,6 @@ namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
@@ -44,10 +43,7 @@ final class OperatorSpacing implements TokenRule
 
     public static function getTokenTypes(TokenTypeIndex $typeIndex): array
     {
-        return [
-            \T_DOLLAR,
-            ...TokenType::OPERATOR_ALL,
-        ];
+        return $typeIndex->Operator;
     }
 
     public function processTokens(array $tokens): void

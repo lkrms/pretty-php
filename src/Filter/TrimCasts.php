@@ -2,14 +2,12 @@
 
 namespace Lkrms\PrettyPHP\Filter;
 
-use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 
 /**
- * Remove whitespace inside cast operators
+ * Normalise cast operators
  *
  * @api
  */
@@ -27,26 +25,13 @@ final class TrimCasts implements Filter
         \T_UNSET_CAST => '(unset)',
     ];
 
-    /** @var array<int,bool> */
-    private array $CastIndex;
-
-    /**
-     * @inheritDoc
-     */
-    public function boot(): void
-    {
-        $this->CastIndex = TokenTypeIndex::get(
-            ...TokenType::CAST,
-        );
-    }
-
     /**
      * @inheritDoc
      */
     public function filterTokens(array $tokens): array
     {
         foreach ($tokens as $token) {
-            if ($this->CastIndex[$token->id]) {
+            if ($this->Idx->Cast[$token->id]) {
                 $text = self::CAST_TEXT[$token->id];
                 if ($text !== $token->text) {
                     if ($token instanceof Token) {

@@ -4,7 +4,6 @@ namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
-use Lkrms\PrettyPHP\Catalog\TokenType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Rule\Concern\TokenRuleTrait;
@@ -49,7 +48,7 @@ final class PlaceComments implements TokenRule
 
     public static function getTokenTypes(TokenTypeIndex $typeIndex): array
     {
-        return TokenType::COMMENT;
+        return $typeIndex->Comment;
     }
 
     public function processTokens(array $tokens): void
