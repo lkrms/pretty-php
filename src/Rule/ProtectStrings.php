@@ -30,9 +30,9 @@ final class ProtectStrings implements TokenRule
     public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return [
-            \T_DOUBLE_QUOTE,
-            \T_START_HEREDOC,
-            \T_BACKTICK,
+            \T_DOUBLE_QUOTE => true,
+            \T_START_HEREDOC => true,
+            \T_BACKTICK => true,
         ];
     }
 

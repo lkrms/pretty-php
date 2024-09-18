@@ -39,7 +39,9 @@ final class AlignArrowFunctions implements TokenRule
      */
     public static function getTokenTypes(TokenTypeIndex $idx): array
     {
-        return [\T_FN];
+        return [
+            \T_FN => true,
+        ];
     }
 
     /**

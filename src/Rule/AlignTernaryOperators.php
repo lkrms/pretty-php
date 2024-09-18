@@ -35,8 +35,8 @@ final class AlignTernaryOperators implements TokenRule
     public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return [
-            \T_QUESTION,
-            \T_COALESCE,
+            \T_QUESTION => true,
+            \T_COALESCE => true,
         ];
     }
 

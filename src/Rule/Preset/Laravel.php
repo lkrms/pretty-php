@@ -50,9 +50,9 @@ final class Laravel implements Preset, TokenRule
     public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return [
-            \T_LOGICAL_NOT,
-            \T_CONCAT,
-            \T_FN,
+            \T_LOGICAL_NOT => true,
+            \T_CONCAT => true,
+            \T_FN => true,
         ];
     }
 

@@ -637,28 +637,10 @@ final class Formatter implements Buildable, Immutable
         $i = 0;
         foreach ($rules as $rule) {
             if (is_a($rule, TokenRule::class, true)) {
-                /** @var int[]|array<int,bool>|array{'*'} */
+                /** @var array<int,bool>|array{'*'} */
                 $types = $rule::getTokenTypes($this->TokenTypeIndex);
-                $first = Arr::first($types);
-                if (is_bool($first)) {
-                    // Reduce an index to entries with a value of `true`
-                    $index = $types;
-                    $types = [];
-                    /** @var int $type */
-                    foreach ($index as $type => $value) {
-                        if ($value) {
-                            $types[$type] = true;
-                        }
-                    }
-                } elseif (is_int($first)) {
-                    // Convert a list of types to an index
-                    /** @var array<int,true> */
-                    $types = array_fill_keys($types, true);
-                } elseif ($types !== ['*']) {
-                    throw new LogicException(sprintf(
-                        'Invalid return value: %s::getTokenTypes()',
-                        $rule,
-                    ));
+                if ($types !== ['*']) {
+                    $types = array_filter($types);
                 }
                 $tokenTypes[$rule] = $types;
                 $mainLoop[$rule . '#token'] = [$rule, TokenRule::PROCESS_TOKENS, $i];

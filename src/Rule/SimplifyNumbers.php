@@ -30,8 +30,8 @@ final class SimplifyNumbers implements TokenRule
     public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return [
-            \T_LNUMBER,
-            \T_DNUMBER,
+            \T_LNUMBER => true,
+            \T_DNUMBER => true,
         ];
     }
 

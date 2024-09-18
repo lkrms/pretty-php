@@ -37,8 +37,8 @@ final class SimplifyStrings implements TokenRule
     public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return [
-            \T_CONSTANT_ENCAPSED_STRING,
-            \T_ENCAPSED_AND_WHITESPACE,
+            \T_CONSTANT_ENCAPSED_STRING => true,
+            \T_ENCAPSED_AND_WHITESPACE => true,
         ];
     }
 

@@ -63,8 +63,8 @@ final class Symfony implements Preset, TokenRule, ListRule
     public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return [
-            \T_CONCAT,
-            \T_FN,
+            \T_CONCAT => true,
+            \T_FN => true,
         ];
     }
 

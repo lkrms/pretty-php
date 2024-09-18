@@ -64,14 +64,14 @@ final class WordPress implements Preset, TokenRule
     public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return [
-            \T_COMMENT,
-            \T_DOC_COMMENT,
-            \T_COLON,
-            \T_LOGICAL_NOT,
-            \T_OPEN_BRACE,
-            \T_CLOSE_BRACE,
-            \T_OPEN_BRACKET,
-            \T_OPEN_PARENTHESIS,
+            \T_COMMENT => true,
+            \T_DOC_COMMENT => true,
+            \T_COLON => true,
+            \T_LOGICAL_NOT => true,
+            \T_OPEN_BRACE => true,
+            \T_CLOSE_BRACE => true,
+            \T_OPEN_BRACKET => true,
+            \T_OPEN_PARENTHESIS => true,
         ];
     }
 

@@ -53,17 +53,17 @@ final class Drupal implements Preset, TokenRule
     {
         return [
             // --
-            \T_CLASS,
-            \T_ENUM,
-            \T_INTERFACE,
-            \T_TRAIT,
+            \T_CLASS => true,
+            \T_ENUM => true,
+            \T_INTERFACE => true,
+            \T_TRAIT => true,
             // --
-            \T_DOC_COMMENT,
+            \T_DOC_COMMENT => true,
             // --
-            \T_CATCH,
-            \T_ELSE,
-            \T_ELSEIF,
-            \T_FINALLY,
+            \T_CATCH => true,
+            \T_ELSE => true,
+            \T_ELSEIF => true,
+            \T_FINALLY => true,
         ];
     }
 

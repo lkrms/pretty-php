@@ -29,9 +29,9 @@ final class SwitchIndentation implements TokenRule
     public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return [
-            \T_SWITCH,
-            \T_CASE,
-            \T_DEFAULT,
+            \T_SWITCH => true,
+            \T_CASE => true,
+            \T_DEFAULT => true,
         ];
     }
 

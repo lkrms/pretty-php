@@ -55,8 +55,8 @@ final class PlaceBraces implements TokenRule
     public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return [
-            \T_OPEN_BRACE,
-            \T_CLOSE_BRACE,
+            \T_OPEN_BRACE => true,
+            \T_CLOSE_BRACE => true,
         ];
     }
 
