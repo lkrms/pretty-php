@@ -1,10 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Rule\Concern;
+namespace Lkrms\PrettyPHP\Concern;
 
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
-use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Rule;
 use Lkrms\PrettyPHP\Token\Token;
 

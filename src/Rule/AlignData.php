@@ -4,8 +4,8 @@ namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
+use Lkrms\PrettyPHP\Concern\BlockRuleTrait;
 use Lkrms\PrettyPHP\Contract\BlockRule;
-use Lkrms\PrettyPHP\Rule\Concern\BlockRuleTrait;
 use Lkrms\PrettyPHP\Token\Token;
 
 /**

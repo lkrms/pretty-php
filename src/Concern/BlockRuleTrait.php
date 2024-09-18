@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Rule\Concern;
+namespace Lkrms\PrettyPHP\Concern;
 
 use Lkrms\PrettyPHP\Contract\BlockRule;
 
