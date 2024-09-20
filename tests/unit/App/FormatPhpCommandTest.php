@@ -902,11 +902,9 @@ EOF,
         bool $filterVersion
     ): void {
         if ($filterVersion) {
+            $version = $this->App->getVersionString();
             foreach ($actual as $message) {
-                if (!(
-                    $message[0] === Level::INFO
-                    && Regex::match('/^pretty-php /', $message[1])
-                )) {
+                if ($message !== [Level::INFO, $version]) {
                     $filtered[] = $message;
                 }
             }

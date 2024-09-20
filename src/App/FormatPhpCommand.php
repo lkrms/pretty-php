@@ -1511,7 +1511,7 @@ EOF,
         if ($configFile !== null) {
             foreach ($values as &$value) {
                 if (substr($value, 0, 2) === '--') {
-                    $value = Str::toCamelCase($value);
+                    $value = Str::camel($value);
                 }
             }
             $format .= ' in %s';
