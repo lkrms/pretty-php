@@ -5,7 +5,7 @@ namespace Lkrms\PrettyPHP\Contract;
 use Lkrms\PrettyPHP\Formatter;
 
 /**
- * Base interface for formatter extensions
+ * @api
  */
 interface Extension
 {

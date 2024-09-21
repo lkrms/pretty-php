@@ -3,21 +3,22 @@
 namespace Lkrms\PrettyPHP\Contract;
 
 use Lkrms\PrettyPHP\Support\TokenCollection;
-use Lkrms\PrettyPHP\Token\Token;
 
+/**
+ * @api
+ */
 interface BlockRule extends Rule
 {
     public const PROCESS_BLOCK = 'processBlock';
 
     /**
-     * Apply the rule to a code block
+     * Apply the rule to the given code block
      *
-     * An array of one or more {@see TokenCollection}s, each representing a line
-     * with one or more {@see Token}s, is passed to
-     * {@see BlockRule::processBlock()} for every block of consecutive non-empty
-     * lines in the output file.
+     * An array of {@see TokenCollection} objects, each representing a line with
+     * code and/or comment tokens, is passed to this method for each block of
+     * non-empty output lines.
      *
-     * @param TokenCollection[] $block
+     * @param TokenCollection[] $lines
      */
-    public function processBlock(array $block): void;
+    public function processBlock(array $lines): void;
 }

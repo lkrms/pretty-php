@@ -48,9 +48,9 @@ final class AlignData implements BlockRule
         }
     }
 
-    public function processBlock(array $block): void
+    public function processBlock(array $lines): void
     {
-        if (($blockLines = count($block)) < 2) {
+        if (($blockLines = count($lines)) < 2) {
             return;
         }
 
@@ -98,7 +98,7 @@ final class AlignData implements BlockRule
                 $this->TokenData[$token->Index] = $data;
             };
 
-        foreach ($block as $line => $tokens) {
+        foreach ($lines as $line => $tokens) {
             foreach ($tokens as $token) {
                 /** @var Token $token for Intelephense */
                 if ($token->hasNewlineBefore()) {
@@ -161,8 +161,8 @@ final class AlignData implements BlockRule
 
         /** @var string[] */
         $runPrevTypes = null;
-        foreach ($ctxIdx as $context => $lines) {
-            if (count($lines) < 2) {
+        foreach ($ctxIdx as $context => $ctxLines) {
+            if (count($ctxLines) < 2) {
                 continue;
             }
             [$type, $brackets] = explode("\0", $context, 3);
@@ -170,7 +170,7 @@ final class AlignData implements BlockRule
             for ($i = 0; $i < $ctxCounts[$context]; $i++) {
                 /** @var array<int,Token> */
                 $run = [];
-                foreach ($lines as $line => $tokens) {
+                foreach ($ctxLines as $line => $tokens) {
                     if (!($token = $tokens[$i] ?? null)) {
                         $collectRun();
                         continue;
@@ -195,10 +195,10 @@ final class AlignData implements BlockRule
                             // higher effective indentation level than the
                             // aligned tokens (enforced in callback)
                             || (($this->Formatter->RelaxAlignmentCriteria || $type !== '=')
-                                && $block[$line - 1][0]->Index
+                                && $lines[$line - 1][0]->Index
                                     <= $lastToken->NextCode->pragmaticEndOfExpression()->Index)
                             || ($this->Formatter->RelaxAlignmentCriteria
-                                && $block[$line - 1][0]->PrevCode === $block[$line][0]->PrevCode)) {
+                                && $lines[$line - 1][0]->PrevCode === $lines[$line][0]->PrevCode)) {
                             $run[$line] = $token;
                             continue;
                         }
@@ -232,10 +232,10 @@ final class AlignData implements BlockRule
                 }
                 if ($prev && $line - $prev > 1) {
                     for ($i = $prev + 1; $i < $line; $i++) {
-                        $innerLines[$prev][] = $block[$i][0];
+                        $innerLines[$prev][] = $lines[$i][0];
                     }
                 }
-                $token1 = $block[$line][0];
+                $token1 = $lines[$line][0];
                 $group[$line] = [$token1, $token2];
                 $prev = $line;
             }
@@ -244,7 +244,7 @@ final class AlignData implements BlockRule
             while (++$line < $blockLines
                     && ($current = $current->endOfLine()->Next)
                     && $current->Index <= $end->Index) {
-                $innerLines[$prev][] = $block[$line][0];
+                $innerLines[$prev][] = $lines[$line][0];
             }
             $action = $type === ','
                 ? self::ALIGN_DATA
