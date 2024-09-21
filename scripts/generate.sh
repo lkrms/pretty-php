@@ -18,6 +18,7 @@ function usage() {
     fi <<EOF
 usage: ${0##*/}                        generate everything
        ${0##*/} --assets               generate code and documentation
+       ${0##*/} --check                check code and documentation
        ${0##*/} --fixtures             generate test fixtures
        ${0##*/} [--fixtures] phpXY...  use PHP versions to generate fixtures${1:+
 }
@@ -29,6 +30,20 @@ EOF
 function generate() {
     local FILE=$1
     shift
+    if ((CHECK)); then
+        if [[ ! -f $FILE ]]; then
+            printf '==> would create %s\n' "$FILE"
+            STATUS=1
+            return
+        fi
+        if ! diff --unified --label "$FILE" --label "$FILE" --color=always "$FILE" <("$@"); then
+            printf '==> would replace %s\n' "$FILE"
+            STATUS=1
+        else
+            printf '==> nothing to do: %s\n' "$FILE"
+        fi
+        return
+    fi
     printf '==> generating %s\n' "$FILE"
     "$@" >"$FILE"
 }
@@ -37,7 +52,9 @@ function generate() {
     die "must run from root of package folder"
 
 ASSETS=1
+CHECK=0
 FIXTURES=1
+STATUS=0
 if [[ ${1-} == -* ]]; then
     ASSETS=0
     FIXTURES=0
@@ -47,8 +64,14 @@ while [[ ${1-} == -* ]]; do
     --assets)
         ASSETS=1
         ;;
+    --check)
+        ASSETS=1
+        CHECK=1
+        FIXTURES=0
+        ;;
     --fixtures)
         FIXTURES=1
+        CHECK=0
         ;;
     -h | --help)
         usage
@@ -60,9 +83,9 @@ while [[ ${1-} == -* ]]; do
     shift
 done
 
-(($#)) || set -- php83 php84 php82 php81 php80 php74
+if ((FIXTURES)); then (
+    (($#)) || set -- php83 php84 php82 php81 php80 php74
 
-if ((FIXTURES)); then
     for PHP in "$@"; do
         type -P "$PHP" >/dev/null ||
             die "command not found: $PHP"
@@ -80,12 +103,24 @@ if ((FIXTURES)); then
             "$1" -dshort_open_tag=on bin/pretty-php --no-config --preset "$PRESET" --output "${FILE%.in}.out" "$FILE"
         done
     done
-fi
+); fi
 
 if ((ASSETS)); then
+    (($#)) || set -- php
+
     # yes = collapse options in synopsis to "[options]"
     generate docs/Usage.md "$1" bin/pretty-php _md yes
     generate resources/prettyphp-schema.json "$1" bin/pretty-php _json_schema "JSON schema for pretty-php configuration files"
 
-    "$1" vendor/bin/sli generate builder --forward=format,with,withExtensions,withPsr12,withoutExtensions --force 'Lkrms\PrettyPHP\Formatter'
+    if ((CHECK)); then
+        unset FORCE
+    else
+        FORCE=
+    fi
+
+    "$1" vendor/bin/sli generate builder \
+        --forward=format,with,withExtensions,withPsr12,withoutExtensions \
+        ${FORCE+--force} 'Lkrms\PrettyPHP\Formatter' || STATUS=$?
+
+    exit "$STATUS"
 fi

@@ -487,7 +487,7 @@ final class Formatter implements Buildable, Immutable
      * @phpstan-param 2|4|8 $tabSize
      * @param array<class-string<Extension>> $disable Non-mandatory extensions to disable
      * @param array<class-string<Extension>> $enable Optional extensions to enable
-     * @param int-mask-of<FormatterFlag::*> $flags Debugging flags
+     * @param int-mask-of<FormatterFlag::*> $flags
      * @param TokenTypeIndex|null $tokenTypeIndex Provide a customised token type index
      * @param HeredocIndent::* $heredocIndent
      * @param ImportSortOrder::* $importSortOrder
@@ -709,26 +709,14 @@ final class Formatter implements Buildable, Immutable
     }
 
     /**
-     * @internal
+     * Get an instance with the given setting enabled or disabled
      *
-     * @param mixed $value
+     * @param ("IncreaseIndentBetweenUnenclosedTags"|"RelaxAlignmentCriteria"|"NewlineBeforeFnDoubleArrows"|"AlignFirstCallInChain") $property
+     * @param bool $value
      * @return static
      */
     public function with(string $property, $value): self
     {
-        if (!isset([
-            'IncreaseIndentBetweenUnenclosedTags' => true,
-            'RelaxAlignmentCriteria' => true,
-            'NewlineBeforeFnDoubleArrows' => true,
-            'AlignFirstCallInChain' => true,
-        ][$property])) {
-            // @codeCoverageIgnoreStart
-            throw new InvalidArgumentException(
-                sprintf('Invalid property: %s', $property)
-            );
-            // @codeCoverageIgnoreEnd
-        }
-
         return $this->withPropertyValue($property, $value)
                     ->apply();
     }
