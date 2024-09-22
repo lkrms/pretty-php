@@ -5,6 +5,8 @@ namespace Lkrms\PrettyPHP\Concern;
 use Lkrms\PrettyPHP\Contract\ListRule;
 
 /**
+ * @api
+ *
  * @phpstan-require-implements ListRule
  */
 trait ListRuleTrait

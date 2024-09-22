@@ -487,7 +487,7 @@ final class Formatter implements Buildable, Immutable
      * @phpstan-param 2|4|8 $tabSize
      * @param array<class-string<Extension>> $disable Non-mandatory extensions to disable
      * @param array<class-string<Extension>> $enable Optional extensions to enable
-     * @param int-mask-of<FormatterFlag::*> $flags Debugging flags
+     * @param int-mask-of<FormatterFlag::*> $flags
      * @param TokenTypeIndex|null $tokenTypeIndex Provide a customised token type index
      * @param HeredocIndent::* $heredocIndent
      * @param ImportSortOrder::* $importSortOrder
@@ -709,26 +709,14 @@ final class Formatter implements Buildable, Immutable
     }
 
     /**
-     * @internal
+     * Get an instance with the given setting enabled or disabled
      *
-     * @param mixed $value
+     * @param ("IncreaseIndentBetweenUnenclosedTags"|"RelaxAlignmentCriteria"|"NewlineBeforeFnDoubleArrows"|"AlignFirstCallInChain") $property
+     * @param bool $value
      * @return static
      */
     public function with(string $property, $value): self
     {
-        if (!isset([
-            'IncreaseIndentBetweenUnenclosedTags' => true,
-            'RelaxAlignmentCriteria' => true,
-            'NewlineBeforeFnDoubleArrows' => true,
-            'AlignFirstCallInChain' => true,
-        ][$property])) {
-            // @codeCoverageIgnoreStart
-            throw new InvalidArgumentException(
-                sprintf('Invalid property: %s', $property)
-            );
-            // @codeCoverageIgnoreEnd
-        }
-
         return $this->withPropertyValue($property, $value)
                     ->apply();
     }
@@ -1067,66 +1055,66 @@ final class Formatter implements Buildable, Immutable
             $logProgress($_rule, TokenRule::PROCESS_TOKENS);
         }
 
-        Profile::startTimer(__METHOD__ . '#find-blocks');
-
-        /** @var array<TokenCollection[]> */
-        $blocks = [];
-
-        /** @var TokenCollection[] */
-        $block = [];
-
-        $line = new TokenCollection();
-
-        /** @var Token */
-        $token = reset($this->Tokens);
-
-        while ($keep = true) {
-            if ($token && $token->id !== \T_INLINE_HTML) {
-                $before = $token->effectiveWhitespaceBefore();
-                if ($before & WhitespaceType::BLANK) {
+        if ($this->BlockLoop) {
+            Profile::startTimer(__METHOD__ . '#find-blocks');
+            $blocks = [];
+            $lines = [];
+            $line = new TokenCollection();
+            $token = reset($this->Tokens);
+            $endOfBlock = false;
+            $endOfLine = false;
+            $keep = true;
+            while (true) {
+                if ($token && $token->id !== \T_INLINE_HTML) {
+                    $before = $token->effectiveWhitespaceBefore();
+                    if ($before & WhitespaceType::BLANK) {
+                        $endOfBlock = true;
+                        $endOfLine = true;
+                    } elseif ($before & WhitespaceType::LINE) {
+                        $endOfLine = true;
+                    }
+                } else {
                     $endOfBlock = true;
-                } elseif ($before & WhitespaceType::LINE) {
                     $endOfLine = true;
+                    $keep = false;
                 }
-            } else {
-                $endOfBlock = true;
-                $keep = false;
-            }
-            if ($endOfLine ?? $endOfBlock ?? false) {
-                if ($line->count()) {
-                    $block[] = $line;
-                    $line = new TokenCollection();
+                if ($endOfLine) {
+                    if ($line->count()) {
+                        $lines[] = $line;
+                        $line = new TokenCollection();
+                    }
+                    $endOfLine = false;
                 }
-                unset($endOfLine);
-            }
-            if ($endOfBlock ?? false) {
-                if ($block) {
-                    $blocks[] = $block;
+                if ($endOfBlock) {
+                    if ($lines) {
+                        $blocks[] = $lines;
+                        $lines = [];
+                    }
+                    $endOfBlock = false;
                 }
-                $block = [];
-                unset($endOfBlock);
+                if (!$token) {
+                    break;
+                }
+                if ($keep) {
+                    $line[] = $token;
+                } else {
+                    $keep = true;
+                }
+                $token = $token->Next;
             }
-            if (!$token) {
-                break;
-            }
-            if ($keep) {
-                $line[] = $token;
-            }
-            $token = $token->Next;
-        }
+            Profile::stopTimer(__METHOD__ . '#find-blocks');
 
-        Profile::stopTimer(__METHOD__ . '#find-blocks');
-
-        foreach ($this->BlockLoop as [$_class]) {
-            /** @var BlockRule */
-            $rule = $this->RuleMap[$_class];
-            $_rule = Get::basename($_class);
-            Profile::startTimer($_rule, 'rule');
-            foreach ($blocks as $block) {
-                $rule->processBlock($block);
+            foreach ($this->BlockLoop as [$_class]) {
+                /** @var BlockRule */
+                $rule = $this->RuleMap[$_class];
+                $_rule = Get::basename($_class);
+                Profile::startTimer($_rule, 'rule');
+                foreach ($blocks as $block) {
+                    $rule->processBlock($block);
+                }
+                Profile::stopTimer($_rule, 'rule');
+                $logProgress($_rule, BlockRule::PROCESS_BLOCK);
             }
-            Profile::stopTimer($_rule, 'rule');
-            $logProgress($_rule, BlockRule::PROCESS_BLOCK);
         }
 
         if ($this->Callbacks) {

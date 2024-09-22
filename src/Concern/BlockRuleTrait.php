@@ -5,6 +5,8 @@ namespace Lkrms\PrettyPHP\Concern;
 use Lkrms\PrettyPHP\Contract\BlockRule;
 
 /**
+ * @api
+ *
  * @phpstan-require-implements BlockRule
  */
 trait BlockRuleTrait

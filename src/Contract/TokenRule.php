@@ -5,6 +5,9 @@ namespace Lkrms\PrettyPHP\Contract;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
 
+/**
+ * @api
+ */
 interface TokenRule extends Rule
 {
     public const PROCESS_TOKENS = 'processTokens';
@@ -42,7 +45,7 @@ interface TokenRule extends Rule
      * Apply the rule to the given tokens
      *
      * Tokens of the types returned by {@see TokenRule::getTokenTypes()} are
-     * passed to this method once per run.
+     * passed to this method once per input file.
      *
      * @param array<int,Token> $tokens
      */

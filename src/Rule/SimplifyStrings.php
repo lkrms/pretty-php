@@ -6,7 +6,10 @@ use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Exception\RuleException;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
+use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\TokenUtility;
 use Salient\Utility\Regex;
+use Salient\Utility\Str;
 
 /**
  * Normalise escape sequences in strings, and replace single- and double-quoted
@@ -44,84 +47,87 @@ final class SimplifyStrings implements TokenRule
 
     public function processTokens(array $tokens): void
     {
+        $string = '';
         foreach ($tokens as $token) {
-            // Ignore nowdocs
-            if (
-                $token->id !== \T_CONSTANT_ENCAPSED_STRING
-                && $token->String->id === \T_START_HEREDOC
-                && substr($token->String->text, 0, 4) === "<<<'"
-            ) {
-                continue;
+            if ($token->id === \T_ENCAPSED_AND_WHITESPACE) {
+                /** @var Token */
+                $openedBy = $token->String;
+                // Ignore nowdocs
+                if (
+                    $openedBy->id === \T_START_HEREDOC
+                    && Str::startsWith($openedBy->text, "<<<'")
+                ) {
+                    continue;
+                }
+            } else {
+                $openedBy = $token;
             }
 
-            // Characters in $escape are backslash-escaped
-            $escape = '';
+            /** @var Token */
+            $next = $token->Next;
 
-            // Characters in $match trigger suppression of single-quoted syntax
-            // when found in a T_CONSTANT_ENCAPSED_STRING
-            $match = '';
+            // Characters to backslash-escape
+            $escape = "\r";
 
-            // Characters in $reserved have a special meaning after backslash
+            // Matches characters that suppress single-quoted syntax
+            $match = '\r';
+
+            // Matches characters that are special after backslash
             $reserved = '';
 
-            // Don't escape line breaks unless they are already escaped
-            if (
-                !$token->hasNewline() || (
-                    $token->Next->id === \T_END_HEREDOC
-                    && strpos(substr($token->text, 0, -1), "\n") === false
-                )
-            ) {
-                $escape .= "\n\r";
-                $match .= '\n\r';
-            } else {
-                $escape .= "\r";
-                $match .= '\r';
+            // Don't escape newlines unless they are already escaped
+            if (!$token->hasNewline() || (
+                $next->id === \T_END_HEREDOC
+                && strpos(substr($token->text, 0, -1), "\n") === false
+            )) {
+                $escape .= "\n";
+                $match .= '\n';
             }
 
-            $string = '';
             $doubleQuote = '';
             $suffix = '';
-            if ($token->id === \T_CONSTANT_ENCAPSED_STRING) {
-                eval("\$string = {$token->text};");
-                $doubleQuote = '"';
-                $escape .= '"';
-                $reserved .= '"';
-            } elseif ($token->String->id === \T_DOUBLE_QUOTE) {
-                eval("\$string = \"{$token->text}\";");
-                $escape .= '"';
-                $reserved .= '"';
-            } elseif ($token->String->id === \T_BACKTICK) {
-                // Convert backtick-enclosed substrings to double-quoted
-                // equivalents by escaping '\"' and '"', and unescaping '\`'
-                $text = Regex::replaceCallback(
-                    '/((?<!\\\\)(?:\\\\\\\\)*)(\\\\?"|\\\\`)/',
-                    fn(array $matches) =>
-                        $matches[1]
-                            . ($matches[2] === '\"'
-                                ? '\\\\\\"'
-                                : ($matches[2] === '"'
-                                    ? '\"'
-                                    : '`')),
-                    $token->text
-                );
-                eval("\$string = \"{$text}\";");
-                $escape .= '`';
-                $reserved .= '`';
-            } elseif ($token->String->id === \T_START_HEREDOC) {
-                $start = trim($token->String->text);
-                $text = $token->text;
-                $end = trim($token->String->StringClosedBy->text);
-                if ($token->Next->id === \T_END_HEREDOC) {
-                    $text = substr($text, 0, -1);
-                    $suffix = "\n";
-                }
-                eval("\$string = {$start}\n{$text}\n{$end};");
-            } else {
-                // @codeCoverageIgnoreStart
-                throw new RuleException(
-                    sprintf('Not a string delimiter: %s', $token->String->getTokenName())
-                );
-                // @codeCoverageIgnoreEnd
+            switch ($openedBy->id) {
+                case \T_CONSTANT_ENCAPSED_STRING:
+                    eval("\$string = {$token->text};");
+                    $doubleQuote = '"';
+                    $escape .= '"';
+                    $reserved .= '"';
+                    break;
+
+                case \T_DOUBLE_QUOTE:
+                    eval("\$string = \"{$token->text}\";");
+                    $escape .= '"';
+                    $reserved .= '"';
+                    break;
+
+                case \T_BACKTICK:
+                    $text = TokenUtility::unescapeBackticks($token->text);
+                    eval("\$string = \"{$text}\";");
+                    $escape .= '`';
+                    $reserved .= '`';
+                    break;
+
+                case \T_START_HEREDOC:
+                    /** @var Token */
+                    $closedBy = $openedBy->StringClosedBy;
+
+                    $start = trim($openedBy->text);
+                    $text = $token->text;
+                    $end = trim($closedBy->text);
+                    if ($next->id === \T_END_HEREDOC) {
+                        $text = substr($text, 0, -1);
+                        $suffix = "\n";
+                    }
+                    eval("\$string = {$start}\n{$text}\n{$end};");
+                    break;
+
+                default:
+                    // @codeCoverageIgnoreStart
+                    throw new RuleException(sprintf(
+                        'Not a string delimiter: %s',
+                        $openedBy->getTokenName(),
+                    ));
+                    // @codeCoverageIgnoreEnd
             }
 
             // If $string contains valid UTF-8 sequences, don't escape leading
@@ -181,8 +187,8 @@ final class SimplifyStrings implements TokenRule
             $reserved = "[nrtvef\\\\\${$reserved}]|[0-7]|x[0-9a-fA-F]|u\{[0-9a-fA-F]+\}";
 
             if ($token->id === \T_CONSTANT_ENCAPSED_STRING
-                    || $token->Next !== $token->String->StringClosedBy
-                    || $token->String->id !== \T_START_HEREDOC) {
+                    || $next !== $openedBy->StringClosedBy
+                    || $openedBy->id !== \T_START_HEREDOC) {
                 $reserved .= '|$';
             }
 
@@ -194,8 +200,10 @@ final class SimplifyStrings implements TokenRule
 
             // "\\\{$a}" becomes "\\\{", which escapes to "\\\\{", but we need
             // the brace to remain escaped lest it become a T_CURLY_OPEN
-            if ($token->id !== \T_CONSTANT_ENCAPSED_STRING
-                    && ($token->Next !== $token->String->StringClosedBy)) {
+            if (
+                $token->id !== \T_CONSTANT_ENCAPSED_STRING
+                && $next !== $openedBy->StringClosedBy
+            ) {
                 $double = Regex::replace(
                     '/(?<!\\\\)(\\\\(?:\\\\\\\\)*)\\\\(\{)$/',
                     '$1$2',

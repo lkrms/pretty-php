@@ -10,6 +10,7 @@ use Lkrms\PrettyPHP\Support\TokenCollection;
 use Lkrms\PrettyPHP\Token\Token;
 use Salient\Utility\Arr;
 use Salient\Utility\Reflect;
+use Salient\Utility\Regex;
 use Salient\Utility\Str;
 
 final class TokenUtility
@@ -26,6 +27,26 @@ final class TokenUtility
             return ' ';
         }
         return '';
+    }
+
+    /**
+     * Convert a backtick-enclosed substring to a double-quoted equivalent
+     */
+    public static function unescapeBackticks(string $text): string
+    {
+        // Escape '\"' and '"', unescape '\`'
+        return Regex::replaceCallback(
+            '/((?<!\\\\)(?:\\\\\\\\)*)(\\\\?"|\\\\`)/',
+            fn($matches) =>
+                $matches[1] . (
+                    $matches[2] === '\"'
+                        ? '\\\\\\"'
+                        : ($matches[2] === '"'
+                            ? '\"'
+                            : '`')
+                ),
+            $text,
+        );
     }
 
     /**

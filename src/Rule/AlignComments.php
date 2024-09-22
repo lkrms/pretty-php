@@ -34,9 +34,9 @@ final class AlignComments implements BlockRule
         }
     }
 
-    public function processBlock(array $block): void
+    public function processBlock(array $lines): void
     {
-        if (count($block) < 2) {
+        if (count($lines) < 2) {
             return;
         }
 
@@ -45,7 +45,7 @@ final class AlignComments implements BlockRule
         /** @var Token|null */
         $lastStartOfLine = null;
         $prevComment = null;
-        foreach ($block as $i => $line) {
+        foreach ($lines as $i => $line) {
             /** @var Token|null */
             $lastComment = $prevComment;
             $prevComment = null;
@@ -108,9 +108,9 @@ final class AlignComments implements BlockRule
             return;
         }
 
-        $block = array_intersect_key($block, $comments);
+        $lines = array_intersect_key($lines, $comments);
 
-        $this->BlockComments[] = [$block, $comments];
+        $this->BlockComments[] = [$lines, $comments];
     }
 
     public function beforeRender(array $tokens): void

@@ -8,14 +8,15 @@ use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Formatter;
 use Salient\Cli\CliApplication;
 use Salient\Core\Facade\Console;
+use Salient\PHPDoc\PHPDoc;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 /**
- * @param array<int,array<array{rule:class-string<Rule>,is_mandatory:bool,is_default:bool,pass:int,method:string,priority:int}>> $array
- * @param-out array<int,array<array{rule:class-string<Rule>,is_mandatory:bool,is_default:bool,pass:int,method:string,priority:int}>> $array
+ * @param array<int,array<array{rule:class-string<Rule>,is_mandatory:bool,is_default:bool,pass:int,method:string,priority:int,php_doc:PHPDoc|null}>> $array
+ * @param-out array<int,array<array{rule:class-string<Rule>,is_mandatory:bool,is_default:bool,pass:int,method:string,priority:int,php_doc:PHPDoc|null}>> $array
  * @param class-string<Rule> $rule
  */
 function maybeAddRule(
@@ -29,6 +30,12 @@ function maybeAddRule(
 ): void {
     $priority = $rule::getPriority($method);
     if ($priority !== null) {
+        if (method_exists($rule, $method)) {
+            $comment = (new ReflectionMethod($rule, $method))->getDocComment();
+            if ($comment !== false) {
+                $phpDoc = new PHPDoc($comment);
+            }
+        }
         $array[$priority][] = [
             'rule' => $rule,
             'is_mandatory' => $isMandatory,
@@ -36,6 +43,7 @@ function maybeAddRule(
             'pass' => $pass,
             'method' => $method,
             'priority' => $priority,
+            'php_doc' => $phpDoc ?? null,
         ];
         return;
     }
@@ -92,9 +100,10 @@ foreach ($index as $rule => $keys) {
 }
 
 $rows = [['Rule', 'Mandatory?', 'Default?', 'Pass', 'Method', 'Priority']];
+$docs = [];
 foreach ($rules as $r) {
     $rows[] = [
-        '`' . Get::basename($r['rule']) . '`' . (
+        $heading = '`' . Get::basename($r['rule']) . '`' . (
             $r['appearance'] === null ? '' : ' (' . $r['appearance'] . ')'
         ),
         $r['is_mandatory'] ? 'Y' : '-',
@@ -103,6 +112,16 @@ foreach ($rules as $r) {
         '`' . $r['method'] . '()`',
         $r['priority'],
     ];
+
+    if ($r['php_doc']) {
+        /** @var PHPDoc */
+        $phpDoc = $r['php_doc'];
+        if ($phpDoc->Description === null) {
+            continue;
+        }
+        $docs[] = '## ' . $heading;
+        $docs[] = $phpDoc->Description;
+    }
 }
 
 foreach ($rows as $row) {
@@ -124,4 +143,9 @@ foreach ($rows as $row) {
         printf(" %-{$widths[$i]}s |", $column);
     }
     printf("\n");
+}
+
+if ($docs) {
+    printf("\n");
+    printf("%s\n", implode("\n\n", $docs));
 }

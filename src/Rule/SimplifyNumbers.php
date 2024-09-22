@@ -11,11 +11,16 @@ use Salient\Utility\Str;
 
 /**
  * Normalise integers and floats
+ *
+ * @api
  */
 final class SimplifyNumbers implements TokenRule
 {
     use TokenRuleTrait;
 
+    /**
+     * @inheritDoc
+     */
     public static function getPriority(string $method): ?int
     {
         switch ($method) {
@@ -27,6 +32,9 @@ final class SimplifyNumbers implements TokenRule
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return [
@@ -35,20 +43,43 @@ final class SimplifyNumbers implements TokenRule
         ];
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function getRequiresSortedTokens(): bool
     {
         return false;
     }
 
+    /**
+     * Apply the rule to the given tokens
+     *
+     * Integer literals are normalised by replacing hexadecimal, octal and
+     * binary prefixes with `0x`, `0` and `0b` respectively, removing redundant
+     * zeroes, adding `0` before hexadecimal and binary values with an odd
+     * number of digits (except hexadecimal values with exactly 5 digits), and
+     * converting hexadecimal digits to uppercase.
+     *
+     * Float literals are normalised by removing redundant zeroes, adding `0` to
+     * empty integer or fractional parts, replacing `E` with `e`, removing `+`
+     * from exponents, and expressing them with mantissae between 1.0 and 10.
+     *
+     * If present in the input, underscores are added to decimal values with no
+     * exponent every 3 digits, to hexadecimal values with more than 5 digits
+     * every 4 digits, and to binary values every 4 digits.
+     */
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
             $text = str_replace('_', '', $token->text, $underscores);
             if (
                 $token->id === \T_LNUMBER
+                // Integer literals that exceed the bounds of `int` are parsed
+                // as `T_DNUMBER`, hence these additional checks
                 || strpbrk($text, '.Ee') === false
                 || strpbrk($text, 'xX') !== false
             ) {
+                // Check for octal, binary and hexadecimal literals
                 if (!Regex::match(
                     '/^0(?<base>[xob]|(?=[0-7]))0*(?<number>[1-9a-f][0-9a-f]*|0)$/i',
                     $text,
@@ -131,14 +162,28 @@ final class SimplifyNumbers implements TokenRule
             $exponent = $matches['exponent'];
 
             if ($exponent === null) {
+                if ($underscores) {
+                    $length = strlen($integer);
+                    if ($length > 3) {
+                        $integer = ltrim($this->split($integer, 3, $length, ' '));
+                    }
+                    $length = strlen($fractional);
+                    if ($length > 3) {
+                        $fractional = $this->split($fractional, 3, $length, '');
+                    }
+                }
                 $token->setText("{$integer}.{$fractional}");
                 continue;
             }
 
             $integer = (int) $integer;
-            $exponent = (int) $exponent;
-            if ($matches['sign'] === '-') {
-                $exponent = -$exponent;
+            if ($integer === 0 && $fractional === '0') {
+                $exponent = 0;
+            } else {
+                $exponent = (int) $exponent;
+                if ($matches['sign'] === '-') {
+                    $exponent = -$exponent;
+                }
             }
 
             // Normalise the mantissa to a value >= 1.0 and < 10.0 if possible
@@ -155,6 +200,7 @@ final class SimplifyNumbers implements TokenRule
 
             while ($integer === 0 && $fractional !== '0') {
                 $integer = (int) $fractional[0];
+                /** @var string */
                 $fractional = substr($fractional, 1);
                 if ($fractional === '') {
                     $fractional = '0';
@@ -166,12 +212,20 @@ final class SimplifyNumbers implements TokenRule
         }
     }
 
+    /**
+     * @param int<1,max> $split
+     * @param int<0,max> $length
+     */
     private function split(string $string, int $split, int $length, string $padWith): string
     {
-        $extra = $length % $split;
-        if ($extra) {
-            $string = str_repeat($padWith, $split - $extra) . $string;
+        if ($padWith !== '') {
+            $extra = $length % $split;
+            if ($extra) {
+                $string = str_repeat($padWith, $split - $extra) . $string;
+            }
         }
-        return implode('_', str_split($string, $split));
+        /** @var string[] */
+        $parts = str_split($string, $split);
+        return implode('_', $parts);
     }
 }

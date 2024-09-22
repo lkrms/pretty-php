@@ -8,6 +8,8 @@ use Lkrms\PrettyPHP\Contract\Rule;
 use Lkrms\PrettyPHP\Token\Token;
 
 /**
+ * @api
+ *
  * @phpstan-require-implements Rule
  */
 trait RuleTrait

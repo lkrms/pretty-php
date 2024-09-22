@@ -6,6 +6,8 @@ use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 
 /**
+ * @api
+ *
  * @phpstan-require-implements TokenRule
  */
 trait TokenRuleTrait

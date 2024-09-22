@@ -6,6 +6,7 @@ use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Exception\FilterException;
 use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\TokenUtility;
 use Salient\Utility\Regex;
 
 /**
@@ -62,17 +63,7 @@ final class EvaluateStrings implements Filter
             } elseif ($lastString->id === \T_DOUBLE_QUOTE) {
                 eval("\$string = \"{$token->text}\";");
             } elseif ($lastString->id === \T_BACKTICK) {
-                $text = Regex::replaceCallback(
-                    '/((?<!\\\\)(?:\\\\\\\\)*)(\\\\?"|\\\\`)/',
-                    fn(array $matches) =>
-                        $matches[1]
-                            . ($matches[2] === '\"'
-                                ? '\\\\\\"'
-                                : ($matches[2] === '"'
-                                    ? '\"'
-                                    : '`')),
-                    $token->text
-                );
+                $text = TokenUtility::unescapeBackticks($token->text);
                 eval("\$string = \"{$text}\";");
             } elseif ($lastString->id === \T_START_HEREDOC) {
                 $start = trim($lastString->text);

@@ -6,6 +6,8 @@ use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Token\GenericToken;
 
 /**
+ * @api
+ *
  * @phpstan-require-implements Filter
  */
 trait FilterTrait

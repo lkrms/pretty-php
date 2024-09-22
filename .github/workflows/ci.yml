@@ -30,7 +30,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   format:
-    name: Check formatting
+    name: Check generated files and formatting
     needs:
       - check-ci-runs
     if: ${{ (github.event_name == 'workflow_call' || needs.check-ci-runs.outputs.ci_required == 1) && !cancelled() && !failure() }}
@@ -53,7 +53,10 @@ jobs:
           restore-keys: composer-cache-${{ runner.os }}-
 
       - name: Install PHP dependencies
-        run: composer install --no-interaction --no-progress --no-dev
+        run: composer install --no-interaction --no-progress
+
+      - name: Check generated files
+        run: scripts/generate.sh --check
 
       - name: Run PHP CS Fixer
         run: tools/php-cs-fixer check --diff --verbose
