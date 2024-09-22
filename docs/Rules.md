@@ -1,8 +1,5 @@
 # Rules
 
-> This document is provided as a reference for contributors. Code style
-> documentation for users is a separate concern.
-
 Formatting rules applied by `pretty-php` are as follows.
 
 Use the [list-rules][list-rules.php] script to generate an up-to-date list if
@@ -55,5 +52,26 @@ needed.
 | `PlaceComments` (2)         | Y          | -        | 4    | `beforeRender()`  | 997      |
 | `AlignComments` (2)         | -          | -        | 4    | `beforeRender()`  | 998      |
 | `EssentialWhitespace`       | Y          | -        | 4    | `beforeRender()`  | 999      |
+
+## `ProtectStrings`
+
+Whitespace is suppressed via critical masks applied to siblings in non-constant
+strings, and to every token between square brackets in those strings.
+
+## `SimplifyNumbers`
+
+Integer literals are normalised by replacing hexadecimal, octal and binary
+prefixes with `0x`, `0` and `0b` respectively, removing redundant zeroes, adding
+`0` before hexadecimal and binary values with an odd number of digits (except
+hexadecimal values with exactly 5 digits), and converting hexadecimal digits to
+uppercase.
+
+Float literals are normalised by removing redundant zeroes, adding `0` to empty
+integer or fractional parts, replacing `E` with `e`, removing `+` from
+exponents, and expressing them with mantissae between 1.0 and 10.
+
+If present in the input, underscores are added to decimal values with no
+exponent every 3 digits, to hexadecimal values with more than 5 digits every 4
+digits, and to binary values every 4 digits.
 
 [list-rules.php]: ../scripts/list-rules.php
