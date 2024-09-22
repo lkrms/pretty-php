@@ -100,7 +100,8 @@ if ((FIXTURES)); then (
     for DIR in tests/fixtures/App/FormatPhpCommand/preset/*; do
         PRESET=${DIR##*/}
         for FILE in "$DIR"/*.in; do
-            "$1" -dshort_open_tag=on bin/pretty-php --no-config --preset "$PRESET" --output "${FILE%.in}.out" "$FILE"
+            printf '==> generating %s\n' "${FILE%.in}.out"
+            "$1" -dshort_open_tag=on bin/pretty-php -qq --no-config --preset "$PRESET" --output "${FILE%.in}.out" "$FILE"
         done
     done
 ); fi
