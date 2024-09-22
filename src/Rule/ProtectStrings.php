@@ -6,6 +6,7 @@ use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
+use Lkrms\PrettyPHP\Token\Token;
 
 /**
  * Suppress changes to whitespace inside strings and heredocs
@@ -16,6 +17,9 @@ final class ProtectStrings implements TokenRule
 {
     use TokenRuleTrait;
 
+    /**
+     * @inheritDoc
+     */
     public static function getPriority(string $method): ?int
     {
         switch ($method) {
@@ -27,6 +31,9 @@ final class ProtectStrings implements TokenRule
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return [
@@ -36,19 +43,42 @@ final class ProtectStrings implements TokenRule
         ];
     }
 
+    /**
+     * @inheritDoc
+     */
+    public static function getRequiresSortedTokens(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Apply the rule to the given tokens
+     *
+     * Whitespace is suppressed via critical masks applied to siblings in
+     * non-constant strings, and to every token between square brackets in those
+     * strings.
+     */
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            if (!$token->Next || $token->Next->String !== $token) {
+            $next = $token->NextSibling;
+            if (!$next || $next->String !== $token) {
                 continue;
             }
 
-            foreach ($token->NextSibling->collectSiblings($token->StringClosedBy) as $current) {
+            /** @var Token */
+            $closedBy = $token->StringClosedBy;
+            foreach ($next->collectSiblings($closedBy) as $current) {
                 $current->CriticalWhitespaceMaskPrev = WhitespaceType::NONE;
+
                 // "$foo[0]" and "$foo[$bar]" fail to parse if there is any
                 // whitespace between the brackets
                 if ($current->id === \T_OPEN_BRACKET) {
-                    foreach ($current->Next->collect($current->ClosedBy) as $inner) {
+                    /** @var Token */
+                    $next = $current->Next;
+                    /** @var Token */
+                    $closedBy = $current->ClosedBy;
+                    foreach ($next->collect($closedBy) as $inner) {
                         $inner->CriticalWhitespaceMaskPrev = WhitespaceType::NONE;
                     }
                 }
