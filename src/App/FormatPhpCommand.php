@@ -601,7 +601,8 @@ Do not report files that require formatting.
 
 May be given multiple times for less verbose output:
 
-- `-qq`: do not print version information or provide a summary of files formatted and replaced on exit.
+- `-qq`: do not print version information or provide a summary of files
+  formatted and replaced on exit.
 - `-qqq`: suppress warnings.
 - `-qqqq`: suppress TTY-only progress updates.
 
