@@ -7,7 +7,7 @@ use Lkrms\PrettyPHP\Tests\TestCase;
 use Salient\Cli\CliApplication;
 use Salient\Console\ConsoleFormatter;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
-use Salient\Contract\Core\ExceptionInterface;
+use Salient\Contract\Core\Exception\ExceptionInterface;
 use Salient\Contract\Core\FileDescriptor;
 use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
