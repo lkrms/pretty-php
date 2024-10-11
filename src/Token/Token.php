@@ -552,9 +552,11 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         /** @var Token */
         $prevCode = $this->PrevCode;
         if (
-            $prevCode->id === \T_CONST
+            (
+                $this->Idx->NonMethodMember[$prevCode->id]
+                && $prevCode->inNamedDeclaration()
+            )
             || ($prevCode->id === \T_COLON && $prevCode->isColonTypeDelimiter())
-            || $this->Idx->VarOrModifier[$prevCode->id]
             || $this->inParameterList()
         ) {
             return TokenSubType::QUESTION_NULLABLE;
