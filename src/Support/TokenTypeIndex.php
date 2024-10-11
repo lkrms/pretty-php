@@ -109,13 +109,13 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $ContinuesControlStructure;
 
     /**
-     * T_ABSTRACT, T_FINAL, T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY,
-     * T_STATIC, T_VAR
+     * T_ABSTRACT, T_CONST, T_FINAL, T_PRIVATE, T_PROTECTED, T_PUBLIC,
+     * T_READONLY, T_STATIC, T_VAR
      *
      * @readonly
      * @var array<int,bool>
      */
-    public array $VarOrModifier;
+    public array $NonMethodMember;
 
     /**
      * T_ATTRIBUTE_COMMENT, T_COMMENT, T_CONSTANT_ENCAPSED_STRING,
@@ -963,7 +963,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             \T_FINALLY,
         );
 
-        $this->VarOrModifier = self::get(
+        $this->NonMethodMember = self::get(
+            \T_CONST,
             \T_VAR,
             ...TG::KEYWORD_MODIFIER,
         );
