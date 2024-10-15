@@ -1421,7 +1421,7 @@ EOF,
      */
     private function addFile($file, array &$files, array &$dirs): void
     {
-        $key = $this->getFileKey($file);
+        $key = File::getIdentifier((string) $file);
 
         if (isset($files[$key])) {
             Console::debug(sprintf('Skipping (already seen): %s', (string) $file));
@@ -1438,15 +1438,6 @@ EOF,
             ? dirname($file)
             : (string) $file->getPathInfo();
         $dirs[$dir] = $dir;
-    }
-
-    /**
-     * @param SplFileInfo|string $file
-     */
-    private function getFileKey($file): string
-    {
-        $stat = File::stat((string) $file);
-        return $stat['dev'] . "\0" . $stat['ino'];
     }
 
     /**
