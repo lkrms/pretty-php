@@ -123,27 +123,24 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     public int $HangingIndent = 0;
 
     /**
-     * The token that triggered each level of hanging indentation applied to the
-     * token
-     *
-     * @var self[]
+     * The token on behalf of which a level of hanging indentation was most
+     * recently applied to the token
      */
-    public array $HangingIndentStack = [];
+    public ?self $HangingIndentToken = null;
 
     /**
      * The context of each level of hanging indentation applied to the token
      *
-     * @var array<array<array<self|null>|self>>
+     * @var array<array{self|null,1?:self}>
      */
-    public array $HangingIndentContextStack = [];
+    public array $HangingIndentContext = [];
 
     /**
-     * Parent tokens associated with at least one level of hanging indentation
-     * applied to the token
+     * Parent tokens associated with hanging indentation applied to the token
      *
      * @var self[]
      */
-    public array $HangingIndentParentStack = [];
+    public array $HangingIndentParent = [];
 
     /**
      * Each entry represents a parent token associated with at least one level

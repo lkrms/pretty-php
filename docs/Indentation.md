@@ -210,6 +210,40 @@ indentation scenarios.
 Overhanging indentation is also applied to blocks that form part of a continuing
 structure, e.g. the [`if` block above](#hanging-indentation).
 
+#### Context
+
+After finding a token to indent, `HangingIndentation` creates a context for it,
+and if indentation for that context has already been applied, the token is not
+indented further.
+
+A token's context is comprised of its parent token (or `null` if it's a
+top-level token), and an optional anchor token shared by any siblings that
+should receive the same level of indentation.
+
+The aim is to differentiate between lines where a new expression starts, and
+lines where an expression continues:
+
+```php
+$iterator = new RecursiveDirectoryIterator($dir,
+    FilesystemIterator::KEY_AS_PATHNAME |
+        FilesystemIterator::CURRENT_AS_FILEINFO |
+        FilesystemIterator::SKIP_DOTS);
+```
+
+```php
+return is_string($contents)
+    ? $contents
+    : json_encode($contents, JSON_PRETTY_PRINT);
+```
+
+```php
+fn($a, $b) =>
+    $a === $b
+        ? 0
+        : $a <=>
+            $b;
+```
+
 [mixed]: #mixed-indentation
 [PSR-12]: https://www.php-fig.org/psr/psr-12/
 [PER]: https://www.php-fig.org/per/coding-style/

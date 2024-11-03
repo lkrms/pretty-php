@@ -191,24 +191,15 @@ final class TokenUtility
         $t['Indent'] = $token->Indent;
         $t['Deindent'] = $token->Deindent;
         $t['HangingIndent'] = $token->HangingIndent;
-        $t['HangingIndentStack'] = $token->HangingIndentStack;
+        $t['HangingIndentToken'] = $token->HangingIndentToken;
 
-        foreach ($token->HangingIndentContextStack as $i => $entry) {
+        foreach ($token->HangingIndentContext as $i => $entry) {
             foreach ($entry as $j => $entry) {
-                if (is_array($entry)) {
-                    foreach ($entry as $k => $entry) {
-                        if ($entry) {
-                            $entry = self::describe($entry);
-                        }
-                        $t['HangingIndentContextStack'][$i][$j][$k] = $entry;
-                    }
-                    continue;
-                }
-                $t['HangingIndentContextStack'][$i][$j] = self::describe($entry);
+                $t['HangingIndentContext'][$i][$j] = $entry ? self::describe($entry) : null;
             }
         }
 
-        $t['HangingIndentParentStack'] = $token->HangingIndentParentStack;
+        $t['HangingIndentParent'] = $token->HangingIndentParent;
         $t['HangingIndentParentLevels'] = $token->HangingIndentParentLevels;
         $t['LinePadding'] = $token->LinePadding;
         $t['LineUnpadding'] = $token->LineUnpadding;
