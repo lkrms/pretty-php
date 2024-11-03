@@ -113,7 +113,7 @@ final class PreserveNewlines implements TokenRule
         // enabled
         if ($token->id === \T_DOUBLE_ARROW
             && (!$this->Formatter->NewlineBeforeFnDoubleArrows
-                || $token->prevSiblingOf(\T_FN)->nextSiblingOf(\T_DOUBLE_ARROW) !== $token)) {
+                || $token->prevSiblingOf(\T_FN, true)->nextSiblingOf(\T_DOUBLE_ARROW) !== $token)) {
             return false;
         }
 
@@ -197,7 +197,7 @@ final class PreserveNewlines implements TokenRule
         // disabled
         if ($token->id === \T_DOUBLE_ARROW
                 && $this->Formatter->NewlineBeforeFnDoubleArrows
-                && $token->prevSiblingOf(\T_FN)->nextSiblingOf(\T_DOUBLE_ARROW) === $token) {
+                && $token->prevSiblingOf(\T_FN, true)->nextSiblingOf(\T_DOUBLE_ARROW) === $token) {
             return false;
         }
 

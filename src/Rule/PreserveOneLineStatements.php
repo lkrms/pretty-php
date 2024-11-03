@@ -48,7 +48,7 @@ final class PreserveOneLineStatements implements TokenRule
                     )
                     && $this->Idx->Attribute[$token->id]) {
                 $this->preserveOneLine(
-                    $token->skipSiblingsFrom($this->Idx->Attribute),
+                    $token->skipNextSiblingsFrom($this->Idx->Attribute),
                     $until
                 );
             }
