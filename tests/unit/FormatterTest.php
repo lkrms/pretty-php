@@ -660,7 +660,7 @@ PHP,
                     ->build(),
             '04-psr12' =>
                 Formatter::build()
-                    ->tokenTypeIndex((new TokenTypeIndex())->withLeadingOperators())
+                    ->tokenTypeIndex(new TokenTypeIndex(true))
                     ->importSortOrder(ImportSortOrder::NONE)
                     ->psr12()
                     ->build(),

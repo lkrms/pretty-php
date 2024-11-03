@@ -8,6 +8,11 @@ use Lkrms\PrettyPHP\Tests\Support\TokenTypeIndexTest;
 
 final class WordPressTokenTypeIndexTest extends TokenTypeIndexTest
 {
+    public static function preserveNewlineProvider(): array
+    {
+        return [];
+    }
+
     protected static function getIndex(): TokenTypeIndex
     {
         return new WordPressTokenTypeIndex();

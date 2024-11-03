@@ -9,6 +9,7 @@ use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\TokenUtility;
 
 /**
  * Preserve newlines adjacent to operators, delimiters and comments
@@ -97,41 +98,30 @@ final class PreserveNewlines implements TokenRule
         int $max,
         bool $ignoreBrackets = false
     ): bool {
-        if (!$this->Idx->PreserveNewlineBefore[$token->id]
-                || $token->line < $min
-                || $token->line > $max
-                || ($ignoreBrackets && $this->Idx->Bracket[$token->id])) {
+        if (
+            $token->line < $min
+            || $token->line > $max
+            || ($ignoreBrackets && $this->Idx->Bracket[$token->id])
+            || !TokenUtility::isNewlineAllowedBefore($token)
+        ) {
             return false;
         }
 
         // Don't preserve newlines between empty brackets
-        if (!$ignoreBrackets && $token->OpenedBy === $prev) {
-            return false;
-        }
-
-        // Only preserve newlines before arrow function `=>` operators if
-        // enabled
-        if ($token->id === \T_DOUBLE_ARROW
-            && (!$this->Formatter->NewlineBeforeFnDoubleArrows
-                || $token->prevSiblingOf(\T_FN, true)->nextSiblingOf(\T_DOUBLE_ARROW) !== $token)) {
+        if ($token->OpenedBy === $prev) {
             return false;
         }
 
         // Treat `?:` as one operator
-        if (($token->Flags & TokenFlag::TERNARY_OPERATOR)
-            && ($token->id === \T_QUESTION
-                ? $token
-                : $token->Data[TokenData::OTHER_TERNARY_OPERATOR]) === $prev) {
+        if (
+            ($token->Flags & TokenFlag::TERNARY_OPERATOR)
+            && $token->id === \T_COLON
+            && $token->Data[TokenData::OTHER_TERNARY_OPERATOR] === $prev
+        ) {
             return false;
         }
 
-        // Don't preserve newlines before `:` other than ternary operators
-        if ($token->id === \T_COLON && !($token->Flags & TokenFlag::TERNARY_OPERATOR)) {
-            return false;
-        }
-
-        if (!$this->Formatter->PreserveNewlines
-                && !$token->hasNewlineBefore()) {
+        if (!$this->Formatter->PreserveNewlines && !$token->hasNewlineBefore()) {
             return false;
         }
 
@@ -152,59 +142,26 @@ final class PreserveNewlines implements TokenRule
         int $max,
         bool $ignoreBrackets = false
     ): bool {
-        // To preserve newlines after attributes, ignore T_ATTRIBUTE itelf and
-        // treat attribute close brackets as T_ATTRIBUTE
-        if ($token->id === \T_ATTRIBUTE) {
-            return false;
-        }
-
-        if ($token->OpenedBy && $token->OpenedBy->id === \T_ATTRIBUTE) {
-            $tokenId = \T_ATTRIBUTE;
-        }
-
-        if (!$this->Idx->PreserveNewlineAfter[$tokenId ?? $token->id]
-                || $next->line < $min
-                || $next->line > $max
-                || ($ignoreBrackets && $this->Idx->Bracket[$token->id])) {
+        if (
+            $next->line < $min
+            || $next->line > $max
+            || ($ignoreBrackets && $this->Idx->Bracket[$token->id])
+            || !TokenUtility::isNewlineAllowedAfter($token)
+        ) {
             return false;
         }
 
         // Don't preserve newlines between empty brackets
-        if (!$ignoreBrackets && $token->ClosedBy === $next) {
+        if ($token->ClosedBy === $next) {
             return false;
         }
 
         // Treat `?:` as one operator
-        if (($token->Flags & TokenFlag::TERNARY_OPERATOR)
-            && ($token->id === \T_COLON
-                ? $token
-                : $token->Data[TokenData::OTHER_TERNARY_OPERATOR]) === $next) {
-            return false;
-        }
-
-        if ($token->id === \T_CLOSE_BRACE
-                && !($token->Flags & TokenFlag::STRUCTURAL_BRACE)) {
-            return false;
-        }
-
-        // Don't preserve newlines after `:` except when they terminate case
-        // statements and labels
-        if ($token->id === \T_COLON && !$token->isColonStatementDelimiter()) {
-            return false;
-        }
-
-        // Don't preserve newlines after arrow function `=>` operators if
-        // disabled
-        if ($token->id === \T_DOUBLE_ARROW
-                && $this->Formatter->NewlineBeforeFnDoubleArrows
-                && $token->prevSiblingOf(\T_FN, true)->nextSiblingOf(\T_DOUBLE_ARROW) === $token) {
-            return false;
-        }
-
-        // Only preserve newlines after `implements` and `extends` if they are
-        // followed by a list of interfaces
-        if (($token->id === \T_IMPLEMENTS || $token->id === \T_EXTENDS)
-                && !($token->Flags & TokenFlag::LIST_PARENT)) {
+        if (
+            ($token->Flags & TokenFlag::TERNARY_OPERATOR)
+            && $token->id === \T_QUESTION
+            && $token->Data[TokenData::OTHER_TERNARY_OPERATOR] === $next
+        ) {
             return false;
         }
 

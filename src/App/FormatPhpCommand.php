@@ -1608,11 +1608,7 @@ EOF,
                  ->disable($disable)
                  ->enable($enable)
                  ->flags($flags)
-                 ->tokenTypeIndex($this->OperatorsFirst
-                     ? (new TokenTypeIndex())->withLeadingOperators()
-                     : ($this->OperatorsLast
-                         ? (new TokenTypeIndex())->withTrailingOperators()
-                         : null))
+                 ->tokenTypeIndex(new TokenTypeIndex($this->OperatorsFirst, $this->OperatorsLast))
                  ->preferredEol(self::EOL_MAP[$this->Eol])
                  ->preserveEol($this->Eol === 'auto')
                  ->heredocIndent(self::HEREDOC_INDENT_MAP[$this->HeredocIndent])
