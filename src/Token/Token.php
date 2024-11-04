@@ -1079,7 +1079,8 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      */
     public function pragmaticEndOfExpression(
         bool $containUnenclosed = true,
-        bool $containDeclaration = true
+        bool $containDeclaration = true,
+        bool $containTernary = false
     ): self {
         // If the token is a statement terminator, there is nothing else to move
         if (!$this->EndExpression) {
@@ -1124,15 +1125,41 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
         // If the token is between `?` and `:` in a ternary expression, return
         // the last token before `:`
+        $prevTernaryIsColon = null;
         $current = $this;
-        while ($current = $current->PrevSibling) {
-            if (($current->Flags & TokenFlag::TERNARY_OPERATOR)
-                    && $current->id === \T_QUESTION) {
-                if ($current->Data[TokenData::OTHER_TERNARY_OPERATOR]->Index > $this->Index) {
-                    /** @var self */
-                    return $current->Data[TokenData::OTHER_TERNARY_OPERATOR]->PrevCode;
+        while (
+            ($current = $current->PrevSibling)
+            && $current->Statement === $this->Statement
+        ) {
+            if ($current->Flags & TokenFlag::TERNARY_OPERATOR) {
+                if ($current->id === \T_QUESTION) {
+                    $prevTernaryIsColon ??= false;
+                    if ($current->Data[TokenData::OTHER_TERNARY_OPERATOR]->Index > $this->Index) {
+                        /** @var self */
+                        return $current->Data[TokenData::OTHER_TERNARY_OPERATOR]->PrevCode;
+                    }
+                    break;
+                } else {
+                    $prevTernaryIsColon ??= true;
                 }
-                break;
+            }
+        }
+
+        // If the token is between `:` and `?` in chained ternary expressions,
+        // return the last token before `?`
+        if ($containTernary && $prevTernaryIsColon) {
+            $current = $this;
+            while (
+                ($current = $current->NextSibling)
+                && $current->Statement === $this->Statement
+            ) {
+                if ($current->Flags & TokenFlag::TERNARY_OPERATOR) {
+                    if ($current->id === \T_QUESTION) {
+                        /** @var self */
+                        return $current->PrevCode;
+                    }
+                    break;
+                }
             }
         }
 

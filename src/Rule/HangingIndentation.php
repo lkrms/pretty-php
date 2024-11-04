@@ -265,7 +265,7 @@ final class HangingIndentation implements TokenRule
             //             $baz->qux()) ||
             //         $baz->quux())
             // ```
-            $until = $until ?? $token->pragmaticEndOfExpression();
+            $until = $until ?? $apply->pragmaticEndOfExpression(true, true, true);
             $indent = 0;
             $hanging = [];
             $parents =
