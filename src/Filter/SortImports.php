@@ -64,8 +64,8 @@ final class SortImports implements Filter
             // Exclude `class <name> { use <trait>; }`
             $parent = array_key_last($stack);
             if ($parent === null || (
-                $isNamespace[$parent]
-                    ??= $this->isDeclarationOf($parent, \T_NAMESPACE)
+                $isNamespace[$parent] ??=
+                    $this->isDeclarationOf($parent, \T_NAMESPACE)
             )) {
                 $useTokens[] = $i;
             }

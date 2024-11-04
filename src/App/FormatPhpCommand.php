@@ -1069,9 +1069,9 @@ EOF,
             }
 
             $dir = dirname($inputFile);
-            $formatter = $this->FormatterByDir[$dir]
-                ??= $this->DefaultFormatter
-                ??= $this->getFormatter();
+            $formatter = $this->FormatterByDir[$dir] ??=
+                $this->DefaultFormatter ??=
+                $this->getFormatter();
 
             $inputStream = File::open($file, 'rb');
 
@@ -1291,8 +1291,8 @@ EOF,
      */
     private function getDefaultSchemaOptionValues(): array
     {
-        return $this->DefaultSchemaOptionValues
-            ??= $this->getDefaultOptionValues(true);
+        return $this->DefaultSchemaOptionValues ??=
+            $this->getDefaultOptionValues(true);
     }
 
     /**

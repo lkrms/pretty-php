@@ -549,9 +549,8 @@ final class HangingIndentation implements TokenRule
     private function effectiveIndent(Token $token): int
     {
         // Ignore $token->LineUnpadding given its role in alignment
-        return
-            (int) (($token->indent() * $this->Formatter->TabSize
-                + $token->LinePadding
-                + $token->Padding) / $this->Formatter->TabSize);
+        return (int) (($token->indent() * $this->Formatter->TabSize
+            + $token->LinePadding
+            + $token->Padding) / $this->Formatter->TabSize);
     }
 }

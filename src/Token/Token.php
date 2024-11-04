@@ -1521,27 +1521,24 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     public function isArrayOpenBracket(): bool
     {
         if ($this->id === \T_OPEN_PARENTHESIS) {
-            return
-                $this->PrevCode
+            return $this->PrevCode
                 && $this->PrevCode->id === \T_ARRAY;
         }
 
-        return
-            $this->id === \T_OPEN_BRACKET && (
-                $this->Expression === $this
-                || !$this->PrevCode
-                || !$this->PrevCode->isDereferenceableTerminator()
-            );
+        return $this->id === \T_OPEN_BRACKET && (
+            $this->Expression === $this
+            || !$this->PrevCode
+            || !$this->PrevCode->isDereferenceableTerminator()
+        );
     }
 
     public function isDereferenceableTerminator(): bool
     {
-        return
-            $this->Idx->DereferenceableTerminator[$this->id] || (
-                $this->PrevCode
-                && $this->PrevCode->id === \T_DOUBLE_COLON
-                && $this->Idx->MaybeReserved[$this->id]
-            );
+        return $this->Idx->DereferenceableTerminator[$this->id] || (
+            $this->PrevCode
+            && $this->PrevCode->id === \T_DOUBLE_COLON
+            && $this->Idx->MaybeReserved[$this->id]
+        );
     }
 
     public function isOneLineComment(): bool
