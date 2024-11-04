@@ -8,6 +8,7 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\TokenUtility;
 
 /**
  * If the first token on a new line continues a statement from the previous one,
@@ -42,15 +43,8 @@ final class HangingIndentation implements TokenRule
 
     private const PARENT_TYPE = TokenData::HANGING_INDENT_PARENT_TYPE;
 
-    /**
-     * True if heredoc indentation is MIXED or HANGING
-     */
-    private bool $HeredocMayHaveHangingIndent;
-
-    /**
-     * True if heredoc indentation is HANGING
-     */
-    private bool $HeredocHasHangingIndent;
+    private bool $HeredocIndentIsMixed;
+    private bool $HeredocIndentIsHanging;
 
     public static function getPriority(string $method): ?int
     {
@@ -70,194 +64,176 @@ final class HangingIndentation implements TokenRule
     public function boot(): void
     {
         $indent = $this->Formatter->HeredocIndent;
-        $this->HeredocHasHangingIndent = (bool) ($indent & HeredocIndent::HANGING);
-        $this->HeredocMayHaveHangingIndent = $this->HeredocHasHangingIndent || $indent & HeredocIndent::MIXED;
+        $this->HeredocIndentIsMixed = (bool) ($indent & HeredocIndent::MIXED);
+        $this->HeredocIndentIsHanging = (bool) ($indent & HeredocIndent::HANGING);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
             if ($this->Idx->OpenBracket[$token->id]) {
-                $token->Data[self::PARENT_TYPE] =
-                    $token->hasNewlineBeforeNextCode()
-                        ? (($token->Flags & TokenFlag::LIST_PARENT
-                                && $token->Data[TokenData::LIST_ITEM_COUNT] > 1)
-                            || ($token->id === \T_OPEN_BRACE && (
-                                $token->Flags & TokenFlag::STRUCTURAL_BRACE
-                                || $token->isMatchBrace()
-                            ))
-                                ? self::NORMAL_INDENT
-                                : self::NO_INDENT)
-                        : (($token->Flags & TokenFlag::LIST_PARENT
-                                && $token->Data[TokenData::LIST_ITEM_COUNT] > 1)
-                            || ($token->id === \T_OPEN_BRACE && (
-                                $token->Flags & TokenFlag::STRUCTURAL_BRACE
-                                || $token->isMatchBrace()
-                            ))
-                            || ($token->id !== \T_OPEN_BRACE && $token->adjacent())
-                                ? self::OVERHANGING_INDENT | self::NO_INNER_NEWLINE
-                                : self::NORMAL_INDENT | self::NO_INNER_NEWLINE);
+                $hasList = (
+                    $token->Flags & TokenFlag::LIST_PARENT
+                    && $token->Data[TokenData::LIST_ITEM_COUNT] > 1
+                ) || (
+                    $token->id === \T_OPEN_BRACE && (
+                        $token->Flags & TokenFlag::STRUCTURAL_BRACE
+                        || $token->isMatchBrace()
+                    )
+                );
+                $token->Data[self::PARENT_TYPE] = $token->hasNewlineBeforeNextCode()
+                    ? ($hasList
+                        ? self::NORMAL_INDENT
+                        : self::NO_INDENT)
+                    : ($hasList || ($token->id !== \T_OPEN_BRACE && $token->adjacent())
+                        ? self::OVERHANGING_INDENT | self::NO_INNER_NEWLINE
+                        : self::NORMAL_INDENT | self::NO_INNER_NEWLINE);
+            }
+
+            // Ignore non-code tokens and T_CLOSE_TAG statement terminators
+            $prev = $token->PrevCode;
+            if ($this->Idx->NotCode[$token->id] || !$prev) {
+                continue;
             }
 
             // If this is the first child of a NO_INDENT parent, create a
             // hanging indent context for it to prevent siblings on subsequent
             // lines being indented
             $parent = $token->Parent;
-            if ($token->Flags & TokenFlag::CODE
-                    && $parent
-                    && $parent === $token->PrevCode
-                    && $token->NextCode
-                    && $parent->ClosedBy
-                    && $token->NextCode->Index < $parent->ClosedBy->Index
-                    && $this->Idx->OpenBracket[$parent->id]
-                    && $parent->Data[self::PARENT_TYPE] & self::NO_INDENT) {
+            if (
+                $parent === $prev
+                && $token->NextCode
+                && $parent->ClosedBy
+                && $token->NextCode->Index < $parent->ClosedBy->Index
+                && $this->Idx->OpenBracket[$parent->id]
+                && $parent->Data[self::PARENT_TYPE] & self::NO_INDENT
+            ) {
                 /** @var Token */
                 $current = $token->Next;
-                $stack = [[$parent]];
-                $stack[] = $token;
+                $context = [$parent, $token];
                 do {
-                    $current->HangingIndentStack[] = $token;
-                    $current->HangingIndentContextStack[] = $stack;
-                    $current->HangingIndentParentStack[] = $parent;
-                } while (($current = $current->Next)
-                    && $current !== $parent->ClosedBy);
+                    $current->HangingIndentToken = $token;
+                    $current->HangingIndentContext[] = $context;
+                    $current->HangingIndentParent[] = $parent;
+                } while (($current = $current->Next) && $current !== $parent->ClosedBy);
                 continue;
             }
 
             // Ignore tokens aligned by other rules
-            $prevCode = $token->PrevCode;
-            if ($token->AlignedWith
-                    || $this->Idx->NotCode[$token->id]
-                    || $this->Idx->CloseBracketOrEndAltSyntax[$token->id]
-                    || $this->Idx->HasStatement[$token->id]
-                    || !$prevCode) {
+            if (
+                $token->AlignedWith
+                || $this->Idx->CloseBracketOrEndAltSyntax[$token->id]
+                || $this->Idx->HasStatement[$token->id]
+            ) {
                 continue;
             }
 
             // Ignore tokens after attributes
-            if ($token->PrevSibling
-                && ($token->PrevSibling->id === \T_ATTRIBUTE
-                    || $token->PrevSibling->id === \T_ATTRIBUTE_COMMENT)) {
+            if ($token->PrevSibling && (
+                $token->PrevSibling->id === \T_ATTRIBUTE
+                || $token->PrevSibling->id === \T_ATTRIBUTE_COMMENT
+            )) {
                 continue;
             }
 
-            // Ignore tokens that aren't at the beginning of a line (including
-            // heredocs if applicable)
-            if (!$prevCode->hasNewlineBeforeNextCode()
-                && !($this->HeredocMayHaveHangingIndent
-                    && $prevCode->id === \T_START_HEREDOC
-                    && ($this->HeredocHasHangingIndent
-                        || ($prevCode->PrevCode
-                            && !$prevCode->AlignedWith
-                            && !$prevCode->PrevCode->hasNewlineBeforeNextCode())))) {
+            // Ignore tokens that aren't at the beginning of a line and aren't
+            // the first token in a heredoc with hanging indentation
+            if (!$prev->hasNewlineBeforeNextCode() && !(
+                $prev->id === \T_START_HEREDOC
+                && ($this->HeredocIndentIsHanging || (
+                    $this->HeredocIndentIsMixed
+                    && !$prev->AlignedWith
+                    && $prev->PrevCode
+                    && !$prev->PrevCode->hasNewlineBeforeNextCode()
+                ))
+            )) {
                 continue;
             }
 
             // Suppress hanging indentation between conditional expressions in
-            // `match`
-            if ($prevCode->id === \T_COMMA
-                    && $parent
-                    && $parent->id === \T_OPEN_BRACE
-                    && $prevCode->isMatchDelimiter()) {
-                continue;
-            }
-
-            // Suppress hanging indentation between aligned expressions in `for`
-            // loops
-            if ($parent
-                    && $parent->PrevCode
+            // `match` and aligned expressions in `for`
+            if ($prev->id === \T_COMMA && $parent && (
+                (
+                    $parent->id === \T_OPEN_BRACE
+                    && $prev->isMatchDelimiter()
+                ) || (
+                    $parent->PrevCode
                     && $parent->PrevCode->id === \T_FOR
-                    && $prevCode->id === \T_COMMA
                     && ($nextCode = $token->prevSiblingOf(\T_SEMICOLON)->or($parent)->NextCode)
-                    && $nextCode->AlignedWith) {
+                    && $nextCode->AlignedWith
+                )
+            )) {
                 continue;
             }
 
             // Ignore open braces, statements that inherit indentation from
-            // enclosing brackets, and lines with different indentation levels
-            // from the previous line
-            if ($token->id === \T_OPEN_BRACE
-                    || ($token->Statement === $token
-                        && (!$parent
-                            || !$this->Idx->OpenBracket[$parent->id]
-                            || !($parent->Data[self::PARENT_TYPE] & self::OVERHANGING_INDENT)))
-                    || $this->indent($prevCode) !== $this->indent($token)) {
+            // enclosing brackets, and lines with indentation that differs from
+            // the previous line
+            if (
+                $token->id === \T_OPEN_BRACE
+                || ($token->Statement === $token && (
+                    !$parent
+                    || !$this->Idx->OpenBracket[$parent->id]
+                    || !($parent->Data[self::PARENT_TYPE] & self::OVERHANGING_INDENT)
+                ))
+                || $this->indent($prev) !== $this->indent($token)
+            ) {
                 continue;
             }
 
-            $stack = [[$token->Parent]];
-            $latest = end($token->HangingIndentStack);
-            unset($until);
+            $trigger = $token->Parent !== $prev->Parent
+                || TokenUtility::isNewlineAllowedBefore($token)
+                || !TokenUtility::isNewlineAllowedAfter($prev)
+                    ? $token
+                    : $prev;
 
-            // Add an appropriate token to `$stack` to establish a context for
-            // this level of hanging indentation. If `$stack` matches a context
-            // already applied on behalf of a previous token, return without
-            // doing anything.
-            //
-            // The aim is to differentiate between, say, lines where a new
-            // expression starts, and lines where an expression continues:
-            //
-            // ```php
-            // $iterator = new RecursiveDirectoryIterator($dir,
-            //     FilesystemIterator::KEY_AS_PATHNAME |
-            //         FilesystemIterator::CURRENT_AS_FILEINFO |
-            //         FilesystemIterator::SKIP_DOTS);
-            // ```
-            //
-            // Or between ternary operators and the expressions they belong to:
-            //
-            // ```php
-            // return is_string($contents)
-            //     ? $contents
-            //     : json_encode($contents, JSON_PRETTY_PRINT);
-            // ```
-            //
-            // Or between the start of a ternary expression and a continued one:
-            //
-            // ```php
-            // fn($a, $b) =>
-            //     $a === $b
-            //         ? 0
-            //         : $a <=>
-            //             $b;
-            // ```
+            $context = [$token->Parent];
+            $latest = $token->HangingIndentToken;
+            $apply = $token;
+            $until = null;
+
+            // Add an appropriate token to `$context` to establish a context for
+            // this level of hanging indentation, and do nothing if it's already
+            // been applied on behalf of a previous token
             if (
-                $token->Flags & TokenFlag::TERNARY_OPERATOR
-                || $token->id === \T_COALESCE
-                || $token->id === \T_COALESCE_EQUAL
+                $trigger->Flags & TokenFlag::TERNARY_OPERATOR
+                || $trigger->id === \T_COALESCE
+                || $trigger->id === \T_COALESCE_EQUAL
             ) {
-                $stack[] = self::getTernaryContext($token)
-                    ?? self::getTernaryOperator1($token)
-                    ?? $token;
-                $until = self::getTernaryEndOfExpression($token);
+                $context[] = self::getTernaryContext($trigger)
+                    ?? self::getTernaryOperator1($trigger)
+                    ?? $trigger;
+                $until = self::getTernaryEndOfExpression($trigger);
+                $apply = $trigger;
             } elseif ($this->Idx->Chain[$token->id]) {
-                $stack[] = $token->Data[TokenData::CHAIN_OPENED_BY];
-            } elseif ($token->Heredoc && $token->Heredoc === $prevCode) {
-                $stack[] = $token->Heredoc;
+                $context[] = $token->Data[TokenData::CHAIN_OPENED_BY];
+            } elseif ($token->Heredoc && $token->Heredoc === $prev) {
+                $context[] = $token->Heredoc;
             } elseif (isset($token->Data[TokenData::LIST_PARENT])) {
-                $stack[] = $token->Data[TokenData::LIST_PARENT];
+                $context[] = $token->Data[TokenData::LIST_PARENT];
             } elseif ($latest && $latest->Parent === $token->Parent) {
-                if (
-                    $this->Idx->ExpressionDelimiter[$prevCode->id]
-                    || $this->Idx->ExpressionDelimiter[$token->id]
-                ) {
-                    $stack[] = $token;
+                if ($this->Idx->ExpressionDelimiter[$trigger->id]) {
+                    $context[] = $trigger;
+                    $apply = $trigger;
                 } elseif ($latest->id === \T_DOUBLE_ARROW) {
-                    $stack[] = $latest;
+                    $context[] = $latest;
                 } elseif (
                     $token->Statement !== $token
                     && $latest->Statement === $latest
                 ) {
                     if ($token->Expression === $latest->Expression) {
-                        $stack[] = $latest;
+                        $context[] = $latest;
                     } else {
-                        $delimiter = $token->prevSiblingFrom($this->Idx->ExpressionDelimiterExceptComparison);
+                        $delimiter = $trigger->prevSiblingFrom($this->Idx->ExpressionDelimiterExceptComparison);
                         if ($delimiter->id === \T_NULL) {
-                            $stack[] = $latest;
+                            $context[] = $latest;
                         } else {
-                            $startOfLine = $prevCode->startOfLine();
+                            $startOfLine = $prev->startOfLine();
                             if ($delimiter->Index < $startOfLine->Index) {
-                                $stack[] = $latest;
+                                $context[] = $latest;
                             }
                         }
                     }
@@ -265,20 +241,18 @@ final class HangingIndentation implements TokenRule
                     $token->Statement !== $token
                     && $latest->Statement !== $latest
                 ) {
-                    $latest = end($latest->HangingIndentStack);
+                    $latest = $latest->HangingIndentToken;
                     if (
                         $latest
                         && $latest->Parent === $token->Parent
                         && $latest->Statement === $latest
                     ) {
-                        $stack[] = $latest;
+                        $context[] = $latest;
                     }
                 }
             }
 
-            // If a hanging indent has already been applied to a token with the
-            // same stack, don't add it again
-            if (in_array($stack, $token->HangingIndentContextStack, true)) {
+            if (in_array($context, $token->HangingIndentContext, true)) {
                 continue;
             }
 
@@ -291,11 +265,11 @@ final class HangingIndentation implements TokenRule
             //             $baz->qux()) ||
             //         $baz->quux())
             // ```
-            $until = $until ?? $token->pragmaticEndOfExpression();
+            $until = $until ?? $apply->pragmaticEndOfExpression(true, true, true);
             $indent = 0;
             $hanging = [];
             $parents =
-                !$parent || in_array($parent, $token->HangingIndentParentStack, true)
+                !$parent || in_array($parent, $token->HangingIndentParent, true)
                     ? []
                     : [$parent];
             $current = $parent;
@@ -303,7 +277,7 @@ final class HangingIndentation implements TokenRule
                     && ($current = $current->Parent)
                     && $this->Idx->OpenBracket[$current->id]
                     && $current->Data[self::PARENT_TYPE] & self::NO_INNER_NEWLINE) {
-                if (in_array($current, $token->HangingIndentParentStack, true)) {
+                if (in_array($current, $token->HangingIndentParent, true)) {
                     continue;
                 }
                 $parents[] = $current;
@@ -362,9 +336,9 @@ final class HangingIndentation implements TokenRule
                 $current->HangingIndent += $indent;
                 $current->HangingIndentParentLevels += $hanging;
                 if ($current !== $token) {
-                    $current->HangingIndentStack[] = $token;
-                    $current->HangingIndentContextStack[] = $stack;
-                    array_push($current->HangingIndentParentStack, ...$parents);
+                    $current->HangingIndentToken = $apply;
+                    $current->HangingIndentContext[] = $context;
+                    array_push($current->HangingIndentParent, ...$parents);
                 }
             } while (
                 $current !== $until
@@ -545,7 +519,7 @@ final class HangingIndentation implements TokenRule
                                 && ($next->HangingIndentParentLevels[$index] ?? 0))
                             || ($next->Index > $until->Index
                                 && $next->Parent === $token->Parent
-                                && $next->HangingIndentContextStack === $token->HangingIndentContextStack
+                                && $next->HangingIndentContext === $token->HangingIndentContext
                                 && !(($next->Statement === $next) xor ($token->Statement === $token))))) {
                         $nextIndent--;
                     }
@@ -575,9 +549,8 @@ final class HangingIndentation implements TokenRule
     private function effectiveIndent(Token $token): int
     {
         // Ignore $token->LineUnpadding given its role in alignment
-        return
-            (int) (($token->indent() * $this->Formatter->TabSize
-                + $token->LinePadding
-                + $token->Padding) / $this->Formatter->TabSize);
+        return (int) (($token->indent() * $this->Formatter->TabSize
+            + $token->LinePadding
+            + $token->Padding) / $this->Formatter->TabSize);
     }
 }

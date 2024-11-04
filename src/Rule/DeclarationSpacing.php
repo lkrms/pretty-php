@@ -361,8 +361,8 @@ final class DeclarationSpacing implements TokenRule
 
     private function hasDocComment(Token $token, bool $orBlankLineBefore = false): bool
     {
-        return $this->Declarations[$token->Index][$orBlankLineBefore ? 6 : 5]
-            ??= $this->doHasDocComment($token, $orBlankLineBefore);
+        return $this->Declarations[$token->Index][$orBlankLineBefore ? 6 : 5] ??=
+            $this->doHasDocComment($token, $orBlankLineBefore);
     }
 
     private function doHasDocComment(Token $token, bool $orBlankLineBefore): bool
@@ -401,8 +401,8 @@ final class DeclarationSpacing implements TokenRule
 
     private function isMultiLine(Token $token): bool
     {
-        return $this->Declarations[$token->Index][7]
-            ??= $token->EndStatement
+        return $this->Declarations[$token->Index][7] ??=
+            $token->EndStatement
                 && $token->collect($token->EndStatement)->hasNewline();
     }
 

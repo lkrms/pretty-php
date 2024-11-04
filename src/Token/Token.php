@@ -32,42 +32,42 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
     /** @var TokenSubType::*|-1|null */
     public ?int $SubType = null;
-    public ?Token $Prev = null;
-    public ?Token $Next = null;
-    public ?Token $PrevCode = null;
-    public ?Token $NextCode = null;
-    public ?Token $PrevSibling = null;
-    public ?Token $NextSibling = null;
-    public ?Token $Statement = null;
-    public ?Token $EndStatement = null;
+    public ?self $Prev = null;
+    public ?self $Next = null;
+    public ?self $PrevCode = null;
+    public ?self $NextCode = null;
+    public ?self $PrevSibling = null;
+    public ?self $NextSibling = null;
+    public ?self $Statement = null;
+    public ?self $EndStatement = null;
 
     /**
      * The token at the start of the token's expression, or null if the token is
      * an expression delimiter
      */
-    public ?Token $Expression = null;
+    public ?self $Expression = null;
 
     /**
      * The token at the end of the token's expression, or null if the token is a
      * statement delimiter
      */
-    public ?Token $EndExpression = null;
+    public ?self $EndExpression = null;
 
-    public ?Token $OpenedBy = null;
-    public ?Token $ClosedBy = null;
-    public ?Token $Parent = null;
+    public ?self $OpenedBy = null;
+    public ?self $ClosedBy = null;
+    public ?self $Parent = null;
     public int $Depth = 0;
-    public ?Token $OpenTag = null;
-    public ?Token $CloseTag = null;
-    public ?Token $String = null;
-    public ?Token $StringClosedBy = null;
-    public ?Token $Heredoc = null;
+    public ?self $OpenTag = null;
+    public ?self $CloseTag = null;
+    public ?self $String = null;
+    public ?self $StringClosedBy = null;
+    public ?self $Heredoc = null;
     /** @var int-mask-of<TokenFlag::*> */
     public int $Flags = 0;
 
     /**
      * @var array<TokenData::*,mixed>
-     * @phpstan-var array{string,int,Token,Token,Token,TokenCollection,int}
+     * @phpstan-var array{string,int,self,self,self,TokenCollection,int}
      */
     public array $Data;
 
@@ -123,27 +123,24 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     public int $HangingIndent = 0;
 
     /**
-     * The token that triggered each level of hanging indentation applied to the
-     * token
-     *
-     * @var Token[]
+     * The token on behalf of which a level of hanging indentation was most
+     * recently applied to the token
      */
-    public array $HangingIndentStack = [];
+    public ?self $HangingIndentToken = null;
 
     /**
      * The context of each level of hanging indentation applied to the token
      *
-     * @var array<array<array<Token|null>|Token>>
+     * @var array<array{self|null,1?:self}>
      */
-    public array $HangingIndentContextStack = [];
+    public array $HangingIndentContext = [];
 
     /**
-     * Parent tokens associated with at least one level of hanging indentation
-     * applied to the token
+     * Parent tokens associated with hanging indentation applied to the token
      *
-     * @var Token[]
+     * @var self[]
      */
-    public array $HangingIndentParentStack = [];
+    public array $HangingIndentParent = [];
 
     /**
      * Each entry represents a parent token associated with at least one level
@@ -159,7 +156,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     public int $LineUnpadding = 0;
     public int $Padding = 0;
     public ?string $HeredocIndent = null;
-    public ?Token $AlignedWith = null;
+    public ?self $AlignedWith = null;
 
     /**
      * Bitmask representing whitespace between the token and its predecessor
@@ -286,10 +283,16 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      *
      * @param array<int,bool> $index
      */
-    public function prevSiblingFrom(array $index): Token
+    public function prevSiblingFrom(array $index, bool $sameStatement = false): self
     {
+        if ($this->id === \T_NULL) {
+            return $this;
+        }
         $t = $this;
         while ($t = $t->PrevSibling) {
+            if ($sameStatement && $t->Statement !== $this->Statement) {
+                break;
+            }
             if ($index[$t->id]) {
                 return $t;
             }
@@ -302,10 +305,16 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      *
      * @param array<int,bool> $index
      */
-    public function nextSiblingFrom(array $index): Token
+    public function nextSiblingFrom(array $index, bool $sameStatement = false): self
     {
+        if ($this->id === \T_NULL) {
+            return $this;
+        }
         $t = $this;
         while ($t = $t->NextSibling) {
+            if ($sameStatement && $t->Statement !== $this->Statement) {
+                break;
+            }
             if ($index[$t->id]) {
                 return $t;
             }
@@ -320,9 +329,14 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      *
      * @param array<int,bool> $index
      */
-    public function skipSiblingsFrom(array $index): Token
+    public function skipNextSiblingsFrom(array $index): self
     {
-        $t = $this->Flags & TokenFlag::CODE ? $this : $this->NextCode;
+        if ($this->id === \T_NULL) {
+            return $this;
+        }
+        $t = $this->Flags & TokenFlag::CODE
+            ? $this
+            : $this->NextSibling;
         while ($t && $index[$t->id]) {
             $t = $t->NextSibling;
         }
@@ -336,9 +350,14 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      *
      * @param array<int,bool> $index
      */
-    public function skipPrevSiblingsFrom(array $index): Token
+    public function skipPrevSiblingsFrom(array $index): self
     {
-        $t = $this->Flags & TokenFlag::CODE ? $this : $this->PrevCode;
+        if ($this->id === \T_NULL) {
+            return $this;
+        }
+        $t = $this->Flags & TokenFlag::CODE
+            ? $this
+            : $this->PrevSibling;
         while ($t && $index[$t->id]) {
             $t = $t->PrevSibling;
         }
@@ -346,12 +365,18 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     }
 
     /**
-     * Get the previous sibling that is of the given type
+     * Get the previous sibling of the given type
      */
-    public function prevSiblingOf(int $type): Token
+    public function prevSiblingOf(int $type, bool $sameStatement = false): self
     {
+        if ($this->id === \T_NULL) {
+            return $this;
+        }
         $t = $this;
         while ($t = $t->PrevSibling) {
+            if ($sameStatement && $t->Statement !== $this->Statement) {
+                break;
+            }
             if ($t->id === $type) {
                 return $t;
             }
@@ -360,12 +385,18 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     }
 
     /**
-     * Get the next sibling that is of the given type
+     * Get the next sibling of the given type
      */
-    public function nextSiblingOf(int $type): Token
+    public function nextSiblingOf(int $type, bool $sameStatement = false): self
     {
+        if ($this->id === \T_NULL) {
+            return $this;
+        }
         $t = $this;
         while ($t = $t->NextSibling) {
+            if ($sameStatement && $t->Statement !== $this->Statement) {
+                break;
+            }
             if ($t->id === $type) {
                 return $t;
             }
@@ -376,7 +407,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     /**
      * Get the last reachable token
      */
-    public function last(): Token
+    public function last(): self
     {
         $t = $this;
         while ($t->Parent) {
@@ -391,9 +422,9 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     /**
      * Get the token, or a fallback if it is T_NULL
      *
-     * @param Token|(Closure(): Token) $token
+     * @param self|(Closure(): self) $token
      */
-    public function or($token): Token
+    public function or($token): self
     {
         if ($this->id !== \T_NULL) {
             return $this;
@@ -401,6 +432,17 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         if ($token instanceof Closure) {
             return $token();
         }
+        return $token;
+    }
+
+    /**
+     * Get a new T_NULL token
+     */
+    public function null(): self
+    {
+        $token = new self(\T_NULL, '');
+        $token->Formatter = $this->Formatter;
+        $token->Idx = $this->Idx;
         return $token;
     }
 
@@ -464,7 +506,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      */
     private function getColonType(): ?int
     {
-        /** @var Token */
+        /** @var self */
         $prevCode = $this->PrevCode;
 
         if (
@@ -549,7 +591,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      */
     private function getQuestionType(): int
     {
-        /** @var Token */
+        /** @var self */
         $prevCode = $this->PrevCode;
         if (
             (
@@ -688,14 +730,14 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         }
 
         // Get the first non-attribute
-        $first = $this->skipSiblingsFrom($this->Idx->Attribute);
+        $first = $this->skipNextSiblingsFrom($this->Idx->Attribute);
 
         // Exclude non-declarations
         if (!$this->Idx->Declaration[$first->id]) {
             return false;
         }
 
-        /** @var Token */
+        /** @var self */
         $next = $first->NextCode;
 
         // Exclude:
@@ -708,7 +750,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
                 && !$this->Idx->Declaration[$next->id]  // `static function`
                 && !(                                   // `static int $foo`
                     $this->Idx->ValueTypeStart[$next->id]
-                    && $next->skipSiblingsFrom($this->Idx->ValueType)->id === \T_VARIABLE
+                    && $next->skipNextSiblingsFrom($this->Idx->ValueType)->id === \T_VARIABLE
                 )
                 && !(                                   // `static $foo` in a property context
                     $next->id === \T_VARIABLE
@@ -749,7 +791,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      * The token returned by this method may not be part of a declaration. It
      * should only be used as a starting point for further checks.
      */
-    public function skipPrevSiblingsToDeclarationStart(): Token
+    public function skipPrevSiblingsToDeclarationStart(): self
     {
         if (!$this->Expression) {
             // @codeCoverageIgnoreStart
@@ -837,7 +879,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             || $text[-1] === "\n";
     }
 
-    public function startOfLine(bool $ignoreComments = true): Token
+    public function startOfLine(bool $ignoreComments = true): self
     {
         $current = $this;
         while (!$current->hasNewlineBefore()
@@ -851,7 +893,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         return $current;
     }
 
-    public function endOfLine(bool $ignoreComments = true): Token
+    public function endOfLine(bool $ignoreComments = true): self
     {
         $current = $this;
         while (!$current->hasNewlineAfter()
@@ -885,7 +927,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
                     ->collect($this)
                     ->reverse()
                     ->find(
-                        fn(Token $t, ?Token $next) =>
+                        fn(self $t, ?self $next) =>
                             ($t->AlignedWith
                                 && ($allowSelfAlignment || $t !== $this))
                             || ($next
@@ -895,7 +937,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         if ($includeToken) {
             $code = $from->collect($this)->render(true);
         } else {
-            /** @var Token */
+            /** @var self */
             $prev = $this->Prev;
             $code = $from->collect($prev)->render(true, true, false);
         }
@@ -923,7 +965,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      * @param bool $containUnenclosed If `true`, braces are imagined around
      * control structures with unenclosed bodies. The default is `false`.
      */
-    public function pragmaticStartOfExpression(bool $containUnenclosed = false): Token
+    public function pragmaticStartOfExpression(bool $containUnenclosed = false): self
     {
         if ($this->Idx->Chain[$this->id]) {
             // Get the first token in the expression dereferenced by the first
@@ -945,11 +987,11 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         // the first token after `?`
         $ternary1 =
             $this->prevSiblings()
-                 ->find(fn(Token $t) =>
+                 ->find(fn(self $t) =>
                             ($t->Flags & TokenFlag::TERNARY_OPERATOR)
                                 && $t->id === \T_QUESTION);
         if ($ternary1 && $ternary1->Data[TokenData::OTHER_TERNARY_OPERATOR]->Index > $this->Index) {
-            /** @var Token */
+            /** @var self */
             $next = $ternary1->NextCode;
             return $next->_pragmaticStartOfExpression($this);
         }
@@ -1014,10 +1056,10 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         }
     }
 
-    private function _pragmaticStartOfExpression(Token $requester): Token
+    private function _pragmaticStartOfExpression(self $requester): self
     {
         if ($requester !== $this && $this->Idx->Return[$this->id]) {
-            /** @var Token */
+            /** @var self */
             return $this->NextCode;
         }
 
@@ -1037,8 +1079,9 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      */
     public function pragmaticEndOfExpression(
         bool $containUnenclosed = true,
-        bool $containDeclaration = true
-    ): Token {
+        bool $containDeclaration = true,
+        bool $containTernary = false
+    ): self {
         // If the token is a statement terminator, there is nothing else to move
         if (!$this->EndExpression) {
             // @codeCoverageIgnoreStart
@@ -1060,7 +1103,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         // If the token is an expression delimiter, return the last token in the
         // statement
         if (!$containUnenclosed && !$this->Expression) {
-            /** @var Token */
+            /** @var self */
             $end = $this->EndStatement;
             return $end === $this
                 ? $end
@@ -1082,15 +1125,41 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
         // If the token is between `?` and `:` in a ternary expression, return
         // the last token before `:`
+        $prevTernaryIsColon = null;
         $current = $this;
-        while ($current = $current->PrevSibling) {
-            if (($current->Flags & TokenFlag::TERNARY_OPERATOR)
-                    && $current->id === \T_QUESTION) {
-                if ($current->Data[TokenData::OTHER_TERNARY_OPERATOR]->Index > $this->Index) {
-                    /** @var Token */
-                    return $current->Data[TokenData::OTHER_TERNARY_OPERATOR]->PrevCode;
+        while (
+            ($current = $current->PrevSibling)
+            && $current->Statement === $this->Statement
+        ) {
+            if ($current->Flags & TokenFlag::TERNARY_OPERATOR) {
+                if ($current->id === \T_QUESTION) {
+                    $prevTernaryIsColon ??= false;
+                    if ($current->Data[TokenData::OTHER_TERNARY_OPERATOR]->Index > $this->Index) {
+                        /** @var self */
+                        return $current->Data[TokenData::OTHER_TERNARY_OPERATOR]->PrevCode;
+                    }
+                    break;
+                } else {
+                    $prevTernaryIsColon ??= true;
                 }
-                break;
+            }
+        }
+
+        // If the token is between `:` and `?` in chained ternary expressions,
+        // return the last token before `?`
+        if ($containTernary && $prevTernaryIsColon) {
+            $current = $this;
+            while (
+                ($current = $current->NextSibling)
+                && $current->Statement === $this->Statement
+            ) {
+                if ($current->Flags & TokenFlag::TERNARY_OPERATOR) {
+                    if ($current->id === \T_QUESTION) {
+                        /** @var self */
+                        return $current->PrevCode;
+                    }
+                    break;
+                }
             }
         }
 
@@ -1152,7 +1221,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         return $current;
     }
 
-    private function getEndOfDeclaration(): ?Token
+    private function getEndOfDeclaration(): ?self
     {
         $parts = $this->skipPrevSiblingsToDeclarationStart()
                       ->declarationParts();
@@ -1160,7 +1229,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             return null;
         }
 
-        /** @var Token */
+        /** @var self */
         $last = $parts->last();
         if ($last->Index < $this->Index) {
             return null;
@@ -1194,12 +1263,12 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         //     // ...
         // };
         // ```
-        /** @var Token */
+        /** @var self */
         $first = $parts->first();
         if ($first->id === \T_NEW && $first->NextCode === $this) {
-            /** @var Token */
+            /** @var self */
             $class = $parts->getFirstOf(\T_CLASS);
-            /** @var Token */
+            /** @var self */
             $prev = $class->PrevCode;
             if ($prev->hasNewlineBeforeNextCode()) {
                 return null;
@@ -1207,7 +1276,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         }
 
         $body = $last->nextSiblingOf(\T_OPEN_BRACE);
-        /** @var Token */
+        /** @var self */
         $end = $this->EndStatement;
         if ($body->id === \T_NULL || $body->Index >= $end->Index) {
             return null;
@@ -1221,7 +1290,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      * brackets or commas in any combination, and the last of these has a
      * subsequent token in the same statement, return it
      */
-    public function adjacent(): ?Token
+    public function adjacent(): ?self
     {
         $t = $this->ClosedBy ?? $this;
         $outer = $t->withNextCodeWhile($this->Idx->CloseBracketOrComma, true)
@@ -1256,7 +1325,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      *   between the adjacent token and the end of the line with an
      *   {@see Token::$AlignedWith} token
      */
-    public function adjacentBeforeNewline(bool $requireAlignedWith = true): ?Token
+    public function adjacentBeforeNewline(bool $requireAlignedWith = true): ?self
     {
         // Return `null` if neither the token nor its parent have a close
         // bracket
@@ -1273,7 +1342,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         // bracket and assign it to `$outer`
         $eol = $this->endOfLine();
         $outer = $current->withNextCodeWhile($this->Idx->CloseBracketOrComma)
-                         ->filter(fn(Token $t) => $t->Index <= $eol->Index)
+                         ->filter(fn(self $t) => $t->Index <= $eol->Index)
                          ->last();
 
         // If it's a `,`, move to the first token of the next expression on the
@@ -1308,7 +1377,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         if ($requireAlignedWith
             && !$outer->NextCode
                       ->collect($eol)
-                      ->find(fn(Token $t) => (bool) $t->AlignedWith)) {
+                      ->find(fn(self $t) => (bool) $t->AlignedWith)) {
             return null;
         }
 
@@ -1322,7 +1391,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      *
      * The token returns itself if it satisfies the criteria.
      */
-    public function lastSiblingBeforeNewline(): Token
+    public function lastSiblingBeforeNewline(): self
     {
         $eol = $this->endOfLine();
         $current = $this->ClosedBy ?: $this;
@@ -1335,7 +1404,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         return $last;
     }
 
-    public function withoutTerminator(): Token
+    public function withoutTerminator(): self
     {
         if ($this->PrevCode && (
             $this->Idx->StatementTerminator[$this->id]
@@ -1346,7 +1415,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         return $this;
     }
 
-    public function withTerminator(): Token
+    public function withTerminator(): self
     {
         if ($this->NextCode && !(
             $this->Idx->StatementTerminator[$this->id]
@@ -1456,7 +1525,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         }
         $t = $this;
         while (true) {
-            /** @var Token */
+            /** @var self */
             $t = $t->Next;
             if ($t === $this->NextCode) {
                 break;
@@ -1479,27 +1548,24 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     public function isArrayOpenBracket(): bool
     {
         if ($this->id === \T_OPEN_PARENTHESIS) {
-            return
-                $this->PrevCode
+            return $this->PrevCode
                 && $this->PrevCode->id === \T_ARRAY;
         }
 
-        return
-            $this->id === \T_OPEN_BRACKET && (
-                $this->Expression === $this
-                || !$this->PrevCode
-                || !$this->PrevCode->isDereferenceableTerminator()
-            );
+        return $this->id === \T_OPEN_BRACKET && (
+            $this->Expression === $this
+            || !$this->PrevCode
+            || !$this->PrevCode->isDereferenceableTerminator()
+        );
     }
 
     public function isDereferenceableTerminator(): bool
     {
-        return
-            $this->Idx->DereferenceableTerminator[$this->id] || (
-                $this->PrevCode
-                && $this->PrevCode->id === \T_DOUBLE_COLON
-                && $this->Idx->MaybeReserved[$this->id]
-            );
+        return $this->Idx->DereferenceableTerminator[$this->id] || (
+            $this->PrevCode
+            && $this->PrevCode->id === \T_DOUBLE_COLON
+            && $this->Idx->MaybeReserved[$this->id]
+        );
     }
 
     public function isOneLineComment(): bool
@@ -1533,7 +1599,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      * Get the difference in indentation between the token and a token being
      * used for alignment
      */
-    public function indentDelta(Token $token): TokenIndentDelta
+    public function indentDelta(self $token): TokenIndentDelta
     {
         return TokenIndentDelta::between($this, $token);
     }
@@ -1669,7 +1735,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     /**
      * Get the token and its following tokens up to and including a given token
      */
-    public function collect(Token $to): TokenCollection
+    public function collect(self $to): TokenCollection
     {
         return TokenCollection::collect($this, $to);
     }
@@ -1678,7 +1744,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      * Get the token and its following siblings, optionally stopping at a given
      * sibling
      */
-    public function collectSiblings(?Token $to = null): TokenCollection
+    public function collectSiblings(?self $to = null): TokenCollection
     {
         $tokens = new TokenCollection();
         if ($this->id === \T_NULL) {
@@ -1711,7 +1777,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      * Get preceding siblings in reverse document order, optionally stopping at
      * a given sibling
      */
-    public function prevSiblings(?Token $to = null): TokenCollection
+    public function prevSiblings(?self $to = null): TokenCollection
     {
         $tokens = new TokenCollection();
         if ($this->id === \T_NULL) {
@@ -1917,23 +1983,6 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     }
 
     // --
-
-    /**
-     * Get a new T_NULL token
-     *
-     * @return static
-     */
-    public function null(): Token
-    {
-        $token = new static(\T_NULL, '');
-        if (isset($this->Formatter)) {
-            $token->Formatter = $this->Formatter;
-        }
-        if (isset($this->Idx)) {
-            $token->Idx = $this->Idx;
-        }
-        return $token;
-    }
 
     /**
      * @return array<string,mixed>

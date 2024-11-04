@@ -1,6 +1,9 @@
 # Newlines
 
-## Default
+The token lists below are validated by the `TokenTypeIndex` [unit test][], so
+any changes to structure or syntax must be reflected there.
+
+## Mixed
 
 ### After
 
@@ -13,7 +16,7 @@ By default, newlines are allowed after:
 - `T_COMMA`
 - `T_COMMENT`
 - `T_DOC_COMMENT`
-- `T_DOUBLE_ARROW` (if applicable)
+- `T_DOUBLE_ARROW` (except in arrow functions)
 - `T_EXTENDS`
 - `T_IMPLEMENTS`
 - `T_OPEN_BRACE`
@@ -21,14 +24,10 @@ By default, newlines are allowed after:
 - `T_OPEN_PARENTHESIS`
 - `T_OPEN_TAG`
 - `T_OPEN_TAG_WITH_ECHO`
-- `T_RETURN`
 - `T_SEMICOLON`
-- `T_THROW`
-- `T_YIELD`
-- `T_YIELD_FROM`
-- Assignment operators (except `??=`)
-- Comparison operators (except `??`)
-- Logical operators (except `!`) - `&&`, `||`, `and`, `or`, `xor`
+- Assignment operators
+- Comparison operators (except `T_COALESCE`)
+- Logical operators (except `T_LOGICAL_NOT`) - `&&`, `||`, `and`, `or`, `xor`
 
 ### Before
 
@@ -40,9 +39,8 @@ They are also allowed before:
 - `T_CLOSE_PARENTHESIS`
 - `T_CLOSE_TAG`
 - `T_COALESCE`
-- `T_COALESCE_EQUAL`
 - `T_CONCAT`
-- `T_DOUBLE_ARROW` (if applicable)
+- `T_DOUBLE_ARROW` (except in arrow functions)
 - `T_LOGICAL_NOT`
 - `T_NULLSAFE_OBJECT_OPERATOR`
 - `T_OBJECT_OPERATOR`
@@ -53,7 +51,7 @@ They are also allowed before:
 ## Operators first
 
 If **`--operators-first`** is given, newlines are allowed before, and not after,
-assignment operators (except `=`), comparison operators, and logical operators.
+comparison operators and logical operators.
 
 ### After
 
@@ -64,8 +62,7 @@ assignment operators (except `=`), comparison operators, and logical operators.
 - `T_COMMA`
 - `T_COMMENT`
 - `T_DOC_COMMENT`
-- `T_DOUBLE_ARROW` (if applicable)
-- `T_EQUAL`
+- `T_DOUBLE_ARROW` (except in arrow functions)
 - `T_EXTENDS`
 - `T_IMPLEMENTS`
 - `T_OPEN_BRACE`
@@ -73,11 +70,8 @@ assignment operators (except `=`), comparison operators, and logical operators.
 - `T_OPEN_PARENTHESIS`
 - `T_OPEN_TAG`
 - `T_OPEN_TAG_WITH_ECHO`
-- `T_RETURN`
 - `T_SEMICOLON`
-- `T_THROW`
-- `T_YIELD`
-- `T_YIELD_FROM`
+- Assignment operators
 
 ### Before
 
@@ -87,11 +81,10 @@ assignment operators (except `=`), comparison operators, and logical operators.
 - `T_CLOSE_PARENTHESIS`
 - `T_CLOSE_TAG`
 - `T_CONCAT`
-- `T_DOUBLE_ARROW` (if applicable)
+- `T_DOUBLE_ARROW` (except in arrow functions)
 - `T_NULLSAFE_OBJECT_OPERATOR`
 - `T_OBJECT_OPERATOR`
 - Arithmetic operators
-- Assignment operators (except `=`)
 - Bitwise operators - `&`, `^`, `|`, `~`, `<<`, `>>`
 - Comparison operators
 - Logical operators - `!`, `&&`, `||`, `and`, `or`, `xor`
@@ -100,7 +93,7 @@ assignment operators (except `=`), comparison operators, and logical operators.
 ## Operators last
 
 With **`--operators-last`**, newlines are allowed after, and not before,
-`T_COALESCE`, `T_COALESCE_EQUAL`, `T_CONCAT`, arithmetic and bitwise operators.
+`T_COALESCE`, `T_CONCAT`, arithmetic and bitwise operators.
 
 ### After
 
@@ -112,7 +105,7 @@ With **`--operators-last`**, newlines are allowed after, and not before,
 - `T_COMMENT`
 - `T_CONCAT`
 - `T_DOC_COMMENT`
-- `T_DOUBLE_ARROW` (if applicable)
+- `T_DOUBLE_ARROW` (except in arrow functions)
 - `T_EXTENDS`
 - `T_IMPLEMENTS`
 - `T_OPEN_BRACE`
@@ -120,16 +113,12 @@ With **`--operators-last`**, newlines are allowed after, and not before,
 - `T_OPEN_PARENTHESIS`
 - `T_OPEN_TAG`
 - `T_OPEN_TAG_WITH_ECHO`
-- `T_RETURN`
 - `T_SEMICOLON`
-- `T_THROW`
-- `T_YIELD`
-- `T_YIELD_FROM`
 - Arithmetic operators
 - Assignment operators
 - Bitwise operators - `&`, `^`, `|`, `~`, `<<`, `>>`
 - Comparison operators
-- Logical operators (except `!`) - `&&`, `||`, `and`, `or`, `xor`
+- Logical operators (except `T_LOGICAL_NOT`) - `&&`, `||`, `and`, `or`, `xor`
 
 ### Before
 
@@ -138,8 +127,10 @@ With **`--operators-last`**, newlines are allowed after, and not before,
 - `T_CLOSE_BRACKET`
 - `T_CLOSE_PARENTHESIS`
 - `T_CLOSE_TAG`
-- `T_DOUBLE_ARROW` (if applicable)
+- `T_DOUBLE_ARROW` (except in arrow functions)
 - `T_LOGICAL_NOT`
 - `T_NULLSAFE_OBJECT_OPERATOR`
 - `T_OBJECT_OPERATOR`
 - Ternary operators
+
+[unit test]: ../tests/unit/Support/TokenTypeIndexTest.php

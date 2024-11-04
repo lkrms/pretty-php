@@ -15,6 +15,88 @@ use Salient\Utility\Str;
 
 final class TokenUtility
 {
+    /**
+     * Check if a newline is allowed before a token
+     */
+    public static function isNewlineAllowedBefore(Token $token): bool
+    {
+        if (!$token->Idx->PreserveNewlineBefore[$token->id]) {
+            return false;
+        }
+
+        // Only allow newlines before arrow function `=>` operators if enabled
+        if ($token->id === \T_DOUBLE_ARROW && (
+            !$token->Formatter->NewlineBeforeFnDoubleArrows
+            || $token->prevSiblingOf(\T_FN, true)->nextSiblingOf(\T_DOUBLE_ARROW) !== $token
+        )) {
+            return false;
+        }
+
+        // Don't allow newlines before `:` other than ternary operators
+        if ($token->id === \T_COLON && !($token->Flags & TokenFlag::TERNARY_OPERATOR)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if a newline is allowed after a token
+     */
+    public static function isNewlineAllowedAfter(Token $token): bool
+    {
+        // To allow newlines after attributes, ignore T_ATTRIBUTE itelf and
+        // treat its close bracket as T_ATTRIBUTE
+        if ($token->id === \T_ATTRIBUTE) {
+            return false;
+        }
+
+        if (
+            $token->OpenedBy
+            && $token->OpenedBy->id === \T_ATTRIBUTE
+            && $token->Idx->PreserveNewlineAfter[\T_ATTRIBUTE]
+        ) {
+            return true;
+        }
+
+        if (!$token->Idx->PreserveNewlineAfter[$token->id]) {
+            return false;
+        }
+
+        if (
+            $token->id === \T_CLOSE_BRACE
+            && !($token->Flags & TokenFlag::STRUCTURAL_BRACE)
+        ) {
+            return false;
+        }
+
+        // Don't allow newlines after `:` except when they terminate case
+        // statements and labels
+        if ($token->id === \T_COLON && !$token->isColonStatementDelimiter()) {
+            return false;
+        }
+
+        // Don't allow newlines after arrow function `=>` operators if disabled
+        if (
+            $token->id === \T_DOUBLE_ARROW
+            && $token->Formatter->NewlineBeforeFnDoubleArrows
+            && $token->prevSiblingOf(\T_FN, true)->nextSiblingOf(\T_DOUBLE_ARROW) === $token
+        ) {
+            return false;
+        }
+
+        // Only allow newlines after `implements` and `extends` if they have
+        // multiple interfaces
+        if (
+            ($token->id === \T_IMPLEMENTS || $token->id === \T_EXTENDS)
+            && !($token->Flags & TokenFlag::LIST_PARENT)
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
     public static function getWhitespace(int $type): string
     {
         if ($type & WhitespaceType::BLANK) {
@@ -109,24 +191,15 @@ final class TokenUtility
         $t['Indent'] = $token->Indent;
         $t['Deindent'] = $token->Deindent;
         $t['HangingIndent'] = $token->HangingIndent;
-        $t['HangingIndentStack'] = $token->HangingIndentStack;
+        $t['HangingIndentToken'] = $token->HangingIndentToken;
 
-        foreach ($token->HangingIndentContextStack as $i => $entry) {
+        foreach ($token->HangingIndentContext as $i => $entry) {
             foreach ($entry as $j => $entry) {
-                if (is_array($entry)) {
-                    foreach ($entry as $k => $entry) {
-                        if ($entry) {
-                            $entry = self::describe($entry);
-                        }
-                        $t['HangingIndentContextStack'][$i][$j][$k] = $entry;
-                    }
-                    continue;
-                }
-                $t['HangingIndentContextStack'][$i][$j] = self::describe($entry);
+                $t['HangingIndentContext'][$i][$j] = $entry ? self::describe($entry) : null;
             }
         }
 
-        $t['HangingIndentParentStack'] = $token->HangingIndentParentStack;
+        $t['HangingIndentParent'] = $token->HangingIndentParent;
         $t['HangingIndentParentLevels'] = $token->HangingIndentParentLevels;
         $t['LinePadding'] = $token->LinePadding;
         $t['LineUnpadding'] = $token->LineUnpadding;

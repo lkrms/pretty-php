@@ -37,7 +37,7 @@ final class Symfony implements Preset, TokenRule, ListRule
                        self::class,
                    ])
                    ->flags($flags)
-                   ->tokenTypeIndex((new TokenTypeIndex())->withLeadingOperators())
+                   ->tokenTypeIndex(new TokenTypeIndex(true))
                    ->heredocIndent(HeredocIndent::NONE)
                    ->importSortOrder(ImportSortOrder::NAME)
                    ->collapseEmptyDeclarationBodies(false)

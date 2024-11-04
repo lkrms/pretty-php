@@ -295,8 +295,8 @@ final class Parser implements Immutable
                     )
                 ) {
                     // @phpstan-ignore assign.propertyType
-                    $token->Flags
-                        |= TokenFlag::CODE
+                    $token->Flags |=
+                        TokenFlag::CODE
                         | TokenFlag::STATEMENT_TERMINATOR;
                 }
             }

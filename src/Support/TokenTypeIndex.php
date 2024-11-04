@@ -16,8 +16,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
 {
     use HasMutator;
 
-    private const LEADING = 0;
-    private const TRAILING = 1;
+    private const FIRST = 0;
+    private const LAST = 1;
     private const MIXED = 2;
 
     /**
@@ -131,7 +131,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
 
     /**
      * T_AND, T_AND_EQUAL, T_BOOLEAN_AND, T_BOOLEAN_OR, T_COALESCE,
-     * T_COALESCE_EQUAL, T_CONCAT, T_CONCAT_EQUAL, T_DIV, T_DIV_EQUAL,
+     * T_COALESCE_EQUAL, T_CONCAT, T_CONCAT_EQUAL, T_DIV, T_DIV_EQUAL, T_EQUAL,
      * T_GREATER, T_IS_EQUAL, T_IS_GREATER_OR_EQUAL, T_IS_IDENTICAL,
      * T_IS_NOT_EQUAL, T_IS_NOT_IDENTICAL, T_IS_SMALLER_OR_EQUAL, T_LOGICAL_AND,
      * T_LOGICAL_OR, T_LOGICAL_XOR, T_MINUS, T_MINUS_EQUAL, T_MOD, T_MOD_EQUAL,
@@ -878,15 +878,17 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      */
     public array $Virtual;
 
-    /** @var self::LEADING|self::TRAILING|self::MIXED */
-    private int $LastOperators;
+    /** @var self::FIRST|self::LAST|self::MIXED */
+    private int $Operators;
     /** @var array<int,bool> */
-    private array $_PreserveNewlineBefore;
+    private static array $DefaultAllowNewlineBefore;
     /** @var array<int,bool> */
-    private array $_PreserveNewlineAfter;
+    private static array $DefaultAllowNewlineAfter;
 
-    public function __construct()
-    {
+    public function __construct(
+        bool $operatorsFirst = false,
+        bool $operatorsLast = false
+    ) {
         $this->Bracket = self::get(
             \T_OPEN_BRACE,
             \T_OPEN_BRACKET,
@@ -985,7 +987,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
 
         $this->Movable = self::get(
             \T_CONCAT,
-            ...TG::OPERATOR_ASSIGNMENT_EXCEPT_EQUAL,
+            ...TG::OPERATOR_ASSIGNMENT,
             ...TG::OPERATOR_COMPARISON,
             ...TG::OPERATOR_LOGICAL_EXCEPT_NOT,
             ...TG::OPERATOR_ARITHMETIC,
@@ -1125,11 +1127,11 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             \T_OBJECT_OPERATOR,
         );
 
-        $preserveBlankBefore = [
+        $this->PreserveBlankBefore = self::get(
             \T_CLOSE_TAG,
-        ];
+        );
 
-        $preserveBlankAfter = [
+        $this->PreserveBlankAfter = self::get(
             \T_CLOSE_BRACE,
             \T_COMMA,
             \T_COMMENT,
@@ -1137,52 +1139,6 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             \T_OPEN_TAG,
             \T_OPEN_TAG_WITH_ECHO,
             \T_SEMICOLON,
-        ];
-
-        $this->PreserveNewlineBefore = self::get(
-            \T_ATTRIBUTE,
-            \T_ATTRIBUTE_COMMENT,
-            \T_CLOSE_BRACKET,
-            \T_CLOSE_PARENTHESIS,
-            \T_COALESCE,
-            \T_COALESCE_EQUAL,
-            \T_CONCAT,
-            \T_DOUBLE_ARROW,
-            \T_LOGICAL_NOT,
-            \T_NULLSAFE_OBJECT_OPERATOR,
-            \T_OBJECT_OPERATOR,
-            ...$preserveBlankBefore,
-            ...TG::OPERATOR_ARITHMETIC,
-            ...TG::OPERATOR_BITWISE,
-            ...TG::OPERATOR_TERNARY,
-        );
-
-        $this->PreserveNewlineAfter = self::get(
-            \T_ATTRIBUTE,
-            \T_ATTRIBUTE_COMMENT,
-            \T_COLON,
-            \T_DOUBLE_ARROW,
-            \T_EXTENDS,
-            \T_IMPLEMENTS,
-            \T_OPEN_BRACE,
-            \T_OPEN_BRACKET,
-            \T_OPEN_PARENTHESIS,
-            \T_RETURN,
-            \T_THROW,
-            \T_YIELD,
-            \T_YIELD_FROM,
-            ...$preserveBlankAfter,
-            ...TG::OPERATOR_ASSIGNMENT_EXCEPT_COALESCE,
-            ...TG::OPERATOR_COMPARISON_EXCEPT_COALESCE,
-            ...TG::OPERATOR_LOGICAL_EXCEPT_NOT,
-        );
-
-        $this->PreserveBlankBefore = self::get(
-            ...$preserveBlankBefore,
-        );
-
-        $this->PreserveBlankAfter = self::get(
-            ...$preserveBlankAfter,
         );
 
         $this->StatementTerminator = self::get(
@@ -1352,9 +1308,58 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             \T_NULL,
         );
 
-        $this->LastOperators = self::MIXED;
-        $this->_PreserveNewlineBefore = $this->PreserveNewlineBefore;
-        $this->_PreserveNewlineAfter = $this->PreserveNewlineAfter;
+        self::$DefaultAllowNewlineBefore ??= self::get(
+            \T_ATTRIBUTE,
+            \T_ATTRIBUTE_COMMENT,
+            \T_CLOSE_BRACKET,
+            \T_CLOSE_PARENTHESIS,
+            \T_CLOSE_TAG,
+            \T_COALESCE,
+            \T_CONCAT,
+            \T_DOUBLE_ARROW,
+            \T_LOGICAL_NOT,
+            \T_NULLSAFE_OBJECT_OPERATOR,
+            \T_OBJECT_OPERATOR,
+            ...TG::OPERATOR_ARITHMETIC,
+            ...TG::OPERATOR_BITWISE,
+            ...TG::OPERATOR_TERNARY,
+        );
+
+        self::$DefaultAllowNewlineAfter ??= self::get(
+            \T_ATTRIBUTE,
+            \T_ATTRIBUTE_COMMENT,
+            \T_CLOSE_BRACE,
+            \T_COLON,
+            \T_COMMA,
+            \T_COMMENT,
+            \T_DOC_COMMENT,
+            \T_DOUBLE_ARROW,
+            \T_EXTENDS,
+            \T_IMPLEMENTS,
+            \T_OPEN_BRACE,
+            \T_OPEN_BRACKET,
+            \T_OPEN_PARENTHESIS,
+            \T_OPEN_TAG,
+            \T_OPEN_TAG_WITH_ECHO,
+            \T_SEMICOLON,
+            ...TG::OPERATOR_ASSIGNMENT,
+            ...TG::OPERATOR_COMPARISON_EXCEPT_COALESCE,
+            ...TG::OPERATOR_LOGICAL_EXCEPT_NOT,
+        );
+
+        $operators = $operatorsFirst
+            ? self::FIRST
+            : ($operatorsLast ? self::LAST : self::MIXED);
+
+        if ($operators === self::FIRST) {
+            [$before, $after] = $this->getOperatorsFirstIndexes();
+        } elseif ($operators === self::LAST) {
+            [$before, $after] = $this->getOperatorsLastIndexes();
+        }
+
+        $this->PreserveNewlineBefore = $before ?? self::$DefaultAllowNewlineBefore;
+        $this->PreserveNewlineAfter = $after ?? self::$DefaultAllowNewlineAfter;
+        $this->Operators = $operators;
     }
 
     /**
@@ -1362,38 +1367,39 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      */
     public function withLeadingOperators()
     {
-        return (clone $this)->applyLeadingOperators();
+        [$before, $after] = $this->getOperatorsFirstIndexes();
+        return $this->with('PreserveNewlineBefore', $before)
+                    ->with('PreserveNewlineAfter', $after)
+                    ->with('Operators', self::FIRST);
     }
 
     /**
-     * @return static
+     * @return array{array<int,bool>,array<int,bool>}
      */
-    protected function applyLeadingOperators()
+    private function getOperatorsFirstIndexes(): array
     {
         $both = self::intersect(
-            $this->_PreserveNewlineBefore,
-            $this->_PreserveNewlineAfter,
+            self::$DefaultAllowNewlineBefore,
+            self::$DefaultAllowNewlineAfter,
         );
-        $preserveBefore = self::merge(
-            $this->_PreserveNewlineBefore,
+
+        $before = self::merge(
+            self::$DefaultAllowNewlineBefore,
             self::get(
-                ...TG::OPERATOR_ASSIGNMENT_EXCEPT_EQUAL,
                 ...TG::OPERATOR_COMPARISON,
                 ...TG::OPERATOR_LOGICAL_EXCEPT_NOT,
             ),
         );
-        $preserveAfter = self::merge(
+
+        $after = self::merge(
             self::diff(
-                $this->_PreserveNewlineAfter,
-                $preserveBefore,
+                self::$DefaultAllowNewlineAfter,
+                $before,
             ),
             $both
         );
 
-        $this->PreserveNewlineBefore = $preserveBefore;
-        $this->PreserveNewlineAfter = $preserveAfter;
-        $this->LastOperators = self::LEADING;
-        return $this;
+        return [$before, $after];
     }
 
     /**
@@ -1401,40 +1407,41 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      */
     public function withTrailingOperators()
     {
-        return (clone $this)->applyTrailingOperators();
+        [$before, $after] = $this->getOperatorsLastIndexes();
+        return $this->with('PreserveNewlineBefore', $before)
+                    ->with('PreserveNewlineAfter', $after)
+                    ->with('Operators', self::LAST);
     }
 
     /**
-     * @return static
+     * @return array{array<int,bool>,array<int,bool>}
      */
-    protected function applyTrailingOperators()
+    private function getOperatorsLastIndexes(): array
     {
         $both = self::intersect(
-            $this->_PreserveNewlineBefore,
-            $this->_PreserveNewlineAfter,
+            self::$DefaultAllowNewlineBefore,
+            self::$DefaultAllowNewlineAfter,
         );
-        $preserveAfter = self::merge(
-            $this->_PreserveNewlineAfter,
+
+        $after = self::merge(
+            self::$DefaultAllowNewlineAfter,
             self::get(
                 \T_COALESCE,
-                \T_COALESCE_EQUAL,
                 \T_CONCAT,
                 ...TG::OPERATOR_ARITHMETIC,
                 ...TG::OPERATOR_BITWISE,
             ),
         );
-        $preserveBefore = self::merge(
+
+        $before = self::merge(
             self::diff(
-                $this->_PreserveNewlineBefore,
-                $preserveAfter,
+                self::$DefaultAllowNewlineBefore,
+                $after,
             ),
             $both
         );
 
-        $this->PreserveNewlineBefore = $preserveBefore;
-        $this->PreserveNewlineAfter = $preserveAfter;
-        $this->LastOperators = self::TRAILING;
-        return $this;
+        return [$before, $after];
     }
 
     /**
@@ -1442,33 +1449,9 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      */
     public function withMixedOperators()
     {
-        return (clone $this)->applyMixedOperators();
-    }
-
-    /**
-     * @return static
-     */
-    protected function applyMixedOperators()
-    {
-        $this->PreserveNewlineBefore = $this->_PreserveNewlineBefore;
-        $this->PreserveNewlineAfter = $this->_PreserveNewlineAfter;
-        $this->LastOperators = self::MIXED;
-        return $this;
-    }
-
-    /**
-     * @return static
-     */
-    public function withPreserveNewline()
-    {
-        switch ($this->LastOperators) {
-            case self::LEADING:
-                return $this->withLeadingOperators();
-            case self::TRAILING:
-                return $this->withTrailingOperators();
-            case self::MIXED:
-                return $this->withMixedOperators();
-        }
+        return $this->with('PreserveNewlineBefore', self::$DefaultAllowNewlineBefore)
+                    ->with('PreserveNewlineAfter', self::$DefaultAllowNewlineAfter)
+                    ->with('Operators', self::MIXED);
     }
 
     /**
@@ -1481,11 +1464,26 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     }
 
     /**
+     * @return static
+     */
+    public function withPreserveNewline()
+    {
+        switch ($this->Operators) {
+            case self::FIRST:
+                return $this->withLeadingOperators();
+            case self::LAST:
+                return $this->withTrailingOperators();
+            case self::MIXED:
+                return $this->withMixedOperators();
+        }
+    }
+
+    /**
      * Get an index of the given token types
      *
      * @return array<int,bool>
      */
-    public static function get(int ...$types): array
+    final public static function get(int ...$types): array
     {
         return array_fill_keys($types, true) + self::TOKEN_INDEX;
     }
@@ -1496,7 +1494,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @param array<int,bool> ...$indexes
      * @return array<int,bool>
      */
-    public static function merge(array ...$indexes): array
+    final public static function merge(array ...$indexes): array
     {
         $index = self::TOKEN_INDEX;
         foreach ($indexes as $idx) {
@@ -1513,7 +1511,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @param array<int,bool> ...$indexes
      * @return array<int,bool>
      */
-    public static function diff(array $index, array ...$indexes): array
+    final public static function diff(array $index, array ...$indexes): array
     {
         if (!$indexes) {
             // @codeCoverageIgnoreStart
@@ -1535,7 +1533,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @param array<int,bool> ...$indexes
      * @return array<int,bool>
      */
-    public static function intersect(array $index, array ...$indexes): array
+    final public static function intersect(array $index, array ...$indexes): array
     {
         if (!$indexes) {
             // @codeCoverageIgnoreStart

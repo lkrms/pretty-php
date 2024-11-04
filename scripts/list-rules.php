@@ -116,11 +116,12 @@ foreach ($rules as $r) {
     if ($r['php_doc']) {
         /** @var PHPDoc */
         $phpDoc = $r['php_doc'];
-        if ($phpDoc->Description === null) {
+        $description = $phpDoc->getDescription();
+        if ($description === null) {
             continue;
         }
         $docs[] = '## ' . $heading;
-        $docs[] = $phpDoc->Description;
+        $docs[] = $description;
     }
 }
 

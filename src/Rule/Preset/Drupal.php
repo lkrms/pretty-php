@@ -98,7 +98,7 @@ final class Drupal implements Preset, TokenRule
                     continue;
                 }
 
-                if (array_key_exists('file', $phpDoc->TagsByName)) {
+                if ($phpDoc->hasTag('file')) {
                     $token->WhitespaceAfter |= WhitespaceType::BLANK;
                     $token->WhitespaceMaskNext |= WhitespaceType::BLANK;
                 }

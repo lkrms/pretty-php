@@ -52,8 +52,8 @@ class A
 
     public static function foo()
     {
-        $foo = self::$b[static::class]
-            ??= self::getFoo();
+        $foo = self::$b[static::class] ??=
+            self::getFoo();
     }
 
     private static function getFoo()
@@ -233,19 +233,18 @@ class Foo
             }
         }
 
-        return
-            match ($c) {
-                0, =>
-                    $this->Baz,
+        return match ($c) {
+            0, =>
+                $this->Baz,
 
-                1,
-                2 =>
-                    $this->baz
-                    * 2,
+            1,
+            2 =>
+                $this->baz
+                * 2,
 
-                default =>
-                    0,
-            };
+            default =>
+                0,
+        };
     }
 }
 
