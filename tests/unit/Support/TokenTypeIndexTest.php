@@ -72,11 +72,11 @@ class TokenTypeIndexTest extends TestCase
         $comment = $property->getDocComment();
         $this->assertIsString($comment, $message);
         $phpDoc = new PHPDoc($comment);
-        if (array_key_exists('internal', $phpDoc->TagsByName)) {
+        if ($phpDoc->hasTag('internal')) {
             return;
         }
-        $this->assertNotEmpty($phpDoc->Summary, $message);
-        $actual = Arr::sort(explode(', ', $phpDoc->Summary));
+        $this->assertNotNull($summary = $phpDoc->getSummary(), $message);
+        $actual = Arr::sort(explode(', ', $summary));
         $this->assertSame($expected, $actual, $message);
     }
 

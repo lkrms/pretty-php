@@ -183,7 +183,7 @@ final class FormatPhpCommand extends CliCommand
     /** @var array<string,Formatter|null> */
     private array $FormatterByDir;
     private Formatter $DefaultFormatter;
-    /** @var array<string,array<string|int|bool>|string|int|bool|null> */
+    /** @var array<string,array<string|int|bool|float>|string|int|bool|float|null> */
     private array $DefaultSchemaOptionValues;
 
     /**
@@ -1262,7 +1262,7 @@ EOF,
     }
 
     /**
-     * @param array<string,array<string|int|bool>|string|int|bool|null> $values
+     * @param array<string,array<string|int|bool|float>|string|int|bool|float|null> $values
      */
     private function getConfig(array $values): self
     {
@@ -1276,7 +1276,7 @@ EOF,
     }
 
     /**
-     * @return array<string,array<string|int|bool>|string|int|bool|null>
+     * @return array<string,array<string|int|bool|float>|string|int|bool|float|null>
      */
     private function getDefaultFormattingOptionValues(): array
     {
@@ -1287,7 +1287,7 @@ EOF,
     }
 
     /**
-     * @return array<string,array<string|int|bool>|string|int|bool|null>
+     * @return array<string,array<string|int|bool|float>|string|int|bool|float|null>
      */
     private function getDefaultSchemaOptionValues(): array
     {
@@ -1296,7 +1296,7 @@ EOF,
     }
 
     /**
-     * @return array<string,array<string|int|bool>|string|int|bool|null>
+     * @return array<string,array<string|int|bool|float>|string|int|bool|float|null>
      */
     private function getFormattingConfigValues(string $filename, bool $pristine = false): array
     {
@@ -1307,7 +1307,7 @@ EOF,
     }
 
     /**
-     * @return array<string,array<string|int|bool>|string|int|bool|null>
+     * @return array<string,array<string|int|bool|float>|string|int|bool|float|null>
      */
     private function getConfigValues(string $filename, bool $pristine = false): array
     {
