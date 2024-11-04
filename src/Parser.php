@@ -9,6 +9,7 @@ use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Token\Token;
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasMutator;
+use Salient\Utility\Exception\ShouldNotHappenException;
 use Salient\Utility\Regex;
 
 final class Parser implements Immutable
@@ -677,7 +678,13 @@ final class Parser implements Immutable
             } elseif ($idx->CloseBracket[$t->id]) {
                 $depth--;
             }
+            if ($depth < 0) {
+                break;
+            }
             $t = $t->Next;
+            if ($idx->NotCode[$t->id]) {
+                continue;
+            }
             if (!$depth) {
                 $offset--;
                 if (!$offset) {
@@ -687,7 +694,7 @@ final class Parser implements Immutable
         }
 
         // @codeCoverageIgnoreStart
-        return $token->null();
+        throw new ShouldNotHappenException('No sibling found');
         // @codeCoverageIgnoreEnd
     }
 
