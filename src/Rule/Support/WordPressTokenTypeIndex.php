@@ -30,16 +30,25 @@ final class WordPressTokenTypeIndex extends TokenTypeIndex
         self::$DefaultAllowNewlineAfter ??= $this->PreserveNewlineAfter;
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function withLeadingOperators()
     {
         return $this;
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function withTrailingOperators()
     {
         return $this;
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function withMixedOperators()
     {
         return $this;

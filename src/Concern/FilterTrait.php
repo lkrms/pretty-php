@@ -43,7 +43,9 @@ trait FilterTrait
     {
         while ($token = $this->getPrevSibling($i, 1, $j)) {
             if ($to !== null && $j < $to) {
+                // @codeCoverageIgnoreStart
                 break;
+                // @codeCoverageIgnoreEnd
             }
             if ($index[$token->id]) {
                 $key = $j;
@@ -127,7 +129,9 @@ trait FilterTrait
     protected function isColonSwitchCaseDelimiter(int $i, ?int $parentIndex = null): bool
     {
         $parent = $parentIndex === null
+            // @codeCoverageIgnoreStart
             ? $this->getParent($i, $parentIndex)
+            // @codeCoverageIgnoreEnd
             : $this->Tokens[$parentIndex];
         return $parent
             && ($parentPrev = $this->getPrevSibling($parentIndex, 2))

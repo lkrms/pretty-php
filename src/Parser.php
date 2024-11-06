@@ -677,14 +677,18 @@ final class Parser implements Immutable
             } elseif ($idx->CloseBracket[$token->id]) {
                 $depth--;
                 if ($depth < 0) {
+                    // @codeCoverageIgnoreStart
                     break;
+                    // @codeCoverageIgnoreEnd
                 }
             }
             $token = $token->Next;
             while ($idx->NotCode[$token->id]) {
                 $token = $token->Next;
                 if (!$token) {
+                    // @codeCoverageIgnoreStart
                     break 2;
+                    // @codeCoverageIgnoreEnd
                 }
             }
             if (!$depth) {
