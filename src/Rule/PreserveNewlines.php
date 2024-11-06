@@ -34,8 +34,8 @@ final class PreserveNewlines implements TokenRule
     public function processTokens(array $tokens): void
     {
         $preserveTypeIndex = TokenTypeIndex::merge(
-            $this->Idx->PreserveNewlineBefore,
-            $this->Idx->PreserveNewlineAfter,
+            $this->Idx->AllowNewlineBefore,
+            $this->Idx->AllowNewlineAfter,
         );
 
         foreach ($tokens as $token) {

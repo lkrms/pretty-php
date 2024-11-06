@@ -267,12 +267,12 @@ class TokenTypeIndexTest extends TestCase
         $first = $idx->withLeadingOperators();
         $last = $idx->withTrailingOperators();
 
-        $mixedBefore = self::getIndexTokens($mixed->PreserveNewlineBefore);
-        $mixedAfter = self::getIndexTokens($mixed->PreserveNewlineAfter);
-        $firstBefore = self::getIndexTokens($first->PreserveNewlineBefore);
-        $firstAfter = self::getIndexTokens($first->PreserveNewlineAfter);
-        $lastBefore = self::getIndexTokens($last->PreserveNewlineBefore);
-        $lastAfter = self::getIndexTokens($last->PreserveNewlineAfter);
+        $mixedBefore = self::getIndexTokens($mixed->AllowNewlineBefore);
+        $mixedAfter = self::getIndexTokens($mixed->AllowNewlineAfter);
+        $firstBefore = self::getIndexTokens($first->AllowNewlineBefore);
+        $firstAfter = self::getIndexTokens($first->AllowNewlineAfter);
+        $lastBefore = self::getIndexTokens($last->AllowNewlineBefore);
+        $lastAfter = self::getIndexTokens($last->AllowNewlineAfter);
 
         $alwaysFirstOrLast = array_intersect(
             $mixedBefore,
@@ -316,19 +316,19 @@ class TokenTypeIndexTest extends TestCase
                 static::ALWAYS_ALLOWED_AT_START_OR_END,
                 array_intersect($lastBefore, $lastAfter),
             ],
-            'Difference between [leading] $PreserveNewlineBefore and [mixed] $PreserveNewlineBefore' => [
+            'Difference between [leading] $AllowNewlineBefore and [mixed] $AllowNewlineBefore' => [
                 static::LEADING_OPERATORS,
                 array_diff($firstBefore, $mixedBefore),
             ],
-            'Difference between [mixed] $PreserveNewlineAfter and [leading] $PreserveNewlineAfter' => [
+            'Difference between [mixed] $AllowNewlineAfter and [leading] $AllowNewlineAfter' => [
                 static::LEADING_OPERATORS,
                 array_diff($mixedAfter, $firstAfter),
             ],
-            'Difference between [mixed] $PreserveNewlineBefore and [trailing] $PreserveNewlineBefore' => [
+            'Difference between [mixed] $AllowNewlineBefore and [trailing] $AllowNewlineBefore' => [
                 static::TRAILING_OPERATORS,
                 array_diff($mixedBefore, $lastBefore),
             ],
-            'Difference between [trailing] $PreserveNewlineAfter and [mixed] $PreserveNewlineAfter' => [
+            'Difference between [trailing] $AllowNewlineAfter and [mixed] $AllowNewlineAfter' => [
                 static::TRAILING_OPERATORS,
                 array_diff($lastAfter, $mixedAfter),
             ],
@@ -359,27 +359,27 @@ class TokenTypeIndexTest extends TestCase
                 static::MAYBE_ALLOWED_AT_START,
                 $maybeLast,
             ],
-            '[mixed] Difference between $PreserveBlankBefore and $PreserveNewlineBefore' => [
+            '[mixed] Difference between $PreserveBlankBefore and $AllowNewlineBefore' => [
                 [],
                 array_diff(self::getIndexTokens($mixed->PreserveBlankBefore), $mixedBefore),
             ],
-            '[mixed] Difference between $PreserveBlankAfter and $PreserveNewlineAfter' => [
+            '[mixed] Difference between $PreserveBlankAfter and $AllowNewlineAfter' => [
                 [],
                 array_diff(self::getIndexTokens($mixed->PreserveBlankAfter), $mixedAfter),
             ],
-            '[leading] Difference between $PreserveBlankBefore and $PreserveNewlineBefore' => [
+            '[leading] Difference between $PreserveBlankBefore and $AllowNewlineBefore' => [
                 [],
                 array_diff(self::getIndexTokens($first->PreserveBlankBefore), $firstBefore),
             ],
-            '[leading] Difference between $PreserveBlankAfter and $PreserveNewlineAfter' => [
+            '[leading] Difference between $PreserveBlankAfter and $AllowNewlineAfter' => [
                 [],
                 array_diff(self::getIndexTokens($first->PreserveBlankAfter), $firstAfter),
             ],
-            '[trailing] Difference between $PreserveBlankBefore and $PreserveNewlineBefore' => [
+            '[trailing] Difference between $PreserveBlankBefore and $AllowNewlineBefore' => [
                 [],
                 array_diff(self::getIndexTokens($last->PreserveBlankBefore), $lastBefore),
             ],
-            '[trailing] Difference between $PreserveBlankAfter and $PreserveNewlineAfter' => [
+            '[trailing] Difference between $PreserveBlankAfter and $AllowNewlineAfter' => [
                 [],
                 array_diff(self::getIndexTokens($last->PreserveBlankAfter), $lastAfter),
             ],
@@ -401,12 +401,12 @@ class TokenTypeIndexTest extends TestCase
             }
 
             yield from [
-                'Newlines > Mixed > After and [mixed] $PreserveNewlineAfter' => [$doc[0][0], $mixedAfter],
-                'Newlines > Mixed > Before and [mixed] $PreserveNewlineBefore' => [$doc[0][1], $mixedBefore],
-                'Newlines > Operators first > After and [leading] $PreserveNewlineAfter' => [$doc[1][0], $firstAfter],
-                'Newlines > Operators first > Before and [leading] $PreserveNewlineBefore' => [$doc[1][1], $firstBefore],
-                'Newlines > Operators last > After and [trailing] $PreserveNewlineAfter' => [$doc[2][0], $lastAfter],
-                'Newlines > Operators last > Before and [trailing] $PreserveNewlineBefore' => [$doc[2][1], $lastBefore],
+                'Newlines > Mixed > After and [mixed] $AllowNewlineAfter' => [$doc[0][0], $mixedAfter],
+                'Newlines > Mixed > Before and [mixed] $AllowNewlineBefore' => [$doc[0][1], $mixedBefore],
+                'Newlines > Operators first > After and [leading] $AllowNewlineAfter' => [$doc[1][0], $firstAfter],
+                'Newlines > Operators first > Before and [leading] $AllowNewlineBefore' => [$doc[1][1], $firstBefore],
+                'Newlines > Operators last > After and [trailing] $AllowNewlineAfter' => [$doc[2][0], $lastAfter],
+                'Newlines > Operators last > Before and [trailing] $AllowNewlineBefore' => [$doc[2][1], $lastBefore],
             ];
         }
     }

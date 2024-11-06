@@ -274,7 +274,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @readonly
      * @var array<int,bool>
      */
-    public array $PreserveNewlineBefore;
+    public array $AllowNewlineBefore;
 
     /**
      * Tokens that may appear before a newline
@@ -284,7 +284,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @readonly
      * @var array<int,bool>
      */
-    public array $PreserveNewlineAfter;
+    public array $AllowNewlineAfter;
 
     /**
      * Tokens that may appear after a blank line
@@ -1322,8 +1322,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             [$before, $after] = $this->getOperatorsLastIndexes();
         }
 
-        $this->PreserveNewlineBefore = $before ?? self::$DefaultAllowNewlineBefore;
-        $this->PreserveNewlineAfter = $after ?? self::$DefaultAllowNewlineAfter;
+        $this->AllowNewlineBefore = $before ?? self::$DefaultAllowNewlineBefore;
+        $this->AllowNewlineAfter = $after ?? self::$DefaultAllowNewlineAfter;
         $this->Operators = $operators;
     }
 
@@ -1333,8 +1333,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public function withLeadingOperators()
     {
         [$before, $after] = $this->getOperatorsFirstIndexes();
-        return $this->with('PreserveNewlineBefore', $before)
-                    ->with('PreserveNewlineAfter', $after)
+        return $this->with('AllowNewlineBefore', $before)
+                    ->with('AllowNewlineAfter', $after)
                     ->with('Operators', self::FIRST);
     }
 
@@ -1373,8 +1373,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public function withTrailingOperators()
     {
         [$before, $after] = $this->getOperatorsLastIndexes();
-        return $this->with('PreserveNewlineBefore', $before)
-                    ->with('PreserveNewlineAfter', $after)
+        return $this->with('AllowNewlineBefore', $before)
+                    ->with('AllowNewlineAfter', $after)
                     ->with('Operators', self::LAST);
     }
 
@@ -1414,8 +1414,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      */
     public function withMixedOperators()
     {
-        return $this->with('PreserveNewlineBefore', self::$DefaultAllowNewlineBefore)
-                    ->with('PreserveNewlineAfter', self::$DefaultAllowNewlineAfter)
+        return $this->with('AllowNewlineBefore', self::$DefaultAllowNewlineBefore)
+                    ->with('AllowNewlineAfter', self::$DefaultAllowNewlineAfter)
                     ->with('Operators', self::MIXED);
     }
 
@@ -1424,8 +1424,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      */
     public function withoutPreserveNewline()
     {
-        return $this->with('PreserveNewlineBefore', $this->PreserveBlankBefore)
-                    ->with('PreserveNewlineAfter', $this->PreserveBlankAfter);
+        return $this->with('AllowNewlineBefore', $this->PreserveBlankBefore)
+                    ->with('AllowNewlineAfter', $this->PreserveBlankAfter);
     }
 
     /**

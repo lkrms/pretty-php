@@ -125,8 +125,8 @@ final class VerticalWhitespace implements TokenRule
 
         foreach (array_keys(self::PRECEDENCE_MAP) as $id) {
             if (
-                $this->Idx->PreserveNewlineBefore[$id]
-                || !$this->Idx->PreserveNewlineAfter[$id]
+                $this->Idx->AllowNewlineBefore[$id]
+                || !$this->Idx->AllowNewlineAfter[$id]
             ) {
                 $this->HasNewline[$id] = $hasNewlineBefore;
                 $this->ApplyNewline[$id] = $applyNewlineBefore;

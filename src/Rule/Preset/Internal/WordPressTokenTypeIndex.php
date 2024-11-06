@@ -23,11 +23,11 @@ final class WordPressTokenTypeIndex extends TokenTypeIndex
 
         $this->PreserveBlankAfter[\T_OPEN_BRACE] = true;
         $this->PreserveBlankBefore[\T_CLOSE_BRACE] = true;
-        $this->PreserveNewlineAfter[\T_CONCAT] = true;
-        $this->PreserveNewlineBefore[\T_CLOSE_BRACE] = true;
+        $this->AllowNewlineAfter[\T_CONCAT] = true;
+        $this->AllowNewlineBefore[\T_CLOSE_BRACE] = true;
 
-        self::$DefaultAllowNewlineBefore ??= $this->PreserveNewlineBefore;
-        self::$DefaultAllowNewlineAfter ??= $this->PreserveNewlineAfter;
+        self::$DefaultAllowNewlineBefore ??= $this->AllowNewlineBefore;
+        self::$DefaultAllowNewlineAfter ??= $this->AllowNewlineAfter;
     }
 
     /**
@@ -56,8 +56,8 @@ final class WordPressTokenTypeIndex extends TokenTypeIndex
 
     public function withPreserveNewline()
     {
-        return $this->with('PreserveNewlineBefore', self::$DefaultAllowNewlineBefore)
-                    ->with('PreserveNewlineAfter', self::$DefaultAllowNewlineAfter)
+        return $this->with('AllowNewlineBefore', self::$DefaultAllowNewlineBefore)
+                    ->with('AllowNewlineAfter', self::$DefaultAllowNewlineAfter)
                     ->with('Operators', self::FIRST);
     }
 }

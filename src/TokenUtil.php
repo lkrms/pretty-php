@@ -19,7 +19,7 @@ final class TokenUtil
      */
     public static function isNewlineAllowedBefore(Token $token): bool
     {
-        if (!$token->Idx->PreserveNewlineBefore[$token->id]) {
+        if (!$token->Idx->AllowNewlineBefore[$token->id]) {
             return false;
         }
 
@@ -53,12 +53,12 @@ final class TokenUtil
         if (
             $token->OpenedBy
             && $token->OpenedBy->id === \T_ATTRIBUTE
-            && $token->Idx->PreserveNewlineAfter[\T_ATTRIBUTE]
+            && $token->Idx->AllowNewlineAfter[\T_ATTRIBUTE]
         ) {
             return true;
         }
 
-        if (!$token->Idx->PreserveNewlineAfter[$token->id]) {
+        if (!$token->Idx->AllowNewlineAfter[$token->id]) {
             return false;
         }
 

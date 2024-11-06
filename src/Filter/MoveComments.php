@@ -44,12 +44,12 @@ final class MoveComments implements Filter
 
         $this->BeforeCommentIndex = TokenTypeIndex::intersect(
             $this->Idx->Movable,
-            $idx->PreserveNewlineAfter,
+            $idx->AllowNewlineAfter,
         );
 
         $this->AfterCommentIndex = TokenTypeIndex::intersect(
             $this->Idx->Movable,
-            $idx->PreserveNewlineBefore,
+            $idx->AllowNewlineBefore,
         );
     }
 
