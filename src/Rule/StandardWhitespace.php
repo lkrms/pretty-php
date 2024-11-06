@@ -146,11 +146,13 @@ final class StandardWhitespace implements TokenRule
                 }
 
                 // Only perform pattern matching on the last line
-                $text = substr(strrchr("\n" . $text, "\n"), 1);
+                /** @var string */
+                $text = strrchr("\n" . $text, "\n");
+                $text = substr($text, 1);
                 if (Regex::match('/^\h++$/', $text)) {
                     $indent = strlen(Str::expandTabs($text, $this->Formatter->TabSize));
                     if ($indent % $this->Formatter->TabSize === 0) {
-                        $token->TagIndent = $indent / $this->Formatter->TabSize;
+                        $token->TagIndent = (int) ($indent / $this->Formatter->TabSize);
 
                         /*
                          * Look for a `?>` tag in the same context, i.e. with
@@ -163,7 +165,8 @@ final class StandardWhitespace implements TokenRule
                                 break;
                             }
                             $current = $current->CloseTag;
-                            while ($current = $current->Next) {
+                            while ($current->Next) {
+                                $current = $current->Next;
                                 if ($current === $current->OpenTag) {
                                     continue 2;
                                 }
@@ -215,6 +218,7 @@ final class StandardWhitespace implements TokenRule
                         || $end->id === \T_CLOSE_TAG
                         || ($end->Next && $end->Next->id === \T_CLOSE_TAG)
                     ) {
+                        assert($token->CloseTag !== null);
                         $token->CloseTag->WhitespaceBefore |= WhitespaceType::SPACE;
                         $token->CloseTag->WhitespaceMaskPrev = WhitespaceType::SPACE;
                     }
@@ -242,6 +246,7 @@ final class StandardWhitespace implements TokenRule
                     && $token->NextCode->Index < $token->CloseTag->Index
                 ) {
                     $nextCode = $token->NextCode;
+                    /** @var Token */
                     $lastCode = $token->CloseTag->PrevCode;
                     if (
                         $nextCode->line === $token->line
@@ -268,6 +273,7 @@ final class StandardWhitespace implements TokenRule
                 // `$sibling` was found
                 if ($tagIndent && $token->Next) {
                     $next = $token->Next;
+                    /** @var Token */
                     $last = $sibling ? $sibling->Prev : $last;
                     $this->Formatter->registerCallback(
                         static::class,
@@ -313,7 +319,8 @@ final class StandardWhitespace implements TokenRule
 
             // Add LINE between the arms of match expressions
             if ($token->id === \T_MATCH) {
-                $parent = $token->NextSibling->NextSibling;
+                $parent = $token->nextSiblingOf(\T_OPEN_BRACE);
+                /** @var Token */
                 $arm = $parent->NextCode;
                 if ($arm === $parent->ClosedBy) {
                     continue;
@@ -333,6 +340,7 @@ final class StandardWhitespace implements TokenRule
             // before and after other attributes, and suppress BLANK after all
             // attributes
             if ($token->id === \T_ATTRIBUTE) {
+                assert($token->ClosedBy !== null);
                 if (!$token->inParameterList()) {
                     $token->WhitespaceBefore |= WhitespaceType::LINE;
                     $token->ClosedBy->WhitespaceAfter |= WhitespaceType::LINE;

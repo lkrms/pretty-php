@@ -16,9 +16,9 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
 {
     use HasMutator;
 
-    private const FIRST = 0;
-    private const LAST = 1;
-    private const MIXED = 2;
+    protected const FIRST = 0;
+    protected const LAST = 1;
+    protected const MIXED = 2;
 
     /**
      * T_OPEN_BRACE, T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_CLOSE_BRACE,
@@ -131,44 +131,24 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
 
     /**
      * T_AND, T_AND_EQUAL, T_BOOLEAN_AND, T_BOOLEAN_OR, T_COALESCE,
-     * T_COALESCE_EQUAL, T_CONCAT, T_CONCAT_EQUAL, T_DIV, T_DIV_EQUAL, T_EQUAL,
-     * T_GREATER, T_IS_EQUAL, T_IS_GREATER_OR_EQUAL, T_IS_IDENTICAL,
-     * T_IS_NOT_EQUAL, T_IS_NOT_IDENTICAL, T_IS_SMALLER_OR_EQUAL, T_LOGICAL_AND,
-     * T_LOGICAL_OR, T_LOGICAL_XOR, T_MINUS, T_MINUS_EQUAL, T_MOD, T_MOD_EQUAL,
-     * T_MUL, T_MUL_EQUAL, T_NOT, T_OR, T_OR_EQUAL, T_PLUS, T_PLUS_EQUAL, T_POW,
-     * T_POW_EQUAL, T_SL, T_SL_EQUAL, T_SMALLER, T_SPACESHIP, T_SR, T_SR_EQUAL,
+     * T_COALESCE_EQUAL, T_COLON, T_COMMA, T_CONCAT, T_CONCAT_EQUAL, T_DIV,
+     * T_DIV_EQUAL, T_EQUAL, T_GREATER, T_IS_EQUAL, T_IS_GREATER_OR_EQUAL,
+     * T_IS_IDENTICAL, T_IS_NOT_EQUAL, T_IS_NOT_IDENTICAL,
+     * T_IS_SMALLER_OR_EQUAL, T_LOGICAL_AND, T_LOGICAL_NOT, T_LOGICAL_OR,
+     * T_LOGICAL_XOR, T_MINUS, T_MINUS_EQUAL, T_MOD, T_MOD_EQUAL, T_MUL,
+     * T_MUL_EQUAL, T_NOT, T_NULLSAFE_OBJECT_OPERATOR, T_OBJECT_OPERATOR, T_OR,
+     * T_OR_EQUAL, T_PLUS, T_PLUS_EQUAL, T_POW, T_POW_EQUAL, T_QUESTION,
+     * T_SEMICOLON, T_SL, T_SL_EQUAL, T_SMALLER, T_SPACESHIP, T_SR, T_SR_EQUAL,
      * T_XOR, T_XOR_EQUAL, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
      * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
      *
-     * Tokens that may be swapped with adjacent comment tokens when operator
-     * placement is changed.
+     * Tokens that may be swapped with adjacent comment tokens for correct
+     * placement.
      *
      * @readonly
      * @var array<int,bool>
      */
     public array $Movable;
-
-    /**
-     * T_AND, T_AND_EQUAL, T_BOOLEAN_AND, T_BOOLEAN_OR, T_CLOSE_BRACE,
-     * T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_CLOSE_TAG, T_COALESCE,
-     * T_COALESCE_EQUAL, T_COLON, T_COMMA, T_CONCAT, T_CONCAT_EQUAL, T_DIV,
-     * T_DIV_EQUAL, T_DOUBLE_ARROW, T_EQUAL, T_GREATER, T_IS_EQUAL,
-     * T_IS_GREATER_OR_EQUAL, T_IS_IDENTICAL, T_IS_NOT_EQUAL,
-     * T_IS_NOT_IDENTICAL, T_IS_SMALLER_OR_EQUAL, T_LOGICAL_AND, T_LOGICAL_NOT,
-     * T_LOGICAL_OR, T_LOGICAL_XOR, T_MINUS, T_MINUS_EQUAL, T_MOD, T_MOD_EQUAL,
-     * T_MUL, T_MUL_EQUAL, T_NOT, T_NULLSAFE_OBJECT_OPERATOR, T_OBJECT_OPERATOR,
-     * T_OR, T_OR_EQUAL, T_PLUS, T_PLUS_EQUAL, T_POW, T_POW_EQUAL, T_QUESTION,
-     * T_SEMICOLON, T_SL, T_SL_EQUAL, T_SMALLER, T_SPACESHIP, T_SR, T_SR_EQUAL,
-     * T_XOR, T_XOR_EQUAL, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
-     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
-     *
-     * Tokens where a preceding DocBlock can be demoted to a standard C-style
-     * comment without loss of information.
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $Undocumentable;
 
     /**
      * T_LNUMBER, T_DNUMBER
@@ -879,7 +859,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $Virtual;
 
     /** @var self::FIRST|self::LAST|self::MIXED */
-    private int $Operators;
+    protected int $Operators;
     /** @var array<int,bool> */
     private static array $DefaultAllowNewlineBefore;
     /** @var array<int,bool> */
@@ -986,32 +966,17 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         );
 
         $this->Movable = self::get(
-            \T_CONCAT,
-            ...TG::OPERATOR_ASSIGNMENT,
-            ...TG::OPERATOR_COMPARISON,
-            ...TG::OPERATOR_LOGICAL_EXCEPT_NOT,
-            ...TG::OPERATOR_ARITHMETIC,
-            ...TG::OPERATOR_BITWISE,
-        );
-
-        // Derived from operators in `$this->PreserveNewlineBefore` and
-        // `$this->PreserveNewlineAfter`
-        $this->Undocumentable = self::get(
-            \T_CLOSE_BRACE,
-            \T_CLOSE_BRACKET,
-            \T_CLOSE_PARENTHESIS,
-            \T_CLOSE_TAG,
             \T_COMMA,
             \T_CONCAT,
-            \T_DOUBLE_ARROW,
+            // \T_DOUBLE_ARROW,
             \T_NULLSAFE_OBJECT_OPERATOR,
             \T_OBJECT_OPERATOR,
             \T_SEMICOLON,
-            ...TG::OPERATOR_ARITHMETIC,
             ...TG::OPERATOR_ASSIGNMENT,
-            ...TG::OPERATOR_BITWISE,
             ...TG::OPERATOR_COMPARISON,
             ...TG::OPERATOR_LOGICAL,
+            ...TG::OPERATOR_ARITHMETIC,
+            ...TG::OPERATOR_BITWISE,
             ...TG::OPERATOR_TERNARY,
         );
 

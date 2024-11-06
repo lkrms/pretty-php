@@ -4,7 +4,7 @@ class A
 {
 	public function index() {}
 
-	/*
+	/**
 	 * Show the form for creating a new resource.
 	 * GET /user/create
 	 *
@@ -31,7 +31,7 @@ class C
 
 	function b()
 	{
-		/*
+		/**
 		 * Show the form for creating a new resource.
 		 * GET /user/create
 		 *

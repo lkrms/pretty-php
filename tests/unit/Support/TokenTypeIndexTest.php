@@ -18,6 +18,131 @@ use ReflectionProperty;
 
 class TokenTypeIndexTest extends TestCase
 {
+    protected const ALWAYS_ALLOWED_AT_START_OR_END = [
+        \T_ATTRIBUTE,
+        \T_ATTRIBUTE_COMMENT,
+        \T_COLON,
+        \T_DOUBLE_ARROW,
+    ];
+
+    protected const ALWAYS_ALLOWED_AT_START = [
+        \T_CLOSE_BRACKET,
+        \T_CLOSE_PARENTHESIS,
+        \T_CLOSE_TAG,
+        \T_LOGICAL_NOT,
+        \T_NULLSAFE_OBJECT_OPERATOR,
+        \T_OBJECT_OPERATOR,
+        \T_QUESTION,
+    ];
+
+    protected const ALWAYS_ALLOWED_AT_END = [
+        \T_AND_EQUAL,
+        \T_CLOSE_BRACE,
+        \T_COALESCE_EQUAL,
+        \T_COMMA,
+        \T_COMMENT,
+        \T_CONCAT_EQUAL,
+        \T_DIV_EQUAL,
+        \T_DOC_COMMENT,
+        \T_EQUAL,
+        \T_EXTENDS,
+        \T_IMPLEMENTS,
+        \T_MINUS_EQUAL,
+        \T_MOD_EQUAL,
+        \T_MUL_EQUAL,
+        \T_OPEN_BRACE,
+        \T_OPEN_BRACKET,
+        \T_OPEN_PARENTHESIS,
+        \T_OPEN_TAG,
+        \T_OPEN_TAG_WITH_ECHO,
+        \T_OR_EQUAL,
+        \T_PLUS_EQUAL,
+        \T_POW_EQUAL,
+        \T_SEMICOLON,
+        \T_SL_EQUAL,
+        \T_SR_EQUAL,
+        \T_XOR_EQUAL,
+    ];
+
+    protected const MAYBE_ALLOWED_AT_START = [
+        \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+        \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
+        \T_AND,
+        \T_ATTRIBUTE,
+        \T_ATTRIBUTE_COMMENT,
+        \T_BOOLEAN_AND,
+        \T_BOOLEAN_OR,
+        \T_COALESCE,
+        \T_COLON,
+        \T_CONCAT,
+        \T_DIV,
+        \T_DOUBLE_ARROW,
+        \T_GREATER,
+        \T_IS_EQUAL,
+        \T_IS_GREATER_OR_EQUAL,
+        \T_IS_IDENTICAL,
+        \T_IS_NOT_EQUAL,
+        \T_IS_NOT_IDENTICAL,
+        \T_IS_SMALLER_OR_EQUAL,
+        \T_LOGICAL_AND,
+        \T_LOGICAL_OR,
+        \T_LOGICAL_XOR,
+        \T_MINUS,
+        \T_MOD,
+        \T_MUL,
+        \T_NOT,
+        \T_OR,
+        \T_PLUS,
+        \T_POW,
+        \T_SL,
+        \T_SMALLER,
+        \T_SPACESHIP,
+        \T_SR,
+        \T_XOR,
+    ];
+
+    protected const LEADING_OPERATORS = [
+        \T_BOOLEAN_AND,
+        \T_BOOLEAN_OR,
+        \T_GREATER,
+        \T_IS_EQUAL,
+        \T_IS_GREATER_OR_EQUAL,
+        \T_IS_IDENTICAL,
+        \T_IS_NOT_EQUAL,
+        \T_IS_NOT_IDENTICAL,
+        \T_IS_SMALLER_OR_EQUAL,
+        \T_LOGICAL_AND,
+        \T_LOGICAL_OR,
+        \T_LOGICAL_XOR,
+        \T_SMALLER,
+        \T_SPACESHIP,
+    ];
+
+    protected const TRAILING_OPERATORS = [
+        \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+        \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
+        \T_AND,
+        \T_COALESCE,
+        \T_CONCAT,
+        \T_DIV,
+        \T_MINUS,
+        \T_MOD,
+        \T_MUL,
+        \T_NOT,
+        \T_OR,
+        \T_PLUS,
+        \T_POW,
+        \T_SL,
+        \T_SR,
+        \T_XOR,
+    ];
+
+    protected const NOT_MOVABLE = [
+        \T_ATTRIBUTE,
+        \T_ATTRIBUTE_COMMENT,
+        \T_DOUBLE_ARROW,
+    ];
+
     public function testValues(): void
     {
         $index = static::getIndex();
@@ -125,18 +250,18 @@ class TokenTypeIndexTest extends TestCase
      * @param int[] $expected
      * @param int[] $array
      */
-    public function testPreserveNewline(array $expected, array $array, bool $sort = false): void
+    public function testPreserveNewline(array $expected, array $array): void
     {
         $this->assertEquals(
-            self::getTokenNames($sort ? Arr::sort($expected) : $expected),
-            self::getTokenNames($sort ? Arr::sort($array) : $array)
+            Arr::sort(self::getTokenNames($expected)),
+            Arr::sort(self::getTokenNames($array)),
         );
     }
 
     /**
-     * @return array<string,array{int[],int[],2?:bool}>
+     * @return iterable<string,array{int[],int[]}>
      */
-    public static function preserveNewlineProvider(): array
+    public static function preserveNewlineProvider(): iterable
     {
         $idx = static::getIndex();
         $mixed = $idx->withMixedOperators();
@@ -150,235 +275,90 @@ class TokenTypeIndexTest extends TestCase
         $lastBefore = self::getIndexTokens($last->PreserveNewlineBefore);
         $lastAfter = self::getIndexTokens($last->PreserveNewlineAfter);
 
+        $alwaysFirstOrLast = array_intersect(
+            $mixedBefore,
+            $firstBefore,
+            $lastBefore,
+            $mixedAfter,
+            $firstAfter,
+            $lastAfter,
+        );
+
+        $alwaysFirst = array_diff(
+            array_intersect($mixedBefore, $firstBefore, $lastBefore),
+            $alwaysFirstOrLast,
+        );
+
+        $alwaysLast = array_diff(
+            array_intersect($mixedAfter, $firstAfter, $lastAfter),
+            $alwaysFirstOrLast,
+        );
+
         $maybeFirst = array_diff(
             array_unique(array_merge($mixedBefore, $firstBefore, $lastBefore)),
-            array_intersect($mixedBefore, $firstBefore, $lastBefore),
+            $alwaysFirst,
         );
 
         $maybeLast = array_diff(
             array_unique(array_merge($mixedAfter, $firstAfter, $lastAfter)),
-            array_intersect($mixedAfter, $firstAfter, $lastAfter),
+            $alwaysLast,
         );
 
-        $parts = explode(
-            "### After\n",
-            Str::eolFromNative(File::getContents(self::getPackagePath() . '/docs/Newlines.md')),
-        );
-        unset($parts[0]);
-        $doc = [];
-        foreach ($parts as $part) {
-            [$after, $before] = explode("### Before\n", $part);
-            $doc[] = [
-                self::getDocTokens($after),
-                self::getDocTokens($before),
-            ];
-        }
-
-        return [
-            '[mixed] Intersection of $PreserveNewlineBefore and $PreserveNewlineAfter' => [
-                [
-                    \T_ATTRIBUTE,
-                    \T_ATTRIBUTE_COMMENT,
-                    \T_DOUBLE_ARROW,
-                    \T_COLON,
-                ],
+        yield from [
+            '[mixed] Allowed at start or end of line' => [
+                static::ALWAYS_ALLOWED_AT_START_OR_END,
                 array_intersect($mixedBefore, $mixedAfter),
             ],
-            '[leading] Intersection of $PreserveNewlineBefore and $PreserveNewlineAfter' => [
-                [
-                    \T_ATTRIBUTE,
-                    \T_ATTRIBUTE_COMMENT,
-                    \T_DOUBLE_ARROW,
-                    \T_COLON,
-                ],
+            '[leading] Allowed at start or end of line' => [
+                static::ALWAYS_ALLOWED_AT_START_OR_END,
                 array_intersect($firstBefore, $firstAfter),
             ],
-            '[trailing] Intersection of $PreserveNewlineBefore and $PreserveNewlineAfter' => [
-                [
-                    \T_ATTRIBUTE,
-                    \T_ATTRIBUTE_COMMENT,
-                    \T_DOUBLE_ARROW,
-                    \T_COLON,
-                ],
+            '[trailing] Allowed at start or end of line' => [
+                static::ALWAYS_ALLOWED_AT_START_OR_END,
                 array_intersect($lastBefore, $lastAfter),
             ],
             'Difference between [leading] $PreserveNewlineBefore and [mixed] $PreserveNewlineBefore' => [
-                [
-                    \T_SMALLER,
-                    \T_GREATER,
-                    \T_IS_EQUAL,
-                    \T_IS_IDENTICAL,
-                    \T_IS_NOT_EQUAL,
-                    \T_IS_NOT_IDENTICAL,
-                    \T_IS_SMALLER_OR_EQUAL,
-                    \T_IS_GREATER_OR_EQUAL,
-                    \T_SPACESHIP,
-                    \T_LOGICAL_AND,
-                    \T_LOGICAL_OR,
-                    \T_LOGICAL_XOR,
-                    \T_BOOLEAN_AND,
-                    \T_BOOLEAN_OR,
-                ],
+                static::LEADING_OPERATORS,
                 array_diff($firstBefore, $mixedBefore),
             ],
             'Difference between [mixed] $PreserveNewlineAfter and [leading] $PreserveNewlineAfter' => [
-                [
-                    \T_SMALLER,
-                    \T_GREATER,
-                    \T_IS_EQUAL,
-                    \T_IS_IDENTICAL,
-                    \T_IS_NOT_EQUAL,
-                    \T_IS_NOT_IDENTICAL,
-                    \T_IS_SMALLER_OR_EQUAL,
-                    \T_IS_GREATER_OR_EQUAL,
-                    \T_SPACESHIP,
-                    \T_LOGICAL_AND,
-                    \T_LOGICAL_OR,
-                    \T_LOGICAL_XOR,
-                    \T_BOOLEAN_AND,
-                    \T_BOOLEAN_OR,
-                ],
+                static::LEADING_OPERATORS,
                 array_diff($mixedAfter, $firstAfter),
             ],
             'Difference between [mixed] $PreserveNewlineBefore and [trailing] $PreserveNewlineBefore' => [
-                [
-                    \T_COALESCE,
-                    \T_CONCAT,
-                    \T_PLUS,
-                    \T_MINUS,
-                    \T_MUL,
-                    \T_DIV,
-                    \T_MOD,
-                    \T_POW,
-                    \T_OR,
-                    \T_XOR,
-                    \T_NOT,
-                    \T_SL,
-                    \T_SR,
-                    \T_AND,
-                    \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
-                    \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
-                ],
+                static::TRAILING_OPERATORS,
                 array_diff($mixedBefore, $lastBefore),
             ],
             'Difference between [trailing] $PreserveNewlineAfter and [mixed] $PreserveNewlineAfter' => [
-                [
-                    \T_COALESCE,
-                    \T_CONCAT,
-                    \T_PLUS,
-                    \T_MINUS,
-                    \T_MUL,
-                    \T_DIV,
-                    \T_MOD,
-                    \T_POW,
-                    \T_OR,
-                    \T_XOR,
-                    \T_NOT,
-                    \T_SL,
-                    \T_SR,
-                    \T_AND,
-                    \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
-                    \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
-                ],
+                static::TRAILING_OPERATORS,
                 array_diff($lastAfter, $mixedAfter),
             ],
-            'Difference between $Movable and $maybeFirst (calculated)' => [
-                [
-                    \T_EQUAL,
-                    \T_COALESCE_EQUAL,
-                    \T_PLUS_EQUAL,
-                    \T_MINUS_EQUAL,
-                    \T_MUL_EQUAL,
-                    \T_DIV_EQUAL,
-                    \T_MOD_EQUAL,
-                    \T_POW_EQUAL,
-                    \T_AND_EQUAL,
-                    \T_OR_EQUAL,
-                    \T_XOR_EQUAL,
-                    \T_SL_EQUAL,
-                    \T_SR_EQUAL,
-                    \T_CONCAT_EQUAL,
-                ],
-                array_diff(self::getIndexTokens($mixed->Movable), $maybeFirst),
+            'Not in $Movable but may move to start or end of line' => [
+                static::NOT_MOVABLE,
+                array_diff(
+                    array_unique(array_merge($maybeFirst, $maybeLast)),
+                    self::getIndexTokens($mixed->Movable),
+                ),
             ],
-            'Difference between $Movable and $maybeLast (calculated)' => [
-                [
-                    \T_EQUAL,
-                    \T_COALESCE_EQUAL,
-                    \T_PLUS_EQUAL,
-                    \T_MINUS_EQUAL,
-                    \T_MUL_EQUAL,
-                    \T_DIV_EQUAL,
-                    \T_MOD_EQUAL,
-                    \T_POW_EQUAL,
-                    \T_AND_EQUAL,
-                    \T_OR_EQUAL,
-                    \T_XOR_EQUAL,
-                    \T_SL_EQUAL,
-                    \T_SR_EQUAL,
-                    \T_CONCAT_EQUAL,
-                ],
-                array_diff(self::getIndexTokens($mixed->Movable), $maybeLast),
+            'Always allowed at start of line' => [
+                static::ALWAYS_ALLOWED_AT_START,
+                $alwaysFirst,
             ],
-            'Intersection of *::$PreserveNewlineBefore' => [
-                [
-                    \T_ATTRIBUTE,
-                    \T_ATTRIBUTE_COMMENT,
-                    \T_CLOSE_BRACKET,
-                    \T_CLOSE_PARENTHESIS,
-                    \T_CLOSE_TAG,
-                    \T_DOUBLE_ARROW,
-                    \T_LOGICAL_NOT,
-                    \T_NULLSAFE_OBJECT_OPERATOR,
-                    \T_OBJECT_OPERATOR,
-                    \T_QUESTION,
-                    \T_COLON,
-                ],
-                array_intersect($mixedBefore, $firstBefore, $lastBefore),
+            'Always allowed at end of line' => [
+                static::ALWAYS_ALLOWED_AT_END,
+                $alwaysLast,
             ],
-            'Intersection of *::$PreserveNewlineAfter' => [
-                [
-                    \T_ATTRIBUTE,
-                    \T_ATTRIBUTE_COMMENT,
-                    \T_CLOSE_BRACE,
-                    \T_COLON,
-                    \T_COMMA,
-                    \T_COMMENT,
-                    \T_DOC_COMMENT,
-                    \T_DOUBLE_ARROW,
-                    \T_EXTENDS,
-                    \T_IMPLEMENTS,
-                    \T_OPEN_BRACE,
-                    \T_OPEN_BRACKET,
-                    \T_OPEN_PARENTHESIS,
-                    \T_OPEN_TAG,
-                    \T_OPEN_TAG_WITH_ECHO,
-                    \T_SEMICOLON,
-                    \T_EQUAL,
-                    \T_COALESCE_EQUAL,
-                    \T_PLUS_EQUAL,
-                    \T_MINUS_EQUAL,
-                    \T_MUL_EQUAL,
-                    \T_DIV_EQUAL,
-                    \T_MOD_EQUAL,
-                    \T_POW_EQUAL,
-                    \T_AND_EQUAL,
-                    \T_OR_EQUAL,
-                    \T_XOR_EQUAL,
-                    \T_SL_EQUAL,
-                    \T_SR_EQUAL,
-                    \T_CONCAT_EQUAL,
-                ],
-                array_intersect($mixedAfter, $firstAfter, $lastAfter),
+            'Always allowed at start or end of line' => [
+                static::ALWAYS_ALLOWED_AT_START_OR_END,
+                $alwaysFirstOrLast,
             ],
-            'Intersection of *::$PreserveNewlineBefore and *::$PreserveNewlineAfter' => [
-                [
-                    \T_ATTRIBUTE,
-                    \T_ATTRIBUTE_COMMENT,
-                    \T_DOUBLE_ARROW,
-                    \T_COLON,
-                ],
-                array_intersect($mixedBefore, $firstBefore, $lastBefore, $mixedAfter, $firstAfter, $lastAfter),
+            'Maybe allowed at start of line' => [
+                static::MAYBE_ALLOWED_AT_START,
+                $maybeFirst,
+            ],
+            'Maybe allowed at end of line' => [
+                static::MAYBE_ALLOWED_AT_START,
+                $maybeLast,
             ],
             '[mixed] Difference between $PreserveBlankBefore and $PreserveNewlineBefore' => [
                 [],
@@ -404,13 +384,32 @@ class TokenTypeIndexTest extends TestCase
                 [],
                 array_diff(self::getIndexTokens($last->PreserveBlankAfter), $lastAfter),
             ],
-            'Newlines > Mixed > After and [mixed] $PreserveNewlineAfter' => [$doc[0][0], $mixedAfter, true],
-            'Newlines > Mixed > Before and [mixed] $PreserveNewlineBefore' => [$doc[0][1], $mixedBefore, true],
-            'Newlines > Operators first > After and [leading] $PreserveNewlineAfter' => [$doc[1][0], $firstAfter, true],
-            'Newlines > Operators first > Before and [leading] $PreserveNewlineBefore' => [$doc[1][1], $firstBefore, true],
-            'Newlines > Operators last > After and [trailing] $PreserveNewlineAfter' => [$doc[2][0], $lastAfter, true],
-            'Newlines > Operators last > Before and [trailing] $PreserveNewlineBefore' => [$doc[2][1], $lastBefore, true],
         ];
+
+        if (static::class === self::class) {
+            $parts = explode(
+                "### After\n",
+                Str::eolFromNative(File::getContents(self::getPackagePath() . '/docs/Newlines.md')),
+            );
+            unset($parts[0]);
+            $doc = [];
+            foreach ($parts as $part) {
+                [$after, $before] = explode("### Before\n", $part);
+                $doc[] = [
+                    self::getDocTokens($after),
+                    self::getDocTokens($before),
+                ];
+            }
+
+            yield from [
+                'Newlines > Mixed > After and [mixed] $PreserveNewlineAfter' => [$doc[0][0], $mixedAfter],
+                'Newlines > Mixed > Before and [mixed] $PreserveNewlineBefore' => [$doc[0][1], $mixedBefore],
+                'Newlines > Operators first > After and [leading] $PreserveNewlineAfter' => [$doc[1][0], $firstAfter],
+                'Newlines > Operators first > Before and [leading] $PreserveNewlineBefore' => [$doc[1][1], $firstBefore],
+                'Newlines > Operators last > After and [trailing] $PreserveNewlineAfter' => [$doc[2][0], $lastAfter],
+                'Newlines > Operators last > Before and [trailing] $PreserveNewlineBefore' => [$doc[2][1], $lastBefore],
+            ];
+        }
     }
 
     /**

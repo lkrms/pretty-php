@@ -2,25 +2,37 @@
 
 namespace Lkrms\PrettyPHP\Filter;
 
-use Lkrms\PrettyPHP\Concern\ExtensionTrait;
+use Lkrms\PrettyPHP\Concern\FilterTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Token\GenericToken;
-use Closure;
 
 /**
  * Move comments if necessary for correct placement of adjacent delimiters and
  * operators
  *
+ * @todo Add support for moving comments around `T_DOUBLE_ARROW` tokens
+ *
  * @api
  */
 final class MoveComments implements Filter
 {
-    use ExtensionTrait;
+    use FilterTrait;
 
-    /** @var array<int,bool> */
+    private int $Count;
+
+    /**
+     * Movable tokens allowed before newlines/comments
+     *
+     * @var array<int,bool>
+     */
     private array $BeforeCommentIndex;
-    /** @var array<int,bool> */
+
+    /**
+     * Movable tokens allowed after newlines/comments
+     *
+     * @var array<int,bool>
+     */
     private array $AfterCommentIndex;
 
     /**
@@ -28,40 +40,27 @@ final class MoveComments implements Filter
      */
     public function boot(): void
     {
-        /** @todo Add support for ternary operators, `T_DOUBLE_ARROW` */
         $idx = $this->Idx->withPreserveNewline();
 
         $this->BeforeCommentIndex = TokenTypeIndex::intersect(
-            TokenTypeIndex::merge(
-                $this->Idx->Movable,
-                TokenTypeIndex::get(
-                    \T_COMMA,
-                    \T_SEMICOLON,
-                    \T_EQUAL,
-                ),
-            ),
+            $this->Idx->Movable,
             $idx->PreserveNewlineAfter,
         );
 
         $this->AfterCommentIndex = TokenTypeIndex::intersect(
-            TokenTypeIndex::merge(
-                $this->Idx->Movable,
-                TokenTypeIndex::get(
-                    \T_LOGICAL_NOT,
-                ),
-            ),
+            $this->Idx->Movable,
             $idx->PreserveNewlineBefore,
         );
     }
 
     /**
-     * @template T of GenericToken
-     *
-     * @param list<T> $tokens
-     * @return list<T>
+     * @inheritDoc
      */
     public function filterTokens(array $tokens): array
     {
+        $this->Tokens = &$tokens;
+        $this->Count = count($tokens);
+
         // Rearrange one or more of these:
         //
         //     1*(T_COMMENT / T_DOC_COMMENT)
@@ -72,63 +71,44 @@ final class MoveComments implements Filter
         //     1*(T_COMMA / T_SEMICOLON / T_EQUAL)
         //     1*(T_COMMENT / T_DOC_COMMENT)
         //
-        $tokens = $this->swapTokens(
-            $tokens,
+        $this->swapTokens(
             $this->Idx->Comment,
             $this->BeforeCommentIndex,
-            // Moving a DocBlock to the other side of a delimiter risks side
-            // effects like documenting previously undocumented structural
-            // elements, but DocBlocks before delimiters are invalid anyway, so
-            // convert them to standard C-style comments
-            $callback = static function (array $comments): bool {
-                /** @var T[] $comments */
-                foreach ($comments as $token) {
-                    if ($token->id === \T_DOC_COMMENT) {
-                        $token->id = \T_COMMENT;
-                        $token->text[2] = ' ';
-                    }
-                }
-                return true;
-            },
-            null,
-            // For consistency, also demote DocBlocks found before close
-            // brackets etc., without moving the close brackets
-            $this->Idx->Undocumentable,
+            true,
         );
 
-        return $this->swapTokens(
-            $tokens,
+        // And one or more of these:
+        //
+        //     1*(T_LOGICAL_NOT)
+        //     1*(T_COMMENT / T_DOC_COMMENT)
+        //
+        // Into this:
+        //
+        //     1*(T_COMMENT / T_DOC_COMMENT)
+        //     1*(T_LOGICAL_NOT)
+        //
+        $this->swapTokens(
             $this->AfterCommentIndex,
             $this->Idx->Comment,
-            null,
-            $callback,
+            false,
         );
+
+        return $tokens;
     }
 
     /**
-     * @template T of GenericToken
-     *
-     * @param list<T> $tokens
      * @param array<int,bool> $firstIdx
      * @param array<int,bool> $lastIdx
-     * @param (Closure(array<int,T>): bool)|null $firstCallback
-     * @param (Closure(array<int,T>): bool)|null $lastCallback
-     * @param array<int,bool>|null $keepLastIdx
-     * @return list<T>
      */
     private function swapTokens(
-        array $tokens,
         array $firstIdx,
         array $lastIdx,
-        ?Closure $firstCallback,
-        ?Closure $lastCallback,
-        ?array $keepLastIdx = null
-    ): array {
-        $count = count($tokens);
-        for ($i = 1; $i < $count; $i++) {
-            $token = $tokens[$i];
+        bool $firstIsComment
+    ): void {
+        for ($i = 1; $i < $this->Count; $i++) {
+            $token = $this->Tokens[$i];
 
-            if (!$firstIdx[$token->id]) {
+            if (!$firstIdx[$token->id] || !$this->checkToken($i)) {
                 continue;
             }
 
@@ -142,35 +122,21 @@ final class MoveComments implements Filter
             $lastTokens = [];
 
             $i--;
-            while (++$i < $count) {
-                $token = $tokens[$i];
+            while (++$i < $this->Count) {
+                $token = $this->Tokens[$i];
 
-                if ($firstIdx[$token->id]) {
-                    if (
-                        $token->id === \T_DOC_COMMENT
-                        && !$this->checkDocComment($i, $tokens, $count)
-                    ) {
-                        break;
-                    }
+                if (
+                    !$firstTokens
+                    || ($firstIdx[$token->id] && $this->checkToken($i))
+                ) {
                     $firstTokens[$i] = $token;
                     continue;
                 }
 
-                if ($lastIdx[$token->id]) {
-                    if (
-                        $token->id === \T_DOC_COMMENT
-                        && !$this->checkDocComment($i, $tokens, $count)
-                    ) {
-                        break;
-                    }
+                if ($lastIdx[$token->id] && $this->checkToken($i, true)) {
                     $last = $i;
                     $lastTokens[$i] = $token;
                     continue;
-                }
-
-                if ($keepLastIdx && $keepLastIdx[$token->id]) {
-                    $last = $i;
-                    $firstTokens[$i] = $token;
                 }
 
                 break;
@@ -186,52 +152,128 @@ final class MoveComments implements Filter
             // in `$lastIdx`
             $firstTokens = array_slice($firstTokens, 0, $length - count($lastTokens), true);
 
-            if (
-                ($firstCallback && $firstCallback($firstTokens) === false)
-                || ($lastCallback && $lastCallback($lastTokens) === false)
-            ) {
-                continue;
-            }
-
-            if ($keepLastIdx) {
+            if ($firstIsComment) {
                 $lineTokens = $lastTokens;
-                $prev = $tokens[$first - 1];
+                $prev = $this->Tokens[$first - 1];
             } else {
                 $lineTokens = $firstTokens;
-                $prev = $tokens[$last];
+                $prev = $this->Tokens[$last];
             }
             $line = $prev->line + substr_count($prev->text, "\n");
-
             foreach ($lineTokens as $token) {
                 $token->line = $line;
             }
 
-            $replacement = $lastTokens + $firstTokens;
-            array_splice($tokens, $first, $length, $replacement);
+            array_splice($this->Tokens, $first, $length, $lastTokens + $firstTokens);
         }
-
-        return $tokens;
     }
 
-    /**
-     * @template T of GenericToken
-     *
-     * @param list<T> $tokens
-     */
-    private function checkDocComment(int $i, array $tokens, int $count): bool
+    private function checkToken(int $i, bool $isLast = false): bool
     {
-        // Find the next code token after the DocBlock, if any
-        do {
-            if (++$i >= $count) {
-                return false;
+        $token = $this->Tokens[$i];
+
+        if ($token->id === \T_COLON) {
+            // The following code replicates most of `Token::getColonType()`,
+            // which can't be used in this context
+            if ($this->isColonAltSyntaxDelimiter($i)) {
+                // Allow comments AFTER alternative syntax delimiters
+                return $isLast;
             }
 
-            if (!$this->Idx->NotCode[$tokens[$i]->id]) {
-                break;
+            $parent = $this->getParent($i, $parentIndex);
+            if ($parent && $this->isColonSwitchCaseDelimiter($i, $parentIndex)) {
+                // Allow comments AFTER switch case delimiters
+                return $isLast;
             }
-        } while (true);
 
-        // Return `true` if the DocBlock can be safely demoted
-        return $this->Idx->Undocumentable[$tokens[$i]->id];
+            /** @var GenericToken */
+            $prevCode = $this->getPrevCode($i, $prevCodeIndex);
+            if (
+                $parent
+                && $parent->id === \T_OPEN_PARENTHESIS
+                && $prevCode->id === \T_STRING
+                && ($prevCode2 = $this->getPrevCode($prevCodeIndex))
+                && ($prevCode2 === $parent || $prevCode2->id === \T_COMMA)
+            ) {
+                // Allow comments AFTER named argument delimiters
+                return $isLast;
+            }
+
+            if (
+                $prevCode->id === \T_STRING
+                && ($prevCode2 = $this->getPrevCode($prevCodeIndex))
+                && $prevCode2->id === \T_ENUM
+            ) {
+                // Allow comments AFTER backed enumeration type delimiters
+                return $isLast;
+            }
+
+            if ($prevCode->id === \T_CLOSE_PARENTHESIS) {
+                $prev = $this->getPrevSibling($prevCodeIndex, 1, $prevIndex);
+                if (
+                    $prev
+                    && $prev->id === \T_USE
+                    && ($prevCode2 = $this->getPrevCode($prevIndex, $prevCode2Index))
+                    && $prevCode2->id === \T_CLOSE_PARENTHESIS
+                ) {
+                    $prev = $this->getPrevSibling($prevCode2Index, 1, $prevIndex);
+                }
+
+                while ($prev && $this->Idx->FunctionIdentifier[$prev->id]) {
+                    $prev = $this->getPrevSibling($prevIndex, 1, $prevIndex);
+                }
+
+                if ($prev && ($prev->id === \T_FUNCTION || $prev->id === \T_FN)) {
+                    // Allow comments AFTER return type delimiters
+                    return $isLast;
+                }
+            }
+
+            while ($prevCode->id === \T_STRING && (
+                ($prev = $this->getPrevSibling($prevCodeIndex, 1, $prevIndex))
+                && $prev->id === \T_COLON
+            )) {
+                if ($this->isColonAltSyntaxDelimiter($prevIndex) || (
+                    $parent
+                    && $this->isColonSwitchCaseDelimiter($prevIndex, $parentIndex)
+                )) {
+                    // Allow comments AFTER label delimiters in alternative
+                    // syntax or switch case statements
+                    return $isLast;
+                }
+                /** @var GenericToken */
+                $prevCode = $this->getPrevCode($prevIndex, $prevCodeIndex);
+            }
+            if ($prevCode->id === \T_STRING && (
+                !($prev = $this->getPrevSibling($prevCodeIndex, 1, $prevIndex)) || (
+                    $prev->id === \T_SEMICOLON
+                    || $prev->id === \T_CLOSE_BRACE
+                    || $this->rangeHasCloseTag($prevIndex + 1, $prevCodeIndex - 1)
+                )
+            )) {
+                // Allow comments AFTER label delimiters in other contexts
+                return $isLast;
+            }
+
+            // Allow comments BEFORE ternary operators
+            return !$isLast;
+        }
+
+        if ($token->id === \T_QUESTION) {
+            // Allow comments BEFORE ternary operators and nullable types
+            return !$isLast;
+        }
+
+        return true;
+    }
+
+    private function rangeHasCloseTag(int $i, int $j): bool
+    {
+        while ($i <= $j) {
+            if ($this->Tokens[$i++]->id === \T_CLOSE_TAG) {
+                return true;
+            }
+        }
+        return false;
     }
 }

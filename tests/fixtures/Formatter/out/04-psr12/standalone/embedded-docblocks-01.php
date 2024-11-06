@@ -1,12 +1,12 @@
 <?php
-$foo = $bar ||
+$foo = $bar
     /** comment */
-    $baz;
+    || $baz;
 
 if (
-    $foo ||
+    $foo
     /** comment */
-    $bar
+    || $bar
 ) {
 }
 
@@ -15,10 +15,7 @@ function baz(
     $foo,
     /** comment */
     $bar
-
-    /*
-     * comment
-     */
+    /** comment */
 ) {}
 
 class Foo
@@ -27,20 +24,20 @@ class Foo
     use Bar;
 }
 
-$foo = $bar ||
+$foo = $bar
     /**
      * line 1
      * line 2
      */
-    $baz;
+    || $baz;
 
 if (
-    $foo ||
+    $foo
     /**
      * line 1
      * line 2
      */
-    $bar
+    || $bar
 ) {
 }
 
@@ -57,7 +54,7 @@ function baz(
      */
     $bar
 
-    /*
+    /**
      * line 1
      * line 2
      */

@@ -770,8 +770,8 @@ function post_excerpt_meta_box( $post ) {
  * @param WP_Post $post Current post object.
  */
 function post_trackback_meta_box( $post ) {
-	$form_trackback = '<input type="text" name="trackback_url" id="trackback_url" class="code" value="'
-		. esc_attr( str_replace( "\n", ' ', $post->to_ping ) ) . '" aria-describedby="trackback-url-desc" />';
+	$form_trackback = '<input type="text" name="trackback_url" id="trackback_url" class="code" value="' .
+		esc_attr( str_replace( "\n", ' ', $post->to_ping ) ) . '" aria-describedby="trackback-url-desc" />';
 
 	if ( '' !== $post->pinged ) {
 		$pings          = '<p>' . __( 'Already pinged:' ) . '</p><ul>';
