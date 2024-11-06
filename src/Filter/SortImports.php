@@ -25,10 +25,7 @@ final class SortImports implements Filter
     private array $SortableImports;
 
     /**
-     * @template T of GenericToken
-     *
-     * @param list<T> $tokens
-     * @return list<T>
+     * @inheritDoc
      */
     public function filterTokens(array $tokens): array
     {
@@ -181,9 +178,7 @@ final class SortImports implements Filter
     }
 
     /**
-     * @template T of GenericToken
-     *
-     * @param T[] $tokens
+     * @param GenericToken[] $tokens
      * @return array{int,string}
      */
     private function sortableImport(array $tokens): array
