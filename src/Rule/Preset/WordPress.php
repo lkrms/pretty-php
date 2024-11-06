@@ -7,13 +7,13 @@ use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\Preset;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Rule\Support\WordPressTokenTypeIndex;
+use Lkrms\PrettyPHP\Rule\Preset\Internal\WordPressTokenTypeIndex;
 use Lkrms\PrettyPHP\Rule\AlignData;
 use Lkrms\PrettyPHP\Rule\DeclarationSpacing;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder;
+use Lkrms\PrettyPHP\Token;
+use Lkrms\PrettyPHP\TokenTypeIndex;
 
 /**
  * Apply the WordPress code style

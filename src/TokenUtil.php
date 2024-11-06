@@ -6,14 +6,13 @@ use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
-use Lkrms\PrettyPHP\Support\TokenCollection;
-use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Internal\TokenCollection;
 use Salient\Utility\Arr;
 use Salient\Utility\Reflect;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 
-final class TokenUtility
+final class TokenUtil
 {
     /**
      * Check if a newline is allowed before a token

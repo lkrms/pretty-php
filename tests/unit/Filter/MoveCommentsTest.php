@@ -2,10 +2,10 @@
 
 namespace Lkrms\PrettyPHP\Tests\Filter;
 
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Tests\TestCase;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
+use Lkrms\PrettyPHP\TokenTypeIndex;
 
 final class MoveCommentsTest extends TestCase
 {

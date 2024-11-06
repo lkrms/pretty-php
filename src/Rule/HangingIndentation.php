@@ -7,8 +7,8 @@ use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Token\Token;
-use Lkrms\PrettyPHP\TokenUtility;
+use Lkrms\PrettyPHP\Token;
+use Lkrms\PrettyPHP\TokenUtil;
 
 /**
  * If the first token on a new line continues a statement from the previous one,
@@ -185,8 +185,8 @@ final class HangingIndentation implements TokenRule
             }
 
             $trigger = $token->Parent !== $prev->Parent
-                || TokenUtility::isNewlineAllowedBefore($token)
-                || !TokenUtility::isNewlineAllowedAfter($prev)
+                || TokenUtil::isNewlineAllowedBefore($token)
+                || !TokenUtil::isNewlineAllowedAfter($prev)
                     ? $token
                     : $prev;
 

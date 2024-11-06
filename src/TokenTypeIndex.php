@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Support;
+namespace Lkrms\PrettyPHP;
 
 use Lkrms\PrettyPHP\Catalog\TokenGroup as TG;
 use Lkrms\PrettyPHP\Contract\HasTokenIndex;

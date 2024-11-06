@@ -5,7 +5,7 @@ namespace Lkrms\PrettyPHP\Concern;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\Rule;
-use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Token;
 
 /**
  * @api

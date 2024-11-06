@@ -9,12 +9,12 @@ use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\ListRule;
 use Lkrms\PrettyPHP\Contract\Preset;
 use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\Internal\TokenCollection;
 use Lkrms\PrettyPHP\Rule\BlankBeforeReturn;
-use Lkrms\PrettyPHP\Support\TokenCollection;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder;
+use Lkrms\PrettyPHP\Token;
+use Lkrms\PrettyPHP\TokenTypeIndex;
 
 /**
  * Apply formatting specific to Symfony's coding standards

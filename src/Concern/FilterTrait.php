@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Concern;
 
 use Lkrms\PrettyPHP\Contract\Filter;
-use Lkrms\PrettyPHP\Token\GenericToken;
+use Lkrms\PrettyPHP\GenericToken;
 
 /**
  * @api

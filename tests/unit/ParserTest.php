@@ -5,7 +5,7 @@ namespace Lkrms\PrettyPHP\Tests;
 use Lkrms\PrettyPHP\Filter\RemoveWhitespace;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\Parser;
-use Lkrms\PrettyPHP\TokenUtility;
+use Lkrms\PrettyPHP\TokenUtil;
 use Salient\Utility\Get;
 
 final class ParserTest extends TestCase
@@ -23,12 +23,12 @@ final class ParserTest extends TestCase
         foreach ($statements as $token) {
             $this->assertNotNull($token->EndStatement);
             if ($token === $token->EndStatement) {
-                $actual[] = TokenUtility::describe($token);
+                $actual[] = TokenUtil::describe($token);
             } else {
                 $actual[] = sprintf(
                     '%s - %s',
-                    TokenUtility::describe($token),
-                    TokenUtility::describe($token->EndStatement),
+                    TokenUtil::describe($token),
+                    TokenUtil::describe($token->EndStatement),
                 );
             }
         }

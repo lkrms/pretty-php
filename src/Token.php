@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Token;
+namespace Lkrms\PrettyPHP;
 
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
@@ -9,11 +9,8 @@ use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Contract\HasTokenNames;
-use Lkrms\PrettyPHP\Support\TokenCollection;
-use Lkrms\PrettyPHP\Support\TokenIndentDelta;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\PrettyPHP\Formatter;
-use Lkrms\PrettyPHP\TokenUtility;
+use Lkrms\PrettyPHP\Internal\TokenCollection;
+use Lkrms\PrettyPHP\Internal\TokenIndentDelta;
 use Salient\Utility\Str;
 use Closure;
 use JsonSerializable;
@@ -1989,6 +1986,6 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      */
     public function jsonSerialize(): array
     {
-        return TokenUtility::serialize($this);
+        return TokenUtil::serialize($this);
     }
 }

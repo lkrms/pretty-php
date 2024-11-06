@@ -7,9 +7,9 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\PrettyPHP\Token\Token;
-use Lkrms\PrettyPHP\TokenUtility;
+use Lkrms\PrettyPHP\Token;
+use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenUtil;
 
 /**
  * Preserve newlines adjacent to operators, delimiters and comments
@@ -102,7 +102,7 @@ final class PreserveNewlines implements TokenRule
             $token->line < $min
             || $token->line > $max
             || ($ignoreBrackets && $this->Idx->Bracket[$token->id])
-            || !TokenUtility::isNewlineAllowedBefore($token)
+            || !TokenUtil::isNewlineAllowedBefore($token)
         ) {
             return false;
         }
@@ -146,7 +146,7 @@ final class PreserveNewlines implements TokenRule
             $next->line < $min
             || $next->line > $max
             || ($ignoreBrackets && $this->Idx->Bracket[$token->id])
-            || !TokenUtility::isNewlineAllowedAfter($token)
+            || !TokenUtil::isNewlineAllowedAfter($token)
         ) {
             return false;
         }

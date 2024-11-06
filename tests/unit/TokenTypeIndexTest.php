@@ -1,10 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Tests\Support;
+namespace Lkrms\PrettyPHP\Tests;
 
 use Lkrms\PrettyPHP\Catalog\TokenGroup;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\PrettyPHP\Tests\TestCase;
+use Lkrms\PrettyPHP\TokenTypeIndex;
 use Salient\PHPDoc\PHPDoc;
 use Salient\Utility\Arr;
 use Salient\Utility\File;

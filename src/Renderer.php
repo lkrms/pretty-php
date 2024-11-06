@@ -3,8 +3,6 @@
 namespace Lkrms\PrettyPHP;
 
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\PrettyPHP\Token\Token;
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasMutator;
 use Salient\Utility\Regex;
@@ -135,7 +133,7 @@ final class Renderer implements Immutable
         $before = '';
         $padding = $token->Padding;
         if ($whitespace = $token->effectiveWhitespaceBefore()) {
-            $before = TokenUtility::getWhitespace($whitespace);
+            $before = TokenUtil::getWhitespace($whitespace);
             if ($before[0] === "\n") {
                 // Don't indent close tags unless subsequent text is indented by
                 // at least the same amount
@@ -172,7 +170,7 @@ final class Renderer implements Immutable
             return '';
         }
 
-        return TokenUtility::getWhitespace($token->effectiveWhitespaceAfter());
+        return TokenUtil::getWhitespace($token->effectiveWhitespaceAfter());
     }
 
     private function getIndentSpaces(Token $token): int
@@ -274,7 +272,7 @@ column 1 despite starting in column 2 or above (like this comment) */
             $indent = "\n" . ltrim($beforeStart, "\n")
                 . str_repeat(' ', mb_strlen($this->render($start, $token->Prev, $softTabs))
                     - strlen($beforeStart)
-                    + strlen(TokenUtility::getWhitespace($token->effectiveWhitespaceBefore()))
+                    + strlen(TokenUtil::getWhitespace($token->effectiveWhitespaceBefore()))
                     + $token->Padding);
         }
         $text = str_replace("\n", $indent, $token->text);

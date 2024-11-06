@@ -6,7 +6,6 @@ use Lkrms\PrettyPHP\Catalog\FormatterFlag;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Contract\Extension;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Salient\Core\AbstractBuilder;
 use Salient\Core\Indentation;
 

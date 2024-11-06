@@ -5,8 +5,8 @@ namespace Lkrms\PrettyPHP\Rule;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Concern\ListRuleTrait;
 use Lkrms\PrettyPHP\Contract\ListRule;
-use Lkrms\PrettyPHP\Support\TokenCollection;
-use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Internal\TokenCollection;
+use Lkrms\PrettyPHP\Token;
 
 /**
  * Align arguments, array elements and other list items with their

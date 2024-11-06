@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Exception;
 
-use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Token;
 use Salient\Utility\Json;
 use Throwable;
 

@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Rule\Support;
+namespace Lkrms\PrettyPHP\Rule\Preset\Internal;
 
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenTypeIndex;
 use Salient\Core\Concern\HasMutator;
 
 /**

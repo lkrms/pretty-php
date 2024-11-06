@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Contract;
 
-use Lkrms\PrettyPHP\Token\GenericToken;
+use Lkrms\PrettyPHP\GenericToken;
 
 interface Filter extends Extension
 {

@@ -4,8 +4,8 @@ namespace Lkrms\PrettyPHP\Filter;
 
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
-use Lkrms\PrettyPHP\Token\GenericToken;
-use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\GenericToken;
+use Lkrms\PrettyPHP\Token;
 use Salient\Utility\Regex;
 
 /**

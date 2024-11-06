@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Tests\Support;
+namespace Lkrms\PrettyPHP\Tests\Internal;
 
 use Lkrms\PrettyPHP\Contract\Filter;
-use Lkrms\PrettyPHP\Support\Problem;
+use Lkrms\PrettyPHP\Internal\Problem;
 use Lkrms\PrettyPHP\Tests\TestCase;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\Parser;
