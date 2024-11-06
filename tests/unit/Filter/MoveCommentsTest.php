@@ -135,9 +135,12 @@ $foo = [
 ];
 
 $foo = [
-    $bar,  /* DocBlock */
-    $baz,  /* DocBlock */
-    $qux,  /* DocBlock */
+    $bar,
+    /** DocBlock */
+    $baz,
+    /** DocBlock */
+    $qux,
+    /** DocBlock */
 ];
 
 function foo(
@@ -148,9 +151,12 @@ function foo(
 
 function bar(
     /** DocBlock */
-    $foo,  /* DocBlock */
-    $baz,  /* DocBlock */
-    $qux  /* DocBlock */
+    $foo,
+    /** DocBlock */
+    $baz,
+    /** DocBlock */
+    $qux
+    /** DocBlock */
 ): void {}
 
 PHP,
@@ -178,51 +184,56 @@ $foo =  /* Comment */
         . '%'  /* Comment */
         : $quux;  /* Comment */
 
-$foo =  /* DocBlock */
-    !
+$foo =
     /** DocBlock */
-    $qux  /* DocBlock */
-        ? ($bar  /* DocBlock */
-            * $baz  /* DocBlock */
-            / 100)  /* DocBlock */
-        . '%'  /* DocBlock */
+    /** DocBlock */
+    !$qux
+        /** DocBlock */
+        ? ($bar
+            /** DocBlock */
+            * $baz
+            /** DocBlock */
+            / 100)
+        /** DocBlock */
+        . '%'
+        /** DocBlock */
         : $quux;
 /** DocBlock */
 $foo =  // Comment
     // Comment
     // Comment
-    !$qux ?  // Comment
-    ($bar  // Comment
-        * $baz  // Comment
-        / 100)  // Comment
-    . '%' :  // Comment
-    $quux;  // Comment
+    !$qux  // Comment
+        ? ($bar  // Comment
+            * $baz  // Comment
+            / 100)  // Comment
+        . '%'  // Comment
+        : $quux;  // Comment
 
 $foo =  /* Comment */
     /* Comment */
     /* Comment */
-    !$qux ?  /* Comment */
-    ($bar  /* Comment */
-        * $baz  /* Comment */
-        / 100)  /* Comment */
-    . '%' :  /* Comment */
-    $quux;  /* Comment */
+    !$qux  /* Comment */
+        ? ($bar  /* Comment */
+            * $baz  /* Comment */
+            / 100)  /* Comment */
+        . '%'  /* Comment */
+        : $quux;  /* Comment */
 
-$foo =  /* DocBlock */
-    /* DocBlock */
-    !
+$foo =
     /** DocBlock */
-    $qux ?
     /** DocBlock */
-    ($bar *
+    /** DocBlock */
+    !$qux
         /** DocBlock */
-        $baz /
+        ? ($bar
+            /** DocBlock */
+            * $baz
+            /** DocBlock */
+            / 100)
         /** DocBlock */
-        100) .
-    /** DocBlock */
-    '%' :
-    /** DocBlock */
-    $quux;
+        . '%'
+        /** DocBlock */
+        : $quux;
 /** DocBlock */
 
 PHP,
@@ -250,51 +261,56 @@ $foo =  /* Comment */
         . '%'  /* Comment */
         : $quux;  /* Comment */
 
-$foo =  /* DocBlock */
-    !
+$foo =
     /** DocBlock */
-    $qux  /* DocBlock */
-        ? ($bar  /* DocBlock */
-            * $baz  /* DocBlock */
-            / 100)  /* DocBlock */
-        . '%'  /* DocBlock */
+    /** DocBlock */
+    !$qux
+        /** DocBlock */
+        ? ($bar
+            /** DocBlock */
+            * $baz
+            /** DocBlock */
+            / 100)
+        /** DocBlock */
+        . '%'
+        /** DocBlock */
         : $quux;
 /** DocBlock */
 $foo =  // Comment
     // Comment
     // Comment
-    !$qux ?  // Comment
-    ($bar  // Comment
-        * $baz  // Comment
-        / 100)  // Comment
-    . '%' :  // Comment
-    $quux;  // Comment
+    !$qux  // Comment
+        ? ($bar  // Comment
+            * $baz  // Comment
+            / 100)  // Comment
+        . '%'  // Comment
+        : $quux;  // Comment
 
 $foo =  /* Comment */
     /* Comment */
     /* Comment */
-    !$qux ?  /* Comment */
-    ($bar  /* Comment */
-        * $baz  /* Comment */
-        / 100)  /* Comment */
-    . '%' :  /* Comment */
-    $quux;  /* Comment */
+    !$qux  /* Comment */
+        ? ($bar  /* Comment */
+            * $baz  /* Comment */
+            / 100)  /* Comment */
+        . '%'  /* Comment */
+        : $quux;  /* Comment */
 
-$foo =  /* DocBlock */
-    /* DocBlock */
-    !
+$foo =
     /** DocBlock */
-    $qux ?
     /** DocBlock */
-    ($bar *
+    /** DocBlock */
+    !$qux
         /** DocBlock */
-        $baz /
+        ? ($bar
+            /** DocBlock */
+            * $baz
+            /** DocBlock */
+            / 100)
         /** DocBlock */
-        100) .
-    /** DocBlock */
-    '%' :
-    /** DocBlock */
-    $quux;
+        . '%'
+        /** DocBlock */
+        : $quux;
 /** DocBlock */
 
 PHP,
@@ -322,56 +338,103 @@ $foo =  /* Comment */
         '%'  /* Comment */
         : $quux;  /* Comment */
 
-$foo =  /* DocBlock */
-    !
+$foo =
     /** DocBlock */
-    $qux  /* DocBlock */
-        ? ($bar *  /* DocBlock */
-            $baz /  /* DocBlock */
-            100) .  /* DocBlock */
-        '%'  /* DocBlock */
+    /** DocBlock */
+    !$qux
+        /** DocBlock */
+        ? ($bar *
+            /** DocBlock */
+            $baz /
+            /** DocBlock */
+            100) .
+        /** DocBlock */
+        '%'
+        /** DocBlock */
         : $quux;
 /** DocBlock */
 $foo =  // Comment
     // Comment
     // Comment
-    !$qux ?  // Comment
-    ($bar *  // Comment
-        $baz /  // Comment
-        100) .  // Comment
-    '%' :  // Comment
-    $quux;  // Comment
+    !$qux  // Comment
+        ? ($bar *  // Comment
+            $baz /  // Comment
+            100) .  // Comment
+        '%'  // Comment
+        : $quux;  // Comment
 
 $foo =  /* Comment */
     /* Comment */
     /* Comment */
-    !$qux ?  /* Comment */
-    ($bar *  /* Comment */
-        $baz /  /* Comment */
-        100) .  /* Comment */
-    '%' :  /* Comment */
-    $quux;  /* Comment */
+    !$qux  /* Comment */
+        ? ($bar *  /* Comment */
+            $baz /  /* Comment */
+            100) .  /* Comment */
+        '%'  /* Comment */
+        : $quux;  /* Comment */
 
-$foo =  /* DocBlock */
-    /* DocBlock */
-    !
+$foo =
     /** DocBlock */
-    $qux ?
     /** DocBlock */
-    ($bar *
+    /** DocBlock */
+    !$qux
         /** DocBlock */
-        $baz /
+        ? ($bar *
+            /** DocBlock */
+            $baz /
+            /** DocBlock */
+            100) .
         /** DocBlock */
-        100) .
-    /** DocBlock */
-    '%' :
-    /** DocBlock */
-    $quux;
+        '%'
+        /** DocBlock */
+        : $quux;
 /** DocBlock */
 
 PHP,
                 $input2,
                 $formatterB->tokenTypeIndex($last),
+            ],
+            'Comments after colons' => [
+                <<<'PHP'
+<?php
+switch ($foo):  // Comment
+    case 1:  // Comment
+        label:  // Comment
+        label:  // Comment
+        break;
+    default:  // Comment
+        label:  // Comment
+        break;
+endswitch;
+label:  // Comment
+label:  // Comment
+fn(): /* Comment */ ?int => null
+?>
+<?php
+label:  // Comment
+label:  // Comment
+
+PHP,
+                <<<'PHP'
+<?php
+switch ($foo):  // Comment
+case 1:  // Comment
+label:  // Comment
+label:  // Comment
+break;
+default:  // Comment
+label:  // Comment
+break;
+endswitch;
+label:  // Comment
+label:  // Comment
+fn(): /* Comment */ ?int => null
+?>
+<?php
+label:  // Comment
+label:  // Comment
+PHP,
+                $formatter,
             ],
         ];
     }

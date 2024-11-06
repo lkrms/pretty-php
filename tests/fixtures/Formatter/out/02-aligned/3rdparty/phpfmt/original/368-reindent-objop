@@ -11,10 +11,10 @@ $foo->bar(
     ->baz();
 
 $foo->bar(
-    'aoeu'
-)->
+        'aoeu'
+    )
     // comment1
-    baz();
+    ->baz();
 
 $foo->bar(
         'aoeu'

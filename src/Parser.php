@@ -671,24 +671,26 @@ final class Parser implements Immutable
         $idx = $this->Formatter->TokenTypeIndex;
 
         $depth = 0;
-        $t = $token;
-        while ($t->Next) {
-            if ($idx->OpenBracket[$t->id]) {
+        while ($token->Next) {
+            if ($idx->OpenBracket[$token->id]) {
                 $depth++;
-            } elseif ($idx->CloseBracket[$t->id]) {
+            } elseif ($idx->CloseBracket[$token->id]) {
                 $depth--;
+                if ($depth < 0) {
+                    break;
+                }
             }
-            if ($depth < 0) {
-                break;
-            }
-            $t = $t->Next;
-            if ($idx->NotCode[$t->id]) {
-                continue;
+            $token = $token->Next;
+            while ($idx->NotCode[$token->id]) {
+                $token = $token->Next;
+                if (!$token) {
+                    break 2;
+                }
             }
             if (!$depth) {
                 $offset--;
                 if (!$offset) {
-                    return $t;
+                    return $token;
                 }
             }
         }

@@ -95,9 +95,7 @@ class SomeClass
         foreach (($arr) as $e => $f) {
         }
 
-        /*
-         * Touch this
-         */
+        /** Touch this */
     }
 }
 

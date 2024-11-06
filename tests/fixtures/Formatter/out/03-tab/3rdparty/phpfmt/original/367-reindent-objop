@@ -12,11 +12,12 @@ $foo
 	)
 	->baz();
 
-$foo->bar(
-	'aoeu'
-)->
+$foo
+	->bar(
+		'aoeu'
+	)
 	// comment1
-	baz();
+	->baz();
 
 $foo
 	->bar(
