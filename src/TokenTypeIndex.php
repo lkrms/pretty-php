@@ -2,7 +2,6 @@
 
 namespace Lkrms\PrettyPHP;
 
-use Lkrms\PrettyPHP\Catalog\TokenGroup as TG;
 use Lkrms\PrettyPHP\Contract\HasTokenIndex;
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasMutator;
@@ -20,6 +19,55 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     protected const LAST = 1;
     protected const MIXED = 2;
 
+    /**
+     * @var array<int,bool>
+     */
+    private const DEFAULT_ALLOW_NEWLINE_BEFORE = [
+        \T_ATTRIBUTE => true,
+        \T_ATTRIBUTE_COMMENT => true,
+        \T_CLOSE_BRACKET => true,
+        \T_CLOSE_PARENTHESIS => true,
+        \T_CLOSE_TAG => true,
+        \T_COALESCE => true,
+        \T_CONCAT => true,
+        \T_DOUBLE_ARROW => true,
+        \T_LOGICAL_NOT => true,
+        \T_OBJECT_OPERATOR => true,
+        \T_NULLSAFE_OBJECT_OPERATOR => true,
+    ]
+        + self::OPERATOR_ARITHMETIC
+        + self::OPERATOR_BITWISE
+        + self::OPERATOR_TERNARY
+        + self::TOKEN_INDEX;
+
+    /**
+     * @var array<int,bool>
+     */
+    private const DEFAULT_ALLOW_NEWLINE_AFTER = [
+        \T_ATTRIBUTE => true,
+        \T_ATTRIBUTE_COMMENT => true,
+        \T_CLOSE_BRACE => true,
+        \T_COLON => true,
+        \T_COMMA => true,
+        \T_COMMENT => true,
+        \T_DOC_COMMENT => true,
+        \T_DOUBLE_ARROW => true,
+        \T_EXTENDS => true,
+        \T_IMPLEMENTS => true,
+        \T_OPEN_BRACE => true,
+        \T_OPEN_BRACKET => true,
+        \T_OPEN_PARENTHESIS => true,
+        \T_OPEN_TAG => true,
+        \T_OPEN_TAG_WITH_ECHO => true,
+        \T_SEMICOLON => true,
+        \T_COALESCE => false,
+        \T_LOGICAL_NOT => false,
+    ]
+        + self::OPERATOR_ASSIGNMENT
+        + self::OPERATOR_COMPARISON
+        + self::OPERATOR_LOGICAL
+        + self::TOKEN_INDEX;
+
     // Syntax:
 
     /**
@@ -29,7 +77,9 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $Bracket;
+    public array $Bracket = self::OPEN_BRACKET
+        + self::CLOSE_BRACKET
+        + self::TOKEN_INDEX;
 
     /**
      * T_OPEN_BRACE, T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_ATTRIBUTE,
@@ -37,7 +87,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $OpenBracket;
+    public array $OpenBracket = self::OPEN_BRACKET
+        + self::TOKEN_INDEX;
 
     /**
      * T_OPEN_BRACE, T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_ATTRIBUTE,
@@ -45,86 +96,136 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $OpenBracketOrNot;
+    public array $OpenBracketOrNot = self::OPEN_BRACKET + [
+        \T_LOGICAL_NOT => true,
+        \T_NOT => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS
      *
      * @var array<int,bool>
      */
-    public array $CloseBracket;
+    public array $CloseBracket = self::CLOSE_BRACKET
+        + self::TOKEN_INDEX;
 
     /**
      * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_END_ALT_SYNTAX
      *
      * @var array<int,bool>
      */
-    public array $CloseBracketOrEndAlt;
+    public array $CloseBracketOrEndAlt = self::CLOSE_BRACKET + [
+        \T_END_ALT_SYNTAX => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_COMMA
      *
      * @var array<int,bool>
      */
-    public array $CloseBracketOrComma;
+    public array $CloseBracketOrComma = self::CLOSE_BRACKET + [
+        \T_COMMA => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_ATTRIBUTE
      *
-     * Also excludes `T_CURLY_OPEN` and `T_DOLLAR_OPEN_CURLY_BRACES`.
-     *
      * @var array<int,bool>
      */
-    public array $OpenBracketExceptBrace;
+    public array $OpenBracketExceptBrace = [
+        \T_OPEN_BRACE => false,
+        \T_CURLY_OPEN => false,
+        \T_DOLLAR_OPEN_CURLY_BRACES => false,
+    ]
+        + self::OPEN_BRACKET
+        + self::TOKEN_INDEX;
 
     /**
      * T_OPEN_BRACE, T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES
      *
      * @var array<int,bool>
      */
-    public array $OpenBrace;
+    public array $OpenBrace = [
+        \T_OPEN_BRACE => true,
+        \T_CURLY_OPEN => true,
+        \T_DOLLAR_OPEN_CURLY_BRACES => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO
      *
      * @var array<int,bool>
      */
-    public array $OpenTag;
+    public array $OpenTag = [
+        \T_OPEN_TAG => true,
+        \T_OPEN_TAG_WITH_ECHO => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_DECLARE, T_FOR, T_FOREACH, T_IF, T_SWITCH, T_WHILE
      *
      * @var array<int,bool>
      */
-    public array $AltStart;
+    public array $AltStart = [
+        \T_DECLARE => true,
+        \T_FOR => true,
+        \T_FOREACH => true,
+        \T_IF => true,
+        \T_SWITCH => true,
+        \T_WHILE => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_ELSE, T_ELSEIF
      *
      * @var array<int,bool>
      */
-    public array $AltContinue;
+    public array $AltContinue = [
+        \T_ELSEIF => true,
+        \T_ELSE => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_ELSEIF
      *
      * @var array<int,bool>
      */
-    public array $AltContinueWithExpression;
+    public array $AltContinueWithExpression = [
+        \T_ELSEIF => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_ELSE
      *
      * @var array<int,bool>
      */
-    public array $AltContinueWithNoExpression;
+    public array $AltContinueWithNoExpression = [
+        \T_ELSE => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_ENDDECLARE, T_ENDFOR, T_ENDFOREACH, T_ENDIF, T_ENDSWITCH, T_ENDWHILE
      *
      * @var array<int,bool>
      */
-    public array $AltEnd;
+    public array $AltEnd = [
+        \T_ENDDECLARE => true,
+        \T_ENDFOR => true,
+        \T_ENDFOREACH => true,
+        \T_ENDIF => true,
+        \T_ENDSWITCH => true,
+        \T_ENDWHILE => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_AND, T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
@@ -132,50 +233,65 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $Ampersand;
+    public array $Ampersand = self::AMPERSAND
+        + self::TOKEN_INDEX;
 
     /**
      * T_ATTRIBUTE, T_ATTRIBUTE_COMMENT
      *
      * @var array<int,bool>
      */
-    public array $Attribute;
+    public array $Attribute = [
+        \T_ATTRIBUTE => true,
+        \T_ATTRIBUTE_COMMENT => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
-     * T_ARRAY_CAST, T_BOOL_CAST, T_DOUBLE_CAST, T_INT_CAST, T_OBJECT_CAST,
-     * T_STRING_CAST, T_UNSET_CAST
+     * Casts
      *
      * @var array<int,bool>
      */
-    public array $Cast;
+    public array $Cast = self::CAST
+        + self::TOKEN_INDEX;
 
     /**
      * T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR
      *
      * @var array<int,bool>
      */
-    public array $Chain;
+    public array $Chain = self::CHAIN
+        + self::TOKEN_INDEX;
 
     /**
      * T_CLASS, T_FUNCTION
      *
      * @var array<int,bool>
      */
-    public array $ClassOrFunction;
+    public array $ClassOrFunction = [
+        \T_CLASS => true,
+        \T_FUNCTION => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_COMMA, T_DOUBLE_ARROW
      *
      * @var array<int,bool>
      */
-    public array $CommaOrDoubleArrow;
+    public array $CommaOrDoubleArrow = [
+        \T_COMMA => true,
+        \T_DOUBLE_ARROW => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_COMMENT, T_DOC_COMMENT
      *
      * @var array<int,bool>
      */
-    public array $Comment;
+    public array $Comment = self::COMMENT
+        + self::TOKEN_INDEX;
 
     /**
      * T_ABSTRACT, T_CASE, T_CLASS, T_CONST, T_DECLARE, T_ENUM, T_FINAL,
@@ -184,7 +300,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $Declaration;
+    public array $Declaration = self::DECLARATION
+        + self::TOKEN_INDEX;
 
     /**
      * T_CASE, T_CLASS, T_CONST, T_DECLARE, T_ENUM, T_FUNCTION, T_INTERFACE,
@@ -192,21 +309,27 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $DeclarationExceptModifiers;
+    public array $DeclarationExceptModifiers = self::NO_MODIFIER
+        + self::DECLARATION
+        + self::TOKEN_INDEX;
 
     /**
      * T_CLASS, T_ENUM, T_INTERFACE, T_TRAIT
      *
      * @var array<int,bool>
      */
-    public array $DeclarationClass;
+    public array $DeclarationClass = self::DECLARATION_CLASS
+        + self::TOKEN_INDEX;
 
     /**
      * T_CLASS, T_ENUM, T_FUNCTION, T_INTERFACE, T_TRAIT
      *
      * @var array<int,bool>
      */
-    public array $DeclarationClassOrFunction;
+    public array $DeclarationClassOrFunction = self::DECLARATION_CLASS + [
+        \T_FUNCTION => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_COMMA, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE,
@@ -214,50 +337,78 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $DeclarationList;
+    public array $DeclarationList = self::DECLARATION_LIST
+        + self::TOKEN_INDEX;
 
     /**
-     * T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY, T_STATIC, T_VAR
+     * Visibility modifiers, T_READONLY, T_STATIC, T_VAR
      *
      * @var array<int,bool>
      */
-    public array $DeclarationPropertyOrVariable;
+    public array $DeclarationPropertyOrVariable = [
+        \T_READONLY => true,
+        \T_STATIC => true,
+        \T_VAR => true,
+    ]
+        + self::VISIBILITY
+        + self::TOKEN_INDEX;
 
     /**
      * T_CLASS, T_ENUM, T_FUNCTION, T_INTERFACE, T_NAMESPACE, T_TRAIT
      *
      * @var array<int,bool>
      */
-    public array $DeclarationTopLevel;
+    public array $DeclarationTopLevel = [
+        \T_FUNCTION => true,
+        \T_NAMESPACE => true,
+    ]
+        + self::DECLARATION_CLASS
+        + self::TOKEN_INDEX;
 
     /**
-     * T_ABSTRACT, T_CONST, T_FINAL, T_PRIVATE, T_PROTECTED, T_PUBLIC,
-     * T_READONLY, T_STATIC, T_VAR
+     * Modifiers, T_CONST
      *
      * @var array<int,bool>
      */
-    public array $NonMethodMember;
+    public array $NonMethodMember = [
+        \T_CONST => true,
+    ]
+        + self::MODIFIER
+        + self::TOKEN_INDEX;
 
     /**
      * T_FN, T_FUNCTION
      *
      * @var array<int,bool>
      */
-    public array $FunctionOrFn;
+    public array $FunctionOrFn = [
+        \T_FN => true,
+        \T_FUNCTION => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_IF, T_ELSEIF
      *
      * @var array<int,bool>
      */
-    public array $IfOrElseIf;
+    public array $IfOrElseIf = [
+        \T_IF => true,
+        \T_ELSEIF => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_IF, T_ELSEIF, T_ELSE
      *
      * @var array<int,bool>
      */
-    public array $IfElseIfOrElse;
+    public array $IfElseIfOrElse = [
+        \T_IF => true,
+        \T_ELSEIF => true,
+        \T_ELSE => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO, T_CLOSE_TAG, T_COMMENT, T_DOC_COMMENT,
@@ -265,97 +416,149 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $NotCode;
+    public array $NotCode = [
+        \T_INLINE_HTML => true,
+        \T_OPEN_TAG => true,
+        \T_OPEN_TAG_WITH_ECHO => true,
+        \T_CLOSE_TAG => true,
+        \T_WHITESPACE => true,
+    ]
+        + self::COMMENT
+        + self::TOKEN_INDEX;
 
     /**
      * T_LNUMBER, T_DNUMBER
      *
      * @var array<int,bool>
      */
-    public array $Number;
+    public array $Number = [
+        \T_LNUMBER => true,
+        \T_DNUMBER => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
-     * T_AND, T_AND_EQUAL, T_AT, T_BOOLEAN_AND, T_BOOLEAN_OR, T_COALESCE,
-     * T_COALESCE_EQUAL, T_COLON, T_CONCAT, T_CONCAT_EQUAL, T_DEC, T_DIV,
-     * T_DIV_EQUAL, T_DOLLAR, T_DOUBLE_ARROW, T_EQUAL, T_GREATER, T_INC,
-     * T_INSTANCEOF, T_IS_EQUAL, T_IS_GREATER_OR_EQUAL, T_IS_IDENTICAL,
-     * T_IS_NOT_EQUAL, T_IS_NOT_IDENTICAL, T_IS_SMALLER_OR_EQUAL, T_LOGICAL_AND,
-     * T_LOGICAL_NOT, T_LOGICAL_OR, T_LOGICAL_XOR, T_MINUS, T_MINUS_EQUAL,
-     * T_MOD, T_MOD_EQUAL, T_MUL, T_MUL_EQUAL, T_NOT, T_OR, T_OR_EQUAL, T_PLUS,
-     * T_PLUS_EQUAL, T_POW, T_POW_EQUAL, T_QUESTION, T_SL, T_SL_EQUAL,
-     * T_SMALLER, T_SPACESHIP, T_SR, T_SR_EQUAL, T_XOR, T_XOR_EQUAL,
-     * T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
-     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
+     * Arithmetic operators, assignment operators, bitwise operators, comparison
+     * operators, logical operators, ternary operators, T_AT, T_CONCAT,
+     * T_DOLLAR, T_DOUBLE_ARROW, T_INC, T_DEC, T_INSTANCEOF
      *
      * @var array<int,bool>
      */
-    public array $Operator;
+    public array $Operator = [
+        \T_AT => true,
+        \T_CONCAT => true,
+        \T_DOLLAR => true,
+        \T_DOUBLE_ARROW => true,
+        \T_INC => true,
+        \T_DEC => true,
+        \T_INSTANCEOF => true,
+    ]
+        + self::OPERATOR_ARITHMETIC
+        + self::OPERATOR_ASSIGNMENT
+        + self::OPERATOR_BITWISE
+        + self::OPERATOR_COMPARISON
+        + self::OPERATOR_LOGICAL
+        + self::OPERATOR_TERNARY
+        + self::TOKEN_INDEX;
 
     /**
-     * T_AND_EQUAL, T_COALESCE_EQUAL, T_CONCAT_EQUAL, T_DIV_EQUAL, T_EQUAL,
-     * T_MINUS_EQUAL, T_MOD_EQUAL, T_MUL_EQUAL, T_OR_EQUAL, T_PLUS_EQUAL,
-     * T_POW_EQUAL, T_SL_EQUAL, T_SR_EQUAL, T_XOR_EQUAL
+     * Assignment operators
      *
      * @var array<int,bool>
      */
-    public array $OperatorAssignment;
+    public array $OperatorAssignment = self::OPERATOR_ASSIGNMENT
+        + self::TOKEN_INDEX;
 
     /**
      * T_AND, T_OR, T_XOR, T_BOOLEAN_AND, T_BOOLEAN_OR, T_LOGICAL_AND,
      * T_LOGICAL_OR, T_LOGICAL_XOR, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
      * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
      *
-     * `&`, `|`, `^`, `&&`, `||`, `and`, `or`, `xor`
+     * Includes `&`, `|`, `^`, `&&`, `||`, `and`, `or` and `xor`.
      *
      * @var array<int,bool>
      */
-    public array $OperatorBooleanExceptNot;
+    public array $OperatorBooleanExceptNot = [
+        \T_OR => true,
+        \T_XOR => true,
+        \T_LOGICAL_NOT => false,
+    ]
+        + self::OPERATOR_LOGICAL
+        + self::AMPERSAND
+        + self::TOKEN_INDEX;
 
     /**
-     * T_GREATER, T_IS_EQUAL, T_IS_GREATER_OR_EQUAL, T_IS_IDENTICAL,
-     * T_IS_NOT_EQUAL, T_IS_NOT_IDENTICAL, T_IS_SMALLER_OR_EQUAL, T_SMALLER,
-     * T_SPACESHIP
-     *
-     * Excludes `T_COALESCE`.
+     * Comparison operators (except T_COALESCE)
      *
      * @var array<int,bool>
      */
-    public array $OperatorComparison;
+    public array $OperatorComparison = [
+        \T_COALESCE => false,
+    ]
+        + self::OPERATOR_COMPARISON
+        + self::TOKEN_INDEX;
 
     /**
      * T_AT, T_DEC, T_DOLLAR, T_INC, T_LOGICAL_NOT, T_NOT
      *
      * @var array<int,bool>
      */
-    public array $OperatorUnary;
+    public array $OperatorUnary = [
+        \T_AT => true,
+        \T_DOLLAR => true,
+        \T_INC => true,
+        \T_DEC => true,
+        \T_LOGICAL_NOT => true,
+        \T_NOT => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_PLUS, T_MINUS
      *
      * @var array<int,bool>
      */
-    public array $PlusOrMinus;
+    public array $PlusOrMinus = [
+        \T_PLUS => true,
+        \T_MINUS => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_RETURN, T_YIELD, T_YIELD_FROM
      *
      * @var array<int,bool>
      */
-    public array $Return;
+    public array $Return = [
+        \T_RETURN => true,
+        \T_YIELD => true,
+        \T_YIELD_FROM => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_DOUBLE_QUOTE, T_START_HEREDOC, T_END_HEREDOC, T_BACKTICK
      *
      * @var array<int,bool>
      */
-    public array $StringDelimiter;
+    public array $StringDelimiter = [
+        \T_DOUBLE_QUOTE => true,
+        \T_START_HEREDOC => true,
+        \T_END_HEREDOC => true,
+        \T_BACKTICK => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_OR
      *
      * @var array<int,bool>
      */
-    public array $TypeDelimiter;
+    public array $TypeDelimiter = [
+        \T_OR => true,
+        \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_ARRAY, T_CALLABLE,
@@ -364,39 +567,59 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $ValueType;
+    public array $ValueType = [
+        \T_OR => true,
+        \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG => true,
+        \T_CLOSE_PARENTHESIS => true,
+    ]
+        + self::VALUE_TYPE_START
+        + self::TOKEN_INDEX;
 
     /**
      * T_END_ALT_SYNTAX, T_NULL
      *
      * @var array<int,bool>
      */
-    public array $Virtual;
+    public array $Virtual = [
+        \T_END_ALT_SYNTAX => true,
+        \T_NULL => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
-     * T_PRIVATE, T_PROTECTED, T_PUBLIC
+     * Visibility modifiers
      *
      * @var array<int,bool>
      */
-    public array $Visibility;
+    public array $Visibility = self::VISIBILITY
+        + self::TOKEN_INDEX;
 
     /**
-     * T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY
+     * Visibility modifiers, T_READONLY
      *
      * @var array<int,bool>
      */
-    public array $VisibilityOrReadonly;
+    public array $VisibilityOrReadonly = self::VISIBILITY + [
+        \T_READONLY => true,
+    ]
+        + self::TOKEN_INDEX;
 
     // Context:
 
     /**
      * T_OPEN_BRACE, T_OPEN_PARENTHESIS, T_EXTENDS, T_IMPLEMENTS
      *
-     * The next token after an anonymous `T_CLASS` or `T_FUNCTION`.
+     * The token that appears after an anonymous `T_CLASS` or `T_FUNCTION`.
      *
      * @var array<int,bool>
      */
-    public array $AfterAnonymousClassOrFunction;
+    public array $AfterAnonymousClassOrFunction = [
+        \T_OPEN_BRACE => true,
+        \T_OPEN_PARENTHESIS => true,
+        \T_EXTENDS => true,
+        \T_IMPLEMENTS => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_ARRAY, T_CLASS, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS,
@@ -404,20 +627,58 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * T_FUNCTION, T_ISSET, T_LIST, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED,
      * T_NAME_RELATIVE, T_STATIC, T_STRING, T_UNSET, T_USE, T_VARIABLE
      *
-     * Tokens that may appear before open parentheses with delimited lists.
+     * Tokens that may appear before parentheses that enclose a delimited list.
      *
      * @var array<int,bool>
      */
-    public array $BeforeListParenthesis;
+    public array $BeforeListParenthesis = [
+        \T_ARRAY => true,
+        \T_CLASS => true,
+        \T_DECLARE => true,
+        \T_FN => true,
+        \T_FOR => true,
+        \T_FUNCTION => true,
+        \T_ISSET => true,
+        \T_LIST => true,
+        \T_STATIC => true,
+        \T_UNSET => true,
+        \T_USE => true,
+        \T_VARIABLE => true,
+    ]
+        + self::DEREFERENCEABLE_SCALAR_END
+        + self::NAME
+        + self::TOKEN_INDEX;
 
     /**
-     * Tokens that may appear before unary operators
+     * Arithmetic operators, assignment operators, bitwise operators, comparison
+     * operators, logical operators, casts, keywords, T_AT, T_COMMA, T_CONCAT,
+     * T_DOLLAR_OPEN_CURLY_BRACES, T_DOUBLE_ARROW, T_ELLIPSIS, T_OPEN_BRACE,
+     * T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_SEMICOLON
      *
-     * @internal
+     * Tokens that may appear before unary operators.
      *
      * @var array<int,bool>
      */
-    public array $BeforeUnary;
+    public array $BeforeUnary = [
+        \T_AT => true,
+        \T_COMMA => true,
+        \T_CONCAT => true,
+        \T_DOLLAR_OPEN_CURLY_BRACES => true,
+        \T_DOUBLE_ARROW => true,
+        \T_ELLIPSIS => true,
+        \T_OPEN_BRACE => true,
+        \T_OPEN_BRACKET => true,
+        \T_OPEN_PARENTHESIS => true,
+        \T_SEMICOLON => true,
+    ]
+        + self::OPERATOR_ARITHMETIC
+        + self::OPERATOR_ASSIGNMENT
+        + self::OPERATOR_BITWISE
+        + self::OPERATOR_COMPARISON
+        + self::OPERATOR_LOGICAL
+        + self::CAST
+        + self::KEYWORD
+        + self::TOKEN_INDEX;
 
     /**
      * T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR, T_OPEN_BRACE,
@@ -425,29 +686,53 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $ChainPart;
+    public array $ChainPart = self::CHAIN_PART
+        + self::TOKEN_INDEX;
 
     /**
-     * T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR, T_OPEN_BRACE,
-     * T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_DOLLAR, T_STRING, T_VARIABLE,
-     * T_ARRAY, T_CONSTANT_ENCAPSED_STRING, T_CURLY_OPEN,
-     * T_DOLLAR_OPEN_CURLY_BRACES, T_DOUBLE_COLON, T_DOUBLE_QUOTE,
-     * T_ENCAPSED_AND_WHITESPACE, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED,
-     * T_NAME_RELATIVE, T_STATIC, T_CLASS_C, T_DIR, T_FILE, T_FUNC_C, T_LINE,
-     * T_METHOD_C, T_NS_C, T_PROPERTY_C, T_TRAIT_C
+     * T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES, T_DOUBLE_QUOTE,
+     * T_ENCAPSED_AND_WHITESPACE, T_ARRAY, T_CONSTANT_ENCAPSED_STRING,
+     * T_DOUBLE_COLON, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED,
+     * T_NAME_RELATIVE, T_STATIC, T_DOLLAR, T_OPEN_BRACE, T_OPEN_BRACKET,
+     * T_OPEN_PARENTHESIS, T_STRING, T_VARIABLE, T_OBJECT_OPERATOR,
+     * T_NULLSAFE_OBJECT_OPERATOR, magic constants
      *
      * @var array<int,bool>
      */
-    public array $ChainExpression;
+    public array $ChainExpression = [
+        // '"' ... '"'
+        \T_CURLY_OPEN => true,
+        \T_DOLLAR_OPEN_CURLY_BRACES => true,
+        \T_DOUBLE_QUOTE => true,
+        \T_ENCAPSED_AND_WHITESPACE => true,
+        // Other dereferenceables
+        \T_ARRAY => true,
+        \T_CONSTANT_ENCAPSED_STRING => true,
+        \T_DOUBLE_COLON => true,
+        \T_NAME_FULLY_QUALIFIED => true,
+        \T_NAME_QUALIFIED => true,
+        \T_NAME_RELATIVE => true,
+        \T_STATIC => true,
+    ]
+        + self::CHAIN_PART
+        + self::MAGIC_CONSTANT
+        + self::TOKEN_INDEX;
 
     /**
      * T_ELSEIF, T_ELSE, T_CATCH, T_FINALLY
      *
-     * Excludes `T_WHILE`, which only qualifies after `T_DO`.
+     * Excludes `T_WHILE`, which only qualifies after `T_DO`. Check for this
+     * separately.
      *
      * @var array<int,bool>
      */
-    public array $ContinuesControlStructure;
+    public array $ContinuesControlStructure = [
+        \T_ELSEIF => true,
+        \T_ELSE => true,
+        \T_CATCH => true,
+        \T_FINALLY => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_ABSTRACT, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
@@ -460,7 +745,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $DeclarationPart;
+    public array $DeclarationPart = self::DECLARATION_PART
+        + self::TOKEN_INDEX;
 
     /**
      * T_ABSTRACT, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
@@ -473,7 +759,10 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $DeclarationPartWithNew;
+    public array $DeclarationPartWithNew = self::DECLARATION_PART + [
+        \T_NEW => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_ABSTRACT, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
@@ -488,7 +777,19 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $DeclarationPartWithNewAndBody;
+    public array $DeclarationPartWithNewAndBody = self::DECLARATION_PART + [
+        \T_ARRAY => true,
+        \T_CALLABLE => true,
+        \T_COLON => true,
+        \T_NEW => true,
+        \T_OPEN_BRACE => true,
+        \T_CLOSE_BRACE => true,
+        \T_OPEN_PARENTHESIS => true,
+        \T_CLOSE_PARENTHESIS => true,
+        \T_OR => true,
+        \T_QUESTION => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS,
@@ -499,14 +800,22 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $EndOfDereferenceable;
+    public array $EndOfDereferenceable = self::DEREFERENCEABLE_END
+        + self::TOKEN_INDEX;
 
     /**
      * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_STRING, T_VARIABLE
      *
      * @var array<int,bool>
      */
-    public array $EndOfVariable;
+    public array $EndOfVariable = [
+        \T_CLOSE_BRACE => true,
+        \T_CLOSE_BRACKET => true,
+        \T_CLOSE_PARENTHESIS => true,
+        \T_STRING => true,
+        \T_VARIABLE => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_AND, T_STRING, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
@@ -514,7 +823,11 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $FunctionIdentifier;
+    public array $FunctionIdentifier = [
+        \T_STRING => true,
+    ]
+        + self::AMPERSAND
+        + self::TOKEN_INDEX;
 
     /**
      * T_CATCH, T_DECLARE, T_DO, T_ELSE, T_ELSEIF, T_FINALLY, T_FOR, T_FOREACH,
@@ -522,21 +835,27 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $HasStatement;
+    public array $HasStatement = self::HAS_STATEMENT_WITH_OPTIONAL_BRACES
+        + self::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES
+        + self::HAS_STATEMENT_WITH_BRACES
+        + self::HAS_EXPRESSION_AND_STATEMENT_WITH_BRACES
+        + self::TOKEN_INDEX;
 
     /**
      * T_DO, T_ELSE
      *
      * @var array<int,bool>
      */
-    public array $HasStatementWithOptionalBraces;
+    public array $HasStatementWithOptionalBraces = self::HAS_STATEMENT_WITH_OPTIONAL_BRACES
+        + self::TOKEN_INDEX;
 
     /**
      * T_ELSEIF, T_FOR, T_FOREACH, T_IF, T_WHILE
      *
      * @var array<int,bool>
      */
-    public array $HasExpressionAndStatementWithOptionalBraces;
+    public array $HasExpressionAndStatementWithOptionalBraces = self::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES
+        + self::TOKEN_INDEX;
 
     /**
      * T_ARRAY, T_CALLABLE, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED,
@@ -544,14 +863,22 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $StartOfValueType;
+    public array $StartOfValueType = self::VALUE_TYPE_START
+        + self::TOKEN_INDEX;
 
     /**
      * T_CASE, T_DEFAULT, T_COLON, T_SEMICOLON, T_CLOSE_TAG
      *
      * @var array<int,bool>
      */
-    public array $SwitchCaseOrDelimiter;
+    public array $SwitchCaseOrDelimiter = [
+        \T_CASE => true,
+        \T_DEFAULT => true,
+        \T_COLON => true,
+        \T_SEMICOLON => true,
+        \T_CLOSE_TAG => true,
+    ]
+        + self::TOKEN_INDEX;
 
     // Parsing:
 
@@ -560,41 +887,54 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $EndOfStatement;
+    public array $EndOfStatement = [
+        \T_COLON => true,
+        \T_COMMA => true,
+        \T_SEMICOLON => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
-     * T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_SEMICOLON, T_DOUBLE_ARROW,
-     * T_AND_EQUAL, T_COALESCE_EQUAL, T_CONCAT_EQUAL, T_DIV_EQUAL, T_EQUAL,
-     * T_GREATER, T_IS_EQUAL, T_IS_GREATER_OR_EQUAL, T_IS_IDENTICAL,
-     * T_IS_NOT_EQUAL, T_IS_NOT_IDENTICAL, T_IS_SMALLER_OR_EQUAL, T_MINUS_EQUAL,
-     * T_MOD_EQUAL, T_MUL_EQUAL, T_OR_EQUAL, T_PLUS_EQUAL, T_POW_EQUAL,
-     * T_SL_EQUAL, T_SMALLER, T_SPACESHIP, T_SR_EQUAL, T_XOR_EQUAL
+     * Assignment operators, comparison operators (except T_COALESCE),
+     * T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_SEMICOLON, T_DOUBLE_ARROW
      *
      * @var array<int,bool>
      */
-    public array $EndOfExpression;
+    public array $EndOfExpression = [
+        \T_CLOSE_BRACKET => true,
+        \T_CLOSE_PARENTHESIS => true,
+        \T_SEMICOLON => true,
+        \T_DOUBLE_ARROW => true,
+        \T_COALESCE => false,
+    ]
+        + self::OPERATOR_ASSIGNMENT
+        + self::OPERATOR_COMPARISON
+        + self::TOKEN_INDEX;
 
     /**
-     * T_DOUBLE_ARROW, T_AND_EQUAL, T_COALESCE_EQUAL, T_CONCAT_EQUAL,
-     * T_DIV_EQUAL, T_EQUAL, T_GREATER, T_IS_EQUAL, T_IS_GREATER_OR_EQUAL,
-     * T_IS_IDENTICAL, T_IS_NOT_EQUAL, T_IS_NOT_IDENTICAL,
-     * T_IS_SMALLER_OR_EQUAL, T_MINUS_EQUAL, T_MOD_EQUAL, T_MUL_EQUAL,
-     * T_OR_EQUAL, T_PLUS_EQUAL, T_POW_EQUAL, T_SL_EQUAL, T_SMALLER,
-     * T_SPACESHIP, T_SR_EQUAL, T_XOR_EQUAL
+     * Assignment operators, comparison operators (except T_COALESCE),
+     * T_DOUBLE_ARROW
      *
      * @var array<int,bool>
      */
-    public array $ExpressionDelimiter;
+    public array $ExpressionDelimiter = [
+        \T_DOUBLE_ARROW => true,
+        \T_COALESCE => false,
+    ]
+        + self::OPERATOR_ASSIGNMENT
+        + self::OPERATOR_COMPARISON
+        + self::TOKEN_INDEX;
 
     /**
-     * T_AND_EQUAL, T_COALESCE_EQUAL, T_CONCAT_EQUAL, T_DIV_EQUAL,
-     * T_DOUBLE_ARROW, T_EQUAL, T_MINUS_EQUAL, T_MOD_EQUAL, T_MUL_EQUAL,
-     * T_OR_EQUAL, T_PLUS_EQUAL, T_POW_EQUAL, T_SL_EQUAL, T_SR_EQUAL,
-     * T_XOR_EQUAL
+     * Assignment operators, T_DOUBLE_ARROW
      *
      * @var array<int,bool>
      */
-    public array $ExpressionDelimiterExceptComparison;
+    public array $ExpressionDelimiterExceptComparison = [
+        \T_DOUBLE_ARROW => true,
+    ]
+        + self::OPERATOR_ASSIGNMENT
+        + self::TOKEN_INDEX;
 
     // Formatting:
 
@@ -603,35 +943,47 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $NotTrimmable;
+    public array $NotTrimmable = self::NOT_TRIMMABLE
+        + self::TOKEN_INDEX;
 
     /**
      * T_CLOSE_TAG, T_START_HEREDOC
      *
      * @var array<int,bool>
      */
-    public array $LeftTrimmable;
+    public array $LeftTrimmable = self::LEFT_TRIMMABLE
+        + self::TOKEN_INDEX;
 
     /**
      * T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO, T_END_HEREDOC
      *
      * @var array<int,bool>
      */
-    public array $RightTrimmable;
+    public array $RightTrimmable = self::RIGHT_TRIMMABLE
+        + self::TOKEN_INDEX;
 
     /**
      * T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO, T_CLOSE_TAG, T_START_HEREDOC,
      * T_END_HEREDOC, T_COMMENT, T_DOC_COMMENT, T_ATTRIBUTE_COMMENT,
      * T_WHITESPACE
      *
+     * Includes left- and right-trimmable tokens.
+     *
      * @var array<int,bool>
      */
-    public array $Trimmable;
+    public array $Trimmable = [
+        \T_ATTRIBUTE_COMMENT => true,
+        \T_WHITESPACE => true,
+    ]
+        + self::COMMENT
+        + self::LEFT_TRIMMABLE
+        + self::RIGHT_TRIMMABLE
+        + self::TOKEN_INDEX;
 
     /**
      * Tokens that may appear after a newline
      *
-     * @internal
+     * @prettyphp-dynamic
      *
      * @var array<int,bool>
      */
@@ -640,7 +992,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     /**
      * Tokens that may appear before a newline
      *
-     * @internal
+     * @prettyphp-dynamic
      *
      * @var array<int,bool>
      */
@@ -649,606 +1001,225 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     /**
      * Tokens that may appear after a blank line
      *
-     * @internal
+     * @prettyphp-dynamic
      *
      * @var array<int,bool>
      */
-    public array $PreserveBlankBefore;
+    public array $PreserveBlankBefore = [
+        \T_CLOSE_TAG => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * Tokens that may appear before a blank line
      *
-     * @internal
+     * @prettyphp-dynamic
      *
      * @var array<int,bool>
      */
-    public array $PreserveBlankAfter;
+    public array $PreserveBlankAfter = [
+        \T_CLOSE_BRACE => true,
+        \T_COMMA => true,
+        \T_COMMENT => true,
+        \T_DOC_COMMENT => true,
+        \T_OPEN_TAG => true,
+        \T_OPEN_TAG_WITH_ECHO => true,
+        \T_SEMICOLON => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
-     * Tokens that require leading and trailing spaces
+     * T_AS, T_FUNCTION, T_INSTEADOF, T_USE
      *
-     * @internal
+     * Tokens that require a leading and trailing space.
      *
      * @var array<int,bool>
      */
-    public array $AddSpace;
+    public array $AddSpace = [
+        \T_AS => true,
+        \T_FUNCTION => true,
+        \T_INSTEADOF => true,
+        \T_USE => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
-     * Tokens that require leading spaces
+     * T_ARRAY, T_CALLABLE, T_ELLIPSIS, T_EXTENDS, T_FN, T_GLOBAL, T_IMPLEMENTS,
+     * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE,
+     * T_NS_SEPARATOR, T_STATIC, T_STRING, T_VARIABLE, T_ABSTRACT, T_CONST,
+     * T_DECLARE, T_FINAL, T_READONLY, T_VAR, T_CLASS, T_ENUM, T_INTERFACE,
+     * T_TRAIT, T_PRIVATE, T_PROTECTED, T_PUBLIC
      *
-     * @internal
+     * Tokens that require a leading space.
      *
      * @var array<int,bool>
      */
-    public array $AddSpaceBefore;
+    public array $AddSpaceBefore = [
+        \T_ARRAY => true,
+        \T_CALLABLE => true,
+        \T_ELLIPSIS => true,
+        \T_EXTENDS => true,
+        \T_FN => true,
+        \T_GLOBAL => true,
+        \T_IMPLEMENTS => true,
+        \T_NAME_FULLY_QUALIFIED => true,
+        \T_NAME_QUALIFIED => true,
+        \T_NAME_RELATIVE => true,
+        \T_NS_SEPARATOR => true,
+        \T_STATIC => true,
+        \T_STRING => true,
+        \T_VARIABLE => true,
+    ]
+        + self::DECLARATION_ONLY
+        + self::TOKEN_INDEX;
 
     /**
-     * Tokens that require trailing spaces
+     * T_BREAK, T_CASE, T_CATCH, T_CLONE, T_CONTINUE, T_ECHO, T_ELSE, T_ELSEIF,
+     * T_FOR, T_FOREACH, T_GOTO, T_IF, T_INCLUDE, T_INCLUDE_ONCE, T_MATCH,
+     * T_NEW, T_PRINT, T_REQUIRE, T_REQUIRE_ONCE, T_RETURN, T_SWITCH, T_THROW,
+     * T_WHILE, T_YIELD, T_YIELD_FROM, casts
      *
-     * @internal
+     * Tokens that require a trailing space.
      *
      * @var array<int,bool>
      */
-    public array $AddSpaceAfter;
+    public array $AddSpaceAfter = [
+        \T_BREAK => true,
+        \T_CASE => true,
+        \T_CATCH => true,
+        \T_CLONE => true,
+        \T_CONTINUE => true,
+        \T_ECHO => true,
+        \T_ELSE => true,
+        \T_ELSEIF => true,
+        \T_FOR => true,
+        \T_FOREACH => true,
+        \T_GOTO => true,
+        \T_IF => true,
+        \T_INCLUDE => true,
+        \T_INCLUDE_ONCE => true,
+        \T_MATCH => true,
+        \T_NEW => true,
+        \T_PRINT => true,
+        \T_REQUIRE => true,
+        \T_REQUIRE_ONCE => true,
+        \T_RETURN => true,
+        \T_SWITCH => true,
+        \T_THROW => true,
+        \T_WHILE => true,
+        \T_YIELD => true,
+        \T_YIELD_FROM => true,
+    ]
+        + self::CAST
+        + self::TOKEN_INDEX;
 
     /**
-     * Tokens that require suppression of leading spaces
+     * T_NS_SEPARATOR
      *
-     * @internal
+     * Tokens that must not render with a leading space.
      *
      * @var array<int,bool>
      */
-    public array $SuppressSpaceBefore;
+    public array $SuppressSpaceBefore = [
+        \T_NS_SEPARATOR => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
-     * Tokens that require suppression of trailing spaces
+     * T_DOUBLE_COLON, T_ELLIPSIS, T_NS_SEPARATOR, T_OBJECT_OPERATOR,
+     * T_NULLSAFE_OBJECT_OPERATOR
      *
-     * @internal
+     * Tokens that must not render with a trailing space.
      *
      * @var array<int,bool>
      */
-    public array $SuppressSpaceAfter;
+    public array $SuppressSpaceAfter = [
+        \T_DOUBLE_COLON => true,
+        \T_ELLIPSIS => true,
+        \T_NS_SEPARATOR => true,
+        \T_OBJECT_OPERATOR => true,
+        \T_NULLSAFE_OBJECT_OPERATOR => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_USE
      *
      * @var array<int,bool>
      */
-    public array $SuppressBlankBetween;
+    public array $SuppressBlankBetween = [
+        \T_USE => true,
+    ]
+        + self::TOKEN_INDEX;
 
     /**
      * T_DECLARE
      *
      * @var array<int,bool>
      */
-    public array $SuppressBlankBetweenOneLine;
+    public array $SuppressBlankBetweenOneLine = [
+        \T_DECLARE => true,
+    ]
+        + self::TOKEN_INDEX;
 
     // Filtering:
 
     /**
-     * T_ARRAY_CAST, T_ATTRIBUTE_COMMENT, T_BOOL_CAST, T_COMMENT,
-     * T_CONSTANT_ENCAPSED_STRING, T_DOC_COMMENT, T_DOUBLE_CAST,
-     * T_ENCAPSED_AND_WHITESPACE, T_END_HEREDOC, T_INLINE_HTML, T_INT_CAST,
-     * T_OBJECT_CAST, T_OPEN_TAG, T_START_HEREDOC, T_STRING_CAST, T_UNSET_CAST,
-     * T_WHITESPACE, T_YIELD_FROM
+     * Casts, T_ATTRIBUTE_COMMENT, T_CONSTANT_ENCAPSED_STRING,
+     * T_ENCAPSED_AND_WHITESPACE, T_INLINE_HTML, T_OPEN_TAG, T_START_HEREDOC,
+     * T_END_HEREDOC, T_WHITESPACE, T_YIELD_FROM, T_COMMENT, T_DOC_COMMENT
      *
      * Tokens that may contain tab characters.
      *
      * @var array<int,bool>
      */
-    public array $Expandable;
+    public array $Expandable = [
+        \T_ATTRIBUTE_COMMENT => true,
+        \T_CONSTANT_ENCAPSED_STRING => true,
+        \T_ENCAPSED_AND_WHITESPACE => true,
+        \T_INLINE_HTML => true,
+        \T_OPEN_TAG => true,
+        \T_START_HEREDOC => true,
+        \T_END_HEREDOC => true,
+        \T_WHITESPACE => true,
+        \T_YIELD_FROM => true,
+    ]
+        + self::CAST
+        + self::COMMENT
+        + self::TOKEN_INDEX;
 
     /**
-     * T_AND, T_AND_EQUAL, T_BOOLEAN_AND, T_BOOLEAN_OR, T_COALESCE,
-     * T_COALESCE_EQUAL, T_COLON, T_COMMA, T_CONCAT, T_CONCAT_EQUAL, T_DIV,
-     * T_DIV_EQUAL, T_EQUAL, T_GREATER, T_IS_EQUAL, T_IS_GREATER_OR_EQUAL,
-     * T_IS_IDENTICAL, T_IS_NOT_EQUAL, T_IS_NOT_IDENTICAL,
-     * T_IS_SMALLER_OR_EQUAL, T_LOGICAL_AND, T_LOGICAL_NOT, T_LOGICAL_OR,
-     * T_LOGICAL_XOR, T_MINUS, T_MINUS_EQUAL, T_MOD, T_MOD_EQUAL, T_MUL,
-     * T_MUL_EQUAL, T_NOT, T_NULLSAFE_OBJECT_OPERATOR, T_OBJECT_OPERATOR, T_OR,
-     * T_OR_EQUAL, T_PLUS, T_PLUS_EQUAL, T_POW, T_POW_EQUAL, T_QUESTION,
-     * T_SEMICOLON, T_SL, T_SL_EQUAL, T_SMALLER, T_SPACESHIP, T_SR, T_SR_EQUAL,
-     * T_XOR, T_XOR_EQUAL, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
-     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
+     * Arithmetic operators, assignment operators, bitwise operators, comparison
+     * operators, logical operators, ternary operators, T_COMMA, T_CONCAT,
+     * T_SEMICOLON, T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR
      *
      * Tokens that may be swapped with adjacent comment tokens for correct
      * placement.
      *
      * @var array<int,bool>
      */
-    public array $Movable;
+    public array $Movable = [
+        \T_COMMA => true,
+        \T_CONCAT => true,
+        // \T_DOUBLE_ARROW => true,
+        \T_SEMICOLON => true,
+    ]
+        + self::CHAIN
+        + self::OPERATOR_ARITHMETIC
+        + self::OPERATOR_ASSIGNMENT
+        + self::OPERATOR_BITWISE
+        + self::OPERATOR_COMPARISON
+        + self::OPERATOR_LOGICAL
+        + self::OPERATOR_TERNARY
+        + self::TOKEN_INDEX;
 
     /** @var self::FIRST|self::LAST|self::MIXED */
     protected int $Operators;
-    /** @var array<int,bool> */
-    private static array $DefaultAllowNewlineBefore;
-    /** @var array<int,bool> */
-    private static array $DefaultAllowNewlineAfter;
 
     public function __construct(
         bool $operatorsFirst = false,
         bool $operatorsLast = false
     ) {
-        $this->Bracket = self::get(
-            \T_OPEN_BRACE,
-            \T_OPEN_BRACKET,
-            \T_OPEN_PARENTHESIS,
-            \T_CLOSE_BRACE,
-            \T_CLOSE_BRACKET,
-            \T_CLOSE_PARENTHESIS,
-            \T_ATTRIBUTE,
-            \T_CURLY_OPEN,
-            \T_DOLLAR_OPEN_CURLY_BRACES,
-        );
-
-        $this->OpenBracket = self::get(
-            \T_OPEN_BRACE,
-            \T_OPEN_BRACKET,
-            \T_OPEN_PARENTHESIS,
-            \T_ATTRIBUTE,
-            \T_CURLY_OPEN,
-            \T_DOLLAR_OPEN_CURLY_BRACES,
-        );
-
-        $this->OpenBracketOrNot = self::get(
-            \T_OPEN_BRACE,
-            \T_OPEN_BRACKET,
-            \T_OPEN_PARENTHESIS,
-            \T_ATTRIBUTE,
-            \T_CURLY_OPEN,
-            \T_DOLLAR_OPEN_CURLY_BRACES,
-            \T_LOGICAL_NOT,
-            \T_NOT,
-        );
-
-        $this->CloseBracket = self::get(
-            \T_CLOSE_BRACE,
-            \T_CLOSE_BRACKET,
-            \T_CLOSE_PARENTHESIS,
-        );
-
-        $this->CloseBracketOrEndAlt = self::get(
-            \T_CLOSE_BRACE,
-            \T_CLOSE_BRACKET,
-            \T_CLOSE_PARENTHESIS,
-            \T_END_ALT_SYNTAX,
-        );
-
-        $this->CloseBracketOrComma = self::get(
-            \T_CLOSE_BRACE,
-            \T_CLOSE_BRACKET,
-            \T_CLOSE_PARENTHESIS,
-            \T_COMMA,
-        );
-
-        $this->OpenBracketExceptBrace = self::get(
-            \T_OPEN_BRACKET,
-            \T_OPEN_PARENTHESIS,
-            \T_ATTRIBUTE,
-        );
-
-        $this->OpenBrace = self::get(
-            \T_OPEN_BRACE,
-            \T_CURLY_OPEN,
-            \T_DOLLAR_OPEN_CURLY_BRACES,
-        );
-
-        $this->OpenTag = self::get(
-            \T_OPEN_TAG,
-            \T_OPEN_TAG_WITH_ECHO,
-        );
-
-        $this->ContinuesControlStructure = self::get(
-            \T_ELSEIF,
-            \T_ELSE,
-            \T_CATCH,
-            \T_FINALLY,
-        );
-
-        $this->NonMethodMember = self::get(
-            \T_CONST,
-            \T_VAR,
-            ...TG::KEYWORD_MODIFIER,
-        );
-
-        $this->Expandable = self::get(
-            \T_OPEN_TAG,
-            \T_COMMENT,
-            \T_DOC_COMMENT,
-            \T_ATTRIBUTE_COMMENT,
-            \T_CONSTANT_ENCAPSED_STRING,
-            \T_ENCAPSED_AND_WHITESPACE,
-            \T_START_HEREDOC,
-            \T_END_HEREDOC,
-            \T_INLINE_HTML,
-            \T_WHITESPACE,
-            \T_YIELD_FROM,
-            ...TG::CAST,
-        );
-
-        $this->Movable = self::get(
-            \T_COMMA,
-            \T_CONCAT,
-            // \T_DOUBLE_ARROW,
-            \T_NULLSAFE_OBJECT_OPERATOR,
-            \T_OBJECT_OPERATOR,
-            \T_SEMICOLON,
-            ...TG::OPERATOR_ASSIGNMENT,
-            ...TG::OPERATOR_COMPARISON,
-            ...TG::OPERATOR_LOGICAL,
-            ...TG::OPERATOR_ARITHMETIC,
-            ...TG::OPERATOR_BITWISE,
-            ...TG::OPERATOR_TERNARY,
-        );
-
-        $this->Number = self::get(
-            \T_LNUMBER,
-            \T_DNUMBER,
-        );
-
-        $this->StringDelimiter = self::get(
-            \T_DOUBLE_QUOTE,
-            \T_START_HEREDOC,
-            \T_END_HEREDOC,
-            \T_BACKTICK,
-        );
-
-        $this->NotTrimmable = self::get(
-            \T_ENCAPSED_AND_WHITESPACE,
-            \T_INLINE_HTML,
-        );
-
-        $this->RightTrimmable = self::get(
-            \T_OPEN_TAG,
-            \T_OPEN_TAG_WITH_ECHO,
-            \T_END_HEREDOC,
-        );
-
-        $this->LeftTrimmable = self::get(
-            \T_CLOSE_TAG,
-            \T_START_HEREDOC,
-        );
-
-        $this->Trimmable = self::merge(
-            $this->RightTrimmable,
-            $this->LeftTrimmable,
-            self::get(
-                \T_ATTRIBUTE_COMMENT,
-                \T_WHITESPACE,
-                ...TG::COMMENT,
-            ),
-        );
-
-        $this->SuppressBlankBetween = self::get(
-            \T_USE,
-        );
-
-        $this->SuppressBlankBetweenOneLine = self::get(
-            \T_DECLARE,
-        );
-
-        $this->AddSpace = self::get(
-            \T_AS,
-            \T_FUNCTION,
-            \T_INSTEADOF,
-            \T_USE,
-        );
-
-        $this->AddSpaceBefore = self::get(
-            \T_ARRAY,
-            \T_CALLABLE,
-            \T_ELLIPSIS,
-            \T_EXTENDS,
-            \T_FN,
-            \T_GLOBAL,
-            \T_IMPLEMENTS,
-            \T_NAME_FULLY_QUALIFIED,
-            \T_NAME_QUALIFIED,
-            \T_NAME_RELATIVE,
-            \T_NS_SEPARATOR,
-            \T_STATIC,
-            \T_STRING,
-            \T_VARIABLE,
-            ...TG::DECLARATION_EXCEPT_MULTI_PURPOSE,
-        );
-
-        $this->AddSpaceAfter = self::get(
-            \T_BREAK,
-            \T_CASE,
-            \T_CATCH,
-            \T_CLONE,
-            \T_CONTINUE,
-            \T_ECHO,
-            \T_ELSE,
-            \T_ELSEIF,
-            \T_FOR,
-            \T_FOREACH,
-            \T_GOTO,
-            \T_IF,
-            \T_INCLUDE,
-            \T_INCLUDE_ONCE,
-            \T_MATCH,
-            \T_NEW,
-            \T_PRINT,
-            \T_REQUIRE,
-            \T_REQUIRE_ONCE,
-            \T_RETURN,
-            \T_SWITCH,
-            \T_THROW,
-            \T_WHILE,
-            \T_YIELD,
-            \T_YIELD_FROM,
-            ...TG::CAST,
-        );
-
-        $this->SuppressSpaceBefore = self::get(
-            \T_NS_SEPARATOR,
-        );
-
-        $this->SuppressSpaceAfter = self::get(
-            \T_DOUBLE_COLON,
-            \T_ELLIPSIS,
-            \T_NS_SEPARATOR,
-            \T_NULLSAFE_OBJECT_OPERATOR,
-            \T_OBJECT_OPERATOR,
-        );
-
-        $this->PreserveBlankBefore = self::get(
-            \T_CLOSE_TAG,
-        );
-
-        $this->PreserveBlankAfter = self::get(
-            \T_CLOSE_BRACE,
-            \T_COMMA,
-            \T_COMMENT,
-            \T_DOC_COMMENT,
-            \T_OPEN_TAG,
-            \T_OPEN_TAG_WITH_ECHO,
-            \T_SEMICOLON,
-        );
-
-        $this->EndOfStatement = self::get(
-            \T_COLON,
-            \T_COMMA,
-            \T_SEMICOLON,
-        );
-
-        $this->EndOfExpression = self::get(
-            \T_CLOSE_BRACKET,
-            \T_CLOSE_PARENTHESIS,
-            \T_SEMICOLON,
-            \T_DOUBLE_ARROW,
-            ...TG::OPERATOR_ASSIGNMENT,
-            ...TG::OPERATOR_COMPARISON_EXCEPT_COALESCE,
-        );
-
-        $this->ExpressionDelimiter = self::get(
-            \T_DOUBLE_ARROW,
-            ...TG::OPERATOR_ASSIGNMENT,
-            ...TG::OPERATOR_COMPARISON_EXCEPT_COALESCE,
-        );
-
-        $this->ExpressionDelimiterExceptComparison = self::get(
-            \T_DOUBLE_ARROW,
-            ...TG::OPERATOR_ASSIGNMENT,
-        );
-
-        $this->FunctionIdentifier = self::get(
-            \T_STRING,
-            ...TG::AMPERSAND,
-        );
-
-        $this->EndOfDereferenceable = self::get(
-            ...TG::DEREFERENCEABLE_END,
-        );
-
-        $this->SwitchCaseOrDelimiter = self::get(
-            \T_CASE,
-            \T_DEFAULT,
-            \T_COLON,
-            \T_SEMICOLON,
-            \T_CLOSE_TAG,
-        );
-
-        $this->BeforeListParenthesis = self::get(
-            \T_ARRAY,
-            \T_DECLARE,
-            \T_FOR,
-            \T_ISSET,
-            \T_LIST,
-            \T_STATIC,
-            \T_UNSET,
-            \T_USE,
-            \T_VARIABLE,
-            ...TG::MAYBE_ANONYMOUS,
-            ...TG::DEREFERENCEABLE_SCALAR_END,
-            ...TG::NAME,
-        );
-
-        $this->BeforeUnary = self::get(
-            \T_OPEN_BRACE,
-            \T_OPEN_BRACKET,
-            \T_OPEN_PARENTHESIS,
-            \T_DOLLAR_OPEN_CURLY_BRACES,
-            \T_AT,
-            \T_BOOLEAN_AND,
-            \T_BOOLEAN_OR,
-            \T_COMMA,
-            \T_CONCAT,
-            \T_DOUBLE_ARROW,
-            \T_ELLIPSIS,
-            \T_SEMICOLON,
-            ...TG::OPERATOR_ARITHMETIC,
-            ...TG::OPERATOR_ASSIGNMENT,
-            ...TG::OPERATOR_BITWISE,
-            ...TG::OPERATOR_COMPARISON,
-            ...TG::OPERATOR_LOGICAL,
-            ...TG::CAST,
-            ...TG::KEYWORD,
-        );
-
-        $this->AltStart = self::get(...TG::ALT_SYNTAX_START);
-        $this->AltContinue = self::get(...TG::ALT_SYNTAX_CONTINUE);
-        $this->AltContinueWithExpression = self::get(...TG::ALT_SYNTAX_CONTINUE_WITH_EXPRESSION);
-        $this->AltContinueWithNoExpression = self::get(...TG::ALT_SYNTAX_CONTINUE_WITHOUT_EXPRESSION);
-        $this->AltEnd = self::get(...TG::ALT_SYNTAX_END);
-        $this->Ampersand = self::get(...TG::AMPERSAND);
-        $this->ClassOrFunction = self::get(\T_CLASS, \T_FUNCTION);
-        $this->AfterAnonymousClassOrFunction = self::get(
-            \T_OPEN_BRACE,
-            \T_OPEN_PARENTHESIS,
-            \T_EXTENDS,
-            \T_IMPLEMENTS,
-        );
-        $this->CommaOrDoubleArrow = self::get(\T_COMMA, \T_DOUBLE_ARROW);
-        $this->FunctionOrFn = self::get(\T_FN, \T_FUNCTION);
-        $this->IfOrElseIf = self::get(\T_IF, \T_ELSEIF);
-        $this->IfElseIfOrElse = self::get(\T_IF, \T_ELSEIF, \T_ELSE);
-        $this->PlusOrMinus = self::get(\T_PLUS, \T_MINUS);
-        $this->Attribute = self::get(\T_ATTRIBUTE, \T_ATTRIBUTE_COMMENT);
-        $this->Cast = self::get(...TG::CAST);
-        $this->Chain = self::get(...TG::CHAIN);
-        $this->ChainPart = self::get(
-            \T_DOLLAR,
-            \T_OPEN_BRACE,
-            \T_OPEN_BRACKET,
-            \T_OPEN_PARENTHESIS,
-            \T_STRING,
-            \T_VARIABLE,
-            ...TG::CHAIN,
-        );
-        $this->ChainExpression = self::merge(
-            $this->ChainPart,
-            self::get(
-                // '"' ... '"'
-                \T_CURLY_OPEN,
-                \T_DOLLAR_OPEN_CURLY_BRACES,
-                \T_DOUBLE_QUOTE,
-                \T_ENCAPSED_AND_WHITESPACE,
-                // Other dereferenceables
-                \T_ARRAY,
-                \T_CONSTANT_ENCAPSED_STRING,
-                \T_DOUBLE_COLON,
-                \T_NAME_FULLY_QUALIFIED,
-                \T_NAME_QUALIFIED,
-                \T_NAME_RELATIVE,
-                \T_STATIC,
-                ...TG::MAGIC_CONSTANT,
-            ),
-        );
-        $this->Comment = self::get(...TG::COMMENT);
-        $this->Declaration = self::get(...TG::DECLARATION);
-        $this->DeclarationExceptModifiers = self::get(...TG::DECLARATION_EXCEPT_MODIFIERS);
-        $this->DeclarationClass = self::get(...TG::DECLARATION_CLASS);
-        $this->DeclarationClassOrFunction = self::get(
-            \T_FUNCTION,
-            ...TG::DECLARATION_CLASS,
-        );
-        $this->DeclarationList = self::get(...TG::DECLARATION_LIST);
-        $this->DeclarationPropertyOrVariable = self::get(
-            \T_STATIC,
-            \T_VAR,
-            ...TG::VISIBILITY_WITH_READONLY,
-        );
-        $this->DeclarationPart = self::get(
-            \T_ATTRIBUTE,
-            \T_ATTRIBUTE_COMMENT,
-            \T_CASE,
-            \T_EXTENDS,
-            \T_FUNCTION,
-            \T_IMPLEMENTS,
-            \T_NAMESPACE,
-            \T_NS_SEPARATOR,
-            \T_USE,
-            ...TG::DECLARATION_EXCEPT_MULTI_PURPOSE,
-            ...TG::DECLARATION_LIST,
-            ...TG::AMPERSAND,
-        );
-        $this->DeclarationPartWithNew = self::merge(
-            $this->DeclarationPart,
-            self::get(\T_NEW),
-        );
-        $this->DeclarationPartWithNewAndBody = self::merge(
-            $this->DeclarationPartWithNew,
-            self::get(
-                \T_ARRAY,
-                \T_CALLABLE,
-                \T_OPEN_BRACE,
-                \T_CLOSE_BRACE,
-                \T_OPEN_PARENTHESIS,
-                \T_CLOSE_PARENTHESIS,
-                \T_COLON,
-                \T_OR,
-                \T_QUESTION,
-            ),
-        );
-        $this->DeclarationTopLevel = self::get(...TG::DECLARATION_TOP_LEVEL);
-        $this->HasStatement = self::get(...TG::HAS_STATEMENT);
-        $this->HasStatementWithOptionalBraces = self::get(...TG::HAS_STATEMENT_WITH_OPTIONAL_BRACES);
-        $this->HasExpressionAndStatementWithOptionalBraces = self::get(...TG::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES);
-        $this->NotCode = self::get(...TG::NOT_CODE);
-        $this->Operator = self::get(...TG::OPERATOR_ALL);
-        $this->OperatorAssignment = self::get(...TG::OPERATOR_ASSIGNMENT);
-        $this->OperatorBooleanExceptNot = self::get(...TG::OPERATOR_BOOLEAN_EXCEPT_NOT);
-        $this->OperatorComparison = self::get(...TG::OPERATOR_COMPARISON_EXCEPT_COALESCE);
-        $this->OperatorUnary = self::get(
-            \T_DOLLAR,
-            \T_LOGICAL_NOT,
-            \T_NOT,
-            ...TG::OPERATOR_ERROR_CONTROL,
-            ...TG::OPERATOR_INCREMENT_DECREMENT,
-        );
-        $this->Return = self::get(...TG::RETURN);
-        $this->TypeDelimiter = self::get(...TG::TYPE_DELIMITER);
-        $this->ValueType = self::get(...TG::VALUE_TYPE);
-        $this->StartOfValueType = self::get(...TG::VALUE_TYPE_START);
-        $this->EndOfVariable = self::get(...TG::VARIABLE_END);
-        $this->Visibility = self::get(...TG::VISIBILITY);
-        $this->VisibilityOrReadonly = self::get(...TG::VISIBILITY_WITH_READONLY);
-        $this->Virtual = self::get(
-            \T_END_ALT_SYNTAX,
-            \T_NULL,
-        );
-
-        self::$DefaultAllowNewlineBefore ??= self::get(
-            \T_ATTRIBUTE,
-            \T_ATTRIBUTE_COMMENT,
-            \T_CLOSE_BRACKET,
-            \T_CLOSE_PARENTHESIS,
-            \T_CLOSE_TAG,
-            \T_COALESCE,
-            \T_CONCAT,
-            \T_DOUBLE_ARROW,
-            \T_LOGICAL_NOT,
-            \T_NULLSAFE_OBJECT_OPERATOR,
-            \T_OBJECT_OPERATOR,
-            ...TG::OPERATOR_ARITHMETIC,
-            ...TG::OPERATOR_BITWISE,
-            ...TG::OPERATOR_TERNARY,
-        );
-
-        self::$DefaultAllowNewlineAfter ??= self::get(
-            \T_ATTRIBUTE,
-            \T_ATTRIBUTE_COMMENT,
-            \T_CLOSE_BRACE,
-            \T_COLON,
-            \T_COMMA,
-            \T_COMMENT,
-            \T_DOC_COMMENT,
-            \T_DOUBLE_ARROW,
-            \T_EXTENDS,
-            \T_IMPLEMENTS,
-            \T_OPEN_BRACE,
-            \T_OPEN_BRACKET,
-            \T_OPEN_PARENTHESIS,
-            \T_OPEN_TAG,
-            \T_OPEN_TAG_WITH_ECHO,
-            \T_SEMICOLON,
-            ...TG::OPERATOR_ASSIGNMENT,
-            ...TG::OPERATOR_COMPARISON_EXCEPT_COALESCE,
-            ...TG::OPERATOR_LOGICAL_EXCEPT_NOT,
-        );
-
         $operators = $operatorsFirst
             ? self::FIRST
             : ($operatorsLast ? self::LAST : self::MIXED);
@@ -1259,8 +1230,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             [$before, $after] = $this->getOperatorsLastIndexes();
         }
 
-        $this->AllowNewlineBefore = $before ?? self::$DefaultAllowNewlineBefore;
-        $this->AllowNewlineAfter = $after ?? self::$DefaultAllowNewlineAfter;
+        $this->AllowNewlineBefore = $before ?? self::DEFAULT_ALLOW_NEWLINE_BEFORE;
+        $this->AllowNewlineAfter = $after ?? self::DEFAULT_ALLOW_NEWLINE_AFTER;
         $this->Operators = $operators;
     }
 
@@ -1281,21 +1252,17 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     private function getOperatorsFirstIndexes(): array
     {
         $both = self::intersect(
-            self::$DefaultAllowNewlineBefore,
-            self::$DefaultAllowNewlineAfter,
+            self::DEFAULT_ALLOW_NEWLINE_BEFORE,
+            self::DEFAULT_ALLOW_NEWLINE_AFTER,
         );
 
-        $before = self::merge(
-            self::$DefaultAllowNewlineBefore,
-            self::get(
-                ...TG::OPERATOR_COMPARISON,
-                ...TG::OPERATOR_LOGICAL_EXCEPT_NOT,
-            ),
-        );
+        $before = self::OPERATOR_COMPARISON
+            + self::OPERATOR_LOGICAL
+            + self::DEFAULT_ALLOW_NEWLINE_BEFORE;
 
         $after = self::merge(
             self::diff(
-                self::$DefaultAllowNewlineAfter,
+                self::DEFAULT_ALLOW_NEWLINE_AFTER,
                 $before,
             ),
             $both
@@ -1321,23 +1288,21 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     private function getOperatorsLastIndexes(): array
     {
         $both = self::intersect(
-            self::$DefaultAllowNewlineBefore,
-            self::$DefaultAllowNewlineAfter,
+            self::DEFAULT_ALLOW_NEWLINE_BEFORE,
+            self::DEFAULT_ALLOW_NEWLINE_AFTER,
         );
 
-        $after = self::merge(
-            self::$DefaultAllowNewlineAfter,
-            self::get(
-                \T_COALESCE,
-                \T_CONCAT,
-                ...TG::OPERATOR_ARITHMETIC,
-                ...TG::OPERATOR_BITWISE,
-            ),
-        );
+        $after = [
+            \T_COALESCE => true,
+            \T_CONCAT => true,
+        ]
+            + self::OPERATOR_ARITHMETIC
+            + self::OPERATOR_BITWISE
+            + self::DEFAULT_ALLOW_NEWLINE_AFTER;
 
         $before = self::merge(
             self::diff(
-                self::$DefaultAllowNewlineBefore,
+                self::DEFAULT_ALLOW_NEWLINE_BEFORE,
                 $after,
             ),
             $both
@@ -1351,8 +1316,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      */
     public function withMixedOperators()
     {
-        return $this->with('AllowNewlineBefore', self::$DefaultAllowNewlineBefore)
-                    ->with('AllowNewlineAfter', self::$DefaultAllowNewlineAfter)
+        return $this->with('AllowNewlineBefore', self::DEFAULT_ALLOW_NEWLINE_BEFORE)
+                    ->with('AllowNewlineAfter', self::DEFAULT_ALLOW_NEWLINE_AFTER)
                     ->with('Operators', self::MIXED);
     }
 

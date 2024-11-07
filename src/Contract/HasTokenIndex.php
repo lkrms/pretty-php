@@ -190,4 +190,454 @@ interface HasTokenIndex
         \T_YIELD => false,
         \T_YIELD_FROM => false,
     ];
+
+    /**
+     * @var array<int,true>
+     */
+    public const OPEN_BRACKET = [
+        \T_OPEN_BRACE => true,
+        \T_OPEN_BRACKET => true,
+        \T_OPEN_PARENTHESIS => true,
+        \T_ATTRIBUTE => true,
+        \T_CURLY_OPEN => true,
+        \T_DOLLAR_OPEN_CURLY_BRACES => true,
+    ];
+
+    /**
+     * @var array<int,true>
+     */
+    public const CLOSE_BRACKET = [
+        \T_CLOSE_BRACE => true,
+        \T_CLOSE_BRACKET => true,
+        \T_CLOSE_PARENTHESIS => true,
+    ];
+
+    /**
+     * @var array<int,true>
+     */
+    public const CAST = [
+        \T_INT_CAST => true,
+        \T_BOOL_CAST => true,
+        \T_DOUBLE_CAST => true,
+        \T_STRING_CAST => true,
+        \T_ARRAY_CAST => true,
+        \T_OBJECT_CAST => true,
+        \T_UNSET_CAST => true,
+    ];
+
+    /**
+     * @var array<int,true>
+     */
+    public const CHAIN_PART = [
+        \T_DOLLAR => true,
+        \T_OPEN_BRACE => true,
+        \T_OPEN_BRACKET => true,
+        \T_OPEN_PARENTHESIS => true,
+        \T_STRING => true,
+        \T_VARIABLE => true,
+    ] + self::CHAIN;
+
+    /**
+     * @var array<int,true>
+     */
+    public const CHAIN = [
+        \T_OBJECT_OPERATOR => true,
+        \T_NULLSAFE_OBJECT_OPERATOR => true,
+    ];
+
+    /**
+     * @var array<int,true>
+     */
+    public const COMMENT = [
+        \T_COMMENT => true,
+        \T_DOC_COMMENT => true,
+    ];
+
+    /**
+     * @var array<int,true>
+     */
+    public const VALUE_TYPE_START = [
+        \T_ARRAY => true,
+        \T_CALLABLE => true,
+        \T_OPEN_PARENTHESIS => true,
+        \T_QUESTION => true,
+    ] + self::DECLARATION_TYPE;
+
+    /**
+     * @var array<int,true>
+     */
+    public const DECLARATION_PART = [
+        \T_ATTRIBUTE => true,
+        \T_ATTRIBUTE_COMMENT => true,
+        \T_CASE => true,
+        \T_EXTENDS => true,
+        \T_FUNCTION => true,
+        \T_IMPLEMENTS => true,
+        \T_NAMESPACE => true,
+        \T_NS_SEPARATOR => true,
+        \T_USE => true,
+    ] + self::DECLARATION_ONLY + self::DECLARATION_LIST + self::AMPERSAND;
+
+    /**
+     * @var array<int,true>
+     */
+    public const DECLARATION = [
+        \T_CASE => true,
+        \T_FUNCTION => true,
+        \T_NAMESPACE => true,
+        \T_STATIC => true,
+        \T_USE => true,
+    ] + self::DECLARATION_ONLY;
+
+    /**
+     * @var array<int,true>
+     */
+    public const DECLARATION_ONLY = [
+        \T_ABSTRACT => true,
+        \T_CONST => true,
+        \T_DECLARE => true,
+        \T_FINAL => true,
+        \T_READONLY => true,
+        \T_VAR => true,
+    ] + self::DECLARATION_CLASS + self::VISIBILITY;
+
+    /**
+     * @var array<int,true>
+     */
+    public const DECLARATION_CLASS = [
+        \T_CLASS => true,
+        \T_ENUM => true,
+        \T_INTERFACE => true,
+        \T_TRAIT => true,
+    ];
+
+    /**
+     * @var array<int,true>
+     */
+    public const DECLARATION_LIST = [
+        \T_COMMA => true,
+    ] + self::DECLARATION_TYPE;
+
+    /**
+     * @var array<int,true>
+     */
+    public const DECLARATION_TYPE = [
+        \T_STATIC => true,
+    ] + self::NAME;
+
+    /**
+     * @var array<int,true>
+     */
+    public const DEREFERENCEABLE_END = [
+        \T_CLOSE_BRACE => true,
+        \T_STRING_VARNAME => true,
+        \T_VARIABLE => true,
+    ] + self::DEREFERENCEABLE_SCALAR_END + self::NAME + self::MAGIC_CONSTANT;
+
+    /**
+     * @var array<int,true>
+     */
+    public const DEREFERENCEABLE_SCALAR_END = [
+        \T_CLOSE_BRACKET => true,
+        \T_CLOSE_PARENTHESIS => true,
+        \T_CONSTANT_ENCAPSED_STRING => true,
+        \T_DOUBLE_QUOTE => true,
+    ];
+
+    /**
+     * @var array<int,true>
+     */
+    public const NAME = [
+        \T_NAME_FULLY_QUALIFIED => true,
+        \T_NAME_QUALIFIED => true,
+        \T_NAME_RELATIVE => true,
+        \T_STRING => true,
+    ];
+
+    /**
+     * @var array<int,true>
+     */
+    public const MAGIC_CONSTANT = [
+        \T_CLASS_C => true,
+        \T_DIR => true,
+        \T_FILE => true,
+        \T_FUNC_C => true,
+        \T_LINE => true,
+        \T_METHOD_C => true,
+        \T_NS_C => true,
+        \T_PROPERTY_C => true,
+        \T_TRAIT_C => true,
+    ];
+
+    /**
+     * @var array<int,true>
+     */
+    public const KEYWORD = [
+        \T_ARRAY => true,
+        \T_AS => true,
+        \T_BREAK => true,
+        \T_CALLABLE => true,
+        \T_CASE => true,
+        \T_CATCH => true,
+        \T_CLASS => true,
+        \T_CLONE => true,
+        \T_CONST => true,
+        \T_CONTINUE => true,
+        \T_DECLARE => true,
+        \T_DEFAULT => true,
+        \T_DO => true,
+        \T_ECHO => true,
+        \T_ELSE => true,
+        \T_ELSEIF => true,
+        \T_EMPTY => true,
+        \T_ENDDECLARE => true,
+        \T_ENDFOR => true,
+        \T_ENDFOREACH => true,
+        \T_ENDIF => true,
+        \T_ENDSWITCH => true,
+        \T_ENDWHILE => true,
+        \T_ENUM => true,
+        \T_EVAL => true,
+        \T_EXIT => true,
+        \T_EXTENDS => true,
+        \T_FINALLY => true,
+        \T_FN => true,
+        \T_FOR => true,
+        \T_FOREACH => true,
+        \T_FUNCTION => true,
+        \T_GLOBAL => true,
+        \T_GOTO => true,
+        \T_HALT_COMPILER => true,
+        \T_IF => true,
+        \T_IMPLEMENTS => true,
+        \T_INCLUDE => true,
+        \T_INCLUDE_ONCE => true,
+        \T_INSTANCEOF => true,
+        \T_INSTEADOF => true,
+        \T_INTERFACE => true,
+        \T_ISSET => true,
+        \T_LIST => true,
+        \T_LOGICAL_AND => true,
+        \T_LOGICAL_OR => true,
+        \T_LOGICAL_XOR => true,
+        \T_MATCH => true,
+        \T_NAMESPACE => true,
+        \T_NEW => true,
+        \T_PRINT => true,
+        \T_REQUIRE => true,
+        \T_REQUIRE_ONCE => true,
+        \T_RETURN => true,
+        \T_SWITCH => true,
+        \T_THROW => true,
+        \T_TRAIT => true,
+        \T_TRY => true,
+        \T_UNSET => true,
+        \T_USE => true,
+        \T_WHILE => true,
+        \T_YIELD => true,
+        \T_YIELD_FROM => true,
+    ] + self::MODIFIER;
+
+    /**
+     * @var array<int,true>
+     */
+    public const MODIFIER = [
+        \T_ABSTRACT => true,
+        \T_FINAL => true,
+        \T_READONLY => true,
+        \T_STATIC => true,
+        \T_VAR => true,
+    ] + self::VISIBILITY;
+
+    /**
+     * @var array<int,true>
+     */
+    public const VISIBILITY = [
+        \T_PRIVATE => true,
+        \T_PROTECTED => true,
+        \T_PUBLIC => true,
+    ];
+
+    /**
+     * @var array<int,false>
+     */
+    public const NO_MODIFIER = [
+        \T_ABSTRACT => false,
+        \T_FINAL => false,
+        \T_READONLY => false,
+        \T_STATIC => false,
+        \T_VAR => false,
+        \T_PRIVATE => false,
+        \T_PROTECTED => false,
+        \T_PUBLIC => false,
+    ];
+
+    /**
+     * @var array<int,true>
+     */
+    public const OPERATOR_ARITHMETIC = [
+        \T_PLUS => true,
+        \T_MINUS => true,
+        \T_MUL => true,
+        \T_DIV => true,
+        \T_MOD => true,
+        \T_POW => true,
+    ];
+
+    /**
+     * @var array<int,true>
+     */
+    public const OPERATOR_ASSIGNMENT = [
+        \T_EQUAL => true,
+        \T_COALESCE_EQUAL => true,
+        \T_PLUS_EQUAL => true,
+        \T_MINUS_EQUAL => true,
+        \T_MUL_EQUAL => true,
+        \T_DIV_EQUAL => true,
+        \T_MOD_EQUAL => true,
+        \T_POW_EQUAL => true,
+        \T_AND_EQUAL => true,
+        \T_OR_EQUAL => true,
+        \T_XOR_EQUAL => true,
+        \T_SL_EQUAL => true,
+        \T_SR_EQUAL => true,
+        \T_CONCAT_EQUAL => true,
+    ];
+
+    /**
+     * @var array<int,true>
+     */
+    public const OPERATOR_BITWISE = [
+        \T_OR => true,
+        \T_XOR => true,
+        \T_NOT => true,
+        \T_SL => true,
+        \T_SR => true,
+    ] + self::AMPERSAND;
+
+    /**
+     * @var array<int,true>
+     */
+    public const OPERATOR_COMPARISON = [
+        \T_COALESCE => true,
+        \T_SMALLER => true,
+        \T_GREATER => true,
+        \T_IS_EQUAL => true,
+        \T_IS_IDENTICAL => true,
+        \T_IS_NOT_EQUAL => true,
+        \T_IS_NOT_IDENTICAL => true,
+        \T_IS_SMALLER_OR_EQUAL => true,
+        \T_IS_GREATER_OR_EQUAL => true,
+        \T_SPACESHIP => true,
+    ];
+
+    /**
+     * @var array<int,true>
+     */
+    public const OPERATOR_LOGICAL = [
+        \T_BOOLEAN_AND => true,
+        \T_BOOLEAN_OR => true,
+        \T_LOGICAL_AND => true,
+        \T_LOGICAL_OR => true,
+        \T_LOGICAL_XOR => true,
+        \T_LOGICAL_NOT => true,
+    ];
+
+    /**
+     * @var array<int,true>
+     */
+    public const OPERATOR_TERNARY = [
+        \T_QUESTION => true,
+        \T_COLON => true,
+    ];
+
+    /**
+     * @var array<int,true>
+     */
+    public const AMPERSAND = [
+        \T_AND => true,
+        \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG => true,
+        \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG => true,
+    ];
+
+    /**
+     * @var array<int,true>
+     */
+    public const HAS_STATEMENT_WITH_OPTIONAL_BRACES = [
+        \T_DO => true,
+        \T_ELSE => true,
+    ];
+
+    /**
+     * @var array<int,true>
+     */
+    public const HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES = [
+        \T_ELSEIF => true,
+        \T_FOR => true,
+        \T_FOREACH => true,
+        \T_IF => true,
+        \T_WHILE => true,
+    ];
+
+    /**
+     * @var array<int,true>
+     */
+    public const HAS_STATEMENT_WITH_BRACES = [
+        \T_FINALLY => true,
+        \T_TRY => true,
+    ];
+
+    /**
+     * @var array<int,true>
+     */
+    public const HAS_EXPRESSION_AND_STATEMENT_WITH_BRACES = [
+        \T_CATCH => true,
+        \T_DECLARE => true,
+        \T_SWITCH => true,
+    ];
+
+    /**
+     * @var array<int,true>
+     */
+    public const HAS_EXPRESSION_WITH_OPTIONAL_PARENTHESES = [
+        \T_BREAK => true,
+        \T_CASE => true,
+        \T_CLONE => true,
+        \T_CONTINUE => true,
+        \T_ECHO => true,
+        \T_INCLUDE => true,
+        \T_INCLUDE_ONCE => true,
+        \T_PRINT => true,
+        \T_REQUIRE => true,
+        \T_REQUIRE_ONCE => true,
+        \T_RETURN => true,
+        \T_THROW => true,
+        \T_YIELD => true,
+        \T_YIELD_FROM => true,
+    ];
+
+    /**
+     * @var array<int,true>
+     */
+    public const NOT_TRIMMABLE = [
+        \T_ENCAPSED_AND_WHITESPACE => true,
+        \T_INLINE_HTML => true,
+    ];
+
+    /**
+     * @var array<int,true>
+     */
+    public const LEFT_TRIMMABLE = [
+        \T_CLOSE_TAG => true,
+        \T_START_HEREDOC => true,
+    ];
+
+    /**
+     * @var array<int,true>
+     */
+    public const RIGHT_TRIMMABLE = [
+        \T_OPEN_TAG => true,
+        \T_OPEN_TAG_WITH_ECHO => true,
+        \T_END_HEREDOC => true,
+    ];
 }

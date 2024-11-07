@@ -2,9 +2,9 @@
 
 namespace Lkrms\PrettyPHP\Tests;
 
-use Lkrms\PrettyPHP\Catalog\TokenGroup;
 use Lkrms\PrettyPHP\TokenTypeIndex;
 use Salient\PHPDoc\PHPDoc;
+use Salient\Utility\Exception\ShouldNotHappenException;
 use Salient\Utility\Arr;
 use Salient\Utility\File;
 use Salient\Utility\Reflect;
@@ -142,6 +142,23 @@ class TokenTypeIndexTest extends TestCase
         \T_DOUBLE_ARROW,
     ];
 
+    /**
+     * @var array<string,string>
+     */
+    protected const CONSTANT_ALIAS_MAP = [
+        'OPERATOR_ARITHMETIC' => 'arithmetic operators',
+        'OPERATOR_ASSIGNMENT' => 'assignment operators',
+        'OPERATOR_BITWISE' => 'bitwise operators',
+        'OPERATOR_COMPARISON' => 'comparison operators',
+        'OPERATOR_LOGICAL' => 'logical operators',
+        'OPERATOR_TERNARY' => 'ternary operators',
+        'CAST' => 'casts',
+        'KEYWORD' => 'keywords',
+        'MODIFIER' => 'modifiers',
+        'VISIBILITY' => 'visibility modifiers',
+        'MAGIC_CONSTANT' => 'magic constants',
+    ];
+
     public function testValues(): void
     {
         $index = static::getIndex();
@@ -178,12 +195,14 @@ class TokenTypeIndexTest extends TestCase
      */
     public function testIndexes(ReflectionProperty $property, TokenTypeIndex $index, string $name): void
     {
+        $this->assertSameSize(TokenTypeIndex::TOKEN_INDEX, array_intersect_key($index->$name, TokenTypeIndex::TOKEN_INDEX), 'Index must cover every token type');
+        $this->assertEmpty(array_diff_key($index->$name, TokenTypeIndex::TOKEN_INDEX), 'Index must only cover token types');
         $filtered = array_filter($index->$name);
         if (Regex::match('/^(?:Suppress|Preserve|Alt)/', $name)) {
             $this->assertNotEmpty($filtered, 'Index cannot be empty');
             return;
         }
-        $this->assertGreaterThan(1, count($filtered), 'Index must have two or more token types');
+        $this->assertGreaterThan(1, count($filtered), 'Index must match two or more token types');
     }
 
     /**
@@ -191,16 +210,17 @@ class TokenTypeIndexTest extends TestCase
      */
     public function testDocBlocks(ReflectionProperty $property, TokenTypeIndex $index, string $name): void
     {
-        $expected = Arr::sort(self::getTokenNames(self::getIndexTokens($index->$name)));
-        $message = sprintf('PHPDoc summary could be: %s', implode(', ', $expected));
+        $expected = self::getTokenNames(self::getIndexTokens($index->$name));
+        $message = sprintf('PHPDoc summary could be: %s', self::collapseTokenNames($expected));
+        $expected = Arr::sort($expected);
         $comment = $property->getDocComment();
         $this->assertIsString($comment, $message);
         $phpDoc = new PHPDoc($comment);
-        if ($phpDoc->hasTag('internal')) {
+        if ($phpDoc->hasTag('prettyphp-dynamic')) {
             return;
         }
         $this->assertNotNull($summary = $phpDoc->getSummary(), $message);
-        $actual = Arr::sort(explode(', ', $summary));
+        $actual = Arr::sort(self::expandTokenNames($summary));
         $this->assertSame($expected, $actual, $message);
     }
 
@@ -432,19 +452,19 @@ class TokenTypeIndexTest extends TestCase
                 $tokens[] = $id;
             } else {
                 $operators = [
-                    'Arithmetic' => TokenGroup::OPERATOR_ARITHMETIC,
-                    'Assignment' => TokenGroup::OPERATOR_ASSIGNMENT,
-                    'Bitwise' => TokenGroup::OPERATOR_BITWISE,
-                    'Comparison' => TokenGroup::OPERATOR_COMPARISON,
-                    'Comparison,T_COALESCE' => TokenGroup::OPERATOR_COMPARISON_EXCEPT_COALESCE,
-                    'Logical' => TokenGroup::OPERATOR_LOGICAL,
-                    'Logical,T_LOGICAL_NOT' => TokenGroup::OPERATOR_LOGICAL_EXCEPT_NOT,
-                    'Ternary' => TokenGroup::OPERATOR_TERNARY,
+                    'Arithmetic' => TokenTypeIndex::OPERATOR_ARITHMETIC,
+                    'Assignment' => TokenTypeIndex::OPERATOR_ASSIGNMENT,
+                    'Bitwise' => TokenTypeIndex::OPERATOR_BITWISE,
+                    'Comparison' => TokenTypeIndex::OPERATOR_COMPARISON,
+                    'Comparison,T_COALESCE' => [\T_COALESCE => false] + TokenTypeIndex::OPERATOR_COMPARISON,
+                    'Logical' => TokenTypeIndex::OPERATOR_LOGICAL,
+                    'Logical,T_LOGICAL_NOT' => [\T_LOGICAL_NOT => false] + TokenTypeIndex::OPERATOR_LOGICAL,
+                    'Ternary' => TokenTypeIndex::OPERATOR_TERNARY,
                 ][Arr::implode(',', [$matches['operators'], $matches['exception']], '')] ?? null;
                 if ($operators === null) {
                     throw new LogicException('Invalid operators: ' . $line);
                 }
-                $tokens = array_merge($tokens ?? [], $operators);
+                $tokens = array_merge($tokens ?? [], array_keys(array_filter($operators)));
             }
         }
         return $tokens ?? [];
@@ -474,6 +494,85 @@ class TokenTypeIndexTest extends TestCase
     protected static function getIndex(): TokenTypeIndex
     {
         return new TokenTypeIndex();
+    }
+
+    /**
+     * @param string[] $tokens
+     */
+    private static function collapseTokenNames(array $tokens): string
+    {
+        $_tokens = $tokens;
+        foreach (self::getConstantTokenNames() as $alias => $names) {
+            if (array_diff($names, $alias === 'keywords' ? $_tokens : $tokens)) {
+                continue;
+            }
+            $collapsed[] = $alias;
+            $tokens = array_diff($tokens, $names);
+        }
+        return Str::upperFirst(implode(', ', array_merge($collapsed ?? [], $tokens)));
+    }
+
+    /**
+     * @return string[]
+     */
+    private static function expandTokenNames(string $string): array
+    {
+        $constants = self::getConstantTokenNames();
+        $tokens = [];
+        foreach (Str::splitDelimited(',', $string, false, null, 0) as $part) {
+            if (Str::startsWith($part, 'T_')) {
+                $tokens[] = $part;
+                continue;
+            }
+            $alias = $part;
+            $split = explode(' (except ', $part);
+            if (count($split) === 2) {
+                [$alias, $except] = $split;
+                $except = substr($except, 0, -1);
+                $except = explode(', ', $except);
+            } else {
+                $except = [];
+            }
+            $alias = Str::lower($alias);
+            $expanded = $constants[$alias] ?? null;
+            if ($expanded === null) {
+                $tokens[] = "<invalid alias '{$alias}'>";
+                continue;
+            }
+            if ($alias === 'keywords' && $tokens) {
+                $expanded = array_diff($expanded, $tokens);
+            }
+            if ($except && ($diff = array_diff($except, $expanded))) {
+                foreach ($diff as $exception) {
+                    $tokens[] = "<invalid exception '{$exception}' for alias '{$alias}'>";
+                }
+            }
+            foreach (array_diff($expanded, $except) as $part) {
+                $tokens[] = $part;
+            }
+        }
+        return $tokens;
+    }
+
+    /**
+     * @return array<string,string[]>
+     */
+    private static function getConstantTokenNames(): array
+    {
+        $class = new ReflectionClass(static::getIndex());
+        foreach (static::CONSTANT_ALIAS_MAP as $name => $alias) {
+            $value = $class->getConstant($name);
+            if (!is_array($value) || array_filter($value) !== $value) {
+                throw new ShouldNotHappenException(sprintf(
+                    'Invalid value or constant not found: %s::%s',
+                    $class->getName(),
+                    $name,
+                ));
+            }
+            /** @var array<int,true> $value */
+            $values[$alias] = self::getTokenNames(array_keys($value));
+        }
+        return $values ?? [];
     }
 
     /**
