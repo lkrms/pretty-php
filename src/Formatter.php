@@ -22,6 +22,7 @@ use Lkrms\PrettyPHP\Filter\EvaluateNumbers;
 use Lkrms\PrettyPHP\Filter\EvaluateStrings;
 use Lkrms\PrettyPHP\Filter\MoveComments;
 use Lkrms\PrettyPHP\Filter\NormaliseCasts;
+use Lkrms\PrettyPHP\Filter\NormaliseKeywords;
 use Lkrms\PrettyPHP\Filter\RemoveEmptyDocBlocks;
 use Lkrms\PrettyPHP\Filter\RemoveEmptyTokens;
 use Lkrms\PrettyPHP\Filter\RemoveHeredocIndentation;
@@ -348,6 +349,7 @@ final class Formatter implements Buildable, Immutable
         SortImports::class,
         MoveComments::class,
         NormaliseCasts::class,
+        NormaliseKeywords::class,
     ];
 
     /**
@@ -358,6 +360,7 @@ final class Formatter implements Buildable, Immutable
         SortImports::class,
         MoveComments::class,
         NormaliseCasts::class,
+        NormaliseKeywords::class,
     ];
 
     /**

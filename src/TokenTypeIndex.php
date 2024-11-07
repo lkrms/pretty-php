@@ -118,9 +118,11 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $NonMethodMember;
 
     /**
-     * T_ATTRIBUTE_COMMENT, T_COMMENT, T_CONSTANT_ENCAPSED_STRING,
-     * T_DOC_COMMENT, T_ENCAPSED_AND_WHITESPACE, T_END_HEREDOC, T_INLINE_HTML,
-     * T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO, T_START_HEREDOC, T_WHITESPACE
+     * T_ARRAY_CAST, T_ATTRIBUTE_COMMENT, T_BOOL_CAST, T_COMMENT,
+     * T_CONSTANT_ENCAPSED_STRING, T_DOC_COMMENT, T_DOUBLE_CAST,
+     * T_ENCAPSED_AND_WHITESPACE, T_END_HEREDOC, T_INLINE_HTML, T_INT_CAST,
+     * T_OBJECT_CAST, T_OPEN_TAG, T_START_HEREDOC, T_STRING_CAST, T_UNSET_CAST,
+     * T_WHITESPACE, T_YIELD_FROM
      *
      * Tokens that may contain tab characters.
      *
@@ -926,7 +928,6 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
 
         $this->Expandable = self::get(
             \T_OPEN_TAG,
-            \T_OPEN_TAG_WITH_ECHO,
             \T_COMMENT,
             \T_DOC_COMMENT,
             \T_ATTRIBUTE_COMMENT,
@@ -936,6 +937,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             \T_END_HEREDOC,
             \T_INLINE_HTML,
             \T_WHITESPACE,
+            \T_YIELD_FROM,
+            ...TG::CAST,
         );
 
         $this->Movable = self::get(
