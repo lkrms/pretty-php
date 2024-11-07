@@ -20,12 +20,13 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     protected const LAST = 1;
     protected const MIXED = 2;
 
+    // Syntax:
+
     /**
      * T_OPEN_BRACE, T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_CLOSE_BRACE,
      * T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_ATTRIBUTE, T_CURLY_OPEN,
      * T_DOLLAR_OPEN_CURLY_BRACES
      *
-     * @readonly
      * @var array<int,bool>
      */
     public array $Bracket;
@@ -34,7 +35,6 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * T_OPEN_BRACE, T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_ATTRIBUTE,
      * T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES
      *
-     * @readonly
      * @var array<int,bool>
      */
     public array $OpenBracket;
@@ -43,7 +43,6 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * T_OPEN_BRACE, T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_ATTRIBUTE,
      * T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES, T_LOGICAL_NOT, T_NOT
      *
-     * @readonly
      * @var array<int,bool>
      */
     public array $OpenBracketOrNot;
@@ -51,7 +50,6 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     /**
      * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS
      *
-     * @readonly
      * @var array<int,bool>
      */
     public array $CloseBracket;
@@ -59,7 +57,6 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     /**
      * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_END_ALT_SYNTAX
      *
-     * @readonly
      * @var array<int,bool>
      */
     public array $CloseBracketOrEndAlt;
@@ -67,7 +64,6 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     /**
      * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_COMMA
      *
-     * @readonly
      * @var array<int,bool>
      */
     public array $CloseBracketOrComma;
@@ -77,7 +73,6 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      *
      * Also excludes `T_CURLY_OPEN` and `T_DOLLAR_OPEN_CURLY_BRACES`.
      *
-     * @readonly
      * @var array<int,bool>
      */
     public array $OpenBracketExceptBrace;
@@ -85,7 +80,6 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     /**
      * T_OPEN_BRACE, T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES
      *
-     * @readonly
      * @var array<int,bool>
      */
     public array $OpenBrace;
@@ -93,29 +87,643 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     /**
      * T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO
      *
-     * @readonly
      * @var array<int,bool>
      */
     public array $OpenTag;
+
+    /**
+     * T_DECLARE, T_FOR, T_FOREACH, T_IF, T_SWITCH, T_WHILE
+     *
+     * @var array<int,bool>
+     */
+    public array $AltStart;
+
+    /**
+     * T_ELSE, T_ELSEIF
+     *
+     * @var array<int,bool>
+     */
+    public array $AltContinue;
+
+    /**
+     * T_ELSEIF
+     *
+     * @var array<int,bool>
+     */
+    public array $AltContinueWithExpression;
+
+    /**
+     * T_ELSE
+     *
+     * @var array<int,bool>
+     */
+    public array $AltContinueWithNoExpression;
+
+    /**
+     * T_ENDDECLARE, T_ENDFOR, T_ENDFOREACH, T_ENDIF, T_ENDSWITCH, T_ENDWHILE
+     *
+     * @var array<int,bool>
+     */
+    public array $AltEnd;
+
+    /**
+     * T_AND, T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
+     * T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG
+     *
+     * @var array<int,bool>
+     */
+    public array $Ampersand;
+
+    /**
+     * T_ATTRIBUTE, T_ATTRIBUTE_COMMENT
+     *
+     * @var array<int,bool>
+     */
+    public array $Attribute;
+
+    /**
+     * T_ARRAY_CAST, T_BOOL_CAST, T_DOUBLE_CAST, T_INT_CAST, T_OBJECT_CAST,
+     * T_STRING_CAST, T_UNSET_CAST
+     *
+     * @var array<int,bool>
+     */
+    public array $Cast;
+
+    /**
+     * T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR
+     *
+     * @var array<int,bool>
+     */
+    public array $Chain;
+
+    /**
+     * T_CLASS, T_FUNCTION
+     *
+     * @var array<int,bool>
+     */
+    public array $ClassOrFunction;
+
+    /**
+     * T_COMMA, T_DOUBLE_ARROW
+     *
+     * @var array<int,bool>
+     */
+    public array $CommaOrDoubleArrow;
+
+    /**
+     * T_COMMENT, T_DOC_COMMENT
+     *
+     * @var array<int,bool>
+     */
+    public array $Comment;
+
+    /**
+     * T_ABSTRACT, T_CASE, T_CLASS, T_CONST, T_DECLARE, T_ENUM, T_FINAL,
+     * T_FUNCTION, T_INTERFACE, T_NAMESPACE, T_PRIVATE, T_PROTECTED, T_PUBLIC,
+     * T_READONLY, T_STATIC, T_TRAIT, T_USE, T_VAR
+     *
+     * @var array<int,bool>
+     */
+    public array $Declaration;
+
+    /**
+     * T_CASE, T_CLASS, T_CONST, T_DECLARE, T_ENUM, T_FUNCTION, T_INTERFACE,
+     * T_NAMESPACE, T_TRAIT, T_USE
+     *
+     * @var array<int,bool>
+     */
+    public array $DeclarationExceptModifiers;
+
+    /**
+     * T_CLASS, T_ENUM, T_INTERFACE, T_TRAIT
+     *
+     * @var array<int,bool>
+     */
+    public array $DeclarationClass;
+
+    /**
+     * T_CLASS, T_ENUM, T_FUNCTION, T_INTERFACE, T_TRAIT
+     *
+     * @var array<int,bool>
+     */
+    public array $DeclarationClassOrFunction;
+
+    /**
+     * T_COMMA, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE,
+     * T_STATIC, T_STRING
+     *
+     * @var array<int,bool>
+     */
+    public array $DeclarationList;
+
+    /**
+     * T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY, T_STATIC, T_VAR
+     *
+     * @var array<int,bool>
+     */
+    public array $DeclarationPropertyOrVariable;
+
+    /**
+     * T_CLASS, T_ENUM, T_FUNCTION, T_INTERFACE, T_NAMESPACE, T_TRAIT
+     *
+     * @var array<int,bool>
+     */
+    public array $DeclarationTopLevel;
+
+    /**
+     * T_ABSTRACT, T_CONST, T_FINAL, T_PRIVATE, T_PROTECTED, T_PUBLIC,
+     * T_READONLY, T_STATIC, T_VAR
+     *
+     * @var array<int,bool>
+     */
+    public array $NonMethodMember;
+
+    /**
+     * T_FN, T_FUNCTION
+     *
+     * @var array<int,bool>
+     */
+    public array $FunctionOrFn;
+
+    /**
+     * T_IF, T_ELSEIF
+     *
+     * @var array<int,bool>
+     */
+    public array $IfOrElseIf;
+
+    /**
+     * T_IF, T_ELSEIF, T_ELSE
+     *
+     * @var array<int,bool>
+     */
+    public array $IfElseIfOrElse;
+
+    /**
+     * T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO, T_CLOSE_TAG, T_COMMENT, T_DOC_COMMENT,
+     * T_INLINE_HTML, T_WHITESPACE
+     *
+     * @var array<int,bool>
+     */
+    public array $NotCode;
+
+    /**
+     * T_LNUMBER, T_DNUMBER
+     *
+     * @var array<int,bool>
+     */
+    public array $Number;
+
+    /**
+     * T_AND, T_AND_EQUAL, T_AT, T_BOOLEAN_AND, T_BOOLEAN_OR, T_COALESCE,
+     * T_COALESCE_EQUAL, T_COLON, T_CONCAT, T_CONCAT_EQUAL, T_DEC, T_DIV,
+     * T_DIV_EQUAL, T_DOLLAR, T_DOUBLE_ARROW, T_EQUAL, T_GREATER, T_INC,
+     * T_INSTANCEOF, T_IS_EQUAL, T_IS_GREATER_OR_EQUAL, T_IS_IDENTICAL,
+     * T_IS_NOT_EQUAL, T_IS_NOT_IDENTICAL, T_IS_SMALLER_OR_EQUAL, T_LOGICAL_AND,
+     * T_LOGICAL_NOT, T_LOGICAL_OR, T_LOGICAL_XOR, T_MINUS, T_MINUS_EQUAL,
+     * T_MOD, T_MOD_EQUAL, T_MUL, T_MUL_EQUAL, T_NOT, T_OR, T_OR_EQUAL, T_PLUS,
+     * T_PLUS_EQUAL, T_POW, T_POW_EQUAL, T_QUESTION, T_SL, T_SL_EQUAL,
+     * T_SMALLER, T_SPACESHIP, T_SR, T_SR_EQUAL, T_XOR, T_XOR_EQUAL,
+     * T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
+     *
+     * @var array<int,bool>
+     */
+    public array $Operator;
+
+    /**
+     * T_AND_EQUAL, T_COALESCE_EQUAL, T_CONCAT_EQUAL, T_DIV_EQUAL, T_EQUAL,
+     * T_MINUS_EQUAL, T_MOD_EQUAL, T_MUL_EQUAL, T_OR_EQUAL, T_PLUS_EQUAL,
+     * T_POW_EQUAL, T_SL_EQUAL, T_SR_EQUAL, T_XOR_EQUAL
+     *
+     * @var array<int,bool>
+     */
+    public array $OperatorAssignment;
+
+    /**
+     * T_AND, T_OR, T_XOR, T_BOOLEAN_AND, T_BOOLEAN_OR, T_LOGICAL_AND,
+     * T_LOGICAL_OR, T_LOGICAL_XOR, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
+     *
+     * `&`, `|`, `^`, `&&`, `||`, `and`, `or`, `xor`
+     *
+     * @var array<int,bool>
+     */
+    public array $OperatorBooleanExceptNot;
+
+    /**
+     * T_GREATER, T_IS_EQUAL, T_IS_GREATER_OR_EQUAL, T_IS_IDENTICAL,
+     * T_IS_NOT_EQUAL, T_IS_NOT_IDENTICAL, T_IS_SMALLER_OR_EQUAL, T_SMALLER,
+     * T_SPACESHIP
+     *
+     * Excludes `T_COALESCE`.
+     *
+     * @var array<int,bool>
+     */
+    public array $OperatorComparison;
+
+    /**
+     * T_AT, T_DEC, T_DOLLAR, T_INC, T_LOGICAL_NOT, T_NOT
+     *
+     * @var array<int,bool>
+     */
+    public array $OperatorUnary;
+
+    /**
+     * T_PLUS, T_MINUS
+     *
+     * @var array<int,bool>
+     */
+    public array $PlusOrMinus;
+
+    /**
+     * T_RETURN, T_YIELD, T_YIELD_FROM
+     *
+     * @var array<int,bool>
+     */
+    public array $Return;
+
+    /**
+     * T_DOUBLE_QUOTE, T_START_HEREDOC, T_END_HEREDOC, T_BACKTICK
+     *
+     * @var array<int,bool>
+     */
+    public array $StringDelimiter;
+
+    /**
+     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_OR
+     *
+     * @var array<int,bool>
+     */
+    public array $TypeDelimiter;
+
+    /**
+     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_ARRAY, T_CALLABLE,
+     * T_CLOSE_PARENTHESIS, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED,
+     * T_NAME_RELATIVE, T_OPEN_PARENTHESIS, T_OR, T_QUESTION, T_STATIC, T_STRING
+     *
+     * @var array<int,bool>
+     */
+    public array $ValueType;
+
+    /**
+     * T_END_ALT_SYNTAX, T_NULL
+     *
+     * @var array<int,bool>
+     */
+    public array $Virtual;
+
+    /**
+     * T_PRIVATE, T_PROTECTED, T_PUBLIC
+     *
+     * @var array<int,bool>
+     */
+    public array $Visibility;
+
+    /**
+     * T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY
+     *
+     * @var array<int,bool>
+     */
+    public array $VisibilityOrReadonly;
+
+    // Context:
+
+    /**
+     * T_OPEN_BRACE, T_OPEN_PARENTHESIS, T_EXTENDS, T_IMPLEMENTS
+     *
+     * The next token after an anonymous `T_CLASS` or `T_FUNCTION`.
+     *
+     * @var array<int,bool>
+     */
+    public array $AfterAnonymousClassOrFunction;
+
+    /**
+     * T_ARRAY, T_CLASS, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS,
+     * T_CONSTANT_ENCAPSED_STRING, T_DECLARE, T_DOUBLE_QUOTE, T_FN, T_FOR,
+     * T_FUNCTION, T_ISSET, T_LIST, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED,
+     * T_NAME_RELATIVE, T_STATIC, T_STRING, T_UNSET, T_USE, T_VARIABLE
+     *
+     * Tokens that may appear before open parentheses with delimited lists.
+     *
+     * @var array<int,bool>
+     */
+    public array $BeforeListParenthesis;
+
+    /**
+     * Tokens that may appear before unary operators
+     *
+     * @internal
+     *
+     * @var array<int,bool>
+     */
+    public array $BeforeUnary;
+
+    /**
+     * T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR, T_OPEN_BRACE,
+     * T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_DOLLAR, T_STRING, T_VARIABLE
+     *
+     * @var array<int,bool>
+     */
+    public array $ChainPart;
+
+    /**
+     * T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR, T_OPEN_BRACE,
+     * T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_DOLLAR, T_STRING, T_VARIABLE,
+     * T_ARRAY, T_CONSTANT_ENCAPSED_STRING, T_CURLY_OPEN,
+     * T_DOLLAR_OPEN_CURLY_BRACES, T_DOUBLE_COLON, T_DOUBLE_QUOTE,
+     * T_ENCAPSED_AND_WHITESPACE, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED,
+     * T_NAME_RELATIVE, T_STATIC, T_CLASS_C, T_DIR, T_FILE, T_FUNC_C, T_LINE,
+     * T_METHOD_C, T_NS_C, T_PROPERTY_C, T_TRAIT_C
+     *
+     * @var array<int,bool>
+     */
+    public array $ChainExpression;
 
     /**
      * T_ELSEIF, T_ELSE, T_CATCH, T_FINALLY
      *
      * Excludes `T_WHILE`, which only qualifies after `T_DO`.
      *
-     * @readonly
      * @var array<int,bool>
      */
     public array $ContinuesControlStructure;
 
     /**
-     * T_ABSTRACT, T_CONST, T_FINAL, T_PRIVATE, T_PROTECTED, T_PUBLIC,
-     * T_READONLY, T_STATIC, T_VAR
+     * T_ABSTRACT, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_AND, T_ATTRIBUTE_COMMENT,
+     * T_ATTRIBUTE, T_CASE, T_CLASS, T_COMMA, T_CONST, T_DECLARE, T_ENUM,
+     * T_EXTENDS, T_FINAL, T_FUNCTION, T_IMPLEMENTS, T_INTERFACE,
+     * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE, T_NAMESPACE,
+     * T_NS_SEPARATOR, T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY, T_STATIC,
+     * T_STRING, T_TRAIT, T_USE, T_VAR
      *
-     * @readonly
      * @var array<int,bool>
      */
-    public array $NonMethodMember;
+    public array $DeclarationPart;
+
+    /**
+     * T_ABSTRACT, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_AND, T_ATTRIBUTE_COMMENT,
+     * T_ATTRIBUTE, T_CASE, T_CLASS, T_COMMA, T_CONST, T_DECLARE, T_ENUM,
+     * T_EXTENDS, T_FINAL, T_FUNCTION, T_IMPLEMENTS, T_INTERFACE,
+     * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE, T_NAMESPACE,
+     * T_NEW, T_NS_SEPARATOR, T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY,
+     * T_STATIC, T_STRING, T_TRAIT, T_USE, T_VAR
+     *
+     * @var array<int,bool>
+     */
+    public array $DeclarationPartWithNew;
+
+    /**
+     * T_ABSTRACT, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_AND, T_ARRAY, T_ATTRIBUTE,
+     * T_ATTRIBUTE_COMMENT, T_CALLABLE, T_CASE, T_CLASS, T_CLOSE_BRACE,
+     * T_CLOSE_PARENTHESIS, T_COLON, T_COMMA, T_CONST, T_DECLARE, T_ENUM,
+     * T_EXTENDS, T_FINAL, T_FUNCTION, T_IMPLEMENTS, T_INTERFACE, T_NAMESPACE,
+     * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE, T_NEW,
+     * T_NS_SEPARATOR, T_OPEN_BRACE, T_OPEN_PARENTHESIS, T_OR, T_PRIVATE,
+     * T_PROTECTED, T_PUBLIC, T_QUESTION, T_READONLY, T_STATIC, T_STRING,
+     * T_TRAIT, T_USE, T_VAR
+     *
+     * @var array<int,bool>
+     */
+    public array $DeclarationPartWithNewAndBody;
+
+    /**
+     * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS,
+     * T_CONSTANT_ENCAPSED_STRING, T_DOUBLE_QUOTE, T_NAME_FULLY_QUALIFIED,
+     * T_NAME_QUALIFIED, T_NAME_RELATIVE, T_STRING, T_STRING_VARNAME,
+     * T_VARIABLE, T_CLASS_C, T_DIR, T_FILE, T_FUNC_C, T_LINE, T_METHOD_C,
+     * T_NS_C, T_PROPERTY_C, T_TRAIT_C
+     *
+     * @var array<int,bool>
+     */
+    public array $EndOfDereferenceable;
+
+    /**
+     * T_AND, T_STRING, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
+     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
+     *
+     * @var array<int,bool>
+     */
+    public array $FunctionIdentifier;
+
+    /**
+     * T_CATCH, T_DECLARE, T_DO, T_ELSE, T_ELSEIF, T_FINALLY, T_FOR, T_FOREACH,
+     * T_IF, T_SWITCH, T_TRY, T_WHILE
+     *
+     * @var array<int,bool>
+     */
+    public array $HasStatement;
+
+    /**
+     * T_DO, T_ELSE
+     *
+     * @var array<int,bool>
+     */
+    public array $HasStatementWithOptionalBraces;
+
+    /**
+     * T_ELSEIF, T_FOR, T_FOREACH, T_IF, T_WHILE
+     *
+     * @var array<int,bool>
+     */
+    public array $HasExpressionAndStatementWithOptionalBraces;
+
+    /**
+     * T_CASE, T_DEFAULT, T_COLON, T_SEMICOLON, T_CLOSE_TAG
+     *
+     * @var array<int,bool>
+     */
+    public array $SwitchCaseOrDelimiter;
+
+    /**
+     * T_ARRAY, T_CALLABLE, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED,
+     * T_NAME_RELATIVE, T_OPEN_PARENTHESIS, T_QUESTION, T_STATIC, T_STRING
+     *
+     * @var array<int,bool>
+     */
+    public array $ValueTypeStart;
+
+    /**
+     * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_STRING, T_VARIABLE
+     *
+     * @var array<int,bool>
+     */
+    public array $VariableEnd;
+
+    // Parsing:
+
+    /**
+     * T_COLON, T_COMMA, T_SEMICOLON
+     *
+     * @var array<int,bool>
+     */
+    public array $EndOfStatement;
+
+    /**
+     * T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_SEMICOLON, T_DOUBLE_ARROW,
+     * T_AND_EQUAL, T_COALESCE_EQUAL, T_CONCAT_EQUAL, T_DIV_EQUAL, T_EQUAL,
+     * T_GREATER, T_IS_EQUAL, T_IS_GREATER_OR_EQUAL, T_IS_IDENTICAL,
+     * T_IS_NOT_EQUAL, T_IS_NOT_IDENTICAL, T_IS_SMALLER_OR_EQUAL, T_MINUS_EQUAL,
+     * T_MOD_EQUAL, T_MUL_EQUAL, T_OR_EQUAL, T_PLUS_EQUAL, T_POW_EQUAL,
+     * T_SL_EQUAL, T_SMALLER, T_SPACESHIP, T_SR_EQUAL, T_XOR_EQUAL
+     *
+     * @var array<int,bool>
+     */
+    public array $EndOfExpression;
+
+    /**
+     * T_DOUBLE_ARROW, T_AND_EQUAL, T_COALESCE_EQUAL, T_CONCAT_EQUAL,
+     * T_DIV_EQUAL, T_EQUAL, T_GREATER, T_IS_EQUAL, T_IS_GREATER_OR_EQUAL,
+     * T_IS_IDENTICAL, T_IS_NOT_EQUAL, T_IS_NOT_IDENTICAL,
+     * T_IS_SMALLER_OR_EQUAL, T_MINUS_EQUAL, T_MOD_EQUAL, T_MUL_EQUAL,
+     * T_OR_EQUAL, T_PLUS_EQUAL, T_POW_EQUAL, T_SL_EQUAL, T_SMALLER,
+     * T_SPACESHIP, T_SR_EQUAL, T_XOR_EQUAL
+     *
+     * @var array<int,bool>
+     */
+    public array $ExpressionDelimiter;
+
+    /**
+     * T_AND_EQUAL, T_COALESCE_EQUAL, T_CONCAT_EQUAL, T_DIV_EQUAL,
+     * T_DOUBLE_ARROW, T_EQUAL, T_MINUS_EQUAL, T_MOD_EQUAL, T_MUL_EQUAL,
+     * T_OR_EQUAL, T_PLUS_EQUAL, T_POW_EQUAL, T_SL_EQUAL, T_SR_EQUAL,
+     * T_XOR_EQUAL
+     *
+     * @var array<int,bool>
+     */
+    public array $ExpressionDelimiterExceptComparison;
+
+    // Formatting:
+
+    /**
+     * T_ENCAPSED_AND_WHITESPACE, T_INLINE_HTML
+     *
+     * @var array<int,bool>
+     */
+    public array $NotTrimmable;
+
+    /**
+     * T_CLOSE_TAG, T_START_HEREDOC
+     *
+     * @var array<int,bool>
+     */
+    public array $LeftTrimmable;
+
+    /**
+     * T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO, T_END_HEREDOC
+     *
+     * @var array<int,bool>
+     */
+    public array $RightTrimmable;
+
+    /**
+     * T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO, T_CLOSE_TAG, T_START_HEREDOC,
+     * T_END_HEREDOC, T_COMMENT, T_DOC_COMMENT, T_ATTRIBUTE_COMMENT,
+     * T_WHITESPACE
+     *
+     * @var array<int,bool>
+     */
+    public array $Trimmable;
+
+    /**
+     * Tokens that may appear after a newline
+     *
+     * @internal
+     *
+     * @var array<int,bool>
+     */
+    public array $AllowNewlineBefore;
+
+    /**
+     * Tokens that may appear before a newline
+     *
+     * @internal
+     *
+     * @var array<int,bool>
+     */
+    public array $AllowNewlineAfter;
+
+    /**
+     * Tokens that may appear after a blank line
+     *
+     * @internal
+     *
+     * @var array<int,bool>
+     */
+    public array $PreserveBlankBefore;
+
+    /**
+     * Tokens that may appear before a blank line
+     *
+     * @internal
+     *
+     * @var array<int,bool>
+     */
+    public array $PreserveBlankAfter;
+
+    /**
+     * Tokens that require leading and trailing spaces
+     *
+     * @internal
+     *
+     * @var array<int,bool>
+     */
+    public array $AddSpace;
+
+    /**
+     * Tokens that require leading spaces
+     *
+     * @internal
+     *
+     * @var array<int,bool>
+     */
+    public array $AddSpaceBefore;
+
+    /**
+     * Tokens that require trailing spaces
+     *
+     * @internal
+     *
+     * @var array<int,bool>
+     */
+    public array $AddSpaceAfter;
+
+    /**
+     * Tokens that require suppression of leading spaces
+     *
+     * @internal
+     *
+     * @var array<int,bool>
+     */
+    public array $SuppressSpaceBefore;
+
+    /**
+     * Tokens that require suppression of trailing spaces
+     *
+     * @internal
+     *
+     * @var array<int,bool>
+     */
+    public array $SuppressSpaceAfter;
+
+    /**
+     * T_USE
+     *
+     * @var array<int,bool>
+     */
+    public array $SuppressBlankBetween;
+
+    /**
+     * T_DECLARE
+     *
+     * @var array<int,bool>
+     */
+    public array $SuppressBlankBetweenOneLine;
+
+    // Filtering:
 
     /**
      * T_ARRAY_CAST, T_ATTRIBUTE_COMMENT, T_BOOL_CAST, T_COMMENT,
@@ -126,7 +734,6 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      *
      * Tokens that may contain tab characters.
      *
-     * @readonly
      * @var array<int,bool>
      */
     public array $Expandable;
@@ -147,691 +754,9 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * Tokens that may be swapped with adjacent comment tokens for correct
      * placement.
      *
-     * @readonly
      * @var array<int,bool>
      */
     public array $Movable;
-
-    /**
-     * T_LNUMBER, T_DNUMBER
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $Number;
-
-    /**
-     * T_DOUBLE_QUOTE, T_START_HEREDOC, T_END_HEREDOC, T_BACKTICK
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $StringDelimiter;
-
-    /**
-     * T_ENCAPSED_AND_WHITESPACE, T_INLINE_HTML
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $NotTrimmable;
-
-    /**
-     * T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO, T_END_HEREDOC
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $RightTrimmable;
-
-    /**
-     * T_CLOSE_TAG, T_START_HEREDOC
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $LeftTrimmable;
-
-    /**
-     * T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO, T_CLOSE_TAG, T_START_HEREDOC,
-     * T_END_HEREDOC, T_COMMENT, T_DOC_COMMENT, T_ATTRIBUTE_COMMENT,
-     * T_WHITESPACE
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $Trimmable;
-
-    /**
-     * T_USE
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $SuppressBlankBetween;
-
-    /**
-     * T_DECLARE
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $SuppressBlankBetweenOneLine;
-
-    /**
-     * Tokens that require leading and trailing spaces
-     *
-     * @internal
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $AddSpace;
-
-    /**
-     * Tokens that require leading spaces
-     *
-     * @internal
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $AddSpaceBefore;
-
-    /**
-     * Tokens that require trailing spaces
-     *
-     * @internal
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $AddSpaceAfter;
-
-    /**
-     * Tokens that require suppression of leading spaces
-     *
-     * @internal
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $SuppressSpaceBefore;
-
-    /**
-     * Tokens that require suppression of trailing spaces
-     *
-     * @internal
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $SuppressSpaceAfter;
-
-    /**
-     * Tokens that may appear after a newline
-     *
-     * @internal
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $AllowNewlineBefore;
-
-    /**
-     * Tokens that may appear before a newline
-     *
-     * @internal
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $AllowNewlineAfter;
-
-    /**
-     * Tokens that may appear after a blank line
-     *
-     * @internal
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $PreserveBlankBefore;
-
-    /**
-     * Tokens that may appear before a blank line
-     *
-     * @internal
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $PreserveBlankAfter;
-
-    /**
-     * T_COLON, T_COMMA, T_SEMICOLON
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $EndOfStatement;
-
-    /**
-     * T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_SEMICOLON, T_DOUBLE_ARROW,
-     * T_AND_EQUAL, T_COALESCE_EQUAL, T_CONCAT_EQUAL, T_DIV_EQUAL, T_EQUAL,
-     * T_GREATER, T_IS_EQUAL, T_IS_GREATER_OR_EQUAL, T_IS_IDENTICAL,
-     * T_IS_NOT_EQUAL, T_IS_NOT_IDENTICAL, T_IS_SMALLER_OR_EQUAL, T_MINUS_EQUAL,
-     * T_MOD_EQUAL, T_MUL_EQUAL, T_OR_EQUAL, T_PLUS_EQUAL, T_POW_EQUAL,
-     * T_SL_EQUAL, T_SMALLER, T_SPACESHIP, T_SR_EQUAL, T_XOR_EQUAL
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $EndOfExpression;
-
-    /**
-     * T_DOUBLE_ARROW, T_AND_EQUAL, T_COALESCE_EQUAL, T_CONCAT_EQUAL,
-     * T_DIV_EQUAL, T_EQUAL, T_GREATER, T_IS_EQUAL, T_IS_GREATER_OR_EQUAL,
-     * T_IS_IDENTICAL, T_IS_NOT_EQUAL, T_IS_NOT_IDENTICAL,
-     * T_IS_SMALLER_OR_EQUAL, T_MINUS_EQUAL, T_MOD_EQUAL, T_MUL_EQUAL,
-     * T_OR_EQUAL, T_PLUS_EQUAL, T_POW_EQUAL, T_SL_EQUAL, T_SMALLER,
-     * T_SPACESHIP, T_SR_EQUAL, T_XOR_EQUAL
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $ExpressionDelimiter;
-
-    /**
-     * T_AND_EQUAL, T_COALESCE_EQUAL, T_CONCAT_EQUAL, T_DIV_EQUAL,
-     * T_DOUBLE_ARROW, T_EQUAL, T_MINUS_EQUAL, T_MOD_EQUAL, T_MUL_EQUAL,
-     * T_OR_EQUAL, T_PLUS_EQUAL, T_POW_EQUAL, T_SL_EQUAL, T_SR_EQUAL,
-     * T_XOR_EQUAL
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $ExpressionDelimiterExceptComparison;
-
-    /**
-     * T_AND, T_STRING, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
-     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $FunctionIdentifier;
-
-    /**
-     * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS,
-     * T_CONSTANT_ENCAPSED_STRING, T_DOUBLE_QUOTE, T_NAME_FULLY_QUALIFIED,
-     * T_NAME_QUALIFIED, T_NAME_RELATIVE, T_STRING, T_STRING_VARNAME,
-     * T_VARIABLE, T_CLASS_C, T_DIR, T_FILE, T_FUNC_C, T_LINE, T_METHOD_C,
-     * T_NS_C, T_PROPERTY_C, T_TRAIT_C
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $EndOfDereferenceable;
-
-    /**
-     * T_CASE, T_DEFAULT, T_COLON, T_SEMICOLON, T_CLOSE_TAG
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $SwitchCaseOrDelimiter;
-
-    /**
-     * T_ARRAY, T_CLASS, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS,
-     * T_CONSTANT_ENCAPSED_STRING, T_DECLARE, T_DOUBLE_QUOTE, T_FN, T_FOR,
-     * T_FUNCTION, T_ISSET, T_LIST, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED,
-     * T_NAME_RELATIVE, T_STATIC, T_STRING, T_UNSET, T_USE, T_VARIABLE
-     *
-     * Tokens that may appear before open parentheses with delimited lists.
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $BeforeListParenthesis;
-
-    /**
-     * Tokens that may appear before unary operators
-     *
-     * @internal
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $BeforeUnary;
-
-    /**
-     * T_DECLARE, T_FOR, T_FOREACH, T_IF, T_SWITCH, T_WHILE
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $AltStart;
-
-    /**
-     * T_ELSE, T_ELSEIF
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $AltContinue;
-
-    /**
-     * T_ELSEIF
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $AltContinueWithExpression;
-
-    /**
-     * T_ELSE
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $AltContinueWithNoExpression;
-
-    /**
-     * T_ENDDECLARE, T_ENDFOR, T_ENDFOREACH, T_ENDIF, T_ENDSWITCH, T_ENDWHILE
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $AltEnd;
-
-    /**
-     * T_AND, T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
-     * T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $Ampersand;
-
-    /**
-     * T_CLASS, T_FUNCTION
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $ClassOrFunction;
-
-    /**
-     * T_OPEN_BRACE, T_OPEN_PARENTHESIS, T_EXTENDS, T_IMPLEMENTS
-     *
-     * The next token after an anonymous `T_CLASS` or `T_FUNCTION`.
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $AfterAnonymousClassOrFunction;
-
-    /**
-     * T_COMMA, T_DOUBLE_ARROW
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $CommaOrDoubleArrow;
-
-    /**
-     * T_FN, T_FUNCTION
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $FunctionOrFn;
-
-    /**
-     * T_IF, T_ELSEIF
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $IfOrElseIf;
-
-    /**
-     * T_IF, T_ELSEIF, T_ELSE
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $IfElseIfOrElse;
-
-    /**
-     * T_PLUS, T_MINUS
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $PlusOrMinus;
-
-    /**
-     * T_ATTRIBUTE, T_ATTRIBUTE_COMMENT
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $Attribute;
-
-    /**
-     * T_ARRAY_CAST, T_BOOL_CAST, T_DOUBLE_CAST, T_INT_CAST, T_OBJECT_CAST,
-     * T_STRING_CAST, T_UNSET_CAST
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $Cast;
-
-    /**
-     * T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $Chain;
-
-    /**
-     * T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR, T_OPEN_BRACE,
-     * T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_DOLLAR, T_STRING, T_VARIABLE
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $ChainPart;
-
-    /**
-     * T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR, T_OPEN_BRACE,
-     * T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_DOLLAR, T_STRING, T_VARIABLE,
-     * T_ARRAY, T_CONSTANT_ENCAPSED_STRING, T_CURLY_OPEN,
-     * T_DOLLAR_OPEN_CURLY_BRACES, T_DOUBLE_COLON, T_DOUBLE_QUOTE,
-     * T_ENCAPSED_AND_WHITESPACE, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED,
-     * T_NAME_RELATIVE, T_STATIC, T_CLASS_C, T_DIR, T_FILE, T_FUNC_C, T_LINE,
-     * T_METHOD_C, T_NS_C, T_PROPERTY_C, T_TRAIT_C
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $ChainExpression;
-
-    /**
-     * T_COMMENT, T_DOC_COMMENT
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $Comment;
-
-    /**
-     * T_ABSTRACT, T_CASE, T_CLASS, T_CONST, T_DECLARE, T_ENUM, T_FINAL,
-     * T_FUNCTION, T_INTERFACE, T_NAMESPACE, T_PRIVATE, T_PROTECTED, T_PUBLIC,
-     * T_READONLY, T_STATIC, T_TRAIT, T_USE, T_VAR
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $Declaration;
-
-    /**
-     * T_CASE, T_CLASS, T_CONST, T_DECLARE, T_ENUM, T_FUNCTION, T_INTERFACE,
-     * T_NAMESPACE, T_TRAIT, T_USE
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $DeclarationExceptModifiers;
-
-    /**
-     * T_CLASS, T_ENUM, T_INTERFACE, T_TRAIT
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $DeclarationClass;
-
-    /**
-     * T_CLASS, T_ENUM, T_FUNCTION, T_INTERFACE, T_TRAIT
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $DeclarationClassOrFunction;
-
-    /**
-     * T_COMMA, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE,
-     * T_STATIC, T_STRING
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $DeclarationList;
-
-    /**
-     * T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY, T_STATIC, T_VAR
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $DeclarationPropertyOrVariable;
-
-    /**
-     * T_ABSTRACT, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
-     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_AND, T_ATTRIBUTE_COMMENT,
-     * T_ATTRIBUTE, T_CASE, T_CLASS, T_COMMA, T_CONST, T_DECLARE, T_ENUM,
-     * T_EXTENDS, T_FINAL, T_FUNCTION, T_IMPLEMENTS, T_INTERFACE,
-     * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE, T_NAMESPACE,
-     * T_NS_SEPARATOR, T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY, T_STATIC,
-     * T_STRING, T_TRAIT, T_USE, T_VAR
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $DeclarationPart;
-
-    /**
-     * T_ABSTRACT, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
-     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_AND, T_ATTRIBUTE_COMMENT,
-     * T_ATTRIBUTE, T_CASE, T_CLASS, T_COMMA, T_CONST, T_DECLARE, T_ENUM,
-     * T_EXTENDS, T_FINAL, T_FUNCTION, T_IMPLEMENTS, T_INTERFACE,
-     * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE, T_NAMESPACE,
-     * T_NEW, T_NS_SEPARATOR, T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY,
-     * T_STATIC, T_STRING, T_TRAIT, T_USE, T_VAR
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $DeclarationPartWithNew;
-
-    /**
-     * T_ABSTRACT, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
-     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_AND, T_ARRAY, T_ATTRIBUTE,
-     * T_ATTRIBUTE_COMMENT, T_CALLABLE, T_CASE, T_CLASS, T_CLOSE_BRACE,
-     * T_CLOSE_PARENTHESIS, T_COLON, T_COMMA, T_CONST, T_DECLARE, T_ENUM,
-     * T_EXTENDS, T_FINAL, T_FUNCTION, T_IMPLEMENTS, T_INTERFACE, T_NAMESPACE,
-     * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE, T_NEW,
-     * T_NS_SEPARATOR, T_OPEN_BRACE, T_OPEN_PARENTHESIS, T_OR, T_PRIVATE,
-     * T_PROTECTED, T_PUBLIC, T_QUESTION, T_READONLY, T_STATIC, T_STRING,
-     * T_TRAIT, T_USE, T_VAR
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $DeclarationPartWithNewAndBody;
-
-    /**
-     * T_CLASS, T_ENUM, T_FUNCTION, T_INTERFACE, T_NAMESPACE, T_TRAIT
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $DeclarationTopLevel;
-
-    /**
-     * T_CATCH, T_DECLARE, T_DO, T_ELSE, T_ELSEIF, T_FINALLY, T_FOR, T_FOREACH,
-     * T_IF, T_SWITCH, T_TRY, T_WHILE
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $HasStatement;
-
-    /**
-     * T_DO, T_ELSE
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $HasStatementWithOptionalBraces;
-
-    /**
-     * T_ELSEIF, T_FOR, T_FOREACH, T_IF, T_WHILE
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $HasExpressionAndStatementWithOptionalBraces;
-
-    /**
-     * T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO, T_CLOSE_TAG, T_COMMENT, T_DOC_COMMENT,
-     * T_INLINE_HTML, T_WHITESPACE
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $NotCode;
-
-    /**
-     * T_AND, T_AND_EQUAL, T_AT, T_BOOLEAN_AND, T_BOOLEAN_OR, T_COALESCE,
-     * T_COALESCE_EQUAL, T_COLON, T_CONCAT, T_CONCAT_EQUAL, T_DEC, T_DIV,
-     * T_DIV_EQUAL, T_DOLLAR, T_DOUBLE_ARROW, T_EQUAL, T_GREATER, T_INC,
-     * T_INSTANCEOF, T_IS_EQUAL, T_IS_GREATER_OR_EQUAL, T_IS_IDENTICAL,
-     * T_IS_NOT_EQUAL, T_IS_NOT_IDENTICAL, T_IS_SMALLER_OR_EQUAL, T_LOGICAL_AND,
-     * T_LOGICAL_NOT, T_LOGICAL_OR, T_LOGICAL_XOR, T_MINUS, T_MINUS_EQUAL,
-     * T_MOD, T_MOD_EQUAL, T_MUL, T_MUL_EQUAL, T_NOT, T_OR, T_OR_EQUAL, T_PLUS,
-     * T_PLUS_EQUAL, T_POW, T_POW_EQUAL, T_QUESTION, T_SL, T_SL_EQUAL,
-     * T_SMALLER, T_SPACESHIP, T_SR, T_SR_EQUAL, T_XOR, T_XOR_EQUAL,
-     * T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
-     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $Operator;
-
-    /**
-     * T_AND_EQUAL, T_COALESCE_EQUAL, T_CONCAT_EQUAL, T_DIV_EQUAL, T_EQUAL,
-     * T_MINUS_EQUAL, T_MOD_EQUAL, T_MUL_EQUAL, T_OR_EQUAL, T_PLUS_EQUAL,
-     * T_POW_EQUAL, T_SL_EQUAL, T_SR_EQUAL, T_XOR_EQUAL
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $OperatorAssignment;
-
-    /**
-     * T_AND, T_OR, T_XOR, T_BOOLEAN_AND, T_BOOLEAN_OR, T_LOGICAL_AND,
-     * T_LOGICAL_OR, T_LOGICAL_XOR, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
-     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
-     *
-     * `&`, `|`, `^`, `&&`, `||`, `and`, `or`, `xor`
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $OperatorBooleanExceptNot;
-
-    /**
-     * T_GREATER, T_IS_EQUAL, T_IS_GREATER_OR_EQUAL, T_IS_IDENTICAL,
-     * T_IS_NOT_EQUAL, T_IS_NOT_IDENTICAL, T_IS_SMALLER_OR_EQUAL, T_SMALLER,
-     * T_SPACESHIP
-     *
-     * Excludes `T_COALESCE`.
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $OperatorComparison;
-
-    /**
-     * T_AT, T_DEC, T_DOLLAR, T_INC, T_LOGICAL_NOT, T_NOT
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $OperatorUnary;
-
-    /**
-     * T_RETURN, T_YIELD, T_YIELD_FROM
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $Return;
-
-    /**
-     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_OR
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $TypeDelimiter;
-
-    /**
-     * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_ARRAY, T_CALLABLE,
-     * T_CLOSE_PARENTHESIS, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED,
-     * T_NAME_RELATIVE, T_OPEN_PARENTHESIS, T_OR, T_QUESTION, T_STATIC, T_STRING
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $ValueType;
-
-    /**
-     * T_ARRAY, T_CALLABLE, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED,
-     * T_NAME_RELATIVE, T_OPEN_PARENTHESIS, T_QUESTION, T_STATIC, T_STRING
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $ValueTypeStart;
-
-    /**
-     * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_STRING, T_VARIABLE
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $VariableEnd;
-
-    /**
-     * T_PRIVATE, T_PROTECTED, T_PUBLIC
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $Visibility;
-
-    /**
-     * T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $VisibilityOrReadonly;
-
-    /**
-     * T_END_ALT_SYNTAX, T_NULL
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $Virtual;
 
     /** @var self::FIRST|self::LAST|self::MIXED */
     protected int $Operators;
