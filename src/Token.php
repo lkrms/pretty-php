@@ -746,7 +746,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
                 $first->id === \T_STATIC
                 && !$this->Idx->Declaration[$next->id]  // `static function`
                 && !(                                   // `static int $foo`
-                    $this->Idx->ValueTypeStart[$next->id]
+                    $this->Idx->StartOfValueType[$next->id]
                     && $next->skipNextSiblingsFrom($this->Idx->ValueType)->id === \T_VARIABLE
                 )
                 && !(                                   // `static $foo` in a property context

@@ -502,6 +502,13 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $EndOfDereferenceable;
 
     /**
+     * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_STRING, T_VARIABLE
+     *
+     * @var array<int,bool>
+     */
+    public array $EndOfVariable;
+
+    /**
      * T_AND, T_STRING, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
      * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
      *
@@ -532,26 +539,19 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $HasExpressionAndStatementWithOptionalBraces;
 
     /**
-     * T_CASE, T_DEFAULT, T_COLON, T_SEMICOLON, T_CLOSE_TAG
-     *
-     * @var array<int,bool>
-     */
-    public array $SwitchCaseOrDelimiter;
-
-    /**
      * T_ARRAY, T_CALLABLE, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED,
      * T_NAME_RELATIVE, T_OPEN_PARENTHESIS, T_QUESTION, T_STATIC, T_STRING
      *
      * @var array<int,bool>
      */
-    public array $ValueTypeStart;
+    public array $StartOfValueType;
 
     /**
-     * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_STRING, T_VARIABLE
+     * T_CASE, T_DEFAULT, T_COLON, T_SEMICOLON, T_CLOSE_TAG
      *
      * @var array<int,bool>
      */
-    public array $VariableEnd;
+    public array $SwitchCaseOrDelimiter;
 
     // Parsing:
 
@@ -1201,8 +1201,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         $this->Return = self::get(...TG::RETURN);
         $this->TypeDelimiter = self::get(...TG::TYPE_DELIMITER);
         $this->ValueType = self::get(...TG::VALUE_TYPE);
-        $this->ValueTypeStart = self::get(...TG::VALUE_TYPE_START);
-        $this->VariableEnd = self::get(...TG::VARIABLE_END);
+        $this->StartOfValueType = self::get(...TG::VALUE_TYPE_START);
+        $this->EndOfVariable = self::get(...TG::VARIABLE_END);
         $this->Visibility = self::get(...TG::VISIBILITY);
         $this->VisibilityOrReadonly = self::get(...TG::VISIBILITY_WITH_READONLY);
         $this->Virtual = self::get(

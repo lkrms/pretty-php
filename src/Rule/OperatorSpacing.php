@@ -128,7 +128,7 @@ final class OperatorSpacing implements TokenRule
             // Suppress whitespace between `++` and `--` and the variables they
             // operate on
             if ($token->id === \T_INC || $token->id === \T_DEC) {
-                if ($token->Prev && $this->Idx->VariableEnd[$token->Prev->id]) {
+                if ($token->Prev && $this->Idx->EndOfVariable[$token->Prev->id]) {
                     $token->WhitespaceMaskPrev = WhitespaceType::NONE;
                 } else {
                     $token->WhitespaceMaskNext = WhitespaceType::NONE;
