@@ -508,13 +508,13 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
         if (
             $this->ClosedBy
-            || $this->Idx->AltSyntaxContinueWithoutExpression[$prevCode->id]
+            || $this->Idx->AltContinueWithNoExpression[$prevCode->id]
             || (
                 $prevCode->id === \T_CLOSE_PARENTHESIS
                 && $prevCode->PrevSibling
                 && (
-                    $this->Idx->AltSyntaxStart[$prevCode->PrevSibling->id]
-                    || $this->Idx->AltSyntaxContinueWithExpression[$prevCode->PrevSibling->id]
+                    $this->Idx->AltStart[$prevCode->PrevSibling->id]
+                    || $this->Idx->AltContinueWithExpression[$prevCode->PrevSibling->id]
                 )
             )
         ) {
@@ -760,7 +760,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
                 )
             )
             || ($first->id === \T_CASE && $first->inSwitch())
-            || ($this->Idx->VisibilityWithReadonly[$first->id] && $first->inParameterList())
+            || ($this->Idx->VisibilityOrReadonly[$first->id] && $first->inParameterList())
         ) {
             return false;
         }
@@ -1404,7 +1404,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     public function withoutTerminator(): self
     {
         if ($this->PrevCode && (
-            $this->Idx->StatementTerminator[$this->id]
+            $this->Idx->EndOfStatement[$this->id]
             || $this->Flags & TokenFlag::STATEMENT_TERMINATOR
         )) {
             return $this->PrevCode;
@@ -1415,10 +1415,10 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     public function withTerminator(): self
     {
         if ($this->NextCode && !(
-            $this->Idx->StatementTerminator[$this->id]
+            $this->Idx->EndOfStatement[$this->id]
             || $this->Flags & TokenFlag::STATEMENT_TERMINATOR
         ) && (
-            $this->Idx->StatementTerminator[$this->NextCode->id]
+            $this->Idx->EndOfStatement[$this->NextCode->id]
             || $this->NextCode->Flags & TokenFlag::STATEMENT_TERMINATOR
         )) {
             return $this->NextCode;
@@ -1558,10 +1558,10 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
     public function isDereferenceableTerminator(): bool
     {
-        return $this->Idx->DereferenceableTerminator[$this->id] || (
+        return $this->Idx->EndOfDereferenceable[$this->id] || (
             $this->PrevCode
             && $this->PrevCode->id === \T_DOUBLE_COLON
-            && $this->Idx->MaybeReserved[$this->id]
+            && $this->id === \T_STRING
         );
     }
 
@@ -1588,7 +1588,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         return $this->Expression === $this
             || ($this->PrevCode && (
                 $this->PrevCode->Flags & TokenFlag::TERNARY_OPERATOR
-                || $this->Idx->UnaryPredecessor[$this->PrevCode->id]
+                || $this->Idx->BeforeUnary[$this->PrevCode->id]
             ));
     }
 

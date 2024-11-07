@@ -50,32 +50,18 @@ interface TokenGroup
     public const OPERATOR_ASSIGNMENT = [
         \T_EQUAL,           // =
         \T_COALESCE_EQUAL,  // ??=
-        ...self::OPERATOR_ASSIGNMENT_EXCEPT_EQUAL_AND_COALESCE,
-    ];
-
-    public const OPERATOR_ASSIGNMENT_EXCEPT_EQUAL = [
-        \T_COALESCE_EQUAL,
-        ...self::OPERATOR_ASSIGNMENT_EXCEPT_EQUAL_AND_COALESCE,
-    ];
-
-    public const OPERATOR_ASSIGNMENT_EXCEPT_COALESCE = [
-        \T_EQUAL,
-        ...self::OPERATOR_ASSIGNMENT_EXCEPT_EQUAL_AND_COALESCE,
-    ];
-
-    public const OPERATOR_ASSIGNMENT_EXCEPT_EQUAL_AND_COALESCE = [
-        \T_PLUS_EQUAL,    // +=
-        \T_MINUS_EQUAL,   // -=
-        \T_MUL_EQUAL,     // *=
-        \T_DIV_EQUAL,     // /=
-        \T_MOD_EQUAL,     // %=
-        \T_POW_EQUAL,     // **=
-        \T_AND_EQUAL,     // &=
-        \T_OR_EQUAL,      // |=
-        \T_XOR_EQUAL,     // ^=
-        \T_SL_EQUAL,      // <<=
-        \T_SR_EQUAL,      // >>=
-        \T_CONCAT_EQUAL,  // .=
+        \T_PLUS_EQUAL,      // +=
+        \T_MINUS_EQUAL,     // -=
+        \T_MUL_EQUAL,       // *=
+        \T_DIV_EQUAL,       // /=
+        \T_MOD_EQUAL,       // %=
+        \T_POW_EQUAL,       // **=
+        \T_AND_EQUAL,       // &=
+        \T_OR_EQUAL,        // |=
+        \T_XOR_EQUAL,       // ^=
+        \T_SL_EQUAL,        // <<=
+        \T_SR_EQUAL,        // >>=
+        \T_CONCAT_EQUAL,    // .=
     ];
 
     public const OPERATOR_BOOLEAN_EXCEPT_NOT = [
@@ -174,34 +160,6 @@ interface TokenGroup
         ...self::DECLARATION_TYPE,
     ];
 
-    public const CHAIN_EXPRESSION = [
-        // '"' ... '"'
-        \T_CURLY_OPEN,
-        \T_DOLLAR_OPEN_CURLY_BRACES,
-        \T_DOUBLE_QUOTE,
-        \T_ENCAPSED_AND_WHITESPACE,
-        // Other dereferenceables
-        \T_ARRAY,
-        \T_CONSTANT_ENCAPSED_STRING,
-        \T_DOUBLE_COLON,
-        \T_NAME_FULLY_QUALIFIED,
-        \T_NAME_QUALIFIED,
-        \T_NAME_RELATIVE,
-        \T_STATIC,
-        ...self::CHAIN_PART,
-        ...self::MAGIC_CONSTANT,
-    ];
-
-    public const CHAIN_PART = [
-        \T_DOLLAR,
-        \T_OPEN_BRACE,
-        \T_OPEN_BRACKET,
-        \T_OPEN_PARENTHESIS,
-        \T_STRING,
-        \T_VARIABLE,
-        ...self::CHAIN,
-    ];
-
     public const CHAIN = [
         \T_OBJECT_OPERATOR,           // ->
         \T_NULLSAFE_OBJECT_OPERATOR,  // ?->
@@ -286,37 +244,6 @@ interface TokenGroup
         \T_ENDWHILE,
     ];
 
-    public const DECLARATION_PART_WITH_NEW_AND_VALUE_TYPE = [
-        \T_ARRAY,
-        \T_CALLABLE,
-        \T_OPEN_PARENTHESIS,
-        \T_CLOSE_PARENTHESIS,
-        \T_COLON,
-        \T_OR,
-        \T_QUESTION,
-        ...self::DECLARATION_PART_WITH_NEW,
-    ];
-
-    public const DECLARATION_PART_WITH_NEW = [
-        \T_NEW,
-        ...self::DECLARATION_PART,
-    ];
-
-    public const DECLARATION_PART = [
-        \T_ATTRIBUTE,
-        \T_ATTRIBUTE_COMMENT,
-        \T_CASE,
-        \T_EXTENDS,
-        \T_FUNCTION,
-        \T_IMPLEMENTS,
-        \T_NAMESPACE,
-        \T_NS_SEPARATOR,
-        \T_USE,
-        ...self::DECLARATION_EXCEPT_MULTI_PURPOSE,
-        ...self::DECLARATION_LIST,
-        ...self::AMPERSAND,
-    ];
-
     public const DECLARATION_TOP_LEVEL = [
         \T_FUNCTION,
         \T_NAMESPACE,
@@ -374,30 +301,6 @@ interface TokenGroup
         \T_TRAIT,
         \T_VAR,
         ...self::VISIBILITY,
-    ];
-
-    /**
-     * identifier_maybe_reserved
-     */
-    public const MAYBE_RESERVED = [
-        \T_STRING,
-        ...self::SEMI_RESERVED,
-    ];
-
-    /**
-     * semi_reserved
-     */
-    public const SEMI_RESERVED = [
-        ...self::RESERVED_NON_MODIFIER,
-        ...self::KEYWORD_MODIFIER,
-    ];
-
-    /**
-     * reserved_non_modifiers
-     */
-    public const RESERVED_NON_MODIFIER = [
-        ...self::KEYWORD_NON_MODIFIER,
-        ...self::MAGIC_CONSTANT,
     ];
 
     public const KEYWORD = [
@@ -514,11 +417,6 @@ interface TokenGroup
         \T_NS_C,
         \T_PROPERTY_C,
         \T_TRAIT_C,
-    ];
-
-    public const NAME_WITH_READONLY = [
-        \T_READONLY,
-        ...self::NAME,
     ];
 
     /**

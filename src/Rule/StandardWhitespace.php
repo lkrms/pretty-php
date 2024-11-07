@@ -16,7 +16,7 @@ use Salient\Utility\Str;
  * Apply sensible default spacing
  *
  * - Add SPACE as per:
- *   - {@see TokenTypeIndex::$AddSpaceAround}
+ *   - {@see TokenTypeIndex::$AddSpace}
  *   - {@see TokenTypeIndex::$AddSpaceBefore}
  *   - {@see TokenTypeIndex::$AddSpaceAfter}
  * - Suppress SPACE and BLANK as per:
@@ -69,8 +69,8 @@ final class StandardWhitespace implements TokenRule
                 \T_START_HEREDOC,
             ),
             $idx->OpenBracket,
-            $idx->CloseBracketOrEndAltSyntax,
-            $idx->AddSpaceAround,
+            $idx->CloseBracketOrEndAlt,
+            $idx->AddSpace,
             $idx->AddSpaceBefore,
             $idx->AddSpaceAfter,
             $idx->SuppressSpaceBefore,
@@ -84,10 +84,10 @@ final class StandardWhitespace implements TokenRule
 
         foreach ($tokens as $token) {
             // Add SPACE as per:
-            // - {@see TokenTypeIndex::$AddSpaceAround}
+            // - {@see TokenTypeIndex::$AddSpace}
             // - {@see TokenTypeIndex::$AddSpaceBefore}
             // - {@see TokenTypeIndex::$AddSpaceAfter}
-            if ($idx->AddSpaceAround[$token->id]) {
+            if ($idx->AddSpace[$token->id]) {
                 $token->WhitespaceBefore |= WhitespaceType::SPACE;
                 $token->WhitespaceAfter |= WhitespaceType::SPACE;
             } elseif ($idx->AddSpaceBefore[$token->id]) {

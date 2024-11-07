@@ -62,7 +62,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @readonly
      * @var array<int,bool>
      */
-    public array $CloseBracketOrEndAltSyntax;
+    public array $CloseBracketOrEndAlt;
 
     /**
      * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_COMMA
@@ -172,7 +172,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @readonly
      * @var array<int,bool>
      */
-    public array $DoNotModify;
+    public array $NotTrimmable;
 
     /**
      * T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO, T_END_HEREDOC
@@ -180,7 +180,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @readonly
      * @var array<int,bool>
      */
-    public array $DoNotModifyLeft;
+    public array $RightTrimmable;
 
     /**
      * T_CLOSE_TAG, T_START_HEREDOC
@@ -188,7 +188,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @readonly
      * @var array<int,bool>
      */
-    public array $DoNotModifyRight;
+    public array $LeftTrimmable;
 
     /**
      * T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO, T_CLOSE_TAG, T_START_HEREDOC,
@@ -198,7 +198,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @readonly
      * @var array<int,bool>
      */
-    public array $Trim;
+    public array $Trimmable;
 
     /**
      * T_USE
@@ -224,7 +224,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @readonly
      * @var array<int,bool>
      */
-    public array $AddSpaceAround;
+    public array $AddSpace;
 
     /**
      * Tokens that require leading spaces
@@ -312,7 +312,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @readonly
      * @var array<int,bool>
      */
-    public array $StatementTerminator;
+    public array $EndOfStatement;
 
     /**
      * T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_SEMICOLON, T_DOUBLE_ARROW,
@@ -325,7 +325,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @readonly
      * @var array<int,bool>
      */
-    public array $ExpressionTerminator;
+    public array $EndOfExpression;
 
     /**
      * T_DOUBLE_ARROW, T_AND_EQUAL, T_COALESCE_EQUAL, T_CONCAT_EQUAL,
@@ -370,15 +370,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @readonly
      * @var array<int,bool>
      */
-    public array $DereferenceableTerminator;
-
-    /**
-     * T_COLON, T_SEMICOLON, T_CLOSE_TAG
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $SwitchCaseDelimiter;
+    public array $EndOfDereferenceable;
 
     /**
      * T_CASE, T_DEFAULT, T_COLON, T_SEMICOLON, T_CLOSE_TAG
@@ -399,7 +391,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @readonly
      * @var array<int,bool>
      */
-    public array $ListParenthesisPredecessor;
+    public array $BeforeListParenthesis;
 
     /**
      * Tokens that may appear before unary operators
@@ -409,7 +401,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @readonly
      * @var array<int,bool>
      */
-    public array $UnaryPredecessor;
+    public array $BeforeUnary;
 
     /**
      * T_DECLARE, T_FOR, T_FOREACH, T_IF, T_SWITCH, T_WHILE
@@ -417,7 +409,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @readonly
      * @var array<int,bool>
      */
-    public array $AltSyntaxStart;
+    public array $AltStart;
 
     /**
      * T_ELSE, T_ELSEIF
@@ -425,7 +417,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @readonly
      * @var array<int,bool>
      */
-    public array $AltSyntaxContinue;
+    public array $AltContinue;
 
     /**
      * T_ELSEIF
@@ -433,7 +425,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @readonly
      * @var array<int,bool>
      */
-    public array $AltSyntaxContinueWithExpression;
+    public array $AltContinueWithExpression;
 
     /**
      * T_ELSE
@@ -441,7 +433,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @readonly
      * @var array<int,bool>
      */
-    public array $AltSyntaxContinueWithoutExpression;
+    public array $AltContinueWithNoExpression;
 
     /**
      * T_ENDDECLARE, T_ENDFOR, T_ENDFOREACH, T_ENDIF, T_ENDSWITCH, T_ENDWHILE
@@ -449,7 +441,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @readonly
      * @var array<int,bool>
      */
-    public array $AltSyntaxEnd;
+    public array $AltEnd;
 
     /**
      * T_AND, T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG,
@@ -470,6 +462,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
 
     /**
      * T_OPEN_BRACE, T_OPEN_PARENTHESIS, T_EXTENDS, T_IMPLEMENTS
+     *
+     * The next token after an anonymous `T_CLASS` or `T_FUNCTION`.
      *
      * @readonly
      * @var array<int,bool>
@@ -702,27 +696,6 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $HasExpressionAndStatementWithOptionalBraces;
 
     /**
-     * T_ABSTRACT, T_ARRAY, T_AS, T_BREAK, T_CALLABLE, T_CASE, T_CATCH, T_CLASS,
-     * T_CLASS_C, T_CLONE, T_CONST, T_CONTINUE, T_DECLARE, T_DEFAULT, T_DIR,
-     * T_DO, T_ECHO, T_ELSE, T_ELSEIF, T_EMPTY, T_ENDDECLARE, T_ENDFOR,
-     * T_ENDFOREACH, T_ENDIF, T_ENDSWITCH, T_ENDWHILE, T_ENUM, T_EVAL, T_EXIT,
-     * T_EXTENDS, T_FILE, T_FINAL, T_FINALLY, T_FN, T_FOR, T_FOREACH,
-     * T_FUNCTION, T_FUNC_C, T_GLOBAL, T_GOTO, T_HALT_COMPILER, T_IF,
-     * T_IMPLEMENTS, T_INCLUDE, T_INCLUDE_ONCE, T_INSTANCEOF, T_INSTEADOF,
-     * T_INTERFACE, T_ISSET, T_LINE, T_LIST, T_LOGICAL_AND, T_LOGICAL_OR,
-     * T_LOGICAL_XOR, T_MATCH, T_METHOD_C, T_NAMESPACE, T_NEW, T_NS_C, T_PRINT,
-     * T_PRIVATE, T_PROPERTY_C, T_PROTECTED, T_PUBLIC, T_READONLY, T_REQUIRE,
-     * T_REQUIRE_ONCE, T_RETURN, T_STATIC, T_STRING, T_SWITCH, T_THROW, T_TRAIT,
-     * T_TRAIT_C, T_TRY, T_UNSET, T_USE, T_VAR, T_WHILE, T_YIELD
-     *
-     * identifier_maybe_reserved
-     *
-     * @readonly
-     * @var array<int,bool>
-     */
-    public array $MaybeReserved;
-
-    /**
      * T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO, T_CLOSE_TAG, T_COMMENT, T_DOC_COMMENT,
      * T_INLINE_HTML, T_WHITESPACE
      *
@@ -848,7 +821,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @readonly
      * @var array<int,bool>
      */
-    public array $VisibilityWithReadonly;
+    public array $VisibilityOrReadonly;
 
     /**
      * T_END_ALT_SYNTAX, T_NULL
@@ -907,7 +880,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             \T_CLOSE_PARENTHESIS,
         );
 
-        $this->CloseBracketOrEndAltSyntax = self::get(
+        $this->CloseBracketOrEndAlt = self::get(
             \T_CLOSE_BRACE,
             \T_CLOSE_BRACKET,
             \T_CLOSE_PARENTHESIS,
@@ -992,25 +965,25 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             \T_BACKTICK,
         );
 
-        $this->DoNotModify = self::get(
+        $this->NotTrimmable = self::get(
             \T_ENCAPSED_AND_WHITESPACE,
             \T_INLINE_HTML,
         );
 
-        $this->DoNotModifyLeft = self::get(
+        $this->RightTrimmable = self::get(
             \T_OPEN_TAG,
             \T_OPEN_TAG_WITH_ECHO,
             \T_END_HEREDOC,
         );
 
-        $this->DoNotModifyRight = self::get(
+        $this->LeftTrimmable = self::get(
             \T_CLOSE_TAG,
             \T_START_HEREDOC,
         );
 
-        $this->Trim = self::merge(
-            $this->DoNotModifyLeft,
-            $this->DoNotModifyRight,
+        $this->Trimmable = self::merge(
+            $this->RightTrimmable,
+            $this->LeftTrimmable,
             self::get(
                 \T_ATTRIBUTE_COMMENT,
                 \T_WHITESPACE,
@@ -1026,7 +999,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             \T_DECLARE,
         );
 
-        $this->AddSpaceAround = self::get(
+        $this->AddSpace = self::get(
             \T_AS,
             \T_FUNCTION,
             \T_INSTEADOF,
@@ -1106,27 +1079,25 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             \T_SEMICOLON,
         );
 
-        $this->StatementTerminator = self::get(
+        $this->EndOfStatement = self::get(
             \T_COLON,
             \T_COMMA,
             \T_SEMICOLON,
         );
 
-        $expressionDelimiter = [
-            \T_DOUBLE_ARROW,
-            ...TG::OPERATOR_ASSIGNMENT,
-            ...TG::OPERATOR_COMPARISON_EXCEPT_COALESCE,
-        ];
-
-        $this->ExpressionTerminator = self::get(
+        $this->EndOfExpression = self::get(
             \T_CLOSE_BRACKET,
             \T_CLOSE_PARENTHESIS,
             \T_SEMICOLON,
-            ...$expressionDelimiter,
+            \T_DOUBLE_ARROW,
+            ...TG::OPERATOR_ASSIGNMENT,
+            ...TG::OPERATOR_COMPARISON_EXCEPT_COALESCE,
         );
 
         $this->ExpressionDelimiter = self::get(
-            ...$expressionDelimiter,
+            \T_DOUBLE_ARROW,
+            ...TG::OPERATOR_ASSIGNMENT,
+            ...TG::OPERATOR_COMPARISON_EXCEPT_COALESCE,
         );
 
         $this->ExpressionDelimiterExceptComparison = self::get(
@@ -1139,14 +1110,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             ...TG::AMPERSAND,
         );
 
-        $this->DereferenceableTerminator = self::get(
+        $this->EndOfDereferenceable = self::get(
             ...TG::DEREFERENCEABLE_END,
-        );
-
-        $this->SwitchCaseDelimiter = self::get(
-            \T_COLON,
-            \T_SEMICOLON,
-            \T_CLOSE_TAG,
         );
 
         $this->SwitchCaseOrDelimiter = self::get(
@@ -1157,7 +1122,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             \T_CLOSE_TAG,
         );
 
-        $this->ListParenthesisPredecessor = self::get(
+        $this->BeforeListParenthesis = self::get(
             \T_ARRAY,
             \T_DECLARE,
             \T_FOR,
@@ -1172,7 +1137,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             ...TG::NAME,
         );
 
-        $this->UnaryPredecessor = self::get(
+        $this->BeforeUnary = self::get(
             \T_OPEN_BRACE,
             \T_OPEN_BRACKET,
             \T_OPEN_PARENTHESIS,
@@ -1194,16 +1159,13 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             ...TG::KEYWORD,
         );
 
-        $this->AltSyntaxStart = self::get(...TG::ALT_SYNTAX_START);
-        $this->AltSyntaxContinue = self::get(...TG::ALT_SYNTAX_CONTINUE);
-        $this->AltSyntaxContinueWithExpression = self::get(...TG::ALT_SYNTAX_CONTINUE_WITH_EXPRESSION);
-        $this->AltSyntaxContinueWithoutExpression = self::get(...TG::ALT_SYNTAX_CONTINUE_WITHOUT_EXPRESSION);
-        $this->AltSyntaxEnd = self::get(...TG::ALT_SYNTAX_END);
+        $this->AltStart = self::get(...TG::ALT_SYNTAX_START);
+        $this->AltContinue = self::get(...TG::ALT_SYNTAX_CONTINUE);
+        $this->AltContinueWithExpression = self::get(...TG::ALT_SYNTAX_CONTINUE_WITH_EXPRESSION);
+        $this->AltContinueWithNoExpression = self::get(...TG::ALT_SYNTAX_CONTINUE_WITHOUT_EXPRESSION);
+        $this->AltEnd = self::get(...TG::ALT_SYNTAX_END);
         $this->Ampersand = self::get(...TG::AMPERSAND);
-        $this->ClassOrFunction = self::get(
-            \T_CLASS,
-            \T_FUNCTION,
-        );
+        $this->ClassOrFunction = self::get(\T_CLASS, \T_FUNCTION);
         $this->AfterAnonymousClassOrFunction = self::get(
             \T_OPEN_BRACE,
             \T_OPEN_PARENTHESIS,
@@ -1215,14 +1177,37 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         $this->IfOrElseIf = self::get(\T_IF, \T_ELSEIF);
         $this->IfElseIfOrElse = self::get(\T_IF, \T_ELSEIF, \T_ELSE);
         $this->PlusOrMinus = self::get(\T_PLUS, \T_MINUS);
-        $this->Attribute = self::get(
-            \T_ATTRIBUTE,
-            \T_ATTRIBUTE_COMMENT,
-        );
+        $this->Attribute = self::get(\T_ATTRIBUTE, \T_ATTRIBUTE_COMMENT);
         $this->Cast = self::get(...TG::CAST);
         $this->Chain = self::get(...TG::CHAIN);
-        $this->ChainPart = self::get(...TG::CHAIN_PART);
-        $this->ChainExpression = self::get(...TG::CHAIN_EXPRESSION);
+        $this->ChainPart = self::get(
+            \T_DOLLAR,
+            \T_OPEN_BRACE,
+            \T_OPEN_BRACKET,
+            \T_OPEN_PARENTHESIS,
+            \T_STRING,
+            \T_VARIABLE,
+            ...TG::CHAIN,
+        );
+        $this->ChainExpression = self::merge(
+            $this->ChainPart,
+            self::get(
+                // '"' ... '"'
+                \T_CURLY_OPEN,
+                \T_DOLLAR_OPEN_CURLY_BRACES,
+                \T_DOUBLE_QUOTE,
+                \T_ENCAPSED_AND_WHITESPACE,
+                // Other dereferenceables
+                \T_ARRAY,
+                \T_CONSTANT_ENCAPSED_STRING,
+                \T_DOUBLE_COLON,
+                \T_NAME_FULLY_QUALIFIED,
+                \T_NAME_QUALIFIED,
+                \T_NAME_RELATIVE,
+                \T_STATIC,
+                ...TG::MAGIC_CONSTANT,
+            ),
+        );
         $this->Comment = self::get(...TG::COMMENT);
         $this->Declaration = self::get(...TG::DECLARATION);
         $this->DeclarationExceptModifiers = self::get(...TG::DECLARATION_EXCEPT_MODIFIERS);
@@ -1237,18 +1222,42 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
             \T_VAR,
             ...TG::VISIBILITY_WITH_READONLY,
         );
-        $this->DeclarationPart = self::get(...TG::DECLARATION_PART);
-        $this->DeclarationPartWithNew = self::get(...TG::DECLARATION_PART_WITH_NEW);
-        $this->DeclarationPartWithNewAndBody = self::get(
-            \T_OPEN_BRACE,
-            \T_CLOSE_BRACE,
-            ...TG::DECLARATION_PART_WITH_NEW_AND_VALUE_TYPE,
+        $this->DeclarationPart = self::get(
+            \T_ATTRIBUTE,
+            \T_ATTRIBUTE_COMMENT,
+            \T_CASE,
+            \T_EXTENDS,
+            \T_FUNCTION,
+            \T_IMPLEMENTS,
+            \T_NAMESPACE,
+            \T_NS_SEPARATOR,
+            \T_USE,
+            ...TG::DECLARATION_EXCEPT_MULTI_PURPOSE,
+            ...TG::DECLARATION_LIST,
+            ...TG::AMPERSAND,
+        );
+        $this->DeclarationPartWithNew = self::merge(
+            $this->DeclarationPart,
+            self::get(\T_NEW),
+        );
+        $this->DeclarationPartWithNewAndBody = self::merge(
+            $this->DeclarationPartWithNew,
+            self::get(
+                \T_ARRAY,
+                \T_CALLABLE,
+                \T_OPEN_BRACE,
+                \T_CLOSE_BRACE,
+                \T_OPEN_PARENTHESIS,
+                \T_CLOSE_PARENTHESIS,
+                \T_COLON,
+                \T_OR,
+                \T_QUESTION,
+            ),
         );
         $this->DeclarationTopLevel = self::get(...TG::DECLARATION_TOP_LEVEL);
         $this->HasStatement = self::get(...TG::HAS_STATEMENT);
         $this->HasStatementWithOptionalBraces = self::get(...TG::HAS_STATEMENT_WITH_OPTIONAL_BRACES);
         $this->HasExpressionAndStatementWithOptionalBraces = self::get(...TG::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES);
-        $this->MaybeReserved = self::get(...TG::MAYBE_RESERVED);
         $this->NotCode = self::get(...TG::NOT_CODE);
         $this->Operator = self::get(...TG::OPERATOR_ALL);
         $this->OperatorAssignment = self::get(...TG::OPERATOR_ASSIGNMENT);
@@ -1267,7 +1276,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         $this->ValueTypeStart = self::get(...TG::VALUE_TYPE_START);
         $this->VariableEnd = self::get(...TG::VARIABLE_END);
         $this->Visibility = self::get(...TG::VISIBILITY);
-        $this->VisibilityWithReadonly = self::get(...TG::VISIBILITY_WITH_READONLY);
+        $this->VisibilityOrReadonly = self::get(...TG::VISIBILITY_WITH_READONLY);
         $this->Virtual = self::get(
             \T_END_ALT_SYNTAX,
             \T_NULL,

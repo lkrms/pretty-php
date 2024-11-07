@@ -116,7 +116,7 @@ final class PlaceComments implements TokenRule
             // Copy indentation and padding from `$next` to `$token` in
             // `beforeRender()` unless `$next` is a close bracket
             $next = $token->NextCode;
-            if ($next && !$this->Idx->CloseBracketOrEndAltSyntax[$next->id]) {
+            if ($next && !$this->Idx->CloseBracketOrEndAlt[$next->id]) {
                 $this->Comments[] = [$token, $next];
             }
 

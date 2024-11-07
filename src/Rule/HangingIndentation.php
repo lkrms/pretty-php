@@ -125,7 +125,7 @@ final class HangingIndentation implements TokenRule
             // Ignore tokens aligned by other rules
             if (
                 $token->AlignedWith
-                || $this->Idx->CloseBracketOrEndAltSyntax[$token->id]
+                || $this->Idx->CloseBracketOrEndAlt[$token->id]
                 || $this->Idx->HasStatement[$token->id]
             ) {
                 continue;

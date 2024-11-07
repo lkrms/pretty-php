@@ -57,8 +57,8 @@ final class Renderer implements Immutable
             // iteration, render it now
             $after = (
                 !$t->Next
-                || $this->Idx->DoNotModify[$t->Next->id]
-                || $this->Idx->DoNotModifyLeft[$t->Next->id]
+                || $this->Idx->NotTrimmable[$t->Next->id]
+                || $this->Idx->RightTrimmable[$t->Next->id]
             )
                 ? $this->renderWhitespaceAfter($t)
                 : '';
@@ -124,8 +124,8 @@ final class Renderer implements Immutable
         bool $softTabs = false
     ): string {
         if (
-            $this->Idx->DoNotModify[$token->id]
-            || $this->Idx->DoNotModifyLeft[$token->id]
+            $this->Idx->NotTrimmable[$token->id]
+            || $this->Idx->RightTrimmable[$token->id]
         ) {
             return '';
         }
@@ -164,8 +164,8 @@ final class Renderer implements Immutable
     public function renderWhitespaceAfter(Token $token): string
     {
         if (
-            $this->Idx->DoNotModify[$token->id]
-            || $this->Idx->DoNotModifyRight[$token->id]
+            $this->Idx->NotTrimmable[$token->id]
+            || $this->Idx->LeftTrimmable[$token->id]
         ) {
             return '';
         }

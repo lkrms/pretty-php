@@ -179,7 +179,7 @@ class TokenTypeIndexTest extends TestCase
     public function testIndexes(ReflectionProperty $property, TokenTypeIndex $index, string $name): void
     {
         $filtered = array_filter($index->$name);
-        if (Regex::match('/^(?:Suppress|Preserve|AltSyntax)/', $name)) {
+        if (Regex::match('/^(?:Suppress|Preserve|Alt)/', $name)) {
             $this->assertNotEmpty($filtered, 'Index cannot be empty');
             return;
         }
@@ -220,7 +220,7 @@ class TokenTypeIndexTest extends TestCase
     public static function addSpaceProvider(): array
     {
         $index = static::getIndex();
-        $around = self::getIndexTokens($index->AddSpaceAround);
+        $around = self::getIndexTokens($index->AddSpace);
         $before = self::getIndexTokens($index->AddSpaceBefore);
         $after = self::getIndexTokens($index->AddSpaceAfter);
 
@@ -228,16 +228,16 @@ class TokenTypeIndexTest extends TestCase
             'Intersection of $AddSpaceBefore and $AddSpaceAfter' => [
                 array_intersect($before, $after),
             ],
-            'Intersection of $AddSpaceBefore and $AddSpaceAfter, not in $AddSpaceAround' => [
+            'Intersection of $AddSpaceBefore and $AddSpaceAfter, not in $AddSpace' => [
                 array_diff(
                     array_intersect($before, $after),
                     $around
                 ),
             ],
-            'Intersection of $AddSpaceAround and $AddSpaceBefore' => [
+            'Intersection of $AddSpace and $AddSpaceBefore' => [
                 array_intersect($around, $before),
             ],
-            'Intersection of $AddSpaceAround and $AddSpaceAfter' => [
+            'Intersection of $AddSpace and $AddSpaceAfter' => [
                 array_intersect($around, $after),
             ],
         ];

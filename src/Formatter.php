@@ -952,7 +952,7 @@ final class Formatter implements Buildable, Immutable
                 case \T_OPEN_PARENTHESIS:
                     $prev = $parent->PrevCode;
                     if ($prev && (
-                        $idx->ListParenthesisPredecessor[$prev->id] || (
+                        $idx->BeforeListParenthesis[$prev->id] || (
                             $prev->id === \T_CLOSE_BRACE
                             && !($prev->Flags & TokenFlag::STRUCTURAL_BRACE)
                         ) || (
