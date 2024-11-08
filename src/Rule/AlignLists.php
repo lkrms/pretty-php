@@ -33,39 +33,39 @@ final class AlignLists implements ListRule
         }
     }
 
-    public function processList(Token $owner, TokenCollection $items): void
+    public function processList(Token $parent, TokenCollection $items): void
     {
         $first = $items->first();
-        $lastToken = $owner->ClosedBy
+        $lastToken = $parent->ClosedBy
             ?: $items->last()->pragmaticEndOfExpression();
 
         // Do nothing if:
         // - an interface list has a leading line break, or
         // - the list does not break over multiple lines
-        if ((!$owner->ClosedBy
-                    && $owner->hasNewlineBeforeNextCode())
+        if ((!$parent->ClosedBy
+                    && $parent->hasNewlineBeforeNextCode())
                 || !$first->collect($lastToken)->hasNewline()) {
             return;
         }
 
         $items->forEach(
             fn(Token $item) =>
-                $item->AlignedWith = $owner
+                $item->AlignedWith = $parent
         );
 
         $this->Formatter->registerCallback(
             static::class,
             $first,
-            fn() => $this->alignList($owner, $items, $first, $lastToken)
+            fn() => $this->alignList($parent, $items, $first, $lastToken)
         );
 
-        $this->ListOwnersByIndex[$owner->Index] = true;
+        $this->ListOwnersByIndex[$parent->Index] = true;
     }
 
-    private function alignList(Token $owner, TokenCollection $items, Token $first, Token $lastToken): void
+    private function alignList(Token $parent, TokenCollection $items, Token $first, Token $lastToken): void
     {
         $callback =
-            function (Token $item, Token $to, int $delta) use ($owner) {
+            function (Token $item, Token $to, int $delta) use ($parent) {
                 if (!$delta) {
                     return;
                 }
@@ -73,14 +73,14 @@ final class AlignLists implements ListRule
                     && ($adjacent->id !== \T_OPEN_BRACE
                         || !($adjacent->Flags & TokenFlag::STRUCTURAL_BRACE
                             || $adjacent->isMatchBrace())
-                        || $adjacent->Depth > $owner->Depth)) {
+                        || $adjacent->Depth > $parent->Depth)) {
                     $to = $adjacent;
                 }
                 while (($adjacent = $to->adjacentBeforeNewline(false))
                     && ($adjacent->id !== \T_OPEN_BRACE
                         || !($adjacent->Flags & TokenFlag::STRUCTURAL_BRACE
                             || $adjacent->isMatchBrace())
-                        || $adjacent->Depth > $owner->Depth)) {
+                        || $adjacent->Depth > $parent->Depth)) {
                     $to = $adjacent->pragmaticEndOfExpression();
                 }
                 $item->collect($to)->forEach(
@@ -88,8 +88,8 @@ final class AlignLists implements ListRule
                 );
             };
 
-        if (!$owner->hasNewlineBeforeNextCode()) {
-            $delta = $owner->alignmentOffset() + ($owner->ClosedBy ? 0 : 1);
+        if (!$parent->hasNewlineBeforeNextCode()) {
+            $delta = $parent->alignmentOffset() + ($parent->ClosedBy ? 0 : 1);
             $callback($first, $lastToken, $delta);
         }
 
@@ -99,8 +99,8 @@ final class AlignLists implements ListRule
                     $item,
                     $next && $next->PrevCode && $next->PrevCode->PrevCode
                         ? $next->PrevCode->PrevCode
-                        : ($owner->ClosedBy && $owner->ClosedBy->PrevCode
-                            ? $owner->ClosedBy->PrevCode
+                        : ($parent->ClosedBy && $parent->ClosedBy->PrevCode
+                            ? $parent->ClosedBy->PrevCode
                             : $item->pragmaticEndOfExpression()),
                     $item->alignmentOffset(false, $this->ListOwnersByIndex[$item->Index] ?? false)
                 )

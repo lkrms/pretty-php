@@ -81,9 +81,9 @@ final class Symfony implements Preset, TokenRule, ListRule
         }
     }
 
-    public function processList(Token $owner, TokenCollection $items): void
+    public function processList(Token $parent, TokenCollection $items): void
     {
-        if (!$owner->isParameterList()) {
+        if (!$parent->isParameterList()) {
             return;
         }
 
@@ -96,6 +96,6 @@ final class Symfony implements Preset, TokenRule, ListRule
             }
         }
 
-        $owner->outer()->maskInnerWhitespace(~WhitespaceType::BLANK & ~WhitespaceType::LINE);
+        $parent->outer()->maskInnerWhitespace(~WhitespaceType::BLANK & ~WhitespaceType::LINE);
     }
 }

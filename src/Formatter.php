@@ -974,11 +974,6 @@ final class Formatter implements Buildable, Immutable
                         break;
                     }
 
-                    if ($parent->children()->hasOneOf(\T_COMMA)) {
-                        // This line should never be reached
-                        break;
-                    }
-
                     continue 2;
             }
             $delimiter = $parent->PrevCode && $parent->PrevCode->id === \T_FOR
@@ -1144,8 +1139,8 @@ final class Formatter implements Buildable, Immutable
             /** @var Token */
             $first = reset($this->Tokens);
             $out = $this->Renderer->render($first, $last, false, true, true);
-        } catch (Throwable $ex) {
             // @codeCoverageIgnoreStart
+        } catch (Throwable $ex) {
             throw new FormatterException(
                 'Unable to render output',
                 null,
@@ -1177,8 +1172,8 @@ final class Formatter implements Buildable, Immutable
                 \TOKEN_PARSE,
                 ...$this->ComparisonFilterList
             );
-        } catch (CompileError $ex) {
             // @codeCoverageIgnoreStart
+        } catch (CompileError $ex) {
             throw new FormatterException(
                 'Unable to parse output',
                 $out,
