@@ -21,9 +21,9 @@ final class WordPressTokenTypeIndex extends TokenTypeIndex
     {
         parent::__construct(true);
 
-        $this->PreserveBlankAfter[\T_OPEN_BRACE] = true;
+        $this->AllowBlankAfter[\T_OPEN_BRACE] = true;
 
-        $this->PreserveBlankBefore[\T_CLOSE_BRACE] = true;
+        $this->AllowBlankBefore[\T_CLOSE_BRACE] = true;
         $this->AllowNewlineBefore[\T_CLOSE_BRACE] = true;
 
         $this->AllowNewlineAfter[\T_CONCAT] = true;

@@ -125,7 +125,7 @@ final class PreserveNewlines implements TokenRule
             return false;
         }
 
-        if (!$this->Idx->PreserveBlankBefore[$token->id]) {
+        if (!$this->Idx->AllowBlankBefore[$token->id]) {
             $line = WhitespaceType::LINE;
         }
 
@@ -180,7 +180,7 @@ final class PreserveNewlines implements TokenRule
         }
 
         if ($line & WhitespaceType::BLANK
-            && (!$this->Idx->PreserveBlankAfter[$token->id]
+            && (!$this->Idx->AllowBlankAfter[$token->id]
                 || ($token->id === \T_COMMA
                     && !$token->isDelimiterBetweenMatchArms())
                 || ($token->id === \T_SEMICOLON

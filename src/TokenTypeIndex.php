@@ -115,7 +115,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $CloseBracketOrEndAlt = self::CLOSE_BRACKET + [
+    public array $CloseBracketOrAlt = self::CLOSE_BRACKET + [
         \T_END_ALT_SYNTAX => true,
     ]
         + self::TOKEN_INDEX;
@@ -1005,7 +1005,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $PreserveBlankBefore = [
+    public array $AllowBlankBefore = [
         \T_CLOSE_TAG => true,
     ]
         + self::TOKEN_INDEX;
@@ -1017,7 +1017,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $PreserveBlankAfter = [
+    public array $AllowBlankAfter = [
         \T_CLOSE_BRACE => true,
         \T_COMMA => true,
         \T_COMMENT => true,
@@ -1326,8 +1326,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      */
     public function withoutPreserveNewline()
     {
-        return $this->with('AllowNewlineBefore', $this->PreserveBlankBefore)
-                    ->with('AllowNewlineAfter', $this->PreserveBlankAfter);
+        return $this->with('AllowNewlineBefore', $this->AllowBlankBefore)
+                    ->with('AllowNewlineAfter', $this->AllowBlankAfter);
     }
 
     /**

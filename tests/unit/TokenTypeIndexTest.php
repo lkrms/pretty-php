@@ -198,7 +198,7 @@ class TokenTypeIndexTest extends TestCase
         $this->assertSameSize(TokenTypeIndex::TOKEN_INDEX, array_intersect_key($index->$name, TokenTypeIndex::TOKEN_INDEX), 'Index must cover every token type');
         $this->assertEmpty(array_diff_key($index->$name, TokenTypeIndex::TOKEN_INDEX), 'Index must only cover token types');
         $filtered = array_filter($index->$name);
-        if (Regex::match('/^(?:Suppress|Preserve|Alt)/', $name)) {
+        if (Regex::match('/^(?:Alt|AllowBlank|Suppress)/', $name)) {
             $this->assertNotEmpty($filtered, 'Index cannot be empty');
             return;
         }
@@ -379,29 +379,29 @@ class TokenTypeIndexTest extends TestCase
                 static::MAYBE_ALLOWED_AT_START,
                 $maybeLast,
             ],
-            '[mixed] Difference between $PreserveBlankBefore and $AllowNewlineBefore' => [
+            '[mixed] Difference between $AllowBlankBefore and $AllowNewlineBefore' => [
                 [],
-                array_diff(self::getIndexTokens($mixed->PreserveBlankBefore), $mixedBefore),
+                array_diff(self::getIndexTokens($mixed->AllowBlankBefore), $mixedBefore),
             ],
-            '[mixed] Difference between $PreserveBlankAfter and $AllowNewlineAfter' => [
+            '[mixed] Difference between $AllowBlankAfter and $AllowNewlineAfter' => [
                 [],
-                array_diff(self::getIndexTokens($mixed->PreserveBlankAfter), $mixedAfter),
+                array_diff(self::getIndexTokens($mixed->AllowBlankAfter), $mixedAfter),
             ],
-            '[leading] Difference between $PreserveBlankBefore and $AllowNewlineBefore' => [
+            '[leading] Difference between $AllowBlankBefore and $AllowNewlineBefore' => [
                 [],
-                array_diff(self::getIndexTokens($first->PreserveBlankBefore), $firstBefore),
+                array_diff(self::getIndexTokens($first->AllowBlankBefore), $firstBefore),
             ],
-            '[leading] Difference between $PreserveBlankAfter and $AllowNewlineAfter' => [
+            '[leading] Difference between $AllowBlankAfter and $AllowNewlineAfter' => [
                 [],
-                array_diff(self::getIndexTokens($first->PreserveBlankAfter), $firstAfter),
+                array_diff(self::getIndexTokens($first->AllowBlankAfter), $firstAfter),
             ],
-            '[trailing] Difference between $PreserveBlankBefore and $AllowNewlineBefore' => [
+            '[trailing] Difference between $AllowBlankBefore and $AllowNewlineBefore' => [
                 [],
-                array_diff(self::getIndexTokens($last->PreserveBlankBefore), $lastBefore),
+                array_diff(self::getIndexTokens($last->AllowBlankBefore), $lastBefore),
             ],
-            '[trailing] Difference between $PreserveBlankAfter and $AllowNewlineAfter' => [
+            '[trailing] Difference between $AllowBlankAfter and $AllowNewlineAfter' => [
                 [],
-                array_diff(self::getIndexTokens($last->PreserveBlankAfter), $lastAfter),
+                array_diff(self::getIndexTokens($last->AllowBlankAfter), $lastAfter),
             ],
         ];
 

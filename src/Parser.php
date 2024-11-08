@@ -315,7 +315,7 @@ final class Parser implements Immutable
             ) {
                 $token->Parent = $prev;
                 $token->Depth++;
-            } elseif ($idx->CloseBracketOrEndAlt[$prev->id]) {
+            } elseif ($idx->CloseBracketOrAlt[$prev->id]) {
                 $token->Parent = $prev->Parent;
                 $token->Depth--;
             } else {
@@ -351,7 +351,7 @@ final class Parser implements Immutable
                 $token->String->StringClosedBy = $token;
             }
 
-            if ($idx->CloseBracketOrEndAlt[$token->id]) {
+            if ($idx->CloseBracketOrAlt[$token->id]) {
                 assert($token->Parent !== null);
                 $opener = $token->Parent;
                 $opener->ClosedBy = $token;

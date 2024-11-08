@@ -69,7 +69,7 @@ final class StandardWhitespace implements TokenRule
                 \T_START_HEREDOC,
             ),
             $idx->OpenBracket,
-            $idx->CloseBracketOrEndAlt,
+            $idx->CloseBracketOrAlt,
             $idx->AddSpace,
             $idx->AddSpaceBefore,
             $idx->AddSpaceAfter,
