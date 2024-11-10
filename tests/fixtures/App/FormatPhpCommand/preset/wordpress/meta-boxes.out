@@ -34,7 +34,7 @@ function post_submit_meta_box( $post, $args = array() ) {
 	$post_type        = $post->post_type;
 	$post_type_object = get_post_type_object( $post_type );
 	$can_publish      = current_user_can( $post_type_object->cap->publish_posts );
-?>
+	?>
 <div class="submitbox" id="submitpost">
 
 <div id="minor-publishing">
@@ -167,7 +167,7 @@ function post_submit_meta_box( $post, $args = array() ) {
 				</div>
 				<?php
 			}
-				?>
+			?>
 		</div>
 
 		<div class="misc-pub-section misc-pub-visibility" id="visibility">
@@ -340,7 +340,7 @@ function post_submit_meta_box( $post, $args = array() ) {
 		 * @param WP_Post $post WP_Post object for the current post.
 		 */
 		do_action( 'post_submitbox_misc_actions', $post );
-			?>
+	?>
 	</div>
 	<div class="clear"></div>
 </div>
@@ -370,7 +370,7 @@ function post_submit_meta_box( $post, $args = array() ) {
 			<a class="submitdelete deletion" href="<?php echo get_delete_post_link( $post_id ); ?>"><?php echo $delete_text; ?></a>
 			<?php
 		}
-			?>
+		?>
 	</div>
 
 	<div id="publishing-action">
@@ -401,7 +401,7 @@ function post_submit_meta_box( $post, $args = array() ) {
 			<?php submit_button( __( 'Update' ), 'primary large', 'save', false, array( 'id' => 'publish' ) ); ?>
 			<?php
 		}
-			?>
+		?>
 	</div>
 	<div class="clear"></div>
 </div>
@@ -528,7 +528,7 @@ function post_format_meta_box( $post, $box ) {
 			if ( $post_format && ! in_array( $post_format, $post_formats[0], true ) ) {
 				$post_formats[0][] = $post_format;
 			}
-	?>
+			?>
 		<div id="post-formats-select">
 		<fieldset>
 			<legend class="screen-reader-text">
@@ -585,7 +585,7 @@ function post_tags_meta_box( $post, $box ) {
 	if ( ! is_string( $terms_to_edit ) ) {
 		$terms_to_edit = '';
 	}
-			?>
+	?>
 <div class="tagsdiv" id="<?php echo $tax_name; ?>">
 	<div class="jaxtag">
 	<div class="nojs-tags hide-if-js">
@@ -936,7 +936,7 @@ function post_comment_meta_box( $post ) {
 function post_slug_meta_box( $post ) {
 	/** This filter is documented in wp-admin/edit-tag-form.php */
 	$editable_slug = apply_filters( 'editable_slug', $post->post_name, $post );
-		?>
+	?>
 <label class="screen-reader-text" for="post_name">
 	<?php
 	/* translators: Hidden accessibility text. */
@@ -1025,7 +1025,7 @@ function page_attributes_meta_box( $post ) {
 		$dropdown_args = apply_filters( 'page_attributes_dropdown_pages_args', $dropdown_args, $post );
 		$pages = wp_dropdown_pages( $dropdown_args );
 		if ( ! empty( $pages ) ) :
-	?>
+			?>
 <p class="post-attributes-label-wrapper parent-id-label-wrapper"><label class="post-attributes-label" for="parent_id"><?php _e( 'Parent' ); ?></label></p>
 			<?php echo $pages; ?>
 			<?php
@@ -1034,7 +1034,7 @@ function page_attributes_meta_box( $post ) {
 
 	if ( count( get_page_templates( $post ) ) > 0 && (int) get_option( 'page_for_posts' ) !== $post->ID ) :
 		$template = ! empty( $post->page_template ) ? $post->page_template : false;
-			?>
+		?>
 <p class="post-attributes-label-wrapper page-template-label-wrapper"><label class="post-attributes-label" for="page_template"><?php _e( 'Template' ); ?></label>
 		<?php
 		/**
@@ -1098,7 +1098,7 @@ function page_attributes_meta_box( $post ) {
  * @param object $link Current link object.
  */
 function link_submit_meta_box( $link ) {
-			?>
+	?>
 <div class="submitbox" id="submitlink">
 
 <div id="minor-publishing">
@@ -1534,7 +1534,7 @@ function attachment_id3_data_meta_box( $post ) {
 		if ( ! empty( $meta[ $key ] ) ) {
 			$value = $meta[ $key ];
 		}
-	?>
+		?>
 	<p>
 		<label for="title"><?php echo $label; ?></label><br />
 		<input type="text" name="id3_<?php echo esc_attr( $key ); ?>" id="id3_<?php echo esc_attr( $key ); ?>" class="large-text" value="<?php echo esc_attr( $value ); ?>" />

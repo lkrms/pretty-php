@@ -135,18 +135,100 @@ final class Renderer implements Immutable
         if ($whitespace = $token->effectiveWhitespaceBefore()) {
             $before = TokenUtil::getWhitespace($whitespace);
             if ($before[0] === "\n") {
+                $indent = $token->indent();
+                $padding += $token->LinePadding - $token->LineUnpadding;
+
                 // Don't indent close tags unless subsequent text is indented by
                 // at least the same amount
-                if ($token->id === \T_CLOSE_TAG && $token->OpenTag && (
+                if ($token->id === \T_CLOSE_TAG && (
                     !$token->Next
                     || $this->getIndentSpacesFromText($token->Next)
                         < $this->getIndentSpaces($token)
                 )) {
-                    $indent = $token->OpenTag->TagIndent;
-                } else {
-                    $indent = $token->indent();
-                    $padding += $token->LinePadding - $token->LineUnpadding;
+                    /** @var Token */
+                    $openTag = $token->OpenTag;
+                    // Look for an indented open tag at the same depth as the
+                    // close tag if its own open tag differs or is not indented
+                    if (
+                        $token->Depth !== $openTag->Depth
+                        || $token->TagIndent === null
+                    ) {
+                        $fallback = null;
+                        $current = $token;
+                        while ($current->Next) {
+                            if ($current === $current->OpenTag) {
+                                if ($current->CloseTag) {
+                                    $current = $current->CloseTag;
+                                    continue;
+                                }
+                                break;
+                            }
+                            $current = $current->Next;
+                            if ($current !== $current->OpenTag) {
+                                continue;
+                            }
+                            if (
+                                $current->Depth !== $token->Depth
+                                || $current->TagIndent === null
+                                || $current->TagIndent * $this->Formatter->TabSize
+                                    > $this->getIndentSpaces($token)
+                            ) {
+                                continue;
+                            }
+
+                            /*
+                             * Use standard indentation if this open tag has an
+                             * adjacent close bracket and the close tag isn't
+                             * adjacent to its open bracket, as in line 5:
+                             *
+                             * ```
+                             * function foo()
+                             * {
+                             *     if ($bar) {
+                             *         // do stuff
+                             *         ?>
+                             *     <?php } else { ?>
+                             *         <!-- output stuff -->
+                             *         <?php
+                             *     }
+                             * }
+                             * ```
+                             */
+                            if (
+                                $current->Next
+                                && $current->Next->OpenedBy
+                                && $token->Prev !== $current->Next->OpenedBy
+                            ) {
+                                $openTag = null;
+                                break;
+                            }
+
+                            // If the adjacent brackets of this open tag don't
+                            // mirror the close tag's, save it in case an open
+                            // tag that does is found
+                            if (
+                                !$fallback
+                                && $this->tagHasAdjacentBracket($current)
+                                    !== $this->tagHasAdjacentBracket($token)
+                            ) {
+                                $fallback = $current;
+                                continue;
+                            }
+
+                            // Otherwise, use it for indentation
+                            $openTag = $current;
+                            break;
+                        }
+                        if ($openTag === $token->OpenTag && $fallback) {
+                            $openTag = $fallback;
+                        }
+                    }
+                    if ($openTag && $openTag->TagIndent !== null) {
+                        $indent = $openTag->TagIndent;
+                        $padding = 0;
+                    }
                 }
+
                 if ($indent) {
                     $before .= str_repeat(
                         $softTabs ? $this->SoftTab : $this->Tab,
@@ -159,6 +241,23 @@ final class Renderer implements Immutable
             $before .= str_repeat(' ', $padding);
         }
         return $before;
+    }
+
+    private function tagHasAdjacentBracket(Token $token): bool
+    {
+        if ($token->OpenTag === $token) {
+            return (
+                $token->Next
+                && $token->Next->OpenedBy
+            ) || (
+                $token->CloseTag
+                && $token->CloseTag->Prev
+                && $token->CloseTag->Prev->ClosedBy
+            );
+        }
+        /** @var Token */
+        $prev = $token->Prev;
+        return $prev->ClosedBy || $prev->OpenedBy;
     }
 
     public function renderWhitespaceAfter(Token $token): string
@@ -193,7 +292,7 @@ final class Renderer implements Immutable
             return 0;
         }
 
-        return strlen(str_replace("\t", $this->SoftTab, $match['indent']));
+        return strlen(Str::expandTabs($match['indent'], $this->Formatter->TabSize));
     }
 
     private function setPosition(
