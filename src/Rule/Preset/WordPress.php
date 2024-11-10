@@ -46,7 +46,6 @@ final class WordPress implements Preset, TokenRule
                    ->tokenTypeIndex(new WordPressTokenTypeIndex())
                    ->oneTrueBraceStyle()
                    ->spacesBesideCode(1)
-                   ->with('IncreaseIndentBetweenUnenclosedTags', false)
                    ->with('RelaxAlignmentCriteria', true);
     }
 

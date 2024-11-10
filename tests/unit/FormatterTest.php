@@ -662,6 +662,7 @@ PHP,
                 Formatter::build()
                     ->tokenTypeIndex(new TokenTypeIndex(true))
                     ->importSortOrder(ImportSortOrder::NONE)
+                    ->indentBetweenTags()
                     ->psr12()
                     ->build(),
         ];

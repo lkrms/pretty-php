@@ -28,7 +28,7 @@ final class StandardWhitespaceTest extends TestCase
 <html>
 <body>
     <?php
-        echo $a;
+    echo $a;
     ?>
 </body>
 </html>

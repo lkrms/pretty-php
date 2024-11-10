@@ -179,12 +179,7 @@ final class StandardWhitespace implements TokenRule
                             if ($sibling) {
                                 $siblingIndent = $tagIndent;
                             }
-                            // Increase the indentation level for tokens between
-                            // unenclosed tags
-                            if (
-                                !$token->Parent
-                                && $this->Formatter->IncreaseIndentBetweenUnenclosedTags
-                            ) {
+                            if ($this->Formatter->IndentBetweenTags) {
                                 $tagIndent++;
                             }
                         }
@@ -254,12 +249,10 @@ final class StandardWhitespace implements TokenRule
                     ) {
                         $this->preserveOneLine($token, $nextCode, true);
                         $this->preserveOneLine($lastCode, $token->CloseTag, true);
-                        // Remove a level of indentation if tokens between
-                        // unenclosed tags don't start on a new line
+                        // If indentation between tags has been added, remove it
                         if (
                             $tagIndent
-                            && !$token->Parent
-                            && $this->Formatter->IncreaseIndentBetweenUnenclosedTags
+                            && $this->Formatter->IndentBetweenTags
                         ) {
                             $tagIndent--;
                         }

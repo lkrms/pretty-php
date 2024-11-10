@@ -206,6 +206,13 @@ final class Formatter implements Buildable, Immutable
     public bool $TightDeclarationSpacing;
 
     /**
+     * True if a level of indentation is added to code between indented tags
+     *
+     * @readonly
+     */
+    public bool $IndentBetweenTags;
+
+    /**
      * Enforce strict PSR-12 / PER Coding Style compliance?
      *
      * @readonly
@@ -240,8 +247,6 @@ final class Formatter implements Buildable, Immutable
 
     // --
 
-    /** @readonly */
-    public bool $IncreaseIndentBetweenUnenclosedTags = true;
     /** @readonly */
     public bool $RelaxAlignmentCriteria = false;
     /** @readonly */
@@ -507,6 +512,7 @@ final class Formatter implements Buildable, Immutable
         bool $collapseDeclareHeaders = true,
         bool $expandHeaders = false,
         bool $tightDeclarationSpacing = false,
+        bool $indentBetweenTags = false,
         bool $psr12 = false
     ) {
         if (!in_array($tabSize, [2, 4, 8], true)) {
@@ -529,6 +535,7 @@ final class Formatter implements Buildable, Immutable
         $this->CollapseDeclareHeaders = $collapseDeclareHeaders;
         $this->ExpandHeaders = $expandHeaders;
         $this->TightDeclarationSpacing = $tightDeclarationSpacing;
+        $this->IndentBetweenTags = $indentBetweenTags;
         $this->Psr12 = $psr12;
 
         $this->Debug = (bool) ($flags & FormatterFlag::DEBUG);
@@ -706,7 +713,7 @@ final class Formatter implements Buildable, Immutable
     /**
      * Get an instance with the given setting enabled or disabled
      *
-     * @param ("IncreaseIndentBetweenUnenclosedTags"|"RelaxAlignmentCriteria"|"NewlineBeforeFnDoubleArrows"|"AlignFirstCallInChain") $property
+     * @param ("RelaxAlignmentCriteria"|"NewlineBeforeFnDoubleArrows"|"AlignFirstCallInChain") $property
      * @param bool $value
      * @return static
      */

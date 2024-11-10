@@ -6,7 +6,7 @@
     <body>
 
         <?php
-            echo "Hi, I'm a PHP script!";
+        echo "Hi, I'm a PHP script!";
         ?>
 
     </body>

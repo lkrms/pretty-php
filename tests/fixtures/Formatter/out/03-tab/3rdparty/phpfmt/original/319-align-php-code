@@ -1,20 +1,20 @@
 <div>
 	<?php
-		// passes:AlignPHPCode
-		echo 'a';
-		if ($a) {
-			echo $b;
-		}
+	// passes:AlignPHPCode
+	echo 'a';
+	if ($a) {
+		echo $b;
+	}
 	?>
 </div>
 
 <div>
 	<?php
-		// passes:AlignPHPCode
-		echo 'a';
-		if ($a) {
-			echo $b;
-		}
+	// passes:AlignPHPCode
+	echo 'a';
+	if ($a) {
+		echo $b;
+	}
 	?>
 </div>
 

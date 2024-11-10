@@ -28,8 +28,9 @@ use Salient\Core\Indentation;
  * @method $this collapseDeclareHeaders(bool $value = true) True if headers like "<?php declare(strict_types=1);" are collapsed to one line (default: true)
  * @method $this expandHeaders(bool $value = true) True if blank lines are applied between "<?php" and subsequent declarations (default: false)
  * @method $this tightDeclarationSpacing(bool $value = true) True if blank lines between declarations of the same type are removed where possible (default: false)
+ * @method $this indentBetweenTags(bool $value = true) True if a level of indentation is added to code between indented tags (default: false)
  * @method $this psr12(bool $value = true) Enforce strict PSR-12 / PER Coding Style compliance? (default: false)
- * @method Formatter with(("IncreaseIndentBetweenUnenclosedTags"|"RelaxAlignmentCriteria"|"NewlineBeforeFnDoubleArrows"|"AlignFirstCallInChain") $property, bool $value) Get an instance with the given setting enabled or disabled
+ * @method Formatter with(("RelaxAlignmentCriteria"|"NewlineBeforeFnDoubleArrows"|"AlignFirstCallInChain") $property, bool $value) Get an instance with the given setting enabled or disabled
  * @method Formatter withoutExtensions(array<class-string<Extension>> $extensions = []) Get an instance with the given extensions disabled
  * @method Formatter withExtensions(array<class-string<Extension>> $enable, array<class-string<Extension>> $disable = [], bool $preserveCurrent = true) Get an instance with the given extensions enabled
  * @method string format(string $code, string|null $eol = null, Indentation|null $indentation = null, string|null $filename = null, bool $fast = false) Get formatted code (see {@see Formatter::format()})
