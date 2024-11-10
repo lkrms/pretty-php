@@ -241,7 +241,7 @@ final class Formatter implements Buildable, Immutable
     // --
 
     /** @readonly */
-    public bool $IncreaseIndentBetweenUnenclosedTags = true;
+    public bool $MatchIndentBetweenGlobalTags = false;
     /** @readonly */
     public bool $RelaxAlignmentCriteria = false;
     /** @readonly */
@@ -706,7 +706,7 @@ final class Formatter implements Buildable, Immutable
     /**
      * Get an instance with the given setting enabled or disabled
      *
-     * @param ("IncreaseIndentBetweenUnenclosedTags"|"RelaxAlignmentCriteria"|"NewlineBeforeFnDoubleArrows"|"AlignFirstCallInChain") $property
+     * @param ("MatchIndentBetweenGlobalTags"|"RelaxAlignmentCriteria"|"NewlineBeforeFnDoubleArrows"|"AlignFirstCallInChain") $property
      * @param bool $value
      * @return static
      */

@@ -183,7 +183,7 @@ final class StandardWhitespace implements TokenRule
                             // unenclosed tags
                             if (
                                 !$token->Parent
-                                && $this->Formatter->IncreaseIndentBetweenUnenclosedTags
+                                && !$this->Formatter->MatchIndentBetweenGlobalTags
                             ) {
                                 $tagIndent++;
                             }
@@ -259,7 +259,7 @@ final class StandardWhitespace implements TokenRule
                         if (
                             $tagIndent
                             && !$token->Parent
-                            && $this->Formatter->IncreaseIndentBetweenUnenclosedTags
+                            && !$this->Formatter->MatchIndentBetweenGlobalTags
                         ) {
                             $tagIndent--;
                         }
