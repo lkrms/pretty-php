@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Tests\Rule;
+namespace Lkrms\PrettyPHP\Tests\Filter;
 
 use Lkrms\PrettyPHP\Tests\TestCase;
 
-final class VerticalWhitespaceTest extends TestCase
+final class NormaliseKeywordsTest extends TestCase
 {
     /**
      * @dataProvider outputProvider
@@ -20,45 +20,38 @@ final class VerticalWhitespaceTest extends TestCase
     public static function outputProvider(): array
     {
         return [
-            'chain #1' => [
+            [
                 <<<'PHP'
 <?php
-$foxtrot
-    ->foo(
-        fn() =>
-            bar()
-    )
-    ->baz()
-    ->quux();
+function foo()
+{
+    yield from [];
+}
 
 PHP,
                 <<<'PHP'
 <?php
-$foxtrot->foo(
-fn() =>
-bar()
-)
-->baz()
-->quux();
+function foo()
+{
+    yield   from    [];
+}
 PHP,
             ],
-            'chain #2' => [
+            [
                 <<<'PHP'
 <?php
-$foxtrot
-    ->foo(fn() =>
-        bar())
-    ->baz()
-    ->quux();
+function foo()
+{
+    YIELD FROM [];
+}
 
 PHP,
                 <<<'PHP'
 <?php
-$foxtrot->foo(fn() =>
-bar()
-)
-->baz()
-->quux();
+function foo()
+{
+    YIELD   FROM    [];
+}
 PHP,
             ],
         ];

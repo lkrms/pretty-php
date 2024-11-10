@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Concern;
 
 use Lkrms\PrettyPHP\Contract\Filter;
-use Lkrms\PrettyPHP\Token\GenericToken;
+use Lkrms\PrettyPHP\GenericToken;
 
 /**
  * @api
@@ -112,13 +112,13 @@ trait FilterTrait
     {
         /** @var GenericToken */
         $token = $this->getPrevCode($i, $j);
-        return $this->Idx->AltSyntaxContinueWithoutExpression[$token->id]
+        return $this->Idx->AltContinueWithNoExpression[$token->id]
             || (
                 $token->id === \T_CLOSE_PARENTHESIS
                 && ($prev = $this->getPrevSibling($j))
                 && (
-                    $this->Idx->AltSyntaxStart[$prev->id]
-                    || $this->Idx->AltSyntaxContinueWithExpression[$prev->id]
+                    $this->Idx->AltStart[$prev->id]
+                    || $this->Idx->AltContinueWithExpression[$prev->id]
                 )
             );
     }

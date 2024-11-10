@@ -5,8 +5,8 @@ namespace Lkrms\PrettyPHP\Filter;
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Exception\FilterException;
-use Lkrms\PrettyPHP\Token\Token;
-use Lkrms\PrettyPHP\TokenUtility;
+use Lkrms\PrettyPHP\Token;
+use Lkrms\PrettyPHP\TokenUtil;
 use Salient\Utility\Regex;
 
 /**
@@ -63,7 +63,7 @@ final class EvaluateStrings implements Filter
             } elseif ($lastString->id === \T_DOUBLE_QUOTE) {
                 eval("\$string = \"{$token->text}\";");
             } elseif ($lastString->id === \T_BACKTICK) {
-                $text = TokenUtility::unescapeBackticks($token->text);
+                $text = TokenUtil::unescapeBackticks($token->text);
                 eval("\$string = \"{$text}\";");
             } elseif ($lastString->id === \T_START_HEREDOC) {
                 $start = trim($lastString->text);

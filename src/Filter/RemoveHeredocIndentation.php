@@ -4,8 +4,8 @@ namespace Lkrms\PrettyPHP\Filter;
 
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
-use Lkrms\PrettyPHP\Token\GenericToken;
-use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\GenericToken;
+use Lkrms\PrettyPHP\Token;
 use Salient\Utility\Regex;
 
 /**
@@ -16,10 +16,7 @@ final class RemoveHeredocIndentation implements Filter
     use ExtensionTrait;
 
     /**
-     * @template T of GenericToken
-     *
-     * @param list<T> $tokens
-     * @return list<T>
+     * @inheritDoc
      */
     public function filterTokens(array $tokens): array
     {
@@ -28,11 +25,11 @@ final class RemoveHeredocIndentation implements Filter
         // separate array with the same structure to ensure the only prefix
         // removed is the innermost one.
 
-        /** @var array<int,T[]> */
+        /** @var array<int,GenericToken[]> */
         $heredocTokens = [];
         /** @var array<int,string[]> */
         $heredocText = [];
-        /** @var array<int,T> */
+        /** @var array<int,GenericToken> */
         $stack = [];
         foreach ($tokens as $i => $token) {
             if ($stack) {

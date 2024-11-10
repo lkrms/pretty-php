@@ -5,7 +5,7 @@ namespace Lkrms\PrettyPHP\Rule;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenTypeIndex;
 
 /**
  * If a control structure expression breaks over multiple lines, add newlines

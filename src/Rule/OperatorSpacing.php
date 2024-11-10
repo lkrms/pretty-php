@@ -7,8 +7,8 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Token;
+use Lkrms\PrettyPHP\TokenTypeIndex;
 
 /**
  * Apply whitespace to operators
@@ -128,7 +128,7 @@ final class OperatorSpacing implements TokenRule
             // Suppress whitespace between `++` and `--` and the variables they
             // operate on
             if ($token->id === \T_INC || $token->id === \T_DEC) {
-                if ($token->Prev && $this->Idx->VariableEnd[$token->Prev->id]) {
+                if ($token->Prev && $this->Idx->EndOfVariable[$token->Prev->id]) {
                     $token->WhitespaceMaskPrev = WhitespaceType::NONE;
                 } else {
                     $token->WhitespaceMaskNext = WhitespaceType::NONE;

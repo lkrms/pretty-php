@@ -7,25 +7,14 @@ use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Token;
+use Lkrms\PrettyPHP\TokenTypeIndex;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 
 /**
  * Apply sensible default spacing
  *
- * - Add SPACE as per:
- *   - {@see TokenTypeIndex::$AddSpaceAround}
- *   - {@see TokenTypeIndex::$AddSpaceBefore}
- *   - {@see TokenTypeIndex::$AddSpaceAfter}
- * - Suppress SPACE and BLANK as per:
- *   - {@see TokenTypeIndex::$SuppressSpaceAfter}
- *   - {@see TokenTypeIndex::$SuppressSpaceBefore}
- * - Suppress SPACE and BLANK after open brackets and before close brackets
- * - Propagate indentation from `<?php` tags to subsequent tokens
- * - Add SPACE or BLANK between `<?php` and a subsequent `declare` construct in
- *   the global scope
  * - Add LINE|SPACE after `<?php` and before `?>`
  * - Preserve one-statement `<?php` ... `?>` blocks on the same line, or
  *   suppress inner LINE between tags and code if both ends have adjacent code
@@ -69,8 +58,8 @@ final class StandardWhitespace implements TokenRule
                 \T_START_HEREDOC,
             ),
             $idx->OpenBracket,
-            $idx->CloseBracketOrEndAltSyntax,
-            $idx->AddSpaceAround,
+            $idx->CloseBracketOrAlt,
+            $idx->AddSpace,
             $idx->AddSpaceBefore,
             $idx->AddSpaceAfter,
             $idx->SuppressSpaceBefore,
@@ -78,16 +67,31 @@ final class StandardWhitespace implements TokenRule
         );
     }
 
+    /**
+     * Leading and trailing spaces are added to tokens in `AddSpace`,
+     * `AddSpaceBefore` and `AddSpaceAfter`, then suppressed, along with blank
+     * lines, for tokens in `SuppressSpaceBefore` and `SuppressSpaceAfter`, and
+     * inside brackets other than structural and `match` braces. Blank lines are
+     * also suppressed after alternative syntax colons and before their closing
+     * counterparts.
+     *
+     * If the indentation level of an open tag aligns with a tab stop, and a
+     * close tag is found in the same scope (or the document has no close tag
+     * and the open tag is in the global scope), nested tokens are indented to
+     * align with it. In the global scope, an additional level of indentation is
+     * applied unless `MatchIndentBetweenGlobalTags` is enabled.
+     *
+     * If a `<?php` tag is followed by a `declare` statement, they are collapsed
+     * to one line. This is only applied in strict PSR-12 mode if the `declare`
+     * statement is `declare(strict_types=1);` (semicolon optional), followed by
+     * a close tag.
+     */
     public function processTokens(array $tokens): void
     {
         $idx = $this->Idx;
 
         foreach ($tokens as $token) {
-            // Add SPACE as per:
-            // - {@see TokenTypeIndex::$AddSpaceAround}
-            // - {@see TokenTypeIndex::$AddSpaceBefore}
-            // - {@see TokenTypeIndex::$AddSpaceAfter}
-            if ($idx->AddSpaceAround[$token->id]) {
+            if ($idx->AddSpace[$token->id]) {
                 $token->WhitespaceBefore |= WhitespaceType::SPACE;
                 $token->WhitespaceAfter |= WhitespaceType::SPACE;
             } elseif ($idx->AddSpaceBefore[$token->id]) {
@@ -96,45 +100,32 @@ final class StandardWhitespace implements TokenRule
                 $token->WhitespaceAfter |= WhitespaceType::SPACE;
             }
 
-            // - Suppress SPACE and BLANK as per:
-            //   - {@see TokenTypeIndex::$SuppressSpaceAfter}
-            //   - {@see TokenTypeIndex::$SuppressSpaceBefore}
-            // - Suppress SPACE and BLANK after open brackets and before close
-            //   brackets
-            if (($idx->OpenBracket[$token->id] && !(
-                $token->Flags & TokenFlag::STRUCTURAL_BRACE
-                || $token->isMatchBrace()
-            ))
-                    || $idx->SuppressSpaceAfter[$token->id]) {
+            if ($idx->SuppressSpaceAfter[$token->id] || (
+                $idx->OpenBracket[$token->id] && !(
+                    $token->Flags & TokenFlag::STRUCTURAL_BRACE
+                    || $token->isMatchBrace()
+                )
+            )) {
                 $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK & ~WhitespaceType::SPACE;
             } elseif ($token->id === \T_COLON && $token->ClosedBy) {
                 $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
             }
 
-            if (($idx->CloseBracket[$token->id] && !(
-                $token->Flags & TokenFlag::STRUCTURAL_BRACE
-                || $token->isMatchBrace()
-            ))
-                || ($idx->SuppressSpaceBefore[$token->id]
-                    // Only suppress SPACE before namespace separators in or
-                    // immediately after an identifier
-                    && ($token->id !== \T_NS_SEPARATOR || ($token->Prev && (
-                        $token->Prev->id === \T_NAME_FULLY_QUALIFIED
-                        || $token->Prev->id === \T_NAME_QUALIFIED
-                        || $token->Prev->id === \T_NAME_RELATIVE
-                        || $token->Prev->id === \T_STRING
-                    ))))) {
+            if ($idx->SuppressSpaceBefore[$token->id] || (
+                $idx->CloseBracket[$token->id] && !(
+                    $token->Flags & TokenFlag::STRUCTURAL_BRACE
+                    || $token->isMatchBrace()
+                )
+            )) {
                 $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::SPACE;
             } elseif ($token->id === \T_END_ALT_SYNTAX) {
                 $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
             }
 
             if ($token === $token->OpenTag) {
-                // Propagate indentation from `<?php` tags to subsequent tokens
-                $tagIndent = 0;
-                /** @var Token|null */
-                $sibling = null;
-                $siblingIndent = null;
+                $closeTag = null;
+                $tagIndent = null;
+                $innerIndent = null;
 
                 $text = '';
                 $current = $token;
@@ -145,23 +136,26 @@ final class StandardWhitespace implements TokenRule
                     }
                 }
 
-                // Only perform pattern matching on the last line
+                // Get the last line of inline HTML before the open tag
                 /** @var string */
                 $text = strrchr("\n" . $text, "\n");
                 $text = substr($text, 1);
-                if (Regex::match('/^\h++$/', $text)) {
+                if ($text === '') {
+                    $token->TagIndent = 0;
+                } elseif (Regex::match('/^\h++$/', $text)) {
                     $indent = strlen(Str::expandTabs($text, $this->Formatter->TabSize));
                     if ($indent % $this->Formatter->TabSize === 0) {
-                        $token->TagIndent = (int) ($indent / $this->Formatter->TabSize);
+                        $indent = (int) ($indent / $this->Formatter->TabSize);
 
-                        /*
-                         * Look for a `?>` tag in the same context, i.e. with
-                         * the same parent
-                         */
+                        // May be used by `Renderer::renderWhitespaceBefore()`,
+                        // even if it isn't used here
+                        $token->TagIndent = $indent;
+
+                        // Try to find a close tag in the same scope
                         $current = $token;
                         while ($current->CloseTag) {
                             if ($current->CloseTag->Parent === $token->Parent) {
-                                $sibling = $current->CloseTag;
+                                $closeTag = $current->CloseTag;
                                 break;
                             }
                             $current = $current->CloseTag;
@@ -174,57 +168,53 @@ final class StandardWhitespace implements TokenRule
                             break;
                         }
 
-                        if ($sibling || (!$token->Parent && !$token->CloseTag)) {
-                            $tagIndent = $token->TagIndent;
-                            if ($sibling) {
-                                $siblingIndent = $tagIndent;
-                            }
+                        if ($closeTag || (!$token->Parent && !$current->CloseTag)) {
+                            $tagIndent = $indent;
+                            $innerIndent = $tagIndent;
                             // Increase the indentation level for tokens between
-                            // unenclosed tags
+                            // tags in the global scope
                             if (
                                 !$token->Parent
-                                && $this->Formatter->IncreaseIndentBetweenUnenclosedTags
+                                && !$this->Formatter->MatchIndentBetweenGlobalTags
                             ) {
-                                $tagIndent++;
+                                $innerIndent++;
                             }
                         }
                     }
                 }
 
-                // Add SPACE or BLANK between `<?php` and a subsequent `declare`
-                // construct in the global scope
-                $current = $token;
+                $endOfLine = $token;
                 if (
-                    $this->Formatter->CollapseDeclareHeaders
-                    && $token->id === \T_OPEN_TAG
+                    $token->id === \T_OPEN_TAG
+                    && $this->Formatter->CollapseDeclareHeaders
                     && ($declare = $token->Next)
                     && $declare->id === \T_DECLARE
                     && $declare->NextSibling
                     && ($end = $declare->NextSibling->NextSibling)
                     && $end === $declare->EndStatement
                     && (!$end->NextCode || $end->NextCode->id !== \T_DECLARE)
-                    && (
-                        !$this->Formatter->Psr12 || (
-                            !strcasecmp((string) $declare->NextSibling->inner(), 'strict_types=1')
-                            && ($end->id === \T_CLOSE_TAG || ($end->Next && $end->Next->id === \T_CLOSE_TAG))
-                        )
-                    )
                 ) {
-                    $token->WhitespaceAfter |= WhitespaceType::SPACE;
-                    $token->WhitespaceMaskNext = WhitespaceType::SPACE;
-                    $current = $end;
-                    if (
-                        $this->Formatter->Psr12
-                        || $end->id === \T_CLOSE_TAG
-                        || ($end->Next && $end->Next->id === \T_CLOSE_TAG)
-                    ) {
-                        assert($token->CloseTag !== null);
-                        $token->CloseTag->WhitespaceBefore |= WhitespaceType::SPACE;
-                        $token->CloseTag->WhitespaceMaskPrev = WhitespaceType::SPACE;
+                    $endIsClose = $end->id === \T_CLOSE_TAG
+                        || ($end->Next && $end->Next->id === \T_CLOSE_TAG);
+
+                    if (!$this->Formatter->Psr12 || (
+                        $endIsClose
+                        && !strcasecmp((string) $declare->NextSibling->inner(), 'strict_types=1')
+                    )) {
+                        $token->WhitespaceAfter |= WhitespaceType::SPACE;
+                        $token->WhitespaceMaskNext = WhitespaceType::SPACE;
+                        $endOfLine = $end;
+                        if ($endIsClose) {
+                            /** @var Token */
+                            $close = $token->CloseTag;
+                            $close->WhitespaceBefore |= WhitespaceType::SPACE;
+                            $close->WhitespaceMaskPrev = WhitespaceType::SPACE;
+                        }
                     }
                 }
-                // Add LINE|SPACE after `<?php`
-                $current->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
+                if ($endOfLine->id !== \T_CLOSE_TAG) {
+                    $endOfLine->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
+                }
 
                 /*
                  * Preserve one-statement `<?php` ... `?>` blocks on the same
@@ -257,36 +247,38 @@ final class StandardWhitespace implements TokenRule
                         // Remove a level of indentation if tokens between
                         // unenclosed tags don't start on a new line
                         if (
-                            $tagIndent
+                            $innerIndent
                             && !$token->Parent
-                            && $this->Formatter->IncreaseIndentBetweenUnenclosedTags
+                            && !$this->Formatter->MatchIndentBetweenGlobalTags
                         ) {
-                            $tagIndent--;
+                            $innerIndent--;
                         }
                     }
                 }
 
                 // If the level of indentation applied to `$token->Next` by
-                // other rules is less than `$tagIndent`, apply the difference
+                // other rules is less than `$innerIndent`, apply the difference
                 // to tokens between `$token` and `$sibling`, or between
                 // `$token` and `$token->CloseTag ?: $token->last()` if no
                 // `$sibling` was found
-                if ($tagIndent && $token->Next) {
+                if ($innerIndent && $token->Next) {
                     $next = $token->Next;
                     /** @var Token */
-                    $last = $sibling ? $sibling->Prev : $last;
+                    $last = $closeTag ? $closeTag->Prev : $last;
                     $this->Formatter->registerCallback(
                         static::class,
                         $next,
-                        function () use ($tagIndent, $next, $last, $sibling, $siblingIndent) {
-                            $delta = $tagIndent - $next->indent();
+                        function () use ($innerIndent, $next, $last, $closeTag, $tagIndent) {
+                            $delta = $innerIndent - $next->indent();
                             if ($delta > 0) {
                                 foreach ($next->collect($last) as $token) {
-                                    $token->TagIndent += $delta;
+                                    if (!$this->Idx->OpenTag[$token->id]) {
+                                        $token->TagIndent += $delta;
+                                    }
                                 }
                             }
-                            if ($sibling) {
-                                $sibling->TagIndent += $siblingIndent - $sibling->indent();
+                            if ($closeTag) {
+                                $closeTag->TagIndent += $tagIndent - $closeTag->indent();
                             }
                         }
                     );

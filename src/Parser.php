@@ -6,7 +6,6 @@ use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Contract\Filter;
-use Lkrms\PrettyPHP\Token\Token;
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasMutator;
 use Salient\Utility\Exception\ShouldNotHappenException;
@@ -180,10 +179,10 @@ final class Parser implements Immutable
             }
 
             $text = $token->text;
-            if ($idx->Trim[$token->id]) {
-                if ($idx->DoNotModifyLeft[$token->id]) {
+            if ($idx->Trimmable[$token->id]) {
+                if ($idx->RightTrimmable[$token->id]) {
                     $text = rtrim($text);
-                } elseif ($idx->DoNotModifyRight[$token->id]) {
+                } elseif ($idx->LeftTrimmable[$token->id]) {
                     $text = ltrim($text);
                 } else {
                     $text = trim($text);
@@ -230,18 +229,18 @@ final class Parser implements Immutable
 
             if (
                 (
-                    $idx->AltSyntaxContinue[$token->id]
-                    || $idx->AltSyntaxEnd[$token->id]
+                    $idx->AltContinue[$token->id]
+                    || $idx->AltEnd[$token->id]
                 ) && $prev && $prev->id !== \T_END_ALT_SYNTAX
             ) {
                 if ((
                     $prev->Parent
                     && $prev->Parent->id === \T_COLON
-                    && ($idx->AltSyntaxEnd[$token->id] || (
-                        $idx->AltSyntaxContinueWithExpression[$token->id]
+                    && ($idx->AltEnd[$token->id] || (
+                        $idx->AltContinueWithExpression[$token->id]
                         && $this->nextSibling($token, 2)->id === \T_COLON
                     ) || (
-                        $idx->AltSyntaxContinueWithoutExpression[$token->id]
+                        $idx->AltContinueWithNoExpression[$token->id]
                         && $this->nextSibling($token)->id === \T_COLON
                     ))
                 ) || (
@@ -316,7 +315,7 @@ final class Parser implements Immutable
             ) {
                 $token->Parent = $prev;
                 $token->Depth++;
-            } elseif ($idx->CloseBracketOrEndAltSyntax[$prev->id]) {
+            } elseif ($idx->CloseBracketOrAlt[$prev->id]) {
                 $token->Parent = $prev->Parent;
                 $token->Depth--;
             } else {
@@ -352,7 +351,7 @@ final class Parser implements Immutable
                 $token->String->StringClosedBy = $token;
             }
 
-            if ($idx->CloseBracketOrEndAltSyntax[$token->id]) {
+            if ($idx->CloseBracketOrAlt[$token->id]) {
                 assert($token->Parent !== null);
                 $opener = $token->Parent;
                 $opener->ClosedBy = $token;
@@ -618,12 +617,12 @@ final class Parser implements Immutable
                 if (
                     !$token->NextSibling
                     || $token === $end
-                    || $idx->ExpressionTerminator[$token->id]
+                    || $idx->EndOfExpression[$token->id]
                     || $token->Flags & TokenFlag::TERNARY_OPERATOR
                 ) {
                     // Exclude terminators from expressions
                     if (!$token->ClosedBy && (
-                        $idx->ExpressionTerminator[$token->id]
+                        $idx->EndOfExpression[$token->id]
                         || $token->Flags & (TokenFlag::STATEMENT_TERMINATOR | TokenFlag::TERNARY_OPERATOR)
                         || $token->id === \T_COLON
                         || $token->id === \T_COMMA

@@ -1,9 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Tests\Token;
+namespace Lkrms\PrettyPHP\Tests;
 
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
-use Lkrms\PrettyPHP\Tests\TestCase;
 use Lkrms\PrettyPHP\Formatter;
 use Salient\Utility\Reflect;
 

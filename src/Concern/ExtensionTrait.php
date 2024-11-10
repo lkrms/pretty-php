@@ -3,8 +3,8 @@
 namespace Lkrms\PrettyPHP\Concern;
 
 use Lkrms\PrettyPHP\Contract\Extension;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Formatter;
+use Lkrms\PrettyPHP\TokenTypeIndex;
 
 /**
  * @api

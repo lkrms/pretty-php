@@ -6,8 +6,8 @@ use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Token;
+use Lkrms\PrettyPHP\TokenTypeIndex;
 
 /**
  * Align ternary and null coalescing operators with their expressions

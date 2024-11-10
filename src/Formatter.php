@@ -22,6 +22,7 @@ use Lkrms\PrettyPHP\Filter\EvaluateNumbers;
 use Lkrms\PrettyPHP\Filter\EvaluateStrings;
 use Lkrms\PrettyPHP\Filter\MoveComments;
 use Lkrms\PrettyPHP\Filter\NormaliseCasts;
+use Lkrms\PrettyPHP\Filter\NormaliseKeywords;
 use Lkrms\PrettyPHP\Filter\RemoveEmptyDocBlocks;
 use Lkrms\PrettyPHP\Filter\RemoveEmptyTokens;
 use Lkrms\PrettyPHP\Filter\RemoveHeredocIndentation;
@@ -29,6 +30,8 @@ use Lkrms\PrettyPHP\Filter\RemoveWhitespace;
 use Lkrms\PrettyPHP\Filter\SortImports;
 use Lkrms\PrettyPHP\Filter\TrimOpenTags;
 use Lkrms\PrettyPHP\Filter\TruncateComments;
+use Lkrms\PrettyPHP\Internal\Problem;
+use Lkrms\PrettyPHP\Internal\TokenCollection;
 use Lkrms\PrettyPHP\Rule\Preset\Drupal;
 use Lkrms\PrettyPHP\Rule\Preset\Laravel;
 use Lkrms\PrettyPHP\Rule\Preset\Symfony;
@@ -62,11 +65,6 @@ use Lkrms\PrettyPHP\Rule\StrictExpressions;
 use Lkrms\PrettyPHP\Rule\StrictLists;
 use Lkrms\PrettyPHP\Rule\SwitchIndentation;
 use Lkrms\PrettyPHP\Rule\VerticalWhitespace;
-use Lkrms\PrettyPHP\Support\Problem;
-use Lkrms\PrettyPHP\Support\TokenCollection;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\PrettyPHP\Token\GenericToken;
-use Lkrms\PrettyPHP\Token\Token;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasBuilder;
@@ -243,7 +241,7 @@ final class Formatter implements Buildable, Immutable
     // --
 
     /** @readonly */
-    public bool $IncreaseIndentBetweenUnenclosedTags = true;
+    public bool $MatchIndentBetweenGlobalTags = false;
     /** @readonly */
     public bool $RelaxAlignmentCriteria = false;
     /** @readonly */
@@ -351,6 +349,7 @@ final class Formatter implements Buildable, Immutable
         SortImports::class,
         MoveComments::class,
         NormaliseCasts::class,
+        NormaliseKeywords::class,
     ];
 
     /**
@@ -361,6 +360,7 @@ final class Formatter implements Buildable, Immutable
         SortImports::class,
         MoveComments::class,
         NormaliseCasts::class,
+        NormaliseKeywords::class,
     ];
 
     /**
@@ -706,7 +706,7 @@ final class Formatter implements Buildable, Immutable
     /**
      * Get an instance with the given setting enabled or disabled
      *
-     * @param ("IncreaseIndentBetweenUnenclosedTags"|"RelaxAlignmentCriteria"|"NewlineBeforeFnDoubleArrows"|"AlignFirstCallInChain") $property
+     * @param ("MatchIndentBetweenGlobalTags"|"RelaxAlignmentCriteria"|"NewlineBeforeFnDoubleArrows"|"AlignFirstCallInChain") $property
      * @param bool $value
      * @return static
      */
@@ -955,7 +955,7 @@ final class Formatter implements Buildable, Immutable
                 case \T_OPEN_PARENTHESIS:
                     $prev = $parent->PrevCode;
                     if ($prev && (
-                        $idx->ListParenthesisPredecessor[$prev->id] || (
+                        $idx->BeforeListParenthesis[$prev->id] || (
                             $prev->id === \T_CLOSE_BRACE
                             && !($prev->Flags & TokenFlag::STRUCTURAL_BRACE)
                         ) || (
@@ -971,11 +971,6 @@ final class Formatter implements Buildable, Immutable
 
                 case \T_OPEN_BRACKET:
                     if ($parent->isArrayOpenBracket()) {
-                        break;
-                    }
-
-                    if ($parent->children()->hasOneOf(\T_COMMA)) {
-                        // This line should never be reached
                         break;
                     }
 
@@ -1144,8 +1139,8 @@ final class Formatter implements Buildable, Immutable
             /** @var Token */
             $first = reset($this->Tokens);
             $out = $this->Renderer->render($first, $last, false, true, true);
-        } catch (Throwable $ex) {
             // @codeCoverageIgnoreStart
+        } catch (Throwable $ex) {
             throw new FormatterException(
                 'Unable to render output',
                 null,
@@ -1177,8 +1172,8 @@ final class Formatter implements Buildable, Immutable
                 \TOKEN_PARSE,
                 ...$this->ComparisonFilterList
             );
-        } catch (CompileError $ex) {
             // @codeCoverageIgnoreStart
+        } catch (CompileError $ex) {
             throw new FormatterException(
                 'Unable to parse output',
                 $out,

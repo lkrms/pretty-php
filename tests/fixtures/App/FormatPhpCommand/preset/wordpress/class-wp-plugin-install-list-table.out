@@ -298,7 +298,7 @@ class WP_Plugin_Install_List_Table extends WP_List_Table {
 					'paragraph_wrap'     => false,
 				)
 			);
-?>
+			?>
 		<?php } else { ?>
 			<div class="no-plugin-results"><?php _e( 'No plugins found. Try a different search.' ); ?></div>
 			<?php
@@ -338,7 +338,7 @@ class WP_Plugin_Install_List_Table extends WP_List_Table {
 		$views = apply_filters( "views_{$this->screen->id}", $views );
 
 		$this->screen->render_screen_reader_content( 'heading_views' );
-			?>
+		?>
 <div class="wp-filter">
 	<ul class="filter-links">
 		<?php

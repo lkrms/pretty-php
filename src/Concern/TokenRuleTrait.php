@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Concern;
 
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenTypeIndex;
 
 /**
  * @api

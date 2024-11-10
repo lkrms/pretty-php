@@ -109,6 +109,43 @@
                 // This is expanded without quoting
                 "${input:prettyPhpArgs} \"${file}\""
             ]
+        },
+        {
+            "name": "Format current file, with optional arguments (PHP 8.4)",
+            "type": "php",
+            "request": "launch",
+            "program": "${workspaceFolder:pretty-php}/bin/pretty-php",
+            "cwd": "${fileDirname}",
+            "port": 0,
+            "runtimeExecutable": "bash",
+            "runtimeArgs": [
+                "-c",
+                "eval \"args=(${*: -1})\" && php84 \"${@:1:$#-1}\" \"${args[@]}\"",
+                "bash",
+                "-dzend_extension=xdebug.so",
+                "-dxdebug.start_with_request=yes",
+                "-dshort_open_tag=on"
+            ],
+            "env": {
+                "XDEBUG_MODE": "debug,develop",
+                "XDEBUG_CONFIG": "client_port=${port}"
+            },
+            "xdebugSettings": {
+                "max_children": 10000,
+                "show_hidden": 1,
+                "max_data": 10000000
+            },
+            "skipFiles": [
+                "!**/vendor/salient/**",
+                "**/vendor/**"
+            ],
+            "args": [
+                "--debug",
+                "--log-progress",
+                "--no-config",
+                // This is expanded without quoting
+                "${input:prettyPhpArgs} \"${file}\""
+            ]
         }
     ],
     "inputs": [

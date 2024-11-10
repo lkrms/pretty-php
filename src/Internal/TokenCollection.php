@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Support;
+namespace Lkrms\PrettyPHP\Internal;
 
-use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Token;
 use Salient\Collection\AbstractTypedList;
 use LogicException;
 use Stringable;
