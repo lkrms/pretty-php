@@ -7,19 +7,20 @@ use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasMutator;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
+use Generator;
 
 final class Renderer implements Immutable
 {
     use HasMutator;
 
-    private Formatter $Formatter;
+    private int $TabSize;
     private string $SoftTab;
     private string $Tab;
     private TokenTypeIndex $Idx;
 
     public function __construct(Formatter $formatter)
     {
-        $this->Formatter = $formatter;
+        $this->TabSize = $formatter->TabSize;
         $this->SoftTab = $formatter->SoftTab;
         $this->Tab = $formatter->Tab;
         $this->Idx = $formatter->TokenTypeIndex;
@@ -32,7 +33,7 @@ final class Renderer implements Immutable
      */
     public function withFormatter(Formatter $formatter): self
     {
-        return $this->with('Formatter', $formatter)
+        return $this->with('TabSize', $formatter->TabSize)
                     ->with('SoftTab', $formatter->SoftTab)
                     ->with('Tab', $formatter->Tab)
                     ->with('Idx', $formatter->TokenTypeIndex);
@@ -138,12 +139,12 @@ final class Renderer implements Immutable
                 $indent = $token->indent();
                 $padding += $token->LinePadding - $token->LineUnpadding;
 
-                // Don't indent close tags unless subsequent text is indented by
-                // at least the same amount
+                // If this is a close tag with subsequent text not indented by
+                // at least the same amount, find something to align with
                 if ($token->id === \T_CLOSE_TAG && (
                     !$token->Next
                     || $this->getIndentSpacesFromText($token->Next)
-                        < $this->getIndentSpaces($token)
+                        < ($spaces = $indent * $this->TabSize + $padding)
                 )) {
                     /** @var Token */
                     $openTag = $token->OpenTag;
@@ -151,35 +152,24 @@ final class Renderer implements Immutable
                     // close tag if its own open tag differs or is not indented
                     if (
                         $token->Depth !== $openTag->Depth
-                        || $token->TagIndent === null
+                        || $openTag->TagIndent === null
                     ) {
                         $fallback = null;
-                        $current = $token;
-                        while ($current->Next) {
-                            if ($current === $current->OpenTag) {
-                                if ($current->CloseTag) {
-                                    $current = $current->CloseTag;
-                                    continue;
-                                }
-                                break;
-                            }
-                            $current = $current->Next;
-                            if ($current !== $current->OpenTag) {
-                                continue;
-                            }
+                        foreach ($this->getClosestOpenTags($token) as $current) {
                             if (
                                 $current->Depth !== $token->Depth
                                 || $current->TagIndent === null
-                                || $current->TagIndent * $this->Formatter->TabSize
-                                    > $this->getIndentSpaces($token)
+                                || $current->TagIndent * $this->TabSize
+                                    > ($spaces ??= $indent * $this->TabSize + $padding)
                             ) {
                                 continue;
                             }
 
                             /*
-                             * Use standard indentation if this open tag has an
-                             * adjacent close bracket and the close tag isn't
-                             * adjacent to its open bracket, as in line 5:
+                             * Use standard indentation if this open tag is
+                             * adjacent to the close bracket of the close tag's
+                             * parent, and the close tag is not adjacent to the
+                             * open bracket of its parent, as in line 5:
                              *
                              * ```
                              * function foo()
@@ -197,7 +187,8 @@ final class Renderer implements Immutable
                             if (
                                 $current->Next
                                 && $current->Next->OpenedBy
-                                && $token->Prev !== $current->Next->OpenedBy
+                                && $current->Next->OpenedBy === $token->Parent
+                                && $token->Prev !== $token->Parent
                             ) {
                                 $openTag = null;
                                 break;
@@ -206,20 +197,22 @@ final class Renderer implements Immutable
                             // If the adjacent brackets of this open tag don't
                             // mirror the close tag's, save it in case an open
                             // tag that does is found
-                            if (
-                                !$fallback
-                                && $this->tagHasAdjacentBracket($current)
-                                    !== $this->tagHasAdjacentBracket($token)
-                            ) {
+                            if (!$fallback && (
+                                $this->tagHasBracket($current, true, false)
+                                    !== ($tokenHasInsideBracket ??= $this->tagHasBracket($token, true, false))
+                                    || $this->tagHasBracket($current, false, true)
+                                        !== ($tokenHasOutsideBracket ??= $this->tagHasBracket($token, false, true))
+                            )) {
                                 $fallback = $current;
                                 continue;
                             }
 
                             // Otherwise, use it for indentation
                             $openTag = $current;
+                            $fallback = null;
                             break;
                         }
-                        if ($openTag === $token->OpenTag && $fallback) {
+                        if ($fallback) {
                             $openTag = $fallback;
                         }
                     }
@@ -243,23 +236,6 @@ final class Renderer implements Immutable
         return $before;
     }
 
-    private function tagHasAdjacentBracket(Token $token): bool
-    {
-        if ($token->OpenTag === $token) {
-            return (
-                $token->Next
-                && $token->Next->OpenedBy
-            ) || (
-                $token->CloseTag
-                && $token->CloseTag->Prev
-                && $token->CloseTag->Prev->ClosedBy
-            );
-        }
-        /** @var Token */
-        $prev = $token->Prev;
-        return $prev->ClosedBy || $prev->OpenedBy;
-    }
-
     public function renderWhitespaceAfter(Token $token): string
     {
         if (
@@ -272,18 +248,61 @@ final class Renderer implements Immutable
         return TokenUtil::getWhitespace($token->effectiveWhitespaceAfter());
     }
 
-    private function getIndentSpaces(Token $token): int
+    /**
+     * @return Generator<Token>
+     */
+    private function getClosestOpenTags(Token $token): Generator
     {
-        return (
-            $token->TagIndent
-            + $token->PreIndent
-            + $token->Indent
-            + $token->HangingIndent
-            - $token->Deindent
-        ) * $this->Formatter->TabSize + (
-            $token->LinePadding
-            - $token->LineUnpadding
-        );
+        $sources = [
+            $this->getNextOpenTags($token),
+            $this->getPrevOpenTags($token),
+        ];
+
+        do {
+            foreach ($sources as $i => $source) {
+                if ($source->valid()) {
+                    yield $source->current();
+                    $source->next();
+                } else {
+                    unset($sources[$i]);
+                }
+            }
+        } while ($sources);
+    }
+
+    /**
+     * @return Generator<Token>
+     */
+    private function getNextOpenTags(Token $token): Generator
+    {
+        if ($token->CloseTag) {
+            $token = $token->CloseTag;
+        }
+        while ($token->Next) {
+            $token = $token->Next;
+            if ($token === $token->OpenTag) {
+                yield $token;
+                if ($token->CloseTag) {
+                    $token = $token->CloseTag;
+                    continue;
+                }
+                break;
+            }
+        }
+    }
+
+    /**
+     * @return Generator<Token>
+     */
+    private function getPrevOpenTags(Token $token): Generator
+    {
+        while ($token->Prev) {
+            $token = $token->Prev;
+            if ($token->OpenTag) {
+                $token = $token->OpenTag;
+                yield $token;
+            }
+        }
     }
 
     private function getIndentSpacesFromText(Token $token): int
@@ -292,29 +311,7 @@ final class Renderer implements Immutable
             return 0;
         }
 
-        return strlen(Str::expandTabs($match['indent'], $this->Formatter->TabSize));
-    }
-
-    private function setPosition(
-        Token $token,
-        string $text,
-        bool $textMayHaveTabs
-    ): void {
-        $token->OutputPos += strlen($text);
-        if ($textMayHaveTabs && strpos($text, "\t") !== false) {
-            $text = Str::expandTabs(
-                $text,
-                $this->Formatter->TabSize,
-                $token->OutputColumn
-            );
-        }
-        $newlines = substr_count($text, "\n");
-        if ($newlines) {
-            $token->OutputLine += $newlines;
-            $token->OutputColumn = mb_strlen($text) - mb_strrpos($text, "\n");
-        } else {
-            $token->OutputColumn += mb_strlen($text);
-        }
+        return strlen(Str::expandTabs($match['indent'], $this->TabSize));
     }
 
     private function getMultiLineComment(Token $token, bool $softTabs): string
@@ -387,5 +384,48 @@ column 1 despite starting in column 2 or above (like this comment) */
             return Regex::replace("/(?<=\\n|\G){$this->SoftTab}/", "\t", $text);
         }
         return $text;
+    }
+
+    private function setPosition(
+        Token $token,
+        string $text,
+        bool $textMayHaveTabs
+    ): void {
+        $token->OutputPos += strlen($text);
+        if ($textMayHaveTabs && strpos($text, "\t") !== false) {
+            $text = Str::expandTabs(
+                $text,
+                $this->TabSize,
+                $token->OutputColumn
+            );
+        }
+        $newlines = substr_count($text, "\n");
+        if ($newlines) {
+            $token->OutputLine += $newlines;
+            $token->OutputColumn = mb_strlen($text) - mb_strrpos($text, "\n");
+        } else {
+            $token->OutputColumn += mb_strlen($text);
+        }
+    }
+
+    private function tagHasBracket(Token $token, bool $inside, bool $outside): bool
+    {
+        if ($token->OpenTag === $token) {
+            return (
+                $inside
+                && $token->Next
+                && $token->Next->OpenedBy
+            ) || (
+                $outside
+                && $token->CloseTag
+                && $token->CloseTag->Prev
+                && $token->CloseTag->Prev->ClosedBy
+            );
+        }
+
+        /** @var Token */
+        $prev = $token->Prev;
+        return ($inside && $prev->ClosedBy)
+            || ($outside && $prev->OpenedBy);
     }
 }

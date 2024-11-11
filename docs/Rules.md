@@ -11,6 +11,7 @@ needed.
 | `SimplifyNumbers`           | -          | Y        | 1    | `processTokens()` | 60       |
 | `SimplifyStrings`           | -          | Y        | 1    | `processTokens()` | 60       |
 | `NormaliseComments`         | Y          | -        | 1    | `processTokens()` | 70       |
+| `IndexSpacing`              | Y          | -        | 1    | `processTokens()` | 78       |
 | `StandardWhitespace` (1)    | Y          | -        | 1    | `processTokens()` | 80       |
 | `StatementSpacing`          | Y          | -        | 1    | `processTokens()` | 80       |
 | `OperatorSpacing`           | Y          | -        | 1    | `processTokens()` | 80       |
@@ -40,13 +41,13 @@ needed.
 | `HeredocIndentation` (1)    | Y          | -        | 1    | `processTokens()` | 900      |
 | `AlignData` (1)             | -          | -        | 2    | `processBlock()`  | 340      |
 | `AlignComments` (1)         | -          | -        | 2    | `processBlock()`  | 340      |
-| `AlignChains` (2)           | -          | -        | 3    | `callback()`      | 710      |
-| `AlignArrowFunctions` (2)   | -          | -        | 3    | `callback()`      | 710      |
-| `AlignTernaryOperators` (2) | -          | -        | 3    | `callback()`      | 710      |
-| `AlignLists` (2)            | -          | -        | 3    | `callback()`      | 710      |
-| `AlignData` (2)             | -          | -        | 3    | `callback()`      | 720      |
-| `HangingIndentation` (2)    | Y          | -        | 3    | `callback()`      | 800      |
-| `StandardWhitespace` (2)    | Y          | -        | 3    | `callback()`      | 820      |
+| `AlignChains` (2)           | -          | -        | 3    | _`callback`_      | 710      |
+| `AlignArrowFunctions` (2)   | -          | -        | 3    | _`callback`_      | 710      |
+| `AlignTernaryOperators` (2) | -          | -        | 3    | _`callback`_      | 710      |
+| `AlignLists` (2)            | -          | -        | 3    | _`callback`_      | 710      |
+| `AlignData` (2)             | -          | -        | 3    | _`callback`_      | 720      |
+| `HangingIndentation` (2)    | Y          | -        | 3    | _`callback`_      | 800      |
+| `StandardWhitespace` (2)    | Y          | -        | 3    | _`callback`_      | 820      |
 | `PlaceBraces` (2)           | Y          | -        | 4    | `beforeRender()`  | 400      |
 | `HeredocIndentation` (2)    | Y          | -        | 4    | `beforeRender()`  | 900      |
 | `PlaceComments` (2)         | Y          | -        | 4    | `beforeRender()`  | 997      |
@@ -73,5 +74,46 @@ exponents, and expressing them with mantissae between 1.0 and 10.
 If present in the input, underscores are added to decimal values with no
 exponent every 3 digits, to hexadecimal values with more than 5 digits every 4
 digits, and to binary values every 4 digits.
+
+## `IndexSpacing`
+
+Leading and trailing spaces are added to tokens in the `AddSpace`,
+`AddSpaceBefore` and `AddSpaceAfter` indexes, then suppressed, along with
+adjacent blank lines, for tokens in the `SuppressSpaceBefore` and
+`SuppressSpaceAfter` indexes, and inside brackets other than structural and
+`match` braces. Blank lines are also suppressed after alternative syntax colons
+and before their closing counterparts.
+
+## `StandardWhitespace` (call 1: `processTokens()`)
+
+If the indentation level of an open tag aligns with a tab stop, and a close tag
+is found in the same scope (or the document has no close tag and the open tag is
+in the global scope), a callback is registered to align nested tokens with it.
+In the global scope, an additional level of indentation is applied unless
+`MatchIndentBetweenGlobalTags` is enabled.
+
+If a `<?php` tag is followed by a `declare` statement, they are collapsed to one
+line. This is only applied in strict PSR-12 mode if the `declare` statement is
+`declare(strict_types=1);` (semicolon optional), followed by a close tag.
+
+Statements between open and close tags on the same line are preserved as
+one-line statements, even if they contain constructs that would otherwise break
+over multiple lines. Similarly, if a pair of open and close tags are both
+adjacent to code on the same line, newlines between code and tags are
+suppressed. Otherwise, inner newlines are added to open and close tags.
+
+Whitespace is also applied to tokens as follows:
+
+- **Commas:** leading whitespace suppressed, trailing space added.
+- **`declare` statements:** whitespace suppressed between parentheses.
+- **`match` expressions:** trailing line added to delimiters after arms.
+- **Attributes:** trailing blank line suppressed, leading and trailing space
+  added for parameters, leading and trailing line added for others.
+- **Heredocs:** leading line suppressed in strict PSR-12 mode.
+
+## `StandardWhitespace` (call 2: _`callback`_)
+
+The indentation level of tokens between indented tags is increased if the first
+token is not sufficiently indented after other rules have been applied.
 
 [list-rules.php]: ../scripts/list-rules.php

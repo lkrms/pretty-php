@@ -92,6 +92,17 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
 
     /**
      * T_OPEN_BRACE, T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_ATTRIBUTE,
+     * T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES, T_COLON
+     *
+     * @var array<int,bool>
+     */
+    public array $OpenBracketOrAlt = self::OPEN_BRACKET + [
+        \T_COLON => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
+     * T_OPEN_BRACE, T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_ATTRIBUTE,
      * T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES, T_LOGICAL_NOT, T_NOT
      *
      * @var array<int,bool>
