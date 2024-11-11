@@ -976,10 +976,6 @@ EOF,
             throw new CliInvalidArgumentsException(...$errors);
         }
 
-        if ($this->Quiet < 2) {
-            $this->App->reportVersion();
-        }
-
         if ($this->PrintConfig) {
             $values = $this->getOptionValues(true, true, true);
             echo Json::prettyPrint(
@@ -988,6 +984,10 @@ EOF,
             ) . \PHP_EOL;
 
             return;
+        }
+
+        if ($this->Quiet < 2) {
+            $this->App->reportVersion();
         }
 
         // Resolve input directories to the closest applicable configuration
