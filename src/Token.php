@@ -81,15 +81,11 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
     /**
      * The formatter to which the token belongs
-     *
-     * @readonly
      */
     public Formatter $Formatter;
 
     /**
      * Token type index
-     *
-     * @readonly
      */
     public TokenTypeIndex $Idx;
 
@@ -219,7 +215,11 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         int $flags = 0,
         Filter ...$filters
     ): array {
-        return self::filter(parent::tokenize($code, $flags), ...$filters);
+        /** @var list<static> */
+        $tokens = parent::tokenize($code, $flags);
+        return $tokens && $filters
+            ? self::filter($tokens, $filters)
+            : $tokens;
     }
 
     /**
@@ -232,22 +232,27 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         int $flags = 0,
         Filter ...$filters
     ): array {
-        return self::filter(GenericToken::tokenize($code, $flags), ...$filters);
+        /** @var list<GenericToken> */
+        $tokens = GenericToken::tokenize($code, $flags);
+        return $tokens && $filters
+            ? self::filter($tokens, $filters)
+            : $tokens;
     }
 
     /**
      * @template T of GenericToken
      *
-     * @param T[] $tokens
-     * @return T[]
+     * @param non-empty-list<T> $tokens
+     * @param non-empty-array<Filter> $filters
+     * @return list<T>
      */
-    private static function filter(array $tokens, Filter ...$filters): array
+    private static function filter(array $tokens, array $filters): array
     {
-        if (!$tokens || !$filters) {
-            return $tokens;
-        }
         foreach ($filters as $filter) {
             $tokens = $filter->filterTokens($tokens);
+            if (!$tokens) {
+                break;
+            }
         }
         return $tokens;
     }

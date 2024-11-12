@@ -1,11 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Method Lkrms\\\\PrettyPHP\\\\Filter\\\\CollectColumn\\:\\:filterTokens\\(\\) should return array\\<int, T of Lkrms\\\\PrettyPHP\\\\GenericToken\\> but returns array\\<Lkrms\\\\PrettyPHP\\\\Token\\>\\.$#"
-			count: 1
-			path: src/Filter/CollectColumn.php
-
-		-
 			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\|\\(T of Lkrms\\\\PrettyPHP\\\\GenericToken\\)\\|null\\.$#"
 			count: 3
 			path: src/Filter/EvaluateStrings.php

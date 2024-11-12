@@ -19,6 +19,8 @@ trait FilterTrait
 
     /**
      * Get the given token's previous code token
+     *
+     * @param-out int $key
      */
     protected function getPrevCode(int $i, ?int &$key = null): ?GenericToken
     {
@@ -30,6 +32,7 @@ trait FilterTrait
             $key = $i;
             return $token;
         }
+        $key = -1;
         return null;
     }
 
@@ -38,6 +41,7 @@ trait FilterTrait
      * index
      *
      * @param array<int,bool> $index
+     * @param-out int $key
      */
     protected function getPrevSiblingFrom(int $i, array $index, ?int $to = null, ?int &$key = null): ?GenericToken
     {
@@ -53,11 +57,14 @@ trait FilterTrait
             }
             $i = $j;
         }
+        $key = -1;
         return null;
     }
 
     /**
      * Get one of the given token's previous siblings
+     *
+     * @param-out int $key
      */
     protected function getPrevSibling(int $i, int $offset = 1, ?int &$key = null): ?GenericToken
     {
@@ -86,11 +93,14 @@ trait FilterTrait
                 }
             }
         }
+        $key = -1;
         return null;
     }
 
     /**
      * Get the given token's parent
+     *
+     * @param-out int $key
      */
     protected function getParent(int $i, ?int &$key = null): ?GenericToken
     {

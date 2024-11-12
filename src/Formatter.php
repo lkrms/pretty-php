@@ -95,15 +95,12 @@ final class Formatter implements Buildable, Immutable
 
     /**
      * Use spaces for indentation?
-     *
-     * @readonly
      */
     public bool $InsertSpaces;
 
     /**
      * The size of a tab, in spaces
      *
-     * @readonly
      * @phpstan-var 2|4|8
      */
     public int $TabSize;
@@ -111,7 +108,6 @@ final class Formatter implements Buildable, Immutable
     /**
      * A series of spaces equivalent to a tab
      *
-     * @readonly
      * @phpstan-var ("  "|"    "|"        ")
      */
     public string $SoftTab;
@@ -119,111 +115,82 @@ final class Formatter implements Buildable, Immutable
     /**
      * The string used for indentation
      *
-     * @readonly
      * @phpstan-var ("  "|"    "|"        "|"	")
      */
     public string $Tab;
 
     /**
      * Token type index
-     *
-     * @readonly
      */
     public TokenTypeIndex $TokenTypeIndex;
 
     /**
      * End-of-line sequence used when line endings are not preserved or when
      * there are no line breaks in the input
-     *
-     * @readonly
      */
     public string $PreferredEol;
 
     /**
      * True if line endings are preserved
-     *
-     * @readonly
      */
     public bool $PreserveEol;
 
     /**
      * Spaces between code and comments on the same line
-     *
-     * @readonly
      */
     public int $SpacesBesideCode;
 
     /**
      * Indentation applied to heredocs and nowdocs
      *
-     * @readonly
      * @var HeredocIndent::*
      */
     public int $HeredocIndent;
 
-    /**
-     * @readonly
-     * @var ImportSortOrder::*
-     */
+    /** @var ImportSortOrder::* */
     public int $ImportSortOrder;
 
     /**
      * True if braces are formatted using the One True Brace Style
-     *
-     * @readonly
      */
     public bool $OneTrueBraceStyle;
 
     /**
      * True if empty declaration bodies are collapsed to the end of the
      * declaration
-     *
-     * @readonly
      */
     public bool $CollapseEmptyDeclarationBodies;
 
     /**
      * True if headers like "<?php declare(strict_types=1);" are collapsed to
      * one line
-     *
-     * @readonly
      */
     public bool $CollapseDeclareHeaders;
 
     /**
      * True if blank lines are applied between "<?php" and subsequent
      * declarations
-     *
-     * @readonly
      */
     public bool $ExpandHeaders;
 
     /**
      * True if blank lines between declarations of the same type are removed
      * where possible
-     *
-     * @readonly
      */
     public bool $TightDeclarationSpacing;
 
     /**
      * True if a level of indentation is added to code between indented tags
-     *
-     * @readonly
      */
     public bool $IndentBetweenTags;
 
     /**
      * Enforce strict PSR-12 / PER Coding Style compliance?
-     *
-     * @readonly
      */
     public bool $Psr12;
 
     /**
      * False if calls to registerProblem() are ignored
-     *
-     * @readonly
      */
     public bool $DetectProblems;
 
@@ -233,24 +200,19 @@ final class Formatter implements Buildable, Immutable
      * When the {@see PreserveNewlines} rule is disabled, `false` is assigned to
      * this property and the rule is reinstated to preserve blank lines between
      * statements.
-     *
-     * @readonly
      */
     public bool $PreserveNewlines;
 
     /**
      * An index of enabled extensions
      *
-     * @readonly
      * @var array<class-string<Extension>,true>
      */
     public array $Enabled;
 
     // --
 
-    /** @readonly */
     public bool $RelaxAlignmentCriteria = false;
-    /** @readonly */
     public bool $NewlineBeforeFnDoubleArrows = false;
 
     /**
@@ -268,8 +230,6 @@ final class Formatter implements Buildable, Immutable
      * $result = $object
      *               ->method1();
      * ```
-     *
-     * @readonly
      */
     public bool $AlignFirstCallInChain = true;
 
@@ -483,7 +443,6 @@ final class Formatter implements Buildable, Immutable
     private bool $Debug;
     private bool $LogProgress;
     private Parser $Parser;
-    /** @readonly */
     public Renderer $Renderer;
 
     /**
@@ -951,7 +910,7 @@ final class Formatter implements Buildable, Immutable
                                     );
                     $count = $items->count();
                     if ($count > 1) {
-                        // @phpstan-ignore-next-line
+                        // @phpstan-ignore assign.propertyType
                         $parent->Flags |= TokenFlag::LIST_PARENT;
                         $parent->Data[TokenData::LIST_ITEM_COUNT] = $count;
                         foreach ($items as $token) {
@@ -1000,7 +959,7 @@ final class Formatter implements Buildable, Immutable
             if (!$count) {
                 continue;
             }
-            // @phpstan-ignore-next-line
+            // @phpstan-ignore assign.propertyType
             $parent->Flags |= TokenFlag::LIST_PARENT;
             $parent->Data[TokenData::LIST_ITEM_COUNT] = $count;
             foreach ($items as $token) {
@@ -1040,9 +999,11 @@ final class Formatter implements Buildable, Immutable
                 $tokens = $this->Tokens;
             } elseif ($rule->getRequiresSortedTokens()) {
                 /** @var array<int,true> $types */
+                // @phpstan-ignore varTag.nativeType
                 $tokens = $this->sortTokensByType($types);
             } else {
                 /** @var array<int,true> $types */
+                // @phpstan-ignore varTag.nativeType
                 $tokens = $this->getTokensByType($types);
             }
             if (!$tokens) {

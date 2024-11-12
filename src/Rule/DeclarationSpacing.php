@@ -291,13 +291,13 @@ final class DeclarationSpacing implements TokenRule
                 if (
                     $this->Formatter->TightDeclarationSpacing
                     || $alwaysExpand === false
-                    || ($alwaysExpand === null && (
+                    || (
                         // Collapse standalone DocBlocks if they were originally
                         // collapsed
                         $token->Prev
                         && $token->Prev->id === \T_DOC_COMMENT
                         && strpos($token->Prev->OriginalText ?? $token->Prev->text, "\n") === false
-                    ))
+                    )
                 ) {
                     $this->maybeCollapseComment($token);
                 }

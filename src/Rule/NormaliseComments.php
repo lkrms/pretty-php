@@ -176,7 +176,7 @@ final class NormaliseComments implements TokenRule
                     )) {
                         $collapse = true;
                     } else {
-                        // @phpstan-ignore-next-line
+                        // @phpstan-ignore assign.propertyType
                         $token->Flags |= TokenFlag::COLLAPSIBLE_COMMENT;
                     }
                 }

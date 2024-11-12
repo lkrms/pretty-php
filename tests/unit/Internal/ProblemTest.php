@@ -18,7 +18,6 @@ final class ProblemTest extends TestCase
 
         $filters = array_map(
             function (string $filter) use ($formatter): Filter {
-                /** @var Filter */
                 $_filter = new $filter($formatter);
                 $_filter->boot();
                 return $_filter;

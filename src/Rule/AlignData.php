@@ -159,7 +159,7 @@ final class AlignData implements BlockRule
                 $run = [];
             };
 
-        /** @var string[] */
+        /** @var string[]|null */
         $runPrevTypes = null;
         foreach ($ctxIdx as $context => $ctxLines) {
             if (count($ctxLines) < 2) {
