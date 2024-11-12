@@ -93,7 +93,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      */
     public TokenTypeIndex $Idx;
 
-    public int $TagIndent = 0;
+    public ?int $TagIndent = null;
 
     /**
      * Indentation levels ignored until the token is rendered
