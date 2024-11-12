@@ -18,78 +18,186 @@ final class StandardWhitespaceTest extends TestCase
     }
 
     /**
-     * @return array<string,array{0:string,1:string,2?:string[]}>
+     * @return iterable<array{string,string,2?:string[]}>
      */
-    public static function outputProvider(): array
+    public static function outputProvider(): iterable
     {
-        return [
+        yield from [
             'indented tags #1' => [
                 <<<'PHP'
-<html>
-<body>
+<div>
     <?php
     echo $a;
     ?>
-</body>
-</html>
+</div>
 PHP,
                 <<<'PHP'
-<html>
-<body>
+<div>
     <?php
 echo $a;
-    ?>
-</body>
-</html>
+?>
+</div>
 PHP,
             ],
             'indented tags #2' => [
                 <<<'PHP'
+<div>
+  <?php
+echo $a;
+?>
+</div>
+PHP,
+                <<<'PHP'
+<div>
+  <?php
+echo $a;
+?>
+</div>
+PHP,
+            ],
+            'indented tags #3' => [
+                <<<'PHP'
 <?php
-if ($a):
-    function f()
+if ($foo):
+    function foo()
     {
         ?>
         <div id="content">
             <?php
-            $b = c();
-            if (d()) {
-                $b = '<span>' . $b . '</span>';
+            $bar = bar();
+            if (baz()) {
+                $bar = "<span>{$bar}</span>";
             }
             ?>
-            <h1><?php echo $b; ?></h1>
-            <?php if (e()): ?>
-                <img />
+            <h1><?php echo $bar; ?></h1>
+            <?php if (qux()): ?>
+            <img />
             <?php endif; ?>
         </div>
-<?php
+    <?php
     }
 endif;
 
 PHP,
                 <<<'PHP'
 <?php
-if ($a):
-    function f() {
-        ?>
+if ($foo):
+    function foo() {
+?>
         <div id="content">
             <?php
-                $b = c();
-                if (d()) {
-                    $b = '<span>' . $b . '</span>';
-                }
+        $bar = bar();
+        if (baz()) {
+            $bar = "<span>{$bar}</span>";
+        }
             ?>
-            <h1><?php echo $b; ?></h1>
-            <?php if (e()): ?>
-                <img />
+            <h1><?php echo $bar; ?></h1>
+            <?php if (qux()): ?>
+            <img />
             <?php endif; ?>
         </div>
-<?php
+    <?php
     }
 endif;
 PHP,
             ],
-        ] + (\PHP_VERSION_ID < 80000 ? [] : [
+            'indented tags #4' => [
+                <<<'PHP'
+<?php
+function foo()
+{
+    if ($bar) {
+        // do stuff
+        ?>
+    <?php } else { ?>
+        <!-- output stuff -->
+        <?php
+    }
+}
+?>
+PHP,
+                <<<'PHP'
+<?php
+function foo()
+{
+    if ($bar) {
+        // do stuff
+?>
+    <?php } else { ?>
+        <!-- output stuff -->
+        <?php
+    }
+}
+?>
+PHP,
+            ],
+            'indented tags #5' => [
+                <<<'PHP'
+<?php
+if ($foo) {
+?>
+<span>
+    <select>
+    <?= $bar ?>
+    </select>
+</span>
+<?php
+}
+?>
+PHP,
+                <<<'PHP'
+<?php
+if ($foo) {
+?>
+<span>
+    <select>
+    <?= $bar ?>
+    </select>
+</span>
+<?php
+}
+?>
+PHP,
+            ],
+            'unindented tags' => [
+                <<<'PHP'
+<?php
+if (str_contains($_SERVER['HTTP_USER_AGENT'], 'Firefox')) {
+?>
+<h3>str_contains() returned true</h3>
+<p>You are using Firefox</p>
+<?php
+} else {
+?>
+<h3>str_contains() returned false</h3>
+<p>You are not using Firefox</p>
+<?php
+}
+?>
+PHP,
+                <<<'PHP'
+<?php
+if (str_contains($_SERVER['HTTP_USER_AGENT'], 'Firefox')) {
+?>
+<h3>str_contains() returned true</h3>
+<p>You are using Firefox</p>
+<?php
+} else {
+?>
+<h3>str_contains() returned false</h3>
+<p>You are not using Firefox</p>
+<?php
+}
+?>
+PHP,
+            ],
+        ];
+
+        if (\PHP_VERSION_ID < 80000) {
+            return;
+        }
+
+        yield from [
             'match expressions' => [
                 <<<'PHP'
 <?php
@@ -110,7 +218,7 @@ $out = match ($in) {0 => 'no items', 1 => "$i item", default => "$in items"};
 $out = match ($in) {0, 1 => 'less than 2 items', default => "$in items"};
 PHP,
             ],
-            "match expressions with 'align-data'" => [
+            'match expressions with AlignData' => [
                 <<<'PHP'
 <?php
 $out = match ($in) {
@@ -129,8 +237,10 @@ PHP,
 $out = match ($in) {0 => 'no items', 1 => "$i item", default => "$in items"};
 $out = match ($in) {0, 1 => 'less than 2 items', default => "$in items"};
 PHP,
-                [AlignData::class],
+                [
+                    AlignData::class,
+                ],
             ],
-        ]);
+        ];
     }
 }
