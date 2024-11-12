@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
@@ -39,7 +40,7 @@ final class StatementSpacing implements TokenRule
             switch ($token->id) {
                 case \T_COLON:
                     // Ignore colons that don't start an alternative syntax block
-                    if (!$token->ClosedBy) {
+                    if (!$token->ClosedBy && $token->getSubType() !== TokenSubType::COLON_LABEL_DELIMITER) {
                         continue 2;
                     }
                     break;

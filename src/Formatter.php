@@ -48,6 +48,7 @@ use Lkrms\PrettyPHP\Rule\DeclarationSpacing;
 use Lkrms\PrettyPHP\Rule\EssentialWhitespace;
 use Lkrms\PrettyPHP\Rule\HangingIndentation;
 use Lkrms\PrettyPHP\Rule\HeredocIndentation;
+use Lkrms\PrettyPHP\Rule\IndexSpacing;
 use Lkrms\PrettyPHP\Rule\ListSpacing;
 use Lkrms\PrettyPHP\Rule\NormaliseComments;
 use Lkrms\PrettyPHP\Rule\OperatorSpacing;
@@ -282,6 +283,7 @@ final class Formatter implements Buildable, Immutable
         SimplifyNumbers::class,
         SimplifyStrings::class,
         NormaliseComments::class,
+        IndexSpacing::class,
         StandardWhitespace::class,
         StatementSpacing::class,
         OperatorSpacing::class,
