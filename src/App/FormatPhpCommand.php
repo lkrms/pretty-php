@@ -153,6 +153,7 @@ final class FormatPhpCommand extends CliCommand
     private string $HeredocIndent = '';
     private string $SortImportsBy = '';
     private bool $NoSortImports = false;
+    private bool $IndentBetweenTags = false;
     private bool $Psr12 = false;
     private ?string $Preset = null;
     private ?string $ConfigFile = null;
@@ -451,6 +452,14 @@ Equivalent to `--disable=sort-imports`
 EOF)
                 ->visibility(Visibility::ALL | Visibility::SCHEMA)
                 ->bindTo($this->NoSortImports),
+            CliOption::build()
+                ->long('indent-between-tags')
+                ->short('b')
+                ->description(<<<EOF
+Add a level of indentation to code between indented tags.
+EOF)
+                ->visibility(Visibility::ALL | Visibility::SCHEMA)
+                ->bindTo($this->IndentBetweenTags),
             CliOption::build()
                 ->long('psr12')
                 ->description(<<<EOF
@@ -1561,6 +1570,7 @@ EOF,
                 'heredocIndent' => $this->HeredocIndent,
                 'sortImportsBy' => $this->SortImportsBy,
                 'noSortImports' => $this->NoSortImports,
+                'indentBetweenTags' => $this->IndentBetweenTags,
                 'psr12' => $this->Psr12,
                 'preset' => $this->Preset,
             ]));
@@ -1615,6 +1625,7 @@ EOF,
                  ->importSortOrder(self::IMPORT_SORT_ORDER_MAP[$this->SortImportsBy])
                  ->oneTrueBraceStyle($this->OneTrueBraceStyle)
                  ->tightDeclarationSpacing($this->Tight)
+                 ->indentBetweenTags($this->IndentBetweenTags)
                  ->psr12($this->Psr12)
                  ->build();
 
