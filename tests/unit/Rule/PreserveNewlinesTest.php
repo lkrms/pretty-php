@@ -4,30 +4,29 @@ namespace Lkrms\PrettyPHP\Tests\Rule;
 
 use Lkrms\PrettyPHP\Rule\PreserveNewlines;
 use Lkrms\PrettyPHP\Tests\TestCase;
-use Generator;
+use Lkrms\PrettyPHP\Formatter;
+use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
 
 final class PreserveNewlinesTest extends TestCase
 {
     /**
      * @dataProvider outputProvider
+     *
+     * @param Formatter|FormatterB $formatter
      */
-    public function testOutput(string $expected, string $code, bool $preserve = true): void
+    public function testOutput(string $expected, string $code, $formatter): void
     {
-        $this->assertCodeFormatIs(
-            $expected,
-            $code,
-            [],
-            $preserve
-                ? []
-                : [PreserveNewlines::class]
-        );
+        $this->assertFormatterOutputIs($expected, $code, $formatter);
     }
 
     /**
-     * @return Generator<string,array{string,string,2?:bool}>
+     * @return iterable<array{string,string,Formatter|FormatterB}>
      */
-    public static function outputProvider(): Generator
+    public static function outputProvider(): iterable
     {
+        $formatterB = Formatter::build();
+        $formatter = $formatterB->build();
+
         yield 'logical operator after bracket' => [
             <<<'PHP'
 <?php
@@ -41,6 +40,7 @@ PHP,
 return a($b) && a($c)
     && strcmp((string) $b, (string) $c) === 0;
 PHP,
+            $formatter,
         ];
 
         yield 'newline after null coalesce assignment operator' => [
@@ -79,6 +79,7 @@ class A
     }
 }
 PHP,
+            $formatter,
         ];
 
         if (\PHP_VERSION_ID < 80000) {
@@ -250,6 +251,7 @@ class Foo
 
 PHP,
             $blankLines,
+            $formatter,
         ];
 
         yield 'blank lines #2' => [
@@ -296,7 +298,7 @@ class Foo
 
 PHP,
             $blankLines,
-            false,
+            $formatterB->disable([PreserveNewlines::class]),
         ];
 
         $blankLinesWithComments = <<<'PHP'
@@ -639,6 +641,7 @@ class Foo
 
 PHP,
             $blankLinesWithComments,
+            $formatter,
         ];
 
         yield 'blank lines with comments #2' => [
@@ -778,7 +781,7 @@ class Foo
 
 PHP,
             $blankLinesWithComments,
-            false,
+            $formatterB->disable([PreserveNewlines::class]),
         ];
     }
 }

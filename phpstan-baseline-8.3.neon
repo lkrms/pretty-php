@@ -339,8 +339,3 @@ parameters:
 			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
 			count: 1
 			path: src/Rule/StrictLists.php
-
-		-
-			message: "#^Parameter \\#3 \\$enable of method Lkrms\\\\PrettyPHP\\\\Tests\\\\TestCase\\:\\:assertCodeFormatIs\\(\\) expects array\\<class\\-string\\<Lkrms\\\\PrettyPHP\\\\Contract\\\\Extension\\>\\>, array\\<string\\> given\\.$#"
-			count: 1
-			path: tests/unit/Rule/StandardWhitespaceTest.php

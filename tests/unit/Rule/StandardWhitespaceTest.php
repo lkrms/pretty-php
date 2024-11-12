@@ -4,24 +4,29 @@ namespace Lkrms\PrettyPHP\Tests\Rule;
 
 use Lkrms\PrettyPHP\Rule\AlignData;
 use Lkrms\PrettyPHP\Tests\TestCase;
+use Lkrms\PrettyPHP\Formatter;
+use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
 
 final class StandardWhitespaceTest extends TestCase
 {
     /**
      * @dataProvider outputProvider
      *
-     * @param string[] $enable
+     * @param Formatter|FormatterB $formatter
      */
-    public function testOutput(string $expected, string $code, array $enable = []): void
+    public function testOutput(string $expected, string $code, $formatter): void
     {
-        $this->assertCodeFormatIs($expected, $code, $enable);
+        $this->assertFormatterOutputIs($expected, $code, $formatter);
     }
 
     /**
-     * @return iterable<array{string,string,2?:string[]}>
+     * @return iterable<array{string,string,Formatter|FormatterB}>
      */
     public static function outputProvider(): iterable
     {
+        $formatterB = Formatter::build();
+        $formatter = $formatterB->build();
+
         yield from [
             'indented tags #1' => [
                 <<<'PHP'
@@ -38,6 +43,7 @@ echo $a;
 ?>
 </div>
 PHP,
+                $formatter,
             ],
             'indented tags #2' => [
                 <<<'PHP'
@@ -54,6 +60,7 @@ echo $a;
 ?>
 </div>
 PHP,
+                $formatter,
             ],
             'indented tags #3' => [
                 <<<'PHP'
@@ -100,6 +107,7 @@ if ($foo):
     }
 endif;
 PHP,
+                $formatter,
             ],
             'indented tags #4' => [
                 <<<'PHP'
@@ -130,6 +138,7 @@ function foo()
 }
 ?>
 PHP,
+                $formatter,
             ],
             'indented tags #5' => [
                 <<<'PHP'
@@ -158,6 +167,7 @@ if ($foo) {
 }
 ?>
 PHP,
+                $formatter,
             ],
             'unindented tags' => [
                 <<<'PHP'
@@ -190,6 +200,7 @@ if (str_contains($_SERVER['HTTP_USER_AGENT'], 'Firefox')) {
 }
 ?>
 PHP,
+                $formatter,
             ],
         ];
 
@@ -217,6 +228,7 @@ PHP,
 $out = match ($in) {0 => 'no items', 1 => "$i item", default => "$in items"};
 $out = match ($in) {0, 1 => 'less than 2 items', default => "$in items"};
 PHP,
+                $formatter,
             ],
             'match expressions with AlignData' => [
                 <<<'PHP'
@@ -237,9 +249,7 @@ PHP,
 $out = match ($in) {0 => 'no items', 1 => "$i item", default => "$in items"};
 $out = match ($in) {0, 1 => 'less than 2 items', default => "$in items"};
 PHP,
-                [
-                    AlignData::class,
-                ],
+                $formatterB->enable([AlignData::class]),
             ],
         ];
     }
