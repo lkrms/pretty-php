@@ -6,7 +6,7 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenTypeIndex;
 
 /**
  * Apply whitespace to control structures where the body has no enclosing braces
@@ -71,7 +71,7 @@ final class ControlStructureSpacing implements TokenRule
                 continue;
             }
 
-            // @phpstan-ignore-next-line
+            // @phpstan-ignore assign.propertyType
             $token->Flags |= TokenFlag::HAS_UNENCLOSED_BODY;
 
             // Add a newline before the token unless it continues a control

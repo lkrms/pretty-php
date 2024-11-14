@@ -5,8 +5,8 @@ namespace Lkrms\PrettyPHP\Rule;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Concern\ListRuleTrait;
 use Lkrms\PrettyPHP\Contract\ListRule;
-use Lkrms\PrettyPHP\Support\TokenCollection;
-use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Internal\TokenCollection;
+use Lkrms\PrettyPHP\Token;
 
 /**
  * Apply whitespace to lists
@@ -51,10 +51,10 @@ final class ListSpacing implements ListRule
             ?? false;
     }
 
-    public function processList(Token $owner, TokenCollection $items): void
+    public function processList(Token $parent, TokenCollection $items): void
     {
-        // If `$owner` has no `ClosedBy`, this is an interface list
-        if (!$owner->ClosedBy) {
+        // If `$parent` has no `ClosedBy`, this is an interface list
+        if (!$parent->ClosedBy) {
             if (!$this->ListRuleEnabled
                     && $items->tokenHasNewlineBefore()) {
                 $first = $items->first();
@@ -67,14 +67,14 @@ final class ListSpacing implements ListRule
 
         // If the list has a "magic comma", add a newline before each item and
         // another after the last item
-        if ($owner->ClosedBy->PrevCode->id === \T_COMMA) {
+        if ($parent->ClosedBy->PrevCode->id === \T_COMMA) {
             $items->copy()
-                  ->add($owner->ClosedBy)
+                  ->add($parent->ClosedBy)
                   ->addWhitespaceBefore(WhitespaceType::LINE, true);
         }
 
-        if ($owner->id !== \T_OPEN_PARENTHESIS
-                || !$owner->isParameterList()) {
+        if ($parent->id !== \T_OPEN_PARENTHESIS
+                || !$parent->isParameterList()) {
             return;
         }
 

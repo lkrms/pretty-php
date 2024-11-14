@@ -22,6 +22,7 @@ use Lkrms\PrettyPHP\Filter\EvaluateNumbers;
 use Lkrms\PrettyPHP\Filter\EvaluateStrings;
 use Lkrms\PrettyPHP\Filter\MoveComments;
 use Lkrms\PrettyPHP\Filter\NormaliseCasts;
+use Lkrms\PrettyPHP\Filter\NormaliseKeywords;
 use Lkrms\PrettyPHP\Filter\RemoveEmptyDocBlocks;
 use Lkrms\PrettyPHP\Filter\RemoveEmptyTokens;
 use Lkrms\PrettyPHP\Filter\RemoveHeredocIndentation;
@@ -29,6 +30,8 @@ use Lkrms\PrettyPHP\Filter\RemoveWhitespace;
 use Lkrms\PrettyPHP\Filter\SortImports;
 use Lkrms\PrettyPHP\Filter\TrimOpenTags;
 use Lkrms\PrettyPHP\Filter\TruncateComments;
+use Lkrms\PrettyPHP\Internal\Problem;
+use Lkrms\PrettyPHP\Internal\TokenCollection;
 use Lkrms\PrettyPHP\Rule\Preset\Drupal;
 use Lkrms\PrettyPHP\Rule\Preset\Laravel;
 use Lkrms\PrettyPHP\Rule\Preset\Symfony;
@@ -45,6 +48,7 @@ use Lkrms\PrettyPHP\Rule\DeclarationSpacing;
 use Lkrms\PrettyPHP\Rule\EssentialWhitespace;
 use Lkrms\PrettyPHP\Rule\HangingIndentation;
 use Lkrms\PrettyPHP\Rule\HeredocIndentation;
+use Lkrms\PrettyPHP\Rule\IndexSpacing;
 use Lkrms\PrettyPHP\Rule\ListSpacing;
 use Lkrms\PrettyPHP\Rule\NormaliseComments;
 use Lkrms\PrettyPHP\Rule\OperatorSpacing;
@@ -62,11 +66,6 @@ use Lkrms\PrettyPHP\Rule\StrictExpressions;
 use Lkrms\PrettyPHP\Rule\StrictLists;
 use Lkrms\PrettyPHP\Rule\SwitchIndentation;
 use Lkrms\PrettyPHP\Rule\VerticalWhitespace;
-use Lkrms\PrettyPHP\Support\Problem;
-use Lkrms\PrettyPHP\Support\TokenCollection;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\PrettyPHP\Token\GenericToken;
-use Lkrms\PrettyPHP\Token\Token;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasBuilder;
@@ -96,15 +95,12 @@ final class Formatter implements Buildable, Immutable
 
     /**
      * Use spaces for indentation?
-     *
-     * @readonly
      */
     public bool $InsertSpaces;
 
     /**
      * The size of a tab, in spaces
      *
-     * @readonly
      * @phpstan-var 2|4|8
      */
     public int $TabSize;
@@ -112,7 +108,6 @@ final class Formatter implements Buildable, Immutable
     /**
      * A series of spaces equivalent to a tab
      *
-     * @readonly
      * @phpstan-var ("  "|"    "|"        ")
      */
     public string $SoftTab;
@@ -120,104 +115,82 @@ final class Formatter implements Buildable, Immutable
     /**
      * The string used for indentation
      *
-     * @readonly
      * @phpstan-var ("  "|"    "|"        "|"	")
      */
     public string $Tab;
 
     /**
      * Token type index
-     *
-     * @readonly
      */
     public TokenTypeIndex $TokenTypeIndex;
 
     /**
      * End-of-line sequence used when line endings are not preserved or when
      * there are no line breaks in the input
-     *
-     * @readonly
      */
     public string $PreferredEol;
 
     /**
      * True if line endings are preserved
-     *
-     * @readonly
      */
     public bool $PreserveEol;
 
     /**
      * Spaces between code and comments on the same line
-     *
-     * @readonly
      */
     public int $SpacesBesideCode;
 
     /**
      * Indentation applied to heredocs and nowdocs
      *
-     * @readonly
      * @var HeredocIndent::*
      */
     public int $HeredocIndent;
 
-    /**
-     * @readonly
-     * @var ImportSortOrder::*
-     */
+    /** @var ImportSortOrder::* */
     public int $ImportSortOrder;
 
     /**
      * True if braces are formatted using the One True Brace Style
-     *
-     * @readonly
      */
     public bool $OneTrueBraceStyle;
 
     /**
      * True if empty declaration bodies are collapsed to the end of the
      * declaration
-     *
-     * @readonly
      */
     public bool $CollapseEmptyDeclarationBodies;
 
     /**
      * True if headers like "<?php declare(strict_types=1);" are collapsed to
      * one line
-     *
-     * @readonly
      */
     public bool $CollapseDeclareHeaders;
 
     /**
      * True if blank lines are applied between "<?php" and subsequent
      * declarations
-     *
-     * @readonly
      */
     public bool $ExpandHeaders;
 
     /**
      * True if blank lines between declarations of the same type are removed
      * where possible
-     *
-     * @readonly
      */
     public bool $TightDeclarationSpacing;
 
     /**
+     * True if a level of indentation is added to code between indented tags
+     */
+    public bool $IndentBetweenTags;
+
+    /**
      * Enforce strict PSR-12 / PER Coding Style compliance?
-     *
-     * @readonly
      */
     public bool $Psr12;
 
     /**
      * False if calls to registerProblem() are ignored
-     *
-     * @readonly
      */
     public bool $DetectProblems;
 
@@ -227,26 +200,19 @@ final class Formatter implements Buildable, Immutable
      * When the {@see PreserveNewlines} rule is disabled, `false` is assigned to
      * this property and the rule is reinstated to preserve blank lines between
      * statements.
-     *
-     * @readonly
      */
     public bool $PreserveNewlines;
 
     /**
      * An index of enabled extensions
      *
-     * @readonly
      * @var array<class-string<Extension>,true>
      */
     public array $Enabled;
 
     // --
 
-    /** @readonly */
-    public bool $IncreaseIndentBetweenUnenclosedTags = true;
-    /** @readonly */
     public bool $RelaxAlignmentCriteria = false;
-    /** @readonly */
     public bool $NewlineBeforeFnDoubleArrows = false;
 
     /**
@@ -264,8 +230,6 @@ final class Formatter implements Buildable, Immutable
      * $result = $object
      *               ->method1();
      * ```
-     *
-     * @readonly
      */
     public bool $AlignFirstCallInChain = true;
 
@@ -279,6 +243,7 @@ final class Formatter implements Buildable, Immutable
         SimplifyNumbers::class,
         SimplifyStrings::class,
         NormaliseComments::class,
+        IndexSpacing::class,
         StandardWhitespace::class,
         StatementSpacing::class,
         OperatorSpacing::class,
@@ -351,6 +316,7 @@ final class Formatter implements Buildable, Immutable
         SortImports::class,
         MoveComments::class,
         NormaliseCasts::class,
+        NormaliseKeywords::class,
     ];
 
     /**
@@ -361,6 +327,7 @@ final class Formatter implements Buildable, Immutable
         SortImports::class,
         MoveComments::class,
         NormaliseCasts::class,
+        NormaliseKeywords::class,
     ];
 
     /**
@@ -476,7 +443,6 @@ final class Formatter implements Buildable, Immutable
     private bool $Debug;
     private bool $LogProgress;
     private Parser $Parser;
-    /** @readonly */
     public Renderer $Renderer;
 
     /**
@@ -507,6 +473,7 @@ final class Formatter implements Buildable, Immutable
         bool $collapseDeclareHeaders = true,
         bool $expandHeaders = false,
         bool $tightDeclarationSpacing = false,
+        bool $indentBetweenTags = false,
         bool $psr12 = false
     ) {
         if (!in_array($tabSize, [2, 4, 8], true)) {
@@ -529,6 +496,7 @@ final class Formatter implements Buildable, Immutable
         $this->CollapseDeclareHeaders = $collapseDeclareHeaders;
         $this->ExpandHeaders = $expandHeaders;
         $this->TightDeclarationSpacing = $tightDeclarationSpacing;
+        $this->IndentBetweenTags = $indentBetweenTags;
         $this->Psr12 = $psr12;
 
         $this->Debug = (bool) ($flags & FormatterFlag::DEBUG);
@@ -706,7 +674,7 @@ final class Formatter implements Buildable, Immutable
     /**
      * Get an instance with the given setting enabled or disabled
      *
-     * @param ("IncreaseIndentBetweenUnenclosedTags"|"RelaxAlignmentCriteria"|"NewlineBeforeFnDoubleArrows"|"AlignFirstCallInChain") $property
+     * @param ("RelaxAlignmentCriteria"|"NewlineBeforeFnDoubleArrows"|"AlignFirstCallInChain") $property
      * @param bool $value
      * @return static
      */
@@ -942,7 +910,7 @@ final class Formatter implements Buildable, Immutable
                                     );
                     $count = $items->count();
                     if ($count > 1) {
-                        // @phpstan-ignore-next-line
+                        // @phpstan-ignore assign.propertyType
                         $parent->Flags |= TokenFlag::LIST_PARENT;
                         $parent->Data[TokenData::LIST_ITEM_COUNT] = $count;
                         foreach ($items as $token) {
@@ -955,7 +923,7 @@ final class Formatter implements Buildable, Immutable
                 case \T_OPEN_PARENTHESIS:
                     $prev = $parent->PrevCode;
                     if ($prev && (
-                        $idx->ListParenthesisPredecessor[$prev->id] || (
+                        $idx->BeforeListParenthesis[$prev->id] || (
                             $prev->id === \T_CLOSE_BRACE
                             && !($prev->Flags & TokenFlag::STRUCTURAL_BRACE)
                         ) || (
@@ -971,11 +939,6 @@ final class Formatter implements Buildable, Immutable
 
                 case \T_OPEN_BRACKET:
                     if ($parent->isArrayOpenBracket()) {
-                        break;
-                    }
-
-                    if ($parent->children()->hasOneOf(\T_COMMA)) {
-                        // This line should never be reached
                         break;
                     }
 
@@ -996,7 +959,7 @@ final class Formatter implements Buildable, Immutable
             if (!$count) {
                 continue;
             }
-            // @phpstan-ignore-next-line
+            // @phpstan-ignore assign.propertyType
             $parent->Flags |= TokenFlag::LIST_PARENT;
             $parent->Data[TokenData::LIST_ITEM_COUNT] = $count;
             foreach ($items as $token) {
@@ -1036,9 +999,11 @@ final class Formatter implements Buildable, Immutable
                 $tokens = $this->Tokens;
             } elseif ($rule->getRequiresSortedTokens()) {
                 /** @var array<int,true> $types */
+                // @phpstan-ignore varTag.nativeType
                 $tokens = $this->sortTokensByType($types);
             } else {
                 /** @var array<int,true> $types */
+                // @phpstan-ignore varTag.nativeType
                 $tokens = $this->getTokensByType($types);
             }
             if (!$tokens) {
@@ -1144,8 +1109,8 @@ final class Formatter implements Buildable, Immutable
             /** @var Token */
             $first = reset($this->Tokens);
             $out = $this->Renderer->render($first, $last, false, true, true);
-        } catch (Throwable $ex) {
             // @codeCoverageIgnoreStart
+        } catch (Throwable $ex) {
             throw new FormatterException(
                 'Unable to render output',
                 null,
@@ -1177,8 +1142,8 @@ final class Formatter implements Buildable, Immutable
                 \TOKEN_PARSE,
                 ...$this->ComparisonFilterList
             );
-        } catch (CompileError $ex) {
             // @codeCoverageIgnoreStart
+        } catch (CompileError $ex) {
             throw new FormatterException(
                 'Unable to parse output',
                 $out,

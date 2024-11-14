@@ -6,7 +6,7 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Concern\BlockRuleTrait;
 use Lkrms\PrettyPHP\Contract\BlockRule;
-use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Token;
 
 /**
  * Align consecutive operators and values
@@ -159,7 +159,7 @@ final class AlignData implements BlockRule
                 $run = [];
             };
 
-        /** @var string[] */
+        /** @var string[]|null */
         $runPrevTypes = null;
         foreach ($ctxIdx as $context => $ctxLines) {
             if (count($ctxLines) < 2) {

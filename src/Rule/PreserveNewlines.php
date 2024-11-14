@@ -7,9 +7,9 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\PrettyPHP\Token\Token;
-use Lkrms\PrettyPHP\TokenUtility;
+use Lkrms\PrettyPHP\Token;
+use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenUtil;
 
 /**
  * Preserve newlines adjacent to operators, delimiters and comments
@@ -34,8 +34,8 @@ final class PreserveNewlines implements TokenRule
     public function processTokens(array $tokens): void
     {
         $preserveTypeIndex = TokenTypeIndex::merge(
-            $this->Idx->PreserveNewlineBefore,
-            $this->Idx->PreserveNewlineAfter,
+            $this->Idx->AllowNewlineBefore,
+            $this->Idx->AllowNewlineAfter,
         );
 
         foreach ($tokens as $token) {
@@ -50,8 +50,8 @@ final class PreserveNewlines implements TokenRule
             if ($prev->OriginalText === null) {
                 $text = $prev->text;
             } elseif (
-                $this->Idx->DoNotModify[$prev->id]
-                || $this->Idx->DoNotModifyRight[$prev->id]
+                $this->Idx->NotTrimmable[$prev->id]
+                || $this->Idx->LeftTrimmable[$prev->id]
             ) {
                 $text = $prev->OriginalText;
             } else {
@@ -102,7 +102,7 @@ final class PreserveNewlines implements TokenRule
             $token->line < $min
             || $token->line > $max
             || ($ignoreBrackets && $this->Idx->Bracket[$token->id])
-            || !TokenUtility::isNewlineAllowedBefore($token)
+            || !TokenUtil::isNewlineAllowedBefore($token)
         ) {
             return false;
         }
@@ -125,7 +125,7 @@ final class PreserveNewlines implements TokenRule
             return false;
         }
 
-        if (!$this->Idx->PreserveBlankBefore[$token->id]) {
+        if (!$this->Idx->AllowBlankBefore[$token->id]) {
             $line = WhitespaceType::LINE;
         }
 
@@ -146,7 +146,7 @@ final class PreserveNewlines implements TokenRule
             $next->line < $min
             || $next->line > $max
             || ($ignoreBrackets && $this->Idx->Bracket[$token->id])
-            || !TokenUtility::isNewlineAllowedAfter($token)
+            || !TokenUtil::isNewlineAllowedAfter($token)
         ) {
             return false;
         }
@@ -180,7 +180,7 @@ final class PreserveNewlines implements TokenRule
         }
 
         if ($line & WhitespaceType::BLANK
-            && (!$this->Idx->PreserveBlankAfter[$token->id]
+            && (!$this->Idx->AllowBlankAfter[$token->id]
                 || ($token->id === \T_COMMA
                     && !$token->isDelimiterBetweenMatchArms())
                 || ($token->id === \T_SEMICOLON

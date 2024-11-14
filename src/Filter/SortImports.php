@@ -5,7 +5,7 @@ namespace Lkrms\PrettyPHP\Filter;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Concern\FilterTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
-use Lkrms\PrettyPHP\Token\GenericToken;
+use Lkrms\PrettyPHP\GenericToken;
 use Salient\Utility\Regex;
 
 /**
@@ -127,7 +127,7 @@ final class SortImports implements Filter
      * @template T of GenericToken
      *
      * @param list<T> $tokens
-     * @param non-empty-array<non-empty-array<T>> $sort
+     * @param non-empty-array<non-empty-array<int,T>> $sort
      * @return list<T>
      */
     private function sortImports(array $tokens, array $sort, bool $removeLastSemicolon): array
@@ -172,6 +172,7 @@ final class SortImports implements Filter
             $nextLine += substr_count($t->text, "\n") + 1;
         }
 
+        /** @var list<T> */
         return array_slice($tokens, 0, $firstKey)
             + $sorted
             + $tokens;

@@ -2,10 +2,10 @@
 <?php declare(strict_types=1);
 
 use Lkrms\PrettyPHP\Catalog\FormatterFlag;
-use Lkrms\PrettyPHP\Token\GenericToken;
-use Lkrms\PrettyPHP\Token\Token;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder;
+use Lkrms\PrettyPHP\GenericToken;
+use Lkrms\PrettyPHP\Token;
 use PhpParser\NodeDumper;
 use PhpParser\ParserFactory;
 use Salient\Cli\CliApplication;

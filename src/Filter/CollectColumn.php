@@ -4,7 +4,7 @@ namespace Lkrms\PrettyPHP\Filter;
 
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
-use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Token;
 use Salient\Utility\Str;
 
 /**
@@ -19,15 +19,13 @@ final class CollectColumn implements Filter
      */
     public function filterTokens(array $tokens): array
     {
-        if (!(reset($tokens) instanceof Token)) {
-            // @codeCoverageIgnoreStart
+        if (!$tokens || !$tokens[0] instanceof Token) {
             return $tokens;
-            // @codeCoverageIgnoreEnd
         }
 
-        /** @var Token[] $tokens */
         $last = array_key_last($tokens);
         $column = 1;
+        /** @var Token $token */
         foreach ($tokens as $i => $token) {
             $token->column = $column;
             $text =

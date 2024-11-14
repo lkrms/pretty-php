@@ -6,10 +6,10 @@
 </head>
 <body>
         <?php
-            $foo = ['foo', 'bar', 'baz'];
-            foreach ($foo as $bar) {
-                echo $bar;
-            }
+        $foo = ['foo', 'bar', 'baz'];
+        foreach ($foo as $bar) {
+            echo $bar;
+        }
         ?>
 </body>
 </html>

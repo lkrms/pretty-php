@@ -7,8 +7,8 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Token;
+use Lkrms\PrettyPHP\TokenTypeIndex;
 use Closure;
 
 /**
@@ -125,8 +125,8 @@ final class VerticalWhitespace implements TokenRule
 
         foreach (array_keys(self::PRECEDENCE_MAP) as $id) {
             if (
-                $this->Idx->PreserveNewlineBefore[$id]
-                || !$this->Idx->PreserveNewlineAfter[$id]
+                $this->Idx->AllowNewlineBefore[$id]
+                || !$this->Idx->AllowNewlineAfter[$id]
             ) {
                 $this->HasNewline[$id] = $hasNewlineBefore;
                 $this->ApplyNewline[$id] = $applyNewlineBefore;

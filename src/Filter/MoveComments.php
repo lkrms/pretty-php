@@ -4,8 +4,8 @@ namespace Lkrms\PrettyPHP\Filter;
 
 use Lkrms\PrettyPHP\Concern\FilterTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\PrettyPHP\Token\GenericToken;
+use Lkrms\PrettyPHP\GenericToken;
+use Lkrms\PrettyPHP\TokenTypeIndex;
 
 /**
  * Move comments if necessary for correct placement of adjacent delimiters and
@@ -44,12 +44,12 @@ final class MoveComments implements Filter
 
         $this->BeforeCommentIndex = TokenTypeIndex::intersect(
             $this->Idx->Movable,
-            $idx->PreserveNewlineAfter,
+            $idx->AllowNewlineAfter,
         );
 
         $this->AfterCommentIndex = TokenTypeIndex::intersect(
             $this->Idx->Movable,
-            $idx->PreserveNewlineBefore,
+            $idx->AllowNewlineBefore,
         );
     }
 

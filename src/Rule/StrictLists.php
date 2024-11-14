@@ -5,8 +5,8 @@ namespace Lkrms\PrettyPHP\Rule;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Concern\ListRuleTrait;
 use Lkrms\PrettyPHP\Contract\ListRule;
-use Lkrms\PrettyPHP\Support\TokenCollection;
-use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Internal\TokenCollection;
+use Lkrms\PrettyPHP\Token;
 
 /**
  * Arrange items in lists horizontally or vertically by replicating the
@@ -31,7 +31,7 @@ final class StrictLists implements ListRule
         }
     }
 
-    public function processList(Token $owner, TokenCollection $items): void
+    public function processList(Token $parent, TokenCollection $items): void
     {
         if ($items->count() < 2) {
             return;
@@ -41,7 +41,7 @@ final class StrictLists implements ListRule
         } else {
             // Leave the first item alone unless strict PSR-12 compliance is
             // enabled
-            if ($owner->ClosedBy && !$this->Formatter->Psr12) {
+            if ($parent->ClosedBy && !$this->Formatter->Psr12) {
                 $items->shift();
             }
             $items->maskWhitespaceBefore(~WhitespaceType::BLANK & ~WhitespaceType::LINE);

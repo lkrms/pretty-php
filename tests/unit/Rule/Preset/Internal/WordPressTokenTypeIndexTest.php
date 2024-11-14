@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Tests\Rule;
+namespace Lkrms\PrettyPHP\Tests\Rule\Preset\Internal;
 
-use Lkrms\PrettyPHP\Rule\Support\WordPressTokenTypeIndex;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\PrettyPHP\Tests\Support\TokenTypeIndexTest;
+use Lkrms\PrettyPHP\Rule\Preset\Internal\WordPressTokenTypeIndex;
+use Lkrms\PrettyPHP\Tests\TokenTypeIndexTest;
+use Lkrms\PrettyPHP\TokenTypeIndex;
 
 final class WordPressTokenTypeIndexTest extends TokenTypeIndexTest
 {

@@ -15,7 +15,7 @@ final class NormaliseCommentsTest extends TestCase
     }
 
     /**
-     * @return array<string[]>
+     * @return array<array{string,string}>
      */
     public static function outputProvider(): array
     {

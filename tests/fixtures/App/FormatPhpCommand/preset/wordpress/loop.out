@@ -58,7 +58,7 @@
 <?php
 while ( have_posts() ) :
 	the_post();
-?>
+	?>
 
 	<?php /* How to display posts of the Gallery format. The gallery category is the old way. */ ?>
 
@@ -180,12 +180,12 @@ while ( have_posts() ) :
 				<?php
 				$tags_list = get_the_tag_list( '', ', ' );
 				if ( $tags_list && ! is_wp_error( $tags_list ) ) :
-				?>
+					?>
 				<span class="tag-links">
 					<?php
 					/* translators: 1: CSS classes, 2: Category list. */
 					printf( __( '<span class="%1$s">Tagged</span> %2$s', 'twentyten' ), 'entry-utility-prep entry-utility-prep-tag-links', $tags_list );
-							?>
+					?>
 				</span>
 				<span class="meta-sep">|</span>
 				<?php endif; ?>

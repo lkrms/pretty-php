@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Contract;
 
-use Lkrms\PrettyPHP\Support\TokenCollection;
+use Lkrms\PrettyPHP\Internal\TokenCollection;
 
 /**
  * @api

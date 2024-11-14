@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Concern;
 
 use Lkrms\PrettyPHP\Contract\Filter;
-use Lkrms\PrettyPHP\Token\GenericToken;
+use Lkrms\PrettyPHP\GenericToken;
 
 /**
  * @api
@@ -19,6 +19,8 @@ trait FilterTrait
 
     /**
      * Get the given token's previous code token
+     *
+     * @param-out int $key
      */
     protected function getPrevCode(int $i, ?int &$key = null): ?GenericToken
     {
@@ -30,6 +32,7 @@ trait FilterTrait
             $key = $i;
             return $token;
         }
+        $key = -1;
         return null;
     }
 
@@ -38,6 +41,7 @@ trait FilterTrait
      * index
      *
      * @param array<int,bool> $index
+     * @param-out int $key
      */
     protected function getPrevSiblingFrom(int $i, array $index, ?int $to = null, ?int &$key = null): ?GenericToken
     {
@@ -53,11 +57,14 @@ trait FilterTrait
             }
             $i = $j;
         }
+        $key = -1;
         return null;
     }
 
     /**
      * Get one of the given token's previous siblings
+     *
+     * @param-out int $key
      */
     protected function getPrevSibling(int $i, int $offset = 1, ?int &$key = null): ?GenericToken
     {
@@ -86,11 +93,14 @@ trait FilterTrait
                 }
             }
         }
+        $key = -1;
         return null;
     }
 
     /**
      * Get the given token's parent
+     *
+     * @param-out int $key
      */
     protected function getParent(int $i, ?int &$key = null): ?GenericToken
     {
@@ -112,13 +122,13 @@ trait FilterTrait
     {
         /** @var GenericToken */
         $token = $this->getPrevCode($i, $j);
-        return $this->Idx->AltSyntaxContinueWithoutExpression[$token->id]
+        return $this->Idx->AltContinueWithNoExpression[$token->id]
             || (
                 $token->id === \T_CLOSE_PARENTHESIS
                 && ($prev = $this->getPrevSibling($j))
                 && (
-                    $this->Idx->AltSyntaxStart[$prev->id]
-                    || $this->Idx->AltSyntaxContinueWithExpression[$prev->id]
+                    $this->Idx->AltStart[$prev->id]
+                    || $this->Idx->AltContinueWithExpression[$prev->id]
                 )
             );
     }

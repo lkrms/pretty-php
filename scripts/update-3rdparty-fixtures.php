@@ -146,7 +146,7 @@ foreach ($listings ?? [] as $source => $sourceListings) {
     foreach ($sourceListings as $i => $output) {
         $ext = '';
         try {
-            // @phpstan-ignore-next-line
+            // @phpstan-ignore function.resultUnused
             token_get_all($output, \TOKEN_PARSE);
         } catch (CompileError $ex) {
             $ext = '.invalid';
@@ -284,7 +284,7 @@ foreach ($byHeading as $heading => $listings) {
 
         $ext = '';
         try {
-            // @phpstan-ignore-next-line
+            // @phpstan-ignore function.resultUnused
             token_get_all($listing, \TOKEN_PARSE);
         } catch (CompileError $ex) {
             $ext = '.invalid';

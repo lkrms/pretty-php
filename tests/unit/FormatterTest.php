@@ -9,9 +9,9 @@ use Lkrms\PrettyPHP\Rule\AlignComments;
 use Lkrms\PrettyPHP\Rule\AlignData;
 use Lkrms\PrettyPHP\Rule\AlignLists;
 use Lkrms\PrettyPHP\Rule\AlignTernaryOperators;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
+use Lkrms\PrettyPHP\TokenTypeIndex;
 use Salient\Utility\File;
 use Salient\Utility\Json;
 use Salient\Utility\Regex;
@@ -662,6 +662,7 @@ PHP,
                 Formatter::build()
                     ->tokenTypeIndex(new TokenTypeIndex(true))
                     ->importSortOrder(ImportSortOrder::NONE)
+                    ->indentBetweenTags()
                     ->psr12()
                     ->build(),
         ];

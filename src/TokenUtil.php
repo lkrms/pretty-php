@@ -6,21 +6,20 @@ use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
-use Lkrms\PrettyPHP\Support\TokenCollection;
-use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Internal\TokenCollection;
 use Salient\Utility\Arr;
 use Salient\Utility\Reflect;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 
-final class TokenUtility
+final class TokenUtil
 {
     /**
      * Check if a newline is allowed before a token
      */
     public static function isNewlineAllowedBefore(Token $token): bool
     {
-        if (!$token->Idx->PreserveNewlineBefore[$token->id]) {
+        if (!$token->Idx->AllowNewlineBefore[$token->id]) {
             return false;
         }
 
@@ -54,12 +53,12 @@ final class TokenUtility
         if (
             $token->OpenedBy
             && $token->OpenedBy->id === \T_ATTRIBUTE
-            && $token->Idx->PreserveNewlineAfter[\T_ATTRIBUTE]
+            && $token->Idx->AllowNewlineAfter[\T_ATTRIBUTE]
         ) {
             return true;
         }
 
-        if (!$token->Idx->PreserveNewlineAfter[$token->id]) {
+        if (!$token->Idx->AllowNewlineAfter[$token->id]) {
             return false;
         }
 

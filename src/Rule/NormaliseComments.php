@@ -8,7 +8,7 @@ use Lkrms\PrettyPHP\Catalog\TokenFlagMask;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenTypeIndex;
 use Salient\Utility\Regex;
 
 /**
@@ -176,7 +176,7 @@ final class NormaliseComments implements TokenRule
                     )) {
                         $collapse = true;
                     } else {
-                        // @phpstan-ignore-next-line
+                        // @phpstan-ignore assign.propertyType
                         $token->Flags |= TokenFlag::COLLAPSIBLE_COMMENT;
                     }
                 }

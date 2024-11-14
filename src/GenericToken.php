@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Token;
+namespace Lkrms\PrettyPHP;
 
 use Salient\Polyfill\PhpToken as SalientPhpToken;
 use PhpToken;

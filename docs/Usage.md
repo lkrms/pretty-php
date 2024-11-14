@@ -171,6 +171,10 @@ pretty-php - Format a PHP file
 
   Equivalent to **`--disable=sort-imports`**
 
+- **`-b`**, **`--indent-between-tags`**
+
+  Add a level of indentation to code between indented tags.
+
 - **`--psr12`**
 
   Enforce strict PSR-12 / PER Coding Style compliance.

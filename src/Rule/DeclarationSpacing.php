@@ -8,8 +8,8 @@ use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Filter\SortImports;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Token;
+use Lkrms\PrettyPHP\TokenTypeIndex;
 use Salient\Utility\Arr;
 use Salient\Utility\Regex;
 
@@ -291,13 +291,13 @@ final class DeclarationSpacing implements TokenRule
                 if (
                     $this->Formatter->TightDeclarationSpacing
                     || $alwaysExpand === false
-                    || ($alwaysExpand === null && (
+                    || (
                         // Collapse standalone DocBlocks if they were originally
                         // collapsed
                         $token->Prev
                         && $token->Prev->id === \T_DOC_COMMENT
                         && strpos($token->Prev->OriginalText ?? $token->Prev->text, "\n") === false
-                    ))
+                    )
                 ) {
                     $this->maybeCollapseComment($token);
                 }

@@ -133,4 +133,4 @@ With **`--operators-last`**, newlines are allowed after, and not before,
 - `T_OBJECT_OPERATOR`
 - Ternary operators
 
-[unit test]: ../tests/unit/Support/TokenTypeIndexTest.php
+[unit test]: ../tests/unit/TokenTypeIndexTest.php

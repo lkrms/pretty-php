@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Token;
+namespace Lkrms\PrettyPHP;
 
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
@@ -9,11 +9,8 @@ use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Contract\HasTokenNames;
-use Lkrms\PrettyPHP\Support\TokenCollection;
-use Lkrms\PrettyPHP\Support\TokenIndentDelta;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\PrettyPHP\Formatter;
-use Lkrms\PrettyPHP\TokenUtility;
+use Lkrms\PrettyPHP\Internal\TokenCollection;
+use Lkrms\PrettyPHP\Internal\TokenIndentDelta;
 use Salient\Utility\Str;
 use Closure;
 use JsonSerializable;
@@ -84,19 +81,15 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
     /**
      * The formatter to which the token belongs
-     *
-     * @readonly
      */
     public Formatter $Formatter;
 
     /**
      * Token type index
-     *
-     * @readonly
      */
     public TokenTypeIndex $Idx;
 
-    public int $TagIndent = 0;
+    public ?int $TagIndent = null;
 
     /**
      * Indentation levels ignored until the token is rendered
@@ -222,7 +215,11 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         int $flags = 0,
         Filter ...$filters
     ): array {
-        return self::filter(parent::tokenize($code, $flags), ...$filters);
+        /** @var list<static> */
+        $tokens = parent::tokenize($code, $flags);
+        return $tokens && $filters
+            ? self::filter($tokens, $filters)
+            : $tokens;
     }
 
     /**
@@ -235,22 +232,27 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         int $flags = 0,
         Filter ...$filters
     ): array {
-        return self::filter(GenericToken::tokenize($code, $flags), ...$filters);
+        /** @var list<GenericToken> */
+        $tokens = GenericToken::tokenize($code, $flags);
+        return $tokens && $filters
+            ? self::filter($tokens, $filters)
+            : $tokens;
     }
 
     /**
      * @template T of GenericToken
      *
-     * @param T[] $tokens
-     * @return T[]
+     * @param non-empty-list<T> $tokens
+     * @param non-empty-array<Filter> $filters
+     * @return list<T>
      */
-    private static function filter(array $tokens, Filter ...$filters): array
+    private static function filter(array $tokens, array $filters): array
     {
-        if (!$tokens || !$filters) {
-            return $tokens;
-        }
         foreach ($filters as $filter) {
             $tokens = $filter->filterTokens($tokens);
+            if (!$tokens) {
+                break;
+            }
         }
         return $tokens;
     }
@@ -511,13 +513,13 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
         if (
             $this->ClosedBy
-            || $this->Idx->AltSyntaxContinueWithoutExpression[$prevCode->id]
+            || $this->Idx->AltContinueWithNoExpression[$prevCode->id]
             || (
                 $prevCode->id === \T_CLOSE_PARENTHESIS
                 && $prevCode->PrevSibling
                 && (
-                    $this->Idx->AltSyntaxStart[$prevCode->PrevSibling->id]
-                    || $this->Idx->AltSyntaxContinueWithExpression[$prevCode->PrevSibling->id]
+                    $this->Idx->AltStart[$prevCode->PrevSibling->id]
+                    || $this->Idx->AltContinueWithExpression[$prevCode->PrevSibling->id]
                 )
             )
         ) {
@@ -749,7 +751,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
                 $first->id === \T_STATIC
                 && !$this->Idx->Declaration[$next->id]  // `static function`
                 && !(                                   // `static int $foo`
-                    $this->Idx->ValueTypeStart[$next->id]
+                    $this->Idx->StartOfValueType[$next->id]
                     && $next->skipNextSiblingsFrom($this->Idx->ValueType)->id === \T_VARIABLE
                 )
                 && !(                                   // `static $foo` in a property context
@@ -763,7 +765,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
                 )
             )
             || ($first->id === \T_CASE && $first->inSwitch())
-            || ($this->Idx->VisibilityWithReadonly[$first->id] && $first->inParameterList())
+            || ($this->Idx->VisibilityOrReadonly[$first->id] && $first->inParameterList())
         ) {
             return false;
         }
@@ -1407,7 +1409,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     public function withoutTerminator(): self
     {
         if ($this->PrevCode && (
-            $this->Idx->StatementTerminator[$this->id]
+            $this->Idx->EndOfStatement[$this->id]
             || $this->Flags & TokenFlag::STATEMENT_TERMINATOR
         )) {
             return $this->PrevCode;
@@ -1418,10 +1420,10 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     public function withTerminator(): self
     {
         if ($this->NextCode && !(
-            $this->Idx->StatementTerminator[$this->id]
+            $this->Idx->EndOfStatement[$this->id]
             || $this->Flags & TokenFlag::STATEMENT_TERMINATOR
         ) && (
-            $this->Idx->StatementTerminator[$this->NextCode->id]
+            $this->Idx->EndOfStatement[$this->NextCode->id]
             || $this->NextCode->Flags & TokenFlag::STATEMENT_TERMINATOR
         )) {
             return $this->NextCode;
@@ -1561,10 +1563,10 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
     public function isDereferenceableTerminator(): bool
     {
-        return $this->Idx->DereferenceableTerminator[$this->id] || (
+        return $this->Idx->EndOfDereferenceable[$this->id] || (
             $this->PrevCode
             && $this->PrevCode->id === \T_DOUBLE_COLON
-            && $this->Idx->MaybeReserved[$this->id]
+            && $this->id === \T_STRING
         );
     }
 
@@ -1591,7 +1593,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         return $this->Expression === $this
             || ($this->PrevCode && (
                 $this->PrevCode->Flags & TokenFlag::TERNARY_OPERATOR
-                || $this->Idx->UnaryPredecessor[$this->PrevCode->id]
+                || $this->Idx->BeforeUnary[$this->PrevCode->id]
             ));
     }
 
@@ -1989,6 +1991,6 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      */
     public function jsonSerialize(): array
     {
-        return TokenUtility::serialize($this);
+        return TokenUtil::serialize($this);
     }
 }

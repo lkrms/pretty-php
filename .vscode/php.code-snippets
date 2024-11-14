@@ -34,7 +34,7 @@
 			"    }",
 			"",
 			"    /**",
-			"     * @return array<string[]>",
+			"     * @return array<array{string,string}>",
 			"     */",
 			"    public static function outputProvider(): array",
 			"    {",

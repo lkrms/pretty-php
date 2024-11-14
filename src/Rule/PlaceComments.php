@@ -7,8 +7,8 @@ use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\PrettyPHP\Token\Token;
+use Lkrms\PrettyPHP\Token;
+use Lkrms\PrettyPHP\TokenTypeIndex;
 
 /**
  * Place comments beside code, above code, or inside code
@@ -116,7 +116,7 @@ final class PlaceComments implements TokenRule
             // Copy indentation and padding from `$next` to `$token` in
             // `beforeRender()` unless `$next` is a close bracket
             $next = $token->NextCode;
-            if ($next && !$this->Idx->CloseBracketOrEndAltSyntax[$next->id]) {
+            if ($next && !$this->Idx->CloseBracketOrAlt[$next->id]) {
                 $this->Comments[] = [$token, $next];
             }
 

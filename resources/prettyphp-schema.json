@@ -142,6 +142,11 @@
             "type": "boolean",
             "default": false
         },
+        "indentBetweenTags": {
+            "description": "Add a level of indentation to code between indented tags.",
+            "type": "boolean",
+            "default": false
+        },
         "psr12": {
             "description": "Enforce strict PSR-12 / PER Coding Style compliance.",
             "type": "boolean",

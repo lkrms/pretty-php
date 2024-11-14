@@ -20,6 +20,7 @@ usage: ${0##*/}                        generate everything
        ${0##*/} --assets               generate code and documentation
        ${0##*/} --check                check code and documentation
        ${0##*/} --fixtures             generate test fixtures
+       ${0##*/} --preset-fixtures      generate preset test fixtures
        ${0##*/} [--fixtures] phpXY...  use PHP versions to generate fixtures${1:+
 }
 EOF
@@ -54,10 +55,12 @@ function generate() {
 ASSETS=1
 CHECK=0
 FIXTURES=1
+PRESET_FIXTURES=1
 STATUS=0
 if [[ ${1-} == -* ]]; then
     ASSETS=0
     FIXTURES=0
+    PRESET_FIXTURES=0
 fi
 while [[ ${1-} == -* ]]; do
     case "$1" in
@@ -68,9 +71,15 @@ while [[ ${1-} == -* ]]; do
         ASSETS=1
         CHECK=1
         FIXTURES=0
+        PRESET_FIXTURES=0
         ;;
     --fixtures)
         FIXTURES=1
+        PRESET_FIXTURES=1
+        CHECK=0
+        ;;
+    --preset-fixtures)
+        PRESET_FIXTURES=1
         CHECK=0
         ;;
     -h | --help)
@@ -96,6 +105,10 @@ if ((FIXTURES)); then (
     for PHP in "$@"; do
         "$PHP" -dshort_open_tag=on scripts/generate-test-output.php
     done
+); fi
+
+if ((PRESET_FIXTURES)); then (
+    (($#)) || set -- php
 
     for DIR in tests/fixtures/App/FormatPhpCommand/preset/*; do
         PRESET=${DIR##*/}

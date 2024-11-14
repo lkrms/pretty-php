@@ -3,25 +3,24 @@
 namespace Lkrms\PrettyPHP;
 
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
-use Lkrms\PrettyPHP\Token\Token;
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasMutator;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
+use Generator;
 
 final class Renderer implements Immutable
 {
     use HasMutator;
 
-    private Formatter $Formatter;
+    private int $TabSize;
     private string $SoftTab;
     private string $Tab;
     private TokenTypeIndex $Idx;
 
     public function __construct(Formatter $formatter)
     {
-        $this->Formatter = $formatter;
+        $this->TabSize = $formatter->TabSize;
         $this->SoftTab = $formatter->SoftTab;
         $this->Tab = $formatter->Tab;
         $this->Idx = $formatter->TokenTypeIndex;
@@ -34,7 +33,7 @@ final class Renderer implements Immutable
      */
     public function withFormatter(Formatter $formatter): self
     {
-        return $this->with('Formatter', $formatter)
+        return $this->with('TabSize', $formatter->TabSize)
                     ->with('SoftTab', $formatter->SoftTab)
                     ->with('Tab', $formatter->Tab)
                     ->with('Idx', $formatter->TokenTypeIndex);
@@ -59,8 +58,8 @@ final class Renderer implements Immutable
             // iteration, render it now
             $after = (
                 !$t->Next
-                || $this->Idx->DoNotModify[$t->Next->id]
-                || $this->Idx->DoNotModifyLeft[$t->Next->id]
+                || $this->Idx->NotTrimmable[$t->Next->id]
+                || $this->Idx->RightTrimmable[$t->Next->id]
             )
                 ? $this->renderWhitespaceAfter($t)
                 : '';
@@ -126,8 +125,8 @@ final class Renderer implements Immutable
         bool $softTabs = false
     ): string {
         if (
-            $this->Idx->DoNotModify[$token->id]
-            || $this->Idx->DoNotModifyLeft[$token->id]
+            $this->Idx->NotTrimmable[$token->id]
+            || $this->Idx->RightTrimmable[$token->id]
         ) {
             return '';
         }
@@ -135,20 +134,54 @@ final class Renderer implements Immutable
         $before = '';
         $padding = $token->Padding;
         if ($whitespace = $token->effectiveWhitespaceBefore()) {
-            $before = TokenUtility::getWhitespace($whitespace);
+            $before = TokenUtil::getWhitespace($whitespace);
             if ($before[0] === "\n") {
-                // Don't indent close tags unless subsequent text is indented by
-                // at least the same amount
-                if ($token->id === \T_CLOSE_TAG && $token->OpenTag && (
-                    !$token->Next
-                    || $this->getIndentSpacesFromText($token->Next)
-                        < $this->getIndentSpaces($token)
-                )) {
-                    $indent = $token->OpenTag->TagIndent;
-                } else {
-                    $indent = $token->indent();
-                    $padding += $token->LinePadding - $token->LineUnpadding;
+                $indent = $token->indent();
+                $padding += $token->LinePadding - $token->LineUnpadding;
+
+                // If this is a close tag with subsequent text not indented by
+                // at least the same amount, perform some sanity checks
+                if (
+                    $token->id === \T_CLOSE_TAG
+                    && $token->Next
+                    && $this->getIndentSpacesFromText($token->Next)
+                        < $indent * $this->TabSize + $padding
+                ) {
+                    // Copy the open tag's indentation if it's at the same depth
+                    /** @var Token */
+                    $openTag = $token->OpenTag;
+                    if (
+                        $token->Depth === $openTag->Depth
+                        && $openTag->TagIndent !== null
+                    ) {
+                        $indent = $openTag->TagIndent;
+                        $padding = 0;
+                    } else {
+                        // Otherwise, if the document has no indented open tags,
+                        // don't indent the close tag
+                        $found = false;
+                        /** @var Token $tag */
+                        foreach ($this->getOpenTags($token) as $tag) {
+                            if (!$tag->TagIndent) {
+                                continue;
+                            }
+                            // Ignore one-line blocks
+                            $end = $tag->CloseTag ?? $tag->last();
+                            /** @var Token */
+                            $end = $end->Prev;
+                            if (!$tag->collect($end)->hasNewline()) {
+                                continue;
+                            }
+                            $found = true;
+                            break;
+                        }
+                        if (!$found) {
+                            $indent = 0;
+                            $padding = 0;
+                        }
+                    }
                 }
+
                 if ($indent) {
                     $before .= str_repeat(
                         $softTabs ? $this->SoftTab : $this->Tab,
@@ -166,27 +199,70 @@ final class Renderer implements Immutable
     public function renderWhitespaceAfter(Token $token): string
     {
         if (
-            $this->Idx->DoNotModify[$token->id]
-            || $this->Idx->DoNotModifyRight[$token->id]
+            $this->Idx->NotTrimmable[$token->id]
+            || $this->Idx->LeftTrimmable[$token->id]
         ) {
             return '';
         }
 
-        return TokenUtility::getWhitespace($token->effectiveWhitespaceAfter());
+        return TokenUtil::getWhitespace($token->effectiveWhitespaceAfter());
     }
 
-    private function getIndentSpaces(Token $token): int
+    /**
+     * @return Generator<Token>
+     */
+    private function getOpenTags(Token $token): Generator
     {
-        return (
-            $token->TagIndent
-            + $token->PreIndent
-            + $token->Indent
-            + $token->HangingIndent
-            - $token->Deindent
-        ) * $this->Formatter->TabSize + (
-            $token->LinePadding
-            - $token->LineUnpadding
-        );
+        $sources = [
+            $this->getNextOpenTags($token),
+            $this->getPrevOpenTags($token),
+        ];
+
+        do {
+            foreach ($sources as $i => $source) {
+                if ($source->valid()) {
+                    yield $source->current();
+                    $source->next();
+                } else {
+                    unset($sources[$i]);
+                }
+            }
+        } while ($sources);
+    }
+
+    /**
+     * @return Generator<Token>
+     */
+    private function getNextOpenTags(Token $token): Generator
+    {
+        if ($token->CloseTag) {
+            $token = $token->CloseTag;
+        }
+        while ($token->Next) {
+            $token = $token->Next;
+            if ($token === $token->OpenTag) {
+                yield $token;
+                if ($token->CloseTag) {
+                    $token = $token->CloseTag;
+                    continue;
+                }
+                break;
+            }
+        }
+    }
+
+    /**
+     * @return Generator<Token>
+     */
+    private function getPrevOpenTags(Token $token): Generator
+    {
+        while ($token->Prev) {
+            $token = $token->Prev;
+            if ($token->OpenTag) {
+                $token = $token->OpenTag;
+                yield $token;
+            }
+        }
     }
 
     private function getIndentSpacesFromText(Token $token): int
@@ -195,29 +271,7 @@ final class Renderer implements Immutable
             return 0;
         }
 
-        return strlen(str_replace("\t", $this->SoftTab, $match['indent']));
-    }
-
-    private function setPosition(
-        Token $token,
-        string $text,
-        bool $textMayHaveTabs
-    ): void {
-        $token->OutputPos += strlen($text);
-        if ($textMayHaveTabs && strpos($text, "\t") !== false) {
-            $text = Str::expandTabs(
-                $text,
-                $this->Formatter->TabSize,
-                $token->OutputColumn
-            );
-        }
-        $newlines = substr_count($text, "\n");
-        if ($newlines) {
-            $token->OutputLine += $newlines;
-            $token->OutputColumn = mb_strlen($text) - mb_strrpos($text, "\n");
-        } else {
-            $token->OutputColumn += mb_strlen($text);
-        }
+        return strlen(Str::expandTabs($match['indent'], $this->TabSize));
     }
 
     private function getMultiLineComment(Token $token, bool $softTabs): string
@@ -274,7 +328,7 @@ column 1 despite starting in column 2 or above (like this comment) */
             $indent = "\n" . ltrim($beforeStart, "\n")
                 . str_repeat(' ', mb_strlen($this->render($start, $token->Prev, $softTabs))
                     - strlen($beforeStart)
-                    + strlen(TokenUtility::getWhitespace($token->effectiveWhitespaceBefore()))
+                    + strlen(TokenUtil::getWhitespace($token->effectiveWhitespaceBefore()))
                     + $token->Padding);
         }
         $text = str_replace("\n", $indent, $token->text);
@@ -290,5 +344,27 @@ column 1 despite starting in column 2 or above (like this comment) */
             return Regex::replace("/(?<=\\n|\G){$this->SoftTab}/", "\t", $text);
         }
         return $text;
+    }
+
+    private function setPosition(
+        Token $token,
+        string $text,
+        bool $textMayHaveTabs
+    ): void {
+        $token->OutputPos += strlen($text);
+        if ($textMayHaveTabs && strpos($text, "\t") !== false) {
+            $text = Str::expandTabs(
+                $text,
+                $this->TabSize,
+                $token->OutputColumn
+            );
+        }
+        $newlines = substr_count($text, "\n");
+        if ($newlines) {
+            $token->OutputLine += $newlines;
+            $token->OutputColumn = mb_strlen($text) - mb_strrpos($text, "\n");
+        } else {
+            $token->OutputColumn += mb_strlen($text);
+        }
     }
 }

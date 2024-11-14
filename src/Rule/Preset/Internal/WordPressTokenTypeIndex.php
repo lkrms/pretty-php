@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\PrettyPHP\Rule\Support;
+namespace Lkrms\PrettyPHP\Rule\Preset\Internal;
 
-use Lkrms\PrettyPHP\Support\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenTypeIndex;
 use Salient\Core\Concern\HasMutator;
 
 /**
@@ -21,13 +21,15 @@ final class WordPressTokenTypeIndex extends TokenTypeIndex
     {
         parent::__construct(true);
 
-        $this->PreserveBlankAfter[\T_OPEN_BRACE] = true;
-        $this->PreserveBlankBefore[\T_CLOSE_BRACE] = true;
-        $this->PreserveNewlineAfter[\T_CONCAT] = true;
-        $this->PreserveNewlineBefore[\T_CLOSE_BRACE] = true;
+        $this->AllowBlankAfter[\T_OPEN_BRACE] = true;
 
-        self::$DefaultAllowNewlineBefore ??= $this->PreserveNewlineBefore;
-        self::$DefaultAllowNewlineAfter ??= $this->PreserveNewlineAfter;
+        $this->AllowBlankBefore[\T_CLOSE_BRACE] = true;
+        $this->AllowNewlineBefore[\T_CLOSE_BRACE] = true;
+
+        $this->AllowNewlineAfter[\T_CONCAT] = true;
+
+        self::$DefaultAllowNewlineBefore ??= $this->AllowNewlineBefore;
+        self::$DefaultAllowNewlineAfter ??= $this->AllowNewlineAfter;
     }
 
     /**
@@ -56,8 +58,8 @@ final class WordPressTokenTypeIndex extends TokenTypeIndex
 
     public function withPreserveNewline()
     {
-        return $this->with('PreserveNewlineBefore', self::$DefaultAllowNewlineBefore)
-                    ->with('PreserveNewlineAfter', self::$DefaultAllowNewlineAfter)
+        return $this->with('AllowNewlineBefore', self::$DefaultAllowNewlineBefore)
+                    ->with('AllowNewlineAfter', self::$DefaultAllowNewlineAfter)
                     ->with('Operators', self::FIRST);
     }
 }
