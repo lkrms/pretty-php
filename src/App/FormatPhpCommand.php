@@ -1251,7 +1251,7 @@ EOF,
     }
 
     /**
-     * @param mixed ...$values
+     * @param string|int|bool|float|null ...$values
      */
     private function printSummary(
         int $count,
