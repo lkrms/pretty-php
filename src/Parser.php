@@ -194,11 +194,9 @@ final class Parser implements Immutable
 
             if ($idx->NotCode[$token->id]) {
                 if ($token->id === \T_DOC_COMMENT) {
-                    // @phpstan-ignore assign.propertyType
                     $token->Flags |= TokenFlag::DOC_COMMENT;
                 } elseif ($token->id === \T_COMMENT) {
                     // "//", "/*" or "#"
-                    // @phpstan-ignore assign.propertyType
                     $token->Flags |= (
                         $text[0] === '/'
                             ? ($text[1] === '/' ? TokenFlag::CPP_COMMENT : TokenFlag::C_COMMENT)
@@ -218,12 +216,10 @@ final class Parser implements Immutable
                                 // The last delimiter is preceded by a newline
                                 || !Regex::match('/\S((?<!\*)|\h++)\*++\/$/', $text)
                             )) {
-                        // @phpstan-ignore assign.propertyType
                         $token->Flags |= TokenFlag::INFORMAL_DOC_COMMENT;
                     }
                 }
             } else {
-                // @phpstan-ignore assign.propertyType
                 $token->Flags |= TokenFlag::CODE;
             }
 
@@ -255,7 +251,6 @@ final class Parser implements Immutable
                     $virtual->Idx = $idx;
                     $virtual->OpenTag = $token->OpenTag;
                     $virtual->CloseTag = &$virtual->OpenTag->CloseTag;
-                    // @phpstan-ignore assign.propertyType
                     $virtual->Flags |= TokenFlag::CODE;
                     $prev->Next = $virtual;
                     $token->Prev = $virtual;
@@ -294,7 +289,6 @@ final class Parser implements Immutable
                         || !($t->Flags & TokenFlag::STATEMENT_TERMINATOR)
                     )
                 ) {
-                    // @phpstan-ignore assign.propertyType
                     $token->Flags |=
                         TokenFlag::CODE
                         | TokenFlag::STATEMENT_TERMINATOR;
@@ -373,9 +367,7 @@ final class Parser implements Immutable
                     continue;
                 }
 
-                // @phpstan-ignore assign.propertyType
                 $opener->Flags |= TokenFlag::STRUCTURAL_BRACE;
-                // @phpstan-ignore assign.propertyType
                 $token->Flags |= TokenFlag::STRUCTURAL_BRACE;
 
                 $t = $token->PrevSibling;
@@ -399,7 +391,6 @@ final class Parser implements Immutable
                     break;
                 }
 
-                // @phpstan-ignore assign.propertyType
                 $token->Flags |= TokenFlag::STATEMENT_TERMINATOR;
 
                 $prev = $token;
@@ -589,9 +580,7 @@ final class Parser implements Immutable
                         if ($count--) {
                             continue;
                         }
-                        // @phpstan-ignore assign.propertyType
                         $current->Flags |= TokenFlag::TERNARY_OPERATOR;
-                        // @phpstan-ignore assign.propertyType
                         $token->Flags |= TokenFlag::TERNARY_OPERATOR;
                         $current->Data[TokenData::OTHER_TERNARY_OPERATOR] = $token;
                         $token->Data[TokenData::OTHER_TERNARY_OPERATOR] = $current;

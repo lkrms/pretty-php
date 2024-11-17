@@ -910,7 +910,6 @@ final class Formatter implements Buildable, Immutable
                                     );
                     $count = $items->count();
                     if ($count > 1) {
-                        // @phpstan-ignore assign.propertyType
                         $parent->Flags |= TokenFlag::LIST_PARENT;
                         $parent->Data[TokenData::LIST_ITEM_COUNT] = $count;
                         foreach ($items as $token) {
@@ -959,7 +958,6 @@ final class Formatter implements Buildable, Immutable
             if (!$count) {
                 continue;
             }
-            // @phpstan-ignore assign.propertyType
             $parent->Flags |= TokenFlag::LIST_PARENT;
             $parent->Data[TokenData::LIST_ITEM_COUNT] = $count;
             foreach ($items as $token) {

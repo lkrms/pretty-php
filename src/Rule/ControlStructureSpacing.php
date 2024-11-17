@@ -71,7 +71,6 @@ final class ControlStructureSpacing implements TokenRule
                 continue;
             }
 
-            // @phpstan-ignore assign.propertyType
             $token->Flags |= TokenFlag::HAS_UNENCLOSED_BODY;
 
             // Add a newline before the token unless it continues a control

@@ -59,7 +59,6 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     public ?self $String = null;
     public ?self $StringClosedBy = null;
     public ?self $Heredoc = null;
-    /** @var int-mask-of<TokenFlag::*> */
     public int $Flags = 0;
 
     /**
@@ -779,7 +778,6 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             return false;
         }
 
-        // @phpstan-ignore assign.propertyType
         $this->Flags |= TokenFlag::NAMED_DECLARATION;
         $this->Data[TokenData::NAMED_DECLARATION_PARTS] = $parts;
 
