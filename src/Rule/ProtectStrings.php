@@ -9,7 +9,7 @@ use Lkrms\PrettyPHP\Token;
 use Lkrms\PrettyPHP\TokenTypeIndex;
 
 /**
- * Suppress changes to whitespace inside strings and heredocs
+ * Suppress changes to whitespace in strings and heredocs
  *
  * @api
  */

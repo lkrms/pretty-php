@@ -77,6 +77,23 @@ If present in the input, underscores are added to decimal values with no
 exponent every 3 digits, to hexadecimal values with more than 5 digits every 4
 digits, and to binary values every 4 digits.
 
+### `SimplifyStrings`
+
+Strings other than nowdocs are normalised as follows:
+
+Single- and double-quoted strings are replaced with the most readable and
+economical syntax. Single-quoted strings are preferred unless escaping is
+required or the double-quoted equivalent is shorter.
+
+Backslash escapes are added in contexts where they improve safety, consistency
+and readability, otherwise they are removed if possible.
+
+Aside from leading and continuation bytes in valid UTF-8 strings, control
+characters and non-ASCII characters are backslash-escaped using hexadecimal
+notation with lowercase digits. Invisible characters that don't belong to a
+recognised Unicode sequence are backslash-escaped using Unicode notation with
+uppercase digits.
+
 ### `IndexSpacing`
 
 Leading and trailing spaces are added to tokens in the `AddSpace`,
