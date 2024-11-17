@@ -13,13 +13,13 @@ interface ListRule extends Rule
     public const PROCESS_LIST = 'processList';
 
     /**
-     * Apply the rule to a list containing one or more items
+     * Apply the rule to a token and the list of items associated with it
      *
-     * If `$parent` is a `T_ATTRIBUTE`, `T_OPEN_BRACKET` or `T_OPEN_PARENTHESIS`
-     * token, at least one item is passed to this method.
+     * If `$parent` is a `T_OPEN_PARENTHESIS`, `T_OPEN_BRACKET` or `T_ATTRIBUTE`
+     * token, `$items` has at least one item.
      *
-     * Otherwise, `$parent` is a `T_EXTENDS` or `T_IMPLEMENTS` token with at
-     * least two subsequent interface names.
+     * Otherwise, `$parent` is a `T_EXTENDS` or `T_IMPLEMENTS` token, and
+     * `$items` has at least two items.
      *
      * Each token in `$items` is the first code token after `$parent` or a
      * delimiter.

@@ -24,16 +24,10 @@ final class StandardWhitespace implements TokenRule
      */
     public static function getPriority(string $method): ?int
     {
-        switch ($method) {
-            case self::PROCESS_TOKENS:
-                return 80;
-
-            case self::CALLBACK:
-                return 820;
-
-            default:
-                return null;
-        }
+        return [
+            self::PROCESS_TOKENS => 80,
+            self::CALLBACK => 820,
+        ][$method] ?? null;
     }
 
     /**

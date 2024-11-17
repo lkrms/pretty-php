@@ -32,13 +32,9 @@ final class ListSpacing implements ListRule
 
     public static function getPriority(string $method): ?int
     {
-        switch ($method) {
-            case self::PROCESS_LIST:
-                return 98;
-
-            default:
-                return null;
-        }
+        return [
+            self::PROCESS_LIST => 98,
+        ][$method] ?? null;
     }
 
     /**

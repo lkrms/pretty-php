@@ -22,13 +22,9 @@ final class ProtectStrings implements TokenRule
      */
     public static function getPriority(string $method): ?int
     {
-        switch ($method) {
-            case self::PROCESS_TOKENS:
-                return 40;
-
-            default:
-                return null;
-        }
+        return [
+            self::PROCESS_TOKENS => 40,
+        ][$method] ?? null;
     }
 
     /**
@@ -46,7 +42,7 @@ final class ProtectStrings implements TokenRule
     /**
      * @inheritDoc
      */
-    public static function getRequiresSortedTokens(): bool
+    public static function needsSortedTokens(): bool
     {
         return false;
     }

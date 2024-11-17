@@ -53,13 +53,9 @@ final class DeclarationSpacing implements TokenRule
      */
     public static function getPriority(string $method): ?int
     {
-        switch ($method) {
-            case self::PROCESS_TOKENS:
-                return 620;
-
-            default:
-                return null;
-        }
+        return [
+            self::PROCESS_TOKENS => 620,
+        ][$method] ?? null;
     }
 
     /**

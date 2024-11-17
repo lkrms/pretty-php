@@ -995,7 +995,7 @@ final class Formatter implements Buildable, Immutable
             }
             if ($types === ['*']) {
                 $tokens = $this->Tokens;
-            } elseif ($rule->getRequiresSortedTokens()) {
+            } elseif ($rule->needsSortedTokens()) {
                 /** @var array<int,true> $types */
                 // @phpstan-ignore varTag.nativeType
                 $tokens = $this->sortTokensByType($types);

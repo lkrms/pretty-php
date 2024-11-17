@@ -32,13 +32,9 @@ final class OperatorSpacing implements TokenRule
 
     public static function getPriority(string $method): ?int
     {
-        switch ($method) {
-            case self::PROCESS_TOKENS:
-                return 80;
-
-            default:
-                return null;
-        }
+        return [
+            self::PROCESS_TOKENS => 80,
+        ][$method] ?? null;
     }
 
     public static function getTokenTypes(TokenTypeIndex $idx): array

@@ -26,16 +26,10 @@ final class HeredocIndentation implements TokenRule
 
     public static function getPriority(string $method): ?int
     {
-        switch ($method) {
-            case self::PROCESS_TOKENS:
-                return 900;
-
-            case self::BEFORE_RENDER:
-                return 900;
-
-            default:
-                return null;
-        }
+        return [
+            self::PROCESS_TOKENS => 900,
+            self::BEFORE_RENDER => 900,
+        ][$method] ?? null;
     }
 
     public static function getTokenTypes(TokenTypeIndex $idx): array

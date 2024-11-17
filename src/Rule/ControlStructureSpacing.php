@@ -22,13 +22,9 @@ final class ControlStructureSpacing implements TokenRule
 
     public static function getPriority(string $method): ?int
     {
-        switch ($method) {
-            case self::PROCESS_TOKENS:
-                return 83;
-
-            default:
-                return null;
-        }
+        return [
+            self::PROCESS_TOKENS => 83,
+        ][$method] ?? null;
     }
 
     public static function getTokenTypes(TokenTypeIndex $idx): array
