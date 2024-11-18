@@ -94,6 +94,36 @@ notation with lowercase digits. Invisible characters that don't belong to a
 recognised Unicode sequence are backslash-escaped using Unicode notation with
 uppercase digits.
 
+### `NormaliseComments`
+
+In one-line C-style comments, unnecessary asterisks are removed from both
+delimiters, and whitespace between delimiters and adjacent content is replaced
+with a space.
+
+Shell-style comments (`#`) are converted to C++-style comments (`//`).
+
+In C++-style comments, a space is added between the delimiter and adjacent
+content if horizontal whitespace is not already present.
+
+DocBlocks are normalised for PSR-5 compliance as follows:
+
+- An asterisk is added to the start of each line that doesn't have one. The
+  indentation of undelimited lines relative to each other is maintained if
+  possible.
+- If every line starts with an asterisk and ends with `" *"` or `"\t*"`,
+  trailing asterisks are removed.
+- Trailing whitespace is removed from each line.
+- The content of each DocBlock is applied to its token as `COMMENT_CONTENT`
+  data.
+- DocBlocks with one line of content are collapsed to a single line unless they
+  appear to describe a file or have a subsequent named declaration. In the
+  latter case, the `COLLAPSIBLE_COMMENT` flag is applied.
+
+C-style comments where every line starts with an asterisk, or at least one
+delimiter appears on its own line, receive the same treatment as DocBlocks.
+
+> Any C-style comments that remain are trimmed and reindented by the renderer.
+
 ### `IndexSpacing`
 
 Leading and trailing spaces are added to tokens in the `AddSpace`,
