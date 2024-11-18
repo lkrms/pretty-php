@@ -29,10 +29,6 @@ final class SortImports implements Filter
      */
     public function filterTokens(array $tokens): array
     {
-        if (!$tokens) {
-            return $tokens;
-        }
-
         $class = get_class($tokens[0]);
 
         $this->Tokens = $tokens;

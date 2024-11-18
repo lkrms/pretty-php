@@ -167,6 +167,17 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
+     * T_OPEN_BRACE, T_IMPLEMENTS
+     *
+     * @var array<int,bool>
+     */
+    public array $OpenBraceOrImplements = [
+        \T_OPEN_BRACE => true,
+        \T_IMPLEMENTS => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
      * T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO
      *
      * @var array<int,bool>
@@ -256,6 +267,20 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         \T_ATTRIBUTE => true,
         \T_ATTRIBUTE_COMMENT => true,
     ]
+        + self::TOKEN_INDEX;
+
+    /**
+     * T_ATTRIBUTE, T_ATTRIBUTE_COMMENT, T_CASE, T_FUNCTION, T_NAMESPACE, T_USE,
+     * T_CONST, T_DECLARE, T_CLASS, T_ENUM, T_INTERFACE, T_TRAIT, T_ABSTRACT,
+     * T_FINAL, T_READONLY, T_STATIC, T_VAR, visibility modifiers
+     *
+     * @var array<int,bool>
+     */
+    public array $AttributeOrDeclaration = [
+        \T_ATTRIBUTE => true,
+        \T_ATTRIBUTE_COMMENT => true,
+    ]
+        + self::DECLARATION
         + self::TOKEN_INDEX;
 
     /**
@@ -377,7 +402,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * Modifiers, T_CONST
+     * Visibility modifiers, T_ABSTRACT, T_CONST, T_FINAL, T_READONLY, T_STATIC,
+     * T_VAR
      *
      * @var array<int,bool>
      */
@@ -419,6 +445,14 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         \T_ELSEIF => true,
         \T_ELSE => true,
     ]
+        + self::TOKEN_INDEX;
+
+    /**
+     * Visibility modifiers, T_ABSTRACT, T_FINAL, T_READONLY, T_STATIC, T_VAR
+     *
+     * @var array<int,bool>
+     */
+    public array $Modifier = self::MODIFIER
         + self::TOKEN_INDEX;
 
     /**
@@ -629,6 +663,19 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         \T_OPEN_PARENTHESIS => true,
         \T_EXTENDS => true,
         \T_IMPLEMENTS => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
+     * T_NEW, T_ATTRIBUTE, T_ATTRIBUTE_COMMENT, T_STATIC
+     *
+     * @var array<int,bool>
+     */
+    public array $BeforeAnonymousClassOrFunction = [
+        \T_NEW => true,
+        \T_ATTRIBUTE => true,
+        \T_ATTRIBUTE_COMMENT => true,
+        \T_STATIC => true,
     ]
         + self::TOKEN_INDEX;
 

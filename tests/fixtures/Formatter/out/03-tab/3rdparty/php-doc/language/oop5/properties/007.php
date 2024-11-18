@@ -2,7 +2,9 @@
 
 class Test
 {
-	public function __construct(public readonly object $obj) {}
+	public function __construct(
+		public readonly object $obj
+	) {}
 }
 
 $test = new Test(new stdClass);

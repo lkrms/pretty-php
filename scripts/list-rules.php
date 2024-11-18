@@ -2,9 +2,11 @@
 <?php declare(strict_types=1);
 
 use Lkrms\PrettyPHP\Contract\BlockRule;
+use Lkrms\PrettyPHP\Contract\DeclarationRule;
 use Lkrms\PrettyPHP\Contract\HasTokenNames;
 use Lkrms\PrettyPHP\Contract\ListRule;
 use Lkrms\PrettyPHP\Contract\Rule;
+use Lkrms\PrettyPHP\Contract\StatementRule;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Rule\IndexSpacing;
 use Lkrms\PrettyPHP\Rule\OperatorSpacing;
@@ -114,6 +116,12 @@ foreach (Arr::extend(Formatter::DEFAULT_RULES, ...Formatter::OPTIONAL_RULES) as 
     $isDefault = in_array($rule, Formatter::DEFAULT_RULES, true);
     if (is_a($rule, TokenRule::class, true)) {
         maybeAddRule($mainLoop, 1, $rule, $isMandatory, $isDefault, TokenRule::PROCESS_TOKENS, true, $callbackDocs);
+    }
+    if (is_a($rule, StatementRule::class, true)) {
+        maybeAddRule($mainLoop, 1, $rule, $isMandatory, $isDefault, StatementRule::PROCESS_STATEMENTS, true, $callbackDocs);
+    }
+    if (is_a($rule, DeclarationRule::class, true)) {
+        maybeAddRule($mainLoop, 1, $rule, $isMandatory, $isDefault, DeclarationRule::PROCESS_DECLARATIONS, true, $callbackDocs);
     }
     if (is_a($rule, ListRule::class, true)) {
         maybeAddRule($mainLoop, 1, $rule, $isMandatory, $isDefault, ListRule::PROCESS_LIST, true, $callbackDocs);

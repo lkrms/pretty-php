@@ -214,7 +214,7 @@ final class NormaliseComments implements TokenRule
                         || $next->getSubType() !== TokenSubType::USE_IMPORT
                     )
                 )) {
-                    if (!($next && $next->isNamedDeclaration()) || (
+                    if (!($next && $next->Flags & TokenFlag::NAMED_DECLARATION) || (
                         $next->id === \T_USE
                         && $next->getSubType() === TokenSubType::USE_TRAIT
                     )) {

@@ -14,7 +14,7 @@ interface Filter extends Extension
      *
      * @template T of GenericToken
      *
-     * @param list<T> $tokens
+     * @param non-empty-list<T> $tokens
      * @return list<T>
      */
     public function filterTokens(array $tokens): array;

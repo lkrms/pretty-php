@@ -208,7 +208,7 @@ final class HangingIndentation implements TokenRule
                 $context[] = $token->Data[TokenData::CHAIN_OPENED_BY];
             } elseif ($token->Heredoc && $token->Heredoc === $prev) {
                 $context[] = $token->Heredoc;
-            } elseif (isset($token->Data[TokenData::LIST_PARENT])) {
+            } elseif ($token->Flags & TokenFlag::LIST_ITEM) {
                 $context[] = $token->Data[TokenData::LIST_PARENT];
             } elseif ($latest && $latest->Parent === $token->Parent) {
                 if ($this->Idx->ExpressionDelimiter[$trigger->id]) {

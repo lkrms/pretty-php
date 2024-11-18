@@ -83,12 +83,17 @@ interface TokenFlag
     public const LIST_PARENT = 1024;
 
     /**
+     * The token is the first in a list item
+     */
+    public const LIST_ITEM = 2048;
+
+    /**
      * The token is a collapsible one-line comment
      */
-    public const COLLAPSIBLE_COMMENT = 2048;
+    public const COLLAPSIBLE_COMMENT = 4096;
 
     /**
      * The token is a control structure with an unenclosed body
      */
-    public const HAS_UNENCLOSED_BODY = 4096;
+    public const HAS_UNENCLOSED_BODY = 8192;
 }

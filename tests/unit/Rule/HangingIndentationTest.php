@@ -62,6 +62,29 @@ PHP,
             [
                 <<<'PHP'
 <?php
+do
+    $result = true
+        ? 'true'
+        : false
+        ? 't'
+        : 'f';
+while (false);
+
+PHP,
+                <<<'PHP'
+<?php
+do
+$result = true
+? 'true'
+: false
+? 't'
+: 'f';
+while (false);
+PHP,
+            ],
+            [
+                <<<'PHP'
+<?php
 $a = $b->c(fn() =>
         $d &&
         $e,

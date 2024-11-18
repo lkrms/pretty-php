@@ -63,7 +63,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
     /**
      * @var array<TokenData::*,mixed>
-     * @phpstan-var array{string,int,self,self,self,TokenCollection,int}
+     * @phpstan-var array{string,TokenCollection,int,self,self,self,TokenCollection,list<int>,int}
      */
     public array $Data;
 
@@ -207,7 +207,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     public int $OutputColumn = -1;
 
     /**
-     * @inheritDoc
+     * @return list<static>
      */
     public static function tokenize(
         string $code,
@@ -224,7 +224,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     /**
      * Same as tokenize(), but returns lower-cost GenericToken instances
      *
-     * @return GenericToken[]
+     * @return list<GenericToken>
      */
     public static function tokenizeForComparison(
         string $code,
@@ -643,17 +643,11 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      */
     public function isParameterList(): bool
     {
-        if ($this->id !== \T_OPEN_PARENTHESIS || !$this->PrevCode) {
-            return false;
-        }
-
-        $prev = $this->PrevCode->skipPrevSiblingsFrom($this->Idx->FunctionIdentifier);
-
-        if ($prev->id === \T_FUNCTION || $prev->id === \T_FN) {
-            return true;
-        }
-
-        return false;
+        return $this->id === \T_OPEN_PARENTHESIS
+            && ($prev = $this->PrevCode)
+            && $this->Idx->FunctionOrFn[
+                $prev->skipPrevSiblingsFrom($this->Idx->FunctionIdentifier)->id
+            ];
     }
 
     /**
@@ -698,90 +692,35 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
                     ->doIsDeclaration(true);
     }
 
-    /**
-     * Check if the token is the first in a non-anonymous declaration
-     *
-     * @phpstan-assert-if-true TokenCollection $parts
-     */
-    public function isNamedDeclaration(?TokenCollection &$parts = null): bool
-    {
-        return $this->doIsDeclaration(false, $parts);
-    }
-
     private function doIsDeclaration(
         bool $allowAnonymous,
         ?TokenCollection &$parts = null
     ): bool {
         if ($this->Flags & TokenFlag::NAMED_DECLARATION) {
-            $parts = $this->Data[TokenData::NAMED_DECLARATION_PARTS];
+            if (!$allowAnonymous) {
+                $parts = $this->Data[TokenData::NAMED_DECLARATION_PARTS];
+            }
             return true;
+        }
+
+        if (!$allowAnonymous) {
+            return false;
         }
 
         // Exclude tokens other than the first in a declaration
-        if ($allowAnonymous) {
-            if (!$this->Expression || (
-                $this->PrevSibling
-                && $this->PrevSibling->Expression === $this->Expression
-                && $this->Idx->DeclarationPartWithNewAndBody[$this->PrevSibling->id]
-            )) {
-                return false;
-            }
-        } elseif ($this->Statement !== $this) {
+        if (!$this->Expression || (
+            $this->PrevSibling
+            && $this->PrevSibling->Expression === $this->Expression
+            && $this->Idx->DeclarationPartWithNewAndBody[$this->PrevSibling->id]
+        )) {
             return false;
         }
 
-        // Get the first non-attribute
-        $first = $this->skipNextSiblingsFrom($this->Idx->Attribute);
-
-        // Exclude non-declarations
-        if (!$this->Idx->Declaration[$first->id]) {
-            return false;
-        }
-
-        /** @var self */
-        $next = $first->NextCode;
-
-        // Exclude:
-        // - `static` outside declarations
-        // - `case` in switch statements
-        // - promoted constructor parameters
-        if (
-            (
-                $first->id === \T_STATIC
-                && !$this->Idx->Declaration[$next->id]  // `static function`
-                && !(                                   // `static int $foo`
-                    $this->Idx->StartOfValueType[$next->id]
-                    && $next->skipNextSiblingsFrom($this->Idx->ValueType)->id === \T_VARIABLE
-                )
-                && !(                                   // `static $foo` in a property context
-                    $next->id === \T_VARIABLE
-                    && $first->Parent
-                    && $first->Parent->id === \T_OPEN_BRACE
-                    && $first->Parent
-                             ->skipPrevSiblingsToDeclarationStart()
-                             ->collectSiblings($first->Parent)
-                             ->hasOneFrom($this->Idx->DeclarationClass)
-                )
-            )
-            || ($first->id === \T_CASE && $first->inSwitch())
-            || ($this->Idx->VisibilityOrReadonly[$first->id] && $first->inParameterList())
-        ) {
-            return false;
-        }
-
-        if ($allowAnonymous) {
-            return true;
-        }
-
-        $parts = $this->namedDeclarationParts();
-        if (!$parts->count()) {
-            return false;
-        }
-
-        $this->Flags |= TokenFlag::NAMED_DECLARATION;
-        $this->Data[TokenData::NAMED_DECLARATION_PARTS] = $parts;
-
-        return true;
+        // Check if the first token after `new`, `static` and any attributes is
+        // `class` or `function`
+        return $this->Idx->ClassOrFunction[
+            $this->skipNextSiblingsFrom($this->Idx->BeforeAnonymousClassOrFunction)->id
+        ];
     }
 
     /**

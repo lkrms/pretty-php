@@ -2,9 +2,12 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
+use Lkrms\PrettyPHP\Contract\DeclarationRule;
 use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\Internal\TokenCollection;
 use Lkrms\PrettyPHP\Token;
 use Lkrms\PrettyPHP\TokenTypeIndex;
 use Salient\Utility\Regex;
@@ -15,7 +18,7 @@ use Salient\Utility\Str;
  *
  * @api
  */
-final class StandardWhitespace implements TokenRule
+final class StandardWhitespace implements TokenRule, DeclarationRule
 {
     use TokenRuleTrait;
 
@@ -26,6 +29,7 @@ final class StandardWhitespace implements TokenRule
     {
         return [
             self::PROCESS_TOKENS => 80,
+            self::PROCESS_DECLARATIONS => 80,
             self::CALLBACK => 820,
         ][$method] ?? null;
     }
@@ -287,6 +291,35 @@ final class StandardWhitespace implements TokenRule
             if ($token->id === \T_START_HEREDOC && $this->Formatter->Psr12) {
                 $token->WhitespaceBefore |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
+            }
+        }
+    }
+
+    /**
+     * Apply the rule to the given declarations
+     *
+     * If a constructor has one or more promoted parameters, a line is added
+     * before every parameter.
+     */
+    public function processDeclarations(array $declarations): void
+    {
+        $parents = [];
+        foreach ($declarations as $token) {
+            $type = $token->Data[TokenData::NAMED_DECLARATION_TYPE];
+            // Ignore if not a promoted constructor parameter
+            if ($type !== [\T_FUNCTION, \T_VAR]) {
+                continue;
+            }
+            /** @var Token */
+            $parent = $token->Parent;
+            $parents[$parent->id] = $parent;
+        }
+
+        foreach ($parents as $parent) {
+            /** @var TokenCollection */
+            $items = $parent->Data[TokenData::LIST_ITEMS];
+            foreach ($items as $item) {
+                $item->WhitespaceBefore |= WhitespaceType::LINE;
             }
         }
     }

@@ -2,7 +2,10 @@
 
 class Point
 {
-    public function __construct(private int $x, private int $y) {}
+    public function __construct(
+        private int $x,
+        private int $y
+    ) {}
 
     // ...
 }

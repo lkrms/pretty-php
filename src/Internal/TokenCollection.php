@@ -128,7 +128,7 @@ final class TokenCollection extends AbstractTypedList implements Stringable
     }
 
     /**
-     * @return int[]
+     * @return list<int>
      */
     public function getTypes(): array
     {

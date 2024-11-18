@@ -16,34 +16,45 @@ interface TokenData
     public const COMMENT_CONTENT = 0;
 
     /**
-     * The number of items associated with a LIST_PARENT token
+     * A collection of items associated with a LIST_PARENT token
      */
-    public const LIST_ITEM_COUNT = 1;
+    public const LIST_ITEMS = 1;
 
     /**
-     * The LIST_PARENT of the first token in a list item
+     * The number of items associated with a LIST_PARENT token
      */
-    public const LIST_PARENT = 2;
+    public const LIST_ITEM_COUNT = 2;
+
+    /**
+     * The LIST_PARENT of the first token in a LIST_ITEM
+     */
+    public const LIST_PARENT = 3;
 
     /**
      * The T_COLON or T_QUESTION associated with a T_QUESTION or T_COLON flagged
      * as a TERNARY_OPERATOR
      */
-    public const OTHER_TERNARY_OPERATOR = 3;
+    public const OTHER_TERNARY_OPERATOR = 4;
 
     /**
      * The first T_OBJECT_OPERATOR or T_NULLSAFE_OBJECT_OPERATOR in a chain
      * thereof
      */
-    public const CHAIN_OPENED_BY = 4;
+    public const CHAIN_OPENED_BY = 5;
 
     /**
      * A collection of tokens that form a NAMED_DECLARATION
      */
-    public const NAMED_DECLARATION_PARTS = 5;
+    public const NAMED_DECLARATION_PARTS = 6;
+
+    /**
+     * A list of token IDs that represent the type of a NAMED_DECLARATION, e.g.
+     * [T_CLASS] or [T_USE, T_FUNCTION]
+     */
+    public const NAMED_DECLARATION_TYPE = 7;
 
     /**
      * The type applied to an open bracket by the HangingIndentation rule
      */
-    public const HANGING_INDENT_PARENT_TYPE = 6;
+    public const HANGING_INDENT_PARENT_TYPE = 8;
 }
