@@ -331,8 +331,9 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
 
     /**
      * T_ABSTRACT, T_CASE, T_CLASS, T_CONST, T_DECLARE, T_ENUM, T_FINAL,
-     * T_FUNCTION, T_INTERFACE, T_NAMESPACE, T_PRIVATE, T_PROTECTED, T_PUBLIC,
-     * T_READONLY, T_STATIC, T_TRAIT, T_USE, T_VAR
+     * T_FUNCTION, T_INTERFACE, T_NAMESPACE, T_PRIVATE, T_PRIVATE_SET,
+     * T_PROTECTED, T_PROTECTED_SET, T_PUBLIC, T_PUBLIC_SET, T_READONLY,
+     * T_STATIC, T_TRAIT, T_USE, T_VAR
      *
      * @var array<int,bool>
      */
@@ -374,19 +375,6 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @var array<int,bool>
      */
     public array $DeclarationList = self::DECLARATION_LIST
-        + self::TOKEN_INDEX;
-
-    /**
-     * Visibility modifiers, T_READONLY, T_STATIC, T_VAR
-     *
-     * @var array<int,bool>
-     */
-    public array $DeclarationPropertyOrVariable = [
-        \T_READONLY => true,
-        \T_STATIC => true,
-        \T_VAR => true,
-    ]
-        + self::VISIBILITY
         + self::TOKEN_INDEX;
 
     /**
@@ -798,8 +786,9 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * T_ATTRIBUTE, T_CASE, T_CLASS, T_COMMA, T_CONST, T_DECLARE, T_ENUM,
      * T_EXTENDS, T_FINAL, T_FUNCTION, T_IMPLEMENTS, T_INTERFACE,
      * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE, T_NAMESPACE,
-     * T_NS_SEPARATOR, T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY, T_STATIC,
-     * T_STRING, T_TRAIT, T_USE, T_VAR
+     * T_NS_SEPARATOR, T_PRIVATE, T_PRIVATE_SET, T_PROTECTED, T_PROTECTED_SET,
+     * T_PUBLIC, T_PUBLIC_SET, T_READONLY, T_STATIC, T_STRING, T_TRAIT, T_USE,
+     * T_VAR
      *
      * @var array<int,bool>
      */
@@ -812,8 +801,9 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * T_ATTRIBUTE, T_CASE, T_CLASS, T_COMMA, T_CONST, T_DECLARE, T_ENUM,
      * T_EXTENDS, T_FINAL, T_FUNCTION, T_IMPLEMENTS, T_INTERFACE,
      * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE, T_NAMESPACE,
-     * T_NEW, T_NS_SEPARATOR, T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY,
-     * T_STATIC, T_STRING, T_TRAIT, T_USE, T_VAR
+     * T_NEW, T_NS_SEPARATOR, T_PRIVATE, T_PRIVATE_SET, T_PROTECTED,
+     * T_PROTECTED_SET, T_PUBLIC, T_PUBLIC_SET, T_READONLY, T_STATIC, T_STRING,
+     * T_TRAIT, T_USE, T_VAR
      *
      * @var array<int,bool>
      */
@@ -830,8 +820,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * T_EXTENDS, T_FINAL, T_FUNCTION, T_IMPLEMENTS, T_INTERFACE, T_NAMESPACE,
      * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE, T_NEW,
      * T_NS_SEPARATOR, T_OPEN_BRACE, T_OPEN_PARENTHESIS, T_OR, T_PRIVATE,
-     * T_PROTECTED, T_PUBLIC, T_QUESTION, T_READONLY, T_STATIC, T_STRING,
-     * T_TRAIT, T_USE, T_VAR
+     * T_PRIVATE_SET, T_PROTECTED, T_PROTECTED_SET, T_PUBLIC, T_PUBLIC_SET,
+     * T_QUESTION, T_READONLY, T_STATIC, T_STRING, T_TRAIT, T_USE, T_VAR
      *
      * @var array<int,bool>
      */
@@ -1106,7 +1096,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE,
      * T_NS_SEPARATOR, T_STATIC, T_STRING, T_VARIABLE, T_ABSTRACT, T_CONST,
      * T_DECLARE, T_FINAL, T_READONLY, T_VAR, T_CLASS, T_ENUM, T_INTERFACE,
-     * T_TRAIT, T_PRIVATE, T_PROTECTED, T_PUBLIC
+     * T_TRAIT, T_PRIVATE, T_PRIVATE_SET, T_PROTECTED, T_PROTECTED_SET,
+     * T_PUBLIC, T_PUBLIC_SET
      *
      * Tokens that require a leading space.
      *

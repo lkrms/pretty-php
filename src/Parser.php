@@ -583,11 +583,12 @@ final class Parser implements Immutable
                     && ($parts = $statement->namedDeclarationParts())->count()
                     && (
                         ($type = $parts->getAnyFrom($idx->DeclarationExceptModifiers)->getTypes())
-                        || $parts->hasOneFrom($idx->DeclarationPropertyOrVariable)
+                        || ($parts->hasOneFrom($idx->Modifier) && $this->isClassStatement($statement))
+                        || ($idx->VisibilityOrReadonly[$first->id] && $statement->inParameterList())
                     )
                 ) {
                     if (!$type) {
-                        $type = $idx->VisibilityOrReadonly[$first->id] && $first->inParameterList()
+                        $type = $statement->inParameterList()
                             ? [\T_FUNCTION, \T_VAR]  // Promoted constructor parameter
                             : [\T_VAR];              // Property
                     } elseif ($type === [\T_USE] && $this->isClassStatement($statement)) {

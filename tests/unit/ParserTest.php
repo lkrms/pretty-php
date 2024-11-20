@@ -298,6 +298,61 @@ class Point {
 }
 PHP,
         ];
+
+        if (\PHP_VERSION_ID < 80400) {
+            return;
+        }
+
+        yield [
+            [
+                [
+                    'tok' => "T1:L2:'class' - T59:L19:'}'",
+                    'par' => 'class Test',
+                    'typ' => 'T_CLASS',
+                ],
+                [
+                    'tok' => "T4:L3:'public' - T19:L6:'}'",
+                    'par' => 'public',
+                    'typ' => 'T_VAR',
+                ],
+                [
+                    'tok' => "T20:L7:'private' - T31:L10:'}'",
+                    'par' => 'private',
+                    'typ' => 'T_VAR',
+                ],
+                [
+                    'tok' => "T32:L11:'abstract' - T40:L14:'}'",
+                    'par' => 'abstract',
+                    'typ' => 'T_VAR',
+                ],
+                [
+                    'tok' => "T41:L15:'public' - T58:L18:'}'",
+                    'par' => 'public',
+                    'typ' => 'T_VAR',
+                ],
+            ],
+            <<<'PHP'
+<?php
+class Test {
+    public $prop {
+        get { return 42; }
+        set { echo $value; }
+    }
+    private $prop2 {
+        get => 42;
+        set => $value;
+    }
+    abstract $prop3 {
+        &get;
+        set;
+    }
+    public $prop4 {
+        final get { return 42; }
+        set(string $value) { }
+    }
+}
+PHP,
+        ];
     }
 
     /**

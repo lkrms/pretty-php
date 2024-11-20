@@ -24,6 +24,9 @@ interface HasTokenNames
         \T_ENUM => 'T_ENUM',
         \T_READONLY => 'T_READONLY',
         // PHP 8.4
+        \T_PRIVATE_SET => 'T_PRIVATE_SET',
+        \T_PROTECTED_SET => 'T_PROTECTED_SET',
+        \T_PUBLIC_SET => 'T_PUBLIC_SET',
         \T_PROPERTY_C => 'T_PROPERTY_C',
         // Custom
         \T_ATTRIBUTE_COMMENT => 'T_ATTRIBUTE_COMMENT',

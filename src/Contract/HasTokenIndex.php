@@ -153,9 +153,12 @@ interface HasTokenIndex
         \T_POW_EQUAL => false,
         \T_PRINT => false,
         \T_PRIVATE => false,
+        \T_PRIVATE_SET => false,
         \T_PROPERTY_C => false,
         \T_PROTECTED => false,
+        \T_PROTECTED_SET => false,
         \T_PUBLIC => false,
+        \T_PUBLIC_SET => false,
         \T_QUESTION => false,
         \T_READONLY => false,
         \T_REQUIRE => false,
@@ -454,8 +457,11 @@ interface HasTokenIndex
      */
     public const VISIBILITY = [
         \T_PRIVATE => true,
+        \T_PRIVATE_SET => true,
         \T_PROTECTED => true,
+        \T_PROTECTED_SET => true,
         \T_PUBLIC => true,
+        \T_PUBLIC_SET => true,
     ];
 
     /**
@@ -468,8 +474,11 @@ interface HasTokenIndex
         \T_STATIC => false,
         \T_VAR => false,
         \T_PRIVATE => false,
+        \T_PRIVATE_SET => false,
         \T_PROTECTED => false,
+        \T_PROTECTED_SET => false,
         \T_PUBLIC => false,
+        \T_PUBLIC_SET => false,
     ];
 
     /**

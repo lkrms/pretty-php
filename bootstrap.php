@@ -15,6 +15,9 @@
         'T_ENUM' => true,
         'T_READONLY' => true,
         // PHP 8.4
+        'T_PRIVATE_SET' => false,
+        'T_PROTECTED_SET' => false,
+        'T_PUBLIC_SET' => false,
         'T_PROPERTY_C' => false,
         // Custom
         'T_ATTRIBUTE_COMMENT' => false,
@@ -67,6 +70,9 @@
     }
 
     // Define PHP 8.4 tokens
+    defined('T_PRIVATE_SET') || define('T_PRIVATE_SET', $getNextId());
+    defined('T_PROTECTED_SET') || define('T_PROTECTED_SET', $getNextId());
+    defined('T_PUBLIC_SET') || define('T_PUBLIC_SET', $getNextId());
     defined('T_PROPERTY_C') || define('T_PROPERTY_C', $getNextId());
 
     // Define custom tokens
