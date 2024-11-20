@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP;
 
+use Lkrms\PrettyPHP\Catalog\DeclarationType;
 use Lkrms\PrettyPHP\Catalog\FormatterFlag;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
@@ -77,6 +78,7 @@ use Salient\Core\Facade\Profile;
 use Salient\Core\Indentation;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
+use Salient\Utility\Reflect;
 use Closure;
 use CompileError;
 use InvalidArgumentException;
@@ -375,6 +377,8 @@ final class Formatter implements Buildable, Immutable
     private array $Rules;
     /** @var array<class-string<TokenRule>,array<int,true>|array{'*'}> */
     private array $TokenRuleTypes;
+    /** @var array<class-string<DeclarationRule>,array<int,true>|array{'*'}> */
+    private array $DeclarationRuleTypes;
 
     /**
      * [ key => [ rule, method ] ]
@@ -431,6 +435,8 @@ final class Formatter implements Buildable, Immutable
     private array $Statements;
     /** @var array<int,Token> */
     private array $Declarations;
+    /** @var array<int,array<int,Token>> */
+    private array $DeclarationsByType;
 
     /**
      * [ priority => [ token index => [ [ rule, callback ], ... ] ] ]
@@ -451,6 +457,11 @@ final class Formatter implements Buildable, Immutable
     private Parser $Parser;
     public Renderer $Renderer;
     private ?bool $Applied = false;
+
+    // --
+
+    /** @var array<int,true> */
+    private static array $AllDeclarationTypes;
 
     /**
      * Creates a new Formatter object
@@ -604,6 +615,7 @@ final class Formatter implements Buildable, Immutable
         Profile::startTimer(__METHOD__ . '#sort-rules');
 
         $tokenTypes = [];
+        $declarationTypes = [];
         $mainLoop = [];
         $blockLoop = [];
         $beforeRender = [];
@@ -623,6 +635,15 @@ final class Formatter implements Buildable, Immutable
                 $mainLoop[$rule . '#statement'] = [$rule, StatementRule::PROCESS_STATEMENTS, $i];
             }
             if (is_a($rule, DeclarationRule::class, true)) {
+                /** @var array<int,bool>|array{'*'} */
+                $types = $rule::getDeclarationTypes(
+                    self::$AllDeclarationTypes ??=
+                        $this->getAllDeclarationTypes()
+                );
+                if ($types !== ['*']) {
+                    $types = array_filter($types);
+                }
+                $declarationTypes[$rule] = $types;
                 $mainLoop[$rule . '#declaration'] = [$rule, DeclarationRule::PROCESS_DECLARATIONS, $i];
             }
             if (is_a($rule, ListRule::class, true)) {
@@ -643,6 +664,7 @@ final class Formatter implements Buildable, Immutable
 
         $this->Rules = $rules;
         $this->TokenRuleTypes = $tokenTypes;
+        $this->DeclarationRuleTypes = $declarationTypes;
         $this->MainLoop = $this->sortRules($mainLoop);
         $this->BlockLoop = $this->sortRules($blockLoop);
         $this->BeforeRender = $this->sortRules($beforeRender);
@@ -672,6 +694,16 @@ final class Formatter implements Buildable, Immutable
         $this->Applied = true;
 
         return $this;
+    }
+
+    /**
+     * @return array<int,true>
+     */
+    private function getAllDeclarationTypes(): array
+    {
+        /** @var int[] */
+        $types = Reflect::getConstants(DeclarationType::class);
+        return array_fill_keys($types, true);
     }
 
     /**
@@ -873,6 +905,7 @@ final class Formatter implements Buildable, Immutable
             $this->TokensById = $this->Document->TokensById;
             $this->Statements = $this->Document->Statements;
             $this->Declarations = $this->Document->Declarations;
+            $this->DeclarationsByType = $this->Document->DeclarationsByType;
 
             if (!$this->Tokens) {
                 if (!$this->Debug) {
@@ -881,6 +914,7 @@ final class Formatter implements Buildable, Immutable
                     unset($this->TokensById);
                     unset($this->Statements);
                     unset($this->Declarations);
+                    unset($this->DeclarationsByType);
                 }
                 return '';
             }
@@ -905,7 +939,7 @@ final class Formatter implements Buildable, Immutable
         }
 
         Profile::startTimer(__METHOD__ . '#find-lists');
-        $parents = $this->sortTokensById([
+        $parents = $this->sortTokensByType($this->TokensById, [
             \T_OPEN_PARENTHESIS => true,
             \T_OPEN_BRACKET => true,
             \T_ATTRIBUTE => true,
@@ -1005,14 +1039,6 @@ final class Formatter implements Buildable, Immutable
                 continue;
             }
 
-            if ($method === DeclarationRule::PROCESS_DECLARATIONS) {
-                /** @var DeclarationRule $rule */
-                $rule->processDeclarations($this->Declarations);
-                Profile::stopTimer($_rule, 'rule');
-                $logProgress($_rule, DeclarationRule::PROCESS_DECLARATIONS);
-                continue;
-            }
-
             if ($method === ListRule::PROCESS_LIST) {
                 foreach ($lists as $i => $list) {
                     /** @var ListRule $rule */
@@ -1023,30 +1049,44 @@ final class Formatter implements Buildable, Immutable
                 continue;
             }
 
-            /** @var TokenRule $rule */
-            $types = $this->TokenRuleTypes[$_class];
+            [$types, $all, $byType, $needsSortedMethod] = [
+                DeclarationRule::PROCESS_DECLARATIONS => [
+                    $this->DeclarationRuleTypes,
+                    $this->Declarations,
+                    $this->DeclarationsByType,
+                    'needsSortedDeclarations',
+                ],
+                TokenRule::PROCESS_TOKENS => [
+                    $this->TokenRuleTypes,
+                    $this->Tokens,
+                    $this->TokensById,
+                    'needsSortedTokens',
+                ],
+            ][$method];
+
+            $types = $types[$_class];
             if ($types === []) {
                 Profile::stopTimer($_rule, 'rule');
                 continue;
             }
             if ($types === ['*']) {
-                $tokens = $this->Tokens;
-            } elseif ($rule->needsSortedTokens()) {
+                $tokens = $all;
+            } elseif ($rule->$needsSortedMethod()) {
                 /** @var array<int,true> $types */
                 // @phpstan-ignore varTag.nativeType
-                $tokens = $this->sortTokensById($types);
+                $tokens = $this->sortTokensByType($byType, $types);
             } else {
                 /** @var array<int,true> $types */
                 // @phpstan-ignore varTag.nativeType
-                $tokens = $this->getTokensById($types);
+                $tokens = $this->getTokensByType($byType, $types);
             }
             if (!$tokens) {
                 Profile::stopTimer($_rule, 'rule');
                 continue;
             }
-            $rule->processTokens($tokens);
+            $rule->$method($tokens);
             Profile::stopTimer($_rule, 'rule');
-            $logProgress($_rule, TokenRule::PROCESS_TOKENS);
+            $logProgress($_rule, $method);
         }
 
         if ($this->BlockLoop) {
@@ -1164,6 +1204,7 @@ final class Formatter implements Buildable, Immutable
                 unset($this->TokensById);
                 unset($this->Statements);
                 unset($this->Declarations);
+                unset($this->DeclarationsByType);
             }
         }
 
@@ -1223,23 +1264,25 @@ final class Formatter implements Buildable, Immutable
     }
 
     /**
+     * @param array<int,array<int,Token>> $index
      * @param array<int,true> $types
      * @return array<int,Token>
      */
-    private function sortTokensById(array $types): array
+    private function sortTokensByType(array $index, array $types): array
     {
-        $tokens = $this->getTokensById($types);
+        $tokens = $this->getTokensByType($index, $types);
         ksort($tokens, \SORT_NUMERIC);
         return $tokens;
     }
 
     /**
+     * @param array<int,array<int,Token>> $index
      * @param array<int,true> $types
      * @return array<int,Token>
      */
-    private function getTokensById(array $types): array
+    private function getTokensByType(array $index, array $types): array
     {
-        $tokens = array_intersect_key($this->TokensById, $types);
+        $tokens = array_intersect_key($index, $types);
         if ($base = array_shift($tokens)) {
             return array_replace($base, ...$tokens);
         }
@@ -1454,6 +1497,7 @@ final class Formatter implements Buildable, Immutable
         $this->Enabled = [];
         $this->Rules = [];
         $this->TokenRuleTypes = [];
+        $this->DeclarationRuleTypes = [];
         $this->MainLoop = [];
         $this->BlockLoop = [];
         $this->BeforeRender = [];
@@ -1479,6 +1523,7 @@ final class Formatter implements Buildable, Immutable
         unset($this->TokensById);
         unset($this->Statements);
         unset($this->Declarations);
+        unset($this->DeclarationsByType);
         $this->Callbacks = null;
         $this->Problems = null;
         $this->Log = null;

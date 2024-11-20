@@ -248,7 +248,11 @@ final class VerticalWhitespace implements TokenRule
                 if (
                     $this->Formatter->OneTrueBraceStyle
                     || !($token->Flags & TokenFlag::STRUCTURAL_BRACE)
-                    || ($token->Next && $token->Next->id === \T_CLOSE_BRACE && !$token->hasNewlineAfter())
+                    || (
+                        $token->Next
+                        && $token->Next->id === \T_CLOSE_BRACE
+                        && !$token->hasNewlineAfter()
+                    )
                 ) {
                     continue;
                 }
@@ -257,18 +261,16 @@ final class VerticalWhitespace implements TokenRule
                 if (
                     // Exclude non-declarations
                     !$parts->hasOneFrom($this->Idx->Declaration)
-                    || (($last = $parts->last()) && (
-                        // Exclude `declare` blocks
-                        $last->id === \T_DECLARE
-                        // Exclude anonymous functions
-                        || $last->skipPrevSiblingsFrom($this->Idx->Ampersand)->id === \T_FUNCTION
-                    ))
-                    || (($start = $parts->first()) && (
-                        // Exclude grouped imports and trait adaptations
-                        $start->id === \T_USE
-                        // Exclude anonymous classes declared on one line
-                        || ($start->id === \T_NEW && !$parts->hasNewlineBetweenTokens())
-                    ))
+                    // Exclude `declare` blocks
+                    || ($last = $parts->last())->id === \T_DECLARE
+                    // Exclude grouped imports and trait adaptations
+                    || ($start = $parts->first())->id === \T_USE
+                    // Exclude property hooks
+                    || $token->inPropertyOrPropertyHook()
+                    // Exclude anonymous functions
+                    || $last->skipPrevSiblingsFrom($this->Idx->Ampersand)->id === \T_FUNCTION
+                    // Exclude anonymous classes declared on one line
+                    || ($start->id === \T_NEW && !$parts->hasNewlineBetweenTokens())
                 ) {
                     continue;
                 }

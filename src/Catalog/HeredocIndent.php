@@ -27,5 +27,5 @@ interface HeredocIndent
     /**
      * Always apply hanging indentation to heredocs
      */
-    public const HANGING = 4;
+    public const HANGING = 3;
 }

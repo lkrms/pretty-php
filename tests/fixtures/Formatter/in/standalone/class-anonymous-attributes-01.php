@@ -22,13 +22,17 @@ $a = new #[ AttrI(true) ] #[ AttrJ(101,Types::ANON_CLASS) ] #[ AttrK() ] class e
 D,
 E
 {
-#[ AttrL(true) ] #[ AttrM(102,Types::FUNC) ] function f(#[ AttrN(true),Attr(103,Types::PARAM) ] #[ AttrO() ] string $h,#[ AttrP ] int $i,$j) {
+#[ AttrL(true) ] #[ AttrM(102,Types::FUNC) ] function f(
+#[ AttrN(true),Attr(103,Types::PARAM) ] #[ AttrO() ] string $h,
+#[ AttrP ] int $i,
+$j) {
 $this->l($h,$i);
 $j();
 }
 function g(#[ AttrQ(null) ] $k) {
 echo $k;
 }
-function z(#[ AttrY ] $x) {
+function z(
+#[ AttrY ] $x) {
 }
 };

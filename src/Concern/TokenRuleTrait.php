@@ -29,9 +29,4 @@ trait TokenRuleTrait
     {
         return true;
     }
-
-    /**
-     * @inheritDoc
-     */
-    public function beforeRender(array $tokens): void {}
 }

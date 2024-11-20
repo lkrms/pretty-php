@@ -48,13 +48,18 @@ interface TokenData
     public const NAMED_DECLARATION_PARTS = 6;
 
     /**
-     * A list of token IDs that represent the type of a NAMED_DECLARATION, e.g.
-     * [T_CLASS] or [T_USE, T_FUNCTION]
+     * The type of a NAMED_DECLARATION
      */
     public const NAMED_DECLARATION_TYPE = 7;
 
     /**
+     * A collection of property hooks for a NAMED_DECLARATION with type PROPERTY
+     * or PROMOTED_PARAM
+     */
+    public const PROPERTY_HOOKS = 8;
+
+    /**
      * The type applied to an open bracket by the HangingIndentation rule
      */
-    public const HANGING_INDENT_PARENT_TYPE = 8;
+    public const HANGING_INDENT_PARENT_TYPE = 9;
 }

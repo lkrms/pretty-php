@@ -2,8 +2,12 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\DeclarationType;
+use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Concern\DeclarationRuleTrait;
 use Lkrms\PrettyPHP\Concern\ListRuleTrait;
+use Lkrms\PrettyPHP\Contract\DeclarationRule;
 use Lkrms\PrettyPHP\Contract\ListRule;
 use Lkrms\PrettyPHP\Internal\TokenCollection;
 use Lkrms\PrettyPHP\Token;
@@ -11,22 +15,12 @@ use Lkrms\PrettyPHP\Token;
 /**
  * Apply whitespace to lists
  *
- * Arrays and argument lists with trailing ("magic") commas are split into one
- * item per line.
- *
- * If interface lists (`extends` or `implements`, depending on context) break
- * over multiple lines and neither {@see StrictLists} nor {@see AlignLists} are
- * enabled, a newline is added before the first interface.
- *
- * If parameter lists contain one or more attributes with a leading or trailing
- * newline, every attribute and parameter is placed on its own line, and blank
- * lines are added before and after annotated parameters to improve readability.
- *
  * @api
  */
-final class ListSpacing implements ListRule
+final class ListSpacing implements ListRule, DeclarationRule
 {
     use ListRuleTrait;
+    use DeclarationRuleTrait;
 
     private bool $ListRuleEnabled;
 
@@ -34,7 +28,16 @@ final class ListSpacing implements ListRule
     {
         return [
             self::PROCESS_LIST => 98,
+            self::PROCESS_DECLARATIONS => 98,
         ][$method] ?? null;
+    }
+
+    public static function getDeclarationTypes(array $all): array
+    {
+        return [
+            DeclarationType::PROPERTY => true,
+            DeclarationType::PARAM => true,
+        ];
     }
 
     /**
@@ -47,90 +50,119 @@ final class ListSpacing implements ListRule
             ?? false;
     }
 
+    /**
+     * Apply the rule to a token and the list of items associated with it
+     *
+     * Arrays and argument lists with trailing ("magic") commas are split into
+     * one item per line.
+     *
+     * If parameter lists have one or more attributes with a trailing newline,
+     * every attribute is placed on its own line, and blank lines are added
+     * before and after annotated parameters to improve readability.
+     *
+     * If interface lists break over multiple lines and neither `StrictLists`
+     * nor `AlignLists` are enabled, a newline is added before the first
+     * interface.
+     */
     public function processList(Token $parent, TokenCollection $items): void
     {
-        // If `$parent` has no `ClosedBy`, this is an interface list
         if (!$parent->ClosedBy) {
-            if (!$this->ListRuleEnabled
-                    && $items->tokenHasNewlineBefore()) {
-                $first = $items->first();
-                $first->WhitespaceBefore |= WhitespaceType::LINE;
-                $first->WhitespaceMaskPrev |= WhitespaceType::LINE;
-                $first->Prev->WhitespaceMaskNext |= WhitespaceType::LINE;
+            if (!$this->ListRuleEnabled && $items->tokenHasNewlineBefore()) {
+                /** @var Token */
+                $token = $items->first();
+                /** @var Token */
+                $prev = $token->Prev;
+                $token->WhitespaceBefore |= WhitespaceType::LINE;
+                $token->WhitespaceMaskPrev |= WhitespaceType::LINE;
+                $prev->WhitespaceMaskNext |= WhitespaceType::LINE;
             }
             return;
         }
 
         // If the list has a "magic comma", add a newline before each item and
-        // another after the last item
-        if ($parent->ClosedBy->PrevCode->id === \T_COMMA) {
+        // another before the close bracket
+        /** @var Token */
+        $last = $parent->ClosedBy->PrevCode;
+        if ($last->id === \T_COMMA) {
             $items->copy()
                   ->add($parent->ClosedBy)
                   ->addWhitespaceBefore(WhitespaceType::LINE, true);
         }
 
-        if ($parent->id !== \T_OPEN_PARENTHESIS
-                || !$parent->isParameterList()) {
-            return;
+        if ($parent->id === \T_OPEN_PARENTHESIS && $parent->isParameterList()) {
+            $this->normaliseDeclarationList($items);
         }
+    }
 
+    /**
+     * Apply the rule to the given declarations
+     *
+     * If a list of property hooks has one or more attributes with a trailing
+     * newline, every attribute is placed on its own line, and blank lines are
+     * added before and after annotated hooks to improve readability.
+     */
+    public function processDeclarations(array $declarations): void
+    {
+        foreach ($declarations as $token) {
+            /** @var TokenCollection */
+            $hooks = $token->Data[TokenData::PROPERTY_HOOKS];
+            if ($hooks->count()) {
+                $this->normaliseDeclarationList($hooks);
+            }
+        }
+    }
+
+    /**
+     * @param iterable<Token> $items
+     */
+    private function normaliseDeclarationList(iterable $items): void
+    {
         $hasAttributeWithNewline = false;
         foreach ($items as $item) {
-            $current = $item;
-            while ($current->id === \T_ATTRIBUTE
-                    || $current->id === \T_ATTRIBUTE_COMMENT) {
-                if ($current->hasNewlineBefore()
-                    || ($current->id === \T_ATTRIBUTE
-                        ? $current->ClosedBy
-                        : $current)->hasNewlineAfter()) {
-                    $hasAttributeWithNewline = true;
-                    break 2;
-                }
-                if (!($current = $current->NextSibling)) {
-                    break;
-                }
+            $attributes = $item->withNextSiblingsWhile($this->Idx->Attribute, true);
+            $itemTokens[$item->Index] = $attributes;
+            if (
+                $attributes->tokenHasNewlineAfter(true)
+                || $attributes->copy()->shift()->tokenHasNewlineBefore()
+            ) {
+                $hasAttributeWithNewline = true;
+                break;
             }
         }
         if (!$hasAttributeWithNewline) {
             return;
         }
 
-        $blankBeforeNext = false;
-        foreach ($items as $token) {
-            $blankBeforeApplied = $blankBeforeNext;
-            if ($blankBeforeNext) {
-                $token->applyBlankLineBefore(true);
-                $blankBeforeNext = false;
+        $addBlankBefore = false;
+        $i = 0;
+        foreach ($items as $item) {
+            if ($addBlankBefore) {
+                $item->applyBlankLineBefore(true);
+                $addBlankBefore = false;
+                $hasBlankBefore = true;
+            } else {
+                $hasBlankBefore = false;
             }
-
-            $current = $token;
-            do {
-                $current->WhitespaceBefore |= WhitespaceType::LINE;
-                $current->WhitespaceMaskPrev |= WhitespaceType::LINE;
-                $current->Prev->WhitespaceMaskNext |= WhitespaceType::LINE;
-                if ($current->id === \T_ATTRIBUTE) {
-                    $current->ClosedBy->WhitespaceAfter |= WhitespaceType::LINE;
-                } elseif ($current->id === \T_ATTRIBUTE_COMMENT) {
-                    $current->WhitespaceAfter |= WhitespaceType::LINE;
+            $tokens = $itemTokens[$item->Index]
+                ?? $item->withNextSiblingsWhile($this->Idx->Attribute, true);
+            $tokens[] = $item->skipNextSiblingsFrom($this->Idx->Attribute);
+            foreach ($tokens as $token) {
+                /** @var Token */
+                $prev = $token->Prev;
+                $token->WhitespaceBefore |= WhitespaceType::LINE;
+                $token->WhitespaceMaskPrev |= WhitespaceType::LINE;
+                $prev->WhitespaceMaskNext |= WhitespaceType::LINE;
+                if ($this->Idx->Attribute[$token->id]) {
+                    $token = $token->ClosedBy ?? $token;
+                    $token->WhitespaceAfter |= WhitespaceType::LINE;
+                    // Add a blank line before each item with an attribute, and
+                    // another before the next item
+                    $addBlankBefore = true;
                 }
-            } while (($current->id === \T_ATTRIBUTE
-                    || $current->id === \T_ATTRIBUTE_COMMENT)
-                && ($current = $current->NextSibling));
-
-            // Continue if $token is a parameter with no attributes
-            if ($current === $token) {
-                $prev = $token;
-                continue;
             }
-
-            // Otherwise, add a blank line before $token and another before the
-            // next parameter
-            if (!$blankBeforeApplied && ($prev ?? null)) {
-                $token->applyBlankLineBefore(true);
+            if ($i++ && $addBlankBefore && !$hasBlankBefore) {
+                $item->applyBlankLineBefore(true);
             }
-            $blankBeforeNext = true;
-
-            $prev = $token;
         }
     }
 }

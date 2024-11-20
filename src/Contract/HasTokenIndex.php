@@ -436,6 +436,7 @@ interface HasTokenIndex
         \T_TRY => true,
         \T_UNSET => true,
         \T_USE => true,
+        \T_VAR => true,
         \T_WHILE => true,
         \T_YIELD => true,
         \T_YIELD_FROM => true,
@@ -449,7 +450,6 @@ interface HasTokenIndex
         \T_FINAL => true,
         \T_READONLY => true,
         \T_STATIC => true,
-        \T_VAR => true,
     ] + self::VISIBILITY;
 
     /**
@@ -472,7 +472,6 @@ interface HasTokenIndex
         \T_FINAL => false,
         \T_READONLY => false,
         \T_STATIC => false,
-        \T_VAR => false,
         \T_PRIVATE => false,
         \T_PRIVATE_SET => false,
         \T_PROTECTED => false,

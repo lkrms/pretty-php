@@ -34,6 +34,10 @@ final class TokenCollection extends AbstractTypedList implements Stringable
         return $instance;
     }
 
+    /**
+     * @phpstan-assert-if-true !null $this->first()
+     * @phpstan-assert-if-true !null $this->last()
+     */
     public function hasOneOf(int $type): bool
     {
         /** @var Token $token */
@@ -72,6 +76,8 @@ final class TokenCollection extends AbstractTypedList implements Stringable
 
     /**
      * @param array<int,bool> $index
+     * @phpstan-assert-if-true !null $this->first()
+     * @phpstan-assert-if-true !null $this->last()
      */
     public function hasOneFrom(array $index): bool
     {
@@ -86,6 +92,8 @@ final class TokenCollection extends AbstractTypedList implements Stringable
 
     /**
      * @param array<int,bool> $index
+     * @phpstan-assert-if-true !null $this->first()
+     * @phpstan-assert-if-true !null $this->last()
      */
     public function hasOneNotFrom(array $index): bool
     {
@@ -157,10 +165,13 @@ final class TokenCollection extends AbstractTypedList implements Stringable
     /**
      * Check if there is a newline after one of the tokens in the collection
      */
-    public function tokenHasNewlineAfter(): bool
+    public function tokenHasNewlineAfter(bool $closedBy = false): bool
     {
         /** @var Token $token */
         foreach ($this as $token) {
+            if ($closedBy && $token->ClosedBy) {
+                $token = $token->ClosedBy;
+            }
             if ($token->hasNewlineAfter()) {
                 return true;
             }

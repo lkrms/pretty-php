@@ -13,8 +13,8 @@ use Lkrms\PrettyPHP\TokenTypeIndex;
  */
 trait ExtensionTrait
 {
-    protected Formatter $Formatter;
-    protected TokenTypeIndex $Idx;
+    private Formatter $Formatter;
+    private TokenTypeIndex $Idx;
 
     public function __construct(Formatter $formatter)
     {

@@ -70,7 +70,7 @@ final class IndexSpacing implements TokenRule
             if ($idx->SuppressSpaceAfter[$token->id] || (
                 $idx->OpenBracket[$token->id] && !(
                     $token->Flags & TokenFlag::STRUCTURAL_BRACE
-                    || $token->isMatchBrace()
+                    || $token->isMatchOpenBrace()
                 )
             )) {
                 $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK & ~WhitespaceType::SPACE;
@@ -81,7 +81,7 @@ final class IndexSpacing implements TokenRule
             if ($idx->SuppressSpaceBefore[$token->id] || (
                 $idx->CloseBracket[$token->id] && !(
                     $token->Flags & TokenFlag::STRUCTURAL_BRACE
-                    || $token->isMatchBrace()
+                    || ($token->OpenedBy && $token->OpenedBy->isMatchOpenBrace())
                 )
             )) {
                 $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::SPACE;

@@ -12,9 +12,4 @@ use Lkrms\PrettyPHP\Contract\StatementRule;
 trait StatementRuleTrait
 {
     use RuleTrait;
-
-    /**
-     * @inheritDoc
-     */
-    public function beforeRender(array $tokens): void {}
 }

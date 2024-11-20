@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP;
 
+use Lkrms\PrettyPHP\Catalog\DeclarationType;
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenFlagMask;
@@ -63,7 +64,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
     /**
      * @var array<TokenData::*,mixed>
-     * @phpstan-var array{string,TokenCollection,int,self,self,self,TokenCollection,list<int>,int}
+     * @phpstan-var array{string,TokenCollection,int,self,self,self,TokenCollection,int,TokenCollection,int}
      */
     public array $Data;
 
@@ -644,10 +645,17 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     public function isParameterList(): bool
     {
         return $this->id === \T_OPEN_PARENTHESIS
-            && ($prev = $this->PrevCode)
-            && $this->Idx->FunctionOrFn[
-                $prev->skipPrevSiblingsFrom($this->Idx->FunctionIdentifier)->id
-            ];
+            && ($prev = $this->PrevSibling)
+            && ($this->Idx->FunctionOrFn[
+                ($prev2 = $prev->skipPrevSiblingsFrom($this->Idx->FunctionIdentifier))->id
+            ] || (
+                $prev->id === \T_STRING
+                && ($prev2->id === \T_NULL || $prev2->skipPrevSiblingsFrom($this->Idx->AttributeOrModifier)->id === \T_NULL)
+                && $this->Parent
+                && $this->Parent->id === \T_OPEN_BRACE
+                && $this->Parent->Statement
+                && $this->Parent->Statement->isProperty()
+            ));
     }
 
     /**
@@ -672,6 +680,79 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             && $this->Parent->PrevSibling
             && $this->Parent->PrevSibling->PrevSibling
             && $this->Parent->PrevSibling->PrevSibling->id === \T_SWITCH;
+    }
+
+    /**
+     * Check if the token is a T_COMMA between the arms of a match expression
+     */
+    public function isDelimiterBetweenMatchArms(): bool
+    {
+        return $this->isMatchDelimiter()
+            && $this->prevSiblingFrom($this->Idx->CommaOrDoubleArrow)->id === \T_DOUBLE_ARROW;
+    }
+
+    /**
+     * Check if the token is a T_COMMA between conditional expressions in a
+     * match expression
+     */
+    public function isDelimiterBetweenMatchExpressions(): bool
+    {
+        return $this->isMatchDelimiter()
+            && $this->prevSiblingFrom($this->Idx->CommaOrDoubleArrow)->id !== \T_DOUBLE_ARROW;
+    }
+
+    /**
+     * Check if the token is a T_COMMA in a match expression
+     */
+    public function isMatchDelimiter(): bool
+    {
+        return $this->id === \T_COMMA
+            && $this->Parent
+            && $this->Parent->isMatchOpenBrace();
+    }
+
+    /**
+     * Check if the token is the T_OPEN_BRACE of a match expression
+     */
+    public function isMatchOpenBrace(): bool
+    {
+        return $this->id === \T_OPEN_BRACE
+            && $this->PrevSibling
+            && $this->PrevSibling->PrevSibling
+            && $this->PrevSibling->PrevSibling->id === \T_MATCH;
+    }
+
+    /**
+     * Check if the token is part of a property declaration, promoted
+     * constructor parameter or property hook
+     */
+    public function inPropertyOrPropertyHook(): bool
+    {
+        return (
+            $this->Statement
+            && $this->Statement->isProperty()
+        ) || $this->inPropertyHook();
+    }
+
+    /**
+     * Check if the token is part of a property hook
+     */
+    public function inPropertyHook(): bool
+    {
+        return $this->Parent
+            && $this->Parent->id === \T_OPEN_BRACE
+            && $this->Parent->Statement
+            && $this->Parent->Statement->isProperty();
+    }
+
+    /**
+     * Check if the token is the first in a property declaration or promoted
+     * constructor parameter
+     */
+    public function isProperty(): bool
+    {
+        return $this->Flags & TokenFlag::NAMED_DECLARATION
+            && $this->Data[TokenData::NAMED_DECLARATION_TYPE] & DeclarationType::PROPERTY;
     }
 
     /**
@@ -750,33 +831,6 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     }
 
     // --
-
-    public function isMatchBrace(): bool
-    {
-        return ($t = $this->OpenedBy ?? $this)->id === \T_OPEN_BRACE
-            && ($t = $t->PrevSibling)
-            && ($t = $t->PrevSibling)
-            && $t->id === \T_MATCH;
-    }
-
-    public function isMatchDelimiter(): bool
-    {
-        return $this->id === \T_COMMA
-            && $this->Parent
-            && $this->Parent->isMatchBrace();
-    }
-
-    public function isDelimiterBetweenMatchArms(): bool
-    {
-        return $this->isMatchDelimiter()
-            && $this->prevSiblingFrom($this->Idx->CommaOrDoubleArrow)->id === \T_DOUBLE_ARROW;
-    }
-
-    public function isDelimiterBetweenMatchExpressions(): bool
-    {
-        return $this->isMatchDelimiter()
-            && $this->prevSiblingFrom($this->Idx->CommaOrDoubleArrow)->id !== \T_DOUBLE_ARROW;
-    }
 
     public function wasFirstOnLine(): bool
     {
@@ -1685,21 +1739,17 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      */
     public function collectSiblings(?self $to = null): TokenCollection
     {
-        $tokens = new TokenCollection();
-        if ($this->id === \T_NULL) {
-            // @codeCoverageIgnoreStart
-            return $tokens;
-            // @codeCoverageIgnoreEnd
+        if ($this->id === \T_NULL || ($to && $to->id === \T_NULL)) {
+            return new TokenCollection();
         }
-        !$to || $to->id !== \T_NULL || $to = null;
         $current = $this->OpenedBy ?? $this;
         if ($to) {
             if ($this->Parent !== $to->Parent) {
-                return $tokens;
+                return new TokenCollection();
             }
             $to = $to->OpenedBy ?? $to;
             if ($this->Index > $to->Index) {
-                return $tokens;
+                return new TokenCollection();
             }
         }
         do {
@@ -1709,7 +1759,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             }
         } while ($current = $current->NextSibling);
 
-        return $tokens;
+        return new TokenCollection($tokens);
     }
 
     /**
@@ -1718,21 +1768,17 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      */
     public function prevSiblings(?self $to = null): TokenCollection
     {
-        $tokens = new TokenCollection();
-        if ($this->id === \T_NULL) {
-            // @codeCoverageIgnoreStart
-            return $tokens;
-            // @codeCoverageIgnoreEnd
+        if ($this->id === \T_NULL || ($to && $to->id === \T_NULL)) {
+            return new TokenCollection();
         }
-        !$to || $to->id !== \T_NULL || $to = null;
         $current = $this->OpenedBy ?? $this;
         if ($to) {
             if ($this->Parent !== $to->Parent) {
-                return $tokens;
+                return new TokenCollection();
             }
             $to = $to->OpenedBy ?? $to;
             if ($this->Index < $to->Index) {
-                return $tokens;
+                return new TokenCollection();
             }
         }
         while ($current = $current->PrevSibling) {
@@ -1742,7 +1788,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             }
         }
 
-        return $tokens;
+        return new TokenCollection($tokens ?? []);
     }
 
     /**
@@ -1775,7 +1821,6 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      */
     private function _prevCodeWhile(bool $includeToken, bool $testToken, array $index): TokenCollection
     {
-        $tokens = new TokenCollection();
         if ($includeToken && !$testToken) {
             $tokens[] = $this;
             $includeToken = false;
@@ -1786,7 +1831,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             $prev = $prev->PrevCode;
         }
 
-        return $tokens;
+        return new TokenCollection($tokens ?? []);
     }
 
     /**
@@ -1819,7 +1864,6 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      */
     private function _nextCodeWhile(bool $includeToken, bool $testToken, array $index): TokenCollection
     {
-        $tokens = new TokenCollection();
         if ($includeToken && !$testToken) {
             $tokens[] = $this;
             $includeToken = false;
@@ -1830,7 +1874,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             $next = $next->NextCode;
         }
 
-        return $tokens;
+        return new TokenCollection($tokens ?? []);
     }
 
     /**
@@ -1863,7 +1907,6 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      */
     private function _prevSiblingsWhile(bool $includeToken, bool $testToken, array $index): TokenCollection
     {
-        $tokens = new TokenCollection();
         if ($includeToken && !$testToken) {
             $tokens[] = $this;
             $includeToken = false;
@@ -1874,7 +1917,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             $prev = $prev->PrevSibling;
         }
 
-        return $tokens;
+        return new TokenCollection($tokens ?? []);
     }
 
     /**
@@ -1907,7 +1950,6 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      */
     private function _nextSiblingsWhile(bool $includeToken, bool $testToken, array $index): TokenCollection
     {
-        $tokens = new TokenCollection();
         if ($includeToken && !$testToken) {
             $tokens[] = $this;
             $includeToken = false;
@@ -1918,7 +1960,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             $next = $next->NextSibling;
         }
 
-        return $tokens;
+        return new TokenCollection($tokens ?? []);
     }
 
     // --

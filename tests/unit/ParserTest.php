@@ -2,12 +2,15 @@
 
 namespace Lkrms\PrettyPHP\Tests;
 
+use Lkrms\PrettyPHP\Catalog\DeclarationType as Type;
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Filter\RemoveWhitespace;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\Parser;
+use Lkrms\PrettyPHP\TokenTypeIndex;
 use Lkrms\PrettyPHP\TokenUtil;
 use Salient\Utility\Get;
+use Salient\Utility\Reflect;
 
 final class ParserTest extends TestCase
 {
@@ -109,7 +112,7 @@ PHP,
     /**
      * @dataProvider declarationsProvider
      *
-     * @param array<array<string,string>> $expected
+     * @param array<array{string,string,int}> $expected
      */
     public function testDeclarations(array $expected, string $code): void
     {
@@ -120,19 +123,28 @@ PHP,
             $this->assertNotNull($token->EndStatement);
             $data = [];
             if ($token === $token->EndStatement) {
-                $data['tok'] = TokenUtil::describe($token);
+                $data[] = TokenUtil::describe($token);
             } else {
-                $data['tok'] = sprintf(
+                $data[] = sprintf(
                     '%s - %s',
                     TokenUtil::describe($token),
                     TokenUtil::describe($token->EndStatement),
                 );
             }
-            $data['par'] = $token->Data[TokenData::NAMED_DECLARATION_PARTS]->toString(' ');
-            $data['typ'] = implode(',', self::getTokenNames($token->Data[TokenData::NAMED_DECLARATION_TYPE]));
+            $data[] = $token->Data[TokenData::NAMED_DECLARATION_PARTS]->toString(' ');
+            $data[] = $type = $token->Data[TokenData::NAMED_DECLARATION_TYPE];
             $actual[] = $data;
+
+            $type = Reflect::getConstantName(Type::class, $type);
+            if ($type !== '') {
+                $type = "Type::{$type}";
+                $data[2] = $type;
+                $constants[$type] = $type;
+            }
+            $actualCode[] = $data;
         }
-        $actualCode = Get::code($actual ?? [], ",\n");
+
+        $actualCode = Get::code($actualCode ?? [], ",\n", ' => ', null, '    ', [], $constants ?? []);
         $this->assertSame(
             $expected,
             $actual ?? [],
@@ -141,7 +153,7 @@ PHP,
     }
 
     /**
-     * @return iterable<array{array<array<string,string>>,string}>
+     * @return iterable<array{array<array{string,string,int}>,string}>
      */
     public static function declarationsProvider(): iterable
     {
@@ -149,69 +161,69 @@ PHP,
             [
                 [
                     [
-                        'tok' => "T1:L1:'declare' - T7:L1:';'",
-                        'par' => 'declare',
-                        'typ' => 'T_DECLARE',
+                        "T1:L1:'declare' - T7:L1:';'",
+                        'declare',
+                        Type::_DECLARE,
                     ],
                     [
-                        'tok' => "T8:L2:'namespace' - T10:L2:';'",
-                        'par' => 'namespace Foo\Bar',
-                        'typ' => 'T_NAMESPACE',
+                        "T8:L2:'namespace' - T10:L2:';'",
+                        'namespace Foo\Bar',
+                        Type::_NAMESPACE,
                     ],
                     [
-                        'tok' => "T11:L3:'use' - T13:L3:';'",
-                        'par' => 'use Baz\Factory',
-                        'typ' => 'T_USE',
+                        "T11:L3:'use' - T13:L3:';'",
+                        'use Baz\Factory',
+                        Type::_USE,
                     ],
                     [
-                        'tok' => "T14:L4:'use' - T17:L4:';'",
-                        'par' => 'use function in_array',
-                        'typ' => 'T_USE,T_FUNCTION',
+                        "T14:L4:'use' - T17:L4:';'",
+                        'use function in_array',
+                        Type::USE_FUNCTION,
                     ],
                     [
-                        'tok' => "T18:L5:'use' - T21:L5:';'",
-                        'par' => 'use const PREG_UNMATCHED_AS_NULL',
-                        'typ' => 'T_USE,T_CONST',
+                        "T18:L5:'use' - T21:L5:';'",
+                        'use const PREG_UNMATCHED_AS_NULL',
+                        Type::USE_CONST,
                     ],
                     [
-                        'tok' => "T22:L6:'class' - T88:L23:'}'",
-                        'par' => 'class Foo',
-                        'typ' => 'T_CLASS',
+                        "T22:L6:'class' - T88:L23:'}'",
+                        'class Foo',
+                        Type::_CLASS,
                     ],
                     [
-                        'tok' => "T25:L7:'use' - T27:L7:';'",
-                        'par' => 'use Factory',
-                        'typ' => 'T_USE,T_TRAIT',
+                        "T25:L7:'use' - T27:L7:';'",
+                        'use Factory',
+                        Type::USE_TRAIT,
                     ],
                     [
-                        'tok' => "T28:L8:'static' - T30:L8:';'",
-                        'par' => 'static',
-                        'typ' => 'T_VAR',
+                        "T28:L8:'static' - T30:L8:';'",
+                        'static',
+                        Type::PROPERTY,
                     ],
                     [
-                        'tok' => "T31:L9:'static' - T36:L9:';'",
-                        'par' => 'static int',
-                        'typ' => 'T_VAR',
+                        "T31:L9:'static' - T36:L9:';'",
+                        'static int',
+                        Type::PROPERTY,
                     ],
                     [
-                        'tok' => "T37:L10:'public' - T43:L10:';'",
-                        'par' => 'public',
-                        'typ' => 'T_VAR',
+                        "T37:L10:'public' - T43:L10:';'",
+                        'public',
+                        Type::PROPERTY,
                     ],
                     [
-                        'tok' => "T44:L11:'public' - T57:L13:'}'",
-                        'par' => 'public function __construct',
-                        'typ' => 'T_FUNCTION',
+                        "T44:L11:'public' - T57:L13:'}'",
+                        'public function __construct',
+                        Type::_FUNCTION,
                     ],
                     [
-                        'tok' => "T58:L14:'static' - T87:L22:'}'",
-                        'par' => 'static public function foo',
-                        'typ' => 'T_FUNCTION',
+                        "T58:L14:'static' - T87:L22:'}'",
+                        'static public function foo',
+                        Type::_FUNCTION,
                     ],
                     [
-                        'tok' => "T89:L24:'function' - T97:L26:'}'",
-                        'par' => 'function foo',
-                        'typ' => 'T_FUNCTION',
+                        "T89:L24:'function' - T97:L26:'}'",
+                        'function foo',
+                        Type::_FUNCTION,
                     ],
                 ],
                 <<<'PHP'
@@ -246,9 +258,9 @@ PHP,
             [
                 [
                     [
-                        'tok' => "T6:L3:'public' - T15:L5:'}'",
-                        'par' => 'public function __toString',
-                        'typ' => 'T_FUNCTION',
+                        "T6:L3:'public' - T15:L5:'}'",
+                        'public function __toString',
+                        Type::_FUNCTION,
                     ],
                 ],
                 <<<'PHP'
@@ -271,24 +283,24 @@ PHP,
         yield [
             [
                 [
-                    'tok' => "T1:L2:'class' - T20:L4:'}'",
-                    'par' => 'class Point',
-                    'typ' => 'T_CLASS',
+                    "T1:L2:'class' - T20:L4:'}'",
+                    'class Point',
+                    Type::_CLASS,
                 ],
                 [
-                    'tok' => "T4:L3:'public' - T19:L3:'}'",
-                    'par' => 'public function __construct',
-                    'typ' => 'T_FUNCTION',
+                    "T4:L3:'public' - T19:L3:'}'",
+                    'public function __construct',
+                    Type::_FUNCTION,
                 ],
                 [
-                    'tok' => "T8:L3:'protected' - T11:L3:','",
-                    'par' => 'protected int',
-                    'typ' => 'T_FUNCTION,T_VAR',
+                    "T8:L3:'protected' - T11:L3:','",
+                    'protected int',
+                    Type::PARAM,
                 ],
                 [
-                    'tok' => "T12:L3:'protected' - T16:L3:'0'",
-                    'par' => 'protected int',
-                    'typ' => 'T_FUNCTION,T_VAR',
+                    "T12:L3:'protected' - T16:L3:'0'",
+                    'protected int',
+                    Type::PARAM,
                 ],
             ],
             <<<'PHP'
@@ -306,29 +318,69 @@ PHP,
         yield [
             [
                 [
-                    'tok' => "T1:L2:'class' - T59:L19:'}'",
-                    'par' => 'class Test',
-                    'typ' => 'T_CLASS',
+                    "T1:L2:'class' - T59:L19:'}'",
+                    'class Test',
+                    Type::_CLASS,
                 ],
                 [
-                    'tok' => "T4:L3:'public' - T19:L6:'}'",
-                    'par' => 'public',
-                    'typ' => 'T_VAR',
+                    "T4:L3:'public' - T19:L6:'}'",
+                    'public',
+                    Type::PROPERTY,
                 ],
                 [
-                    'tok' => "T20:L7:'private' - T31:L10:'}'",
-                    'par' => 'private',
-                    'typ' => 'T_VAR',
+                    "T7:L4:'get' - T12:L4:'}'",
+                    'get',
+                    Type::HOOK,
                 ],
                 [
-                    'tok' => "T32:L11:'abstract' - T40:L14:'}'",
-                    'par' => 'abstract',
-                    'typ' => 'T_VAR',
+                    "T13:L5:'set' - T18:L5:'}'",
+                    'set',
+                    Type::HOOK,
                 ],
                 [
-                    'tok' => "T41:L15:'public' - T58:L18:'}'",
-                    'par' => 'public',
-                    'typ' => 'T_VAR',
+                    "T20:L7:'private' - T31:L10:'}'",
+                    'private',
+                    Type::PROPERTY,
+                ],
+                [
+                    "T23:L8:'get' - T26:L8:';'",
+                    'get',
+                    Type::HOOK,
+                ],
+                [
+                    "T27:L9:'set' - T30:L9:';'",
+                    'set',
+                    Type::HOOK,
+                ],
+                [
+                    "T32:L11:'abstract' - T40:L14:'}'",
+                    'abstract',
+                    Type::PROPERTY,
+                ],
+                [
+                    "T35:L12:'&' - T37:L12:';'",
+                    '& get',
+                    Type::HOOK,
+                ],
+                [
+                    "T38:L13:'set' - T39:L13:';'",
+                    'set',
+                    Type::HOOK,
+                ],
+                [
+                    "T41:L15:'public' - T58:L18:'}'",
+                    'public',
+                    Type::PROPERTY,
+                ],
+                [
+                    "T44:L16:'final' - T50:L16:'}'",
+                    'final get',
+                    Type::HOOK,
+                ],
+                [
+                    "T51:L17:'set' - T57:L17:'}'",
+                    'set',
+                    Type::HOOK,
                 ],
             ],
             <<<'PHP'
@@ -481,5 +533,34 @@ $bar = function (): Baz|(Foo&Bar) {
 };
 PHP,
         ];
+    }
+
+    public function testDeclarationMap(): void
+    {
+        $idx = array_filter((new TokenTypeIndex())->DeclarationExceptModifierOrVar);
+        $map = self::getDeclarationMap();
+        $this->assertEmpty(array_diff_key($idx, $map), sprintf(
+            '%s::DECLARATION_MAP does not cover %s::$DeclarationExceptModifierOrVar',
+            Parser::class,
+            TokenTypeIndex::class,
+        ));
+        $this->assertEmpty(array_diff_key($map, $idx), sprintf(
+            '%s::DECLARATION_MAP covers tokens not in %s::$DeclarationExceptModifierOrVar',
+            Parser::class,
+            TokenTypeIndex::class,
+        ));
+    }
+
+    /**
+     * @return array<int,int>
+     */
+    private static function getDeclarationMap(): array
+    {
+        /**
+         * @disregard P1012
+         * @phpstan-ignore classConstant.notFound
+         */
+        return (static fn() => self::DECLARATION_MAP)
+                   ->bindTo(null, Parser::class)();
     }
 }

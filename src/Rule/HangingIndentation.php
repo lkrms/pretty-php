@@ -60,8 +60,8 @@ final class HangingIndentation implements TokenRule
     public function boot(): void
     {
         $indent = $this->Formatter->HeredocIndent;
-        $this->HeredocIndentIsMixed = (bool) ($indent & HeredocIndent::MIXED);
-        $this->HeredocIndentIsHanging = (bool) ($indent & HeredocIndent::HANGING);
+        $this->HeredocIndentIsMixed = $indent === HeredocIndent::MIXED;
+        $this->HeredocIndentIsHanging = $indent === HeredocIndent::HANGING;
     }
 
     /**
@@ -77,7 +77,7 @@ final class HangingIndentation implements TokenRule
                 ) || (
                     $token->id === \T_OPEN_BRACE && (
                         $token->Flags & TokenFlag::STRUCTURAL_BRACE
-                        || $token->isMatchBrace()
+                        || $token->isMatchOpenBrace()
                     )
                 );
                 $token->Data[self::PARENT_TYPE] = $token->hasNewlineBeforeNextCode()

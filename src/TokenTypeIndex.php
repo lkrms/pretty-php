@@ -284,6 +284,19 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
+     * T_ATTRIBUTE, T_ATTRIBUTE_COMMENT, T_ABSTRACT, T_FINAL, T_READONLY,
+     * T_STATIC, visibility modifiers
+     *
+     * @var array<int,bool>
+     */
+    public array $AttributeOrModifier = [
+        \T_ATTRIBUTE => true,
+        \T_ATTRIBUTE_COMMENT => true,
+    ]
+        + self::MODIFIER
+        + self::TOKEN_INDEX;
+
+    /**
      * Casts
      *
      * @var array<int,bool>
@@ -346,7 +359,9 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $DeclarationExceptModifiers = self::NO_MODIFIER
+    public array $DeclarationExceptModifierOrVar = self::NO_MODIFIER + [
+        \T_VAR => false,
+    ]
         + self::DECLARATION
         + self::TOKEN_INDEX;
 
@@ -397,6 +412,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      */
     public array $NonMethodMember = [
         \T_CONST => true,
+        \T_VAR => true,
     ]
         + self::MODIFIER
         + self::TOKEN_INDEX;
@@ -436,11 +452,21 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * Visibility modifiers, T_ABSTRACT, T_FINAL, T_READONLY, T_STATIC, T_VAR
+     * Visibility modifiers, T_ABSTRACT, T_FINAL, T_READONLY, T_STATIC
      *
      * @var array<int,bool>
      */
     public array $Modifier = self::MODIFIER
+        + self::TOKEN_INDEX;
+
+    /**
+     * Visibility modifiers, T_ABSTRACT, T_FINAL, T_READONLY, T_STATIC, T_VAR
+     *
+     * @var array<int,bool>
+     */
+    public array $ModifierOrVar = self::MODIFIER + [
+        \T_VAR => true,
+    ]
         + self::TOKEN_INDEX;
 
     /**

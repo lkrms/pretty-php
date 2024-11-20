@@ -16,5 +16,16 @@ trait DeclarationRuleTrait
     /**
      * @inheritDoc
      */
-    public function beforeRender(array $tokens): void {}
+    public static function getDeclarationTypes(array $all): array
+    {
+        return ['*'];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function needsSortedDeclarations(): bool
+    {
+        return true;
+    }
 }

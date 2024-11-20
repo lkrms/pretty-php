@@ -12,9 +12,4 @@ use Lkrms\PrettyPHP\Contract\BlockRule;
 trait BlockRuleTrait
 {
     use RuleTrait;
-
-    /**
-     * @inheritDoc
-     */
-    public function beforeRender(array $tokens): void {}
 }

@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\DeclarationType as Type;
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
@@ -44,7 +45,7 @@ final class DeclarationSpacing implements DeclarationRule
     /**
      * [ Token index => [ token, type, modifiers, tight, tightOneLine, hasDocComment, hasDocCommentOrBlankLineBefore, isMultiLine ] ]
      *
-     * @var array<int,array{Token,int[],int[],bool,bool,bool|null,bool|null,bool|null}>
+     * @var array<int,array{Token,int,int[],bool,bool,bool|null,bool|null,bool|null}>
      */
     private array $Declarations;
 
@@ -56,6 +57,18 @@ final class DeclarationSpacing implements DeclarationRule
         return [
             self::PROCESS_DECLARATIONS => 620,
         ][$method] ?? null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function getDeclarationTypes(array $all): array
+    {
+        // Ignore promoted constructor parameters and property hooks
+        return [
+            Type::HOOK => false,
+            Type::PARAM => false,
+        ] + $all;
     }
 
     /**
@@ -84,24 +97,19 @@ final class DeclarationSpacing implements DeclarationRule
         foreach ($declarations as $token) {
             $type = $token->Data[TokenData::NAMED_DECLARATION_TYPE];
 
-            // Ignore promoted constructor parameters
-            if ($type === [\T_FUNCTION, \T_VAR]) {
-                continue;
-            }
-
             // Apply the same formatting to imports and trait insertion, and
             // don't separate `use`, `use function` and `use constant` if
             // imports are not being sorted
             if (
-                $type === [\T_USE, \T_TRAIT]
+                $type === Type::USE_TRAIT
                 || (
                     !$this->SortImportsEnabled && (
-                        $type === [\T_USE, \T_FUNCTION]
-                        || $type === [\T_USE, \T_CONST]
+                        $type === Type::USE_FUNCTION
+                        || $type === Type::USE_CONST
                     )
                 )
             ) {
-                $type = [\T_USE];
+                $type = Type::_USE;
             }
 
             $parts = $token->Data[TokenData::NAMED_DECLARATION_PARTS];
@@ -293,10 +301,9 @@ final class DeclarationSpacing implements DeclarationRule
      * Check if $token and any subsequent tightly-spaced declarations of $type
      * have modifiers mutually exclusive with $group
      *
-     * @param int[] $type
      * @param non-empty-array<int[]> $group
      */
-    private function isGroupedByModifier(Token $token, array $type, array $group): bool
+    private function isGroupedByModifier(Token $token, int $type, array $group): bool
     {
         $groups = [Arr::unique($group)];
         $group = null;

@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule\Preset;
 
+use Lkrms\PrettyPHP\Catalog\DeclarationType;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Catalog\TokenData;
@@ -85,7 +86,7 @@ final class Symfony implements Preset, TokenRule, ListRule
         foreach ($items as $item) {
             if (
                 $item->Flags & TokenFlag::NAMED_DECLARATION
-                && $item->Data[TokenData::NAMED_DECLARATION_TYPE] === [\T_FUNCTION, \T_VAR]
+                && $item->Data[TokenData::NAMED_DECLARATION_TYPE] === DeclarationType::PARAM
             ) {
                 return;
             }

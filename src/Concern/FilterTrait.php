@@ -15,14 +15,14 @@ trait FilterTrait
     use ExtensionTrait;
 
     /** @var list<GenericToken> */
-    protected array $Tokens;
+    private array $Tokens;
 
     /**
      * Get the given token's previous code token
      *
      * @param-out int $key
      */
-    protected function getPrevCode(int $i, ?int &$key = null): ?GenericToken
+    private function getPrevCode(int $i, ?int &$key = null): ?GenericToken
     {
         while ($i--) {
             $token = $this->Tokens[$i];
@@ -43,7 +43,7 @@ trait FilterTrait
      * @param array<int,bool> $index
      * @param-out int $key
      */
-    protected function getPrevSiblingFrom(int $i, array $index, ?int $to = null, ?int &$key = null): ?GenericToken
+    private function getPrevSiblingFrom(int $i, array $index, ?int $to = null, ?int &$key = null): ?GenericToken
     {
         while ($token = $this->getPrevSibling($i, 1, $j)) {
             if ($to !== null && $j < $to) {
@@ -66,7 +66,7 @@ trait FilterTrait
      *
      * @param-out int $key
      */
-    protected function getPrevSibling(int $i, int $offset = 1, ?int &$key = null): ?GenericToken
+    private function getPrevSibling(int $i, int $offset = 1, ?int &$key = null): ?GenericToken
     {
         $depth = 0;
         if ($this->Idx->CloseBracket[$this->Tokens[$i]->id]) {
@@ -102,7 +102,7 @@ trait FilterTrait
      *
      * @param-out int $key
      */
-    protected function getParent(int $i, ?int &$key = null): ?GenericToken
+    private function getParent(int $i, ?int &$key = null): ?GenericToken
     {
         while ($this->getPrevSibling($i, 1, $j)) {
             $i = $j;
@@ -118,7 +118,7 @@ trait FilterTrait
     /**
      * Check if the given T_COLON belongs to an alternative syntax construct
      */
-    protected function isColonAltSyntaxDelimiter(int $i): bool
+    private function isColonAltSyntaxDelimiter(int $i): bool
     {
         /** @var GenericToken */
         $token = $this->getPrevCode($i, $j);
@@ -136,7 +136,7 @@ trait FilterTrait
     /**
      * Check if the given T_COLON is a switch case delimiter
      */
-    protected function isColonSwitchCaseDelimiter(int $i, ?int $parentIndex = null): bool
+    private function isColonSwitchCaseDelimiter(int $i, ?int $parentIndex = null): bool
     {
         $parent = $parentIndex === null
             // @codeCoverageIgnoreStart
@@ -154,7 +154,7 @@ trait FilterTrait
      * Check if the given token, together with previous tokens in the same
      * statement, form a declaration of the given type
      */
-    protected function isDeclarationOf(int $i, int $type): bool
+    private function isDeclarationOf(int $i, int $type): bool
     {
         while ($i--) {
             $token = $this->Tokens[$i];
@@ -174,7 +174,7 @@ trait FilterTrait
     /**
      * Check if the given token is a comment that starts with '//' or '#'
      */
-    protected function isOneLineComment(int $i): bool
+    private function isOneLineComment(int $i): bool
     {
         $token = $this->Tokens[$i];
         return $token->id === \T_COMMENT && (

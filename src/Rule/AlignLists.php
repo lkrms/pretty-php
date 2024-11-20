@@ -66,14 +66,14 @@ final class AlignLists implements ListRule
                 while (($adjacent = $to->lastSiblingBeforeNewline()) !== $to
                     && ($adjacent->id !== \T_OPEN_BRACE
                         || !($adjacent->Flags & TokenFlag::STRUCTURAL_BRACE
-                            || $adjacent->isMatchBrace())
+                            || $adjacent->isMatchOpenBrace())
                         || $adjacent->Depth > $parent->Depth)) {
                     $to = $adjacent;
                 }
                 while (($adjacent = $to->adjacentBeforeNewline(false))
                     && ($adjacent->id !== \T_OPEN_BRACE
                         || !($adjacent->Flags & TokenFlag::STRUCTURAL_BRACE
-                            || $adjacent->isMatchBrace())
+                            || $adjacent->isMatchOpenBrace())
                         || $adjacent->Depth > $parent->Depth)) {
                     $to = $adjacent->pragmaticEndOfExpression();
                 }

@@ -2,11 +2,13 @@
 
 namespace Lkrms\PrettyPHP;
 
+use Lkrms\PrettyPHP\Catalog\DeclarationType as Type;
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Internal\Document;
+use Lkrms\PrettyPHP\Internal\TokenCollection;
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasMutator;
 use Salient\Utility\Exception\ShouldNotHappenException;
@@ -15,6 +17,19 @@ use Salient\Utility\Regex;
 final class Parser implements Immutable
 {
     use HasMutator;
+
+    private const DECLARATION_MAP = [
+        \T_CASE => Type::_CASE,
+        \T_CLASS => Type::_CLASS,
+        \T_CONST => Type::_CONST,
+        \T_DECLARE => Type::_DECLARE,
+        \T_ENUM => Type::_ENUM,
+        \T_FUNCTION => Type::_FUNCTION,
+        \T_INTERFACE => Type::_INTERFACE,
+        \T_NAMESPACE => Type::_NAMESPACE,
+        \T_TRAIT => Type::_TRAIT,
+        \T_USE => Type::_USE,
+    ];
 
     private Formatter $Formatter;
 
@@ -49,13 +64,14 @@ final class Parser implements Immutable
         $this->linkTokens($tokens);
         $this->buildHierarchy($tokens, $tokensById, $scopes);
         $this->parseStatements($scopes, $statements);
-        $this->parseExpressions($statements, $declarations);
+        $this->parseExpressions($statements, $declarations, $declarationsByType);
 
         return new Document(
             $tokens,
             $tokensById,
             $statements,
             $declarations,
+            $declarationsByType,
         );
     }
 
@@ -545,14 +561,24 @@ final class Parser implements Immutable
      * @param Token[] $statements
      * @param array<int,Token>|null $declarations
      * @param-out array<int,Token> $declarations
+     * @param array<int,array<int,Token>>|null $declarationsByType
+     * @param-out array<int,array<int,Token>> $declarationsByType
      */
-    private function parseExpressions(array $statements, ?array &$declarations): void
-    {
+    private function parseExpressions(
+        array $statements,
+        ?array &$declarations,
+        ?array &$declarationsByType
+    ): void {
         $idx = $this->Formatter->TokenTypeIndex;
 
         $declarations = [];
+        $declarationsByType = [];
 
         foreach ($statements as $statement) {
+            /** @var Token */
+            $end = $statement->EndStatement;
+            $end = $end->OpenedBy ?? $end;
+
             if (
                 $idx->AttributeOrDeclaration[$statement->id]
                 && ($first = $this->skipNextSiblingsFrom($statement, $idx->Attribute))
@@ -567,7 +593,7 @@ final class Parser implements Immutable
                     // - `static $foo` or `static function` at class level
                     (
                         $first->id !== \T_STATIC
-                        || $idx->Modifier[$next->id]
+                        || $idx->ModifierOrVar[$next->id]
                         || (
                             $idx->StartOfValueType[$next->id]
                             && ($variable = $this->skipNextSiblingsFrom($next, $idx->ValueType))
@@ -581,29 +607,56 @@ final class Parser implements Immutable
                     // Limit `case` to enumerations
                     && ($first->id !== \T_CASE || !$first->inSwitch())
                     && ($parts = $statement->namedDeclarationParts())->count()
-                    && (
-                        ($type = $parts->getAnyFrom($idx->DeclarationExceptModifiers)->getTypes())
-                        || ($parts->hasOneFrom($idx->Modifier) && $this->isClassStatement($statement))
-                        || ($idx->VisibilityOrReadonly[$first->id] && $statement->inParameterList())
-                    )
                 ) {
-                    if (!$type) {
-                        $type = $statement->inParameterList()
-                            ? [\T_FUNCTION, \T_VAR]  // Promoted constructor parameter
-                            : [\T_VAR];              // Property
-                    } elseif ($type === [\T_USE] && $this->isClassStatement($statement)) {
-                        $type = [\T_USE, \T_TRAIT];  // Trait insertion
+                    $type = 0;
+                    foreach ($parts->getAnyFrom(
+                        $idx->DeclarationExceptModifierOrVar
+                    )->getTypes() as $id) {
+                        $type |= self::DECLARATION_MAP[$id];
                     }
-                    $statement->Flags |= TokenFlag::NAMED_DECLARATION;
-                    $statement->Data[TokenData::NAMED_DECLARATION_PARTS] = $parts;
-                    $statement->Data[TokenData::NAMED_DECLARATION_TYPE] = $type;
-                    $declarations[$statement->Index] = $statement;
+                    if (!$type) {
+                        if ($parts->hasOneFrom($idx->ModifierOrVar) && $this->isClassStatement($statement)) {
+                            $type = Type::PROPERTY;
+                        } elseif ($idx->VisibilityOrReadonly[$first->id] && $statement->inParameterList()) {
+                            $type = Type::PARAM;
+                        }
+                    } elseif ($type === Type::_USE && $this->isClassStatement($statement)) {
+                        $type = Type::USE_TRAIT;
+                    }
+                    if ($type) {
+                        $statement->Flags |= TokenFlag::NAMED_DECLARATION;
+                        $statement->Data[TokenData::NAMED_DECLARATION_PARTS] = $parts;
+                        $statement->Data[TokenData::NAMED_DECLARATION_TYPE] = $type;
+                        $declarations[$statement->Index] = $statement;
+                        $declarationsByType[$type][$statement->Index] = $statement;
+
+                        if ($type & Type::PROPERTY) {
+                            $hooks = [];
+                            if (
+                                $end->id === \T_OPEN_BRACE
+                                && $end->ClosedBy !== $end->NextCode
+                            ) {
+                                /** @var Token */
+                                $current = $end->NextCode;
+                                do {
+                                    if ($current === $current->Statement) {
+                                        $hooks[] = $current;
+                                    }
+                                } while ($current = $current->NextSibling);
+                            }
+                            foreach ($hooks as $hook) {
+                                $hook->Flags |= TokenFlag::NAMED_DECLARATION;
+                                $hook->Data[TokenData::NAMED_DECLARATION_PARTS] = $hook->namedDeclarationParts();
+                                $hook->Data[TokenData::NAMED_DECLARATION_TYPE] = Type::HOOK;
+                                $declarations[$hook->Index] = $hook;
+                                $declarationsByType[Type::HOOK][$hook->Index] = $hook;
+                            }
+                            $statement->Data[TokenData::PROPERTY_HOOKS] = new TokenCollection($hooks);
+                        }
+                    }
                 }
             }
 
-            /** @var Token */
-            $end = $statement->EndStatement;
-            $end = $end->OpenedBy ?? $end;
             $expression = $statement;
             $token = $expression;
             while (true) {
@@ -774,8 +827,8 @@ final class Parser implements Immutable
         /** @var Token */
         $t = $t->PrevCode;
 
-        // Braces cannot be empty in dereferencing contexts, but trait
-        // adaptation braces can be
+        // Braces cannot be empty in dereferencing contexts, but they can be in
+        // property hooks and trait adaptations
         return $t === $token                                  // `{}`
             || $t->id === \T_SEMICOLON                        // `{ statement; }`
             || $t->id === \T_COLON                            // `{ label: }`
