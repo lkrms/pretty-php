@@ -25,13 +25,8 @@ trait TokenRuleTrait
     /**
      * @inheritDoc
      */
-    public static function getRequiresSortedTokens(): bool
+    public static function needsSortedTokens(): bool
     {
         return true;
     }
-
-    /**
-     * @inheritDoc
-     */
-    public function beforeRender(array $tokens): void {}
 }

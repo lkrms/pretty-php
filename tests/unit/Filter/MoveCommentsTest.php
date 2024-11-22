@@ -140,7 +140,10 @@ $foo = [
     $baz,
     /** DocBlock */
     $qux,
-    /** DocBlock */
+
+    /**
+     * DocBlock
+     */
 ];
 
 function foo(
@@ -156,7 +159,10 @@ function bar(
     $baz,
     /** DocBlock */
     $qux
-    /** DocBlock */
+
+    /**
+     * DocBlock
+     */
 ): void {}
 
 PHP,
@@ -234,7 +240,10 @@ $foo =
         . '%'
         /** DocBlock */
         : $quux;
-/** DocBlock */
+
+/**
+ * DocBlock
+ */
 
 PHP,
                 $input2,
@@ -311,7 +320,10 @@ $foo =
         . '%'
         /** DocBlock */
         : $quux;
-/** DocBlock */
+
+/**
+ * DocBlock
+ */
 
 PHP,
                 $input2,
@@ -388,7 +400,10 @@ $foo =
         '%'
         /** DocBlock */
         : $quux;
-/** DocBlock */
+
+/**
+ * DocBlock
+ */
 
 PHP,
                 $input2,

@@ -12,7 +12,9 @@ final class Suit implements UnitEnum, Colorful
     public const Clubs    = new self('Clubs');
     public const Spades   = new self('Spades');
 
-    private function __construct(public readonly string $name) {}
+    private function __construct(
+        public readonly string $name
+    ) {}
 
     public function color(): string
     {

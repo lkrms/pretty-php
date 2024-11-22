@@ -17,17 +17,22 @@ trait RuleTrait
     use ExtensionTrait;
 
     /**
+     * @inheritDoc
+     */
+    public function beforeRender(array $tokens): void {}
+
+    /**
      * Suppress vertical whitespace between the given tokens if they were on the
      * same line
      *
      * @param bool $force If `true`, suppress vertical whitespace even if the
      * tokens were on different lines.
-     * @param bool $checkStatement If `true`, only suppress vertical
-     * whitespace if the tokens belong to the same statement.
+     * @param bool $checkStatement If `true`, only suppress vertical whitespace
+     * if the tokens belong to the same statement.
      * @return bool `true` if vertical whitespace is suppressed, otherwise
      * `false`.
      */
-    protected function preserveOneLine(
+    private function preserveOneLine(
         Token $start,
         Token $end,
         bool $force = false,
@@ -60,7 +65,7 @@ trait RuleTrait
     /**
      * Copy an open bracket's inner whitespace to its close bracket
      */
-    protected function mirrorBracket(
+    private function mirrorBracket(
         Token $open,
         ?bool $hasNewlineBeforeNextCode = null
     ): void {

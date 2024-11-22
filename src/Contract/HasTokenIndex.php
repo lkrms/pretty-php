@@ -153,9 +153,12 @@ interface HasTokenIndex
         \T_POW_EQUAL => false,
         \T_PRINT => false,
         \T_PRIVATE => false,
+        \T_PRIVATE_SET => false,
         \T_PROPERTY_C => false,
         \T_PROTECTED => false,
+        \T_PROTECTED_SET => false,
         \T_PUBLIC => false,
+        \T_PUBLIC_SET => false,
         \T_QUESTION => false,
         \T_READONLY => false,
         \T_REQUIRE => false,
@@ -433,6 +436,7 @@ interface HasTokenIndex
         \T_TRY => true,
         \T_UNSET => true,
         \T_USE => true,
+        \T_VAR => true,
         \T_WHILE => true,
         \T_YIELD => true,
         \T_YIELD_FROM => true,
@@ -446,7 +450,6 @@ interface HasTokenIndex
         \T_FINAL => true,
         \T_READONLY => true,
         \T_STATIC => true,
-        \T_VAR => true,
     ] + self::VISIBILITY;
 
     /**
@@ -454,8 +457,11 @@ interface HasTokenIndex
      */
     public const VISIBILITY = [
         \T_PRIVATE => true,
+        \T_PRIVATE_SET => true,
         \T_PROTECTED => true,
+        \T_PROTECTED_SET => true,
         \T_PUBLIC => true,
+        \T_PUBLIC_SET => true,
     ];
 
     /**
@@ -466,10 +472,12 @@ interface HasTokenIndex
         \T_FINAL => false,
         \T_READONLY => false,
         \T_STATIC => false,
-        \T_VAR => false,
         \T_PRIVATE => false,
+        \T_PRIVATE_SET => false,
         \T_PROTECTED => false,
+        \T_PROTECTED_SET => false,
         \T_PUBLIC => false,
+        \T_PUBLIC_SET => false,
     ];
 
     /**

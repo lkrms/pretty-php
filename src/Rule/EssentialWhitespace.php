@@ -22,13 +22,9 @@ final class EssentialWhitespace implements Rule
 
     public static function getPriority(string $method): ?int
     {
-        switch ($method) {
-            case self::BEFORE_RENDER:
-                return 999;
-
-            default:
-                return null;
-        }
+        return [
+            self::BEFORE_RENDER => 999,
+        ][$method] ?? null;
     }
 
     public function beforeRender(array $tokens): void

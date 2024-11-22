@@ -128,8 +128,10 @@ jobs:
           - windows-latest
           - macos-latest
         php-version:
-          - "8.3"
+          - "8.4"
         include:
+          - os: ubuntu-latest
+            php-version: "8.3"
           - os: ubuntu-latest
             php-version: "8.2"
           - os: ubuntu-latest
@@ -263,8 +265,10 @@ jobs:
           - windows-latest
           - macos-latest
         php-version:
-          - "8.3"
+          - "8.4"
         include:
+          - os: ubuntu-latest
+            php-version: "8.3"
           - os: ubuntu-latest
             php-version: "8.2"
           - os: ubuntu-latest

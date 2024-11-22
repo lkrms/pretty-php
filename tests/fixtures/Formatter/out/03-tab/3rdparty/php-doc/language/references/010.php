@@ -1,4 +1,5 @@
 <?php
+
 function foo(&$var)
 {
 	$var++;
@@ -11,4 +12,5 @@ function &bar()
 }
 
 foo(bar());
+
 ?>

@@ -19,6 +19,26 @@ final class NormaliseCommentsTest extends TestCase
      */
     public static function outputProvider(): array
     {
+        $indentedCode1Output = <<<'PHP'
+<?php
+
+/*
+ * if ($foo) {
+ *     bar();
+ * }
+ */
+class Foo
+{
+    /*
+     * if ($foo) {
+     *     bar();
+     * }
+     */
+    function bar() {}
+}
+
+PHP;
+
         return [
             'text aligned with *' => [
                 <<<'PHP'
@@ -215,26 +235,8 @@ class Foo {
 }
 PHP,
             ],
-            'indented code #1' => [
-                <<<'PHP'
-<?php
-
-/*
- * if ($foo) {
- *     bar();
- * }
- */
-class Foo
-{
-    /*
-     * if ($foo) {
-     *     bar();
-     * }
-     */
-    function bar() {}
-}
-
-PHP,
+            'indented code #1 (4 spaces)' => [
+                $indentedCode1Output,
                 <<<'PHP'
 <?php
 /*
@@ -247,6 +249,82 @@ class Foo {
         if ($foo) {
             bar();
         }
+    */
+    function bar() {}
+}
+PHP,
+            ],
+            'indented code #1 (3 spaces)' => [
+                $indentedCode1Output,
+                <<<'PHP'
+<?php
+/*
+   if ($foo) {
+       bar();
+   }
+*/
+class Foo {
+    /*
+       if ($foo) {
+           bar();
+       }
+    */
+    function bar() {}
+}
+PHP,
+            ],
+            'indented code #1 (2 spaces)' => [
+                $indentedCode1Output,
+                <<<'PHP'
+<?php
+/*
+  if ($foo) {
+      bar();
+  }
+*/
+class Foo {
+    /*
+      if ($foo) {
+          bar();
+      }
+    */
+    function bar() {}
+}
+PHP,
+            ],
+            'indented code #1 (1 space)' => [
+                $indentedCode1Output,
+                <<<'PHP'
+<?php
+/*
+ if ($foo) {
+     bar();
+ }
+*/
+class Foo {
+    /*
+     if ($foo) {
+         bar();
+     }
+    */
+    function bar() {}
+}
+PHP,
+            ],
+            'indented code #1 (0 spaces)' => [
+                $indentedCode1Output,
+                <<<'PHP'
+<?php
+/*
+if ($foo) {
+    bar();
+}
+*/
+class Foo {
+    /*
+    if ($foo) {
+        bar();
+    }
     */
     function bar() {}
 }
@@ -360,6 +438,43 @@ class Foo {
      */
     function bar() {}
 }
+PHP,
+            ],
+            'trailing asterisks' => [
+                <<<'PHP'
+<?php
+
+/**
+ * Comment
+ */
+
+/*
+ * Comment
+ */
+
+/*
+ * Comment
+ */
+
+/*
+ * Comment
+ */
+
+PHP,
+                <<<'PHP'
+<?php
+/**        *
+ *         *
+   Comment *
+ *         *
+ *         */
+/*         *
+ * Comment *
+ *         */
+/* Comment *
+ *         */
+/*         *
+ * Comment */
 PHP,
             ],
             [

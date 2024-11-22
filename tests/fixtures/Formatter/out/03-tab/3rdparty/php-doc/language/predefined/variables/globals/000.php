@@ -1,4 +1,5 @@
 <?php
+
 function test()
 {
 	$foo = 'local variable';
@@ -9,4 +10,5 @@ function test()
 
 $foo = 'Example content';
 test();
+
 ?>

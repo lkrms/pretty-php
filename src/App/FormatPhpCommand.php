@@ -1217,10 +1217,8 @@ EOF,
 
         if ($this->Diff !== null || $this->Check) {
             if ($this->Quiet < 2) {
-                if (($this->Diff !== null && $replaced && stream_isatty(\STDOUT))) {
+                if ($this->Diff !== null && $replaced && stream_isatty(\STDOUT)) {
                     Console::printTty('');
-                } elseif ($errors) {
-                    Console::printOut('');
                 }
                 $format = 'Found ' . Arr::implode(' and ', [
                     $invalid ? Inflect::format($invalid, '{{#}} invalid {{#:file}}') : null,
@@ -1234,9 +1232,6 @@ EOF,
         }
 
         if ($this->Quiet < 2) {
-            if ($replaced || $unchanged || $errors) {
-                Console::printOut('');
-            }
             $this->printSummary(
                 $count,
                 $replaced
@@ -1251,7 +1246,7 @@ EOF,
     }
 
     /**
-     * @param mixed ...$values
+     * @param string|int|bool|float|null ...$values
      */
     private function printSummary(
         int $count,

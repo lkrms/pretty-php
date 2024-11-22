@@ -1,13 +1,10 @@
 <?php
-class Foo
-{
-    final public const X = "foo";
+class BaseClass {
+   final protected string $test;
 }
 
-class Bar extends Foo
-{
-    public const X = "bar";
+class ChildClass extends BaseClass {
+    public string $test;
 }
-
-// Fatal error: Bar::X cannot override final constant Foo::X
+// Results in Fatal error: Cannot override final property BaseClass::$test
 ?>

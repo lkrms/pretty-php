@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP;
 
+use Lkrms\PrettyPHP\Catalog\DeclarationType;
 use Lkrms\PrettyPHP\Catalog\FormatterFlag;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
@@ -9,10 +10,12 @@ use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Contract\BlockRule;
+use Lkrms\PrettyPHP\Contract\DeclarationRule;
 use Lkrms\PrettyPHP\Contract\Extension;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Contract\ListRule;
 use Lkrms\PrettyPHP\Contract\Rule;
+use Lkrms\PrettyPHP\Contract\StatementRule;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Exception\FormatterException;
 use Lkrms\PrettyPHP\Exception\InvalidFormatterException;
@@ -30,6 +33,7 @@ use Lkrms\PrettyPHP\Filter\RemoveWhitespace;
 use Lkrms\PrettyPHP\Filter\SortImports;
 use Lkrms\PrettyPHP\Filter\TrimOpenTags;
 use Lkrms\PrettyPHP\Filter\TruncateComments;
+use Lkrms\PrettyPHP\Internal\Document;
 use Lkrms\PrettyPHP\Internal\Problem;
 use Lkrms\PrettyPHP\Internal\TokenCollection;
 use Lkrms\PrettyPHP\Rule\Preset\Drupal;
@@ -74,6 +78,7 @@ use Salient\Core\Facade\Profile;
 use Salient\Core\Indentation;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
+use Salient\Utility\Reflect;
 use Closure;
 use CompileError;
 use InvalidArgumentException;
@@ -371,12 +376,14 @@ final class Formatter implements Buildable, Immutable
     /** @var array<class-string<Rule>> */
     private array $Rules;
     /** @var array<class-string<TokenRule>,array<int,true>|array{'*'}> */
-    private array $RuleTokenTypes;
+    private array $TokenRuleTypes;
+    /** @var array<class-string<DeclarationRule>,array<int,true>|array{'*'}> */
+    private array $DeclarationRuleTypes;
 
     /**
      * [ key => [ rule, method ] ]
      *
-     * @var array<string,array{class-string<TokenRule|ListRule>,string}>
+     * @var array<string,array{class-string<TokenRule|StatementRule|DeclarationRule|ListRule>,string}>
      */
     private array $MainLoop;
 
@@ -419,12 +426,17 @@ final class Formatter implements Buildable, Immutable
      */
     public ?Indentation $Indentation = null;
 
-    /** @var array<int,Token> */
-    public array $Tokens;
-    /** @var array<int,Token> */
-    public array $Statements;
+    public Document $Document;
+    /** @var list<Token> */
+    private array $Tokens;
     /** @var array<int,array<int,Token>> */
-    private array $TokenIndex;
+    private array $TokensById;
+    /** @var array<int,Token> */
+    private array $Statements;
+    /** @var array<int,Token> */
+    private array $Declarations;
+    /** @var array<int,array<int,Token>> */
+    private array $DeclarationsByType;
 
     /**
      * [ priority => [ token index => [ [ rule, callback ], ... ] ] ]
@@ -444,6 +456,12 @@ final class Formatter implements Buildable, Immutable
     private bool $LogProgress;
     private Parser $Parser;
     public Renderer $Renderer;
+    private ?bool $Applied = false;
+
+    // --
+
+    /** @var array<int,true> */
+    private static array $AllDeclarationTypes;
 
     /**
      * Creates a new Formatter object
@@ -515,6 +533,10 @@ final class Formatter implements Buildable, Immutable
      */
     private function apply(): self
     {
+        if ($this->Applied) {
+            return $this;
+        }
+
         if ($this->Psr12) {
             $this->InsertSpaces = true;
             $this->TabSize = 4;
@@ -572,10 +594,7 @@ final class Formatter implements Buildable, Immutable
         foreach (self::INCOMPATIBLE_RULES as $incompatible) {
             $incompatible = array_intersect($incompatible, $rules);
             if (count($incompatible) > 1) {
-                $names = [];
-                foreach ($incompatible as $rule) {
-                    $names[] = Get::basename($rule);
-                }
+                $names = array_map([Get::class, 'basename'], $incompatible);
                 throw new InvalidFormatterException(sprintf(
                     'Enabled rules are not compatible: %s',
                     implode(', ', $names),
@@ -596,6 +615,7 @@ final class Formatter implements Buildable, Immutable
         Profile::startTimer(__METHOD__ . '#sort-rules');
 
         $tokenTypes = [];
+        $declarationTypes = [];
         $mainLoop = [];
         $blockLoop = [];
         $beforeRender = [];
@@ -610,6 +630,21 @@ final class Formatter implements Buildable, Immutable
                 }
                 $tokenTypes[$rule] = $types;
                 $mainLoop[$rule . '#token'] = [$rule, TokenRule::PROCESS_TOKENS, $i];
+            }
+            if (is_a($rule, StatementRule::class, true)) {
+                $mainLoop[$rule . '#statement'] = [$rule, StatementRule::PROCESS_STATEMENTS, $i];
+            }
+            if (is_a($rule, DeclarationRule::class, true)) {
+                /** @var array<int,bool>|array{'*'} */
+                $types = $rule::getDeclarationTypes(
+                    self::$AllDeclarationTypes ??=
+                        $this->getAllDeclarationTypes()
+                );
+                if ($types !== ['*']) {
+                    $types = array_filter($types);
+                }
+                $declarationTypes[$rule] = $types;
+                $mainLoop[$rule . '#declaration'] = [$rule, DeclarationRule::PROCESS_DECLARATIONS, $i];
             }
             if (is_a($rule, ListRule::class, true)) {
                 $mainLoop[$rule . '#list'] = [$rule, ListRule::PROCESS_LIST, $i];
@@ -628,7 +663,8 @@ final class Formatter implements Buildable, Immutable
         }
 
         $this->Rules = $rules;
-        $this->RuleTokenTypes = $tokenTypes;
+        $this->TokenRuleTypes = $tokenTypes;
+        $this->DeclarationRuleTypes = $declarationTypes;
         $this->MainLoop = $this->sortRules($mainLoop);
         $this->BlockLoop = $this->sortRules($blockLoop);
         $this->BeforeRender = $this->sortRules($beforeRender);
@@ -647,10 +683,27 @@ final class Formatter implements Buildable, Immutable
         $enabled = Arr::toIndex(Arr::extend($rules, ...$withComparison));
         $this->Enabled = $enabled;
 
-        $this->Parser = new Parser($this);
-        $this->Renderer = new Renderer($this);
+        if ($this->Applied === false) {
+            $this->Parser = new Parser($this);
+            $this->Renderer = new Renderer($this);
+        } else {
+            $this->Parser = $this->Parser->withFormatter($this);
+            $this->Renderer = $this->Renderer->withFormatter($this);
+        }
+
+        $this->Applied = true;
 
         return $this;
+    }
+
+    /**
+     * @return array<int,true>
+     */
+    private function getAllDeclarationTypes(): array
+    {
+        /** @var int[] */
+        $types = Reflect::getConstants(DeclarationType::class);
+        return array_fill_keys($types, true);
     }
 
     /**
@@ -782,8 +835,9 @@ final class Formatter implements Buildable, Immutable
      * 6. Find lists comprised of
      *    - one or more comma-delimited items between `[]` or `()`, or
      *    - two or more interfaces after `extends` or `implements`
-     * 7. Process enabled {@see TokenRule} and {@see ListRule} extensions in one
-     *    loop, ordered by priority
+     * 7. Process enabled {@see TokenRule}, {@see StatementRule},
+     *    {@see DeclarationRule} and {@see ListRule} extensions in one loop,
+     *    ordered by priority
      * 8. Find blocks comprised of two or more consecutive non-blank lines
      * 9. Process enabled {@see BlockRule} extensions in priority order
      * 10. Process callbacks registered in (7) or (9) in priority and token
@@ -846,17 +900,21 @@ final class Formatter implements Buildable, Immutable
         try {
             $this->Filename = $filename;
             $this->Indentation = $indentation;
-            $this->Statements = [];
-            $this->Tokens = $this->Parser->parse(
-                $code,
-                $this->FormatFilterList,
-                $this->Statements,
-            );
+            $this->Document = $this->Parser->parse($code, ...$this->FormatFilterList);
+            $this->Tokens = $this->Document->Tokens;
+            $this->TokensById = $this->Document->TokensById;
+            $this->Statements = $this->Document->Statements;
+            $this->Declarations = $this->Document->Declarations;
+            $this->DeclarationsByType = $this->Document->DeclarationsByType;
 
             if (!$this->Tokens) {
                 if (!$this->Debug) {
+                    unset($this->Document);
                     unset($this->Tokens);
+                    unset($this->TokensById);
                     unset($this->Statements);
+                    unset($this->Declarations);
+                    unset($this->DeclarationsByType);
                 }
                 return '';
             }
@@ -880,45 +938,37 @@ final class Formatter implements Buildable, Immutable
             Profile::stopTimer(__METHOD__ . '#parse-input');
         }
 
-        Profile::startTimer(__METHOD__ . '#index-tokens');
-        foreach ($this->Tokens as $index => $token) {
-            $this->TokenIndex[$token->id][$index] = $token;
-        }
-        Profile::stopTimer(__METHOD__ . '#index-tokens');
-
         Profile::startTimer(__METHOD__ . '#find-lists');
-        // Get non-empty open brackets
-        $listParents = $this->sortTokensByType([
-            \T_OPEN_BRACKET => true,
+        $parents = $this->sortTokensByType($this->TokensById, [
             \T_OPEN_PARENTHESIS => true,
+            \T_OPEN_BRACKET => true,
             \T_ATTRIBUTE => true,
             \T_EXTENDS => true,
             \T_IMPLEMENTS => true,
         ]);
         $lists = [];
-        foreach ($listParents as $i => $parent) {
+        foreach ($parents as $i => $parent) {
             if ($parent->ClosedBy === $parent->NextCode) {
                 continue;
             }
+
+            $items = null;
+            $minCount = 1;
+
             switch ($parent->id) {
                 case \T_EXTENDS:
                 case \T_IMPLEMENTS:
-                    $items = $parent->nextSiblingsWhile($idx->DeclarationList)
-                                    ->filter(
-                                        fn(Token $t, ?Token $next, ?Token $prev) =>
-                                            !$prev || ($t->PrevCode && $t->PrevCode->id === \T_COMMA)
-                                    );
-                    $count = $items->count();
-                    if ($count > 1) {
-                        // @phpstan-ignore assign.propertyType
-                        $parent->Flags |= TokenFlag::LIST_PARENT;
-                        $parent->Data[TokenData::LIST_ITEM_COUNT] = $count;
-                        foreach ($items as $token) {
-                            $token->Data[TokenData::LIST_PARENT] = $parent;
-                        }
-                        $lists[$i] = $items;
-                    }
-                    continue 2;
+                    /** @var Token */
+                    $first = $parent->NextCode;
+                    /** @var Token */
+                    $last = $parent->nextSiblingFrom($idx->OpenBraceOrImplements)->PrevCode;
+                    $items = $first->collectSiblings($last)
+                                   ->filter(
+                                       fn(Token $t, ?Token $next, ?Token $prev) =>
+                                           !$prev || ($t->PrevCode && $t->PrevCode->id === \T_COMMA)
+                                   );
+                    $minCount = 2;
+                    break;
 
                 case \T_OPEN_PARENTHESIS:
                     $prev = $parent->PrevCode;
@@ -934,35 +984,37 @@ final class Formatter implements Buildable, Immutable
                     )) {
                         break;
                     }
-
                     continue 2;
 
                 case \T_OPEN_BRACKET:
                     if ($parent->isArrayOpenBracket()) {
                         break;
                     }
-
                     continue 2;
             }
-            $delimiter = $parent->PrevCode && $parent->PrevCode->id === \T_FOR
-                ? \T_SEMICOLON
-                : \T_COMMA;
-            $items = $parent->children()
-                            ->filter(fn(Token $t, ?Token $next, ?Token $prev) =>
-                                         $t->id !== $delimiter && (
-                                             !$prev || (
-                                                 $t->PrevCode
-                                                 && $t->PrevCode->id === $delimiter
-                                             )
-                                         ));
+
+            if ($items === null) {
+                $delimiter = $parent->PrevCode && $parent->PrevCode->id === \T_FOR
+                    ? \T_SEMICOLON
+                    : \T_COMMA;
+                $items = $parent->children()
+                                ->filter(
+                                    fn(Token $t, ?Token $next, ?Token $prev) =>
+                                        $t->id !== $delimiter && (
+                                            !$prev || ($t->PrevCode && $t->PrevCode->id === $delimiter)
+                                        )
+                                );
+            }
+
             $count = $items->count();
-            if (!$count) {
+            if ($count < $minCount) {
                 continue;
             }
-            // @phpstan-ignore assign.propertyType
             $parent->Flags |= TokenFlag::LIST_PARENT;
+            $parent->Data[TokenData::LIST_ITEMS] = $items;
             $parent->Data[TokenData::LIST_ITEM_COUNT] = $count;
             foreach ($items as $token) {
+                $token->Flags |= TokenFlag::LIST_ITEM;
                 $token->Data[TokenData::LIST_PARENT] = $parent;
             }
             $lists[$i] = $items;
@@ -974,45 +1026,67 @@ final class Formatter implements Buildable, Immutable
             : fn() => null;
 
         foreach ($this->MainLoop as [$_class, $method]) {
-            /** @var TokenRule|ListRule */
+            /** @var TokenRule|StatementRule|DeclarationRule|ListRule */
             $rule = $this->RuleMap[$_class];
             $_rule = Get::basename($_class);
             Profile::startTimer($_rule, 'rule');
 
+            if ($method === StatementRule::PROCESS_STATEMENTS) {
+                /** @var StatementRule $rule */
+                $rule->processStatements($this->Statements);
+                Profile::stopTimer($_rule, 'rule');
+                $logProgress($_rule, StatementRule::PROCESS_STATEMENTS);
+                continue;
+            }
+
             if ($method === ListRule::PROCESS_LIST) {
                 foreach ($lists as $i => $list) {
                     /** @var ListRule $rule */
-                    $rule->processList($listParents[$i], clone $list);
+                    $rule->processList($parents[$i], clone $list);
                 }
                 Profile::stopTimer($_rule, 'rule');
                 $logProgress($_rule, ListRule::PROCESS_LIST);
                 continue;
             }
 
-            /** @var TokenRule $rule */
-            $types = $this->RuleTokenTypes[$_class];
+            [$types, $all, $byType, $needsSortedMethod] = [
+                DeclarationRule::PROCESS_DECLARATIONS => [
+                    $this->DeclarationRuleTypes,
+                    $this->Declarations,
+                    $this->DeclarationsByType,
+                    'needsSortedDeclarations',
+                ],
+                TokenRule::PROCESS_TOKENS => [
+                    $this->TokenRuleTypes,
+                    $this->Tokens,
+                    $this->TokensById,
+                    'needsSortedTokens',
+                ],
+            ][$method];
+
+            $types = $types[$_class];
             if ($types === []) {
                 Profile::stopTimer($_rule, 'rule');
                 continue;
             }
             if ($types === ['*']) {
-                $tokens = $this->Tokens;
-            } elseif ($rule->getRequiresSortedTokens()) {
+                $tokens = $all;
+            } elseif ($rule->$needsSortedMethod()) {
                 /** @var array<int,true> $types */
                 // @phpstan-ignore varTag.nativeType
-                $tokens = $this->sortTokensByType($types);
+                $tokens = $this->sortTokensByType($byType, $types);
             } else {
                 /** @var array<int,true> $types */
                 // @phpstan-ignore varTag.nativeType
-                $tokens = $this->getTokensByType($types);
+                $tokens = $this->getTokensByType($byType, $types);
             }
             if (!$tokens) {
                 Profile::stopTimer($_rule, 'rule');
                 continue;
             }
-            $rule->processTokens($tokens);
+            $rule->$method($tokens);
             Profile::stopTimer($_rule, 'rule');
-            $logProgress($_rule, TokenRule::PROCESS_TOKENS);
+            $logProgress($_rule, $method);
         }
 
         if ($this->BlockLoop) {
@@ -1108,6 +1182,8 @@ final class Formatter implements Buildable, Immutable
         try {
             /** @var Token */
             $first = reset($this->Tokens);
+            /** @var Token */
+            $last = end($this->Tokens);
             $out = $this->Renderer->render($first, $last, false, true, true);
             // @codeCoverageIgnoreStart
         } catch (Throwable $ex) {
@@ -1123,8 +1199,12 @@ final class Formatter implements Buildable, Immutable
         } finally {
             Profile::stopTimer(__METHOD__ . '#render');
             if (!$this->Debug) {
+                unset($this->Document);
                 unset($this->Tokens);
+                unset($this->TokensById);
                 unset($this->Statements);
+                unset($this->Declarations);
+                unset($this->DeclarationsByType);
             }
         }
 
@@ -1184,23 +1264,25 @@ final class Formatter implements Buildable, Immutable
     }
 
     /**
+     * @param array<int,array<int,Token>> $index
      * @param array<int,true> $types
      * @return array<int,Token>
      */
-    private function sortTokensByType(array $types): array
+    private function sortTokensByType(array $index, array $types): array
     {
-        $tokens = $this->getTokensByType($types);
+        $tokens = $this->getTokensByType($index, $types);
         ksort($tokens, \SORT_NUMERIC);
         return $tokens;
     }
 
     /**
+     * @param array<int,array<int,Token>> $index
      * @param array<int,true> $types
      * @return array<int,Token>
      */
-    private function getTokensByType(array $types): array
+    private function getTokensByType(array $index, array $types): array
     {
-        $tokens = array_intersect_key($this->TokenIndex, $types);
+        $tokens = array_intersect_key($index, $types);
         if ($base = array_shift($tokens)) {
             return array_replace($base, ...$tokens);
         }
@@ -1398,7 +1480,7 @@ final class Formatter implements Buildable, Immutable
     private function __clone()
     {
         $this->flush();
-        $this->Parser = $this->Parser->withFormatter($this);
+        $this->Applied = null;
     }
 
     /**
@@ -1409,9 +1491,13 @@ final class Formatter implements Buildable, Immutable
     {
         $this->reset();
 
+        unset($this->SoftTab);
+        unset($this->Tab);
+        unset($this->PreserveNewlines);
         $this->Enabled = [];
         $this->Rules = [];
-        $this->RuleTokenTypes = [];
+        $this->TokenRuleTypes = [];
+        $this->DeclarationRuleTypes = [];
         $this->MainLoop = [];
         $this->BlockLoop = [];
         $this->BeforeRender = [];
@@ -1431,9 +1517,13 @@ final class Formatter implements Buildable, Immutable
     private function reset(): void
     {
         $this->Filename = null;
+        $this->Indentation = null;
+        unset($this->Document);
         unset($this->Tokens);
+        unset($this->TokensById);
         unset($this->Statements);
-        unset($this->TokenIndex);
+        unset($this->Declarations);
+        unset($this->DeclarationsByType);
         $this->Callbacks = null;
         $this->Problems = null;
         $this->Log = null;

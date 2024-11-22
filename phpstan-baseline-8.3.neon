@@ -1,336 +1,355 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\|\\(T of Lkrms\\\\PrettyPHP\\\\GenericToken\\)\\|null\\.$#"
+			message: '#^Cannot access property \$id on Lkrms\\PrettyPHP\\Token\|\(T of Lkrms\\PrettyPHP\\GenericToken\)\|null\.$#'
+			identifier: property.nonObject
 			count: 3
 			path: src/Filter/EvaluateStrings.php
 
 		-
-			message: "#^Cannot access property \\$text on Lkrms\\\\PrettyPHP\\\\Token\\|\\(T of Lkrms\\\\PrettyPHP\\\\GenericToken\\)\\|null\\.$#"
+			message: '#^Cannot access property \$text on Lkrms\\PrettyPHP\\Token\|\(T of Lkrms\\PrettyPHP\\GenericToken\)\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Filter/EvaluateStrings.php
 
 		-
-			message: "#^Parameter \\#2 \\$subject of static method Salient\\\\Utility\\\\Regex\\:\\:match\\(\\) expects string, string\\|false given\\.$#"
+			message: '#^Parameter \#2 \$subject of static method Salient\\Utility\\Regex\:\:match\(\) expects string, string\|false given\.$#'
+			identifier: argument.type
 			count: 1
 			path: src/Filter/RemoveHeredocIndentation.php
 
 		-
-			message: "#^Cannot access property \\$CriticalWhitespaceMaskNext on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$CriticalWhitespaceMaskNext on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Internal/TokenCollection.php
 
 		-
-			message: "#^Cannot access property \\$CriticalWhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$CriticalWhitespaceMaskPrev on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Internal/TokenCollection.php
 
 		-
-			message: "#^Cannot access property \\$WhitespaceMaskNext on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$WhitespaceMaskNext on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Internal/TokenCollection.php
 
 		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$WhitespaceMaskPrev on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Internal/TokenCollection.php
 
 		-
-			message: "#^Cannot call method collect\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot call method collect\(\) on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: method.nonObject
 			count: 2
 			path: src/Internal/TokenCollection.php
 
 		-
-			message: "#^Parameter \\#1 \\$to of method Lkrms\\\\PrettyPHP\\\\Token\\:\\:collect\\(\\) expects Lkrms\\\\PrettyPHP\\\\Token, Lkrms\\\\PrettyPHP\\\\Token\\|null given\\.$#"
+			message: '#^Parameter \#1 \$to of method Lkrms\\PrettyPHP\\Token\:\:collect\(\) expects Lkrms\\PrettyPHP\\Token, Lkrms\\PrettyPHP\\Token\|null given\.$#'
+			identifier: argument.type
 			count: 1
 			path: src/Rule/AlignComments.php
 
 		-
-			message: "#^Parameter \\#2 \\$start of function mb_substr expects int, int\\<0, max\\>\\|false given\\.$#"
+			message: '#^Parameter \#2 \$start of function mb_substr expects int, int\<0, max\>\|false given\.$#'
+			identifier: argument.type
 			count: 1
 			path: src/Rule/AlignComments.php
 
 		-
-			message: "#^Binary operation \"\\-\" between ''\\|int and ''\\|int\\|null results in an error\\.$#"
+			message: '#^Binary operation "\-" between ''''\|int and ''''\|int\|null results in an error\.$#'
+			identifier: binaryOp.invalid
 			count: 1
 			path: src/Rule/AlignData.php
 
 		-
-			message: "#^Binary operation \"\\-\" between ''\\|int and 1 results in an error\\.$#"
+			message: '#^Binary operation "\-" between ''''\|int and 1 results in an error\.$#'
+			identifier: binaryOp.invalid
 			count: 2
 			path: src/Rule/AlignData.php
 
 		-
-			message: "#^Cannot access property \\$Padding on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$Padding on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 2
 			path: src/Rule/AlignData.php
 
 		-
-			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$id on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Rule/AlignData.php
 
 		-
-			message: "#^Cannot access property \\$text on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$text on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Rule/AlignData.php
 
 		-
-			message: "#^Cannot call method collectSiblings\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot call method collectSiblings\(\) on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: method.nonObject
 			count: 1
 			path: src/Rule/AlignData.php
 
 		-
-			message: "#^Cannot call method pragmaticEndOfExpression\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot call method pragmaticEndOfExpression\(\) on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: method.nonObject
 			count: 3
 			path: src/Rule/AlignData.php
 
 		-
-			message: "#^Parameter \\#1 \\$value of function count expects array\\|Countable, array\\|null given\\.$#"
+			message: '#^Parameter \#1 \$value of function count expects array\|Countable, array\|null given\.$#'
+			identifier: argument.type
 			count: 1
 			path: src/Rule/AlignData.php
 
 		-
-			message: "#^Cannot call method collect\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot call method collect\(\) on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: method.nonObject
 			count: 1
 			path: src/Rule/AlignLists.php
 
 		-
-			message: "#^Cannot call method pragmaticEndOfExpression\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot call method pragmaticEndOfExpression\(\) on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: method.nonObject
 			count: 1
 			path: src/Rule/AlignLists.php
 
 		-
-			message: "#^Parameter \\#2 \\$first of method Lkrms\\\\PrettyPHP\\\\Formatter\\:\\:registerCallback\\(\\) expects Lkrms\\\\PrettyPHP\\\\Token, Lkrms\\\\PrettyPHP\\\\Token\\|null given\\.$#"
+			message: '#^Parameter \#2 \$first of method Lkrms\\PrettyPHP\\Formatter\:\:registerCallback\(\) expects Lkrms\\PrettyPHP\\Token, Lkrms\\PrettyPHP\\Token\|null given\.$#'
+			identifier: argument.type
 			count: 1
 			path: src/Rule/AlignLists.php
 
 		-
-			message: "#^Parameter \\#3 \\$first of method Lkrms\\\\PrettyPHP\\\\Rule\\\\AlignLists\\:\\:alignList\\(\\) expects Lkrms\\\\PrettyPHP\\\\Token, Lkrms\\\\PrettyPHP\\\\Token\\|null given\\.$#"
+			message: '#^Parameter \#3 \$first of method Lkrms\\PrettyPHP\\Rule\\AlignLists\:\:alignList\(\) expects Lkrms\\PrettyPHP\\Token, Lkrms\\PrettyPHP\\Token\|null given\.$#'
+			identifier: argument.type
 			count: 1
 			path: src/Rule/AlignLists.php
 
 		-
-			message: "#^Cannot call method pragmaticStartOfExpression\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot call method pragmaticStartOfExpression\(\) on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: method.nonObject
 			count: 1
 			path: src/Rule/AlignTernaryOperators.php
 
 		-
-			message: "#^Cannot access property \\$Index on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$Index on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Rule/ControlStructureSpacing.php
 
 		-
-			message: "#^Cannot access property \\$WhitespaceMaskNext on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$WhitespaceMaskNext on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 2
 			path: src/Rule/ControlStructureSpacing.php
 
 		-
-			message: "#^Cannot access property \\$LinePadding on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$LinePadding on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Rule/HeredocIndentation.php
 
 		-
-			message: "#^Cannot access property \\$LineUnpadding on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$LineUnpadding on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Rule/HeredocIndentation.php
 
 		-
-			message: "#^Cannot call method renderIndent\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot call method renderIndent\(\) on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: method.nonObject
 			count: 2
 			path: src/Rule/HeredocIndentation.php
 
 		-
-			message: "#^Cannot access property \\$Prev on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/ListSpacing.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceAfter on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/ListSpacing.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/ListSpacing.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskNext on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/ListSpacing.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/ListSpacing.php
-
-		-
-			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/ListSpacing.php
-
-		-
-			message: "#^Cannot call method hasNewlineAfter\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
-			count: 1
-			path: src/Rule/ListSpacing.php
-
-		-
-			message: "#^Cannot access property \\$Flags on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$Flags on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Rule/OperatorSpacing.php
 
 		-
-			message: "#^Cannot access property \\$NextCode on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$NextCode on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Rule/OperatorSpacing.php
 
 		-
-			message: "#^Cannot access property \\$PrevCode on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$PrevCode on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 2
 			path: src/Rule/OperatorSpacing.php
 
 		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$WhitespaceBefore on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Rule/OperatorSpacing.php
 
 		-
-			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$id on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 3
 			path: src/Rule/OperatorSpacing.php
 
 		-
-			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
-			count: 2
-			path: src/Rule/PlaceBraces.php
-
-		-
-			message: "#^Cannot access property \\$WhitespaceMaskNext on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$WhitespaceMaskNext on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Rule/PlaceComments.php
 
 		-
-			message: "#^Cannot call method collect\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot call method collect\(\) on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: method.nonObject
 			count: 1
 			path: src/Rule/PlaceComments.php
 
 		-
-			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$id on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Rule/PreserveNewlines.php
 
 		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$WhitespaceBefore on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Rule/Preset/Drupal.php
 
 		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$WhitespaceMaskPrev on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Rule/Preset/Drupal.php
 
 		-
-			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$id on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 2
 			path: src/Rule/Preset/Drupal.php
 
 		-
-			message: "#^Cannot access property \\$Next on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$Next on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Rule/Preset/WordPress.php
 
 		-
-			message: "#^Cannot access property \\$Prev on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$Prev on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Rule/Preset/WordPress.php
 
 		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$WhitespaceBefore on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Rule/Preset/WordPress.php
 
 		-
-			message: "#^Cannot access property \\$WhitespaceMaskNext on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$WhitespaceMaskNext on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Rule/Preset/WordPress.php
 
 		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$WhitespaceMaskPrev on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 2
 			path: src/Rule/Preset/WordPress.php
 
 		-
-			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$id on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 2
 			path: src/Rule/Preset/WordPress.php
 
 		-
-			message: "#^Cannot access property \\$line on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$line on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Rule/Preset/WordPress.php
 
 		-
-			message: "#^Cannot access property \\$text on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$text on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Rule/Preset/WordPress.php
 
 		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$WhitespaceMaskPrev on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Rule/StatementSpacing.php
 
 		-
-			message: "#^Cannot access property \\$id on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$id on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 3
 			path: src/Rule/StatementSpacing.php
 
 		-
-			message: "#^Cannot access property \\$ClosedBy on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$ClosedBy on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Rule/StrictExpressions.php
 
 		-
-			message: "#^Cannot access property \\$NextCode on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$NextCode on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Rule/StrictExpressions.php
 
 		-
-			message: "#^Cannot access property \\$PrevCode on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$PrevCode on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Rule/StrictExpressions.php
 
 		-
-			message: "#^Cannot access property \\$WhitespaceAfter on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$WhitespaceAfter on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Rule/StrictExpressions.php
 
 		-
-			message: "#^Cannot access property \\$WhitespaceBefore on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$WhitespaceBefore on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: src/Rule/StrictExpressions.php
 
 		-
-			message: "#^Cannot access property \\$WhitespaceMaskNext on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$WhitespaceMaskNext on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 2
 			path: src/Rule/StrictExpressions.php
 
 		-
-			message: "#^Cannot access property \\$WhitespaceMaskPrev on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot access property \$WhitespaceMaskPrev on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: property.nonObject
 			count: 2
 			path: src/Rule/StrictExpressions.php
 
 		-
-			message: "#^Cannot call method collect\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot call method collect\(\) on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: method.nonObject
 			count: 1
 			path: src/Rule/StrictExpressions.php
 
 		-
-			message: "#^Cannot call method hasNewlineAfter\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot call method hasNewlineAfter\(\) on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: method.nonObject
 			count: 1
 			path: src/Rule/StrictExpressions.php
 
 		-
-			message: "#^Cannot call method hasNewlineBefore\\(\\) on Lkrms\\\\PrettyPHP\\\\Token\\|null\\.$#"
+			message: '#^Cannot call method hasNewlineBefore\(\) on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: method.nonObject
 			count: 1
 			path: src/Rule/StrictLists.php

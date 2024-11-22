@@ -22,16 +22,10 @@ final class AlignChains implements TokenRule
 
     public static function getPriority(string $method): ?int
     {
-        switch ($method) {
-            case self::PROCESS_TOKENS:
-                return 340;
-
-            case self::CALLBACK:
-                return 710;
-
-            default:
-                return null;
-        }
+        return [
+            self::PROCESS_TOKENS => 340,
+            self::CALLBACK => 710,
+        ][$method] ?? null;
     }
 
     public static function getTokenTypes(TokenTypeIndex $idx): array

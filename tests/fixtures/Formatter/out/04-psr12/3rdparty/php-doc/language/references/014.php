@@ -7,4 +7,5 @@ function &collector()
 }
 
 array_push(collector(), 'foo');
+
 ?>

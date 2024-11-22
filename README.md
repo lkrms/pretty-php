@@ -39,7 +39,7 @@ If you have questions or feedback, I'd love to [hear from you][discuss].
 
 ## Features
 
-- Supports code written for **PHP 8.3** and below (when running on a PHP version
+- Supports code written for **PHP 8.4** and below (when running on a PHP version
   that can parse it)
 - Code is formatted for **readability**, **consistency** and **small diffs**
 - With few [exceptions](#pragmatism), **previous formatting is ignored**, and
@@ -58,8 +58,8 @@ If you have questions or feedback, I'd love to [hear from you][discuss].
 ### Requirements
 
 - Linux, macOS or Windows
-- PHP 8.3, 8.2, 8.1, 8.0 or 7.4 with the standard `tokenizer`, `mbstring` and
-  `json` extensions enabled
+- PHP 8.4, 8.3, 8.2, 8.1, 8.0 or 7.4 with the standard `tokenizer`, `mbstring`
+  and `json` extensions enabled
 
 ### PHP archive (PHAR)
 

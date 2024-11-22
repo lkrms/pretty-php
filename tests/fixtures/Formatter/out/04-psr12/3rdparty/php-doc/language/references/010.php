@@ -12,4 +12,5 @@ function &bar()
 }
 
 foo(bar());
+
 ?>

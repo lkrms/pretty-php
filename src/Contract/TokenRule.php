@@ -18,34 +18,23 @@ interface TokenRule extends Rule
      * Tokens of these types are passed to {@see TokenRule::processTokens()}
      * during formatting.
      *
-     * Returns an index of token types, or `['*']` for all tokens.
-     *
-     * Example:
-     *
-     * ```php
-     * class MyRule implements TokenRule
-     * {
-     *     public static function getTokenTypes(TokenTypeIndex $idx): array
-     *     {
-     *         return [\T_FN => true];
-     *     }
-     * }
-     * ```
+     * Returns a partial or complete index of token types, or `['*']` for all
+     * tokens.
      *
      * @return array<int,bool>|array{'*'}
      */
     public static function getTokenTypes(TokenTypeIndex $idx): array;
 
     /**
-     * Check if tokens must be passed to the rule in document order
+     * Check if the rule requires tokens to be given in document order
      */
-    public static function getRequiresSortedTokens(): bool;
+    public static function needsSortedTokens(): bool;
 
     /**
      * Apply the rule to the given tokens
      *
      * Tokens of the types returned by {@see TokenRule::getTokenTypes()} are
-     * passed to this method once per input file.
+     * passed to this method once per document.
      *
      * @param array<int,Token> $tokens
      */

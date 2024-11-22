@@ -63,9 +63,7 @@ interface Named
     // Objects implementing this interface must have a readable
     // $fullName property.  That could be satisfied with a traditional
     // property or a property with a "get" hook.
-    public string $fullName {
-        get;
-    }
+    public string $fullName { get; }
 }
 
 // The "User" class above satisfies this interface, but so does:
@@ -116,7 +114,7 @@ class User
     public function __construct(private string $first, private string $last) {}
 
     public string $fullName {
-        set(string $value) {
+        set (string $value) {
             [$this->first, $this->last] = explode(' ', $value, 2);
         }
     }
@@ -144,7 +142,7 @@ class User
         get {
             return "$this->first $this->last";
         }
-        set(string $value) {
+        set (string $value) {
             [$this->first, $this->last] = explode(' ', $value, 2);
         }
     }
@@ -162,7 +160,7 @@ print $u->first;
 class User
 {
     public string $username {
-        set(string $value) {
+        set (string $value) {
             if (strlen($value) > 10)
                 throw new \InvalidArgumentException('Too long');
             $this->username = strtolower($value);
@@ -183,7 +181,7 @@ use Symfony\Component\String\UnicodeString;
 class Person
 {
     public UnicodeString $name {
-        set(string | UnicodeString $value) {
+        set (string|UnicodeString $value) {
             $this->name = $value instanceof UnicodeString ? $value : new UnicodeString($value);
         }
     }
@@ -228,7 +226,7 @@ class User
 class User
 {
     public string $fullName {
-        set(string $value) {
+        set (string $value) {
             [$this->first, $this->last] = explode(' ', $value, 2);
         }
     }
@@ -245,7 +243,7 @@ class User
 class User
 {
     public string $username {
-        set(string $value) {
+        set (string $value) {
             $this->username = strtolower($value);
         }
     }
@@ -536,7 +534,7 @@ class Point
 class PositivePoint extends Point
 {
     public int $x {
-        set($x) {
+        set ($x) {
             if ($x < 0) {
                 throw new \InvalidArgumentException('Too small');
             }
@@ -603,22 +601,15 @@ interface I
 {
     // An implementing class MUST have a publicly-readable property,
     // but whether or not it's publicly settable is unrestricted.
-    public string $readable {
-        get;
-    }
+    public string $readable { get; }
 
     // An implementing class MUST have a publicly-writeable property,
     // but whether or not it's publicly readable is unrestricted.
-    public string $writeable {
-        set;
-    }
+    public string $writeable { set; }
 
     // An implementing class MUST have a property that is both publicly
     // readable and publicly writeable.
-    public string $both {
-        get;
-        set;
-    }
+    public string $both { get; set; }
 }
 
 // This class implements all three properties as traditional, un-hooked
@@ -668,20 +659,13 @@ class C2 implements I
 abstract class A
 {
     // Extending classes must have a publicly-gettable property.
-    abstract public string $readable {
-        get;
-    }
+    abstract public string $readable { get; }
 
     // Extending classes must have a protected- or public-writeable property.
-    abstract protected string $writeable {
-        set;
-    }
+    abstract protected string $writeable { set; }
 
     // Extending classes must have a protected or public symmetric property.
-    abstract protected string $both {
-        get;
-        set;
-    }
+    abstract protected string $both { get; set; }
 }
 
 class C extends A
@@ -725,9 +709,7 @@ class Poodle extends Dog {}
 interface PetOwner
 {
     // Only a get operation is required, so this may be covariant.
-    public Animal $pet {
-        get;
-    }
+    public Animal $pet { get; }
 }
 
 class DogOwner implements PetOwner
@@ -790,12 +772,8 @@ class B {}
 class C
 {
     public $prop {
-        #[A]
-        get {
-        }
-        #[B]
-        set {
-        }
+        #[A] get {}
+        #[B] set {}
     }
 }
 
@@ -811,10 +789,7 @@ $aAttrib = $getAttr->getInstance();
 class C
 {
     public int $prop {
-        set(
-            #[SensitiveParameter]
-            int $value
-        ) {
+        set (#[SensitiveParameter] int $value) {
             throw new Exception('Exception from $prop');
         }
     }

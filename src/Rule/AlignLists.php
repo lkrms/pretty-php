@@ -21,16 +21,10 @@ final class AlignLists implements ListRule
 
     public static function getPriority(string $method): ?int
     {
-        switch ($method) {
-            case self::PROCESS_LIST:
-                return 400;
-
-            case self::CALLBACK:
-                return 710;
-
-            default:
-                return null;
-        }
+        return [
+            self::PROCESS_LIST => 400,
+            self::CALLBACK => 710,
+        ][$method] ?? null;
     }
 
     public function processList(Token $parent, TokenCollection $items): void
@@ -72,14 +66,14 @@ final class AlignLists implements ListRule
                 while (($adjacent = $to->lastSiblingBeforeNewline()) !== $to
                     && ($adjacent->id !== \T_OPEN_BRACE
                         || !($adjacent->Flags & TokenFlag::STRUCTURAL_BRACE
-                            || $adjacent->isMatchBrace())
+                            || $adjacent->isMatchOpenBrace())
                         || $adjacent->Depth > $parent->Depth)) {
                     $to = $adjacent;
                 }
                 while (($adjacent = $to->adjacentBeforeNewline(false))
                     && ($adjacent->id !== \T_OPEN_BRACE
                         || !($adjacent->Flags & TokenFlag::STRUCTURAL_BRACE
-                            || $adjacent->isMatchBrace())
+                            || $adjacent->isMatchOpenBrace())
                         || $adjacent->Depth > $parent->Depth)) {
                     $to = $adjacent->pragmaticEndOfExpression();
                 }

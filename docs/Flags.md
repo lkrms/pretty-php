@@ -15,7 +15,8 @@
 | 6      | 64    | `TERNARY_OPERATOR`      | `Parser`                  |
 | 7      | 128   | `INFORMAL_DOC_COMMENT`  | `Parser`                  |
 | 8      | 256   | `STRUCTURAL_BRACE`      | `Parser`                  |
-| 9      | 512   | `NAMED_DECLARATION`     | `Token`                   |
+| 9      | 512   | `NAMED_DECLARATION`     | `Parser`                  |
 | 10     | 1024  | `LIST_PARENT`           | `Formatter`               |
-| 11     | 2048  | `COLLAPSIBLE_COMMENT`   | `NormaliseComments`       |
-| 12     | 4096  | `HAS_UNENCLOSED_BODY`   | `ControlStructureSpacing` |
+| 11     | 2048  | `LIST_ITEM`             | `Formatter`               |
+| 12     | 4096  | `COLLAPSIBLE_COMMENT`   | `NormaliseComments`       |
+| 13     | 8192  | `HAS_UNENCLOSED_BODY`   | `ControlStructureSpacing` |

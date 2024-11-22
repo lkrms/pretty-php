@@ -40,13 +40,9 @@ final class Drupal implements Preset, TokenRule
 
     public static function getPriority(string $method): ?int
     {
-        switch ($method) {
-            case self::PROCESS_TOKENS:
-                return 100;
-
-            default:
-                return null;
-        }
+        return [
+            self::PROCESS_TOKENS => 100,
+        ][$method] ?? null;
     }
 
     public static function getTokenTypes(TokenTypeIndex $idx): array

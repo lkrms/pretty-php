@@ -1,6 +1,8 @@
 <?php
+
 // Before PHP 8.1.0
-$a            = 1;
+$a = 1;
+
 $globals      = $GLOBALS;  // Ostensibly by-value copy
 $globals['a'] = 2;
 var_dump($a);              // int(2)
@@ -14,4 +16,5 @@ $globals['a'] = 1;
 foreach ($globals as $key => $value) {
     $GLOBALS[$key] = $value;
 }
+
 ?>

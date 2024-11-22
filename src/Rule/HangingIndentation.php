@@ -48,14 +48,10 @@ final class HangingIndentation implements TokenRule
 
     public static function getPriority(string $method): ?int
     {
-        switch ($method) {
-            case self::PROCESS_TOKENS:
-            case self::CALLBACK:
-                return 800;
-
-            default:
-                return null;
-        }
+        return [
+            self::PROCESS_TOKENS => 800,
+            self::CALLBACK => 800,
+        ][$method] ?? null;
     }
 
     /**
@@ -64,8 +60,8 @@ final class HangingIndentation implements TokenRule
     public function boot(): void
     {
         $indent = $this->Formatter->HeredocIndent;
-        $this->HeredocIndentIsMixed = (bool) ($indent & HeredocIndent::MIXED);
-        $this->HeredocIndentIsHanging = (bool) ($indent & HeredocIndent::HANGING);
+        $this->HeredocIndentIsMixed = $indent === HeredocIndent::MIXED;
+        $this->HeredocIndentIsHanging = $indent === HeredocIndent::HANGING;
     }
 
     /**
@@ -81,7 +77,7 @@ final class HangingIndentation implements TokenRule
                 ) || (
                     $token->id === \T_OPEN_BRACE && (
                         $token->Flags & TokenFlag::STRUCTURAL_BRACE
-                        || $token->isMatchBrace()
+                        || $token->isMatchOpenBrace()
                     )
                 );
                 $token->Data[self::PARENT_TYPE] = $token->hasNewlineBeforeNextCode()
@@ -212,7 +208,7 @@ final class HangingIndentation implements TokenRule
                 $context[] = $token->Data[TokenData::CHAIN_OPENED_BY];
             } elseif ($token->Heredoc && $token->Heredoc === $prev) {
                 $context[] = $token->Heredoc;
-            } elseif (isset($token->Data[TokenData::LIST_PARENT])) {
+            } elseif ($token->Flags & TokenFlag::LIST_ITEM) {
                 $context[] = $token->Data[TokenData::LIST_PARENT];
             } elseif ($latest && $latest->Parent === $token->Parent) {
                 if ($this->Idx->ExpressionDelimiter[$trigger->id]) {

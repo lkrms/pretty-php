@@ -167,6 +167,17 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
+     * T_OPEN_BRACE, T_IMPLEMENTS
+     *
+     * @var array<int,bool>
+     */
+    public array $OpenBraceOrImplements = [
+        \T_OPEN_BRACE => true,
+        \T_IMPLEMENTS => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
      * T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO
      *
      * @var array<int,bool>
@@ -259,6 +270,33 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
+     * T_ATTRIBUTE, T_ATTRIBUTE_COMMENT, T_CASE, T_FUNCTION, T_NAMESPACE, T_USE,
+     * T_CONST, T_DECLARE, T_CLASS, T_ENUM, T_INTERFACE, T_TRAIT, T_ABSTRACT,
+     * T_FINAL, T_READONLY, T_STATIC, T_VAR, visibility modifiers
+     *
+     * @var array<int,bool>
+     */
+    public array $AttributeOrDeclaration = [
+        \T_ATTRIBUTE => true,
+        \T_ATTRIBUTE_COMMENT => true,
+    ]
+        + self::DECLARATION
+        + self::TOKEN_INDEX;
+
+    /**
+     * T_ATTRIBUTE, T_ATTRIBUTE_COMMENT, T_ABSTRACT, T_FINAL, T_READONLY,
+     * T_STATIC, visibility modifiers
+     *
+     * @var array<int,bool>
+     */
+    public array $AttributeOrModifier = [
+        \T_ATTRIBUTE => true,
+        \T_ATTRIBUTE_COMMENT => true,
+    ]
+        + self::MODIFIER
+        + self::TOKEN_INDEX;
+
+    /**
      * Casts
      *
      * @var array<int,bool>
@@ -306,8 +344,9 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
 
     /**
      * T_ABSTRACT, T_CASE, T_CLASS, T_CONST, T_DECLARE, T_ENUM, T_FINAL,
-     * T_FUNCTION, T_INTERFACE, T_NAMESPACE, T_PRIVATE, T_PROTECTED, T_PUBLIC,
-     * T_READONLY, T_STATIC, T_TRAIT, T_USE, T_VAR
+     * T_FUNCTION, T_INTERFACE, T_NAMESPACE, T_PRIVATE, T_PRIVATE_SET,
+     * T_PROTECTED, T_PROTECTED_SET, T_PUBLIC, T_PUBLIC_SET, T_READONLY,
+     * T_STATIC, T_TRAIT, T_USE, T_VAR
      *
      * @var array<int,bool>
      */
@@ -320,7 +359,9 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $DeclarationExceptModifiers = self::NO_MODIFIER
+    public array $DeclarationExceptModifierOrVar = self::NO_MODIFIER + [
+        \T_VAR => false,
+    ]
         + self::DECLARATION
         + self::TOKEN_INDEX;
 
@@ -352,19 +393,6 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * Visibility modifiers, T_READONLY, T_STATIC, T_VAR
-     *
-     * @var array<int,bool>
-     */
-    public array $DeclarationPropertyOrVariable = [
-        \T_READONLY => true,
-        \T_STATIC => true,
-        \T_VAR => true,
-    ]
-        + self::VISIBILITY
-        + self::TOKEN_INDEX;
-
-    /**
      * T_CLASS, T_ENUM, T_FUNCTION, T_INTERFACE, T_NAMESPACE, T_TRAIT
      *
      * @var array<int,bool>
@@ -377,12 +405,14 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * Modifiers, T_CONST
+     * Visibility modifiers, T_ABSTRACT, T_CONST, T_FINAL, T_READONLY, T_STATIC,
+     * T_VAR
      *
      * @var array<int,bool>
      */
     public array $NonMethodMember = [
         \T_CONST => true,
+        \T_VAR => true,
     ]
         + self::MODIFIER
         + self::TOKEN_INDEX;
@@ -418,6 +448,24 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         \T_IF => true,
         \T_ELSEIF => true,
         \T_ELSE => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
+     * Visibility modifiers, T_ABSTRACT, T_FINAL, T_READONLY, T_STATIC
+     *
+     * @var array<int,bool>
+     */
+    public array $Modifier = self::MODIFIER
+        + self::TOKEN_INDEX;
+
+    /**
+     * Visibility modifiers, T_ABSTRACT, T_FINAL, T_READONLY, T_STATIC, T_VAR
+     *
+     * @var array<int,bool>
+     */
+    public array $ModifierOrVar = self::MODIFIER + [
+        \T_VAR => true,
     ]
         + self::TOKEN_INDEX;
 
@@ -633,6 +681,19 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
+     * T_NEW, T_ATTRIBUTE, T_ATTRIBUTE_COMMENT, T_STATIC
+     *
+     * @var array<int,bool>
+     */
+    public array $BeforeAnonymousClassOrFunction = [
+        \T_NEW => true,
+        \T_ATTRIBUTE => true,
+        \T_ATTRIBUTE_COMMENT => true,
+        \T_STATIC => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
      * T_ARRAY, T_CLASS, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS,
      * T_CONSTANT_ENCAPSED_STRING, T_DECLARE, T_DOUBLE_QUOTE, T_FN, T_FOR,
      * T_FUNCTION, T_ISSET, T_LIST, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED,
@@ -751,8 +812,9 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * T_ATTRIBUTE, T_CASE, T_CLASS, T_COMMA, T_CONST, T_DECLARE, T_ENUM,
      * T_EXTENDS, T_FINAL, T_FUNCTION, T_IMPLEMENTS, T_INTERFACE,
      * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE, T_NAMESPACE,
-     * T_NS_SEPARATOR, T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY, T_STATIC,
-     * T_STRING, T_TRAIT, T_USE, T_VAR
+     * T_NS_SEPARATOR, T_PRIVATE, T_PRIVATE_SET, T_PROTECTED, T_PROTECTED_SET,
+     * T_PUBLIC, T_PUBLIC_SET, T_READONLY, T_STATIC, T_STRING, T_TRAIT, T_USE,
+     * T_VAR
      *
      * @var array<int,bool>
      */
@@ -765,8 +827,9 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * T_ATTRIBUTE, T_CASE, T_CLASS, T_COMMA, T_CONST, T_DECLARE, T_ENUM,
      * T_EXTENDS, T_FINAL, T_FUNCTION, T_IMPLEMENTS, T_INTERFACE,
      * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE, T_NAMESPACE,
-     * T_NEW, T_NS_SEPARATOR, T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY,
-     * T_STATIC, T_STRING, T_TRAIT, T_USE, T_VAR
+     * T_NEW, T_NS_SEPARATOR, T_PRIVATE, T_PRIVATE_SET, T_PROTECTED,
+     * T_PROTECTED_SET, T_PUBLIC, T_PUBLIC_SET, T_READONLY, T_STATIC, T_STRING,
+     * T_TRAIT, T_USE, T_VAR
      *
      * @var array<int,bool>
      */
@@ -783,8 +846,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * T_EXTENDS, T_FINAL, T_FUNCTION, T_IMPLEMENTS, T_INTERFACE, T_NAMESPACE,
      * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE, T_NEW,
      * T_NS_SEPARATOR, T_OPEN_BRACE, T_OPEN_PARENTHESIS, T_OR, T_PRIVATE,
-     * T_PROTECTED, T_PUBLIC, T_QUESTION, T_READONLY, T_STATIC, T_STRING,
-     * T_TRAIT, T_USE, T_VAR
+     * T_PRIVATE_SET, T_PROTECTED, T_PROTECTED_SET, T_PUBLIC, T_PUBLIC_SET,
+     * T_QUESTION, T_READONLY, T_STATIC, T_STRING, T_TRAIT, T_USE, T_VAR
      *
      * @var array<int,bool>
      */
@@ -1059,7 +1122,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE,
      * T_NS_SEPARATOR, T_STATIC, T_STRING, T_VARIABLE, T_ABSTRACT, T_CONST,
      * T_DECLARE, T_FINAL, T_READONLY, T_VAR, T_CLASS, T_ENUM, T_INTERFACE,
-     * T_TRAIT, T_PRIVATE, T_PROTECTED, T_PUBLIC
+     * T_TRAIT, T_PRIVATE, T_PRIVATE_SET, T_PROTECTED, T_PROTECTED_SET,
+     * T_PUBLIC, T_PUBLIC_SET
      *
      * Tokens that require a leading space.
      *

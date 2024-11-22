@@ -1,22 +1,27 @@
 <?php
-class Foo {}
-class Bar extends Foo {}
-
 interface A
 {
-	public function myfunc(Foo $arg): Foo;
+	public function foo();
 }
 
-interface B
+interface B extends A
 {
-	public function myfunc(Bar $arg): Bar;
+	public function baz(Baz $baz);
 }
 
-class MyClass implements A, B
+// This will work
+class C implements B
 {
-	public function myfunc(Foo $arg): Bar
-	{
-		return new Bar();
-	}
+	public function foo() {}
+
+	public function baz(Baz $baz) {}
+}
+
+// This will not work and result in a fatal error
+class D implements B
+{
+	public function foo() {}
+
+	public function baz(Foo $foo) {}
 }
 ?>

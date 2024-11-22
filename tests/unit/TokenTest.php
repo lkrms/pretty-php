@@ -39,7 +39,7 @@ PHP;
         $formatter->format($code, \PHP_EOL, null, null, true);
 
         $subTypes = [];
-        foreach ($formatter->Tokens as $token) {
+        foreach ($formatter->getTokens() ?? [] as $token) {
             if ($token->id === \T_COLON) {
                 $subTypes[] = Reflect::getConstantName(TokenSubType::class, $token->getSubType());
             }

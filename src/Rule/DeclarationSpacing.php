@@ -2,11 +2,12 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\DeclarationType as Type;
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
-use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
-use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\Concern\DeclarationRuleTrait;
+use Lkrms\PrettyPHP\Contract\DeclarationRule;
 use Lkrms\PrettyPHP\Filter\SortImports;
 use Lkrms\PrettyPHP\Token;
 use Lkrms\PrettyPHP\TokenTypeIndex;
@@ -33,9 +34,9 @@ use Salient\Utility\Regex;
  *
  * @api
  */
-final class DeclarationSpacing implements TokenRule
+final class DeclarationSpacing implements DeclarationRule
 {
-    use TokenRuleTrait;
+    use DeclarationRuleTrait;
 
     private const EXPANDABLE_TAG = '@(?:phan-|psalm-|phpstan-)?(?:api|internal|method|property(?:-read|-write)?|param|return|throws|(?:(?i)inheritDoc))(?=\s|$)';
 
@@ -44,7 +45,7 @@ final class DeclarationSpacing implements TokenRule
     /**
      * [ Token index => [ token, type, modifiers, tight, tightOneLine, hasDocComment, hasDocCommentOrBlankLineBefore, isMultiLine ] ]
      *
-     * @var array<int,array{Token,int[],int[],bool,bool,bool|null,bool|null,bool|null}>
+     * @var array<int,array{Token,int,int[],bool,bool,bool|null,bool|null,bool|null}>
      */
     private array $Declarations;
 
@@ -53,24 +54,21 @@ final class DeclarationSpacing implements TokenRule
      */
     public static function getPriority(string $method): ?int
     {
-        switch ($method) {
-            case self::PROCESS_TOKENS:
-                return 620;
-
-            default:
-                return null;
-        }
+        return [
+            self::PROCESS_DECLARATIONS => 620,
+        ][$method] ?? null;
     }
 
     /**
      * @inheritDoc
      */
-    public static function getTokenTypes(TokenTypeIndex $idx): array
+    public static function getDeclarationTypes(array $all): array
     {
-        return TokenTypeIndex::merge(
-            $idx->Attribute,
-            $idx->Declaration,
-        );
+        // Ignore promoted constructor parameters and property hooks
+        return [
+            Type::HOOK => false,
+            Type::PARAM => false,
+        ] + $all;
     }
 
     /**
@@ -92,36 +90,29 @@ final class DeclarationSpacing implements TokenRule
     /**
      * @inheritDoc
      */
-    public function processTokens(array $tokens): void
+    public function processDeclarations(array $declarations): void
     {
         $this->Declarations = [];
 
-        foreach ($tokens as $token) {
-            // Ignore tokens other than the first in each declaration
-            if ($token->Statement !== $token) {
-                continue;
-            }
+        foreach ($declarations as $token) {
+            $type = $token->Data[TokenData::NAMED_DECLARATION_TYPE];
 
-            if (!$token->isNamedDeclaration($parts)) {
-                continue;
-            }
-
-            $type = $parts->getAnyFrom($this->Idx->DeclarationExceptModifiers)
-                          ->getTypes();
-
-            // Ignore declarations with no apparent type unless they are
-            // property or variable declarations
-            if (!$type && !$parts->hasOneFrom($this->Idx->DeclarationPropertyOrVariable)) {
-                continue;
-            }
-
-            // Don't separate `use`, `use function` and `use constant` if
+            // Apply the same formatting to imports and trait insertion, and
+            // don't separate `use`, `use function` and `use constant` if
             // imports are not being sorted
-            if (!$this->SortImportsEnabled && (
-                $type === [\T_USE, \T_FUNCTION] || $type === [\T_USE, \T_CONST]
-            )) {
-                $type = [\T_USE];
+            if (
+                $type === Type::USE_TRAIT
+                || (
+                    !$this->SortImportsEnabled && (
+                        $type === Type::USE_FUNCTION
+                        || $type === Type::USE_CONST
+                    )
+                )
+            ) {
+                $type = Type::_USE;
             }
+
+            $parts = $token->Data[TokenData::NAMED_DECLARATION_PARTS];
 
             $modifiers = [];
             $modifier = $parts->getFirstFrom($this->Idx->Visibility);
@@ -150,6 +141,7 @@ final class DeclarationSpacing implements TokenRule
         $declarations = $this->Declarations;
         while ($declarations) {
             [$token, $type, $modifiers, $tight, $tightOneLine] = reset($declarations);
+            // array_shift() can't be used here because it doesn't preserve keys
             unset($declarations[$token->Index]);
 
             $group = [$prevModifiers = $modifiers];
@@ -309,10 +301,9 @@ final class DeclarationSpacing implements TokenRule
      * Check if $token and any subsequent tightly-spaced declarations of $type
      * have modifiers mutually exclusive with $group
      *
-     * @param int[] $type
      * @param non-empty-array<int[]> $group
      */
-    private function isGroupedByModifier(Token $token, array $type, array $group): bool
+    private function isGroupedByModifier(Token $token, int $type, array $group): bool
     {
         $groups = [Arr::unique($group)];
         $group = null;

@@ -8,6 +8,7 @@ use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use Salient\Core\Facade\Profile;
+use Salient\Utility\Arr;
 use Salient\Utility\Regex;
 
 abstract class TestCase extends PHPUnitTestCase implements HasTokenNames
@@ -22,13 +23,13 @@ abstract class TestCase extends PHPUnitTestCase implements HasTokenNames
         if ($formatter instanceof FormatterB) {
             $formatter = $formatter->build();
         }
-        // Preserve `$formatter->Tokens` for inspection
+        // Preserve tokens for inspection
         $formatter = $formatter->withDebug();
         $first = $formatter->format($code);
         $second = $formatter->format($first, null, null, null, true);
         self::assertSame($expected, $first, 'Output is not formatted correctly.');
         self::assertSame($expected, $second, 'Output is not idempotent.');
-        if ($last = end($formatter->Tokens)) {
+        if ($last = Arr::last($formatter->getTokens() ?? [])) {
             self::assertSame($last->pos, $last->OutputPos, 'pos and OutputPos do not match.');
         }
     }

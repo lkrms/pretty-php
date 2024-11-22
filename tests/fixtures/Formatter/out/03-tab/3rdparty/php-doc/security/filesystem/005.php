@@ -1,4 +1,5 @@
 <?php
+
 $file = $_GET['file'];
 
 // Whitelisting possible values
@@ -11,4 +12,5 @@ switch ($file) {
 	default:
 		include '/home/wwwrun/include/main.php';
 }
+
 ?>

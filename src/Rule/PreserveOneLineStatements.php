@@ -2,8 +2,8 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
-use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\Concern\StatementRuleTrait;
+use Lkrms\PrettyPHP\Contract\StatementRule;
 
 /**
  * Suppress newlines in statements and control structures that start and end on
@@ -23,30 +23,27 @@ use Lkrms\PrettyPHP\Contract\TokenRule;
  * }
  * ```
  */
-final class PreserveOneLineStatements implements TokenRule
+final class PreserveOneLineStatements implements StatementRule
 {
-    use TokenRuleTrait;
+    use StatementRuleTrait;
 
     public static function getPriority(string $method): ?int
     {
-        switch ($method) {
-            case self::PROCESS_TOKENS:
-                return 95;
-
-            default:
-                return null;
-        }
+        return [
+            self::PROCESS_STATEMENTS => 95,
+        ][$method] ?? null;
     }
 
-    public function processTokens(array $tokens): void
+    public function processStatements(array $statements): void
     {
-        foreach ($tokens as $token) {
-            if ($token->Statement === $token
-                    && !$this->preserveOneLine(
-                        $token,
-                        $until = $token->pragmaticEndOfExpression(false, false)
-                    )
-                    && $this->Idx->Attribute[$token->id]) {
+        foreach ($statements as $token) {
+            if (
+                !$this->preserveOneLine(
+                    $token,
+                    $until = $token->pragmaticEndOfExpression(false, false)
+                )
+                && $this->Idx->Attribute[$token->id]
+            ) {
                 $this->preserveOneLine(
                     $token->skipNextSiblingsFrom($this->Idx->Attribute),
                     $until

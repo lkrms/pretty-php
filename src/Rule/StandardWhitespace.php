@@ -2,9 +2,14 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\DeclarationType;
+use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Concern\DeclarationRuleTrait;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
+use Lkrms\PrettyPHP\Contract\DeclarationRule;
 use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\Internal\TokenCollection;
 use Lkrms\PrettyPHP\Token;
 use Lkrms\PrettyPHP\TokenTypeIndex;
 use Salient\Utility\Regex;
@@ -15,25 +20,21 @@ use Salient\Utility\Str;
  *
  * @api
  */
-final class StandardWhitespace implements TokenRule
+final class StandardWhitespace implements TokenRule, DeclarationRule
 {
     use TokenRuleTrait;
+    use DeclarationRuleTrait;
 
     /**
      * @inheritDoc
      */
     public static function getPriority(string $method): ?int
     {
-        switch ($method) {
-            case self::PROCESS_TOKENS:
-                return 80;
-
-            case self::CALLBACK:
-                return 820;
-
-            default:
-                return null;
-        }
+        return [
+            self::PROCESS_TOKENS => 80,
+            self::PROCESS_DECLARATIONS => 80,
+            self::CALLBACK => 820,
+        ][$method] ?? null;
     }
 
     /**
@@ -81,7 +82,8 @@ final class StandardWhitespace implements TokenRule
      * - **`declare` statements:** whitespace suppressed between parentheses.
      * - **`match` expressions:** trailing line added to delimiters after arms.
      * - **Attributes:** trailing blank line suppressed, leading and trailing
-     *   space added for parameters, leading and trailing line added for others.
+     *   space added for parameters and property hooks, leading and trailing
+     *   line added for others.
      * - **Heredocs:** leading line suppressed in strict PSR-12 mode.
      *
      * @prettyphp-callback The `TagIndent` of tokens between indented tags is
@@ -280,7 +282,7 @@ final class StandardWhitespace implements TokenRule
                 $closedBy = $token->id === \T_ATTRIBUTE
                     ? $token->ClosedBy
                     : $token;
-                if (!$token->inParameterList()) {
+                if (!$token->inParameterList() && !$token->inPropertyHook()) {
                     $token->WhitespaceBefore |= WhitespaceType::LINE;
                     $closedBy->WhitespaceAfter |= WhitespaceType::LINE;
                 }
@@ -293,6 +295,84 @@ final class StandardWhitespace implements TokenRule
             if ($token->id === \T_START_HEREDOC && $this->Formatter->Psr12) {
                 $token->WhitespaceBefore |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
+            }
+        }
+    }
+
+    /**
+     * Apply the rule to the given declarations
+     *
+     * If a constructor has one or more promoted parameters, a line is added
+     * before every parameter.
+     *
+     * If a property has unimplemented hooks with no modifiers or attributes
+     * (e.g. `public $Foo { &get; set; }`), they are collapsed to one line,
+     * otherwise hooks with statements are formatted like anonymous functions,
+     * and hooks that use abbreviated syntax are formatted like arrow functions.
+     */
+    public function processDeclarations(array $declarations): void
+    {
+        $parents = [];
+        foreach ($declarations as $token) {
+            $type = $token->Data[TokenData::NAMED_DECLARATION_TYPE];
+
+            // Collect promoted constructor parameters
+            if ($type === DeclarationType::PARAM) {
+                /** @var Token */
+                $parent = $token->Parent;
+                $parents[$parent->id] = $parent;
+            }
+
+            if (
+                $type & DeclarationType::PROPERTY
+                && ($hooks = $token->Data[TokenData::PROPERTY_HOOKS])->count()
+            ) {
+                /** @var TokenCollection $hooks */
+                $collapse = true;
+                foreach ($hooks as $hook) {
+                    $hasAttribute = $this->Idx->Attribute[$hook->id];
+                    $name = $hook->skipNextSiblingsFrom($this->Idx->AttributeOrModifier);
+                    $hasModifier = $name !== $hook
+                        && $name->PrevSibling
+                        && !$this->Idx->Attribute[$name->PrevSibling->id];
+                    $name = $name->skipNextSiblingsFrom($this->Idx->Ampersand);
+                    /** @var Token */
+                    $next = $name->NextSibling;
+                    if ($hasParameters = $next->id === \T_OPEN_PARENTHESIS) {
+                        /** @var Token */
+                        $next = $next->NextSibling;
+                    }
+                    // Format `set () {}` like `function () {}`
+                    if ($hasBody = $next->id === \T_OPEN_BRACE) {
+                        $name->WhitespaceBefore |= WhitespaceType::SPACE;
+                        $name->WhitespaceAfter |= WhitespaceType::SPACE;
+                    }
+                    $hasExpression = $next->id === \T_DOUBLE_ARROW;
+                    $collapse = $collapse && !(
+                        $hasAttribute
+                        || $hasModifier
+                        || $hasParameters
+                        || $hasBody
+                        || $hasExpression
+                    );
+                }
+
+                // Collapse hooks like `{ &get; set; }` to one line
+                if ($collapse) {
+                    /** @var Token */
+                    $end = $token->EndStatement;
+                    /** @var Token */
+                    $start = $end->OpenedBy;
+                    $this->preserveOneLine($start, $end, true);
+                }
+            }
+        }
+
+        foreach ($parents as $parent) {
+            /** @var TokenCollection */
+            $items = $parent->Data[TokenData::LIST_ITEMS];
+            foreach ($items as $item) {
+                $item->WhitespaceBefore |= WhitespaceType::LINE;
             }
         }
     }

@@ -1,26 +1,19 @@
 <?php
 interface A
 {
-    public function foo(string $s): string;
-
-    public function bar(int $i): int;
+    const B = 'Interface constant';
 }
 
-// An abstract class may implement only a portion of an interface.
-// Classes that extend the abstract class must implement the rest.
-abstract class B implements A
+// Prints: Interface constant
+echo A::B;
+
+class B implements A
 {
-    public function foo(string $s): string
-    {
-        return $s . PHP_EOL;
-    }
+    const B = 'Class constant';
 }
 
-class C extends B
-{
-    public function bar(int $i): int
-    {
-        return $i * 2;
-    }
-}
+// Prints: Class constant
+// Prior to PHP 8.1.0, this will however not work because it was not
+// allowed to override constants.
+echo B::B;
 ?>

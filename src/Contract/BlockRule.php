@@ -16,7 +16,7 @@ interface BlockRule extends Rule
      *
      * An array of {@see TokenCollection} objects, each representing a line with
      * code and/or comment tokens, is passed to this method for each block of
-     * non-empty output lines.
+     * consecutive non-empty output lines.
      *
      * @param TokenCollection[] $lines
      */

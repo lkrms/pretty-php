@@ -1,48 +1,15 @@
 <?php
-
-/**
- * Define MyClass
- */
-class MyClass
+class Book
 {
-    // Declare a public constant
-    public const MY_PUBLIC = 'public';
-
-    // Declare a protected constant
-    protected const MY_PROTECTED = 'protected';
-
-    // Declare a private constant
-    private const MY_PRIVATE = 'private';
-
-    public function foo()
-    {
-        echo self::MY_PUBLIC;
-        echo self::MY_PROTECTED;
-        echo self::MY_PRIVATE;
-    }
+    protected string $title;
+    public protected(set) string $author;
+    protected private(set) int $pubYear;
 }
 
-$myclass = new MyClass();
-MyClass::MY_PUBLIC;  // Works
-MyClass::MY_PROTECTED;  // Fatal Error
-MyClass::MY_PRIVATE;  // Fatal Error
-$myclass->foo();  // Public, Protected and Private work
-
-/**
- * Define MyClass2
- */
-class MyClass2 extends MyClass
+class SpecialBook extends Book
 {
-    // This is public
-    function foo2()
-    {
-        echo self::MY_PUBLIC;
-        echo self::MY_PROTECTED;
-        echo self::MY_PRIVATE;  // Fatal Error
-    }
+    public protected(set) $title;  // OK, as reading is wider and writing the same.
+    public string $author;  // OK, as reading is the same and writing is wider.
+    public protected(set) int $pubYear;  // Fatal Error. private(set) properties are final.
 }
-
-$myclass2 = new MyClass2;
-echo MyClass2::MY_PUBLIC;  // Works
-$myclass2->foo2();  // Public and Protected work, not Private
 ?>

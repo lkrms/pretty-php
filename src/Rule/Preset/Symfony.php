@@ -2,8 +2,11 @@
 
 namespace Lkrms\PrettyPHP\Rule\Preset;
 
+use Lkrms\PrettyPHP\Catalog\DeclarationType;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
+use Lkrms\PrettyPHP\Catalog\TokenData;
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceType;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\ListRule;
@@ -21,9 +24,8 @@ use Lkrms\PrettyPHP\TokenTypeIndex;
  *
  * - Suppress horizontal space before and after '.'
  * - Add a space after 'fn' in arrow functions
- * - Add a newline before parameters in constructor declarations where one or
- *   more are promoted
- * - Suppress newlines between parameters in other function declarations
+ * - Suppress newlines between parameters in function declarations where none
+ *   are promoted constructor parameters
  */
 final class Symfony implements Preset, TokenRule, ListRule
 {
@@ -48,16 +50,10 @@ final class Symfony implements Preset, TokenRule, ListRule
 
     public static function getPriority(string $method): ?int
     {
-        switch ($method) {
-            case self::PROCESS_TOKENS:
-                return 100;
-
-            case self::PROCESS_LIST:
-                return 100;
-
-            default:
-                return null;
-        }
+        return [
+            self::PROCESS_TOKENS => 100,
+            self::PROCESS_LIST => 100,
+        ][$method] ?? null;
     }
 
     public static function getTokenTypes(TokenTypeIndex $idx): array
@@ -88,10 +84,10 @@ final class Symfony implements Preset, TokenRule, ListRule
         }
 
         foreach ($items as $item) {
-            if ($this->Idx->Visibility[$item->id]) {
-                foreach ($items as $item) {
-                    $item->WhitespaceBefore |= WhitespaceType::LINE;
-                }
+            if (
+                $item->Flags & TokenFlag::NAMED_DECLARATION
+                && $item->Data[TokenData::NAMED_DECLARATION_TYPE] === DeclarationType::PARAM
+            ) {
                 return;
             }
         }

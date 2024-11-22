@@ -8,7 +8,8 @@ $b = array();
 foo($b['b']);
 var_dump(array_key_exists('b', $b));  // bool(true)
 
-$c = new stdClass;
+$c = new stdClass();
 foo($c->d);
 var_dump(property_exists($c, 'd'));  // bool(true)
+
 ?>

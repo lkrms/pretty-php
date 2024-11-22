@@ -13,7 +13,10 @@ function baz(
 	$foo,
 	/** comment */
 	$bar
-	/** comment */
+
+	/**
+	 * comment
+	 */
 ) {}
 
 class Foo

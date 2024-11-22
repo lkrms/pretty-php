@@ -22,13 +22,9 @@ final class StrictLists implements ListRule
 
     public static function getPriority(string $method): ?int
     {
-        switch ($method) {
-            case self::PROCESS_LIST:
-                return 370;
-
-            default:
-                return null;
-        }
+        return [
+            self::PROCESS_LIST => 370,
+        ][$method] ?? null;
     }
 
     public function processList(Token $parent, TokenCollection $items): void

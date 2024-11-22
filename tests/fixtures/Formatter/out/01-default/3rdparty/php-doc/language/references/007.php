@@ -1,4 +1,5 @@
 <?php
+
 function foo(&$var)
 {
     $var++;
@@ -6,4 +7,5 @@ function foo(&$var)
 
 $a = 5;
 foo($a);
+
 ?>

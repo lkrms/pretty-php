@@ -1,20 +1,11 @@
 <?php
-function test_global_ref()
+function foo()
 {
-    global $obj;
-    $new = new stdClass;
-    $obj = &$new;
-}
+    static $int = 0;          // correct
+    static $int = 1 + 2;      // correct
+    static $int = sqrt(121);  // correct as of PHP 8.3.0
 
-function test_global_noref()
-{
-    global $obj;
-    $new = new stdClass;
-    $obj = $new;
+    $int++;
+    echo $int;
 }
-
-test_global_ref();
-var_dump($obj);
-test_global_noref();
-var_dump($obj);
 ?>

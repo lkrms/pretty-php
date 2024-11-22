@@ -19,7 +19,7 @@ final class CollectColumn implements Filter
      */
     public function filterTokens(array $tokens): array
     {
-        if (!$tokens || !$tokens[0] instanceof Token) {
+        if (!$tokens[0] instanceof Token) {
             return $tokens;
         }
 

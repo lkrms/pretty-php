@@ -1,8 +1,12 @@
 <?php
-function test()
+$a = 1;
+$b = 2;
+
+function Sum()
 {
-    $a = 0;
-    echo $a;
-    $a++;
-}
+    $GLOBALS['b'] = $GLOBALS['a'] + $GLOBALS['b'];
+} 
+
+Sum();
+echo $b;
 ?>

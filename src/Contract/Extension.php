@@ -22,7 +22,7 @@ interface Extension
     /**
      * Clear the extension's state for a new payload
      *
-     * Called once per input file, before formatting begins.
+     * Called once per document, before formatting begins.
      */
     public function reset(): void;
 }
