@@ -1,6 +1,7 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
+use Lkrms\PrettyPHP\Catalog\DeclarationType;
 use Lkrms\PrettyPHP\Contract\BlockRule;
 use Lkrms\PrettyPHP\Contract\DeclarationRule;
 use Lkrms\PrettyPHP\Contract\HasTokenNames;
@@ -17,13 +18,14 @@ use Salient\Core\Facade\Console;
 use Salient\PHPDoc\PHPDoc;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
+use Salient\Utility\Reflect;
 use Salient\Utility\Str;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 /**
- * @param array<int,array<array{rule:class-string<Rule>,is_mandatory:bool,is_default:bool,pass:int,method:string,priority:int,php_doc:PHPDoc|null,tokens:array<int,bool>|array{'*'}|null}>> $array
- * @param-out array<int,array<array{rule:class-string<Rule>,is_mandatory:bool,is_default:bool,pass:int,method:string,priority:int,php_doc:PHPDoc|null,tokens:array<int,bool>|array{'*'}|null}>> $array
+ * @param array<int,array<array{rule:class-string<Rule>,is_mandatory:bool,is_default:bool,pass:int,method:string,priority:int,php_doc:PHPDoc|null,tokens:array<int,bool>|array{'*'}|null,declarations:array<int,bool>|array{'*'}|null}>> $array
+ * @param-out array<int,array<array{rule:class-string<Rule>,is_mandatory:bool,is_default:bool,pass:int,method:string,priority:int,php_doc:PHPDoc|null,tokens:array<int,bool>|array{'*'}|null,declarations:array<int,bool>|array{'*'}|null}>> $array
  * @param class-string<Rule> $rule
  * @param array<class-string<Rule>,array<string|null>>|null $callbackDocs
  */
@@ -57,6 +59,10 @@ function maybeAddRule(
             static $idx = new TokenTypeIndex();
             /** @var class-string<TokenRule> $rule */
             $tokens = $rule::getTokenTypes($idx);
+        } elseif ($method === DeclarationRule::PROCESS_DECLARATIONS) {
+            static $all = getAllDeclarationTypes();
+            /** @var class-string<DeclarationRule> $rule */
+            $declarations = $rule::getDeclarationTypes($all);
         }
         $array[$priority][] = [
             'rule' => $rule,
@@ -67,12 +73,23 @@ function maybeAddRule(
             'priority' => $priority,
             'php_doc' => $phpDoc ?? null,
             'tokens' => $tokens ?? null,
+            'declarations' => $declarations ?? null,
         ];
         return;
     }
     if ($reportDisabled) {
         Console::warn('Rule is disabled:', $rule);
     }
+}
+
+/**
+ * @return array<int,true>
+ */
+function getAllDeclarationTypes(): array
+{
+    /** @var int[] */
+    $types = Reflect::getConstants(DeclarationType::class);
+    return array_fill_keys($types, true);
 }
 
 /**
@@ -158,8 +175,10 @@ foreach ($index as $rule => $keys) {
 
 $table1 = [['Rule', 'Mandatory?', 'Default?', 'Pass', 'Method', 'Priority']];
 $table2 = [['Token', 'Rules']];
+$table3 = [['Declaration', 'Rules']];
 $docs = [];
 $tokenRules = [];
+$declarationRules = [];
 foreach ($rules as $r) {
     $method = $r['method'] === Rule::CALLBACK
         ? '_`callback`_'
@@ -189,6 +208,16 @@ foreach ($rules as $r) {
                 }
                 $tokenRules['`' . $name . '`'][] = $heading;
             }
+        }
+    }
+
+    if ($r['declarations'] === ['*']) {
+        $declarationRules['`*`'][] = $heading;
+    } elseif ($r['declarations']) {
+        foreach (array_keys(array_filter($r['declarations'])) as $type) {
+            $name = Reflect::getConstantName(DeclarationType::class, $type);
+            $name = ltrim($name, '_');
+            $declarationRules['`' . $name . '`'][] = $heading;
         }
     }
 
@@ -235,3 +264,13 @@ foreach ($tokenRules as $name => $rules) {
 printf("\n");
 printf("## `TokenRule` classes, by token type\n\n");
 printTable($table2);
+
+ksort($declarationRules);
+foreach ($declarationRules as $name => $rules) {
+    sort($rules);
+    $table3[] = [$name, implode(', ', $rules)];
+}
+
+printf("\n");
+printf("## `DeclarationRule` classes, by declaration type\n\n");
+printTable($table3);
