@@ -10,4 +10,5 @@ function test()
 
 $foo = 'Example content';
 test();
+
 ?>

@@ -1,0 +1,6 @@
+<?php
+//passes:PSR2ModifierVisibilityStaticOrder
+class Test
+{
+    private \mysqli $conn;
+}

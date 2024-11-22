@@ -1,7 +1,5 @@
 <?php
-$foo = 'Bob';              // Assign the value 'Bob' to $foo
-$bar = &$foo;              // Reference $foo via $bar.
-$bar = "My name is $bar";  // Alter $bar...
-echo $bar;
-echo $foo;                 // $foo is altered too.
+${'invalid-name'} = 'bar';
+$name             = 'invalid-name';
+echo ${'invalid-name'}, ' ', $$name;
 ?>

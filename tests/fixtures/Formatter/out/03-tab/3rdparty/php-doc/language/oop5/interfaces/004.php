@@ -1,19 +1,25 @@
 <?php
 interface A
 {
-	const B = 'Interface constant';
+	public function foo();
 }
 
-// Prints: Interface constant
-echo A::B;
-
-class B implements A
+interface B
 {
-	const B = 'Class constant';
+	public function bar();
 }
 
-// Prints: Class constant
-// Prior to PHP 8.1.0, this will however not work because it was not
-// allowed to override constants.
-echo B::B;
+interface C extends A, B
+{
+	public function baz();
+}
+
+class D implements C
+{
+	public function foo() {}
+
+	public function bar() {}
+
+	public function baz() {}
+}
 ?>

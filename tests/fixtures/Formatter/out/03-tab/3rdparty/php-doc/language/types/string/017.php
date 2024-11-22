@@ -1,6 +1,5 @@
 <?php
-$string = 'string';
-echo "The character at index -2 is $string[-2].", PHP_EOL;
-$string[-3] = 'o';
-echo "Changing the character at index -3 to o gives $string.", PHP_EOL;
+echo "No interpolation \$  has happened\n";
+echo "No interpolation \$\n has happened\n";
+echo "No interpolation \$2 has happened\n";
 ?>

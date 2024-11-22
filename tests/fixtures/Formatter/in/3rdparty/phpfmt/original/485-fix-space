@@ -1,0 +1,3 @@
+<?php
+$result = true?\Str::of('true'):\Str::of('false');
+$result = true?Str\Str::of('true'):\Str::of('false');

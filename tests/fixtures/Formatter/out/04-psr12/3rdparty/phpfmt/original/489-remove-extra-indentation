@@ -1,0 +1,3 @@
+<?php
+// passes:Reindent
+\Excel::raw(new class($excel) implements \FromArray {});

@@ -1,4 +1,4 @@
 <?php
-$a = 1;
-include 'b.inc';
+// Unset AND unreferenced (no use context) variable.
+var_dump($unset_var);
 ?>

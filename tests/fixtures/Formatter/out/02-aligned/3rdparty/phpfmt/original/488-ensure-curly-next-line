@@ -1,0 +1,7 @@
+<?php
+// passes:PSR2CurlyOpenNextLine
+\Excel::raw(new class($excel) implements \FromArray {});
+
+\Excel::raw(new class($excel) implements FromArray {});
+
+\Excel::raw(new class($excel) implements FromArray\A {});

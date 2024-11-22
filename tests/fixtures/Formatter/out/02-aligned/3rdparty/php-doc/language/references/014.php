@@ -1,4 +1,5 @@
 <?php
+
 function &collector()
 {
     static $collection = array();
@@ -6,4 +7,5 @@ function &collector()
 }
 
 array_push(collector(), 'foo');
+
 ?>

@@ -1,28 +1,43 @@
 <?php
 
-interface A
+// Declare the interface 'Template'
+interface Template
 {
-    public function foo();
+    public function setVariable($name, $var);
+    public function getHtml($template);
 }
 
-interface B extends A
-{
-    public function baz(Baz $baz);
-}
-
+// Implement the interface
 // This will work
-class C implements B
+class WorkingTemplate implements Template
 {
-    public function foo() {}
+    private $vars = [];
 
-    public function baz(Baz $baz) {}
+    public function setVariable($name, $var)
+    {
+        $this->vars[$name] = $var;
+    }
+
+    public function getHtml($template)
+    {
+        foreach ($this->vars as $name => $value) {
+            $template = str_replace('{' . $name . '}', $value, $template);
+        }
+
+        return $template;
+    }
 }
 
-// This will not work and result in a fatal error
-class D implements B
+// This will not work
+// Fatal error: Class BadTemplate contains 1 abstract methods
+// and must therefore be declared abstract (Template::getHtml)
+class BadTemplate implements Template
 {
-    public function foo() {}
+    private $vars = [];
 
-    public function baz(Foo $foo) {}
+    public function setVariable($name, $var)
+    {
+        $this->vars[$name] = $var;
+    }
 }
 ?>

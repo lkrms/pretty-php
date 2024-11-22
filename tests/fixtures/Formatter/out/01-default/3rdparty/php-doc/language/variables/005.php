@@ -1,10 +1,3 @@
 <?php
-$a = 1;  /* global scope */
-
-function test()
-{
-    echo $a;  /* reference to local scope variable */
-}
-
-test();
+$unset_array[] = 'value';  // Does not generate a warning.
 ?>

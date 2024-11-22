@@ -1,43 +1,59 @@
 <?php
 
-// Declare the interface 'Template'
-interface Template
+interface I
 {
-    public function setVariable($name, $var);
-    public function getHtml($template);
+    // An implementing class MUST have a publicly-readable property,
+    // but whether or not it's publicly settable is unrestricted.
+    public string $readable { get; }
+
+    // An implementing class MUST have a publicly-writeable property,
+    // but whether or not it's publicly readable is unrestricted.
+    public string $writeable { set; }
+
+    // An implementing class MUST have a property that is both publicly
+    // readable and publicly writeable.
+    public string $both { get; set; }
 }
 
-// Implement the interface
-// This will work
-class WorkingTemplate implements Template
+// This class implements all three properties as traditional, un-hooked
+// properties. That's entirely valid.
+class C1 implements I
 {
-    private $vars = [];
+    public string $readable;
 
-    public function setVariable($name, $var)
-    {
-        $this->vars[$name] = $var;
-    }
+    public string $writeable;
 
-    public function getHtml($template)
-    {
-        foreach ($this->vars as $name => $value) {
-            $template = str_replace('{' . $name . '}', $value, $template);
-        }
-
-        return $template;
-    }
+    public string $both;
 }
 
-// This will not work
-// Fatal error: Class BadTemplate contains 1 abstract methods
-// and must therefore be declared abstract (Template::getHtml)
-class BadTemplate implements Template
+// This class implements all three properties using just the hooks
+// that are requested.  This is also entirely valid.
+class C2 implements I
 {
-    private $vars = [];
+    private string $written = '';
+    private string $all = '';
 
-    public function setVariable($name, $var)
-    {
-        $this->vars[$name] = $var;
+    // Uses only a get hook to create a virtual property.
+    // This satisfies the "public get" requirement.
+    // It is not writeable, but that is not required by the interface.
+    public string $readable {
+        get => strtoupper($this->writeable);
+    }
+
+    // The interface only requires the property be settable,
+    // but also including get operations is entirely valid.
+    // This example creates a virtual property, which is fine.
+    public string $writeable {
+        get => $this->written;
+        set => $value;
+    }
+
+    // This property requires both read and write be possible,
+    // so we need to either implement both, or allow it to have
+    // the default behavior.
+    public string $both {
+        get => $this->all;
+        set => strtoupper($value);
     }
 }
 ?>

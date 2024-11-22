@@ -8,4 +8,5 @@ function &collector()
 
 $collection = &collector();
 $collection[] = 'foo';
+
 ?>

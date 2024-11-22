@@ -1,3 +1,0 @@
-<?php
-
-$instance = new class {};

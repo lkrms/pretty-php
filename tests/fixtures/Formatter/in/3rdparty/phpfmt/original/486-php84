@@ -1,0 +1,77 @@
+<?php
+//passes:default,EliminateDuplicatedEmptyLines,RTrim,ShortArray,SortUseNameSpace,SpaceAroundExclamationMark,LeftAlignComment,PSR2ModifierVisibilityStaticOrder,ReindentEqual,Reindent,ReindentObjOps,AlignDoubleArrow,AlignEquals,ReindentColonBlocks,SplitCurlyCloseAndTokens,ResizeSpaces,StripExtraCommaInList,YodaComparisons,MergeDoubleArrowAndArray,MergeCurlyCloseAndDoWhile,MergeParenCloseWithCurlyOpen,NormalizeLnAndLtrimLines,ExtraCommaInArray,SmartLnAfterCurlyOpen,AddMissingCurlyBraces,OrderAndRemoveUseClauses,NormalizeIsNotEquals,RemoveIncludeParentheses,TwoCommandsInSameLine,SpaceBetweenMethods,ReturnNull,DoubleToSingleQuote,PSR2CurlyOpenNextLine
+//version:8.4
+// https://stitcher.io/blog/new-in-php-84
+class BookViewModel
+{
+    public function __construct(
+        private array $authors,
+    ) {}
+
+    public string $credits { get {
+            return implode(', ', array_map(
+                fn(Author $author) => $author->name, 
+                $this->authors,
+            ));
+        }
+    }
+    
+    public Author $mainAuthor {
+        set (Author $mainAuthor) {
+            $this->authors[] = $mainAuthor;
+            $this->mainAuthor = $mainAuthor;
+        }
+        
+        get => $this->mainAuthor;
+    }
+
+    public Author2 $mainAuthor {
+        set (Author $mainAuthor) {
+            $this->authors[]  = $mainAuthor;
+            $this->mainAuthor = $mainAuthor;
+        }
+
+        get (Author $mainAuthor) {
+            $this->authors[]  = $mainAuthor;
+            $this->mainAuthor = $mainAuthor;
+        }
+    }
+}
+
+interface HasAuthors
+{
+    public string $credits { get; }
+    public Author $mainAuthor { get; set; }
+}
+
+$name = new ReflectionClass($objectOrClass)->getShortName();
+
+class BookViewModel
+{
+    public private(set) Author $author;
+}
+
+class BookViewModel
+{
+    private(set) Author $author;
+}
+
+class BookViewModel
+{
+    public protected(set) Author $author;
+}
+
+class BookViewModel
+{
+    public function __construct(
+        private(set) Author $author
+    ) {}
+
+    public function handle() {
+        get('a');
+        set('b');
+    }
+}
+
+get('a');
+set('b');

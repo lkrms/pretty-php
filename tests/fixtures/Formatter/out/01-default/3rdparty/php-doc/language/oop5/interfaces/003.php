@@ -1,25 +1,22 @@
 <?php
+class Foo {}
+class Bar extends Foo {}
+
 interface A
 {
-    public function foo();
+    public function myfunc(Foo $arg): Foo;
 }
 
 interface B
 {
-    public function bar();
+    public function myfunc(Bar $arg): Bar;
 }
 
-interface C extends A, B
+class MyClass implements A, B
 {
-    public function baz();
-}
-
-class D implements C
-{
-    public function foo() {}
-
-    public function bar() {}
-
-    public function baz() {}
+    public function myfunc(Foo $arg): Bar
+    {
+        return new Bar();
+    }
 }
 ?>

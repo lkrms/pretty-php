@@ -1,88 +1,29 @@
 <?php
-
-/**
- * Define MyClass
- */
-class MyClass
+class Book
 {
-    // Declare a public constructor
-    public function __construct() {}
+    public function __construct(
+        public private(set) string $title,
+        public protected(set) string $author,
+        protected private(set) int $pubYear,
+    ) {}
+}
 
-    // Declare a public method
-    public function MyPublic() {}
-
-    // Declare a protected method
-    protected function MyProtected() {}
-
-    // Declare a private method
-    private function MyPrivate() {}
-
-    // This is public
-    function Foo()
+class SpecialBook extends Book
+{
+    public function update(string $author, int $year): void
     {
-        $this->MyPublic();
-        $this->MyProtected();
-        $this->MyPrivate();
+        $this->author = $author;  // OK
+        $this->pubYear = $year;  // Fatal Error
     }
 }
 
-$myclass = new MyClass;
-$myclass->MyPublic();  // Works
-$myclass->MyProtected();  // Fatal Error
-$myclass->MyPrivate();  // Fatal Error
-$myclass->Foo();  // Public, Protected and Private work
+$b = new Book('How to PHP', 'Peter H. Peterson', 2024);
 
-/**
- * Define MyClass2
- */
-class MyClass2 extends MyClass
-{
-    // This is public
-    function Foo2()
-    {
-        $this->MyPublic();
-        $this->MyProtected();
-        $this->MyPrivate();  // Fatal Error
-    }
-}
+echo $b->title;  // Works
+echo $b->author;  // Works
+echo $b->pubYear;  // Fatal Error
 
-$myclass2 = new MyClass2;
-$myclass2->MyPublic();  // Works
-$myclass2->Foo2();  // Public and Protected work, not Private
-
-class Bar
-{
-    public function test()
-    {
-        $this->testPrivate();
-        $this->testPublic();
-    }
-
-    public function testPublic()
-    {
-        echo "Bar::testPublic\n";
-    }
-
-    private function testPrivate()
-    {
-        echo "Bar::testPrivate\n";
-    }
-}
-
-class Foo extends Bar
-{
-    public function testPublic()
-    {
-        echo "Foo::testPublic\n";
-    }
-
-    private function testPrivate()
-    {
-        echo "Foo::testPrivate\n";
-    }
-}
-
-$myFoo = new Foo();
-$myFoo->test();  // Bar::testPrivate
-// Foo::testPublic
+$b->title = 'How not to PHP';  // Fatal Error
+$b->author = 'Pedro H. Peterson';  // Fatal Error
+$b->pubYear = 2023;  // Fatal Error
 ?>

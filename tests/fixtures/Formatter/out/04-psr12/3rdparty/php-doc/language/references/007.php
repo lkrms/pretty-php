@@ -7,4 +7,5 @@ function foo(&$var)
 
 $a = 5;
 foo($a);
+
 ?>

@@ -9,6 +9,6 @@ echo (true ? 'true' : false ? 't' : 'f');
 echo ((true ? 'true' : false) ? 't' : 'f');
 
 // here, one can see that the first expression is evaluated to 'true', which
-// in turn evaluates to (bool)true, thus returning the true branch of the
+// in turn evaluates to (bool) true, thus returning the true branch of the
 // second ternary expression.
 ?>

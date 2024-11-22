@@ -1,23 +1,26 @@
 <?php
-
-class One
+interface A
 {
-	/* ... */
+	public function foo(string $s): string;
+
+	public function bar(int $i): int;
 }
 
-interface Usable
+// An abstract class may implement only a portion of an interface.
+// Classes that extend the abstract class must implement the rest.
+abstract class B implements A
 {
-	/* ... */
+	public function foo(string $s): string
+	{
+		return $s . PHP_EOL;
+	}
 }
 
-interface Updatable
+class C extends B
 {
-	/* ... */
-}
-
-// The keyword order here is important. 'extends' must come first.
-class Two extends One implements Usable, Updatable
-{
-	/* ... */
+	public function bar(int $i): int
+	{
+		return $i * 2;
+	}
 }
 ?>

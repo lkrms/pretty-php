@@ -1,20 +1,35 @@
 <?php
-class Foo {}
-class Bar extends Foo {}
-
-interface A {
-    public function myfunc(Foo $arg): Foo;
-}
-
-interface B {
-    public function myfunc(Bar $arg): Bar;
-}
-
-class MyClass implements A, B
+interface A
 {
-    public function myfunc(Foo $arg): Bar
+    public function foo();
+}
+
+interface B extends A
+{
+    public function baz(Baz $baz);
+}
+
+// This will work
+class C implements B
+{
+    public function foo()
     {
-        return new Bar();
+    }
+
+    public function baz(Baz $baz)
+    {
+    }
+}
+
+// This will not work and result in a fatal error
+class D implements B
+{
+    public function foo()
+    {
+    }
+
+    public function baz(Foo $foo)
+    {
     }
 }
 ?>
