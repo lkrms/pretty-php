@@ -112,7 +112,7 @@ if ((BUILD_PHAR)); then
     { [[ -f $TEMP_DIR/box.json ]] ||
         [[ -f $TEMP_DIR/box.json.dist ]] ||
         cp -v "$REPO/box.json" "$TEMP_DIR/box.json"; } &&
-        php -d phar.readonly=off tools/box compile -d "$TEMP_DIR" --no-interaction
+        php -d phar.readonly=off -d error_reporting=22527 tools/box compile -d "$TEMP_DIR" --no-interaction
 
     printf '==> finalising build\n'
     TEMP_PHAR=("$TEMP_DIR/$DIST"/*.phar)
