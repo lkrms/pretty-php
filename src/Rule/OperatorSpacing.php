@@ -45,28 +45,36 @@ final class OperatorSpacing implements TokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            if ($token->Parent
-                    && $token->Parent->PrevCode
-                    && $token->Parent->PrevCode->id === \T_DECLARE) {
+            if (
+                $token->Parent
+                && $token->Parent->PrevCode
+                && $token->Parent->PrevCode->id === \T_DECLARE
+            ) {
                 continue;
             }
 
             // Suppress whitespace after ampersands related to passing,
             // assigning and returning by reference
-            if ($this->Idx->Ampersand[$token->id]
-                && $token->Next->Flags & TokenFlag::CODE
-                // `function &getValue()`
-                && (($token->PrevCode
-                    && ($token->PrevCode->id === \T_FUNCTION
-                        || $token->PrevCode->id === \T_FN))
+            if (
+                $this->Idx->Ampersand[$token->id]
+                && ($next = $token->Next)
+                && $next->Flags & TokenFlag::CODE
+                && (
+                    // `function &getValue()`
+                    ($token->PrevCode && $this->Idx->FunctionOrFn[$token->PrevCode->id])
+                    // `public $Foo { &get; }`
+                    || $token->inPropertyHook()
                     // `[&$variable]`, `$a = &getValue()`
                     || $token->inUnaryContext()
                     // `function foo(&$bar)`, `function foo($bar, &...$baz)`
-                    || (($token->Next->id === \T_VARIABLE
-                            || $token->Next->id === \T_ELLIPSIS)
+                    || (
+                        ($next->id === \T_VARIABLE || $next->id === \T_ELLIPSIS)
                         && $token->inParameterList()
                         // Not `function getValue($param = $a & $b)`
-                        && !$token->sinceStartOfStatement()->hasOneOf(\T_VARIABLE)))) {
+                        && !$token->sinceStartOfStatement()->hasOneOf(\T_VARIABLE)
+                    )
+                )
+            ) {
                 $token->WhitespaceBefore |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskNext = WhitespaceType::NONE;
                 continue;
@@ -74,15 +82,24 @@ final class OperatorSpacing implements TokenRule
 
             // Suppress whitespace around operators in union, intersection and
             // DNF types
-            if ($this->Idx->TypeDelimiter[$token->id]
-                && (($inTypeContext = $this->inTypeContext($token))
-                    || ($token->id === \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
+            if (
+                $this->Idx->TypeDelimiter[$token->id] && (
+                    ($inTypeContext = $this->inTypeContext($token)) || (
+                        $token->id === \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
                         && $token->Parent
                         && $token->Parent->id === \T_OPEN_PARENTHESIS
-                        && (($token->Parent->PrevCode
-                                && $token->Parent->PrevCode->id === \T_OR)
-                            || $token->Parent->ClosedBy->NextCode->id === \T_OR)
-                        && $this->inTypeContext($token->Parent)))) {
+                        && ((
+                            $token->Parent->PrevCode
+                            && $token->Parent->PrevCode->id === \T_OR
+                        ) || (
+                            $token->Parent->ClosedBy
+                            && $token->Parent->ClosedBy->NextCode
+                            && $token->Parent->ClosedBy->NextCode->id === \T_OR
+                        ))
+                        && $this->inTypeContext($token->Parent)
+                    )
+                )
+            ) {
                 $token->WhitespaceMaskNext = WhitespaceType::NONE;
                 $token->WhitespaceMaskPrev = WhitespaceType::NONE;
 
@@ -92,6 +109,7 @@ final class OperatorSpacing implements TokenRule
 
                 // Add a leading space to DNF types with opening parentheses
                 // (e.g. `(A&B)|null`)
+                /** @var Token */
                 $parent = $token->Parent;
                 if (!$parent->PrevCode || $parent->PrevCode->id !== \T_OR) {
                     $parent->WhitespaceBefore |= WhitespaceType::SPACE;
@@ -174,7 +192,8 @@ final class OperatorSpacing implements TokenRule
      */
     private function inTypeContext(Token $token): bool
     {
-        return $token->inDeclaration()
+        return ($token->inDeclaration()
+                && !$token->inPropertyHook())
             || ($token->inParameterList()
                 && !$token->sinceStartOfStatement()->hasOneOf(\T_VARIABLE))
             || (($prev = $token->prevCodeWhile($this->Idx->ValueType)->last())

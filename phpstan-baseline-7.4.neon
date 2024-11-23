@@ -181,36 +181,6 @@ parameters:
 			path: src/Rule/HeredocIndentation.php
 
 		-
-			message: '#^Cannot access property \$Flags on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Rule/OperatorSpacing.php
-
-		-
-			message: '#^Cannot access property \$NextCode on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Rule/OperatorSpacing.php
-
-		-
-			message: '#^Cannot access property \$PrevCode on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 2
-			path: src/Rule/OperatorSpacing.php
-
-		-
-			message: '#^Cannot access property \$WhitespaceBefore on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Rule/OperatorSpacing.php
-
-		-
-			message: '#^Cannot access property \$id on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 3
-			path: src/Rule/OperatorSpacing.php
-
-		-
 			message: '#^Cannot access property \$WhitespaceMaskNext on Lkrms\\PrettyPHP\\Token\|null\.$#'
 			identifier: property.nonObject
 			count: 1
