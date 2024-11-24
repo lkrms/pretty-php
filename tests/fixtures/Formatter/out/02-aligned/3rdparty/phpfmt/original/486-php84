@@ -22,7 +22,6 @@ class BookViewModel
             $this->authors[]  = $mainAuthor;
             $this->mainAuthor = $mainAuthor;
         }
-
         get => $this->mainAuthor;
     }
 
@@ -31,7 +30,6 @@ class BookViewModel
             $this->authors[]  = $mainAuthor;
             $this->mainAuthor = $mainAuthor;
         }
-
         get (Author $mainAuthor) {
             $this->authors[]  = $mainAuthor;
             $this->mainAuthor = $mainAuthor;

@@ -74,7 +74,7 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
-          - "8.3"
+          - "8.4"
           - "7.4"
 
     runs-on: ubuntu-latest
@@ -332,13 +332,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{ matrix.repository }}
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.3"
-          extensions: none, json, mbstring, tokenizer
-          coverage: none
 
       - name: Download phar artifact
         uses: actions/download-artifact@v4

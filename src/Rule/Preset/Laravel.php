@@ -10,6 +10,7 @@ use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Rule\BlankBeforeReturn;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder;
+use Lkrms\PrettyPHP\Token;
 use Lkrms\PrettyPHP\TokenTypeIndex;
 
 /**
@@ -57,11 +58,14 @@ final class Laravel implements Preset, TokenRule
         foreach ($tokens as $token) {
             switch ($token->id) {
                 case \T_LOGICAL_NOT:
-                    if (($token->Next->id ?? null) === \T_LOGICAL_NOT) {
+                    /** @var Token */
+                    $next = $token->Next;
+                    if ($next->id === \T_LOGICAL_NOT) {
                         continue 2;
                     }
                     $token->WhitespaceAfter |= WhitespaceType::SPACE;
                     $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
+                    $next->WhitespaceMaskPrev |= WhitespaceType::SPACE;
                     continue 2;
 
                 case \T_CONCAT:
@@ -70,8 +74,11 @@ final class Laravel implements Preset, TokenRule
                     continue 2;
 
                 case \T_FN:
+                    /** @var Token */
+                    $next = $token->Next;
                     $token->WhitespaceAfter |= WhitespaceType::SPACE;
                     $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
+                    $next->WhitespaceMaskPrev |= WhitespaceType::SPACE;
                     continue 2;
             }
         }

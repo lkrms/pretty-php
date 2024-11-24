@@ -9,6 +9,7 @@ use Lkrms\PrettyPHP\Rule\AlignComments;
 use Lkrms\PrettyPHP\Rule\AlignData;
 use Lkrms\PrettyPHP\Rule\AlignLists;
 use Lkrms\PrettyPHP\Rule\AlignTernaryOperators;
+use Lkrms\PrettyPHP\Rule\PreserveOneLineStatements;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
 use Lkrms\PrettyPHP\TokenTypeIndex;
@@ -20,8 +21,6 @@ use SplFileInfo;
 
 final class FormatterTest extends TestCase
 {
-    public const TARGET_VERSION_ID = 80300;
-
     /**
      * @dataProvider formatProvider
      *
@@ -33,14 +32,14 @@ final class FormatterTest extends TestCase
     }
 
     /**
-     * @return array<string,array{string,string,Formatter|FormatterB}>
+     * @return iterable<string,array{string,string,Formatter|FormatterB}>
      */
-    public static function formatProvider(): array
+    public static function formatProvider(): iterable
     {
         $formatterB = Formatter::build();
         $formatter = $formatterB->build();
 
-        return [
+        yield from [
             'empty string' => [
                 '',
                 '',
@@ -501,6 +500,360 @@ goto bar;
 bar: qux();
 PHP,
                 $formatter,
+            ],
+        ];
+
+        if (\PHP_VERSION_ID < 80400) {
+            return;
+        }
+
+        yield from [
+            'property hooks with and without attributes and comments' => [
+                <<<'PHP'
+<?php
+class Foo
+{
+    public $A {
+        get {
+            return 71;
+        }
+        set {
+            echo $value;
+        }
+    }
+
+    private $B {
+        get => 71;
+        set => $value;
+    }
+
+    abstract $C { &get; set; }
+
+    public $D {
+        final get {
+            return 71;
+        }
+        set (string $value) {}
+    }
+
+    public $E {
+        #[A] get {
+            return 71;
+        }
+        #[B] #[C] set {
+            echo $value;
+        }
+    }
+
+    private $F {
+        #[A] get => 71;
+        #[B] #[C] set => $value;
+    }
+
+    abstract $G {
+        #[A] &get;
+        #[B] #[C] set;
+    }
+
+    public $H {
+        #[A] final get {
+            return 71;
+        }
+        #[B] #[C] set (string $value) {}
+    }
+
+    public $I {
+        #[A]
+        get {
+            return 71;
+        }
+
+        #[B]
+        #[C]
+        set {
+            echo $value;
+        }
+    }
+
+    private $J {
+        #[A]
+        get => 71;
+
+        #[B]
+        #[C]
+        set => $value;
+    }
+
+    abstract $K {
+        #[A]
+        &get;
+
+        #[B]
+        #[C]
+        set;
+    }
+
+    public $L {
+        #[A]
+        final get {
+            return 71;
+        }
+
+        #[B]
+        #[C]
+        set (string $value) {}
+    }
+
+    public $M {
+        /** @var int */
+        #[A] get {
+            return 71;
+        }
+        #[B] #[C] set {
+            echo $value;
+        }
+    }
+
+    private $N {
+        /** @var int */
+        #[A] get => 71;
+        #[B] #[C] set => $value;
+    }
+
+    abstract $O {
+        /**
+         * DocBlock
+         */
+        #[A] &get;
+        #[B] #[C] set;
+    }
+
+    public $P {
+        /** @var int */
+        #[A] final get {
+            return 71;
+        }
+        #[B] #[C] set (string $value) {}
+    }
+
+    public $Q {
+        final &get => $this->Q;
+    }
+
+    public $R {
+        // Comment
+        get {
+            return 71;
+        }
+        set {
+            echo $value;
+        }
+    }
+
+    public $S {
+        get {
+            return 71;
+        }
+        // Comment
+        set {
+            echo $value;
+        }
+    }
+
+    public $T {
+        // Comment
+        get {
+            return 71;
+        }
+        // Comment
+        set {
+            echo $value;
+        }
+    }
+
+    public $U {
+        get {
+            return 71;
+        }
+
+        set (
+            string $value
+        ) {}
+    }
+}
+
+PHP,
+                <<<'PHP'
+<?php
+class Foo {
+    public $A {
+        get { return 71; }
+
+        set { echo $value; }
+    }
+    private $B {
+        get => 71;
+
+        set => $value;
+    }
+    abstract $C {
+        &get;
+
+        set;
+    }
+    public $D {
+        final get { return 71; }
+
+        set (string $value) {}
+    }
+    public $E {
+        #[A] get { return 71; }
+
+        #[B] #[C] set { echo $value; }
+    }
+    private $F {
+        #[A] get => 71;
+
+        #[B] #[C] set => $value;
+    }
+    abstract $G {
+        #[A] &get;
+
+        #[B] #[C] set;
+    }
+    public $H {
+        #[A] final get { return 71; }
+
+        #[B] #[C] set (string $value) {}
+    }
+    public $I {
+        #[A] get { return 71; }
+        #[B] #[C]
+        set { echo $value; }
+    }
+    private $J {
+        #[A] get => 71;
+        #[B] #[C]
+        set => $value;
+    }
+    abstract $K { #[A] &get; #[B] #[C]
+    set; }
+    public $L {
+        #[A] final get { return 71; }
+        #[B] #[C]
+        set (string $value) {}
+    }
+    public $M {
+        /** @var int */ #[A] get { return 71; }
+
+        #[B] #[C] set { echo $value; }
+    }
+    private $N {
+        /** @var int */ #[A] get => 71;
+
+        #[B] #[C] set => $value;
+    }
+    abstract $O {
+        /** DocBlock */ #[A] &get;
+
+        #[B] #[C] set;
+    }
+    public $P {
+        /** @var int */ #[A] final get { return 71; }
+
+        #[B] #[C] set (string $value) {}
+    }
+    public $Q {
+        final &get => $this->Q;
+    }
+    public $R {
+        // Comment
+        get { return 71; }
+
+        set { echo $value; }
+    }
+    public $S {
+        get { return 71; }
+
+        // Comment
+        set { echo $value; }
+    }
+    public $T {
+        // Comment
+        get { return 71; }
+
+        // Comment
+        set { echo $value; }
+    }
+    public $U {
+        get { return 71; }
+        set (
+            string $value
+        ) {}
+    }
+}
+PHP,
+                $formatter,
+            ],
+            'property hooks with PreserveOneLineStatements' => [
+                <<<'PHP'
+<?php
+class Foo
+{
+    public $A {
+        get { return 71; }
+        set { echo $value; }
+    }
+
+    public $B {
+        #[A] get { return 71; }
+        #[B] #[C] set { echo $value; }
+    }
+
+    public $C {
+        /** @var int */
+        #[A] get { return 71; }
+        #[B] #[C] set { echo $value; }
+    }
+
+    private $D { get => 71; set => $value; }
+    private $E { #[A] get => 71; #[B] #[C] set => $value; }
+    private $F { /** @var int */ #[A] get => 71; #[B] #[C] set => $value; }
+    public $G { final get { return 71; } set (string $value) {} }
+    public $H { #[A] final get { return 71; } #[B] #[C] set (string $value) {} }
+    public $I { /** @var int */ #[A] final get { return 71; } #[B] #[C] set (string $value) {} }
+    abstract $J { #[A] &get; #[B] #[C] set; }
+    abstract $K { /* comment */ #[A] &get; #[B] #[C] set; }
+}
+
+PHP,
+                <<<'PHP'
+<?php
+class Foo {
+    public $A {
+        get { return 71; }
+        set { echo $value; }
+    }
+    public $B {
+        #[A] get { return 71; }
+        #[B] #[C] set { echo $value; }
+    }
+    public $C {
+        /** @var int */
+        #[A] get { return 71; }
+        #[B] #[C] set { echo $value; }
+    }
+    private $D { get => 71; set => $value; }
+    private $E { #[A] get => 71; #[B] #[C] set => $value; }
+    private $F { /** @var int */ #[A] get => 71; #[B] #[C] set => $value; }
+    public $G { final get { return 71; } set (string $value) {} }
+    public $H { #[A] final get { return 71; } #[B] #[C] set (string $value) {} }
+    public $I { /** @var int */ #[A] final get { return 71; } #[B] #[C] set (string $value) {} }
+    abstract $J { #[A] &get; #[B] #[C] set; }
+    abstract $K { /* comment */ #[A] &get; #[B] #[C] set; }
+}
+PHP,
+                $formatterB->withExtensions([PreserveOneLineStatements::class]),
             ],
         ];
     }

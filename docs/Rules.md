@@ -23,7 +23,8 @@ needed.
 | `PreserveOneLineStatements` | -          | -        | 1    | `processStatements()`   | 95       |
 | `BlankBeforeReturn`         | -          | -        | 1    | `processTokens()`       | 97       |
 | `VerticalWhitespace`        | Y          | -        | 1    | `processTokens()`       | 98       |
-| `ListSpacing`               | Y          | -        | 1    | `processList()`         | 98       |
+| `ListSpacing` (1)           | Y          | -        | 1    | `processDeclarations()` | 98       |
+| `ListSpacing` (2)           | Y          | -        | 1    | `processList()`         | 98       |
 | `StrictExpressions`         | -          | -        | 1    | `processTokens()`       | 98       |
 | `Drupal`                    | -          | -        | 1    | `processTokens()`       | 100      |
 | `Laravel`                   | -          | -        | 1    | `processTokens()`       | 100      |
@@ -157,7 +158,8 @@ Whitespace is also applied to tokens as follows:
 - **`declare` statements:** whitespace suppressed between parentheses.
 - **`match` expressions:** trailing line added to delimiters after arms.
 - **Attributes:** trailing blank line suppressed, leading and trailing space
-  added for parameters, leading and trailing line added for others.
+  added for parameters and property hooks, leading and trailing line added for
+  others.
 - **Heredocs:** leading line suppressed in strict PSR-12 mode.
 
 ### `StandardWhitespace` (call 2: `processDeclarations()`)
@@ -165,11 +167,55 @@ Whitespace is also applied to tokens as follows:
 If a constructor has one or more promoted parameters, a line is added before
 every parameter.
 
+If a property has unimplemented hooks with no modifiers or attributes (e.g.
+`public $Foo { &get; set; }`), they are collapsed to one line, otherwise hooks
+with statements are formatted like anonymous functions, and hooks that use
+abbreviated syntax are formatted like arrow functions.
+
+### `PlaceBraces` (call 1: `processTokens()`)
+
+Whitespace is applied to structural and `match` expression braces as follows:
+
+- Blank lines are suppressed after open braces and before close braces.
+- Newlines are added after open braces.
+- Newlines are added after close braces unless they belong to a `match`
+  expression or a control structure that is immediately continued, e.g.
+  `} else {`. In the latter case, trailing newlines are suppressed.
+- Empty class, function and property hook bodies are collapsed to ` {}`
+  immediately after the declaration they belong to.
+- Horizontal whitespace is suppressed between other empty braces.
+
+Open brace placement is left for a rule that runs after vertical whitespace has
+been applied.
+
+### `ListSpacing` (call 1: `processDeclarations()`)
+
+If a list of property hooks has one or more attributes with a trailing newline,
+every attribute is placed on its own line, and blank lines are added before and
+after annotated hooks to improve readability.
+
+### `ListSpacing` (call 2: `processList()`)
+
+Arrays and argument lists with trailing ("magic") commas are split into one item
+per line.
+
+If parameter lists have one or more attributes with a trailing newline, every
+attribute is placed on its own line, and blank lines are added before and after
+annotated parameters to improve readability.
+
+If interface lists break over multiple lines and neither `StrictLists` nor
+`AlignLists` are enabled, a newline is added before the first interface.
+
 ### `StandardWhitespace` (call 3: _`callback`_)
 
 The `TagIndent` of tokens between indented tags is adjusted by the difference,
 if any, between the open tag's indent and the indentation level of the first
 token after the open tag.
+
+### `PlaceBraces` (call 2: `beforeRender()`)
+
+In function declarations where `)` and `{` appear at the start of consecutive
+lines, they are collapsed to the same line.
 
 ## `TokenRule` classes, by token type
 
@@ -187,7 +233,7 @@ token after the open tag.
 | `T_CASE`                                    | `SwitchIndentation`                                                  |
 | `T_CATCH`                                   | `Drupal`                                                             |
 | `T_CLASS`                                   | `Drupal`                                                             |
-| `T_CLOSE_BRACE`                             | `PlaceBraces`, `WordPress`                                           |
+| `T_CLOSE_BRACE`                             | `WordPress`                                                          |
 | `T_CLOSE_TAG`                               | `StandardWhitespace`                                                 |
 | `T_COALESCE`                                | `AlignTernaryOperators`                                              |
 | `T_COLON`                                   | `StatementSpacing`, `WordPress`                                      |
@@ -235,5 +281,26 @@ token after the open tag.
 | `T_XOR`                                     | `VerticalWhitespace`                                                 |
 | `T_YIELD_FROM`                              | `BlankBeforeReturn`                                                  |
 | `T_YIELD`                                   | `BlankBeforeReturn`                                                  |
+
+## `DeclarationRule` classes, by declaration type
+
+| Declaration    | Rules                               |
+| -------------- | ----------------------------------- |
+| `*`            | `StandardWhitespace`                |
+| `CASE`         | `DeclarationSpacing`                |
+| `CLASS`        | `DeclarationSpacing`                |
+| `CONST`        | `DeclarationSpacing`                |
+| `DECLARE`      | `DeclarationSpacing`                |
+| `ENUM`         | `DeclarationSpacing`                |
+| `FUNCTION`     | `DeclarationSpacing`                |
+| `INTERFACE`    | `DeclarationSpacing`                |
+| `NAMESPACE`    | `DeclarationSpacing`                |
+| `PARAM`        | `ListSpacing`                       |
+| `PROPERTY`     | `DeclarationSpacing`, `ListSpacing` |
+| `TRAIT`        | `DeclarationSpacing`                |
+| `USE_CONST`    | `DeclarationSpacing`                |
+| `USE_FUNCTION` | `DeclarationSpacing`                |
+| `USE_TRAIT`    | `DeclarationSpacing`                |
+| `USE`          | `DeclarationSpacing`                |
 
 [list-rules.php]: ../scripts/list-rules.php

@@ -169,36 +169,6 @@ parameters:
 			path: src/Rule/HeredocIndentation.php
 
 		-
-			message: '#^Cannot access property \$Flags on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Rule/OperatorSpacing.php
-
-		-
-			message: '#^Cannot access property \$NextCode on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Rule/OperatorSpacing.php
-
-		-
-			message: '#^Cannot access property \$PrevCode on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 2
-			path: src/Rule/OperatorSpacing.php
-
-		-
-			message: '#^Cannot access property \$WhitespaceBefore on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Rule/OperatorSpacing.php
-
-		-
-			message: '#^Cannot access property \$id on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 3
-			path: src/Rule/OperatorSpacing.php
-
-		-
 			message: '#^Cannot access property \$WhitespaceMaskNext on Lkrms\\PrettyPHP\\Token\|null\.$#'
 			identifier: property.nonObject
 			count: 1
@@ -215,72 +185,6 @@ parameters:
 			identifier: property.nonObject
 			count: 1
 			path: src/Rule/PreserveNewlines.php
-
-		-
-			message: '#^Cannot access property \$WhitespaceBefore on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Rule/Preset/Drupal.php
-
-		-
-			message: '#^Cannot access property \$WhitespaceMaskPrev on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Rule/Preset/Drupal.php
-
-		-
-			message: '#^Cannot access property \$id on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 2
-			path: src/Rule/Preset/Drupal.php
-
-		-
-			message: '#^Cannot access property \$Next on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Rule/Preset/WordPress.php
-
-		-
-			message: '#^Cannot access property \$Prev on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Rule/Preset/WordPress.php
-
-		-
-			message: '#^Cannot access property \$WhitespaceBefore on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Rule/Preset/WordPress.php
-
-		-
-			message: '#^Cannot access property \$WhitespaceMaskNext on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Rule/Preset/WordPress.php
-
-		-
-			message: '#^Cannot access property \$WhitespaceMaskPrev on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 2
-			path: src/Rule/Preset/WordPress.php
-
-		-
-			message: '#^Cannot access property \$id on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 2
-			path: src/Rule/Preset/WordPress.php
-
-		-
-			message: '#^Cannot access property \$line on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Rule/Preset/WordPress.php
-
-		-
-			message: '#^Cannot access property \$text on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Rule/Preset/WordPress.php
 
 		-
 			message: '#^Cannot access property \$WhitespaceMaskPrev on Lkrms\\PrettyPHP\\Token\|null\.$#'

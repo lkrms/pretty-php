@@ -79,12 +79,19 @@ final class WordPress implements Preset, TokenRule
 
             if ($token->id === \T_DOC_COMMENT && !$this->DocCommentUnpinned) {
                 $token->WhitespaceMaskNext |= WhitespaceType::BLANK;
+                if ($token->Next) {
+                    $token->Next->WhitespaceMaskPrev |= WhitespaceType::BLANK;
+                }
                 $this->DocCommentUnpinned = true;
             }
 
             if ($token->id === \T_DOC_COMMENT || $token->id === \T_COMMENT) {
-                if ($token->hasBlankLineBefore()
-                        && $token->line - $token->Prev->line - substr_count($token->Prev->text, "\n") < 2) {
+                /** @var Token */
+                $prev = $token->Prev;
+                if (
+                    $token->hasBlankLineBefore()
+                    && $token->line - $prev->line - substr_count($prev->text, "\n") < 2
+                ) {
                     $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
                 }
                 continue;
@@ -96,34 +103,53 @@ final class WordPress implements Preset, TokenRule
                 }
                 $token->WhitespaceBefore |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskPrev |= WhitespaceType::SPACE;
+                /** @var Token */
+                $prev = $token->Prev;
+                $prev->WhitespaceMaskNext |= WhitespaceType::SPACE;
                 continue;
             }
 
             if ($token->id === \T_LOGICAL_NOT) {
-                if ($token->Next->id === \T_LOGICAL_NOT) {
+                /** @var Token */
+                $next = $token->Next;
+                if ($next->id === \T_LOGICAL_NOT) {
                     continue;
                 }
                 $token->WhitespaceAfter |= WhitespaceType::SPACE;
                 $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
+                $next->WhitespaceMaskPrev |= WhitespaceType::SPACE;
                 continue;
             }
 
             if ($token->id === \T_OPEN_BRACE) {
+                /** @var Token */
+                $next = $token->Next;
                 $token->WhitespaceMaskNext |= WhitespaceType::BLANK;
+                $next->WhitespaceMaskPrev |= WhitespaceType::BLANK;
                 continue;
             }
 
             if ($token->id === \T_CLOSE_BRACE) {
+                /** @var Token */
+                $prev = $token->Prev;
                 $token->WhitespaceMaskPrev |= WhitespaceType::BLANK;
+                $prev->WhitespaceMaskNext |= WhitespaceType::BLANK;
                 continue;
             }
 
             // All that remains is T_OPEN_BRACKET and T_OPEN_PARENTHESIS
-            if ($token->ClosedBy === $token->Next
-                || ($token->id === \T_OPEN_BRACKET
-                    && ($token->String
-                        || ($token->Next->Next === $token->ClosedBy
-                            && $token->Next->id !== \T_VARIABLE)))) {
+            if (
+                !$token->Next
+                || !$token->ClosedBy
+                || !$token->ClosedBy->Prev
+                || $token->ClosedBy === $token->Next
+                || ($token->id === \T_OPEN_BRACKET && (
+                    $token->String || (
+                        $token->Next->Next === $token->ClosedBy
+                        && $token->Next->id !== \T_VARIABLE
+                    )
+                ))
+            ) {
                 continue;
             }
 

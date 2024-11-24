@@ -74,6 +74,9 @@ final class Symfony implements Preset, TokenRule, ListRule
             }
             $token->WhitespaceAfter |= WhitespaceType::SPACE;
             $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
+            /** @var Token */
+            $next = $token->Next;
+            $next->WhitespaceMaskPrev |= WhitespaceType::SPACE;
         }
     }
 

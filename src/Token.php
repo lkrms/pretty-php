@@ -1447,6 +1447,9 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         $t->WhitespaceBefore |= WhitespaceType::BLANK;
         if ($withMask) {
             $t->WhitespaceMaskPrev |= WhitespaceType::BLANK;
+            if ($t->Prev) {
+                $t->Prev->WhitespaceMaskNext |= WhitespaceType::BLANK;
+            }
         }
     }
 
