@@ -168,6 +168,7 @@ final class PlaceComments implements TokenRule
                 $token->WhitespaceBefore |= WhitespaceType::SPACE;
                 if ($token->hasNewlineAfter()) {
                     $token->Prev->WhitespaceMaskNext |= WhitespaceType::SPACE;
+                    $token->WhitespaceMaskPrev |= WhitespaceType::SPACE;
                     $token->Padding = $this->Formatter->SpacesBesideCode - 1;
                 } else {
                     $token->WhitespaceAfter |= WhitespaceType::SPACE;

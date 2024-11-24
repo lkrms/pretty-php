@@ -238,7 +238,8 @@ interface HasTokenIndex
         \T_OPEN_PARENTHESIS => true,
         \T_STRING => true,
         \T_VARIABLE => true,
-    ] + self::CHAIN;
+    ]
+        + self::CHAIN;
 
     /**
      * @var array<int,true>
@@ -264,7 +265,8 @@ interface HasTokenIndex
         \T_CALLABLE => true,
         \T_OPEN_PARENTHESIS => true,
         \T_QUESTION => true,
-    ] + self::DECLARATION_TYPE;
+    ]
+        + self::DECLARATION_TYPE;
 
     /**
      * @var array<int,true>
@@ -279,7 +281,10 @@ interface HasTokenIndex
         \T_NAMESPACE => true,
         \T_NS_SEPARATOR => true,
         \T_USE => true,
-    ] + self::DECLARATION_ONLY + self::DECLARATION_LIST + self::AMPERSAND;
+    ]
+        + self::DECLARATION_ONLY
+        + self::DECLARATION_LIST
+        + self::AMPERSAND;
 
     /**
      * @var array<int,true>
@@ -290,7 +295,8 @@ interface HasTokenIndex
         \T_NAMESPACE => true,
         \T_STATIC => true,
         \T_USE => true,
-    ] + self::DECLARATION_ONLY;
+    ]
+        + self::DECLARATION_ONLY;
 
     /**
      * @var array<int,true>
@@ -302,7 +308,9 @@ interface HasTokenIndex
         \T_FINAL => true,
         \T_READONLY => true,
         \T_VAR => true,
-    ] + self::DECLARATION_CLASS + self::VISIBILITY;
+    ]
+        + self::DECLARATION_CLASS
+        + self::VISIBILITY;
 
     /**
      * @var array<int,true>
@@ -319,14 +327,16 @@ interface HasTokenIndex
      */
     public const DECLARATION_LIST = [
         \T_COMMA => true,
-    ] + self::DECLARATION_TYPE;
+    ]
+        + self::DECLARATION_TYPE;
 
     /**
      * @var array<int,true>
      */
     public const DECLARATION_TYPE = [
         \T_STATIC => true,
-    ] + self::NAME;
+    ]
+        + self::NAME;
 
     /**
      * @var array<int,true>
@@ -335,7 +345,10 @@ interface HasTokenIndex
         \T_CLOSE_BRACE => true,
         \T_STRING_VARNAME => true,
         \T_VARIABLE => true,
-    ] + self::DEREFERENCEABLE_SCALAR_END + self::NAME + self::MAGIC_CONSTANT;
+    ]
+        + self::DEREFERENCEABLE_SCALAR_END
+        + self::NAME
+        + self::MAGIC_CONSTANT;
 
     /**
      * @var array<int,true>
@@ -440,7 +453,8 @@ interface HasTokenIndex
         \T_WHILE => true,
         \T_YIELD => true,
         \T_YIELD_FROM => true,
-    ] + self::MODIFIER;
+    ]
+        + self::MODIFIER;
 
     /**
      * @var array<int,true>
@@ -450,18 +464,26 @@ interface HasTokenIndex
         \T_FINAL => true,
         \T_READONLY => true,
         \T_STATIC => true,
-    ] + self::VISIBILITY;
+    ]
+        + self::VISIBILITY;
 
     /**
      * @var array<int,true>
      */
     public const VISIBILITY = [
-        \T_PRIVATE => true,
         \T_PRIVATE_SET => true,
-        \T_PROTECTED => true,
         \T_PROTECTED_SET => true,
-        \T_PUBLIC => true,
         \T_PUBLIC_SET => true,
+    ]
+        + self::VISIBILITY_GET;
+
+    /**
+     * @var array<int,true>
+     */
+    public const VISIBILITY_GET = [
+        \T_PRIVATE => true,
+        \T_PROTECTED => true,
+        \T_PUBLIC => true,
     ];
 
     /**
@@ -521,7 +543,8 @@ interface HasTokenIndex
         \T_NOT => true,
         \T_SL => true,
         \T_SR => true,
-    ] + self::AMPERSAND;
+    ]
+        + self::AMPERSAND;
 
     /**
      * @var array<int,true>

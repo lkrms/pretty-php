@@ -9,6 +9,7 @@ use Lkrms\PrettyPHP\Contract\Preset;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder;
+use Lkrms\PrettyPHP\Token;
 use Lkrms\PrettyPHP\TokenTypeIndex;
 use Salient\PHPDoc\PHPDoc;
 use Throwable;
@@ -74,14 +75,22 @@ final class Drupal implements Preset, TokenRule
                 }
 
                 $open = $token->nextSiblingOf(\T_OPEN_BRACE);
-                if ($open->Next->id === \T_CLOSE_BRACE) {
+                /** @var Token */
+                $next = $open->Next;
+                if ($next->id === \T_CLOSE_BRACE) {
                     continue;
                 }
+                /** @var Token */
+                $closedBy = $open->ClosedBy;
+                /** @var Token */
+                $prev = $closedBy->Prev;
 
                 $open->WhitespaceAfter |= WhitespaceType::BLANK;
                 $open->WhitespaceMaskNext |= WhitespaceType::BLANK;
-                $open->ClosedBy->WhitespaceBefore |= WhitespaceType::BLANK;
-                $open->ClosedBy->WhitespaceMaskPrev |= WhitespaceType::BLANK;
+                $next->WhitespaceMaskPrev |= WhitespaceType::BLANK;
+                $closedBy->WhitespaceBefore |= WhitespaceType::BLANK;
+                $closedBy->WhitespaceMaskPrev |= WhitespaceType::BLANK;
+                $prev->WhitespaceMaskNext |= WhitespaceType::BLANK;
 
                 continue;
             }
@@ -97,6 +106,9 @@ final class Drupal implements Preset, TokenRule
                 if ($phpDoc->hasTag('file')) {
                     $token->WhitespaceAfter |= WhitespaceType::BLANK;
                     $token->WhitespaceMaskNext |= WhitespaceType::BLANK;
+                    if ($token->Next) {
+                        $token->Next->WhitespaceMaskPrev |= WhitespaceType::BLANK;
+                    }
                 }
 
                 continue;
@@ -104,9 +116,14 @@ final class Drupal implements Preset, TokenRule
 
             // Add a newline after close braces with a subsequent `catch`, `else`,
             // `elseif` or `finally`
-            if ($token->PrevCode->id === \T_CLOSE_BRACE) {
+            /** @var Token */
+            $prevCode = $token->PrevCode;
+            if ($prevCode->id === \T_CLOSE_BRACE) {
                 $token->WhitespaceBefore |= WhitespaceType::LINE;
                 $token->WhitespaceMaskPrev |= WhitespaceType::LINE;
+                /** @var Token */
+                $prev = $token->Prev;
+                $prev->WhitespaceMaskNext |= WhitespaceType::LINE;
             }
         }
     }

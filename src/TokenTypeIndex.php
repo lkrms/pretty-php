@@ -384,15 +384,6 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * T_COMMA, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE,
-     * T_STATIC, T_STRING
-     *
-     * @var array<int,bool>
-     */
-    public array $DeclarationList = self::DECLARATION_LIST
-        + self::TOKEN_INDEX;
-
-    /**
      * T_CLASS, T_ENUM, T_FUNCTION, T_INTERFACE, T_NAMESPACE, T_TRAIT
      *
      * @var array<int,bool>
@@ -429,6 +420,14 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
+     * T_PRIVATE, T_PROTECTED, T_PUBLIC
+     *
+     * @var array<int,bool>
+     */
+    public array $GetVisibility = self::VISIBILITY_GET
+        + self::TOKEN_INDEX;
+
+    /**
      * T_IF, T_ELSEIF
      *
      * @var array<int,bool>
@@ -449,14 +448,6 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         \T_ELSEIF => true,
         \T_ELSE => true,
     ]
-        + self::TOKEN_INDEX;
-
-    /**
-     * Visibility modifiers, T_ABSTRACT, T_FINAL, T_READONLY, T_STATIC
-     *
-     * @var array<int,bool>
-     */
-    public array $Modifier = self::MODIFIER
         + self::TOKEN_INDEX;
 
     /**
@@ -643,14 +634,6 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         \T_END_ALT_SYNTAX => true,
         \T_NULL => true,
     ]
-        + self::TOKEN_INDEX;
-
-    /**
-     * Visibility modifiers
-     *
-     * @var array<int,bool>
-     */
-    public array $Visibility = self::VISIBILITY
         + self::TOKEN_INDEX;
 
     /**
@@ -929,6 +912,18 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      * @var array<int,bool>
      */
     public array $HasExpressionAndStatementWithOptionalBraces = self::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES
+        + self::TOKEN_INDEX;
+
+    /**
+     * T_DOUBLE_ARROW, T_OPEN_BRACE, T_SEMICOLON
+     *
+     * @var array<int,bool>
+     */
+    public array $StartOfPropertyHookBody = [
+        \T_DOUBLE_ARROW => true,
+        \T_OPEN_BRACE => true,
+        \T_SEMICOLON => true,
+    ]
         + self::TOKEN_INDEX;
 
     /**
@@ -1214,26 +1209,6 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         \T_NS_SEPARATOR => true,
         \T_OBJECT_OPERATOR => true,
         \T_NULLSAFE_OBJECT_OPERATOR => true,
-    ]
-        + self::TOKEN_INDEX;
-
-    /**
-     * T_USE
-     *
-     * @var array<int,bool>
-     */
-    public array $SuppressBlankBetween = [
-        \T_USE => true,
-    ]
-        + self::TOKEN_INDEX;
-
-    /**
-     * T_DECLARE
-     *
-     * @var array<int,bool>
-     */
-    public array $SuppressBlankBetweenOneLine = [
-        \T_DECLARE => true,
     ]
         + self::TOKEN_INDEX;
 

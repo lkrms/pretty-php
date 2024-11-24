@@ -116,6 +116,9 @@ final class ControlStructureSpacing implements TokenRule
             // Add a newline after the body
             $end->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
             $end->WhitespaceMaskNext |= WhitespaceType::LINE;
+            if ($end->Next) {
+                $end->Next->WhitespaceMaskPrev |= WhitespaceType::LINE;
+            }
 
             // If the control structure continues, suppress blank lines after
             // the body
