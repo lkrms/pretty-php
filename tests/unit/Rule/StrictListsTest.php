@@ -40,9 +40,7 @@ PHP,
             'multi-line array with opening newline' => [
                 <<<'PHP'
 <?php
-$a = [
-    $b, $c, $d
-];
+$a = [$b, $c, $d];
 
 PHP,
                 <<<'PHP'
@@ -93,9 +91,7 @@ PHP,
                 <<<'PHP'
 <?php
 F($a, $b, $c, $d);
-F(
-    $a, $b, $c, $d
-);
+F($a, $b, $c, $d);
 F(
     $a,
     $b,
@@ -109,9 +105,7 @@ F(
     $c,
     $d
 );
-F(
-    $a, $b, $c, $d
-);
+F($a, $b, $c, $d);
 
 PHP,
                 <<<'PHP'

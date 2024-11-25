@@ -207,6 +207,11 @@ annotated parameters to improve readability.
 If interface lists break over multiple lines and neither `StrictLists` nor
 `AlignLists` are enabled, a newline is added before the first interface.
 
+### `StrictLists`
+
+Items in lists are arranged horizontally or vertically by replicating the
+arrangement of the first and second items.
+
 ### `StandardWhitespace` (call 3: _`callback`_)
 
 The `TagIndent` of tokens between indented tags is adjusted by the difference,

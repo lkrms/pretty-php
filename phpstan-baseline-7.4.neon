@@ -155,9 +155,3 @@ parameters:
 			identifier: property.nonObject
 			count: 3
 			path: src/Rule/StatementSpacing.php
-
-		-
-			message: '#^Cannot call method hasNewlineBefore\(\) on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Rule/StrictLists.php

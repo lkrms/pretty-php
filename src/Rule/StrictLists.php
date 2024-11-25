@@ -9,17 +9,17 @@ use Lkrms\PrettyPHP\Internal\TokenCollection;
 use Lkrms\PrettyPHP\Token;
 
 /**
- * Arrange items in lists horizontally or vertically by replicating the
- * arrangement of the first and second items
+ * Arrange items in lists horizontally or vertically
  *
- * Newlines are added before the first item in vertical lists. Newlines before
- * the first item in horizontal lists are removed when strict PSR-12 compliance
- * is enabled.
+ * @api
  */
 final class StrictLists implements ListRule
 {
     use ListRuleTrait;
 
+    /**
+     * @inheritDoc
+     */
     public static function getPriority(string $method): ?int
     {
         return [
@@ -27,19 +27,23 @@ final class StrictLists implements ListRule
         ][$method] ?? null;
     }
 
+    /**
+     * Apply the rule to a token and the list of items associated with it
+     *
+     * Items in lists are arranged horizontally or vertically by replicating the
+     * arrangement of the first and second items.
+     */
     public function processList(Token $parent, TokenCollection $items): void
     {
         if ($items->count() < 2) {
             return;
         }
-        if ($items->nth(2)->hasNewlineBefore()) {
+
+        /** @var Token */
+        $second = $items->nth(2);
+        if ($second->hasNewlineBefore()) {
             $items->applyWhitespace(Space::LINE_BEFORE);
         } else {
-            // Leave the first item alone unless strict PSR-12 compliance is
-            // enabled
-            if ($parent->ClosedBy && !$this->Formatter->Psr12) {
-                $items->shift();
-            }
             $items->applyWhitespace(Space::NO_BLANK_BEFORE | Space::NO_LINE_BEFORE);
         }
     }
