@@ -21,6 +21,9 @@ final class NormaliseComments implements TokenRule
 {
     use TokenRuleTrait;
 
+    /**
+     * @inheritDoc
+     */
     public static function getPriority(string $method): ?int
     {
         return [
@@ -28,9 +31,20 @@ final class NormaliseComments implements TokenRule
         ][$method] ?? null;
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return $idx->Comment;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function needsSortedTokens(): bool
+    {
+        return false;
     }
 
     /**
