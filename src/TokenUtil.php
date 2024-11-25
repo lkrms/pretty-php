@@ -5,7 +5,7 @@ namespace Lkrms\PrettyPHP;
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Internal\TokenCollection;
 use Salient\Utility\Arr;
 use Salient\Utility\Reflect;
@@ -98,13 +98,13 @@ final class TokenUtil
 
     public static function getWhitespace(int $type): string
     {
-        if ($type & WhitespaceType::BLANK) {
+        if ($type & Space::BLANK) {
             return "\n\n";
         }
-        if ($type & WhitespaceType::LINE) {
+        if ($type & Space::LINE) {
             return "\n";
         }
-        if ($type & WhitespaceType::SPACE) {
+        if ($type & Space::SPACE) {
             return ' ';
         }
         return '';
@@ -158,9 +158,11 @@ final class TokenUtil
         $t['Heredoc'] = $token->Heredoc;
 
         if ($token->Flags) {
+            static $tokenFlags;
+            $tokenFlags ??= Reflect::getConstants(TokenFlag::class);
             $flags = [];
             /** @var int $value */
-            foreach (Reflect::getConstants(TokenFlag::class) as $name => $value) {
+            foreach ($tokenFlags as $name => $value) {
                 if (($token->Flags & $value) === $value) {
                     $flags[] = $name;
                 }
@@ -205,14 +207,38 @@ final class TokenUtil
         $t['Padding'] = $token->Padding;
         $t['HeredocIndent'] = $token->HeredocIndent;
         $t['AlignedWith'] = $token->AlignedWith;
-        $t['WhitespaceBefore'] = self::getWhitespace($token->WhitespaceBefore);
-        $t['WhitespaceAfter'] = self::getWhitespace($token->WhitespaceAfter);
-        $t['WhitespaceMaskPrev'] = $token->WhitespaceMaskPrev;
-        $t['WhitespaceMaskNext'] = $token->WhitespaceMaskNext;
-        $t['CriticalWhitespaceBefore'] = $token->CriticalWhitespaceBefore;
-        $t['CriticalWhitespaceAfter'] = $token->CriticalWhitespaceAfter;
-        $t['CriticalWhitespaceMaskPrev'] = $token->CriticalWhitespaceMaskPrev;
-        $t['CriticalWhitespaceMaskNext'] = $token->CriticalWhitespaceMaskNext;
+
+        if ($token->Whitespace) {
+            static $whitespaceFlags;
+            $whitespaceFlags ??= Arr::unset(
+                Reflect::getConstants(Space::class),
+                'SPACE',
+                'LINE',
+                'BLANK',
+                'NO_SPACE',
+                'NO_LINE',
+                'NO_BLANK',
+                'CRITICAL_SPACE',
+                'CRITICAL_LINE',
+                'CRITICAL_BLANK',
+                'CRITICAL_NO_SPACE',
+                'CRITICAL_NO_LINE',
+                'CRITICAL_NO_BLANK',
+            );
+            $whitespace = [];
+            $tokenValue = $token->Whitespace;
+            /** @var int $value */
+            foreach ($whitespaceFlags as $name => $value) {
+                if (($tokenValue & $value) === $value) {
+                    $whitespace[] = $name;
+                    $tokenValue &= ~$value;
+                }
+            }
+            if ($whitespace) {
+                $t['Whitespace'] = implode('|', $whitespace);
+            }
+        }
+
         $t['OutputLine'] = $token->OutputLine;
         $t['OutputPos'] = $token->OutputPos;
         $t['OutputColumn'] = $token->OutputColumn;

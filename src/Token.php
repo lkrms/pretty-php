@@ -7,7 +7,7 @@ use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenFlagMask;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Contract\HasTokenNames;
 use Lkrms\PrettyPHP\Internal\TokenCollection;
@@ -152,56 +152,10 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     public ?self $AlignedWith = null;
 
     /**
-     * Bitmask representing whitespace between the token and its predecessor
+     * Bitmask representing whitespace applied between the token and its
+     * neighbours
      */
-    public int $WhitespaceBefore = WhitespaceType::NONE;
-
-    /**
-     * Bitmask representing whitespace between the token and its successor
-     */
-    public int $WhitespaceAfter = WhitespaceType::NONE;
-
-    /**
-     * Bitmask applied to whitespace between the token and its predecessor
-     */
-    public int $WhitespaceMaskPrev = WhitespaceType::ALL;
-
-    /**
-     * Bitmask applied to whitespace between the token and its successor
-     */
-    public int $WhitespaceMaskNext = WhitespaceType::ALL;
-
-    /**
-     * Secondary bitmask representing whitespace between the token and its
-     * predecessor
-     *
-     * Values added to this bitmask MUST NOT BE REMOVED.
-     */
-    public int $CriticalWhitespaceBefore = WhitespaceType::NONE;
-
-    /**
-     * Secondary bitmask representing whitespace between the token and its
-     * successor
-     *
-     * Values added to this bitmask MUST NOT BE REMOVED.
-     */
-    public int $CriticalWhitespaceAfter = WhitespaceType::NONE;
-
-    /**
-     * Secondary bitmask applied to whitespace between the token and its
-     * predecessor
-     *
-     * Values removed from this bitmask MUST NOT BE RESTORED.
-     */
-    public int $CriticalWhitespaceMaskPrev = WhitespaceType::ALL;
-
-    /**
-     * Secondary bitmask applied to whitespace between the token and its
-     * successor
-     *
-     * Values removed from this bitmask MUST NOT BE RESTORED.
-     */
-    public int $CriticalWhitespaceMaskNext = WhitespaceType::ALL;
+    public int $Whitespace = 0;
 
     public int $OutputLine = -1;
     public int $OutputPos = -1;
@@ -1422,7 +1376,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         return $this;
     }
 
-    public function applyBlankLineBefore(bool $withMask = false): void
+    public function applyBlankLineBefore(bool $force = false): void
     {
         $t = $this;
         $i = 0;
@@ -1444,59 +1398,109 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             $i++;
             $t = $t->Prev;
         }
-        $t->WhitespaceBefore |= WhitespaceType::BLANK;
-        if ($withMask) {
-            $t->WhitespaceMaskPrev |= WhitespaceType::BLANK;
-            if ($t->Prev) {
-                $t->Prev->WhitespaceMaskNext |= WhitespaceType::BLANK;
-            }
+        $t->Whitespace |= Space::BLANK_BEFORE;
+        if ($force) {
+            $t->removeWhitespace(Space::NO_BLANK_BEFORE);
         }
     }
 
-    public function effectiveWhitespaceBefore(): int
+    /**
+     * Apply whitespace to the token after removing conflicting whitespace
+     */
+    public function applyWhitespace(int $whitespace): void
     {
-        return $this->CriticalWhitespaceBefore
-            | ($this->Prev->CriticalWhitespaceAfter ?? 0)
-            | (($this->WhitespaceBefore
-                    | ($this->Prev->WhitespaceAfter ?? 0))
-                & ($this->Prev->WhitespaceMaskNext ?? WhitespaceType::ALL)
-                & ($this->Prev->CriticalWhitespaceMaskNext ?? WhitespaceType::ALL)
-                & $this->WhitespaceMaskPrev
-                & $this->CriticalWhitespaceMaskPrev);
+        // Shift *_BEFORE and *_AFTER to their NO_* counterparts, then clear
+        // other bits
+        if ($remove = $whitespace << 6 & 0b111111000000) {
+            // @phpstan-ignore argument.type
+            $this->removeWhitespace($remove);
+        }
+
+        $this->Whitespace |= $whitespace;
     }
 
-    public function effectiveWhitespaceAfter(): int
+    /**
+     * Remove whitespace applied to the token or its neighbours
+     *
+     * @param int-mask-of<Space::NO_SPACE_BEFORE|Space::NO_LINE_BEFORE|Space::NO_BLANK_BEFORE|Space::NO_SPACE_AFTER|Space::NO_LINE_AFTER|Space::NO_BLANK_AFTER> $whitespace
+     */
+    public function removeWhitespace(int $whitespace): void
     {
-        return $this->CriticalWhitespaceAfter
-            | ($this->Next->CriticalWhitespaceBefore ?? 0)
-            | (($this->WhitespaceAfter
-                    | ($this->Next->WhitespaceBefore ?? 0))
-                & ($this->Next->WhitespaceMaskPrev ?? WhitespaceType::ALL)
-                & ($this->Next->CriticalWhitespaceMaskPrev ?? WhitespaceType::ALL)
-                & $this->WhitespaceMaskNext
-                & $this->CriticalWhitespaceMaskNext);
+        $this->Whitespace &= ~$whitespace;
+        if ($this->Prev && ($before = $whitespace & 0b0111000111)) {
+            $this->Prev->Whitespace &= ~($before << 3);
+        }
+        if ($this->Next && ($after = $whitespace & 0b111000111000)) {
+            $this->Next->Whitespace &= ~($after >> 3);
+        }
+    }
+
+    public function getWhitespaceBefore(): int
+    {
+        return $this->Prev
+            ? (
+                $this->Whitespace >> 12              // CRITICAL_*_BEFORE
+                | $this->Prev->Whitespace >> 15      // CRITICAL_*_AFTER
+                | ((
+                    $this->Whitespace >> 0           // *_BEFORE
+                    | $this->Prev->Whitespace >> 3   // *_AFTER
+                ) & ~(
+                    $this->Whitespace >> 6           // NO_*_BEFORE
+                    | $this->Whitespace >> 18        // CRITICAL_NO_*_BEFORE
+                    | $this->Prev->Whitespace >> 9   // NO_*_AFTER
+                    | $this->Prev->Whitespace >> 21  // CRITICAL_NO_*_AFTER
+                ))
+            ) & 7
+            : ($this->Whitespace >> 12 | (
+                $this->Whitespace >> 0 & ~(
+                    $this->Whitespace >> 6
+                    | $this->Whitespace >> 18
+                )
+            )) & 7;
+    }
+
+    public function getWhitespaceAfter(): int
+    {
+        return $this->Next
+            ? (
+                $this->Whitespace >> 15              // CRITICAL_*_AFTER
+                | $this->Next->Whitespace >> 12      // CRITICAL_*_BEFORE
+                | ((
+                    $this->Whitespace >> 3           // *_AFTER
+                    | $this->Next->Whitespace >> 0   // *_BEFORE
+                ) & ~(
+                    $this->Whitespace >> 9           // NO_*_AFTER
+                    | $this->Whitespace >> 21        // CRITICAL_NO_*_AFTER
+                    | $this->Next->Whitespace >> 6   // NO_*_BEFORE
+                    | $this->Next->Whitespace >> 18  // CRITICAL_NO_*_BEFORE
+                ))
+            ) & 7
+            : ($this->Whitespace >> 15 | (
+                $this->Whitespace >> 3 & ~(
+                    $this->Whitespace >> 9
+                    | $this->Whitespace >> 21
+                )
+            )) & 7;
     }
 
     public function hasNewlineBefore(): bool
     {
-        return !!($this->effectiveWhitespaceBefore()
-            & (WhitespaceType::LINE | WhitespaceType::BLANK));
+        return (bool) ($this->getWhitespaceBefore() & (Space::BLANK | Space::LINE));
     }
 
     public function hasNewlineAfter(): bool
     {
-        return !!($this->effectiveWhitespaceAfter()
-            & (WhitespaceType::LINE | WhitespaceType::BLANK));
+        return (bool) ($this->getWhitespaceAfter() & (Space::BLANK | Space::LINE));
     }
 
     public function hasBlankLineBefore(): bool
     {
-        return !!($this->effectiveWhitespaceBefore() & WhitespaceType::BLANK);
+        return (bool) ($this->getWhitespaceBefore() & Space::BLANK);
     }
 
     public function hasBlankLineAfter(): bool
     {
-        return !!($this->effectiveWhitespaceAfter() & WhitespaceType::BLANK);
+        return (bool) ($this->getWhitespaceAfter() & Space::BLANK);
     }
 
     /**

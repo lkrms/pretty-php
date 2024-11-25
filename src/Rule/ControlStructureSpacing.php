@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\TokenTypeIndex;
@@ -74,16 +74,12 @@ final class ControlStructureSpacing implements TokenRule
             if (!$token->PrevCode
                     || $token->PrevCode->id !== \T_CLOSE_BRACE
                     || !$token->continuesControlStructure()) {
-                $token->WhitespaceBefore |= WhitespaceType::LINE;
-                $token->WhitespaceMaskPrev |= WhitespaceType::LINE;
-                $token->Prev->WhitespaceMaskNext |= WhitespaceType::LINE;
+                $token->applyWhitespace(Space::LINE_BEFORE);
             }
 
             // Add newlines and suppress blank lines before unenclosed bodies
-            $body->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
-            $body->WhitespaceMaskPrev |= WhitespaceType::LINE;
-            $body->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
-            $body->Prev->WhitespaceMaskNext |= WhitespaceType::LINE;
+            $body->Whitespace |= Space::NO_BLANK_BEFORE | Space::LINE_BEFORE | Space::SPACE_BEFORE;
+            $body->removeWhitespace(Space::NO_LINE_BEFORE);
 
             // Find the last token in the body
             $end = null;
@@ -114,16 +110,13 @@ final class ControlStructureSpacing implements TokenRule
             }
 
             // Add a newline after the body
-            $end->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
-            $end->WhitespaceMaskNext |= WhitespaceType::LINE;
-            if ($end->Next) {
-                $end->Next->WhitespaceMaskPrev |= WhitespaceType::LINE;
-            }
+            $end->Whitespace |= Space::LINE_AFTER | Space::SPACE_AFTER;
+            $end->removeWhitespace(Space::NO_LINE_AFTER);
 
             // If the control structure continues, suppress blank lines after
             // the body
             if ($continues) {
-                $end->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
+                $end->Whitespace |= Space::NO_BLANK_AFTER;
             }
 
             if (!$this->Formatter->DetectProblems) {

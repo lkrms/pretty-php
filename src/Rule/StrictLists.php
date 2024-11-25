@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\ListRuleTrait;
 use Lkrms\PrettyPHP\Contract\ListRule;
 use Lkrms\PrettyPHP\Internal\TokenCollection;
@@ -33,14 +33,14 @@ final class StrictLists implements ListRule
             return;
         }
         if ($items->nth(2)->hasNewlineBefore()) {
-            $items->addWhitespaceBefore(WhitespaceType::LINE);
+            $items->applyWhitespace(Space::LINE_BEFORE);
         } else {
             // Leave the first item alone unless strict PSR-12 compliance is
             // enabled
             if ($parent->ClosedBy && !$this->Formatter->Psr12) {
                 $items->shift();
             }
-            $items->maskWhitespaceBefore(~WhitespaceType::BLANK & ~WhitespaceType::LINE);
+            $items->applyWhitespace(Space::NO_BLANK_BEFORE | Space::NO_LINE_BEFORE);
         }
     }
 }

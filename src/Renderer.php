@@ -133,7 +133,7 @@ final class Renderer implements Immutable
 
         $before = '';
         $padding = $token->Padding;
-        if ($whitespace = $token->effectiveWhitespaceBefore()) {
+        if ($whitespace = $token->getWhitespaceBefore()) {
             $before = TokenUtil::getWhitespace($whitespace);
             if ($before[0] === "\n") {
                 $indent = $token->indent();
@@ -205,7 +205,7 @@ final class Renderer implements Immutable
             return '';
         }
 
-        return TokenUtil::getWhitespace($token->effectiveWhitespaceAfter());
+        return TokenUtil::getWhitespace($token->getWhitespaceAfter());
     }
 
     /**
@@ -328,7 +328,7 @@ column 1 despite starting in column 2 or above (like this comment) */
             $indent = "\n" . ltrim($beforeStart, "\n")
                 . str_repeat(' ', mb_strlen($this->render($start, $token->Prev, $softTabs))
                     - strlen($beforeStart)
-                    + strlen(TokenUtil::getWhitespace($token->effectiveWhitespaceBefore()))
+                    + strlen(TokenUtil::getWhitespace($token->getWhitespaceBefore()))
                     + $token->Padding);
         }
         $text = str_replace("\n", $indent, $token->text);

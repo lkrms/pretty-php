@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\RuleTrait;
 use Lkrms\PrettyPHP\Contract\Rule;
 use Salient\Utility\Regex;
@@ -41,13 +41,11 @@ final class EssentialWhitespace implements Rule
             /* Add newlines after one-line comments with no subsequent `?>` */
             if ($token->Flags & TokenFlag::ONELINE_COMMENT
                     && $next->id !== \T_CLOSE_TAG) {
-                $token->WhitespaceAfter |= WhitespaceType::LINE;
-                $token->WhitespaceMaskNext |= WhitespaceType::LINE;
-                $next->WhitespaceMaskPrev |= WhitespaceType::LINE;
+                $token->applyWhitespace(Space::LINE_AFTER);
                 continue;
             }
 
-            if ($token->effectiveWhitespaceAfter()
+            if ($token->getWhitespaceAfter()
                     || $this->Idx->SuppressSpaceAfter[$token->id]
                     || $this->Idx->SuppressSpaceBefore[$next->id]) {
                 continue;
@@ -58,9 +56,7 @@ final class EssentialWhitespace implements Rule
                         '/^[a-zA-Z0-9\\\\_\x80-\xff]{2}$/',
                         ($token->text[-1] ?? '') . ($next->text[0] ?? '')
                     )) {
-                $token->WhitespaceAfter |= WhitespaceType::SPACE;
-                $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
-                $next->WhitespaceMaskPrev |= WhitespaceType::SPACE;
+                $token->applyWhitespace(Space::SPACE_AFTER);
             }
         }
     }

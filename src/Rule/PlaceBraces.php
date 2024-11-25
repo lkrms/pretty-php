@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Token;
@@ -74,8 +74,7 @@ final class PlaceBraces implements TokenRule
             $close = $token->ClosedBy;
 
             // Suppress blank lines before close braces
-            $close->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
-            $close->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
+            $close->Whitespace |= Space::NO_BLANK_BEFORE | Space::LINE_BEFORE | Space::SPACE_BEFORE;
 
             // Don't move subsequent code to the next line if the brace is part
             // of an expression
@@ -83,7 +82,7 @@ final class PlaceBraces implements TokenRule
                 // Keep structures like `} else {` on the same line
                 $next = $close->NextCode;
                 if ($next && $next->continuesControlStructure()) {
-                    $close->WhitespaceAfter |= WhitespaceType::SPACE;
+                    $close->Whitespace |= Space::SPACE_AFTER;
                     if (!($next->Flags & TokenFlag::HAS_UNENCLOSED_BODY) || (
                         // `$next` can only be `elseif` or `else`, so if the
                         // close brace is not the body of `if` or `elseif`, the
@@ -93,14 +92,14 @@ final class PlaceBraces implements TokenRule
                         && $close->PrevSibling->PrevSibling
                         && $this->Idx->IfOrElseIf[$close->PrevSibling->PrevSibling->id]
                     )) {
-                        $next->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
+                        $next->Whitespace |= Space::NO_BLANK_BEFORE | Space::NO_LINE_BEFORE;
                     } else {
-                        $close->WhitespaceAfter |= WhitespaceType::LINE;
-                        $next->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
+                        $close->Whitespace |= Space::LINE_AFTER;
+                        $next->Whitespace |= Space::NO_BLANK_BEFORE;
                     }
                 } else {
                     // Otherwise, add newlines after close braces
-                    $close->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
+                    $close->Whitespace |= Space::LINE_AFTER | Space::SPACE_AFTER;
                 }
             }
 
@@ -117,20 +116,17 @@ final class PlaceBraces implements TokenRule
                     || $token->inPropertyOrPropertyHook()
                 )
             ) {
-                $token->WhitespaceBefore |= WhitespaceType::SPACE;
-                $token->WhitespaceMaskPrev = WhitespaceType::SPACE;
-                $token->WhitespaceMaskNext = WhitespaceType::NONE;
+                $token->Whitespace |= Space::NONE_BEFORE | Space::NONE_AFTER;
+                $token->applyWhitespace(Space::SPACE_BEFORE);
                 continue;
             }
 
             // Add newlines and suppress blank lines after open braces
-            $token->WhitespaceBefore |= WhitespaceType::SPACE;
-            $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
-            $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
+            $token->Whitespace |= Space::SPACE_BEFORE | Space::NO_BLANK_AFTER | Space::LINE_AFTER | Space::SPACE_AFTER;
 
             // Suppress horizontal whitespace between empty braces
             if ($next->id === \T_CLOSE_BRACE) {
-                $token->WhitespaceMaskNext &= ~WhitespaceType::SPACE;
+                $token->Whitespace |= Space::NO_SPACE_AFTER;
             }
 
             // Collect consecutive `)` and `{` tokens to collapse before
@@ -158,8 +154,8 @@ final class PlaceBraces implements TokenRule
     {
         foreach ($this->BracketBracePairs as [$bracket, $brace]) {
             if ($bracket->hasNewlineBefore() && $brace->hasNewlineBefore()) {
-                $brace->WhitespaceBefore |= WhitespaceType::SPACE;
-                $brace->WhitespaceMaskPrev = WhitespaceType::SPACE;
+                $brace->Whitespace |= Space::NONE_BEFORE;
+                $brace->applyWhitespace(Space::SPACE_BEFORE);
             }
         }
     }

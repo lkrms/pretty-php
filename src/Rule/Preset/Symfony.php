@@ -7,7 +7,7 @@ use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\ListRule;
 use Lkrms\PrettyPHP\Contract\Preset;
@@ -68,15 +68,10 @@ final class Symfony implements Preset, TokenRule, ListRule
     {
         foreach ($tokens as $token) {
             if ($token->id === \T_CONCAT) {
-                $token->WhitespaceMaskPrev &= ~WhitespaceType::SPACE;
-                $token->WhitespaceMaskNext &= ~WhitespaceType::SPACE;
+                $token->Whitespace |= Space::NO_SPACE_BEFORE | Space::NO_SPACE_AFTER;
                 continue;
             }
-            $token->WhitespaceAfter |= WhitespaceType::SPACE;
-            $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
-            /** @var Token */
-            $next = $token->Next;
-            $next->WhitespaceMaskPrev |= WhitespaceType::SPACE;
+            $token->applyWhitespace(Space::SPACE_AFTER);
         }
     }
 
@@ -95,6 +90,6 @@ final class Symfony implements Preset, TokenRule, ListRule
             }
         }
 
-        $parent->outer()->maskInnerWhitespace(~WhitespaceType::BLANK & ~WhitespaceType::LINE);
+        $parent->outer()->applyInnerWhitespace(Space::NO_BLANK | Space::NO_LINE);
     }
 }

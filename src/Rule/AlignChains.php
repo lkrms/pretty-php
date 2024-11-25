@@ -4,7 +4,7 @@ namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Internal\TokenCollection;
@@ -81,8 +81,7 @@ final class AlignChains implements TokenRule
                     && $eol->Next === $token
                     && mb_strlen($alignWith->collect($eol)->render()) <= $this->Formatter->TabSize
                 ) {
-                    $token->WhitespaceBefore = WhitespaceType::NONE;
-                    $token->WhitespaceMaskPrev = WhitespaceType::NONE;
+                    $token->Whitespace |= Space::NONE_BEFORE;
                     $alignWith = null;
                 } else {
                     // Safe because $alignWith->text can't have newlines

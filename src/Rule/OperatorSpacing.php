@@ -4,7 +4,7 @@ namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Token;
@@ -75,8 +75,7 @@ final class OperatorSpacing implements TokenRule
                     )
                 )
             ) {
-                $token->WhitespaceBefore |= WhitespaceType::SPACE;
-                $token->WhitespaceMaskNext = WhitespaceType::NONE;
+                $token->Whitespace |= Space::SPACE_BEFORE | Space::NONE_AFTER;
                 continue;
             }
 
@@ -100,8 +99,7 @@ final class OperatorSpacing implements TokenRule
                     )
                 )
             ) {
-                $token->WhitespaceMaskNext = WhitespaceType::NONE;
-                $token->WhitespaceMaskPrev = WhitespaceType::NONE;
+                $token->Whitespace |= Space::NONE_BEFORE | Space::NONE_AFTER;
 
                 if ($inTypeContext) {
                     continue;
@@ -112,7 +110,7 @@ final class OperatorSpacing implements TokenRule
                 /** @var Token */
                 $parent = $token->Parent;
                 if (!$parent->PrevCode || $parent->PrevCode->id !== \T_OR) {
-                    $parent->WhitespaceBefore |= WhitespaceType::SPACE;
+                    $parent->Whitespace |= Space::SPACE_BEFORE;
                 }
                 continue;
             }
@@ -124,8 +122,7 @@ final class OperatorSpacing implements TokenRule
                     && $token->Parent->PrevCode
                     && $token->Parent->PrevCode->id === \T_CATCH
                     && !$this->Formatter->Psr12) {
-                $token->WhitespaceMaskNext = WhitespaceType::NONE;
-                $token->WhitespaceMaskPrev = WhitespaceType::NONE;
+                $token->Whitespace |= Space::NONE_BEFORE | Space::NONE_AFTER;
                 continue;
             }
 
@@ -134,8 +131,7 @@ final class OperatorSpacing implements TokenRule
                 $token->id === \T_QUESTION
                 && !($token->Flags & TokenFlag::TERNARY_OPERATOR)
             ) {
-                $token->WhitespaceBefore |= WhitespaceType::SPACE;
-                $token->WhitespaceMaskNext = WhitespaceType::NONE;
+                $token->Whitespace |= Space::SPACE_BEFORE | Space::NONE_AFTER;
                 continue;
             }
 
@@ -143,9 +139,9 @@ final class OperatorSpacing implements TokenRule
             // operate on
             if ($token->id === \T_INC || $token->id === \T_DEC) {
                 if ($token->Prev && $this->Idx->EndOfVariable[$token->Prev->id]) {
-                    $token->WhitespaceMaskPrev = WhitespaceType::NONE;
+                    $token->Whitespace |= Space::NONE_BEFORE;
                 } else {
-                    $token->WhitespaceMaskNext = WhitespaceType::NONE;
+                    $token->Whitespace |= Space::NONE_AFTER;
                 }
             }
 
@@ -155,12 +151,12 @@ final class OperatorSpacing implements TokenRule
                 && $token->Next->Flags & TokenFlag::CODE
                 && (!$this->Idx->Operator[$token->Next->id]
                     || $token->Next->isUnaryOperator())) {
-                $token->WhitespaceMaskNext = WhitespaceType::NONE;
+                $token->Whitespace |= Space::NONE_AFTER;
 
                 continue;
             }
 
-            $token->WhitespaceAfter |= WhitespaceType::SPACE;
+            $token->Whitespace |= Space::SPACE_AFTER;
 
             if (
                 $token->id === \T_COLON
@@ -176,13 +172,11 @@ final class OperatorSpacing implements TokenRule
                     ? $token
                     : $token->Data[TokenData::OTHER_TERNARY_OPERATOR]) === $token->Prev
             ) {
-                $token->WhitespaceBefore = WhitespaceType::NONE;
-                $token->Prev->WhitespaceAfter = WhitespaceType::NONE;
-
+                $token->Whitespace |= Space::NONE_BEFORE;
                 continue;
             }
 
-            $token->WhitespaceBefore |= WhitespaceType::SPACE;
+            $token->Whitespace |= Space::SPACE_BEFORE;
         }
     }
 

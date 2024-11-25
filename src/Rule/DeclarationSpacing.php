@@ -5,7 +5,7 @@ namespace Lkrms\PrettyPHP\Rule;
 use Lkrms\PrettyPHP\Catalog\DeclarationType as Type;
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\DeclarationRuleTrait;
 use Lkrms\PrettyPHP\Contract\DeclarationRule;
 use Lkrms\PrettyPHP\Filter\SortImports;
@@ -167,7 +167,7 @@ final class DeclarationSpacing implements DeclarationRule
                 unset($declarations[$token->Index]);
 
                 $prevIsMultiLine = false;
-                $masked = false;
+                $applied = false;
 
                 // Suppress blank lines between `use` statements, one-line
                 // `declare` statements, and property hooks not declared over
@@ -177,9 +177,9 @@ final class DeclarationSpacing implements DeclarationRule
                     && !$this->isMultiLine($prev)
                     && !$this->isMultiLine($token)
                 )) {
-                    $prevEnd->collect($token)->maskWhitespaceBefore(~WhitespaceType::BLANK);
+                    $prevEnd->collect($token)->applyWhitespace(Space::NO_BLANK_BEFORE);
                     $expand = false;
-                    $masked = true;
+                    $applied = true;
                 } elseif (
                     // Apply "loose" spacing to multi-line declarations
                     $this->hasDocComment($token)
@@ -218,7 +218,7 @@ final class DeclarationSpacing implements DeclarationRule
                     $expand = $nextExpand;
                 }
 
-                if (!$expand && !$masked && (
+                if (!$expand && !$applied && (
                     // Don't suppress blank lines between declarations with
                     // different modifiers, e.g. preserve the blank line before
                     // `private const` here:
@@ -253,17 +253,17 @@ final class DeclarationSpacing implements DeclarationRule
                 $group[] = $modifiers;
                 $prevModifiers = $modifiers;
 
-                $token->WhitespaceBefore |= WhitespaceType::LINE;
+                $token->Whitespace |= Space::LINE_BEFORE;
 
                 // Collapse DocBlocks and suppress blank lines before DocBlocks
                 // above tightly-spaced declarations
                 $this->maybeCollapseComment($token);
-                if ($masked) {
+                if ($applied) {
                     continue;
                 }
-                $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
+                $token->Whitespace |= Space::NO_BLANK_BEFORE;
                 if ($token->Prev && $token->Prev->id === \T_DOC_COMMENT) {
-                    $token->Prev->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
+                    $token->Prev->Whitespace |= Space::NO_BLANK_BEFORE;
                 }
             }
 
@@ -278,7 +278,7 @@ final class DeclarationSpacing implements DeclarationRule
                     || !($prevEnd->Next->Flags & TokenFlag::CODE)
                 )
             ) {
-                $prevEnd->WhitespaceAfter |= WhitespaceType::BLANK;
+                $prevEnd->Whitespace |= Space::BLANK_AFTER;
             }
 
             if ($nextExpand) {
@@ -433,7 +433,7 @@ final class DeclarationSpacing implements DeclarationRule
         }
     }
 
-    private function maybeApplyBlankLineBefore(Token $token, bool $withMask = false): void
+    private function maybeApplyBlankLineBefore(Token $token, bool $force = false): void
     {
         $this->Declarations[$token->Index][3] = null;
         $this->Declarations[$token->Index][4] = null;
@@ -444,10 +444,10 @@ final class DeclarationSpacing implements DeclarationRule
             && $token->OpenTag
             && $token->OpenTag->NextCode === $token
         ) {
-            $token->WhitespaceBefore |= WhitespaceType::LINE;
+            $token->Whitespace |= Space::LINE_BEFORE;
             return;
         }
 
-        $token->applyBlankLineBefore($withMask);
+        $token->applyBlankLineBefore($force);
     }
 }

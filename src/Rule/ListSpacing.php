@@ -4,7 +4,7 @@ namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\DeclarationType;
 use Lkrms\PrettyPHP\Catalog\TokenData;
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\DeclarationRuleTrait;
 use Lkrms\PrettyPHP\Concern\ListRuleTrait;
 use Lkrms\PrettyPHP\Contract\DeclarationRule;
@@ -70,11 +70,7 @@ final class ListSpacing implements ListRule, DeclarationRule
             if (!$this->ListRuleEnabled && $items->tokenHasNewlineBefore()) {
                 /** @var Token */
                 $token = $items->first();
-                /** @var Token */
-                $prev = $token->Prev;
-                $token->WhitespaceBefore |= WhitespaceType::LINE;
-                $token->WhitespaceMaskPrev |= WhitespaceType::LINE;
-                $prev->WhitespaceMaskNext |= WhitespaceType::LINE;
+                $token->applyWhitespace(Space::LINE_BEFORE);
             }
             return;
         }
@@ -86,7 +82,7 @@ final class ListSpacing implements ListRule, DeclarationRule
         if ($last->id === \T_COMMA) {
             $items->copy()
                   ->add($parent->ClosedBy)
-                  ->addWhitespaceBefore(WhitespaceType::LINE, true);
+                  ->applyWhitespace(Space::CRITICAL_LINE_BEFORE);
         }
 
         if ($parent->id === \T_OPEN_PARENTHESIS && $parent->isParameterList()) {
@@ -147,14 +143,10 @@ final class ListSpacing implements ListRule, DeclarationRule
                 ?? $item->withNextSiblingsWhile($this->Idx->Attribute, true);
             $tokens[] = $item->skipNextSiblingsFrom($this->Idx->Attribute);
             foreach ($tokens as $token) {
-                /** @var Token */
-                $prev = $token->Prev;
-                $token->WhitespaceBefore |= WhitespaceType::LINE;
-                $token->WhitespaceMaskPrev |= WhitespaceType::LINE;
-                $prev->WhitespaceMaskNext |= WhitespaceType::LINE;
+                $token->applyWhitespace(Space::LINE_BEFORE);
                 if ($this->Idx->Attribute[$token->id]) {
                     $token = $token->ClosedBy ?? $token;
-                    $token->WhitespaceAfter |= WhitespaceType::LINE;
+                    $token->Whitespace |= Space::LINE_AFTER;
                     // Add a blank line before each item with an attribute, and
                     // another before the next item
                     $addBlankBefore = true;

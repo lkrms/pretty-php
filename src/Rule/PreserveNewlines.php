@@ -4,7 +4,7 @@ namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Token;
@@ -60,17 +60,17 @@ final class PreserveNewlines implements TokenRule
                 continue;
             }
 
-            $effective = $token->effectiveWhitespaceBefore();
+            $before = $token->getWhitespaceBefore();
             if ($lines > 1) {
-                if ($effective & WhitespaceType::BLANK) {
+                if ($before & Space::BLANK) {
                     continue;
                 }
-                $line = WhitespaceType::BLANK | WhitespaceType::LINE;
+                $line = Space::BLANK | Space::LINE;
             } else {
-                if ($effective & (WhitespaceType::BLANK | WhitespaceType::LINE)) {
+                if ($before & (Space::BLANK | Space::LINE)) {
                     continue;
                 }
-                $line = WhitespaceType::LINE;
+                $line = Space::LINE;
             }
 
             $min = $prev->line;
@@ -122,10 +122,10 @@ final class PreserveNewlines implements TokenRule
         }
 
         if (!$this->Idx->AllowBlankBefore[$token->id]) {
-            $line = WhitespaceType::LINE;
+            $line = Space::LINE;
         }
 
-        $token->WhitespaceBefore |= $line;
+        $token->Whitespace |= $line;
 
         return true;
     }
@@ -175,7 +175,7 @@ final class PreserveNewlines implements TokenRule
             return false;
         }
 
-        if ($line & WhitespaceType::BLANK
+        if ($line & Space::BLANK
             && (!$this->Idx->AllowBlankAfter[$token->id]
                 || ($token->id === \T_COMMA
                     && !$token->isDelimiterBetweenMatchArms())
@@ -193,7 +193,7 @@ final class PreserveNewlines implements TokenRule
             if (!$this->Formatter->PreserveNewlines) {
                 return false;
             }
-            $line = WhitespaceType::LINE;
+            $line = Space::LINE;
         }
 
         if (!$this->Formatter->PreserveNewlines
@@ -201,7 +201,7 @@ final class PreserveNewlines implements TokenRule
             return false;
         }
 
-        $token->WhitespaceAfter |= $line;
+        $token->Whitespace |= $line << 3;
 
         return true;
     }

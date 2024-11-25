@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\TokenTypeIndex;
@@ -59,12 +59,11 @@ final class IndexSpacing implements TokenRule
 
         foreach ($tokens as $token) {
             if ($idx->AddSpace[$token->id]) {
-                $token->WhitespaceBefore |= WhitespaceType::SPACE;
-                $token->WhitespaceAfter |= WhitespaceType::SPACE;
+                $token->Whitespace |= Space::SPACE_BEFORE | Space::SPACE_AFTER;
             } elseif ($idx->AddSpaceBefore[$token->id]) {
-                $token->WhitespaceBefore |= WhitespaceType::SPACE;
+                $token->Whitespace |= Space::SPACE_BEFORE;
             } elseif ($idx->AddSpaceAfter[$token->id]) {
-                $token->WhitespaceAfter |= WhitespaceType::SPACE;
+                $token->Whitespace |= Space::SPACE_AFTER;
             }
 
             if ($idx->SuppressSpaceAfter[$token->id] || (
@@ -73,9 +72,9 @@ final class IndexSpacing implements TokenRule
                     || $token->isMatchOpenBrace()
                 )
             )) {
-                $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK & ~WhitespaceType::SPACE;
+                $token->Whitespace |= Space::NO_BLANK_AFTER | Space::NO_SPACE_AFTER;
             } elseif ($token->id === \T_COLON && $token->ClosedBy) {
-                $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
+                $token->Whitespace |= Space::NO_BLANK_AFTER;
             }
 
             if ($idx->SuppressSpaceBefore[$token->id] || (
@@ -84,9 +83,9 @@ final class IndexSpacing implements TokenRule
                     || ($token->OpenedBy && $token->OpenedBy->isMatchOpenBrace())
                 )
             )) {
-                $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::SPACE;
+                $token->Whitespace |= Space::NO_BLANK_BEFORE | Space::NO_SPACE_BEFORE;
             } elseif ($token->id === \T_END_ALT_SYNTAX) {
-                $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
+                $token->Whitespace |= Space::NO_BLANK_BEFORE;
             }
         }
     }
