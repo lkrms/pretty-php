@@ -42,18 +42,16 @@ final class SimplifyStrings implements TokenRule
      *
      * Strings other than nowdocs are normalised as follows:
      *
-     * Single- and double-quoted strings are replaced with the most readable and
-     * economical syntax. Single-quoted strings are preferred unless escaping is
-     * required or the double-quoted equivalent is shorter.
-     *
-     * Backslash escapes are added in contexts where they improve safety,
-     * consistency and readability, otherwise they are removed if possible.
-     *
-     * Aside from leading and continuation bytes in valid UTF-8 strings, control
-     * characters and non-ASCII characters are backslash-escaped using
-     * hexadecimal notation with lowercase digits. Invisible characters that
-     * don't belong to a recognised Unicode sequence are backslash-escaped using
-     * Unicode notation with uppercase digits.
+     * - Single- and double-quoted strings are replaced with the most readable
+     *   and economical syntax. Single-quoted strings are preferred unless
+     *   escaping is required or the double-quoted equivalent is shorter.
+     * - Backslash escapes are added in contexts where they improve safety,
+     *   consistency and readability, otherwise they are removed if possible.
+     * - Aside from leading and continuation bytes in valid UTF-8 strings,
+     *   control characters and non-ASCII characters are backslash-escaped using
+     *   hexadecimal notation with lowercase digits. Invisible characters that
+     *   don't belong to a recognised Unicode sequence are backslash-escaped
+     *   using Unicode notation with uppercase digits.
      */
     public function processTokens(array $tokens): void
     {

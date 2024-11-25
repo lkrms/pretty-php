@@ -60,8 +60,8 @@ final class SimplifyNumbers implements TokenRule
      * empty integer or fractional parts, replacing `E` with `e`, removing `+`
      * from exponents, and expressing them with mantissae between 1.0 and 10.
      *
-     * If present in the input, underscores are added to decimal values with no
-     * exponent every 3 digits, to hexadecimal values with more than 5 digits
+     * If present in the input, underscores are applied to decimal values with
+     * no exponent every 3 digits, to hexadecimal values with more than 5 digits
      * every 4 digits, and to binary values every 4 digits.
      */
     public function processTokens(array $tokens): void

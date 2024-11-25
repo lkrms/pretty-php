@@ -71,6 +71,14 @@ final class DeclarationSpacing implements DeclarationRule
     /**
      * @inheritDoc
      */
+    public static function needsSortedDeclarations(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function boot(): void
     {
         $this->SortImportsEnabled = $this->Formatter->Enabled[SortImports::class] ?? false;

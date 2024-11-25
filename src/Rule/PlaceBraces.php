@@ -54,11 +54,12 @@ final class PlaceBraces implements TokenRule
      *   expression or a control structure that is immediately continued, e.g.
      *   `} else {`. In the latter case, trailing newlines are suppressed.
      * - Empty class, function and property hook bodies are collapsed to ` {}`
-     *   immediately after the declaration they belong to.
+     *   on the same line as the declaration they belong to unless
+     *   `CollapseEmptyDeclarationBodies` is disabled.
      * - Horizontal whitespace is suppressed between other empty braces.
      *
-     * Open brace placement is left for a rule that runs after vertical
-     * whitespace has been applied.
+     * > Open brace placement is left for a rule that runs after vertical
+     * > whitespace has been applied.
      */
     public function processTokens(array $tokens): void
     {

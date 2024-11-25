@@ -56,6 +56,33 @@ final class StandardWhitespace implements TokenRule, DeclarationRule
     }
 
     /**
+     * @inheritDoc
+     */
+    public static function needsSortedTokens(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function getDeclarationTypes(array $all): array
+    {
+        return [
+            DeclarationType::PROPERTY => true,
+            DeclarationType::PARAM => true,
+        ];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function needsSortedDeclarations(): bool
+    {
+        return false;
+    }
+
+    /**
      * Apply the rule to the given tokens
      *
      * If the indentation level of an open tag aligns with a tab stop, and a
