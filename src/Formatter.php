@@ -55,6 +55,7 @@ use Lkrms\PrettyPHP\Rule\HeredocIndentation;
 use Lkrms\PrettyPHP\Rule\IndexSpacing;
 use Lkrms\PrettyPHP\Rule\ListSpacing;
 use Lkrms\PrettyPHP\Rule\NormaliseComments;
+use Lkrms\PrettyPHP\Rule\NormaliseStrings;
 use Lkrms\PrettyPHP\Rule\OperatorSpacing;
 use Lkrms\PrettyPHP\Rule\PlaceBraces;
 use Lkrms\PrettyPHP\Rule\PlaceComments;
@@ -62,7 +63,6 @@ use Lkrms\PrettyPHP\Rule\PreserveNewlines;
 use Lkrms\PrettyPHP\Rule\PreserveOneLineStatements;
 use Lkrms\PrettyPHP\Rule\ProtectStrings;
 use Lkrms\PrettyPHP\Rule\SimplifyNumbers;
-use Lkrms\PrettyPHP\Rule\SimplifyStrings;
 use Lkrms\PrettyPHP\Rule\StandardIndentation;
 use Lkrms\PrettyPHP\Rule\StandardWhitespace;
 use Lkrms\PrettyPHP\Rule\StatementSpacing;
@@ -246,7 +246,7 @@ final class Formatter implements Buildable, Immutable
     public const DEFAULT_RULES = [
         ProtectStrings::class,
         SimplifyNumbers::class,
-        SimplifyStrings::class,
+        NormaliseStrings::class,
         NormaliseComments::class,
         IndexSpacing::class,
         StandardWhitespace::class,
@@ -271,7 +271,7 @@ final class Formatter implements Buildable, Immutable
      */
     public const OPTIONAL_RULES = [
         SimplifyNumbers::class,
-        SimplifyStrings::class,
+        NormaliseStrings::class,
         PreserveNewlines::class,
         PreserveOneLineStatements::class,
         BlankBeforeReturn::class,

@@ -5,10 +5,10 @@ namespace Lkrms\PrettyPHP\Rule;
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Exception\RuleException;
 use Lkrms\PrettyPHP\Token;
 use Lkrms\PrettyPHP\TokenTypeIndex;
 use Lkrms\PrettyPHP\TokenUtil;
+use Salient\Utility\Exception\ShouldNotHappenException;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 
@@ -17,12 +17,15 @@ use Salient\Utility\Str;
  *
  * @api
  */
-final class SimplifyStrings implements TokenRule
+final class NormaliseStrings implements TokenRule
 {
     use TokenRuleTrait;
 
     private const INVISIBLE = '/^' . Regex::INVISIBLE_CHAR . '$/u';
 
+    /**
+     * @inheritDoc
+     */
     public static function getPriority(string $method): ?int
     {
         return [
@@ -30,12 +33,23 @@ final class SimplifyStrings implements TokenRule
         ][$method] ?? null;
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return [
             \T_CONSTANT_ENCAPSED_STRING => true,
             \T_ENCAPSED_AND_WHITESPACE => true,
         ];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function needsSortedTokens(): bool
+    {
+        return false;
     }
 
     /**
@@ -117,7 +131,6 @@ final class SimplifyStrings implements TokenRule
 
                 case \T_START_HEREDOC:
                     $closedBy = $openedBy->Data[TokenData::STRING_CLOSED_BY];
-
                     $start = trim($openedBy->text);
                     $text = $token->text;
                     $end = trim($closedBy->text);
@@ -131,7 +144,7 @@ final class SimplifyStrings implements TokenRule
 
                 default:
                     // @codeCoverageIgnoreStart
-                    throw new RuleException(sprintf(
+                    throw new ShouldNotHappenException(sprintf(
                         'Not a string delimiter: %s',
                         $openedBy->getTokenName(),
                     ));
