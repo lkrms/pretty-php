@@ -14,7 +14,7 @@ if (\PHP_VERSION_ID < 80000) {
                 [
                     'message' => '#^PHPDoc tag @var with type array\<string\> is not subtype of native type non\-empty\-list\<string\>\|false\.$#',
                     'count' => 1,
-                    'path' => "$dir/src/Rule/SimplifyNumbers.php",
+                    'path' => "$dir/src/Rule/NormaliseNumbers.php",
                 ],
             ],
         ] + $parameters,
