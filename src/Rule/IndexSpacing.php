@@ -44,6 +44,14 @@ final class IndexSpacing implements TokenRule
     }
 
     /**
+     * @inheritDoc
+     */
+    public static function needsSortedTokens(): bool
+    {
+        return false;
+    }
+
+    /**
      * Apply the rule to the given tokens
      *
      * Leading and trailing spaces are added to tokens in the `AddSpace`,
