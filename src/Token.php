@@ -58,13 +58,12 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     public ?self $OpenTag = null;
     public ?self $CloseTag = null;
     public ?self $String = null;
-    public ?self $StringClosedBy = null;
     public ?self $Heredoc = null;
     public int $Flags = 0;
 
     /**
      * @var array<TokenData::*,mixed>
-     * @phpstan-var array{string,TokenCollection,int,self,self,self,TokenCollection,int,TokenCollection,int}
+     * @phpstan-var array{string,TokenCollection,int,self,self,self,self,TokenCollection,int,TokenCollection,int}
      */
     public array $Data;
 

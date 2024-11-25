@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
@@ -63,8 +64,7 @@ final class ProtectStrings implements TokenRule
                 continue;
             }
 
-            /** @var Token */
-            $closedBy = $token->StringClosedBy;
+            $closedBy = $token->Data[TokenData::STRING_CLOSED_BY];
             foreach ($next->collectSiblings($closedBy) as $current) {
                 $current->Whitespace |= Space::CRITICAL_NONE_BEFORE;
 

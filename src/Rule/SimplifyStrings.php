@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Exception\RuleException;
@@ -115,8 +116,7 @@ final class SimplifyStrings implements TokenRule
                     break;
 
                 case \T_START_HEREDOC:
-                    /** @var Token */
-                    $closedBy = $openedBy->StringClosedBy;
+                    $closedBy = $openedBy->Data[TokenData::STRING_CLOSED_BY];
 
                     $start = trim($openedBy->text);
                     $text = $token->text;
@@ -195,7 +195,7 @@ final class SimplifyStrings implements TokenRule
             $reserved = "[nrtvef\\\\\${$reserved}]|[0-7]|x[0-9a-fA-F]|u\{[0-9a-fA-F]+\}";
             if (
                 $token->id === \T_CONSTANT_ENCAPSED_STRING
-                || $next !== $openedBy->StringClosedBy
+                || $next !== $openedBy->Data[TokenData::STRING_CLOSED_BY]
                 || $openedBy->id !== \T_START_HEREDOC
             ) {
                 $reserved .= '|$';
@@ -210,7 +210,7 @@ final class SimplifyStrings implements TokenRule
             // the brace to remain escaped lest it become a `T_CURLY_OPEN`
             if (
                 $token->id !== \T_CONSTANT_ENCAPSED_STRING
-                && $next !== $openedBy->StringClosedBy
+                && $next !== $openedBy->Data[TokenData::STRING_CLOSED_BY]
             ) {
                 $double = Regex::replace(
                     '/(?<!\\\\)(\\\\(?:\\\\\\\\)*)\\\\(\{)$/D',

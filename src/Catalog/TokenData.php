@@ -37,29 +37,34 @@ interface TokenData
     public const OTHER_TERNARY_OPERATOR = 4;
 
     /**
+     * The last token of the string opened by the token
+     */
+    public const STRING_CLOSED_BY = 5;
+
+    /**
      * The first T_OBJECT_OPERATOR or T_NULLSAFE_OBJECT_OPERATOR in a chain
      * thereof
      */
-    public const CHAIN_OPENED_BY = 5;
+    public const CHAIN_OPENED_BY = 6;
 
     /**
      * A collection of tokens that form a NAMED_DECLARATION
      */
-    public const NAMED_DECLARATION_PARTS = 6;
+    public const NAMED_DECLARATION_PARTS = 7;
 
     /**
      * The type of a NAMED_DECLARATION
      */
-    public const NAMED_DECLARATION_TYPE = 7;
+    public const NAMED_DECLARATION_TYPE = 8;
 
     /**
      * A collection of property hooks for a NAMED_DECLARATION with type PROPERTY
      * or PROMOTED_PARAM
      */
-    public const PROPERTY_HOOKS = 8;
+    public const PROPERTY_HOOKS = 9;
 
     /**
      * The type applied to an open bracket by the HangingIndentation rule
      */
-    public const HANGING_INDENT_PARENT_TYPE = 9;
+    public const HANGING_INDENT_PARENT_TYPE = 10;
 }
