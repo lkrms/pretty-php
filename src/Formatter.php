@@ -868,7 +868,7 @@ final class Formatter implements Buildable, Immutable
         if (!$this->ExtensionsLoaded) {
             Profile::startTimer(__METHOD__ . '#load-extensions');
             try {
-                $this->RuleMap = array_combine($this->Rules, $this->getExtensions($this->Rules));
+                $this->RuleMap = $this->getExtensions($this->Rules, true);
                 $this->FormatFilterList = $this->getExtensions($this->FormatFilters);
                 $this->ComparisonFilterList = $this->getExtensions($this->ComparisonFilters);
                 $this->ExtensionsLoaded = true;
@@ -1394,14 +1394,19 @@ final class Formatter implements Buildable, Immutable
      * @template T of Extension
      *
      * @param array<class-string<T>> $extensions
-     * @return array<T>
+     * @return ($map is true ? array<class-string<T>,T> : list<T>)
      */
-    private function getExtensions(array $extensions): array
+    private function getExtensions(array $extensions, bool $map = false): array
     {
         foreach ($extensions as $ext) {
-            $result[] = $this->Extensions[$ext] ??= $this->getExtension($ext);
+            /** @var T */
+            $extension = $this->Extensions[$ext] ??= $this->getExtension($ext);
+            if ($map) {
+                $result[$ext] = $extension;
+            } else {
+                $result[] = $extension;
+            }
         }
-        /** @var array<T> */
         return $result ?? [];
     }
 

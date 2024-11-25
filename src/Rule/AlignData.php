@@ -147,6 +147,7 @@ final class AlignData implements BlockRule
 
         $collectRun =
             function () use (&$type, &$run, &$runs) {
+                /** @var array<int,Token> $run */
                 if (count($run) > 1) {
                     $runs[] = [$type, $run];
                 }

@@ -1,9 +1,5 @@
 <?php declare(strict_types=1);
 
-$includes = [
-    sprintf('../phpstan-baseline-%d.%d.neon', \PHP_MAJOR_VERSION, \PHP_MINOR_VERSION),
-];
-
 $parameters = [
     'phpVersion' => \PHP_VERSION_ID,
     'tmpDir' => sprintf('build/cache/phpstan/%d.%d', \PHP_MAJOR_VERSION, \PHP_MINOR_VERSION),
@@ -13,7 +9,6 @@ $dir = dirname(__DIR__);
 
 if (\PHP_VERSION_ID < 80000) {
     return [
-        'includes' => $includes,
         'parameters' => [
             'ignoreErrors' => [
                 [
@@ -27,6 +22,5 @@ if (\PHP_VERSION_ID < 80000) {
 }
 
 return [
-    'includes' => $includes,
     'parameters' => $parameters,
 ];
