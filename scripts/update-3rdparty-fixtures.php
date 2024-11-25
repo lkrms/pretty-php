@@ -102,9 +102,7 @@ foreach ($files as $xmlFile) {
     }
     $xml = '';
     while ($split) {
-        $xml .= Regex::replace(
-            '/&[[:alpha:]_][[:alnum:]_.-]*;/', '', array_shift($split)
-        );
+        $xml .= Regex::replace('/&[[:alpha:]_][[:alnum:]_.-]*;/', '', array_shift($split));
         if ($split) {
             $xml .= array_shift($split);
         }

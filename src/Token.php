@@ -1625,10 +1625,12 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             return $this->text;
         }
 
-        $tabSize = $this->Formatter->Indentation->TabSize
-            ?? $this->Formatter->TabSize;
         return Str::expandLeadingTabs(
-            $this->text, $tabSize, !$this->wasFirstOnLine(), $this->column
+            $this->text,
+            $this->Formatter->Indentation->TabSize
+                ?? $this->Formatter->TabSize,
+            !$this->wasFirstOnLine(),
+            $this->column,
         );
     }
 
