@@ -25,36 +25,6 @@ parameters:
 			path: src/Formatter.php
 
 		-
-			message: '#^Cannot access property \$CriticalWhitespaceMaskNext on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Internal/TokenCollection.php
-
-		-
-			message: '#^Cannot access property \$CriticalWhitespaceMaskPrev on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Internal/TokenCollection.php
-
-		-
-			message: '#^Cannot access property \$WhitespaceMaskNext on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Internal/TokenCollection.php
-
-		-
-			message: '#^Cannot access property \$WhitespaceMaskPrev on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Internal/TokenCollection.php
-
-		-
-			message: '#^Cannot call method collect\(\) on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: method.nonObject
-			count: 2
-			path: src/Internal/TokenCollection.php
-
-		-
 			message: '#^Parameter \#1 \$to of method Lkrms\\PrettyPHP\\Token\:\:collect\(\) expects Lkrms\\PrettyPHP\\Token, Lkrms\\PrettyPHP\\Token\|null given\.$#'
 			identifier: argument.type
 			count: 1
@@ -151,12 +121,6 @@ parameters:
 			path: src/Rule/ControlStructureSpacing.php
 
 		-
-			message: '#^Cannot access property \$WhitespaceMaskNext on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 2
-			path: src/Rule/ControlStructureSpacing.php
-
-		-
 			message: '#^Cannot access property \$LinePadding on Lkrms\\PrettyPHP\\Token\|null\.$#'
 			identifier: property.nonObject
 			count: 1
@@ -175,12 +139,6 @@ parameters:
 			path: src/Rule/HeredocIndentation.php
 
 		-
-			message: '#^Cannot access property \$WhitespaceMaskNext on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Rule/PlaceComments.php
-
-		-
 			message: '#^Cannot call method collect\(\) on Lkrms\\PrettyPHP\\Token\|null\.$#'
 			identifier: method.nonObject
 			count: 1
@@ -193,73 +151,7 @@ parameters:
 			path: src/Rule/PreserveNewlines.php
 
 		-
-			message: '#^Cannot access property \$WhitespaceMaskPrev on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Rule/StatementSpacing.php
-
-		-
 			message: '#^Cannot access property \$id on Lkrms\\PrettyPHP\\Token\|null\.$#'
 			identifier: property.nonObject
 			count: 3
 			path: src/Rule/StatementSpacing.php
-
-		-
-			message: '#^Cannot access property \$ClosedBy on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Rule/StrictExpressions.php
-
-		-
-			message: '#^Cannot access property \$NextCode on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Rule/StrictExpressions.php
-
-		-
-			message: '#^Cannot access property \$PrevCode on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Rule/StrictExpressions.php
-
-		-
-			message: '#^Cannot access property \$WhitespaceAfter on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Rule/StrictExpressions.php
-
-		-
-			message: '#^Cannot access property \$WhitespaceBefore on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Rule/StrictExpressions.php
-
-		-
-			message: '#^Cannot access property \$WhitespaceMaskNext on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 2
-			path: src/Rule/StrictExpressions.php
-
-		-
-			message: '#^Cannot access property \$WhitespaceMaskPrev on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 2
-			path: src/Rule/StrictExpressions.php
-
-		-
-			message: '#^Cannot call method collect\(\) on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Rule/StrictExpressions.php
-
-		-
-			message: '#^Cannot call method hasNewlineAfter\(\) on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Rule/StrictExpressions.php
-
-		-
-			message: '#^Cannot call method hasNewlineBefore\(\) on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Rule/StrictLists.php

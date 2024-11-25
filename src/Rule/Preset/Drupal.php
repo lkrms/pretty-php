@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Rule\Preset;
 
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\Preset;
 use Lkrms\PrettyPHP\Contract\TokenRule;
@@ -82,15 +82,9 @@ final class Drupal implements Preset, TokenRule
                 }
                 /** @var Token */
                 $closedBy = $open->ClosedBy;
-                /** @var Token */
-                $prev = $closedBy->Prev;
 
-                $open->WhitespaceAfter |= WhitespaceType::BLANK;
-                $open->WhitespaceMaskNext |= WhitespaceType::BLANK;
-                $next->WhitespaceMaskPrev |= WhitespaceType::BLANK;
-                $closedBy->WhitespaceBefore |= WhitespaceType::BLANK;
-                $closedBy->WhitespaceMaskPrev |= WhitespaceType::BLANK;
-                $prev->WhitespaceMaskNext |= WhitespaceType::BLANK;
+                $open->applyWhitespace(Space::BLANK_AFTER);
+                $closedBy->applyWhitespace(Space::BLANK_BEFORE);
 
                 continue;
             }
@@ -104,11 +98,7 @@ final class Drupal implements Preset, TokenRule
                 }
 
                 if ($phpDoc->hasTag('file')) {
-                    $token->WhitespaceAfter |= WhitespaceType::BLANK;
-                    $token->WhitespaceMaskNext |= WhitespaceType::BLANK;
-                    if ($token->Next) {
-                        $token->Next->WhitespaceMaskPrev |= WhitespaceType::BLANK;
-                    }
+                    $token->applyWhitespace(Space::BLANK_AFTER);
                 }
 
                 continue;
@@ -119,11 +109,7 @@ final class Drupal implements Preset, TokenRule
             /** @var Token */
             $prevCode = $token->PrevCode;
             if ($prevCode->id === \T_CLOSE_BRACE) {
-                $token->WhitespaceBefore |= WhitespaceType::LINE;
-                $token->WhitespaceMaskPrev |= WhitespaceType::LINE;
-                /** @var Token */
-                $prev = $token->Prev;
-                $prev->WhitespaceMaskNext |= WhitespaceType::LINE;
+                $token->applyWhitespace(Space::LINE_BEFORE);
             }
         }
     }

@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Rule\Preset;
 
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\Preset;
 use Lkrms\PrettyPHP\Contract\TokenRule;
@@ -78,10 +78,7 @@ final class WordPress implements Preset, TokenRule
             }
 
             if ($token->id === \T_DOC_COMMENT && !$this->DocCommentUnpinned) {
-                $token->WhitespaceMaskNext |= WhitespaceType::BLANK;
-                if ($token->Next) {
-                    $token->Next->WhitespaceMaskPrev |= WhitespaceType::BLANK;
-                }
+                $token->removeWhitespace(Space::NO_BLANK_AFTER);
                 $this->DocCommentUnpinned = true;
             }
 
@@ -92,7 +89,7 @@ final class WordPress implements Preset, TokenRule
                     $token->hasBlankLineBefore()
                     && $token->line - $prev->line - substr_count($prev->text, "\n") < 2
                 ) {
-                    $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK;
+                    $token->Whitespace |= Space::NO_BLANK_BEFORE;
                 }
                 continue;
             }
@@ -101,11 +98,7 @@ final class WordPress implements Preset, TokenRule
                 if (!$token->isColonAltSyntaxDelimiter()) {
                     continue;
                 }
-                $token->WhitespaceBefore |= WhitespaceType::SPACE;
-                $token->WhitespaceMaskPrev |= WhitespaceType::SPACE;
-                /** @var Token */
-                $prev = $token->Prev;
-                $prev->WhitespaceMaskNext |= WhitespaceType::SPACE;
+                $token->applyWhitespace(Space::SPACE_BEFORE);
                 continue;
             }
 
@@ -115,25 +108,17 @@ final class WordPress implements Preset, TokenRule
                 if ($next->id === \T_LOGICAL_NOT) {
                     continue;
                 }
-                $token->WhitespaceAfter |= WhitespaceType::SPACE;
-                $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
-                $next->WhitespaceMaskPrev |= WhitespaceType::SPACE;
+                $token->applyWhitespace(Space::SPACE_AFTER);
                 continue;
             }
 
             if ($token->id === \T_OPEN_BRACE) {
-                /** @var Token */
-                $next = $token->Next;
-                $token->WhitespaceMaskNext |= WhitespaceType::BLANK;
-                $next->WhitespaceMaskPrev |= WhitespaceType::BLANK;
+                $token->removeWhitespace(Space::NO_BLANK_AFTER);
                 continue;
             }
 
             if ($token->id === \T_CLOSE_BRACE) {
-                /** @var Token */
-                $prev = $token->Prev;
-                $token->WhitespaceMaskPrev |= WhitespaceType::BLANK;
-                $prev->WhitespaceMaskNext |= WhitespaceType::BLANK;
+                $token->removeWhitespace(Space::NO_BLANK_BEFORE);
                 continue;
             }
 
@@ -153,12 +138,8 @@ final class WordPress implements Preset, TokenRule
                 continue;
             }
 
-            $token->WhitespaceAfter |= WhitespaceType::SPACE;
-            $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
-            $token->Next->WhitespaceMaskPrev |= WhitespaceType::SPACE;
-            $token->ClosedBy->WhitespaceBefore |= WhitespaceType::SPACE;
-            $token->ClosedBy->WhitespaceMaskPrev |= WhitespaceType::SPACE;
-            $token->ClosedBy->Prev->WhitespaceMaskNext |= WhitespaceType::SPACE;
+            $token->ClosedBy->applyWhitespace(Space::SPACE_BEFORE);
+            $token->applyWhitespace(Space::SPACE_AFTER);
         }
     }
 

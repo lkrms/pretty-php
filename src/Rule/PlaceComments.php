@@ -4,7 +4,7 @@ namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Token;
@@ -53,7 +53,7 @@ final class PlaceComments implements TokenRule
                 && $token->Next
                 && $token->Next->id !== \T_CLOSE_TAG
             ) {
-                $token->CriticalWhitespaceAfter |= WhitespaceType::LINE;
+                $token->Whitespace |= Space::CRITICAL_LINE_AFTER;
             }
 
             $isDocComment =
@@ -82,27 +82,26 @@ final class PlaceComments implements TokenRule
                         || $prev->OpenTag === $prev
                     )) {
                         $this->CommentsBesideCode[] = $token;
-                        $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
+                        $token->Whitespace |= Space::NO_BLANK_BEFORE | Space::NO_LINE_BEFORE;
                         continue;
                     }
-                    $token->WhitespaceBefore |= WhitespaceType::SPACE;
-                    $token->WhitespaceAfter |= WhitespaceType::SPACE;
+                    $token->Whitespace |= Space::SPACE_BEFORE | Space::SPACE_AFTER;
                     continue;
                 }
 
                 // Aside from DocBlocks and, in strict PSR-12 mode, comments after
                 // top-level close braces, don't move comments to the next line
                 if (!$wasFirstOnLine) {
-                    $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
+                    $token->Whitespace |= Space::LINE_AFTER | Space::SPACE_AFTER;
                     if ($prev && (
                         $prev->Flags & TokenFlag::CODE
                         || $prev->OpenTag === $prev
                     )) {
                         $this->CommentsBesideCode[] = $token;
-                        $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
+                        $token->Whitespace |= Space::NO_BLANK_BEFORE | Space::NO_LINE_BEFORE;
                         continue;
                     }
-                    $token->WhitespaceBefore |= WhitespaceType::SPACE;
+                    $token->Whitespace |= Space::SPACE_BEFORE;
                     continue;
                 }
             }
@@ -114,8 +113,7 @@ final class PlaceComments implements TokenRule
                 $this->Comments[] = [$token, $next];
             }
 
-            $token->WhitespaceAfter |= WhitespaceType::LINE;
-            $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
+            $token->Whitespace |= Space::LINE_BEFORE | Space::SPACE_BEFORE | Space::LINE_AFTER;
 
             if (!$isDocComment) {
                 continue;
@@ -131,7 +129,7 @@ final class PlaceComments implements TokenRule
                     || !$token->NextSibling
                     || $token->PrevSibling->Statement !== $token->NextSibling->Statement)
             ) {
-                $token->WhitespaceBefore |= WhitespaceType::BLANK;
+                $token->Whitespace |= Space::BLANK_BEFORE;
             }
 
             // Add a blank line after file-level DocBlocks and multi-line C-style
@@ -146,7 +144,7 @@ final class PlaceComments implements TokenRule
                     )
                 )
             ) {
-                $token->WhitespaceAfter |= WhitespaceType::BLANK;
+                $token->Whitespace |= Space::BLANK_AFTER;
                 continue;
             }
 
@@ -156,7 +154,7 @@ final class PlaceComments implements TokenRule
                 && $next === $token->Next
                 && $token->id === \T_DOC_COMMENT
             ) {
-                $token->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
+                $token->Whitespace |= Space::NO_BLANK_AFTER;
             }
         }
     }
@@ -165,13 +163,12 @@ final class PlaceComments implements TokenRule
     {
         foreach ($this->CommentsBesideCode as $token) {
             if (!$token->hasNewlineBefore()) {
-                $token->WhitespaceBefore |= WhitespaceType::SPACE;
+                $token->Whitespace |= Space::SPACE_BEFORE;
                 if ($token->hasNewlineAfter()) {
-                    $token->Prev->WhitespaceMaskNext |= WhitespaceType::SPACE;
-                    $token->WhitespaceMaskPrev |= WhitespaceType::SPACE;
+                    $token->removeWhitespace(Space::NO_SPACE_BEFORE);
                     $token->Padding = $this->Formatter->SpacesBesideCode - 1;
                 } else {
-                    $token->WhitespaceAfter |= WhitespaceType::SPACE;
+                    $token->Whitespace |= Space::SPACE_AFTER;
                 }
             }
         }
@@ -256,7 +253,7 @@ final class PlaceComments implements TokenRule
 
         foreach ($this->CollapsibleComments as $token) {
             if ($token->hasNewline()) {
-                $token->WhitespaceBefore |= WhitespaceType::BLANK;
+                $token->Whitespace |= Space::BLANK_BEFORE;
             }
         }
     }

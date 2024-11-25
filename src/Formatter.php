@@ -8,7 +8,7 @@ use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Contract\BlockRule;
 use Lkrms\PrettyPHP\Contract\DeclarationRule;
 use Lkrms\PrettyPHP\Contract\Extension;
@@ -925,7 +925,7 @@ final class Formatter implements Buildable, Immutable
                 && $last->Statement
                 && $last->Statement->id !== \T_HALT_COMPILER
             ) {
-                $last->WhitespaceAfter |= WhitespaceType::LINE;
+                $last->Whitespace |= Space::LINE_AFTER;
             }
         } catch (CompileError $ex) {
             throw new InvalidSyntaxException(sprintf(
@@ -1100,11 +1100,11 @@ final class Formatter implements Buildable, Immutable
             $keep = true;
             while (true) {
                 if ($token && $token->id !== \T_INLINE_HTML) {
-                    $before = $token->effectiveWhitespaceBefore();
-                    if ($before & WhitespaceType::BLANK) {
+                    $before = $token->getWhitespaceBefore();
+                    if ($before & Space::BLANK) {
                         $endOfBlock = true;
                         $endOfLine = true;
-                    } elseif ($before & WhitespaceType::LINE) {
+                    } elseif ($before & Space::LINE) {
                         $endOfLine = true;
                     }
                 } else {

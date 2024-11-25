@@ -2,7 +2,8 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Catalog\TokenData;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Token;
@@ -50,9 +51,10 @@ final class ProtectStrings implements TokenRule
     /**
      * Apply the rule to the given tokens
      *
-     * Whitespace is suppressed via critical masks applied to siblings in
-     * non-constant strings, and to every token between square brackets in those
-     * strings.
+     * Changes to whitespace in non-constant strings are suppressed for:
+     *
+     * - nested siblings
+     * - every descendant of square brackets that are nested siblings
      */
     public function processTokens(array $tokens): void
     {
@@ -62,10 +64,9 @@ final class ProtectStrings implements TokenRule
                 continue;
             }
 
-            /** @var Token */
-            $closedBy = $token->StringClosedBy;
+            $closedBy = $token->Data[TokenData::STRING_CLOSED_BY];
             foreach ($next->collectSiblings($closedBy) as $current) {
-                $current->CriticalWhitespaceMaskPrev = WhitespaceType::NONE;
+                $current->Whitespace |= Space::CRITICAL_NONE_BEFORE;
 
                 // "$foo[0]" and "$foo[$bar]" fail to parse if there is any
                 // whitespace between the brackets
@@ -75,7 +76,7 @@ final class ProtectStrings implements TokenRule
                     /** @var Token */
                     $closedBy = $current->ClosedBy;
                     foreach ($next->collect($closedBy) as $inner) {
-                        $inner->CriticalWhitespaceMaskPrev = WhitespaceType::NONE;
+                        $inner->Whitespace |= Space::CRITICAL_NONE_BEFORE;
                     }
                 }
             }

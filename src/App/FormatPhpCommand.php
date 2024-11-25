@@ -1453,7 +1453,10 @@ EOF,
     ): void {
         $throw = fn(string $message, string ...$names) =>
                      $this->throwInvalidOptionsException(
-                         $exception, $configFile, $message, ...$names
+                         $exception,
+                         $configFile,
+                         $message,
+                         ...$names,
                      );
 
         if ($this->OperatorsFirst && $this->OperatorsLast) {

@@ -2,9 +2,10 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\Token;
 use Lkrms\PrettyPHP\TokenTypeIndex;
 
 /**
@@ -46,18 +47,16 @@ final class StrictExpressions implements TokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
+            /** @var Token */
             $first = $token->NextCode;
             if ($first->hasNewlineAfter()) {
                 continue;
             }
+            /** @var Token */
             $last = $first->ClosedBy;
             if ($first->collect($last)->hasNewline()) {
-                $first->WhitespaceAfter |= WhitespaceType::LINE;
-                $first->WhitespaceMaskNext |= WhitespaceType::LINE;
-                $first->NextCode->WhitespaceMaskPrev |= WhitespaceType::LINE;
-                $last->WhitespaceBefore |= WhitespaceType::LINE;
-                $last->WhitespaceMaskPrev |= WhitespaceType::LINE;
-                $last->PrevCode->WhitespaceMaskNext |= WhitespaceType::LINE;
+                $first->applyWhitespace(Space::LINE_AFTER);
+                $last->applyWhitespace(Space::LINE_BEFORE);
             }
         }
     }

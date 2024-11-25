@@ -4,7 +4,7 @@ namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Token;
@@ -104,7 +104,7 @@ final class VerticalWhitespace implements TokenRule
                 $t->Prev
                 && $sol->collect($t->Prev)->hasOneNotFrom($this->Idx->CloseBracket)
             )) {
-                $t->WhitespaceBefore |= WhitespaceType::LINE;
+                $t->Whitespace |= Space::LINE_BEFORE;
             }
         };
         $applyNewlineAfter = function (Token $t): void {
@@ -115,7 +115,7 @@ final class VerticalWhitespace implements TokenRule
                 $t->Next
                 && $t->Next->collect($eol)->hasOneNotFrom($this->Idx->OpenBracketOrNot)
             )) {
-                $t->WhitespaceAfter |= WhitespaceType::LINE;
+                $t->Whitespace |= Space::LINE_AFTER;
             }
         };
 
@@ -219,22 +219,21 @@ final class VerticalWhitespace implements TokenRule
                     || $expr2->hasNewlineBetweenTokens()
                     || $expr3->hasNewlineBetweenTokens()
                 ) {
-                    $commas->addWhitespaceAfter(WhitespaceType::LINE);
-                    $semicolons->addWhitespaceAfter(WhitespaceType::BLANK);
+                    $commas->applyWhitespace(Space::LINE_AFTER);
+                    $semicolons->applyWhitespace(Space::BLANK_AFTER);
                 } elseif ($semicolons->tokenHasNewlineAfter()) {
                     // If the second or third expression in a `for` loop is at
                     // the start of a line, add a newline before the other
-                    $semicolons->addWhitespaceAfter(WhitespaceType::LINE);
+                    $semicolons->applyWhitespace(Space::LINE_AFTER);
                 }
 
                 // Suppress whitespace in empty `for` loop expressions
                 foreach ([[$expr1, 1], [$expr2, 1], [$expr3, 0]] as [$expr, $emptyCount]) {
                     if ($expr->count() === $emptyCount) {
                         if ($emptyCount) {
-                            $expr->maskWhitespaceBefore(WhitespaceType::NONE);
+                            $expr->applyWhitespace(Space::NONE_BEFORE);
                         } else {
-                            $semi2->WhitespaceMaskNext = WhitespaceType::NONE;
-                            $semi2->Next->WhitespaceMaskPrev = WhitespaceType::NONE;
+                            $semi2->Whitespace |= Space::NONE_AFTER;
                         }
                     }
                 }
@@ -275,7 +274,7 @@ final class VerticalWhitespace implements TokenRule
                     continue;
                 }
 
-                $token->WhitespaceBefore |= WhitespaceType::LINE;
+                $token->Whitespace |= Space::LINE_BEFORE;
 
                 continue;
             }
@@ -296,9 +295,9 @@ final class VerticalWhitespace implements TokenRule
                 $op1Newline = $token->hasNewlineBefore();
                 $op2Newline = $other->hasNewlineBefore();
                 if ($op1Newline && !$op2Newline) {
-                    $other->WhitespaceBefore |= WhitespaceType::LINE;
+                    $other->Whitespace |= Space::LINE_BEFORE;
                 } elseif (!$op1Newline && $op2Newline) {
-                    $token->WhitespaceBefore |= WhitespaceType::LINE;
+                    $token->Whitespace |= Space::LINE_BEFORE;
                 }
 
                 continue;
@@ -328,7 +327,7 @@ final class VerticalWhitespace implements TokenRule
                 $chain->shift();
             }
 
-            $chain->addWhitespaceBefore(WhitespaceType::LINE);
+            $chain->applyWhitespace(Space::LINE_BEFORE);
 
             // }
         }

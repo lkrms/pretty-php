@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Token;
@@ -47,9 +47,8 @@ final class SwitchIndentation implements TokenRule
 
             /** @var Token */
             $separator = $token->EndStatement;
-            $token->WhitespaceBefore |= WhitespaceType::LINE;
-            $separator->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
-            $separator->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
+            $token->Whitespace |= Space::LINE_BEFORE;
+            $separator->Whitespace |= Space::NO_BLANK_AFTER | Space::LINE_AFTER | Space::SPACE_AFTER;
             $token->collect($separator)->forEach(fn(Token $t) => $t->Deindent++);
         }
     }

@@ -4,6 +4,7 @@ namespace Lkrms\PrettyPHP\Internal;
 
 use Lkrms\PrettyPHP\Token;
 use Salient\Collection\AbstractTypedList;
+use InvalidArgumentException;
 use LogicException;
 use Stringable;
 
@@ -286,125 +287,52 @@ final class TokenCollection extends AbstractTypedList implements Stringable
     /**
      * @return $this
      */
-    public function addWhitespaceBefore(int $type, bool $critical = false)
+    public function applyWhitespace(int $whitespace)
     {
-        if ($critical) {
-            /** @var Token $token */
-            foreach ($this as $token) {
-                $token->CriticalWhitespaceBefore |= $type;
-            }
-            return $this;
-        }
+        // Shift *_BEFORE and *_AFTER to their NO_* counterparts, then clear
+        // other bits
+        $remove = $whitespace << 6 & 0b111111000000;
 
         /** @var Token $token */
         foreach ($this as $token) {
-            $token->WhitespaceBefore |= $type;
-            $token->WhitespaceMaskPrev |= $type;
-            if ($token->Prev) {
-                $token->Prev->WhitespaceMaskNext |= $type;
+            $token->Whitespace |= $whitespace;
+            if ($remove) {
+                // @phpstan-ignore argument.type
+                $token->removeWhitespace($remove);
             }
         }
+
         return $this;
     }
 
     /**
      * @return $this
      */
-    public function addWhitespaceAfter(int $type, bool $critical = false)
-    {
-        if ($critical) {
-            /** @var Token $token */
-            foreach ($this as $token) {
-                $token->CriticalWhitespaceAfter |= $type;
-            }
-            return $this;
-        }
-
-        /** @var Token $token */
-        foreach ($this as $token) {
-            $token->WhitespaceAfter |= $type;
-            $token->WhitespaceMaskNext |= $type;
-            if ($token->Next) {
-                $token->Next->WhitespaceMaskPrev |= $type;
-            }
-        }
-        return $this;
-    }
-
-    /**
-     * Use T_AND_EQUAL ('&=') to apply a mask to all WhitespaceMaskPrev and
-     * WhitespaceMaskNext values that cover whitespace before tokens in the
-     * collection
-     *
-     * If `$critical` is set, operate on CriticalWhitespaceMaskPrev and
-     * CriticalWhitespaceMaskNext instead.
-     *
-     * @return $this
-     */
-    public function maskWhitespaceBefore(int $mask, bool $critical = false)
-    {
-        if ($critical) {
-            /** @var Token $token */
-            foreach ($this as $token) {
-                $token->CriticalWhitespaceMaskPrev &= $mask;
-                if ($token->Prev) {
-                    $token->Prev->CriticalWhitespaceMaskNext &= $mask;
-                }
-            }
-            return $this;
-        }
-
-        /** @var Token $token */
-        foreach ($this as $token) {
-            $token->WhitespaceMaskPrev &= $mask;
-            if ($token->Prev) {
-                $token->Prev->WhitespaceMaskNext &= $mask;
-            }
-        }
-        return $this;
-    }
-
-    /**
-     * Use T_AND_EQUAL ('&=') to apply a mask to all inward-facing
-     * WhitespaceMaskPrev and WhitespaceMaskNext values in the collection
-     *
-     * If `$critical` is set, operate on CriticalWhitespaceMaskPrev and
-     * CriticalWhitespaceMaskNext instead.
-     *
-     * @return $this
-     */
-    public function maskInnerWhitespace(int $mask, bool $critical = false)
+    public function applyInnerWhitespace(int $whitespace)
     {
         $this->assertCollected();
 
-        $count = $this->count();
-        if ($count < 2) {
+        if (($whitespace & 0b0111000111000111000111) !== $whitespace) {
+            throw new InvalidArgumentException('Invalid $whitespace (AFTER bits cannot be set)');
+        }
+
+        if ($this->count() < 2) {
             return $this;
         }
 
-        if ($critical) {
-            if ($count > 2) {
-                foreach ($this->nth(2)->collect($this->nth(-2)) as $token) {
-                    $token->CriticalWhitespaceMaskPrev &= $mask;
-                    $token->CriticalWhitespaceMaskNext &= $mask;
+        $remove = $whitespace << 6 & 0b111111000000;
+
+        $i = 0;
+        /** @var Token $token */
+        foreach ($this as $token) {
+            if ($i++) {
+                $token->Whitespace |= $whitespace;
+                if ($remove) {
+                    // @phpstan-ignore argument.type
+                    $token->removeWhitespace($remove);
                 }
             }
-
-            $this->first()->CriticalWhitespaceMaskNext &= $mask;
-            $this->last()->CriticalWhitespaceMaskPrev &= $mask;
-
-            return $this;
         }
-
-        if ($count > 2) {
-            foreach ($this->nth(2)->collect($this->nth(-2)) as $token) {
-                $token->WhitespaceMaskPrev &= $mask;
-                $token->WhitespaceMaskNext &= $mask;
-            }
-        }
-
-        $this->first()->WhitespaceMaskNext &= $mask;
-        $this->last()->WhitespaceMaskPrev &= $mask;
 
         return $this;
     }

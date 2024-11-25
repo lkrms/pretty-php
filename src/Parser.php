@@ -160,8 +160,8 @@ final class Parser implements Immutable
      * - `Parent`
      * - `Depth`
      * - `String`
-     * - `StringClosedBy`
      * - `Heredoc`
+     * - `Data[TokenData::STRING_CLOSED_BY]`
      *
      * @param non-empty-list<Token> $tokens
      * @param-out non-empty-list<Token> $tokens
@@ -338,7 +338,11 @@ final class Parser implements Immutable
             $token->String = $prev->String;
             $token->Heredoc = $prev->Heredoc;
             if ($idx->StringDelimiter[$prev->id]) {
-                if ($prev->String && $prev->String->StringClosedBy === $prev) {
+                if (
+                    $prev->String
+                    && isset($prev->String->Data[TokenData::STRING_CLOSED_BY])
+                    && $prev->String->Data[TokenData::STRING_CLOSED_BY] === $prev
+                ) {
                     $token->String = $prev->String->String;
                     if ($prev->id === \T_END_HEREDOC) {
                         assert($prev->Heredoc !== null);
@@ -361,7 +365,7 @@ final class Parser implements Immutable
                     || ($token->String->id !== \T_START_HEREDOC && $token->String->id === $token->id)
                 )
             ) {
-                $token->String->StringClosedBy = $token;
+                $token->String->Data[TokenData::STRING_CLOSED_BY] = $token;
             }
 
             if ($idx->CloseBracketOrAlt[$token->id]) {

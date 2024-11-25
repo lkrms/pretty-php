@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Rule\Preset;
 
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\Preset;
 use Lkrms\PrettyPHP\Contract\TokenRule;
@@ -63,22 +63,15 @@ final class Laravel implements Preset, TokenRule
                     if ($next->id === \T_LOGICAL_NOT) {
                         continue 2;
                     }
-                    $token->WhitespaceAfter |= WhitespaceType::SPACE;
-                    $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
-                    $next->WhitespaceMaskPrev |= WhitespaceType::SPACE;
+                    $token->applyWhitespace(Space::SPACE_AFTER);
                     continue 2;
 
                 case \T_CONCAT:
-                    $token->WhitespaceMaskPrev &= ~WhitespaceType::SPACE;
-                    $token->WhitespaceMaskNext &= ~WhitespaceType::SPACE;
+                    $token->Whitespace |= Space::NO_SPACE_BEFORE | Space::NO_SPACE_AFTER;
                     continue 2;
 
                 case \T_FN:
-                    /** @var Token */
-                    $next = $token->Next;
-                    $token->WhitespaceAfter |= WhitespaceType::SPACE;
-                    $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
-                    $next->WhitespaceMaskPrev |= WhitespaceType::SPACE;
+                    $token->applyWhitespace(Space::SPACE_AFTER);
                     continue 2;
             }
         }

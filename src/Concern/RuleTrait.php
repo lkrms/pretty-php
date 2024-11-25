@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Concern;
 
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Contract\Rule;
 use Lkrms\PrettyPHP\Token;
 
@@ -55,9 +55,8 @@ trait RuleTrait
             }
         }
 
-        $mask = ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
         $start->collect($end)
-              ->maskInnerWhitespace($mask, true);
+              ->applyInnerWhitespace(Space::CRITICAL_NO_BLANK | Space::CRITICAL_NO_LINE);
 
         return true;
     }
@@ -76,17 +75,13 @@ trait RuleTrait
             $hasNewlineBeforeNextCode = $open->hasNewlineBeforeNextCode();
         }
         if (!$hasNewlineBeforeNextCode) {
-            $mask = ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
-            $close->WhitespaceMaskPrev &= $mask;
+            $close->Whitespace |= Space::NO_BLANK_BEFORE | Space::NO_LINE_BEFORE;
             return;
         }
 
-        $close->WhitespaceBefore |= WhitespaceType::LINE;
+        $close->Whitespace |= Space::LINE_BEFORE;
         if (!$close->hasNewlineBefore()) {
-            /** @var Token */
-            $prev = $close->Prev;
-            $close->WhitespaceMaskPrev |= WhitespaceType::LINE;
-            $prev->WhitespaceMaskNext |= WhitespaceType::LINE;
+            $close->removeWhitespace(Space::NO_LINE_BEFORE);
         }
     }
 }

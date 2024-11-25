@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\TokenSubType;
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\TokenTypeIndex;
@@ -52,9 +52,7 @@ final class StatementSpacing implements TokenRule
                                 || $token->NextSibling->id === \T_SEMICOLON) {
                             continue 2;
                         }
-                        $token->WhitespaceAfter |= WhitespaceType::SPACE;
-                        $token->WhitespaceMaskNext |= WhitespaceType::SPACE;
-                        $token->Next->WhitespaceMaskPrev |= WhitespaceType::SPACE;
+                        $token->applyWhitespace(Space::SPACE_AFTER);
                         continue 2;
                     }
 
@@ -81,9 +79,7 @@ final class StatementSpacing implements TokenRule
                     break;
             }
 
-            $token->WhitespaceBefore = WhitespaceType::NONE;
-            $token->WhitespaceMaskPrev = WhitespaceType::NONE;
-            $token->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
+            $token->Whitespace |= Space::NONE_BEFORE | Space::LINE_AFTER | Space::SPACE_AFTER;
         }
     }
 }

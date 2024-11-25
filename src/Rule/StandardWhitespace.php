@@ -4,7 +4,7 @@ namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\DeclarationType;
 use Lkrms\PrettyPHP\Catalog\TokenData;
-use Lkrms\PrettyPHP\Catalog\WhitespaceType;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\DeclarationRuleTrait;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\DeclarationRule;
@@ -53,6 +53,33 @@ final class StandardWhitespace implements TokenRule, DeclarationRule
             $idx->Attribute,
             $idx->OpenTag,
         );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function needsSortedTokens(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function getDeclarationTypes(array $all): array
+    {
+        return [
+            DeclarationType::PROPERTY => true,
+            DeclarationType::PARAM => true,
+        ];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function needsSortedDeclarations(): bool
+    {
+        return false;
     }
 
     /**
@@ -169,19 +196,19 @@ final class StandardWhitespace implements TokenRule, DeclarationRule
                         $endIsClose
                         && !strcasecmp((string) $declare->NextSibling->inner(), 'strict_types=1')
                     )) {
-                        $token->WhitespaceAfter |= WhitespaceType::SPACE;
-                        $token->WhitespaceMaskNext = WhitespaceType::SPACE;
+                        $token->Whitespace |= Space::NONE_AFTER;
+                        $token->applyWhitespace(Space::SPACE_AFTER);
                         $endOfLine = $end;
                         if ($endIsClose) {
                             /** @var Token */
                             $close = $token->CloseTag;
-                            $close->WhitespaceBefore |= WhitespaceType::SPACE;
-                            $close->WhitespaceMaskPrev = WhitespaceType::SPACE;
+                            $close->Whitespace |= Space::NONE_BEFORE;
+                            $close->applyWhitespace(Space::SPACE_BEFORE);
                         }
                     }
                 }
                 if ($endOfLine->id !== \T_CLOSE_TAG) {
-                    $endOfLine->WhitespaceAfter |= WhitespaceType::LINE | WhitespaceType::SPACE;
+                    $endOfLine->Whitespace |= Space::LINE_AFTER | Space::SPACE_AFTER;
                 }
 
                 // Preserve one-line statements between open and close tags on
@@ -242,20 +269,19 @@ final class StandardWhitespace implements TokenRule, DeclarationRule
             }
 
             if ($token->id === \T_CLOSE_TAG) {
-                $token->WhitespaceBefore |= WhitespaceType::LINE | WhitespaceType::SPACE;
+                $token->Whitespace |= Space::LINE_BEFORE | Space::SPACE_BEFORE;
                 continue;
             }
 
             if ($token->id === \T_COMMA) {
-                $token->WhitespaceMaskPrev = WhitespaceType::NONE;
-                $token->WhitespaceAfter |= WhitespaceType::SPACE;
+                $token->Whitespace |= Space::NONE_BEFORE | Space::SPACE_AFTER;
                 continue;
             }
 
             if ($token->id === \T_DECLARE) {
                 /** @var Token */
                 $nextCode = $token->NextCode;
-                $nextCode->outer()->maskInnerWhitespace(WhitespaceType::NONE);
+                $nextCode->outer()->applyInnerWhitespace(Space::NONE);
                 continue;
             }
 
@@ -272,7 +298,7 @@ final class StandardWhitespace implements TokenRule, DeclarationRule
                     if ($arm->id === \T_NULL) {
                         break;
                     }
-                    $arm->WhitespaceAfter |= WhitespaceType::LINE;
+                    $arm->Whitespace |= Space::LINE_AFTER;
                 }
                 continue;
             }
@@ -283,18 +309,16 @@ final class StandardWhitespace implements TokenRule, DeclarationRule
                     ? $token->ClosedBy
                     : $token;
                 if (!$token->inParameterList() && !$token->inPropertyHook()) {
-                    $token->WhitespaceBefore |= WhitespaceType::LINE;
-                    $closedBy->WhitespaceAfter |= WhitespaceType::LINE;
+                    $token->Whitespace |= Space::LINE_BEFORE;
+                    $closedBy->Whitespace |= Space::LINE_AFTER;
                 }
-                $token->WhitespaceBefore |= WhitespaceType::SPACE;
-                $closedBy->WhitespaceAfter |= WhitespaceType::SPACE;
-                $closedBy->WhitespaceMaskNext &= ~WhitespaceType::BLANK;
+                $token->Whitespace |= Space::SPACE_BEFORE;
+                $closedBy->Whitespace |= Space::NO_BLANK_AFTER | Space::SPACE_AFTER;
                 continue;
             }
 
             if ($token->id === \T_START_HEREDOC && $this->Formatter->Psr12) {
-                $token->WhitespaceBefore |= WhitespaceType::SPACE;
-                $token->WhitespaceMaskPrev &= ~WhitespaceType::BLANK & ~WhitespaceType::LINE;
+                $token->Whitespace |= Space::NO_BLANK_BEFORE | Space::NO_LINE_BEFORE | Space::SPACE_BEFORE;
             }
         }
     }
@@ -344,8 +368,7 @@ final class StandardWhitespace implements TokenRule, DeclarationRule
                     }
                     // Format `set () {}` like `function () {}`
                     if ($hasBody = $next->id === \T_OPEN_BRACE) {
-                        $name->WhitespaceBefore |= WhitespaceType::SPACE;
-                        $name->WhitespaceAfter |= WhitespaceType::SPACE;
+                        $name->Whitespace |= Space::SPACE_BEFORE | Space::SPACE_AFTER;
                     }
                     $hasExpression = $next->id === \T_DOUBLE_ARROW;
                     $collapse = $collapse && !(
@@ -372,7 +395,7 @@ final class StandardWhitespace implements TokenRule, DeclarationRule
             /** @var TokenCollection */
             $items = $parent->Data[TokenData::LIST_ITEMS];
             foreach ($items as $item) {
-                $item->WhitespaceBefore |= WhitespaceType::LINE;
+                $item->Whitespace |= Space::LINE_BEFORE;
             }
         }
     }

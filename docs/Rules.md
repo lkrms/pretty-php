@@ -60,8 +60,10 @@ needed.
 
 ### `ProtectStrings`
 
-Whitespace is suppressed via critical masks applied to siblings in non-constant
-strings, and to every token between square brackets in those strings.
+Changes to whitespace in non-constant strings are suppressed for:
+
+- nested siblings
+- every descendant of square brackets that are nested siblings
 
 ### `SimplifyNumbers`
 
@@ -75,7 +77,7 @@ Float literals are normalised by removing redundant zeroes, adding `0` to empty
 integer or fractional parts, replacing `E` with `e`, removing `+` from
 exponents, and expressing them with mantissae between 1.0 and 10.
 
-If present in the input, underscores are added to decimal values with no
+If present in the input, underscores are applied to decimal values with no
 exponent every 3 digits, to hexadecimal values with more than 5 digits every 4
 digits, and to binary values every 4 digits.
 
@@ -83,18 +85,16 @@ digits, and to binary values every 4 digits.
 
 Strings other than nowdocs are normalised as follows:
 
-Single- and double-quoted strings are replaced with the most readable and
-economical syntax. Single-quoted strings are preferred unless escaping is
-required or the double-quoted equivalent is shorter.
-
-Backslash escapes are added in contexts where they improve safety, consistency
-and readability, otherwise they are removed if possible.
-
-Aside from leading and continuation bytes in valid UTF-8 strings, control
-characters and non-ASCII characters are backslash-escaped using hexadecimal
-notation with lowercase digits. Invisible characters that don't belong to a
-recognised Unicode sequence are backslash-escaped using Unicode notation with
-uppercase digits.
+- Single- and double-quoted strings are replaced with the most readable and
+  economical syntax. Single-quoted strings are preferred unless escaping is
+  required or the double-quoted equivalent is shorter.
+- Backslash escapes are added in contexts where they improve safety, consistency
+  and readability, otherwise they are removed if possible.
+- Aside from leading and continuation bytes in valid UTF-8 strings, control
+  characters and non-ASCII characters are backslash-escaped using hexadecimal
+  notation with lowercase digits. Invisible characters that don't belong to a
+  recognised Unicode sequence are backslash-escaped using Unicode notation with
+  uppercase digits.
 
 ### `NormaliseComments`
 
@@ -181,12 +181,13 @@ Whitespace is applied to structural and `match` expression braces as follows:
 - Newlines are added after close braces unless they belong to a `match`
   expression or a control structure that is immediately continued, e.g.
   `} else {`. In the latter case, trailing newlines are suppressed.
-- Empty class, function and property hook bodies are collapsed to ` {}`
-  immediately after the declaration they belong to.
+- Empty class, function and property hook bodies are collapsed to ` {}` on the
+  same line as the declaration they belong to unless
+  `CollapseEmptyDeclarationBodies` is disabled.
 - Horizontal whitespace is suppressed between other empty braces.
 
-Open brace placement is left for a rule that runs after vertical whitespace has
-been applied.
+> Open brace placement is left for a rule that runs after vertical whitespace
+> has been applied.
 
 ### `ListSpacing` (call 1: `processDeclarations()`)
 
@@ -205,6 +206,11 @@ annotated parameters to improve readability.
 
 If interface lists break over multiple lines and neither `StrictLists` nor
 `AlignLists` are enabled, a newline is added before the first interface.
+
+### `StrictLists`
+
+Items in lists are arranged horizontally or vertically by replicating the
+arrangement of the first and second items.
 
 ### `StandardWhitespace` (call 3: _`callback`_)
 
@@ -284,23 +290,23 @@ lines, they are collapsed to the same line.
 
 ## `DeclarationRule` classes, by declaration type
 
-| Declaration    | Rules                               |
-| -------------- | ----------------------------------- |
-| `*`            | `StandardWhitespace`                |
-| `CASE`         | `DeclarationSpacing`                |
-| `CLASS`        | `DeclarationSpacing`                |
-| `CONST`        | `DeclarationSpacing`                |
-| `DECLARE`      | `DeclarationSpacing`                |
-| `ENUM`         | `DeclarationSpacing`                |
-| `FUNCTION`     | `DeclarationSpacing`                |
-| `INTERFACE`    | `DeclarationSpacing`                |
-| `NAMESPACE`    | `DeclarationSpacing`                |
-| `PARAM`        | `ListSpacing`                       |
-| `PROPERTY`     | `DeclarationSpacing`, `ListSpacing` |
-| `TRAIT`        | `DeclarationSpacing`                |
-| `USE_CONST`    | `DeclarationSpacing`                |
-| `USE_FUNCTION` | `DeclarationSpacing`                |
-| `USE_TRAIT`    | `DeclarationSpacing`                |
-| `USE`          | `DeclarationSpacing`                |
+| Declaration    | Rules                                                     |
+| -------------- | --------------------------------------------------------- |
+| `CASE`         | `DeclarationSpacing`                                      |
+| `CLASS`        | `DeclarationSpacing`                                      |
+| `CONST`        | `DeclarationSpacing`                                      |
+| `DECLARE`      | `DeclarationSpacing`                                      |
+| `ENUM`         | `DeclarationSpacing`                                      |
+| `FUNCTION`     | `DeclarationSpacing`                                      |
+| `HOOK`         | `DeclarationSpacing`                                      |
+| `INTERFACE`    | `DeclarationSpacing`                                      |
+| `NAMESPACE`    | `DeclarationSpacing`                                      |
+| `PARAM`        | `ListSpacing`, `StandardWhitespace`                       |
+| `PROPERTY`     | `DeclarationSpacing`, `ListSpacing`, `StandardWhitespace` |
+| `TRAIT`        | `DeclarationSpacing`                                      |
+| `USE_CONST`    | `DeclarationSpacing`                                      |
+| `USE_FUNCTION` | `DeclarationSpacing`                                      |
+| `USE_TRAIT`    | `DeclarationSpacing`                                      |
+| `USE`          | `DeclarationSpacing`                                      |
 
 [list-rules.php]: ../scripts/list-rules.php

@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Exception\RuleException;
@@ -42,18 +43,16 @@ final class SimplifyStrings implements TokenRule
      *
      * Strings other than nowdocs are normalised as follows:
      *
-     * Single- and double-quoted strings are replaced with the most readable and
-     * economical syntax. Single-quoted strings are preferred unless escaping is
-     * required or the double-quoted equivalent is shorter.
-     *
-     * Backslash escapes are added in contexts where they improve safety,
-     * consistency and readability, otherwise they are removed if possible.
-     *
-     * Aside from leading and continuation bytes in valid UTF-8 strings, control
-     * characters and non-ASCII characters are backslash-escaped using
-     * hexadecimal notation with lowercase digits. Invisible characters that
-     * don't belong to a recognised Unicode sequence are backslash-escaped using
-     * Unicode notation with uppercase digits.
+     * - Single- and double-quoted strings are replaced with the most readable
+     *   and economical syntax. Single-quoted strings are preferred unless
+     *   escaping is required or the double-quoted equivalent is shorter.
+     * - Backslash escapes are added in contexts where they improve safety,
+     *   consistency and readability, otherwise they are removed if possible.
+     * - Aside from leading and continuation bytes in valid UTF-8 strings,
+     *   control characters and non-ASCII characters are backslash-escaped using
+     *   hexadecimal notation with lowercase digits. Invisible characters that
+     *   don't belong to a recognised Unicode sequence are backslash-escaped
+     *   using Unicode notation with uppercase digits.
      */
     public function processTokens(array $tokens): void
     {
@@ -117,8 +116,7 @@ final class SimplifyStrings implements TokenRule
                     break;
 
                 case \T_START_HEREDOC:
-                    /** @var Token */
-                    $closedBy = $openedBy->StringClosedBy;
+                    $closedBy = $openedBy->Data[TokenData::STRING_CLOSED_BY];
 
                     $start = trim($openedBy->text);
                     $text = $token->text;
@@ -197,7 +195,7 @@ final class SimplifyStrings implements TokenRule
             $reserved = "[nrtvef\\\\\${$reserved}]|[0-7]|x[0-9a-fA-F]|u\{[0-9a-fA-F]+\}";
             if (
                 $token->id === \T_CONSTANT_ENCAPSED_STRING
-                || $next !== $openedBy->StringClosedBy
+                || $next !== $openedBy->Data[TokenData::STRING_CLOSED_BY]
                 || $openedBy->id !== \T_START_HEREDOC
             ) {
                 $reserved .= '|$';
@@ -212,7 +210,7 @@ final class SimplifyStrings implements TokenRule
             // the brace to remain escaped lest it become a `T_CURLY_OPEN`
             if (
                 $token->id !== \T_CONSTANT_ENCAPSED_STRING
-                && $next !== $openedBy->StringClosedBy
+                && $next !== $openedBy->Data[TokenData::STRING_CLOSED_BY]
             ) {
                 $double = Regex::replace(
                     '/(?<!\\\\)(\\\\(?:\\\\\\\\)*)\\\\(\{)$/D',
