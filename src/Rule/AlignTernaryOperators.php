@@ -46,9 +46,11 @@ final class AlignTernaryOperators implements TokenRule
 
             // Do nothing if none of the operators in question are at the start
             // of a line
-            if (!$token->hasNewlineBefore()
+            if (
+                !$token->hasNewlineBefore()
                 && ($token->id === \T_COALESCE
-                    || !$token->Data[TokenData::OTHER_TERNARY_OPERATOR]->hasNewlineBefore())) {
+                    || !$token->Data[TokenData::OTHER_TERNARY_OPERATOR]->hasNewlineBefore())
+            ) {
                 continue;
             }
 

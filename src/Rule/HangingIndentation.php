@@ -269,10 +269,12 @@ final class HangingIndentation implements TokenRule
                     ? []
                     : [$parent];
             $current = $parent;
-            while ($current
-                    && ($current = $current->Parent)
-                    && $this->Idx->OpenBracket[$current->id]
-                    && $current->Data[self::PARENT_TYPE] & self::NO_INNER_NEWLINE) {
+            while (
+                $current
+                && ($current = $current->Parent)
+                && $this->Idx->OpenBracket[$current->id]
+                && $current->Data[self::PARENT_TYPE] & self::NO_INNER_NEWLINE
+            ) {
                 if (in_array($current, $token->HangingIndentParent, true)) {
                     continue;
                 }
@@ -290,10 +292,12 @@ final class HangingIndentation implements TokenRule
 
             // And another if the token is mid-statement and has an
             // OVERHANGING_INDENT parent
-            if ($parent
-                    && $this->Idx->OpenBracket[$parent->id]
-                    && $parent->Data[self::PARENT_TYPE] & self::OVERHANGING_INDENT
-                    && $token->Statement !== $token) {
+            if (
+                $parent
+                && $this->Idx->OpenBracket[$parent->id]
+                && $parent->Data[self::PARENT_TYPE] & self::OVERHANGING_INDENT
+                && $token->Statement !== $token
+            ) {
                 $indent++;
                 $hanging[$parent->Index] = 1;
             }
@@ -324,9 +328,11 @@ final class HangingIndentation implements TokenRule
                 //         $g)
                 //     ?: $start;
                 // ```
-                if ($parent
-                        && ($hanging[$parent->Index] ?? null)
-                        && array_key_exists($parent->Index, $current->HangingIndentParentLevels)) {
+                if (
+                    $parent
+                    && ($hanging[$parent->Index] ?? null)
+                    && array_key_exists($parent->Index, $current->HangingIndentParentLevels)
+                ) {
                     $current->HangingIndentParentLevels[$parent->Index] += $hanging[$parent->Index];
                 }
                 $current->HangingIndent += $indent;
@@ -381,10 +387,12 @@ final class HangingIndentation implements TokenRule
         //     ? $qux[$i] ?? $fallback
         //     : $quux;
         // ```
-        if ($prevTernary
-                && $token->id === \T_COLON
-                && $token->Flags & TokenFlag::TERNARY_OPERATOR
-                && $prevTernary->Index > $token->Data[TokenData::OTHER_TERNARY_OPERATOR]->Index) {
+        if (
+            $prevTernary
+            && $token->id === \T_COLON
+            && $token->Flags & TokenFlag::TERNARY_OPERATOR
+            && $prevTernary->Index > $token->Data[TokenData::OTHER_TERNARY_OPERATOR]->Index
+        ) {
             return null;
         }
 
@@ -411,12 +419,14 @@ final class HangingIndentation implements TokenRule
                 $until = self::getTernaryOperator2($current);
                 $until = $until->EndExpression ?? $current;
             }
-        } while ($until !== $current
+        } while (
+            $until !== $current
             && ($current = $until->NextSibling)
             && ($current->id === \T_COALESCE
                 || $current->id === \T_COALESCE_EQUAL
                 || ($current->id === \T_QUESTION
-                    && $current->Flags & TokenFlag::TERNARY_OPERATOR)));
+                    && $current->Flags & TokenFlag::TERNARY_OPERATOR))
+        );
 
         // And without breaking out of an unenclosed control structure
         // body, proceed to the end of the expression
@@ -495,8 +505,10 @@ final class HangingIndentation implements TokenRule
                             break;
                         }
                         $nextIndent = $this->effectiveIndent($next);
-                    } while ($nextIndent === $indent
-                        && $next->Index <= $until->Index);
+                    } while (
+                        $nextIndent === $indent
+                        && $next->Index <= $until->Index
+                    );
 
                     // Adjust $indent for this level of indentation
                     $indent--;
@@ -510,13 +522,15 @@ final class HangingIndentation implements TokenRule
                     // appear to be distinct, if:
                     // - $next falls outside the range being collapsed
                     // - $next has the same hanging indent context as $token
-                    if ($next
+                    if (
+                        $next
                         && (($next->Index <= $until->Index
                                 && ($next->HangingIndentParentLevels[$index] ?? 0))
                             || ($next->Index > $until->Index
                                 && $next->Parent === $token->Parent
                                 && $next->HangingIndentContext === $token->HangingIndentContext
-                                && !(($next->Statement === $next) xor ($token->Statement === $token))))) {
+                                && !(($next->Statement === $next) xor ($token->Statement === $token))))
+                    ) {
                         $nextIndent--;
                     }
 

@@ -44,12 +44,16 @@ final class StatementSpacing implements TokenRule
                 case \T_SEMICOLON:
                     // Add SPACE after for loop expression delimiters where the next
                     // expression is non-empty
-                    if ($token->Parent
-                            && $token->Parent->PrevCode
-                            && $token->Parent->id === \T_OPEN_PARENTHESIS
-                            && $token->Parent->PrevCode->id === \T_FOR) {
-                        if (!$token->NextSibling
-                                || $token->NextSibling->id === \T_SEMICOLON) {
+                    if (
+                        $token->Parent
+                        && $token->Parent->PrevCode
+                        && $token->Parent->id === \T_OPEN_PARENTHESIS
+                        && $token->Parent->PrevCode->id === \T_FOR
+                    ) {
+                        if (
+                            !$token->NextSibling
+                            || $token->NextSibling->id === \T_SEMICOLON
+                        ) {
                             continue 2;
                         }
                         $token->applyWhitespace(Space::SPACE_AFTER);
@@ -70,8 +74,10 @@ final class StatementSpacing implements TokenRule
                                 $token,
                             );
                         }
-                        if (!$this->Idx->CloseBracket[$token->Prev->id]
-                                && $token->Prev->id !== \T_SEMICOLON) {
+                        if (
+                            !$this->Idx->CloseBracket[$token->Prev->id]
+                            && $token->Prev->id !== \T_SEMICOLON
+                        ) {
                             continue 2;
                         }
                     }

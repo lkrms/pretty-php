@@ -224,16 +224,18 @@ final class Parser implements Immutable
                     // Make multi-line C-style comments honourary DocBlocks if:
                     // - every line starts with "*", or
                     // - at least one delimiter appears on its own line
-                    if (($token->Flags & TokenFlag::C_COMMENT) === TokenFlag::C_COMMENT
-                            && strpos($text, "\n") !== false
-                            && (
-                                // Every line starts with "*"
-                                !Regex::match('/\n\h*+(?!\*)\S/', $text)
-                                // The first delimiter is followed by a newline
-                                || !Regex::match('/^\/\*++(\h++|(?!\*))\S/', $text)
-                                // The last delimiter is preceded by a newline
-                                || !Regex::match('/\S((?<!\*)|\h++)\*++\/$/', $text)
-                            )) {
+                    if (
+                        ($token->Flags & TokenFlag::C_COMMENT) === TokenFlag::C_COMMENT
+                        && strpos($text, "\n") !== false
+                        && (
+                            // Every line starts with "*"
+                            !Regex::match('/\n\h*+(?!\*)\S/', $text)
+                            // The first delimiter is followed by a newline
+                            || !Regex::match('/^\/\*++(\h++|(?!\*))\S/', $text)
+                            // The last delimiter is preceded by a newline
+                            || !Regex::match('/\S((?<!\*)|\h++)\*++\/$/', $text)
+                        )
+                    ) {
                         $token->Flags |= TokenFlag::INFORMAL_DOC_COMMENT;
                     }
                 }

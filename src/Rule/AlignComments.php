@@ -78,7 +78,8 @@ final class AlignComments implements BlockRule
              */
             /** @var Token */
             $prev = $comment->Prev;
-            if ($prev !== $lastComment
+            if (
+                $prev !== $lastComment
                 || $comment->line - $prev->line > 1
                 || ($comment->Flags & TokenFlagMask::COMMENT_TYPE) !== ($prev->Flags & TokenFlagMask::COMMENT_TYPE)
                 || $comment->isMultiLineComment()
@@ -91,7 +92,8 @@ final class AlignComments implements BlockRule
                 )
                 || ($comment->NextCode
                     && $comment->NextCode->wasFirstOnLine()
-                    && $comment->column <= $comment->NextCode->column)) {
+                    && $comment->column <= $comment->NextCode->column)
+            ) {
                 continue;
             }
 

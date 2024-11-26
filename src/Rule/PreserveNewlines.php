@@ -36,10 +36,12 @@ final class PreserveNewlines implements TokenRule
 
         foreach ($tokens as $token) {
             $prev = $token->Prev;
-            if (!$prev
+            if (
+                !$prev
                 || $prev->line === $token->line
                 || (!$preserveTypeIndex[$token->id]
-                    && !$preserveTypeIndex[$prev->id])) {
+                    && !$preserveTypeIndex[$prev->id])
+            ) {
                 continue;
             }
 
@@ -169,13 +171,16 @@ final class PreserveNewlines implements TokenRule
         //     => false,
         // };
         // ```
-        if ($token->id === \T_COMMA
-                && $token->isDelimiterBetweenMatchExpressions()
-                && $token->NextCode->id === \T_DOUBLE_ARROW) {
+        if (
+            $token->id === \T_COMMA
+            && $token->isDelimiterBetweenMatchExpressions()
+            && $token->NextCode->id === \T_DOUBLE_ARROW
+        ) {
             return false;
         }
 
-        if ($line & Space::BLANK
+        if (
+            $line & Space::BLANK
             && (!$this->Idx->AllowBlankAfter[$token->id]
                 || ($token->id === \T_COMMA
                     && !$token->isDelimiterBetweenMatchArms())
@@ -189,15 +194,18 @@ final class PreserveNewlines implements TokenRule
                             && $token->PrevCode->EndStatement !== $token->PrevCode)
                         || ($token->Parent
                             && !($token->Parent->id === \T_OPEN_BRACE
-                                && $token->Parent->Flags & TokenFlag::STRUCTURAL_BRACE)))))) {
+                                && $token->Parent->Flags & TokenFlag::STRUCTURAL_BRACE)))))
+        ) {
             if (!$this->Formatter->PreserveNewlines) {
                 return false;
             }
             $line = Space::LINE;
         }
 
-        if (!$this->Formatter->PreserveNewlines
-                && !$token->hasNewlineAfter()) {
+        if (
+            !$this->Formatter->PreserveNewlines
+            && !$token->hasNewlineAfter()
+        ) {
             return false;
         }
 

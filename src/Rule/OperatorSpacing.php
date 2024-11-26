@@ -117,11 +117,13 @@ final class OperatorSpacing implements TokenRule
 
             // Suppress whitespace around exception delimiters in `catch` blocks
             // (unless in strict PSR-12 mode)
-            if ($token->id === \T_OR
-                    && $token->Parent
-                    && $token->Parent->PrevCode
-                    && $token->Parent->PrevCode->id === \T_CATCH
-                    && !$this->Formatter->Psr12) {
+            if (
+                $token->id === \T_OR
+                && $token->Parent
+                && $token->Parent->PrevCode
+                && $token->Parent->PrevCode->id === \T_CATCH
+                && !$this->Formatter->Psr12
+            ) {
                 $token->Whitespace |= Space::NONE_BEFORE | Space::NONE_AFTER;
                 continue;
             }
@@ -146,11 +148,13 @@ final class OperatorSpacing implements TokenRule
             }
 
             // Suppress whitespace after unary operators
-            if ($token->isUnaryOperator()
+            if (
+                $token->isUnaryOperator()
                 && $token->Next
                 && $token->Next->Flags & TokenFlag::CODE
                 && (!$this->Idx->Operator[$token->Next->id]
-                    || $token->Next->isUnaryOperator())) {
+                    || $token->Next->isUnaryOperator())
+            ) {
                 $token->Whitespace |= Space::NONE_AFTER;
 
                 continue;

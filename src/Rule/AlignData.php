@@ -110,8 +110,10 @@ final class AlignData implements BlockRule
                     }
                     continue;
                 }
-                if ($token->id === \T_COLON
-                        && $token->getSubId() === TokenSubId::COLON_SWITCH_CASE_DELIMITER) {
+                if (
+                    $token->id === \T_COLON
+                    && $token->getSubId() === TokenSubId::COLON_SWITCH_CASE_DELIMITER
+                ) {
                     $addToIndex('case');
                     continue;
                 }
@@ -119,11 +121,13 @@ final class AlignData implements BlockRule
                     $addToIndex('=>');
                     continue;
                 }
-                if ($token->id === \T_COMMA
-                        && !$token->hasNewlineAfter()
-                        && $token->Parent
-                        && $token->Parent->isArrayOpenBracket()
-                        && !$this->Idx->CloseBracket[$token->Next->id]) {
+                if (
+                    $token->id === \T_COMMA
+                    && !$token->hasNewlineAfter()
+                    && $token->Parent
+                    && $token->Parent->isArrayOpenBracket()
+                    && !$this->Idx->CloseBracket[$token->Next->id]
+                ) {
                     $data = [
                         'prevTypes' => $token->prevSiblings($token->prevSiblingOf(\T_COMMA)->NextCode)->getTypes(),
                         'nextTypes' => $token->Next->collectSiblings($token->nextSiblingOf(\T_COMMA)->PrevCode)->getTypes(),
@@ -184,7 +188,8 @@ final class AlignData implements BlockRule
                     if ($lastToken = end($run)) {
                         $prev = key($run);
                         // Tokens must appear on consecutive lines
-                        if ($line - $prev === 1
+                        if (
+                            $line - $prev === 1
                             // Loophole: the expression they precede may span
                             // multiple lines, as long as inner lines have a
                             // higher effective indentation level than the
@@ -193,7 +198,8 @@ final class AlignData implements BlockRule
                                 && $lines[$line - 1][0]->Index
                                     <= $lastToken->NextCode->pragmaticEndOfExpression()->Index)
                             || ($this->Formatter->RelaxAlignmentCriteria
-                                && $lines[$line - 1][0]->PrevCode === $lines[$line][0]->PrevCode)) {
+                                && $lines[$line - 1][0]->PrevCode === $lines[$line][0]->PrevCode)
+                        ) {
                             $run[$line] = $token;
                             continue;
                         }
@@ -236,9 +242,11 @@ final class AlignData implements BlockRule
             }
             $end = $token2->NextCode->pragmaticEndOfExpression();
             $current = $token2;
-            while (++$line < $blockLines
-                    && ($current = $current->endOfLine()->Next)
-                    && $current->Index <= $end->Index) {
+            while (
+                ++$line < $blockLines
+                && ($current = $current->endOfLine()->Next)
+                && $current->Index <= $end->Index
+            ) {
                 $innerLines[$prev][] = $lines[$line][0];
             }
             $action = $type === ','
@@ -287,10 +295,12 @@ final class AlignData implements BlockRule
             $length = mb_strlen($token1->collect($token2)->render(true, false));
             $lengths[$i] = $length;
             $maxLength = max($maxLength, $length);
-            if ($action === self::ALIGN_DATA
-                    && ($types = $this->TokenData[$token2->Index]['prevTypes'] ?? null)
-                    // Exclude `null` from type detection heuristic
-                    && !($types === [\T_STRING] && strcasecmp($token2->Prev->text, 'null'))) {
+            if (
+                $action === self::ALIGN_DATA
+                && ($types = $this->TokenData[$token2->Index]['prevTypes'] ?? null)
+                // Exclude `null` from type detection heuristic
+                && !($types === [\T_STRING] && strcasecmp($token2->Prev->text, 'null'))
+            ) {
                 $prevTypes[] = $types;
             }
         }

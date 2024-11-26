@@ -870,11 +870,13 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     public function startOfLine(bool $ignoreComments = true): self
     {
         $current = $this;
-        while (!$current->hasNewlineBefore()
-                && ($ignoreComments
-                    || !($current->isMultiLineComment() && $current->hasNewline()))
-                && $current->id !== \T_END_HEREDOC
-                && $current->Prev) {
+        while (
+            !$current->hasNewlineBefore()
+            && ($ignoreComments
+                || !($current->isMultiLineComment() && $current->hasNewline()))
+            && $current->id !== \T_END_HEREDOC
+            && $current->Prev
+        ) {
             $current = $current->Prev;
         }
 
@@ -884,11 +886,13 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     public function endOfLine(bool $ignoreComments = true): self
     {
         $current = $this;
-        while (!$current->hasNewlineAfter()
-                && ($ignoreComments
-                    || !($current->isMultiLineComment() && $current->hasNewline()))
-                && $current->id !== \T_START_HEREDOC
-                && $current->Next) {
+        while (
+            !$current->hasNewlineAfter()
+            && ($ignoreComments
+                || !($current->isMultiLineComment() && $current->hasNewline()))
+            && $current->id !== \T_START_HEREDOC
+            && $current->Next
+        ) {
             $current = $current->Next;
         }
 
@@ -1013,17 +1017,21 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             // Honour imaginary braces around control structures with unenclosed
             // bodies if needed
             if ($containUnenclosed && $current->EndExpression) {
-                if ($this->Idx->HasStatementWithOptionalBraces[$current->id]
-                        && ($body = $current->NextSibling)
-                        && $body->id !== \T_OPEN_BRACE
-                        && $current->EndExpression->withTerminator()->Index >= $this->Index) {
+                if (
+                    $this->Idx->HasStatementWithOptionalBraces[$current->id]
+                    && ($body = $current->NextSibling)
+                    && $body->id !== \T_OPEN_BRACE
+                    && $current->EndExpression->withTerminator()->Index >= $this->Index
+                ) {
                     return $body->_pragmaticStartOfExpression($this);
                 }
-                if ($this->Idx->HasExpressionAndStatementWithOptionalBraces[$current->id]
-                        && $current->NextSibling
-                        && ($body = $current->NextSibling->NextSibling)
-                        && $body->id !== \T_OPEN_BRACE
-                        && $current->EndExpression->withTerminator()->Index >= $this->Index) {
+                if (
+                    $this->Idx->HasExpressionAndStatementWithOptionalBraces[$current->id]
+                    && $current->NextSibling
+                    && ($body = $current->NextSibling->NextSibling)
+                    && $body->id !== \T_OPEN_BRACE
+                    && $current->EndExpression->withTerminator()->Index >= $this->Index
+                ) {
                     return $body->_pragmaticStartOfExpression($this);
                 }
             }
@@ -1104,9 +1112,11 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             $current = $this;
             do {
                 $last = $current;
-            } while (($current = $current->NextSibling)
+            } while (
+                ($current = $current->NextSibling)
                 && $this->Expression === $current->Expression
-                && $this->Idx->ChainPart[$current->id]);
+                && $this->Idx->ChainPart[$current->id]
+            );
 
             return $last->ClosedBy ?: $last;
         }
@@ -1173,8 +1183,10 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
             // Don't terminate if the token between expressions is a ternary
             // operator or an expression terminator other than `)`, `]` and `;`
-            if (($terminator->Flags & TokenFlag::TERNARY_OPERATOR)
-                    || $this->Idx->ExpressionDelimiter[$terminator->id]) {
+            if (
+                ($terminator->Flags & TokenFlag::TERNARY_OPERATOR)
+                || $this->Idx->ExpressionDelimiter[$terminator->id]
+            ) {
                 continue;
             }
 
@@ -1188,17 +1200,21 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             if ($next->id === \T_CATCH || $next->id === \T_FINALLY) {
                 continue;
             }
-            if (($next->id === \T_ELSEIF || $next->id === \T_ELSE)
+            if (
+                ($next->id === \T_ELSEIF || $next->id === \T_ELSE)
                 && (!$containUnenclosed
                     || $terminator->id === \T_CLOSE_BRACE
-                    || $terminator->prevSiblingFrom($this->Idx->IfOrElseIf)->Index >= $this->Index)) {
+                    || $terminator->prevSiblingFrom($this->Idx->IfOrElseIf)->Index >= $this->Index)
+            ) {
                 continue;
             }
-            if ($next->id === \T_WHILE
+            if (
+                $next->id === \T_WHILE
                 && $next->Statement !== $next
                 && (!$containUnenclosed
                     || $terminator->id === \T_CLOSE_BRACE
-                    || ($next->Statement && $next->Statement->Index >= $this->Index))) {
+                    || ($next->Statement && $next->Statement->Index >= $this->Index))
+            ) {
                 continue;
             }
 
@@ -1336,17 +1352,20 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         // If it's a `,`, move to the first token of the next expression on the
         // same line and assign it to `$next`
         $next = $outer;
-        while ($next
-                && !$next->Expression
-                && $next->NextSibling
-                && $next->NextSibling->Index <= $eol->Index) {
+        while (
+            $next
+            && !$next->Expression
+            && $next->NextSibling
+            && $next->NextSibling->Index <= $eol->Index
+        ) {
             $next = $next->NextSibling;
         }
 
         // Return `null` if the first code token after `$outer` is on a
         // subsequent line, or if neither `$outer` nor `$next` belong to a
         // statement that continues beyond their respective next code tokens
-        if (!$outer
+        if (
+            !$outer
             || !$outer->NextCode
             || $outer->NextCode->Index > $eol->Index
             || ((!$outer->EndStatement
@@ -1355,17 +1374,20 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
                     || !$next
                     || !$next->EndStatement
                     || !$next->NextCode
-                    || $next->EndStatement->Index <= $next->NextCode->Index))) {
+                    || $next->EndStatement->Index <= $next->NextCode->Index))
+        ) {
             return null;
         }
 
         // Return `null` if `$requireAlignedWith` is `true` and there are no
         // tokens between `$outer` and the end of the line where `AlignedWith`
         // is set
-        if ($requireAlignedWith
+        if (
+            $requireAlignedWith
             && !$outer->NextCode
                       ->collect($eol)
-                      ->find(fn(self $t) => (bool) $t->AlignedWith)) {
+                      ->find(fn(self $t) => (bool) $t->AlignedWith)
+        ) {
             return null;
         }
 
@@ -1386,8 +1408,10 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         do {
             $last = $current;
             $current = $current->NextSibling;
-        } while ($current
-            && $current->Index <= $eol->Index);
+        } while (
+            $current
+            && $current->Index <= $eol->Index
+        );
 
         return $last;
     }
