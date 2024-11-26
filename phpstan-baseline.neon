@@ -1,12 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Parameter \#2 \$subject of static method Salient\\Utility\\Regex\:\:match\(\) expects string, string\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Filter/RemoveHeredocIndentation.php
-
-		-
 			message: '#^Parameter \#1 \$to of method Lkrms\\PrettyPHP\\Token\:\:collect\(\) expects Lkrms\\PrettyPHP\\Token, Lkrms\\PrettyPHP\\Token\|null given\.$#'
 			identifier: argument.type
 			count: 1

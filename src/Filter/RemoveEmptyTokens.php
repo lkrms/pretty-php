@@ -19,13 +19,13 @@ final class RemoveEmptyTokens implements Filter
      */
     public function filterTokens(array $tokens): array
     {
-        $filtered = [];
         foreach ($tokens as $token) {
-            if ($token->text !== '') {
-                $filtered[] = $token;
+            if ($token->text === '') {
+                continue;
             }
+            $filtered[] = $token;
         }
 
-        return $filtered;
+        return $filtered ?? [];
     }
 }

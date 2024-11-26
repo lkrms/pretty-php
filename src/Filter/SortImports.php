@@ -49,37 +49,25 @@ final class SortImports implements Filter
         // use A \ B \ C
         // use A \ B
         // ```
-        $search = [
-            '/\\\\/',
-            '/\h++/',
-        ];
+        $search = ['/\\\\/', '/\h++/'];
+        $replace = [' \ ', ' '];
 
-        $replace = [
-            ' \ ',
-            ' ',
-        ];
-
-        switch ($this->Formatter->ImportSortOrder) {
-            case ImportSortOrder::DEPTH:
-                array_push(
-                    $search,
-                    '/(?:^use(?: function| const)?|\\\\) (?=[^ \\\\{]+(?: [^\\\\]|$))/i',
-                    '/\\\\ (?=\{)/',
-                    '/(?:^use(?: function| const)?|\\\\) (?=[^ \\\\]+ \\\\)/i',
-                );
-                array_push(
-                    $replace,
-                    '${0}2',
-                    '${0}1',
-                    '${0}0',
-                );
-                break;
-
-            case ImportSortOrder::NAME:
-            default:
-                $search[] = '/(?<=\\\\ )\{ /';
-                $replace[] = '';
-                break;
+        if ($this->Formatter->ImportSortOrder === ImportSortOrder::DEPTH) {
+            array_push(
+                $search,
+                '/(?:^use(?: function| const)?|\\\\) (?=[^ \\\\{]+(?: [^\\\\]|$))/iD',
+                '/\\\\ (?=\{)/',
+                '/(?:^use(?: function| const)?|\\\\) (?=[^ \\\\]+ \\\\)/i',
+            );
+            array_push(
+                $replace,
+                '${0}2',
+                '${0}1',
+                '${0}0',
+            );
+        } else {
+            $search[] = '/(?<=\\\\ )\{ /';
+            $replace[] = '';
         }
 
         $this->Search = $search;
@@ -253,10 +241,7 @@ final class SortImports implements Filter
     {
         $import = [];
         foreach ($tokens as $token) {
-            if (
-                $this->Idx->Comment[$token->id]
-                || $token->id === \T_SEMICOLON
-            ) {
+            if ($this->Idx->CommentOrSemicolon[$token->id]) {
                 continue;
             }
             if ($token->id === \T_COMMA) {

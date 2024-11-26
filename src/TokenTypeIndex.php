@@ -355,6 +355,16 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
+     * T_COMMENT, T_DOC_COMMENT, T_SEMICOLON
+     *
+     * @var array<int,bool>
+     */
+    public array $CommentOrSemicolon = self::COMMENT + [
+        \T_SEMICOLON => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
      * T_ABSTRACT, T_CASE, T_CLASS, T_CONST, T_DECLARE, T_ENUM, T_FINAL,
      * T_FUNCTION, T_INTERFACE, T_NAMESPACE, T_PRIVATE, T_PRIVATE_SET,
      * T_PROTECTED, T_PROTECTED_SET, T_PUBLIC, T_PUBLIC_SET, T_READONLY,
@@ -655,6 +665,17 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      */
     public array $VisibilityOrReadonly = self::VISIBILITY + [
         \T_READONLY => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
+     * T_WHITESPACE, T_BAD_CHARACTER
+     *
+     * @var array<int,bool>
+     */
+    public array $Whitespace = [
+        \T_WHITESPACE => true,
+        \T_BAD_CHARACTER => true,
     ]
         + self::TOKEN_INDEX;
 
