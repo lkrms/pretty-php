@@ -6,7 +6,7 @@ use Lkrms\PrettyPHP\Catalog\DeclarationType;
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenFlagMask;
-use Lkrms\PrettyPHP\Catalog\TokenSubType;
+use Lkrms\PrettyPHP\Catalog\TokenSubId;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Contract\HasTokenNames;
@@ -19,7 +19,7 @@ use JsonSerializable;
 class Token extends GenericToken implements HasTokenNames, JsonSerializable
 {
     /**
-     * The starting column (1-based) of the token
+     * The starting column number (1-based) of the token
      */
     public int $column = -1;
 
@@ -28,8 +28,8 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      */
     public int $Index = -1;
 
-    /** @var TokenSubType::*|-1|null */
-    public ?int $SubType = null;
+    /** @var TokenSubId::*|-1|null */
+    public ?int $SubId = null;
     public ?self $Prev = null;
     public ?self $Next = null;
     public ?self $PrevCode = null;
@@ -446,7 +446,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      */
     public function isColonAltSyntaxDelimiter(): bool
     {
-        return $this->getSubType() === TokenSubType::COLON_ALT_SYNTAX_DELIMITER;
+        return $this->getSubId() === TokenSubId::COLON_ALT_SYNTAX_DELIMITER;
     }
 
     /**
@@ -454,8 +454,8 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      */
     public function isColonStatementDelimiter(): bool
     {
-        return $this->getSubType() === TokenSubType::COLON_SWITCH_CASE_DELIMITER
-            || $this->SubType === TokenSubType::COLON_LABEL_DELIMITER;
+        return $this->getSubId() === TokenSubId::COLON_SWITCH_CASE_DELIMITER
+            || $this->SubId === TokenSubId::COLON_LABEL_DELIMITER;
     }
 
     /**
@@ -463,39 +463,39 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      */
     public function isColonTypeDelimiter(): bool
     {
-        return $this->getSubType() === TokenSubType::COLON_RETURN_TYPE_DELIMITER
-            || $this->SubType === TokenSubType::COLON_BACKED_ENUM_TYPE_DELIMITER;
+        return $this->getSubId() === TokenSubId::COLON_RETURN_TYPE_DELIMITER
+            || $this->SubId === TokenSubId::COLON_BACKED_ENUM_TYPE_DELIMITER;
     }
 
     /**
      * Get the sub-type of a T_COLON, T_QUESTION or T_USE token
      *
-     * @return TokenSubType::*|-1
+     * @return TokenSubId::*|-1
      */
-    public function getSubType(): int
+    public function getSubId(): int
     {
-        if ($this->SubType !== null) {
-            return $this->SubType;
+        if ($this->SubId !== null) {
+            return $this->SubId;
         }
 
         switch ($this->id) {
             case \T_COLON:
                 // If it's too early to determine the token's sub-type, save
                 // `null` to resolve it later and return `-1`
-                return ($this->SubType = $this->getColonType()) ?? -1;
+                return ($this->SubId = $this->getColonType()) ?? -1;
             case \T_QUESTION:
-                return $this->SubType = $this->getQuestionType();
+                return $this->SubId = $this->getQuestionType();
             case \T_USE:
-                return $this->SubType = $this->getUseType();
+                return $this->SubId = $this->getUseType();
             default:
                 // @codeCoverageIgnoreStart
-                return $this->SubType = -1;
+                return $this->SubId = -1;
                 // @codeCoverageIgnoreEnd
         }
     }
 
     /**
-     * @return TokenSubType::COLON_*|null
+     * @return TokenSubId::COLON_*|null
      */
     private function getColonType(): ?int
     {
@@ -514,7 +514,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
                 )
             )
         ) {
-            return TokenSubType::COLON_ALT_SYNTAX_DELIMITER;
+            return TokenSubId::COLON_ALT_SYNTAX_DELIMITER;
         }
 
         if (
@@ -527,11 +527,11 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
                 || $prevCode->PrevCode->id === \T_COMMA
             )
         ) {
-            return TokenSubType::COLON_NAMED_ARGUMENT_DELIMITER;
+            return TokenSubId::COLON_NAMED_ARGUMENT_DELIMITER;
         }
 
         if ($this->inSwitchCase()) {
-            return TokenSubType::COLON_SWITCH_CASE_DELIMITER;
+            return TokenSubId::COLON_SWITCH_CASE_DELIMITER;
         }
 
         if (
@@ -539,7 +539,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             && $prevCode->PrevCode
             && $prevCode->PrevCode->id === \T_ENUM
         ) {
-            return TokenSubType::COLON_BACKED_ENUM_TYPE_DELIMITER;
+            return TokenSubId::COLON_BACKED_ENUM_TYPE_DELIMITER;
         }
 
         if ($prevCode->id === \T_CLOSE_PARENTHESIS) {
@@ -557,7 +557,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
                 $prev = $prev->skipPrevSiblingsFrom($this->Idx->FunctionIdentifier);
 
                 if ($prev->id === \T_FUNCTION || $prev->id === \T_FN) {
-                    return TokenSubType::COLON_RETURN_TYPE_DELIMITER;
+                    return TokenSubId::COLON_RETURN_TYPE_DELIMITER;
                 }
             }
         }
@@ -573,14 +573,14 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
                 && $prevCode->PrevSibling->EndStatement->NextSibling === $prevCode
             )
         )) {
-            return TokenSubType::COLON_LABEL_DELIMITER;
+            return TokenSubId::COLON_LABEL_DELIMITER;
         }
 
-        return TokenSubType::COLON_TERNARY_OPERATOR;
+        return TokenSubId::COLON_TERNARY_OPERATOR;
     }
 
     /**
-     * @return TokenSubType::QUESTION_*
+     * @return TokenSubId::QUESTION_*
      */
     private function getQuestionType(): int
     {
@@ -594,32 +594,32 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             || ($prevCode->id === \T_COLON && $prevCode->isColonTypeDelimiter())
             || $this->inParameterList()
         ) {
-            return TokenSubType::QUESTION_NULLABLE;
+            return TokenSubId::QUESTION_NULLABLE;
         }
 
-        return TokenSubType::QUESTION_TERNARY_OPERATOR;
+        return TokenSubId::QUESTION_TERNARY_OPERATOR;
     }
 
     /**
-     * @return TokenSubType::USE_*
+     * @return TokenSubId::USE_*
      */
     private function getUseType(): int
     {
         if ($this->PrevCode && $this->PrevCode->id === \T_CLOSE_PARENTHESIS) {
-            return TokenSubType::USE_VARIABLES;
+            return TokenSubId::USE_VARIABLES;
         }
 
         if ($this->Parent && $this->Parent->id === \T_OPEN_BRACE) {
             $t = $this->Parent->PrevSibling;
             while ($t && $this->Idx->DeclarationPart[$t->id]) {
                 if ($this->Idx->DeclarationClass[$t->id]) {
-                    return TokenSubType::USE_TRAIT;
+                    return TokenSubId::USE_TRAIT;
                 }
                 $t = $t->PrevSibling;
             }
         }
 
-        return TokenSubType::USE_IMPORT;
+        return TokenSubId::USE_IMPORT;
     }
 
     /**

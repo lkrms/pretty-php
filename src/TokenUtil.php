@@ -4,7 +4,7 @@ namespace Lkrms\PrettyPHP;
 
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\TokenSubType;
+use Lkrms\PrettyPHP\Catalog\TokenSubId;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Internal\TokenCollection;
 use Salient\Utility\Arr;
@@ -140,9 +140,9 @@ final class TokenUtil
         $t['pos'] = $token->pos;
         $t['column'] = $token->column;
 
-        if ($token->SubType !== null) {
-            $t['SubType'] = $token->SubType !== -1
-                ? Reflect::getConstantName(TokenSubType::class, $token->SubType)
+        if ($token->SubId !== null) {
+            $t['SubId'] = $token->SubId !== -1
+                ? Reflect::getConstantName(TokenSubId::class, $token->SubId)
                 : '<unknown>';
         }
 

@@ -4,9 +4,8 @@ namespace Lkrms\PrettyPHP\Filter;
 
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
-use Lkrms\PrettyPHP\Exception\FilterException;
-use Lkrms\PrettyPHP\Token;
 use Lkrms\PrettyPHP\TokenUtil;
+use Salient\Utility\Exception\ShouldNotHappenException;
 use Salient\Utility\Regex;
 
 /**
@@ -23,9 +22,7 @@ final class EvaluateStrings implements Filter
      */
     public function filterTokens(array $tokens): array
     {
-        /** @var Token[] */
         $stack = [];
-        /** @var Token|null */
         $lastString = null;
 
         $string = '';
@@ -60,6 +57,8 @@ final class EvaluateStrings implements Filter
                 eval("\$string = {$token->text};");
             } elseif ($token->id !== \T_ENCAPSED_AND_WHITESPACE) {
                 continue;
+            } elseif (!$lastString) {
+                throw new ShouldNotHappenException('Error parsing string');
             } elseif ($lastString->id === \T_DOUBLE_QUOTE) {
                 eval("\$string = \"{$token->text}\";");
             } elseif ($lastString->id === \T_BACKTICK) {
@@ -74,7 +73,7 @@ final class EvaluateStrings implements Filter
                 $end = Regex::replace('/[^a-zA-Z0-9_]+/', '', $start);
                 eval("\$string = {$start}\n{$token->text}\n{$end};");
             } else {
-                throw new FilterException('Error parsing string');
+                throw new ShouldNotHappenException('Error parsing string');
             }
             $token->text = $string;
         }

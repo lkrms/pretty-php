@@ -7,7 +7,7 @@ namespace Lkrms\PrettyPHP\Catalog;
  *
  * @api
  */
-interface TokenSubType
+interface TokenSubId
 {
     public const COLON_TERNARY_OPERATOR = 0;
     public const COLON_ALT_SYNTAX_DELIMITER = 1;

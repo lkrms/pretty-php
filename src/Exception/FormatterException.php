@@ -6,6 +6,9 @@ use Lkrms\PrettyPHP\Token;
 use Salient\Utility\Json;
 use Throwable;
 
+/**
+ * @api
+ */
 class FormatterException extends AbstractException
 {
     protected ?string $Output;
@@ -17,6 +20,8 @@ class FormatterException extends AbstractException
     protected $Data;
 
     /**
+     * @internal
+     *
      * @param Token[]|null $tokens
      * @param array<string,string>|null $log
      * @param mixed[]|object|null $data
@@ -29,20 +34,25 @@ class FormatterException extends AbstractException
         $data = null,
         ?Throwable $previous = null
     ) {
-        parent::__construct($message, $previous);
-
         $this->Output = $output;
         $this->Tokens = $tokens;
         $this->Log = $log;
         $this->Data = $data;
+
+        parent::__construct($message, $previous);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getMetadata(): array
     {
+        $flags = \JSON_FORCE_OBJECT | \JSON_INVALID_UTF8_IGNORE;
+
         return [
             'output' => $this->Output,
-            'tokens' => Json::prettyPrint($this->Tokens, \JSON_FORCE_OBJECT),
-            'data' => Json::prettyPrint($this->Data),
+            'tokens' => Json::prettyPrint($this->Tokens, $flags),
+            'data' => Json::prettyPrint($this->Data, $flags),
         ];
     }
 

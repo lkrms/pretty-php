@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\TokenSubType;
+use Lkrms\PrettyPHP\Catalog\TokenSubId;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
@@ -140,7 +140,7 @@ final class PlaceComments implements TokenRule
                     || $next->id === \T_NAMESPACE
                     || (
                         $next->id === \T_USE
-                        && $next->getSubType() === TokenSubType::USE_IMPORT
+                        && $next->getSubId() === TokenSubId::USE_IMPORT
                     )
                 )
             ) {

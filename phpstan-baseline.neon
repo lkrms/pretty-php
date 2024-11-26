@@ -1,18 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Cannot access property \$id on Lkrms\\PrettyPHP\\Token\|\(T of Lkrms\\PrettyPHP\\GenericToken\)\|null\.$#'
-			identifier: property.nonObject
-			count: 3
-			path: src/Filter/EvaluateStrings.php
-
-		-
-			message: '#^Cannot access property \$text on Lkrms\\PrettyPHP\\Token\|\(T of Lkrms\\PrettyPHP\\GenericToken\)\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Filter/EvaluateStrings.php
-
-		-
 			message: '#^Parameter \#2 \$subject of static method Salient\\Utility\\Regex\:\:match\(\) expects string, string\|false given\.$#'
 			identifier: argument.type
 			count: 1

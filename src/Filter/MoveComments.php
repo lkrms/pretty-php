@@ -19,8 +19,6 @@ final class MoveComments implements Filter
 {
     use FilterTrait;
 
-    private int $Count;
-
     /**
      * Movable tokens allowed before newlines/comments
      *
@@ -34,6 +32,10 @@ final class MoveComments implements Filter
      * @var array<int,bool>
      */
     private array $AfterCommentIndex;
+
+    // --
+
+    private int $Count;
 
     /**
      * @inheritDoc
@@ -51,6 +53,15 @@ final class MoveComments implements Filter
             $this->Idx->Movable,
             $idx->AllowNewlineBefore,
         );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function reset(): void
+    {
+        $this->Tokens = [];
+        $this->Count = 0;
     }
 
     /**

@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Catalog;
 
 /**
- * Whitespace applied to tokens
+ * Whitespace flags applied to tokens
  *
  * @api
  */

@@ -60,10 +60,7 @@ use JsonException;
 use SplFileInfo;
 use Throwable;
 
-/**
- * Provides pretty-php's command-line interface
- */
-final class FormatPhpCommand extends CliCommand
+final class PrettyPHPCommand extends CliCommand
 {
     private const DISABLE_MAP = [
         'sort-imports' => SortImports::class,

@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Tests\App;
 
-use Lkrms\PrettyPHP\App\FormatPhpCommand;
+use Lkrms\PrettyPHP\App\PrettyPHPCommand;
 use Lkrms\PrettyPHP\Tests\TestCase;
 use Salient\Cli\CliApplication;
 use Salient\Console\ConsoleFormatter;
@@ -64,7 +64,7 @@ EOF;
         $_SERVER['SCRIPT_FILENAME'] = 'pretty-php';
 
         $this->App = (new CliApplication(self::$BasePath))
-                         ->oneCommand(FormatPhpCommand::class);
+                         ->oneCommand(PrettyPHPCommand::class);
     }
 
     protected function tearDown(): void
@@ -815,11 +815,11 @@ EOF,
     {
         $file = self::$FixturesPath . '/empty-config/Foo.php';
         $messages = [
-            [Level::DEBUG, self::DEBUG . '{' . FormatPhpCommand::class . '->getConfigFile:'],
-            [Level::DEBUG, self::DEBUG . '{' . FormatPhpCommand::class . '->getConfigValues:'],
-            [Level::DEBUG, self::DEBUG . '{' . FormatPhpCommand::class . '->run:'],
-            [Level::DEBUG, self::DEBUG . '{' . FormatPhpCommand::class . '->doGetFormatter:'],
-            [Level::DEBUG, self::DEBUG . '{' . FormatPhpCommand::class . '->run:'],
+            [Level::DEBUG, self::DEBUG . '{' . PrettyPHPCommand::class . '->getConfigFile:'],
+            [Level::DEBUG, self::DEBUG . '{' . PrettyPHPCommand::class . '->getConfigValues:'],
+            [Level::DEBUG, self::DEBUG . '{' . PrettyPHPCommand::class . '->run:'],
+            [Level::DEBUG, self::DEBUG . '{' . PrettyPHPCommand::class . '->doGetFormatter:'],
+            [Level::DEBUG, self::DEBUG . '{' . PrettyPHPCommand::class . '->run:'],
             [Level::INFO, self::SUCCESS . 'Formatted 1 file successfully in '],
         ];
         $dir = $this->App->getTempPath() . '/debug';

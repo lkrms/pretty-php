@@ -5,7 +5,7 @@ namespace Lkrms\PrettyPHP;
 use Lkrms\PrettyPHP\Catalog\DeclarationType as Type;
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\TokenSubType;
+use Lkrms\PrettyPHP\Catalog\TokenSubId;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Internal\Document;
 use Lkrms\PrettyPHP\Internal\TokenCollection;
@@ -667,7 +667,7 @@ final class Parser implements Immutable
                 // Flag and link ternary operators
                 if (
                     $token->id === \T_QUESTION
-                    && $token->getSubType() === TokenSubType::QUESTION_TERNARY_OPERATOR
+                    && $token->getSubId() === TokenSubId::QUESTION_TERNARY_OPERATOR
                 ) {
                     $current = $token;
                     $count = 0;
@@ -677,14 +677,14 @@ final class Parser implements Immutable
                     ) {
                         if (
                             $current->id === \T_QUESTION
-                            && $current->getSubType() === TokenSubType::QUESTION_TERNARY_OPERATOR
+                            && $current->getSubId() === TokenSubId::QUESTION_TERNARY_OPERATOR
                         ) {
                             $count++;
                             continue;
                         }
                         if (
                             $current->id === \T_COLON
-                            && $current->getSubType() === TokenSubType::COLON_TERNARY_OPERATOR
+                            && $current->getSubId() === TokenSubId::COLON_TERNARY_OPERATOR
                         ) {
                             if ($count--) {
                                 continue;
