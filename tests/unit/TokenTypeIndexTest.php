@@ -139,7 +139,6 @@ class TokenTypeIndexTest extends TestCase
     protected const NOT_MOVABLE = [
         \T_ATTRIBUTE,
         \T_ATTRIBUTE_COMMENT,
-        \T_DOUBLE_ARROW,
     ];
 
     /**

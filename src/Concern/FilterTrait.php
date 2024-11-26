@@ -98,6 +98,62 @@ trait FilterTrait
     }
 
     /**
+     * Get the given token's next sibling of the given type
+     *
+     * @param-out int $key
+     */
+    private function getNextSiblingOf(int $i, int $count, int $id, ?int &$key = null): ?GenericToken
+    {
+        while ($token = $this->getNextSibling($i, $count, 1, $j)) {
+            if ($token->id === $id) {
+                $key = $j;
+                return $token;
+            }
+            $i = $j;
+        }
+        $key = -1;
+        return null;
+    }
+
+    /**
+     * Get one of the given token's next siblings
+     *
+     * @param-out int $key
+     */
+    private function getNextSibling(int $i, int $count, int $offset = 1, ?int &$key = null): ?GenericToken
+    {
+        $depth = 0;
+        while ($i + 1 < $count) {
+            $token = $this->Tokens[$i];
+            if ($this->Idx->OpenBracket[$token->id]) {
+                $depth++;
+            } elseif ($this->Idx->CloseBracket[$token->id]) {
+                $depth--;
+                if ($depth < 0) {
+                    break;
+                }
+            }
+            $token = $this->Tokens[++$i];
+            while ($this->Idx->NotCode[$token->id]) {
+                if ($i + 1 < $count) {
+                    $token = $this->Tokens[++$i];
+                } else {
+                    break 2;
+                }
+            }
+            if (!$depth) {
+                $offset--;
+                if (!$offset) {
+                    $key = $i;
+                    return $token;
+                }
+            }
+        }
+        $key = -1;
+        return null;
+    }
+
+    /**
      * Get the given token's parent
      *
      * @param-out int $key

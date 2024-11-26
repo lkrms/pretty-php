@@ -92,7 +92,6 @@ final class WordPressTokenTypeIndexTest extends TokenTypeIndexTest
         \T_ATTRIBUTE,
         \T_ATTRIBUTE_COMMENT,
         \T_CLOSE_BRACE,
-        \T_DOUBLE_ARROW,
     ];
 
     protected static function getIndex(): TokenTypeIndex

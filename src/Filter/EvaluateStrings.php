@@ -58,7 +58,9 @@ final class EvaluateStrings implements Filter
             } elseif ($token->id !== \T_ENCAPSED_AND_WHITESPACE) {
                 continue;
             } elseif (!$lastString) {
+                // @codeCoverageIgnoreStart
                 throw new ShouldNotHappenException('Error parsing string');
+                // @codeCoverageIgnoreEnd
             } elseif ($lastString->id === \T_DOUBLE_QUOTE) {
                 eval("\$string = \"{$token->text}\";");
             } elseif ($lastString->id === \T_BACKTICK) {
@@ -73,7 +75,9 @@ final class EvaluateStrings implements Filter
                 $end = Regex::replace('/[^a-zA-Z0-9_]+/', '', $start);
                 eval("\$string = {$start}\n{$token->text}\n{$end};");
             } else {
+                // @codeCoverageIgnoreStart
                 throw new ShouldNotHappenException('Error parsing string');
+                // @codeCoverageIgnoreEnd
             }
             $token->text = $string;
         }

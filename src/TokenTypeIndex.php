@@ -1253,7 +1253,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     /**
      * Arithmetic operators, assignment operators, bitwise operators, comparison
      * operators, logical operators, ternary operators, T_COMMA, T_CONCAT,
-     * T_SEMICOLON, T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR
+     * T_DOUBLE_ARROW, T_SEMICOLON, T_OBJECT_OPERATOR,
+     * T_NULLSAFE_OBJECT_OPERATOR
      *
      * Tokens that may be swapped with adjacent comment tokens for correct
      * placement.
@@ -1263,7 +1264,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $Movable = [
         \T_COMMA => true,
         \T_CONCAT => true,
-        // \T_DOUBLE_ARROW => true,
+        \T_DOUBLE_ARROW => true,
         \T_SEMICOLON => true,
     ]
         + self::CHAIN

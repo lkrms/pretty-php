@@ -123,6 +123,28 @@ $foo  /** DocBlock */
         $quux;  /** DocBlock */
 PHP;
 
+        $input3 = <<<'PHP'
+<?php
+fn() /* comment */ => null;
+fn() => /* comment */ null;
+fn()  /* comment */
+    => null;
+fn() =>  /* comment */
+    null;
+fn()  // comment
+    => null;
+fn() =>  // comment
+    null;
+[
+    'foo' /* comment */ => 0,
+    'bar' => /* comment */ 0,
+    'baz'  // comment
+        => 0,
+    'qux' =>  // comment
+        0,
+];
+PHP;
+
         return [
             'Comments before commas' => [
                 <<<'PHP'
@@ -450,6 +472,110 @@ label:  // Comment
 label:  // Comment
 PHP,
                 $formatter,
+            ],
+            'Comments before and after double arrows + mixed' => [
+                <<<'PHP'
+<?php
+fn() => /* comment */ null;
+fn() => /* comment */ null;
+fn() =>  /* comment */
+    null;
+fn() =>  /* comment */
+    null;
+fn() =>  // comment
+    null;
+fn() =>  // comment
+    null;
+[
+    'foo' => /* comment */ 0,
+    'bar' => /* comment */ 0,
+    'baz' =>  // comment
+        0,
+    'qux' =>  // comment
+        0,
+];
+
+PHP,
+                $input3,
+                $formatterB->tokenTypeIndex($mixed),
+            ],
+            'Comments before and after double arrows + first' => [
+                <<<'PHP'
+<?php
+fn() => /* comment */ null;
+fn() => /* comment */ null;
+fn() =>  /* comment */
+    null;
+fn() =>  /* comment */
+    null;
+fn() =>  // comment
+    null;
+fn() =>  // comment
+    null;
+[
+    'foo' => /* comment */ 0,
+    'bar' => /* comment */ 0,
+    'baz' =>  // comment
+        0,
+    'qux' =>  // comment
+        0,
+];
+
+PHP,
+                $input3,
+                $formatterB->tokenTypeIndex($first),
+            ],
+            'Comments before and after double arrows + last' => [
+                <<<'PHP'
+<?php
+fn() => /* comment */ null;
+fn() => /* comment */ null;
+fn() =>  /* comment */
+    null;
+fn() =>  /* comment */
+    null;
+fn() =>  // comment
+    null;
+fn() =>  // comment
+    null;
+[
+    'foo' => /* comment */ 0,
+    'bar' => /* comment */ 0,
+    'baz' =>  // comment
+        0,
+    'qux' =>  // comment
+        0,
+];
+
+PHP,
+                $input3,
+                $formatterB->tokenTypeIndex($last),
+            ],
+            'Comments before and after double arrows + PSR-12' => [
+                <<<'PHP'
+<?php
+fn() /* comment */ => null;
+fn() /* comment */ => null;
+fn()  /* comment */
+    => null;
+fn()  /* comment */
+    => null;
+fn()  // comment
+    => null;
+fn()  // comment
+    => null;
+[
+    'foo' => /* comment */ 0,
+    'bar' => /* comment */ 0,
+    'baz' =>  // comment
+        0,
+    'qux' =>  // comment
+        0,
+];
+
+PHP,
+                $input3,
+                $formatterB->psr12(),
             ],
         ];
     }

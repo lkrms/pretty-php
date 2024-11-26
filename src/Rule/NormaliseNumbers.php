@@ -148,9 +148,11 @@ final class NormaliseNumbers implements TokenRule
                 $matches,
                 \PREG_UNMATCHED_AS_NULL,
             )) {
+                // @codeCoverageIgnoreStart
                 throw new ShouldNotHappenException(
                     sprintf('Invalid %s: %s', $token->getTokenName(), $token->text)
                 );
+                // @codeCoverageIgnoreEnd
             }
 
             $integer = Str::coalesce($matches['integer'], '0');
