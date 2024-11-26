@@ -20,7 +20,7 @@ use Salient\Utility\Str;
  *
  * @api
  */
-final class StandardWhitespace implements TokenRule, DeclarationRule
+final class StandardSpacing implements TokenRule, DeclarationRule
 {
     use TokenRuleTrait;
     use DeclarationRuleTrait;
@@ -368,7 +368,7 @@ final class StandardWhitespace implements TokenRule, DeclarationRule
                     }
                     // Format `set () {}` like `function () {}`
                     if ($hasBody = $next->id === \T_OPEN_BRACE) {
-                        $name->Whitespace |= Space::SPACE_BEFORE | Space::SPACE_AFTER;
+                        $name->Whitespace |= Space::SPACE_AFTER;
                     }
                     $hasExpression = $next->id === \T_DOUBLE_ARROW;
                     $collapse = $collapse && !(

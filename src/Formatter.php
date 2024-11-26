@@ -64,7 +64,7 @@ use Lkrms\PrettyPHP\Rule\PreserveNewlines;
 use Lkrms\PrettyPHP\Rule\PreserveOneLineStatements;
 use Lkrms\PrettyPHP\Rule\ProtectStrings;
 use Lkrms\PrettyPHP\Rule\StandardIndentation;
-use Lkrms\PrettyPHP\Rule\StandardWhitespace;
+use Lkrms\PrettyPHP\Rule\StandardSpacing;
 use Lkrms\PrettyPHP\Rule\StatementSpacing;
 use Lkrms\PrettyPHP\Rule\StrictExpressions;
 use Lkrms\PrettyPHP\Rule\StrictLists;
@@ -249,7 +249,7 @@ final class Formatter implements Buildable, Immutable
         NormaliseStrings::class,
         NormaliseComments::class,
         IndexSpacing::class,
-        StandardWhitespace::class,
+        StandardSpacing::class,
         StatementSpacing::class,
         OperatorSpacing::class,
         ControlStructureSpacing::class,
