@@ -43,6 +43,22 @@ final class PlaceBraces implements TokenRule
     }
 
     /**
+     * @inheritDoc
+     */
+    public static function needsSortedTokens(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function reset(): void
+    {
+        $this->BracketBracePairs = [];
+    }
+
+    /**
      * Apply the rule to the given tokens
      *
      * Whitespace is applied to structural and `match` expression braces as
@@ -159,13 +175,5 @@ final class PlaceBraces implements TokenRule
                 $brace->applyWhitespace(Space::SPACE_BEFORE);
             }
         }
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function reset(): void
-    {
-        $this->BracketBracePairs = [];
     }
 }

@@ -4,8 +4,8 @@ namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Exception\RuleException;
 use Lkrms\PrettyPHP\TokenTypeIndex;
+use Salient\Utility\Exception\ShouldNotHappenException;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 
@@ -14,7 +14,7 @@ use Salient\Utility\Str;
  *
  * @api
  */
-final class SimplifyNumbers implements TokenRule
+final class NormaliseNumbers implements TokenRule
 {
     use TokenRuleTrait;
 
@@ -148,7 +148,7 @@ final class SimplifyNumbers implements TokenRule
                 $matches,
                 \PREG_UNMATCHED_AS_NULL,
             )) {
-                throw new RuleException(
+                throw new ShouldNotHappenException(
                     sprintf('Invalid %s: %s', $token->getTokenName(), $token->text)
                 );
             }

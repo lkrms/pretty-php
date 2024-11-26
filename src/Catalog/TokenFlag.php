@@ -40,25 +40,25 @@ interface TokenFlag
     public const DOC_COMMENT = 10;
 
     /**
+     * The token is a C-style comment where every line starts with "*" or at
+     * least one delimiter appears on its own line
+     */
+    public const INFORMAL_DOC_COMMENT = 16;
+
+    /**
+     * The token is a collapsible one-line T_DOC_COMMENT
+     */
+    public const COLLAPSIBLE_COMMENT = 32;
+
+    /**
      * The token is not a tag, comment, whitespace or inline markup
      */
-    public const CODE = 16;
+    public const CODE = 64;
 
     /**
      * The token is a T_CLOSE_BRACE or T_CLOSE_TAG that terminates a statement
      */
-    public const STATEMENT_TERMINATOR = 32;
-
-    /**
-     * The token is a T_QUESTION or T_COLON belonging to a ternary operator
-     */
-    public const TERNARY_OPERATOR = 64;
-
-    /**
-     * The token is a C-style comment where every line starts with "*" or at
-     * least one delimiter appears on its own line
-     */
-    public const INFORMAL_DOC_COMMENT = 128;
+    public const STATEMENT_TERMINATOR = 128;
 
     /**
      * The token is a T_OPEN_BRACE or T_CLOSE_BRACE that delimits a code block
@@ -73,27 +73,32 @@ interface TokenFlag
     public const STRUCTURAL_BRACE = 256;
 
     /**
+     * The token is a T_QUESTION or T_COLON belonging to a ternary operator
+     */
+    public const TERNARY_OPERATOR = 512;
+
+    /**
+     * The token is a T_DOUBLE_ARROW belonging to an arrow function
+     */
+    public const FN_DOUBLE_ARROW = 1024;
+
+    /**
      * The token is the first in a statement that declares a named entity
      */
-    public const NAMED_DECLARATION = 512;
+    public const NAMED_DECLARATION = 2048;
 
     /**
      * The token is the parent of a list of items
      */
-    public const LIST_PARENT = 1024;
+    public const LIST_PARENT = 4096;
 
     /**
      * The token is the first in a list item
      */
-    public const LIST_ITEM = 2048;
-
-    /**
-     * The token is a collapsible one-line comment
-     */
-    public const COLLAPSIBLE_COMMENT = 4096;
+    public const LIST_ITEM = 8192;
 
     /**
      * The token is a control structure with an unenclosed body
      */
-    public const HAS_UNENCLOSED_BODY = 8192;
+    public const HAS_UNENCLOSED_BODY = 16384;
 }

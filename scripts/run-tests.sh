@@ -20,7 +20,7 @@ function run() {
 
 function run_with_php_versions() {
     local php versions=()
-    while [[ $1 == [78][0-9] ]]; do
+    while [[ -z $1 ]] || [[ $1 == [78][0-9] ]]; do
         if type -P "php$1" >/dev/null; then
             versions[${#versions[@]}]=php$1
         fi
@@ -37,7 +37,7 @@ function run_with_php_versions() {
 run scripts/generate.sh --check
 run php83 tools/php-cs-fixer check --diff --verbose
 run bin/pretty-php --diff
-run_with_php_versions 84 74 vendor/bin/phpstan
+run_with_php_versions '' 74 vendor/bin/phpstan
 run_with_php_versions 84 83 82 81 80 74 vendor/bin/phpunit
 
 run scripts/build.sh

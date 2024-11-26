@@ -55,6 +55,10 @@ final class ProtectStrings implements TokenRule
      *
      * - nested siblings
      * - every descendant of square brackets that are nested siblings
+     *
+     * The latter is necessary because strings like `"$foo[0]"` and
+     * `"$foo[$bar]"` are unparseable if there is any whitespace between the
+     * brackets.
      */
     public function processTokens(array $tokens): void
     {
@@ -67,9 +71,6 @@ final class ProtectStrings implements TokenRule
             $closedBy = $token->Data[TokenData::STRING_CLOSED_BY];
             foreach ($next->collectSiblings($closedBy) as $current) {
                 $current->Whitespace |= Space::CRITICAL_NONE_BEFORE;
-
-                // "$foo[0]" and "$foo[$bar]" fail to parse if there is any
-                // whitespace between the brackets
                 if ($current->id === \T_OPEN_BRACKET) {
                     /** @var Token */
                     $next = $current->Next;

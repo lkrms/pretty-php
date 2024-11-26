@@ -714,6 +714,12 @@ final class Parser implements Immutable
                     }
                 }
 
+                // Flag arrow function double arrow operators
+                if ($token->id === \T_FN) {
+                    $next = $token->nextSiblingOf(\T_DOUBLE_ARROW);
+                    $next->Flags |= TokenFlag::FN_DOUBLE_ARROW;
+                }
+
                 $isTerminator = false;
                 if (
                     !$token->NextSibling

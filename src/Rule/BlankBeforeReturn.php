@@ -7,8 +7,7 @@ use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\TokenTypeIndex;
 
 /**
- * Add a blank line before return and yield statements unless they appear
- * consecutively or at the beginning of a compound statement
+ * Add blank lines before return statements
  *
  * @api
  */
@@ -16,6 +15,9 @@ final class BlankBeforeReturn implements TokenRule
 {
     use TokenRuleTrait;
 
+    /**
+     * @inheritDoc
+     */
     public static function getPriority(string $method): ?int
     {
         return [
@@ -23,18 +25,45 @@ final class BlankBeforeReturn implements TokenRule
         ][$method] ?? null;
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function getTokenTypes(TokenTypeIndex $idx): array
     {
         return $idx->Return;
     }
 
+    /**
+     * @inheritDoc
+     */
+    public static function needsSortedTokens(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Apply the rule to the given tokens
+     *
+     * Blank lines are added before non-consecutive `return`, `yield` and `yield
+     * from` statements.
+     */
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
+            // Ignore empty statements
+            $prev = $token;
+            while (
+                $prev->PrevCode
+                && $prev->PrevCode->id === \T_SEMICOLON
+                && $prev->PrevCode->Statement === $prev->PrevCode
+            ) {
+                $prev = $prev->PrevCode;
+            }
+
             if (
-                $token->PrevSibling
-                && $token->PrevSibling->Statement
-                && $this->Idx->Return[$token->PrevSibling->Statement->id]
+                $prev->PrevSibling
+                && $prev->PrevSibling->Statement
+                && $this->Idx->Return[$prev->PrevSibling->Statement->id]
             ) {
                 continue;
             }

@@ -24,10 +24,10 @@ use Lkrms\PrettyPHP\Rule\AlignLists;
 use Lkrms\PrettyPHP\Rule\AlignTernaryOperators;
 use Lkrms\PrettyPHP\Rule\BlankBeforeReturn;
 use Lkrms\PrettyPHP\Rule\DeclarationSpacing;
+use Lkrms\PrettyPHP\Rule\NormaliseNumbers;
+use Lkrms\PrettyPHP\Rule\NormaliseStrings;
 use Lkrms\PrettyPHP\Rule\PreserveNewlines;
 use Lkrms\PrettyPHP\Rule\PreserveOneLineStatements;
-use Lkrms\PrettyPHP\Rule\SimplifyNumbers;
-use Lkrms\PrettyPHP\Rule\SimplifyStrings;
 use Lkrms\PrettyPHP\Rule\StrictExpressions;
 use Lkrms\PrettyPHP\Rule\StrictLists;
 use Lkrms\PrettyPHP\Formatter;
@@ -68,8 +68,8 @@ final class FormatPhpCommand extends CliCommand
     private const DISABLE_MAP = [
         'sort-imports' => SortImports::class,
         'move-comments' => MoveComments::class,
-        'simplify-strings' => SimplifyStrings::class,
-        'simplify-numbers' => SimplifyNumbers::class,
+        'simplify-strings' => NormaliseStrings::class,
+        'simplify-numbers' => NormaliseNumbers::class,
         'preserve-newlines' => PreserveNewlines::class,
         'declaration-spacing' => DeclarationSpacing::class,
     ];

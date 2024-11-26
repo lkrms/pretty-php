@@ -10,13 +10,14 @@
 | 1, 2   | 6     | `SHELL_COMMENT` ("#")   | `Parser`                  |
 | 0, 3   | 9     | `C_COMMENT` ("/\*")     | `Parser`                  |
 | 1, 3   | 10    | `DOC_COMMENT` ("/\*\*") | `Parser`                  |
-| 4      | 16    | `CODE`                  | `Parser`                  |
-| 5      | 32    | `STATEMENT_TERMINATOR`  | `Parser`                  |
-| 6      | 64    | `TERNARY_OPERATOR`      | `Parser`                  |
-| 7      | 128   | `INFORMAL_DOC_COMMENT`  | `Parser`                  |
+| 4      | 16    | `INFORMAL_DOC_COMMENT`  | `Parser`                  |
+| 5      | 32    | `COLLAPSIBLE_COMMENT`   | `NormaliseComments`       |
+| 6      | 64    | `CODE`                  | `Parser`                  |
+| 7      | 128   | `STATEMENT_TERMINATOR`  | `Parser`                  |
 | 8      | 256   | `STRUCTURAL_BRACE`      | `Parser`                  |
-| 9      | 512   | `NAMED_DECLARATION`     | `Parser`                  |
-| 10     | 1024  | `LIST_PARENT`           | `Formatter`               |
-| 11     | 2048  | `LIST_ITEM`             | `Formatter`               |
-| 12     | 4096  | `COLLAPSIBLE_COMMENT`   | `NormaliseComments`       |
-| 13     | 8192  | `HAS_UNENCLOSED_BODY`   | `ControlStructureSpacing` |
+| 9      | 512   | `TERNARY_OPERATOR`      | `Parser`                  |
+| 10     | 1024  | `FN_DOUBLE_ARROW`       | `Parser`                  |
+| 11     | 2048  | `NAMED_DECLARATION`     | `Parser`                  |
+| 12     | 4096  | `LIST_PARENT`           | `Formatter`               |
+| 13     | 8192  | `LIST_ITEM`             | `Formatter`               |
+| 14     | 16384 | `HAS_UNENCLOSED_BODY`   | `ControlStructureSpacing` |
