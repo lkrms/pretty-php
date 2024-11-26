@@ -16,7 +16,8 @@ By default, newlines are allowed after:
 - `T_COMMA`
 - `T_COMMENT`
 - `T_DOC_COMMENT`
-- `T_DOUBLE_ARROW` (except in arrow functions)
+- `T_DOUBLE_ARROW` (except in arrow functions if `NewlineBeforeFnDoubleArrows`
+  is enabled)
 - `T_EXTENDS`
 - `T_IMPLEMENTS`
 - `T_OPEN_BRACE`
@@ -40,7 +41,8 @@ They are also allowed before:
 - `T_CLOSE_TAG`
 - `T_COALESCE`
 - `T_CONCAT`
-- `T_DOUBLE_ARROW` (except in arrow functions)
+- `T_DOUBLE_ARROW` (in arrow functions if `NewlineBeforeFnDoubleArrows` is
+  enabled)
 - `T_LOGICAL_NOT`
 - `T_NULLSAFE_OBJECT_OPERATOR`
 - `T_OBJECT_OPERATOR`
@@ -62,7 +64,8 @@ comparison operators and logical operators.
 - `T_COMMA`
 - `T_COMMENT`
 - `T_DOC_COMMENT`
-- `T_DOUBLE_ARROW` (except in arrow functions)
+- `T_DOUBLE_ARROW` (except in arrow functions if `NewlineBeforeFnDoubleArrows`
+  is enabled)
 - `T_EXTENDS`
 - `T_IMPLEMENTS`
 - `T_OPEN_BRACE`
@@ -81,7 +84,8 @@ comparison operators and logical operators.
 - `T_CLOSE_PARENTHESIS`
 - `T_CLOSE_TAG`
 - `T_CONCAT`
-- `T_DOUBLE_ARROW` (except in arrow functions)
+- `T_DOUBLE_ARROW` (in arrow functions if `NewlineBeforeFnDoubleArrows` is
+  enabled)
 - `T_NULLSAFE_OBJECT_OPERATOR`
 - `T_OBJECT_OPERATOR`
 - Arithmetic operators
@@ -105,7 +109,8 @@ With **`--operators-last`**, newlines are allowed after, and not before,
 - `T_COMMENT`
 - `T_CONCAT`
 - `T_DOC_COMMENT`
-- `T_DOUBLE_ARROW` (except in arrow functions)
+- `T_DOUBLE_ARROW` (except in arrow functions if `NewlineBeforeFnDoubleArrows`
+  is enabled)
 - `T_EXTENDS`
 - `T_IMPLEMENTS`
 - `T_OPEN_BRACE`
@@ -127,7 +132,8 @@ With **`--operators-last`**, newlines are allowed after, and not before,
 - `T_CLOSE_BRACKET`
 - `T_CLOSE_PARENTHESIS`
 - `T_CLOSE_TAG`
-- `T_DOUBLE_ARROW` (except in arrow functions)
+- `T_DOUBLE_ARROW` (in arrow functions if `NewlineBeforeFnDoubleArrows` is
+  enabled)
 - `T_LOGICAL_NOT`
 - `T_NULLSAFE_OBJECT_OPERATOR`
 - `T_OBJECT_OPERATOR`
