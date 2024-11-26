@@ -8,12 +8,12 @@ needed.
 | Rule                        | Mandatory? | Default? | Pass | Method                  | Priority |
 | --------------------------- | ---------- | -------- | ---- | ----------------------- | -------- |
 | `ProtectStrings`            | Y          | -        | 1    | `processTokens()`       | 40       |
-| `SimplifyNumbers`           | -          | Y        | 1    | `processTokens()`       | 60       |
-| `SimplifyStrings`           | -          | Y        | 1    | `processTokens()`       | 60       |
+| `NormaliseNumbers`          | -          | Y        | 1    | `processTokens()`       | 60       |
+| `NormaliseStrings`          | -          | Y        | 1    | `processTokens()`       | 60       |
 | `NormaliseComments`         | Y          | -        | 1    | `processTokens()`       | 70       |
 | `IndexSpacing`              | Y          | -        | 1    | `processTokens()`       | 78       |
-| `StandardWhitespace` (1)    | Y          | -        | 1    | `processTokens()`       | 80       |
-| `StandardWhitespace` (2)    | Y          | -        | 1    | `processDeclarations()` | 80       |
+| `StandardSpacing` (1)       | Y          | -        | 1    | `processTokens()`       | 80       |
+| `StandardSpacing` (2)       | Y          | -        | 1    | `processDeclarations()` | 80       |
 | `StatementSpacing`          | Y          | -        | 1    | `processTokens()`       | 80       |
 | `OperatorSpacing`           | Y          | -        | 1    | `processTokens()`       | 80       |
 | `ControlStructureSpacing`   | Y          | -        | 1    | `processTokens()`       | 83       |
@@ -49,7 +49,7 @@ needed.
 | `AlignLists` (2)            | -          | -        | 3    | _`callback`_            | 710      |
 | `AlignData` (2)             | -          | -        | 3    | _`callback`_            | 720      |
 | `HangingIndentation` (2)    | Y          | -        | 3    | _`callback`_            | 800      |
-| `StandardWhitespace` (3)    | Y          | -        | 3    | _`callback`_            | 820      |
+| `StandardSpacing` (3)       | Y          | -        | 3    | _`callback`_            | 820      |
 | `PlaceBraces` (2)           | Y          | -        | 4    | `beforeRender()`        | 400      |
 | `HeredocIndentation` (2)    | Y          | -        | 4    | `beforeRender()`        | 900      |
 | `PlaceComments` (2)         | Y          | -        | 4    | `beforeRender()`        | 997      |
@@ -65,7 +65,10 @@ Changes to whitespace in non-constant strings are suppressed for:
 - nested siblings
 - every descendant of square brackets that are nested siblings
 
-### `SimplifyNumbers`
+The latter is necessary because strings like `"$foo[0]"` and `"$foo[$bar]"` are
+unparseable if there is any whitespace between the brackets.
+
+### `NormaliseNumbers`
 
 Integer literals are normalised by replacing hexadecimal, octal and binary
 prefixes with `0x`, `0` and `0b` respectively, removing redundant zeroes, adding
@@ -81,7 +84,7 @@ If present in the input, underscores are applied to decimal values with no
 exponent every 3 digits, to hexadecimal values with more than 5 digits every 4
 digits, and to binary values every 4 digits.
 
-### `SimplifyStrings`
+### `NormaliseStrings`
 
 Strings other than nowdocs are normalised as follows:
 
@@ -135,7 +138,7 @@ adjacent blank lines, for tokens in the `SuppressSpaceBefore` and
 `match` braces. Blank lines are also suppressed after alternative syntax colons
 and before their closing counterparts.
 
-### `StandardWhitespace` (call 1: `processTokens()`)
+### `StandardSpacing` (call 1: `processTokens()`)
 
 If the indentation level of an open tag aligns with a tab stop, and a close tag
 is found in the same scope (or the document has no close tag and the open tag is
@@ -158,11 +161,11 @@ Whitespace is also applied to tokens as follows:
 - **`declare` statements:** whitespace suppressed between parentheses.
 - **`match` expressions:** trailing line added to delimiters after arms.
 - **Attributes:** trailing blank line suppressed, leading and trailing space
-  added for parameters and property hooks, leading and trailing line added for
-  others.
+  added for parameters, property hooks, anonymous functions and arrow functions,
+  leading and trailing line added for others.
 - **Heredocs:** leading line suppressed in strict PSR-12 mode.
 
-### `StandardWhitespace` (call 2: `processDeclarations()`)
+### `StandardSpacing` (call 2: `processDeclarations()`)
 
 If a constructor has one or more promoted parameters, a line is added before
 every parameter.
@@ -189,6 +192,11 @@ Whitespace is applied to structural and `match` expression braces as follows:
 > Open brace placement is left for a rule that runs after vertical whitespace
 > has been applied.
 
+### `BlankBeforeReturn`
+
+Blank lines are added before non-consecutive `return`, `yield` and `yield from`
+statements.
+
 ### `ListSpacing` (call 1: `processDeclarations()`)
 
 If a list of property hooks has one or more attributes with a trailing newline,
@@ -212,7 +220,22 @@ If interface lists break over multiple lines and neither `StrictLists` nor
 Items in lists are arranged horizontally or vertically by replicating the
 arrangement of the first and second items.
 
-### `StandardWhitespace` (call 3: _`callback`_)
+### `AlignArrowFunctions` (call 1: `processTokens()`)
+
+If an arrow function expression starts on a new line, a callback is registered
+to align it with the `fn` it's associated with, or with the first token on the
+previous line if its arguments break over multiple lines.
+
+### `AlignArrowFunctions` (call 2: _`callback`_)
+
+Tokens in arrow function expressions are aligned with the `fn` they're
+associated with, or with the first token on the previous line if its arguments
+break over multiple lines.
+
+This is achieved by copying the alignment target's indentation to each token
+after making a calculated adjustment to `LinePadding`.
+
+### `StandardSpacing` (call 3: _`callback`_)
 
 The `TagIndent` of tokens between indented tags is adjusted by the difference,
 if any, between the open tag's indent and the indentation level of the first
@@ -231,8 +254,8 @@ lines, they are collapsed to the same line.
 | `T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG`     | `VerticalWhitespace`                                                 |
 | `T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG` | `VerticalWhitespace`                                                 |
 | `T_AND`                                     | `VerticalWhitespace`                                                 |
-| `T_ATTRIBUTE_COMMENT`                       | `StandardWhitespace`                                                 |
-| `T_ATTRIBUTE`                               | `StandardWhitespace`                                                 |
+| `T_ATTRIBUTE_COMMENT`                       | `StandardSpacing`                                                    |
+| `T_ATTRIBUTE`                               | `StandardSpacing`                                                    |
 | `T_BACKTICK`                                | `ProtectStrings`                                                     |
 | `T_BOOLEAN_AND`                             | `VerticalWhitespace`                                                 |
 | `T_BOOLEAN_OR`                              | `VerticalWhitespace`                                                 |
@@ -240,22 +263,22 @@ lines, they are collapsed to the same line.
 | `T_CATCH`                                   | `Drupal`                                                             |
 | `T_CLASS`                                   | `Drupal`                                                             |
 | `T_CLOSE_BRACE`                             | `WordPress`                                                          |
-| `T_CLOSE_TAG`                               | `StandardWhitespace`                                                 |
+| `T_CLOSE_TAG`                               | `StandardSpacing`                                                    |
 | `T_COALESCE`                                | `AlignTernaryOperators`                                              |
 | `T_COLON`                                   | `StatementSpacing`, `WordPress`                                      |
-| `T_COMMA`                                   | `StandardWhitespace`                                                 |
+| `T_COMMA`                                   | `StandardSpacing`                                                    |
 | `T_COMMENT`                                 | `NormaliseComments`, `PlaceComments`, `WordPress`                    |
 | `T_CONCAT`                                  | `Laravel`, `Symfony`                                                 |
-| `T_CONSTANT_ENCAPSED_STRING`                | `SimplifyStrings`                                                    |
-| `T_DECLARE`                                 | `StandardWhitespace`                                                 |
+| `T_CONSTANT_ENCAPSED_STRING`                | `NormaliseStrings`                                                   |
+| `T_DECLARE`                                 | `StandardSpacing`                                                    |
 | `T_DEFAULT`                                 | `SwitchIndentation`                                                  |
-| `T_DNUMBER`                                 | `SimplifyNumbers`                                                    |
+| `T_DNUMBER`                                 | `NormaliseNumbers`                                                   |
 | `T_DOC_COMMENT`                             | `Drupal`, `NormaliseComments`, `PlaceComments`, `WordPress`          |
 | `T_DOUBLE_QUOTE`                            | `ProtectStrings`                                                     |
 | `T_DO`                                      | `ControlStructureSpacing`                                            |
 | `T_ELSEIF`                                  | `ControlStructureSpacing`, `Drupal`, `StrictExpressions`             |
 | `T_ELSE`                                    | `ControlStructureSpacing`, `Drupal`                                  |
-| `T_ENCAPSED_AND_WHITESPACE`                 | `SimplifyStrings`                                                    |
+| `T_ENCAPSED_AND_WHITESPACE`                 | `NormaliseStrings`                                                   |
 | `T_ENUM`                                    | `Drupal`                                                             |
 | `T_FINALLY`                                 | `Drupal`                                                             |
 | `T_FN`                                      | `AlignArrowFunctions`, `Laravel`, `Symfony`                          |
@@ -263,24 +286,24 @@ lines, they are collapsed to the same line.
 | `T_FOR`                                     | `ControlStructureSpacing`, `StrictExpressions`, `VerticalWhitespace` |
 | `T_IF`                                      | `ControlStructureSpacing`, `StrictExpressions`                       |
 | `T_INTERFACE`                               | `Drupal`                                                             |
-| `T_LNUMBER`                                 | `SimplifyNumbers`                                                    |
+| `T_LNUMBER`                                 | `NormaliseNumbers`                                                   |
 | `T_LOGICAL_AND`                             | `VerticalWhitespace`                                                 |
 | `T_LOGICAL_NOT`                             | `Laravel`, `WordPress`                                               |
 | `T_LOGICAL_OR`                              | `VerticalWhitespace`                                                 |
 | `T_LOGICAL_XOR`                             | `VerticalWhitespace`                                                 |
-| `T_MATCH`                                   | `StandardWhitespace`                                                 |
+| `T_MATCH`                                   | `StandardSpacing`                                                    |
 | `T_NULLSAFE_OBJECT_OPERATOR`                | `AlignChains`, `VerticalWhitespace`                                  |
 | `T_OBJECT_OPERATOR`                         | `AlignChains`, `VerticalWhitespace`                                  |
 | `T_OPEN_BRACE`                              | `PlaceBraces`, `VerticalWhitespace`, `WordPress`                     |
 | `T_OPEN_BRACKET`                            | `WordPress`                                                          |
 | `T_OPEN_PARENTHESIS`                        | `WordPress`                                                          |
-| `T_OPEN_TAG_WITH_ECHO`                      | `StandardWhitespace`                                                 |
-| `T_OPEN_TAG`                                | `StandardWhitespace`                                                 |
+| `T_OPEN_TAG_WITH_ECHO`                      | `StandardSpacing`                                                    |
+| `T_OPEN_TAG`                                | `StandardSpacing`                                                    |
 | `T_OR`                                      | `VerticalWhitespace`                                                 |
 | `T_QUESTION`                                | `AlignTernaryOperators`, `VerticalWhitespace`                        |
 | `T_RETURN`                                  | `BlankBeforeReturn`                                                  |
 | `T_SEMICOLON`                               | `StatementSpacing`                                                   |
-| `T_START_HEREDOC`                           | `HeredocIndentation`, `ProtectStrings`, `StandardWhitespace`         |
+| `T_START_HEREDOC`                           | `HeredocIndentation`, `ProtectStrings`, `StandardSpacing`            |
 | `T_SWITCH`                                  | `StrictExpressions`, `SwitchIndentation`                             |
 | `T_TRAIT`                                   | `Drupal`                                                             |
 | `T_WHILE`                                   | `ControlStructureSpacing`, `StrictExpressions`                       |
@@ -290,23 +313,23 @@ lines, they are collapsed to the same line.
 
 ## `DeclarationRule` classes, by declaration type
 
-| Declaration    | Rules                                                     |
-| -------------- | --------------------------------------------------------- |
-| `CASE`         | `DeclarationSpacing`                                      |
-| `CLASS`        | `DeclarationSpacing`                                      |
-| `CONST`        | `DeclarationSpacing`                                      |
-| `DECLARE`      | `DeclarationSpacing`                                      |
-| `ENUM`         | `DeclarationSpacing`                                      |
-| `FUNCTION`     | `DeclarationSpacing`                                      |
-| `HOOK`         | `DeclarationSpacing`                                      |
-| `INTERFACE`    | `DeclarationSpacing`                                      |
-| `NAMESPACE`    | `DeclarationSpacing`                                      |
-| `PARAM`        | `ListSpacing`, `StandardWhitespace`                       |
-| `PROPERTY`     | `DeclarationSpacing`, `ListSpacing`, `StandardWhitespace` |
-| `TRAIT`        | `DeclarationSpacing`                                      |
-| `USE_CONST`    | `DeclarationSpacing`                                      |
-| `USE_FUNCTION` | `DeclarationSpacing`                                      |
-| `USE_TRAIT`    | `DeclarationSpacing`                                      |
-| `USE`          | `DeclarationSpacing`                                      |
+| Declaration    | Rules                                                  |
+| -------------- | ------------------------------------------------------ |
+| `CASE`         | `DeclarationSpacing`                                   |
+| `CLASS`        | `DeclarationSpacing`                                   |
+| `CONST`        | `DeclarationSpacing`                                   |
+| `DECLARE`      | `DeclarationSpacing`                                   |
+| `ENUM`         | `DeclarationSpacing`                                   |
+| `FUNCTION`     | `DeclarationSpacing`                                   |
+| `HOOK`         | `DeclarationSpacing`                                   |
+| `INTERFACE`    | `DeclarationSpacing`                                   |
+| `NAMESPACE`    | `DeclarationSpacing`                                   |
+| `PARAM`        | `ListSpacing`, `StandardSpacing`                       |
+| `PROPERTY`     | `DeclarationSpacing`, `ListSpacing`, `StandardSpacing` |
+| `TRAIT`        | `DeclarationSpacing`                                   |
+| `USE_CONST`    | `DeclarationSpacing`                                   |
+| `USE_FUNCTION` | `DeclarationSpacing`                                   |
+| `USE_TRAIT`    | `DeclarationSpacing`                                   |
+| `USE`          | `DeclarationSpacing`                                   |
 
 [list-rules.php]: ../scripts/list-rules.php
