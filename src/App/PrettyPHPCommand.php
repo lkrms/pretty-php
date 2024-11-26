@@ -28,6 +28,7 @@ use Lkrms\PrettyPHP\Rule\NormaliseNumbers;
 use Lkrms\PrettyPHP\Rule\NormaliseStrings;
 use Lkrms\PrettyPHP\Rule\PreserveNewlines;
 use Lkrms\PrettyPHP\Rule\PreserveOneLineStatements;
+use Lkrms\PrettyPHP\Rule\SemiStrictExpressions;
 use Lkrms\PrettyPHP\Rule\StrictExpressions;
 use Lkrms\PrettyPHP\Rule\StrictLists;
 use Lkrms\PrettyPHP\Formatter;
@@ -80,6 +81,7 @@ final class PrettyPHPCommand extends CliCommand
         'align-lists' => AlignLists::class,
         'blank-before-return' => BlankBeforeReturn::class,
         'strict-expressions' => StrictExpressions::class,
+        'semi-strict-expressions' => SemiStrictExpressions::class,
         'strict-lists' => StrictLists::class,
         'preserve-one-line' => PreserveOneLineStatements::class,
     ];

@@ -9,14 +9,12 @@ use Lkrms\PrettyPHP\Token;
 use Lkrms\PrettyPHP\TokenTypeIndex;
 
 /**
- * If a control structure expression breaks over multiple lines, add newlines
- * before and after it
- *
- * Necessary for PSR-12 compliance.
+ * If there are newlines between siblings in a control structure expression, add
+ * newlines before and after it
  *
  * @api
  */
-final class StrictExpressions implements TokenRule
+final class SemiStrictExpressions implements TokenRule
 {
     use TokenRuleTrait;
 
@@ -64,9 +62,9 @@ final class StrictExpressions implements TokenRule
             if ($first->hasNewlineAfter()) {
                 continue;
             }
-            /** @var Token */
-            $last = $first->ClosedBy;
-            if ($first->collect($last)->hasNewline()) {
+            if ($first->children()->tokenHasNewlineAfter(true)) {
+                /** @var Token */
+                $last = $first->ClosedBy;
                 $first->applyWhitespace(Space::LINE_AFTER);
                 $last->applyWhitespace(Space::LINE_BEFORE);
             }

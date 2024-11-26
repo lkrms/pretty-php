@@ -57,7 +57,7 @@ final class MoveComments implements Filter
             $idx->AllowNewlineBefore,
         );
 
-        $this->NeedsFnDoubleArrow = $this->Formatter->NewlineBeforeFnDoubleArrows;
+        $this->NeedsFnDoubleArrow = $this->Formatter->NewlineBeforeFnDoubleArrow;
     }
 
     /**

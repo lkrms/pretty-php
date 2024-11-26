@@ -63,6 +63,7 @@ use Lkrms\PrettyPHP\Rule\PlaceComments;
 use Lkrms\PrettyPHP\Rule\PreserveNewlines;
 use Lkrms\PrettyPHP\Rule\PreserveOneLineStatements;
 use Lkrms\PrettyPHP\Rule\ProtectStrings;
+use Lkrms\PrettyPHP\Rule\SemiStrictExpressions;
 use Lkrms\PrettyPHP\Rule\StandardIndentation;
 use Lkrms\PrettyPHP\Rule\StandardSpacing;
 use Lkrms\PrettyPHP\Rule\StatementSpacing;
@@ -218,7 +219,7 @@ final class Formatter implements Buildable, Immutable
     // --
 
     public bool $RelaxAlignmentCriteria = false;
-    public bool $NewlineBeforeFnDoubleArrows = false;
+    public bool $NewlineBeforeFnDoubleArrow = false;
 
     /**
      * If the first object operator in a chain of method calls has a leading
@@ -276,6 +277,7 @@ final class Formatter implements Buildable, Immutable
         PreserveOneLineStatements::class,
         BlankBeforeReturn::class,
         StrictExpressions::class,
+        SemiStrictExpressions::class,
         Drupal::class,
         Laravel::class,
         Symfony::class,
@@ -307,6 +309,10 @@ final class Formatter implements Buildable, Immutable
         [
             StrictLists::class,
             AlignLists::class,
+        ],
+        [
+            StrictExpressions::class,
+            SemiStrictExpressions::class,
         ],
     ];
 
@@ -361,6 +367,7 @@ final class Formatter implements Buildable, Immutable
      */
     public const PSR12_DISABLE = [
         PreserveOneLineStatements::class,
+        SemiStrictExpressions::class,
         AlignLists::class,
     ];
 
@@ -544,7 +551,7 @@ final class Formatter implements Buildable, Immutable
             $this->PreserveEol = false;
             $this->HeredocIndent = HeredocIndent::HANGING;
             $this->OneTrueBraceStyle = false;
-            $this->NewlineBeforeFnDoubleArrows = true;
+            $this->NewlineBeforeFnDoubleArrow = true;
 
             $enable = array_merge(
                 self::PSR12_ENABLE,
@@ -727,7 +734,7 @@ final class Formatter implements Buildable, Immutable
     /**
      * Get an instance with the given setting enabled or disabled
      *
-     * @param ("RelaxAlignmentCriteria"|"NewlineBeforeFnDoubleArrows"|"AlignFirstCallInChain") $property
+     * @param ("RelaxAlignmentCriteria"|"NewlineBeforeFnDoubleArrow"|"AlignFirstCallInChain") $property
      * @param bool $value
      * @return static
      */

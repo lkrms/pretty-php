@@ -65,7 +65,7 @@ final class AlignArrowFunctions implements TokenRule
     {
         foreach ($tokens as $token) {
             $expr = $token->nextSiblingOf(\T_DOUBLE_ARROW);
-            if (!$this->Formatter->NewlineBeforeFnDoubleArrows) {
+            if (!$this->Formatter->NewlineBeforeFnDoubleArrow) {
                 /** @var Token */
                 $expr = $expr->NextCode;
             }

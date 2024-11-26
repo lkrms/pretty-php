@@ -26,7 +26,7 @@ final class TokenUtil
         // Don't allow newlines before `=>` other than in arrow functions
         if ($token->id === \T_DOUBLE_ARROW && (
             !($token->Flags & TokenFlag::FN_DOUBLE_ARROW)
-            || !$token->Formatter->NewlineBeforeFnDoubleArrows
+            || !$token->Formatter->NewlineBeforeFnDoubleArrow
         )) {
             return false;
         }
@@ -78,7 +78,7 @@ final class TokenUtil
         // Don't allow newlines after `=>` in arrow functions if disabled
         if (
             $token->Flags & TokenFlag::FN_DOUBLE_ARROW
-            && $token->Formatter->NewlineBeforeFnDoubleArrows
+            && $token->Formatter->NewlineBeforeFnDoubleArrow
         ) {
             return false;
         }

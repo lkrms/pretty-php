@@ -15,6 +15,7 @@
         "align-comments",
         "align-fn",
         "preserve-one-line",
+        "semi-strict-expressions",
         "strict-lists"
     ],
     "operatorsFirst": true,
