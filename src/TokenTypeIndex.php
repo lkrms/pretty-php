@@ -297,6 +297,18 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
+     * T_ATTRIBUTE, T_ATTRIBUTE_COMMENT, T_STATIC
+     *
+     * @var array<int,bool>
+     */
+    public array $AttributeOrStatic = [
+        \T_ATTRIBUTE => true,
+        \T_ATTRIBUTE_COMMENT => true,
+        \T_STATIC => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
      * Casts
      *
      * @var array<int,bool>

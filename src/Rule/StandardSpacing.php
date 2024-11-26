@@ -12,6 +12,7 @@ use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Internal\TokenCollection;
 use Lkrms\PrettyPHP\Token;
 use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenUtil;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 
@@ -109,8 +110,8 @@ final class StandardSpacing implements TokenRule, DeclarationRule
      * - **`declare` statements:** whitespace suppressed between parentheses.
      * - **`match` expressions:** trailing line added to delimiters after arms.
      * - **Attributes:** trailing blank line suppressed, leading and trailing
-     *   space added for parameters and property hooks, leading and trailing
-     *   line added for others.
+     *   space added for parameters, property hooks, anonymous functions and
+     *   arrow functions, leading and trailing line added for others.
      * - **Heredocs:** leading line suppressed in strict PSR-12 mode.
      *
      * @prettyphp-callback The `TagIndent` of tokens between indented tags is
@@ -308,7 +309,14 @@ final class StandardSpacing implements TokenRule, DeclarationRule
                 $closedBy = $token->id === \T_ATTRIBUTE
                     ? $token->ClosedBy
                     : $token;
-                if (!$token->inParameterList() && !$token->inPropertyHook()) {
+                if (
+                    !$token->inParameterList()
+                    && !$token->inPropertyHook()
+                    && !($token->inAnonymousFunctionOrFn() && !(
+                        TokenUtil::isNewlineAllowedAfter($closedBy)
+                        && $closedBy->wasLastOnLine()
+                    ))
+                ) {
                     $token->Whitespace |= Space::LINE_BEFORE;
                     $closedBy->Whitespace |= Space::LINE_AFTER;
                 }

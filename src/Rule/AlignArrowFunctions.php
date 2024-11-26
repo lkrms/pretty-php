@@ -41,46 +41,70 @@ final class AlignArrowFunctions implements TokenRule
     /**
      * @inheritDoc
      */
+    public static function needsSortedTokens(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Apply the rule to the given tokens
+     *
+     * If an arrow function expression starts on a new line, a callback is
+     * registered to align it with the `fn` it's associated with, or with the
+     * first token on the previous line if its arguments break over multiple
+     * lines.
+     *
+     * @prettyphp-callback Tokens in arrow function expressions are aligned with
+     * the `fn` they're associated with, or with the first token on the previous
+     * line if its arguments break over multiple lines.
+     *
+     * This is achieved by copying the alignment target's indentation to each
+     * token after making a calculated adjustment to `LinePadding`.
+     */
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            $arrow = $token->nextSiblingOf(\T_DOUBLE_ARROW);
-            /** @var Token */
-            $body = $this->Formatter->NewlineBeforeFnDoubleArrows
-                ? $arrow
-                : $arrow->NextCode;
+            $expr = $token->nextSiblingOf(\T_DOUBLE_ARROW);
+            if (!$this->Formatter->NewlineBeforeFnDoubleArrows) {
+                /** @var Token */
+                $expr = $expr->NextCode;
+            }
 
-            if (!$body->hasNewlineBefore()) {
+            if (!$expr->hasNewlineBefore()) {
                 continue;
             }
 
-            // If the arrow function's arguments break over multiple lines,
-            // align with the start of the previous line
-            assert($body->Prev && $token->EndStatement);
+            // Allow for possibilities like `#[Foo] static fn()`
+            $token = $token->skipPrevSiblingsToDeclarationStart();
             /** @var Token */
-            $alignWith = $token->collect($body->Prev)
+            $prev = $expr->PrevCode;
+            /** @var Token */
+            $alignWith = $token->collect($prev)
                                ->reverse()
                                ->find(fn(Token $t) =>
-                                          $t === $token
-                                              || ($t->Flags & TokenFlag::CODE && $t->hasNewlineBefore()));
+                                          $t === $token || (
+                                              $t->Flags & TokenFlag::CODE
+                                              && $t->hasNewlineBefore()
+                                          ));
 
-            $body->AlignedWith = $alignWith;
+            $expr->AlignedWith = $alignWith;
+
+            $tabSize = $this->Formatter->TabSize;
             $this->Formatter->registerCallback(
                 static::class,
-                $body,
-                fn() => $this->alignBody($body, $alignWith, $token->EndStatement),
+                $expr,
+                static function () use ($expr, $alignWith, $tabSize) {
+                    $offset = $alignWith->alignmentOffset(false) + $tabSize;
+                    $delta = $expr->indentDelta($alignWith);
+                    $delta->LinePadding += $offset;
+
+                    /** @var Token */
+                    $until = $expr->EndStatement;
+                    foreach ($expr->collect($until) as $token) {
+                        $delta->apply($token);
+                    }
+                },
             );
-        }
-    }
-
-    private function alignBody(Token $body, Token $alignWith, Token $until): void
-    {
-        $offset = $alignWith->alignmentOffset(false) + $this->Formatter->TabSize;
-        $delta = $body->indentDelta($alignWith);
-        $delta->LinePadding += $offset;
-
-        foreach ($body->collect($until) as $token) {
-            $delta->apply($token);
         }
     }
 }

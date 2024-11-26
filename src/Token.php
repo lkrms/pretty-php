@@ -360,6 +360,44 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     }
 
     /**
+     * Skip to the next token that is not one of the types in an index
+     *
+     * The token returns itself if it satisfies the criteria.
+     *
+     * @param array<int,bool> $index
+     */
+    public function skipNextFrom(array $index): self
+    {
+        if ($this->id === \T_NULL) {
+            return $this;
+        }
+        $t = $this;
+        while ($t && $index[$t->id]) {
+            $t = $t->Next;
+        }
+        return $t ?? $this->null();
+    }
+
+    /**
+     * Skip to the previous token that is not one of the types in an index
+     *
+     * The token returns itself if it satisfies the criteria.
+     *
+     * @param array<int,bool> $index
+     */
+    public function skipPrevFrom(array $index): self
+    {
+        if ($this->id === \T_NULL) {
+            return $this;
+        }
+        $t = $this;
+        while ($t && $index[$t->id]) {
+            $t = $t->Prev;
+        }
+        return $t ?? $this->null();
+    }
+
+    /**
      * Get the last reachable token
      */
     public function last(): self
@@ -709,6 +747,22 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     }
 
     /**
+     * Check if the token is part of an anonymous function declaration or arrow
+     * function
+     */
+    public function inAnonymousFunctionOrFn(): bool
+    {
+        return $this->skipPrevSiblingsToDeclarationStart()
+                    ->doIsAnonymousFunctionOrFn();
+    }
+
+    private function doIsAnonymousFunctionOrFn(): bool
+    {
+        return !($this->Flags & TokenFlag::NAMED_DECLARATION)
+            && $this->Idx->FunctionOrFn[$this->skipNextSiblingsFrom($this->Idx->AttributeOrStatic)->id];
+    }
+
+    /**
      * Check if the token is part of a non-anonymous declaration
      */
     public function inNamedDeclaration(?TokenCollection &$parts = null): bool
@@ -788,41 +842,29 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     public function wasFirstOnLine(): bool
     {
         if ($this->id === \T_NULL) {
-            // @codeCoverageIgnoreStart
             return false;
-            // @codeCoverageIgnoreEnd
         }
-        $prev = $this;
-        do {
-            $prev = $prev->Prev;
-            if (!$prev) {
-                return true;
-            }
-        } while ($this->Idx->Virtual[$prev->id]);
-        $prevText = $prev->OriginalText ?? $prev->text;
+        if (!$this->Prev) {
+            return true;
+        }
+        $prev = $this->Prev->skipPrevFrom($this->Idx->Virtual);
+        $prevText = rtrim($prev->OriginalText ?? $prev->text, "\n");
         $prevNewlines = substr_count($prevText, "\n");
-        return $this->line > ($prev->line + $prevNewlines)
-            || $prevText[-1] === "\n";
+        return $this->line > ($prev->line + $prevNewlines);
     }
 
     public function wasLastOnLine(): bool
     {
         if ($this->id === \T_NULL) {
-            // @codeCoverageIgnoreStart
             return false;
-            // @codeCoverageIgnoreEnd
         }
-        $next = $this;
-        do {
-            $next = $next->Next;
-            if (!$next) {
-                return true;
-            }
-        } while ($this->Idx->Virtual[$next->id]);
-        $text = $this->OriginalText ?? $this->text;
+        if (!$this->Next) {
+            return true;
+        }
+        $next = $this->Next->skipNextFrom($this->Idx->Virtual);
+        $text = rtrim($this->OriginalText ?? $this->text, "\n");
         $newlines = substr_count($text, "\n");
-        return ($this->line + $newlines) < $next->line
-            || $text[-1] === "\n";
+        return ($this->line + $newlines) < $next->line;
     }
 
     public function startOfLine(bool $ignoreComments = true): self
