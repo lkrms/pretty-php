@@ -37,8 +37,7 @@ trait FilterTrait
     }
 
     /**
-     * Get the given token's previous sibling that is one of the types in an
-     * index
+     * Get the given token's previous sibling that is in an index
      *
      * @param array<int,bool> $index
      * @param-out int $key
@@ -98,7 +97,7 @@ trait FilterTrait
     }
 
     /**
-     * Get the given token's next sibling of the given type
+     * Get the given token's next sibling with the given token ID
      *
      * @param-out int $key
      */
@@ -208,9 +207,9 @@ trait FilterTrait
 
     /**
      * Check if the given token, together with previous tokens in the same
-     * statement, form a declaration of the given type
+     * statement, form a declaration with the given token ID
      */
-    private function isDeclarationOf(int $i, int $type): bool
+    private function isDeclarationOf(int $i, int $id): bool
     {
         while ($i--) {
             $token = $this->Tokens[$i];
@@ -220,7 +219,7 @@ trait FilterTrait
             if (!$this->Idx->DeclarationPart[$token->id]) {
                 return false;
             }
-            if ($token->id === $type) {
+            if ($token->id === $id) {
                 return true;
             }
         }

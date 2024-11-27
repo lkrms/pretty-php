@@ -8,7 +8,7 @@ use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
 use Lkrms\PrettyPHP\TokenUtil;
 
 /**
@@ -29,7 +29,7 @@ final class PreserveNewlines implements TokenRule
 
     public function processTokens(array $tokens): void
     {
-        $preserveTypeIndex = TokenTypeIndex::merge(
+        $preserveIndex = TokenIndex::merge(
             $this->Idx->AllowNewlineBefore,
             $this->Idx->AllowNewlineAfter,
         );
@@ -39,8 +39,8 @@ final class PreserveNewlines implements TokenRule
             if (
                 !$prev
                 || $prev->line === $token->line
-                || (!$preserveTypeIndex[$token->id]
-                    && !$preserveTypeIndex[$prev->id])
+                || (!$preserveIndex[$token->id]
+                    && !$preserveIndex[$prev->id])
             ) {
                 continue;
             }

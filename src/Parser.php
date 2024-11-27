@@ -96,7 +96,7 @@ final class Parser implements Immutable
 
         foreach ($tokens as $token) {
             $token->Formatter = $this->Formatter;
-            $token->Idx = $this->Formatter->TokenTypeIndex;
+            $token->Idx = $this->Formatter->TokenIndex;
 
             if ($prev) {
                 $token->Prev = $prev;
@@ -175,7 +175,7 @@ final class Parser implements Immutable
         ?array &$tokensById,
         ?array &$scopes
     ): void {
-        $idx = $this->Formatter->TokenTypeIndex;
+        $idx = $this->Formatter->TokenIndex;
 
         $linked = [];
         $tokensById = [];
@@ -476,7 +476,7 @@ final class Parser implements Immutable
      */
     private function parseStatements(array $scopes, ?array &$statements): void
     {
-        $idx = $this->Formatter->TokenTypeIndex;
+        $idx = $this->Formatter->TokenIndex;
 
         $statements = [];
 
@@ -575,7 +575,7 @@ final class Parser implements Immutable
         ?array &$declarations,
         ?array &$declarationsByType
     ): void {
-        $idx = $this->Formatter->TokenTypeIndex;
+        $idx = $this->Formatter->TokenIndex;
 
         $declarations = [];
         $declarationsByType = [];
@@ -617,7 +617,7 @@ final class Parser implements Immutable
                     $type = 0;
                     foreach ($parts->getAnyFrom(
                         $idx->DeclarationExceptModifierOrVar
-                    )->getTypes() as $id) {
+                    )->getIds() as $id) {
                         $type |= self::DECLARATION_MAP[$id];
                     }
                     if (!$type) {
@@ -776,7 +776,7 @@ final class Parser implements Immutable
 
     private function nextSibling(Token $token, int $offset = 1): Token
     {
-        $idx = $this->Formatter->TokenTypeIndex;
+        $idx = $this->Formatter->TokenIndex;
 
         $depth = 0;
         while ($token->Next) {
@@ -903,7 +903,7 @@ final class Parser implements Immutable
      */
     private function isClassStatement(Token $token): bool
     {
-        $idx = $this->Formatter->TokenTypeIndex;
+        $idx = $this->Formatter->TokenIndex;
 
         return $token->Parent
             && $token->Parent->id === \T_OPEN_BRACE

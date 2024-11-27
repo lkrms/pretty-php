@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Catalog;
 
 /**
- * Token sub-types
+ * Token sub-ids
  *
  * @api
  */

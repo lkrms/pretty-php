@@ -34,7 +34,7 @@ use Lkrms\PrettyPHP\Rule\StrictLists;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliCommand;
 use Salient\Cli\CliOption;
@@ -1615,7 +1615,7 @@ EOF,
                  ->disable($disable)
                  ->enable($enable)
                  ->flags($flags)
-                 ->tokenTypeIndex(new TokenTypeIndex($this->OperatorsFirst, $this->OperatorsLast))
+                 ->tokenIndex(new TokenIndex($this->OperatorsFirst, $this->OperatorsLast))
                  ->preferredEol(self::EOL_MAP[$this->Eol])
                  ->preserveEol($this->Eol === 'auto')
                  ->heredocIndent(self::HEREDOC_INDENT_MAP[$this->HeredocIndent])

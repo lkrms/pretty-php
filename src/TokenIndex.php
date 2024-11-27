@@ -7,11 +7,9 @@ use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasMutator;
 
 /**
- * Token type indexes
- *
  * @api
  */
-class TokenTypeIndex implements HasTokenIndex, Immutable
+class TokenIndex implements HasTokenIndex, Immutable
 {
     use HasMutator;
 
@@ -1430,17 +1428,17 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     }
 
     /**
-     * Get an index of the given token types
+     * Get an index of the given tokens
      *
      * @return array<int,bool>
      */
-    final public static function get(int ...$types): array
+    final public static function get(int ...$id): array
     {
-        return array_fill_keys($types, true) + self::TOKEN_INDEX;
+        return array_fill_keys($id, true) + self::TOKEN_INDEX;
     }
 
     /**
-     * Get an index of every token type in the given indexes
+     * Get an index of every token in the given indexes
      *
      * @param array<int,bool> ...$indexes
      * @return array<int,bool>
@@ -1455,8 +1453,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     }
 
     /**
-     * Get an index of every token type in a given index that is not present in
-     * any of the others
+     * Get an index of every token in a given index that is not present in any
+     * of the others
      *
      * @param array<int,bool> $index
      * @param array<int,bool> ...$indexes
@@ -1477,8 +1475,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     }
 
     /**
-     * Get an index of every token type in a given index that is present in all
-     * of the others
+     * Get an index of every token in a given index that is present in all of
+     * the others
      *
      * @param array<int,bool> $index
      * @param array<int,bool> ...$indexes

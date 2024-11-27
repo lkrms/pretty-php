@@ -4,7 +4,7 @@ namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
 use Salient\Utility\Exception\ShouldNotHappenException;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
@@ -31,7 +31,7 @@ final class NormaliseNumbers implements TokenRule
     /**
      * @inheritDoc
      */
-    public static function getTokenTypes(TokenTypeIndex $idx): array
+    public static function getTokens(TokenIndex $idx): array
     {
         return [
             \T_LNUMBER => true,

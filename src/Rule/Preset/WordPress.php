@@ -7,13 +7,13 @@ use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\Preset;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Rule\Preset\Internal\WordPressTokenTypeIndex;
+use Lkrms\PrettyPHP\Rule\Preset\Internal\WordPressTokenIndex;
 use Lkrms\PrettyPHP\Rule\AlignData;
 use Lkrms\PrettyPHP\Rule\DeclarationSpacing;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
 
 /**
  * Apply the WordPress code style
@@ -43,7 +43,7 @@ final class WordPress implements Preset, TokenRule
                        self::class,
                    ])
                    ->flags($flags)
-                   ->tokenTypeIndex(new WordPressTokenTypeIndex())
+                   ->tokenIndex(new WordPressTokenIndex())
                    ->oneTrueBraceStyle()
                    ->spacesBesideCode(1)
                    ->with('RelaxAlignmentCriteria', true);
@@ -56,7 +56,7 @@ final class WordPress implements Preset, TokenRule
         ][$method] ?? null;
     }
 
-    public static function getTokenTypes(TokenTypeIndex $idx): array
+    public static function getTokens(TokenIndex $idx): array
     {
         return [
             \T_COMMENT => true,

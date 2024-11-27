@@ -12,7 +12,7 @@ use Lkrms\PrettyPHP\Rule\AlignTernaryOperators;
 use Lkrms\PrettyPHP\Rule\PreserveOneLineStatements;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
 use Salient\Utility\File;
 use Salient\Utility\Json;
 use Salient\Utility\Regex;
@@ -1015,7 +1015,7 @@ PHP,
                     ->build(),
             '04-psr12' =>
                 Formatter::build()
-                    ->tokenTypeIndex(new TokenTypeIndex(true))
+                    ->tokenIndex(new TokenIndex(true))
                     ->importSortOrder(ImportSortOrder::NONE)
                     ->indentBetweenTags()
                     ->psr12()

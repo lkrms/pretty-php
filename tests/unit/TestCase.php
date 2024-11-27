@@ -77,15 +77,15 @@ abstract class TestCase extends PHPUnitTestCase implements HasTokenNames
     }
 
     /**
-     * @param int[] $types
+     * @param int[] $ids
      * @return string[]
      */
-    public static function getTokenNames(array $types): array
+    public static function getTokenNames(array $ids): array
     {
-        foreach ($types as $type) {
-            $name = token_name($type);
+        foreach ($ids as $id) {
+            $name = token_name($id);
             if (substr($name, 0, 2) !== 'T_') {
-                $name = self::TOKEN_NAME[$type] ?? $name;
+                $name = self::TOKEN_NAME[$id] ?? $name;
             }
             $names[] = $name;
         }

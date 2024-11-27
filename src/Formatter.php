@@ -126,9 +126,9 @@ final class Formatter implements Buildable, Immutable
     public string $Tab;
 
     /**
-     * Token type index
+     * Token index
      */
-    public TokenTypeIndex $TokenTypeIndex;
+    public TokenIndex $TokenIndex;
 
     /**
      * End-of-line sequence used when line endings are not preserved or when
@@ -477,7 +477,7 @@ final class Formatter implements Buildable, Immutable
      * @param array<class-string<Extension>> $disable Non-mandatory extensions to disable
      * @param array<class-string<Extension>> $enable Optional extensions to enable
      * @param int-mask-of<FormatterFlag::*> $flags
-     * @param TokenTypeIndex|null $tokenTypeIndex Provide a customised token type index
+     * @param TokenIndex|null $tokenIndex Provide a customised token index
      * @param HeredocIndent::* $heredocIndent
      * @param ImportSortOrder::* $importSortOrder
      */
@@ -487,7 +487,7 @@ final class Formatter implements Buildable, Immutable
         array $disable = [],
         array $enable = [],
         int $flags = 0,
-        ?TokenTypeIndex $tokenTypeIndex = null,
+        ?TokenIndex $tokenIndex = null,
         string $preferredEol = \PHP_EOL,
         bool $preserveEol = true,
         int $spacesBesideCode = 2,
@@ -510,7 +510,7 @@ final class Formatter implements Buildable, Immutable
 
         $this->InsertSpaces = $insertSpaces;
         $this->TabSize = $tabSize;
-        $this->TokenTypeIndex = $tokenTypeIndex ?? new TokenTypeIndex();
+        $this->TokenIndex = $tokenIndex ?? new TokenIndex();
         $this->PreferredEol = $preferredEol;
         $this->PreserveEol = $preserveEol;
         $this->SpacesBesideCode = $spacesBesideCode;
@@ -591,11 +591,11 @@ final class Formatter implements Buildable, Immutable
         // lines between statements
         if (!in_array(PreserveNewlines::class, $rules, true)) {
             $this->PreserveNewlines = false;
-            $this->TokenTypeIndex = $this->TokenTypeIndex->withoutPreserveNewline();
+            $this->TokenIndex = $this->TokenIndex->withoutPreserveNewline();
             $rules[] = PreserveNewlines::class;
         } else {
             $this->PreserveNewlines = true;
-            $this->TokenTypeIndex = $this->TokenTypeIndex->withPreserveNewline();
+            $this->TokenIndex = $this->TokenIndex->withPreserveNewline();
         }
 
         foreach (self::INCOMPATIBLE_RULES as $incompatible) {
@@ -631,7 +631,7 @@ final class Formatter implements Buildable, Immutable
         foreach ($rules as $rule) {
             if (is_a($rule, TokenRule::class, true)) {
                 /** @var array<int,bool>|array{'*'} */
-                $types = $rule::getTokenTypes($this->TokenTypeIndex);
+                $types = $rule::getTokens($this->TokenIndex);
                 if ($types !== ['*']) {
                     $types = array_filter($types);
                 }
@@ -884,7 +884,7 @@ final class Formatter implements Buildable, Immutable
             }
         }
 
-        $idx = $this->TokenTypeIndex;
+        $idx = $this->TokenIndex;
 
         Profile::startTimer(__METHOD__ . '#reset');
         $this->reset();

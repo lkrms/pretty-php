@@ -84,9 +84,9 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     public Formatter $Formatter;
 
     /**
-     * Token type index
+     * Token index
      */
-    public TokenTypeIndex $Idx;
+    public TokenIndex $Idx;
 
     public ?int $TagIndent = null;
 
@@ -234,7 +234,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     // Navigation methods:
 
     /**
-     * Get the previous sibling that is one of the types in an index
+     * Get the previous sibling that is in an index
      *
      * @param array<int,bool> $index
      */
@@ -256,7 +256,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     }
 
     /**
-     * Get the next sibling that is one of the types in an index
+     * Get the next sibling that is in an index
      *
      * @param array<int,bool> $index
      */
@@ -278,7 +278,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     }
 
     /**
-     * Skip to the next sibling that is not one of the types in an index
+     * Skip to the next sibling that is not in an index
      *
      * The token returns itself if it satisfies the criteria.
      *
@@ -299,7 +299,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     }
 
     /**
-     * Skip to the previous sibling that is not one of the types in an index
+     * Skip to the previous sibling that is not in an index
      *
      * The token returns itself if it satisfies the criteria.
      *
@@ -320,9 +320,9 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     }
 
     /**
-     * Get the previous sibling of the given type
+     * Get the previous sibling with the given token ID
      */
-    public function prevSiblingOf(int $type, bool $sameStatement = false): self
+    public function prevSiblingOf(int $id, bool $sameStatement = false): self
     {
         if ($this->id === \T_NULL) {
             return $this;
@@ -332,7 +332,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             if ($sameStatement && $t->Statement !== $this->Statement) {
                 break;
             }
-            if ($t->id === $type) {
+            if ($t->id === $id) {
                 return $t;
             }
         }
@@ -340,9 +340,9 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     }
 
     /**
-     * Get the next sibling of the given type
+     * Get the next sibling with the given token ID
      */
-    public function nextSiblingOf(int $type, bool $sameStatement = false): self
+    public function nextSiblingOf(int $id, bool $sameStatement = false): self
     {
         if ($this->id === \T_NULL) {
             return $this;
@@ -352,7 +352,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             if ($sameStatement && $t->Statement !== $this->Statement) {
                 break;
             }
-            if ($t->id === $type) {
+            if ($t->id === $id) {
                 return $t;
             }
         }
@@ -360,7 +360,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     }
 
     /**
-     * Skip to the next token that is not one of the types in an index
+     * Skip to the next token that is not in an index
      *
      * The token returns itself if it satisfies the criteria.
      *
@@ -379,7 +379,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     }
 
     /**
-     * Skip to the previous token that is not one of the types in an index
+     * Skip to the previous token that is not in an index
      *
      * The token returns itself if it satisfies the criteria.
      *
@@ -468,7 +468,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     }
 
     /**
-     * Get the sub-type of a T_COLON, T_QUESTION or T_USE token
+     * Get the sub-id of a T_COLON, T_QUESTION or T_USE token
      *
      * @return TokenSubId::*|-1
      */
@@ -480,7 +480,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
         switch ($this->id) {
             case \T_COLON:
-                // If it's too early to determine the token's sub-type, save
+                // If it's too early to determine the token's sub-id, save
                 // `null` to resolve it later and return `-1`
                 return ($this->SubId = $this->getColonType()) ?? -1;
             case \T_QUESTION:
@@ -1867,7 +1867,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
     /**
      * Get preceding code tokens in reverse document order, up to but not
-     * including the first that isn't one of the types in an index
+     * including the first that isn't in an index
      *
      * @param array<int,bool> $index
      */
@@ -1878,12 +1878,12 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
     /**
      * Get the token and its preceding code tokens in reverse document order, up
-     * to but not including the first that isn't one of the types in an index
+     * to but not including the first that isn't in an index
      *
      * @param array<int,bool> $index
-     * @param bool $testToken If `true` and the token isn't one of the types in
-     * `$index`, an empty collection is returned. Otherwise, the token is added
-     * to the collection regardless.
+     * @param bool $testToken If `true` and the token isn't in `$index`, an
+     * empty collection is returned. Otherwise, the token is added to the
+     * collection regardless.
      */
     public function withPrevCodeWhile(array $index, bool $testToken = false): TokenCollection
     {
@@ -1910,7 +1910,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
     /**
      * Get following code tokens, up to but not including the first that isn't
-     * one of the types in an index
+     * in an index
      *
      * @param array<int,bool> $index
      */
@@ -1921,12 +1921,12 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
     /**
      * Get the token and its following code tokens, up to but not including the
-     * first that isn't one of the types in an index
+     * first that isn't in an index
      *
      * @param array<int,bool> $index
-     * @param bool $testToken If `true` and the token isn't one of the types in
-     * `$index`, an empty collection is returned. Otherwise, the token is added
-     * to the collection regardless.
+     * @param bool $testToken If `true` and the token isn't in `$index`, an
+     * empty collection is returned. Otherwise, the token is added to the
+     * collection regardless.
      */
     public function withNextCodeWhile(array $index, bool $testToken = false): TokenCollection
     {
@@ -1953,7 +1953,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
     /**
      * Get preceding siblings in reverse document order, up to but not including
-     * the first that isn't one of the types in an index
+     * the first that isn't in an index
      *
      * @param array<int,bool> $index
      */
@@ -1964,12 +1964,12 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
     /**
      * Get the token and its preceding siblings in reverse document order, up to
-     * but not including the first that isn't one of the types in an index
+     * but not including the first that isn't in an index
      *
      * @param array<int,bool> $index
-     * @param bool $testToken If `true` and the token isn't one of the types in
-     * `$index`, an empty collection is returned. Otherwise, the token is added
-     * to the collection regardless.
+     * @param bool $testToken If `true` and the token isn't in `$index`, an
+     * empty collection is returned. Otherwise, the token is added to the
+     * collection regardless.
      */
     public function withPrevSiblingsWhile(array $index, bool $testToken = false): TokenCollection
     {
@@ -1995,8 +1995,8 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     }
 
     /**
-     * Get following siblings, up to but not including the first that isn't one
-     * of the types in an index
+     * Get following siblings, up to but not including the first that isn't in
+     * an index
      *
      * @param array<int,bool> $index
      */
@@ -2007,12 +2007,12 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
     /**
      * Get the token and its following siblings, up to but not including the
-     * first that isn't one of the types in an index
+     * first that isn't in an index
      *
      * @param array<int,bool> $index
-     * @param bool $testToken If `true` and the token isn't one of the types in
-     * `$index`, an empty collection is returned. Otherwise, the token is added
-     * to the collection regardless.
+     * @param bool $testToken If `true` and the token isn't in `$index`, an
+     * empty collection is returned. Otherwise, the token is added to the
+     * collection regardless.
      */
     public function withNextSiblingsWhile(array $index, bool $testToken = false): TokenCollection
     {

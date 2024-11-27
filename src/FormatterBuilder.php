@@ -17,7 +17,7 @@ use Salient\Core\Indentation;
  * @method $this disable(array<class-string<Extension>> $value) Non-mandatory extensions to disable
  * @method $this enable(array<class-string<Extension>> $value) Optional extensions to enable
  * @method $this flags(int-mask-of<FormatterFlag::*> $value) Pass $value to `$flags` in Formatter::__construct()
- * @method $this tokenTypeIndex(TokenTypeIndex|null $value) Provide a customised token type index
+ * @method $this tokenIndex(TokenIndex|null $value) Provide a customised token index
  * @method $this preferredEol(string $value) End-of-line sequence used when line endings are not preserved or when there are no line breaks in the input
  * @method $this preserveEol(bool $value = true) True if line endings are preserved (default: true)
  * @method $this spacesBesideCode(int $value) Spaces between code and comments on the same line

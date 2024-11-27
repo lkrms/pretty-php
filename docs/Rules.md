@@ -26,6 +26,7 @@ needed.
 | `ListSpacing` (1)           | Y          | -        | 1    | `processDeclarations()` | 98       |
 | `ListSpacing` (2)           | Y          | -        | 1    | `processList()`         | 98       |
 | `StrictExpressions`         | -          | -        | 1    | `processTokens()`       | 98       |
+| `SemiStrictExpressions`     | -          | -        | 1    | `processTokens()`       | 98       |
 | `Drupal`                    | -          | -        | 1    | `processTokens()`       | 100      |
 | `Laravel`                   | -          | -        | 1    | `processTokens()`       | 100      |
 | `Symfony` (1)               | -          | -        | 1    | `processTokens()`       | 100      |
@@ -246,70 +247,70 @@ token after the open tag.
 In function declarations where `)` and `{` appear at the start of consecutive
 lines, they are collapsed to the same line.
 
-## `TokenRule` classes, by token type
+## `TokenRule` classes, by token
 
-| Token                                       | Rules                                                                |
-| ------------------------------------------- | -------------------------------------------------------------------- |
-| `*`                                         | `HangingIndentation`, `PreserveNewlines`, `StandardIndentation`      |
-| `T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG`     | `VerticalWhitespace`                                                 |
-| `T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG` | `VerticalWhitespace`                                                 |
-| `T_AND`                                     | `VerticalWhitespace`                                                 |
-| `T_ATTRIBUTE_COMMENT`                       | `StandardSpacing`                                                    |
-| `T_ATTRIBUTE`                               | `StandardSpacing`                                                    |
-| `T_BACKTICK`                                | `ProtectStrings`                                                     |
-| `T_BOOLEAN_AND`                             | `VerticalWhitespace`                                                 |
-| `T_BOOLEAN_OR`                              | `VerticalWhitespace`                                                 |
-| `T_CASE`                                    | `SwitchIndentation`                                                  |
-| `T_CATCH`                                   | `Drupal`                                                             |
-| `T_CLASS`                                   | `Drupal`                                                             |
-| `T_CLOSE_BRACE`                             | `WordPress`                                                          |
-| `T_CLOSE_TAG`                               | `StandardSpacing`                                                    |
-| `T_COALESCE`                                | `AlignTernaryOperators`                                              |
-| `T_COLON`                                   | `StatementSpacing`, `WordPress`                                      |
-| `T_COMMA`                                   | `StandardSpacing`                                                    |
-| `T_COMMENT`                                 | `NormaliseComments`, `PlaceComments`, `WordPress`                    |
-| `T_CONCAT`                                  | `Laravel`, `Symfony`                                                 |
-| `T_CONSTANT_ENCAPSED_STRING`                | `NormaliseStrings`                                                   |
-| `T_DECLARE`                                 | `StandardSpacing`                                                    |
-| `T_DEFAULT`                                 | `SwitchIndentation`                                                  |
-| `T_DNUMBER`                                 | `NormaliseNumbers`                                                   |
-| `T_DOC_COMMENT`                             | `Drupal`, `NormaliseComments`, `PlaceComments`, `WordPress`          |
-| `T_DOUBLE_QUOTE`                            | `ProtectStrings`                                                     |
-| `T_DO`                                      | `ControlStructureSpacing`                                            |
-| `T_ELSEIF`                                  | `ControlStructureSpacing`, `Drupal`, `StrictExpressions`             |
-| `T_ELSE`                                    | `ControlStructureSpacing`, `Drupal`                                  |
-| `T_ENCAPSED_AND_WHITESPACE`                 | `NormaliseStrings`                                                   |
-| `T_ENUM`                                    | `Drupal`                                                             |
-| `T_FINALLY`                                 | `Drupal`                                                             |
-| `T_FN`                                      | `AlignArrowFunctions`, `Laravel`, `Symfony`                          |
-| `T_FOREACH`                                 | `ControlStructureSpacing`, `StrictExpressions`                       |
-| `T_FOR`                                     | `ControlStructureSpacing`, `StrictExpressions`, `VerticalWhitespace` |
-| `T_IF`                                      | `ControlStructureSpacing`, `StrictExpressions`                       |
-| `T_INTERFACE`                               | `Drupal`                                                             |
-| `T_LNUMBER`                                 | `NormaliseNumbers`                                                   |
-| `T_LOGICAL_AND`                             | `VerticalWhitespace`                                                 |
-| `T_LOGICAL_NOT`                             | `Laravel`, `WordPress`                                               |
-| `T_LOGICAL_OR`                              | `VerticalWhitespace`                                                 |
-| `T_LOGICAL_XOR`                             | `VerticalWhitespace`                                                 |
-| `T_MATCH`                                   | `StandardSpacing`                                                    |
-| `T_NULLSAFE_OBJECT_OPERATOR`                | `AlignChains`, `VerticalWhitespace`                                  |
-| `T_OBJECT_OPERATOR`                         | `AlignChains`, `VerticalWhitespace`                                  |
-| `T_OPEN_BRACE`                              | `PlaceBraces`, `VerticalWhitespace`, `WordPress`                     |
-| `T_OPEN_BRACKET`                            | `WordPress`                                                          |
-| `T_OPEN_PARENTHESIS`                        | `WordPress`                                                          |
-| `T_OPEN_TAG_WITH_ECHO`                      | `StandardSpacing`                                                    |
-| `T_OPEN_TAG`                                | `StandardSpacing`                                                    |
-| `T_OR`                                      | `VerticalWhitespace`                                                 |
-| `T_QUESTION`                                | `AlignTernaryOperators`, `VerticalWhitespace`                        |
-| `T_RETURN`                                  | `BlankBeforeReturn`                                                  |
-| `T_SEMICOLON`                               | `StatementSpacing`                                                   |
-| `T_START_HEREDOC`                           | `HeredocIndentation`, `ProtectStrings`, `StandardSpacing`            |
-| `T_SWITCH`                                  | `StrictExpressions`, `SwitchIndentation`                             |
-| `T_TRAIT`                                   | `Drupal`                                                             |
-| `T_WHILE`                                   | `ControlStructureSpacing`, `StrictExpressions`                       |
-| `T_XOR`                                     | `VerticalWhitespace`                                                 |
-| `T_YIELD_FROM`                              | `BlankBeforeReturn`                                                  |
-| `T_YIELD`                                   | `BlankBeforeReturn`                                                  |
+| Token                                       | Rules                                                                                         |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `*`                                         | `HangingIndentation`, `PreserveNewlines`, `StandardIndentation`                               |
+| `T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG`     | `VerticalWhitespace`                                                                          |
+| `T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG` | `VerticalWhitespace`                                                                          |
+| `T_AND`                                     | `VerticalWhitespace`                                                                          |
+| `T_ATTRIBUTE_COMMENT`                       | `StandardSpacing`                                                                             |
+| `T_ATTRIBUTE`                               | `StandardSpacing`                                                                             |
+| `T_BACKTICK`                                | `ProtectStrings`                                                                              |
+| `T_BOOLEAN_AND`                             | `VerticalWhitespace`                                                                          |
+| `T_BOOLEAN_OR`                              | `VerticalWhitespace`                                                                          |
+| `T_CASE`                                    | `SwitchIndentation`                                                                           |
+| `T_CATCH`                                   | `Drupal`                                                                                      |
+| `T_CLASS`                                   | `Drupal`                                                                                      |
+| `T_CLOSE_BRACE`                             | `WordPress`                                                                                   |
+| `T_CLOSE_TAG`                               | `StandardSpacing`                                                                             |
+| `T_COALESCE`                                | `AlignTernaryOperators`                                                                       |
+| `T_COLON`                                   | `StatementSpacing`, `WordPress`                                                               |
+| `T_COMMA`                                   | `StandardSpacing`                                                                             |
+| `T_COMMENT`                                 | `NormaliseComments`, `PlaceComments`, `WordPress`                                             |
+| `T_CONCAT`                                  | `Laravel`, `Symfony`                                                                          |
+| `T_CONSTANT_ENCAPSED_STRING`                | `NormaliseStrings`                                                                            |
+| `T_DECLARE`                                 | `StandardSpacing`                                                                             |
+| `T_DEFAULT`                                 | `SwitchIndentation`                                                                           |
+| `T_DNUMBER`                                 | `NormaliseNumbers`                                                                            |
+| `T_DOC_COMMENT`                             | `Drupal`, `NormaliseComments`, `PlaceComments`, `WordPress`                                   |
+| `T_DOUBLE_QUOTE`                            | `ProtectStrings`                                                                              |
+| `T_DO`                                      | `ControlStructureSpacing`                                                                     |
+| `T_ELSEIF`                                  | `ControlStructureSpacing`, `Drupal`, `SemiStrictExpressions`, `StrictExpressions`             |
+| `T_ELSE`                                    | `ControlStructureSpacing`, `Drupal`                                                           |
+| `T_ENCAPSED_AND_WHITESPACE`                 | `NormaliseStrings`                                                                            |
+| `T_ENUM`                                    | `Drupal`                                                                                      |
+| `T_FINALLY`                                 | `Drupal`                                                                                      |
+| `T_FN`                                      | `AlignArrowFunctions`, `Laravel`, `Symfony`                                                   |
+| `T_FOREACH`                                 | `ControlStructureSpacing`, `SemiStrictExpressions`, `StrictExpressions`                       |
+| `T_FOR`                                     | `ControlStructureSpacing`, `SemiStrictExpressions`, `StrictExpressions`, `VerticalWhitespace` |
+| `T_IF`                                      | `ControlStructureSpacing`, `SemiStrictExpressions`, `StrictExpressions`                       |
+| `T_INTERFACE`                               | `Drupal`                                                                                      |
+| `T_LNUMBER`                                 | `NormaliseNumbers`                                                                            |
+| `T_LOGICAL_AND`                             | `VerticalWhitespace`                                                                          |
+| `T_LOGICAL_NOT`                             | `Laravel`, `WordPress`                                                                        |
+| `T_LOGICAL_OR`                              | `VerticalWhitespace`                                                                          |
+| `T_LOGICAL_XOR`                             | `VerticalWhitespace`                                                                          |
+| `T_MATCH`                                   | `StandardSpacing`                                                                             |
+| `T_NULLSAFE_OBJECT_OPERATOR`                | `AlignChains`, `VerticalWhitespace`                                                           |
+| `T_OBJECT_OPERATOR`                         | `AlignChains`, `VerticalWhitespace`                                                           |
+| `T_OPEN_BRACE`                              | `PlaceBraces`, `VerticalWhitespace`, `WordPress`                                              |
+| `T_OPEN_BRACKET`                            | `WordPress`                                                                                   |
+| `T_OPEN_PARENTHESIS`                        | `WordPress`                                                                                   |
+| `T_OPEN_TAG_WITH_ECHO`                      | `StandardSpacing`                                                                             |
+| `T_OPEN_TAG`                                | `StandardSpacing`                                                                             |
+| `T_OR`                                      | `VerticalWhitespace`                                                                          |
+| `T_QUESTION`                                | `AlignTernaryOperators`, `VerticalWhitespace`                                                 |
+| `T_RETURN`                                  | `BlankBeforeReturn`                                                                           |
+| `T_SEMICOLON`                               | `StatementSpacing`                                                                            |
+| `T_START_HEREDOC`                           | `HeredocIndentation`, `ProtectStrings`, `StandardSpacing`                                     |
+| `T_SWITCH`                                  | `SemiStrictExpressions`, `StrictExpressions`, `SwitchIndentation`                             |
+| `T_TRAIT`                                   | `Drupal`                                                                                      |
+| `T_WHILE`                                   | `ControlStructureSpacing`, `SemiStrictExpressions`, `StrictExpressions`                       |
+| `T_XOR`                                     | `VerticalWhitespace`                                                                          |
+| `T_YIELD_FROM`                              | `BlankBeforeReturn`                                                                           |
+| `T_YIELD`                                   | `BlankBeforeReturn`                                                                           |
 
 ## `DeclarationRule` classes, by declaration type
 

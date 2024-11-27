@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Tests;
 
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
 use Salient\PHPDoc\PHPDoc;
 use Salient\Utility\Exception\ShouldNotHappenException;
 use Salient\Utility\Arr;
@@ -15,7 +15,7 @@ use LogicException;
 use ReflectionClass;
 use ReflectionProperty;
 
-class TokenTypeIndexTest extends TestCase
+class TokenIndexTest extends TestCase
 {
     protected const ALWAYS_ALLOWED_AT_START_OR_END = [
         \T_ATTRIBUTE,
@@ -192,22 +192,22 @@ class TokenTypeIndexTest extends TestCase
     /**
      * @dataProvider propertyProvider
      */
-    public function testIndexes(ReflectionProperty $property, TokenTypeIndex $index, string $name): void
+    public function testIndexes(ReflectionProperty $property, TokenIndex $index, string $name): void
     {
-        $this->assertSameSize(TokenTypeIndex::TOKEN_INDEX, array_intersect_key($index->$name, TokenTypeIndex::TOKEN_INDEX), 'Index must cover every token type');
-        $this->assertEmpty(array_diff_key($index->$name, TokenTypeIndex::TOKEN_INDEX), 'Index must only cover token types');
+        $this->assertSameSize(TokenIndex::TOKEN_INDEX, array_intersect_key($index->$name, TokenIndex::TOKEN_INDEX), 'Index must cover every token');
+        $this->assertEmpty(array_diff_key($index->$name, TokenIndex::TOKEN_INDEX), 'Index must only cover tokens');
         $filtered = array_filter($index->$name);
         if (Regex::match('/^(?:Alt|AllowBlank|Suppress)/', $name)) {
             $this->assertNotEmpty($filtered, 'Index cannot be empty');
             return;
         }
-        $this->assertGreaterThan(1, count($filtered), 'Index must match two or more token types');
+        $this->assertGreaterThan(1, count($filtered), 'Index must match two or more tokens');
     }
 
     /**
      * @dataProvider propertyProvider
      */
-    public function testDocBlocks(ReflectionProperty $property, TokenTypeIndex $index, string $name): void
+    public function testDocBlocks(ReflectionProperty $property, TokenIndex $index, string $name): void
     {
         $expected = self::getTokenNames(self::getIndexTokens($index->$name));
         $message = sprintf('PHPDoc summary could be: %s', self::collapseTokenNames($expected));
@@ -451,14 +451,14 @@ class TokenTypeIndexTest extends TestCase
                 $tokens[] = $id;
             } else {
                 $operators = [
-                    'Arithmetic' => TokenTypeIndex::OPERATOR_ARITHMETIC,
-                    'Assignment' => TokenTypeIndex::OPERATOR_ASSIGNMENT,
-                    'Bitwise' => TokenTypeIndex::OPERATOR_BITWISE,
-                    'Comparison' => TokenTypeIndex::OPERATOR_COMPARISON,
-                    'Comparison,T_COALESCE' => [\T_COALESCE => false] + TokenTypeIndex::OPERATOR_COMPARISON,
-                    'Logical' => TokenTypeIndex::OPERATOR_LOGICAL,
-                    'Logical,T_LOGICAL_NOT' => [\T_LOGICAL_NOT => false] + TokenTypeIndex::OPERATOR_LOGICAL,
-                    'Ternary' => TokenTypeIndex::OPERATOR_TERNARY,
+                    'Arithmetic' => TokenIndex::OPERATOR_ARITHMETIC,
+                    'Assignment' => TokenIndex::OPERATOR_ASSIGNMENT,
+                    'Bitwise' => TokenIndex::OPERATOR_BITWISE,
+                    'Comparison' => TokenIndex::OPERATOR_COMPARISON,
+                    'Comparison,T_COALESCE' => [\T_COALESCE => false] + TokenIndex::OPERATOR_COMPARISON,
+                    'Logical' => TokenIndex::OPERATOR_LOGICAL,
+                    'Logical,T_LOGICAL_NOT' => [\T_LOGICAL_NOT => false] + TokenIndex::OPERATOR_LOGICAL,
+                    'Ternary' => TokenIndex::OPERATOR_TERNARY,
                 ][Arr::implode(',', [$matches['operators'], $matches['exception']], '')] ?? null;
                 if ($operators === null) {
                     throw new LogicException('Invalid operators: ' . $line);
@@ -470,7 +470,7 @@ class TokenTypeIndexTest extends TestCase
     }
 
     /**
-     * @return Generator<string,array{ReflectionProperty,TokenTypeIndex,string}>
+     * @return Generator<string,array{ReflectionProperty,TokenIndex,string}>
      */
     public static function propertyProvider(): Generator
     {
@@ -490,9 +490,9 @@ class TokenTypeIndexTest extends TestCase
                    ->getProperties(ReflectionProperty::IS_PUBLIC);
     }
 
-    protected static function getIndex(): TokenTypeIndex
+    protected static function getIndex(): TokenIndex
     {
-        return new TokenTypeIndex();
+        return new TokenIndex();
     }
 
     /**
@@ -580,11 +580,11 @@ class TokenTypeIndexTest extends TestCase
      */
     private static function getIndexTokens(array $index): array
     {
-        foreach ($index as $type => $value) {
+        foreach ($index as $id => $value) {
             if ($value) {
-                $types[] = $type;
+                $ids[] = $id;
             }
         }
-        return $types ?? [];
+        return $ids ?? [];
     }
 }

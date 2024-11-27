@@ -5,7 +5,7 @@ namespace Lkrms\PrettyPHP\Tests\Filter;
 use Lkrms\PrettyPHP\Tests\TestCase;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
 
 final class MoveCommentsTest extends TestCase
 {
@@ -27,7 +27,7 @@ final class MoveCommentsTest extends TestCase
         $formatterB = Formatter::build();
         $formatter = $formatterB->build();
 
-        $idx = new TokenTypeIndex();
+        $idx = new TokenIndex();
         $mixed = $idx->withMixedOperators();
         $first = $idx->withLeadingOperators();
         $last = $idx->withTrailingOperators();
@@ -269,7 +269,7 @@ $foo =
 
 PHP,
                 $input2,
-                $formatterB->tokenTypeIndex($mixed),
+                $formatterB->tokenIndex($mixed),
             ],
             'Comments before and after operators + first' => [
                 <<<'PHP'
@@ -349,7 +349,7 @@ $foo =
 
 PHP,
                 $input2,
-                $formatterB->tokenTypeIndex($first),
+                $formatterB->tokenIndex($first),
             ],
             'Comments before and after operators + last' => [
                 <<<'PHP'
@@ -429,7 +429,7 @@ $foo =
 
 PHP,
                 $input2,
-                $formatterB->tokenTypeIndex($last),
+                $formatterB->tokenIndex($last),
             ],
             'Comments after colons' => [
                 <<<'PHP'
@@ -497,7 +497,7 @@ fn() =>  // comment
 
 PHP,
                 $input3,
-                $formatterB->tokenTypeIndex($mixed),
+                $formatterB->tokenIndex($mixed),
             ],
             'Comments before and after double arrows + first' => [
                 <<<'PHP'
@@ -523,7 +523,7 @@ fn() =>  // comment
 
 PHP,
                 $input3,
-                $formatterB->tokenTypeIndex($first),
+                $formatterB->tokenIndex($first),
             ],
             'Comments before and after double arrows + last' => [
                 <<<'PHP'
@@ -549,7 +549,7 @@ fn() =>  // comment
 
 PHP,
                 $input3,
-                $formatterB->tokenTypeIndex($last),
+                $formatterB->tokenIndex($last),
             ],
             'Comments before and after double arrows + PSR-12' => [
                 <<<'PHP'

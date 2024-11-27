@@ -2,11 +2,11 @@
 
 namespace Lkrms\PrettyPHP\Tests\Rule\Preset\Internal;
 
-use Lkrms\PrettyPHP\Rule\Preset\Internal\WordPressTokenTypeIndex;
-use Lkrms\PrettyPHP\Tests\TokenTypeIndexTest;
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\Rule\Preset\Internal\WordPressTokenIndex;
+use Lkrms\PrettyPHP\Tests\TokenIndexTest;
+use Lkrms\PrettyPHP\TokenIndex;
 
-final class WordPressTokenTypeIndexTest extends TokenTypeIndexTest
+final class WordPressTokenIndexTest extends TokenIndexTest
 {
     protected const ALWAYS_ALLOWED_AT_START_OR_END = [
         \T_ATTRIBUTE,
@@ -94,8 +94,8 @@ final class WordPressTokenTypeIndexTest extends TokenTypeIndexTest
         \T_CLOSE_BRACE,
     ];
 
-    protected static function getIndex(): TokenTypeIndex
+    protected static function getIndex(): TokenIndex
     {
-        return new WordPressTokenTypeIndex();
+        return new WordPressTokenIndex();
     }
 }

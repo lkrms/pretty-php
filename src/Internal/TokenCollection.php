@@ -39,11 +39,11 @@ final class TokenCollection extends AbstractTypedList implements Stringable
      * @phpstan-assert-if-true !null $this->first()
      * @phpstan-assert-if-true !null $this->last()
      */
-    public function hasOneOf(int $type): bool
+    public function hasOneOf(int $id): bool
     {
         /** @var Token $token */
         foreach ($this as $token) {
-            if ($token->id === $type) {
+            if ($token->id === $id) {
                 return true;
             }
         }
@@ -53,22 +53,22 @@ final class TokenCollection extends AbstractTypedList implements Stringable
     /**
      * @return static
      */
-    public function getAnyOf(int $type)
+    public function getAnyOf(int $id)
     {
         /** @var Token $token */
         foreach ($this as $token) {
-            if ($token->id === $type) {
+            if ($token->id === $id) {
                 $tokens[] = $token;
             }
         }
         return $this->maybeReplaceItems($tokens ?? [], true);
     }
 
-    public function getFirstOf(int $type): ?Token
+    public function getFirstOf(int $id): ?Token
     {
         /** @var Token $token */
         foreach ($this as $token) {
-            if ($token->id === $type) {
+            if ($token->id === $id) {
                 return $token;
             }
         }
@@ -139,14 +139,14 @@ final class TokenCollection extends AbstractTypedList implements Stringable
     /**
      * @return list<int>
      */
-    public function getTypes(): array
+    public function getIds(): array
     {
         /** @var Token $token */
         foreach ($this as $token) {
-            $types[] = $token->id;
+            $ids[] = $token->id;
         }
 
-        return $types ?? [];
+        return $ids ?? [];
     }
 
     /**

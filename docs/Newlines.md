@@ -1,7 +1,7 @@
 # Newlines
 
-The token lists below are validated by the `TokenTypeIndex` [unit test][], so
-any changes to structure or syntax must be reflected there.
+The token lists below are validated by the `TokenIndex` [unit test][], so any
+changes to structure or syntax must be reflected there.
 
 ## Mixed
 
@@ -139,4 +139,4 @@ With **`--operators-last`**, newlines are allowed after, and not before,
 - `T_OBJECT_OPERATOR`
 - Ternary operators
 
-[unit test]: ../tests/unit/TokenTypeIndexTest.php
+[unit test]: ../tests/unit/TokenIndexTest.php

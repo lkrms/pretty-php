@@ -5,7 +5,7 @@ namespace Lkrms\PrettyPHP\Filter;
 use Lkrms\PrettyPHP\Concern\FilterTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\GenericToken;
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
 use Salient\Utility\Exception\ShouldNotHappenException;
 
 /**
@@ -47,12 +47,12 @@ final class MoveComments implements Filter
     {
         $idx = $this->Idx->withPreserveNewline();
 
-        $this->BeforeCommentIndex = TokenTypeIndex::intersect(
+        $this->BeforeCommentIndex = TokenIndex::intersect(
             $this->Idx->Movable,
             $idx->AllowNewlineAfter,
         );
 
-        $this->AfterCommentIndex = TokenTypeIndex::intersect(
+        $this->AfterCommentIndex = TokenIndex::intersect(
             $this->Idx->Movable,
             $idx->AllowNewlineBefore,
         );

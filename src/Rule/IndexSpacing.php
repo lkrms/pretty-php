@@ -6,10 +6,10 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
 
 /**
- * Apply whitespace to tokens as per the formatter's token type index
+ * Apply whitespace to tokens as per the formatter's token index
  *
  * @api
  */
@@ -30,9 +30,9 @@ final class IndexSpacing implements TokenRule
     /**
      * @inheritDoc
      */
-    public static function getTokenTypes(TokenTypeIndex $idx): array
+    public static function getTokens(TokenIndex $idx): array
     {
-        return TokenTypeIndex::merge(
+        return TokenIndex::merge(
             $idx->AddSpace,
             $idx->AddSpaceBefore,
             $idx->AddSpaceAfter,

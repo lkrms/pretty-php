@@ -16,14 +16,14 @@ final class Renderer implements Immutable
     private int $TabSize;
     private string $SoftTab;
     private string $Tab;
-    private TokenTypeIndex $Idx;
+    private TokenIndex $Idx;
 
     public function __construct(Formatter $formatter)
     {
         $this->TabSize = $formatter->TabSize;
         $this->SoftTab = $formatter->SoftTab;
         $this->Tab = $formatter->Tab;
-        $this->Idx = $formatter->TokenTypeIndex;
+        $this->Idx = $formatter->TokenIndex;
     }
 
     /**
@@ -36,7 +36,7 @@ final class Renderer implements Immutable
         return $this->with('TabSize', $formatter->TabSize)
                     ->with('SoftTab', $formatter->SoftTab)
                     ->with('Tab', $formatter->Tab)
-                    ->with('Idx', $formatter->TokenTypeIndex);
+                    ->with('Idx', $formatter->TokenIndex);
     }
 
     public function render(
