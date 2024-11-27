@@ -3,7 +3,6 @@
 
 use Lkrms\PrettyPHP\Catalog\FormatterFlag;
 use Lkrms\PrettyPHP\Formatter;
-use Lkrms\PrettyPHP\FormatterBuilder;
 use Lkrms\PrettyPHP\GenericToken;
 use Lkrms\PrettyPHP\Token;
 use PhpParser\NodeDumper;
@@ -96,7 +95,7 @@ if ($parseWithPhpParser) {
     exit;
 }
 
-$formatter = (new FormatterBuilder())
+$formatter = Formatter::build()
                  ->flags($dump ? FormatterFlag::DEBUG : 0)
                  ->build();
 

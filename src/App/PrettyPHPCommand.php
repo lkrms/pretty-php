@@ -32,7 +32,6 @@ use Lkrms\PrettyPHP\Rule\SemiStrictExpressions;
 use Lkrms\PrettyPHP\Rule\StrictExpressions;
 use Lkrms\PrettyPHP\Rule\StrictLists;
 use Lkrms\PrettyPHP\Formatter;
-use Lkrms\PrettyPHP\FormatterBuilder;
 use Lkrms\PrettyPHP\Token;
 use Lkrms\PrettyPHP\TokenIndex;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
@@ -1609,7 +1608,7 @@ EOF,
         $disable = array_values(array_intersect_key(self::DISABLE_MAP, array_flip($disable)));
         $enable = array_values(array_intersect_key(self::ENABLE_MAP, array_flip($this->Enable)));
 
-        $f = (new FormatterBuilder())
+        $f = Formatter::build()
                  ->insertSpaces(!$this->Tabs)
                  ->tabSize($this->Tabs ?: $this->Spaces ?: 4)
                  ->disable($disable)

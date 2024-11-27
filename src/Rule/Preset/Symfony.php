@@ -15,7 +15,6 @@ use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Internal\TokenCollection;
 use Lkrms\PrettyPHP\Rule\BlankBeforeReturn;
 use Lkrms\PrettyPHP\Formatter;
-use Lkrms\PrettyPHP\FormatterBuilder;
 use Lkrms\PrettyPHP\Token;
 use Lkrms\PrettyPHP\TokenIndex;
 
@@ -33,7 +32,7 @@ final class Symfony implements Preset, TokenRule, ListRule
 
     public static function getFormatter(int $flags = 0): Formatter
     {
-        return (new FormatterBuilder())
+        return Formatter::build()
                    ->enable([
                        BlankBeforeReturn::class,
                        self::class,

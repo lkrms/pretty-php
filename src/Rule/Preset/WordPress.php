@@ -11,7 +11,6 @@ use Lkrms\PrettyPHP\Rule\Preset\Internal\WordPressTokenIndex;
 use Lkrms\PrettyPHP\Rule\AlignData;
 use Lkrms\PrettyPHP\Rule\DeclarationSpacing;
 use Lkrms\PrettyPHP\Formatter;
-use Lkrms\PrettyPHP\FormatterBuilder;
 use Lkrms\PrettyPHP\Token;
 use Lkrms\PrettyPHP\TokenIndex;
 
@@ -34,7 +33,7 @@ final class WordPress implements Preset, TokenRule
 
     public static function getFormatter(int $flags = 0): Formatter
     {
-        return (new FormatterBuilder())
+        return Formatter::build()
                    ->insertSpaces(false)
                    ->tabSize(4)
                    ->disable([DeclarationSpacing::class])
