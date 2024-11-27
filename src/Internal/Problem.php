@@ -7,46 +7,15 @@ use Salient\Utility\Str;
 use Stringable;
 
 /**
- * A non-critical problem detected in formatted code
+ * @internal
  */
 final class Problem implements Stringable
 {
-    /**
-     * An sprintf() format string describing the problem
-     *
-     * @readonly
-     */
     public string $Format;
-
-    /**
-     * Values for the sprintf() format string
-     *
-     * @readonly
-     * @var array<int|float|string|bool|null>
-     */
+    /** @var array<int|float|string|bool|null> */
     public array $Values;
-
-    /**
-     * The name of the file with the problem
-     *
-     * @readonly
-     */
     public ?string $Filename;
-
-    /**
-     * The start of the range of tokens with the problem
-     *
-     * @readonly
-     */
     public Token $Start;
-
-    /**
-     * The end of the range of tokens with the problem
-     *
-     * May be `null` if the problem only affects one token.
-     *
-     * @readonly
-     */
     public ?Token $End;
 
     /**
@@ -67,35 +36,33 @@ final class Problem implements Stringable
     }
 
     /**
-     * @internal
+     * @inheritDoc
      */
     public function __toString(): string
     {
         $format = ': %s:%d:%d';
         $locations[] = $this->Start;
         if ($this->End && $this->End !== $this->Start) {
-            $format .= ',%1$s:%d:%d';
+            $format .= ' -> %1$s:%d:%d';
             $locations[] = $this->End;
         }
 
         // Use lines and columns from `OutputLine` and `OutputColumn` if none
         // are `-1`, otherwise fall back to `line` and `column`
-        $out = [];
-        foreach ($locations as $loc) {
-            $in[] = $loc->line;
-            $in[] = $loc->column;
-            if ($out === null) {
-                continue;
+        foreach ($locations as $location) {
+            $values[] = $location->OutputLine;
+            $values[] = $location->OutputColumn;
+        }
+
+        if (in_array(-1, $values, true)) {
+            $values = [];
+            foreach ($locations as $location) {
+                $values[] = $location->line;
+                $values[] = $location->column;
             }
-            if ($loc->OutputLine === -1 || $loc->OutputColumn === -1) {
-                $out = null;
-                continue;
-            }
-            $out[] = $loc->OutputLine;
-            $out[] = $loc->OutputColumn;
         }
 
         return sprintf($this->Format, ...$this->Values)
-            . sprintf($format, $this->Filename ?? '<input>', ...($out ?? $in));
+            . sprintf($format, $this->Filename ?? '<input>', ...$values);
     }
 }
