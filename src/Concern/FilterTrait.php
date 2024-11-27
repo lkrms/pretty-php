@@ -56,8 +56,10 @@ trait FilterTrait
             }
             $i = $j;
         }
+        // @codeCoverageIgnoreStart
         $key = -1;
         return null;
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -110,8 +112,10 @@ trait FilterTrait
             }
             $i = $j;
         }
+        // @codeCoverageIgnoreStart
         $key = -1;
         return null;
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -129,7 +133,9 @@ trait FilterTrait
             } elseif ($this->Idx->CloseBracket[$token->id]) {
                 $depth--;
                 if ($depth < 0) {
+                    // @codeCoverageIgnoreStart
                     break;
+                    // @codeCoverageIgnoreEnd
                 }
             }
             $token = $this->Tokens[++$i];
@@ -137,7 +143,9 @@ trait FilterTrait
                 if ($i + 1 < $count) {
                     $token = $this->Tokens[++$i];
                 } else {
+                    // @codeCoverageIgnoreStart
                     break 2;
+                    // @codeCoverageIgnoreEnd
                 }
             }
             if (!$depth) {
@@ -148,8 +156,10 @@ trait FilterTrait
                 }
             }
         }
+        // @codeCoverageIgnoreStart
         $key = -1;
         return null;
+        // @codeCoverageIgnoreEnd
     }
 
     /**

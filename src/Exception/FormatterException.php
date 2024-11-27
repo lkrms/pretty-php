@@ -8,6 +8,8 @@ use Throwable;
 
 /**
  * @api
+ *
+ * @codeCoverageIgnore
  */
 class FormatterException extends AbstractException
 {
