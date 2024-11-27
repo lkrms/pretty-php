@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use Salient\Core\Facade\Profile;
 use Salient\Utility\Arr;
 use Salient\Utility\Regex;
+use Salient\Utility\Str;
 
 abstract class TestCase extends PHPUnitTestCase implements HasTokenNames
 {
@@ -27,6 +28,9 @@ abstract class TestCase extends PHPUnitTestCase implements HasTokenNames
         $formatter = $formatter->withDebug();
         $first = $formatter->format($code);
         $second = $formatter->format($first, null, null, null, true);
+        if (!$formatter->PreserveEol && $formatter->PreferredEol !== \PHP_EOL) {
+            $expected = Str::setEol($expected, $formatter->PreferredEol);
+        }
         self::assertSame($expected, $first, 'Output is not formatted correctly.');
         self::assertSame($expected, $second, 'Output is not idempotent.');
         if ($last = Arr::last($formatter->getTokens() ?? [])) {
