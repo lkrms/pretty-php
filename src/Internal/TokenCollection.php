@@ -4,33 +4,33 @@ namespace Lkrms\PrettyPHP\Internal;
 
 use Lkrms\PrettyPHP\Token;
 use Salient\Collection\Collection;
+use Salient\Utility\Exception\ShouldNotHappenException;
 use InvalidArgumentException;
-use LogicException;
 use Stringable;
 
 /**
+ * @internal
+ *
  * @extends Collection<array-key,Token>
  */
 final class TokenCollection extends Collection implements Stringable
 {
     private bool $Collected = false;
 
-    /**
-     * @return static
-     */
-    public static function collect(Token $from, Token $to)
+    public static function collect(Token $from, Token $to): self
     {
+        $tokens = [];
         if (
             $from->id !== \T_NULL
             && $to->id !== \T_NULL
             && $from->Index <= $to->Index
         ) {
+            $t = $from;
             do {
-                $tokens[] = $from;
-            } while ($from !== $to && ($from = $from->Next));
+                $tokens[] = $t;
+            } while ($t !== $to && ($t = $t->Next));
         }
-
-        $instance = new self($tokens ?? []);
+        $instance = new self($tokens);
         $instance->Collected = true;
         return $instance;
     }
@@ -41,8 +41,7 @@ final class TokenCollection extends Collection implements Stringable
      */
     public function hasOneOf(int $id): bool
     {
-        /** @var Token $token */
-        foreach ($this as $token) {
+        foreach ($this->Items as $token) {
             if ($token->id === $id) {
                 return true;
             }
@@ -50,24 +49,20 @@ final class TokenCollection extends Collection implements Stringable
         return false;
     }
 
-    /**
-     * @return static
-     */
-    public function getAnyOf(int $id)
+    public function getAnyOf(int $id): self
     {
-        /** @var Token $token */
-        foreach ($this as $token) {
+        $tokens = [];
+        foreach ($this->Items as $token) {
             if ($token->id === $id) {
                 $tokens[] = $token;
             }
         }
-        return $this->maybeReplaceItems($tokens ?? [], true);
+        return $this->maybeReplaceItems($tokens);
     }
 
     public function getFirstOf(int $id): ?Token
     {
-        /** @var Token $token */
-        foreach ($this as $token) {
+        foreach ($this->Items as $token) {
             if ($token->id === $id) {
                 return $token;
             }
@@ -82,8 +77,7 @@ final class TokenCollection extends Collection implements Stringable
      */
     public function hasOneFrom(array $index): bool
     {
-        /** @var Token $token */
-        foreach ($this as $token) {
+        foreach ($this->Items as $token) {
             if ($index[$token->id]) {
                 return true;
             }
@@ -98,8 +92,7 @@ final class TokenCollection extends Collection implements Stringable
      */
     public function hasOneNotFrom(array $index): bool
     {
-        /** @var Token $token */
-        foreach ($this as $token) {
+        foreach ($this->Items as $token) {
             if (!$index[$token->id]) {
                 return true;
             }
@@ -109,17 +102,16 @@ final class TokenCollection extends Collection implements Stringable
 
     /**
      * @param array<int,bool> $index
-     * @return static
      */
-    public function getAnyFrom(array $index)
+    public function getAnyFrom(array $index): self
     {
-        /** @var Token $token */
-        foreach ($this as $token) {
+        $tokens = [];
+        foreach ($this->Items as $token) {
             if ($index[$token->id]) {
                 $tokens[] = $token;
             }
         }
-        return $this->maybeReplaceItems($tokens ?? [], true);
+        return $this->maybeReplaceItems($tokens);
     }
 
     /**
@@ -127,8 +119,7 @@ final class TokenCollection extends Collection implements Stringable
      */
     public function getFirstFrom(array $index): ?Token
     {
-        /** @var Token $token */
-        foreach ($this as $token) {
+        foreach ($this->Items as $token) {
             if ($index[$token->id]) {
                 return $token;
             }
@@ -141,12 +132,11 @@ final class TokenCollection extends Collection implements Stringable
      */
     public function getIds(): array
     {
-        /** @var Token $token */
-        foreach ($this as $token) {
+        $ids = [];
+        foreach ($this->Items as $token) {
             $ids[] = $token->id;
         }
-
-        return $ids ?? [];
+        return $ids;
     }
 
     /**
@@ -154,8 +144,7 @@ final class TokenCollection extends Collection implements Stringable
      */
     public function tokenHasNewlineBefore(): bool
     {
-        /** @var Token $token */
-        foreach ($this as $token) {
+        foreach ($this->Items as $token) {
             if ($token->hasNewlineBefore()) {
                 return true;
             }
@@ -168,8 +157,7 @@ final class TokenCollection extends Collection implements Stringable
      */
     public function tokenHasNewlineAfter(bool $closedBy = false): bool
     {
-        /** @var Token $token */
-        foreach ($this as $token) {
+        foreach ($this->Items as $token) {
             if ($closedBy && $token->ClosedBy) {
                 $token = $token->ClosedBy;
             }
@@ -186,10 +174,11 @@ final class TokenCollection extends Collection implements Stringable
      */
     public function hasNewlineBetweenTokens(): bool
     {
-        $i = 0;
-        /** @var Token $token */
-        foreach ($this as $token) {
-            if ($i++ && $token->hasNewlineBefore()) {
+        $ignore = true;
+        foreach ($this->Items as $token) {
+            if ($ignore) {
+                $ignore = false;
+            } elseif ($token->hasNewlineBefore()) {
                 return true;
             }
         }
@@ -201,10 +190,11 @@ final class TokenCollection extends Collection implements Stringable
      */
     public function hasBlankLineBetweenTokens(): bool
     {
-        $i = 0;
-        /** @var Token $token */
-        foreach ($this as $token) {
-            if ($i++ && $token->hasBlankLineBefore()) {
+        $ignore = true;
+        foreach ($this->Items as $token) {
+            if ($ignore) {
+                $ignore = false;
+            } elseif ($token->hasBlankLineBefore()) {
                 return true;
             }
         }
@@ -218,14 +208,14 @@ final class TokenCollection extends Collection implements Stringable
     public function hasNewline(): bool
     {
         $this->assertCollected();
-
-        $i = 0;
-        /** @var Token $token */
-        foreach ($this as $token) {
+        $ignore = true;
+        foreach ($this->Items as $token) {
             if (strpos($token->text, "\n") !== false) {
                 return true;
             }
-            if ($i++ && $token->hasNewlineBefore()) {
+            if ($ignore) {
+                $ignore = false;
+            } elseif ($token->hasNewlineBefore()) {
                 return true;
             }
         }
@@ -250,23 +240,32 @@ final class TokenCollection extends Collection implements Stringable
             return '';
         }
 
-        $first = reset($this->Items);
-        $last = end($this->Items);
+        $from = reset($this->Items);
+        $to = end($this->Items);
+        $renderer = $from->Formatter->Renderer;
 
-        $renderer = $first->Formatter->Renderer;
-        $code = $renderer->render($first, $last, $softTabs);
-        if (
-            !$trimAfter
-            && ($after = $renderer->renderWhitespaceAfter($last))
-        ) {
-            $code .= $after;
+        $code = $renderer->render($from, $to, $softTabs);
+
+        $after = $renderer->renderWhitespaceAfter($to);
+        if ($after !== '') {
+            $afterLength = strlen($after);
+            if ($trimAfter) {
+                if (substr($code, -$afterLength) === $after) {
+                    // Remove trailing whitespace if the renderer added it
+                    $code = substr($code, 0, -$afterLength);
+                }
+            } elseif (substr($code, -$afterLength) !== $after) {
+                $code .= $after;
+            }
         }
-        if (
-            $trimBefore
-            && ($before = $renderer->renderWhitespaceBefore($first, $softTabs))
-        ) {
-            return substr($code, strlen($before));
+
+        if ($trimBefore) {
+            $before = $renderer->renderWhitespaceBefore($from, $softTabs);
+            return $before === ''
+                ? $code
+                : substr($code, strlen($before));
         }
+
         return ltrim($code, "\n");
     }
 
@@ -277,11 +276,11 @@ final class TokenCollection extends Collection implements Stringable
 
     public function toString(string $delimiter = ''): string
     {
-        /** @var Token $token */
-        foreach ($this as $token) {
-            $code[] = $token->text;
+        $text = [];
+        foreach ($this->Items as $token) {
+            $text[] = $token->text;
         }
-        return implode($delimiter, $code ?? []);
+        return implode($delimiter, $text);
     }
 
     /**
@@ -292,16 +291,13 @@ final class TokenCollection extends Collection implements Stringable
         // Shift *_BEFORE and *_AFTER to their NO_* counterparts, then clear
         // other bits
         $remove = $whitespace << 6 & 0b111111000000;
-
-        /** @var Token $token */
-        foreach ($this as $token) {
+        foreach ($this->Items as $token) {
             $token->Whitespace |= $whitespace;
             if ($remove) {
                 // @phpstan-ignore argument.type
                 $token->removeWhitespace($remove);
             }
         }
-
         return $this;
     }
 
@@ -311,21 +307,20 @@ final class TokenCollection extends Collection implements Stringable
     public function applyInnerWhitespace(int $whitespace)
     {
         $this->assertCollected();
-
         if (($whitespace & 0b0111000111000111000111) !== $whitespace) {
+            // @codeCoverageIgnoreStart
             throw new InvalidArgumentException('Invalid $whitespace (AFTER bits cannot be set)');
+            // @codeCoverageIgnoreEnd
         }
-
         if ($this->count() < 2) {
             return $this;
         }
-
         $remove = $whitespace << 6 & 0b111111000000;
-
-        $i = 0;
-        /** @var Token $token */
-        foreach ($this as $token) {
-            if ($i++) {
+        $ignore = true;
+        foreach ($this->Items as $token) {
+            if ($ignore) {
+                $ignore = false;
+            } else {
                 $token->Whitespace |= $whitespace;
                 if ($remove) {
                     // @phpstan-ignore argument.type
@@ -333,16 +328,7 @@ final class TokenCollection extends Collection implements Stringable
                 }
             }
         }
-
         return $this;
-    }
-
-    /**
-     * @internal
-     */
-    public function __clone()
-    {
-        $this->Collected = false;
     }
 
     /**
@@ -357,7 +343,7 @@ final class TokenCollection extends Collection implements Stringable
     {
         if (!$this->Collected) {
             // @codeCoverageIgnoreStart
-            throw new LogicException(sprintf(
+            throw new ShouldNotHappenException(sprintf(
                 'Tokens were not collected by %s::collect()',
                 static::class,
             ));
