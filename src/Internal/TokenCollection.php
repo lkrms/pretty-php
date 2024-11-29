@@ -3,15 +3,15 @@
 namespace Lkrms\PrettyPHP\Internal;
 
 use Lkrms\PrettyPHP\Token;
-use Salient\Collection\AbstractTypedList;
+use Salient\Collection\Collection;
 use InvalidArgumentException;
 use LogicException;
 use Stringable;
 
 /**
- * @extends AbstractTypedList<Token>
+ * @extends Collection<array-key,Token>
  */
-final class TokenCollection extends AbstractTypedList implements Stringable
+final class TokenCollection extends Collection implements Stringable
 {
     private bool $Collected = false;
 

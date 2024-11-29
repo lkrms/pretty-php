@@ -80,8 +80,7 @@ final class ListSpacing implements ListRule, DeclarationRule
         /** @var Token */
         $last = $parent->ClosedBy->PrevCode;
         if ($last->id === \T_COMMA) {
-            $items->copy()
-                  ->add($parent->ClosedBy)
+            $items->add($parent->ClosedBy)
                   ->applyWhitespace(Space::CRITICAL_LINE_BEFORE);
         }
 
@@ -119,7 +118,7 @@ final class ListSpacing implements ListRule, DeclarationRule
             $itemTokens[$item->Index] = $attributes;
             if (
                 $attributes->tokenHasNewlineAfter(true)
-                || $attributes->copy()->shift()->tokenHasNewlineBefore()
+                || $attributes->shift()->tokenHasNewlineBefore()
             ) {
                 $hasAttributeWithNewline = true;
                 break;

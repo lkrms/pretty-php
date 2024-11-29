@@ -94,7 +94,7 @@ final class AlignChains implements TokenRule
                     continue;
                 }
                 $token->AlignedWith = $alignWith = $token;
-                $chain->shift();
+                $chain = $chain->shift();
             }
 
             $chain->forEach(fn(Token $t) => $t->AlignedWith = $alignWith);

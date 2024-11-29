@@ -324,7 +324,7 @@ final class VerticalWhitespace implements TokenRule
             // Leave the first object operator alone if chain alignment is
             // enabled and strict PSR-12 compliance isn't
             if ($this->AlignChainsEnabled && !$this->Formatter->Psr12) {
-                $chain->shift();
+                $chain = $chain->shift();
             }
 
             $chain->applyWhitespace(Space::LINE_BEFORE);
