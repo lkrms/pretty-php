@@ -2,13 +2,13 @@
 
 namespace Lkrms\PrettyPHP\Rule\Preset\Internal;
 
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
 use Salient\Core\Concern\HasMutator;
 
 /**
  * @internal
  */
-final class WordPressTokenTypeIndex extends TokenTypeIndex
+final class WordPressTokenIndex extends TokenIndex
 {
     use HasMutator;
 

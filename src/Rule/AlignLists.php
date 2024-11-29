@@ -36,9 +36,11 @@ final class AlignLists implements ListRule
         // Do nothing if:
         // - an interface list has a leading line break, or
         // - the list does not break over multiple lines
-        if ((!$parent->ClosedBy
-                    && $parent->hasNewlineBeforeNextCode())
-                || !$first->collect($lastToken)->hasNewline()) {
+        if (
+            (!$parent->ClosedBy
+                && $parent->hasNewlineBeforeNextCode())
+            || !$first->collect($lastToken)->hasNewline()
+        ) {
             return;
         }
 
@@ -63,18 +65,22 @@ final class AlignLists implements ListRule
                 if (!$delta) {
                     return;
                 }
-                while (($adjacent = $to->lastSiblingBeforeNewline()) !== $to
+                while (
+                    ($adjacent = $to->lastSiblingBeforeNewline()) !== $to
                     && ($adjacent->id !== \T_OPEN_BRACE
                         || !($adjacent->Flags & TokenFlag::STRUCTURAL_BRACE
                             || $adjacent->isMatchOpenBrace())
-                        || $adjacent->Depth > $parent->Depth)) {
+                        || $adjacent->Depth > $parent->Depth)
+                ) {
                     $to = $adjacent;
                 }
-                while (($adjacent = $to->adjacentBeforeNewline(false))
+                while (
+                    ($adjacent = $to->adjacentBeforeNewline(false))
                     && ($adjacent->id !== \T_OPEN_BRACE
                         || !($adjacent->Flags & TokenFlag::STRUCTURAL_BRACE
                             || $adjacent->isMatchOpenBrace())
-                        || $adjacent->Depth > $parent->Depth)) {
+                        || $adjacent->Depth > $parent->Depth)
+                ) {
                     $to = $adjacent->pragmaticEndOfExpression();
                 }
                 $item->collect($to)->forEach(

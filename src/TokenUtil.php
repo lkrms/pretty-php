@@ -4,7 +4,7 @@ namespace Lkrms\PrettyPHP;
 
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\TokenSubType;
+use Lkrms\PrettyPHP\Catalog\TokenSubId;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Internal\TokenCollection;
 use Salient\Utility\Arr;
@@ -26,7 +26,7 @@ final class TokenUtil
         // Don't allow newlines before `=>` other than in arrow functions
         if ($token->id === \T_DOUBLE_ARROW && (
             !($token->Flags & TokenFlag::FN_DOUBLE_ARROW)
-            || !$token->Formatter->NewlineBeforeFnDoubleArrows
+            || !$token->Formatter->NewlineBeforeFnDoubleArrow
         )) {
             return false;
         }
@@ -78,7 +78,7 @@ final class TokenUtil
         // Don't allow newlines after `=>` in arrow functions if disabled
         if (
             $token->Flags & TokenFlag::FN_DOUBLE_ARROW
-            && $token->Formatter->NewlineBeforeFnDoubleArrows
+            && $token->Formatter->NewlineBeforeFnDoubleArrow
         ) {
             return false;
         }
@@ -140,9 +140,9 @@ final class TokenUtil
         $t['pos'] = $token->pos;
         $t['column'] = $token->column;
 
-        if ($token->SubType !== null) {
-            $t['SubType'] = $token->SubType !== -1
-                ? Reflect::getConstantName(TokenSubType::class, $token->SubType)
+        if ($token->SubId !== null) {
+            $t['SubId'] = $token->SubId !== -1
+                ? Reflect::getConstantName(TokenSubId::class, $token->SubId)
                 : '<unknown>';
         }
 

@@ -6,7 +6,7 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
 
 /**
  * Align arrow function expressions with their definitions
@@ -31,7 +31,7 @@ final class AlignArrowFunctions implements TokenRule
     /**
      * @inheritDoc
      */
-    public static function getTokenTypes(TokenTypeIndex $idx): array
+    public static function getTokens(TokenIndex $idx): array
     {
         return [
             \T_FN => true,
@@ -65,7 +65,7 @@ final class AlignArrowFunctions implements TokenRule
     {
         foreach ($tokens as $token) {
             $expr = $token->nextSiblingOf(\T_DOUBLE_ARROW);
-            if (!$this->Formatter->NewlineBeforeFnDoubleArrows) {
+            if (!$this->Formatter->NewlineBeforeFnDoubleArrow) {
                 /** @var Token */
                 $expr = $expr->NextCode;
             }

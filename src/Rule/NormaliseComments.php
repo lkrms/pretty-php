@@ -5,11 +5,11 @@ namespace Lkrms\PrettyPHP\Rule;
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenFlagMask;
-use Lkrms\PrettyPHP\Catalog\TokenSubType;
+use Lkrms\PrettyPHP\Catalog\TokenSubId;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
 use Salient\Utility\Regex;
 
 /**
@@ -34,7 +34,7 @@ final class NormaliseComments implements TokenRule
     /**
      * @inheritDoc
      */
-    public static function getTokenTypes(TokenTypeIndex $idx): array
+    public static function getTokens(TokenIndex $idx): array
     {
         return $idx->Comment;
     }
@@ -225,12 +225,12 @@ final class NormaliseComments implements TokenRule
                     && $next->id !== \T_NAMESPACE
                     && (
                         $next->id !== \T_USE
-                        || $next->getSubType() !== TokenSubType::USE_IMPORT
+                        || $next->getSubId() !== TokenSubId::USE_IMPORT
                     )
                 )) {
                     if (!($next && $next->Flags & TokenFlag::NAMED_DECLARATION) || (
                         $next->id === \T_USE
-                        && $next->getSubType() === TokenSubType::USE_TRAIT
+                        && $next->getSubId() === TokenSubId::USE_TRAIT
                     )) {
                         $collapse = true;
                     } else {

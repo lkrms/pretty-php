@@ -4,7 +4,7 @@ namespace Lkrms\PrettyPHP\Concern;
 
 use Lkrms\PrettyPHP\Contract\Extension;
 use Lkrms\PrettyPHP\Formatter;
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
 
 /**
  * @api
@@ -14,12 +14,12 @@ use Lkrms\PrettyPHP\TokenTypeIndex;
 trait ExtensionTrait
 {
     private Formatter $Formatter;
-    private TokenTypeIndex $Idx;
+    private TokenIndex $Idx;
 
     public function __construct(Formatter $formatter)
     {
         $this->Formatter = $formatter;
-        $this->Idx = $formatter->TokenTypeIndex;
+        $this->Idx = $formatter->TokenIndex;
     }
 
     /**

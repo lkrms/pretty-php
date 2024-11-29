@@ -7,7 +7,7 @@ use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Filter\RemoveWhitespace;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\Parser;
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
 use Lkrms\PrettyPHP\TokenUtil;
 use Salient\Utility\Get;
 use Salient\Utility\Reflect;
@@ -537,17 +537,17 @@ PHP,
 
     public function testDeclarationMap(): void
     {
-        $idx = array_filter((new TokenTypeIndex())->DeclarationExceptModifierOrVar);
+        $idx = array_filter((new TokenIndex())->DeclarationExceptModifierOrVar);
         $map = self::getDeclarationMap();
         $this->assertEmpty(array_diff_key($idx, $map), sprintf(
             '%s::DECLARATION_MAP does not cover %s::$DeclarationExceptModifierOrVar',
             Parser::class,
-            TokenTypeIndex::class,
+            TokenIndex::class,
         ));
         $this->assertEmpty(array_diff_key($map, $idx), sprintf(
             '%s::DECLARATION_MAP covers tokens not in %s::$DeclarationExceptModifierOrVar',
             Parser::class,
-            TokenTypeIndex::class,
+            TokenIndex::class,
         ));
     }
 

@@ -5,7 +5,7 @@ namespace Lkrms\PrettyPHP;
 use Lkrms\PrettyPHP\Catalog\DeclarationType as Type;
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\TokenSubType;
+use Lkrms\PrettyPHP\Catalog\TokenSubId;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Internal\Document;
 use Lkrms\PrettyPHP\Internal\TokenCollection;
@@ -96,7 +96,7 @@ final class Parser implements Immutable
 
         foreach ($tokens as $token) {
             $token->Formatter = $this->Formatter;
-            $token->Idx = $this->Formatter->TokenTypeIndex;
+            $token->Idx = $this->Formatter->TokenIndex;
 
             if ($prev) {
                 $token->Prev = $prev;
@@ -175,7 +175,7 @@ final class Parser implements Immutable
         ?array &$tokensById,
         ?array &$scopes
     ): void {
-        $idx = $this->Formatter->TokenTypeIndex;
+        $idx = $this->Formatter->TokenIndex;
 
         $linked = [];
         $tokensById = [];
@@ -224,16 +224,18 @@ final class Parser implements Immutable
                     // Make multi-line C-style comments honourary DocBlocks if:
                     // - every line starts with "*", or
                     // - at least one delimiter appears on its own line
-                    if (($token->Flags & TokenFlag::C_COMMENT) === TokenFlag::C_COMMENT
-                            && strpos($text, "\n") !== false
-                            && (
-                                // Every line starts with "*"
-                                !Regex::match('/\n\h*+(?!\*)\S/', $text)
-                                // The first delimiter is followed by a newline
-                                || !Regex::match('/^\/\*++(\h++|(?!\*))\S/', $text)
-                                // The last delimiter is preceded by a newline
-                                || !Regex::match('/\S((?<!\*)|\h++)\*++\/$/', $text)
-                            )) {
+                    if (
+                        ($token->Flags & TokenFlag::C_COMMENT) === TokenFlag::C_COMMENT
+                        && strpos($text, "\n") !== false
+                        && (
+                            // Every line starts with "*"
+                            !Regex::match('/\n\h*+(?!\*)\S/', $text)
+                            // The first delimiter is followed by a newline
+                            || !Regex::match('/^\/\*++(\h++|(?!\*))\S/', $text)
+                            // The last delimiter is preceded by a newline
+                            || !Regex::match('/\S((?<!\*)|\h++)\*++\/$/', $text)
+                        )
+                    ) {
                         $token->Flags |= TokenFlag::INFORMAL_DOC_COMMENT;
                     }
                 }
@@ -474,7 +476,7 @@ final class Parser implements Immutable
      */
     private function parseStatements(array $scopes, ?array &$statements): void
     {
-        $idx = $this->Formatter->TokenTypeIndex;
+        $idx = $this->Formatter->TokenIndex;
 
         $statements = [];
 
@@ -573,7 +575,7 @@ final class Parser implements Immutable
         ?array &$declarations,
         ?array &$declarationsByType
     ): void {
-        $idx = $this->Formatter->TokenTypeIndex;
+        $idx = $this->Formatter->TokenIndex;
 
         $declarations = [];
         $declarationsByType = [];
@@ -615,7 +617,7 @@ final class Parser implements Immutable
                     $type = 0;
                     foreach ($parts->getAnyFrom(
                         $idx->DeclarationExceptModifierOrVar
-                    )->getTypes() as $id) {
+                    )->getIds() as $id) {
                         $type |= self::DECLARATION_MAP[$id];
                     }
                     if (!$type) {
@@ -667,7 +669,7 @@ final class Parser implements Immutable
                 // Flag and link ternary operators
                 if (
                     $token->id === \T_QUESTION
-                    && $token->getSubType() === TokenSubType::QUESTION_TERNARY_OPERATOR
+                    && $token->getSubId() === TokenSubId::QUESTION_TERNARY_OPERATOR
                 ) {
                     $current = $token;
                     $count = 0;
@@ -677,14 +679,14 @@ final class Parser implements Immutable
                     ) {
                         if (
                             $current->id === \T_QUESTION
-                            && $current->getSubType() === TokenSubType::QUESTION_TERNARY_OPERATOR
+                            && $current->getSubId() === TokenSubId::QUESTION_TERNARY_OPERATOR
                         ) {
                             $count++;
                             continue;
                         }
                         if (
                             $current->id === \T_COLON
-                            && $current->getSubType() === TokenSubType::COLON_TERNARY_OPERATOR
+                            && $current->getSubId() === TokenSubId::COLON_TERNARY_OPERATOR
                         ) {
                             if ($count--) {
                                 continue;
@@ -774,7 +776,7 @@ final class Parser implements Immutable
 
     private function nextSibling(Token $token, int $offset = 1): Token
     {
-        $idx = $this->Formatter->TokenTypeIndex;
+        $idx = $this->Formatter->TokenIndex;
 
         $depth = 0;
         while ($token->Next) {
@@ -901,7 +903,7 @@ final class Parser implements Immutable
      */
     private function isClassStatement(Token $token): bool
     {
-        $idx = $this->Formatter->TokenTypeIndex;
+        $idx = $this->Formatter->TokenIndex;
 
         return $token->Parent
             && $token->Parent->id === \T_OPEN_BRACE

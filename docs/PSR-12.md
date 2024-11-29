@@ -22,16 +22,17 @@ And these are ignored:
 
 In strict PSR-12 mode, these rules are enabled and cannot be disabled:
 
-- `StrictExpressions`
-- `StrictLists`
+- `DeclarationSpacing`
 - `SortImports` (sort order is not specified, but import statements must be
   grouped by class, then function, then constant as per [PSR-12, section 3])
-- `DeclarationSpacing`
+- `StrictExpressions`
+- `StrictLists`
 
 And these rules cannot be enabled:
 
 - `AlignLists`
 - `PreserveOneLineStatements`
+- `SemiStrictExpressions`
 
 ## Behaviours
 
@@ -113,7 +114,7 @@ $foo = fn()
 ```
 
 > `pretty-php`'s default style departs from the standard to minimise the
-> horizontal space required for arrow function bodies:
+> horizontal space required for arrow function expressions:
 >
 > ```php
 > <?php
@@ -152,10 +153,6 @@ $baz = <<<EOF
 >     Content
 >     EOF;
 > ```
-
-### Lists
-
-Unconditional newlines are added after the opening bracket of vertical lists.
 
 ### Exceptions
 

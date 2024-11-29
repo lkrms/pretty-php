@@ -37,8 +37,7 @@ trait FilterTrait
     }
 
     /**
-     * Get the given token's previous sibling that is one of the types in an
-     * index
+     * Get the given token's previous sibling that is in an index
      *
      * @param array<int,bool> $index
      * @param-out int $key
@@ -57,8 +56,10 @@ trait FilterTrait
             }
             $i = $j;
         }
+        // @codeCoverageIgnoreStart
         $key = -1;
         return null;
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -95,6 +96,70 @@ trait FilterTrait
         }
         $key = -1;
         return null;
+    }
+
+    /**
+     * Get the given token's next sibling with the given token ID
+     *
+     * @param-out int $key
+     */
+    private function getNextSiblingOf(int $i, int $count, int $id, ?int &$key = null): ?GenericToken
+    {
+        while ($token = $this->getNextSibling($i, $count, 1, $j)) {
+            if ($token->id === $id) {
+                $key = $j;
+                return $token;
+            }
+            $i = $j;
+        }
+        // @codeCoverageIgnoreStart
+        $key = -1;
+        return null;
+        // @codeCoverageIgnoreEnd
+    }
+
+    /**
+     * Get one of the given token's next siblings
+     *
+     * @param-out int $key
+     */
+    private function getNextSibling(int $i, int $count, int $offset = 1, ?int &$key = null): ?GenericToken
+    {
+        $depth = 0;
+        while ($i + 1 < $count) {
+            $token = $this->Tokens[$i];
+            if ($this->Idx->OpenBracket[$token->id]) {
+                $depth++;
+            } elseif ($this->Idx->CloseBracket[$token->id]) {
+                $depth--;
+                if ($depth < 0) {
+                    // @codeCoverageIgnoreStart
+                    break;
+                    // @codeCoverageIgnoreEnd
+                }
+            }
+            $token = $this->Tokens[++$i];
+            while ($this->Idx->NotCode[$token->id]) {
+                if ($i + 1 < $count) {
+                    $token = $this->Tokens[++$i];
+                } else {
+                    // @codeCoverageIgnoreStart
+                    break 2;
+                    // @codeCoverageIgnoreEnd
+                }
+            }
+            if (!$depth) {
+                $offset--;
+                if (!$offset) {
+                    $key = $i;
+                    return $token;
+                }
+            }
+        }
+        // @codeCoverageIgnoreStart
+        $key = -1;
+        return null;
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -152,9 +217,9 @@ trait FilterTrait
 
     /**
      * Check if the given token, together with previous tokens in the same
-     * statement, form a declaration of the given type
+     * statement, form a declaration with the given token ID
      */
-    private function isDeclarationOf(int $i, int $type): bool
+    private function isDeclarationOf(int $i, int $id): bool
     {
         while ($i--) {
             $token = $this->Tokens[$i];
@@ -164,7 +229,7 @@ trait FilterTrait
             if (!$this->Idx->DeclarationPart[$token->id]) {
                 return false;
             }
-            if ($token->id === $type) {
+            if ($token->id === $id) {
                 return true;
             }
         }

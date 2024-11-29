@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Tests;
 
-use Lkrms\PrettyPHP\Catalog\TokenSubType;
+use Lkrms\PrettyPHP\Catalog\TokenSubId;
 use Lkrms\PrettyPHP\Formatter;
 use Salient\Utility\Reflect;
 
@@ -11,7 +11,7 @@ final class TokenTest extends TestCase
     /**
      * @requires PHP >= 8.1
      */
-    public function testColonSubTypes(): void
+    public function testColonSubIds(): void
     {
         $code = <<<'PHP'
 <?php
@@ -38,10 +38,10 @@ PHP;
         $formatter = (new Formatter())->withDebug();
         $formatter->format($code, \PHP_EOL, null, null, true);
 
-        $subTypes = [];
+        $actual = [];
         foreach ($formatter->getTokens() ?? [] as $token) {
             if ($token->id === \T_COLON) {
-                $subTypes[] = Reflect::getConstantName(TokenSubType::class, $token->getSubType());
+                $actual[] = Reflect::getConstantName(TokenSubId::class, $token->getSubId());
             }
         }
 
@@ -56,7 +56,7 @@ PHP;
             'COLON_ALT_SYNTAX_DELIMITER',
             'COLON_SWITCH_CASE_DELIMITER',
             'COLON_SWITCH_CASE_DELIMITER',
-        ], $subTypes);
-        $this->assertCount(7, array_unique($subTypes));
+        ], $actual);
+        $this->assertCount(7, array_unique($actual));
     }
 }

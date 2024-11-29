@@ -6,7 +6,7 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
 
 /**
  * Apply whitespace to control structures where the body has no enclosing braces
@@ -27,9 +27,9 @@ final class ControlStructureSpacing implements TokenRule
         ][$method] ?? null;
     }
 
-    public static function getTokenTypes(TokenTypeIndex $idx): array
+    public static function getTokens(TokenIndex $idx): array
     {
-        return TokenTypeIndex::merge(
+        return TokenIndex::merge(
             $idx->HasStatementWithOptionalBraces,
             $idx->HasExpressionAndStatementWithOptionalBraces,
         );
@@ -39,16 +39,20 @@ final class ControlStructureSpacing implements TokenRule
     {
         foreach ($tokens as $token) {
             // Ignore the second half of `elseif` expressed as `else if`
-            if ($token->id === \T_IF
-                    && $token->PrevCode
-                    && $token->PrevCode->id === \T_ELSE) {
+            if (
+                $token->id === \T_IF
+                && $token->PrevCode
+                && $token->PrevCode->id === \T_ELSE
+            ) {
                 continue;
             }
 
             assert($token->NextCode !== null);
 
-            if ($token->id === \T_ELSE
-                    && $token->NextCode->id === \T_IF) {
+            if (
+                $token->id === \T_ELSE
+                && $token->NextCode->id === \T_IF
+            ) {
                 assert($token->NextCode->NextCode !== null);
                 $body = $token->NextCode->NextCode->NextSibling;
             } elseif ($this->Idx->HasStatementWithOptionalBraces[$token->id]) {
@@ -60,10 +64,12 @@ final class ControlStructureSpacing implements TokenRule
             assert($body !== null);
 
             // Ignore enclosed and empty bodies
-            if ($body->id === \T_OPEN_BRACE
-                    || $body->id === \T_COLON
-                    || $body->id === \T_SEMICOLON
-                    || ($body->Flags & TokenFlag::STATEMENT_TERMINATOR)) {
+            if (
+                $body->id === \T_OPEN_BRACE
+                || $body->id === \T_COLON
+                || $body->id === \T_SEMICOLON
+                || ($body->Flags & TokenFlag::STATEMENT_TERMINATOR)
+            ) {
                 continue;
             }
 
@@ -71,9 +77,11 @@ final class ControlStructureSpacing implements TokenRule
 
             // Add a newline before the token unless it continues a control
             // structure where the previous body had enclosing braces
-            if (!$token->PrevCode
-                    || $token->PrevCode->id !== \T_CLOSE_BRACE
-                    || !$token->continuesControlStructure()) {
+            if (
+                !$token->PrevCode
+                || $token->PrevCode->id !== \T_CLOSE_BRACE
+                || !$token->continuesControlStructure()
+            ) {
                 $token->applyWhitespace(Space::LINE_BEFORE);
             }
 
@@ -96,9 +104,11 @@ final class ControlStructureSpacing implements TokenRule
                     $continues = true;
                 }
             }
-            if (!$end
-                    || $end->id === \T_NULL
-                    || $end->Index > $body->EndStatement->Index) {
+            if (
+                !$end
+                || $end->id === \T_NULL
+                || $end->Index > $body->EndStatement->Index
+            ) {
                 $end = $body->pragmaticEndOfExpression()
                             ->withTerminator();
             }

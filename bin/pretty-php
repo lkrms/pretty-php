@@ -1,12 +1,12 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
-use Lkrms\PrettyPHP\App\FormatPhpCommand;
+use Lkrms\PrettyPHP\App\PrettyPHPCommand;
 use Salient\Cli\CliApplication;
 
 require $_composer_autoload_path
     ?? dirname(__DIR__) . '/vendor/autoload.php';
 
 (new CliApplication(dirname(__DIR__)))
-    ->oneCommand(FormatPhpCommand::class)
+    ->oneCommand(PrettyPHPCommand::class)
     ->runAndExit();

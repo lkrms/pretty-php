@@ -4,12 +4,13 @@ namespace Lkrms\PrettyPHP\Filter;
 
 use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
-use Lkrms\PrettyPHP\GenericToken;
 use Lkrms\PrettyPHP\Token;
 use Salient\Utility\Regex;
 
 /**
  * Remove indentation from heredocs
+ *
+ * @api
  */
 final class RemoveHeredocIndentation implements Filter
 {
@@ -25,11 +26,8 @@ final class RemoveHeredocIndentation implements Filter
         // separate array with the same structure to ensure the only prefix
         // removed is the innermost one.
 
-        /** @var array<int,GenericToken[]> */
         $heredocTokens = [];
-        /** @var array<int,string[]> */
         $heredocText = [];
-        /** @var array<int,GenericToken> */
         $stack = [];
         foreach ($tokens as $i => $token) {
             if ($stack) {
@@ -47,7 +45,6 @@ final class RemoveHeredocIndentation implements Filter
             }
         }
 
-        /** @var array<int,string[]> $heredocText */
         foreach ($heredocText as $i => $heredoc) {
             // Check for indentation to remove
             if (!Regex::match('/^\h++/', end($heredoc), $matches)) {
@@ -58,23 +55,20 @@ final class RemoveHeredocIndentation implements Filter
             $stripped = Regex::replace("/\\n{$matches[0]}/", "\n", $heredoc);
 
             // And from the start of the first token and closing identifier,
-            // where there is no leading newline and no chance the token is not
-            // at the start of a line
-            $last = count($heredoc) - 1;
+            // where there is no leading newline
+            $last = count($stripped) - 1;
             if ($last === 0) {
-                $stripped[0] =
-                    Regex::replace(
-                        "/^{$matches[0]}/",
-                        '',
-                        $stripped[0]
-                    );
+                $stripped[0] = Regex::replace(
+                    "/^{$matches[0]}/",
+                    '',
+                    $stripped[0],
+                );
             } else {
-                [$stripped[0], $stripped[$last]] =
-                    Regex::replace(
-                        "/^{$matches[0]}/",
-                        '',
-                        [$stripped[0], $stripped[$last]]
-                    );
+                [$stripped[0], $stripped[$last]] = Regex::replace(
+                    "/^{$matches[0]}/",
+                    '',
+                    [$stripped[0], $stripped[$last]],
+                );
             }
 
             // Finally, update each token

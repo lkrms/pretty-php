@@ -9,9 +9,8 @@ use Lkrms\PrettyPHP\Contract\Preset;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Rule\BlankBeforeReturn;
 use Lkrms\PrettyPHP\Formatter;
-use Lkrms\PrettyPHP\FormatterBuilder;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
 
 /**
  * Apply Laravel's code style
@@ -27,7 +26,7 @@ final class Laravel implements Preset, TokenRule
 
     public static function getFormatter(int $flags = 0): Formatter
     {
-        return (new FormatterBuilder())
+        return Formatter::build()
                    ->enable([
                        BlankBeforeReturn::class,
                        self::class,
@@ -44,7 +43,7 @@ final class Laravel implements Preset, TokenRule
         ][$method] ?? null;
     }
 
-    public static function getTokenTypes(TokenTypeIndex $idx): array
+    public static function getTokens(TokenIndex $idx): array
     {
         return [
             \T_LOGICAL_NOT => true,

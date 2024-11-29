@@ -5,21 +5,18 @@ namespace Lkrms\PrettyPHP\Filter;
 use Lkrms\PrettyPHP\Concern\FilterTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\GenericToken;
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
+use Salient\Utility\Exception\ShouldNotHappenException;
 
 /**
  * Move comments if necessary for correct placement of adjacent delimiters and
  * operators
- *
- * @todo Add support for moving comments around `T_DOUBLE_ARROW` tokens
  *
  * @api
  */
 final class MoveComments implements Filter
 {
     use FilterTrait;
-
-    private int $Count;
 
     /**
      * Movable tokens allowed before newlines/comments
@@ -35,6 +32,14 @@ final class MoveComments implements Filter
      */
     private array $AfterCommentIndex;
 
+    private bool $NeedsFnDoubleArrow;
+
+    // --
+
+    private int $Count;
+    /** @var array<int,bool> */
+    private array $FnDoubleArrow;
+
     /**
      * @inheritDoc
      */
@@ -42,15 +47,30 @@ final class MoveComments implements Filter
     {
         $idx = $this->Idx->withPreserveNewline();
 
-        $this->BeforeCommentIndex = TokenTypeIndex::intersect(
+        $this->BeforeCommentIndex = TokenIndex::intersect(
             $this->Idx->Movable,
             $idx->AllowNewlineAfter,
         );
 
-        $this->AfterCommentIndex = TokenTypeIndex::intersect(
+        $this->AfterCommentIndex = TokenIndex::intersect(
             $this->Idx->Movable,
             $idx->AllowNewlineBefore,
         );
+
+        $this->NeedsFnDoubleArrow = $this->Formatter->NewlineBeforeFnDoubleArrow;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function reset(): void
+    {
+        $tokens = [];
+        $this->Tokens = &$tokens;
+        $this->Count = 0;
+        if ($this->NeedsFnDoubleArrow) {
+            $this->FnDoubleArrow = [];
+        }
     }
 
     /**
@@ -60,6 +80,19 @@ final class MoveComments implements Filter
     {
         $this->Tokens = &$tokens;
         $this->Count = count($tokens);
+
+        if ($this->NeedsFnDoubleArrow) {
+            foreach ($tokens as $i => $token) {
+                if ($token->id === \T_FN) {
+                    if (!$this->getNextSiblingOf($i, $this->Count, \T_DOUBLE_ARROW, $j)) {
+                        // @codeCoverageIgnoreStart
+                        throw new ShouldNotHappenException('Invalid arrow function');
+                        // @codeCoverageIgnoreEnd
+                    }
+                    $this->FnDoubleArrow[$j] = true;
+                }
+            }
+        }
 
         // Rearrange one or more of these:
         //
@@ -262,6 +295,16 @@ final class MoveComments implements Filter
         if ($token->id === \T_QUESTION) {
             // Allow comments BEFORE ternary operators and nullable types
             return !$isLast;
+        }
+
+        if ($token->id === \T_DOUBLE_ARROW) {
+            if ($this->NeedsFnDoubleArrow && ($this->FnDoubleArrow[$i] ?? false)) {
+                // Allow comments BEFORE `=>` in arrow functions if enabled
+                return !$isLast;
+            }
+
+            // Allow comments AFTER `=>` otherwise
+            return $isLast;
         }
 
         return true;

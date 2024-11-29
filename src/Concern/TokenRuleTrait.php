@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Concern;
 
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
 
 /**
  * @api
@@ -17,7 +17,7 @@ trait TokenRuleTrait
     /**
      * @inheritDoc
      */
-    public static function getTokenTypes(TokenTypeIndex $idx): array
+    public static function getTokens(TokenIndex $idx): array
     {
         return ['*'];
     }

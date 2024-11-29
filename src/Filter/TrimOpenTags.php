@@ -6,7 +6,7 @@ use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
 
 /**
- * Remove whitespace after T_OPEN_TAG and T_OPEN_TAG_WITH_ECHO for comparison
+ * Remove whitespace after open tags for comparison
  *
  * @api
  */

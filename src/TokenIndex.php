@@ -7,11 +7,9 @@ use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasMutator;
 
 /**
- * Token type indexes
- *
  * @api
  */
-class TokenTypeIndex implements HasTokenIndex, Immutable
+class TokenIndex implements HasTokenIndex, Immutable
 {
     use HasMutator;
 
@@ -355,6 +353,16 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
+     * T_COMMENT, T_DOC_COMMENT, T_SEMICOLON
+     *
+     * @var array<int,bool>
+     */
+    public array $CommentOrSemicolon = self::COMMENT + [
+        \T_SEMICOLON => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
      * T_ABSTRACT, T_CASE, T_CLASS, T_CONST, T_DECLARE, T_ENUM, T_FINAL,
      * T_FUNCTION, T_INTERFACE, T_NAMESPACE, T_PRIVATE, T_PRIVATE_SET,
      * T_PROTECTED, T_PROTECTED_SET, T_PUBLIC, T_PUBLIC_SET, T_READONLY,
@@ -655,6 +663,17 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
      */
     public array $VisibilityOrReadonly = self::VISIBILITY + [
         \T_READONLY => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
+     * T_WHITESPACE, T_BAD_CHARACTER
+     *
+     * @var array<int,bool>
+     */
+    public array $Whitespace = [
+        \T_WHITESPACE => true,
+        \T_BAD_CHARACTER => true,
     ]
         + self::TOKEN_INDEX;
 
@@ -1253,7 +1272,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     /**
      * Arithmetic operators, assignment operators, bitwise operators, comparison
      * operators, logical operators, ternary operators, T_COMMA, T_CONCAT,
-     * T_SEMICOLON, T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR
+     * T_DOUBLE_ARROW, T_SEMICOLON, T_OBJECT_OPERATOR,
+     * T_NULLSAFE_OBJECT_OPERATOR
      *
      * Tokens that may be swapped with adjacent comment tokens for correct
      * placement.
@@ -1263,7 +1283,7 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     public array $Movable = [
         \T_COMMA => true,
         \T_CONCAT => true,
-        // \T_DOUBLE_ARROW => true,
+        \T_DOUBLE_ARROW => true,
         \T_SEMICOLON => true,
     ]
         + self::CHAIN
@@ -1408,17 +1428,17 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     }
 
     /**
-     * Get an index of the given token types
+     * Get an index of the given tokens
      *
      * @return array<int,bool>
      */
-    final public static function get(int ...$types): array
+    final public static function get(int ...$id): array
     {
-        return array_fill_keys($types, true) + self::TOKEN_INDEX;
+        return array_fill_keys($id, true) + self::TOKEN_INDEX;
     }
 
     /**
-     * Get an index of every token type in the given indexes
+     * Get an index of every token in the given indexes
      *
      * @param array<int,bool> ...$indexes
      * @return array<int,bool>
@@ -1433,8 +1453,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     }
 
     /**
-     * Get an index of every token type in a given index that is not present in
-     * any of the others
+     * Get an index of every token in a given index that is not present in any
+     * of the others
      *
      * @param array<int,bool> $index
      * @param array<int,bool> ...$indexes
@@ -1455,8 +1475,8 @@ class TokenTypeIndex implements HasTokenIndex, Immutable
     }
 
     /**
-     * Get an index of every token type in a given index that is present in all
-     * of the others
+     * Get an index of every token in a given index that is present in all of
+     * the others
      *
      * @param array<int,bool> $index
      * @param array<int,bool> ...$indexes

@@ -7,7 +7,7 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
 
 /**
  * Align ternary and null coalescing operators with their expressions
@@ -26,7 +26,7 @@ final class AlignTernaryOperators implements TokenRule
         ][$method] ?? null;
     }
 
-    public static function getTokenTypes(TokenTypeIndex $idx): array
+    public static function getTokens(TokenIndex $idx): array
     {
         return [
             \T_QUESTION => true,
@@ -46,9 +46,11 @@ final class AlignTernaryOperators implements TokenRule
 
             // Do nothing if none of the operators in question are at the start
             // of a line
-            if (!$token->hasNewlineBefore()
+            if (
+                !$token->hasNewlineBefore()
                 && ($token->id === \T_COALESCE
-                    || !$token->Data[TokenData::OTHER_TERNARY_OPERATOR]->hasNewlineBefore())) {
+                    || !$token->Data[TokenData::OTHER_TERNARY_OPERATOR]->hasNewlineBefore())
+            ) {
                 continue;
             }
 

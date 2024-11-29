@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Catalog;
 
 /**
- * Named declaration types
+ * Non-anonymous declaration types
  *
  * @api
  */

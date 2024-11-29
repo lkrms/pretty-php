@@ -15,9 +15,8 @@ use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Internal\TokenCollection;
 use Lkrms\PrettyPHP\Rule\BlankBeforeReturn;
 use Lkrms\PrettyPHP\Formatter;
-use Lkrms\PrettyPHP\FormatterBuilder;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
 
 /**
  * Apply formatting specific to Symfony's coding standards
@@ -33,13 +32,13 @@ final class Symfony implements Preset, TokenRule, ListRule
 
     public static function getFormatter(int $flags = 0): Formatter
     {
-        return (new FormatterBuilder())
+        return Formatter::build()
                    ->enable([
                        BlankBeforeReturn::class,
                        self::class,
                    ])
                    ->flags($flags)
-                   ->tokenTypeIndex(new TokenTypeIndex(true))
+                   ->tokenIndex(new TokenIndex(true))
                    ->heredocIndent(HeredocIndent::NONE)
                    ->importSortOrder(ImportSortOrder::NAME)
                    ->collapseEmptyDeclarationBodies(false)
@@ -56,7 +55,7 @@ final class Symfony implements Preset, TokenRule, ListRule
         ][$method] ?? null;
     }
 
-    public static function getTokenTypes(TokenTypeIndex $idx): array
+    public static function getTokens(TokenIndex $idx): array
     {
         return [
             \T_CONCAT => true,

@@ -5,7 +5,7 @@ namespace Lkrms\PrettyPHP\Tests\Filter;
 use Lkrms\PrettyPHP\Tests\TestCase;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
 
 final class MoveCommentsTest extends TestCase
 {
@@ -27,7 +27,7 @@ final class MoveCommentsTest extends TestCase
         $formatterB = Formatter::build();
         $formatter = $formatterB->build();
 
-        $idx = new TokenTypeIndex();
+        $idx = new TokenIndex();
         $mixed = $idx->withMixedOperators();
         $first = $idx->withLeadingOperators();
         $last = $idx->withTrailingOperators();
@@ -121,6 +121,28 @@ $foo  /** DocBlock */
             100) .  /** DocBlock */
         '%' :  /** DocBlock */
         $quux;  /** DocBlock */
+PHP;
+
+        $input3 = <<<'PHP'
+<?php
+fn() /* comment */ => null;
+fn() => /* comment */ null;
+fn()  /* comment */
+    => null;
+fn() =>  /* comment */
+    null;
+fn()  // comment
+    => null;
+fn() =>  // comment
+    null;
+[
+    'foo' /* comment */ => 0,
+    'bar' => /* comment */ 0,
+    'baz'  // comment
+        => 0,
+    'qux' =>  // comment
+        0,
+];
 PHP;
 
         return [
@@ -247,7 +269,7 @@ $foo =
 
 PHP,
                 $input2,
-                $formatterB->tokenTypeIndex($mixed),
+                $formatterB->tokenIndex($mixed),
             ],
             'Comments before and after operators + first' => [
                 <<<'PHP'
@@ -327,7 +349,7 @@ $foo =
 
 PHP,
                 $input2,
-                $formatterB->tokenTypeIndex($first),
+                $formatterB->tokenIndex($first),
             ],
             'Comments before and after operators + last' => [
                 <<<'PHP'
@@ -407,7 +429,7 @@ $foo =
 
 PHP,
                 $input2,
-                $formatterB->tokenTypeIndex($last),
+                $formatterB->tokenIndex($last),
             ],
             'Comments after colons' => [
                 <<<'PHP'
@@ -450,6 +472,110 @@ label:  // Comment
 label:  // Comment
 PHP,
                 $formatter,
+            ],
+            'Comments before and after double arrows + mixed' => [
+                <<<'PHP'
+<?php
+fn() => /* comment */ null;
+fn() => /* comment */ null;
+fn() =>  /* comment */
+    null;
+fn() =>  /* comment */
+    null;
+fn() =>  // comment
+    null;
+fn() =>  // comment
+    null;
+[
+    'foo' => /* comment */ 0,
+    'bar' => /* comment */ 0,
+    'baz' =>  // comment
+        0,
+    'qux' =>  // comment
+        0,
+];
+
+PHP,
+                $input3,
+                $formatterB->tokenIndex($mixed),
+            ],
+            'Comments before and after double arrows + first' => [
+                <<<'PHP'
+<?php
+fn() => /* comment */ null;
+fn() => /* comment */ null;
+fn() =>  /* comment */
+    null;
+fn() =>  /* comment */
+    null;
+fn() =>  // comment
+    null;
+fn() =>  // comment
+    null;
+[
+    'foo' => /* comment */ 0,
+    'bar' => /* comment */ 0,
+    'baz' =>  // comment
+        0,
+    'qux' =>  // comment
+        0,
+];
+
+PHP,
+                $input3,
+                $formatterB->tokenIndex($first),
+            ],
+            'Comments before and after double arrows + last' => [
+                <<<'PHP'
+<?php
+fn() => /* comment */ null;
+fn() => /* comment */ null;
+fn() =>  /* comment */
+    null;
+fn() =>  /* comment */
+    null;
+fn() =>  // comment
+    null;
+fn() =>  // comment
+    null;
+[
+    'foo' => /* comment */ 0,
+    'bar' => /* comment */ 0,
+    'baz' =>  // comment
+        0,
+    'qux' =>  // comment
+        0,
+];
+
+PHP,
+                $input3,
+                $formatterB->tokenIndex($last),
+            ],
+            'Comments before and after double arrows + PSR-12' => [
+                <<<'PHP'
+<?php
+fn() /* comment */ => null;
+fn() /* comment */ => null;
+fn()  /* comment */
+    => null;
+fn()  /* comment */
+    => null;
+fn()  // comment
+    => null;
+fn()  // comment
+    => null;
+[
+    'foo' => /* comment */ 0,
+    'bar' => /* comment */ 0,
+    'baz' =>  // comment
+        0,
+    'qux' =>  // comment
+        0,
+];
+
+PHP,
+                $input3,
+                $formatterB->psr12(),
             ],
         ];
     }

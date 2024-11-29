@@ -21,8 +21,67 @@ final class SortImports implements Filter
     private array $Search;
     /** @var string[] */
     private array $Replace;
+
+    // --
+
     /** @var array<int,array{int,string}> */
     private array $SortableImports;
+
+    /**
+     * @inheritDoc
+     */
+    public function boot(): void
+    {
+        // If sorting depth-first, normalise to:
+        //
+        // ```
+        // use 2A
+        // use 0A \ 0B \ 1{ D
+        // use 0A \ 0B \ 2C
+        // use 0A \ 2B
+        // ```
+        //
+        // Otherwise, normalise to:
+        //
+        // ```
+        // use A
+        // use A \ B \ D
+        // use A \ B \ C
+        // use A \ B
+        // ```
+        $search = ['/\\\\/', '/\h++/'];
+        $replace = [' \ ', ' '];
+
+        if ($this->Formatter->ImportSortOrder === ImportSortOrder::DEPTH) {
+            array_push(
+                $search,
+                '/(?:^use(?: function| const)?|\\\\) (?=[^ \\\\{]+(?: [^\\\\]|$))/iD',
+                '/\\\\ (?=\{)/',
+                '/(?:^use(?: function| const)?|\\\\) (?=[^ \\\\]+ \\\\)/i',
+            );
+            array_push(
+                $replace,
+                '${0}2',
+                '${0}1',
+                '${0}0',
+            );
+        } else {
+            $search[] = '/(?<=\\\\ )\{ /';
+            $replace[] = '';
+        }
+
+        $this->Search = $search;
+        $this->Replace = $replace;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function reset(): void
+    {
+        $this->Tokens = [];
+        $this->SortableImports = [];
+    }
 
     /**
      * @inheritDoc
@@ -182,10 +241,7 @@ final class SortImports implements Filter
     {
         $import = [];
         foreach ($tokens as $token) {
-            if (
-                $this->Idx->Comment[$token->id]
-                || $token->id === \T_SEMICOLON
-            ) {
+            if ($this->Idx->CommentOrSemicolon[$token->id]) {
                 continue;
             }
             if ($token->id === \T_COMMA) {
@@ -217,72 +273,5 @@ final class SortImports implements Filter
             $order,
             Regex::replace($this->Search, $this->Replace, $import),
         ];
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function reset(): void
-    {
-        $this->SortableImports = [];
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function boot(): void
-    {
-        // If sorting depth-first, normalise to:
-        //
-        // ```
-        // use 2A
-        // use 0A \ 0B \ 1{ D
-        // use 0A \ 0B \ 2C
-        // use 0A \ 2B
-        // ```
-        //
-        // Otherwise, normalise to:
-        //
-        // ```
-        // use A
-        // use A \ B \ D
-        // use A \ B \ C
-        // use A \ B
-        // ```
-        $search = [
-            '/\\\\/',
-            '/\h++/',
-        ];
-
-        $replace = [
-            ' \ ',
-            ' ',
-        ];
-
-        switch ($this->Formatter->ImportSortOrder) {
-            case ImportSortOrder::DEPTH:
-                array_push(
-                    $search,
-                    '/(?:^use(?: function| const)?|\\\\) (?=[^ \\\\{]+(?: [^\\\\]|$))/i',
-                    '/\\\\ (?=\{)/',
-                    '/(?:^use(?: function| const)?|\\\\) (?=[^ \\\\]+ \\\\)/i',
-                );
-                array_push(
-                    $replace,
-                    '${0}2',
-                    '${0}1',
-                    '${0}0',
-                );
-                break;
-
-            case ImportSortOrder::NAME:
-            default:
-                $search[] = '/(?<=\\\\ )\{ /';
-                $replace[] = '';
-                break;
-        }
-
-        $this->Search = $search;
-        $this->Replace = $replace;
     }
 }

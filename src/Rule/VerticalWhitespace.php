@@ -8,7 +8,7 @@ use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
 use Closure;
 
 /**
@@ -74,10 +74,10 @@ final class VerticalWhitespace implements TokenRule
         ][$method] ?? null;
     }
 
-    public static function getTokenTypes(TokenTypeIndex $idx): array
+    public static function getTokens(TokenIndex $idx): array
     {
-        return TokenTypeIndex::merge(
-            TokenTypeIndex::get(
+        return TokenIndex::merge(
+            TokenIndex::get(
                 \T_FOR,
                 \T_OPEN_BRACE,
                 \T_QUESTION,
@@ -165,7 +165,7 @@ final class VerticalWhitespace implements TokenRule
                 // Get the statement's boolean operators and find the
                 // highest-precedence operator with an adjacent newline
                 /** @var array<int,Token[]> */
-                $byType = [];
+                $byId = [];
                 $minPrecedence = self::PRECEDENCE_MAP[$id];
 
                 foreach ($token->Statement->collectSiblings($token->EndStatement) as $t) {
@@ -173,14 +173,14 @@ final class VerticalWhitespace implements TokenRule
                         continue;
                     }
                     $id = self::TOKEN_MAP[$t->id];
-                    $byType[$id][] = $t;
+                    $byId[$id][] = $t;
                     if ($t === $token || !($this->HasNewline[$id])($t)) {
                         continue;
                     }
                     $minPrecedence = min($minPrecedence, self::PRECEDENCE_MAP[$id]);
                 }
 
-                foreach ($byType as $id => $tokens) {
+                foreach ($byId as $id => $tokens) {
                     if (self::PRECEDENCE_MAP[$id] >= $minPrecedence) {
                         foreach ($tokens as $t) {
                             ($this->ApplyNewline[$id])($t);
@@ -324,7 +324,7 @@ final class VerticalWhitespace implements TokenRule
             // Leave the first object operator alone if chain alignment is
             // enabled and strict PSR-12 compliance isn't
             if ($this->AlignChainsEnabled && !$this->Formatter->Psr12) {
-                $chain->shift();
+                $chain = $chain->shift();
             }
 
             $chain->applyWhitespace(Space::LINE_BEFORE);

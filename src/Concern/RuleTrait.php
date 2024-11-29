@@ -27,7 +27,7 @@ trait RuleTrait
      *
      * @param bool $force If `true`, suppress vertical whitespace even if the
      * tokens were on different lines.
-     * @param bool $checkStatement If `true`, only suppress vertical whitespace
+     * @param bool $sameStatement If `true`, only suppress vertical whitespace
      * if the tokens belong to the same statement.
      * @return bool `true` if vertical whitespace is suppressed, otherwise
      * `false`.
@@ -36,13 +36,13 @@ trait RuleTrait
         Token $start,
         Token $end,
         bool $force = false,
-        bool $checkStatement = false
+        bool $sameStatement = false
     ): bool {
         if (!$force && $start->line !== $end->line) {
             return false;
         }
 
-        if ($checkStatement) {
+        if ($sameStatement) {
             $from = $start->Flags & TokenFlag::CODE ? $start : $start->NextCode;
             $to = $end->Flags & TokenFlag::CODE ? $end : $end->PrevCode;
             if (

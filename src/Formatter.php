@@ -63,6 +63,7 @@ use Lkrms\PrettyPHP\Rule\PlaceComments;
 use Lkrms\PrettyPHP\Rule\PreserveNewlines;
 use Lkrms\PrettyPHP\Rule\PreserveOneLineStatements;
 use Lkrms\PrettyPHP\Rule\ProtectStrings;
+use Lkrms\PrettyPHP\Rule\SemiStrictExpressions;
 use Lkrms\PrettyPHP\Rule\StandardIndentation;
 use Lkrms\PrettyPHP\Rule\StandardSpacing;
 use Lkrms\PrettyPHP\Rule\StatementSpacing;
@@ -125,9 +126,9 @@ final class Formatter implements Buildable, Immutable
     public string $Tab;
 
     /**
-     * Token type index
+     * Token index
      */
-    public TokenTypeIndex $TokenTypeIndex;
+    public TokenIndex $TokenIndex;
 
     /**
      * End-of-line sequence used when line endings are not preserved or when
@@ -218,7 +219,7 @@ final class Formatter implements Buildable, Immutable
     // --
 
     public bool $RelaxAlignmentCriteria = false;
-    public bool $NewlineBeforeFnDoubleArrows = false;
+    public bool $NewlineBeforeFnDoubleArrow = false;
 
     /**
      * If the first object operator in a chain of method calls has a leading
@@ -276,6 +277,7 @@ final class Formatter implements Buildable, Immutable
         PreserveOneLineStatements::class,
         BlankBeforeReturn::class,
         StrictExpressions::class,
+        SemiStrictExpressions::class,
         Drupal::class,
         Laravel::class,
         Symfony::class,
@@ -307,6 +309,10 @@ final class Formatter implements Buildable, Immutable
         [
             StrictLists::class,
             AlignLists::class,
+        ],
+        [
+            StrictExpressions::class,
+            SemiStrictExpressions::class,
         ],
     ];
 
@@ -361,6 +367,7 @@ final class Formatter implements Buildable, Immutable
      */
     public const PSR12_DISABLE = [
         PreserveOneLineStatements::class,
+        SemiStrictExpressions::class,
         AlignLists::class,
     ];
 
@@ -470,7 +477,7 @@ final class Formatter implements Buildable, Immutable
      * @param array<class-string<Extension>> $disable Non-mandatory extensions to disable
      * @param array<class-string<Extension>> $enable Optional extensions to enable
      * @param int-mask-of<FormatterFlag::*> $flags
-     * @param TokenTypeIndex|null $tokenTypeIndex Provide a customised token type index
+     * @param TokenIndex|null $tokenIndex Provide a customised token index
      * @param HeredocIndent::* $heredocIndent
      * @param ImportSortOrder::* $importSortOrder
      */
@@ -480,7 +487,7 @@ final class Formatter implements Buildable, Immutable
         array $disable = [],
         array $enable = [],
         int $flags = 0,
-        ?TokenTypeIndex $tokenTypeIndex = null,
+        ?TokenIndex $tokenIndex = null,
         string $preferredEol = \PHP_EOL,
         bool $preserveEol = true,
         int $spacesBesideCode = 2,
@@ -503,7 +510,7 @@ final class Formatter implements Buildable, Immutable
 
         $this->InsertSpaces = $insertSpaces;
         $this->TabSize = $tabSize;
-        $this->TokenTypeIndex = $tokenTypeIndex ?? new TokenTypeIndex();
+        $this->TokenIndex = $tokenIndex ?? new TokenIndex();
         $this->PreferredEol = $preferredEol;
         $this->PreserveEol = $preserveEol;
         $this->SpacesBesideCode = $spacesBesideCode;
@@ -544,7 +551,7 @@ final class Formatter implements Buildable, Immutable
             $this->PreserveEol = false;
             $this->HeredocIndent = HeredocIndent::HANGING;
             $this->OneTrueBraceStyle = false;
-            $this->NewlineBeforeFnDoubleArrows = true;
+            $this->NewlineBeforeFnDoubleArrow = true;
 
             $enable = array_merge(
                 self::PSR12_ENABLE,
@@ -584,11 +591,11 @@ final class Formatter implements Buildable, Immutable
         // lines between statements
         if (!in_array(PreserveNewlines::class, $rules, true)) {
             $this->PreserveNewlines = false;
-            $this->TokenTypeIndex = $this->TokenTypeIndex->withoutPreserveNewline();
+            $this->TokenIndex = $this->TokenIndex->withoutPreserveNewline();
             $rules[] = PreserveNewlines::class;
         } else {
             $this->PreserveNewlines = true;
-            $this->TokenTypeIndex = $this->TokenTypeIndex->withPreserveNewline();
+            $this->TokenIndex = $this->TokenIndex->withPreserveNewline();
         }
 
         foreach (self::INCOMPATIBLE_RULES as $incompatible) {
@@ -624,7 +631,7 @@ final class Formatter implements Buildable, Immutable
         foreach ($rules as $rule) {
             if (is_a($rule, TokenRule::class, true)) {
                 /** @var array<int,bool>|array{'*'} */
-                $types = $rule::getTokenTypes($this->TokenTypeIndex);
+                $types = $rule::getTokens($this->TokenIndex);
                 if ($types !== ['*']) {
                     $types = array_filter($types);
                 }
@@ -727,7 +734,7 @@ final class Formatter implements Buildable, Immutable
     /**
      * Get an instance with the given setting enabled or disabled
      *
-     * @param ("RelaxAlignmentCriteria"|"NewlineBeforeFnDoubleArrows"|"AlignFirstCallInChain") $property
+     * @param ("RelaxAlignmentCriteria"|"NewlineBeforeFnDoubleArrow"|"AlignFirstCallInChain") $property
      * @param bool $value
      * @return static
      */
@@ -877,7 +884,7 @@ final class Formatter implements Buildable, Immutable
             }
         }
 
-        $idx = $this->TokenTypeIndex;
+        $idx = $this->TokenIndex;
 
         Profile::startTimer(__METHOD__ . '#reset');
         $this->reset();

@@ -173,13 +173,20 @@ jobs:
         id: run-phpunit-tests
         shell: bash
         run: |
-          php -dshort_open_tag=On vendor/bin/phpunit ${RUNNER_DEBUG+--debug} --no-coverage --coverage-clover=coverage.xml && status=0 || status=$?
-          printf 'coverage_report_generated=%d\n' "$([[ -s coverage.xml ]] && echo 1 || echo 0)" >>"$GITHUB_OUTPUT"
+          php -dshort_open_tag=On vendor/bin/phpunit ${RUNNER_DEBUG+--debug} --no-coverage --coverage-clover=coverage.xml --log-junit=junit.xml && status=0 || status=$?
+          printf 'coverage_generated=%d\n' "$([[ -s coverage.xml ]] && echo 1 || echo 0)" >>"$GITHUB_OUTPUT"
+          printf 'results_generated=%d\n' "$([[ -s junit.xml ]] && echo 1 || echo 0)" >>"$GITHUB_OUTPUT"
           (exit $status)
 
-      - name: Upload code coverage report to Codecov
-        if: ${{ !cancelled() && steps.run-phpunit-tests.outputs.coverage_report_generated == 1 }}
-        uses: codecov/codecov-action@v4
+      - name: Upload coverage to Codecov
+        if: ${{ !cancelled() && steps.run-phpunit-tests.outputs.coverage_generated == 1 }}
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() && steps.run-phpunit-tests.outputs.results_generated == 1 }}
+        uses: codecov/test-results-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 

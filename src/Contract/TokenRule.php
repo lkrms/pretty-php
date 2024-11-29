@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Contract;
 
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
 
 /**
  * @api
@@ -13,17 +13,16 @@ interface TokenRule extends Rule
     public const PROCESS_TOKENS = 'processTokens';
 
     /**
-     * Get token types the rule is interested in
+     * Get tokens the rule is interested in
      *
-     * Tokens of these types are passed to {@see TokenRule::processTokens()}
-     * during formatting.
+     * Matching tokens are passed to {@see TokenRule::processTokens()} during
+     * formatting.
      *
-     * Returns a partial or complete index of token types, or `['*']` for all
-     * tokens.
+     * Returns a partial or complete token index, or `['*']` for all tokens.
      *
      * @return array<int,bool>|array{'*'}
      */
-    public static function getTokenTypes(TokenTypeIndex $idx): array;
+    public static function getTokens(TokenIndex $idx): array;
 
     /**
      * Check if the rule requires tokens to be given in document order
@@ -33,7 +32,7 @@ interface TokenRule extends Rule
     /**
      * Apply the rule to the given tokens
      *
-     * Tokens of the types returned by {@see TokenRule::getTokenTypes()} are
+     * Tokens matching the return value of {@see TokenRule::getTokens()} are
      * passed to this method once per document.
      *
      * @param array<int,Token> $tokens

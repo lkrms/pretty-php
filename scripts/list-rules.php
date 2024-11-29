@@ -12,7 +12,7 @@ use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Rule\IndexSpacing;
 use Lkrms\PrettyPHP\Rule\OperatorSpacing;
 use Lkrms\PrettyPHP\Formatter;
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
 use Salient\Cli\CliApplication;
 use Salient\Core\Facade\Console;
 use Salient\PHPDoc\PHPDoc;
@@ -56,9 +56,9 @@ function maybeAddRule(
             }
         }
         if ($method === TokenRule::PROCESS_TOKENS) {
-            static $idx = new TokenTypeIndex();
+            static $idx = new TokenIndex();
             /** @var class-string<TokenRule> $rule */
-            $tokens = $rule::getTokenTypes($idx);
+            $tokens = $rule::getTokens($idx);
         } elseif ($method === DeclarationRule::PROCESS_DECLARATIONS) {
             static $all = getAllDeclarationTypes();
             /** @var class-string<DeclarationRule> $rule */
@@ -201,10 +201,10 @@ foreach ($rules as $r) {
         if ($r['tokens'] === ['*']) {
             $tokenRules['`*`'][] = $heading;
         } elseif ($r['tokens']) {
-            foreach (array_keys(array_filter($r['tokens'])) as $type) {
-                $name = token_name($type);
+            foreach (array_keys(array_filter($r['tokens'])) as $id) {
+                $name = token_name($id);
                 if (!Str::startsWith($name, 'T_')) {
-                    $name = HasTokenNames::TOKEN_NAME[$type] ?? $name;
+                    $name = HasTokenNames::TOKEN_NAME[$id] ?? $name;
                 }
                 $tokenRules['`' . $name . '`'][] = $heading;
             }
@@ -214,8 +214,8 @@ foreach ($rules as $r) {
     if ($r['declarations'] === ['*']) {
         $declarationRules['`*`'][] = $heading;
     } elseif ($r['declarations']) {
-        foreach (array_keys(array_filter($r['declarations'])) as $type) {
-            $name = Reflect::getConstantName(DeclarationType::class, $type);
+        foreach (array_keys(array_filter($r['declarations'])) as $id) {
+            $name = Reflect::getConstantName(DeclarationType::class, $id);
             $name = ltrim($name, '_');
             $declarationRules['`' . $name . '`'][] = $heading;
         }
@@ -262,7 +262,7 @@ foreach ($tokenRules as $name => $rules) {
 }
 
 printf("\n");
-printf("## `TokenRule` classes, by token type\n\n");
+printf("## `TokenRule` classes, by token\n\n");
 printTable($table2);
 
 ksort($declarationRules);

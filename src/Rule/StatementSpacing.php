@@ -2,11 +2,11 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\TokenSubType;
+use Lkrms\PrettyPHP\Catalog\TokenSubId;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
 
 /**
  * Apply whitespace to statement terminators
@@ -22,7 +22,7 @@ final class StatementSpacing implements TokenRule
         ][$method] ?? null;
     }
 
-    public static function getTokenTypes(TokenTypeIndex $idx): array
+    public static function getTokens(TokenIndex $idx): array
     {
         return [
             \T_COLON => true,
@@ -36,7 +36,7 @@ final class StatementSpacing implements TokenRule
             switch ($token->id) {
                 case \T_COLON:
                     // Ignore colons that don't start an alternative syntax block
-                    if (!$token->ClosedBy && $token->getSubType() !== TokenSubType::COLON_LABEL_DELIMITER) {
+                    if (!$token->ClosedBy && $token->getSubId() !== TokenSubId::COLON_LABEL_DELIMITER) {
                         continue 2;
                     }
                     break;
@@ -44,12 +44,16 @@ final class StatementSpacing implements TokenRule
                 case \T_SEMICOLON:
                     // Add SPACE after for loop expression delimiters where the next
                     // expression is non-empty
-                    if ($token->Parent
-                            && $token->Parent->PrevCode
-                            && $token->Parent->id === \T_OPEN_PARENTHESIS
-                            && $token->Parent->PrevCode->id === \T_FOR) {
-                        if (!$token->NextSibling
-                                || $token->NextSibling->id === \T_SEMICOLON) {
+                    if (
+                        $token->Parent
+                        && $token->Parent->PrevCode
+                        && $token->Parent->id === \T_OPEN_PARENTHESIS
+                        && $token->Parent->PrevCode->id === \T_FOR
+                    ) {
+                        if (
+                            !$token->NextSibling
+                            || $token->NextSibling->id === \T_SEMICOLON
+                        ) {
                             continue 2;
                         }
                         $token->applyWhitespace(Space::SPACE_AFTER);
@@ -70,8 +74,10 @@ final class StatementSpacing implements TokenRule
                                 $token,
                             );
                         }
-                        if (!$this->Idx->CloseBracket[$token->Prev->id]
-                                && $token->Prev->id !== \T_SEMICOLON) {
+                        if (
+                            !$this->Idx->CloseBracket[$token->Prev->id]
+                            && $token->Prev->id !== \T_SEMICOLON
+                        ) {
                             continue 2;
                         }
                     }

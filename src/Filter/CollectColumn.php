@@ -8,7 +8,9 @@ use Lkrms\PrettyPHP\Token;
 use Salient\Utility\Str;
 
 /**
- * Assign the starting column of each token to its $column property
+ * Assign the starting column number of each token to its $column property
+ *
+ * @api
  */
 final class CollectColumn implements Filter
 {
@@ -20,19 +22,23 @@ final class CollectColumn implements Filter
     public function filterTokens(array $tokens): array
     {
         if (!$tokens[0] instanceof Token) {
+            // @codeCoverageIgnoreStart
             return $tokens;
+            // @codeCoverageIgnoreEnd
         }
 
-        $last = array_key_last($tokens);
+        $tabSize = $this->Formatter->Indentation->TabSize
+            ?? $this->Formatter->TabSize;
+
+        $last = count($tokens) - 1;
         $column = 1;
         /** @var Token $token */
         foreach ($tokens as $i => $token) {
             $token->column = $column;
-            $text =
-                !$this->Idx->Expandable[$token->id]
+            $text = !$this->Idx->Expandable[$token->id]
                 || strpos($token->text, "\t") === false
                     ? $token->text
-                    : Str::expandTabs($token->text, $this->Formatter->TabSize, $column);
+                    : Str::expandTabs($token->text, $tabSize, $column);
             if ($text !== $token->text) {
                 $token->ExpandedText = $text;
             }

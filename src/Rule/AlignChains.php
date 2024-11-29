@@ -9,7 +9,7 @@ use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Internal\TokenCollection;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
 
 /**
  * Align consecutive object operators in the same chain of method calls
@@ -28,7 +28,7 @@ final class AlignChains implements TokenRule
         ][$method] ?? null;
     }
 
-    public static function getTokenTypes(TokenTypeIndex $idx): array
+    public static function getTokens(TokenIndex $idx): array
     {
         return $idx->Chain;
     }
@@ -94,7 +94,7 @@ final class AlignChains implements TokenRule
                     continue;
                 }
                 $token->AlignedWith = $alignWith = $token;
-                $chain->shift();
+                $chain = $chain->shift();
             }
 
             $chain->forEach(fn(Token $t) => $t->AlignedWith = $alignWith);

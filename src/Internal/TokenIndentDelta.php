@@ -5,7 +5,7 @@ namespace Lkrms\PrettyPHP\Internal;
 use Lkrms\PrettyPHP\Token;
 
 /**
- * The difference in indentation between two tokens
+ * @internal
  */
 final class TokenIndentDelta
 {
@@ -19,26 +19,26 @@ final class TokenIndentDelta
     /**
      * Get the difference in indentation between two tokens
      *
-     * @return self The result of subtracting `$token1`'s indentation levels and
+     * @return self The result of subtracting `$token1`'s indentation and line
      * padding values from `$token2`'s.
      */
     public static function between(Token $token1, Token $token2): self
     {
-        $instance = new self();
-        $instance->PreIndent = $token2->PreIndent - $token1->PreIndent;
-        $instance->Indent = $token2->Indent - $token1->Indent;
-        $instance->Deindent = $token2->Deindent - $token1->Deindent;
-        $instance->HangingIndent = $token2->HangingIndent - $token1->HangingIndent;
-        $instance->LinePadding = $token2->LinePadding - $token1->LinePadding;
-        $instance->LineUnpadding = $token2->LineUnpadding - $token1->LineUnpadding;
+        $delta = new self();
+        $delta->PreIndent = $token2->PreIndent - $token1->PreIndent;
+        $delta->Indent = $token2->Indent - $token1->Indent;
+        $delta->Deindent = $token2->Deindent - $token1->Deindent;
+        $delta->HangingIndent = $token2->HangingIndent - $token1->HangingIndent;
+        $delta->LinePadding = $token2->LinePadding - $token1->LinePadding;
+        $delta->LineUnpadding = $token2->LineUnpadding - $token1->LineUnpadding;
 
-        return $instance;
+        return $delta;
     }
 
     /**
-     * Apply the difference in indentation to a token and return it
+     * Apply the difference in indentation to a token
      */
-    public function apply(Token $token): Token
+    public function apply(Token $token): void
     {
         $token->PreIndent += $this->PreIndent;
         $token->Indent += $this->Indent;
@@ -46,8 +46,6 @@ final class TokenIndentDelta
         $token->HangingIndent += $this->HangingIndent;
         $token->LinePadding += $this->LinePadding;
         $token->LineUnpadding += $this->LineUnpadding;
-
-        return $token;
     }
 
     private function __construct() {}

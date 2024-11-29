@@ -28,12 +28,12 @@ use Lkrms\PrettyPHP\Rule\NormaliseNumbers;
 use Lkrms\PrettyPHP\Rule\NormaliseStrings;
 use Lkrms\PrettyPHP\Rule\PreserveNewlines;
 use Lkrms\PrettyPHP\Rule\PreserveOneLineStatements;
+use Lkrms\PrettyPHP\Rule\SemiStrictExpressions;
 use Lkrms\PrettyPHP\Rule\StrictExpressions;
 use Lkrms\PrettyPHP\Rule\StrictLists;
 use Lkrms\PrettyPHP\Formatter;
-use Lkrms\PrettyPHP\FormatterBuilder;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenTypeIndex;
+use Lkrms\PrettyPHP\TokenIndex;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliCommand;
 use Salient\Cli\CliOption;
@@ -60,10 +60,7 @@ use JsonException;
 use SplFileInfo;
 use Throwable;
 
-/**
- * Provides pretty-php's command-line interface
- */
-final class FormatPhpCommand extends CliCommand
+final class PrettyPHPCommand extends CliCommand
 {
     private const DISABLE_MAP = [
         'sort-imports' => SortImports::class,
@@ -83,6 +80,7 @@ final class FormatPhpCommand extends CliCommand
         'align-lists' => AlignLists::class,
         'blank-before-return' => BlankBeforeReturn::class,
         'strict-expressions' => StrictExpressions::class,
+        'semi-strict-expressions' => SemiStrictExpressions::class,
         'strict-lists' => StrictLists::class,
         'preserve-one-line' => PreserveOneLineStatements::class,
     ];
@@ -1610,13 +1608,13 @@ EOF,
         $disable = array_values(array_intersect_key(self::DISABLE_MAP, array_flip($disable)));
         $enable = array_values(array_intersect_key(self::ENABLE_MAP, array_flip($this->Enable)));
 
-        $f = (new FormatterBuilder())
+        $f = Formatter::build()
                  ->insertSpaces(!$this->Tabs)
                  ->tabSize($this->Tabs ?: $this->Spaces ?: 4)
                  ->disable($disable)
                  ->enable($enable)
                  ->flags($flags)
-                 ->tokenTypeIndex(new TokenTypeIndex($this->OperatorsFirst, $this->OperatorsLast))
+                 ->tokenIndex(new TokenIndex($this->OperatorsFirst, $this->OperatorsLast))
                  ->preferredEol(self::EOL_MAP[$this->Eol])
                  ->preserveEol($this->Eol === 'auto')
                  ->heredocIndent(self::HEREDOC_INDENT_MAP[$this->HeredocIndent])

@@ -4,4 +4,7 @@ namespace Lkrms\PrettyPHP\Exception;
 
 use Salient\Core\AbstractException as SalientAbstractException;
 
+/**
+ * @internal
+ */
 abstract class AbstractException extends SalientAbstractException {}

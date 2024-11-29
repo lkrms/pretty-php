@@ -2,4 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Exception;
 
+/**
+ * @api
+ */
 class InvalidFormatterException extends AbstractException {}

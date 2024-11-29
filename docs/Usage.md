@@ -105,6 +105,7 @@ pretty-php - Format a PHP file
   - `align-lists`
   - `blank-before-return`
   - `strict-expressions`
+  - `semi-strict-expressions`
   - `strict-lists`
   - `preserve-one-line`
 
