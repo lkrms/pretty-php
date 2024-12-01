@@ -9,8 +9,8 @@ use Lkrms\PrettyPHP\Token;
 use Lkrms\PrettyPHP\TokenIndex;
 
 /**
- * If there are newlines between siblings in a control structure expression, add
- * newlines before and after it
+ * Add newlines before and after control structure expressions with newlines
+ * between siblings
  *
  * @api
  */
@@ -33,14 +33,7 @@ final class SemiStrictExpressions implements TokenRule
      */
     public static function getTokens(TokenIndex $idx): array
     {
-        return [
-            \T_IF => true,
-            \T_ELSEIF => true,
-            \T_SWITCH => true,
-            \T_WHILE => true,
-            \T_FOR => true,
-            \T_FOREACH => true,
-        ];
+        return $idx->HasExpression;
     }
 
     /**
@@ -52,7 +45,14 @@ final class SemiStrictExpressions implements TokenRule
     }
 
     /**
-     * @inheritDoc
+     * Apply the rule to the given tokens
+     *
+     * Newlines are added before and after control structure expressions with
+     * newlines between siblings.
+     *
+     * > Unlike `StrictExpressions`, this rule does not apply leading and
+     * > trailing newlines to expressions that would not break over multiple
+     * > lines if tokens between brackets were removed.
      */
     public function processTokens(array $tokens): void
     {
@@ -62,7 +62,7 @@ final class SemiStrictExpressions implements TokenRule
             if ($first->hasNewlineAfter()) {
                 continue;
             }
-            if ($first->children()->tokenHasNewlineAfter(true)) {
+            if ($first->children()->pop()->tokenHasNewlineAfter(true)) {
                 /** @var Token */
                 $last = $first->ClosedBy;
                 $first->applyWhitespace(Space::LINE_AFTER);

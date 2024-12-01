@@ -17,20 +17,17 @@ use Lkrms\PrettyPHP\TokenIndex;
 /**
  * Apply the WordPress code style
  *
- * Specifically:
- *
- * - Add a space before alternative syntax ':' operators
- * - Add a space after '!' unless it appears before another '!'
- * - Add a space inside non-empty parentheses
- * - Add a space inside non-empty square brackets unless their first inner token
- *   is a T_CONSTANT_ENCAPSED_STRING
+ * @api
  */
 final class WordPress implements Preset, TokenRule
 {
     use TokenRuleTrait;
 
-    private bool $DocCommentUnpinned = false;
+    private bool $DocCommentUnpinned;
 
+    /**
+     * @inheritDoc
+     */
     public static function getFormatter(int $flags = 0): Formatter
     {
         return Formatter::build()
@@ -48,6 +45,9 @@ final class WordPress implements Preset, TokenRule
                    ->with('RelaxAlignmentCriteria', true);
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function getPriority(string $method): ?int
     {
         return [
@@ -55,6 +55,9 @@ final class WordPress implements Preset, TokenRule
         ][$method] ?? null;
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function getTokens(TokenIndex $idx): array
     {
         return [
@@ -63,16 +66,54 @@ final class WordPress implements Preset, TokenRule
             \T_COLON => true,
             \T_LOGICAL_NOT => true,
             \T_OPEN_BRACE => true,
-            \T_CLOSE_BRACE => true,
             \T_OPEN_BRACKET => true,
             \T_OPEN_PARENTHESIS => true,
         ];
     }
 
+    /**
+     * @inheritDoc
+     */
+    public static function needsSortedTokens(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function reset(): void
+    {
+        $this->DocCommentUnpinned = false;
+    }
+
+    /**
+     * Apply the rule to the given tokens
+     *
+     * Suppression of blank lines after DocBlocks is disabled for the first
+     * DocBlock in each document.
+     *
+     * Blank lines added before DocBlocks by other rules are removed.
+     *
+     * Leading spaces are added to `:` in alternative syntax constructs.
+     *
+     * Trailing spaces are added to `!` operators.
+     *
+     * Suppression of blank lines inside braces is disabled.
+     *
+     * Spaces are added inside non-empty:
+     *
+     * - parentheses
+     * - square brackets (except in strings or when they enclose one inner token
+     *   that is not a variable)
+     */
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            if ($token->id === \T_COMMENT && !($token->Flags & TokenFlag::INFORMAL_DOC_COMMENT)) {
+            if (
+                $token->id === \T_COMMENT
+                && !($token->Flags & TokenFlag::INFORMAL_DOC_COMMENT)
+            ) {
                 continue;
             }
 
@@ -81,7 +122,7 @@ final class WordPress implements Preset, TokenRule
                 $this->DocCommentUnpinned = true;
             }
 
-            if ($token->id === \T_DOC_COMMENT || $token->id === \T_COMMENT) {
+            if ($this->Idx->Comment[$token->id]) {
                 /** @var Token */
                 $prev = $token->Prev;
                 if (
@@ -111,42 +152,31 @@ final class WordPress implements Preset, TokenRule
                 continue;
             }
 
+            /** @var Token */
+            $close = $token->ClosedBy;
+
             if ($token->id === \T_OPEN_BRACE) {
                 $token->removeWhitespace(Space::NO_BLANK_AFTER);
+                $close->removeWhitespace(Space::NO_BLANK_BEFORE);
                 continue;
             }
 
-            if ($token->id === \T_CLOSE_BRACE) {
-                $token->removeWhitespace(Space::NO_BLANK_BEFORE);
-                continue;
-            }
+            /** @var Token */
+            $next = $token->Next;
 
-            // All that remains is T_OPEN_BRACKET and T_OPEN_PARENTHESIS
-            if (
-                !$token->Next
-                || !$token->ClosedBy
-                || !$token->ClosedBy->Prev
-                || $token->ClosedBy === $token->Next
-                || ($token->id === \T_OPEN_BRACKET && (
+            if ($close === $next || (
+                $token->id === \T_OPEN_BRACKET && (
                     $token->String || (
-                        $token->Next->Next === $token->ClosedBy
-                        && $token->Next->id !== \T_VARIABLE
+                        $next->Next === $close
+                        && $next->id !== \T_VARIABLE
                     )
-                ))
-            ) {
+                )
+            )) {
                 continue;
             }
 
-            $token->ClosedBy->applyWhitespace(Space::SPACE_BEFORE);
             $token->applyWhitespace(Space::SPACE_AFTER);
+            $close->applyWhitespace(Space::SPACE_BEFORE);
         }
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function reset(): void
-    {
-        $this->DocCommentUnpinned = false;
     }
 }

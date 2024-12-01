@@ -56,11 +56,13 @@ function maybeAddRule(
             }
         }
         if ($method === TokenRule::PROCESS_TOKENS) {
-            static $idx = new TokenIndex();
+            static $idx;
+            $idx ??= new TokenIndex();
             /** @var class-string<TokenRule> $rule */
             $tokens = $rule::getTokens($idx);
         } elseif ($method === DeclarationRule::PROCESS_DECLARATIONS) {
-            static $all = getAllDeclarationTypes();
+            static $all;
+            $all ??= getAllDeclarationTypes();
             /** @var class-string<DeclarationRule> $rule */
             $declarations = $rule::getDeclarationTypes($all);
         }
@@ -240,11 +242,19 @@ foreach ($rules as $r) {
         continue;
     }
     $docs[] = '### ' . $heading . (
+        $r['is_mandatory']
+            ? ''
+            : (
+                $r['is_default']
+                    ? ', unless disabled'
+                    : ', if enabled'
+            )
+    ) . (
         $r['appearance'] === null
             ? ''
             : ' (call ' . $r['appearance'] . ': ' . $method . ')'
     );
-    $docs[] = $description;
+    $docs[] = Str::unwrap($description, "\n", false, true, true);
 }
 
 printTable($table1);

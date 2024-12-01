@@ -2,10 +2,8 @@
 
 namespace Lkrms\PrettyPHP\Rule\Preset;
 
-use Lkrms\PrettyPHP\Catalog\DeclarationType;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
-use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
@@ -19,17 +17,17 @@ use Lkrms\PrettyPHP\Token;
 use Lkrms\PrettyPHP\TokenIndex;
 
 /**
- * Apply formatting specific to Symfony's coding standards
+ * Apply the Symfony code style
  *
- * - Suppress horizontal space before and after '.'
- * - Add a space after 'fn' in arrow functions
- * - Suppress newlines between parameters in function declarations where none
- *   are promoted constructor parameters
+ * @api
  */
 final class Symfony implements Preset, TokenRule, ListRule
 {
     use TokenRuleTrait;
 
+    /**
+     * @inheritDoc
+     */
     public static function getFormatter(int $flags = 0): Formatter
     {
         return Formatter::build()
@@ -47,6 +45,9 @@ final class Symfony implements Preset, TokenRule, ListRule
                    ->build();
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function getPriority(string $method): ?int
     {
         return [
@@ -55,6 +56,9 @@ final class Symfony implements Preset, TokenRule, ListRule
         ][$method] ?? null;
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function getTokens(TokenIndex $idx): array
     {
         return [
@@ -63,6 +67,21 @@ final class Symfony implements Preset, TokenRule, ListRule
         ];
     }
 
+    /**
+     * @inheritDoc
+     */
+    public static function needsSortedTokens(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Apply the rule to the given tokens
+     *
+     * Trailing spaces are added to `fn` in arrow functions.
+     *
+     * Leading and trailing spaces are suppressed for `.` operators.
+     */
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
@@ -70,10 +89,17 @@ final class Symfony implements Preset, TokenRule, ListRule
                 $token->Whitespace |= Space::NO_SPACE_BEFORE | Space::NO_SPACE_AFTER;
                 continue;
             }
+
             $token->applyWhitespace(Space::SPACE_AFTER);
         }
     }
 
+    /**
+     * Apply the rule to a token and the list of items associated with it
+     *
+     * Newlines are suppressed between parameters in function declarations that
+     * have no promoted constructor parameters.
+     */
     public function processList(Token $parent, TokenCollection $items): void
     {
         if (!$parent->isParameterList()) {
@@ -81,10 +107,7 @@ final class Symfony implements Preset, TokenRule, ListRule
         }
 
         foreach ($items as $item) {
-            if (
-                $item->Flags & TokenFlag::NAMED_DECLARATION
-                && $item->Data[TokenData::NAMED_DECLARATION_TYPE] === DeclarationType::PARAM
-            ) {
+            if ($item->Flags & TokenFlag::NAMED_DECLARATION) {
                 return;
             }
         }

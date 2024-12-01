@@ -122,8 +122,19 @@ if ((PRESET_FIXTURES)); then (
 if ((ASSETS)); then
     (($#)) || set -- php
 
+    function list-rules() {
+        cat <<'EOF' &&
+# Rules
+
+Formatting rules applied by `pretty-php` are as follows.
+
+EOF
+            scripts/list-rules.php
+    }
+
     # yes = collapse options in synopsis to "[options]"
     generate docs/Usage.md "$1" bin/pretty-php _md yes
+    generate docs/Rules.md list-rules
     generate resources/prettyphp-schema.json "$1" bin/pretty-php _json_schema "JSON schema for pretty-php configuration files"
 
     if ((CHECK)); then
