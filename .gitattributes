@@ -9,8 +9,12 @@
 /.vscode export-ignore
 /box.json* export-ignore
 /docs export-ignore
+/docs/Rules.md linguist-generated
+/docs/Usage.md linguist-generated
 /phpstan* export-ignore
 /phpunit* export-ignore
+/resources/prettyphp-schema.json linguist-generated
 /scripts export-ignore
+/src/FormatterBuilder.php linguist-generated
 /tests export-ignore
 /tools export-ignore
