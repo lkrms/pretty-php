@@ -9,10 +9,8 @@ use Lkrms\PrettyPHP\Token;
 use Lkrms\PrettyPHP\TokenIndex;
 
 /**
- * If a control structure expression breaks over multiple lines, add newlines
- * before and after it
- *
- * Necessary for PSR-12 compliance.
+ * Add newlines before and after control structure expressions that break over
+ * multiple lines
  *
  * @api
  */
@@ -35,14 +33,7 @@ final class StrictExpressions implements TokenRule
      */
     public static function getTokens(TokenIndex $idx): array
     {
-        return [
-            \T_IF => true,
-            \T_ELSEIF => true,
-            \T_SWITCH => true,
-            \T_WHILE => true,
-            \T_FOR => true,
-            \T_FOREACH => true,
-        ];
+        return $idx->HasExpression;
     }
 
     /**
@@ -54,7 +45,10 @@ final class StrictExpressions implements TokenRule
     }
 
     /**
-     * @inheritDoc
+     * Apply the rule to the given tokens
+     *
+     * Newlines are added before and after control structure expressions that
+     * break over multiple lines.
      */
     public function processTokens(array $tokens): void
     {
@@ -66,7 +60,9 @@ final class StrictExpressions implements TokenRule
             }
             /** @var Token */
             $last = $first->ClosedBy;
-            if ($first->collect($last)->hasNewline()) {
+            /** @var Token */
+            $beforeLast = $last->Prev;
+            if ($first->collect($beforeLast)->hasNewline()) {
                 $first->applyWhitespace(Space::LINE_AFTER);
                 $last->applyWhitespace(Space::LINE_BEFORE);
             }

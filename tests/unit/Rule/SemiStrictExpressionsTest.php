@@ -40,6 +40,12 @@ if ($foo || (
 )) {
     qux();
 }
+if ($foo || (
+    $bar
+    && $baz
+)) {
+    qux();
+}
 if (
     $foo
     || $bar
@@ -55,6 +61,13 @@ if ($foo || (
     $bar
     && $baz
 )) {
+    qux();
+}
+if ($foo || (
+    $bar
+    && $baz
+)
+) {
     qux();
 }
 if ($foo

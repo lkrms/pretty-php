@@ -918,6 +918,19 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
+     * T_ELSEIF, T_FOR, T_FOREACH, T_IF, T_SWITCH, T_WHILE
+     *
+     * @var array<int,bool>
+     */
+    public array $HasExpression = [
+        \T_CATCH => false,
+        \T_DECLARE => false,
+    ]
+        + self::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES
+        + self::HAS_EXPRESSION_AND_STATEMENT_WITH_BRACES
+        + self::TOKEN_INDEX;
+
+    /**
      * T_CATCH, T_DECLARE, T_DO, T_ELSE, T_ELSEIF, T_FINALLY, T_FOR, T_FOREACH,
      * T_IF, T_SWITCH, T_TRY, T_WHILE
      *
