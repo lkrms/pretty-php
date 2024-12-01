@@ -13,17 +13,17 @@ use Lkrms\PrettyPHP\Token;
 use Lkrms\PrettyPHP\TokenIndex;
 
 /**
- * Apply Laravel's code style
+ * Apply the Laravel code style
  *
- * Specifically:
- * - Add a space after '!' unless it appears before another '!'
- * - Suppress horizontal space before and after '.'
- * - Add a space after 'fn' in arrow functions
+ * @api
  */
 final class Laravel implements Preset, TokenRule
 {
     use TokenRuleTrait;
 
+    /**
+     * @inheritDoc
+     */
     public static function getFormatter(int $flags = 0): Formatter
     {
         return Formatter::build()
@@ -36,6 +36,9 @@ final class Laravel implements Preset, TokenRule
                    ->build();
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function getPriority(string $method): ?int
     {
         return [
@@ -43,36 +46,53 @@ final class Laravel implements Preset, TokenRule
         ][$method] ?? null;
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function getTokens(TokenIndex $idx): array
     {
         return [
-            \T_LOGICAL_NOT => true,
             \T_CONCAT => true,
+            \T_LOGICAL_NOT => true,
             \T_FN => true,
         ];
     }
 
+    /**
+     * @inheritDoc
+     */
+    public static function needsSortedTokens(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Apply the rule to the given tokens
+     *
+     * Trailing spaces are added to:
+     *
+     * - `!` operators
+     * - `fn` in arrow functions
+     *
+     * Leading and trailing spaces are suppressed for `.` operators.
+     */
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            switch ($token->id) {
-                case \T_LOGICAL_NOT:
-                    /** @var Token */
-                    $next = $token->Next;
-                    if ($next->id === \T_LOGICAL_NOT) {
-                        continue 2;
-                    }
-                    $token->applyWhitespace(Space::SPACE_AFTER);
-                    continue 2;
-
-                case \T_CONCAT:
-                    $token->Whitespace |= Space::NO_SPACE_BEFORE | Space::NO_SPACE_AFTER;
-                    continue 2;
-
-                case \T_FN:
-                    $token->applyWhitespace(Space::SPACE_AFTER);
-                    continue 2;
+            if ($token->id === \T_CONCAT) {
+                $token->Whitespace |= Space::NO_SPACE_BEFORE | Space::NO_SPACE_AFTER;
+                continue;
             }
+
+            if ($token->id === \T_LOGICAL_NOT) {
+                /** @var Token */
+                $next = $token->Next;
+                if ($next->id === \T_LOGICAL_NOT) {
+                    continue;
+                }
+            }
+
+            $token->applyWhitespace(Space::SPACE_AFTER);
         }
     }
 }

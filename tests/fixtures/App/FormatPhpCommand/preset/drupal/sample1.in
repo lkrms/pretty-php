@@ -15,3 +15,6 @@ return $quux;
 return null;
 }
 }
+class bar
+{
+}

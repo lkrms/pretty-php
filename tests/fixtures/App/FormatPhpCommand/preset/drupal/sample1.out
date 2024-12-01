@@ -18,3 +18,5 @@ function foo($bar, $baz, $qux, $quux) {
     return null;
   }
 }
+
+class bar {}

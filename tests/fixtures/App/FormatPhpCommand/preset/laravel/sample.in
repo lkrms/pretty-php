@@ -1,0 +1,3 @@
+<?php
+$callback = fn($foo, $bar): bool =>
+    !!($foo . $bar);
