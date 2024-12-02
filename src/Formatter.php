@@ -237,7 +237,7 @@ final class Formatter implements Buildable, Immutable
      *               ->method1();
      * ```
      */
-    public bool $AlignFirstCallInChain = true;
+    public bool $AlignChainAfterNewline = true;
 
     // --
 
@@ -734,7 +734,7 @@ final class Formatter implements Buildable, Immutable
     /**
      * Get an instance with the given setting enabled or disabled
      *
-     * @param ("RelaxAlignmentCriteria"|"NewlineBeforeFnDoubleArrow"|"AlignFirstCallInChain") $property
+     * @param ("RelaxAlignmentCriteria"|"NewlineBeforeFnDoubleArrow"|"AlignChainAfterNewline") $property
      * @param bool $value
      * @return static
      */

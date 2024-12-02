@@ -153,6 +153,25 @@ $d11 || $e11),
 $d12 || $e12);
 PHP,
             ],
+            // This test will fail when issues with end-of-expression detection
+            // are fixed, because `->qux()` will align with `->baz()`
+            [
+                <<<'PHP'
+<?php
+$foo = $bar
+    ?: $foo->bar()
+           ->baz() ?: $foo->baz()
+                   ->qux();
+
+PHP,
+                <<<'PHP'
+<?php
+$foo = $bar
+?: $foo->bar()
+->baz() ?: $foo->baz()
+->qux();
+PHP,
+            ],
         ];
     }
 }

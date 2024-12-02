@@ -959,22 +959,6 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
      */
     public function pragmaticStartOfExpression(bool $containUnenclosed = false): self
     {
-        if ($this->Idx->Chain[$this->id]) {
-            // Get the first token in the expression dereferenced by the first
-            // `->` or `?->` in the chain
-            $current = $this;
-            $first = null;
-            while (
-                ($current = $current->PrevSibling)
-                && $this->Expression === $current->Expression
-                && $this->Idx->ChainExpression[$current->id]
-            ) {
-                $first = $current;
-            }
-            assert($first !== null);
-            return $first;
-        }
-
         // If the token is between `?` and `:` in a ternary expression, return
         // the first token after `?`
         $ternary1 =

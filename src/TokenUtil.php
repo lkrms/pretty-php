@@ -95,6 +95,23 @@ final class TokenUtil
         return true;
     }
 
+    /**
+     * Get the first token in the expression dereferenced by the first object
+     * operator in a given chain of method calls
+     */
+    public static function getChainExpression(Token $token): Token
+    {
+        $t = $token;
+        while (
+            $t->PrevSibling
+            && $t->PrevSibling->Expression === $token->Expression
+            && $token->Idx->ChainExpression[$t->PrevSibling->id]
+        ) {
+            $t = $t->PrevSibling;
+        }
+        return $t;
+    }
+
     public static function getWhitespace(int $type): string
     {
         if ($type & Space::BLANK) {
