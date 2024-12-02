@@ -96,6 +96,63 @@ final class TokenUtil
     }
 
     /**
+     * Get the first ternary or null coalescing operator that is one of a given
+     * ternary or null coalescing operator's preceding siblings in the same
+     * statement
+     *
+     * If `$token` is part of the first ternary or null coalescing expression in
+     * the statement, `null` is returned.
+     */
+    public static function getTernaryContext(Token $token): ?Token
+    {
+        $before = self::getTernary1($token) ?? $token;
+        $t = $before;
+        while (
+            ($t = $t->PrevSibling)
+            && $t->Statement === $token->Statement
+        ) {
+            if ((
+                $t->id === \T_COALESCE
+                && $t->Index < $before->Index
+            ) || (
+                $t->Flags & TokenFlag::TERNARY_OPERATOR
+                && self::getTernary1($t) === $t
+                && $t->Data[TokenData::OTHER_TERNARY_OPERATOR]->Index
+                    < $before->Index
+            )) {
+                $context = $t;
+            }
+        }
+        return $context ?? null;
+    }
+
+    /**
+     * Get the first ternary operator for the given ternary operator, or null if
+     * it is not a ternary operator
+     */
+    public static function getTernary1(Token $token): ?Token
+    {
+        return $token->Flags & TokenFlag::TERNARY_OPERATOR
+            ? ($token->id === \T_QUESTION
+                ? $token
+                : $token->Data[TokenData::OTHER_TERNARY_OPERATOR])
+            : null;
+    }
+
+    /**
+     * Get the second ternary operator for the given ternary operator, or null
+     * if it is not a ternary operator
+     */
+    public static function getTernary2(Token $token): ?Token
+    {
+        return $token->Flags & TokenFlag::TERNARY_OPERATOR
+            ? ($token->id === \T_COLON
+                ? $token
+                : $token->Data[TokenData::OTHER_TERNARY_OPERATOR])
+            : null;
+    }
+
+    /**
      * Get the first token in the expression dereferenced by the first object
      * operator in a given chain of method calls
      */

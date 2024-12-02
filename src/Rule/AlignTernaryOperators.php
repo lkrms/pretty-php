@@ -8,6 +8,7 @@ use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Token;
 use Lkrms\PrettyPHP\TokenIndex;
+use Lkrms\PrettyPHP\TokenUtil;
 
 /**
  * Align ternary and null coalescing operators with their expressions
@@ -56,7 +57,7 @@ final class AlignTernaryOperators implements TokenRule
 
             // If previous ternary or null coalescing operators in this scope
             // have already been aligned, do nothing
-            $prevTernary = HangingIndentation::getTernaryContext($token);
+            $prevTernary = TokenUtil::getTernaryContext($token);
             if ($prevTernary && $prevTernary->AlignedWith) {
                 $this->setAlignedWith($token, $prevTernary->AlignedWith);
                 continue;

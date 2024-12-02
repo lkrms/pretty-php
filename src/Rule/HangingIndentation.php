@@ -197,10 +197,9 @@ final class HangingIndentation implements TokenRule
             if (
                 $trigger->Flags & TokenFlag::TERNARY_OPERATOR
                 || $trigger->id === \T_COALESCE
-                || $trigger->id === \T_COALESCE_EQUAL
             ) {
-                $context[] = self::getTernaryContext($trigger)
-                    ?? self::getTernaryOperator1($trigger)
+                $context[] = TokenUtil::getTernaryContext($trigger)
+                    ?? TokenUtil::getTernary1($trigger)
                     ?? $trigger;
                 $until = self::getTernaryEndOfExpression($trigger);
                 $apply = $trigger;
@@ -350,56 +349,6 @@ final class HangingIndentation implements TokenRule
     }
 
     /**
-     * Get the first ternary or null coalescing operator that is one of another
-     * ternary or null coalescing operator's preceding siblings in the same
-     * statement
-     *
-     * Prevents outcomes like this:
-     *
-     * ```php
-     * $a
-     *   ?: $b
-     *     ?: $c
-     * ```
-     */
-    public static function getTernaryContext(Token $token): ?Token
-    {
-        $current = $token->PrevSibling;
-        $prevTernary = null;
-        while ($current && $current->Statement === $token->Statement) {
-            if (
-                $current->id === \T_COALESCE
-                || $current->id === \T_COALESCE_EQUAL
-                || ($current->Flags & TokenFlag::TERNARY_OPERATOR
-                    && self::getTernaryOperator1($current) === $current
-                    && $current->Data[TokenData::OTHER_TERNARY_OPERATOR]->Index
-                        < (self::getTernaryOperator1($token) ?? $token)->Index)
-            ) {
-                $prevTernary = $current;
-            }
-            $current = $current->PrevSibling;
-        }
-
-        // Handle this scenario:
-        //
-        // ```php
-        // $foo = $bar
-        //     ? $qux[$i] ?? $fallback
-        //     : $quux;
-        // ```
-        if (
-            $prevTernary
-            && $token->id === \T_COLON
-            && $token->Flags & TokenFlag::TERNARY_OPERATOR
-            && $prevTernary->Index > $token->Data[TokenData::OTHER_TERNARY_OPERATOR]->Index
-        ) {
-            return null;
-        }
-
-        return $prevTernary;
-    }
-
-    /**
      * Get the last token in the same statement as a ternary operator
      */
     public static function getTernaryEndOfExpression(Token $token): Token
@@ -411,19 +360,17 @@ final class HangingIndentation implements TokenRule
         do {
             if (
                 $current->id === \T_COALESCE
-                || $current->id === \T_COALESCE_EQUAL
             ) {
                 $until = $current->EndExpression ?? $current;
             } else {
                 /** @var Token */
-                $until = self::getTernaryOperator2($current);
+                $until = TokenUtil::getTernary2($current);
                 $until = $until->EndExpression ?? $current;
             }
         } while (
             $until !== $current
             && ($current = $until->NextSibling)
             && ($current->id === \T_COALESCE
-                || $current->id === \T_COALESCE_EQUAL
                 || ($current->id === \T_QUESTION
                     && $current->Flags & TokenFlag::TERNARY_OPERATOR))
         );
@@ -438,24 +385,6 @@ final class HangingIndentation implements TokenRule
         }
 
         return $until;
-    }
-
-    private static function getTernaryOperator1(Token $token): ?Token
-    {
-        return $token->id === \T_QUESTION
-            ? $token
-            : ($token->Flags & TokenFlag::TERNARY_OPERATOR
-                ? $token->Data[TokenData::OTHER_TERNARY_OPERATOR]
-                : null);
-    }
-
-    private static function getTernaryOperator2(Token $token): ?Token
-    {
-        return $token->id === \T_COLON
-            ? $token
-            : ($token->Flags & TokenFlag::TERNARY_OPERATOR
-                ? $token->Data[TokenData::OTHER_TERNARY_OPERATOR]
-                : null);
     }
 
     /**
