@@ -561,6 +561,9 @@ final class Parser implements Immutable
      *
      * - `Expression`
      * - `EndExpression`
+     * - `Data[TokenData::NAMED_DECLARATION_PARTS]`
+     * - `Data[TokenData::NAMED_DECLARATION_TYPE]`
+     * - `Data[TokenData::PROPERTY_HOOKS]`
      * - `Data[TokenData::OTHER_TERNARY_OPERATOR]`
      * - `Data[TokenData::CHAIN_OPENED_BY]`
      *
@@ -726,16 +729,19 @@ final class Parser implements Immutable
                 if (
                     !$token->NextSibling
                     || $token === $end
-                    || $idx->EndOfExpression[$token->id]
+                    || $idx->ExpressionDelimiter[$token->id]
+                    || $token->id === \T_SEMICOLON
                     || $token->Flags & TokenFlag::TERNARY_OPERATOR
                 ) {
                     // Exclude terminators from expressions
-                    if (!$token->ClosedBy && (
-                        $idx->EndOfExpression[$token->id]
-                        || $token->Flags & (TokenFlag::STATEMENT_TERMINATOR | TokenFlag::TERNARY_OPERATOR)
-                        || $token->id === \T_COLON
-                        || $token->id === \T_COMMA
-                    )) {
+                    if (
+                        $idx->ExpressionDelimiter[$token->id]
+                        || $idx->StatementDelimiter[$token->id]
+                        || $token->Flags & (
+                            TokenFlag::STATEMENT_TERMINATOR
+                            | TokenFlag::TERNARY_OPERATOR
+                        )
+                    ) {
                         $isTerminator = true;
                         $last = $token->PrevCode;
                         // Do nothing if the expression is empty

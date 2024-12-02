@@ -1078,7 +1078,7 @@ EOF,
             $dir = dirname($inputFile);
             $formatter = $this->FormatterByDir[$dir] ??=
                 $this->DefaultFormatter ??=
-                $this->getFormatter();
+                    $this->getFormatter();
 
             $inputStream = File::open($file, 'rb');
 

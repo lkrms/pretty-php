@@ -996,35 +996,6 @@ class TokenIndex implements HasTokenIndex, Immutable
     // Parsing:
 
     /**
-     * T_COLON, T_COMMA, T_SEMICOLON
-     *
-     * @var array<int,bool>
-     */
-    public array $EndOfStatement = [
-        \T_COLON => true,
-        \T_COMMA => true,
-        \T_SEMICOLON => true,
-    ]
-        + self::TOKEN_INDEX;
-
-    /**
-     * Assignment operators, comparison operators (except T_COALESCE),
-     * T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_SEMICOLON, T_DOUBLE_ARROW
-     *
-     * @var array<int,bool>
-     */
-    public array $EndOfExpression = [
-        \T_CLOSE_BRACKET => true,
-        \T_CLOSE_PARENTHESIS => true,
-        \T_SEMICOLON => true,
-        \T_DOUBLE_ARROW => true,
-        \T_COALESCE => false,
-    ]
-        + self::OPERATOR_ASSIGNMENT
-        + self::OPERATOR_COMPARISON
-        + self::TOKEN_INDEX;
-
-    /**
      * Assignment operators, comparison operators (except T_COALESCE),
      * T_DOUBLE_ARROW
      *
@@ -1047,6 +1018,18 @@ class TokenIndex implements HasTokenIndex, Immutable
         \T_DOUBLE_ARROW => true,
     ]
         + self::OPERATOR_ASSIGNMENT
+        + self::TOKEN_INDEX;
+
+    /**
+     * T_COLON, T_COMMA, T_SEMICOLON
+     *
+     * @var array<int,bool>
+     */
+    public array $StatementDelimiter = [
+        \T_COLON => true,
+        \T_COMMA => true,
+        \T_SEMICOLON => true,
+    ]
         + self::TOKEN_INDEX;
 
     // Formatting:

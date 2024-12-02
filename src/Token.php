@@ -1403,7 +1403,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     public function withoutTerminator(): self
     {
         if ($this->PrevCode && (
-            $this->Idx->EndOfStatement[$this->id]
+            $this->Idx->StatementDelimiter[$this->id]
             || $this->Flags & TokenFlag::STATEMENT_TERMINATOR
         )) {
             return $this->PrevCode;
@@ -1414,10 +1414,10 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     public function withTerminator(): self
     {
         if ($this->NextCode && !(
-            $this->Idx->EndOfStatement[$this->id]
+            $this->Idx->StatementDelimiter[$this->id]
             || $this->Flags & TokenFlag::STATEMENT_TERMINATOR
         ) && (
-            $this->Idx->EndOfStatement[$this->NextCode->id]
+            $this->Idx->StatementDelimiter[$this->NextCode->id]
             || $this->NextCode->Flags & TokenFlag::STATEMENT_TERMINATOR
         )) {
             return $this->NextCode;
