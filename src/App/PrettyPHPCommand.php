@@ -1507,7 +1507,7 @@ EOF,
     ): void {
         if ($configFile !== null) {
             foreach ($values as &$value) {
-                if (substr($value, 0, 2) === '--') {
+                if (Str::startsWith($value, '--')) {
                     $value = Str::camel($value);
                 }
             }

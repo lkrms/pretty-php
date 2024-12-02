@@ -277,7 +277,7 @@ foreach ($byHeading as $heading => $listings) {
     foreach ($listings as $i => $listing) {
         $name = sprintf('%s-%02d', $heading, $i);
 
-        if (substr(ltrim($listing), 0, 5) !== '<?php') {
+        if (!Str::startsWith(ltrim($listing), '<?php')) {
             $listing = "<?php\n\n$listing";
             Console::warn('No open tag:', $name, null, false);
         }

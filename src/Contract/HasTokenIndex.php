@@ -636,6 +636,7 @@ interface HasTokenIndex
         \T_CLONE => true,
         \T_CONTINUE => true,
         \T_ECHO => true,
+        \T_EXIT => true,
         \T_INCLUDE => true,
         \T_INCLUDE_ONCE => true,
         \T_PRINT => true,
