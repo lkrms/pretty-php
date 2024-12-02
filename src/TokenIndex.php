@@ -776,35 +776,6 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES, T_DOUBLE_QUOTE,
-     * T_ENCAPSED_AND_WHITESPACE, T_ARRAY, T_CONSTANT_ENCAPSED_STRING,
-     * T_DOUBLE_COLON, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED,
-     * T_NAME_RELATIVE, T_STATIC, T_DOLLAR, T_OPEN_BRACE, T_OPEN_BRACKET,
-     * T_OPEN_PARENTHESIS, T_STRING, T_VARIABLE, T_OBJECT_OPERATOR,
-     * T_NULLSAFE_OBJECT_OPERATOR, magic constants
-     *
-     * @var array<int,bool>
-     */
-    public array $ChainExpression = [
-        // '"' ... '"'
-        \T_CURLY_OPEN => true,
-        \T_DOLLAR_OPEN_CURLY_BRACES => true,
-        \T_DOUBLE_QUOTE => true,
-        \T_ENCAPSED_AND_WHITESPACE => true,
-        // Other dereferenceables
-        \T_ARRAY => true,
-        \T_CONSTANT_ENCAPSED_STRING => true,
-        \T_DOUBLE_COLON => true,
-        \T_NAME_FULLY_QUALIFIED => true,
-        \T_NAME_QUALIFIED => true,
-        \T_NAME_RELATIVE => true,
-        \T_STATIC => true,
-    ]
-        + self::CHAIN_PART
-        + self::MAGIC_CONSTANT
-        + self::TOKEN_INDEX;
-
-    /**
      * T_ELSEIF, T_ELSE, T_CATCH, T_FINALLY
      *
      * Excludes `T_WHILE`, which only qualifies after `T_DO`. Check for this

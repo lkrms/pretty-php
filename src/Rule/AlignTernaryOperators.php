@@ -63,10 +63,7 @@ final class AlignTernaryOperators implements TokenRule
                 continue;
             }
 
-            $alignWith =
-                ($prevTernary ?: $token)
-                    ->PrevCode
-                    ->pragmaticStartOfExpression(true);
+            $alignWith = TokenUtil::getOperatorExpression($prevTernary ?? $token);
 
             $this->setAlignedWith($token, $alignWith);
             $until = HangingIndentation::getTernaryEndOfExpression($token);

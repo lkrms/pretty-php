@@ -79,12 +79,6 @@ parameters:
 			path: src/Rule/AlignLists.php
 
 		-
-			message: '#^Cannot call method pragmaticStartOfExpression\(\) on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Rule/AlignTernaryOperators.php
-
-		-
 			message: '#^Cannot access property \$Index on Lkrms\\PrettyPHP\\Token\|null\.$#'
 			identifier: property.nonObject
 			count: 1

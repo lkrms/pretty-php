@@ -86,7 +86,7 @@ final class AlignChains implements TokenRule
             $offset = -2;
 
             if ($hasNewlineBefore) {
-                $expr = TokenUtil::getChainExpression($token);
+                $expr = TokenUtil::getOperatorExpression($token);
                 /** @var Token */
                 $prev = $token->PrevCode;
                 /** @var Token */
