@@ -191,10 +191,7 @@ trait FilterTrait
             || (
                 $token->id === \T_CLOSE_PARENTHESIS
                 && ($prev = $this->getPrevSibling($j))
-                && (
-                    $this->Idx->AltStart[$prev->id]
-                    || $this->Idx->AltContinueWithExpression[$prev->id]
-                )
+                && $this->Idx->AltStartOrContinueWithExpression[$prev->id]
             );
     }
 

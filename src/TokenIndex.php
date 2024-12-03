@@ -187,15 +187,16 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * T_DECLARE, T_FOR, T_FOREACH, T_IF, T_SWITCH, T_WHILE
+     * T_DECLARE, T_FOR, T_FOREACH, T_IF, T_ELSEIF, T_SWITCH, T_WHILE
      *
      * @var array<int,bool>
      */
-    public array $AltStart = [
+    public array $AltStartOrContinueWithExpression = [
         \T_DECLARE => true,
         \T_FOR => true,
         \T_FOREACH => true,
         \T_IF => true,
+        \T_ELSEIF => true,
         \T_SWITCH => true,
         \T_WHILE => true,
     ]

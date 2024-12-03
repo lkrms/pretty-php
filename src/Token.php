@@ -549,11 +549,8 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             || $this->Idx->AltContinueWithNoExpression[$prevCode->id]
             || (
                 $prevCode->id === \T_CLOSE_PARENTHESIS
-                && $prevCode->PrevSibling
-                && (
-                    $this->Idx->AltStart[$prevCode->PrevSibling->id]
-                    || $this->Idx->AltContinueWithExpression[$prevCode->PrevSibling->id]
-                )
+                && ($prev = $prevCode->PrevSibling)
+                && $this->Idx->AltStartOrContinueWithExpression[$prev->id]
             )
         ) {
             return TokenSubId::COLON_ALT_SYNTAX_DELIMITER;
@@ -563,11 +560,8 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             $this->Parent
             && $this->Parent->id === \T_OPEN_PARENTHESIS
             && $prevCode->id === \T_STRING
-            && $prevCode->PrevCode
-            && (
-                $prevCode->PrevCode === $this->Parent
-                || $prevCode->PrevCode->id === \T_COMMA
-            )
+            && ($prev = $prevCode->PrevCode)
+            && ($prev === $this->Parent || $prev->id === \T_COMMA)
         ) {
             return TokenSubId::COLON_NAMED_ARGUMENT_DELIMITER;
         }
@@ -578,8 +572,8 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
 
         if (
             $prevCode->id === \T_STRING
-            && $prevCode->PrevCode
-            && $prevCode->PrevCode->id === \T_ENUM
+            && ($prev = $prevCode->PrevCode)
+            && $prev->id === \T_ENUM
         ) {
             return TokenSubId::COLON_BACKED_ENUM_TYPE_DELIMITER;
         }
@@ -598,7 +592,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             if ($prev) {
                 $prev = $prev->skipPrevSiblingsFrom($this->Idx->FunctionIdentifier);
 
-                if ($prev->id === \T_FUNCTION || $prev->id === \T_FN) {
+                if ($this->Idx->FunctionOrFn[$prev->id]) {
                     return TokenSubId::COLON_RETURN_TYPE_DELIMITER;
                 }
             }
