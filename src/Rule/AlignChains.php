@@ -72,7 +72,7 @@ final class AlignChains implements TokenRule
                 continue;
             }
 
-            $chain = $token->withNextSiblingsWhile($this->Idx->ChainPart)
+            $chain = $token->withNextSiblingsFrom($this->Idx->ChainPart)
                            ->getAnyFrom($this->Idx->Chain);
 
             if (!$hasNewlineBefore && (
@@ -139,7 +139,7 @@ final class AlignChains implements TokenRule
                     /** @var Token */
                     $first = $chain->first();
                     $offset = $alignWith->alignmentOffset() + $offset;
-                    $delta = $first->indentDelta($alignWith);
+                    $delta = $first->getIndentDelta($alignWith);
                     $delta->LinePadding += $offset;
                     $callback = static function (
                         Token $t,

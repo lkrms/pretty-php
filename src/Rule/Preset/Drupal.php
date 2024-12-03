@@ -146,7 +146,7 @@ final class Drupal implements Preset, TokenRule, DeclarationRule
             }
 
             /** @var Token */
-            $close = $open->ClosedBy;
+            $close = $open->CloseBracket;
 
             $open->applyWhitespace(Space::BLANK_AFTER);
             $close->applyWhitespace(Space::BLANK_BEFORE);

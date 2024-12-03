@@ -72,7 +72,7 @@ final class HangingIndentation implements TokenRule
         foreach ($tokens as $token) {
             if ($this->Idx->OpenBracket[$token->id]) {
                 /** @var Token */
-                $close = $token->ClosedBy;
+                $close = $token->CloseBracket;
                 $hasList = (
                     $token->Flags & TokenFlag::LIST_PARENT
                     && $token->Data[TokenData::LIST_ITEM_COUNT] > 1
@@ -104,8 +104,8 @@ final class HangingIndentation implements TokenRule
             if (
                 $parent === $prev
                 && $token->NextCode
-                && $parent->ClosedBy
-                && $token->NextCode->Index < $parent->ClosedBy->Index
+                && $parent->CloseBracket
+                && $token->NextCode->index < $parent->CloseBracket->index
                 && $this->Idx->OpenBracket[$parent->id]
                 && $parent->Data[self::PARENT_TYPE] & self::NO_INDENT
             ) {
@@ -116,7 +116,7 @@ final class HangingIndentation implements TokenRule
                     $current->HangingIndentToken = $token;
                     $current->HangingIndentContext[] = $context;
                     $current->HangingIndentParent[] = $parent;
-                } while (($current = $current->Next) && $current !== $parent->ClosedBy);
+                } while (($current = $current->Next) && $current !== $parent->CloseBracket);
                 continue;
             }
 
@@ -229,7 +229,7 @@ final class HangingIndentation implements TokenRule
                             $context[] = $latest;
                         } else {
                             $startOfLine = $prev->startOfLine();
-                            if ($delimiter->Index < $startOfLine->Index) {
+                            if ($delimiter->index < $startOfLine->index) {
                                 $context[] = $latest;
                             }
                         }
@@ -281,10 +281,10 @@ final class HangingIndentation implements TokenRule
                 }
                 $parents[] = $current;
                 $indent++;
-                $hanging[$current->Index] = 1;
+                $hanging[$current->index] = 1;
                 if ($current->Data[self::PARENT_TYPE] & self::OVERHANGING_INDENT) {
                     $indent++;
-                    $hanging[$current->Index]++;
+                    $hanging[$current->index]++;
                 }
             }
 
@@ -300,7 +300,7 @@ final class HangingIndentation implements TokenRule
                 && $token->Statement !== $token
             ) {
                 $indent++;
-                $hanging[$parent->Index] = 1;
+                $hanging[$parent->index] = 1;
             }
 
             if ($adjacent = $until->adjacentBeforeNewline()) {
@@ -336,10 +336,10 @@ final class HangingIndentation implements TokenRule
                 // ```
                 if (
                     $parent
-                    && ($hanging[$parent->Index] ?? null)
-                    && array_key_exists($parent->Index, $current->HangingIndentParentLevels)
+                    && ($hanging[$parent->index] ?? null)
+                    && array_key_exists($parent->index, $current->HangingIndentParentLevels)
                 ) {
-                    $current->HangingIndentParentLevels[$parent->Index] += $hanging[$parent->Index];
+                    $current->HangingIndentParentLevels[$parent->index] += $hanging[$parent->index];
                 }
                 $current->HangingIndent += $indent;
                 $current->HangingIndentParentLevels += $hanging;
@@ -418,7 +418,7 @@ final class HangingIndentation implements TokenRule
                     do {
                         do {
                             $next = $next->endOfLine(false);
-                            if (!$next->isMultiLineComment() || !$next->hasNewline()) {
+                            if (!($next->Flags & TokenFlag::MULTILINE_COMMENT) || !$next->hasNewline()) {
                                 break;
                             }
                             // If a comment that breaks over multiple lines
@@ -443,7 +443,7 @@ final class HangingIndentation implements TokenRule
                         $nextIndent = $this->effectiveIndent($next);
                     } while (
                         $nextIndent === $indent
-                        && $next->Index <= $until->Index
+                        && $next->index <= $until->index
                     );
 
                     // Adjust $indent for this level of indentation
@@ -460,9 +460,9 @@ final class HangingIndentation implements TokenRule
                     // - $next has the same hanging indent context as $token
                     if (
                         $next
-                        && (($next->Index <= $until->Index
+                        && (($next->index <= $until->index
                                 && ($next->HangingIndentParentLevels[$index] ?? 0))
-                            || ($next->Index > $until->Index
+                            || ($next->index > $until->index
                                 && $next->Parent === $token->Parent
                                 && $next->HangingIndentContext === $token->HangingIndentContext
                                 && !(($next->Statement === $next) xor ($token->Statement === $token))))
@@ -475,7 +475,7 @@ final class HangingIndentation implements TokenRule
                     }
 
                     $current = $next;
-                } while ($current && $current->Index <= $until->Index);
+                } while ($current && $current->index <= $until->index);
 
                 foreach ($tokens as $t) {
                     if ($t->HangingIndentParentLevels[$index] ?? 0) {
@@ -495,7 +495,7 @@ final class HangingIndentation implements TokenRule
     private function effectiveIndent(Token $token): int
     {
         // Ignore $token->LineUnpadding given its role in alignment
-        return (int) (($token->indent() * $this->Formatter->TabSize
+        return (int) (($token->getIndent() * $this->Formatter->TabSize
             + $token->LinePadding
             + $token->Padding) / $this->Formatter->TabSize);
     }

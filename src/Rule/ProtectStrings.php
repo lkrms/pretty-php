@@ -69,13 +69,13 @@ final class ProtectStrings implements TokenRule
             }
 
             $closedBy = $token->Data[TokenData::STRING_CLOSED_BY];
-            foreach ($next->collectSiblings($closedBy) as $current) {
+            foreach ($next->withNextSiblings($closedBy) as $current) {
                 $current->Whitespace |= Space::CRITICAL_NONE_BEFORE;
                 if ($current->id === \T_OPEN_BRACKET) {
                     /** @var Token */
                     $next = $current->Next;
                     /** @var Token */
-                    $closedBy = $current->ClosedBy;
+                    $closedBy = $current->CloseBracket;
                     foreach ($next->collect($closedBy) as $inner) {
                         $inner->Whitespace |= Space::CRITICAL_NONE_BEFORE;
                     }

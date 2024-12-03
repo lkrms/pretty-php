@@ -472,6 +472,19 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
+     * T_INLINE_HTML, T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO, T_CLOSE_TAG
+     *
+     * @var array<int,bool>
+     */
+    public array $Markup = [
+        \T_INLINE_HTML => true,
+        \T_OPEN_TAG => true,
+        \T_OPEN_TAG_WITH_ECHO => true,
+        \T_CLOSE_TAG => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
      * Visibility modifiers, T_ABSTRACT, T_FINAL, T_READONLY, T_STATIC, T_VAR
      *
      * @var array<int,bool>

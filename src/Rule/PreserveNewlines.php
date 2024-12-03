@@ -106,7 +106,7 @@ final class PreserveNewlines implements TokenRule
         }
 
         // Don't preserve newlines between empty brackets
-        if ($token->OpenedBy === $prev) {
+        if ($token->OpenBracket === $prev) {
             return false;
         }
 
@@ -150,7 +150,7 @@ final class PreserveNewlines implements TokenRule
         }
 
         // Don't preserve newlines between empty brackets
-        if ($token->ClosedBy === $next) {
+        if ($token->CloseBracket === $next) {
             return false;
         }
 
@@ -190,7 +190,7 @@ final class PreserveNewlines implements TokenRule
                     && $token->Parent->PrevCode->id === \T_FOR)
                 || ($this->Idx->Comment[$token->id]
                     && (($token->PrevCode
-                            && !$token->PrevCode->ClosedBy
+                            && !$token->PrevCode->CloseBracket
                             && $token->PrevCode->EndStatement !== $token->PrevCode)
                         || ($token->Parent
                             && !($token->Parent->id === \T_OPEN_BRACE

@@ -59,8 +59,8 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
         }
 
         if (
-            $token->OpenedBy
-            && $token->OpenedBy->id === \T_ATTRIBUTE
+            $token->OpenBracket
+            && $token->OpenBracket->id === \T_ATTRIBUTE
             && $token->Idx->AllowNewlineAfter[\T_ATTRIBUTE]
         ) {
             return true;
@@ -155,12 +155,12 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
                     $precedence === -1
                     || $nextPrecedence > $precedence
                 )) {
-                    return $t->ClosedBy ?? $t;
+                    return $t->CloseBracket ?? $t;
                 }
             }
             $t = $next;
         }
-        return $t->ClosedBy ?? $t;
+        return $t->CloseBracket ?? $t;
     }
 
     /**
@@ -213,12 +213,12 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
         ) {
             if ((
                 $t->id === \T_COALESCE
-                && $t->Index < $before->Index
+                && $t->index < $before->index
             ) || (
                 $t->Flags & TokenFlag::TERNARY_OPERATOR
                 && self::getTernary1($t) === $t
-                && $t->Data[TokenData::OTHER_TERNARY_OPERATOR]->Index
-                    < $before->Index
+                && $t->Data[TokenData::OTHER_TERNARY_OPERATOR]->index
+                    < $before->index
             )) {
                 $context = $t;
             }
@@ -297,9 +297,9 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
         $t['pos'] = $token->pos;
         $t['column'] = $token->column;
 
-        if ($token->SubId !== null) {
-            $t['SubId'] = $token->SubId !== -1
-                ? Reflect::getConstantName(TokenSubId::class, $token->SubId)
+        if ($token->subId !== null) {
+            $t['subId'] = $token->subId !== -1
+                ? Reflect::getConstantName(TokenSubId::class, $token->subId)
                 : '<unknown>';
         }
 
@@ -434,7 +434,7 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
     {
         return sprintf(
             'T%d:L%d:%s',
-            $token->Index,
+            $token->index,
             $token->line,
             Str::ellipsize(var_export($token->text, true), 20),
         );

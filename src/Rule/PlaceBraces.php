@@ -88,7 +88,7 @@ final class PlaceBraces implements TokenRule
             }
 
             /** @var Token */
-            $close = $token->ClosedBy;
+            $close = $token->CloseBracket;
 
             // Suppress blank lines before close braces
             $close->Whitespace |= Space::NO_BLANK_BEFORE | Space::LINE_BEFORE | Space::SPACE_BEFORE;
@@ -122,7 +122,7 @@ final class PlaceBraces implements TokenRule
 
             /** @var Token */
             $next = $token->Next;
-            $parts = $token->skipPrevSiblingsToDeclarationStart()->declarationParts();
+            $parts = $token->skipToStartOfDeclaration()->declarationParts();
 
             // Move empty bodies to the end of the previous line
             if (
@@ -151,7 +151,7 @@ final class PlaceBraces implements TokenRule
             if ($parts->hasOneOf(\T_FUNCTION)) {
                 /** @var Token */
                 $prev = $parts->last()->NextSibling;
-                $prev = $prev->ClosedBy;
+                $prev = $prev->CloseBracket;
             } else {
                 $prev = $token->PrevCode;
             }

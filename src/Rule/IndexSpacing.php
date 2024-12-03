@@ -81,14 +81,14 @@ final class IndexSpacing implements TokenRule
                 )
             )) {
                 $token->Whitespace |= Space::NO_BLANK_AFTER | Space::NO_SPACE_AFTER;
-            } elseif ($token->id === \T_COLON && $token->ClosedBy) {
+            } elseif ($token->id === \T_COLON && $token->CloseBracket) {
                 $token->Whitespace |= Space::NO_BLANK_AFTER;
             }
 
             if ($idx->SuppressSpaceBefore[$token->id] || (
                 $idx->CloseBracket[$token->id] && !(
                     $token->Flags & TokenFlag::STRUCTURAL_BRACE
-                    || ($token->OpenedBy && $token->OpenedBy->isMatchOpenBrace())
+                    || ($token->OpenBracket && $token->OpenBracket->isMatchOpenBrace())
                 )
             )) {
                 $token->Whitespace |= Space::NO_BLANK_BEFORE | Space::NO_SPACE_BEFORE;

@@ -227,7 +227,7 @@ final class StandardSpacing implements TokenRule, DeclarationRule
                 if (
                     $token->CloseTag
                     && $token->NextCode
-                    && $token->NextCode->Index < $token->CloseTag->Index
+                    && $token->NextCode->index < $token->CloseTag->index
                 ) {
                     $nextCode = $token->NextCode;
                     /** @var Token */
@@ -254,7 +254,7 @@ final class StandardSpacing implements TokenRule, DeclarationRule
                         static::class,
                         $next,
                         static function () use ($idx, $innerIndent, $next, $last) {
-                            $delta = $innerIndent - $next->indent();
+                            $delta = $innerIndent - $next->getIndent();
                             if ($delta) {
                                 foreach ($next->collect($last) as $token) {
                                     if (!$idx->OpenTag[$token->id]) {
@@ -290,7 +290,7 @@ final class StandardSpacing implements TokenRule, DeclarationRule
                 $parent = $token->nextSiblingOf(\T_OPEN_BRACE);
                 /** @var Token */
                 $arm = $parent->NextCode;
-                if ($arm === $parent->ClosedBy) {
+                if ($arm === $parent->CloseBracket) {
                     continue;
                 }
                 while (true) {
@@ -307,7 +307,7 @@ final class StandardSpacing implements TokenRule, DeclarationRule
             if ($idx->Attribute[$token->id]) {
                 /** @var Token */
                 $closedBy = $token->id === \T_ATTRIBUTE
-                    ? $token->ClosedBy
+                    ? $token->CloseBracket
                     : $token;
                 if (
                     !$token->inParameterList()
@@ -363,11 +363,11 @@ final class StandardSpacing implements TokenRule, DeclarationRule
                 $collapse = true;
                 foreach ($hooks as $hook) {
                     $hasAttribute = $this->Idx->Attribute[$hook->id];
-                    $name = $hook->skipNextSiblingsFrom($this->Idx->AttributeOrModifier);
+                    $name = $hook->skipNextSiblingFrom($this->Idx->AttributeOrModifier);
                     $hasModifier = $name !== $hook
                         && $name->PrevSibling
                         && !$this->Idx->Attribute[$name->PrevSibling->id];
-                    $name = $name->skipNextSiblingsFrom($this->Idx->Ampersand);
+                    $name = $name->skipNextSiblingFrom($this->Idx->Ampersand);
                     /** @var Token */
                     $next = $name->NextSibling;
                     if ($hasParameters = $next->id === \T_OPEN_PARENTHESIS) {
@@ -393,7 +393,7 @@ final class StandardSpacing implements TokenRule, DeclarationRule
                     /** @var Token */
                     $end = $token->EndStatement;
                     /** @var Token */
-                    $start = $end->OpenedBy;
+                    $start = $end->OpenBracket;
                     $this->preserveOneLine($start, $end, true);
                 }
             }

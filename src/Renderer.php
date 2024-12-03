@@ -136,7 +136,7 @@ final class Renderer implements Immutable
         if ($whitespace = $token->getWhitespaceBefore()) {
             $before = TokenUtil::getWhitespace($whitespace);
             if ($before[0] === "\n") {
-                $indent = $token->indent();
+                $indent = $token->getIndent();
                 $padding += $token->LinePadding - $token->LineUnpadding;
 
                 // If this is a close tag with subsequent text not indented by
@@ -283,7 +283,7 @@ final class Renderer implements Immutable
             $token->id === \T_COMMENT
             && !($token->Flags & TokenFlag::INFORMAL_DOC_COMMENT)
         ) {
-            $text = $token->expandedText();
+            $text = $token->expandText(true);
             $delta = $token->OutputColumn - $token->column;
             /* Don't reindent if the comment hasn't moved, or if it has text in
 column 1 despite starting in column 2 or above (like this comment) */

@@ -36,7 +36,7 @@ final class StatementSpacing implements TokenRule
             switch ($token->id) {
                 case \T_COLON:
                     // Ignore colons that don't start an alternative syntax block
-                    if (!$token->ClosedBy && $token->getSubId() !== TokenSubId::COLON_LABEL_DELIMITER) {
+                    if (!$token->CloseBracket && $token->getSubId() !== TokenSubId::COLON_LABEL_DELIMITER) {
                         continue 2;
                     }
                     break;

@@ -30,14 +30,14 @@ final class AlignLists implements ListRule
     public function processList(Token $parent, TokenCollection $items): void
     {
         $first = $items->first();
-        $lastToken = $parent->ClosedBy
+        $lastToken = $parent->CloseBracket
             ?: $items->last()->pragmaticEndOfExpression();
 
         // Do nothing if:
         // - an interface list has a leading line break, or
         // - the list does not break over multiple lines
         if (
-            (!$parent->ClosedBy
+            (!$parent->CloseBracket
                 && $parent->hasNewlineBeforeNextCode())
             || !$first->collect($lastToken)->hasNewline()
         ) {
@@ -55,7 +55,7 @@ final class AlignLists implements ListRule
             fn() => $this->alignList($parent, $items, $first, $lastToken)
         );
 
-        $this->ListOwnersByIndex[$parent->Index] = true;
+        $this->ListOwnersByIndex[$parent->index] = true;
     }
 
     private function alignList(Token $parent, TokenCollection $items, Token $first, Token $lastToken): void
@@ -89,7 +89,7 @@ final class AlignLists implements ListRule
             };
 
         if (!$parent->hasNewlineBeforeNextCode()) {
-            $delta = $parent->alignmentOffset() + ($parent->ClosedBy ? 0 : 1);
+            $delta = $parent->alignmentOffset() + ($parent->CloseBracket ? 0 : 1);
             $callback($first, $lastToken, $delta);
         }
 
@@ -99,10 +99,10 @@ final class AlignLists implements ListRule
                     $item,
                     $next && $next->PrevCode && $next->PrevCode->PrevCode
                         ? $next->PrevCode->PrevCode
-                        : ($parent->ClosedBy && $parent->ClosedBy->PrevCode
-                            ? $parent->ClosedBy->PrevCode
+                        : ($parent->CloseBracket && $parent->CloseBracket->PrevCode
+                            ? $parent->CloseBracket->PrevCode
                             : $item->pragmaticEndOfExpression()),
-                    $item->alignmentOffset(false, $this->ListOwnersByIndex[$item->Index] ?? false)
+                    $item->alignmentOffset(false, $this->ListOwnersByIndex[$item->index] ?? false)
                 )
         );
     }

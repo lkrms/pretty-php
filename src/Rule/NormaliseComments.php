@@ -182,7 +182,7 @@ final class NormaliseComments implements TokenRule
                 // Expand leading tabs if tabs don't appear first in every line
                 // where they are combined with spaces for indentation
                 if (Regex::match('/\n(?=\h)(?!\t* *(?!\h))/', $text)) {
-                    $text = $token->expandedText();
+                    $text = $token->expandText();
                 }
 
                 // Add missing asterisks
