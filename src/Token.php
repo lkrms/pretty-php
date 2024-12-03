@@ -291,7 +291,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         }
         $t = $this->Flags & TokenFlag::CODE
             ? $this
-            : $this->NextSibling;
+            : $this->NextCode;
         while ($t && $index[$t->id]) {
             $t = $t->NextSibling;
         }
@@ -312,7 +312,7 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
         }
         $t = $this->Flags & TokenFlag::CODE
             ? $this
-            : $this->PrevSibling;
+            : $this->PrevCode;
         while ($t && $index[$t->id]) {
             $t = $t->PrevSibling;
         }
@@ -357,6 +357,48 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
             }
         }
         return $this->null();
+    }
+
+    /**
+     * Skip to the next code token that is not in an index
+     *
+     * The token returns itself if it satisfies the criteria.
+     *
+     * @param array<int,bool> $index
+     */
+    public function skipNextCodeFrom(array $index): self
+    {
+        if ($this->id === \T_NULL) {
+            return $this;
+        }
+        $t = $this->Flags & TokenFlag::CODE
+            ? $this
+            : $this->NextCode;
+        while ($t && $index[$t->id]) {
+            $t = $t->NextCode;
+        }
+        return $t ?? $this->null();
+    }
+
+    /**
+     * Skip to the previous code token that is not in an index
+     *
+     * The token returns itself if it satisfies the criteria.
+     *
+     * @param array<int,bool> $index
+     */
+    public function skipPrevCodeFrom(array $index): self
+    {
+        if ($this->id === \T_NULL) {
+            return $this;
+        }
+        $t = $this->Flags & TokenFlag::CODE
+            ? $this
+            : $this->PrevCode;
+        while ($t && $index[$t->id]) {
+            $t = $t->PrevCode;
+        }
+        return $t ?? $this->null();
     }
 
     /**
@@ -1179,110 +1221,57 @@ class Token extends GenericToken implements HasTokenNames, JsonSerializable
     }
 
     /**
-     * If the token belongs to a sequence of one or more consecutive close
-     * brackets or commas in any combination, and the last of these has a
-     * subsequent token in the same statement, return it
+     * If the token has an adjacent token on the same line, return it
      */
-    public function adjacent(): ?self
+    public function adjacentBeforeNewline(): ?self
     {
-        $t = $this->ClosedBy ?? $this;
-        $outer = $t->withNextCodeWhile($this->Idx->CloseBracketOrComma, true)
-                   ->last();
-        return !$outer
-            || !$outer->NextCode
-            || !$outer->EndStatement
-            || $outer->EndStatement->Index <= $outer->NextCode->Index
-                ? null
-                : $outer->NextCode;
+        return ($adjacent = $this->adjacent())
+            && $adjacent->Index <= $this->endOfLine()->Index
+                ? $adjacent
+                : null;
     }
 
     /**
-     * Get the first token of an expression, statement or block in a parent
-     * scope that appears between the token and the end of the line
-     *
-     * In this example, the token adjacent to `$b` is `{`:
-     *
-     * ```php
-     * if ($c &&
-     *         ($a || $b)) {
-     *     // ...
-     * }
-     * ```
-     *
-     * Returns `null` if:
-     *
-     * - there are no tokens adjacent to the token
-     * - neither the token nor its parent have a close bracket to establish a
-     *   distinct scope for subsequent tokens
-     * - `$requireAlignedWith` is `true` (the default) and there are no tokens
-     *   between the adjacent token and the end of the line with an
-     *   {@see Token::$AlignedWith} token
+     * If, after skipping close brackets and commas in any combination, the
+     * token has a subsequent token in the same statement other than its
+     * terminator, return it
      */
-    public function adjacentBeforeNewline(bool $requireAlignedWith = true): ?self
+    public function adjacent(): ?self
     {
-        // Return `null` if neither the token nor its parent have a close
-        // bracket
-        $current = $this->ClosedBy ?: $this;
-        if (!$current->OpenedBy) {
-            /** @var static|null */
-            $current = $current->Parent->ClosedBy ?? null;
-            if (!$current) {
-                return null;
-            }
-        }
-
-        // Find the last `)`, `]`, `}`, or `,` on the same line as the close
-        // bracket and assign it to `$outer`
-        $eol = $this->endOfLine();
-        $outer = $current->withNextCodeWhile($this->Idx->CloseBracketOrComma)
-                         ->filter(fn(self $t) => $t->Index <= $eol->Index)
-                         ->last();
-
-        // If it's a `,`, move to the first token of the next expression on the
-        // same line and assign it to `$next`
-        $next = $outer;
-        while (
-            $next
-            && !$next->Expression
-            && $next->NextSibling
-            && $next->NextSibling->Index <= $eol->Index
-        ) {
-            $next = $next->NextSibling;
-        }
-
-        // Return `null` if the first code token after `$outer` is on a
-        // subsequent line, or if neither `$outer` nor `$next` belong to a
-        // statement that continues beyond their respective next code tokens
         if (
-            !$outer
-            || !$outer->NextCode
-            || $outer->NextCode->Index > $eol->Index
-            || ((!$outer->EndStatement
-                    || $outer->EndStatement->Index <= $outer->NextCode->Index)
-                && ($next === $outer
-                    || !$next
-                    || !$next->EndStatement
-                    || !$next->NextCode
-                    || $next->EndStatement->Index <= $next->NextCode->Index))
+            !$this->Idx->CloseBracketOrComma[$this->id]
+            && $this->NextCode
+            && $this->Idx->CloseBracketOrComma[$this->NextCode->id]
         ) {
+            return $this->NextCode->adjacent();
+        }
+
+        $adjacent = $this->skipNextCodeFrom($this->Idx->CloseBracketOrComma);
+
+        if ($adjacent->id === \T_NULL) {
             return null;
         }
 
-        // Return `null` if `$requireAlignedWith` is `true` and there are no
-        // tokens between `$outer` and the end of the line where `AlignedWith`
-        // is set
-        if (
-            $requireAlignedWith
-            && !$outer->NextCode
-                      ->collect($eol)
-                      ->find(fn(self $t) => (bool) $t->AlignedWith)
-        ) {
-            return null;
+        if ($adjacent === $this) {
+            $adjacent = $this->NextCode;
+            return $adjacent
+                && $adjacent->Statement === $this->Statement
+                && $adjacent !== $this->EndStatement
+                    ? $adjacent
+                    : null;
         }
 
-        return $next === $outer
-            ? $outer->NextCode
-            : $next;
+        /** @var self */
+        $prev = $adjacent->PrevCode;
+        return (
+            $adjacent->Statement === $prev->Statement
+            && $adjacent !== $prev->EndStatement
+        ) || (
+            $prev->id === \T_COMMA
+            && $adjacent->Statement === $adjacent
+        )
+            ? $adjacent
+            : null;
     }
 
     /**

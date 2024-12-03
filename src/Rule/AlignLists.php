@@ -75,7 +75,7 @@ final class AlignLists implements ListRule
                     $to = $adjacent;
                 }
                 while (
-                    ($adjacent = $to->adjacentBeforeNewline(false))
+                    ($adjacent = $to->adjacentBeforeNewline())
                     && ($adjacent->id !== \T_OPEN_BRACE
                         || !($adjacent->Flags & TokenFlag::STRUCTURAL_BRACE
                             || $adjacent->isMatchOpenBrace())

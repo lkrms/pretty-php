@@ -71,6 +71,8 @@ final class HangingIndentation implements TokenRule
     {
         foreach ($tokens as $token) {
             if ($this->Idx->OpenBracket[$token->id]) {
+                /** @var Token */
+                $close = $token->ClosedBy;
                 $hasList = (
                     $token->Flags & TokenFlag::LIST_PARENT
                     && $token->Data[TokenData::LIST_ITEM_COUNT] > 1
@@ -84,7 +86,7 @@ final class HangingIndentation implements TokenRule
                     ? ($hasList
                         ? self::NORMAL_INDENT
                         : self::NO_INDENT)
-                    : ($hasList || ($token->id !== \T_OPEN_BRACE && $token->adjacent())
+                    : ($hasList || ($token->id !== \T_OPEN_BRACE && $close->adjacent())
                         ? self::OVERHANGING_INDENT | self::NO_INNER_NEWLINE
                         : self::NORMAL_INDENT | self::NO_INNER_NEWLINE);
             }
@@ -302,7 +304,12 @@ final class HangingIndentation implements TokenRule
             }
 
             if ($adjacent = $until->adjacentBeforeNewline()) {
-                $until = $adjacent->pragmaticEndOfExpression();
+                foreach ($adjacent->collect($adjacent->endOfLine()) as $t) {
+                    if ($t->AlignedWith) {
+                        $until = $adjacent->pragmaticEndOfExpression();
+                        break;
+                    }
+                }
             }
 
             if ($indent > 1) {
