@@ -80,7 +80,10 @@ final class AlignTernaryOperators implements TokenRule
     {
         $token->AlignedWith = $alignWith;
         if ($token->Flags & TokenFlag::TERNARY_OPERATOR) {
-            $token->Data[TokenData::OTHER_TERNARY_OPERATOR]->AlignedWith = $alignWith;
+            $other = $token->Data[TokenData::OTHER_TERNARY_OPERATOR];
+            if ($other->hasNewlineBefore()) {
+                $other->AlignedWith = $alignWith;
+            }
         }
     }
 

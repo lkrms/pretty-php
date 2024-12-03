@@ -123,25 +123,34 @@ final class AlignChains implements TokenRule
                 $t->AlignedWith = $alignWith;
             }
 
+            $until = TokenUtil::getOperatorEndExpression($token);
             $idx = $this->Idx;
 
             $this->Formatter->registerCallback(
                 static::class,
                 $token,
-                static function () use ($chain, $alignWith, $offset, $idx) {
+                static function () use (
+                    $chain,
+                    $alignWith,
+                    $offset,
+                    $until,
+                    $idx
+                ) {
                     /** @var Token */
                     $first = $chain->first();
                     $offset = $alignWith->alignmentOffset() + $offset;
                     $delta = $first->indentDelta($alignWith);
                     $delta->LinePadding += $offset;
-                    $callback = function (Token $t, ?Token $next) use ($delta) {
+                    $callback = static function (
+                        Token $t,
+                        ?Token $next
+                    ) use ($until, $delta) {
                         if ($next) {
                             /** @var Token */
                             $until = $next->Prev;
                         } else {
-                            $until = $t->pragmaticEndOfExpression();
-                            if ($adjacent = $until->adjacentBeforeNewline()) {
-                                $until = $adjacent->pragmaticEndOfExpression();
+                            while ($adjacent = $until->adjacentBeforeNewline()) {
+                                $until = TokenUtil::getOperatorEndExpression($adjacent);
                             }
                         }
                         foreach ($t->collect($until) as $_t) {
@@ -154,8 +163,9 @@ final class AlignChains implements TokenRule
 
                     // Apply $delta to code between $alignWith and $first
                     if ($idx->Chain[$alignWith->id]) {
-                        assert($alignWith->Next !== null);
-                        $callback($alignWith->Next, $first);
+                        /** @var Token */
+                        $next = $alignWith->Next;
+                        $callback($next, $first);
                     }
 
                     $chain->forEach($callback);

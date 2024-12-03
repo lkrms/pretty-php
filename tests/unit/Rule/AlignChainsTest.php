@@ -3,6 +3,7 @@
 namespace Lkrms\PrettyPHP\Tests\Rule;
 
 use Lkrms\PrettyPHP\Rule\AlignChains;
+use Lkrms\PrettyPHP\Rule\AlignTernaryOperators;
 use Lkrms\PrettyPHP\Tests\TestCase;
 
 final class AlignChainsTest extends TestCase
@@ -12,7 +13,7 @@ final class AlignChainsTest extends TestCase
      */
     public function testOutput(string $expected, string $code): void
     {
-        $this->assertCodeFormatIs($expected, $code, [AlignChains::class]);
+        $this->assertCodeFormatIs($expected, $code, [AlignChains::class, AlignTernaryOperators::class]);
     }
 
     /**
@@ -153,15 +154,13 @@ $d11 || $e11),
 $d12 || $e12);
 PHP,
             ],
-            // This test will fail when issues with end-of-expression detection
-            // are fixed, because `->qux()` will align with `->baz()`
             [
                 <<<'PHP'
 <?php
 $foo = $bar
-    ?: $foo->bar()
-           ->baz() ?: $foo->baz()
-                   ->qux();
+           ?: $foo->bar()
+                  ->baz() ?: $foo->baz()
+                                 ->qux();
 
 PHP,
                 <<<'PHP'
