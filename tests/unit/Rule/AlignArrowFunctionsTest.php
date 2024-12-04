@@ -41,6 +41,10 @@ $foo = bar($baz, static fn() =>
     $qux);
 $foo = fn() =>
            foo($bar);
+$foo = fn() =>
+           <<<EOF
+           baz
+           EOF . $bar;
 
 PHP,
                 <<<'PHP'
@@ -53,6 +57,10 @@ $foo = bar($baz, static fn() =>
     $qux);
 $foo = fn() =>
     foo($bar);
+$foo = fn() =>
+    <<<EOF
+    baz
+    EOF . $bar;
 PHP,
                 $formatter,
             ],

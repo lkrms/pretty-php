@@ -61,8 +61,8 @@ Formatting rules applied by `pretty-php` are as follows.
 
 Changes to whitespace in non-constant strings are suppressed for:
 
-- nested siblings
-- every descendant of square brackets that are nested siblings
+- inner siblings
+- every token between square brackets
 
 The latter is necessary because strings like `"$foo[0]"` and `"$foo[$bar]"` are unparseable if there is any whitespace between the brackets.
 
@@ -230,11 +230,24 @@ Items in lists are arranged horizontally or vertically by replicating the arrang
 
 If an arrow function expression starts on a new line, a callback is registered to align it with the `fn` it's associated with, or with the first token on the previous line if its arguments break over multiple lines.
 
+### `AlignChains`, if enabled (call 2: _`callback`_)
+
+Object operators in a chain of method calls are aligned with a given token.
+
+This is achieved by:
+
+- calculating the difference between the first object operator's current output column and its desired output column
+- applying it to the `LinePadding` of each object operator and its adjacent tokens
+- incrementing `LineUnpadding` for any `?->` operators, to accommodate the extra character
+
 ### `AlignArrowFunctions`, if enabled (call 2: _`callback`_)
 
 Tokens in arrow function expressions are aligned with the `fn` they're associated with, or with the first token on the previous line if its arguments break over multiple lines.
 
-This is achieved by copying the alignment target's indentation to each token after making a calculated adjustment to `LinePadding`.
+This is achieved by:
+
+- calculating the difference between the current and desired output columns of the first token in the expression
+- applying it to the `LinePadding` of each token
 
 ### `StandardSpacing` (call 3: _`callback`_)
 

@@ -11,7 +11,6 @@ use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Contract\HasTokenNames;
 use Lkrms\PrettyPHP\Internal\TokenCollection;
-use Lkrms\PrettyPHP\Internal\TokenIndentDelta;
 use Salient\Utility\Str;
 use Closure;
 use JsonSerializable;
@@ -1254,12 +1253,34 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     }
 
     /**
-     * Get the difference in indentation between the token and a given alignment
-     * token
+     * Get the difference in output column between the token and a given token
      */
-    public function getIndentDelta(self $token): TokenIndentDelta
+    public function getColumnDelta(self $token, bool $beforeText): int
     {
-        return TokenIndentDelta::between($this, $token);
+        return $token->getOutputColumn($beforeText) - $this->getOutputColumn($beforeText);
+    }
+
+    private function getOutputColumn(bool $beforeText): int
+    {
+        return $beforeText
+            ? ($this->Prev
+                ? $this->Prev->getNextOutputColumn(true)
+                : 0)
+            : $this->getNextOutputColumn(false);
+    }
+
+    private function getNextOutputColumn(bool $afterWhitespace): int
+    {
+        $line = $this->startOfLine(false)->collect($this)->render(true, false);
+        if ($afterWhitespace) {
+            /** @var self */
+            $next = $this->Next;
+            $line .= $this->Formatter->Renderer->renderWhitespaceBefore($next, true);
+        }
+        if (($pos = strrpos($line, "\n")) !== false) {
+            $line = substr($line, $pos + 1);
+        }
+        return mb_strlen($line);
     }
 
     // Collection methods:
