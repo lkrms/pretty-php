@@ -110,7 +110,7 @@ if ((FIXTURES)); then (
 if ((PRESET_FIXTURES)); then (
     (($#)) || set -- php
 
-    for DIR in tests/fixtures/App/FormatPhpCommand/preset/*; do
+    for DIR in tests/fixtures/App/PrettyPHPCommand/preset/*; do
         PRESET=${DIR##*/}
         for FILE in "$DIR"/*.in; do
             printf '==> generating %s\n' "${FILE%.in}.out"
