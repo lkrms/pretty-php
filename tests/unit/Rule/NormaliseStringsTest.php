@@ -6,7 +6,7 @@ use Lkrms\PrettyPHP\Tests\TestCase;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
 
-final class SimplifyStringsTest extends TestCase
+final class NormaliseStringsTest extends TestCase
 {
     /**
      * @dataProvider outputProvider

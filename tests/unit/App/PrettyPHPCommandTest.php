@@ -25,7 +25,7 @@ use Generator;
 /**
  * @backupGlobals enabled
  */
-final class FormatPhpCommandTest extends TestCase
+final class PrettyPHPCommandTest extends TestCase
 {
     private const ERROR = ConsoleFormatter::DEFAULT_LEVEL_PREFIX_MAP[Level::ERROR];
     private const WARNING = ConsoleFormatter::DEFAULT_LEVEL_PREFIX_MAP[Level::WARNING];
