@@ -19,6 +19,7 @@ use Salient\PHPDoc\PHPDoc;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Salient\Utility\Reflect;
+use Salient\Utility\Regex;
 use Salient\Utility\Str;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
@@ -254,6 +255,8 @@ foreach ($rules as $r) {
             ? ''
             : ' (call ' . $r['appearance'] . ': ' . $method . ')'
     );
+    // Remove leading ">" after non-empty lines
+    $description = Regex::replace('/(?<!\n)(\n\h*+)> ?/m', '$1', $description);
     $docs[] = Str::unwrap($description, "\n", false, true, true);
 }
 

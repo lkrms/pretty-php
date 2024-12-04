@@ -100,7 +100,7 @@ DocBlocks are normalised for PSR-5 compliance as follows:
 
 C-style comments where every line starts with an asterisk, or at least one delimiter appears on its own line, receive the same treatment as DocBlocks.
 
-> Any C-style comments that remain are trimmed and reindented by the > renderer.
+> Any C-style comments that remain are trimmed and reindented by the renderer.
 
 ### `IndexSpacing`
 
@@ -138,7 +138,7 @@ Whitespace is applied to structural and `match` expression braces as follows:
 - Empty class, function and property hook bodies are collapsed to ` {}` on the same line as the declaration they belong to unless `CollapseEmptyDeclarationBodies` is disabled.
 - Horizontal whitespace is suppressed between other empty braces.
 
-> Open brace placement is left for a rule that runs after vertical > whitespace has been applied.
+> Open brace placement is left for a rule that runs after vertical whitespace has been applied.
 
 ### `BlankBeforeReturn`, if enabled
 
@@ -164,7 +164,7 @@ Newlines are added before and after control structure expressions that break ove
 
 Newlines are added before and after control structure expressions with newlines between siblings.
 
-> Unlike `StrictExpressions`, this rule does not apply leading and > trailing newlines to expressions that would not break over multiple > lines if tokens between brackets were removed.
+> Unlike `StrictExpressions`, this rule does not apply leading and trailing newlines to expressions that would not break over multiple lines if tokens between brackets were removed.
 
 ### `Drupal`, if enabled (call 1: `processTokens()`)
 
