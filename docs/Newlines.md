@@ -97,7 +97,7 @@ comparison operators and logical operators.
 ## Operators last
 
 With **`--operators-last`**, newlines are allowed after, and not before,
-`T_COALESCE`, `T_CONCAT`, arithmetic and bitwise operators.
+`T_COALESCE`, `T_CONCAT`, arithmetic operators and bitwise operators.
 
 ### After
 

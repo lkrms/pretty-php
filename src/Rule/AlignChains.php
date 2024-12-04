@@ -55,6 +55,18 @@ final class AlignChains implements TokenRule
      * - the expression dereferenced by the first object operator (if it doesn't
      *   break over multiple lines), or
      * - the first token on the line before the first object operator
+     *
+     * @prettyphp-callback Object operators in a chain of method calls are
+     * aligned with a given token.
+     *
+     * This is achieved by:
+     *
+     * - calculating the difference between the first object operator's current
+     *   output column and its desired output column
+     * - applying it to the `LinePadding` of each object operator and its
+     *   adjacent tokens
+     * - incrementing `LineUnpadding` for any `?->` operators, to accommodate
+     *   the extra character
      */
     public function processTokens(array $tokens): void
     {
@@ -83,7 +95,7 @@ final class AlignChains implements TokenRule
             }
 
             $alignWith = null;
-            $offset = -2;
+            $offset = 0;
 
             if ($hasNewlineBefore) {
                 $expr = TokenUtil::getOperatorExpression($token);
@@ -107,7 +119,7 @@ final class AlignChains implements TokenRule
                     $token->Whitespace |= Space::NONE_BEFORE;
                     $alignWith = null;
                 } else {
-                    $offset = $this->Formatter->TabSize - mb_strlen($alignWith->text);
+                    $offset = $this->Formatter->TabSize + 2 - mb_strlen($alignWith->text);
                 }
             }
 
@@ -138,11 +150,12 @@ final class AlignChains implements TokenRule
                 ) {
                     /** @var Token */
                     $first = $chain->first();
-                    $offset = $alignWith->alignmentOffset() + $offset;
-                    $delta = $first->getIndentDelta($alignWith);
-                    $delta->LinePadding += $offset;
+                    $delta = $first->getColumnDelta($alignWith, false) + $offset;
+                    if ($first->id === \T_NULLSAFE_OBJECT_OPERATOR) {
+                        $delta++;
+                    }
                     $callback = static function (
-                        Token $t,
+                        Token $token,
                         ?Token $next
                     ) use ($until, $delta) {
                         if ($next) {
@@ -153,15 +166,17 @@ final class AlignChains implements TokenRule
                                 $until = TokenUtil::getOperatorEndExpression($adjacent);
                             }
                         }
-                        foreach ($t->collect($until) as $_t) {
-                            $delta->apply($_t);
+                        foreach ($token->collect($until) as $t) {
+                            $t->LinePadding += $delta;
                         }
-                        if ($t->id === \T_NULLSAFE_OBJECT_OPERATOR) {
-                            $t->LineUnpadding += 1;
+                        if ($token->id === \T_NULLSAFE_OBJECT_OPERATOR) {
+                            $token->LineUnpadding++;
                         }
                     };
 
-                    // Apply $delta to code between $alignWith and $first
+                    // If the second and subsequent object operators in the
+                    // chain are being aligned with the first, apply the
+                    // callback to any tokens between the first and second
                     if ($idx->Chain[$alignWith->id]) {
                         /** @var Token */
                         $next = $alignWith->Next;
