@@ -237,7 +237,7 @@ final class Formatter implements Buildable, Immutable
      *               ->method1();
      * ```
      */
-    public bool $AlignFirstCallInChain = true;
+    public bool $AlignChainAfterNewline = true;
 
     // --
 
@@ -734,7 +734,7 @@ final class Formatter implements Buildable, Immutable
     /**
      * Get an instance with the given setting enabled or disabled
      *
-     * @param ("RelaxAlignmentCriteria"|"NewlineBeforeFnDoubleArrow"|"AlignFirstCallInChain") $property
+     * @param ("RelaxAlignmentCriteria"|"NewlineBeforeFnDoubleArrow"|"AlignChainAfterNewline") $property
      * @param bool $value
      * @return static
      */
@@ -955,7 +955,7 @@ final class Formatter implements Buildable, Immutable
         ]);
         $lists = [];
         foreach ($parents as $i => $parent) {
-            if ($parent->ClosedBy === $parent->NextCode) {
+            if ($parent->CloseBracket === $parent->NextCode) {
                 continue;
             }
 
@@ -969,7 +969,7 @@ final class Formatter implements Buildable, Immutable
                     $first = $parent->NextCode;
                     /** @var Token */
                     $last = $parent->nextSiblingFrom($idx->OpenBraceOrImplements)->PrevCode;
-                    $items = $first->collectSiblings($last)
+                    $items = $first->withNextSiblings($last)
                                    ->filter(
                                        fn(Token $t, ?Token $next, ?Token $prev) =>
                                            !$prev || ($t->PrevCode && $t->PrevCode->id === \T_COMMA)
@@ -1361,7 +1361,7 @@ final class Formatter implements Buildable, Immutable
         }
 
         $priority = $this->CallbackPriorities[$rule];
-        $index = $first->Index;
+        $index = $first->index;
         if ($reverse) {
             $index = -$index;
         }

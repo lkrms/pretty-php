@@ -49,7 +49,7 @@ final class PlaceComments implements TokenRule
     {
         foreach ($tokens as $token) {
             if (
-                $token->isOneLineComment()
+                $token->Flags & TokenFlag::ONELINE_COMMENT
                 && $token->Next
                 && $token->Next->id !== \T_CLOSE_TAG
             ) {
@@ -65,7 +65,7 @@ final class PlaceComments implements TokenRule
                 $prev
                 && $prev->id === \T_CLOSE_BRACE
                 && $prev->Flags & TokenFlag::STRUCTURAL_BRACE
-                && $prev->skipPrevSiblingsToDeclarationStart()
+                && $prev->skipToStartOfDeclaration()
                         ->namedDeclarationParts()
                         ->hasOneFrom($this->Idx->DeclarationClass);
 

@@ -59,7 +59,7 @@ final class StrictExpressions implements TokenRule
                 continue;
             }
             /** @var Token */
-            $last = $first->ClosedBy;
+            $last = $first->CloseBracket;
             /** @var Token */
             $beforeLast = $last->Prev;
             if ($first->collect($beforeLast)->hasNewline()) {

@@ -154,13 +154,13 @@ final class VerticalWhitespace implements TokenRule
                 // Ignore statements already processed and tokens with no
                 // adjacent newline
                 if (
-                    isset($this->Seen[$token->Statement->Index])
+                    isset($this->Seen[$token->Statement->index])
                     || !($this->HasNewline[$id])($token)
                 ) {
                     continue;
                 }
 
-                $this->Seen[$token->Statement->Index] = true;
+                $this->Seen[$token->Statement->index] = true;
 
                 // Get the statement's boolean operators and find the
                 // highest-precedence operator with an adjacent newline
@@ -168,7 +168,7 @@ final class VerticalWhitespace implements TokenRule
                 $byId = [];
                 $minPrecedence = self::PRECEDENCE_MAP[$id];
 
-                foreach ($token->Statement->collectSiblings($token->EndStatement) as $t) {
+                foreach ($token->Statement->withNextSiblings($token->EndStatement) as $t) {
                     if (!$this->Idx->OperatorBooleanExceptNot[$t->id]) {
                         continue;
                     }
@@ -195,8 +195,8 @@ final class VerticalWhitespace implements TokenRule
                 assert(
                     $token->NextCode
                     && $token->NextCode->Next
-                    && $token->NextCode->ClosedBy
-                    && $token->NextCode->ClosedBy->Prev
+                    && $token->NextCode->CloseBracket
+                    && $token->NextCode->CloseBracket->Prev
                 );
 
                 $children = $token->NextCode->children();
@@ -207,9 +207,9 @@ final class VerticalWhitespace implements TokenRule
 
                 assert($semi1 && $semi1->Next && $semi2 && $semi2->Next);
 
-                $expr1 = $token->NextCode->Next->collectSiblings($semi1);
-                $expr2 = $semi1->Next->collectSiblings($semi2);
-                $expr3 = $semi2->Next->collectSiblings($token->NextCode->ClosedBy->Prev);
+                $expr1 = $token->NextCode->Next->withNextSiblings($semi1);
+                $expr2 = $semi1->Next->withNextSiblings($semi2);
+                $expr3 = $semi2->Next->withNextSiblings($token->NextCode->CloseBracket->Prev);
 
                 // If an expression in a `for` loop breaks over multiple lines,
                 // add a newline after each comma-delimited expression and a
@@ -256,7 +256,7 @@ final class VerticalWhitespace implements TokenRule
                     continue;
                 }
 
-                $parts = $token->skipPrevSiblingsToDeclarationStart()->declarationParts();
+                $parts = $token->skipToStartOfDeclaration()->declarationParts();
                 if (
                     // Exclude non-declarations
                     !$parts->hasOneFrom($this->Idx->Declaration)
@@ -267,7 +267,7 @@ final class VerticalWhitespace implements TokenRule
                     // Exclude property hooks
                     || $token->inPropertyOrPropertyHook()
                     // Exclude anonymous functions
-                    || $last->skipPrevSiblingsFrom($this->Idx->Ampersand)->id === \T_FUNCTION
+                    || $last->skipPrevSiblingFrom($this->Idx->Ampersand)->id === \T_FUNCTION
                     // Exclude anonymous classes declared on one line
                     || ($start->id === \T_NEW && !$parts->hasNewlineBetweenTokens())
                 ) {
@@ -311,7 +311,7 @@ final class VerticalWhitespace implements TokenRule
                 continue;
             }
 
-            $chain = $token->withNextSiblingsWhile($this->Idx->ChainPart)
+            $chain = $token->withNextSiblingsFrom($this->Idx->ChainPart)
                            ->getAnyFrom($this->Idx->Chain);
 
             if (

@@ -23,7 +23,7 @@ final class TokenCollection extends Collection implements Stringable
         if (
             $from->id !== \T_NULL
             && $to->id !== \T_NULL
-            && $from->Index <= $to->Index
+            && $from->index <= $to->index
         ) {
             $t = $from;
             do {
@@ -158,8 +158,8 @@ final class TokenCollection extends Collection implements Stringable
     public function tokenHasNewlineAfter(bool $closedBy = false): bool
     {
         foreach ($this->Items as $token) {
-            if ($closedBy && $token->ClosedBy) {
-                $token = $token->ClosedBy;
+            if ($closedBy && $token->CloseBracket) {
+                $token = $token->CloseBracket;
             }
             if ($token->hasNewlineAfter()) {
                 return true;
@@ -194,7 +194,7 @@ final class TokenCollection extends Collection implements Stringable
         foreach ($this->Items as $token) {
             if ($ignore) {
                 $ignore = false;
-            } elseif ($token->hasBlankLineBefore()) {
+            } elseif ($token->hasBlankBefore()) {
                 return true;
             }
         }

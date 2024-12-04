@@ -48,7 +48,7 @@ trait RuleTrait
             if (
                 $from
                 && $to
-                && $from->Index <= $to->Index
+                && $from->index <= $to->index
                 && $from->Statement !== $to->Statement
             ) {
                 return false;
@@ -69,7 +69,7 @@ trait RuleTrait
         ?bool $hasNewlineBeforeNextCode = null
     ): void {
         /** @var Token */
-        $close = $open->ClosedBy;
+        $close = $open->CloseBracket;
 
         if ($hasNewlineBeforeNextCode === null) {
             $hasNewlineBeforeNextCode = $open->hasNewlineBeforeNextCode();

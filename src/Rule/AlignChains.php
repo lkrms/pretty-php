@@ -7,9 +7,9 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\Internal\TokenCollection;
 use Lkrms\PrettyPHP\Token;
 use Lkrms\PrettyPHP\TokenIndex;
+use Lkrms\PrettyPHP\TokenUtil;
 
 /**
  * Align consecutive object operators in the same chain of method calls
@@ -20,6 +20,9 @@ final class AlignChains implements TokenRule
 {
     use TokenRuleTrait;
 
+    /**
+     * @inheritDoc
+     */
     public static function getPriority(string $method): ?int
     {
         return [
@@ -28,11 +31,31 @@ final class AlignChains implements TokenRule
         ][$method] ?? null;
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function getTokens(TokenIndex $idx): array
     {
         return $idx->Chain;
     }
 
+    /**
+     * Apply the rule to the given tokens
+     *
+     * If there are no object operators with a leading newline in a chain of
+     * method calls, or if the first object operator in the chain has a leading
+     * newline and `AlignChainAfterNewline` is disabled, no action is taken.
+     *
+     * Otherwise, if the first object operator in the chain has a leading
+     * newline, it is removed if horizontal space on subsequent lines would be
+     * saved. Then, a callback is registered to align object operators in the
+     * chain with:
+     *
+     * - the first object operator (if it has no leading newline)
+     * - the expression dereferenced by the first object operator (if it doesn't
+     *   break over multiple lines), or
+     * - the first token on the line before the first object operator
+     */
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
@@ -42,39 +65,39 @@ final class AlignChains implements TokenRule
 
             $hasNewlineBefore = $token->hasNewlineBefore();
 
-            // Do nothing if the first `->` in the chain has a leading newline
-            // and alignment with the start of the expression is disabled
-            if ($hasNewlineBefore && !$this->Formatter->AlignFirstCallInChain) {
+            if (
+                $hasNewlineBefore
+                && !$this->Formatter->AlignChainAfterNewline
+            ) {
                 continue;
             }
 
-            $chain = $token->withNextSiblingsWhile($this->Idx->ChainPart)
+            $chain = $token->withNextSiblingsFrom($this->Idx->ChainPart)
                            ->getAnyFrom($this->Idx->Chain);
 
-            // Do nothing if there's no `->` in the chain with a leading newline
             if (!$hasNewlineBefore && (
-                $chain->count() < 2 || !$chain->slice(1)->tokenHasNewlineBefore()
+                $chain->count() < 2
+                || !$chain->shift()->tokenHasNewlineBefore()
             )) {
                 continue;
             }
 
-            /** @var Token|null $alignWith */
             $alignWith = null;
             $offset = -2;
 
             if ($hasNewlineBefore) {
-                $start = $token->pragmaticStartOfExpression();
-                // If the expression being dereferenced breaks over multiple
-                // lines, align with the start of the previous line
-                assert($token->Prev !== null);
+                $expr = TokenUtil::getOperatorExpression($token);
                 /** @var Token */
-                $alignWith = $start->collect($token->Prev)
-                                   ->reverse()
-                                   ->find(fn(Token $t) =>
-                                              $t === $start
-                                                  || ($t->Flags & TokenFlag::CODE && $t->hasNewlineBefore()));
+                $prev = $token->PrevCode;
+                /** @var Token */
+                $alignWith = $expr->collect($prev)
+                                  ->reverse()
+                                  ->find(fn(Token $t) =>
+                                             $t === $expr || (
+                                                 $t->Flags & TokenFlag::CODE
+                                                 && $t->hasNewlineBefore()
+                                             ));
 
-                // Collapse the first `->` in the chain if it would save space
                 $eol = $alignWith->endOfLine();
                 if (
                     $eol->Flags & TokenFlag::CODE
@@ -84,7 +107,6 @@ final class AlignChains implements TokenRule
                     $token->Whitespace |= Space::NONE_BEFORE;
                     $alignWith = null;
                 } else {
-                    // Safe because $alignWith->text can't have newlines
                     $offset = $this->Formatter->TabSize - mb_strlen($alignWith->text);
                 }
             }
@@ -97,50 +119,58 @@ final class AlignChains implements TokenRule
                 $chain = $chain->shift();
             }
 
-            $chain->forEach(fn(Token $t) => $t->AlignedWith = $alignWith);
+            foreach ($chain as $t) {
+                $t->AlignedWith = $alignWith;
+            }
+
+            $until = TokenUtil::getOperatorEndExpression($token);
+            $idx = $this->Idx;
 
             $this->Formatter->registerCallback(
                 static::class,
                 $token,
-                fn() => $this->alignChain($chain, $alignWith, $offset),
+                static function () use (
+                    $chain,
+                    $alignWith,
+                    $offset,
+                    $until,
+                    $idx
+                ) {
+                    /** @var Token */
+                    $first = $chain->first();
+                    $offset = $alignWith->alignmentOffset() + $offset;
+                    $delta = $first->getIndentDelta($alignWith);
+                    $delta->LinePadding += $offset;
+                    $callback = static function (
+                        Token $t,
+                        ?Token $next
+                    ) use ($until, $delta) {
+                        if ($next) {
+                            /** @var Token */
+                            $until = $next->Prev;
+                        } else {
+                            while ($adjacent = $until->adjacentBeforeNewline()) {
+                                $until = TokenUtil::getOperatorEndExpression($adjacent);
+                            }
+                        }
+                        foreach ($t->collect($until) as $_t) {
+                            $delta->apply($_t);
+                        }
+                        if ($t->id === \T_NULLSAFE_OBJECT_OPERATOR) {
+                            $t->LineUnpadding += 1;
+                        }
+                    };
+
+                    // Apply $delta to code between $alignWith and $first
+                    if ($idx->Chain[$alignWith->id]) {
+                        /** @var Token */
+                        $next = $alignWith->Next;
+                        $callback($next, $first);
+                    }
+
+                    $chain->forEach($callback);
+                },
             );
         }
-    }
-
-    private function alignChain(
-        TokenCollection $chain,
-        Token $alignWith,
-        int $offset
-    ): void {
-        /** @var Token */
-        $first = $chain->first();
-        $offset = $alignWith->alignmentOffset() + $offset;
-        $delta = $first->indentDelta($alignWith);
-        $delta->LinePadding += $offset;
-        $callback = function (Token $t, ?Token $next) use ($delta) {
-            if ($next) {
-                /** @var Token */
-                $until = $next->Prev;
-            } else {
-                $until = $t->pragmaticEndOfExpression();
-                if ($adjacent = $until->adjacentBeforeNewline()) {
-                    $until = $adjacent->pragmaticEndOfExpression();
-                }
-            }
-            foreach ($t->collect($until) as $_t) {
-                $delta->apply($_t);
-            }
-            if ($t->id === \T_NULLSAFE_OBJECT_OPERATOR) {
-                $t->LineUnpadding += 1;
-            }
-        };
-
-        // Apply $delta to code between $alignWith and $first
-        if ($this->Idx->Chain[$alignWith->id]) {
-            assert($alignWith->Next !== null);
-            $callback($alignWith->Next, $first);
-        }
-
-        $chain->forEach($callback);
     }
 }

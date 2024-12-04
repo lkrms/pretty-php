@@ -43,15 +43,15 @@ parameters:
 			path: src/Rule/AlignData.php
 
 		-
-			message: '#^Cannot call method collectSiblings\(\) on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Rule/AlignData.php
-
-		-
 			message: '#^Cannot call method pragmaticEndOfExpression\(\) on Lkrms\\PrettyPHP\\Token\|null\.$#'
 			identifier: method.nonObject
 			count: 3
+			path: src/Rule/AlignData.php
+
+		-
+			message: '#^Cannot call method withNextSiblings\(\) on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			identifier: method.nonObject
+			count: 1
 			path: src/Rule/AlignData.php
 
 		-
@@ -79,13 +79,7 @@ parameters:
 			path: src/Rule/AlignLists.php
 
 		-
-			message: '#^Cannot call method pragmaticStartOfExpression\(\) on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Rule/AlignTernaryOperators.php
-
-		-
-			message: '#^Cannot access property \$Index on Lkrms\\PrettyPHP\\Token\|null\.$#'
+			message: '#^Cannot access property \$index on Lkrms\\PrettyPHP\\Token\|null\.$#'
 			identifier: property.nonObject
 			count: 1
 			path: src/Rule/ControlStructureSpacing.php

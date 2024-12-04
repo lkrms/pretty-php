@@ -75,7 +75,7 @@ final class AlignArrowFunctions implements TokenRule
             }
 
             // Allow for possibilities like `#[Foo] static fn()`
-            $token = $token->skipPrevSiblingsToDeclarationStart();
+            $token = $token->skipToStartOfDeclaration();
             /** @var Token */
             $prev = $expr->PrevCode;
             /** @var Token */
@@ -95,7 +95,7 @@ final class AlignArrowFunctions implements TokenRule
                 $expr,
                 static function () use ($expr, $alignWith, $tabSize) {
                     $offset = $alignWith->alignmentOffset(false) + $tabSize;
-                    $delta = $expr->indentDelta($alignWith);
+                    $delta = $expr->getIndentDelta($alignWith);
                     $delta->LinePadding += $offset;
 
                     /** @var Token */

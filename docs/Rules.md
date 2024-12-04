@@ -212,6 +212,16 @@ Spaces are added inside non-empty:
 - parentheses
 - square brackets (except in strings or when they enclose one inner token that is not a variable)
 
+### `AlignChains`, if enabled (call 1: `processTokens()`)
+
+If there are no object operators with a leading newline in a chain of method calls, or if the first object operator in the chain has a leading newline and `AlignChainAfterNewline` is disabled, no action is taken.
+
+Otherwise, if the first object operator in the chain has a leading newline, it is removed if horizontal space on subsequent lines would be saved. Then, a callback is registered to align object operators in the chain with:
+
+- the first object operator (if it has no leading newline)
+- the expression dereferenced by the first object operator (if it doesn't break over multiple lines), or
+- the first token on the line before the first object operator
+
 ### `StrictLists`, if enabled
 
 Items in lists are arranged horizontally or vertically by replicating the arrangement of the first and second items.

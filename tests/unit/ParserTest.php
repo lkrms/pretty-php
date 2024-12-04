@@ -135,12 +135,9 @@ PHP,
             $data[] = $type = $token->Data[TokenData::NAMED_DECLARATION_TYPE];
             $actual[] = $data;
 
-            $type = Reflect::getConstantName(Type::class, $type);
-            if ($type !== '') {
-                $type = "Type::{$type}";
-                $data[2] = $type;
-                $constants[$type] = $type;
-            }
+            $type = 'Type::' . Reflect::getConstantName(Type::class, $type);
+            $data[2] = $type;
+            $constants[$type] = $type;
             $actualCode[] = $data;
         }
 

@@ -71,7 +71,7 @@ final class OperatorSpacing implements TokenRule
                         ($next->id === \T_VARIABLE || $next->id === \T_ELLIPSIS)
                         && $token->inParameterList()
                         // Not `function getValue($param = $a & $b)`
-                        && !$token->sinceStartOfStatement()->hasOneOf(\T_VARIABLE)
+                        && !$token->sinceStatement()->hasOneOf(\T_VARIABLE)
                     )
                 )
             ) {
@@ -91,9 +91,9 @@ final class OperatorSpacing implements TokenRule
                             $token->Parent->PrevCode
                             && $token->Parent->PrevCode->id === \T_OR
                         ) || (
-                            $token->Parent->ClosedBy
-                            && $token->Parent->ClosedBy->NextCode
-                            && $token->Parent->ClosedBy->NextCode->id === \T_OR
+                            $token->Parent->CloseBracket
+                            && $token->Parent->CloseBracket->NextCode
+                            && $token->Parent->CloseBracket->NextCode->id === \T_OR
                         ))
                         && $this->inTypeContext($token->Parent)
                     )
@@ -193,12 +193,11 @@ final class OperatorSpacing implements TokenRule
         return ($token->inDeclaration()
                 && !$token->inPropertyHook())
             || ($token->inParameterList()
-                && !$token->sinceStartOfStatement()->hasOneOf(\T_VARIABLE))
-            || (($prev = $token->prevCodeWhile($this->Idx->ValueType)->last())
-                && ($prev = $prev->PrevCode)
+                && !$token->sinceStatement()->hasOneOf(\T_VARIABLE))
+            || (($prev = $token->skipPrevSiblingFrom($this->Idx->ValueType)) !== $token
                 && $prev->id === \T_COLON
                 && ($prev = $prev->PrevSibling)
                 && ($prev = $prev->PrevSibling)
-                && $prev->skipPrevSiblingsFrom($this->Idx->Ampersand)->id === \T_FN);
+                && $prev->skipPrevSiblingFrom($this->Idx->Ampersand)->id === \T_FN);
     }
 }

@@ -107,7 +107,7 @@ final class ControlStructureSpacing implements TokenRule
             if (
                 !$end
                 || $end->id === \T_NULL
-                || $end->Index > $body->EndStatement->Index
+                || $end->index > $body->EndStatement->index
             ) {
                 $end = $body->pragmaticEndOfExpression()
                             ->withTerminator();

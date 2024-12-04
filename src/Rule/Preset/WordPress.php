@@ -126,7 +126,7 @@ final class WordPress implements Preset, TokenRule
                 /** @var Token */
                 $prev = $token->Prev;
                 if (
-                    $token->hasBlankLineBefore()
+                    $token->hasBlankBefore()
                     && $token->line - $prev->line - substr_count($prev->text, "\n") < 2
                 ) {
                     $token->Whitespace |= Space::NO_BLANK_BEFORE;
@@ -153,7 +153,7 @@ final class WordPress implements Preset, TokenRule
             }
 
             /** @var Token */
-            $close = $token->ClosedBy;
+            $close = $token->CloseBracket;
 
             if ($token->id === \T_OPEN_BRACE) {
                 $token->removeWhitespace(Space::NO_BLANK_AFTER);

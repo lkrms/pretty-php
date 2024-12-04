@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenFlagMask;
 use Lkrms\PrettyPHP\Concern\BlockRuleTrait;
 use Lkrms\PrettyPHP\Contract\BlockRule;
@@ -82,7 +83,7 @@ final class AlignComments implements BlockRule
                 $prev !== $lastComment
                 || $comment->line - $prev->line > 1
                 || ($comment->Flags & TokenFlagMask::COMMENT_TYPE) !== ($prev->Flags & TokenFlagMask::COMMENT_TYPE)
-                || $comment->isMultiLineComment()
+                || $comment->Flags & TokenFlag::MULTILINE_COMMENT
                 || $comment->column === 1
                 || !$lastStartOfLine
                 || $comment->column <= (

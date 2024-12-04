@@ -82,14 +82,14 @@ final class AlignData implements BlockRule
                     $current = $current->Parent;
                     $brackets = $current->text . $brackets;
                 }
-                $index = "$type\0$brackets\0{$token->indent()}";
+                $index = "$type\0$brackets\0{$token->getIndent()}";
                 $ctxIdx[$index][$line][] = $token;
                 $ctxCounts[$index] = max($ctxCounts[$index] ?? 0, count($ctxIdx[$index][$line]));
                 isset($lineIdx[$line][$brackets]) || $lineIdx[$line][$brackets] = [];
                 $prevTypes = end($lineIdx[$line][$brackets]) ?: [];
                 $prevTypes[] = $type;
-                $lineIdx[$line][$brackets][$token->Index] = $prevTypes;
-                $this->TokenData[$token->Index] = $data;
+                $lineIdx[$line][$brackets][$token->index] = $prevTypes;
+                $this->TokenData[$token->index] = $data;
             };
 
         foreach ($lines as $line => $tokens) {
@@ -106,7 +106,7 @@ final class AlignData implements BlockRule
                     if ($token->inParameterList()) {
                         // Only align default value definitions within the same
                         // declaration
-                        $addToIndex(implode(':', ['fn', $token->Parent->Index]));
+                        $addToIndex(implode(':', ['fn', $token->Parent->index]));
                     }
                     continue;
                 }
@@ -130,7 +130,7 @@ final class AlignData implements BlockRule
                 ) {
                     $data = [
                         'prevTypes' => $token->prevSiblings($token->prevSiblingOf(\T_COMMA)->NextCode)->getIds(),
-                        'nextTypes' => $token->Next->collectSiblings($token->nextSiblingOf(\T_COMMA)->PrevCode)->getIds(),
+                        'nextTypes' => $token->Next->withNextSiblings($token->nextSiblingOf(\T_COMMA)->PrevCode)->getIds(),
                     ];
                     $type = array_map(fn(array $types): string => implode(',', $this->simplifyTokenTypes($types)), $data);
                     array_unshift($type, ',');
@@ -176,7 +176,7 @@ final class AlignData implements BlockRule
                     }
                     // If the alignable tokens that have appeared on the line in
                     // this context so far have changed, start a new run
-                    $prevTypes = $lineIdx[$line][$brackets][$token->Index];
+                    $prevTypes = $lineIdx[$line][$brackets][$token->index];
                     if (!$run) {
                         $runPrevTypes = $prevTypes;
                     } elseif ($prevTypes !== $runPrevTypes) {
@@ -195,8 +195,8 @@ final class AlignData implements BlockRule
                             // higher effective indentation level than the
                             // aligned tokens (enforced in callback)
                             || (($this->Formatter->RelaxAlignmentCriteria || $type !== '=')
-                                && $lines[$line - 1][0]->Index
-                                    <= $lastToken->NextCode->pragmaticEndOfExpression()->Index)
+                                && $lines[$line - 1][0]->index
+                                    <= $lastToken->NextCode->pragmaticEndOfExpression()->index)
                             || ($this->Formatter->RelaxAlignmentCriteria
                                 && $lines[$line - 1][0]->PrevCode === $lines[$line][0]->PrevCode)
                         ) {
@@ -245,7 +245,7 @@ final class AlignData implements BlockRule
             while (
                 ++$line < $blockLines
                 && ($current = $current->endOfLine()->Next)
-                && $current->Index <= $end->Index
+                && $current->index <= $end->index
             ) {
                 $innerLines[$prev][] = $lines[$line][0];
             }
@@ -297,7 +297,7 @@ final class AlignData implements BlockRule
             $maxLength = max($maxLength, $length);
             if (
                 $action === self::ALIGN_DATA
-                && ($types = $this->TokenData[$token2->Index]['prevTypes'] ?? null)
+                && ($types = $this->TokenData[$token2->index]['prevTypes'] ?? null)
                 // Exclude `null` from type detection heuristic
                 && !($types === [\T_STRING] && strcasecmp($token2->Prev->text, 'null'))
             ) {

@@ -66,7 +66,7 @@ final class ListSpacing implements ListRule, DeclarationRule
      */
     public function processList(Token $parent, TokenCollection $items): void
     {
-        if (!$parent->ClosedBy) {
+        if (!$parent->CloseBracket) {
             if (!$this->ListRuleEnabled && $items->tokenHasNewlineBefore()) {
                 /** @var Token */
                 $token = $items->first();
@@ -78,9 +78,9 @@ final class ListSpacing implements ListRule, DeclarationRule
         // If the list has a "magic comma", add a newline before each item and
         // another before the close bracket
         /** @var Token */
-        $last = $parent->ClosedBy->PrevCode;
+        $last = $parent->CloseBracket->PrevCode;
         if ($last->id === \T_COMMA) {
-            $items->add($parent->ClosedBy)
+            $items->add($parent->CloseBracket)
                   ->applyWhitespace(Space::CRITICAL_LINE_BEFORE);
         }
 
@@ -114,8 +114,8 @@ final class ListSpacing implements ListRule, DeclarationRule
     {
         $hasAttributeWithNewline = false;
         foreach ($items as $item) {
-            $attributes = $item->withNextSiblingsWhile($this->Idx->Attribute, true);
-            $itemTokens[$item->Index] = $attributes;
+            $attributes = $item->withNextSiblingsFrom($this->Idx->Attribute, true);
+            $itemTokens[$item->index] = $attributes;
             if (
                 $attributes->tokenHasNewlineAfter(true)
                 || $attributes->shift()->tokenHasNewlineBefore()
@@ -132,19 +132,19 @@ final class ListSpacing implements ListRule, DeclarationRule
         $i = 0;
         foreach ($items as $item) {
             if ($addBlankBefore) {
-                $item->applyBlankLineBefore(true);
+                $item->applyBlankBefore(true);
                 $addBlankBefore = false;
                 $hasBlankBefore = true;
             } else {
                 $hasBlankBefore = false;
             }
-            $tokens = $itemTokens[$item->Index]
-                ?? $item->withNextSiblingsWhile($this->Idx->Attribute, true);
-            $tokens[] = $item->skipNextSiblingsFrom($this->Idx->Attribute);
+            $tokens = $itemTokens[$item->index]
+                ?? $item->withNextSiblingsFrom($this->Idx->Attribute, true);
+            $tokens[] = $item->skipNextSiblingFrom($this->Idx->Attribute);
             foreach ($tokens as $token) {
                 $token->applyWhitespace(Space::LINE_BEFORE);
                 if ($this->Idx->Attribute[$token->id]) {
-                    $token = $token->ClosedBy ?? $token;
+                    $token = $token->CloseBracket ?? $token;
                     $token->Whitespace |= Space::LINE_AFTER;
                     // Add a blank line before each item with an attribute, and
                     // another before the next item
@@ -152,7 +152,7 @@ final class ListSpacing implements ListRule, DeclarationRule
                 }
             }
             if ($i++ && $addBlankBefore && !$hasBlankBefore) {
-                $item->applyBlankLineBefore(true);
+                $item->applyBlankBefore(true);
             }
         }
     }

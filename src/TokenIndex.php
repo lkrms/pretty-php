@@ -187,15 +187,16 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * T_DECLARE, T_FOR, T_FOREACH, T_IF, T_SWITCH, T_WHILE
+     * T_DECLARE, T_FOR, T_FOREACH, T_IF, T_ELSEIF, T_SWITCH, T_WHILE
      *
      * @var array<int,bool>
      */
-    public array $AltStart = [
+    public array $AltStartOrContinueWithExpression = [
         \T_DECLARE => true,
         \T_FOR => true,
         \T_FOREACH => true,
         \T_IF => true,
+        \T_ELSEIF => true,
         \T_SWITCH => true,
         \T_WHILE => true,
     ]
@@ -467,6 +468,19 @@ class TokenIndex implements HasTokenIndex, Immutable
         \T_IF => true,
         \T_ELSEIF => true,
         \T_ELSE => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
+     * T_INLINE_HTML, T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO, T_CLOSE_TAG
+     *
+     * @var array<int,bool>
+     */
+    public array $Markup = [
+        \T_INLINE_HTML => true,
+        \T_OPEN_TAG => true,
+        \T_OPEN_TAG_WITH_ECHO => true,
+        \T_CLOSE_TAG => true,
     ]
         + self::TOKEN_INDEX;
 
@@ -776,35 +790,6 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES, T_DOUBLE_QUOTE,
-     * T_ENCAPSED_AND_WHITESPACE, T_ARRAY, T_CONSTANT_ENCAPSED_STRING,
-     * T_DOUBLE_COLON, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED,
-     * T_NAME_RELATIVE, T_STATIC, T_DOLLAR, T_OPEN_BRACE, T_OPEN_BRACKET,
-     * T_OPEN_PARENTHESIS, T_STRING, T_VARIABLE, T_OBJECT_OPERATOR,
-     * T_NULLSAFE_OBJECT_OPERATOR, magic constants
-     *
-     * @var array<int,bool>
-     */
-    public array $ChainExpression = [
-        // '"' ... '"'
-        \T_CURLY_OPEN => true,
-        \T_DOLLAR_OPEN_CURLY_BRACES => true,
-        \T_DOUBLE_QUOTE => true,
-        \T_ENCAPSED_AND_WHITESPACE => true,
-        // Other dereferenceables
-        \T_ARRAY => true,
-        \T_CONSTANT_ENCAPSED_STRING => true,
-        \T_DOUBLE_COLON => true,
-        \T_NAME_FULLY_QUALIFIED => true,
-        \T_NAME_QUALIFIED => true,
-        \T_NAME_RELATIVE => true,
-        \T_STATIC => true,
-    ]
-        + self::CHAIN_PART
-        + self::MAGIC_CONSTANT
-        + self::TOKEN_INDEX;
-
-    /**
      * T_ELSEIF, T_ELSE, T_CATCH, T_FINALLY
      *
      * Excludes `T_WHILE`, which only qualifies after `T_DO`. Check for this
@@ -996,35 +981,6 @@ class TokenIndex implements HasTokenIndex, Immutable
     // Parsing:
 
     /**
-     * T_COLON, T_COMMA, T_SEMICOLON
-     *
-     * @var array<int,bool>
-     */
-    public array $EndOfStatement = [
-        \T_COLON => true,
-        \T_COMMA => true,
-        \T_SEMICOLON => true,
-    ]
-        + self::TOKEN_INDEX;
-
-    /**
-     * Assignment operators, comparison operators (except T_COALESCE),
-     * T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_SEMICOLON, T_DOUBLE_ARROW
-     *
-     * @var array<int,bool>
-     */
-    public array $EndOfExpression = [
-        \T_CLOSE_BRACKET => true,
-        \T_CLOSE_PARENTHESIS => true,
-        \T_SEMICOLON => true,
-        \T_DOUBLE_ARROW => true,
-        \T_COALESCE => false,
-    ]
-        + self::OPERATOR_ASSIGNMENT
-        + self::OPERATOR_COMPARISON
-        + self::TOKEN_INDEX;
-
-    /**
      * Assignment operators, comparison operators (except T_COALESCE),
      * T_DOUBLE_ARROW
      *
@@ -1047,6 +1003,18 @@ class TokenIndex implements HasTokenIndex, Immutable
         \T_DOUBLE_ARROW => true,
     ]
         + self::OPERATOR_ASSIGNMENT
+        + self::TOKEN_INDEX;
+
+    /**
+     * T_COLON, T_COMMA, T_SEMICOLON
+     *
+     * @var array<int,bool>
+     */
+    public array $StatementDelimiter = [
+        \T_COLON => true,
+        \T_COMMA => true,
+        \T_SEMICOLON => true,
+    ]
         + self::TOKEN_INDEX;
 
     // Formatting:

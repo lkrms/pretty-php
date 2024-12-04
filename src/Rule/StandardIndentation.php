@@ -31,8 +31,8 @@ final class StandardIndentation implements TokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            if ($token->OpenedBy) {
-                $token->Indent = $token->OpenedBy->Indent;
+            if ($token->OpenBracket) {
+                $token->Indent = $token->OpenBracket->Indent;
                 continue;
             }
 
@@ -43,7 +43,7 @@ final class StandardIndentation implements TokenRule
             $prev = $token->Prev;
             $token->Indent = $prev->Indent;
 
-            if (!$prev->ClosedBy) {
+            if (!$prev->CloseBracket) {
                 continue;
             }
 

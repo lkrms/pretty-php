@@ -6,14 +6,22 @@ use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenSubId;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
+use Lkrms\PrettyPHP\Contract\HasOperatorPrecedence;
+use Lkrms\PrettyPHP\Contract\HasTokenIndex;
 use Lkrms\PrettyPHP\Internal\TokenCollection;
 use Salient\Utility\Arr;
 use Salient\Utility\Reflect;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 
-final class TokenUtil
+final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
 {
+    /**
+     * @var array<int,array<array{int,int,bool,bool}>|false>
+     */
+    private const OPERATOR_PRECEDENCE_INDEX = self::OPERATOR_PRECEDENCE
+        + self::TOKEN_INDEX;
+
     /**
      * Check if a newline is allowed before a token
      */
@@ -51,8 +59,8 @@ final class TokenUtil
         }
 
         if (
-            $token->OpenedBy
-            && $token->OpenedBy->id === \T_ATTRIBUTE
+            $token->OpenBracket
+            && $token->OpenBracket->id === \T_ATTRIBUTE
             && $token->Idx->AllowNewlineAfter[\T_ATTRIBUTE]
         ) {
             return true;
@@ -93,6 +101,155 @@ final class TokenUtil
         }
 
         return true;
+    }
+
+    /**
+     * Get the first token in the expression to which a given operator applies
+     * by iterating over previous siblings until an operator with lower
+     * precedence is found
+     */
+    public static function getOperatorExpression(Token $token): Token
+    {
+        $precedence = self::OPERATOR_PRECEDENCE_INDEX[$token->id]
+            ? self::getOperatorPrecedence($token)
+            : -1;
+        $t = $token;
+        while (
+            ($prev = $t->PrevSibling)
+            && $prev->Statement === $token->Statement
+        ) {
+            if (self::OPERATOR_PRECEDENCE_INDEX[$prev->id]) {
+                $prevPrecedence = self::getOperatorPrecedence($prev);
+                if ($prevPrecedence !== -1 && (
+                    // If called with a non-operator, stop at the first operator
+                    $precedence === -1
+                    || $prevPrecedence > $precedence
+                )) {
+                    return $t;
+                }
+            }
+            $t = $prev;
+        }
+        return $t;
+    }
+
+    /**
+     * Get the last token in the expression to which a given operator applies by
+     * iterating over next siblings until an operator with lower precedence is
+     * found
+     */
+    public static function getOperatorEndExpression(Token $token): Token
+    {
+        $precedence = self::OPERATOR_PRECEDENCE_INDEX[$token->id]
+            ? self::getOperatorPrecedence($token)
+            : -1;
+        $t = $token;
+        while (
+            ($next = $t->NextSibling)
+            && $next->Statement === $token->Statement
+        ) {
+            if (self::OPERATOR_PRECEDENCE_INDEX[$next->id]) {
+                $nextPrecedence = self::getOperatorPrecedence($next);
+                if ($nextPrecedence !== -1 && (
+                    // If called with a non-operator, stop at the first operator
+                    $precedence === -1
+                    || $nextPrecedence > $precedence
+                )) {
+                    return $t->CloseBracket ?? $t;
+                }
+            }
+            $t = $next;
+        }
+        return $t->CloseBracket ?? $t;
+    }
+
+    /**
+     * Get the precedence of a given operator, or -1 if it is not an operator
+     *
+     * Lower numbers indicate higher precedence.
+     *
+     * @param-out bool $leftAssociative
+     * @param-out bool $rightAssociative
+     */
+    public static function getOperatorPrecedence(
+        Token $token,
+        ?bool &$leftAssociative = null,
+        ?bool &$rightAssociative = null
+    ): int {
+        if ($precedence = self::OPERATOR_PRECEDENCE_INDEX[$token->id]) {
+            foreach ($precedence as [$arity, $precedence, $leftAssoc, $rightAssoc]) {
+                if (
+                    $arity === 0
+                    || ($arity === self::UNARY && $token->inUnaryContext())
+                    || ($arity === self::BINARY && !$token->inUnaryContext())
+                    || ($arity === self::TERNARY && $token->Flags & TokenFlag::TERNARY_OPERATOR)
+                ) {
+                    $leftAssociative = $leftAssoc;
+                    $rightAssociative = $rightAssoc;
+                    return $precedence;
+                }
+            }
+        }
+        $leftAssociative = false;
+        $rightAssociative = false;
+        return -1;
+    }
+
+    /**
+     * Get the first ternary or null coalescing operator that is one of a given
+     * ternary or null coalescing operator's preceding siblings in the same
+     * statement
+     *
+     * If `$token` is part of the first ternary or null coalescing expression in
+     * the statement, `null` is returned.
+     */
+    public static function getTernaryContext(Token $token): ?Token
+    {
+        $before = self::getTernary1($token) ?? $token;
+        $t = $before;
+        while (
+            ($t = $t->PrevSibling)
+            && $t->Statement === $token->Statement
+        ) {
+            if ((
+                $t->id === \T_COALESCE
+                && $t->index < $before->index
+            ) || (
+                $t->Flags & TokenFlag::TERNARY_OPERATOR
+                && self::getTernary1($t) === $t
+                && $t->Data[TokenData::OTHER_TERNARY_OPERATOR]->index
+                    < $before->index
+            )) {
+                $context = $t;
+            }
+        }
+        return $context ?? null;
+    }
+
+    /**
+     * Get the first ternary operator for the given ternary operator, or null if
+     * it is not a ternary operator
+     */
+    public static function getTernary1(Token $token): ?Token
+    {
+        return $token->Flags & TokenFlag::TERNARY_OPERATOR
+            ? ($token->id === \T_QUESTION
+                ? $token
+                : $token->Data[TokenData::OTHER_TERNARY_OPERATOR])
+            : null;
+    }
+
+    /**
+     * Get the second ternary operator for the given ternary operator, or null
+     * if it is not a ternary operator
+     */
+    public static function getTernary2(Token $token): ?Token
+    {
+        return $token->Flags & TokenFlag::TERNARY_OPERATOR
+            ? ($token->id === \T_COLON
+                ? $token
+                : $token->Data[TokenData::OTHER_TERNARY_OPERATOR])
+            : null;
     }
 
     public static function getWhitespace(int $type): string
@@ -140,9 +297,9 @@ final class TokenUtil
         $t['pos'] = $token->pos;
         $t['column'] = $token->column;
 
-        if ($token->SubId !== null) {
-            $t['SubId'] = $token->SubId !== -1
-                ? Reflect::getConstantName(TokenSubId::class, $token->SubId)
+        if ($token->subId !== null) {
+            $t['subId'] = $token->subId !== -1
+                ? Reflect::getConstantName(TokenSubId::class, $token->subId)
                 : '<unknown>';
         }
 
@@ -277,7 +434,7 @@ final class TokenUtil
     {
         return sprintf(
             'T%d:L%d:%s',
-            $token->Index,
+            $token->index,
             $token->line,
             Str::ellipsize(var_export($token->text, true), 20),
         );

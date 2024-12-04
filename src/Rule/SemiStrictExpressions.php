@@ -64,7 +64,7 @@ final class SemiStrictExpressions implements TokenRule
             }
             if ($first->children()->pop()->tokenHasNewlineAfter(true)) {
                 /** @var Token */
-                $last = $first->ClosedBy;
+                $last = $first->CloseBracket;
                 $first->applyWhitespace(Space::LINE_AFTER);
                 $last->applyWhitespace(Space::LINE_BEFORE);
             }

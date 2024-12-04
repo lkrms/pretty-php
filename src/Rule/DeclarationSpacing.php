@@ -124,7 +124,7 @@ final class DeclarationSpacing implements DeclarationRule
                 }
             }
 
-            $this->Declarations[$token->Index] = [
+            $this->Declarations[$token->index] = [
                 $token,
                 $type,
                 $modifiers,
@@ -139,13 +139,13 @@ final class DeclarationSpacing implements DeclarationRule
         uasort(
             $this->Declarations,
             fn($a, $b) => $b[0]->Depth <=> $a[0]->Depth
-                ?: $a[0]->Index <=> $b[0]->Index,
+                ?: $a[0]->index <=> $b[0]->index,
         );
 
         $declarations = $this->Declarations;
         while ($declarations) {
             [$token, $type, $modifiers] = reset($declarations);
-            unset($declarations[$token->Index]);
+            unset($declarations[$token->index]);
 
             $collapse = [];
             if (!$this->hasDocComment($token) && !$this->isMultiLine($token)) {
@@ -164,15 +164,15 @@ final class DeclarationSpacing implements DeclarationRule
                 ($prevEnd = ($prev = $token)->EndStatement)
                 && ($token = $prevEnd->NextSibling)
             ) {
-                if (!isset($declarations[$token->Index])) {
+                if (!isset($declarations[$token->index])) {
                     $nonDeclarationReached = true;
                     break;
                 }
-                [, $nextType, $modifiers] = $declarations[$token->Index];
+                [, $nextType, $modifiers] = $declarations[$token->index];
                 if ($nextType !== $type) {
                     break;
                 }
-                unset($declarations[$token->Index]);
+                unset($declarations[$token->index]);
 
                 $prevIsMultiLine = false;
                 $applied = false;
@@ -323,10 +323,10 @@ final class DeclarationSpacing implements DeclarationRule
 
         $group = [];
         do {
-            if (!isset($this->Declarations[$token->Index])) {
+            if (!isset($this->Declarations[$token->index])) {
                 break;
             }
-            [, $nextType, $modifiers] = $this->Declarations[$token->Index];
+            [, $nextType, $modifiers] = $this->Declarations[$token->index];
             if (
                 $nextType !== $type
                 || $this->hasDocComment($token)
@@ -362,7 +362,7 @@ final class DeclarationSpacing implements DeclarationRule
 
     private function hasDocComment(Token $token, bool $orBlankLineBefore = false): bool
     {
-        return $this->Declarations[$token->Index][$orBlankLineBefore ? 4 : 3] ??=
+        return $this->Declarations[$token->index][$orBlankLineBefore ? 4 : 3] ??=
             $this->doHasDocComment($token, $orBlankLineBefore);
     }
 
@@ -376,10 +376,10 @@ final class DeclarationSpacing implements DeclarationRule
         $prev = $token->Prev;
 
         if ($prev->id !== \T_DOC_COMMENT) {
-            return $orBlankLineBefore && $token->hasBlankLineBefore();
+            return $orBlankLineBefore && $token->hasBlankBefore();
         }
 
-        if (!$prev->hasNewlineBefore() || $prev->hasBlankLineAfter()) {
+        if (!$prev->hasNewlineBefore() || $prev->hasBlankAfter()) {
             return false;
         }
 
@@ -401,19 +401,19 @@ final class DeclarationSpacing implements DeclarationRule
                 )
             )
         ) || (
-            $orBlankLineBefore && $prev->hasBlankLineBefore()
+            $orBlankLineBefore && $prev->hasBlankBefore()
         );
     }
 
     private function isMultiLine(Token $token): bool
     {
-        return $this->Declarations[$token->Index][5] ??=
+        return $this->Declarations[$token->index][5] ??=
             $this->doIsMultiLine($token);
     }
 
     private function doIsMultiLine(Token $token): bool
     {
-        $type = $this->Declarations[$token->Index][1];
+        $type = $this->Declarations[$token->index][1];
         $end = $type === Type::HOOK
             ? $token->nextSiblingFrom($this->Idx->StartOfPropertyHookBody)->PrevCode
             : $token->EndStatement;
@@ -443,8 +443,8 @@ final class DeclarationSpacing implements DeclarationRule
 
     private function maybeApplyBlankLineBefore(Token $token, bool $force = false): void
     {
-        $this->Declarations[$token->Index][3] = null;
-        $this->Declarations[$token->Index][4] = null;
+        $this->Declarations[$token->index][3] = null;
+        $this->Declarations[$token->index][4] = null;
 
         if (
             !$this->Formatter->Psr12
@@ -456,6 +456,6 @@ final class DeclarationSpacing implements DeclarationRule
             return;
         }
 
-        $token->applyBlankLineBefore($force);
+        $token->applyBlankBefore($force);
     }
 }

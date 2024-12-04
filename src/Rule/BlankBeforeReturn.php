@@ -68,7 +68,7 @@ final class BlankBeforeReturn implements TokenRule
                 continue;
             }
 
-            $token->applyBlankLineBefore();
+            $token->applyBlankBefore();
         }
     }
 }
