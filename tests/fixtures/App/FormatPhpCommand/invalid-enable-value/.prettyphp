@@ -1,0 +1,5 @@
+{
+    "enable": [
+        "not-very-strict-expressions"
+    ]
+}

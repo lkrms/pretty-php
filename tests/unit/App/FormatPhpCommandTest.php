@@ -519,6 +519,23 @@ EOF),
 EOF),
                 '--diff',
             ],
+            'invalid --enable value' => [
+                0,
+                [
+                    [Level::WARNING, "Warning: invalid --enable value 'not-very-strict-expressions' (expected one or more of: "],
+                    [Level::INFO, self::SUMMARY . 'Formatted 1 file with 0 errors and 1 warning in '],
+                ],
+                '/invalid-enable-value',
+            ],
+            'invalid --enable value in cwd' => [
+                0,
+                [
+                    [Level::WARNING, "Warning: invalid --enable value 'not-very-strict-expressions' (expected one or more of: "],
+                    [Level::INFO, self::SUMMARY . 'Formatted 1 file with 0 errors and 1 warning in '],
+                ],
+                '/invalid-enable-value',
+                true,
+            ],
         ];
     }
 

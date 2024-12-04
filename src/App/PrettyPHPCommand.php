@@ -780,9 +780,9 @@ EOF,
                 $this->getOptionValues(true, true, true),
                 self::SRC_OPTION_INDEX,
             ) + $this->getFormattingConfigValues($this->ConfigFile, $this->PrintConfig);
-            $defaults = $this->getDefaultFormattingOptionValues();
-            // 2. Set the value of every option
-            $this->applyOptionValues($config + $defaults, true, true, true);
+            $defaults = $this->getDefaultSchemaOptionValues();
+            // 2. Set every option to its default value
+            $this->applyOptionValues($defaults, true, true, true);
             // 3. Set the value of configured options as if they had been given
             //    on the command line
             $this->applyOptionValues($config, true, true, true, true, true);
@@ -1272,20 +1272,9 @@ EOF,
 
         /** @var self */
         $clone = Get::copy($this);
-        $clone->applyOptionValues($values + $defaults, true, true, true);
+        $clone->applyOptionValues($defaults, true, true, true);
         $clone->applyOptionValues($values, true, true, true, true, true);
         return $clone;
-    }
-
-    /**
-     * @return array<string,array<string|int|bool|float>|string|int|bool|float|null>
-     */
-    private function getDefaultFormattingOptionValues(): array
-    {
-        return array_diff_key(
-            $this->getDefaultSchemaOptionValues(),
-            self::SRC_OPTION_INDEX,
-        );
     }
 
     /**
