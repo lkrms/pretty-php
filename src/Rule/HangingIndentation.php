@@ -203,7 +203,7 @@ final class HangingIndentation implements TokenRule
                 $context[] = TokenUtil::getTernaryContext($trigger)
                     ?? TokenUtil::getTernary1($trigger)
                     ?? $trigger;
-                $until = self::getTernaryEndOfExpression($trigger);
+                $until = TokenUtil::getTernaryEndExpression($trigger);
                 $apply = $trigger;
             } elseif ($this->Idx->Chain[$token->id]) {
                 $context[] = $token->Data[TokenData::CHAIN_OPENED_BY];
@@ -353,45 +353,6 @@ final class HangingIndentation implements TokenRule
                 && $current = $current->Next
             );
         }
-    }
-
-    /**
-     * Get the last token in the same statement as a ternary operator
-     */
-    public static function getTernaryEndOfExpression(Token $token): Token
-    {
-        // Find the last token
-        // - in the third expression
-        // - of the last ternary expression in this statement
-        $current = $token;
-        do {
-            if (
-                $current->id === \T_COALESCE
-            ) {
-                $until = $current->EndExpression ?? $current;
-            } else {
-                /** @var Token */
-                $until = TokenUtil::getTernary2($current);
-                $until = $until->EndExpression ?? $current;
-            }
-        } while (
-            $until !== $current
-            && ($current = $until->NextSibling)
-            && ($current->id === \T_COALESCE
-                || ($current->id === \T_QUESTION
-                    && $current->Flags & TokenFlag::TERNARY_OPERATOR))
-        );
-
-        // And without breaking out of an unenclosed control structure
-        // body, proceed to the end of the expression
-        if (!(
-            $until->NextSibling
-            && $until->NextSibling->Flags & TokenFlag::TERNARY_OPERATOR
-        )) {
-            $until = $until->pragmaticEndOfExpression();
-        }
-
-        return $until;
     }
 
     /**
