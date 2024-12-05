@@ -135,7 +135,8 @@ final class Renderer implements Immutable
         $padding = $token->Padding;
         if ($whitespace = $token->getWhitespaceBefore()) {
             $before = TokenUtil::getWhitespace($whitespace);
-            if ($before[0] === "\n") {
+            // i.e. if LINE or BLANK are set
+            if ($whitespace > 1) {
                 $indent = $token->getIndent();
                 $padding += $token->LinePadding - $token->LineUnpadding;
 

@@ -1260,7 +1260,10 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         return $token->getOutputColumn($beforeText) - $this->getOutputColumn($beforeText);
     }
 
-    private function getOutputColumn(bool $beforeText): int
+    /**
+     * Get the output column of the token
+     */
+    public function getOutputColumn(bool $beforeText): int
     {
         return $beforeText
             ? ($this->Prev
@@ -1271,16 +1274,22 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
 
     private function getNextOutputColumn(bool $afterWhitespace): int
     {
-        $line = $this->startOfLine(false)->collect($this)->render(true, false);
+        $sol = $this->startOfLine(false);
+        $line = $sol->collect($this)->render(true, false);
         if ($afterWhitespace) {
             /** @var self */
             $next = $this->Next;
             $line .= $this->Formatter->Renderer->renderWhitespaceBefore($next, true);
         }
+        $delta = 0;
         if (($pos = strrpos($line, "\n")) !== false) {
             $line = substr($line, $pos + 1);
+        } elseif ($sol->id === \T_END_HEREDOC) {
+            $delta += $sol->getIndent() * $this->Formatter->TabSize
+                + $sol->LinePadding
+                - $sol->LineUnpadding;
         }
-        return mb_strlen($line);
+        return mb_strlen($line) + $delta;
     }
 
     // Collection methods:
@@ -1477,52 +1486,6 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     }
 
     // --
-
-    /**
-     * Get the token's offset relative to the most recent alignment token or the
-     * start of the line, whichever is closest
-     *
-     * An alignment token is a token where {@see Token::$AlignedWith} is set.
-     *
-     * Whitespace at the start of the line is ignored.
-     *
-     * @param bool $includeToken If `true` (the default), the offset includes
-     * the token itself.
-     * @param bool $allowSelfAlignment If `true`, the token itself is considered
-     * an alignment token candidate.
-     */
-    public function alignmentOffset(bool $includeToken = true, bool $allowSelfAlignment = false): int
-    {
-        $startOfLine = $this->startOfLine();
-        $from = $startOfLine
-                    ->collect($this)
-                    ->reverse()
-                    ->find(
-                        fn(self $t, ?self $next) =>
-                            ($t->AlignedWith
-                                && ($allowSelfAlignment || $t !== $this))
-                            || ($next
-                                && $next === $this->AlignedWith)
-                    ) ?? $startOfLine;
-
-        if ($includeToken) {
-            $code = $from->collect($this)->render(true);
-        } else {
-            /** @var self */
-            $prev = $this->Prev;
-            $code = $from->collect($prev)->render(true, true, false);
-        }
-        $offset = mb_strlen($code);
-        // Handle strings with embedded newlines
-        if (($newline = mb_strrpos($code, "\n")) !== false) {
-            $newLinePadding = $offset - $newline - 1;
-            $offset = $newLinePadding - ($this->LinePadding - $this->LineUnpadding);
-        } else {
-            $offset -= $from->hasNewlineBefore() ? $from->LineUnpadding : 0;
-        }
-
-        return $offset;
-    }
 
     /**
      * If the token were moved to the right, get the last token that would move

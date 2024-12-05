@@ -234,6 +234,10 @@ If an arrow function expression starts on a new line, a callback is registered t
 
 If a ternary or null coalescing operator has a leading newline, a callback is registered to align it with its expression.
 
+### `AlignLists`, if enabled (call 1: `processList()`)
+
+A callback is registered to align arguments, array elements and other list items, along with their inner and adjacent tokens, with the column after their open brackets, or with the first item in the list if they have no enclosing brackets.
+
 ### `AlignChains`, if enabled (call 2: _`callback`_)
 
 Object operators in a chain of method calls are aligned with a given token.

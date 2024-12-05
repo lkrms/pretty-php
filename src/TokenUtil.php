@@ -147,6 +147,7 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
         while (
             ($next = $t->NextSibling)
             && $next->Statement === $token->Statement
+            && $next !== $token->EndStatement
         ) {
             if (self::OPERATOR_PRECEDENCE_INDEX[$next->id]) {
                 $nextPrecedence = self::getOperatorPrecedence($next);
