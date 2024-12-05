@@ -230,6 +230,10 @@ Items in lists are arranged horizontally or vertically by replicating the arrang
 
 If an arrow function expression starts on a new line, a callback is registered to align it with the `fn` it's associated with, or with the first token on the previous line if its arguments break over multiple lines.
 
+### `AlignTernaryOperators`, if enabled (call 1: `processTokens()`)
+
+If a ternary or null coalescing operator has a leading newline, a callback is registered to align it with its expression.
+
 ### `AlignChains`, if enabled (call 2: _`callback`_)
 
 Object operators in a chain of method calls are aligned with a given token.
@@ -248,6 +252,15 @@ This is achieved by:
 
 - calculating the difference between the current and desired output columns of the first token in the expression
 - applying it to the `LinePadding` of each token
+
+### `AlignTernaryOperators`, if enabled (call 2: _`callback`_)
+
+Ternary and null coalescing operators with leading newlines are aligned with their expressions.
+
+This is achieved by:
+
+- calculating the difference between the current and desired output columns of the operator
+- applying it to the `LinePadding` of the operator and its adjacent tokens
 
 ### `StandardSpacing` (call 3: _`callback`_)
 

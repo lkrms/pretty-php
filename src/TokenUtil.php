@@ -227,6 +227,24 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
     }
 
     /**
+     * Get the last token in the expression to which a given ternary or null
+     * coalescing operator applies
+     */
+    public static function getTernaryEndExpression(Token $token): Token
+    {
+        $t = self::getOperatorEndExpression($token);
+        // If `$token` is a null coalescing operator, `$t` could have a
+        // subsequent ternary operator
+        if (
+            $t->NextSibling
+            && $t->NextSibling->Flags & TokenFlag::TERNARY_OPERATOR
+        ) {
+            $t = self::getOperatorEndExpression($t->NextSibling);
+        }
+        return $t;
+    }
+
+    /**
      * Get the first ternary operator for the given ternary operator, or null if
      * it is not a ternary operator
      */
