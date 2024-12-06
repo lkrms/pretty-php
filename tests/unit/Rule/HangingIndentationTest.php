@@ -40,22 +40,22 @@ PHP,
                 <<<'PHP'
 <?php
 do
-    $result = true
-        ? 'true'
-            ? 't'
-            : false
-        : 'f';
+    $foo = $bar
+        ? $baz
+            ? $qux
+            : $quux
+        : $quuux;
 while (false);
 
 PHP,
                 <<<'PHP'
 <?php
 do
-$result = true
-? 'true'
-? 't'
-: false
-: 'f';
+$foo = $bar
+? $baz
+? $qux
+: $quux
+: $quuux;
 while (false);
 PHP,
             ],
@@ -63,22 +63,39 @@ PHP,
                 <<<'PHP'
 <?php
 do
-    $result = true
-        ? 'true'
-        : false
-        ? 't'
-        : 'f';
+    $foo = $bar
+        ? $baz
+        : $qux
+            ? $quux
+            : $quuux;
 while (false);
 
 PHP,
                 <<<'PHP'
 <?php
 do
-$result = true
-? 'true'
-: false
-? 't'
-: 'f';
+$foo = $bar
+? $baz
+: $qux
+? $quux
+: $quuux;
+while (false);
+PHP,
+            ],
+            [
+                <<<'PHP'
+<?php
+do
+    $foo = $bar ||
+        $baz;
+while (false);
+
+PHP,
+                <<<'PHP'
+<?php
+do
+$foo = $bar ||
+$baz;
 while (false);
 PHP,
             ],
@@ -344,6 +361,51 @@ $alpha =
         ?: $delta
         ?? $echo
         ?: $foxtrot;
+$alpha = $bravo
+    ?: $charlie
+    ?? $delta
+    ?: $echo
+    ?? $foxtrot;
+$alpha =
+    $bravo
+        ?: $charlie
+        ?? $delta
+        ?: $echo
+        ?? $foxtrot;
+$alpha = $bravo
+    ?? $charlie
+    ?? $delta
+    ?: $echo
+    ?: $foxtrot;
+$alpha =
+    $bravo
+        ?? $charlie
+        ?? $delta
+        ?: $echo
+        ?: $foxtrot;
+$alpha = $bravo
+    ?: $charlie
+    ?: $delta
+    ?? $echo
+    ?? $foxtrot;
+$alpha =
+    $bravo
+        ?: $charlie
+        ?: $delta
+        ?? $echo
+        ?? $foxtrot;
+$alpha = $bravo ?: $charlie
+    ?: $delta ?? $echo
+    ?? $foxtrot;
+$alpha = $bravo ?? $charlie
+    ?? $delta ?: $echo
+    ?: $foxtrot;
+$alpha = $bravo ?? $charlie
+    ?: $delta ?? $echo
+    ?: $foxtrot;
+$alpha = $bravo ?: $charlie
+    ?? $delta ?: $echo
+    ?? $foxtrot;
 
 PHP,
                 <<<'PHP'
@@ -359,6 +421,144 @@ $bravo
 ?: $delta
 ?? $echo
 ?: $foxtrot;
+$alpha = $bravo
+?: $charlie
+?? $delta
+?: $echo
+?? $foxtrot;
+$alpha =
+$bravo
+?: $charlie
+?? $delta
+?: $echo
+?? $foxtrot;
+$alpha = $bravo
+?? $charlie
+?? $delta
+?: $echo
+?: $foxtrot;
+$alpha =
+$bravo
+?? $charlie
+?? $delta
+?: $echo
+?: $foxtrot;
+$alpha = $bravo
+?: $charlie
+?: $delta
+?? $echo
+?? $foxtrot;
+$alpha =
+$bravo
+?: $charlie
+?: $delta
+?? $echo
+?? $foxtrot;
+$alpha = $bravo ?: $charlie
+?: $delta ?? $echo
+?? $foxtrot;
+$alpha = $bravo ?? $charlie
+?? $delta ?: $echo
+?: $foxtrot;
+$alpha = $bravo ?? $charlie
+?: $delta ?? $echo
+?: $foxtrot;
+$alpha = $bravo ?: $charlie
+?? $delta ?: $echo
+?? $foxtrot;
+PHP,
+            ],
+            [
+                <<<'PHP'
+<?php
+$a = $b
+    ?: $c or
+        $d
+            ?: $e;
+$a = $b
+    ? $c
+    : $d or
+        $e
+            ? $f
+            : $g;
+$a = $b
+    ?: $c
+    ?: $d or
+        $e
+            ?: $f
+            ?: $g;
+$a = $b
+    ?? $c
+    ?? $d or
+        $e
+            ?? $f
+            ?? $g;
+$a = $b
+    ?? $c
+    ?: $d
+    ?? $e
+    ?: $f or
+        $g
+            ?? $h
+            ?: $i
+            ?? $j
+            ?: $k;
+$a = $b
+    ?: $c
+    ?? $d
+    ?: $e
+    ?? $f or
+        $g
+            ?: $h
+            ?? $i
+            ?: $j
+            ?? $k;
+
+PHP,
+                <<<'PHP'
+<?php
+$a = $b
+?: $c or
+$d
+?: $e;
+$a = $b
+? $c
+: $d or
+$e
+? $f
+: $g;
+$a = $b
+?: $c
+?: $d or
+$e
+?: $f
+?: $g;
+$a = $b
+?? $c
+?? $d or
+$e
+?? $f
+?? $g;
+$a = $b
+?? $c
+?: $d
+?? $e
+?: $f or
+$g
+?? $h
+?: $i
+?? $j
+?: $k;
+$a = $b
+?: $c
+?? $d
+?: $e
+?? $f or
+$g
+?: $h
+?? $i
+?: $j
+?? $k;
 PHP,
             ],
             [

@@ -232,7 +232,7 @@ If an arrow function expression starts on a new line, a callback is registered t
 
 ### `AlignTernaryOperators`, if enabled (call 1: `processTokens()`)
 
-If a ternary or null coalescing operator has a leading newline, a callback is registered to align it with its expression.
+If a ternary or null coalescing operator has a leading newline, a callback is registered to align it with its expression, or with the first token on the previous line if its expression breaks over multiple lines.
 
 ### `AlignLists`, if enabled (call 1: `processList()`)
 
@@ -259,7 +259,7 @@ This is achieved by:
 
 ### `AlignTernaryOperators`, if enabled (call 2: _`callback`_)
 
-Ternary and null coalescing operators with leading newlines are aligned with their expressions.
+Ternary and null coalescing operators with leading newlines are aligned with their expressions, or with the first token on the previous line if their expressions break over multiple lines.
 
 This is achieved by:
 

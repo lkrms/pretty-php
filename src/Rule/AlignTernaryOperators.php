@@ -53,10 +53,12 @@ final class AlignTernaryOperators implements TokenRule
      * Apply the rule to the given tokens
      *
      * If a ternary or null coalescing operator has a leading newline, a
-     * callback is registered to align it with its expression.
+     * callback is registered to align it with its expression, or with the first
+     * token on the previous line if its expression breaks over multiple lines.
      *
      * @prettyphp-callback Ternary and null coalescing operators with leading
-     * newlines are aligned with their expressions.
+     * newlines are aligned with their expressions, or with the first token on
+     * the previous line if their expressions break over multiple lines.
      *
      * This is achieved by:
      *
@@ -85,7 +87,17 @@ final class AlignTernaryOperators implements TokenRule
                 continue;
             }
 
-            $alignWith = TokenUtil::getOperatorExpression($prevTernary ?? $token);
+            $expr = TokenUtil::getTernaryExpression($prevTernary ?? $token);
+            /** @var Token */
+            $prev = ($prevTernary ?? $token)->PrevCode;
+            /** @var Token */
+            $alignWith = $expr->collect($prev)
+                              ->reverse()
+                              ->find(fn(Token $t) =>
+                                         $t === $expr || (
+                                             $t->Flags & TokenFlag::CODE
+                                             && $t->hasNewlineBefore()
+                                         ));
 
             $this->setAlignedWith($token, $alignWith);
 
@@ -96,13 +108,25 @@ final class AlignTernaryOperators implements TokenRule
                 static::class,
                 $token,
                 static function () use ($token, $alignWith, $until, $tabSize) {
-                    $delta = $token->getColumnDelta($alignWith, true) + $tabSize;
                     while ($adjacent = $until->adjacentBeforeNewline()) {
                         $until = TokenUtil::getOperatorEndExpression($adjacent);
                     }
-                    foreach ($token->collect($until) as $token) {
-                        $token->LinePadding += $delta;
+                    if (
+                        ($end = $until->endOfUnenclosedControlStructureBody())
+                        && $end->index < $until->index
+                    ) {
+                        $until = $end;
                     }
+                    $tokens = $token->collect($until);
+                    ($callback = static function () use ($token, $alignWith, $tabSize, $tokens) {
+                        $delta = $token->getColumnDelta($alignWith, true) + $tabSize;
+                        if ($delta) {
+                            foreach ($tokens as $token) {
+                                $token->LinePadding += $delta;
+                            }
+                        }
+                    })();
+                    $alignWith->Data[TokenData::ALIGNMENT_CALLBACKS][] = $callback;
                 }
             );
         }
