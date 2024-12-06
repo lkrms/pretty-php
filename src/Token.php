@@ -68,7 +68,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
 
     /**
      * @var array<TokenData::*,mixed>
-     * @phpstan-var array{string,TokenCollection,int,self,self,self,self,TokenCollection,int,TokenCollection,int}
+     * @phpstan-var array{string,TokenCollection,int,self,self,self,self,TokenCollection,int,TokenCollection,Closure[],int}
      */
     public array $Data;
 
@@ -1114,6 +1114,15 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         if ($this->Next && ($after = $whitespace & 0b111000111000)) {
             $this->Next->Whitespace &= ~($after >> 3);
         }
+    }
+
+    /**
+     * Check if, between the previous code token and the token, there's a
+     * newline between tokens
+     */
+    public function hasNewlineAfterPrevCode(): bool
+    {
+        return $this->PrevCode && $this->PrevCode->hasNewlineBeforeNextCode();
     }
 
     /**

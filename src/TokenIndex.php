@@ -583,6 +583,14 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
+     * Ternary operators
+     *
+     * @var array<int,bool>
+     */
+    public array $OperatorTernary = self::OPERATOR_TERNARY
+        + self::TOKEN_INDEX;
+
+    /**
      * T_AT, T_DEC, T_DOLLAR, T_INC, T_LOGICAL_NOT, T_NOT
      *
      * @var array<int,bool>
