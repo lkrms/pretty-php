@@ -64,7 +64,13 @@ interface TokenData
     public const PROPERTY_HOOKS = 9;
 
     /**
+     * A list of closures that align other tokens with the token when its output
+     * column changes
+     */
+    public const ALIGNMENT_CALLBACKS = 10;
+
+    /**
      * The type applied to an open bracket by the HangingIndentation rule
      */
-    public const HANGING_INDENT_PARENT_TYPE = 10;
+    public const HANGING_INDENT_PARENT_TYPE = 11;
 }

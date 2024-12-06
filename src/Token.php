@@ -11,7 +11,6 @@ use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Contract\HasTokenNames;
 use Lkrms\PrettyPHP\Internal\TokenCollection;
-use Lkrms\PrettyPHP\Internal\TokenIndentDelta;
 use Salient\Utility\Str;
 use Closure;
 use JsonSerializable;
@@ -69,7 +68,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
 
     /**
      * @var array<TokenData::*,mixed>
-     * @phpstan-var array{string,TokenCollection,int,self,self,self,self,TokenCollection,int,TokenCollection,int}
+     * @phpstan-var array{string,TokenCollection,int,self,self,self,self,TokenCollection,int,TokenCollection,Closure[],int}
      */
     public array $Data;
 
@@ -1118,6 +1117,15 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     }
 
     /**
+     * Check if, between the previous code token and the token, there's a
+     * newline between tokens
+     */
+    public function hasNewlineAfterPrevCode(): bool
+    {
+        return $this->PrevCode && $this->PrevCode->hasNewlineBeforeNextCode();
+    }
+
+    /**
      * Check if, between the token and the next code token, there's a newline
      * between tokens
      */
@@ -1254,12 +1262,43 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     }
 
     /**
-     * Get the difference in indentation between the token and a given alignment
-     * token
+     * Get the difference in output column between the token and a given token
      */
-    public function getIndentDelta(self $token): TokenIndentDelta
+    public function getColumnDelta(self $token, bool $beforeText): int
     {
-        return TokenIndentDelta::between($this, $token);
+        return $token->getOutputColumn($beforeText) - $this->getOutputColumn($beforeText);
+    }
+
+    /**
+     * Get the output column of the token
+     */
+    public function getOutputColumn(bool $beforeText): int
+    {
+        return $beforeText
+            ? ($this->Prev
+                ? $this->Prev->getNextOutputColumn(true)
+                : 0)
+            : $this->getNextOutputColumn(false);
+    }
+
+    private function getNextOutputColumn(bool $afterWhitespace): int
+    {
+        $sol = $this->startOfLine(false);
+        $line = $sol->collect($this)->render(true, false);
+        if ($afterWhitespace) {
+            /** @var Token */
+            $next = $this->Next;
+            $line .= $this->Formatter->Renderer->renderWhitespaceBefore($next, true);
+        }
+        $delta = 0;
+        if (($pos = strrpos($line, "\n")) !== false) {
+            $line = substr($line, $pos + 1);
+        } elseif ($sol->id === \T_END_HEREDOC) {
+            $delta += $sol->getIndent() * $this->Formatter->TabSize
+                + $sol->LinePadding
+                - $sol->LineUnpadding;
+        }
+        return mb_strlen($line) + $delta;
     }
 
     // Collection methods:
@@ -1456,52 +1495,6 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     }
 
     // --
-
-    /**
-     * Get the token's offset relative to the most recent alignment token or the
-     * start of the line, whichever is closest
-     *
-     * An alignment token is a token where {@see Token::$AlignedWith} is set.
-     *
-     * Whitespace at the start of the line is ignored.
-     *
-     * @param bool $includeToken If `true` (the default), the offset includes
-     * the token itself.
-     * @param bool $allowSelfAlignment If `true`, the token itself is considered
-     * an alignment token candidate.
-     */
-    public function alignmentOffset(bool $includeToken = true, bool $allowSelfAlignment = false): int
-    {
-        $startOfLine = $this->startOfLine();
-        $from = $startOfLine
-                    ->collect($this)
-                    ->reverse()
-                    ->find(
-                        fn(self $t, ?self $next) =>
-                            ($t->AlignedWith
-                                && ($allowSelfAlignment || $t !== $this))
-                            || ($next
-                                && $next === $this->AlignedWith)
-                    ) ?? $startOfLine;
-
-        if ($includeToken) {
-            $code = $from->collect($this)->render(true);
-        } else {
-            /** @var self */
-            $prev = $this->Prev;
-            $code = $from->collect($prev)->render(true, true, false);
-        }
-        $offset = mb_strlen($code);
-        // Handle strings with embedded newlines
-        if (($newline = mb_strrpos($code, "\n")) !== false) {
-            $newLinePadding = $offset - $newline - 1;
-            $offset = $newLinePadding - ($this->LinePadding - $this->LineUnpadding);
-        } else {
-            $offset -= $from->hasNewlineBefore() ? $from->LineUnpadding : 0;
-        }
-
-        return $offset;
-    }
 
     /**
      * If the token were moved to the right, get the last token that would move
