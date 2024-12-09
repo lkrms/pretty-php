@@ -191,9 +191,11 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
                 }
             }
         }
+        // @codeCoverageIgnoreStart
         $leftAssociative = false;
         $rightAssociative = false;
         return -1;
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -226,9 +228,11 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
                 }
             }
         }
+        // @codeCoverageIgnoreStart
         $leftAssociative = false;
         $rightAssociative = false;
         return -1;
+        // @codeCoverageIgnoreEnd
     }
 
     /**
