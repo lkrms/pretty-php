@@ -36,15 +36,7 @@ final class TokenCollection extends Collection implements Stringable
     }
 
     /**
-     * @phpstan-assert-if-false !null $this->first()
-     * @phpstan-assert-if-false !null $this->last()
-     */
-    public function isEmpty(): bool
-    {
-        return !$this->Items;
-    }
-
-    /**
+     * @phpstan-assert-if-true non-empty-array<array-key,Token> $this->all()
      * @phpstan-assert-if-true !null $this->first()
      * @phpstan-assert-if-true !null $this->last()
      */
@@ -81,6 +73,7 @@ final class TokenCollection extends Collection implements Stringable
 
     /**
      * @param array<int,bool> $index
+     * @phpstan-assert-if-true non-empty-array<array-key,Token> $this->all()
      * @phpstan-assert-if-true !null $this->first()
      * @phpstan-assert-if-true !null $this->last()
      */
@@ -96,6 +89,7 @@ final class TokenCollection extends Collection implements Stringable
 
     /**
      * @param array<int,bool> $index
+     * @phpstan-assert-if-true non-empty-array<array-key,Token> $this->all()
      * @phpstan-assert-if-true !null $this->first()
      * @phpstan-assert-if-true !null $this->last()
      */
