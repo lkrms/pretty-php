@@ -140,6 +140,14 @@ Whitespace is applied to structural and `match` expression braces as follows:
 
 > Open brace placement is left for a rule that runs after vertical whitespace has been applied.
 
+### `PreserveOneLineStatements`, if enabled
+
+Newlines are suppressed between tokens in statements and control structures that start and end on the same line in the input.
+
+If a `switch` case and its statement list are on the same line in the input, they are treated as one statement.
+
+Attributes on their own line are excluded from consideration.
+
 ### `BlankBeforeReturn`, if enabled
 
 Blank lines are added before non-consecutive `return`, `yield` and `yield from` statements.

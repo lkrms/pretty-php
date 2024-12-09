@@ -769,6 +769,27 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     }
 
     /**
+     * Get the last token in the statement list of a switch case, or null if the
+     * token is not part of a case or default statement in a switch
+     */
+    public function endOfSwitchCaseStatementList(): ?self
+    {
+        if (!$this->EndStatement || !$this->inSwitchCase()) {
+            return null;
+        }
+
+        $t = $this->EndStatement;
+        while (
+            ($next = $t->NextSibling)
+            && !$this->Idx->CaseOrDefault[$next->id]
+        ) {
+            /** @var self */
+            $t = $next->EndStatement;
+        }
+        return $t;
+    }
+
+    /**
      * Check if the token is in a case or default statement in a switch
      */
     public function inSwitchCase(): bool

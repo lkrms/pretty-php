@@ -4,29 +4,21 @@ namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Concern\StatementRuleTrait;
 use Lkrms\PrettyPHP\Contract\StatementRule;
+use Lkrms\PrettyPHP\Token;
 
 /**
- * Suppress newlines in statements and control structures that start and end on
- * the same line, including individual case statements
+ * Suppress newlines between tokens in statements and control structures that
+ * start and end on the same line in the input
  *
- * Examples:
- *
- * ```php
- * // Short anonymous functions
- * $callback = function ($value) { $result = doSomethingWith($value); return $result; };
- *
- * // Case statements
- * switch ($value) {
- *     case 1: $result = doSomething(); break;
- *     case 2: $result = doSomethingElse(); break;
- *     default: $result = doDefaultThing(); break;
- * }
- * ```
+ * @api
  */
 final class PreserveOneLineStatements implements StatementRule
 {
     use StatementRuleTrait;
 
+    /**
+     * @inheritDoc
+     */
     public static function getPriority(string $method): ?int
     {
         return [
@@ -34,20 +26,35 @@ final class PreserveOneLineStatements implements StatementRule
         ][$method] ?? null;
     }
 
+    /**
+     * Apply the rule to the given statements
+     *
+     * Newlines are suppressed between tokens in statements and control
+     * structures that start and end on the same line in the input.
+     *
+     * If a `switch` case and its statement list are on the same line in the
+     * input, they are treated as one statement.
+     *
+     * Attributes on their own line are excluded from consideration.
+     */
     public function processStatements(array $statements): void
     {
         foreach ($statements as $token) {
             if (
-                !$this->preserveOneLine(
-                    $token,
-                    $until = $token->pragmaticEndOfExpression(false, false)
-                )
+                ($end = $token->endOfSwitchCaseStatementList())
+                && $this->preserveOneLine($token, $end)
+            ) {
+                continue;
+            }
+
+            /** @var Token */
+            $end = $token->EndStatement;
+            if (
+                !$this->preserveOneLine($token, $end)
                 && $this->Idx->Attribute[$token->id]
             ) {
-                $this->preserveOneLine(
-                    $token->skipNextSiblingFrom($this->Idx->Attribute),
-                    $until
-                );
+                $start = $token->skipNextSiblingFrom($this->Idx->Attribute);
+                $this->preserveOneLine($start, $end);
             }
         }
     }

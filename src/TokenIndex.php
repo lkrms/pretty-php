@@ -308,6 +308,17 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
+     * T_CASE, T_DEFAULT
+     *
+     * @var array<int,bool>
+     */
+    public array $CaseOrDefault = [
+        \T_CASE => true,
+        \T_DEFAULT => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
      * Casts
      *
      * @var array<int,bool>

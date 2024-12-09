@@ -893,7 +893,7 @@ final class Parser implements Immutable
             if ($t->id === \T_WHILE && !(
                 $t->PrevSibling
                 && $t->PrevSibling->PrevSibling
-                && $t->PrevSibling->PrevSibling->id !== \T_WHILE
+                && $t->PrevSibling->PrevSibling->id === \T_WHILE
             )) {
                 return $t === $token;
             }
