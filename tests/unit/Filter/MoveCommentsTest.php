@@ -451,6 +451,10 @@ fn(): /* Comment */ ?int => null
 label:  // Comment
 label:  // Comment
 
+function foo() {}
+
+label:  // Comment
+
 PHP,
                 <<<'PHP'
 <?php
@@ -469,6 +473,8 @@ fn(): /* Comment */ ?int => null
 ?>
 <?php
 label:  // Comment
+label:  // Comment
+function foo() {}
 label:  // Comment
 PHP,
                 $formatter,
