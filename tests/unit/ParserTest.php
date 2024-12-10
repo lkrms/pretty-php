@@ -106,6 +106,125 @@ else /* comment */:
 endif;
 PHP,
             ],
+            [
+                [
+                    "T1:L2:'if' - T12:L4:';'",
+                    "T3:L2:'\$foo'",
+                    "T8:L3:'\$bar'",
+                    "T13:L6:'do' - T21:L7:';'",
+                    "T17:L7:'foo' - T19:L7:')'",
+                    "T22:L9:'while' - T28:L9:';'",
+                    "T24:L9:'foo' - T26:L9:')'",
+                    "T29:L11:'for' - T34:L11:';'",
+                    "T31:L11:';'",
+                    "T32:L11:';'",
+                    "T35:L13:'foreach' - T41:L13:';'",
+                    "T37:L13:'\$foo' - T39:L13:'\$bar'",
+                    "T42:L15:'if' - T62:L20:';'",
+                    "T44:L15:'\$foo'",
+                    "T52:L17:'\$baz'",
+                    "T63:L22:'do' - T74:L24:';'",
+                    "T70:L24:'bar' - T72:L24:')'",
+                    "T75:L26:'do' - T89:L28:';'",
+                    "T78:L27:'foo' - T80:L27:')'",
+                    "T85:L28:'bar' - T87:L28:')'",
+                    "T90:L30:'while' - T99:L31:';'",
+                    "T92:L30:'foo' - T94:L30:')'",
+                    "T100:L33:'for' - T108:L34:';'",
+                    "T102:L33:';'",
+                    "T103:L33:';'",
+                    "T109:L36:'foreach' - T118:L37:';'",
+                    "T111:L36:'\$foo' - T113:L36:'\$bar'",
+                ],
+                <<<'PHP'
+<?php
+if ($foo);
+elseif ($bar);
+else;
+
+do;
+while (foo());
+
+while (foo());
+
+for (;;);
+
+foreach ($foo as $bar);
+
+if ($foo)
+    bar();
+elseif ($baz)
+    qux();
+else
+    quux();
+
+do
+    foo();
+while (bar());
+
+do
+    while (foo());
+while (bar());
+
+while (foo())
+    bar();
+
+for (;;)
+    foo();
+
+foreach ($foo as $bar)
+    baz();
+PHP,
+            ],
+            [
+                [
+                    "T1:L2:'if' - T27:L8:'}'",
+                    "T3:L2:'\$foo'",
+                    "T6:L3:'bar' - T9:L3:';'",
+                    "T13:L4:'\$baz'",
+                    "T16:L5:'qux' - T19:L5:';'",
+                    "T23:L7:'quux' - T26:L7:';'",
+                    "T28:L10:'do' - T41:L12:';'",
+                    "T30:L11:'foo' - T33:L11:';'",
+                    "T37:L12:'bar' - T39:L12:')'",
+                    "T42:L14:'while' - T53:L16:'}'",
+                    "T44:L14:'foo' - T46:L14:')'",
+                    "T49:L15:'bar' - T52:L15:';'",
+                    "T54:L18:'for' - T64:L20:'}'",
+                    "T56:L18:';'",
+                    "T57:L18:';'",
+                    "T60:L19:'foo' - T63:L19:';'",
+                    "T65:L22:'foreach' - T76:L24:'}'",
+                    "T67:L22:'\$foo' - T69:L22:'\$bar'",
+                    "T72:L23:'baz' - T75:L23:';'",
+                ],
+                <<<'PHP'
+<?php
+if ($foo) {
+    bar();
+} elseif ($baz) {
+    qux();
+} else {
+    quux();
+}
+
+do {
+    foo();
+} while (bar());
+
+while (foo()) {
+    bar();
+}
+
+for (;;) {
+    foo();
+}
+
+foreach ($foo as $bar) {
+    baz();
+}
+PHP,
+            ],
         ];
     }
 
