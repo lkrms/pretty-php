@@ -669,14 +669,11 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
             return TokenSubId::USE_VARIABLES;
         }
 
-        if ($this->Parent && $this->Parent->id === \T_OPEN_BRACE) {
-            $t = $this->Parent->PrevSibling;
-            while ($t && $this->Idx->DeclarationPart[$t->id]) {
-                if ($this->Idx->DeclarationClass[$t->id]) {
-                    return TokenSubId::USE_TRAIT;
-                }
-                $t = $t->PrevSibling;
-            }
+        if (
+            $this->Flags & TokenFlag::NAMED_DECLARATION
+            && $this->Data[TokenData::NAMED_DECLARATION_TYPE] === DeclarationType::USE_TRAIT
+        ) {
+            return TokenSubId::USE_TRAIT;
         }
 
         return TokenSubId::USE_IMPORT;
@@ -711,13 +708,13 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     public function isArrayOpenBracket(): bool
     {
         if ($this->id === \T_OPEN_PARENTHESIS) {
-            return $this->PrevCode
-                && $this->PrevCode->id === \T_ARRAY;
+            return ($prev = $this->PrevCode)
+                && $prev->id === \T_ARRAY;
         }
         return $this->id === \T_OPEN_BRACKET && (
-            $this->Expression === $this
-            || !$this->PrevCode
-            || !$this->Idx->EndOfDereferenceable[$this->PrevCode->id]
+            !($prev = $this->PrevCode)
+            || !$this->Idx->EndOfDereferenceable[$prev->id]
+            || $prev->Flags & TokenFlag::STRUCTURAL_BRACE
         );
     }
 
@@ -731,10 +728,10 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
 
     public function inUnaryContext(): bool
     {
-        return $this->Expression === $this
+        return $this->Statement === $this
             || !($prev = $this->PrevCode)
-            || $prev->Flags & TokenFlag::TERNARY_OPERATOR
-            || $this->Idx->BeforeUnary[$prev->id];
+            || $this->Idx->BeforeUnary[$prev->id]
+            || $prev->Flags & TokenFlag::TERNARY_OPERATOR;
     }
 
     /**
@@ -952,7 +949,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
      */
     public function wasFirstOnLine(): bool
     {
-        if ($this->id === \T_NULL) {
+        if ($this->id === \T_NULL || $this->Idx->Virtual[$this->id]) {
             return false;
         }
         if (!$this->Prev) {
@@ -969,7 +966,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
      */
     public function wasLastOnLine(): bool
     {
-        if ($this->id === \T_NULL) {
+        if ($this->id === \T_NULL || $this->Idx->Virtual[$this->id]) {
             return false;
         }
         if (!$this->Next) {
