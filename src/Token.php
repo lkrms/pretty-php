@@ -202,6 +202,35 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     }
 
     /**
+     * Get the line number (1-based) of the token's last character
+     */
+    public function getEndLine(): int
+    {
+        $text = $this->OriginalText ?? $this->text;
+        return $this->line + substr_count($text, "\n");
+    }
+
+    /**
+     * Get the position (0-based) of the token's last character
+     */
+    public function getEndPos(): int
+    {
+        $text = $this->OriginalText ?? $this->text;
+        return $this->pos + strlen($text);
+    }
+
+    /**
+     * Get the column number (1-based) of the token's last character
+     */
+    public function getEndColumn(): int
+    {
+        $text = $this->OriginalText ?? $this->text;
+        return ($pos = mb_strrpos($text, "\n")) === false
+            ? $this->column + mb_strlen($text)
+            : mb_strlen($text) - $pos;
+    }
+
+    /**
      * Expand leading tabs in the content of the token
      */
     public function expandText(bool $forOutput = false): string
@@ -468,25 +497,25 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     }
 
     /**
-     * Get the token, or the given token if it's a T_NULL
+     * Get the token, or the given value if it's a T_NULL
      *
-     * @param self|(Closure(): self) $token
+     * @template T
+     *
+     * @param T|(Closure(): T) $value
+     * @return static|T
      */
-    public function or($token): self
+    public function or($value)
     {
         if ($this->id !== \T_NULL) {
             return $this;
         }
-        if ($token instanceof Closure) {
-            return $token();
+        if ($value instanceof Closure) {
+            return $value();
         }
-        return $token;
+        return $value;
     }
 
-    /**
-     * Get a new T_NULL token
-     */
-    public function null(): self
+    private function null(): self
     {
         $token = new self(\T_NULL, '');
         $token->Formatter = $this->Formatter;
@@ -506,7 +535,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     }
 
     /**
-     * Check if the token is the colon after a switch case or a label
+     * Check if the token is the colon after a switch case or label
      */
     public function isColonStatementDelimiter(): bool
     {
@@ -538,9 +567,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
 
         switch ($this->id) {
             case \T_COLON:
-                // If it's too early to determine the token's sub-id, assign
-                // `null` to resolve it later and return `-1`
-                return ($this->subId = $this->getColonSubId()) ?? -1;
+                return $this->subId = $this->getColonSubId();
 
             case \T_QUESTION:
                 return $this->subId = $this->getQuestionSubId();
@@ -556,9 +583,9 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     }
 
     /**
-     * @return TokenSubId::COLON_*|null
+     * @return TokenSubId::COLON_*
      */
-    private function getColonSubId(): ?int
+    private function getColonSubId(): int
     {
         /** @var self */
         $prevCode = $this->PrevCode;
@@ -610,22 +637,41 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
 
             if ($prev) {
                 $prev = $prev->skipPrevSiblingFrom($this->Idx->FunctionIdentifier);
-
                 if ($this->Idx->FunctionOrFn[$prev->id]) {
                     return TokenSubId::COLON_RETURN_TYPE_DELIMITER;
                 }
             }
         }
 
-        // The remaining possibilities require statements to have been parsed
-        if ($prevCode->PrevSibling && !$prevCode->PrevSibling->EndStatement) {
-            return null;
+        if (
+            $prevCode->id === \T_STRING
+            && ($prev = $prevCode->PrevSibling)
+            && $prev->id === \T_COLON
+        ) {
+            $subId = $prev->getSubId();
+            if (
+                $subId === TokenSubId::COLON_ALT_SYNTAX_DELIMITER
+                || $subId === TokenSubId::COLON_SWITCH_CASE_DELIMITER
+                || $subId === TokenSubId::COLON_LABEL_DELIMITER
+            ) {
+                return TokenSubId::COLON_LABEL_DELIMITER;
+            }
         }
 
         if ($prevCode->id === \T_STRING && (
-            !$prevCode->PrevSibling || (
-                $prevCode->PrevSibling->EndStatement
-                && $prevCode->PrevSibling->EndStatement->NextSibling === $prevCode
+            !($prev = $prevCode->PrevSibling) || (
+                $prev->id === \T_SEMICOLON
+                || $prev->Flags & TokenFlag::STATEMENT_TERMINATOR
+                || (
+                    $prev->CloseBracket
+                    && $prev->CloseBracket->Flags & TokenFlag::STATEMENT_TERMINATOR
+                )
+                || $this->Idx->HasOptionalBraces[$prev->id]
+                || (
+                    $prev->id === \T_OPEN_PARENTHESIS
+                    && $prev->PrevSibling
+                    && $this->Idx->HasOptionalBracesWithExpression[$prev->PrevSibling->id]
+                )
             )
         )) {
             return TokenSubId::COLON_LABEL_DELIMITER;

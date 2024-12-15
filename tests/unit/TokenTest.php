@@ -34,6 +34,12 @@ switch ($argv[1] ?? null):
         exit(1);
 endswitch;
 
+while (false)
+    unreachable:
+
+do
+    reachable:
+while (false);
 PHP;
 
         $formatter = (new Formatter())->withDebug();
@@ -58,6 +64,8 @@ PHP;
             'COLON_ALT_SYNTAX_DELIMITER',
             'COLON_SWITCH_CASE_DELIMITER',
             'COLON_SWITCH_CASE_DELIMITER',
+            'COLON_LABEL_DELIMITER',
+            'COLON_LABEL_DELIMITER',
         ], $actual);
         $this->assertCount(7, array_unique($actual));
     }
