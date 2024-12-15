@@ -47,10 +47,7 @@ final class PreserveNewlines implements TokenRule
 
             if ($prev->OriginalText === null) {
                 $text = $prev->text;
-            } elseif (
-                $this->Idx->NotTrimmable[$prev->id]
-                || $this->Idx->LeftTrimmable[$prev->id]
-            ) {
+            } elseif ($this->Idx->NotRightTrimmable[$prev->id]) {
                 $text = $prev->OriginalText;
             } else {
                 $text = rtrim($prev->OriginalText);

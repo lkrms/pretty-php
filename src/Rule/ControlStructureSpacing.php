@@ -29,10 +29,7 @@ final class ControlStructureSpacing implements TokenRule
 
     public static function getTokens(TokenIndex $idx): array
     {
-        return TokenIndex::merge(
-            $idx->HasStatementWithOptionalBraces,
-            $idx->HasExpressionAndStatementWithOptionalBraces,
-        );
+        return $idx->HasOptionalBraces;
     }
 
     public function processTokens(array $tokens): void
@@ -55,7 +52,7 @@ final class ControlStructureSpacing implements TokenRule
             ) {
                 assert($token->NextCode->NextCode !== null);
                 $body = $token->NextCode->NextCode->NextSibling;
-            } elseif ($this->Idx->HasStatementWithOptionalBraces[$token->id]) {
+            } elseif ($this->Idx->HasOptionalBracesWithNoExpression[$token->id]) {
                 $body = $token->NextCode;
             } else {
                 $body = $token->NextCode->NextSibling;
