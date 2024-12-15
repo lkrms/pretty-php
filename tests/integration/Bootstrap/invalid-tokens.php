@@ -17,5 +17,7 @@ defined('T_PROPERTY_C') || define('T_PROPERTY_C', 13);
 defined('T_ATTRIBUTE_COMMENT') || define('T_ATTRIBUTE_COMMENT', 14);
 defined('T_END_ALT_SYNTAX') || define('T_END_ALT_SYNTAX', 15);
 defined('T_NULL') || define('T_NULL', 16);
+defined('T_OPEN_UNENCLOSED') || define('T_OPEN_UNENCLOSED', 17);
+defined('T_CLOSE_UNENCLOSED') || define('T_CLOSE_UNENCLOSED', 18);
 
 require dirname(__DIR__, 3) . '/vendor/autoload.php';
