@@ -11,6 +11,7 @@ interface HasTokenIndex
      * @var array<int,false>
      */
     public const TOKEN_INDEX = [
+        0 => false,
         \T_ABSTRACT => false,
         \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG => false,
         \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG => false,

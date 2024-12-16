@@ -69,6 +69,45 @@ $bar =
 Code between brackets (`()`, `[]`, `{}`) is always indented when the open
 bracket is followed by a line break.
 
+### Comments
+
+The `PlaceComments` rule aligns comments with subsequent code unless the next
+code token is a close bracket or switch case:
+
+```php
+<?php
+switch ($foo) {
+    //
+    case 0:
+    case 1:
+        //
+        bar();
+        // Indented
+    case 2:
+        // Indented
+    case 3:
+        baz();
+        break;
+
+        // Indented
+
+    case 4:
+        qux();
+        break;
+
+        // Indented
+
+    //
+    case 5:
+        quux();
+        break;
+
+    //
+    default:
+        break;
+}
+```
+
 ## Hanging indentation
 
 Hanging indentation is applied when the context of a line of code is unclear

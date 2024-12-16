@@ -8,6 +8,7 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Token;
+use Lkrms\PrettyPHP\TokenIndex;
 use Lkrms\PrettyPHP\TokenUtil;
 
 /**
@@ -52,6 +53,14 @@ final class HangingIndentation implements TokenRule
             self::PROCESS_TOKENS => 800,
             self::CALLBACK => 800,
         ][$method] ?? null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function getTokens(TokenIndex $idx): array
+    {
+        return $idx->NotVirtual;
     }
 
     /**
@@ -123,8 +132,9 @@ final class HangingIndentation implements TokenRule
             // Ignore tokens aligned by other rules
             if (
                 $token->AlignedWith
-                || $this->Idx->CloseBracketOrAlt[$token->id]
+                || $this->Idx->CloseBracket[$token->id]
                 || $this->Idx->HasStatement[$token->id]
+                || $this->Idx->AltEnd[$token->id]
             ) {
                 continue;
             }
@@ -207,12 +217,6 @@ final class HangingIndentation implements TokenRule
                 $until = TokenUtil::getTernaryEndExpression($trigger);
                 while ($adjacent = $until->adjacentBeforeNewline()) {
                     $until = TokenUtil::getOperatorEndExpression($adjacent);
-                }
-                if (
-                    ($end = $until->endOfUnenclosedControlStructureBody())
-                    && $end->index < $until->index
-                ) {
-                    $until = $end;
                 }
             } elseif ($this->Idx->Chain[$token->id]) {
                 $context[] = $token->Data[TokenData::CHAIN_OPENED_BY];
@@ -441,8 +445,7 @@ final class HangingIndentation implements TokenRule
             }
         }
 
-        return $token->endOfUnenclosedControlStructureBody()
-            ?? $token->EndStatement
+        return $token->EndStatement
             ?? $token;
     }
 

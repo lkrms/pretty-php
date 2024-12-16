@@ -515,7 +515,12 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
         $t['OutputColumn'] = $token->OutputColumn;
 
         foreach ($t as $key => &$value) {
-            if ($value === null || $value === []) {
+            if (
+                $value === null
+                || $value === []
+                || ($value === 0 && Str::endsWith($key, ['Indent', 'Padding'], true))
+                || ($value === -1 && Str::startsWith($key, ['line', 'pos', 'column', 'Output']))
+            ) {
                 unset($t[$key]);
                 continue;
             }
@@ -547,11 +552,24 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
 
     public static function describe(Token $token): string
     {
+        if ($token->Idx->Virtual[$token->id]) {
+            $realPrev = $token->skipPrevFrom($token->Idx->Virtual);
+            if ($token->Data[TokenData::BOUND_TO] === $realPrev) {
+                $payload = $realPrev;
+                $suffix = '<<(virtual)';
+            } else {
+                $payload = $token->skipNextFrom($token->Idx->Virtual);
+                $prefix = '(virtual)>>';
+            }
+        }
+
         return sprintf(
             'T%d:L%d:%s',
             $token->index,
             $token->line,
-            Str::ellipsize(var_export($token->text, true), 20),
+            ($prefix ?? '')
+                . Str::ellipsize(var_export(($payload ?? $token)->text, true), 20)
+                . ($suffix ?? ''),
         );
     }
 

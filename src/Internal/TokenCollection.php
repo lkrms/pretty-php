@@ -131,6 +131,19 @@ final class TokenCollection extends Collection implements Stringable
     }
 
     /**
+     * @param array<int,bool> $index
+     */
+    public function getFirstNotFrom(array $index): ?Token
+    {
+        foreach ($this->Items as $token) {
+            if (!$index[$token->id]) {
+                return $token;
+            }
+        }
+        return null;
+    }
+
+    /**
      * @return list<int>
      */
     public function getIds(): array
@@ -247,27 +260,14 @@ final class TokenCollection extends Collection implements Stringable
         $to = end($this->Items);
         $renderer = $from->Formatter->Renderer;
 
-        $code = $renderer->render($from, $to, $softTabs);
-
-        $after = $renderer->renderWhitespaceAfter($to);
-        if ($after !== '') {
-            $afterLength = strlen($after);
-            if ($trimAfter) {
-                if (substr($code, -$afterLength) === $after) {
-                    // Remove trailing whitespace if the renderer added it
-                    $code = substr($code, 0, -$afterLength);
-                }
-            } elseif (substr($code, -$afterLength) !== $after) {
-                $code .= $after;
-            }
-        }
-
-        if ($trimBefore) {
-            $before = $renderer->renderWhitespaceBefore($from, $softTabs);
-            return $before === ''
-                ? $code
-                : substr($code, strlen($before));
-        }
+        $code = $renderer->render(
+            $from,
+            $to,
+            $softTabs,
+            false,
+            $trimBefore,
+            $trimAfter
+        );
 
         return ltrim($code, "\n");
     }
@@ -281,7 +281,9 @@ final class TokenCollection extends Collection implements Stringable
     {
         $text = [];
         foreach ($this->Items as $token) {
-            $text[] = $token->text;
+            if (!$token->Idx->Virtual[$token->id]) {
+                $text[] = $token->text;
+            }
         }
         return implode($delimiter, $text);
     }
@@ -294,7 +296,13 @@ final class TokenCollection extends Collection implements Stringable
         // Shift *_BEFORE and *_AFTER to their NO_* counterparts, then clear
         // other bits
         $remove = $whitespace << 6 & 0b111111000000;
+        $ignoreVirtual = false;
         foreach ($this->Items as $token) {
+            if (!$ignoreVirtual) {
+                $ignoreVirtual = true;
+            } elseif ($token->Idx->Virtual[$token->id]) {
+                continue;
+            }
             $token->Whitespace |= $whitespace;
             if ($remove) {
                 // @phpstan-ignore argument.type
@@ -323,6 +331,8 @@ final class TokenCollection extends Collection implements Stringable
         foreach ($this->Items as $token) {
             if ($ignore) {
                 $ignore = false;
+            } elseif ($token->Idx->Virtual[$token->id]) {
+                continue;
             } else {
                 $token->Whitespace |= $whitespace;
                 if ($remove) {

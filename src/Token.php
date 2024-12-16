@@ -68,7 +68,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
 
     /**
      * @var array<TokenData::*,mixed>
-     * @phpstan-var array{string,TokenCollection,int,self,self,self,self,TokenCollection,int,TokenCollection,Closure[],int}
+     * @phpstan-var array{string,TokenCollection,int,self,self,self,self,TokenCollection,int,TokenCollection,Closure[],self,bool,self,self|null,self|null,int}
      */
     public array $Data;
 
@@ -271,6 +271,32 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     }
 
     // Navigation methods:
+
+    /**
+     * Get the previous non-virtual token
+     */
+    public function prevReal(): ?self
+    {
+        $real = $this->Idx->Virtual[$this->id]
+            ? $this->Data[TokenData::BOUND_TO]
+            : $this;
+        return $real->Prev && $this->Idx->Virtual[$real->Prev->id]
+            ? $real->Prev->Data[TokenData::PREV_REAL]
+            : $real->Prev;
+    }
+
+    /**
+     * Get the next non-virtual token
+     */
+    public function nextReal(): ?self
+    {
+        $real = $this->Idx->Virtual[$this->id]
+            ? $this->Data[TokenData::BOUND_TO]
+            : $this;
+        return $real->Next && $this->Idx->Virtual[$real->Next->id]
+            ? $real->Next->Data[TokenData::NEXT_REAL]
+            : $real->Next;
+    }
 
     /**
      * Get the previous sibling with the given token ID
@@ -725,26 +751,6 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         return TokenSubId::USE_IMPORT;
     }
 
-    /**
-     * Get the last token in an unenclosed control structure body, or null if
-     * the token is not part of a control structure with an unenclosed body
-     */
-    public function endOfUnenclosedControlStructureBody(): ?self
-    {
-        if (!$this->EndStatement) {
-            return null;
-        }
-        $end = $this->EndStatement->prevSiblingOf(\T_SEMICOLON, true);
-        if ($end->id !== \T_NULL) {
-            /** @var self */
-            $next = $end->NextSibling;
-            if ($next->continuesControlStructure()) {
-                return $end;
-            }
-        }
-        return null;
-    }
-
     public function continuesControlStructure(): bool
     {
         return $this->Idx->ContinuesControlStructure[$this->id]
@@ -1192,11 +1198,19 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     public function removeWhitespace(int $whitespace): void
     {
         $this->Whitespace &= ~$whitespace;
-        if ($this->Prev && ($before = $whitespace & 0b0111000111)) {
-            $this->Prev->Whitespace &= ~($before << 3);
+
+        if (
+            ($before = $whitespace & 0b0111000111)
+            && ($prev = $this->prevReal())
+        ) {
+            $prev->Whitespace &= ~($before << 3);
         }
-        if ($this->Next && ($after = $whitespace & 0b111000111000)) {
-            $this->Next->Whitespace &= ~($after >> 3);
+
+        if (
+            ($after = $whitespace & 0b111000111000)
+            && ($next = $this->nextReal())
+        ) {
+            $next->Whitespace &= ~($after >> 3);
         }
     }
 
@@ -1206,7 +1220,14 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
      */
     public function hasNewlineAfterPrevCode(): bool
     {
-        return $this->PrevCode && $this->PrevCode->hasNewlineBeforeNextCode();
+        $real = $this->Idx->Virtual[$this->id]
+            ? $this->Data[TokenData::BOUND_TO]
+            : $this;
+        $prev = $real->PrevCode
+            ? $real->PrevCode->skipPrevCodeFrom($this->Idx->Virtual)->or(null)
+            : null;
+
+        return $prev && $prev->hasNewlineBeforeNextCode();
     }
 
     /**
@@ -1218,20 +1239,33 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         if ($this->hasNewlineAfter()) {
             return true;
         }
-        if (!$this->NextCode || $this->NextCode === $this->Next) {
+
+        $real = $this->Idx->Virtual[$this->id]
+            ? $this->Data[TokenData::BOUND_TO]
+            : $this;
+        $next = $real->NextCode
+            ? $real->NextCode->skipNextCodeFrom($this->Idx->Virtual)->or(null)
+            : null;
+
+        if (!$next || (
+            $real->Next
+            && $next === $real->Next->skipNextFrom($this->Idx->Virtual)
+        )) {
             return false;
         }
-        $t = $this;
+
+        $t = $real;
         do {
             /** @var self */
             $t = $t->Next;
             if (
-                $t->hasNewlineAfter()
-                || ($this->Idx->Markup[$t->id] && $t->hasNewline())
+                !$this->Idx->Virtual[$t->id]
+                && ($t->hasNewlineAfter()
+                    || ($this->Idx->Markup[$t->id] && $t->hasNewline()))
             ) {
                 return true;
             }
-        } while ($t->Next !== $this->NextCode);
+        } while ($t->Next !== $next);
 
         return false;
     }
@@ -1258,48 +1292,62 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
 
     public function getWhitespaceBefore(): int
     {
-        return $this->Prev
+        $real = $this->Idx->Virtual[$this->id]
+            ? $this->Data[TokenData::BOUND_TO]
+            : $this;
+        $prev = $real->Prev && $this->Idx->Virtual[$real->Prev->id]
+            ? $real->Prev->Data[TokenData::PREV_REAL]
+            : $real->Prev;
+
+        return $prev
             ? (
-                $this->Whitespace >> 12              // CRITICAL_*_BEFORE
-                | $this->Prev->Whitespace >> 15      // CRITICAL_*_AFTER
+                $real->Whitespace >> 12        // CRITICAL_*_BEFORE
+                | $prev->Whitespace >> 15      // CRITICAL_*_AFTER
                 | ((
-                    $this->Whitespace >> 0           // *_BEFORE
-                    | $this->Prev->Whitespace >> 3   // *_AFTER
+                    $real->Whitespace >> 0     // *_BEFORE
+                    | $prev->Whitespace >> 3   // *_AFTER
                 ) & ~(
-                    $this->Whitespace >> 6           // NO_*_BEFORE
-                    | $this->Whitespace >> 18        // CRITICAL_NO_*_BEFORE
-                    | $this->Prev->Whitespace >> 9   // NO_*_AFTER
-                    | $this->Prev->Whitespace >> 21  // CRITICAL_NO_*_AFTER
+                    $real->Whitespace >> 6     // NO_*_BEFORE
+                    | $real->Whitespace >> 18  // CRITICAL_NO_*_BEFORE
+                    | $prev->Whitespace >> 9   // NO_*_AFTER
+                    | $prev->Whitespace >> 21  // CRITICAL_NO_*_AFTER
                 ))
             ) & 7
-            : ($this->Whitespace >> 12 | (
-                $this->Whitespace >> 0 & ~(
-                    $this->Whitespace >> 6
-                    | $this->Whitespace >> 18
+            : ($real->Whitespace >> 12 | (
+                $real->Whitespace >> 0 & ~(
+                    $real->Whitespace >> 6
+                    | $real->Whitespace >> 18
                 )
             )) & 7;
     }
 
     public function getWhitespaceAfter(): int
     {
-        return $this->Next
+        $real = $this->Idx->Virtual[$this->id]
+            ? $this->Data[TokenData::BOUND_TO]
+            : $this;
+        $next = $real->Next && $this->Idx->Virtual[$real->Next->id]
+            ? $real->Next->Data[TokenData::NEXT_REAL]
+            : $real->Next;
+
+        return $next
             ? (
-                $this->Whitespace >> 15              // CRITICAL_*_AFTER
-                | $this->Next->Whitespace >> 12      // CRITICAL_*_BEFORE
+                $real->Whitespace >> 15        // CRITICAL_*_AFTER
+                | $next->Whitespace >> 12      // CRITICAL_*_BEFORE
                 | ((
-                    $this->Whitespace >> 3           // *_AFTER
-                    | $this->Next->Whitespace >> 0   // *_BEFORE
+                    $real->Whitespace >> 3     // *_AFTER
+                    | $next->Whitespace >> 0   // *_BEFORE
                 ) & ~(
-                    $this->Whitespace >> 9           // NO_*_AFTER
-                    | $this->Whitespace >> 21        // CRITICAL_NO_*_AFTER
-                    | $this->Next->Whitespace >> 6   // NO_*_BEFORE
-                    | $this->Next->Whitespace >> 18  // CRITICAL_NO_*_BEFORE
+                    $real->Whitespace >> 9     // NO_*_AFTER
+                    | $real->Whitespace >> 21  // CRITICAL_NO_*_AFTER
+                    | $next->Whitespace >> 6   // NO_*_BEFORE
+                    | $next->Whitespace >> 18  // CRITICAL_NO_*_BEFORE
                 ))
             ) & 7
-            : ($this->Whitespace >> 15 | (
-                $this->Whitespace >> 3 & ~(
-                    $this->Whitespace >> 9
-                    | $this->Whitespace >> 21
+            : ($real->Whitespace >> 15 | (
+                $real->Whitespace >> 3 & ~(
+                    $real->Whitespace >> 9
+                    | $real->Whitespace >> 21
                 )
             )) & 7;
     }

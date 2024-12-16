@@ -2,17 +2,16 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\Token;
 use Lkrms\PrettyPHP\TokenIndex;
 
 /**
- * Apply whitespace to control structures where the body has no enclosing braces
- *
- * Control structures that meet this criteria are also reported to the user via
- * {@see Formatter::registerProblem()}.
+ * Format control structures with unenclosed bodies
  *
  * @api
  */
@@ -20,6 +19,9 @@ final class ControlStructureSpacing implements TokenRule
 {
     use TokenRuleTrait;
 
+    /**
+     * @inheritDoc
+     */
     public static function getPriority(string $method): ?int
     {
         return [
@@ -27,115 +29,76 @@ final class ControlStructureSpacing implements TokenRule
         ][$method] ?? null;
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function getTokens(TokenIndex $idx): array
     {
         return $idx->HasOptionalBraces;
     }
 
+    /**
+     * @inheritDoc
+     */
+    public static function needsSortedTokens(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Apply the rule to the given tokens
+     *
+     * If the body of a control structure has no enclosing braces:
+     *
+     * - a newline is added after the body (if empty)
+     * - a newline is added before and after the body (if non-empty)
+     * - blank lines before the body are suppressed
+     * - blank lines after the body are suppressed if the control structure
+     *   continues
+     */
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            // Ignore the second half of `elseif` expressed as `else if`
             if (
-                $token->id === \T_IF
-                && $token->PrevCode
-                && $token->PrevCode->id === \T_ELSE
+                !($token->Flags & TokenFlag::UNENCLOSED_PARENT)
+                || ($token->id === \T_WHILE && $token->continuesControlStructure())
             ) {
                 continue;
             }
 
-            assert($token->NextCode !== null);
+            $open = $token->nextSiblingOf(\T_OPEN_UNENCLOSED);
+            $continues = $open->Data[TokenData::UNENCLOSED_CONTINUES];
+            $inner = $open->inner();
+            /** @var Token */
+            $close = $open->CloseBracket;
+            $body = $inner->getFirstNotFrom($this->Idx->Comment);
 
-            if (
-                $token->id === \T_ELSE
-                && $token->NextCode->id === \T_IF
-            ) {
-                assert($token->NextCode->NextCode !== null);
-                $body = $token->NextCode->NextCode->NextSibling;
-            } elseif ($this->Idx->HasOptionalBracesWithNoExpression[$token->id]) {
-                $body = $token->NextCode;
-            } else {
-                $body = $token->NextCode->NextSibling;
+            // `$body` is `null` if the body is a close tag
+            if (!$body) {
+                $open->applyWhitespace(Space::LINE_AFTER | Space::SPACE_AFTER);
+            } elseif ($body->id !== \T_SEMICOLON) {
+                $body->applyWhitespace(Space::LINE_BEFORE | Space::SPACE_BEFORE);
             }
+            $open->Whitespace |= Space::NO_BLANK_AFTER;
 
-            assert($body !== null);
-
-            // Ignore enclosed and empty bodies
-            if (
-                $body->id === \T_OPEN_BRACE
-                || $body->id === \T_COLON
-                || $body->id === \T_SEMICOLON
-                || ($body->Flags & TokenFlag::STATEMENT_TERMINATOR)
-            ) {
-                continue;
-            }
-
-            $token->Flags |= TokenFlag::HAS_UNENCLOSED_BODY;
-
-            // Add a newline before the token unless it continues a control
-            // structure where the previous body had enclosing braces
-            if (
-                !$token->PrevCode
-                || $token->PrevCode->id !== \T_CLOSE_BRACE
-                || !$token->continuesControlStructure()
-            ) {
-                $token->applyWhitespace(Space::LINE_BEFORE);
-            }
-
-            // Add newlines and suppress blank lines before unenclosed bodies
-            $body->Whitespace |= Space::NO_BLANK_BEFORE | Space::LINE_BEFORE | Space::SPACE_BEFORE;
-            $body->removeWhitespace(Space::NO_LINE_BEFORE);
-
-            // Find the last token in the body
-            $end = null;
-            $continues = false;
-            if ($token->id === \T_DO) {
-                $continues = true;
-            } elseif ($this->Idx->IfOrElseIf[$token->id]) {
-                assert($body->PrevSibling !== null);
-                $end = $body->PrevSibling->nextSiblingFrom($this->Idx->IfElseIfOrElse);
-                if ($end->id === \T_IF) {
-                    $end = $body->EndStatement;
-                } elseif ($end->id !== \T_NULL) {
-                    $end = $end->PrevCode;
-                    $continues = true;
-                }
-            }
-            if (
-                !$end
-                || $end->id === \T_NULL
-                || $end->index > $body->EndStatement->index
-            ) {
-                $end = $body->pragmaticEndOfExpression()
-                            ->withTerminator();
-            }
-
-            // Use PreIndent to apply indentation that isn't clobbered by
-            // `StandardIndentation`
-            foreach ($body->collect($end) as $t) {
-                $t->PreIndent++;
-            }
-
-            // Add a newline after the body
-            $end->Whitespace |= Space::LINE_AFTER | Space::SPACE_AFTER;
-            $end->removeWhitespace(Space::NO_LINE_AFTER);
-
-            // If the control structure continues, suppress blank lines after
-            // the body
+            // If the structure continues, `$close` is bound to `elseif`, `else`
+            // or `while`, otherwise it's bound to the end of the structure
             if ($continues) {
-                $end->Whitespace |= Space::NO_BLANK_AFTER;
+                $close->applyWhitespace(Space::LINE_BEFORE | Space::SPACE_BEFORE);
+                $close->Whitespace |= Space::NO_BLANK_BEFORE;
+            } else {
+                $close->applyWhitespace(Space::LINE_AFTER | Space::SPACE_AFTER);
             }
 
-            if (!$this->Formatter->DetectProblems) {
-                continue;
+            if ($this->Formatter->DetectProblems) {
+                $end = $inner->last();
+                $this->Formatter->registerProblem(
+                    '%s body has no enclosing braces',
+                    $body ?? $open,
+                    $end,
+                    $token->getTokenName(),
+                );
             }
-
-            $this->Formatter->registerProblem(
-                'Braces not used in %s control structure',
-                $token,
-                $end,
-                $token->getTokenName(),
-            );
         }
     }
 }

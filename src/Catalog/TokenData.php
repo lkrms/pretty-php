@@ -70,7 +70,35 @@ interface TokenData
     public const ALIGNMENT_CALLBACKS = 10;
 
     /**
+     * The control structure a T_OPEN_UNENCLOSED token is associated with
+     */
+    public const UNENCLOSED_PARENT = 11;
+
+    /**
+     * Whether or not the control structure a T_OPEN_UNENCLOSED token is
+     * associated with continues after its T_CLOSE_UNENCLOSED counterpart
+     */
+    public const UNENCLOSED_CONTINUES = 12;
+
+    /**
+     * The non-virtual token a virtual token is bound to
+     */
+    public const BOUND_TO = 13;
+
+    /**
+     * The last non-virtual token before a virtual token, or null if there is no
+     * such token
+     */
+    public const PREV_REAL = 14;
+
+    /**
+     * The next non-virtual token after a virtual token, or null if there is no
+     * such token
+     */
+    public const NEXT_REAL = 15;
+
+    /**
      * The type applied to an open bracket by the HangingIndentation rule
      */
-    public const HANGING_INDENT_PARENT_TYPE = 11;
+    public const HANGING_INDENT_PARENT_TYPE = 16;
 }

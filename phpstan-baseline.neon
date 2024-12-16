@@ -55,12 +55,6 @@ parameters:
 			path: src/Rule/AlignData.php
 
 		-
-			message: '#^Cannot access property \$index on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Rule/ControlStructureSpacing.php
-
-		-
 			message: '#^Cannot access property \$LinePadding on Lkrms\\PrettyPHP\\Token\|null\.$#'
 			identifier: property.nonObject
 			count: 1
@@ -79,19 +73,7 @@ parameters:
 			path: src/Rule/HeredocIndentation.php
 
 		-
-			message: '#^Cannot call method collect\(\) on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Rule/PlaceComments.php
-
-		-
 			message: '#^Cannot access property \$id on Lkrms\\PrettyPHP\\Token\|null\.$#'
 			identifier: property.nonObject
 			count: 1
 			path: src/Rule/PreserveNewlines.php
-
-		-
-			message: '#^Cannot access property \$id on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 3
-			path: src/Rule/StatementSpacing.php

@@ -102,6 +102,51 @@ PHP,
             [
                 <<<'PHP'
 <?php
+if (foo())
+    $foo = $bar
+        ? $baz
+            ? $qux
+            : $quux
+        : $quuux;
+elseif (bar())
+    $foo = $bar
+        ? $baz
+        : $qux
+            ? $quux
+            : $quuux;
+else
+    $foo = $bar
+        ? $baz
+            ? $qux
+            : $quux
+        : $quuux;
+
+PHP,
+                <<<'PHP'
+<?php
+if (foo())
+$foo = $bar
+? $baz
+? $qux
+: $quux
+: $quuux;
+elseif (bar())
+$foo = $bar
+? $baz
+: $qux
+? $quux
+: $quuux;
+else
+$foo = $bar
+? $baz
+? $qux
+: $quux
+: $quuux;
+PHP,
+            ],
+            [
+                <<<'PHP'
+<?php
 $a = $b->c(fn() =>
         $d &&
         $e,
@@ -222,6 +267,7 @@ do {
 while (true);
 
 do
+    // comment
     a();
 // comment
 while (true);
@@ -236,13 +282,17 @@ else {
 }
 
 if (true)
+    // comment
     a();
 // comment
 elseif (false)
+    // comment
     b();
 // comment
 else
+    // comment
     c();
+// comment
 
 PHP,
                 <<<'PHP'
@@ -256,6 +306,7 @@ do {}
 while (true);
 
 do
+// comment
 a();
 // comment
 while (true);
@@ -267,13 +318,17 @@ elseif (false) {}
 else {}
 
 if (true)
+// comment
 a();
 // comment
 elseif (false)
+// comment
 b();
 // comment
 else
+// comment
 c();
+// comment
 PHP,
             ],
             [

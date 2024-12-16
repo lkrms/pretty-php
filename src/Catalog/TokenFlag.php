@@ -100,5 +100,5 @@ interface TokenFlag
     /**
      * The token is a control structure with an unenclosed body
      */
-    public const HAS_UNENCLOSED_BODY = 16384;
+    public const UNENCLOSED_PARENT = 16384;
 }

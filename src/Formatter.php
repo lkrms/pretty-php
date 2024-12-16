@@ -1191,7 +1191,7 @@ final class Formatter implements Buildable, Immutable
             $first = reset($this->Tokens);
             /** @var Token */
             $last = end($this->Tokens);
-            $out = $this->Renderer->render($first, $last, false, true, true);
+            $out = $this->Renderer->render($first, $last, false, true);
             // @codeCoverageIgnoreStart
         } catch (Throwable $ex) {
             throw new FormatterException(

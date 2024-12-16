@@ -27,6 +27,11 @@ final class PreserveNewlines implements TokenRule
         ][$method] ?? null;
     }
 
+    public static function getTokens(TokenIndex $idx): array
+    {
+        return $idx->NotVirtual;
+    }
+
     public function processTokens(array $tokens): void
     {
         $preserveIndex = TokenIndex::merge(
@@ -35,7 +40,7 @@ final class PreserveNewlines implements TokenRule
         );
 
         foreach ($tokens as $token) {
-            $prev = $token->Prev;
+            $prev = $token->prevReal();
             if (
                 !$prev
                 || $prev->line === $token->line
@@ -179,6 +184,8 @@ final class PreserveNewlines implements TokenRule
         if (
             $line & Space::BLANK
             && (!$this->Idx->AllowBlankAfter[$token->id]
+                || ($token->id === \T_COLON
+                    && $token->NextSibling)
                 || ($token->id === \T_COMMA
                     && !$token->isDelimiterBetweenMatchArms())
                 || ($token->id === \T_SEMICOLON

@@ -339,6 +339,17 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
+     * T_CATCH, T_FINALLY
+     *
+     * @var array<int,bool>
+     */
+    public array $CatchOrFinally = [
+        \T_CATCH => true,
+        \T_FINALLY => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
      * T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR
      *
      * @var array<int,bool>
@@ -542,6 +553,18 @@ class TokenIndex implements HasTokenIndex, Immutable
         \T_WHITESPACE => true,
     ]
         + self::COMMENT
+        + self::TOKEN_INDEX;
+
+    /**
+     * T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO, T_INLINE_HTML
+     *
+     * @var array<int,bool>
+     */
+    public array $OutsideCode = [
+        \T_INLINE_HTML => true,
+        \T_OPEN_TAG => true,
+        \T_OPEN_TAG_WITH_ECHO => true,
+    ]
         + self::TOKEN_INDEX;
 
     /**
@@ -1176,6 +1199,7 @@ class TokenIndex implements HasTokenIndex, Immutable
      */
     public array $AllowBlankAfter = [
         \T_CLOSE_BRACE => true,
+        \T_COLON => true,
         \T_COMMA => true,
         \T_COMMENT => true,
         \T_DOC_COMMENT => true,

@@ -86,6 +86,51 @@ PHP,
             [
                 <<<'PHP'
 <?php
+if (foo())
+    $foo = $bar
+               ? $baz
+                     ? $qux
+                     : $quux
+               : $quuux;
+elseif (bar())
+    $foo = $bar
+               ? $baz
+               : $qux
+                     ? $quux
+                     : $quuux;
+else
+    $foo = $bar
+               ? $baz
+                     ? $qux
+                     : $quux
+               : $quuux;
+
+PHP,
+                <<<'PHP'
+<?php
+if (foo())
+$foo = $bar
+? $baz
+? $qux
+: $quux
+: $quuux;
+elseif (bar())
+$foo = $bar
+? $baz
+: $qux
+? $quux
+: $quuux;
+else
+$foo = $bar
+? $baz
+? $qux
+: $quux
+: $quuux;
+PHP,
+            ],
+            [
+                <<<'PHP'
+<?php
 $a = $b->c(fn() =>
         $d &&
         $e,

@@ -111,12 +111,6 @@ final class AlignTernaryOperators implements TokenRule
                     while ($adjacent = $until->adjacentBeforeNewline()) {
                         $until = TokenUtil::getOperatorEndExpression($adjacent);
                     }
-                    if (
-                        ($end = $until->endOfUnenclosedControlStructureBody())
-                        && $end->index < $until->index
-                    ) {
-                        $until = $end;
-                    }
                     $tokens = $token->collect($until);
                     ($callback = static function () use ($token, $alignWith, $tabSize, $tokens) {
                         $delta = $token->getColumnDelta($alignWith, true) + $tabSize;
