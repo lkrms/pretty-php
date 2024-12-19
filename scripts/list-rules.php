@@ -25,8 +25,8 @@ use Salient\Utility\Str;
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 /**
- * @param array<int,array<array{rule:class-string<Rule>,is_mandatory:bool,is_default:bool,pass:int,method:string,priority:int,php_doc:PHPDoc|null,tokens:array<int,bool>|array{'*'}|null,declarations:array<int,bool>|array{'*'}|null}>> $array
- * @param-out array<int,array<array{rule:class-string<Rule>,is_mandatory:bool,is_default:bool,pass:int,method:string,priority:int,php_doc:PHPDoc|null,tokens:array<int,bool>|array{'*'}|null,declarations:array<int,bool>|array{'*'}|null}>> $array
+ * @param array<int,array<array{rule:class-string<Rule>,is_mandatory:bool,is_default:bool,pass:int,method:string,priority:int,php_doc:PHPDoc|null,tokens:array<int,bool>|array{string}|null,declarations:array<int,bool>|array{'*'}|null}>> $array
+ * @param-out array<int,array<array{rule:class-string<Rule>,is_mandatory:bool,is_default:bool,pass:int,method:string,priority:int,php_doc:PHPDoc|null,tokens:array<int,bool>|array{string}|null,declarations:array<int,bool>|array{'*'}|null}>> $array
  * @param class-string<Rule> $rule
  * @param array<class-string<Rule>,array<string|null>>|null $callbackDocs
  */
@@ -57,10 +57,14 @@ function maybeAddRule(
             }
         }
         if ($method === TokenRule::PROCESS_TOKENS) {
+            /** @var TokenIndex|null */
             static $idx;
             $idx ??= new TokenIndex();
             /** @var class-string<TokenRule> $rule */
             $tokens = $rule::getTokens($idx);
+            if ($tokens === $idx->NotVirtual) {
+                $tokens = ['* (except virtual)'];
+            }
         } elseif ($method === DeclarationRule::PROCESS_DECLARATIONS) {
             static $all;
             $all ??= getAllDeclarationTypes();
@@ -201,26 +205,26 @@ foreach ($rules as $r) {
         IndexSpacing::class,
         OperatorSpacing::class,
     ], true)) {
-        if ($r['tokens'] === ['*']) {
-            $tokenRules['`*`'][] = $heading;
+        if (is_string($r['tokens'][0] ?? null)) {
+            $tokenRules[$r['tokens'][0]][] = $heading;
         } elseif ($r['tokens']) {
             foreach (array_keys(array_filter($r['tokens'])) as $id) {
                 $name = token_name($id);
                 if (!Str::startsWith($name, 'T_')) {
                     $name = HasTokenNames::TOKEN_NAME[$id] ?? $name;
                 }
-                $tokenRules['`' . $name . '`'][] = $heading;
+                $tokenRules[$name][] = $heading;
             }
         }
     }
 
     if ($r['declarations'] === ['*']) {
-        $declarationRules['`*`'][] = $heading;
+        $declarationRules['*'][] = $heading;
     } elseif ($r['declarations']) {
         foreach (array_keys(array_filter($r['declarations'])) as $id) {
             $name = Reflect::getConstantName(DeclarationType::class, $id);
             $name = ltrim($name, '_');
-            $declarationRules['`' . $name . '`'][] = $heading;
+            $declarationRules[$name][] = $heading;
         }
     }
 
@@ -271,7 +275,7 @@ if ($docs) {
 ksort($tokenRules);
 foreach ($tokenRules as $name => $rules) {
     sort($rules);
-    $table2[] = [$name, implode(', ', $rules)];
+    $table2[] = ['`' . $name . '`', implode(', ', $rules)];
 }
 
 printf("\n");
@@ -281,7 +285,7 @@ printTable($table2);
 ksort($declarationRules);
 foreach ($declarationRules as $name => $rules) {
     sort($rules);
-    $table3[] = [$name, implode(', ', $rules)];
+    $table3[] = ['`' . $name . '`', implode(', ', $rules)];
 }
 
 printf("\n");

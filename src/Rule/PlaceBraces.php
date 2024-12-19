@@ -100,7 +100,7 @@ final class PlaceBraces implements TokenRule
                 $next = $close->NextCode;
                 if ($next && $next->continuesControlStructure()) {
                     $close->Whitespace |= Space::SPACE_AFTER;
-                    if (!($next->Flags & TokenFlag::HAS_UNENCLOSED_BODY) || (
+                    if (!($next->Flags & TokenFlag::UNENCLOSED_PARENT) || (
                         // `$next` can only be `elseif` or `else`, so if the
                         // close brace is not the body of `if` or `elseif`, the
                         // `if` construct `$next` belongs to must be its parent,

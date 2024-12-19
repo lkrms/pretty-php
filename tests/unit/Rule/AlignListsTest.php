@@ -456,7 +456,27 @@ EOF],
 'p'], ['q',
 'r']);
 PHP,
-            ]
+            ],
+            'interface lists' => [
+                <<<'PHP'
+<?php
+interface Foo extends Bar,
+                      Baz,
+                      Qux {}
+
+class Foo extends Bar implements Baz,
+                                 Qux {}
+
+PHP,
+                <<<'PHP'
+<?php
+interface Foo extends Bar,
+    Baz,
+    Qux {}
+class Foo extends Bar implements Baz,
+    Qux {}
+PHP,
+            ],
         ];
     }
 }

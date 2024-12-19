@@ -34,6 +34,7 @@ abstract class TestCase extends PHPUnitTestCase implements HasTokenNames
         self::assertSame($expected, $first, 'Output is not formatted correctly.');
         self::assertSame($expected, $second, 'Output is not idempotent.');
         if ($last = Arr::last($formatter->getTokens() ?? [])) {
+            $last = $last->skipPrevFrom($formatter->TokenIndex->Virtual);
             self::assertSame($last->pos, $last->OutputPos, 'pos and OutputPos do not match.');
         }
     }

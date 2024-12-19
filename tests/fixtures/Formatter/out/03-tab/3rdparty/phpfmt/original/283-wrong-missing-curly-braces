@@ -147,8 +147,8 @@ if (true)
 			echo 2;
 		else
 			echo 3;
-		else
-			echo 3;
+	else
+		echo 3;
 
 foreach (getParameters() as $param)
 	$paramClasses[] = getClass() ? getClass()->name : null;

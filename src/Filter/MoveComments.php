@@ -256,7 +256,7 @@ final class MoveComments implements Filter
                     $prev = $this->getPrevSibling($prevIndex, 1, $prevIndex);
                 }
 
-                if ($prev && ($prev->id === \T_FUNCTION || $prev->id === \T_FN)) {
+                if ($prev && $this->Idx->FunctionOrFn[$prev->id]) {
                     // Allow comments AFTER return type delimiters
                     return $isLast;
                 }
@@ -280,7 +280,12 @@ final class MoveComments implements Filter
             if ($prevCode->id === \T_STRING && (
                 !($prev = $this->getPrevSibling($prevCodeIndex, 1, $prevIndex)) || (
                     $prev->id === \T_SEMICOLON
-                    || $prev->id === \T_CLOSE_BRACE
+                    // Checking `$prev` is a structural brace is unnecessary
+                    // unless there is an X and Y that makes this parseable:
+                    //
+                    // ```
+                    // $foo = $bar ? X { Y } Baz : $qux;
+                    || $prev->id === \T_OPEN_BRACE
                     || $this->rangeHasCloseTag($prevIndex + 1, $prevCodeIndex - 1)
                 )
             )) {

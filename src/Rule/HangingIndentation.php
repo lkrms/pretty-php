@@ -8,6 +8,7 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Token;
+use Lkrms\PrettyPHP\TokenIndex;
 use Lkrms\PrettyPHP\TokenUtil;
 
 /**
@@ -52,6 +53,14 @@ final class HangingIndentation implements TokenRule
             self::PROCESS_TOKENS => 800,
             self::CALLBACK => 800,
         ][$method] ?? null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function getTokens(TokenIndex $idx): array
+    {
+        return $idx->NotVirtual;
     }
 
     /**
@@ -123,8 +132,9 @@ final class HangingIndentation implements TokenRule
             // Ignore tokens aligned by other rules
             if (
                 $token->AlignedWith
-                || $this->Idx->CloseBracketOrAlt[$token->id]
+                || $this->Idx->CloseBracket[$token->id]
                 || $this->Idx->HasStatement[$token->id]
+                || $this->Idx->AltEnd[$token->id]
             ) {
                 continue;
             }
@@ -203,8 +213,11 @@ final class HangingIndentation implements TokenRule
                 $context[] = TokenUtil::getTernaryContext($trigger)
                     ?? TokenUtil::getTernary1($trigger)
                     ?? $trigger;
-                $until = self::getTernaryEndOfExpression($trigger);
                 $apply = $trigger;
+                $until = TokenUtil::getTernaryEndExpression($trigger);
+                while ($adjacent = $until->adjacentBeforeNewline()) {
+                    $until = TokenUtil::getOperatorEndExpression($adjacent);
+                }
             } elseif ($this->Idx->Chain[$token->id]) {
                 $context[] = $token->Data[TokenData::CHAIN_OPENED_BY];
             } elseif ($token->Heredoc && $token->Heredoc === $prev) {
@@ -262,7 +275,7 @@ final class HangingIndentation implements TokenRule
             //             $baz->qux()) ||
             //         $baz->quux())
             // ```
-            $until = $until ?? $apply->pragmaticEndOfExpression(true, true, true);
+            $until = $until ?? $this->getLastIndentable($apply);
             $indent = 0;
             $hanging = [];
             $parents =
@@ -306,7 +319,7 @@ final class HangingIndentation implements TokenRule
             if ($adjacent = $until->adjacentBeforeNewline()) {
                 foreach ($adjacent->collect($adjacent->endOfLine()) as $t) {
                     if ($t->AlignedWith) {
-                        $until = $adjacent->pragmaticEndOfExpression();
+                        $until = $this->getLastIndentable($adjacent);
                         break;
                     }
                 }
@@ -355,43 +368,85 @@ final class HangingIndentation implements TokenRule
         }
     }
 
-    /**
-     * Get the last token in the same statement as a ternary operator
-     */
-    public static function getTernaryEndOfExpression(Token $token): Token
+    private function getLastIndentable(Token $token): Token
     {
-        // Find the last token
-        // - in the third expression
-        // - of the last ternary expression in this statement
-        $current = $token;
-        do {
-            if (
-                $current->id === \T_COALESCE
-            ) {
-                $until = $current->EndExpression ?? $current;
-            } else {
-                /** @var Token */
-                $until = TokenUtil::getTernary2($current);
-                $until = $until->EndExpression ?? $current;
-            }
-        } while (
-            $until !== $current
-            && ($current = $until->NextSibling)
-            && ($current->id === \T_COALESCE
-                || ($current->id === \T_QUESTION
-                    && $current->Flags & TokenFlag::TERNARY_OPERATOR))
-        );
-
-        // And without breaking out of an unenclosed control structure
-        // body, proceed to the end of the expression
-        if (!(
-            $until->NextSibling
-            && $until->NextSibling->Flags & TokenFlag::TERNARY_OPERATOR
-        )) {
-            $until = $until->pragmaticEndOfExpression();
+        // Check if the token is part of a declaration with a body that hasn't
+        // been reached yet, not including anonymous functions or classes like
+        // the following, which can be moved around in their entirety:
+        //
+        // ```
+        // $foo = new
+        //     #[Attribute]
+        //     class implements
+        //         Bar,
+        //         Baz
+        //     {
+        //         // ...
+        //     };
+        // ```
+        //
+        // But anonymous classes like this cannot:
+        //
+        // ```
+        // $foo = new class implements
+        //     Bar,
+        //     Baz
+        // {
+        //     // ...
+        // };
+        // ```
+        $parts = $token->skipToStartOfDeclaration()
+                       ->declarationParts();
+        if (
+            !$parts->isEmpty()
+            && (
+                $parts->hasOneFrom($this->Idx->DeclarationTopLevel)
+                || ($token->Statement && $token->Statement->isProperty())
+            )
+            && ($last = $parts->last())->index >= $token->index
+            && $last->skipPrevSiblingFrom($this->Idx->Ampersand)->id !== \T_FUNCTION
+            && !(
+                ($first = $parts->first())->id === \T_NEW
+                && $first->NextCode === $token
+                && $first->nextSiblingOf(\T_CLASS)->hasNewlineAfterPrevCode()
+            ) && ($body = $last->nextSiblingOf(\T_OPEN_BRACE, true))->id !== \T_NULL
+        ) {
+            /** @var Token */
+            return $body->PrevCode;
         }
 
-        return $until;
+        // If the token is between `?` and `:` in a ternary expression, return
+        // the last token before `:`
+        $t = $token;
+        $ternaryColon = null;
+        while (($t = $t->prevSiblingFrom($this->Idx->OperatorTernary, true))->id !== \T_NULL) {
+            if ($t->Flags & TokenFlag::TERNARY_OPERATOR) {
+                if ($t->id === \T_QUESTION) {
+                    /** @var Token */
+                    return $t->Data[TokenData::OTHER_TERNARY_OPERATOR]->PrevCode;
+                }
+                $ternaryColon = $t;
+                break;
+            }
+        }
+
+        if (
+            $ternaryColon
+            && TokenUtil::getOperatorEndExpression($ternaryColon)->index >= $token->index
+        ) {
+            // If the token is between `:` and `?` in chained ternary
+            // expressions, return the last token before `?`
+            $t = $token;
+            while (($t = $t->nextSiblingOf(\T_QUESTION, true))->id !== \T_NULL) {
+                if ($t->Flags & TokenFlag::TERNARY_OPERATOR) {
+                    /** @var Token */
+                    return $t->PrevCode;
+                }
+            }
+        }
+
+        return $token->EndStatement
+            ?? $token;
     }
 
     /**
@@ -400,6 +455,7 @@ final class HangingIndentation implements TokenRule
     private function maybeCollapseOverhanging(Token $token, Token $until, array $hanging): void
     {
         $tokens = $token->collect($until);
+        $collapsed = [];
         foreach ($hanging as $index => $count) {
             for ($i = 0; $i < $count; $i++) {
                 // The purpose of overhanging indents is to visually separate
@@ -481,7 +537,16 @@ final class HangingIndentation implements TokenRule
                     if ($t->HangingIndentParentLevels[$index] ?? 0) {
                         $t->HangingIndent--;
                         $t->HangingIndentParentLevels[$index]--;
+                        $collapsed[$t->index] = $t;
                     }
+                }
+            }
+        }
+
+        foreach ($collapsed as $t) {
+            if ($callbacks = $t->Data[TokenData::ALIGNMENT_CALLBACKS] ?? null) {
+                foreach ($callbacks as $callback) {
+                    $callback();
                 }
             }
         }

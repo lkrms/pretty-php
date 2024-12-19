@@ -53,8 +53,8 @@ final class ProtectStrings implements TokenRule
      *
      * Changes to whitespace in non-constant strings are suppressed for:
      *
-     * - nested siblings
-     * - every descendant of square brackets that are nested siblings
+     * - inner siblings
+     * - every token between square brackets
      *
      * The latter is necessary because strings like `"$foo[0]"` and
      * `"$foo[$bar]"` are unparseable if there is any whitespace between the

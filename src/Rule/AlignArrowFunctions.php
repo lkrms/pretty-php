@@ -58,8 +58,11 @@ final class AlignArrowFunctions implements TokenRule
      * the `fn` they're associated with, or with the first token on the previous
      * line if its arguments break over multiple lines.
      *
-     * This is achieved by copying the alignment target's indentation to each
-     * token after making a calculated adjustment to `LinePadding`.
+     * This is achieved by:
+     *
+     * - calculating the difference between the current and desired output
+     *   columns of the first token in the expression
+     * - applying it to the `LinePadding` of each token
      */
     public function processTokens(array $tokens): void
     {
@@ -90,18 +93,16 @@ final class AlignArrowFunctions implements TokenRule
             $expr->AlignedWith = $alignWith;
 
             $tabSize = $this->Formatter->TabSize;
+
             $this->Formatter->registerCallback(
                 static::class,
                 $expr,
                 static function () use ($expr, $alignWith, $tabSize) {
-                    $offset = $alignWith->alignmentOffset(false) + $tabSize;
-                    $delta = $expr->getIndentDelta($alignWith);
-                    $delta->LinePadding += $offset;
-
+                    $delta = $expr->getColumnDelta($alignWith, true) + $tabSize;
                     /** @var Token */
                     $until = $expr->EndStatement;
-                    foreach ($expr->collect($until) as $token) {
-                        $delta->apply($token);
+                    foreach ($expr->collect($until) as $t) {
+                        $t->LinePadding += $delta;
                     }
                 },
             );

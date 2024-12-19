@@ -2,10 +2,10 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\TokenSubId;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\Token;
 use Lkrms\PrettyPHP\TokenIndex;
 
 /**
@@ -33,59 +33,63 @@ final class StatementSpacing implements TokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            switch ($token->id) {
-                case \T_COLON:
-                    // Ignore colons that don't start an alternative syntax block
-                    if (!$token->CloseBracket && $token->getSubId() !== TokenSubId::COLON_LABEL_DELIMITER) {
-                        continue 2;
-                    }
-                    break;
-
-                case \T_SEMICOLON:
-                    // Add SPACE after for loop expression delimiters where the next
-                    // expression is non-empty
+            $collapse = true;
+            if ($token->id === \T_COLON) {
+                if (
+                    !$token->CloseBracket
+                    && !$token->isColonStatementDelimiter()
+                ) {
+                    continue;
+                }
+            } else {
+                // Add space after `for` loop expression delimiters where the
+                // next expression is non-empty
+                if (
+                    ($parent = $token->Parent)
+                    && $parent->id === \T_OPEN_PARENTHESIS
+                    && ($prev = $parent->PrevCode)
+                    && $prev->id === \T_FOR
+                ) {
                     if (
-                        $token->Parent
-                        && $token->Parent->PrevCode
-                        && $token->Parent->id === \T_OPEN_PARENTHESIS
-                        && $token->Parent->PrevCode->id === \T_FOR
+                        $token->NextSibling
+                        && $token->NextSibling->id !== \T_SEMICOLON
                     ) {
-                        if (
-                            !$token->NextSibling
-                            || $token->NextSibling->id === \T_SEMICOLON
-                        ) {
-                            continue 2;
-                        }
                         $token->applyWhitespace(Space::SPACE_AFTER);
-                        continue 2;
                     }
+                    continue;
+                }
 
-                    // Don't make any changes after __halt_compiler()
-                    if ($token->Statement->id === \T_HALT_COMPILER) {
-                        continue 2;
+                /** @var Token */
+                $statement = $token->Statement;
+
+                // Don't make any changes after __halt_compiler()
+                if ($statement->id === \T_HALT_COMPILER) {
+                    continue;
+                }
+
+                // Don't collapse vertical whitespace between open braces and
+                // empty statements
+                if ($statement === $token) {
+                    if ($this->Formatter->DetectProblems) {
+                        $this->Formatter->registerProblem(
+                            'Empty statement',
+                            $token,
+                        );
                     }
-
-                    // Don't collapse whitespace before empty statements unless they
-                    // follow a close bracket or semicolon
-                    if ($token->Statement === $token) {
-                        if ($this->Formatter->DetectProblems) {
-                            $this->Formatter->registerProblem(
-                                'Empty statement',
-                                $token,
-                            );
-                        }
-                        if (
-                            !$this->Idx->CloseBracket[$token->Prev->id]
-                            && $token->Prev->id !== \T_SEMICOLON
-                        ) {
-                            continue 2;
-                        }
+                    if (($prev = $token->Prev) && (
+                        $this->Idx->OpenBracket[$prev->id]
+                        || ($prev->id === \T_COLON && $prev->CloseBracket)
+                    )) {
+                        $collapse = false;
                     }
-
-                    break;
+                }
             }
 
-            $token->Whitespace |= Space::NONE_BEFORE | Space::LINE_AFTER | Space::SPACE_AFTER;
+            $token->Whitespace |= ($collapse
+                    ? Space::NONE_BEFORE
+                    : Space::NO_SPACE_BEFORE)
+                | Space::LINE_AFTER
+                | Space::SPACE_AFTER;
         }
     }
 }

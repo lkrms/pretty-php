@@ -61,8 +61,8 @@ Formatting rules applied by `pretty-php` are as follows.
 
 Changes to whitespace in non-constant strings are suppressed for:
 
-- nested siblings
-- every descendant of square brackets that are nested siblings
+- inner siblings
+- every token between square brackets
 
 The latter is necessary because strings like `"$foo[0]"` and `"$foo[$bar]"` are unparseable if there is any whitespace between the brackets.
 
@@ -128,6 +128,35 @@ If a constructor has one or more promoted parameters, a line is added before eve
 
 If a property has unimplemented hooks with no modifiers or attributes (e.g. `public $Foo { &get; set; }`), they are collapsed to one line, otherwise hooks with statements are formatted like anonymous functions, and hooks that use abbreviated syntax are formatted like arrow functions.
 
+### `ControlStructureSpacing`
+
+If the body of a control structure has no enclosing braces:
+
+- a newline is added after the body (if empty)
+- a newline is added before and after the body (if non-empty)
+- blank lines before the body are suppressed
+- blank lines after the body are suppressed if the control structure continues
+
+### `PlaceComments` (call 1: `processTokens()`)
+
+Critical newlines are added after one-line comments with subsequent close tags.
+
+Newlines are added before and after:
+
+- DocBlocks
+- comments with a leading newline in the input
+- comments after top-level close braces if strict PSR-12 mode is enabled
+
+These comments are also saved for alignment with the next code token (unless it's a close bracket).
+
+Leading and trailing spaces are added to comments that don't appear on their own line, and comments where the previous token is a code token are saved to receive padding derived from `SpacesBesideCode` if they are the last token on the line after other rules are applied.
+
+For multi-line DocBlocks, and C-style comments that receive the same treatment:
+
+- leading blank lines are added unless the comment appears mid-statement (deferred for DocBlocks with the `COLLAPSIBLE_COMMENT` flag)
+- trailing blank lines are added to file-level comments
+- trailing blank lines are suppressed for DocBlocks with subsequent code
+
 ### `PlaceBraces` (call 1: `processTokens()`)
 
 Whitespace is applied to structural and `match` expression braces as follows:
@@ -139,6 +168,14 @@ Whitespace is applied to structural and `match` expression braces as follows:
 - Horizontal whitespace is suppressed between other empty braces.
 
 > Open brace placement is left for a rule that runs after vertical whitespace has been applied.
+
+### `PreserveOneLineStatements`, if enabled
+
+Newlines are suppressed between tokens in statements and control structures that start and end on the same line in the input.
+
+If a `switch` case and its statement list are on the same line in the input, they are treated as one statement.
+
+Attributes on their own line are excluded from consideration.
 
 ### `BlankBeforeReturn`, if enabled
 
@@ -230,11 +267,41 @@ Items in lists are arranged horizontally or vertically by replicating the arrang
 
 If an arrow function expression starts on a new line, a callback is registered to align it with the `fn` it's associated with, or with the first token on the previous line if its arguments break over multiple lines.
 
+### `AlignTernaryOperators`, if enabled (call 1: `processTokens()`)
+
+If a ternary or null coalescing operator has a leading newline, a callback is registered to align it with its expression, or with the first token on the previous line if its expression breaks over multiple lines.
+
+### `AlignLists`, if enabled (call 1: `processList()`)
+
+A callback is registered to align arguments, array elements and other list items, along with their inner and adjacent tokens, with the column after their open brackets, or with the first item in the list if they have no enclosing brackets.
+
+### `AlignChains`, if enabled (call 2: _`callback`_)
+
+Object operators in a chain of method calls are aligned with a given token.
+
+This is achieved by:
+
+- calculating the difference between the first object operator's current output column and its desired output column
+- applying it to the `LinePadding` of each object operator and its adjacent tokens
+- incrementing `LineUnpadding` for any `?->` operators, to accommodate the extra character
+
 ### `AlignArrowFunctions`, if enabled (call 2: _`callback`_)
 
 Tokens in arrow function expressions are aligned with the `fn` they're associated with, or with the first token on the previous line if its arguments break over multiple lines.
 
-This is achieved by copying the alignment target's indentation to each token after making a calculated adjustment to `LinePadding`.
+This is achieved by:
+
+- calculating the difference between the current and desired output columns of the first token in the expression
+- applying it to the `LinePadding` of each token
+
+### `AlignTernaryOperators`, if enabled (call 2: _`callback`_)
+
+Ternary and null coalescing operators with leading newlines are aligned with their expressions, or with the first token on the previous line if their expressions break over multiple lines.
+
+This is achieved by:
+
+- calculating the difference between the current and desired output columns of the operator
+- applying it to the `LinePadding` of the operator and its adjacent tokens
 
 ### `StandardSpacing` (call 3: _`callback`_)
 
@@ -244,16 +311,21 @@ The `TagIndent` of tokens between indented tags is adjusted by the difference, i
 
 In function declarations where `)` and `{` appear at the start of consecutive lines, they are collapsed to the same line.
 
+### `PlaceComments` (call 2: `beforeRender()`)
+
+Placement of comments saved earlier is finalised.
+
 ## `TokenRule` classes, by token
 
 | Token                                       | Rules                                                                                         |
 | ------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `*`                                         | `HangingIndentation`, `PreserveNewlines`, `StandardIndentation`                               |
+| `*`                                         | `StandardIndentation`                                                                         |
+| `* (except virtual)`                        | `HangingIndentation`, `PreserveNewlines`                                                      |
 | `T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG`     | `VerticalWhitespace`                                                                          |
 | `T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG` | `VerticalWhitespace`                                                                          |
 | `T_AND`                                     | `VerticalWhitespace`                                                                          |
-| `T_ATTRIBUTE_COMMENT`                       | `StandardSpacing`                                                                             |
 | `T_ATTRIBUTE`                               | `StandardSpacing`                                                                             |
+| `T_ATTRIBUTE_COMMENT`                       | `StandardSpacing`                                                                             |
 | `T_BACKTICK`                                | `ProtectStrings`                                                                              |
 | `T_BOOLEAN_AND`                             | `VerticalWhitespace`                                                                          |
 | `T_BOOLEAN_OR`                              | `VerticalWhitespace`                                                                          |
@@ -269,16 +341,16 @@ In function declarations where `)` and `{` appear at the start of consecutive li
 | `T_DECLARE`                                 | `StandardSpacing`                                                                             |
 | `T_DEFAULT`                                 | `SwitchIndentation`                                                                           |
 | `T_DNUMBER`                                 | `NormaliseNumbers`                                                                            |
+| `T_DO`                                      | `ControlStructureSpacing`                                                                     |
 | `T_DOC_COMMENT`                             | `Drupal`, `NormaliseComments`, `PlaceComments`, `WordPress`                                   |
 | `T_DOUBLE_QUOTE`                            | `ProtectStrings`                                                                              |
-| `T_DO`                                      | `ControlStructureSpacing`                                                                     |
-| `T_ELSEIF`                                  | `ControlStructureSpacing`, `Drupal`, `SemiStrictExpressions`, `StrictExpressions`             |
 | `T_ELSE`                                    | `ControlStructureSpacing`, `Drupal`                                                           |
+| `T_ELSEIF`                                  | `ControlStructureSpacing`, `Drupal`, `SemiStrictExpressions`, `StrictExpressions`             |
 | `T_ENCAPSED_AND_WHITESPACE`                 | `NormaliseStrings`                                                                            |
 | `T_FINALLY`                                 | `Drupal`                                                                                      |
 | `T_FN`                                      | `AlignArrowFunctions`, `Laravel`, `Symfony`                                                   |
-| `T_FOREACH`                                 | `ControlStructureSpacing`, `SemiStrictExpressions`, `StrictExpressions`                       |
 | `T_FOR`                                     | `ControlStructureSpacing`, `SemiStrictExpressions`, `StrictExpressions`, `VerticalWhitespace` |
+| `T_FOREACH`                                 | `ControlStructureSpacing`, `SemiStrictExpressions`, `StrictExpressions`                       |
 | `T_IF`                                      | `ControlStructureSpacing`, `SemiStrictExpressions`, `StrictExpressions`                       |
 | `T_LNUMBER`                                 | `NormaliseNumbers`                                                                            |
 | `T_LOGICAL_AND`                             | `VerticalWhitespace`                                                                          |
@@ -291,8 +363,8 @@ In function declarations where `)` and `{` appear at the start of consecutive li
 | `T_OPEN_BRACE`                              | `PlaceBraces`, `VerticalWhitespace`, `WordPress`                                              |
 | `T_OPEN_BRACKET`                            | `WordPress`                                                                                   |
 | `T_OPEN_PARENTHESIS`                        | `WordPress`                                                                                   |
-| `T_OPEN_TAG_WITH_ECHO`                      | `StandardSpacing`                                                                             |
 | `T_OPEN_TAG`                                | `StandardSpacing`                                                                             |
+| `T_OPEN_TAG_WITH_ECHO`                      | `StandardSpacing`                                                                             |
 | `T_OR`                                      | `VerticalWhitespace`                                                                          |
 | `T_QUESTION`                                | `AlignTernaryOperators`, `VerticalWhitespace`                                                 |
 | `T_RETURN`                                  | `BlankBeforeReturn`                                                                           |
@@ -301,8 +373,8 @@ In function declarations where `)` and `{` appear at the start of consecutive li
 | `T_SWITCH`                                  | `SemiStrictExpressions`, `StrictExpressions`, `SwitchIndentation`                             |
 | `T_WHILE`                                   | `ControlStructureSpacing`, `SemiStrictExpressions`, `StrictExpressions`                       |
 | `T_XOR`                                     | `VerticalWhitespace`                                                                          |
-| `T_YIELD_FROM`                              | `BlankBeforeReturn`                                                                           |
 | `T_YIELD`                                   | `BlankBeforeReturn`                                                                           |
+| `T_YIELD_FROM`                              | `BlankBeforeReturn`                                                                           |
 
 ## `DeclarationRule` classes, by declaration type
 
@@ -320,7 +392,7 @@ In function declarations where `)` and `{` appear at the start of consecutive li
 | `PARAM`        | `ListSpacing`, `StandardSpacing`                       |
 | `PROPERTY`     | `DeclarationSpacing`, `ListSpacing`, `StandardSpacing` |
 | `TRAIT`        | `DeclarationSpacing`, `Drupal`                         |
+| `USE`          | `DeclarationSpacing`                                   |
 | `USE_CONST`    | `DeclarationSpacing`                                   |
 | `USE_FUNCTION` | `DeclarationSpacing`                                   |
 | `USE_TRAIT`    | `DeclarationSpacing`                                   |
-| `USE`          | `DeclarationSpacing`                                   |

@@ -12,8 +12,8 @@ if (true)
         echo 1;
     else
         echo 2;
-    else
-        echo 3;
+else
+    echo 3;
 
 if (true)
     for ($i = 0; $i < 10; $i++)
@@ -27,5 +27,5 @@ if (true)
             echo 2;
         else
             echo 3;
-        else
-            echo 3;
+    else
+        echo 3;

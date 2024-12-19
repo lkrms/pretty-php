@@ -147,6 +147,7 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
         while (
             ($next = $t->NextSibling)
             && $next->Statement === $token->Statement
+            && $next !== $token->EndStatement
         ) {
             if (self::OPERATOR_PRECEDENCE_INDEX[$next->id]) {
                 $nextPrecedence = self::getOperatorPrecedence($next);
@@ -190,9 +191,48 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
                 }
             }
         }
+        // @codeCoverageIgnoreStart
         $leftAssociative = false;
         $rightAssociative = false;
         return -1;
+        // @codeCoverageIgnoreEnd
+    }
+
+    /**
+     * Get the precedence of an operator with the given token ID, or -1 if it is
+     * not an operator
+     *
+     * Lower numbers indicate higher precedence.
+     *
+     * @param-out bool $leftAssociative
+     * @param-out bool $rightAssociative
+     */
+    public static function getPrecedenceOf(
+        int $id,
+        bool $unary = false,
+        bool $ternary = false,
+        ?bool &$leftAssociative = null,
+        ?bool &$rightAssociative = null
+    ): int {
+        if ($precedence = self::OPERATOR_PRECEDENCE_INDEX[$id]) {
+            foreach ($precedence as [$arity, $precedence, $leftAssoc, $rightAssoc]) {
+                if (
+                    $arity === 0
+                    || ($arity === self::UNARY && $unary)
+                    || ($arity === self::BINARY && !$unary)
+                    || ($arity === self::TERNARY && $ternary)
+                ) {
+                    $leftAssociative = $leftAssoc;
+                    $rightAssociative = $rightAssoc;
+                    return $precedence;
+                }
+            }
+        }
+        // @codeCoverageIgnoreStart
+        $leftAssociative = false;
+        $rightAssociative = false;
+        return -1;
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -205,25 +245,100 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
      */
     public static function getTernaryContext(Token $token): ?Token
     {
-        $before = self::getTernary1($token) ?? $token;
+        $precedence = self::getPrecedenceOf(\T_QUESTION, false, true);
+        if ($ternary = $token->Flags & TokenFlag::TERNARY_OPERATOR) {
+            /** @var Token */
+            $before = self::getTernary1($token);
+            $short = $before->NextCode === self::getTernary2($token);
+        } else {
+            $before = $token;
+            $short = false;
+        }
         $t = $before;
         while (
-            ($t = $t->PrevSibling)
+            (!$ternary || $short)
+            && ($t = $t->PrevSibling)
             && $t->Statement === $token->Statement
         ) {
-            if ((
-                $t->id === \T_COALESCE
-                && $t->index < $before->index
-            ) || (
-                $t->Flags & TokenFlag::TERNARY_OPERATOR
-                && self::getTernary1($t) === $t
-                && $t->Data[TokenData::OTHER_TERNARY_OPERATOR]->index
-                    < $before->index
-            )) {
+            if ($t->id === \T_COALESCE) {
                 $context = $t;
+            } elseif ($t->Flags & TokenFlag::TERNARY_OPERATOR) {
+                if (
+                    self::getTernary1($t) === $t
+                    && $t->Data[TokenData::OTHER_TERNARY_OPERATOR]->index
+                        < $before->index
+                ) {
+                    $context = $t;
+                    $ternary = true;
+                    $short = $t->NextCode === self::getTernary2($t);
+                }
+            } elseif (self::OPERATOR_PRECEDENCE_INDEX[$t->id]) {
+                $prevPrecedence = self::getOperatorPrecedence($t);
+                if ($prevPrecedence !== -1 && $prevPrecedence > $precedence) {
+                    break;
+                }
             }
         }
         return $context ?? null;
+    }
+
+    /**
+     * Get the first token in the expression to which a given ternary or null
+     * coalescing context applies
+     *
+     * @param Token $context A token returned by
+     * {@see TokenUtil::getTernaryContext()}, or the first ternary or null
+     * coalescing operator in a statement.
+     */
+    public static function getTernaryExpression(Token $context): Token
+    {
+        $precedence = self::getPrecedenceOf(\T_QUESTION, false, true);
+        $t = $context;
+        while (
+            ($prev = $t->PrevSibling)
+            && $prev->Statement === $context->Statement
+        ) {
+            if ($prev->Flags & TokenFlag::TERNARY_OPERATOR) {
+                return $t;
+            }
+            if (self::OPERATOR_PRECEDENCE_INDEX[$prev->id]) {
+                $prevPrecedence = self::getOperatorPrecedence($prev);
+                if ($prevPrecedence !== -1 && $prevPrecedence > $precedence) {
+                    return $t;
+                }
+            }
+            $t = $prev;
+        }
+        return $t;
+    }
+
+    /**
+     * Get the last token in the expression to which a given ternary or null
+     * coalescing operator applies
+     */
+    public static function getTernaryEndExpression(Token $token): Token
+    {
+        $precedence = self::getPrecedenceOf(\T_QUESTION, false, true);
+        $t = self::getTernary2($token) ?? $token;
+        while (
+            ($next = $t->NextSibling)
+            && $next->Statement === $token->Statement
+            && $next !== $token->EndStatement
+        ) {
+            if ($next->Flags & TokenFlag::TERNARY_OPERATOR) {
+                if ($next->id === \T_COLON) {
+                    return $t->CloseBracket ?? $t;
+                }
+                $next = $next->Data[TokenData::OTHER_TERNARY_OPERATOR];
+            } elseif (self::OPERATOR_PRECEDENCE_INDEX[$next->id]) {
+                $nextPrecedence = self::getOperatorPrecedence($next);
+                if ($nextPrecedence !== -1 && $nextPrecedence > $precedence) {
+                    return $t->CloseBracket ?? $t;
+                }
+            }
+            $t = $next;
+        }
+        return $t->CloseBracket ?? $t;
     }
 
     /**
@@ -337,7 +452,7 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
                         ? self::describe($value)
                         : ($value instanceof TokenCollection
                             ? $value->toString(' ')
-                            : $value);
+                            : (is_array($value) ? count($value) : $value));
             }
         }
 
@@ -400,7 +515,12 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
         $t['OutputColumn'] = $token->OutputColumn;
 
         foreach ($t as $key => &$value) {
-            if ($value === null || $value === []) {
+            if (
+                $value === null
+                || $value === []
+                || ($value === 0 && Str::endsWith($key, ['Indent', 'Padding'], true))
+                || ($value === -1 && Str::startsWith($key, ['line', 'pos', 'column', 'Output']))
+            ) {
                 unset($t[$key]);
                 continue;
             }
@@ -432,11 +552,24 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
 
     public static function describe(Token $token): string
     {
+        if ($token->Idx->Virtual[$token->id]) {
+            $realPrev = $token->skipPrevFrom($token->Idx->Virtual);
+            if ($token->Data[TokenData::BOUND_TO] === $realPrev) {
+                $payload = $realPrev;
+                $suffix = '<<(virtual)';
+            } else {
+                $payload = $token->skipNextFrom($token->Idx->Virtual);
+                $prefix = '(virtual)>>';
+            }
+        }
+
         return sprintf(
             'T%d:L%d:%s',
             $token->index,
             $token->line,
-            Str::ellipsize(var_export($token->text, true), 20),
+            ($prefix ?? '')
+                . Str::ellipsize(var_export(($payload ?? $token)->text, true), 20)
+                . ($suffix ?? ''),
         );
     }
 

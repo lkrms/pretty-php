@@ -23,6 +23,8 @@
         'T_ATTRIBUTE_COMMENT' => false,
         'T_END_ALT_SYNTAX' => false,
         'T_NULL' => false,
+        'T_OPEN_UNENCLOSED' => false,
+        'T_CLOSE_UNENCLOSED' => false,
     ];
 
     $defined = [];
@@ -80,6 +82,8 @@
     defined('T_ATTRIBUTE_COMMENT') || define('T_ATTRIBUTE_COMMENT', $getNextId());
     defined('T_END_ALT_SYNTAX') || define('T_END_ALT_SYNTAX', $getNextId());
     defined('T_NULL') || define('T_NULL', $getNextId());
+    defined('T_OPEN_UNENCLOSED') || define('T_OPEN_UNENCLOSED', $getNextId());
+    defined('T_CLOSE_UNENCLOSED') || define('T_CLOSE_UNENCLOSED', $getNextId());
 
     // Define single-character tokens because the text of a token cannot be
     // relied upon to determine its type, e.g. the following tests may be true

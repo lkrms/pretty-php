@@ -28,6 +28,14 @@ final class StandardIndentation implements TokenRule
     /**
      * @inheritDoc
      */
+    public static function needsSortedTokens(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
@@ -43,17 +51,15 @@ final class StandardIndentation implements TokenRule
             $prev = $token->Prev;
             $token->Indent = $prev->Indent;
 
-            if (!$prev->CloseBracket) {
-                continue;
-            }
+            if ($prev->CloseBracket) {
+                if ($hasNewline = $token->hasNewlineAfterPrevCode()) {
+                    $token->Indent++;
+                }
 
-            if ($prev->hasNewlineBeforeNextCode()) {
-                $token->Indent++;
-                $this->mirrorBracket($prev, true);
-                continue;
+                if (!$this->Idx->Virtual[$prev->id]) {
+                    $this->mirrorBracket($prev, $hasNewline);
+                }
             }
-
-            $this->mirrorBracket($prev, false);
         }
     }
 }

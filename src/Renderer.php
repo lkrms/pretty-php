@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP;
 
+use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasMutator;
@@ -9,6 +10,9 @@ use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use Generator;
 
+/**
+ * @api
+ */
 final class Renderer implements Immutable
 {
     use HasMutator;
@@ -39,40 +43,60 @@ final class Renderer implements Immutable
                     ->with('Idx', $formatter->TokenIndex);
     }
 
+    /**
+     * @param bool $final Reindent multi-line comments and set the output
+     * position properties of each token?
+     */
     public function render(
         Token $from,
         Token $to,
         bool $softTabs = false,
-        bool $setPosition = false,
-        bool $final = false
+        bool $final = false,
+        bool $noWhitespaceBefore = false,
+        bool $noWhitespaceAfter = false
     ): string {
         $indentMayHaveTabs = !$softTabs && $this->Tab === "\t";
 
         $t = $from;
         $code = '';
         do {
-            // Render whitespace before the token
-            $before = $this->renderWhitespaceBefore($t, $softTabs);
+            if ($this->Idx->Virtual[$t->id]) {
+                $after = $before = '';
+            } else {
+                // Render whitespace before the token
+                $before = $noWhitespaceBefore
+                    && $t === $from
+                        ? ''
+                        : $this->renderWhitespaceBefore($t, $softTabs);
 
-            // If whitespace after the token will not be rendered on the next
-            // iteration, render it now
-            $after = (
-                !$t->Next
-                || $this->Idx->NotTrimmable[$t->Next->id]
-                || $this->Idx->RightTrimmable[$t->Next->id]
-            )
-                ? $this->renderWhitespaceAfter($t)
-                : '';
+                // If whitespace after the token will not be rendered on the
+                // next iteration, render it now
+                $isLast = $t === $to
+                    || !$t->Next
+                    || (
+                        $this->Idx->Virtual[$t->Next->id]
+                        && !$t->Next->Data[TokenData::NEXT_REAL]
+                    );
+                $after = (
+                    $noWhitespaceAfter
+                    && $isLast
+                ) || !(
+                    $isLast
+                    || !$t->Next
+                    || $this->Idx->NotLeftTrimmable[$t->Next->id]
+                )
+                    ? ''
+                    : $this->renderWhitespaceAfter($t);
+            }
 
-            if ($setPosition) {
-                if (!$t->Prev) {
+            if ($final) {
+                if ($t === $from) {
                     $t->OutputLine = 1;
                     $t->OutputColumn = 1;
                     $t->OutputPos = 0;
                 }
 
-                // Adjust the token's position to account for any leading
-                // whitespace
+                // Adjust the token's position for any leading whitespace
                 if ($before !== '') {
                     $this->setPosition($t, $before, $indentMayHaveTabs);
                 }
@@ -95,6 +119,7 @@ final class Renderer implements Immutable
                 $t->id === \T_START_HEREDOC
                 || ($t->Heredoc && $t->id !== \T_END_HEREDOC)
             ) && ($heredoc = $t->Heredoc ?? $t)->HeredocIndent) {
+                // Remove redundant whitespace from empty heredoc lines
                 $text = Regex::replace(
                     ($t->Next->text[0] ?? null) === "\n"
                         ? "/\\n{$heredoc->HeredocIndent}\$/m"
@@ -107,7 +132,7 @@ final class Renderer implements Immutable
             }
 
             $output = $text . $after;
-            if ($setPosition && $t->Next && $output !== '') {
+            if ($final && $t->Next && $output !== '') {
                 $this->setPosition(
                     $t->Next,
                     $output,
@@ -124,10 +149,7 @@ final class Renderer implements Immutable
         Token $token,
         bool $softTabs = false
     ): string {
-        if (
-            $this->Idx->NotTrimmable[$token->id]
-            || $this->Idx->RightTrimmable[$token->id]
-        ) {
+        if ($this->Idx->NotLeftTrimmable[$token->id]) {
             return '';
         }
 
@@ -135,9 +157,15 @@ final class Renderer implements Immutable
         $padding = $token->Padding;
         if ($whitespace = $token->getWhitespaceBefore()) {
             $before = TokenUtil::getWhitespace($whitespace);
-            if ($before[0] === "\n") {
-                $indent = $token->getIndent();
-                $padding += $token->LinePadding - $token->LineUnpadding;
+            // i.e. if LINE or BLANK are set
+            if ($whitespace > 1) {
+                $indent = $token->TagIndent
+                    + $token->PreIndent
+                    + $token->Indent
+                    + $token->HangingIndent
+                    - $token->Deindent;
+                $padding += $token->LinePadding
+                    - $token->LineUnpadding;
 
                 // If this is a close tag with subsequent text not indented by
                 // at least the same amount, perform some sanity checks
@@ -190,22 +218,18 @@ final class Renderer implements Immutable
                 }
             }
         }
-        if ($padding) {
-            $before .= str_repeat(' ', $padding);
-        }
-        return $before;
+
+        return $padding
+            ? $before . str_repeat(' ', $padding)
+            : $before;
     }
 
     public function renderWhitespaceAfter(Token $token): string
     {
-        if (
-            $this->Idx->NotTrimmable[$token->id]
-            || $this->Idx->LeftTrimmable[$token->id]
-        ) {
-            return '';
-        }
-
-        return TokenUtil::getWhitespace($token->getWhitespaceAfter());
+        return $this->Idx->NotRightTrimmable[$token->id]
+            || !($whitespace = $token->getWhitespaceAfter())
+                ? ''
+                : TokenUtil::getWhitespace($whitespace);
     }
 
     /**
@@ -276,17 +300,16 @@ final class Renderer implements Immutable
 
     private function getMultiLineComment(Token $token, bool $softTabs): string
     {
-        // If the token is a C-style comment where at least one line starts with
-        // a character other than "*", and neither delimiter appears on its own
-        // line, reindent it to preserve alignment
+        // If the comment hasn't been normalised, reindent it to preserve
+        // alignment if possible
         if (
             $token->id === \T_COMMENT
             && !($token->Flags & TokenFlag::INFORMAL_DOC_COMMENT)
         ) {
             $text = $token->expandText(true);
             $delta = $token->OutputColumn - $token->column;
-            /* Don't reindent if the comment hasn't moved, or if it has text in
-column 1 despite starting in column 2 or above (like this comment) */
+            // Don't reindent if the comment hasn't moved, or if it has text
+            // other than asterisks in column 1 despite starting later
             if (!$delta || (
                 $token->column > 1
                 && Regex::match('/\n(?!\*)\S/', $text)
@@ -311,29 +334,39 @@ column 1 despite starting in column 2 or above (like this comment) */
             );
         }
 
-        if (!$token->Prev || ($start = $token->startOfLine()) === $token) {
+        // If the comment has been normalised, replace newlines with indentation
+        // derived from its location on the line
+        if (($start = $token->startOfLine()) === $token) {
             $tabs = $token->TagIndent
                 + $token->PreIndent
                 + $token->Indent
                 + $token->HangingIndent
                 - $token->Deindent;
-            $spaces = $token->LinePadding
-                - $token->LineUnpadding
-                + $token->Padding;
+            $spaces = $token->Padding
+                + $token->LinePadding
+                - $token->LineUnpadding;
             $indent = "\n"
                 . ($tabs ? str_repeat($softTabs ? $this->SoftTab : $this->Tab, $tabs) : '')
                 . ($spaces ? str_repeat(' ', $spaces) : '');
         } else {
-            $beforeStart = $this->renderWhitespaceBefore($start, $softTabs);
-            $indent = "\n" . ltrim($beforeStart, "\n")
-                . str_repeat(' ', mb_strlen($this->render($start, $token->Prev, $softTabs))
-                    - strlen($beforeStart)
-                    + strlen(TokenUtil::getWhitespace($token->getWhitespaceBefore()))
-                    + $token->Padding);
+            /** @var Token */
+            $prev = $token->Prev;
+            $code = $this->render($start, $prev, $softTabs, false, false, true);
+            $whitespaceLength = strspn($code, " \t\n");
+            $whitespace = substr($code, 0, $whitespaceLength);
+            $whitespaceBefore = ($before = $token->getWhitespaceBefore())
+                ? TokenUtil::getWhitespace($before)
+                : '';
+            $spaces = mb_strlen($code)
+                + strlen($whitespaceBefore)
+                + $token->Padding
+                - $whitespaceLength;
+            $indent = "\n"
+                . ltrim($whitespace, "\n")
+                . str_repeat(' ', $spaces);
         }
-        $text = str_replace("\n", $indent, $token->text);
 
-        return $text;
+        return str_replace("\n", $indent, $token->text);
     }
 
     private function maybeUnexpandTabs(string $text, bool $softTabs): string

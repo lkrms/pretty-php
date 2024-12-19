@@ -9,11 +9,652 @@ use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\Parser;
 use Lkrms\PrettyPHP\TokenIndex;
 use Lkrms\PrettyPHP\TokenUtil;
+use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Salient\Utility\Reflect;
+use Salient\Utility\Str;
 
 final class ParserTest extends TestCase
 {
+    /**
+     * @dataProvider parseProvider
+     *
+     * @param array<array<string,mixed>> $expected
+     */
+    public function testParse(array $expected, string $code): void
+    {
+        $formatter = new Formatter();
+        $parser = new Parser($formatter);
+        $tokens = $parser->parse(Str::eolFromNative($code), new RemoveWhitespace($formatter))->Tokens;
+        foreach ($tokens as $token) {
+            $actual[] = Arr::unset(
+                TokenUtil::serialize($token),
+                'Statement',
+                'EndStatement',
+                'Expression',
+                'EndExpression',
+            );
+        }
+        $actualCode = Get::code($actual ?? [], ",\n");
+        $this->assertSame(
+            $expected,
+            $actual ?? [],
+            'If $code has changed, replace $expected with: ' . $actualCode,
+        );
+    }
+
+    /**
+     * @return array<array{array<array<string,mixed>>,string}>
+     */
+    public static function parseProvider(): array
+    {
+        return [
+            [
+                [
+                    [
+                        'id' => 'T_OPEN_TAG',
+                        'text' => '<?php',
+                        'line' => 1,
+                        'pos' => 0,
+                        'NextSibling' => "T1:L2:'if'",
+                        'OriginalText' => "<?php\n",
+                    ],
+                    [
+                        'id' => 'T_IF',
+                        'text' => 'if',
+                        'line' => 2,
+                        'pos' => 6,
+                        'NextSibling' => "T2:L2:'('",
+                        'Flags' => 'CODE|UNENCLOSED_PARENT',
+                    ],
+                    [
+                        'id' => '(',
+                        'text' => '(',
+                        'line' => 2,
+                        'pos' => 9,
+                        'PrevSibling' => "T1:L2:'if'",
+                        'NextSibling' => "T5:L2:')'<<(virtual)",
+                        'Flags' => 'CODE',
+                    ],
+                    [
+                        'id' => 'T_STRING',
+                        'text' => 'true',
+                        'line' => 2,
+                        'pos' => 10,
+                        'Parent' => "T2:L2:'('",
+                        'Flags' => 'CODE',
+                    ],
+                    [
+                        'id' => ')',
+                        'text' => ')',
+                        'line' => 2,
+                        'pos' => 14,
+                        'PrevSibling' => "T1:L2:'if'",
+                        'NextSibling' => "T5:L2:')'<<(virtual)",
+                        'Flags' => 'CODE',
+                    ],
+                    [
+                        'id' => 'T_OPEN_UNENCLOSED',
+                        'text' => '',
+                        'line' => 2,
+                        'pos' => 15,
+                        'PrevSibling' => "T2:L2:'('",
+                        'NextSibling' => "T19:L7:'else'",
+                        'Flags' => 'CODE',
+                        'Data' => [
+                            'PREV_REAL' => "T4:L2:')'",
+                            'NEXT_REAL' => "T6:L3:'if'",
+                            'BOUND_TO' => "T4:L2:')'",
+                            'UNENCLOSED_PARENT' => "T1:L2:'if'",
+                            'UNENCLOSED_CONTINUES' => true,
+                        ],
+                    ],
+                    [
+                        'id' => 'T_IF',
+                        'text' => 'if',
+                        'line' => 3,
+                        'pos' => 20,
+                        'NextSibling' => "T7:L3:'('",
+                        'Parent' => "T5:L2:')'<<(virtual)",
+                        'Flags' => 'CODE',
+                    ],
+                    [
+                        'id' => '(',
+                        'text' => '(',
+                        'line' => 3,
+                        'pos' => 23,
+                        'PrevSibling' => "T6:L3:'if'",
+                        'NextSibling' => "T10:L3:':'",
+                        'Parent' => "T5:L2:')'<<(virtual)",
+                        'Flags' => 'CODE',
+                    ],
+                    [
+                        'id' => 'T_STRING',
+                        'text' => 'false',
+                        'line' => 3,
+                        'pos' => 24,
+                        'Parent' => "T7:L3:'('",
+                        'Flags' => 'CODE',
+                    ],
+                    [
+                        'id' => ')',
+                        'text' => ')',
+                        'line' => 3,
+                        'pos' => 29,
+                        'PrevSibling' => "T6:L3:'if'",
+                        'NextSibling' => "T10:L3:':'",
+                        'Parent' => "T5:L2:')'<<(virtual)",
+                        'Flags' => 'CODE',
+                    ],
+                    [
+                        'id' => ':',
+                        'text' => ':',
+                        'line' => 3,
+                        'pos' => 30,
+                        'subId' => 'COLON_ALT_SYNTAX_DELIMITER',
+                        'PrevSibling' => "T7:L3:'('",
+                        'NextSibling' => "T12:L4:'else'",
+                        'Parent' => "T5:L2:')'<<(virtual)",
+                        'Flags' => 'CODE',
+                    ],
+                    [
+                        'id' => 'T_END_ALT_SYNTAX',
+                        'text' => '',
+                        'line' => 4,
+                        'pos' => 36,
+                        'PrevSibling' => "T7:L3:'('",
+                        'NextSibling' => "T12:L4:'else'",
+                        'Parent' => "T5:L2:')'<<(virtual)",
+                        'Flags' => 'CODE',
+                        'Data' => [
+                            'PREV_REAL' => "T10:L3:':'",
+                            'NEXT_REAL' => "T12:L4:'else'",
+                            'BOUND_TO' => "T12:L4:'else'",
+                        ],
+                    ],
+                    [
+                        'id' => 'T_ELSE',
+                        'text' => 'else',
+                        'line' => 4,
+                        'pos' => 36,
+                        'PrevSibling' => "T10:L3:':'",
+                        'NextSibling' => "T13:L4:':'",
+                        'Parent' => "T5:L2:')'<<(virtual)",
+                        'Flags' => 'CODE',
+                    ],
+                    [
+                        'id' => ':',
+                        'text' => ':',
+                        'line' => 4,
+                        'pos' => 40,
+                        'subId' => 'COLON_ALT_SYNTAX_DELIMITER',
+                        'PrevSibling' => "T12:L4:'else'",
+                        'NextSibling' => "T15:L5:'endif'",
+                        'Parent' => "T5:L2:')'<<(virtual)",
+                        'Flags' => 'CODE',
+                    ],
+                    [
+                        'id' => 'T_END_ALT_SYNTAX',
+                        'text' => '',
+                        'line' => 5,
+                        'pos' => 46,
+                        'PrevSibling' => "T12:L4:'else'",
+                        'NextSibling' => "T15:L5:'endif'",
+                        'Parent' => "T5:L2:')'<<(virtual)",
+                        'Flags' => 'CODE',
+                        'Data' => [
+                            'PREV_REAL' => "T13:L4:':'",
+                            'NEXT_REAL' => "T15:L5:'endif'",
+                            'BOUND_TO' => "T15:L5:'endif'",
+                        ],
+                    ],
+                    [
+                        'id' => 'T_ENDIF',
+                        'text' => 'endif',
+                        'line' => 5,
+                        'pos' => 46,
+                        'PrevSibling' => "T13:L4:':'",
+                        'NextSibling' => "T16:L6:'?>'",
+                        'Parent' => "T5:L2:')'<<(virtual)",
+                        'Flags' => 'CODE',
+                    ],
+                    [
+                        'id' => 'T_CLOSE_TAG',
+                        'text' => '?>',
+                        'line' => 6,
+                        'pos' => 52,
+                        'PrevSibling' => "T15:L5:'endif'",
+                        'Parent' => "T5:L2:')'<<(virtual)",
+                        'Flags' => 'CODE|STATEMENT_TERMINATOR',
+                    ],
+                    [
+                        'id' => 'T_OPEN_TAG',
+                        'text' => '<?php',
+                        'line' => 6,
+                        'pos' => 54,
+                        'PrevSibling' => "T16:L6:'?>'",
+                        'Parent' => "T5:L2:')'<<(virtual)",
+                        'OriginalText' => "<?php\n",
+                    ],
+                    [
+                        'id' => 'T_CLOSE_UNENCLOSED',
+                        'text' => '',
+                        'line' => 7,
+                        'pos' => 60,
+                        'PrevSibling' => "T2:L2:'('",
+                        'NextSibling' => "T19:L7:'else'",
+                        'Flags' => 'CODE',
+                        'Data' => [
+                            'PREV_REAL' => "T17:L6:'<?php'",
+                            'NEXT_REAL' => "T19:L7:'else'",
+                            'BOUND_TO' => "T19:L7:'else'",
+                        ],
+                    ],
+                    [
+                        'id' => 'T_ELSE',
+                        'text' => 'else',
+                        'line' => 7,
+                        'pos' => 60,
+                        'PrevSibling' => "T5:L2:')'<<(virtual)",
+                        'NextSibling' => "T20:L7:'else'<<(virtual)",
+                        'Flags' => 'CODE|UNENCLOSED_PARENT',
+                    ],
+                    [
+                        'id' => 'T_OPEN_UNENCLOSED',
+                        'text' => '',
+                        'line' => 7,
+                        'pos' => 64,
+                        'PrevSibling' => "T19:L7:'else'",
+                        'NextSibling' => "T22:L8:'?>'",
+                        'Flags' => 'CODE',
+                        'Data' => [
+                            'PREV_REAL' => "T19:L7:'else'",
+                            'NEXT_REAL' => "T22:L8:'?>'",
+                            'BOUND_TO' => "T19:L7:'else'",
+                            'UNENCLOSED_PARENT' => "T19:L7:'else'",
+                            'UNENCLOSED_CONTINUES' => false,
+                        ],
+                    ],
+                    [
+                        'id' => 'T_CLOSE_UNENCLOSED',
+                        'text' => '',
+                        'line' => 7,
+                        'pos' => 64,
+                        'PrevSibling' => "T19:L7:'else'",
+                        'NextSibling' => "T22:L8:'?>'",
+                        'Flags' => 'CODE',
+                        'Data' => [
+                            'PREV_REAL' => "T19:L7:'else'",
+                            'NEXT_REAL' => "T22:L8:'?>'",
+                            'BOUND_TO' => "T19:L7:'else'",
+                        ],
+                    ],
+                    [
+                        'id' => 'T_CLOSE_TAG',
+                        'text' => '?>',
+                        'line' => 8,
+                        'pos' => 65,
+                        'PrevSibling' => "T20:L7:'else'<<(virtual)",
+                        'Flags' => 'CODE|STATEMENT_TERMINATOR',
+                    ],
+                    [
+                        'id' => 'T_OPEN_TAG',
+                        'text' => '<?php',
+                        'line' => 8,
+                        'pos' => 67,
+                        'PrevSibling' => "T22:L8:'?>'",
+                    ],
+                ],
+                <<<'PHP'
+<?php
+if (true)
+    if (false):
+    else:
+    endif
+?><?php
+else
+?><?php
+PHP,
+            ],
+            [
+                [
+                    [
+                        'id' => 'T_OPEN_TAG',
+                        'text' => '<?php',
+                        'line' => 1,
+                        'pos' => 0,
+                        'NextSibling' => "T2:L2:'if'",
+                        'OriginalText' => '<?php ',
+                    ],
+                    [
+                        'id' => 'T_COMMENT',
+                        'text' => '// comment',
+                        'line' => 1,
+                        'pos' => 7,
+                        'NextSibling' => "T2:L2:'if'",
+                        'Flags' => 'ONELINE_COMMENT|CPP_COMMENT',
+                    ],
+                    [
+                        'id' => 'T_IF',
+                        'text' => 'if',
+                        'line' => 2,
+                        'pos' => 18,
+                        'NextSibling' => "T3:L2:'('",
+                        'Flags' => 'CODE|UNENCLOSED_PARENT',
+                    ],
+                    [
+                        'id' => '(',
+                        'text' => '(',
+                        'line' => 2,
+                        'pos' => 21,
+                        'PrevSibling' => "T2:L2:'if'",
+                        'NextSibling' => "T6:L2:')'<<(virtual)",
+                        'Flags' => 'CODE',
+                    ],
+                    [
+                        'id' => 'T_STRING',
+                        'text' => 'true',
+                        'line' => 2,
+                        'pos' => 22,
+                        'Parent' => "T3:L2:'('",
+                        'Flags' => 'CODE',
+                    ],
+                    [
+                        'id' => ')',
+                        'text' => ')',
+                        'line' => 2,
+                        'pos' => 26,
+                        'PrevSibling' => "T2:L2:'if'",
+                        'NextSibling' => "T6:L2:')'<<(virtual)",
+                        'Flags' => 'CODE',
+                    ],
+                    [
+                        'id' => 'T_OPEN_UNENCLOSED',
+                        'text' => '',
+                        'line' => 2,
+                        'pos' => 27,
+                        'PrevSibling' => "T3:L2:'('",
+                        'NextSibling' => "T25:L7:'else'",
+                        'Flags' => 'CODE',
+                        'Data' => [
+                            'PREV_REAL' => "T5:L2:')'",
+                            'NEXT_REAL' => "T7:L2:'// comment'",
+                            'BOUND_TO' => "T5:L2:')'",
+                            'UNENCLOSED_PARENT' => "T2:L2:'if'",
+                            'UNENCLOSED_CONTINUES' => true,
+                        ],
+                    ],
+                    [
+                        'id' => 'T_COMMENT',
+                        'text' => '// comment',
+                        'line' => 2,
+                        'pos' => 29,
+                        'NextSibling' => "T8:L3:'if'",
+                        'Parent' => "T6:L2:')'<<(virtual)",
+                        'Flags' => 'ONELINE_COMMENT|CPP_COMMENT',
+                    ],
+                    [
+                        'id' => 'T_IF',
+                        'text' => 'if',
+                        'line' => 3,
+                        'pos' => 44,
+                        'NextSibling' => "T9:L3:'('",
+                        'Parent' => "T6:L2:')'<<(virtual)",
+                        'Flags' => 'CODE',
+                    ],
+                    [
+                        'id' => '(',
+                        'text' => '(',
+                        'line' => 3,
+                        'pos' => 47,
+                        'PrevSibling' => "T8:L3:'if'",
+                        'NextSibling' => "T12:L3:':'",
+                        'Parent' => "T6:L2:')'<<(virtual)",
+                        'Flags' => 'CODE',
+                    ],
+                    [
+                        'id' => 'T_STRING',
+                        'text' => 'false',
+                        'line' => 3,
+                        'pos' => 48,
+                        'Parent' => "T9:L3:'('",
+                        'Flags' => 'CODE',
+                    ],
+                    [
+                        'id' => ')',
+                        'text' => ')',
+                        'line' => 3,
+                        'pos' => 53,
+                        'PrevSibling' => "T8:L3:'if'",
+                        'NextSibling' => "T12:L3:':'",
+                        'Parent' => "T6:L2:')'<<(virtual)",
+                        'Flags' => 'CODE',
+                    ],
+                    [
+                        'id' => ':',
+                        'text' => ':',
+                        'line' => 3,
+                        'pos' => 54,
+                        'subId' => 'COLON_ALT_SYNTAX_DELIMITER',
+                        'PrevSibling' => "T9:L3:'('",
+                        'NextSibling' => "T15:L4:'else'",
+                        'Parent' => "T6:L2:')'<<(virtual)",
+                        'Flags' => 'CODE',
+                    ],
+                    [
+                        'id' => 'T_COMMENT',
+                        'text' => '// comment',
+                        'line' => 3,
+                        'pos' => 57,
+                        'Parent' => "T12:L3:':'",
+                        'Flags' => 'ONELINE_COMMENT|CPP_COMMENT',
+                    ],
+                    [
+                        'id' => 'T_END_ALT_SYNTAX',
+                        'text' => '',
+                        'line' => 4,
+                        'pos' => 72,
+                        'PrevSibling' => "T9:L3:'('",
+                        'NextSibling' => "T15:L4:'else'",
+                        'Parent' => "T6:L2:')'<<(virtual)",
+                        'Flags' => 'CODE',
+                        'Data' => [
+                            'PREV_REAL' => "T13:L3:'// comment'",
+                            'NEXT_REAL' => "T15:L4:'else'",
+                            'BOUND_TO' => "T15:L4:'else'",
+                        ],
+                    ],
+                    [
+                        'id' => 'T_ELSE',
+                        'text' => 'else',
+                        'line' => 4,
+                        'pos' => 72,
+                        'PrevSibling' => "T12:L3:':'",
+                        'NextSibling' => "T16:L4:':'",
+                        'Parent' => "T6:L2:')'<<(virtual)",
+                        'Flags' => 'CODE',
+                    ],
+                    [
+                        'id' => ':',
+                        'text' => ':',
+                        'line' => 4,
+                        'pos' => 76,
+                        'subId' => 'COLON_ALT_SYNTAX_DELIMITER',
+                        'PrevSibling' => "T15:L4:'else'",
+                        'NextSibling' => "T19:L5:'endif'",
+                        'Parent' => "T6:L2:')'<<(virtual)",
+                        'Flags' => 'CODE',
+                    ],
+                    [
+                        'id' => 'T_COMMENT',
+                        'text' => '// comment',
+                        'line' => 4,
+                        'pos' => 79,
+                        'Parent' => "T16:L4:':'",
+                        'Flags' => 'ONELINE_COMMENT|CPP_COMMENT',
+                    ],
+                    [
+                        'id' => 'T_END_ALT_SYNTAX',
+                        'text' => '',
+                        'line' => 5,
+                        'pos' => 94,
+                        'PrevSibling' => "T15:L4:'else'",
+                        'NextSibling' => "T19:L5:'endif'",
+                        'Parent' => "T6:L2:')'<<(virtual)",
+                        'Flags' => 'CODE',
+                        'Data' => [
+                            'PREV_REAL' => "T17:L4:'// comment'",
+                            'NEXT_REAL' => "T19:L5:'endif'",
+                            'BOUND_TO' => "T19:L5:'endif'",
+                        ],
+                    ],
+                    [
+                        'id' => 'T_ENDIF',
+                        'text' => 'endif',
+                        'line' => 5,
+                        'pos' => 94,
+                        'PrevSibling' => "T16:L4:':'",
+                        'NextSibling' => "T21:L6:'?>'",
+                        'Parent' => "T6:L2:')'<<(virtual)",
+                        'Flags' => 'CODE',
+                    ],
+                    [
+                        'id' => 'T_COMMENT',
+                        'text' => '// comment',
+                        'line' => 5,
+                        'pos' => 101,
+                        'PrevSibling' => "T19:L5:'endif'",
+                        'NextSibling' => "T21:L6:'?>'",
+                        'Parent' => "T6:L2:')'<<(virtual)",
+                        'Flags' => 'ONELINE_COMMENT|CPP_COMMENT',
+                    ],
+                    [
+                        'id' => 'T_CLOSE_TAG',
+                        'text' => '?>',
+                        'line' => 6,
+                        'pos' => 112,
+                        'PrevSibling' => "T19:L5:'endif'",
+                        'Parent' => "T6:L2:')'<<(virtual)",
+                        'Flags' => 'CODE|STATEMENT_TERMINATOR',
+                    ],
+                    [
+                        'id' => 'T_OPEN_TAG',
+                        'text' => '<?php',
+                        'line' => 6,
+                        'pos' => 114,
+                        'PrevSibling' => "T21:L6:'?>'",
+                        'Parent' => "T6:L2:')'<<(virtual)",
+                        'OriginalText' => '<?php ',
+                    ],
+                    [
+                        'id' => 'T_CLOSE_UNENCLOSED',
+                        'text' => '',
+                        'line' => 6,
+                        'pos' => 121,
+                        'PrevSibling' => "T3:L2:'('",
+                        'NextSibling' => "T25:L7:'else'",
+                        'Flags' => 'CODE',
+                        'Data' => [
+                            'PREV_REAL' => "T22:L6:'<?php'",
+                            'NEXT_REAL' => "T24:L6:'// comment'",
+                            'BOUND_TO' => "T24:L6:'// comment'",
+                        ],
+                    ],
+                    [
+                        'id' => 'T_COMMENT',
+                        'text' => '// comment',
+                        'line' => 6,
+                        'pos' => 121,
+                        'PrevSibling' => "T6:L2:')'<<(virtual)",
+                        'NextSibling' => "T25:L7:'else'",
+                        'Flags' => 'ONELINE_COMMENT|CPP_COMMENT',
+                    ],
+                    [
+                        'id' => 'T_ELSE',
+                        'text' => 'else',
+                        'line' => 7,
+                        'pos' => 132,
+                        'PrevSibling' => "T6:L2:')'<<(virtual)",
+                        'NextSibling' => "T26:L7:'else'<<(virtual)",
+                        'Flags' => 'CODE|UNENCLOSED_PARENT',
+                    ],
+                    [
+                        'id' => 'T_OPEN_UNENCLOSED',
+                        'text' => '',
+                        'line' => 7,
+                        'pos' => 136,
+                        'PrevSibling' => "T25:L7:'else'",
+                        'NextSibling' => "T29:L8:'?>'",
+                        'Flags' => 'CODE',
+                        'Data' => [
+                            'PREV_REAL' => "T25:L7:'else'",
+                            'NEXT_REAL' => "T27:L7:'// comment'",
+                            'BOUND_TO' => "T25:L7:'else'",
+                            'UNENCLOSED_PARENT' => "T25:L7:'else'",
+                            'UNENCLOSED_CONTINUES' => false,
+                        ],
+                    ],
+                    [
+                        'id' => 'T_COMMENT',
+                        'text' => '// comment',
+                        'line' => 7,
+                        'pos' => 138,
+                        'Parent' => "T26:L7:'else'<<(virtual)",
+                        'Flags' => 'ONELINE_COMMENT|CPP_COMMENT',
+                    ],
+                    [
+                        'id' => 'T_CLOSE_UNENCLOSED',
+                        'text' => '',
+                        'line' => 7,
+                        'pos' => 148,
+                        'PrevSibling' => "T25:L7:'else'",
+                        'NextSibling' => "T29:L8:'?>'",
+                        'Flags' => 'CODE',
+                        'Data' => [
+                            'PREV_REAL' => "T27:L7:'// comment'",
+                            'NEXT_REAL' => "T29:L8:'?>'",
+                            'BOUND_TO' => "T27:L7:'// comment'",
+                        ],
+                    ],
+                    [
+                        'id' => 'T_CLOSE_TAG',
+                        'text' => '?>',
+                        'line' => 8,
+                        'pos' => 149,
+                        'PrevSibling' => "T26:L7:'else'<<(virtual)",
+                        'Flags' => 'CODE|STATEMENT_TERMINATOR',
+                    ],
+                    [
+                        'id' => 'T_OPEN_TAG',
+                        'text' => '<?php',
+                        'line' => 8,
+                        'pos' => 151,
+                        'PrevSibling' => "T29:L8:'?>'",
+                        'OriginalText' => '<?php ',
+                    ],
+                    [
+                        'id' => 'T_COMMENT',
+                        'text' => '// comment',
+                        'line' => 8,
+                        'pos' => 158,
+                        'PrevSibling' => "T29:L8:'?>'",
+                        'Flags' => 'ONELINE_COMMENT|CPP_COMMENT',
+                    ],
+                ],
+                <<<'PHP'
+<?php  // comment
+if (true)  // comment
+    if (false):  // comment
+    else:  // comment
+    endif  // comment
+?><?php  // comment
+else  // comment
+?><?php  // comment
+PHP,
+            ],
+        ];
+    }
+
     /**
      * @dataProvider statementsProvider
      *
@@ -104,6 +745,251 @@ elseif /* comment */ ($bar):
 else /* comment */:
     baz();
 endif;
+PHP,
+            ],
+            [
+                [
+                    "T1:L2:'if' - T18:L4:';'<<(virtual)",
+                    "T3:L2:'\$foo'",
+                    "T6:L2:';'",
+                    "T10:L3:'\$bar'",
+                    "T13:L3:';'",
+                    "T17:L4:';'",
+                    "T19:L6:'do' - T29:L7:';'",
+                    "T21:L6:';'",
+                    "T25:L7:'foo' - T27:L7:')'",
+                    "T30:L9:'while' - T38:L9:';'<<(virtual)",
+                    "T32:L9:'foo' - T34:L9:')'",
+                    "T37:L9:';'",
+                    "T39:L11:'for' - T46:L11:';'<<(virtual)",
+                    "T41:L11:';'",
+                    "T42:L11:';'",
+                    "T45:L11:';'",
+                    "T47:L13:'foreach' - T55:L13:';'<<(virtual)",
+                    "T49:L13:'\$foo' - T51:L13:'\$bar'",
+                    "T54:L13:';'",
+                    "T56:L15:'if' - T82:L20:';'<<(virtual)",
+                    "T58:L15:'\$foo'",
+                    "T61:L16:'bar' - T64:L16:';'",
+                    "T68:L17:'\$baz'",
+                    "T71:L18:'qux' - T74:L18:';'",
+                    "T78:L20:'quux' - T81:L20:';'",
+                    "T83:L22:'do' - T96:L24:';'",
+                    "T85:L23:'foo' - T88:L23:';'",
+                    "T92:L24:'bar' - T94:L24:')'",
+                    "T97:L26:'do' - T115:L28:';'",
+                    "T99:L27:'while' - T107:L27:';'<<(virtual)",
+                    "T101:L27:'foo' - T103:L27:')'",
+                    "T106:L27:';'",
+                    "T111:L28:'bar' - T113:L28:')'",
+                    "T116:L30:'while' - T127:L31:';'<<(virtual)",
+                    "T118:L30:'foo' - T120:L30:')'",
+                    "T123:L31:'bar' - T126:L31:';'",
+                    "T128:L33:'for' - T138:L34:';'<<(virtual)",
+                    "T130:L33:';'",
+                    "T131:L33:';'",
+                    "T134:L34:'foo' - T137:L34:';'",
+                    "T139:L36:'foreach' - T150:L37:';'<<(virtual)",
+                    "T141:L36:'\$foo' - T143:L36:'\$bar'",
+                    "T146:L37:'baz' - T149:L37:';'",
+                ],
+                <<<'PHP'
+<?php
+if ($foo);
+elseif ($bar);
+else;
+
+do;
+while (foo());
+
+while (foo());
+
+for (;;);
+
+foreach ($foo as $bar);
+
+if ($foo)
+    bar();
+elseif ($baz)
+    qux();
+else
+    quux();
+
+do
+    foo();
+while (bar());
+
+do
+    while (foo());
+while (bar());
+
+while (foo())
+    bar();
+
+for (;;)
+    foo();
+
+foreach ($foo as $bar)
+    baz();
+PHP,
+            ],
+            [
+                [
+                    "T1:L2:'if' - T21:L7:':'<<(virtual)",
+                    "T3:L2:'\$foo'",
+                    "T6:L3:'label' - T7:L3:':'",
+                    "T11:L4:'\$bar'",
+                    "T14:L5:'label' - T15:L5:':'",
+                    "T19:L7:'label' - T20:L7:':'",
+                    "T22:L9:'do' - T33:L11:';'",
+                    "T24:L10:'label' - T25:L10:':'",
+                    "T29:L11:'foo' - T31:L11:')'",
+                    "T34:L13:'while' - T43:L14:':'<<(virtual)",
+                    "T36:L13:'foo' - T38:L13:')'",
+                    "T41:L14:'label' - T42:L14:':'",
+                    "T44:L16:'for' - T52:L17:':'<<(virtual)",
+                    "T46:L16:';'",
+                    "T47:L16:';'",
+                    "T50:L17:'label' - T51:L17:':'",
+                    "T53:L19:'foreach' - T62:L20:':'<<(virtual)",
+                    "T55:L19:'\$foo' - T57:L19:'\$bar'",
+                    "T60:L20:'label' - T61:L20:':'",
+                ],
+                <<<'PHP'
+<?php
+if ($foo)
+    label:
+elseif ($bar)
+    label:
+else
+    label:
+
+do
+    label:
+while (foo());
+
+while (foo())
+    label:
+
+for (;;)
+    label:
+
+foreach ($foo as $bar)
+    label:
+PHP,
+            ],
+            [
+                [
+                    "T1:L2:'if' - T27:L8:'}'",
+                    "T3:L2:'\$foo'",
+                    "T6:L3:'bar' - T9:L3:';'",
+                    "T13:L4:'\$baz'",
+                    "T16:L5:'qux' - T19:L5:';'",
+                    "T23:L7:'quux' - T26:L7:';'",
+                    "T28:L10:'do' - T41:L12:';'",
+                    "T30:L11:'foo' - T33:L11:';'",
+                    "T37:L12:'bar' - T39:L12:')'",
+                    "T42:L14:'while' - T53:L16:'}'",
+                    "T44:L14:'foo' - T46:L14:')'",
+                    "T49:L15:'bar' - T52:L15:';'",
+                    "T54:L18:'for' - T64:L20:'}'",
+                    "T56:L18:';'",
+                    "T57:L18:';'",
+                    "T60:L19:'foo' - T63:L19:';'",
+                    "T65:L22:'foreach' - T76:L24:'}'",
+                    "T67:L22:'\$foo' - T69:L22:'\$bar'",
+                    "T72:L23:'baz' - T75:L23:';'",
+                ],
+                <<<'PHP'
+<?php
+if ($foo) {
+    bar();
+} elseif ($baz) {
+    qux();
+} else {
+    quux();
+}
+
+do {
+    foo();
+} while (bar());
+
+while (foo()) {
+    bar();
+}
+
+for (;;) {
+    foo();
+}
+
+foreach ($foo as $bar) {
+    baz();
+}
+PHP,
+            ],
+            [
+                [
+                    "T1:L2:'do' - T41:L11:';'",
+                    "T3:L3:'do' - T33:L10:';'",
+                    "T5:L4:'if' - T24:L9:'?>'",
+                    "T7:L4:'\$foo'",
+                    "T10:L5:'?>'",
+                    "T15:L6:'\$bar'",
+                    "T18:L7:'?>'",
+                    "T29:L10:'baz' - T31:L10:')'",
+                    "T37:L11:'qux' - T39:L11:')'",
+                    "T42:L13:'do' - T59:L16:';'",
+                    "T44:L14:'if' - T50:L15:'?>'",
+                    "T46:L14:'\$foo'",
+                    "T55:L16:'bar' - T57:L16:')'",
+                    "T60:L18:'while' - T74:L20:'?>'",
+                    "T62:L18:'foo' - T64:L18:')'",
+                    "T67:L19:'if' - T72:L19:')'<<(virtual)",
+                    "T69:L19:'\$bar'",
+                ],
+                <<<'PHP'
+<?php
+do
+    do
+        if ($foo)
+?><?php
+        elseif ($bar)
+?><?php
+        else
+?><?php
+    while (baz());
+while (qux());
+
+do
+    if ($foo)
+?><?php
+while (bar());
+
+while (foo())
+    if ($bar)
+?><?php
+PHP,
+            ],
+            [
+                [
+                    "T1:L2:'if' - T7:L2:'?>'",
+                    "T3:L2:'\$foo'",
+                ],
+                <<<'PHP'
+<?php
+if ($foo) ?>bar
+PHP,
+            ],
+            [
+                [
+                    "T1:L2:'if' - T10:L3:'?>'",
+                    "T3:L2:'\$foo'",
+                    "T6:L3:'bar' - T8:L3:')'",
+                ],
+                <<<'PHP'
+<?php
+if ($foo)
+    bar() ?>baz
 PHP,
             ],
         ];

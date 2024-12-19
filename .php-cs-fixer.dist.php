@@ -8,6 +8,8 @@ $customTokens = [
     'T_ATTRIBUTE_COMMENT',
     'T_END_ALT_SYNTAX',
     'T_NULL',
+    'T_OPEN_UNENCLOSED',
+    'T_CLOSE_UNENCLOSED',
     'T_LOGICAL_NOT',
     'T_DOUBLE_QUOTE',
     'T_DOLLAR',

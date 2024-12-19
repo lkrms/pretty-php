@@ -140,6 +140,18 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
+     * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_CLOSE_UNENCLOSED,
+     * T_END_ALT_SYNTAX
+     *
+     * @var array<int,bool>
+     */
+    public array $CloseBracketOrVirtual = self::CLOSE_BRACKET + [
+        \T_CLOSE_UNENCLOSED => true,
+        \T_END_ALT_SYNTAX => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
      * T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_ATTRIBUTE
      *
      * @var array<int,bool>
@@ -308,11 +320,33 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
+     * T_CASE, T_DEFAULT
+     *
+     * @var array<int,bool>
+     */
+    public array $CaseOrDefault = [
+        \T_CASE => true,
+        \T_DEFAULT => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
      * Casts
      *
      * @var array<int,bool>
      */
     public array $Cast = self::CAST
+        + self::TOKEN_INDEX;
+
+    /**
+     * T_CATCH, T_FINALLY
+     *
+     * @var array<int,bool>
+     */
+    public array $CatchOrFinally = [
+        \T_CATCH => true,
+        \T_FINALLY => true,
+    ]
         + self::TOKEN_INDEX;
 
     /**
@@ -460,6 +494,17 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
+     * T_ELSEIF, T_ELSE
+     *
+     * @var array<int,bool>
+     */
+    public array $ElseIfOrElse = [
+        \T_ELSEIF => true,
+        \T_ELSE => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
      * T_IF, T_ELSEIF, T_ELSE
      *
      * @var array<int,bool>
@@ -508,6 +553,29 @@ class TokenIndex implements HasTokenIndex, Immutable
         \T_WHITESPACE => true,
     ]
         + self::COMMENT
+        + self::TOKEN_INDEX;
+
+    /**
+     * T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO, T_INLINE_HTML
+     *
+     * @var array<int,bool>
+     */
+    public array $OutsideCode = [
+        \T_INLINE_HTML => true,
+        \T_OPEN_TAG => true,
+        \T_OPEN_TAG_WITH_ECHO => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
+     * T_COMMENT, T_DOC_COMMENT, T_ATTRIBUTE_COMMENT, T_WHITESPACE
+     *
+     * @var array<int,bool>
+     */
+    public array $NotCodeBeforeCloseTag = self::COMMENT + [
+        \T_ATTRIBUTE_COMMENT => true,
+        \T_WHITESPACE => true,
+    ]
         + self::TOKEN_INDEX;
 
     /**
@@ -572,14 +640,11 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * Comparison operators (except T_COALESCE)
+     * Ternary operators
      *
      * @var array<int,bool>
      */
-    public array $OperatorComparison = [
-        \T_COALESCE => false,
-    ]
-        + self::OPERATOR_COMPARISON
+    public array $OperatorTernary = self::OPERATOR_TERNARY
         + self::TOKEN_INDEX;
 
     /**
@@ -660,14 +725,28 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * T_END_ALT_SYNTAX, T_NULL
+     * T_END_ALT_SYNTAX, T_OPEN_UNENCLOSED, T_CLOSE_UNENCLOSED
      *
      * @var array<int,bool>
      */
     public array $Virtual = [
         \T_END_ALT_SYNTAX => true,
-        \T_NULL => true,
+        \T_OPEN_UNENCLOSED => true,
+        \T_CLOSE_UNENCLOSED => true,
     ]
+        + self::TOKEN_INDEX;
+
+    /**
+     * All (except T_END_ALT_SYNTAX, T_OPEN_UNENCLOSED, T_CLOSE_UNENCLOSED)
+     *
+     * @var array<int,bool>
+     */
+    public array $NotVirtual = [
+        \T_END_ALT_SYNTAX => false,
+        \T_OPEN_UNENCLOSED => false,
+        \T_CLOSE_UNENCLOSED => false,
+    ]
+        + self::ALL
         + self::TOKEN_INDEX;
 
     /**
@@ -928,11 +1007,12 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * T_DO, T_ELSE
+     * T_DO, T_ELSE, T_ELSEIF, T_FOR, T_FOREACH, T_IF, T_WHILE
      *
      * @var array<int,bool>
      */
-    public array $HasStatementWithOptionalBraces = self::HAS_STATEMENT_WITH_OPTIONAL_BRACES
+    public array $HasOptionalBraces = self::HAS_STATEMENT_WITH_OPTIONAL_BRACES
+        + self::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES
         + self::TOKEN_INDEX;
 
     /**
@@ -940,7 +1020,15 @@ class TokenIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $HasExpressionAndStatementWithOptionalBraces = self::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES
+    public array $HasOptionalBracesWithExpression = self::HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES
+        + self::TOKEN_INDEX;
+
+    /**
+     * T_DO, T_ELSE
+     *
+     * @var array<int,bool>
+     */
+    public array $HasOptionalBracesWithNoExpression = self::HAS_STATEMENT_WITH_OPTIONAL_BRACES
         + self::TOKEN_INDEX;
 
     /**
@@ -1020,11 +1108,22 @@ class TokenIndex implements HasTokenIndex, Immutable
     // Formatting:
 
     /**
-     * T_ENCAPSED_AND_WHITESPACE, T_INLINE_HTML
+     * T_ENCAPSED_AND_WHITESPACE, T_INLINE_HTML, T_OPEN_TAG,
+     * T_OPEN_TAG_WITH_ECHO, T_END_HEREDOC
      *
      * @var array<int,bool>
      */
-    public array $NotTrimmable = self::NOT_TRIMMABLE
+    public array $NotLeftTrimmable = self::NOT_TRIMMABLE
+        + self::RIGHT_TRIMMABLE
+        + self::TOKEN_INDEX;
+
+    /**
+     * T_ENCAPSED_AND_WHITESPACE, T_INLINE_HTML, T_CLOSE_TAG, T_START_HEREDOC
+     *
+     * @var array<int,bool>
+     */
+    public array $NotRightTrimmable = self::NOT_TRIMMABLE
+        + self::LEFT_TRIMMABLE
         + self::TOKEN_INDEX;
 
     /**
@@ -1100,6 +1199,7 @@ class TokenIndex implements HasTokenIndex, Immutable
      */
     public array $AllowBlankAfter = [
         \T_CLOSE_BRACE => true,
+        \T_COLON => true,
         \T_COMMA => true,
         \T_COMMENT => true,
         \T_DOC_COMMENT => true,
