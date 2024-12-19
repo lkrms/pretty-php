@@ -263,8 +263,7 @@ final class Parser implements Immutable
                     ($next->id === \T_CLOSE_TAG || (
                         $next->id !== \T_OPEN_BRACE
                         && !$idx->NotCode[$next->id]
-                    ))
-                    && ((
+                    )) && ((
                         $idx->HasOptionalBracesWithNoExpression[$prevCode->id]
                         // Don't enclose tokens in alternative syntax constructs
                         && !(
@@ -769,8 +768,7 @@ final class Parser implements Immutable
                             $idx->StartOfValueType[$next->id]
                             && ($variable = $this->skipNextSiblingsFrom($next, $idx->ValueType))
                             && $variable->id === \T_VARIABLE
-                        )
-                        || (
+                        ) || (
                             ($next->id === \T_VARIABLE || $next->id === \T_FUNCTION)
                             && $this->isClassStatement($statement)
                         )

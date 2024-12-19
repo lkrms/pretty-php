@@ -1185,7 +1185,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         if ($this->Idx->Virtual[$this->id]) {
             $whitespace &= $this->Data[TokenData::BOUND_TO]->index < $this->index
                 ? 0b111000111000111000111000
-                : 0b0111000111000111000111;
+                : 0b111000111000111000111;
         }
 
         // Shift *_BEFORE and *_AFTER to their NO_* counterparts, then clear
@@ -1207,7 +1207,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         if ($this->Idx->Virtual[$this->id]) {
             $whitespace &= $this->Data[TokenData::BOUND_TO]->index < $this->index
                 ? 0b111000111000
-                : 0b0111000111;
+                : 0b111000111;
         }
 
         $this->doRemoveWhitespace($whitespace);
@@ -1221,7 +1221,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         $this->Whitespace &= ~$whitespace;
 
         if (
-            ($before = $whitespace & 0b0111000111)
+            ($before = $whitespace & 0b111000111)
             && ($prev = $this->prevReal())
         ) {
             $prev->Whitespace &= ~($before << 3);

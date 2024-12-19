@@ -409,7 +409,8 @@ final class HangingIndentation implements TokenRule
                 ($first = $parts->first())->id === \T_NEW
                 && $first->NextCode === $token
                 && $first->nextSiblingOf(\T_CLASS)->hasNewlineAfterPrevCode()
-            ) && ($body = $last->nextSiblingOf(\T_OPEN_BRACE, true))->id !== \T_NULL
+            )
+            && ($body = $last->nextSiblingOf(\T_OPEN_BRACE, true))->id !== \T_NULL
         ) {
             /** @var Token */
             return $body->PrevCode;

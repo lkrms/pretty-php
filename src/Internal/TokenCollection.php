@@ -313,7 +313,7 @@ final class TokenCollection extends Collection implements Stringable
     public function applyInnerWhitespace(int $whitespace)
     {
         $this->assertCollected();
-        if (($whitespace & 0b0111000111000111000111) !== $whitespace) {
+        if (($whitespace & 0b111000111000111000111) !== $whitespace) {
             // @codeCoverageIgnoreStart
             throw new InvalidArgumentException('Invalid $whitespace (AFTER bits cannot be set)');
             // @codeCoverageIgnoreEnd
