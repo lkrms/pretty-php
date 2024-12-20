@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Internal;
 
+use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Token;
 use Salient\Collection\Collection;
 use Salient\Utility\Exception\ShouldNotHappenException;
@@ -296,13 +297,7 @@ final class TokenCollection extends Collection implements Stringable
         // Shift *_BEFORE and *_AFTER to their NO_* counterparts, then clear
         // other bits
         $remove = $whitespace << 6 & 0b111111000000;
-        $ignoreVirtual = false;
         foreach ($this->Items as $token) {
-            if (!$ignoreVirtual) {
-                $ignoreVirtual = true;
-            } elseif ($token->Idx->Virtual[$token->id]) {
-                continue;
-            }
             $token->Whitespace |= $whitespace;
             if ($remove) {
                 // @phpstan-ignore argument.type
@@ -318,7 +313,7 @@ final class TokenCollection extends Collection implements Stringable
     public function applyInnerWhitespace(int $whitespace)
     {
         $this->assertCollected();
-        if (($whitespace & 0b0111000111000111000111) !== $whitespace) {
+        if (($whitespace & 0b111000111000111000111) !== $whitespace) {
             // @codeCoverageIgnoreStart
             throw new InvalidArgumentException('Invalid $whitespace (AFTER bits cannot be set)');
             // @codeCoverageIgnoreEnd
@@ -331,13 +326,15 @@ final class TokenCollection extends Collection implements Stringable
         foreach ($this->Items as $token) {
             if ($ignore) {
                 $ignore = false;
-            } elseif ($token->Idx->Virtual[$token->id]) {
+            } elseif (
+                $token->Idx->Virtual[$token->id]
+                && $token->Data[TokenData::BOUND_TO]->index < $token->index
+            ) {
                 continue;
             } else {
                 $token->Whitespace |= $whitespace;
                 if ($remove) {
-                    // @phpstan-ignore argument.type
-                    $token->removeWhitespace($remove);
+                    $token->doRemoveWhitespace($remove);
                 }
             }
         }

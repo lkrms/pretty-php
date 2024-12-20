@@ -9,6 +9,7 @@ use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Token;
 use Lkrms\PrettyPHP\TokenIndex;
+use Lkrms\PrettyPHP\TokenUtil;
 use Closure;
 
 /**
@@ -34,30 +35,6 @@ use Closure;
 final class VerticalWhitespace implements TokenRule
 {
     use TokenRuleTrait;
-
-    private const TOKEN_MAP = [
-        \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG => \T_AND,
-        \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG => \T_AND,
-        \T_AND => \T_AND,
-        \T_BOOLEAN_AND => \T_BOOLEAN_AND,
-        \T_BOOLEAN_OR => \T_BOOLEAN_OR,
-        \T_LOGICAL_AND => \T_LOGICAL_AND,
-        \T_LOGICAL_OR => \T_LOGICAL_OR,
-        \T_LOGICAL_XOR => \T_LOGICAL_XOR,
-        \T_OR => \T_OR,
-        \T_XOR => \T_XOR,
-    ];
-
-    private const PRECEDENCE_MAP = [
-        \T_AND => 0,
-        \T_XOR => 1,
-        \T_OR => 2,
-        \T_BOOLEAN_AND => 3,
-        \T_BOOLEAN_OR => 4,
-        \T_LOGICAL_AND => 5,
-        \T_LOGICAL_XOR => 6,
-        \T_LOGICAL_OR => 7,
-    ];
 
     private bool $AlignChainsEnabled;
     /** @var array<int,Closure(Token): bool> */
@@ -94,32 +71,51 @@ final class VerticalWhitespace implements TokenRule
     {
         $this->AlignChainsEnabled = $this->Formatter->Enabled[AlignChains::class] ?? false;
 
-        $hasNewlineBefore = fn(Token $t): bool => $t->hasNewlineBefore();
+        $hasNewlineBefore = fn(Token $t): bool => $t->hasNewlineAfterPrevCode();
         $hasNewlineAfter = fn(Token $t): bool => $t->hasNewlineBeforeNextCode();
         $applyNewlineBefore = function (Token $t): void {
             $sol = $t->startOfLine();
-            // Don't add a newline after a standalone close bracket, e.g. `) &&`
+            /** @var Token */
+            $prev = $t->Prev;
+            /** @var Token */
+            $next = $t->Next;
+            // Suppress newlines after standalone close brackets, e.g. `) &&`
             // where `)` is at the start of a line
-            if ($sol === $t || (
-                $t->Prev
-                && $sol->collect($t->Prev)->hasOneNotFrom($this->Idx->CloseBracket)
-            )) {
+            if (
+                ($prev->index >= $sol->index ? $sol : $prev->startOfLine())
+                    ->collect($prev)
+                    ->hasOneNotFrom($this->Idx->CloseBracket)
+                || $next
+                       ->collect($next->endOfLine())
+                       ->hasOneNotFrom($this->Idx->OpenBracketOrNot)
+            ) {
                 $t->Whitespace |= Space::LINE_BEFORE;
+            } else {
+                $t->Whitespace |= Space::NO_LINE_BEFORE;
             }
         };
         $applyNewlineAfter = function (Token $t): void {
             $eol = $t->endOfLine();
-            // Don't add a newline before a standalone open bracket, e.g. `&& (`
+            /** @var Token */
+            $next = $t->Next;
+            /** @var Token */
+            $prev = $t->Prev;
+            // Suppress newlines before standalone open brackets, e.g. `&& (`
             // where `(` is at the end of a line
-            if ($eol === $t || (
-                $t->Next
-                && $t->Next->collect($eol)->hasOneNotFrom($this->Idx->OpenBracketOrNot)
-            )) {
+            if (
+                $next->collect($next->index <= $eol->index ? $eol : $next->endOfLine())
+                     ->hasOneNotFrom($this->Idx->OpenBracketOrNot)
+                || $prev->startOfLine()
+                        ->collect($prev)
+                        ->hasOneNotFrom($this->Idx->CloseBracket)
+            ) {
                 $t->Whitespace |= Space::LINE_AFTER;
+            } else {
+                $t->Whitespace |= Space::NO_LINE_AFTER;
             }
         };
 
-        foreach (array_keys(self::PRECEDENCE_MAP) as $id) {
+        foreach (array_keys(array_filter($this->Idx->OperatorBooleanExceptNot)) as $id) {
             if (
                 $this->Idx->AllowNewlineBefore[$id]
                 || !$this->Idx->AllowNewlineAfter[$id]
@@ -147,43 +143,43 @@ final class VerticalWhitespace implements TokenRule
             // Propagate newlines adjacent to boolean operators to others of
             // equal or lower precedence in the same statement
             if ($this->Idx->OperatorBooleanExceptNot[$token->id]) {
-                $id = self::TOKEN_MAP[$token->id];
-
-                assert($token->Statement !== null);
+                /** @var Token */
+                $statement = $token->Statement;
 
                 // Ignore statements already processed and tokens with no
                 // adjacent newline
                 if (
-                    isset($this->Seen[$token->Statement->index])
-                    || !($this->HasNewline[$id])($token)
+                    isset($this->Seen[$statement->index])
+                    || !($this->HasNewline[$token->id])($token)
                 ) {
                     continue;
                 }
 
-                $this->Seen[$token->Statement->index] = true;
+                $this->Seen[$statement->index] = true;
 
                 // Get the statement's boolean operators and find the
                 // highest-precedence operator with an adjacent newline
                 /** @var array<int,Token[]> */
-                $byId = [];
-                $minPrecedence = self::PRECEDENCE_MAP[$id];
+                $byPrecedence = [];
+                $maxPrecedence = TokenUtil::getOperatorPrecedence($token);
 
-                foreach ($token->Statement->withNextSiblings($token->EndStatement) as $t) {
+                foreach ($statement->withNextSiblings($token->EndStatement) as $t) {
                     if (!$this->Idx->OperatorBooleanExceptNot[$t->id]) {
                         continue;
                     }
-                    $id = self::TOKEN_MAP[$t->id];
-                    $byId[$id][] = $t;
-                    if ($t === $token || !($this->HasNewline[$id])($t)) {
+                    $precedence = TokenUtil::getOperatorPrecedence($t);
+                    $byPrecedence[$precedence][] = $t;
+                    if ($t === $token || !($this->HasNewline[$t->id])($t)) {
                         continue;
                     }
-                    $minPrecedence = min($minPrecedence, self::PRECEDENCE_MAP[$id]);
+                    // Lower numbers = higher precedence
+                    $maxPrecedence = min($maxPrecedence, $precedence);
                 }
 
-                foreach ($byId as $id => $tokens) {
-                    if (self::PRECEDENCE_MAP[$id] >= $minPrecedence) {
+                foreach ($byPrecedence as $precedence => $tokens) {
+                    if ($precedence >= $maxPrecedence) {
                         foreach ($tokens as $t) {
-                            ($this->ApplyNewline[$id])($t);
+                            ($this->ApplyNewline[$t->id])($t);
                         }
                     }
                 }

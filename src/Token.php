@@ -1180,11 +1180,18 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
      */
     public function applyWhitespace(int $whitespace): void
     {
+        // Ignore *_BEFORE if the token is bound to a previous token, *_AFTER if
+        // it's bound to a subsequent token
+        if ($this->Idx->Virtual[$this->id]) {
+            $whitespace &= $this->Data[TokenData::BOUND_TO]->index < $this->index
+                ? 0b111000111000111000111000
+                : 0b111000111000111000111;
+        }
+
         // Shift *_BEFORE and *_AFTER to their NO_* counterparts, then clear
         // other bits
         if ($remove = $whitespace << 6 & 0b111111000000) {
-            // @phpstan-ignore argument.type
-            $this->removeWhitespace($remove);
+            $this->doRemoveWhitespace($remove);
         }
 
         $this->Whitespace |= $whitespace;
@@ -1197,10 +1204,24 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
      */
     public function removeWhitespace(int $whitespace): void
     {
+        if ($this->Idx->Virtual[$this->id]) {
+            $whitespace &= $this->Data[TokenData::BOUND_TO]->index < $this->index
+                ? 0b111000111000
+                : 0b111000111;
+        }
+
+        $this->doRemoveWhitespace($whitespace);
+    }
+
+    /**
+     * @internal
+     */
+    public function doRemoveWhitespace(int $whitespace): void
+    {
         $this->Whitespace &= ~$whitespace;
 
         if (
-            ($before = $whitespace & 0b0111000111)
+            ($before = $whitespace & 0b111000111)
             && ($prev = $this->prevReal())
         ) {
             $prev->Whitespace &= ~($before << 3);

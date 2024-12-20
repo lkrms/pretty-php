@@ -52,9 +52,7 @@ final class NormaliseNumbers implements TokenRule
      *
      * Integer literals are normalised by replacing hexadecimal, octal and
      * binary prefixes with `0x`, `0` and `0b` respectively, removing redundant
-     * zeroes, adding `0` before hexadecimal and binary values with an odd
-     * number of digits (except hexadecimal values with exactly 5 digits), and
-     * converting hexadecimal digits to uppercase.
+     * zeroes, and converting hexadecimal digits to uppercase.
      *
      * Float literals are normalised by removing redundant zeroes, adding `0` to
      * empty integer or fractional parts, replacing `E` with `e`, removing `+`
@@ -94,7 +92,6 @@ final class NormaliseNumbers implements TokenRule
                 $base = $matches['base'];
                 $number = $matches['number'];
                 $length = 0;
-                $pad = 0;
                 $split = 0;
 
                 switch ($base) {
@@ -105,7 +102,6 @@ final class NormaliseNumbers implements TokenRule
                         $number = strtr($number, 'abcdef', 'ABCDEF');
                         $length = strlen($number);
                         if ($length !== 5 || $underscores) {
-                            $pad = $length % 2;
                             $split = 4;
                         }
                         break;
@@ -127,15 +123,12 @@ final class NormaliseNumbers implements TokenRule
                         // No break
                     case 'b':
                         $length = strlen($number);
-                        $pad = $length % 2;
                         $split = 4;
                         break;
                 }
 
                 if ($underscores && $split && $length > $split) {
                     $number = $this->split($number, $split, $length, '0');
-                } elseif ($pad) {
-                    $number = str_repeat('0', $pad) . $number;
                 }
 
                 $token->setText("0{$base}{$number}");

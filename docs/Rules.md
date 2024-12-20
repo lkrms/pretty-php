@@ -68,7 +68,7 @@ The latter is necessary because strings like `"$foo[0]"` and `"$foo[$bar]"` are 
 
 ### `NormaliseNumbers`, unless disabled
 
-Integer literals are normalised by replacing hexadecimal, octal and binary prefixes with `0x`, `0` and `0b` respectively, removing redundant zeroes, adding `0` before hexadecimal and binary values with an odd number of digits (except hexadecimal values with exactly 5 digits), and converting hexadecimal digits to uppercase.
+Integer literals are normalised by replacing hexadecimal, octal and binary prefixes with `0x`, `0` and `0b` respectively, removing redundant zeroes, and converting hexadecimal digits to uppercase.
 
 Float literals are normalised by removing redundant zeroes, adding `0` to empty integer or fractional parts, replacing `E` with `e`, removing `+` from exponents, and expressing them with mantissae between 1.0 and 10.
 
