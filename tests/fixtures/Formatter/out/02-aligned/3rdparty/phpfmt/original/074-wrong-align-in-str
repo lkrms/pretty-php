@@ -6,7 +6,7 @@ $cccccccc = 3;
 
 $c = 0;
 
-$a = array(
+$a    = array(
     $a   => 1,
     $ccc => 10,
 );

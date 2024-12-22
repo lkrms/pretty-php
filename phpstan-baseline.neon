@@ -13,48 +13,6 @@ parameters:
 			path: src/Rule/AlignComments.php
 
 		-
-			message: '#^Binary operation "\-" between ''''\|int and ''''\|int\|null results in an error\.$#'
-			identifier: binaryOp.invalid
-			count: 1
-			path: src/Rule/AlignData.php
-
-		-
-			message: '#^Binary operation "\-" between ''''\|int and 1 results in an error\.$#'
-			identifier: binaryOp.invalid
-			count: 2
-			path: src/Rule/AlignData.php
-
-		-
-			message: '#^Cannot access property \$Padding on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 2
-			path: src/Rule/AlignData.php
-
-		-
-			message: '#^Cannot access property \$id on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Rule/AlignData.php
-
-		-
-			message: '#^Cannot access property \$text on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Rule/AlignData.php
-
-		-
-			message: '#^Cannot call method pragmaticEndOfExpression\(\) on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: method.nonObject
-			count: 3
-			path: src/Rule/AlignData.php
-
-		-
-			message: '#^Cannot call method withNextSiblings\(\) on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Rule/AlignData.php
-
-		-
 			message: '#^Cannot access property \$LinePadding on Lkrms\\PrettyPHP\\Token\|null\.$#'
 			identifier: property.nonObject
 			count: 1

@@ -133,7 +133,7 @@ final class AlignLists implements ListRule
                 // to the entire list as a single item so inner tokens align
                 // with the column after the open bracket
                 if (!$parent->hasNewlineBeforeNextCode()) {
-                    $delta = $parent->getOutputColumn(false)
+                    $delta = $parent->getOutputColumn(false) - 1
                         - ($parent->getIndent() * $tabSize
                             + $parent->LinePadding
                             - $parent->LineUnpadding)
@@ -156,7 +156,7 @@ final class AlignLists implements ListRule
                             return;
                         }
 
-                        $delta = $item->getOutputColumn(true)
+                        $delta = $item->getOutputColumn(true) - 1
                             - ($item->getIndent() * $tabSize
                                 + $item->LinePadding
                                 - $item->LineUnpadding);

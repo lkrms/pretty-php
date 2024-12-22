@@ -1,6 +1,6 @@
 <?php
 $people = array(
-    array('name' => 'Kalle',  'salt' => 856412),
+    array('name' => 'Kalle', 'salt' => 856412),
     array('name' => 'Pierre', 'salt' => 215863)
 );
 

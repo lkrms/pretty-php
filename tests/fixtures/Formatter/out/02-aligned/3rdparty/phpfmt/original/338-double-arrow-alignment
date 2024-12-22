@@ -1,7 +1,7 @@
 <?php
 // passes:AlignGroupDoubleArrow
 $test = [
-    'shortkey' => [
+    'shortkey'      => [
         'shortkey'             => 'test',
         'shortishkey'          => 'test',
         'reallylongkey'        => 'test',

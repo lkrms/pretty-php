@@ -5,7 +5,7 @@ class A
 }
 
 // Pre PHP 7 code
-$getX = function () {
+$getX   = function () {
     return $this->x;
 };
 $getXCB = $getX->bindTo(new A, 'A');  // intermediate closure

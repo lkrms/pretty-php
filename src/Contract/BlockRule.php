@@ -18,7 +18,7 @@ interface BlockRule extends Rule
      * code and/or comment tokens, is passed to this method for each block of
      * consecutive non-empty output lines.
      *
-     * @param TokenCollection[] $lines
+     * @param non-empty-list<TokenCollection> $lines
      */
     public function processBlock(array $lines): void;
 }

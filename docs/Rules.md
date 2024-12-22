@@ -46,7 +46,7 @@ Formatting rules applied by `pretty-php` are as follows.
 | `AlignArrowFunctions` (2)   | -          | -        | 3    | _`callback`_            | 710      |
 | `AlignTernaryOperators` (2) | -          | -        | 3    | _`callback`_            | 710      |
 | `AlignLists` (2)            | -          | -        | 3    | _`callback`_            | 710      |
-| `AlignData` (2)             | -          | -        | 3    | _`callback`_            | 720      |
+| `AlignData` (2)             | -          | -        | 3    | _`callback`_            | 710      |
 | `HangingIndentation` (2)    | Y          | -        | 3    | _`callback`_            | 800      |
 | `StandardSpacing` (3)       | Y          | -        | 3    | _`callback`_            | 820      |
 | `PlaceBraces` (2)           | Y          | -        | 4    | `beforeRender()`        | 400      |
@@ -275,6 +275,16 @@ If a ternary or null coalescing operator has a leading newline, a callback is re
 
 A callback is registered to align arguments, array elements and other list items, along with their inner and adjacent tokens, with the column after their open brackets, or with the first item in the list if they have no enclosing brackets.
 
+### `AlignData`, if enabled (call 1: `processBlock()`)
+
+When they appear in the same scope, a callback is registered to align consecutive:
+
+- assignment operators
+- `=>` delimiters in array syntax (except as noted below)
+- `=>` delimiters in `match` expressions
+
+If the open bracket of an array is not followed by a newline and neither `AlignLists` nor `StrictLists` are enabled, its `=>` delimiters are ignored.
+
 ### `AlignChains`, if enabled (call 2: _`callback`_)
 
 Object operators in a chain of method calls are aligned with a given token.
@@ -302,6 +312,12 @@ This is achieved by:
 
 - calculating the difference between the current and desired output columns of the operator
 - applying it to the `LinePadding` of the operator and its adjacent tokens
+
+### `AlignData`, if enabled (call 2: _`callback`_)
+
+Assignment operators are aligned unless `MaxAssignmentPadding` is not `null` and would be exceeded.
+
+In arrays and `match` expressions, `=>` delimiters are aligned unless `MaxDoubleArrowColumn` is not `null`, in which case any found in subsequent columns are excluded from consideration.
 
 ### `StandardSpacing` (call 3: _`callback`_)
 

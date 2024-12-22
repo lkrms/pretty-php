@@ -6,7 +6,7 @@ $expressionResult = match ($condition) {
 };
 
 $expressionResult = match ($condition) {
-    1, 2 => foo(),
+    1, 2    => foo(),
     default => function () {
         match ($condition) {
             1, 2    => foo(),

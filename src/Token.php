@@ -936,6 +936,29 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     }
 
     /**
+     * Check if the token is a T_DOUBLE_ARROW associated with an arrow function
+     */
+    public function isDoubleArrowAfterFn(): bool
+    {
+        if ($this->id !== \T_DOUBLE_ARROW) {
+            return false;
+        }
+        /** @var self */
+        $prev = $this->PrevCode;
+        $prev = $prev->skipPrevSiblingFrom($this->Idx->ValueType);
+        if ($prev !== $this->PrevCode && (
+            $prev->id !== \T_COLON
+            || !($prev = $prev->PrevCode)
+        )) {
+            return false;
+        }
+        /** @var self $prev */
+        return $prev->id === \T_CLOSE_PARENTHESIS
+            && ($prev = $prev->PrevSibling)
+            && $prev->skipPrevSiblingFrom($this->Idx->Ampersand)->id === \T_FN;
+    }
+
+    /**
      * Check if the token is part of an anonymous function declaration or arrow
      * function
      */
@@ -1031,14 +1054,33 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     }
 
     /**
+     * Get the sibling of the token closest to the start of the line it will
+     * currently render on
+     *
+     * The token returns itself if it satisfies the criteria.
+     */
+    public function firstSiblingAfterNewline(bool $ignoreComments = true): self
+    {
+        $sol = $this->startOfLine($ignoreComments);
+        $t = $this->OpenBracket ?? $this;
+        while (
+            $t->PrevSibling
+            && $t->PrevSibling->index >= $sol->index
+        ) {
+            $t = $t->PrevSibling;
+        }
+        return $t;
+    }
+
+    /**
      * Get the last sibling between the token and the end of the line it will
      * currently render on
      *
      * The token returns itself if it satisfies the criteria.
      */
-    public function lastSiblingBeforeNewline(): self
+    public function lastSiblingBeforeNewline(bool $ignoreComments = true): self
     {
-        $eol = $this->endOfLine();
+        $eol = $this->endOfLine($ignoreComments);
         $t = $this->CloseBracket ?? $this;
         while (
             $t->NextSibling
@@ -1430,7 +1472,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         return $beforeText
             ? ($this->Prev
                 ? $this->Prev->getNextOutputColumn(true)
-                : 0)
+                : 1)
             : $this->getNextOutputColumn(false);
     }
 
@@ -1451,7 +1493,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
                 + $sol->LinePadding
                 - $sol->LineUnpadding;
         }
-        return mb_strlen($line) + $delta;
+        return mb_strlen($line) + $delta + 1;
     }
 
     // Collection methods:
@@ -1645,259 +1687,5 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         }
 
         return new TokenCollection($tokens ?? []);
-    }
-
-    // --
-
-    /**
-     * If the token were moved to the right, get the last token that would move
-     * with it
-     *
-     * Statement separators (e.g. `,` and `;`) are not part of expressions and
-     * are not returned unless {@see Token::pragmaticEndOfExpression()} is
-     * called on them directly.
-     *
-     * @param bool $containUnenclosed If `true` (the default), braces are
-     * imagined around control structures with unenclosed bodies.
-     */
-    public function pragmaticEndOfExpression(
-        bool $containUnenclosed = true,
-        bool $containDeclaration = true,
-        bool $containTernary = false
-    ): self {
-        // If the token is a statement terminator, there is nothing else to move
-        if (!$this->EndExpression) {
-            // @codeCoverageIgnoreStart
-            return $this;
-            // @codeCoverageIgnoreEnd
-        }
-
-        // If the token is part of a declaration with an adjacent body (class,
-        // function, interface, etc.), return the token that precedes the
-        // opening brace of the body so the body is not moved
-        if (
-            $containDeclaration
-            && $this->Expression
-            && ($end = $this->getEndOfDeclaration())
-        ) {
-            return $end;
-        }
-
-        // If the token is an expression delimiter, return the last token in the
-        // statement
-        if (!$containUnenclosed && !$this->Expression) {
-            /** @var self */
-            $end = $this->EndStatement;
-            return $end === $this
-                ? $end
-                : $end->withoutTerminator();
-        }
-
-        // If the token is an object operator, return the last token in the
-        // chain
-        if ($this->Idx->Chain[$this->id]) {
-            $current = $this;
-            do {
-                $last = $current;
-            } while (
-                ($current = $current->NextSibling)
-                && $this->Expression === $current->Expression
-                && $this->Idx->ChainPart[$current->id]
-            );
-
-            return $last->CloseBracket ?: $last;
-        }
-
-        // If the token is between `?` and `:` in a ternary expression, return
-        // the last token before `:`
-        $prevTernaryIsColon = null;
-        $current = $this;
-        while (
-            ($current = $current->PrevSibling)
-            && $current->Statement === $this->Statement
-        ) {
-            if ($current->Flags & TokenFlag::TERNARY_OPERATOR) {
-                if ($current->id === \T_QUESTION) {
-                    $prevTernaryIsColon ??= false;
-                    if ($current->Data[TokenData::OTHER_TERNARY_OPERATOR]->index > $this->index) {
-                        /** @var self */
-                        return $current->Data[TokenData::OTHER_TERNARY_OPERATOR]->PrevCode;
-                    }
-                    break;
-                } else {
-                    $prevTernaryIsColon ??= true;
-                }
-            }
-        }
-
-        // If the token is between `:` and `?` in chained ternary expressions,
-        // return the last token before `?`
-        if ($containTernary && $prevTernaryIsColon) {
-            $current = $this;
-            while (
-                ($current = $current->NextSibling)
-                && $current->Statement === $this->Statement
-            ) {
-                if ($current->Flags & TokenFlag::TERNARY_OPERATOR) {
-                    if ($current->id === \T_QUESTION) {
-                        /** @var self */
-                        return $current->PrevCode;
-                    }
-                    break;
-                }
-            }
-        }
-
-        // Otherwise, traverse siblings by expression until none remain or an
-        // appropriate terminator is found
-        $current = $this->OpenBracket ?: $this;
-        $inSwitchCase = $current->inSwitchCase();
-
-        while ($current->EndExpression) {
-            $current = $current->EndExpression;
-            $terminator =
-                $current->NextSibling
-                && !$current->NextSibling->Expression
-                    ? $current->NextSibling
-                    : $current;
-            $next = $terminator->NextSibling;
-
-            if (!$next) {
-                return $current;
-            }
-
-            [$last, $current] = [$current, $next];
-
-            // Don't terminate if the token between expressions is a ternary
-            // operator or an expression terminator other than `)`, `]` and `;`
-            if (
-                ($terminator->Flags & TokenFlag::TERNARY_OPERATOR)
-                || $this->Idx->ExpressionDelimiter[$terminator->id]
-            ) {
-                continue;
-            }
-
-            // Don't terminate `case` and `default` statements until the next
-            // `case` or `default` is reached
-            if ($inSwitchCase && $next->id !== \T_CASE && $next->id !== \T_DEFAULT) {
-                continue;
-            }
-
-            // Don't terminate if the next token continues a control structure
-            if ($next->id === \T_CATCH || $next->id === \T_FINALLY) {
-                continue;
-            }
-            if (
-                ($next->id === \T_ELSEIF || $next->id === \T_ELSE)
-                && (!$containUnenclosed
-                    || $terminator->id === \T_CLOSE_BRACE
-                    || $terminator->prevSiblingFrom($this->Idx->IfOrElseIf)->index >= $this->index)
-            ) {
-                continue;
-            }
-            if (
-                $next->id === \T_WHILE
-                && $next->Statement !== $next
-                && (!$containUnenclosed
-                    || $terminator->id === \T_CLOSE_BRACE
-                    || ($next->Statement && $next->Statement->index >= $this->index))
-            ) {
-                continue;
-            }
-
-            // Otherwise, terminate
-            return $last;
-        }
-
-        return $current;
-    }
-
-    private function getEndOfDeclaration(): ?self
-    {
-        $parts = $this->skipToStartOfDeclaration()
-                      ->declarationParts();
-        if (!$parts->hasOneFrom($this->Idx->DeclarationTopLevel)) {
-            return null;
-        }
-
-        /** @var self */
-        $last = $parts->last();
-        if ($last->index < $this->index) {
-            return null;
-        }
-
-        // Exclude anonymous functions, which can move as needed
-        if ($last->skipPrevSiblingFrom($this->Idx->Ampersand)->id === \T_FUNCTION) {
-            return null;
-        }
-
-        // Exclude anonymous classes with newlines before `class`, i.e.
-        //
-        // ```php
-        // $foo = new
-        //     #[Attribute]
-        //     class implements
-        //         Bar,
-        //         Baz
-        //     {
-        //         // ...
-        //     };
-        // ```
-        //
-        // vs.:
-        //
-        // ```php
-        // $foo = new class implements
-        //     Bar,
-        //     Baz
-        // {
-        //     // ...
-        // };
-        // ```
-        /** @var self */
-        $first = $parts->first();
-        if ($first->id === \T_NEW && $first->NextCode === $this) {
-            /** @var self */
-            $class = $parts->getFirstOf(\T_CLASS);
-            /** @var self */
-            $prev = $class->PrevCode;
-            if ($prev->hasNewlineBeforeNextCode()) {
-                return null;
-            }
-        }
-
-        $body = $last->nextSiblingOf(\T_OPEN_BRACE);
-        /** @var self */
-        $end = $this->EndStatement;
-        if ($body->id === \T_NULL || $body->index >= $end->index) {
-            return null;
-        }
-
-        return $body->PrevCode;
-    }
-
-    public function withoutTerminator(): self
-    {
-        if ($this->PrevCode && (
-            $this->Idx->StatementDelimiter[$this->id]
-            || $this->Flags & TokenFlag::STATEMENT_TERMINATOR
-        )) {
-            return $this->PrevCode;
-        }
-        return $this;
-    }
-
-    public function withTerminator(): self
-    {
-        if ($this->NextCode && !(
-            $this->Idx->StatementDelimiter[$this->id]
-            || $this->Flags & TokenFlag::STATEMENT_TERMINATOR
-        ) && (
-            $this->Idx->StatementDelimiter[$this->NextCode->id]
-            || $this->NextCode->Flags & TokenFlag::STATEMENT_TERMINATOR
-        )) {
-            return $this->NextCode;
-        }
-        return $this;
     }
 }
