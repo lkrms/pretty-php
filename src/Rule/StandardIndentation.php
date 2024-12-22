@@ -2,12 +2,12 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 
 /**
- * Apply symmetrical whitespace to brackets and increase the indentation
- * level of tokens between them
+ * Indent tokens between brackets with inner newlines
  *
  * @api
  */
@@ -34,7 +34,11 @@ final class StandardIndentation implements TokenRule
     }
 
     /**
-     * @inheritDoc
+     * Apply the rule to the given tokens
+     *
+     * The `Indent` and inner whitespace of each open bracket is copied to its
+     * close bracket, and the `Indent` of tokens between brackets with inner
+     * newlines is incremented.
      */
     public function processTokens(array $tokens): void
     {
@@ -51,13 +55,20 @@ final class StandardIndentation implements TokenRule
             $prev = $token->Prev;
             $token->Indent = $prev->Indent;
 
-            if ($prev->CloseBracket) {
+            if ($close = $prev->CloseBracket) {
                 if ($hasNewline = $token->hasNewlineAfterPrevCode()) {
                     $token->Indent++;
                 }
 
                 if (!$this->Idx->Virtual[$prev->id]) {
-                    $this->mirrorBracket($prev, $hasNewline);
+                    if (!$hasNewline) {
+                        $close->Whitespace |= Space::NO_BLANK_BEFORE | Space::NO_LINE_BEFORE;
+                    } else {
+                        $close->Whitespace |= Space::LINE_BEFORE;
+                        if (!$close->hasNewlineBefore()) {
+                            $close->removeWhitespace(Space::NO_LINE_BEFORE);
+                        }
+                    }
                 }
             }
         }
