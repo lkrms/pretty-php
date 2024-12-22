@@ -9,10 +9,10 @@ class StdObj
     {
         return [
             '',
-            'aaaaaaaaaaaaaaaaaaaa' => [
+            'aaaaaaaaaaaaaaaaaaaa'                    => [
                 'aaaaaaaaaaaaa' => '',
-                'aaaaaaaaaaa' => 200,
-                'aaaaaaaa' => [
+                'aaaaaaaaaaa'   => 200,
+                'aaaaaaaa'      => [
                     'aaaaaaaaaaaaaa' => false,
                     'aaaaaaaaaaaaa'  => true,
                     'aaaaaaaaaa'     => true,
@@ -30,8 +30,8 @@ class StdObj
                         ]
                     ]
                 ],
-                'aaaaaaaaaaa' => 200,
-                'aaaaaaaa' => [
+                'aaaaaaaaaaa'   => 200,
+                'aaaaaaaa'      => [
                     'aaaaaaaaaaaaaa' => false,
                     'aaaaaaaaaaaaa'  => true,
                     'aaaaaaaaaa'     => true,

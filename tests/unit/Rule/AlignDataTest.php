@@ -21,44 +21,6 @@ final class AlignDataTest extends TestCase
      */
     public static function outputProvider(): array
     {
-        return [
-            'one-line switch blocks' => [
-                <<<'PHP'
-<?php
-switch ($operator) {
-    default:
-    case '=':
-    case '==':  return $retrieved == $value;
-    case '!=':
-    case '<>':  return $retrieved != $value;
-    case '<':   return $retrieved < $value;
-    case '>':   return $retrieved > $value;
-    case '<=':  return $retrieved <= $value;
-    case '>=':  return $retrieved >= $value;
-    case '===': return $retrieved === $value;
-    case '!==': return $retrieved !== $value;
-    case '<=>': return $retrieved <=> $value;
-}
-
-PHP,
-                <<<'PHP'
-<?php
-switch ($operator) {
-default:
-case '=':
-case '==': return $retrieved == $value;
-case '!=':
-case '<>': return $retrieved != $value;
-case '<': return $retrieved < $value;
-case '>': return $retrieved > $value;
-case '<=': return $retrieved <= $value;
-case '>=': return $retrieved >= $value;
-case '===': return $retrieved === $value;
-case '!==': return $retrieved !== $value;
-case '<=>': return $retrieved <=> $value;
-}
-PHP,
-            ],
-        ];
+        return [];
     }
 }

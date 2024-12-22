@@ -42,7 +42,8 @@ final class WordPress implements Preset, TokenRule
                    ->tokenIndex(new WordPressTokenIndex())
                    ->oneTrueBraceStyle()
                    ->spacesBesideCode(1)
-                   ->with('RelaxAlignmentCriteria', true);
+                   ->with('MaxAssignmentPadding', 40)
+                   ->with('MaxDoubleArrowColumn', 60);
     }
 
     /**

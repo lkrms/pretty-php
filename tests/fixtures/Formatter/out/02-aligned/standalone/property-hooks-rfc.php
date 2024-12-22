@@ -286,7 +286,7 @@ class Foo
 
 $x = 'beep';
 
-$foo = new Foo();
+$foo      = new Foo();
 // This is fine; as $bar is a normal property.
 $foo->bar = &$x;
 
@@ -439,7 +439,7 @@ class Test
     }
 }
 
-$test = new Test();
+$test          = new Test();
 // Appending to an array invokes &get and modifies
 // the array stored in the returned reference, bypassing
 // the set hook entirely.

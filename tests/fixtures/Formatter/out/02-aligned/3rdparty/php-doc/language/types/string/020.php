@@ -3,7 +3,7 @@
 const DATA_KEY = 'const-key';
 
 $great = 'fantastic';
-$arr = [
+$arr   = [
     '1',
     '2',
     '3',

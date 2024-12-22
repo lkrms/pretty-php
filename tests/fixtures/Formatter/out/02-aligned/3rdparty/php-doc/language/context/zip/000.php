@@ -1,6 +1,6 @@
 <?php
 // Read encrypted archive
-$opts = array(
+$opts    = array(
     'zip' => array(
         'password' => 'secret',
     ),

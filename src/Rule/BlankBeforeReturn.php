@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\TokenIndex;
@@ -50,6 +51,16 @@ final class BlankBeforeReturn implements TokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
+            // Ignore `yield` and `yield from` in non-statement contexts
+            if (
+                $token->Statement !== $token || (
+                    $token->Parent
+                    && !($token->Parent->Flags & TokenFlag::STRUCTURAL_BRACE)
+                )
+            ) {
+                continue;
+            }
+
             // Ignore empty statements
             $prev = $token;
             while (

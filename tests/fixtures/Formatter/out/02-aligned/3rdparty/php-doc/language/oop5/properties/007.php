@@ -7,9 +7,9 @@ class Test
     ) {}
 }
 
-$test = new Test(new stdClass);
+$test           = new Test(new stdClass);
 // Legal interior mutation.
 $test->obj->foo = 1;
 // Illegal reassignment.
-$test->obj = new stdClass;
+$test->obj      = new stdClass;
 ?>

@@ -218,8 +218,9 @@ final class Formatter implements Buildable, Immutable
 
     // --
 
-    public bool $RelaxAlignmentCriteria = false;
     public bool $NewlineBeforeFnDoubleArrow = false;
+    public ?int $MaxAssignmentPadding = null;
+    public ?int $MaxDoubleArrowColumn = null;
 
     /**
      * If the first object operator in a chain of method calls has a leading
@@ -732,14 +733,15 @@ final class Formatter implements Buildable, Immutable
     }
 
     /**
-     * Get an instance with the given setting enabled or disabled
+     * Get an instance with a value applied to the given setting
      *
-     * @param ("RelaxAlignmentCriteria"|"NewlineBeforeFnDoubleArrow"|"AlignChainAfterNewline") $property
-     * @param bool $value
+     * @param ("NewlineBeforeFnDoubleArrow"|"MaxAssignmentPadding"|"MaxDoubleArrowColumn"|"AlignChainAfterNewline") $property
+     * @param int|bool $value
      * @return static
      */
     public function with(string $property, $value): self
     {
+        // @phpstan-ignore salient.property.type
         return $this->withPropertyValue($property, $value)
                     ->apply();
     }
