@@ -6,7 +6,6 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenFlagMask;
 use Lkrms\PrettyPHP\Concern\BlockRuleTrait;
 use Lkrms\PrettyPHP\Contract\BlockRule;
-use Lkrms\PrettyPHP\Internal\TokenCollection;
 use Lkrms\PrettyPHP\Token;
 
 /**
@@ -18,9 +17,12 @@ final class AlignComments implements BlockRule
 {
     use BlockRuleTrait;
 
-    /** @var array<array{TokenCollection[],Token[]}> */
-    private array $BlockComments = [];
+    /** @var array<non-empty-array<Token>> */
+    private array $Comments;
 
+    /**
+     * @inheritDoc
+     */
     public static function getPriority(string $method): ?int
     {
         return [
@@ -29,127 +31,98 @@ final class AlignComments implements BlockRule
         ][$method] ?? null;
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function reset(): void
+    {
+        $this->Comments = [];
+    }
+
+    /**
+     * Apply the rule to the given code block
+     *
+     * Comments beside code, along with any continuations on subsequent lines,
+     * are saved for alignment.
+     *
+     * C++- and shell-style comments on their own line after a comment beside
+     * code are treated as continuations of the initial comment if they are of
+     * the same type and were indented by at least one column relative to code
+     * in the same context.
+     */
     public function processBlock(array $lines): void
     {
         if (count($lines) < 2) {
             return;
         }
 
-        // Collect comments that appear beside code
-        $comments = [];
-        /** @var Token|null */
-        $lastStartOfLine = null;
-        $prevComment = null;
-        foreach ($lines as $i => $line) {
-            /** @var Token|null */
-            $lastComment = $prevComment;
-            $prevComment = null;
+        $tabSize = $this->Formatter->Indentation->TabSize
+            ?? $this->Formatter->TabSize;
 
+        /** @var Token[] */
+        $comments = [];
+        $column = 1;
+        $depth = 0;
+        $nextCode = null;
+        $nextCodeWasFirst = null;
+        foreach ($lines as $tokens) {
             /** @var Token */
-            $comment = $line->last();
+            $comment = $tokens->last();
             if (!$this->Idx->Comment[$comment->id]) {
                 continue;
             }
 
-            if (!$comment->hasNewlineBefore()) {
-                $comments[$i] = $prevComment = $comment;
-                $lastStartOfLine = $line->first();
-                continue;
-            }
-
-            /**
-             * A comment on its own line is considered standalone unless it
-             * continues a comment from the line before by having the same
-             * one-line comment type (`//` or `#`) and being indented relative
-             * to code in the same context
-             *
-             * ```php
-             * $a = 1;
-             * $b = 2;  // Comment 1
-             *  // Continuation of comment 1 (indented relative to $b)
-             * $c = 3;  // Comment 2
-             * // Comment 3 (not indented relative to $c)
-             * ```
-             *
-             * ```php
-             * foreach ($array as $key => $value)  // Comment 1
-             *     // Comment 2
-             *     echo "$key: $value\n";
-             * ```
-             */
             /** @var Token */
-            $prev = $comment->Prev;
-            if (
-                $prev !== $lastComment
-                || $comment->line - $prev->line > 1
-                || ($comment->Flags & TokenFlagMask::COMMENT_TYPE) !== ($prev->Flags & TokenFlagMask::COMMENT_TYPE)
-                || $comment->Flags & TokenFlag::MULTILINE_COMMENT
-                || $comment->column === 1
-                || !$lastStartOfLine
-                || $comment->column <= (
-                    $lastStartOfLine->column
-                    + ($comment->Depth - $lastStartOfLine->Depth)
-                    * ($this->Formatter->Indentation->TabSize ?? $this->Formatter->TabSize)
+            $first = $tokens->first();
+            if ($first !== $comment) {
+                $comments[] = $comment;
+                $column = $first->column;
+                $depth = $first->Depth;
+                $nextCode = $comment->NextCode;
+                $nextCodeWasFirst = null;
+            } elseif (
+                $comments
+                && ($prev = end($comments)) === $comment->Prev
+                && $comment->line - $prev->line < 2
+                && ($comment->Flags & TokenFlagMask::COMMENT_TYPE) === ($prev->Flags & TokenFlagMask::COMMENT_TYPE)
+                && $comment->Flags & TokenFlag::ONELINE_COMMENT
+                && $comment->column > 1
+                && $comment->column > $column + ($comment->Depth - $depth) * $tabSize
+                && (
+                    !$nextCode
+                    || !($nextCodeWasFirst ??= $nextCode->wasFirstOnLine())
+                    || $comment->column > $nextCode->column
                 )
-                || ($comment->NextCode
-                    && $comment->NextCode->wasFirstOnLine()
-                    && $comment->column <= $comment->NextCode->column)
             ) {
-                continue;
+                $comments[] = $comment;
             }
-
-            $comments[$i] = $prevComment = $comment;
         }
 
-        if (count($comments) < 2) {
-            return;
-        }
-
-        $lines = array_intersect_key($lines, $comments);
-
-        $this->BlockComments[] = [$lines, $comments];
-    }
-
-    public function beforeRender(array $tokens): void
-    {
-        $renderer = $this->Formatter->Renderer;
-        foreach ($this->BlockComments as [$block, $comments]) {
-            $lengths = [];
-            $max = 0;
-            foreach ($block as $i => $line) {
-                /** @var Token */
-                $token = $line[0];
-                /** @var Token */
-                $comment = $comments[$i];
-                // If $comment is the first token on the line, there won't be
-                // anything to collect between $token and $comment->Prev, so use
-                // $comment's leading whitespace for calculations
-                if ($token === $comment) {
-                    $length = strlen(ltrim($renderer->renderWhitespaceBefore($comment, true), "\n"));
-                    // Compensate for lack of SPACE applied by PlaceComments
-                    $lengths[$i] = $length - 1;
-                    $max = max($max, $length);
-                    continue;
-                }
-                $text = $token->collect($comment->Prev)->render(true, false);
-                $length = mb_strlen(mb_substr($text, mb_strrpos("\n" . $text, "\n")));
-                $lengths[$i] = $length;
-                $max = max($max, $length);
-            }
-            foreach ($comments as $i => $comment) {
-                $comment->Padding = $max - $lengths[$i]
-                    + $this->Formatter->SpacesBesideCode
-                    // Compensate for SPACE applied by PlaceComments
-                    - 1;
-            }
+        if (count($comments) > 1) {
+            $this->Comments[] = $comments;
         }
     }
 
     /**
-     * @inheritDoc
+     * Apply the rule to the given tokens
+     *
+     * Comments saved for alignment are aligned with the rightmost comment in
+     * the block.
      */
-    public function reset(): void
+    public function beforeRender(array $tokens): void
     {
-        $this->BlockComments = [];
+        foreach ($this->Comments as $comments) {
+            $count = 0;
+            $max = 0;
+            foreach ($comments as $i => $comment) {
+                $columns[$i] = $column = $comment->getOutputColumn(true);
+                $max = $count++
+                    ? max($max, $column)
+                    : $column;
+            }
+            foreach ($comments as $i => $comment) {
+                $comment->Padding += $max - $columns[$i];
+            }
+        }
     }
 }
