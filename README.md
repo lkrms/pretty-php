@@ -41,6 +41,7 @@ If you have questions or feedback, I'd love to [hear from you][discuss].
 
 - Supports code written for **PHP 8.4** and below (when running on a PHP version
   that can parse it)
+- Formats [property hooks][property-hooks] introduced in PHP 8.4
 - Code is formatted for **readability**, **consistency** and **small diffs**
 - With few [exceptions](#pragmatism), **previous formatting is ignored**, and
   nothing in the original file other than whitespace is changed
@@ -196,6 +197,7 @@ This project is licensed under the [MIT License][].
 [Open VSX Registry]: https://open-vsx.org/extension/lkrms/pretty-php
 [PER]: https://www.php-fig.org/per/coding-style/
 [PHIVE]: https://phar.io
+[property-hooks]: https://wiki.php.net/rfc/property-hooks
 [PSR-12]: https://www.php-fig.org/psr/psr-12/
 [Visual Studio Marketplace]:
   https://marketplace.visualstudio.com/items?itemName=lkrms.pretty-php
