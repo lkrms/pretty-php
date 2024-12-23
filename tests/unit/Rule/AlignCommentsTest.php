@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Tests\Rule;
 
+use Lkrms\PrettyPHP\Rule\AlignComments;
 use Lkrms\PrettyPHP\Tests\TestCase;
 
 final class AlignCommentsTest extends TestCase
@@ -11,52 +12,110 @@ final class AlignCommentsTest extends TestCase
      */
     public function testOutput(string $expected, string $code): void
     {
-        $this->assertCodeFormatIs($expected, $code);
+        $this->assertCodeFormatIs($expected, $code, [AlignComments::class]);
     }
 
     /**
-     * @return array<string,array{string,string}>
+     * @return array<array{string,string}>
      */
     public static function outputProvider(): array
     {
         return [
-            'standalone comments' => [
+            [
                 <<<'PHP'
 <?php
-$a = 1;
-$b = 2;  //
-
-//
-$c = 3;
+$a = 1;      //
+$b = 10;     //
+$c = 100;
+$d = 1000;   //
+$e = 10000;  //
 
 PHP,
                 <<<'PHP'
 <?php
-$a = 1;
-$b = 2;  //
-
-//
-$c = 3;
+$a = 1;  //
+$b = 10;  #
+$c = 100;
+$d = 1000;  //
+$e = 10000;  #
 PHP,
             ],
-            'mixed comment types' => [
+            [
                 <<<'PHP'
 <?php
-echo 'This is a test';  // This is a one-line c++ style comment
-/* This is a multi line comment
-   yet another line of comment */
-echo 'This is yet another test';
-echo 'One Final Test';  // This is (or was) a one-line shell-style comment
-?>
+$a = 1;     //
+            //
+$b = 10;    //
+            //
+$c = 100;   //
+//
+$d = 1000;  //
+//
+
+//
+
 PHP,
                 <<<'PHP'
 <?php
-echo 'This is a test'; // This is a one-line c++ style comment
-/* This is a multi line comment
-   yet another line of comment */
-echo 'This is yet another test';
-echo 'One Final Test'; # This is (or was) a one-line shell-style comment
-?>
+$a = 1;  //
+ //
+$b = 10;  #
+ #
+$c = 100;  //
+ #
+$d = 1000;  #
+ //
+
+//
+PHP,
+            ],
+            [
+                <<<'PHP'
+<?php
+$a = 1;   /* line 1
+             line 2 */
+$b = 10;  /* line 1
+             line 2 */
+/* comment */
+/* comment */
+
+PHP,
+                <<<'PHP'
+<?php
+$a = 1;  /* line 1
+            line 2 */
+$b = 10;  /* line 1
+             line 2 */
+ /* comment */
+/* comment */
+PHP,
+            ],
+            [
+                <<<'PHP'
+<?php
+$a = 1; /* inline */     /* line 1
+                            line 2 */
+$b = 10; /* inline */    // one-line 1
+                         // one-line 2
+$c = 100; /* inline */   // shell-style 1
+                         // shell-style 2
+$d = 1000;               /* inline */
+$e = 10000; /* inline */ // one-line 1
+/* inline */
+// one-line 2
+
+PHP,
+                <<<'PHP'
+<?php
+$a = 1; /* inline */ /* line 1
+                        line 2 */
+$b = 10; /* inline */ // one-line 1
+ // one-line 2
+$c = 100; /* inline */ # shell-style 1
+ # shell-style 2
+$d = 1000; /* inline */
+$e = 10000; /* inline */ // one-line 1
+/* inline */ // one-line 2
 PHP,
             ],
         ];

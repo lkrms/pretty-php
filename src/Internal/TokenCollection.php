@@ -225,6 +225,7 @@ final class TokenCollection extends Collection implements Stringable
     public function hasNewline(): bool
     {
         $this->assertCollected();
+
         $ignore = true;
         foreach ($this->Items as $token) {
             if (strpos($token->text, "\n") !== false) {
@@ -232,7 +233,10 @@ final class TokenCollection extends Collection implements Stringable
             }
             if ($ignore) {
                 $ignore = false;
-            } elseif ($token->hasNewlineBefore()) {
+            } elseif (
+                !$token->Idx->Virtual[$token->id]
+                && $token->hasNewlineBefore()
+            ) {
                 return true;
             }
         }
@@ -313,6 +317,7 @@ final class TokenCollection extends Collection implements Stringable
     public function applyInnerWhitespace(int $whitespace)
     {
         $this->assertCollected();
+
         if (($whitespace & 0b111000111000111000111) !== $whitespace) {
             // @codeCoverageIgnoreStart
             throw new InvalidArgumentException('Invalid $whitespace (AFTER bits cannot be set)');
@@ -327,11 +332,9 @@ final class TokenCollection extends Collection implements Stringable
             if ($ignore) {
                 $ignore = false;
             } elseif (
-                $token->Idx->Virtual[$token->id]
-                && $token->Data[TokenData::BOUND_TO]->index < $token->index
+                !$token->Idx->Virtual[$token->id]
+                || $token->Data[TokenData::BOUND_TO]->index > $token->index
             ) {
-                continue;
-            } else {
                 $token->Whitespace |= $whitespace;
                 if ($remove) {
                     $token->doRemoveWhitespace($remove);

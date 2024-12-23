@@ -1,18 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Parameter \#1 \$to of method Lkrms\\PrettyPHP\\Token\:\:collect\(\) expects Lkrms\\PrettyPHP\\Token, Lkrms\\PrettyPHP\\Token\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Rule/AlignComments.php
-
-		-
-			message: '#^Parameter \#2 \$start of function mb_substr expects int, int\<0, max\>\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Rule/AlignComments.php
-
-		-
 			message: '#^Cannot access property \$LinePadding on Lkrms\\PrettyPHP\\Token\|null\.$#'
 			identifier: property.nonObject
 			count: 1

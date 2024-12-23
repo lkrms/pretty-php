@@ -275,6 +275,10 @@ If a ternary or null coalescing operator has a leading newline, a callback is re
 
 A callback is registered to align arguments, array elements and other list items, along with their inner and adjacent tokens, with the column after their open brackets, or with the first item in the list if they have no enclosing brackets.
 
+### `StandardIndentation`
+
+The `Indent` and inner whitespace of each open bracket is copied to its close bracket, and the `Indent` of tokens between brackets with inner newlines is incremented.
+
 ### `AlignData`, if enabled (call 1: `processBlock()`)
 
 When they appear in the same scope, a callback is registered to align consecutive:
@@ -284,6 +288,12 @@ When they appear in the same scope, a callback is registered to align consecutiv
 - `=>` delimiters in `match` expressions
 
 If the open bracket of an array is not followed by a newline and neither `AlignLists` nor `StrictLists` are enabled, its `=>` delimiters are ignored.
+
+### `AlignComments`, if enabled (call 1: `processBlock()`)
+
+Comments beside code, along with any continuations on subsequent lines, are saved for alignment.
+
+C++- and shell-style comments on their own line after a comment beside code are treated as continuations of the initial comment if they are of the same type and were indented by at least one column relative to code in the same context.
 
 ### `AlignChains`, if enabled (call 2: _`callback`_)
 
@@ -330,6 +340,10 @@ In function declarations where `)` and `{` appear at the start of consecutive li
 ### `PlaceComments` (call 2: `beforeRender()`)
 
 Placement of comments saved earlier is finalised.
+
+### `AlignComments`, if enabled (call 2: `beforeRender()`)
+
+Comments saved for alignment are aligned with the rightmost comment in the block.
 
 ## `TokenRule` classes, by token
 

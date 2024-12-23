@@ -60,28 +60,4 @@ trait RuleTrait
 
         return true;
     }
-
-    /**
-     * Copy an open bracket's inner whitespace to its close bracket
-     */
-    private function mirrorBracket(
-        Token $open,
-        ?bool $hasNewlineBeforeNextCode = null
-    ): void {
-        /** @var Token */
-        $close = $open->CloseBracket;
-
-        if ($hasNewlineBeforeNextCode === null) {
-            $hasNewlineBeforeNextCode = $open->hasNewlineBeforeNextCode();
-        }
-        if (!$hasNewlineBeforeNextCode) {
-            $close->Whitespace |= Space::NO_BLANK_BEFORE | Space::NO_LINE_BEFORE;
-            return;
-        }
-
-        $close->Whitespace |= Space::LINE_BEFORE;
-        if (!$close->hasNewlineBefore()) {
-            $close->removeWhitespace(Space::NO_LINE_BEFORE);
-        }
-    }
 }
