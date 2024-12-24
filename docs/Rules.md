@@ -279,6 +279,21 @@ A callback is registered to align arguments, array elements and other list items
 
 The `Indent` and inner whitespace of each open bracket is copied to its close bracket, and the `Indent` of tokens between brackets with inner newlines is incremented.
 
+### `DeclarationSpacing`, unless disabled
+
+One-line declarations with a collapsed or collapsible DocBlock, or no DocBlock at all, are considered "collapsible". Declarations that break over multiple lines or have a DocBlock that cannot be collapsed to one line are considered "non-collapsible".
+
+"Tight" spacing is applied by suppressing blank lines between collapsible declarations of the same type when they appear consecutively and:
+
+- `TightDeclarationSpacing` is enabled, or
+- there is no blank line in the input between the first and second declarations in the group
+
+DocBlocks in tightly-spaced groups are collapsed to a single line.
+
+Otherwise, "loose" spacing is applied by adding blank lines between declarations.
+
+Blank lines are also added before and after each group of declarations, and they are suppressed between `use` statements, one-line `declare` statements, and property hooks not declared over multiple lines.
+
 ### `AlignData`, if enabled (call 1: `processBlock()`)
 
 When they appear in the same scope, a callback is registered to align consecutive:

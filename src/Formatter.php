@@ -552,6 +552,7 @@ final class Formatter implements Buildable, Immutable
             $this->PreserveEol = false;
             $this->HeredocIndent = HeredocIndent::HANGING;
             $this->OneTrueBraceStyle = false;
+            $this->ExpandHeaders = true;
             $this->NewlineBeforeFnDoubleArrow = true;
 
             $enable = array_merge(

@@ -1017,6 +1017,25 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         return $t;
     }
 
+    /**
+     * Skip to the previous code token that is not subsequent to the T_SEMICOLON
+     * of an empty statement
+     *
+     * The token returns itself if it satisfies the criteria.
+     */
+    public function skipPrevEmptyStatements(): self
+    {
+        $t = $this;
+        while (
+            $t->PrevCode
+            && $t->PrevCode->id === \T_SEMICOLON
+            && $t->PrevCode->Statement === $t->PrevCode
+        ) {
+            $t = $t->PrevCode;
+        }
+        return $t;
+    }
+
     // Position-related methods:
 
     /**
