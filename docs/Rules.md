@@ -360,6 +360,10 @@ Placement of comments saved earlier is finalised.
 
 Comments saved for alignment are aligned with the rightmost comment in the block.
 
+### `EssentialSpacing`
+
+Newlines and spaces are added after tokens that would otherwise fail to parse. This is to ensure that if an edge case not covered by other rules arises, formatter output can still be parsed.
+
 ## `TokenRule` classes, by token
 
 | Token                                       | Rules                                                                                      |
