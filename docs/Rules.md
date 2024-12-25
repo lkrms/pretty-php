@@ -279,6 +279,15 @@ A callback is registered to align arguments, array elements and other list items
 
 The `Indent` and inner whitespace of each open bracket is copied to its close bracket, and the `Indent` of tokens between brackets with inner newlines is incremented.
 
+### `SwitchIndentation`
+
+In switch case lists:
+
+- The `PreIndent` of every token is incremented
+- The `Deindent` of tokens between `case` or `default` and their respective delimiters is incremented
+- Newlines are added before `case` and `default` and after their respective delimiters
+- Blank lines are suppressed after `case` and `default` delimiters
+
 ### `DeclarationSpacing`, unless disabled
 
 One-line declarations with a collapsed or collapsible DocBlock, or no DocBlock at all, are considered "collapsible". Declarations that break over multiple lines or have a DocBlock that cannot be collapsed to one line are considered "non-collapsible".
