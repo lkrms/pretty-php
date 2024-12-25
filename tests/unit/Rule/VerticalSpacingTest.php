@@ -7,7 +7,7 @@ use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
 use Lkrms\PrettyPHP\TokenIndex;
 
-final class VerticalWhitespaceTest extends TestCase
+final class VerticalSpacingTest extends TestCase
 {
     /**
      * @dataProvider outputProvider

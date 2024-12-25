@@ -16,7 +16,7 @@ use Salient\Utility\Regex;
  *
  * @api
  */
-final class EssentialWhitespace implements Rule
+final class EssentialSpacing implements Rule
 {
     use RuleTrait;
 
