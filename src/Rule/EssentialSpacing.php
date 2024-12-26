@@ -9,17 +9,17 @@ use Lkrms\PrettyPHP\Contract\Rule;
 use Salient\Utility\Regex;
 
 /**
- * Add whitespace after tokens that would otherwise fail to parse
- *
- * This rule adds sufficient whitespace to ensure formatter output can be parsed
- * if an edge case not covered by other rules should arise.
+ * Add newlines and spaces after tokens that would otherwise fail to parse
  *
  * @api
  */
-final class EssentialWhitespace implements Rule
+final class EssentialSpacing implements Rule
 {
     use RuleTrait;
 
+    /**
+     * @inheritDoc
+     */
     public static function getPriority(string $method): ?int
     {
         return [
@@ -27,20 +27,27 @@ final class EssentialWhitespace implements Rule
         ][$method] ?? null;
     }
 
+    /**
+     * Apply the rule to the given tokens
+     *
+     * Newlines and spaces are added after tokens that would otherwise fail to
+     * parse. This is to ensure that if an edge case not covered by other rules
+     * arises, formatter output can still be parsed.
+     */
     public function beforeRender(array $tokens): void
     {
         foreach ($tokens as $token) {
-            $next = $token->Next;
             if (
-                !$next
-                || $token->String
+                $this->Idx->Virtual[$token->id]
+                || !($next = $token->nextReal())
                 || $next->String
-                || $token->hasNewlineAfter()
+                || $token->String
+                || ($after = $token->getWhitespaceAfter()) & (Space::BLANK | Space::LINE)
             ) {
                 continue;
             }
 
-            /* Add newlines after one-line comments with no subsequent `?>` */
+            // Add newlines after one-line comments with no subsequent close tag
             if (
                 $token->Flags & TokenFlag::ONELINE_COMMENT
                 && $next->id !== \T_CLOSE_TAG
@@ -50,7 +57,7 @@ final class EssentialWhitespace implements Rule
             }
 
             if (
-                $token->getWhitespaceAfter()
+                $after
                 || $this->Idx->SuppressSpaceAfter[$token->id]
                 || $this->Idx->SuppressSpaceBefore[$next->id]
             ) {
@@ -60,7 +67,7 @@ final class EssentialWhitespace implements Rule
             if (
                 $token->id === \T_OPEN_TAG
                 || Regex::match(
-                    '/^[a-zA-Z0-9\\\\_\x80-\xff]{2}$/',
+                    '/^[a-zA-Z0-9\\\\_\x80-\xff]{2}$/D',
                     ($token->text[-1] ?? '') . ($next->text[0] ?? '')
                 )
             ) {

@@ -49,7 +49,7 @@ use Lkrms\PrettyPHP\Rule\AlignTernaryOperators;
 use Lkrms\PrettyPHP\Rule\BlankBeforeReturn;
 use Lkrms\PrettyPHP\Rule\ControlStructureSpacing;
 use Lkrms\PrettyPHP\Rule\DeclarationSpacing;
-use Lkrms\PrettyPHP\Rule\EssentialWhitespace;
+use Lkrms\PrettyPHP\Rule\EssentialSpacing;
 use Lkrms\PrettyPHP\Rule\HangingIndentation;
 use Lkrms\PrettyPHP\Rule\HeredocIndentation;
 use Lkrms\PrettyPHP\Rule\IndexSpacing;
@@ -70,7 +70,7 @@ use Lkrms\PrettyPHP\Rule\StatementSpacing;
 use Lkrms\PrettyPHP\Rule\StrictExpressions;
 use Lkrms\PrettyPHP\Rule\StrictLists;
 use Lkrms\PrettyPHP\Rule\SwitchIndentation;
-use Lkrms\PrettyPHP\Rule\VerticalWhitespace;
+use Lkrms\PrettyPHP\Rule\VerticalSpacing;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasBuilder;
@@ -258,14 +258,14 @@ final class Formatter implements Buildable, Immutable
         PlaceComments::class,
         PlaceBraces::class,
         PreserveNewlines::class,
-        VerticalWhitespace::class,
+        VerticalSpacing::class,
         ListSpacing::class,
         StandardIndentation::class,
         SwitchIndentation::class,
         DeclarationSpacing::class,
         HangingIndentation::class,
         HeredocIndentation::class,
-        EssentialWhitespace::class,
+        EssentialSpacing::class,
     ];
 
     /**
@@ -552,6 +552,7 @@ final class Formatter implements Buildable, Immutable
             $this->PreserveEol = false;
             $this->HeredocIndent = HeredocIndent::HANGING;
             $this->OneTrueBraceStyle = false;
+            $this->ExpandHeaders = true;
             $this->NewlineBeforeFnDoubleArrow = true;
 
             $enable = array_merge(

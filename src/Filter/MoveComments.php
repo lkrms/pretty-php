@@ -84,7 +84,7 @@ final class MoveComments implements Filter
         if ($this->NeedsFnDoubleArrow) {
             foreach ($tokens as $i => $token) {
                 if ($token->id === \T_FN) {
-                    if (!$this->getNextSiblingOf($i, $this->Count, \T_DOUBLE_ARROW, $j)) {
+                    if (!$this->getNextSiblingOf($i, \T_DOUBLE_ARROW, $this->Count - 1, $j)) {
                         // @codeCoverageIgnoreStart
                         throw new ShouldNotHappenException('Invalid arrow function');
                         // @codeCoverageIgnoreEnd
@@ -206,21 +206,17 @@ final class MoveComments implements Filter
         $token = $this->Tokens[$i];
 
         if ($token->id === \T_COLON) {
-            // The following code replicates most of `Token::getColonType()`,
-            // which can't be used in this context
+            // The following code replicates `Token::getColonSubId()`, which
+            // can't be used in this context
             if ($this->isColonAltSyntaxDelimiter($i)) {
                 // Allow comments AFTER alternative syntax delimiters
                 return $isLast;
             }
 
-            $parent = $this->getParent($i, $parentIndex);
-            if ($parent && $this->isColonSwitchCaseDelimiter($i, $parentIndex)) {
-                // Allow comments AFTER switch case delimiters
-                return $isLast;
-            }
-
             /** @var GenericToken */
             $prevCode = $this->getPrevCode($i, $prevCodeIndex);
+            $parent = $this->getParent($i, $parentIndex);
+
             if (
                 $parent
                 && $parent->id === \T_OPEN_PARENTHESIS
@@ -241,25 +237,14 @@ final class MoveComments implements Filter
                 return $isLast;
             }
 
-            if ($prevCode->id === \T_CLOSE_PARENTHESIS) {
-                $prev = $this->getPrevSibling($prevCodeIndex, 1, $prevIndex);
-                if (
-                    $prev
-                    && $prev->id === \T_USE
-                    && ($prevCode2 = $this->getPrevCode($prevIndex, $prevCode2Index))
-                    && $prevCode2->id === \T_CLOSE_PARENTHESIS
-                ) {
-                    $prev = $this->getPrevSibling($prevCode2Index, 1, $prevIndex);
-                }
+            if ($this->isColonReturnTypeDelimiter($i, $prevCodeIndex)) {
+                // Allow comments AFTER return type delimiters
+                return $isLast;
+            }
 
-                while ($prev && $this->Idx->FunctionIdentifier[$prev->id]) {
-                    $prev = $this->getPrevSibling($prevIndex, 1, $prevIndex);
-                }
-
-                if ($prev && $this->Idx->FunctionOrFn[$prev->id]) {
-                    // Allow comments AFTER return type delimiters
-                    return $isLast;
-                }
+            if ($parent && $this->isColonSwitchCaseDelimiter($i, $parentIndex)) {
+                // Allow comments AFTER switch case delimiters
+                return $isLast;
             }
 
             while ($prevCode->id === \T_STRING && (

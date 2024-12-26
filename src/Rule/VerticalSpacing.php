@@ -32,7 +32,7 @@ use Closure;
  *
  * @api
  */
-final class VerticalWhitespace implements TokenRule
+final class VerticalSpacing implements TokenRule
 {
     use TokenRuleTrait;
 

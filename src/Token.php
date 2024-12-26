@@ -638,10 +638,6 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
             return TokenSubId::COLON_NAMED_ARGUMENT_DELIMITER;
         }
 
-        if ($this->inSwitchCase()) {
-            return TokenSubId::COLON_SWITCH_CASE_DELIMITER;
-        }
-
         if (
             $prevCode->id === \T_STRING
             && ($prev = $prevCode->PrevCode)
@@ -650,23 +646,12 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
             return TokenSubId::COLON_BACKED_ENUM_TYPE_DELIMITER;
         }
 
-        if ($prevCode->id === \T_CLOSE_PARENTHESIS) {
-            $prev = $prevCode->PrevSibling;
-            if (
-                $prev
-                && $prev->id === \T_USE
-                && $prev->PrevCode
-                && $prev->PrevCode->id === \T_CLOSE_PARENTHESIS
-            ) {
-                $prev = $prev->PrevCode->PrevSibling;
-            }
+        if ($this->isColonReturnTypeDelimiter()) {
+            return TokenSubId::COLON_RETURN_TYPE_DELIMITER;
+        }
 
-            if ($prev) {
-                $prev = $prev->skipPrevSiblingFrom($this->Idx->FunctionIdentifier);
-                if ($this->Idx->FunctionOrFn[$prev->id]) {
-                    return TokenSubId::COLON_RETURN_TYPE_DELIMITER;
-                }
-            }
+        if ($this->endOfSwitchCase() === $this) {
+            return TokenSubId::COLON_SWITCH_CASE_DELIMITER;
         }
 
         if (
@@ -704,6 +689,31 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         }
 
         return TokenSubId::COLON_TERNARY_OPERATOR;
+    }
+
+    private function isColonReturnTypeDelimiter(): bool
+    {
+        /** @var self */
+        $prevCode = $this->PrevCode;
+        if ($prevCode->id === \T_CLOSE_PARENTHESIS) {
+            $prev = $prevCode->PrevSibling;
+            if (
+                $prev
+                && $prev->id === \T_USE
+                && $prev->PrevCode
+                && $prev->PrevCode->id === \T_CLOSE_PARENTHESIS
+            ) {
+                $prev = $prev->PrevCode->PrevSibling;
+            }
+
+            if ($prev) {
+                $prev = $prev->skipPrevSiblingFrom($this->Idx->FunctionIdentifier);
+                if ($this->Idx->FunctionOrFn[$prev->id]) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -844,11 +854,60 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     public function inSwitchCase(): bool
     {
         return $this->inSwitch() && (
-            $this->id === \T_CASE
-            || $this->id === \T_DEFAULT
-            || ($prev = $this->prevSiblingFrom($this->Idx->SwitchCaseOrDelimiter))->id === \T_CASE
-            || $prev->id === \T_DEFAULT
+            $this->Idx->CaseOrDefault[$this->id] || (
+                ($end = $this->getEndOfSwitchCase())
+                && $this->index <= $end->index
+            )
         );
+    }
+
+    /**
+     * Get the last token in the switch case, or null if the token is not part
+     * of a case or default statement in a switch
+     */
+    public function endOfSwitchCase(): ?self
+    {
+        return $this->inSwitch()
+            && ($end = $this->getEndOfSwitchCase())
+            && $this->index <= $end->index
+                ? $end
+                : null;
+    }
+
+    private function getEndOfSwitchCase(): ?self
+    {
+        $t = $this->prevSiblingFrom($this->Idx->CaseOrDefault);
+        if ($t->id === \T_NULL) {
+            return null;
+        }
+
+        $ternaryCount = 0;
+        do {
+            $t = $t->nextSiblingFrom($this->Idx->SwitchCaseDelimiterOrTernary);
+            if ($t->id === \T_NULL) {
+                return null;
+            } elseif ($t->id === \T_QUESTION) {
+                /** @var self */
+                $prev = $t->PrevCode;
+                if (
+                    $prev->id !== \T_COLON
+                    || !$prev->isColonReturnTypeDelimiter()
+                ) {
+                    $ternaryCount++;
+                }
+                continue;
+            } elseif ($t->id === \T_COLON) {
+                if (
+                    $t->isColonReturnTypeDelimiter()
+                    || $ternaryCount--
+                ) {
+                    continue;
+                }
+            }
+            break;
+        } while (true);
+
+        return $t;
     }
 
     /**
@@ -1013,6 +1072,25 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
             && $this->Idx->DeclarationPartWithNewAndBody[$t->PrevSibling->id]
         ) {
             $t = $t->PrevSibling;
+        }
+        return $t;
+    }
+
+    /**
+     * Skip to the previous code token that is not subsequent to the T_SEMICOLON
+     * of an empty statement
+     *
+     * The token returns itself if it satisfies the criteria.
+     */
+    public function skipPrevEmptyStatements(): self
+    {
+        $t = $this;
+        while (
+            $t->PrevCode
+            && $t->PrevCode->id === \T_SEMICOLON
+            && $t->PrevCode->Statement === $t->PrevCode
+        ) {
+            $t = $t->PrevCode;
         }
         return $t;
     }

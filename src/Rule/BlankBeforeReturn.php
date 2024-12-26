@@ -61,20 +61,10 @@ final class BlankBeforeReturn implements TokenRule
                 continue;
             }
 
-            // Ignore empty statements
-            $prev = $token;
-            while (
-                $prev->PrevCode
-                && $prev->PrevCode->id === \T_SEMICOLON
-                && $prev->PrevCode->Statement === $prev->PrevCode
-            ) {
-                $prev = $prev->PrevCode;
-            }
-
             if (
-                $prev->PrevSibling
-                && $prev->PrevSibling->Statement
-                && $this->Idx->Return[$prev->PrevSibling->Statement->id]
+                ($prev = $token->skipPrevEmptyStatements()->PrevSibling)
+                && $prev->Statement
+                && $this->Idx->Return[$prev->Statement->id]
             ) {
                 continue;
             }

@@ -479,6 +479,56 @@ label:  // Comment
 PHP,
                 $formatter,
             ],
+            [
+                <<<'PHP'
+<?php
+switch ($foo) {
+    case $bar
+        // Comment
+        ? $baz
+        // Comment
+        : $foo:  // Comment
+        break;
+    case fn():  // Comment
+        // Comment
+        ?int => null:  // Comment
+        break;
+    case $bar
+        // Comment
+        ? fn():  // Comment
+            // Comment
+            ?int => null
+        // Comment
+        : $foo:  // Comment
+        break;
+}
+
+PHP,
+                <<<'PHP'
+<?php
+switch ($foo) {
+case $bar
+?  // Comment
+$baz
+:  // Comment
+$foo:  // Comment
+break;
+case fn():  // Comment
+?  // Comment
+int => null:  // Comment
+break;
+case $bar
+?  // Comment
+fn():  // Comment
+?  // Comment
+int => null
+:  // Comment
+$foo:  // Comment
+break;
+}
+PHP,
+                $formatter,
+            ],
             'Comments before and after double arrows + mixed' => [
                 <<<'PHP'
 <?php

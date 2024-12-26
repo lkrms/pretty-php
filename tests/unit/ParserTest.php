@@ -992,6 +992,29 @@ if ($foo)
     bar() ?>baz
 PHP,
             ],
+            [
+                [
+                    "T1:L2:'switch' - T43:L9:'}'",
+                    "T3:L2:'\$foo'",
+                    "T6:L3:'case' - T12:L3:':'",
+                    "T13:L4:'break' - T14:L4:';'",
+                    "T15:L5:'case' - T24:L5:':'",
+                    "T25:L6:'break' - T26:L6:';'",
+                    "T27:L7:'case' - T40:L7:':'",
+                    "T41:L8:'break' - T42:L8:';'",
+                ],
+                <<<'PHP'
+<?php
+switch ($foo) {
+    case $bar ? $baz : $foo:
+        break;
+    case fn(): ?int => null:
+        break;
+    case $bar ? fn(): ?int => null : $foo:
+        break;
+}
+PHP,
+            ],
         ];
     }
 
