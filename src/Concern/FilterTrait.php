@@ -99,13 +99,32 @@ trait FilterTrait
     }
 
     /**
+     * Get the given token's next sibling that is in an index
+     *
+     * @param array<int,bool> $index
+     * @param-out int $key
+     */
+    private function getNextSiblingFrom(int $i, array $index, int $to, ?int &$key = null): ?GenericToken
+    {
+        while ($token = $this->getNextSibling($i, $to + 1, 1, $j)) {
+            if ($index[$token->id]) {
+                $key = $j;
+                return $token;
+            }
+            $i = $j;
+        }
+        $key = -1;
+        return null;
+    }
+
+    /**
      * Get the given token's next sibling with the given token ID
      *
      * @param-out int $key
      */
-    private function getNextSiblingOf(int $i, int $count, int $id, ?int &$key = null): ?GenericToken
+    private function getNextSiblingOf(int $i, int $id, int $to, ?int &$key = null): ?GenericToken
     {
-        while ($token = $this->getNextSibling($i, $count, 1, $j)) {
+        while ($token = $this->getNextSibling($i, $to + 1, 1, $j)) {
             if ($token->id === $id) {
                 $key = $j;
                 return $token;
@@ -201,15 +220,82 @@ trait FilterTrait
     private function isColonSwitchCaseDelimiter(int $i, ?int $parentIndex = null): bool
     {
         $parent = $parentIndex === null
-            // @codeCoverageIgnoreStart
             ? $this->getParent($i, $parentIndex)
-            // @codeCoverageIgnoreEnd
             : $this->Tokens[$parentIndex];
-        return $parent
-            && ($parentPrev = $this->getPrevSibling($parentIndex, 2))
-            && $parentPrev->id === \T_SWITCH
-            && ($prev = $this->getPrevSiblingFrom($i, $this->Idx->SwitchCaseOrDelimiter, $parentIndex + 1))
-            && ($prev->id === \T_CASE || $prev->id === \T_DEFAULT);
+
+        if (
+            !$parent
+            || !($parentPrev = $this->getPrevSibling($parentIndex, 2))
+            || $parentPrev->id !== \T_SWITCH
+        ) {
+            return false;
+        }
+
+        $t = $this->getPrevSiblingFrom($i, $this->Idx->CaseOrDefault, $parentIndex + 1, $j);
+        if (!$t) {
+            return false;
+        }
+
+        $ternaryCount = 0;
+        do {
+            $t = $this->getNextSiblingFrom($j, $this->Idx->SwitchCaseDelimiterOrTernary, $i, $j);
+            if (!$t) {
+                return false;
+            } elseif ($t->id === \T_QUESTION) {
+                /** @var GenericToken */
+                $prev = $this->getPrevCode($j, $prevIndex);
+                if (
+                    $prev->id !== \T_COLON
+                    || !$this->isColonReturnTypeDelimiter($prevIndex)
+                ) {
+                    $ternaryCount++;
+                }
+                continue;
+            } elseif ($t->id === \T_COLON) {
+                if (
+                    $this->isColonReturnTypeDelimiter($j)
+                    || $ternaryCount--
+                ) {
+                    continue;
+                }
+            }
+            break;
+        } while (true);
+
+        return $t === $this->Tokens[$i];
+    }
+
+    /**
+     * Check if the given T_COLON is a return type delimiter
+     */
+    private function isColonReturnTypeDelimiter(int $i, ?int $prevCodeIndex = null): bool
+    {
+        /** @var GenericToken */
+        $prevCode = $prevCodeIndex === null
+            ? $this->getPrevCode($i, $prevCodeIndex)
+            : $this->Tokens[$prevCodeIndex];
+
+        if ($prevCode->id === \T_CLOSE_PARENTHESIS) {
+            $prev = $this->getPrevSibling($prevCodeIndex, 1, $prevIndex);
+            if (
+                $prev
+                && $prev->id === \T_USE
+                && ($prevCode2 = $this->getPrevCode($prevIndex, $prevCode2Index))
+                && $prevCode2->id === \T_CLOSE_PARENTHESIS
+            ) {
+                $prev = $this->getPrevSibling($prevCode2Index, 1, $prevIndex);
+            }
+
+            while ($prev && $this->Idx->FunctionIdentifier[$prev->id]) {
+                $prev = $this->getPrevSibling($prevIndex, 1, $prevIndex);
+            }
+
+            if ($prev && $this->Idx->FunctionOrFn[$prev->id]) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

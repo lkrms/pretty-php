@@ -29,6 +29,7 @@ $getIndex = $foo
 start:
 switch ($argv[1] ?? null):
     case Actions::Run->value:
+    case $foo ? fn(): ?int => null : $bar:
         break;
     default:
         exit(1);
@@ -62,6 +63,9 @@ PHP;
             'COLON_TERNARY_OPERATOR',
             'COLON_LABEL_DELIMITER',
             'COLON_ALT_SYNTAX_DELIMITER',
+            'COLON_SWITCH_CASE_DELIMITER',
+            'COLON_RETURN_TYPE_DELIMITER',
+            'COLON_TERNARY_OPERATOR',
             'COLON_SWITCH_CASE_DELIMITER',
             'COLON_SWITCH_CASE_DELIMITER',
             'COLON_LABEL_DELIMITER',

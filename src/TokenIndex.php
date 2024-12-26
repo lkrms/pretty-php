@@ -1053,16 +1053,15 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * T_CASE, T_DEFAULT, T_COLON, T_SEMICOLON, T_CLOSE_TAG
+     * T_COLON, T_SEMICOLON, T_CLOSE_TAG, T_QUESTION
      *
      * @var array<int,bool>
      */
-    public array $SwitchCaseOrDelimiter = [
-        \T_CASE => true,
-        \T_DEFAULT => true,
+    public array $SwitchCaseDelimiterOrTernary = [
         \T_COLON => true,
         \T_SEMICOLON => true,
         \T_CLOSE_TAG => true,
+        \T_QUESTION => true,
     ]
         + self::TOKEN_INDEX;
 
