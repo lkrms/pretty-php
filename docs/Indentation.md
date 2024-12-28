@@ -255,27 +255,21 @@ After finding a token to indent, `HangingIndentation` creates a context for it,
 and if indentation for that context has already been applied, the token is not
 indented further.
 
-A token's context is comprised of its parent token (or `null` if it's a
-top-level token), and an optional anchor token shared by any siblings that
-should receive the same level of indentation.
+A token's context is an `array{?Token, ?Token, ?Token, 3?:Token|int, 4?:int}`
+comprised of:
+
+- its parent (or `null` if it's a top-level token)
+- the most recent assignment operator or `T_DOUBLE_ARROW` in the same statement
+  (or `null` if it isn't part of an expression after an assignment or `=>`)
+- its ternary context (or `null` if it isn't part of a ternary expression)
+- an optional token and/or precedence value shared by any siblings that should
+  receive the same level of indentation
 
 The aim is to differentiate between lines where a new expression starts, and
 lines where an expression continues:
 
 ```php
-$iterator = new RecursiveDirectoryIterator($dir,
-    FilesystemIterator::KEY_AS_PATHNAME |
-        FilesystemIterator::CURRENT_AS_FILEINFO |
-        FilesystemIterator::SKIP_DOTS);
-```
-
-```php
-return is_string($contents)
-    ? $contents
-    : json_encode($contents, JSON_PRETTY_PRINT);
-```
-
-```php
+<?php
 fn($a, $b) =>
     $a === $b
         ? 0
@@ -283,6 +277,10 @@ fn($a, $b) =>
             $b;
 ```
 
+There are many more examples in the `HangingIndentation` [unit
+test][HangingIndentationTest].
+
 [mixed]: #mixed-indentation
 [PSR-12]: https://www.php-fig.org/psr/psr-12/
 [PER]: https://www.php-fig.org/per/coding-style/
+[HangingIndentationTest]: ../tests/unit/Rule/HangingIndentationTest.php

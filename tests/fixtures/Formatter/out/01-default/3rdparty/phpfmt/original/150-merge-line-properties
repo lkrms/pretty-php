@@ -51,8 +51,13 @@ class Foo3
 {
     public $foo;
     private $foo2;
-    protected $bar1, $bar2;
-    public $baz1 = null, $baz2, $baz3 = false;
+
+    protected $bar1,
+        $bar2;
+
+    public $baz1 = null,
+        $baz2,
+        $baz3 = false;
 }
 
 class ClassName extends AnotherClass

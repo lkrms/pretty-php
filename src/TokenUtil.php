@@ -19,7 +19,7 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
     /**
      * @var array<int,array<array{int,int,bool,bool}>|false>
      */
-    private const OPERATOR_PRECEDENCE_INDEX = self::OPERATOR_PRECEDENCE
+    public const OPERATOR_PRECEDENCE_INDEX = self::OPERATOR_PRECEDENCE
         + self::TOKEN_INDEX;
 
     /**
@@ -104,19 +104,28 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
     }
 
     /**
-     * Get the first token in the expression to which a given operator applies
-     * by iterating over previous siblings until an operator with lower
-     * precedence is found
+     * Get the first token in the expression to which a given token belongs by
+     * iterating over previous siblings until an operator with lower precedence
+     * is found
+     *
+     * If a precedence other than `-1` is given, iteration stops at the first
+     * lower-precedence operator.
+     *
+     * If the token is not an operator or a precedence of `-1` is given,
+     * iteration stops at the first operator.
      */
-    public static function getOperatorExpression(Token $token): Token
+    public static function getOperatorExpression(Token $token, ?int $precedence = null): Token
     {
-        $precedence = self::OPERATOR_PRECEDENCE_INDEX[$token->id]
-            ? self::getOperatorPrecedence($token)
-            : -1;
+        if ($precedence === null) {
+            $precedence = self::OPERATOR_PRECEDENCE_INDEX[$token->id]
+                ? self::getOperatorPrecedence($token)
+                : -1;
+        }
         $t = $token;
         while (
             ($prev = $t->PrevSibling)
             && $prev->Statement === $token->Statement
+            && $prev->id !== \T_COMMA
         ) {
             if (self::OPERATOR_PRECEDENCE_INDEX[$prev->id]) {
                 $prevPrecedence = self::getOperatorPrecedence($prev);
@@ -134,24 +143,40 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
     }
 
     /**
-     * Get the last token in the expression to which a given operator applies by
+     * Get the last token in the expression to which a given token belongs by
      * iterating over next siblings until an operator with lower precedence is
      * found
+     *
+     * If a precedence other than `-1` is given, iteration stops at the first
+     * lower-precedence operator.
+     *
+     * If the token is not an operator or a precedence of `-1` is given,
+     * iteration stops at the first operator.
      */
-    public static function getOperatorEndExpression(Token $token): Token
+    public static function getOperatorEndExpression(Token $token, ?int $precedence = null): Token
     {
-        $precedence = self::OPERATOR_PRECEDENCE_INDEX[$token->id]
-            ? self::getOperatorPrecedence($token)
-            : -1;
+        if ($precedence === null) {
+            $precedence = self::OPERATOR_PRECEDENCE_INDEX[$token->id]
+                ? self::getOperatorPrecedence($token)
+                : -1;
+        }
+        $ternary2 = self::getTernary2AfterTernary1($token);
         $t = $token;
         while (
             ($next = $t->NextSibling)
             && $next->Statement === $token->Statement
-            && $next !== $token->EndStatement
+            && $next->id !== \T_COMMA
+            && (
+                $next !== $token->EndStatement
+                || !$token->Idx->StatementDelimiter[$next->id]
+            ) && (
+                !$ternary2
+                || $ternary2->index > $next->index
+            )
         ) {
             if (self::OPERATOR_PRECEDENCE_INDEX[$next->id]) {
                 $nextPrecedence = self::getOperatorPrecedence($next);
-                if ($nextPrecedence !== -1 && (
+                if ($nextPrecedence !== -1 && $nextPrecedence < 99 && (
                     // If called with a non-operator, stop at the first operator
                     $precedence === -1
                     || $nextPrecedence > $precedence
@@ -259,6 +284,7 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
             (!$ternary || $short)
             && ($t = $t->PrevSibling)
             && $t->Statement === $token->Statement
+            && $t->id !== \T_COMMA
         ) {
             if ($t->id === \T_COALESCE) {
                 $context = $t;
@@ -297,6 +323,7 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
         while (
             ($prev = $t->PrevSibling)
             && $prev->Statement === $context->Statement
+            && $prev->id !== \T_COMMA
         ) {
             if ($prev->Flags & TokenFlag::TERNARY_OPERATOR) {
                 return $t;
@@ -323,7 +350,11 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
         while (
             ($next = $t->NextSibling)
             && $next->Statement === $token->Statement
-            && $next !== $token->EndStatement
+            && $next->id !== \T_COMMA
+            && (
+                $next !== $token->EndStatement
+                || !$token->Idx->StatementDelimiter[$next->id]
+            )
         ) {
             if ($next->Flags & TokenFlag::TERNARY_OPERATOR) {
                 if ($next->id === \T_COLON) {
@@ -332,7 +363,7 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
                 $next = $next->Data[TokenData::OTHER_TERNARY_OPERATOR];
             } elseif (self::OPERATOR_PRECEDENCE_INDEX[$next->id]) {
                 $nextPrecedence = self::getOperatorPrecedence($next);
-                if ($nextPrecedence !== -1 && $nextPrecedence > $precedence) {
+                if ($nextPrecedence !== -1 && $nextPrecedence < 99 && $nextPrecedence > $precedence) {
                     return $t->CloseBracket ?? $t;
                 }
             }
@@ -364,6 +395,26 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
             ? ($token->id === \T_COLON
                 ? $token
                 : $token->Data[TokenData::OTHER_TERNARY_OPERATOR])
+            : null;
+    }
+
+    /**
+     * Get the second ternary operator of the expression to which the given
+     * token belongs, or null if it is not between the first and second
+     * operators of a ternary expression
+     */
+    public static function getTernary2AfterTernary1(Token $token): ?Token
+    {
+        $t = $token;
+        do {
+            $t = $t->prevSiblingOf(\T_QUESTION, true);
+            if ($t->id === \T_NULL) {
+                return null;
+            }
+        } while (!($t->Flags & TokenFlag::TERNARY_OPERATOR));
+        $other = $t->Data[TokenData::OTHER_TERNARY_OPERATOR];
+        return $other->index > $token->index
+            ? $other
             : null;
     }
 
@@ -463,16 +514,6 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
         $t['Indent'] = $token->Indent;
         $t['Deindent'] = $token->Deindent;
         $t['HangingIndent'] = $token->HangingIndent;
-        $t['HangingIndentToken'] = $token->HangingIndentToken;
-
-        foreach ($token->HangingIndentContext as $i => $entry) {
-            foreach ($entry as $j => $entry) {
-                $t['HangingIndentContext'][$i][$j] = $entry ? self::describe($entry) : null;
-            }
-        }
-
-        $t['HangingIndentParent'] = $token->HangingIndentParent;
-        $t['HangingIndentParentLevels'] = $token->HangingIndentParentLevels;
         $t['LinePadding'] = $token->LinePadding;
         $t['LineUnpadding'] = $token->LineUnpadding;
         $t['Padding'] = $token->Padding;
@@ -517,7 +558,6 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
         foreach ($t as $key => &$value) {
             if (
                 $value === null
-                || $value === []
                 || ($value === 0 && Str::endsWith($key, ['Indent', 'Padding'], true))
                 || ($value === -1 && Str::startsWith($key, ['line', 'pos', 'column', 'Output']))
             ) {
@@ -527,13 +567,6 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
             if ($value instanceof Token) {
                 $value = self::describe($value);
                 continue;
-            }
-            if (Arr::of($value, Token::class)) {
-                /** @var Token[] $value */
-                foreach ($value as &$token) {
-                    $token = self::describe($token);
-                }
-                unset($token);
             }
         }
         unset($value);

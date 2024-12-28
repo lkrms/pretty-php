@@ -198,18 +198,18 @@ $foo =  // Comment
     // Comment
     !$qux  // Comment
         ? ($bar  // Comment
-            * $baz  // Comment
-            / 100)  // Comment
-        . '%'  // Comment
+                * $baz  // Comment
+                / 100)  // Comment
+            . '%'  // Comment
         : $quux;  // Comment
 
 $foo =  /* Comment */
     /* Comment */
     !$qux  /* Comment */
         ? ($bar  /* Comment */
-            * $baz  /* Comment */
-            / 100)  /* Comment */
-        . '%'  /* Comment */
+                * $baz  /* Comment */
+                / 100)  /* Comment */
+            . '%'  /* Comment */
         : $quux;  /* Comment */
 
 $foo =
@@ -218,12 +218,12 @@ $foo =
     !$qux
         /** DocBlock */
         ? ($bar
+                /** DocBlock */
+                * $baz
+                /** DocBlock */
+                / 100)
             /** DocBlock */
-            * $baz
-            /** DocBlock */
-            / 100)
-        /** DocBlock */
-        . '%'
+            . '%'
         /** DocBlock */
         : $quux;
 /** DocBlock */
@@ -232,9 +232,9 @@ $foo =  // Comment
     // Comment
     !$qux  // Comment
         ? ($bar  // Comment
-            * $baz  // Comment
-            / 100)  // Comment
-        . '%'  // Comment
+                * $baz  // Comment
+                / 100)  // Comment
+            . '%'  // Comment
         : $quux;  // Comment
 
 $foo =  /* Comment */
@@ -242,9 +242,9 @@ $foo =  /* Comment */
     /* Comment */
     !$qux  /* Comment */
         ? ($bar  /* Comment */
-            * $baz  /* Comment */
-            / 100)  /* Comment */
-        . '%'  /* Comment */
+                * $baz  /* Comment */
+                / 100)  /* Comment */
+            . '%'  /* Comment */
         : $quux;  /* Comment */
 
 $foo =
@@ -254,12 +254,12 @@ $foo =
     !$qux
         /** DocBlock */
         ? ($bar
+                /** DocBlock */
+                * $baz
+                /** DocBlock */
+                / 100)
             /** DocBlock */
-            * $baz
-            /** DocBlock */
-            / 100)
-        /** DocBlock */
-        . '%'
+            . '%'
         /** DocBlock */
         : $quux;
 
@@ -278,18 +278,18 @@ $foo =  // Comment
     // Comment
     !$qux  // Comment
         ? ($bar  // Comment
-            * $baz  // Comment
-            / 100)  // Comment
-        . '%'  // Comment
+                * $baz  // Comment
+                / 100)  // Comment
+            . '%'  // Comment
         : $quux;  // Comment
 
 $foo =  /* Comment */
     /* Comment */
     !$qux  /* Comment */
         ? ($bar  /* Comment */
-            * $baz  /* Comment */
-            / 100)  /* Comment */
-        . '%'  /* Comment */
+                * $baz  /* Comment */
+                / 100)  /* Comment */
+            . '%'  /* Comment */
         : $quux;  /* Comment */
 
 $foo =
@@ -298,12 +298,12 @@ $foo =
     !$qux
         /** DocBlock */
         ? ($bar
+                /** DocBlock */
+                * $baz
+                /** DocBlock */
+                / 100)
             /** DocBlock */
-            * $baz
-            /** DocBlock */
-            / 100)
-        /** DocBlock */
-        . '%'
+            . '%'
         /** DocBlock */
         : $quux;
 /** DocBlock */
@@ -312,9 +312,9 @@ $foo =  // Comment
     // Comment
     !$qux  // Comment
         ? ($bar  // Comment
-            * $baz  // Comment
-            / 100)  // Comment
-        . '%'  // Comment
+                * $baz  // Comment
+                / 100)  // Comment
+            . '%'  // Comment
         : $quux;  // Comment
 
 $foo =  /* Comment */
@@ -322,9 +322,9 @@ $foo =  /* Comment */
     /* Comment */
     !$qux  /* Comment */
         ? ($bar  /* Comment */
-            * $baz  /* Comment */
-            / 100)  /* Comment */
-        . '%'  /* Comment */
+                * $baz  /* Comment */
+                / 100)  /* Comment */
+            . '%'  /* Comment */
         : $quux;  /* Comment */
 
 $foo =
@@ -334,12 +334,12 @@ $foo =
     !$qux
         /** DocBlock */
         ? ($bar
+                /** DocBlock */
+                * $baz
+                /** DocBlock */
+                / 100)
             /** DocBlock */
-            * $baz
-            /** DocBlock */
-            / 100)
-        /** DocBlock */
-        . '%'
+            . '%'
         /** DocBlock */
         : $quux;
 
@@ -358,18 +358,18 @@ $foo =  // Comment
     // Comment
     !$qux  // Comment
         ? ($bar *  // Comment
-            $baz /  // Comment
-            100) .  // Comment
-        '%'  // Comment
+                $baz /  // Comment
+                100) .  // Comment
+            '%'  // Comment
         : $quux;  // Comment
 
 $foo =  /* Comment */
     /* Comment */
     !$qux  /* Comment */
         ? ($bar *  /* Comment */
-            $baz /  /* Comment */
-            100) .  /* Comment */
-        '%'  /* Comment */
+                $baz /  /* Comment */
+                100) .  /* Comment */
+            '%'  /* Comment */
         : $quux;  /* Comment */
 
 $foo =
@@ -378,12 +378,12 @@ $foo =
     !$qux
         /** DocBlock */
         ? ($bar *
+                /** DocBlock */
+                $baz /
+                /** DocBlock */
+                100) .
             /** DocBlock */
-            $baz /
-            /** DocBlock */
-            100) .
-        /** DocBlock */
-        '%'
+            '%'
         /** DocBlock */
         : $quux;
 /** DocBlock */
@@ -392,9 +392,9 @@ $foo =  // Comment
     // Comment
     !$qux  // Comment
         ? ($bar *  // Comment
-            $baz /  // Comment
-            100) .  // Comment
-        '%'  // Comment
+                $baz /  // Comment
+                100) .  // Comment
+            '%'  // Comment
         : $quux;  // Comment
 
 $foo =  /* Comment */
@@ -402,9 +402,9 @@ $foo =  /* Comment */
     /* Comment */
     !$qux  /* Comment */
         ? ($bar *  /* Comment */
-            $baz /  /* Comment */
-            100) .  /* Comment */
-        '%'  /* Comment */
+                $baz /  /* Comment */
+                100) .  /* Comment */
+            '%'  /* Comment */
         : $quux;  /* Comment */
 
 $foo =
@@ -414,12 +414,12 @@ $foo =
     !$qux
         /** DocBlock */
         ? ($bar *
+                /** DocBlock */
+                $baz /
+                /** DocBlock */
+                100) .
             /** DocBlock */
-            $baz /
-            /** DocBlock */
-            100) .
-        /** DocBlock */
-        '%'
+            '%'
         /** DocBlock */
         : $quux;
 

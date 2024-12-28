@@ -100,7 +100,7 @@ final class Symfony implements Preset, TokenRule, ListRule
      * Newlines are suppressed between parameters in function declarations that
      * have no promoted constructor parameters.
      */
-    public function processList(Token $parent, TokenCollection $items): void
+    public function processList(Token $parent, TokenCollection $items, Token $lastChild): void
     {
         if (!$parent->isParameterList()) {
             return;

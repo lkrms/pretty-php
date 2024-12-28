@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\DeclarationType;
+use Lkrms\PrettyPHP\Catalog\DeclarationType as Type;
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\DeclarationRuleTrait;
@@ -35,8 +35,13 @@ final class ListSpacing implements ListRule, DeclarationRule
     public static function getDeclarationTypes(array $all): array
     {
         return [
-            DeclarationType::PROPERTY => true,
-            DeclarationType::PARAM => true,
+            Type::_CONST => true,
+            Type::_USE => true,
+            Type::PROPERTY => true,
+            Type::PARAM => true,
+            Type::USE_CONST => true,
+            Type::USE_FUNCTION => true,
+            Type::USE_TRAIT => true,
         ];
     }
 
@@ -64,10 +69,14 @@ final class ListSpacing implements ListRule, DeclarationRule
      * nor `AlignLists` are enabled, a newline is added before the first
      * interface.
      */
-    public function processList(Token $parent, TokenCollection $items): void
+    public function processList(Token $parent, TokenCollection $items, Token $lastChild): void
     {
         if (!$parent->CloseBracket) {
-            if (!$this->ListRuleEnabled && $items->tokenHasNewlineBefore()) {
+            if (
+                !$this->ListRuleEnabled
+                && ($parent->id === \T_EXTENDS || $parent->id === \T_IMPLEMENTS)
+                && $items->tokenHasNewlineBefore()
+            ) {
                 /** @var Token */
                 $token = $items->first();
                 $token->applyWhitespace(Space::LINE_BEFORE);
@@ -92,6 +101,11 @@ final class ListSpacing implements ListRule, DeclarationRule
     /**
      * Apply the rule to the given declarations
      *
+     * Newlines are added between comma-delimited constant declarations and
+     * property declarations. When neither `StrictLists` nor `AlignLists` are
+     * enabled, they are also added to `use` statements between comma-delimited
+     * imports and traits that break over multiple lines.
+     *
      * If a list of property hooks has one or more attributes with a trailing
      * newline, every attribute is placed on its own line, and blank lines are
      * added before and after annotated hooks to improve readability.
@@ -99,10 +113,29 @@ final class ListSpacing implements ListRule, DeclarationRule
     public function processDeclarations(array $declarations): void
     {
         foreach ($declarations as $token) {
-            /** @var TokenCollection */
-            $hooks = $token->Data[TokenData::PROPERTY_HOOKS];
-            if ($hooks->count()) {
-                $this->normaliseDeclarationList($hooks);
+            $type = $token->Data[TokenData::NAMED_DECLARATION_TYPE];
+
+            if (
+                $type === Type::_CONST
+                || $type === Type::PROPERTY
+                || $type & Type::_USE
+            ) {
+                $commas = $token->withNextSiblings($token->EndStatement)
+                                ->getAnyOf(\T_COMMA);
+                if (!($type & Type::_USE) || (
+                    !$this->ListRuleEnabled
+                    && $commas->tokenHasNewlineBeforeNextCode()
+                )) {
+                    $commas->applyWhitespace(Space::LINE_AFTER);
+                }
+            }
+
+            if ($type & Type::PROPERTY) {
+                /** @var TokenCollection */
+                $hooks = $token->Data[TokenData::PROPERTY_HOOKS];
+                if ($hooks->count()) {
+                    $this->normaliseDeclarationList($hooks);
+                }
             }
         }
     }

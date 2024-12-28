@@ -656,6 +656,7 @@ final class Parser implements Immutable
                 //     lists, arrays, `for` expressions
                 //   - between non-structural braces, e.g. in `match`
                 //     expressions
+                //   - not after `implements` in anonymous class declarations
 
                 if (
                     !$token->NextSibling
@@ -687,6 +688,7 @@ final class Parser implements Immutable
                             $parent->id === \T_OPEN_BRACE
                             && !($parent->Flags & TokenFlag::STRUCTURAL_BRACE)
                         ))
+                        && $token->skipPrevCodeFrom($idx->DeclarationList)->id !== \T_IMPLEMENTS
                     )
                 ) {
                     $end = $token->CloseBracket ?? $token;

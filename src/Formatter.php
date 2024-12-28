@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP;
 
-use Lkrms\PrettyPHP\Catalog\DeclarationType;
+use Lkrms\PrettyPHP\Catalog\DeclarationType as Type;
 use Lkrms\PrettyPHP\Catalog\FormatterFlag;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
@@ -711,7 +711,7 @@ final class Formatter implements Buildable, Immutable
     private function getAllDeclarationTypes(): array
     {
         /** @var int[] */
-        $types = Reflect::getConstants(DeclarationType::class);
+        $types = Reflect::getConstants(Type::class);
         return array_fill_keys($types, true);
     }
 
@@ -949,40 +949,68 @@ final class Formatter implements Buildable, Immutable
         }
 
         Profile::startTimer(__METHOD__ . '#find-lists');
-        $parents = $this->sortTokensByType($this->TokensById, [
+        $lists = [];
+        $parents = $this->getTokensByType($this->TokensById, [
             \T_OPEN_PARENTHESIS => true,
             \T_OPEN_BRACKET => true,
+            \T_OPEN_BRACE => true,
             \T_ATTRIBUTE => true,
             \T_EXTENDS => true,
             \T_IMPLEMENTS => true,
+            \T_INSTEADOF => true,
+            \T_STATIC => true,
+            \T_GLOBAL => true,
         ]);
-        $lists = [];
         foreach ($parents as $i => $parent) {
             if ($parent->CloseBracket === $parent->NextCode) {
                 continue;
             }
 
+            $delimiter = $parent->id === \T_OPEN_PARENTHESIS
+                && $parent->PrevCode
+                && $parent->PrevCode->id === \T_FOR
+                    ? \T_SEMICOLON
+                    : \T_COMMA;
+            $last = null;
             $items = null;
             $minCount = 1;
 
+            /** @var Token */
+            $endStatement = $parent->EndStatement;
+
             switch ($parent->id) {
+                case \T_STATIC:
+                    if (
+                        $parent->Statement !== $parent
+                        || $parent->Flags & TokenFlag::NAMED_DECLARATION
+                    ) {
+                        continue 2;
+                    }
+                    // No break
+                case \T_INSTEADOF:
+                case \T_GLOBAL:
+                    /** @var Token */
+                    $last = $endStatement->PrevCode;
+                    // No break
                 case \T_EXTENDS:
                 case \T_IMPLEMENTS:
                     /** @var Token */
                     $first = $parent->NextCode;
-                    /** @var Token */
-                    $last = $parent->nextSiblingFrom($idx->OpenBraceOrImplements)->PrevCode;
+                    $last ??= $parent->nextSiblingFrom($idx->OpenBraceOrImplements)->PrevCode;
+                    /** @var Token $last */
                     $items = $first->withNextSiblings($last)
                                    ->filter(
                                        fn(Token $t, ?Token $next, ?Token $prev) =>
-                                           !$prev || ($t->PrevCode && $t->PrevCode->id === \T_COMMA)
+                                           !$prev
+                                           || !$t->PrevCode
+                                           || $t->PrevCode->id === $delimiter
                                    );
                     $minCount = 2;
                     break;
 
                 case \T_OPEN_PARENTHESIS:
                     $prev = $parent->PrevCode;
-                    if ($prev && (
+                    if (!$prev || !(
                         $idx->BeforeListParenthesis[$prev->id] || (
                             $prev->id === \T_CLOSE_BRACE
                             && !($prev->Flags & TokenFlag::STRUCTURAL_BRACE)
@@ -992,43 +1020,127 @@ final class Formatter implements Buildable, Immutable
                             && $idx->FunctionOrFn[$prev->PrevCode->id]
                         )
                     )) {
-                        break;
+                        continue 2;
                     }
-                    continue 2;
+                    break;
 
                 case \T_OPEN_BRACKET:
-                    if ($parent->isArrayOpenBracket()) {
-                        break;
+                    if (!$parent->isArrayOpenBracket()) {
+                        continue 2;
                     }
-                    continue 2;
+                    break;
+
+                case \T_OPEN_BRACE:
+                    /** @var Token */
+                    $statement = $parent->Statement;
+                    if (!(
+                        $statement->Flags & TokenFlag::NAMED_DECLARATION
+                        && ($statement->Data[TokenData::NAMED_DECLARATION_TYPE] & (
+                            Type::_USE
+                            | Type::_TRAIT
+                        )) === Type::_USE
+                    )) {
+                        continue 2;
+                    }
+                    break;
             }
 
-            if ($items === null) {
-                $delimiter = $parent->PrevCode && $parent->PrevCode->id === \T_FOR
-                    ? \T_SEMICOLON
-                    : \T_COMMA;
-                $items = $parent->children()
-                                ->filter(
-                                    fn(Token $t, ?Token $next, ?Token $prev) =>
-                                        $t->id !== $delimiter && (
-                                            !$prev || ($t->PrevCode && $t->PrevCode->id === $delimiter)
-                                        )
-                                );
-            }
+            $last ??= ($parent->CloseBracket ?? $endStatement)->PrevCode;
+            /** @var Token $last */
+            $items ??= $parent->children()
+                              ->filter(
+                                  fn(Token $t, ?Token $next, ?Token $prev) =>
+                                      $t->id !== $delimiter
+                                      && $t->Statement === $t
+                                      && (
+                                          !$prev
+                                          || !$t->PrevCode
+                                          || $t->PrevCode->id === $delimiter
+                                      )
+                              );
 
             $count = $items->count();
             if ($count < $minCount) {
                 continue;
             }
             $parent->Flags |= TokenFlag::LIST_PARENT;
+            $parent->Data[TokenData::LIST_DELIMITER] = $delimiter;
             $parent->Data[TokenData::LIST_ITEMS] = $items;
             $parent->Data[TokenData::LIST_ITEM_COUNT] = $count;
             foreach ($items as $token) {
                 $token->Flags |= TokenFlag::LIST_ITEM;
                 $token->Data[TokenData::LIST_PARENT] = $parent;
             }
-            $lists[$i] = $items;
+            $lists[$i] = [$parent, $items, $last];
         }
+
+        $parents = $this->getTokensByType($this->DeclarationsByType, [
+            Type::_CONST => true,
+            Type::_USE => true,
+            Type::PROPERTY => true,
+            Type::USE_CONST => true,
+            Type::USE_FUNCTION => true,
+            Type::USE_TRAIT => true,
+        ]);
+        foreach ($parents as $i => $parent) {
+            $type = $parent->Data[TokenData::NAMED_DECLARATION_TYPE];
+            $first = null;
+            $last = null;
+
+            /** @var Token */
+            $endStatement = $parent->EndStatement;
+
+            switch ($type) {
+                case Type::_USE:
+                case Type::USE_CONST:
+                case Type::USE_FUNCTION:
+                case Type::USE_TRAIT:
+                    /** @var Token */
+                    $first = $parent->NextCode;
+                    $first = $first->skipNextSiblingFrom($idx->ConstOrFunction);
+                    if ($type === Type::USE_TRAIT) {
+                        $last = $parent->nextSiblingFrom($idx->OpenBraceOrSemicolon)
+                                       ->PrevCode;
+                    }
+                    break;
+
+                case Type::PROPERTY:
+                    $first = $parent->nextSiblingOf(\T_VARIABLE);
+                    /** @var Token */
+                    $last = $parent->nextSiblingFrom($idx->OpenBraceOrSemicolon)
+                                   ->PrevCode;
+                    break;
+            }
+
+            $first ??= $parent->nextSiblingOf(\T_EQUAL)->PrevCode;
+            /** @var Token $first */
+            $parent = $first->PrevCode;
+            /** @var Token $parent */
+            $last ??= $endStatement->PrevCode;
+            /** @var Token $last */
+            $items = $first->withNextSiblings($last)
+                           ->filter(
+                               fn(Token $t, ?Token $next, ?Token $prev) =>
+                                   !$prev
+                                   || !$t->PrevCode
+                                   || $t->PrevCode->id === \T_COMMA
+                           );
+
+            $count = $items->count();
+            if ($count < 2) {
+                continue;
+            }
+            $parent->Flags |= TokenFlag::LIST_PARENT;
+            $parent->Data[TokenData::LIST_DELIMITER] = \T_COMMA;
+            $parent->Data[TokenData::LIST_ITEMS] = $items;
+            $parent->Data[TokenData::LIST_ITEM_COUNT] = $count;
+            foreach ($items as $token) {
+                $token->Flags |= TokenFlag::LIST_ITEM;
+                $token->Data[TokenData::LIST_PARENT] = $parent;
+            }
+            $lists[$i] = [$parent, $items, $last];
+        }
+        ksort($lists, \SORT_NUMERIC);
         Profile::stopTimer(__METHOD__ . '#find-lists');
 
         $logProgress = $this->LogProgress
@@ -1050,9 +1162,9 @@ final class Formatter implements Buildable, Immutable
             }
 
             if ($method === ListRule::PROCESS_LIST) {
-                foreach ($lists as $i => $list) {
+                foreach ($lists as [$parent, $items, $last]) {
                     /** @var ListRule $rule */
-                    $rule->processList($parents[$i], clone $list);
+                    $rule->processList($parent, clone $items, $last);
                 }
                 Profile::stopTimer($_rule, 'rule');
                 $logProgress($_rule, ListRule::PROCESS_LIST);

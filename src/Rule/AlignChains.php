@@ -135,21 +135,22 @@ final class AlignChains implements TokenRule
                 $t->AlignedWith = $alignWith;
             }
 
+            /** @var Token */
+            $first = $chain->first();
             $until = TokenUtil::getOperatorEndExpression($token);
             $idx = $this->Idx;
 
             $this->Formatter->registerCallback(
                 static::class,
                 $token,
-                static function () use (
+                $callback = static function () use (
                     $chain,
                     $alignWith,
                     $offset,
+                    $first,
                     $until,
                     $idx
                 ) {
-                    /** @var Token */
-                    $first = $chain->first();
                     $delta = $first->getColumnDelta($alignWith, false) + $offset;
                     if ($first->id === \T_NULLSAFE_OBJECT_OPERATOR) {
                         $delta++;
@@ -186,6 +187,7 @@ final class AlignChains implements TokenRule
                     $chain->forEach($callback);
                 },
             );
+            $alignWith->Data[TokenData::ALIGNMENT_CALLBACKS][] = $callback;
         }
     }
 }

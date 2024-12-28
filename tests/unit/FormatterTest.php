@@ -501,6 +501,36 @@ bar: qux();
 PHP,
                 $formatter,
             ],
+            'anonymous class commas in array scope' => [
+                <<<'PHP'
+<?php
+$foo = new Bar(
+    [
+        'baz' => [
+            new class implements Foo, Bar {
+                public const FOO = 1;
+            },
+            'qux',
+        ],
+    ],
+);
+
+PHP,
+                <<<'PHP'
+<?php
+$foo = new Bar(
+[
+'baz' => [
+new class implements Foo, Bar {
+public const FOO = 1;
+},
+'qux',
+],
+],
+);
+PHP,
+                $formatter,
+            ],
         ];
 
         if (\PHP_VERSION_ID < 80400) {

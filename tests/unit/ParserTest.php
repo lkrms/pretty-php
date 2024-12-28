@@ -1015,6 +1015,29 @@ switch ($foo) {
 }
 PHP,
             ],
+            'anonymous class commas in array scope' => [
+                [
+                    "T1:L2:'\$foo' - T32:L11:';'",
+                    "T6:L3:'[' - T30:L10:','",
+                    "T7:L4:'\'baz\'' - T28:L9:','",
+                    "T10:L5:'new' - T24:L7:','",
+                    "T17:L6:'public' - T22:L6:';'",
+                    "T25:L8:'\'qux\'' - T26:L8:','",
+                ],
+                <<<'PHP'
+<?php
+$foo = new Bar(
+    [
+        'baz' => [
+            new class implements Foo, Bar {
+                public const FOO = 1;
+            },
+            'qux',
+        ],
+    ],
+);
+PHP,
+            ],
         ];
     }
 

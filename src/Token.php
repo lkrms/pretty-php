@@ -68,7 +68,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
 
     /**
      * @var array<TokenData::*,mixed>
-     * @phpstan-var array{string,TokenCollection,int,self,self,self,self,TokenCollection,int,TokenCollection,Closure[],self,bool,self,self|null,self|null,int}
+     * @phpstan-var array{string,int,TokenCollection,int,self,self,self,self,TokenCollection,int,TokenCollection,Closure[],self,bool,self,self|null,self|null}
      */
     public array $Data;
 
@@ -95,44 +95,6 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     public int $LineUnpadding = 0;
     public int $Padding = 0;
     public ?self $AlignedWith = null;
-
-    /**
-     * The token on behalf of which a level of hanging indentation was most
-     * recently applied to the token
-     *
-     * @internal
-     */
-    public ?self $HangingIndentToken = null;
-
-    /**
-     * The context of each level of hanging indentation applied to the token
-     *
-     * @internal
-     *
-     * @var array<array{self|null,1?:self}>
-     */
-    public array $HangingIndentContext = [];
-
-    /**
-     * Parent tokens associated with hanging indentation applied to the token
-     *
-     * @internal
-     *
-     * @var self[]
-     */
-    public array $HangingIndentParent = [];
-
-    /**
-     * Each entry represents a parent token associated with at least one level
-     * of collapsible indentation applied to the token
-     *
-     * Parent token index => levels of collapsible indentation applied
-     *
-     * @internal
-     *
-     * @var array<int,int>
-     */
-    public array $HangingIndentParentLevels = [];
 
     /**
      * @internal
