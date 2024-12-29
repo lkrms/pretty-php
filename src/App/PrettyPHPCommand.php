@@ -1684,7 +1684,7 @@ EOF,
         $files += [
             'input.php' => $input,
             'output.php' => $output,
-            'tokens.json' => $tokens,
+            'tokens.json' => $tokens !== null ? (object) $tokens : null,
             'data.out' => is_string($data) ? $data : null,
             'data.json' => is_string($data) ? null : $data,
         ];
@@ -1698,7 +1698,7 @@ EOF,
             if (!is_string($out)) {
                 $out = Json::prettyPrint(
                     $out,
-                    \JSON_FORCE_OBJECT | \JSON_INVALID_UTF8_IGNORE
+                    \JSON_INVALID_UTF8_IGNORE
                 ) . \PHP_EOL;
             }
             File::writeContents($file, $out);
