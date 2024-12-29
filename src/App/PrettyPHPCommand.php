@@ -1121,11 +1121,27 @@ EOF,
                 continue;
             } catch (FormatterException $ex) {
                 Console::error('Unable to format:', $inputFile);
-                $this->maybeDumpDebugOutput($input, $ex->getOutput(), $ex->getTokens(), $ex->getLog(), $ex->getData());
+                $this->maybeDumpDebugOutput(
+                    $input,
+                    $ex->getOutput(),
+                    $ex->getTokens(),
+                    $ex->getLog(),
+                    $ex->getData(),
+                );
                 throw $ex;
             } catch (Throwable $ex) {
                 Console::error('Unable to format:', $inputFile);
-                $this->maybeDumpDebugOutput($input, null, $formatter->getTokens(), $formatter->Log, (string) $ex);
+                $data = [get_class($ex) => (string) $ex];
+                if ($this->Debug) {
+                    $data += $formatter->getExtensionData();
+                }
+                $this->maybeDumpDebugOutput(
+                    $input,
+                    null,
+                    $formatter->getTokens(),
+                    $formatter->Log,
+                    $data,
+                );
                 throw $ex;
             } finally {
                 Profile::stopTimer($inputFile, 'file');
@@ -1138,7 +1154,15 @@ EOF,
             }
 
             if ($i === $count) {
-                $this->maybeDumpDebugOutput($input, $output, $formatter->getTokens(), $formatter->Log, null);
+                $this->maybeDumpDebugOutput(
+                    $input,
+                    $output,
+                    $formatter->getTokens(),
+                    $formatter->Log,
+                    $this->Debug
+                        ? $formatter->getExtensionData()
+                        : null,
+                );
             }
 
             if ($this->Diff !== null || $this->Check) {
@@ -1660,7 +1684,7 @@ EOF,
         $files += [
             'input.php' => $input,
             'output.php' => $output,
-            'tokens.json' => $tokens,
+            'tokens.json' => $tokens !== null ? (object) $tokens : null,
             'data.out' => is_string($data) ? $data : null,
             'data.json' => is_string($data) ? null : $data,
         ];
@@ -1674,7 +1698,7 @@ EOF,
             if (!is_string($out)) {
                 $out = Json::prettyPrint(
                     $out,
-                    \JSON_FORCE_OBJECT | \JSON_INVALID_UTF8_IGNORE
+                    \JSON_INVALID_UTF8_IGNORE
                 ) . \PHP_EOL;
             }
             File::writeContents($file, $out);

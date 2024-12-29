@@ -1202,8 +1202,8 @@ final class Formatter implements Buildable, Immutable
                 null,
                 $this->Debug ? $this->Tokens : null,
                 $this->Log,
-                null,
-                $ex
+                $this->Debug ? $this->getExtensionData() : null,
+                $ex,
             );
             // @codeCoverageIgnoreEnd
         } finally {
@@ -1239,8 +1239,8 @@ final class Formatter implements Buildable, Immutable
                 $out,
                 $this->Tokens ?? null,
                 $this->Log,
-                null,
-                $ex
+                $this->Debug ? $this->getExtensionData() : null,
+                $ex,
             );
             // @codeCoverageIgnoreEnd
         } finally {
@@ -1263,7 +1263,7 @@ final class Formatter implements Buildable, Immutable
                 $out,
                 $this->Tokens ?? null,
                 $this->Log,
-                ['before' => $before, 'after' => $after]
+                $this->Debug ? $this->getExtensionData() : null,
             );
             // @codeCoverageIgnoreEnd
         }
@@ -1398,6 +1398,21 @@ final class Formatter implements Buildable, Immutable
             $end,
             ...$values,
         );
+    }
+
+    /**
+     * Get extension data as an array of associative arrays
+     *
+     * @return array<class-string<Extension>,non-empty-array<string,mixed>>
+     */
+    public function getExtensionData(): array
+    {
+        foreach ($this->Extensions ?? [] as $_ext => $ext) {
+            if ($_data = $ext->getData()) {
+                $data[$_ext] = $_data;
+            }
+        }
+        return $data ?? [];
     }
 
     /**
@@ -1561,7 +1576,8 @@ final class Formatter implements Buildable, Immutable
                 null,
                 $this->Tokens,
                 $this->Log,
-                $ex
+                $this->getExtensionData(),
+                $ex,
             );
         } finally {
             Profile::stopTimer(__METHOD__ . '#render');

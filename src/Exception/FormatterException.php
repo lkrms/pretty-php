@@ -49,11 +49,11 @@ class FormatterException extends AbstractException
      */
     public function getMetadata(): array
     {
-        $flags = \JSON_FORCE_OBJECT | \JSON_INVALID_UTF8_IGNORE;
+        $flags = \JSON_INVALID_UTF8_IGNORE;
 
         return [
             'output' => $this->Output,
-            'tokens' => Json::prettyPrint($this->Tokens, $flags),
+            'tokens' => Json::prettyPrint($this->Tokens !== null ? (object) $this->Tokens : null, $flags),
             'data' => Json::prettyPrint($this->Data, $flags),
         ];
     }

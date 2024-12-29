@@ -25,4 +25,13 @@ interface Extension
      * Called once per document, before formatting begins.
      */
     public function reset(): void;
+
+    /**
+     * Get extension data as an associative array
+     *
+     * Called when generating debug output.
+     *
+     * @return array<string,mixed>
+     */
+    public function getData(): array;
 }
