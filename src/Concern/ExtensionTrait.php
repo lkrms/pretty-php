@@ -31,4 +31,12 @@ trait ExtensionTrait
      * @inheritDoc
      */
     public function reset(): void {}
+
+    /**
+     * @inheritDoc
+     */
+    public function getData(): array
+    {
+        return [];
+    }
 }

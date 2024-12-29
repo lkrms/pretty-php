@@ -1121,11 +1121,27 @@ EOF,
                 continue;
             } catch (FormatterException $ex) {
                 Console::error('Unable to format:', $inputFile);
-                $this->maybeDumpDebugOutput($input, $ex->getOutput(), $ex->getTokens(), $ex->getLog(), $ex->getData());
+                $this->maybeDumpDebugOutput(
+                    $input,
+                    $ex->getOutput(),
+                    $ex->getTokens(),
+                    $ex->getLog(),
+                    $ex->getData(),
+                );
                 throw $ex;
             } catch (Throwable $ex) {
                 Console::error('Unable to format:', $inputFile);
-                $this->maybeDumpDebugOutput($input, null, $formatter->getTokens(), $formatter->Log, (string) $ex);
+                $data = [get_class($ex) => (string) $ex];
+                if ($this->Debug) {
+                    $data += $formatter->getExtensionData();
+                }
+                $this->maybeDumpDebugOutput(
+                    $input,
+                    null,
+                    $formatter->getTokens(),
+                    $formatter->Log,
+                    $data,
+                );
                 throw $ex;
             } finally {
                 Profile::stopTimer($inputFile, 'file');
@@ -1138,7 +1154,15 @@ EOF,
             }
 
             if ($i === $count) {
-                $this->maybeDumpDebugOutput($input, $output, $formatter->getTokens(), $formatter->Log, null);
+                $this->maybeDumpDebugOutput(
+                    $input,
+                    $output,
+                    $formatter->getTokens(),
+                    $formatter->Log,
+                    $this->Debug
+                        ? $formatter->getExtensionData()
+                        : null,
+                );
             }
 
             if ($this->Diff !== null || $this->Check) {
