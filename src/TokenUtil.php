@@ -473,8 +473,6 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
         $t['NextSibling'] = $token->NextSibling;
         $t['Statement'] = $token->Statement;
         $t['EndStatement'] = $token->EndStatement;
-        $t['Expression'] = $token->Expression;
-        $t['EndExpression'] = $token->EndExpression;
         $t['Parent'] = $token->Parent;
         $t['String'] = $token->String;
         $t['Heredoc'] = $token->Heredoc;

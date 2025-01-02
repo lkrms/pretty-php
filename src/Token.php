@@ -47,17 +47,6 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     public ?self $CloseTag = null;
     public ?self $Statement = null;
     public ?self $EndStatement = null;
-
-    /**
-     * NULL if the token is an expression delimiter
-     */
-    public ?self $Expression = null;
-
-    /**
-     * NULL if the token is a statement delimiter
-     */
-    public ?self $EndExpression = null;
-
     public ?self $OpenBracket = null;
     public ?self $CloseBracket = null;
     public ?self $Parent = null;
