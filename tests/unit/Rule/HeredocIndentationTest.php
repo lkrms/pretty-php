@@ -27,6 +27,52 @@ final class HeredocIndentationTest extends TestCase
         $builder = Formatter::build();
 
         return [
+            [
+                <<<'PHP'
+<?php
+$foo = fn($bar) => $bar;
+$baz = true;
+echo <<<EOF
+    line 1
+
+    {$foo(
+        $baz
+            ? <<<EOF
+                line 3
+
+                line 5
+
+                EOF
+            : ''
+    )}
+    line 7
+
+    EOF;
+
+PHP,
+                <<<'PHP'
+<?php
+$foo = fn($bar) => $bar;
+$baz = true;
+echo <<<EOF
+line 1
+
+{$foo(
+$baz
+? <<<EOF
+line 3
+
+line 5
+
+EOF
+: ''
+)}
+line 7
+
+EOF;
+PHP,
+                $builder,
+            ],
             'NONE' => [
                 <<<'PHP'
 <?php

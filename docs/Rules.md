@@ -309,6 +309,10 @@ Blank lines are also added before and after each group of declarations, and they
 
 Scopes and expressions that would otherwise be difficult to differentiate from adjacent code are indented for visual separation, and a callback is registered to collapse any unnecessary "overhanging" indentation levels.
 
+### `HeredocIndentation` (call 1: `processTokens()`)
+
+If `HeredocIndent` has a value other than `NONE`, heredocs are saved for later processing.
+
 ### `AlignData`, if enabled (call 1: `processBlock()`)
 
 When they appear in the same scope, a callback is registered to align consecutive:
@@ -370,6 +374,12 @@ The `TagIndent` of tokens between indented tags is adjusted by the difference, i
 ### `PlaceBraces` (call 2: `beforeRender()`)
 
 In function declarations where `)` and `{` appear at the start of consecutive lines, they are collapsed to the same line.
+
+### `HeredocIndentation` (call 2: `beforeRender()`)
+
+The indentation of the first inner token of each heredoc saved earlier is applied to the heredoc by adding whitespace after newline characters in each of its tokens.
+
+Whitespace added to each heredoc is also applied to the `HeredocIndent` property of its `T_START_HEREDOC` token, which allows inherited indentation to be removed when processing nested heredocs.
 
 ### `PlaceComments` (call 2: `beforeRender()`)
 

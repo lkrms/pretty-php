@@ -118,12 +118,12 @@ final class Renderer implements Immutable
             } elseif ((
                 $t->id === \T_START_HEREDOC
                 || ($t->Heredoc && $t->id !== \T_END_HEREDOC)
-            ) && ($heredoc = $t->Heredoc ?? $t)->HeredocIndent) {
+            ) && ($heredocIndent = $this->getHeredocIndent($t)) !== '') {
                 // Remove redundant whitespace from empty heredoc lines
                 $text = Regex::replace(
                     ($t->Next->text[0] ?? null) === "\n"
-                        ? "/\\n{$heredoc->HeredocIndent}\$/m"
-                        : "/\\n{$heredoc->HeredocIndent}(?=\\n)/",
+                        ? "/\\n{$heredocIndent}\$/m"
+                        : "/\\n{$heredocIndent}(?=\\n)/",
                     "\n",
                     $t->text,
                 );
@@ -367,6 +367,20 @@ final class Renderer implements Immutable
         }
 
         return str_replace("\n", $indent, $token->text);
+    }
+
+    private function getHeredocIndent(Token $token): string
+    {
+        $indent = '';
+        /** @var Token */
+        $t = $token->id === \T_START_HEREDOC
+            ? $token
+            : $token->Heredoc;
+        do {
+            $indent .= $t->HeredocIndent;
+        } while ($t = $t->Heredoc);
+
+        return $indent;
     }
 
     private function maybeUnexpandTabs(string $text, bool $softTabs): string
