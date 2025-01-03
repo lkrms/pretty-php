@@ -6,6 +6,7 @@ use Lkrms\PrettyPHP\Catalog\DeclarationType as Type;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Internal\TokenCollection;
@@ -133,6 +134,7 @@ final class HangingIndentation implements TokenRule
                 || $this->Idx->CloseBracket[$token->id]
                 || $token->id === \T_OPEN_BRACE
                 || !$token->PrevCode
+                || $this->Idx->Virtual[$token->PrevCode->id]
             ) {
                 continue;
             }
@@ -183,9 +185,38 @@ final class HangingIndentation implements TokenRule
 
             // Do nothing if the token is not at the start of a line and is not
             // the first token in a heredoc with hanging indentation, or if its
-            // indentation already differs from the previous token
+            // indentation already differs from the previous token. Whitespace
+            // is checked manually to save calling `hasNewlineBeforeNextCode()`
+            // on almost every token.
+            $prevCodeHasNewlineBeforeNextCode = false;
+            $t = $prevCode;
+            do {
+                /** @var Token */
+                $next = $t->Next;
+                if (
+                    (
+                        $t->Whitespace >> 15
+                        | $next->Whitespace >> 12
+                        | ((
+                            $t->Whitespace >> 3
+                            | $next->Whitespace >> 0
+                        ) & ~(
+                            $t->Whitespace >> 9
+                            | $t->Whitespace >> 21
+                            | $next->Whitespace >> 6
+                            | $next->Whitespace >> 18
+                        ))
+                    ) & (Space::BLANK | Space::LINE)
+                    || ($this->Idx->Markup[$t->id] && $t->hasNewline())
+                ) {
+                    $prevCodeHasNewlineBeforeNextCode = true;
+                    break;
+                }
+                $t = $next;
+            } while ($t->index < $token->index);
+
             if (
-                (!$prevCode->hasNewlineBeforeNextCode() && !(
+                (!$prevCodeHasNewlineBeforeNextCode && !(
                     $prevCode->id === \T_START_HEREDOC && (
                         $this->HeredocIndent === HeredocIndent::HANGING || (
                             $this->HeredocIndent === HeredocIndent::MIXED
