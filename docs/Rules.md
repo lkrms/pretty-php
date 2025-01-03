@@ -169,6 +169,17 @@ Whitespace is applied to structural and `match` expression braces as follows:
 
 > Open brace placement is left for a rule that runs after vertical whitespace has been applied.
 
+### `PreserveNewlines`, unless disabled
+
+If a newline in the input is adjacent to a token in `AllowNewlineBefore` or `AllowNewlineAfter`, it is applied to the token as a leading or trailing newline on a best-effort basis. This has the effect of placing operators before or after newlines as per the formatter's token index.
+
+Similarly, blank lines in the input are preserved between tokens in `AllowBlankBefore` and `AllowBlankAfter`, except:
+
+- after `:` if there is a subsequent token in the same scope
+- after `,` other than between `match` expression arms
+- after `;` in `for` expressions
+- after mid-statement comments and comments in non-statement scopes
+
 ### `PreserveOneLineStatements`, if enabled
 
 Newlines are suppressed between tokens in statements and control structures that start and end on the same line in the input.
