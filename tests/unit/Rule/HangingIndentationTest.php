@@ -56,6 +56,38 @@ PHP,
             [
                 <<<'PHP'
 <?php
+function foo()
+{
+    static $a = 0,
+        $b = 1,
+        $c =
+            2,
+        $d = 3,
+        $e = 4,
+        $f = 5,
+        $g = 6;
+}
+
+PHP,
+                <<<'PHP'
+<?php
+function foo() {
+static
+$a = 0,
+$b = 1,
+$c =
+2,
+$d = 3,
+$e = 4,
+$f = 5,
+$g = 6;
+}
+PHP,
+                $formatter,
+            ],
+            [
+                <<<'PHP'
+<?php
 $abc = $def
     ->ghi()
     ->klm()

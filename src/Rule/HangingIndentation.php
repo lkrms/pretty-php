@@ -144,7 +144,10 @@ final class HangingIndentation implements TokenRule
             $declType = $statement->Flags & TokenFlag::NAMED_DECLARATION
                 ? $statement->Data[TokenData::NAMED_DECLARATION_TYPE]
                 : 0;
-            $declHasList = $declType === Type::_CONST || $declType === Type::PROPERTY;
+            $mayHaveListWithEqual = $declType === Type::_CONST
+                || $declType === Type::PROPERTY
+                || ($statement->id === \T_STATIC && !$declType)
+                || $statement->id === \T_GLOBAL;
             $parent = $token->Parent;
             $parentFlags = $parent
                 ? $this->ParentFlags[$parent->index]
@@ -245,11 +248,11 @@ final class HangingIndentation implements TokenRule
                     ) {
                         continue;
                     }
-                    // In lists of constant or property declarations, ignore
-                    // assignment operators that belong to a different
-                    // declaration or don't trigger indentation
+                    // In lists of declarations/variables, ignore assignment
+                    // operators that belong to a different entry or don't
+                    // trigger indentation
                     if (
-                        $declHasList && (
+                        $mayHaveListWithEqual && (
                             $t->withNextSiblings($token)->hasOneOf(\T_COMMA)
                             || !(
                                 $t->hasNewlineBeforeNextCode()
@@ -426,7 +429,7 @@ final class HangingIndentation implements TokenRule
             $collapsible = [];
 
             // And another for mid-declaration constants and properties
-            if ($declHasList && $trigger->id !== \T_COMMA) {
+            if ($mayHaveListWithEqual && $trigger->id !== \T_COMMA) {
                 $indent++;
             }
 
@@ -481,8 +484,8 @@ final class HangingIndentation implements TokenRule
             $this->Formatter->registerCallback(
                 static::class,
                 $token,
-                function () use ($token, $until, $indent, $declHasList) {
-                    $levels = $this->getLevelsToCollapse($token, $until, $indent - 1, $declHasList);
+                function () use ($token, $until, $indent, $mayHaveListWithEqual) {
+                    $levels = $this->getLevelsToCollapse($token, $until, $indent - 1, $mayHaveListWithEqual);
                     if ($levels) {
                         foreach ($token->collect($until) as $t) {
                             $t->HangingIndent -= $levels;
@@ -554,8 +557,12 @@ final class HangingIndentation implements TokenRule
         return null;
     }
 
-    private function getLevelsToCollapse(Token $token, Token $until, int $levels, bool $declHasList): int
-    {
+    private function getLevelsToCollapse(
+        Token $token,
+        Token $until,
+        int $levels,
+        bool $mayHaveListWithEqual
+    ): int {
         // Collapse every possible level if there's a multi-line comment between
         // `$until` and the next line, there are no more lines, or the next line
         // starts with a close bracket and there is no comment to fall back on
@@ -600,7 +607,7 @@ final class HangingIndentation implements TokenRule
             && ($this->Contexts[$next->index] ?? null)
                 === ($this->Contexts[$token->index] ?? null)
             && !($next->Statement === $next xor $token->Statement === $token)
-            && !($declHasList && (
+            && !($mayHaveListWithEqual && (
                 ($next->PrevCode && $next->PrevCode->id === \T_COMMA)
                 xor ($token->PrevCode && $token->PrevCode->id === \T_COMMA)
             ))
