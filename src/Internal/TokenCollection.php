@@ -186,6 +186,23 @@ final class TokenCollection extends Collection implements Stringable
     }
 
     /**
+     * Check if, between a token in the collection and its next code token,
+     * there's a newline between tokens
+     */
+    public function tokenHasNewlineBeforeNextCode(bool $closedBy = false): bool
+    {
+        foreach ($this->Items as $token) {
+            if ($closedBy && $token->CloseBracket) {
+                $token = $token->CloseBracket;
+            }
+            if ($token->hasNewlineBeforeNextCode()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Check if any tokens in the collection are separated by one or more line
      * breaks
      */

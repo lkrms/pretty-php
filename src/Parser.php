@@ -131,7 +131,7 @@ final class Parser implements Immutable
     }
 
     /**
-     * Pass 2: link brackets, siblings and parents
+     * Pass 2: build token hierarchy
      *
      * - on PHP < 8.0, convert comments that appear to be PHP >= 8.0 attributes
      *   to `T_ATTRIBUTE_COMMENT`
@@ -605,7 +605,7 @@ final class Parser implements Immutable
     }
 
     /**
-     * Pass 3: resolve statements
+     * Pass 3: parse statements
      *
      * Token properties set:
      *
@@ -656,6 +656,7 @@ final class Parser implements Immutable
                 //     lists, arrays, `for` expressions
                 //   - between non-structural braces, e.g. in `match`
                 //     expressions
+                //   - not after `implements` in anonymous class declarations
 
                 if (
                     !$token->NextSibling
@@ -687,6 +688,7 @@ final class Parser implements Immutable
                             $parent->id === \T_OPEN_BRACE
                             && !($parent->Flags & TokenFlag::STRUCTURAL_BRACE)
                         ))
+                        && $token->skipPrevCodeFrom($idx->DeclarationList)->id !== \T_IMPLEMENTS
                     )
                 ) {
                     $end = $token->CloseBracket ?? $token;
@@ -716,12 +718,10 @@ final class Parser implements Immutable
     }
 
     /**
-     * Pass 4: resolve expressions
+     * Pass 4: identify declarations and parse (some) expressions
      *
      * Token properties set:
      *
-     * - `Expression`
-     * - `EndExpression`
      * - `Data[TokenData::NAMED_DECLARATION_PARTS]`
      * - `Data[TokenData::NAMED_DECLARATION_TYPE]`
      * - `Data[TokenData::PROPERTY_HOOKS]`
@@ -826,8 +826,7 @@ final class Parser implements Immutable
                 }
             }
 
-            $expression = $statement;
-            $token = $expression;
+            $token = $statement;
             while (true) {
                 // Flag and link ternary operators
                 if (
@@ -885,56 +884,11 @@ final class Parser implements Immutable
                     $next->Flags |= TokenFlag::FN_DOUBLE_ARROW;
                 }
 
-                $isDelimiter = false;
-                if (
-                    !$token->NextSibling
-                    || $token === $end
-                    || $idx->ExpressionDelimiter[$token->id]
-                    || $token->Flags & TokenFlag::TERNARY_OPERATOR
-                ) {
-                    // Exclude delimiters from expressions
-                    if (
-                        $idx->ExpressionDelimiter[$token->id]
-                        || $idx->StatementDelimiter[$token->id]
-                        || $token->Flags & (
-                            TokenFlag::STATEMENT_TERMINATOR
-                            | TokenFlag::TERNARY_OPERATOR
-                        )
-                    ) {
-                        $isDelimiter = true;
-                        $last = $token->PrevCode;
-                        // Do nothing if the expression is empty
-                        if ($last && $last->index >= $expression->index) {
-                            $expression->EndExpression = $last;
-                        }
-                    } else {
-                        $expression->EndExpression = $token->CloseBracket ?? $token;
-                    }
-                }
-
-                if (!$isDelimiter) {
-                    $token->Expression = $expression;
-                    if ($token !== $expression) {
-                        $token->EndExpression = &$expression->EndExpression;
-                    }
-                    if ($token->CloseBracket) {
-                        $token->CloseBracket->Expression = $expression;
-                        $token->CloseBracket->EndExpression = &$expression->EndExpression;
-                    }
-                }
-
                 if (!$token->NextSibling || $token === $end) {
                     break;
                 }
 
-                $prev = $token;
                 $token = $token->NextSibling;
-                if ($expression->EndExpression || $isDelimiter) {
-                    $expression = $token;
-                    if ($isDelimiter) {
-                        $prev->EndExpression = &$expression->EndExpression;
-                    }
-                }
             }
         }
     }

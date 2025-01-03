@@ -48,7 +48,7 @@ final class AlignLists implements ListRule
      * after their open brackets, or with the first item in the list if they
      * have no enclosing brackets.
      */
-    public function processList(Token $parent, TokenCollection $items): void
+    public function processList(Token $parent, TokenCollection $items, Token $lastChild): void
     {
         /** @var Token */
         $first = $items->first();
@@ -56,14 +56,12 @@ final class AlignLists implements ListRule
             /** @var Token */
             $until = $last->PrevCode;
         } else {
-            /** @var Token */
-            $last = $parent->nextSiblingFrom($this->Idx->OpenBraceOrImplements)
-                           ->PrevCode;
+            $last = $lastChild;
             $until = $last;
         }
 
-        // Do nothing if a list of interfaces has a leading newline, or if items
-        // don't break over multiple lines
+        // Do nothing if a list of classes/declarations/variables has a leading
+        // newline, or if items don't break over multiple lines
         if (
             (!$parent->CloseBracket && $parent->hasNewlineBeforeNextCode())
             || !$first->collect($last)->hasNewline()

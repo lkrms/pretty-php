@@ -19,8 +19,8 @@ function a()
 
 $a =
 	$b =
-		$c
-		. $d;
+	$c
+	. $d;
 
 $string = function () {
 	$c

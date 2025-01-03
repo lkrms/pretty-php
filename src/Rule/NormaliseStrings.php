@@ -191,13 +191,13 @@ final class NormaliseStrings implements TokenRule
                 '/((?<!\\\\)(?:\\\\\\\\)*)\\\\(?:(?<NUL>000(?![0-7]))|(?<octal>[0-7]{3})|(?<cslash>[ab]))/',
                 fn($matches) =>
                     $matches[1]
-                        . ($matches['NUL'] !== null
-                            ? '\0'
-                            : ($matches['octal'] !== null
-                                ? (($dec = octdec($matches['octal'])) === 27
-                                    ? '\e'
-                                    : sprintf('\x%02x', $dec))
-                                : sprintf('\x%02x', ['a' => 7, 'b' => 8][$matches['cslash']]))),
+                    . ($matches['NUL'] !== null
+                        ? '\0'
+                        : ($matches['octal'] !== null
+                            ? (($dec = octdec($matches['octal'])) === 27
+                                ? '\e'
+                                : sprintf('\x%02x', $dec))
+                            : sprintf('\x%02x', ['a' => 7, 'b' => 8][$matches['cslash']]))),
                 $double,
                 -1,
                 $count,

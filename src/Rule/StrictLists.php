@@ -33,7 +33,7 @@ final class StrictLists implements ListRule
      * Items in lists are arranged horizontally or vertically by replicating the
      * arrangement of the first and second items.
      */
-    public function processList(Token $parent, TokenCollection $items): void
+    public function processList(Token $parent, TokenCollection $items, Token $lastChild): void
     {
         if ($items->count() < 2) {
             return;
@@ -42,6 +42,13 @@ final class StrictLists implements ListRule
         /** @var Token */
         $second = $items->nth(2);
         if ($second->hasNewlineBefore()) {
+            if (
+                !$parent->CloseBracket
+                && $parent->id !== \T_EXTENDS
+                && $parent->id !== \T_IMPLEMENTS
+            ) {
+                $items = $items->shift();
+            }
             $items->applyWhitespace(Space::LINE_BEFORE);
         } else {
             $items->applyWhitespace(Space::NO_BLANK_BEFORE | Space::NO_LINE_BEFORE);

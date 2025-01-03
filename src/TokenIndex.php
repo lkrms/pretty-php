@@ -188,6 +188,17 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
+     * T_OPEN_BRACE, T_SEMICOLON
+     *
+     * @var array<int,bool>
+     */
+    public array $OpenBraceOrSemicolon = [
+        \T_OPEN_BRACE => true,
+        \T_SEMICOLON => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
      * T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO
      *
      * @var array<int,bool>
@@ -364,6 +375,17 @@ class TokenIndex implements HasTokenIndex, Immutable
      */
     public array $ClassOrFunction = [
         \T_CLASS => true,
+        \T_FUNCTION => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
+     * T_CONST, T_FUNCTION
+     *
+     * @var array<int,bool>
+     */
+    public array $ConstOrFunction = [
+        \T_CONST => true,
         \T_FUNCTION => true,
     ]
         + self::TOKEN_INDEX;
@@ -619,6 +641,17 @@ class TokenIndex implements HasTokenIndex, Immutable
      * @var array<int,bool>
      */
     public array $OperatorAssignment = self::OPERATOR_ASSIGNMENT
+        + self::TOKEN_INDEX;
+
+    /**
+     * Assignment operators, T_DOUBLE_ARROW
+     *
+     * @var array<int,bool>
+     */
+    public array $OperatorAssignmentOrDoubleArrow = [
+        \T_DOUBLE_ARROW => true,
+    ]
+        + self::OPERATOR_ASSIGNMENT
         + self::TOKEN_INDEX;
 
     /**
@@ -885,6 +918,15 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
+     * T_COMMA, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE,
+     * T_STATIC, T_STRING
+     *
+     * @var array<int,bool>
+     */
+    public array $DeclarationList = self::DECLARATION_LIST
+        + self::TOKEN_INDEX;
+
+    /**
      * T_ABSTRACT, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG,
      * T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_AND, T_ATTRIBUTE_COMMENT,
      * T_ATTRIBUTE, T_CASE, T_CLASS, T_COMMA, T_CONST, T_DECLARE, T_ENUM,
@@ -1079,17 +1121,6 @@ class TokenIndex implements HasTokenIndex, Immutable
     ]
         + self::OPERATOR_ASSIGNMENT
         + self::OPERATOR_COMPARISON
-        + self::TOKEN_INDEX;
-
-    /**
-     * Assignment operators, T_DOUBLE_ARROW
-     *
-     * @var array<int,bool>
-     */
-    public array $ExpressionDelimiterExceptComparison = [
-        \T_DOUBLE_ARROW => true,
-    ]
-        + self::OPERATOR_ASSIGNMENT
         + self::TOKEN_INDEX;
 
     /**

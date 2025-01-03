@@ -2,7 +2,10 @@
 class Connection
 {
 	protected $link;
-	private $dsn, $username, $password;
+
+	private $dsn,
+		$username,
+		$password;
 
 	public function __construct($dsn, $username, $password)
 	{

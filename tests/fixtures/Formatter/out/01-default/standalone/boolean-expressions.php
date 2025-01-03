@@ -11,7 +11,7 @@ $a = $b
 $a = $b
     & $c
     | $d
-    & $e;
+        & $e;
 
 $a = $b ||
     $c ||
@@ -24,7 +24,7 @@ $a = $b ||
 $a = $b &&
     $c ||
     $d &&
-    $e;
+        $e;
 
 foo(bar() ||
     qux() ||
@@ -37,7 +37,7 @@ foo(bar() ||
 foo(bar() &&
     qux() ||
     quux() &&
-    quuux());
+        quuux());
 
 foo(bar() &&
     qux() &&

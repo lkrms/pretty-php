@@ -1,6 +1,7 @@
 <?php
 class A
 {
-    var $foo, $bar;
+    var $foo,
+        $bar;
 }
 ?>

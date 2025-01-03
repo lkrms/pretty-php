@@ -183,6 +183,8 @@ Blank lines are added before non-consecutive `return`, `yield` and `yield from` 
 
 ### `ListSpacing` (call 1: `processDeclarations()`)
 
+Newlines are added between comma-delimited constant declarations and property declarations. When neither `StrictLists` nor `AlignLists` are enabled, they are also added to `use` statements between comma-delimited imports and traits that break over multiple lines.
+
 If a list of property hooks has one or more attributes with a trailing newline, every attribute is placed on its own line, and blank lines are added before and after annotated hooks to improve readability.
 
 ### `ListSpacing` (call 2: `processList()`)
@@ -303,6 +305,10 @@ Otherwise, "loose" spacing is applied by adding blank lines between declarations
 
 Blank lines are also added before and after each group of declarations, and they are suppressed between `use` statements, one-line `declare` statements, and property hooks not declared over multiple lines.
 
+### `HangingIndentation` (call 1: `processTokens()`)
+
+Scopes and expressions that would otherwise be difficult to differentiate from adjacent code are indented for visual separation, and a callback is registered to collapse any unnecessary "overhanging" indentation levels.
+
 ### `AlignData`, if enabled (call 1: `processBlock()`)
 
 When they appear in the same scope, a callback is registered to align consecutive:
@@ -353,6 +359,10 @@ Assignment operators are aligned unless `MaxAssignmentPadding` is not `null` and
 
 In arrays and `match` expressions, `=>` delimiters are aligned unless `MaxDoubleArrowColumn` is not `null`, in which case any found in subsequent columns are excluded from consideration.
 
+### `HangingIndentation` (call 2: _`callback`_)
+
+"Overhanging" indentation applied earlier is collapsed to the minimum level required to ensure distinct scopes and expressions do not appear to run together.
+
 ### `StandardSpacing` (call 3: _`callback`_)
 
 The `TagIndent` of tokens between indented tags is adjusted by the difference, if any, between the open tag's indent and the indentation level of the first token after the open tag.
@@ -377,8 +387,8 @@ Newlines and spaces are added after tokens that would otherwise fail to parse. T
 
 | Token                                       | Rules                                                                                      |
 | ------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `*`                                         | `StandardIndentation`                                                                      |
-| `* (except virtual)`                        | `HangingIndentation`, `PreserveNewlines`                                                   |
+| `*`                                         | `HangingIndentation`, `StandardIndentation`                                                |
+| `* (except virtual)`                        | `PreserveNewlines`                                                                         |
 | `T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG`     | `VerticalSpacing`                                                                          |
 | `T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG` | `VerticalSpacing`                                                                          |
 | `T_AND`                                     | `VerticalSpacing`                                                                          |
@@ -440,7 +450,7 @@ Newlines and spaces are added after tokens that would otherwise fail to parse. T
 | -------------- | ------------------------------------------------------ |
 | `CASE`         | `DeclarationSpacing`                                   |
 | `CLASS`        | `DeclarationSpacing`, `Drupal`                         |
-| `CONST`        | `DeclarationSpacing`                                   |
+| `CONST`        | `DeclarationSpacing`, `ListSpacing`                    |
 | `DECLARE`      | `DeclarationSpacing`                                   |
 | `ENUM`         | `DeclarationSpacing`, `Drupal`                         |
 | `FUNCTION`     | `DeclarationSpacing`                                   |
@@ -450,7 +460,7 @@ Newlines and spaces are added after tokens that would otherwise fail to parse. T
 | `PARAM`        | `ListSpacing`, `StandardSpacing`                       |
 | `PROPERTY`     | `DeclarationSpacing`, `ListSpacing`, `StandardSpacing` |
 | `TRAIT`        | `DeclarationSpacing`, `Drupal`                         |
-| `USE`          | `DeclarationSpacing`                                   |
-| `USE_CONST`    | `DeclarationSpacing`                                   |
-| `USE_FUNCTION` | `DeclarationSpacing`                                   |
-| `USE_TRAIT`    | `DeclarationSpacing`                                   |
+| `USE`          | `DeclarationSpacing`, `ListSpacing`                    |
+| `USE_CONST`    | `DeclarationSpacing`, `ListSpacing`                    |
+| `USE_FUNCTION` | `DeclarationSpacing`, `ListSpacing`                    |
+| `USE_TRAIT`    | `DeclarationSpacing`, `ListSpacing`                    |
