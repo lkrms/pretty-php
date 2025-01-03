@@ -24,6 +24,9 @@ final class ListSpacing implements ListRule, DeclarationRule
 
     private bool $ListRuleEnabled;
 
+    /**
+     * @inheritDoc
+     */
     public static function getPriority(string $method): ?int
     {
         return [
@@ -32,6 +35,9 @@ final class ListSpacing implements ListRule, DeclarationRule
         ][$method] ?? null;
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function getDeclarationTypes(array $all): array
     {
         return [
@@ -48,6 +54,14 @@ final class ListSpacing implements ListRule, DeclarationRule
     /**
      * @inheritDoc
      */
+    public static function needsSortedDeclarations(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function boot(): void
     {
         $this->ListRuleEnabled = $this->Formatter->Enabled[StrictLists::class]
@@ -58,16 +72,16 @@ final class ListSpacing implements ListRule, DeclarationRule
     /**
      * Apply the rule to a token and the list of items associated with it
      *
+     * If interface lists break over multiple lines and neither `StrictLists`
+     * nor `AlignLists` are enabled, a newline is added before the first
+     * interface.
+     *
      * Arrays and argument lists with trailing ("magic") commas are split into
      * one item per line.
      *
      * If parameter lists have one or more attributes with a trailing newline,
      * every attribute is placed on its own line, and blank lines are added
      * before and after annotated parameters to improve readability.
-     *
-     * If interface lists break over multiple lines and neither `StrictLists`
-     * nor `AlignLists` are enabled, a newline is added before the first
-     * interface.
      */
     public function processList(Token $parent, TokenCollection $items, Token $lastChild): void
     {
@@ -84,11 +98,7 @@ final class ListSpacing implements ListRule, DeclarationRule
             return;
         }
 
-        // If the list has a "magic comma", add a newline before each item and
-        // another before the close bracket
-        /** @var Token */
-        $last = $parent->CloseBracket->PrevCode;
-        if ($last->id === \T_COMMA) {
+        if ($lastChild->id === \T_COMMA) {
             $items->add($parent->CloseBracket)
                   ->applyWhitespace(Space::CRITICAL_LINE_BEFORE);
         }

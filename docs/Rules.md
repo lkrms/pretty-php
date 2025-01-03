@@ -189,11 +189,11 @@ If a list of property hooks has one or more attributes with a trailing newline, 
 
 ### `ListSpacing` (call 2: `processList()`)
 
+If interface lists break over multiple lines and neither `StrictLists` nor `AlignLists` are enabled, a newline is added before the first interface.
+
 Arrays and argument lists with trailing ("magic") commas are split into one item per line.
 
 If parameter lists have one or more attributes with a trailing newline, every attribute is placed on its own line, and blank lines are added before and after annotated parameters to improve readability.
-
-If interface lists break over multiple lines and neither `StrictLists` nor `AlignLists` are enabled, a newline is added before the first interface.
 
 ### `StrictExpressions`, if enabled
 
