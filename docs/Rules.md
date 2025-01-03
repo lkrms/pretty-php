@@ -169,6 +169,17 @@ Whitespace is applied to structural and `match` expression braces as follows:
 
 > Open brace placement is left for a rule that runs after vertical whitespace has been applied.
 
+### `PreserveNewlines`, unless disabled
+
+If a newline in the input is adjacent to a token in `AllowNewlineBefore` or `AllowNewlineAfter`, it is applied to the token as a leading or trailing newline on a best-effort basis. This has the effect of placing operators before or after newlines as per the index passed to the formatter.
+
+Similarly, blank lines in the input are preserved between tokens in `AllowBlankBefore` and `AllowBlankAfter`, except:
+
+- after `:` if there is a subsequent token in the same scope
+- after `,` other than between `match` expression arms
+- after `;` in `for` expressions
+- after mid-statement comments and comments in non-statement scopes
+
 ### `PreserveOneLineStatements`, if enabled
 
 Newlines are suppressed between tokens in statements and control structures that start and end on the same line in the input.
@@ -189,11 +200,11 @@ If a list of property hooks has one or more attributes with a trailing newline, 
 
 ### `ListSpacing` (call 2: `processList()`)
 
+If interface lists break over multiple lines and neither `StrictLists` nor `AlignLists` are enabled, a newline is added before the first interface.
+
 Arrays and argument lists with trailing ("magic") commas are split into one item per line.
 
 If parameter lists have one or more attributes with a trailing newline, every attribute is placed on its own line, and blank lines are added before and after annotated parameters to improve readability.
-
-If interface lists break over multiple lines and neither `StrictLists` nor `AlignLists` are enabled, a newline is added before the first interface.
 
 ### `StrictExpressions`, if enabled
 
@@ -309,6 +320,10 @@ Blank lines are also added before and after each group of declarations, and they
 
 Scopes and expressions that would otherwise be difficult to differentiate from adjacent code are indented for visual separation, and a callback is registered to collapse any unnecessary "overhanging" indentation levels.
 
+### `HeredocIndentation` (call 1: `processTokens()`)
+
+If `HeredocIndent` has a value other than `NONE`, heredocs are saved for later processing.
+
 ### `AlignData`, if enabled (call 1: `processBlock()`)
 
 When they appear in the same scope, a callback is registered to align consecutive:
@@ -370,6 +385,12 @@ The `TagIndent` of tokens between indented tags is adjusted by the difference, i
 ### `PlaceBraces` (call 2: `beforeRender()`)
 
 In function declarations where `)` and `{` appear at the start of consecutive lines, they are collapsed to the same line.
+
+### `HeredocIndentation` (call 2: `beforeRender()`)
+
+The indentation of the first inner token of each heredoc saved earlier is applied to the heredoc by adding whitespace after newline characters in each of its tokens.
+
+Whitespace added to each heredoc is also applied to the `HeredocIndent` property of its `T_START_HEREDOC` token, which allows inherited indentation to be removed when processing nested heredocs.
 
 ### `PlaceComments` (call 2: `beforeRender()`)
 
