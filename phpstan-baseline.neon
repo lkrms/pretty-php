@@ -1,7 +1,2 @@
 parameters:
-	ignoreErrors:
-		-
-			message: '#^Cannot access property \$id on Lkrms\\PrettyPHP\\Token\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Rule/PreserveNewlines.php
+	ignoreErrors: []
