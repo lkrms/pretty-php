@@ -110,6 +110,7 @@ for ($i = 0, $j = 0,
     $i++, $j++) {
     baz($i);
 }
+++$i;
 foreach ($foo as $bar) {
     baz($bar);
 }

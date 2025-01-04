@@ -112,6 +112,7 @@ for ($i = 0,
      $j++) {
     baz($i);
 }
+++$i;
 foreach ($foo as $bar) {
     baz($bar);
 }

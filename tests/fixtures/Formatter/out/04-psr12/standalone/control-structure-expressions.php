@@ -138,6 +138,7 @@ for (
 ) {
     baz($i);
 }
+++$i;
 foreach ($foo as $bar) {
     baz($bar);
 }

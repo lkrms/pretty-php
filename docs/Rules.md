@@ -128,6 +128,28 @@ If a constructor has one or more promoted parameters, a line is added before eve
 
 If a property has unimplemented hooks with no modifiers or attributes (e.g. `public $Foo { &get; set; }`), they are collapsed to one line, otherwise hooks with statements are formatted like anonymous functions, and hooks that use abbreviated syntax are formatted like arrow functions.
 
+### `OperatorSpacing`
+
+Operators in `declare` expressions are ignored, otherwise spaces are added before and after operators not mentioned below.
+
+Whitespace is suppressed:
+
+- after reference-related ampersands
+- before and after operators in union, intersection and DNF types
+- before and after exception delimiters in `catch` blocks (unless strict PSR-12 mode is enabled)
+- after `?` in nullable types
+- between `++` and `--` and the variables they operate on
+- after unary operators
+- before `:` in short ternary expressions, e.g. `$a ?: $b`
+
+A space is added:
+
+- before reference-related ampersands
+- before DNF types that start with an open parenthesis
+- before `?` in nullable types
+- before and after `:` in standard ternary expressions
+- after `:` in other contexts
+
 ### `ControlStructureSpacing`
 
 If the body of a control structure has no enclosing braces:
