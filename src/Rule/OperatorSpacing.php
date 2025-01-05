@@ -13,23 +13,15 @@ use Lkrms\PrettyPHP\TokenIndex;
 /**
  * Apply whitespace to operators
  *
- * - Suppress whitespace after ampersands related to passing, assigning and
- *   returning by reference
- * - Suppress whitespace around operators in union, intersection and DNF types
- * - Suppress whitespace around exception delimiters in `catch` blocks (unless
- *   in strict PSR-12 mode)
- * - Suppress whitespace after `?` in nullable types
- * - Suppress whitespace between `++` and `--` and the variables they operate on
- * - Suppress whitespace after unary operators
- * - Collapse ternary operators with nothing between `?` and `:`
- *
- * Otherwise, add a space after each operator, and before operators except
- * non-ternary `:`.
+ * @api
  */
 final class OperatorSpacing implements TokenRule
 {
     use TokenRuleTrait;
 
+    /**
+     * @inheritDoc
+     */
     public static function getPriority(string $method): ?int
     {
         return [
@@ -37,33 +29,73 @@ final class OperatorSpacing implements TokenRule
         ][$method] ?? null;
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function getTokens(TokenIndex $idx): array
     {
         return $idx->Operator;
     }
 
+    /**
+     * @inheritDoc
+     */
+    public static function needsSortedTokens(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Apply the rule to the given tokens
+     *
+     * Operators in `declare` expressions are ignored, otherwise spaces are
+     * added before and after operators not mentioned below.
+     *
+     * Whitespace is suppressed:
+     *
+     * - after reference-related ampersands
+     * - before and after operators in union, intersection and DNF types
+     * - before and after exception delimiters in `catch` blocks (unless strict
+     *   PSR-12 mode is enabled)
+     * - after `?` in nullable types
+     * - between `++` and `--` and the variables they operate on
+     * - after unary operators
+     * - before `:` in short ternary expressions, e.g. `$a ?: $b`
+     *
+     * A space is added:
+     *
+     * - before reference-related ampersands
+     * - before DNF types that start with an open parenthesis
+     * - before `?` in nullable types
+     * - before and after `:` in standard ternary expressions
+     * - after `:` in other contexts
+     */
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
+            $parent = $token->Parent;
+
             if (
-                $token->Parent
-                && $token->Parent->PrevCode
-                && $token->Parent->PrevCode->id === \T_DECLARE
+                $parent
+                && $parent->PrevCode
+                && $parent->PrevCode->id === \T_DECLARE
             ) {
                 continue;
             }
 
-            // Suppress whitespace after ampersands related to passing,
-            // assigning and returning by reference
+            /** @var Token */
+            $next = $token->Next;
+            $prev = $token->Prev;
+            $prevCode = $token->PrevCode;
+
             if (
                 $this->Idx->Ampersand[$token->id]
-                && ($next = $token->Next)
                 && $next->Flags & TokenFlag::CODE
                 && (
                     // `function &getValue()`
-                    ($token->PrevCode && $this->Idx->FunctionOrFn[$token->PrevCode->id])
+                    ($prevCode && $this->Idx->FunctionOrFn[$prevCode->id])
                     // `public $Foo { &get; }`
-                    || $token->inPropertyHook()
+                    || ($parent && $token->inPropertyHook())
                     // `[&$variable]`, `$a = &getValue()`
                     || $token->inUnaryContext()
                     // `function foo(&$bar)`, `function foo($bar, &...$baz)`
@@ -76,128 +108,98 @@ final class OperatorSpacing implements TokenRule
                 )
             ) {
                 $token->Whitespace |= Space::SPACE_BEFORE | Space::NONE_AFTER;
-                continue;
-            }
-
-            // Suppress whitespace around operators in union, intersection and
-            // DNF types
-            if (
+            } elseif (
                 $this->Idx->TypeDelimiter[$token->id] && (
                     ($inTypeContext = $this->inTypeContext($token)) || (
                         $token->id === \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG
-                        && $token->Parent
-                        && $token->Parent->id === \T_OPEN_PARENTHESIS
-                        && ((
-                            $token->Parent->PrevCode
-                            && $token->Parent->PrevCode->id === \T_OR
-                        ) || (
-                            $token->Parent->CloseBracket
-                            && $token->Parent->CloseBracket->NextCode
-                            && $token->Parent->CloseBracket->NextCode->id === \T_OR
-                        ))
-                        && $this->inTypeContext($token->Parent)
+                        && $parent
+                        && $parent->id === \T_OPEN_PARENTHESIS
+                        && (
+                            (
+                                $parent->PrevCode
+                                && $parent->PrevCode->id === \T_OR
+                            ) || (
+                                $parent->CloseBracket
+                                && $parent->CloseBracket->NextCode
+                                && $parent->CloseBracket->NextCode->id === \T_OR
+                            )
+                        )
+                        && $this->inTypeContext($parent)
                     )
                 )
             ) {
                 $token->Whitespace |= Space::NONE_BEFORE | Space::NONE_AFTER;
-
-                if ($inTypeContext) {
-                    continue;
+                if (!$inTypeContext) {
+                    /** @var Token $parent */
+                    if (
+                        $parent->PrevCode
+                        && $parent->PrevCode->id !== \T_OR
+                    ) {
+                        $parent->Whitespace |= Space::SPACE_BEFORE;
+                    }
                 }
-
-                // Add a leading space to DNF types with opening parentheses
-                // (e.g. `(A&B)|null`)
-                /** @var Token */
-                $parent = $token->Parent;
-                if (!$parent->PrevCode || $parent->PrevCode->id !== \T_OR) {
-                    $parent->Whitespace |= Space::SPACE_BEFORE;
-                }
-                continue;
-            }
-
-            // Suppress whitespace around exception delimiters in `catch` blocks
-            // (unless in strict PSR-12 mode)
-            if (
+            } elseif (
                 $token->id === \T_OR
-                && $token->Parent
-                && $token->Parent->PrevCode
-                && $token->Parent->PrevCode->id === \T_CATCH
+                && $parent
+                && $parent->PrevCode
+                && $parent->PrevCode->id === \T_CATCH
                 && !$this->Formatter->Psr12
             ) {
                 $token->Whitespace |= Space::NONE_BEFORE | Space::NONE_AFTER;
-                continue;
-            }
-
-            // Suppress whitespace after `?` in nullable types
-            if (
+            } elseif (
                 $token->id === \T_QUESTION
                 && !($token->Flags & TokenFlag::TERNARY_OPERATOR)
             ) {
                 $token->Whitespace |= Space::SPACE_BEFORE | Space::NONE_AFTER;
-                continue;
-            }
-
-            // Suppress whitespace between `++` and `--` and the variables they
-            // operate on
-            if ($token->id === \T_INC || $token->id === \T_DEC) {
-                if ($token->Prev && $this->Idx->EndOfVariable[$token->Prev->id]) {
-                    $token->Whitespace |= Space::NONE_BEFORE;
-                } else {
-                    $token->Whitespace |= Space::NONE_AFTER;
-                }
-            }
-
-            // Suppress whitespace after unary operators
-            if (
+            } elseif (
+                $token->id === \T_INC
+                || $token->id === \T_DEC
+            ) {
+                $token->Whitespace |= $prev
+                    && $this->Idx->EndOfVariable[$prev->id]
+                    && !($prev->Flags & TokenFlag::STRUCTURAL_BRACE)
+                        ? Space::NONE_BEFORE
+                        : Space::NONE_AFTER;
+            } elseif (
                 $token->isUnaryOperator()
-                && $token->Next
-                && $token->Next->Flags & TokenFlag::CODE
-                && (!$this->Idx->Operator[$token->Next->id]
-                    || $token->Next->isUnaryOperator())
+                && $next->Flags & TokenFlag::CODE
+                && (
+                    !$this->Idx->Operator[$next->id]
+                    || $next->isUnaryOperator()
+                )
             ) {
                 $token->Whitespace |= Space::NONE_AFTER;
-
-                continue;
+            } elseif ($token->id === \T_COLON) {
+                $token->Whitespace |= (
+                    $token->Flags & TokenFlag::TERNARY_OPERATOR
+                        ? ($token->Data[TokenData::OTHER_TERNARY_OPERATOR] === $prev
+                            ? Space::NONE_BEFORE
+                            : Space::SPACE_BEFORE)
+                        : 0
+                ) | Space::SPACE_AFTER;
+            } else {
+                $token->Whitespace |= Space::SPACE_AFTER | Space::SPACE_BEFORE;
             }
-
-            $token->Whitespace |= Space::SPACE_AFTER;
-
-            if (
-                $token->id === \T_COLON
-                && !($token->Flags & TokenFlag::TERNARY_OPERATOR)
-            ) {
-                continue;
-            }
-
-            // Collapse ternary operators with nothing between `?` and `:`
-            if (
-                ($token->Flags & TokenFlag::TERNARY_OPERATOR)
-                && ($token->id === \T_QUESTION
-                    ? $token
-                    : $token->Data[TokenData::OTHER_TERNARY_OPERATOR]) === $token->Prev
-            ) {
-                $token->Whitespace |= Space::NONE_BEFORE;
-                continue;
-            }
-
-            $token->Whitespace |= Space::SPACE_BEFORE;
         }
     }
 
     /**
-     * Check if the token is part of a declaration (i.e. a property type or
-     * function return type), parameter type, or arrow function return type
+     * Check if a T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG or T_OR token, or a
+     * T_OPEN_PARENTHESIS token enclosing one of them, belongs to a native type
      */
     private function inTypeContext(Token $token): bool
     {
-        return ($token->inDeclaration()
-                && !$token->inPropertyHook())
-            || ($token->inParameterList()
-                && !$token->sinceStatement()->hasOneOf(\T_VARIABLE))
-            || (($prev = $token->skipPrevSiblingFrom($this->Idx->ValueType)) !== $token
-                && $prev->id === \T_COLON
-                && ($prev = $prev->PrevSibling)
-                && ($prev = $prev->PrevSibling)
-                && $prev->skipPrevSiblingFrom($this->Idx->Ampersand)->id === \T_FN);
+        return (
+            $token->inDeclaration()
+            && !$token->inPropertyHook()
+        ) || (
+            $token->inParameterList()
+            && !$token->sinceStatement()->hasOneOf(\T_VARIABLE)
+        ) || (
+            ($prev = $token->skipPrevSiblingFrom($this->Idx->ValueType))->id === \T_COLON
+            && ($prev = $prev->PrevSibling)
+            && ($prev = $prev->PrevSibling)
+            && $prev->skipPrevSiblingFrom($this->Idx->Ampersand)->id === \T_FN
+        );
     }
 }

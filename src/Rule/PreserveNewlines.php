@@ -12,7 +12,7 @@ use Lkrms\PrettyPHP\TokenIndex;
 use Lkrms\PrettyPHP\TokenUtil;
 
 /**
- * Preserve newlines adjacent to operators, delimiters and comments
+ * Preserve newlines in the input
  *
  * @api
  */
@@ -20,6 +20,12 @@ final class PreserveNewlines implements TokenRule
 {
     use TokenRuleTrait;
 
+    /** @var array<int,bool> */
+    private array $AllowNewlineIndex;
+
+    /**
+     * @inheritDoc
+     */
     public static function getPriority(string $method): ?int
     {
         return [
@@ -27,25 +33,60 @@ final class PreserveNewlines implements TokenRule
         ][$method] ?? null;
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function getTokens(TokenIndex $idx): array
     {
         return $idx->NotVirtual;
     }
 
-    public function processTokens(array $tokens): void
+    /**
+     * @inheritDoc
+     */
+    public static function needsSortedTokens(): bool
     {
-        $preserveIndex = TokenIndex::merge(
+        return true;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function boot(): void
+    {
+        $this->AllowNewlineIndex = TokenIndex::merge(
             $this->Idx->AllowNewlineBefore,
             $this->Idx->AllowNewlineAfter,
         );
+    }
 
+    /**
+     * Apply the rule to the given tokens
+     *
+     * If a newline in the input is adjacent to a token in `AllowNewlineBefore`
+     * or `AllowNewlineAfter`, it is applied to the token as a leading or
+     * trailing newline on a best-effort basis. This has the effect of placing
+     * operators before or after newlines as per the formatter's token index.
+     *
+     * Similarly, blank lines in the input are preserved between tokens in
+     * `AllowBlankBefore` and `AllowBlankAfter`, except:
+     *
+     * - after `:` if there is a subsequent token in the same scope
+     * - after `,` other than between `match` expression arms
+     * - after `;` in `for` expressions
+     * - after mid-statement comments and comments in non-statement scopes
+     */
+    public function processTokens(array $tokens): void
+    {
         foreach ($tokens as $token) {
             $prev = $token->prevReal();
             if (
                 !$prev
                 || $prev->line === $token->line
-                || (!$preserveIndex[$token->id]
-                    && !$preserveIndex[$prev->id])
+                || (
+                    !$this->AllowNewlineIndex[$token->id]
+                    && !$this->AllowNewlineIndex[$prev->id]
+                )
             ) {
                 continue;
             }
@@ -79,13 +120,13 @@ final class PreserveNewlines implements TokenRule
 
             $min = $prev->line;
             $max = $token->line;
-            // 1. Is a newline after $prev OK?
+            // - Is a newline after $prev OK?
+            // - If $prev moves to the next line, is a newline before it OK?
+            // - Is a newline before $token OK?
+            // - If $token moves to the previous line, is a newline after it OK?
             $this->maybePreserveNewlineAfter($prev, $token, $line, $min, $max)
-                // 2. If $prev moved to the next line, would a newline before it be OK?
                 || ($prev->Prev && $this->maybePreserveNewlineBefore($prev, $prev->Prev, $line, $min, $max, true))
-                // 3. Is a newline before $token OK?
                 || $this->maybePreserveNewlineBefore($token, $prev, $line, $min, $max)
-                // 4. If $token moved to the previous line, would a newline after it be OK?
                 || ($token->Next && $this->maybePreserveNewlineAfter($token, $token->Next, $line, $min, $max, true));
         }
     }
@@ -165,52 +206,70 @@ final class PreserveNewlines implements TokenRule
             return false;
         }
 
-        // Don't preserve newlines between `,` and `=>` in `match` expressions:
-        //
-        // ```
-        // match ($a) {
-        //     0,
-        //     => false,
-        // };
-        // ```
+        // Don't preserve newlines between `,` and `=>` in `match` expressions
         if (
             $token->id === \T_COMMA
             && $token->isDelimiterBetweenMatchExpressions()
-            && $token->NextCode->id === \T_DOUBLE_ARROW
         ) {
-            return false;
-        }
-
-        if (
-            $line & Space::BLANK
-            && (!$this->Idx->AllowBlankAfter[$token->id]
-                || ($token->id === \T_COLON
-                    && $token->NextSibling)
-                || ($token->id === \T_COMMA
-                    && !$token->isDelimiterBetweenMatchArms())
-                || ($token->id === \T_SEMICOLON
-                    && $token->Parent
-                    && $token->Parent->PrevCode
-                    && $token->Parent->PrevCode->id === \T_FOR)
-                || ($this->Idx->Comment[$token->id]
-                    && (($token->PrevCode
-                            && !$token->PrevCode->CloseBracket
-                            && $token->PrevCode->EndStatement !== $token->PrevCode)
-                        || ($token->Parent
-                            && !($token->Parent->id === \T_OPEN_BRACE
-                                && $token->Parent->Flags & TokenFlag::STRUCTURAL_BRACE)))))
-        ) {
-            if (!$this->Formatter->PreserveNewlines) {
+            /** @var Token */
+            $nextCode = $token->NextCode;
+            if ($nextCode->id === \T_DOUBLE_ARROW) {
                 return false;
             }
-            $line = Space::LINE;
         }
 
-        if (
-            !$this->Formatter->PreserveNewlines
-            && !$token->hasNewlineAfter()
-        ) {
+        if (!$this->Formatter->PreserveNewlines && !$token->hasNewlineAfter()) {
             return false;
+        }
+
+        $parent = $token->Parent;
+        if (
+            $line & Space::BLANK && (
+                !$this->Idx->AllowBlankAfter[$token->id]
+                || (
+                    $token->id === \T_COLON
+                    && $next->Parent === $parent
+                ) || (
+                    $token->id === \T_COMMA
+                    && !$token->isDelimiterBetweenMatchArms()
+                ) || (
+                    $token->id === \T_SEMICOLON
+                    && $parent
+                    && ($prev = $parent->PrevCode)
+                    && $prev->id === \T_FOR
+                ) || (
+                    $this->Idx->Comment[$token->id] && (
+                        (
+                            ($prevCode = $token->PrevCode)
+                            && $prevCode->Parent === $parent
+                            && $prevCode->EndStatement !== $prevCode
+                        ) || (
+                            $parent
+                            && !($parent->Flags & TokenFlag::STRUCTURAL_BRACE)
+                        )
+                    )
+                ) || (
+                    $this->Idx->Comment[$next->id] && (
+                        (
+                            ($prevCode = $next->PrevCode)
+                            && $prevCode->Parent === $next->Parent
+                            && $prevCode->EndStatement !== $prevCode
+                        ) || (
+                            $next->Parent
+                            && !($next->Parent->Flags & TokenFlag::STRUCTURAL_BRACE)
+                            && !(
+                                $next->Parent->id === \T_OPEN_BRACE
+                                && $next->Parent->isMatchOpenBrace()
+                                && ($prevCode = $next->PrevCode)
+                                && $prevCode->id === \T_COMMA
+                                && $prevCode->isDelimiterBetweenMatchArms()
+                            )
+                        )
+                    )
+                )
+            )
+        ) {
+            $line = Space::LINE;
         }
 
         $token->Whitespace |= $line << 3;

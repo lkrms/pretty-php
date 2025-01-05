@@ -97,6 +97,12 @@ for ((isset($i) ||
     $i++) {
     baz($i);
 }
+for ((isset($i) ||
+        $i = 0);
+    $i < 10;
+    $i++, $j++) {
+    baz($i);
+}
 for ($i = 0, $j = 0, (isset($k) ||
         $k = 0);
     $i < 10;
@@ -110,6 +116,7 @@ for ($i = 0, $j = 0,
     $i++, $j++) {
     baz($i);
 }
+++$i;
 foreach ($foo as $bar) {
     baz($bar);
 }

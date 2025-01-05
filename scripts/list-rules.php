@@ -192,7 +192,7 @@ foreach ($rules as $r) {
         : '`' . $r['method'] . '()`';
     $table1[] = [
         ($heading = '`' . Get::basename($r['rule']) . '`') . (
-            $r['appearance'] === null ? '' : ' (' . $r['appearance'] . ')'
+            $call = $r['appearance'] === null ? '' : ' (' . $r['appearance'] . ')'
         ),
         $r['is_mandatory'] ? 'Y' : '-',
         $r['is_default'] && !$r['is_mandatory'] ? 'Y' : '-',
@@ -241,26 +241,20 @@ foreach ($rules as $r) {
             null,
         );
     } else {
-        continue;
+        $description = null;
     }
-    if ($description === null) {
-        continue;
-    }
-    $docs[] = '### ' . $heading . (
+    $docs[] = '### ' . $heading . $call;
+    $docs[] = '<small>(' . (
         $r['is_mandatory']
-            ? ''
+            ? 'mandatory'
             : (
                 $r['is_default']
-                    ? ', unless disabled'
-                    : ', if enabled'
+                    ? 'default'
+                    : 'optional'
             )
-    ) . (
-        $r['appearance'] === null
-            ? ''
-            : ' (call ' . $r['appearance'] . ': ' . $method . ')'
-    );
+    ) . ', ' . $method . ', priority ' . $r['priority'] . ')</small>';
     // Remove leading ">" after non-empty lines
-    $description = Regex::replace('/(?<!\n)(\n\h*+)> ?/m', '$1', $description);
+    $description = Regex::replace('/(?<!\n)(\n\h*+)> ?/m', '$1', $description ?? 'Not documented.');
     $docs[] = Str::unwrap($description, "\n", false, true, true);
 }
 

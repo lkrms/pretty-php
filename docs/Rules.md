@@ -59,6 +59,8 @@ Formatting rules applied by `pretty-php` are as follows.
 
 ### `ProtectStrings`
 
+<small>(mandatory, `processTokens()`, priority 40)</small>
+
 Changes to whitespace in non-constant strings are suppressed for:
 
 - inner siblings
@@ -66,7 +68,9 @@ Changes to whitespace in non-constant strings are suppressed for:
 
 The latter is necessary because strings like `"$foo[0]"` and `"$foo[$bar]"` are unparseable if there is any whitespace between the brackets.
 
-### `NormaliseNumbers`, unless disabled
+### `NormaliseNumbers`
+
+<small>(default, `processTokens()`, priority 60)</small>
 
 Integer literals are normalised by replacing hexadecimal, octal and binary prefixes with `0x`, `0` and `0b` respectively, removing redundant zeroes, and converting hexadecimal digits to uppercase.
 
@@ -74,7 +78,9 @@ Float literals are normalised by removing redundant zeroes, adding `0` to empty 
 
 If present in the input, underscores are applied to decimal values with no exponent every 3 digits, to hexadecimal values with more than 5 digits every 4 digits, and to binary values every 4 digits.
 
-### `NormaliseStrings`, unless disabled
+### `NormaliseStrings`
+
+<small>(default, `processTokens()`, priority 60)</small>
 
 Strings other than nowdocs are normalised as follows:
 
@@ -83,6 +89,8 @@ Strings other than nowdocs are normalised as follows:
 - Aside from leading and continuation bytes in valid UTF-8 strings, control characters and non-ASCII characters are backslash-escaped using hexadecimal notation with lowercase digits. Invisible characters that don't belong to a recognised Unicode sequence are backslash-escaped using Unicode notation with uppercase digits.
 
 ### `NormaliseComments`
+
+<small>(mandatory, `processTokens()`, priority 70)</small>
 
 In one-line C-style comments, unnecessary asterisks are removed from both delimiters, and whitespace between delimiters and adjacent content is replaced with a space.
 
@@ -104,9 +112,13 @@ C-style comments where every line starts with an asterisk, or at least one delim
 
 ### `IndexSpacing`
 
+<small>(mandatory, `processTokens()`, priority 78)</small>
+
 Leading and trailing spaces are added to tokens in the `AddSpace`, `AddSpaceBefore` and `AddSpaceAfter` indexes, then suppressed, along with adjacent blank lines, for tokens in the `SuppressSpaceBefore` and `SuppressSpaceAfter` indexes, and inside brackets other than structural and `match` braces. Blank lines are also suppressed after alternative syntax colons and before their closing counterparts.
 
-### `StandardSpacing` (call 1: `processTokens()`)
+### `StandardSpacing` (1)
+
+<small>(mandatory, `processTokens()`, priority 80)</small>
 
 If the indentation level of an open tag aligns with a tab stop, and a close tag is found in the same scope (or the document has no close tag and the open tag is in the global scope), a callback is registered to align nested tokens with it. An additional level of indentation is applied if `IndentBetweenTags` is enabled.
 
@@ -122,13 +134,49 @@ Whitespace is also applied to tokens as follows:
 - **Attributes:** trailing blank line suppressed, leading and trailing space added for parameters, property hooks, anonymous functions and arrow functions, leading and trailing line added for others.
 - **Heredocs:** leading line suppressed in strict PSR-12 mode.
 
-### `StandardSpacing` (call 2: `processDeclarations()`)
+### `StandardSpacing` (2)
+
+<small>(mandatory, `processDeclarations()`, priority 80)</small>
 
 If a constructor has one or more promoted parameters, a line is added before every parameter.
 
 If a property has unimplemented hooks with no modifiers or attributes (e.g. `public $Foo { &get; set; }`), they are collapsed to one line, otherwise hooks with statements are formatted like anonymous functions, and hooks that use abbreviated syntax are formatted like arrow functions.
 
+### `StatementSpacing`
+
+<small>(mandatory, `processTokens()`, priority 80)</small>
+
+In `for` loop expressions, a space is added after semicolons where the next expression is not empty.
+
+Whitespace is suppressed before, and newlines are added after, semicolons in other contexts and colons in alternative syntax constructs, `switch` cases and labels.
+
+### `OperatorSpacing`
+
+<small>(mandatory, `processTokens()`, priority 80)</small>
+
+Operators in `declare` expressions are ignored, otherwise spaces are added before and after operators not mentioned below.
+
+Whitespace is suppressed:
+
+- after reference-related ampersands
+- before and after operators in union, intersection and DNF types
+- before and after exception delimiters in `catch` blocks (unless strict PSR-12 mode is enabled)
+- after `?` in nullable types
+- between `++` and `--` and the variables they operate on
+- after unary operators
+- before `:` in short ternary expressions, e.g. `$a ?: $b`
+
+A space is added:
+
+- before reference-related ampersands
+- before DNF types that start with an open parenthesis
+- before `?` in nullable types
+- before and after `:` in standard ternary expressions
+- after `:` in other contexts
+
 ### `ControlStructureSpacing`
+
+<small>(mandatory, `processTokens()`, priority 83)</small>
 
 If the body of a control structure has no enclosing braces:
 
@@ -137,7 +185,9 @@ If the body of a control structure has no enclosing braces:
 - blank lines before the body are suppressed
 - blank lines after the body are suppressed if the control structure continues
 
-### `PlaceComments` (call 1: `processTokens()`)
+### `PlaceComments` (1)
+
+<small>(mandatory, `processTokens()`, priority 90)</small>
 
 Critical newlines are added after one-line comments with subsequent close tags.
 
@@ -157,7 +207,9 @@ For multi-line DocBlocks, and C-style comments that receive the same treatment:
 - trailing blank lines are added to file-level comments
 - trailing blank lines are suppressed for DocBlocks with subsequent code
 
-### `PlaceBraces` (call 1: `processTokens()`)
+### `PlaceBraces` (1)
+
+<small>(mandatory, `processTokens()`, priority 92)</small>
 
 Whitespace is applied to structural and `match` expression braces as follows:
 
@@ -167,9 +219,24 @@ Whitespace is applied to structural and `match` expression braces as follows:
 - Empty class, function and property hook bodies are collapsed to ` {}` on the same line as the declaration they belong to unless `CollapseEmptyDeclarationBodies` is disabled.
 - Horizontal whitespace is suppressed between other empty braces.
 
-> Open brace placement is left for a rule that runs after vertical whitespace has been applied.
+> Open brace placement is handled by `VerticalSpacing`, which runs after newlines are applied by other rules.
 
-### `PreserveOneLineStatements`, if enabled
+### `PreserveNewlines`
+
+<small>(default, `processTokens()`, priority 93)</small>
+
+If a newline in the input is adjacent to a token in `AllowNewlineBefore` or `AllowNewlineAfter`, it is applied to the token as a leading or trailing newline on a best-effort basis. This has the effect of placing operators before or after newlines as per the formatter's token index.
+
+Similarly, blank lines in the input are preserved between tokens in `AllowBlankBefore` and `AllowBlankAfter`, except:
+
+- after `:` if there is a subsequent token in the same scope
+- after `,` other than between `match` expression arms
+- after `;` in `for` expressions
+- after mid-statement comments and comments in non-statement scopes
+
+### `PreserveOneLineStatements`
+
+<small>(optional, `processStatements()`, priority 95)</small>
 
 Newlines are suppressed between tokens in statements and control structures that start and end on the same line in the input.
 
@@ -177,45 +244,80 @@ If a `switch` case and its statement list are on the same line in the input, the
 
 Attributes on their own line are excluded from consideration.
 
-### `BlankBeforeReturn`, if enabled
+### `BlankBeforeReturn`
+
+<small>(optional, `processTokens()`, priority 97)</small>
 
 Blank lines are added before non-consecutive `return`, `yield` and `yield from` statements.
 
-### `ListSpacing` (call 1: `processDeclarations()`)
+### `VerticalSpacing`
+
+<small>(mandatory, `processTokens()`, priority 98)</small>
+
+In expressions where one or more boolean operators have an adjacent newline, newlines are added to other boolean operators of equal or lower precedence.
+
+In `for` loops:
+
+- If an expression with multiple expressions breaks over multiple lines, newlines are added after comma-delimited expressions, and blank lines are added after semicolon-delimited expressions
+- Otherwise, if an expression breaks over multiple lines, newlines are added after semicolon-delimited expressions
+- Otherwise, if the second or third expression has a leading newline, a newline is added before the other
+- Whitespace in empty expressions is suppressed
+
+Newlines are added before open braces that belong to top-level declarations and anonymous classes declared over multiple lines.
+
+Newlines are added before both operators in ternary expressions where one operator has a leading newline.
+
+In method chains where an object operator (`->` or `?->`) has a leading newline, newlines are added before every object operator. If the `AlignChains` rule is enabled and strict PSR-12 compliance is not, a newline is not added before the first object operator in the chain.
+
+### `ListSpacing` (1)
+
+<small>(mandatory, `processDeclarations()`, priority 98)</small>
 
 Newlines are added between comma-delimited constant declarations and property declarations. When neither `StrictLists` nor `AlignLists` are enabled, they are also added to `use` statements between comma-delimited imports and traits that break over multiple lines.
 
 If a list of property hooks has one or more attributes with a trailing newline, every attribute is placed on its own line, and blank lines are added before and after annotated hooks to improve readability.
 
-### `ListSpacing` (call 2: `processList()`)
+### `ListSpacing` (2)
+
+<small>(mandatory, `processList()`, priority 98)</small>
+
+If interface lists break over multiple lines and neither `StrictLists` nor `AlignLists` are enabled, a newline is added before the first interface.
 
 Arrays and argument lists with trailing ("magic") commas are split into one item per line.
 
 If parameter lists have one or more attributes with a trailing newline, every attribute is placed on its own line, and blank lines are added before and after annotated parameters to improve readability.
 
-If interface lists break over multiple lines and neither `StrictLists` nor `AlignLists` are enabled, a newline is added before the first interface.
+### `StrictExpressions`
 
-### `StrictExpressions`, if enabled
+<small>(optional, `processTokens()`, priority 98)</small>
 
 Newlines are added before and after control structure expressions that break over multiple lines.
 
-### `SemiStrictExpressions`, if enabled
+### `SemiStrictExpressions`
+
+<small>(optional, `processTokens()`, priority 98)</small>
 
 Newlines are added before and after control structure expressions with newlines between siblings.
 
 > Unlike `StrictExpressions`, this rule does not apply leading and trailing newlines to expressions that would not break over multiple lines if tokens between brackets were removed.
 
-### `Drupal`, if enabled (call 1: `processTokens()`)
+### `Drupal` (1)
+
+<small>(optional, `processTokens()`, priority 100)</small>
 
 Blank lines are added after DocBlocks with a `@file` tag.
 
 Newlines are added after close braces with a subsequent `elseif`, `else`, `catch` or `finally`.
 
-### `Drupal`, if enabled (call 2: `processDeclarations()`)
+### `Drupal` (2)
+
+<small>(optional, `processDeclarations()`, priority 100)</small>
 
 Blank lines are added inside non-empty `class`, `enum`, `interface` and `trait` braces.
 
-### `Laravel`, if enabled
+### `Laravel`
+
+<small>(optional, `processTokens()`, priority 100)</small>
 
 Trailing spaces are added to:
 
@@ -224,17 +326,23 @@ Trailing spaces are added to:
 
 Leading and trailing spaces are suppressed for `.` operators.
 
-### `Symfony`, if enabled (call 1: `processTokens()`)
+### `Symfony` (1)
+
+<small>(optional, `processTokens()`, priority 100)</small>
 
 Trailing spaces are added to `fn` in arrow functions.
 
 Leading and trailing spaces are suppressed for `.` operators.
 
-### `Symfony`, if enabled (call 2: `processList()`)
+### `Symfony` (2)
+
+<small>(optional, `processList()`, priority 100)</small>
 
 Newlines are suppressed between parameters in function declarations that have no promoted constructor parameters.
 
-### `WordPress`, if enabled
+### `WordPress`
+
+<small>(optional, `processTokens()`, priority 100)</small>
 
 Suppression of blank lines after DocBlocks is disabled for the first DocBlock in each document.
 
@@ -251,7 +359,9 @@ Spaces are added inside non-empty:
 - parentheses
 - square brackets (except in strings or when they enclose one inner token that is not a variable)
 
-### `AlignChains`, if enabled (call 1: `processTokens()`)
+### `AlignChains` (1)
+
+<small>(optional, `processTokens()`, priority 340)</small>
 
 If there are no object operators with a leading newline in a chain of method calls, or if the first object operator in the chain has a leading newline and `AlignChainAfterNewline` is disabled, no action is taken.
 
@@ -261,27 +371,39 @@ Otherwise, if the first object operator in the chain has a leading newline, it i
 - the expression dereferenced by the first object operator (if it doesn't break over multiple lines), or
 - the first token on the line before the first object operator
 
-### `StrictLists`, if enabled
+### `StrictLists`
+
+<small>(optional, `processList()`, priority 370)</small>
 
 Items in lists are arranged horizontally or vertically by replicating the arrangement of the first and second items.
 
-### `AlignArrowFunctions`, if enabled (call 1: `processTokens()`)
+### `AlignArrowFunctions` (1)
+
+<small>(optional, `processTokens()`, priority 380)</small>
 
 If an arrow function expression starts on a new line, a callback is registered to align it with the `fn` it's associated with, or with the first token on the previous line if its arguments break over multiple lines.
 
-### `AlignTernaryOperators`, if enabled (call 1: `processTokens()`)
+### `AlignTernaryOperators` (1)
+
+<small>(optional, `processTokens()`, priority 380)</small>
 
 If a ternary or null coalescing operator has a leading newline, a callback is registered to align it with its expression, or with the first token on the previous line if its expression breaks over multiple lines.
 
-### `AlignLists`, if enabled (call 1: `processList()`)
+### `AlignLists` (1)
+
+<small>(optional, `processList()`, priority 400)</small>
 
 A callback is registered to align arguments, array elements and other list items, along with their inner and adjacent tokens, with the column after their open brackets, or with the first item in the list if they have no enclosing brackets.
 
 ### `StandardIndentation`
 
+<small>(mandatory, `processTokens()`, priority 600)</small>
+
 The `Indent` and inner whitespace of each open bracket is copied to its close bracket, and the `Indent` of tokens between brackets with inner newlines is incremented.
 
 ### `SwitchIndentation`
+
+<small>(mandatory, `processTokens()`, priority 600)</small>
 
 In switch case lists:
 
@@ -290,7 +412,9 @@ In switch case lists:
 - Newlines are added before `case` and `default` and after their respective delimiters
 - Blank lines are suppressed after `case` and `default` delimiters
 
-### `DeclarationSpacing`, unless disabled
+### `DeclarationSpacing`
+
+<small>(default, `processDeclarations()`, priority 620)</small>
 
 One-line declarations with a collapsed or collapsible DocBlock, or no DocBlock at all, are considered "collapsible". Declarations that break over multiple lines or have a DocBlock that cannot be collapsed to one line are considered "non-collapsible".
 
@@ -305,11 +429,21 @@ Otherwise, "loose" spacing is applied by adding blank lines between declarations
 
 Blank lines are also added before and after each group of declarations, and they are suppressed between `use` statements, one-line `declare` statements, and property hooks not declared over multiple lines.
 
-### `HangingIndentation` (call 1: `processTokens()`)
+### `HangingIndentation` (1)
+
+<small>(mandatory, `processTokens()`, priority 800)</small>
 
 Scopes and expressions that would otherwise be difficult to differentiate from adjacent code are indented for visual separation, and a callback is registered to collapse any unnecessary "overhanging" indentation levels.
 
-### `AlignData`, if enabled (call 1: `processBlock()`)
+### `HeredocIndentation` (1)
+
+<small>(mandatory, `processTokens()`, priority 900)</small>
+
+If `HeredocIndent` has a value other than `NONE`, heredocs are saved for later processing.
+
+### `AlignData` (1)
+
+<small>(optional, `processBlock()`, priority 340)</small>
 
 When they appear in the same scope, a callback is registered to align consecutive:
 
@@ -319,13 +453,17 @@ When they appear in the same scope, a callback is registered to align consecutiv
 
 If the open bracket of an array is not followed by a newline and neither `AlignLists` nor `StrictLists` are enabled, its `=>` delimiters are ignored.
 
-### `AlignComments`, if enabled (call 1: `processBlock()`)
+### `AlignComments` (1)
+
+<small>(optional, `processBlock()`, priority 340)</small>
 
 Comments beside code, along with any continuations on subsequent lines, are saved for alignment.
 
 C++- and shell-style comments on their own line after a comment beside code are treated as continuations of the initial comment if they are of the same type and were indented by at least one column relative to code in the same context.
 
-### `AlignChains`, if enabled (call 2: _`callback`_)
+### `AlignChains` (2)
+
+<small>(optional, _`callback`_, priority 710)</small>
 
 Object operators in a chain of method calls are aligned with a given token.
 
@@ -335,7 +473,9 @@ This is achieved by:
 - applying it to the `LinePadding` of each object operator and its adjacent tokens
 - incrementing `LineUnpadding` for any `?->` operators, to accommodate the extra character
 
-### `AlignArrowFunctions`, if enabled (call 2: _`callback`_)
+### `AlignArrowFunctions` (2)
+
+<small>(optional, _`callback`_, priority 710)</small>
 
 Tokens in arrow function expressions are aligned with the `fn` they're associated with, or with the first token on the previous line if its arguments break over multiple lines.
 
@@ -344,7 +484,9 @@ This is achieved by:
 - calculating the difference between the current and desired output columns of the first token in the expression
 - applying it to the `LinePadding` of each token
 
-### `AlignTernaryOperators`, if enabled (call 2: _`callback`_)
+### `AlignTernaryOperators` (2)
+
+<small>(optional, _`callback`_, priority 710)</small>
 
 Ternary and null coalescing operators with leading newlines are aligned with their expressions, or with the first token on the previous line if their expressions break over multiple lines.
 
@@ -353,33 +495,61 @@ This is achieved by:
 - calculating the difference between the current and desired output columns of the operator
 - applying it to the `LinePadding` of the operator and its adjacent tokens
 
-### `AlignData`, if enabled (call 2: _`callback`_)
+### `AlignLists` (2)
+
+<small>(optional, _`callback`_, priority 710)</small>
+
+Not documented.
+
+### `AlignData` (2)
+
+<small>(optional, _`callback`_, priority 710)</small>
 
 Assignment operators are aligned unless `MaxAssignmentPadding` is not `null` and would be exceeded.
 
 In arrays and `match` expressions, `=>` delimiters are aligned unless `MaxDoubleArrowColumn` is not `null`, in which case any found in subsequent columns are excluded from consideration.
 
-### `HangingIndentation` (call 2: _`callback`_)
+### `HangingIndentation` (2)
+
+<small>(mandatory, _`callback`_, priority 800)</small>
 
 "Overhanging" indentation applied earlier is collapsed to the minimum level required to ensure distinct scopes and expressions do not appear to run together.
 
-### `StandardSpacing` (call 3: _`callback`_)
+### `StandardSpacing` (3)
+
+<small>(mandatory, _`callback`_, priority 820)</small>
 
 The `TagIndent` of tokens between indented tags is adjusted by the difference, if any, between the open tag's indent and the indentation level of the first token after the open tag.
 
-### `PlaceBraces` (call 2: `beforeRender()`)
+### `PlaceBraces` (2)
+
+<small>(mandatory, `beforeRender()`, priority 400)</small>
 
 In function declarations where `)` and `{` appear at the start of consecutive lines, they are collapsed to the same line.
 
-### `PlaceComments` (call 2: `beforeRender()`)
+### `HeredocIndentation` (2)
+
+<small>(mandatory, `beforeRender()`, priority 900)</small>
+
+The indentation of the first inner token of each heredoc saved earlier is applied to the heredoc by adding whitespace after newline characters in each of its tokens.
+
+Whitespace added to each heredoc is also applied to the `HeredocIndent` property of its `T_START_HEREDOC` token, which allows inherited indentation to be removed when processing nested heredocs.
+
+### `PlaceComments` (2)
+
+<small>(mandatory, `beforeRender()`, priority 997)</small>
 
 Placement of comments saved earlier is finalised.
 
-### `AlignComments`, if enabled (call 2: `beforeRender()`)
+### `AlignComments` (2)
+
+<small>(optional, `beforeRender()`, priority 998)</small>
 
 Comments saved for alignment are aligned with the rightmost comment in the block.
 
 ### `EssentialSpacing`
+
+<small>(mandatory, `beforeRender()`, priority 999)</small>
 
 Newlines and spaces are added after tokens that would otherwise fail to parse. This is to ensure that if an edge case not covered by other rules arises, formatter output can still be parsed.
 

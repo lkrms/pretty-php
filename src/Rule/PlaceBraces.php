@@ -74,8 +74,8 @@ final class PlaceBraces implements TokenRule
      *   `CollapseEmptyDeclarationBodies` is disabled.
      * - Horizontal whitespace is suppressed between other empty braces.
      *
-     * > Open brace placement is left for a rule that runs after vertical
-     * > whitespace has been applied.
+     * > Open brace placement is handled by `VerticalSpacing`, which runs after
+     * > newlines are applied by other rules.
      */
     public function processTokens(array $tokens): void
     {

@@ -1539,16 +1539,6 @@ class TokenIndex implements HasTokenIndex, Immutable
     }
 
     /**
-     * Get an index of the given tokens
-     *
-     * @return array<int,bool>
-     */
-    final public static function get(int ...$id): array
-    {
-        return array_fill_keys($id, true) + self::TOKEN_INDEX;
-    }
-
-    /**
      * Get an index of every token in the given indexes
      *
      * @param array<int,bool> ...$indexes

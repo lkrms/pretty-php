@@ -17,7 +17,7 @@ use Salient\Utility\Regex;
 use Salient\Utility\Str;
 
 /**
- * Apply sensible default spacing
+ * Apply standard spacing
  *
  * @api
  */
