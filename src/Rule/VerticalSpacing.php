@@ -13,22 +13,7 @@ use Lkrms\PrettyPHP\TokenUtil;
 use Closure;
 
 /**
- * Apply sensible vertical spacing
- *
- * - Propagate newlines adjacent to boolean operators to others of equal or
- *   lower precedence in the same statement
- * - If an expression in a `for` loop breaks over multiple lines, add a newline
- *   after each comma-delimited expression and a blank line between each
- *   semicolon-delimited expression
- * - If the second or third expression in a `for` loop is at the start of a
- *   line, add a newline before the other
- * - Suppress whitespace in empty `for` loop expressions
- * - Add a newline before an open brace that is part of a top-level declaration
- *   or an anonymous class declared over multiple lines
- * - If one ternary operator is at the start of a line, add a newline before the
- *   other
- * - If an object operator (`->` or `?->`) is at the start of a line, add a
- *   newline before other object operators in the same chain
+ * Apply standard vertical spacing
  *
  * @api
  */
@@ -44,6 +29,9 @@ final class VerticalSpacing implements TokenRule
     /** @var array<int,true> */
     private array $Seen;
 
+    /**
+     * @inheritDoc
+     */
     public static function getPriority(string $method): ?int
     {
         return [
@@ -51,14 +39,17 @@ final class VerticalSpacing implements TokenRule
         ][$method] ?? null;
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function getTokens(TokenIndex $idx): array
     {
         return TokenIndex::merge(
-            TokenIndex::get(
-                \T_FOR,
-                \T_OPEN_BRACE,
-                \T_QUESTION,
-            ),
+            [
+                \T_FOR => true,
+                \T_OPEN_BRACE => true,
+                \T_QUESTION => true,
+            ],
             $idx->Chain,
             $idx->OperatorBooleanExceptNot,
         );
@@ -67,9 +58,18 @@ final class VerticalSpacing implements TokenRule
     /**
      * @inheritDoc
      */
+    public static function needsSortedTokens(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function boot(): void
     {
-        $this->AlignChainsEnabled = $this->Formatter->Enabled[AlignChains::class] ?? false;
+        $this->AlignChainsEnabled = $this->Formatter->Enabled[AlignChains::class]
+            ?? false;
 
         $hasNewlineBefore = fn(Token $t): bool => $t->hasNewlineAfterPrevCode();
         $hasNewlineAfter = fn(Token $t): bool => $t->hasNewlineBeforeNextCode();
@@ -137,6 +137,35 @@ final class VerticalSpacing implements TokenRule
         $this->Seen = [];
     }
 
+    /**
+     * Apply the rule to the given tokens
+     *
+     * In expressions where one or more boolean operators have an adjacent
+     * newline, newlines are added to other boolean operators of equal or lower
+     * precedence.
+     *
+     * In `for` loops:
+     *
+     * - If an expression with multiple expressions breaks over multiple lines,
+     *   newlines are added after comma-delimited expressions, and blank lines
+     *   are added after semicolon-delimited expressions
+     * - Otherwise, if an expression breaks over multiple lines, newlines are
+     *   added after semicolon-delimited expressions
+     * - Otherwise, if the second or third expression has a leading newline, a
+     *   newline is added before the other
+     * - Whitespace in empty expressions is suppressed
+     *
+     * Newlines are added before open braces that belong to top-level
+     * declarations and anonymous classes declared over multiple lines.
+     *
+     * Newlines are added before both operators in ternary expressions where one
+     * operator has a leading newline.
+     *
+     * In method chains where an object operator (`->` or `?->`) has a leading
+     * newline, newlines are added before every object operator. If the
+     * `AlignChains` rule is enabled and strict PSR-12 compliance is not, a
+     * newline is not added before the first object operator in the chain.
+     */
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
@@ -159,17 +188,21 @@ final class VerticalSpacing implements TokenRule
 
                 // Get the statement's boolean operators and find the
                 // highest-precedence operator with an adjacent newline
+                $precedence = TokenUtil::getOperatorPrecedence($token);
                 /** @var array<int,Token[]> */
-                $byPrecedence = [];
-                $maxPrecedence = TokenUtil::getOperatorPrecedence($token);
+                $byPrecedence = [$precedence => [$token]];
+                $maxPrecedence = $precedence;
 
                 foreach ($statement->withNextSiblings($token->EndStatement) as $t) {
-                    if (!$this->Idx->OperatorBooleanExceptNot[$t->id]) {
+                    if (
+                        $t === $token
+                        || !$this->Idx->OperatorBooleanExceptNot[$t->id]
+                    ) {
                         continue;
                     }
                     $precedence = TokenUtil::getOperatorPrecedence($t);
                     $byPrecedence[$precedence][] = $t;
-                    if ($t === $token || !($this->HasNewline[$t->id])($t)) {
+                    if (!($this->HasNewline[$t->id])($t)) {
                         continue;
                     }
                     // Lower numbers = higher precedence
@@ -183,63 +216,60 @@ final class VerticalSpacing implements TokenRule
                         }
                     }
                 }
+            } elseif ($token->id === \T_FOR) {
+                /** @var Token */
+                $open = $token->NextCode;
+                /** @var Token */
+                $close = $open->CloseBracket;
+                /** @var Token */
+                $first = $open->Next;
+                /** @var Token */
+                $last = $close->Prev;
 
-                continue;
-            }
-
-            if ($token->id === \T_FOR) {
-                assert(
-                    $token->NextCode
-                    && $token->NextCode->Next
-                    && $token->NextCode->CloseBracket
-                    && $token->NextCode->CloseBracket->Prev
-                );
-
-                $children = $token->NextCode->children();
+                $children = $open->children();
                 $commas = $children->getAnyOf(\T_COMMA);
                 $semicolons = $children->getAnyOf(\T_SEMICOLON);
+                /** @var Token */
                 $semi1 = $semicolons->first();
+                /** @var Token */
+                $second = $semi1->Next;
+                /** @var Token */
                 $semi2 = $semicolons->last();
+                /** @var Token */
+                $third = $semi2->Next;
 
-                assert($semi1 && $semi1->Next && $semi2 && $semi2->Next);
+                $expr1 = $first->collect($semi1);
+                $expr2 = $second->collect($semi2);
+                $expr3 = $third->collect($last);
 
-                $expr1 = $token->NextCode->Next->withNextSiblings($semi1);
-                $expr2 = $semi1->Next->withNextSiblings($semi2);
-                $expr3 = $semi2->Next->withNextSiblings($token->NextCode->CloseBracket->Prev);
-
-                // If an expression in a `for` loop breaks over multiple lines,
-                // add a newline after each comma-delimited expression and a
-                // blank line between each semicolon-delimited expression
-                if (
-                    $expr1->hasNewlineBetweenTokens()
-                    || $expr2->hasNewlineBetweenTokens()
-                    || $expr3->hasNewlineBetweenTokens()
-                ) {
+                $hasNewline = false;
+                $hasNewlineAndComma = false;
+                foreach ([$expr1, $expr2, $expr3] as $expr) {
+                    if ($expr->hasNewlineBetweenTokens()) {
+                        $hasNewline = true;
+                        if ($expr->hasOneOf(\T_COMMA)) {
+                            $hasNewlineAndComma = true;
+                            break;
+                        }
+                    }
+                }
+                if ($hasNewlineAndComma) {
                     $commas->applyWhitespace(Space::LINE_AFTER);
                     $semicolons->applyWhitespace(Space::BLANK_AFTER);
-                } elseif ($semicolons->tokenHasNewlineAfter()) {
-                    // If the second or third expression in a `for` loop is at
-                    // the start of a line, add a newline before the other
+                } elseif ($hasNewline || $semicolons->tokenHasNewlineAfter()) {
                     $semicolons->applyWhitespace(Space::LINE_AFTER);
                 }
 
                 // Suppress whitespace in empty `for` loop expressions
-                foreach ([[$expr1, 1], [$expr2, 1], [$expr3, 0]] as [$expr, $emptyCount]) {
-                    if ($expr->count() === $emptyCount) {
-                        if ($emptyCount) {
-                            $expr->applyWhitespace(Space::NONE_BEFORE);
-                        } else {
-                            $semi2->Whitespace |= Space::NONE_AFTER;
-                        }
+                foreach ([$expr1, $expr2, $expr3] as $i => $expr) {
+                    $count = $expr->count();
+                    if ($i < 2 && $count === 1) {
+                        $expr->applyWhitespace(Space::NONE_BEFORE);
+                    } elseif ($i === 2 && $count === 0) {
+                        $semi2->Whitespace |= Space::NONE_AFTER;
                     }
                 }
-
-                continue;
-            }
-
-            // Add a newline before an open brace that is part of a top-level
-            // declaration or an anonymous class declared over multiple lines
-            if ($token->id === \T_OPEN_BRACE) {
+            } elseif ($token->id === \T_OPEN_BRACE) {
                 if (
                     $this->Formatter->OneTrueBraceStyle
                     || !($token->Flags & TokenFlag::STRUCTURAL_BRACE)
@@ -252,38 +282,34 @@ final class VerticalSpacing implements TokenRule
                     continue;
                 }
 
+                // Ignore:
+                // - non-declarations
+                // - `declare` blocks
+                // - grouped imports and trait adaptations
+                // - property hooks
+                // - anonymous functions
+                // - anonymous classes declared on one line
                 $parts = $token->skipToStartOfDeclaration()->declarationParts();
                 if (
-                    // Exclude non-declarations
                     !$parts->hasOneFrom($this->Idx->Declaration)
-                    // Exclude `declare` blocks
-                    || ($last = $parts->last())->id === \T_DECLARE
-                    // Exclude grouped imports and trait adaptations
-                    || ($start = $parts->first())->id === \T_USE
-                    // Exclude property hooks
+                    || ($first = $parts->first())->id === \T_DECLARE
+                    || $first->id === \T_USE
                     || $token->inPropertyOrPropertyHook()
-                    // Exclude anonymous functions
-                    || $last->skipPrevSiblingFrom($this->Idx->Ampersand)->id === \T_FUNCTION
-                    // Exclude anonymous classes declared on one line
-                    || ($start->id === \T_NEW && !$parts->hasNewlineBetweenTokens())
+                    || $parts->last()
+                             ->skipPrevSiblingFrom($this->Idx->Ampersand)
+                             ->id === \T_FUNCTION
+                    || ($first->id === \T_NEW && !$parts->hasNewlineBetweenTokens())
                 ) {
                     continue;
                 }
 
                 $token->Whitespace |= Space::LINE_BEFORE;
-
-                continue;
-            }
-
-            // If one ternary operator is at the start of a line, add a newline
-            // before the other
-            if ($token->id === \T_QUESTION) {
+            } elseif ($token->id === \T_QUESTION) {
                 if (!($token->Flags & TokenFlag::TERNARY_OPERATOR)) {
                     continue;
                 }
 
                 $other = $token->Data[TokenData::OTHER_TERNARY_OPERATOR];
-
                 if ($other === $token->Next) {
                     continue;
                 }
@@ -295,37 +321,30 @@ final class VerticalSpacing implements TokenRule
                 } elseif (!$op1Newline && $op2Newline) {
                     $token->Whitespace |= Space::LINE_BEFORE;
                 }
+            } else {
+                if ($token !== $token->Data[TokenData::CHAIN_OPENED_BY]) {
+                    continue;
+                }
 
-                continue;
+                $chain = $token->withNextSiblingsFrom($this->Idx->ChainPart)
+                               ->getAnyFrom($this->Idx->Chain);
+
+                if (
+                    $chain->count() < 2
+                    || !$chain->tokenHasNewlineBefore()
+                ) {
+                    continue;
+                }
+
+                if (
+                    $this->AlignChainsEnabled
+                    && !$this->Formatter->Psr12
+                ) {
+                    $chain = $chain->shift();
+                }
+
+                $chain->applyWhitespace(Space::LINE_BEFORE);
             }
-
-            // if ($this->Idx->Chain[$token->id]) {
-
-            // If an object operator (`->` or `?->`) is at the start of a line,
-            // add a newline before other object operators in the same chain
-            if ($token !== $token->Data[TokenData::CHAIN_OPENED_BY]) {
-                continue;
-            }
-
-            $chain = $token->withNextSiblingsFrom($this->Idx->ChainPart)
-                           ->getAnyFrom($this->Idx->Chain);
-
-            if (
-                $chain->count() < 2
-                || !$chain->find(fn(Token $t) => $t->hasNewlineBefore())
-            ) {
-                continue;
-            }
-
-            // Leave the first object operator alone if chain alignment is
-            // enabled and strict PSR-12 compliance isn't
-            if ($this->AlignChainsEnabled && !$this->Formatter->Psr12) {
-                $chain = $chain->shift();
-            }
-
-            $chain->applyWhitespace(Space::LINE_BEFORE);
-
-            // }
         }
     }
 }

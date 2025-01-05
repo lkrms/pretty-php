@@ -189,7 +189,7 @@ Whitespace is applied to structural and `match` expression braces as follows:
 - Empty class, function and property hook bodies are collapsed to ` {}` on the same line as the declaration they belong to unless `CollapseEmptyDeclarationBodies` is disabled.
 - Horizontal whitespace is suppressed between other empty braces.
 
-> Open brace placement is left for a rule that runs after vertical whitespace has been applied.
+> Open brace placement is handled by `VerticalSpacing`, which runs after newlines are applied by other rules.
 
 ### `PreserveNewlines`, unless disabled
 
@@ -213,6 +213,23 @@ Attributes on their own line are excluded from consideration.
 ### `BlankBeforeReturn`, if enabled
 
 Blank lines are added before non-consecutive `return`, `yield` and `yield from` statements.
+
+### `VerticalSpacing`
+
+In expressions where one or more boolean operators have an adjacent newline, newlines are added to other boolean operators of equal or lower precedence.
+
+In `for` loops:
+
+- If an expression with multiple expressions breaks over multiple lines, newlines are added after comma-delimited expressions, and blank lines are added after semicolon-delimited expressions
+- Otherwise, if an expression breaks over multiple lines, newlines are added after semicolon-delimited expressions
+- Otherwise, if the second or third expression has a leading newline, a newline is added before the other
+- Whitespace in empty expressions is suppressed
+
+Newlines are added before open braces that belong to top-level declarations and anonymous classes declared over multiple lines.
+
+Newlines are added before both operators in ternary expressions where one operator has a leading newline.
+
+In method chains where an object operator (`->` or `?->`) has a leading newline, newlines are added before every object operator. If the `AlignChains` rule is enabled and strict PSR-12 compliance is not, a newline is not added before the first object operator in the chain.
 
 ### `ListSpacing` (call 1: `processDeclarations()`)
 
