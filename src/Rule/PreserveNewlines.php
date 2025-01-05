@@ -235,8 +235,8 @@ final class PreserveNewlines implements TokenRule
                 ) || (
                     $token->id === \T_SEMICOLON
                     && $parent
-                    && $parent->PrevCode
-                    && $parent->PrevCode->id === \T_FOR
+                    && ($prev = $parent->PrevCode)
+                    && $prev->id === \T_FOR
                 ) || (
                     $this->Idx->Comment[$token->id] && (
                         (

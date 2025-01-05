@@ -10,11 +10,16 @@ use Lkrms\PrettyPHP\TokenIndex;
 
 /**
  * Apply whitespace to statement terminators
+ *
+ * @api
  */
 final class StatementSpacing implements TokenRule
 {
     use TokenRuleTrait;
 
+    /**
+     * @inheritDoc
+     */
     public static function getPriority(string $method): ?int
     {
         return [
@@ -22,6 +27,9 @@ final class StatementSpacing implements TokenRule
         ][$method] ?? null;
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function getTokens(TokenIndex $idx): array
     {
         return [
@@ -30,6 +38,24 @@ final class StatementSpacing implements TokenRule
         ];
     }
 
+    /**
+     * @inheritDoc
+     */
+    public static function needsSortedTokens(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Apply the rule to the given tokens
+     *
+     * In `for` loop expressions, a space is added after semicolons where the
+     * next expression is not empty.
+     *
+     * Whitespace is suppressed before, and newlines are added after, semicolons
+     * in other contexts and colons in alternative syntax constructs, `switch`
+     * cases and labels.
+     */
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
@@ -42,8 +68,6 @@ final class StatementSpacing implements TokenRule
                     continue;
                 }
             } else {
-                // Add space after `for` loop expression delimiters where the
-                // next expression is non-empty
                 if (
                     ($parent = $token->Parent)
                     && $parent->id === \T_OPEN_PARENTHESIS
@@ -51,10 +75,10 @@ final class StatementSpacing implements TokenRule
                     && $prev->id === \T_FOR
                 ) {
                     if (
-                        $token->NextSibling
-                        && $token->NextSibling->id !== \T_SEMICOLON
+                        ($next = $token->NextSibling)
+                        && $next->id !== \T_SEMICOLON
                     ) {
-                        $token->applyWhitespace(Space::SPACE_AFTER);
+                        $token->Whitespace |= Space::SPACE_AFTER;
                     }
                     continue;
                 }
@@ -76,20 +100,23 @@ final class StatementSpacing implements TokenRule
                             $token,
                         );
                     }
-                    if (($prev = $token->Prev) && (
-                        $this->Idx->OpenBracket[$prev->id]
-                        || ($prev->id === \T_COLON && $prev->CloseBracket)
-                    )) {
+                    if (
+                        ($prev = $token->Prev)
+                        && (
+                            $this->Idx->OpenBracket[$prev->id]
+                            || ($prev->id === \T_COLON && $prev->CloseBracket)
+                        )
+                    ) {
                         $collapse = false;
                     }
                 }
             }
 
-            $token->Whitespace |= ($collapse
+            $token->Whitespace |= Space::LINE_AFTER
+                | Space::SPACE_AFTER
+                | ($collapse
                     ? Space::NONE_BEFORE
-                    : Space::NO_SPACE_BEFORE)
-                | Space::LINE_AFTER
-                | Space::SPACE_AFTER;
+                    : Space::NO_SPACE_BEFORE);
         }
     }
 }

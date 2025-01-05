@@ -128,6 +128,12 @@ If a constructor has one or more promoted parameters, a line is added before eve
 
 If a property has unimplemented hooks with no modifiers or attributes (e.g. `public $Foo { &get; set; }`), they are collapsed to one line, otherwise hooks with statements are formatted like anonymous functions, and hooks that use abbreviated syntax are formatted like arrow functions.
 
+### `StatementSpacing`
+
+In `for` loop expressions, a space is added after semicolons where the next expression is not empty.
+
+Whitespace is suppressed before, and newlines are added after, semicolons in other contexts and colons in alternative syntax constructs, `switch` cases and labels.
+
 ### `OperatorSpacing`
 
 Operators in `declare` expressions are ignored, otherwise spaces are added before and after operators not mentioned below.
