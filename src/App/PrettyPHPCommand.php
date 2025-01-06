@@ -976,11 +976,7 @@ EOF,
 
         if ($this->PrintConfig) {
             $values = $this->getOptionValues(true, true, true);
-            echo Json::prettyPrint(
-                $values,
-                $values ? 0 : \JSON_FORCE_OBJECT
-            ) . \PHP_EOL;
-
+            echo Json::prettyPrint((object) $values) . \PHP_EOL;
             return;
         }
 
