@@ -8,7 +8,7 @@ Formatting rules applied by `pretty-php` are as follows.
 | `NormaliseStrings`          | -          | Y        | 1    | `processTokens()`       | 42       |
 | `NormaliseNumbers`          | -          | Y        | 1    | `processTokens()`       | 44       |
 | `ProtectStrings`            | Y          | -        | 1    | `processTokens()`       | 60       |
-| `HeredocIndentation` (1)    | Y          | -        | 1    | `processTokens()`       | 62       |
+| `FormatHeredocs` (1)        | Y          | -        | 1    | `processTokens()`       | 62       |
 | `IndexSpacing`              | Y          | -        | 1    | `processTokens()`       | 100      |
 | `OperatorSpacing`           | Y          | -        | 1    | `processTokens()`       | 102      |
 | `StandardSpacing` (1)       | Y          | -        | 1    | `processTokens()`       | 104      |
@@ -20,9 +20,9 @@ Formatting rules applied by `pretty-php` are as follows.
 | `PreserveNewlines`          | -          | Y        | 1    | `processTokens()`       | 200      |
 | `PreserveOneLineStatements` | -          | -        | 1    | `processStatements()`   | 202      |
 | `BlankBeforeReturn`         | -          | -        | 1    | `processTokens()`       | 220      |
-| `VerticalSpacing`           | Y          | -        | 1    | `processTokens()`       | 240      |
-| `ListSpacing` (1)           | Y          | -        | 1    | `processList()`         | 240      |
-| `ListSpacing` (2)           | Y          | -        | 1    | `processDeclarations()` | 240      |
+| `VerticalSpacing` (1)       | Y          | -        | 1    | `processTokens()`       | 240      |
+| `VerticalSpacing` (2)       | Y          | -        | 1    | `processList()`         | 240      |
+| `VerticalSpacing` (3)       | Y          | -        | 1    | `processDeclarations()` | 240      |
 | `StrictLists`               | -          | -        | 1    | `processList()`         | 242      |
 | `StrictExpressions`         | -          | -        | 1    | `processTokens()`       | 244      |
 | `SemiStrictExpressions`     | -          | -        | 1    | `processTokens()`       | 246      |
@@ -50,7 +50,7 @@ Formatting rules applied by `pretty-php` are as follows.
 | `HangingIndentation` (2)    | Y          | -        | 3    | _`callback`_            | 680      |
 | `StandardSpacing` (3)       | Y          | -        | 3    | _`callback`_            | 699      |
 | `PlaceBraces` (2)           | Y          | -        | 4    | `beforeRender()`        | 920      |
-| `HeredocIndentation` (2)    | Y          | -        | 4    | `beforeRender()`        | 980      |
+| `FormatHeredocs` (2)        | Y          | -        | 4    | `beforeRender()`        | 980      |
 | `PlaceComments` (2)         | Y          | -        | 4    | `beforeRender()`        | 997      |
 | `AlignComments` (2)         | -          | -        | 4    | `beforeRender()`        | 998      |
 | `EssentialSpacing`          | Y          | -        | 4    | `beforeRender()`        | 999      |
@@ -105,7 +105,7 @@ If an underscore is present in the input, underscores are applied to decimal val
 
 In non-constant strings, whitespace between tokens is suppressed for inner siblings, and for every token between square brackets. (The latter is necessary because strings like `"$foo[0]"` and `"$foo[$bar]"` are unparseable if there is any whitespace between the brackets.)
 
-### `HeredocIndentation` (1)
+### `FormatHeredocs` (1)
 
 <small>(mandatory, `processTokens()`, priority 62)</small>
 
@@ -258,7 +258,7 @@ Attributes on their own line are excluded from consideration.
 
 Blank lines are added before non-consecutive `return`, `yield` and `yield from` statements.
 
-### `VerticalSpacing`
+### `VerticalSpacing` (1)
 
 <small>(mandatory, `processTokens()`, priority 240)</small>
 
@@ -277,7 +277,7 @@ Newlines are added before both operators in ternary expressions where one operat
 
 In method chains where an object operator (`->` or `?->`) has a leading newline, newlines are added before every object operator. If the `AlignChains` rule is enabled and strict PSR-12 compliance is not, the first object operator in the chain is excluded from this operation.
 
-### `ListSpacing` (1)
+### `VerticalSpacing` (2)
 
 <small>(mandatory, `processList()`, priority 240)</small>
 
@@ -287,7 +287,7 @@ Arrays and argument lists with trailing ("magic") commas are split into one item
 
 If parameter lists have one or more attributes with a trailing newline, every attribute is placed on its own line, and blank lines are added before and after annotated parameters to improve readability.
 
-### `ListSpacing` (2)
+### `VerticalSpacing` (3)
 
 <small>(mandatory, `processDeclarations()`, priority 240)</small>
 
@@ -539,7 +539,7 @@ The `TagIndent` of tokens between indented tags is adjusted by the difference, i
 
 In function declarations where `)` and `{` appear at the start of consecutive lines, they are collapsed to the same line.
 
-### `HeredocIndentation` (2)
+### `FormatHeredocs` (2)
 
 <small>(mandatory, `beforeRender()`, priority 980)</small>
 
@@ -617,7 +617,7 @@ Newlines and spaces are added after tokens that would otherwise fail to parse. T
 | `T_QUESTION`                                | `AlignTernaryOperators`, `VerticalSpacing`                                                 |
 | `T_RETURN`                                  | `BlankBeforeReturn`                                                                        |
 | `T_SEMICOLON`                               | `StatementSpacing`                                                                         |
-| `T_START_HEREDOC`                           | `HeredocIndentation`, `ProtectStrings`, `StandardSpacing`                                  |
+| `T_START_HEREDOC`                           | `FormatHeredocs`, `ProtectStrings`, `StandardSpacing`                                      |
 | `T_SWITCH`                                  | `SemiStrictExpressions`, `StrictExpressions`, `SwitchIndentation`                          |
 | `T_WHILE`                                   | `ControlStructureSpacing`, `SemiStrictExpressions`, `StrictExpressions`                    |
 | `T_XOR`                                     | `VerticalSpacing`                                                                          |
@@ -626,21 +626,21 @@ Newlines and spaces are added after tokens that would otherwise fail to parse. T
 
 ## `DeclarationRule` classes, by declaration type
 
-| Declaration    | Rules                                                  |
-| -------------- | ------------------------------------------------------ |
-| `CASE`         | `DeclarationSpacing`                                   |
-| `CLASS`        | `DeclarationSpacing`, `Drupal`                         |
-| `CONST`        | `DeclarationSpacing`, `ListSpacing`                    |
-| `DECLARE`      | `DeclarationSpacing`                                   |
-| `ENUM`         | `DeclarationSpacing`, `Drupal`                         |
-| `FUNCTION`     | `DeclarationSpacing`                                   |
-| `HOOK`         | `DeclarationSpacing`                                   |
-| `INTERFACE`    | `DeclarationSpacing`, `Drupal`                         |
-| `NAMESPACE`    | `DeclarationSpacing`                                   |
-| `PARAM`        | `ListSpacing`, `StandardSpacing`                       |
-| `PROPERTY`     | `DeclarationSpacing`, `ListSpacing`, `StandardSpacing` |
-| `TRAIT`        | `DeclarationSpacing`, `Drupal`                         |
-| `USE`          | `DeclarationSpacing`, `ListSpacing`                    |
-| `USE_CONST`    | `DeclarationSpacing`, `ListSpacing`                    |
-| `USE_FUNCTION` | `DeclarationSpacing`, `ListSpacing`                    |
-| `USE_TRAIT`    | `DeclarationSpacing`, `ListSpacing`                    |
+| Declaration    | Rules                                                      |
+| -------------- | ---------------------------------------------------------- |
+| `CASE`         | `DeclarationSpacing`                                       |
+| `CLASS`        | `DeclarationSpacing`, `Drupal`                             |
+| `CONST`        | `DeclarationSpacing`, `VerticalSpacing`                    |
+| `DECLARE`      | `DeclarationSpacing`                                       |
+| `ENUM`         | `DeclarationSpacing`, `Drupal`                             |
+| `FUNCTION`     | `DeclarationSpacing`                                       |
+| `HOOK`         | `DeclarationSpacing`                                       |
+| `INTERFACE`    | `DeclarationSpacing`, `Drupal`                             |
+| `NAMESPACE`    | `DeclarationSpacing`                                       |
+| `PARAM`        | `StandardSpacing`, `VerticalSpacing`                       |
+| `PROPERTY`     | `DeclarationSpacing`, `StandardSpacing`, `VerticalSpacing` |
+| `TRAIT`        | `DeclarationSpacing`, `Drupal`                             |
+| `USE`          | `DeclarationSpacing`, `VerticalSpacing`                    |
+| `USE_CONST`    | `DeclarationSpacing`, `VerticalSpacing`                    |
+| `USE_FUNCTION` | `DeclarationSpacing`, `VerticalSpacing`                    |
+| `USE_TRAIT`    | `DeclarationSpacing`, `VerticalSpacing`                    |

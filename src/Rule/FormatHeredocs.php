@@ -13,7 +13,7 @@ use Lkrms\PrettyPHP\TokenIndex;
  *
  * @api
  */
-final class HeredocIndentation implements TokenRule
+final class FormatHeredocs implements TokenRule
 {
     use TokenRuleTrait;
 

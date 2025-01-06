@@ -50,10 +50,9 @@ use Lkrms\PrettyPHP\Rule\BlankBeforeReturn;
 use Lkrms\PrettyPHP\Rule\ControlStructureSpacing;
 use Lkrms\PrettyPHP\Rule\DeclarationSpacing;
 use Lkrms\PrettyPHP\Rule\EssentialSpacing;
+use Lkrms\PrettyPHP\Rule\FormatHeredocs;
 use Lkrms\PrettyPHP\Rule\HangingIndentation;
-use Lkrms\PrettyPHP\Rule\HeredocIndentation;
 use Lkrms\PrettyPHP\Rule\IndexSpacing;
-use Lkrms\PrettyPHP\Rule\ListSpacing;
 use Lkrms\PrettyPHP\Rule\NormaliseComments;
 use Lkrms\PrettyPHP\Rule\NormaliseNumbers;
 use Lkrms\PrettyPHP\Rule\NormaliseStrings;
@@ -250,7 +249,7 @@ final class Formatter implements Buildable, Immutable
         NormaliseStrings::class,
         NormaliseNumbers::class,
         ProtectStrings::class,
-        HeredocIndentation::class,
+        FormatHeredocs::class,
         IndexSpacing::class,
         OperatorSpacing::class,
         StandardSpacing::class,
@@ -260,7 +259,6 @@ final class Formatter implements Buildable, Immutable
         PlaceComments::class,
         PreserveNewlines::class,
         VerticalSpacing::class,
-        ListSpacing::class,
         DeclarationSpacing::class,
         StandardIndentation::class,
         SwitchIndentation::class,

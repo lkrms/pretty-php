@@ -187,6 +187,28 @@ PHP,
 PHP,
                 $formatterB->tokenIndex(new TokenIndex(true)),
             ],
+            'magic comma' => [
+                <<<'PHP'
+<?php
+function getArray()
+{
+    return [
+        'foo',
+        'bar',
+        'baz',
+    ];
+}
+
+PHP,
+                <<<'PHP'
+<?php
+function getArray()
+{
+    return ['foo', 'bar', 'baz',];
+}
+PHP,
+                $formatter,
+            ],
         ];
     }
 }
