@@ -640,6 +640,9 @@ final class Formatter implements Buildable, Immutable
                 $tokenTypes[$rule] = $types;
                 $mainLoop[$rule . '#token'] = [$rule, TokenRule::PROCESS_TOKENS, $i];
             }
+            if (is_a($rule, ListRule::class, true)) {
+                $mainLoop[$rule . '#list'] = [$rule, ListRule::PROCESS_LIST, $i];
+            }
             if (is_a($rule, StatementRule::class, true)) {
                 $mainLoop[$rule . '#statement'] = [$rule, StatementRule::PROCESS_STATEMENTS, $i];
             }
@@ -654,9 +657,6 @@ final class Formatter implements Buildable, Immutable
                 }
                 $declarationTypes[$rule] = $types;
                 $mainLoop[$rule . '#declaration'] = [$rule, DeclarationRule::PROCESS_DECLARATIONS, $i];
-            }
-            if (is_a($rule, ListRule::class, true)) {
-                $mainLoop[$rule . '#list'] = [$rule, ListRule::PROCESS_LIST, $i];
             }
             if (is_a($rule, BlockRule::class, true)) {
                 $blockLoop[$rule] = [$rule, BlockRule::PROCESS_BLOCK, $i];

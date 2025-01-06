@@ -87,7 +87,7 @@ final class StandardSpacing implements TokenRule, DeclarationRule
      * Apply the rule to the given tokens
      *
      * If the indentation level of an open tag aligns with a tab stop, and a
-     * close tag is found in the same scope (or the document has no close tag
+     * close tag is found in the same scope (or the document has no close tag,
      * and the open tag is in the global scope), a callback is registered to
      * align nested tokens with it. An additional level of indentation is
      * applied if `IndentBetweenTags` is enabled.
@@ -104,15 +104,19 @@ final class StandardSpacing implements TokenRule, DeclarationRule
      * tags are suppressed. Otherwise, inner newlines are added to open and
      * close tags.
      *
-     * Whitespace is also applied to tokens as follows:
+     * Whitespace is applied to other tokens as follows:
      *
-     * - **Commas:** leading whitespace suppressed, trailing space added.
-     * - **`declare` statements:** whitespace suppressed between parentheses.
-     * - **`match` expressions:** trailing line added to delimiters after arms.
-     * - **Attributes:** trailing blank line suppressed, leading and trailing
-     *   space added for parameters, property hooks, anonymous functions and
-     *   arrow functions, leading and trailing line added for others.
-     * - **Heredocs:** leading line suppressed in strict PSR-12 mode.
+     * - **Commas:** leading whitespace is suppressed, and trailing spaces are
+     *   added.
+     * - **`declare` expressions:** whitespace is suppressed between
+     *   parentheses.
+     * - **`match` expressions:** newlines are added after delimiters between
+     *   arms.
+     * - **Attributes:** in parameters, property hooks, anonymous functions and
+     *   arrow functions, spaces are added before and after attributes, and
+     *   trailing blank lines are suppressed. For other attributes, leading and
+     *   trailing newlines are added.
+     * - **Heredocs:** leading newlines are suppressed in strict PSR-12 mode.
      *
      * @prettyphp-callback The `TagIndent` of tokens between indented tags is
      * adjusted by the difference, if any, between the open tag's indent and the
@@ -334,7 +338,7 @@ final class StandardSpacing implements TokenRule, DeclarationRule
     /**
      * Apply the rule to the given declarations
      *
-     * If a constructor has one or more promoted parameters, a line is added
+     * If a constructor has one or more promoted parameters, a newline is added
      * before every parameter.
      *
      * If a property has unimplemented hooks with no modifiers or attributes

@@ -51,6 +51,14 @@ final class HangingIndentation implements TokenRule
     /**
      * @inheritDoc
      */
+    public static function needsSortedTokens(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function boot(): void
     {
         $this->HeredocIndent = $this->Formatter->HeredocIndent;

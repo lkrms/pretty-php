@@ -75,11 +75,9 @@ final class HeredocIndentation implements TokenRule
      *
      * The indentation of the first inner token of each heredoc saved earlier is
      * applied to the heredoc by adding whitespace after newline characters in
-     * each of its tokens.
-     *
-     * Whitespace added to each heredoc is also applied to the `HeredocIndent`
-     * property of its `T_START_HEREDOC` token, which allows inherited
-     * indentation to be removed when processing nested heredocs.
+     * each of its tokens. (Whitespace added to each heredoc is also applied to
+     * the `HeredocIndent` property of its `T_START_HEREDOC` token, which allows
+     * inherited indentation to be removed when processing nested heredocs.)
      */
     public function beforeRender(array $tokens): void
     {

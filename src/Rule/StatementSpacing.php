@@ -63,7 +63,7 @@ final class StatementSpacing implements TokenRule
             if ($token->id === \T_COLON) {
                 if (
                     !$token->CloseBracket
-                    && !$token->isColonStatementDelimiter()
+                    && $token->EndStatement !== $token
                 ) {
                     continue;
                 }

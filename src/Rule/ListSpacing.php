@@ -100,7 +100,7 @@ final class ListSpacing implements ListRule, DeclarationRule
 
         if ($lastChild->id === \T_COMMA) {
             $items->add($parent->CloseBracket)
-                  ->applyWhitespace(Space::CRITICAL_LINE_BEFORE);
+                  ->applyWhitespace(Space::LINE_BEFORE);
         }
 
         if ($parent->id === \T_OPEN_PARENTHESIS && $parent->isParameterList()) {
@@ -114,7 +114,7 @@ final class ListSpacing implements ListRule, DeclarationRule
      * Newlines are added between comma-delimited constant declarations and
      * property declarations. When neither `StrictLists` nor `AlignLists` are
      * enabled, they are also added to `use` statements between comma-delimited
-     * imports and traits that break over multiple lines.
+     * imports and trait insertions that break over multiple lines.
      *
      * If a list of property hooks has one or more attributes with a trailing
      * newline, every attribute is placed on its own line, and blank lines are

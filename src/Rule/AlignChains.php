@@ -40,6 +40,14 @@ final class AlignChains implements TokenRule
     }
 
     /**
+     * @inheritDoc
+     */
+    public static function needsSortedTokens(): bool
+    {
+        return false;
+    }
+
+    /**
      * Apply the rule to the given tokens
      *
      * If there are no object operators with a leading newline in a chain of

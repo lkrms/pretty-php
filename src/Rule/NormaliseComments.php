@@ -50,13 +50,13 @@ final class NormaliseComments implements TokenRule
     /**
      * Apply the rule to the given tokens
      *
-     * In one-line C-style comments, unnecessary asterisks are removed from both
-     * delimiters, and whitespace between delimiters and adjacent content is
-     * replaced with a space.
+     * In one-line C-style comments (`/*`), unnecessary asterisks are removed
+     * from both delimiters, the remaining content is trimmed, and spaces are
+     * added between delimiters and adjacent content.
      *
      * Shell-style comments (`#`) are converted to C++-style comments (`//`).
      *
-     * In C++-style comments, a space is added between the delimiter and
+     * In C++-style comments (`//`), a space is added between the delimiter and
      * adjacent content if horizontal whitespace is not already present.
      *
      * DocBlocks are normalised for PSR-5 compliance as follows:
@@ -74,12 +74,12 @@ final class NormaliseComments implements TokenRule
      *   declaration. In the latter case, the `COLLAPSIBLE_COMMENT` flag is
      *   applied.
      *
-     * C-style comments where every line starts with an asterisk, or at least
-     * one delimiter appears on its own line, receive the same treatment as
-     * DocBlocks.
+     * Multi-line C-style comments where every line starts with an asterisk, or
+     * at least one delimiter appears on its own line, receive the same
+     * treatment as DocBlocks.
      *
-     * > Any C-style comments that remain are trimmed and reindented by the
-     * > renderer.
+     * > Multi-line C-style comments that do not meet this criteria are trimmed
+     * > and reindented by the renderer.
      */
     public function processTokens(array $tokens): void
     {

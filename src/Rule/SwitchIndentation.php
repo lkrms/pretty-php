@@ -52,12 +52,12 @@ final class SwitchIndentation implements TokenRule
      *
      * In switch case lists:
      *
-     * - The `PreIndent` of every token is incremented
+     * - The `PreIndent` of every token is incremented.
      * - The `Deindent` of tokens between `case` or `default` and their
-     *   respective delimiters is incremented
+     *   respective delimiters is incremented.
      * - Newlines are added before `case` and `default` and after their
-     *   respective delimiters
-     * - Blank lines are suppressed after `case` and `default` delimiters
+     *   respective delimiters.
+     * - Blank lines are suppressed after `case` and `default` delimiters.
      */
     public function processTokens(array $tokens): void
     {

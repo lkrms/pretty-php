@@ -148,12 +148,12 @@ final class VerticalSpacing implements TokenRule
      *
      * - If an expression with multiple expressions breaks over multiple lines,
      *   newlines are added after comma-delimited expressions, and blank lines
-     *   are added after semicolon-delimited expressions
+     *   are added after semicolon-delimited expressions.
      * - Otherwise, if an expression breaks over multiple lines, newlines are
-     *   added after semicolon-delimited expressions
+     *   added after semicolon-delimited expressions.
      * - Otherwise, if the second or third expression has a leading newline, a
-     *   newline is added before the other
-     * - Whitespace in empty expressions is suppressed
+     *   newline is added before the other.
+     * - Whitespace in empty expressions is suppressed.
      *
      * Newlines are added before open braces that belong to top-level
      * declarations and anonymous classes declared over multiple lines.
@@ -163,8 +163,8 @@ final class VerticalSpacing implements TokenRule
      *
      * In method chains where an object operator (`->` or `?->`) has a leading
      * newline, newlines are added before every object operator. If the
-     * `AlignChains` rule is enabled and strict PSR-12 compliance is not, a
-     * newline is not added before the first object operator in the chain.
+     * `AlignChains` rule is enabled and strict PSR-12 compliance is not, the
+     * first object operator in the chain is excluded from this operation.
      */
     public function processTokens(array $tokens): void
     {

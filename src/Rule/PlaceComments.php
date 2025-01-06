@@ -67,14 +67,15 @@ final class PlaceComments implements TokenRule
     /**
      * Apply the rule to the given tokens
      *
-     * Critical newlines are added after one-line comments with subsequent close
-     * tags.
+     * Critical newlines are added after one-line comments followed by any token
+     * other than a close tag.
      *
      * Newlines are added before and after:
      *
      * - DocBlocks
      * - comments with a leading newline in the input
-     * - comments after top-level close braces if strict PSR-12 mode is enabled
+     * - comments after top-level close braces (if strict PSR-12 mode is
+     *   enabled)
      *
      * These comments are also saved for alignment with the next code token
      * (unless it's a close bracket).
@@ -88,7 +89,7 @@ final class PlaceComments implements TokenRule
      * treatment:
      *
      * - leading blank lines are added unless the comment appears mid-statement
-     *   (deferred for DocBlocks with the `COLLAPSIBLE_COMMENT` flag)
+     *   (deferred for collapsible DocBlocks; see `DeclarationSpacing`)
      * - trailing blank lines are added to file-level comments
      * - trailing blank lines are suppressed for DocBlocks with subsequent code
      */

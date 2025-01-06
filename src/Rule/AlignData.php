@@ -75,6 +75,12 @@ final class AlignData implements BlockRule
      * In arrays and `match` expressions, `=>` delimiters are aligned unless
      * `MaxDoubleArrowColumn` is not `null`, in which case any found in
      * subsequent columns are excluded from consideration.
+     *
+     * Alignment is achieved by:
+     *
+     * - calculating the difference between the current and desired output
+     *   columns of each token
+     * - applying it to the `Padding` of the token
      */
     public function processBlock(array $lines): void
     {

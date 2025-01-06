@@ -86,8 +86,8 @@ final class DeclarationSpacing implements DeclarationRule
      * Otherwise, "loose" spacing is applied by adding blank lines between
      * declarations.
      *
-     * Blank lines are also added before and after each group of declarations,
-     * and they are suppressed between `use` statements, one-line `declare`
+     * Blank lines are also added before and after each group of declarations.
+     * They are suppressed between `use` statements, one-line `declare`
      * statements, and property hooks not declared over multiple lines.
      */
     public function processDeclarations(array $declarations): void

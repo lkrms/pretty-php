@@ -21,12 +21,4 @@ trait TokenRuleTrait
     {
         return ['*'];
     }
-
-    /**
-     * @inheritDoc
-     */
-    public static function needsSortedTokens(): bool
-    {
-        return true;
-    }
 }

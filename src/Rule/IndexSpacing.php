@@ -54,12 +54,15 @@ final class IndexSpacing implements TokenRule
     /**
      * Apply the rule to the given tokens
      *
-     * Leading and trailing spaces are added to tokens in the `AddSpace`,
-     * `AddSpaceBefore` and `AddSpaceAfter` indexes, then suppressed, along with
-     * adjacent blank lines, for tokens in the `SuppressSpaceBefore` and
-     * `SuppressSpaceAfter` indexes, and inside brackets other than structural
-     * and `match` braces. Blank lines are also suppressed after alternative
-     * syntax colons and before their closing counterparts.
+     * Leading and trailing spaces are:
+     *
+     * - added to tokens in the `AddSpace`, `AddSpaceBefore` and `AddSpaceAfter`
+     *   indexes
+     * - suppressed, along with blank lines, for tokens in the
+     *   `SuppressSpaceBefore` and `SuppressSpaceAfter` indexes, and inside
+     *   brackets other than structural and `match` braces
+     *
+     * Blank lines are also suppressed inside alternative syntax blocks.
      */
     public function processTokens(array $tokens): void
     {

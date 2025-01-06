@@ -91,7 +91,7 @@ final class WordPress implements Preset, TokenRule
     /**
      * Apply the rule to the given tokens
      *
-     * Suppression of blank lines after DocBlocks is disabled for the first
+     * Suppression of blank lines after DocBlocks is removed for the first
      * DocBlock in each document.
      *
      * Blank lines added before DocBlocks by other rules are removed.

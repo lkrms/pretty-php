@@ -48,8 +48,7 @@ final class OperatorSpacing implements TokenRule
     /**
      * Apply the rule to the given tokens
      *
-     * Operators in `declare` expressions are ignored, otherwise spaces are
-     * added before and after operators not mentioned below.
+     * Operators in `declare` expressions are ignored.
      *
      * Whitespace is suppressed:
      *
@@ -59,7 +58,7 @@ final class OperatorSpacing implements TokenRule
      *   PSR-12 mode is enabled)
      * - after `?` in nullable types
      * - between `++` and `--` and the variables they operate on
-     * - after unary operators
+     * - after other unary operators
      * - before `:` in short ternary expressions, e.g. `$a ?: $b`
      *
      * A space is added:
@@ -69,6 +68,8 @@ final class OperatorSpacing implements TokenRule
      * - before `?` in nullable types
      * - before and after `:` in standard ternary expressions
      * - after `:` in other contexts
+     *
+     * Spaces are added before and after operators not mentioned above.
      */
     public function processTokens(array $tokens): void
     {

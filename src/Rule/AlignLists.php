@@ -47,6 +47,16 @@ final class AlignLists implements ListRule
      * list items, along with their inner and adjacent tokens, with the column
      * after their open brackets, or with the first item in the list if they
      * have no enclosing brackets.
+     *
+     * @prettyphp-callback List items are aligned with the column after their
+     * open bracket, or with the first item in the list if they have no
+     * enclosing brackets.
+     *
+     * This is achieved by:
+     *
+     * - calculating the difference between the current and desired output
+     *   columns of each item
+     * - applying it to the `LinePadding` of the item and its adjacent tokens
      */
     public function processList(Token $parent, TokenCollection $items, Token $lastChild): void
     {

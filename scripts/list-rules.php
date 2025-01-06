@@ -141,14 +141,14 @@ foreach (Arr::extend(Formatter::DEFAULT_RULES, ...Formatter::OPTIONAL_RULES) as 
     if (is_a($rule, TokenRule::class, true)) {
         maybeAddRule($mainLoop, 1, $rule, $isMandatory, $isDefault, TokenRule::PROCESS_TOKENS, true, $callbackDocs);
     }
+    if (is_a($rule, ListRule::class, true)) {
+        maybeAddRule($mainLoop, 1, $rule, $isMandatory, $isDefault, ListRule::PROCESS_LIST, true, $callbackDocs);
+    }
     if (is_a($rule, StatementRule::class, true)) {
         maybeAddRule($mainLoop, 1, $rule, $isMandatory, $isDefault, StatementRule::PROCESS_STATEMENTS, true, $callbackDocs);
     }
     if (is_a($rule, DeclarationRule::class, true)) {
         maybeAddRule($mainLoop, 1, $rule, $isMandatory, $isDefault, DeclarationRule::PROCESS_DECLARATIONS, true, $callbackDocs);
-    }
-    if (is_a($rule, ListRule::class, true)) {
-        maybeAddRule($mainLoop, 1, $rule, $isMandatory, $isDefault, ListRule::PROCESS_LIST, true, $callbackDocs);
     }
     if (is_a($rule, BlockRule::class, true)) {
         maybeAddRule($blockLoop, 2, $rule, $isMandatory, $isDefault, BlockRule::PROCESS_BLOCK, true, $callbackDocs);
