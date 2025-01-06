@@ -107,7 +107,7 @@ final class Symfony implements Preset, TokenRule, ListRule
         }
 
         foreach ($items as $item) {
-            if ($item->Flags & TokenFlag::NAMED_DECLARATION) {
+            if ($item->Flags & TokenFlag::DECLARATION) {
                 return;
             }
         }

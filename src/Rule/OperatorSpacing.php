@@ -149,7 +149,7 @@ final class OperatorSpacing implements TokenRule
                 $token->Whitespace |= Space::NONE_BEFORE | Space::NONE_AFTER;
             } elseif (
                 $token->id === \T_QUESTION
-                && !($token->Flags & TokenFlag::TERNARY_OPERATOR)
+                && !($token->Flags & TokenFlag::TERNARY)
             ) {
                 $token->Whitespace |= Space::SPACE_BEFORE | Space::NONE_AFTER;
             } elseif (
@@ -172,8 +172,8 @@ final class OperatorSpacing implements TokenRule
                 $token->Whitespace |= Space::NONE_AFTER;
             } elseif ($token->id === \T_COLON) {
                 $token->Whitespace |= (
-                    $token->Flags & TokenFlag::TERNARY_OPERATOR
-                        ? ($token->Data[TokenData::OTHER_TERNARY_OPERATOR] === $prev
+                    $token->Flags & TokenFlag::TERNARY
+                        ? ($token->Data[TokenData::OTHER_TERNARY] === $prev
                             ? Space::NONE_BEFORE
                             : Space::SPACE_BEFORE)
                         : 0

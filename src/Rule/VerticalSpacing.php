@@ -343,11 +343,11 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
 
                 $token->Whitespace |= Space::LINE_BEFORE;
             } elseif ($token->id === \T_QUESTION) {
-                if (!($token->Flags & TokenFlag::TERNARY_OPERATOR)) {
+                if (!($token->Flags & TokenFlag::TERNARY)) {
                     continue;
                 }
 
-                $other = $token->Data[TokenData::OTHER_TERNARY_OPERATOR];
+                $other = $token->Data[TokenData::OTHER_TERNARY];
                 if ($other === $token->Next) {
                     continue;
                 }
@@ -360,7 +360,7 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
                     $token->Whitespace |= Space::LINE_BEFORE;
                 }
             } else {
-                if ($token !== $token->Data[TokenData::CHAIN_OPENED_BY]) {
+                if ($token !== $token->Data[TokenData::CHAIN]) {
                     continue;
                 }
 
@@ -440,7 +440,7 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
     public function processDeclarations(array $declarations): void
     {
         foreach ($declarations as $token) {
-            $type = $token->Data[TokenData::NAMED_DECLARATION_TYPE];
+            $type = $token->Data[TokenData::DECLARATION_TYPE];
 
             if (
                 $type === Type::_CONST

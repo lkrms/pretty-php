@@ -74,7 +74,7 @@ final class AlignTernaryOperators implements TokenRule
             // start of a line
             if ((
                 $token->id === \T_QUESTION
-                && !($token->Flags & TokenFlag::TERNARY_OPERATOR)
+                && !($token->Flags & TokenFlag::TERNARY)
             ) || !$token->hasNewlineBefore()) {
                 continue;
             }
@@ -129,8 +129,8 @@ final class AlignTernaryOperators implements TokenRule
     private function setAlignedWith(Token $token, Token $alignWith): void
     {
         $token->AlignedWith = $alignWith;
-        if ($token->Flags & TokenFlag::TERNARY_OPERATOR) {
-            $other = $token->Data[TokenData::OTHER_TERNARY_OPERATOR];
+        if ($token->Flags & TokenFlag::TERNARY) {
+            $other = $token->Data[TokenData::OTHER_TERNARY];
             if ($other->hasNewlineBefore()) {
                 $other->AlignedWith = $alignWith;
             }

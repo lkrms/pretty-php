@@ -65,7 +65,7 @@ final class ProtectStrings implements TokenRule
                 continue;
             }
 
-            $closedBy = $token->Data[TokenData::STRING_CLOSED_BY];
+            $closedBy = $token->Data[TokenData::END_STRING];
             foreach ($next->withNextSiblings($closedBy) as $current) {
                 $current->Whitespace |= Space::CRITICAL_NONE_BEFORE;
                 if ($current->id === \T_OPEN_BRACKET) {

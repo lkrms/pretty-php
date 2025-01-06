@@ -350,7 +350,7 @@ final class StandardSpacing implements TokenRule, DeclarationRule
     {
         $parents = [];
         foreach ($declarations as $token) {
-            $type = $token->Data[TokenData::NAMED_DECLARATION_TYPE];
+            $type = $token->Data[TokenData::DECLARATION_TYPE];
 
             // Collect promoted constructor parameters
             if ($type === DeclarationType::PARAM) {

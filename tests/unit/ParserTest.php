@@ -223,7 +223,7 @@ final class ParserTest extends TestCase
                         'pos' => 52,
                         'PrevSibling' => "T15:L5:'endif'",
                         'Parent' => "T5:L2:')'<<(virtual)",
-                        'Flags' => 'CODE|STATEMENT_TERMINATOR',
+                        'Flags' => 'CODE|TERMINATOR',
                     ],
                     [
                         'id' => 'T_OPEN_TAG',
@@ -293,7 +293,7 @@ final class ParserTest extends TestCase
                         'line' => 8,
                         'pos' => 65,
                         'PrevSibling' => "T20:L7:'else'<<(virtual)",
-                        'Flags' => 'CODE|STATEMENT_TERMINATOR',
+                        'Flags' => 'CODE|TERMINATOR',
                     ],
                     [
                         'id' => 'T_OPEN_TAG',
@@ -533,7 +533,7 @@ PHP,
                         'pos' => 112,
                         'PrevSibling' => "T19:L5:'endif'",
                         'Parent' => "T6:L2:')'<<(virtual)",
-                        'Flags' => 'CODE|STATEMENT_TERMINATOR',
+                        'Flags' => 'CODE|TERMINATOR',
                     ],
                     [
                         'id' => 'T_OPEN_TAG',
@@ -620,7 +620,7 @@ PHP,
                         'line' => 8,
                         'pos' => 149,
                         'PrevSibling' => "T26:L7:'else'<<(virtual)",
-                        'Flags' => 'CODE|STATEMENT_TERMINATOR',
+                        'Flags' => 'CODE|TERMINATOR',
                     ],
                     [
                         'id' => 'T_OPEN_TAG',
@@ -1061,8 +1061,8 @@ PHP,
                     TokenUtil::describe($token->EndStatement),
                 );
             }
-            $data[] = $token->Data[TokenData::NAMED_DECLARATION_PARTS]->toString(' ');
-            $data[] = $type = $token->Data[TokenData::NAMED_DECLARATION_TYPE];
+            $data[] = $token->Data[TokenData::DECLARATION_PARTS]->toString(' ');
+            $data[] = $type = $token->Data[TokenData::DECLARATION_TYPE];
             $actual[] = $data;
 
             $type = 'Type::' . Reflect::getConstantName(Type::class, $type);

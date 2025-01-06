@@ -980,7 +980,7 @@ final class Formatter implements Buildable, Immutable
                 case \T_STATIC:
                     if (
                         $parent->Statement !== $parent
-                        || $parent->Flags & TokenFlag::NAMED_DECLARATION
+                        || $parent->Flags & TokenFlag::DECLARATION
                     ) {
                         continue 2;
                     }
@@ -1032,8 +1032,8 @@ final class Formatter implements Buildable, Immutable
                     /** @var Token */
                     $statement = $parent->Statement;
                     if (!(
-                        $statement->Flags & TokenFlag::NAMED_DECLARATION
-                        && ($statement->Data[TokenData::NAMED_DECLARATION_TYPE] & (
+                        $statement->Flags & TokenFlag::DECLARATION
+                        && ($statement->Data[TokenData::DECLARATION_TYPE] & (
                             Type::_USE
                             | Type::_TRAIT
                         )) === Type::_USE
@@ -1081,7 +1081,7 @@ final class Formatter implements Buildable, Immutable
             Type::USE_TRAIT => true,
         ]);
         foreach ($parents as $i => $parent) {
-            $type = $parent->Data[TokenData::NAMED_DECLARATION_TYPE];
+            $type = $parent->Data[TokenData::DECLARATION_TYPE];
             $first = null;
             $last = null;
 

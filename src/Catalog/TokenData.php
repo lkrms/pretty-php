@@ -10,8 +10,8 @@ namespace Lkrms\PrettyPHP\Catalog;
 interface TokenData
 {
     /**
-     * The content of a normalised T_COMMENT or T_DOC_COMMENT after removal of
-     * delimiters, trailing whitespace and leading asterisks
+     * The content of a normalised DocBlock token (T_DOC_COMMENT or T_COMMENT)
+     * after delimiters and trailing whitespace are removed
      */
     public const COMMENT_CONTENT = 0;
 
@@ -36,41 +36,39 @@ interface TokenData
     public const LIST_PARENT = 4;
 
     /**
-     * The T_COLON or T_QUESTION associated with a T_QUESTION or T_COLON flagged
-     * as a TERNARY_OPERATOR
+     * The other T_QUESTION or T_COLON associated with a TERNARY
      */
-    public const OTHER_TERNARY_OPERATOR = 5;
+    public const OTHER_TERNARY = 5;
 
     /**
      * The last token of the string opened by the token
      */
-    public const STRING_CLOSED_BY = 6;
+    public const END_STRING = 6;
 
     /**
-     * The first T_OBJECT_OPERATOR or T_NULLSAFE_OBJECT_OPERATOR in a chain
-     * thereof
+     * The first object operator in a chain of method calls
      */
-    public const CHAIN_OPENED_BY = 7;
+    public const CHAIN = 7;
 
     /**
-     * A collection of tokens that form a NAMED_DECLARATION
+     * A collection of tokens that form a DECLARATION
      */
-    public const NAMED_DECLARATION_PARTS = 8;
+    public const DECLARATION_PARTS = 8;
 
     /**
-     * The type of a NAMED_DECLARATION
+     * The type of a DECLARATION
      */
-    public const NAMED_DECLARATION_TYPE = 9;
+    public const DECLARATION_TYPE = 9;
 
     /**
-     * A collection of property hooks for a NAMED_DECLARATION with type PROPERTY
-     * or PROMOTED_PARAM
+     * A collection of property hooks associated with a DECLARATION of type
+     * PROPERTY or PROMOTED_PARAM
      */
     public const PROPERTY_HOOKS = 10;
 
     /**
-     * A list of closures that align other tokens with the token when its output
-     * column changes
+     * An array of closures that align other tokens with the token when its
+     * output column changes
      */
     public const ALIGNMENT_CALLBACKS = 11;
 

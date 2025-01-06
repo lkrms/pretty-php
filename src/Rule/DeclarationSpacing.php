@@ -97,9 +97,9 @@ final class DeclarationSpacing implements DeclarationRule
         $declDepths = [];
 
         foreach ($declarations as $token) {
-            $type = $token->Data[TokenData::NAMED_DECLARATION_TYPE];
+            $type = $token->Data[TokenData::DECLARATION_TYPE];
             /** @var TokenCollection */
-            $parts = $token->Data[TokenData::NAMED_DECLARATION_PARTS];
+            $parts = $token->Data[TokenData::DECLARATION_PARTS];
 
             // Don't separate `use`, `use function` and `use constant` if
             // imports are not being sorted

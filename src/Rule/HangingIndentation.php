@@ -151,8 +151,8 @@ final class HangingIndentation implements TokenRule
             $prevSibling = $token->PrevSibling;
             /** @var Token */
             $statement = $token->Statement;
-            $declType = $statement->Flags & TokenFlag::NAMED_DECLARATION
-                ? $statement->Data[TokenData::NAMED_DECLARATION_TYPE]
+            $declType = $statement->Flags & TokenFlag::DECLARATION
+                ? $statement->Data[TokenData::DECLARATION_TYPE]
                 : 0;
             $mayHaveListWithEqual = $declType === Type::_CONST
                 || $declType === Type::PROPERTY
@@ -326,10 +326,10 @@ final class HangingIndentation implements TokenRule
                 $firstItem = $listItems->first();
                 $context[] = $firstItem;
             } elseif ($this->Idx->Chain[$token->id]) {
-                $context[] = $token->Data[TokenData::CHAIN_OPENED_BY];
+                $context[] = $token->Data[TokenData::CHAIN];
                 $until = TokenUtil::getOperatorEndExpression($token);
             } elseif (
-                $token->Flags & TokenFlag::TERNARY_OPERATOR
+                $token->Flags & TokenFlag::TERNARY
                 || $token->id === \T_COALESCE
             ) {
                 $ternary = TokenUtil::getTernaryContext($token)
@@ -420,7 +420,7 @@ final class HangingIndentation implements TokenRule
                 ($next = $until->NextCode)
                 && ((
                     $next->id === \T_QUESTION
-                    && $next->Flags & TokenFlag::TERNARY_OPERATOR
+                    && $next->Flags & TokenFlag::TERNARY
                 ) || $next->id === \T_COALESCE)
                 && !TokenUtil::getTernaryContext($next)
             ) {

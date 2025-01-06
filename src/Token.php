@@ -623,10 +623,10 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         if ($prevCode->id === \T_STRING && (
             !($prev = $prevCode->PrevSibling) || (
                 $prev->id === \T_SEMICOLON
-                || $prev->Flags & TokenFlag::STATEMENT_TERMINATOR
+                || $prev->Flags & TokenFlag::TERMINATOR
                 || (
                     $prev->CloseBracket
-                    && $prev->CloseBracket->Flags & TokenFlag::STATEMENT_TERMINATOR
+                    && $prev->CloseBracket->Flags & TokenFlag::TERMINATOR
                 )
                 || $this->Idx->HasOptionalBraces[$prev->id]
                 || (
@@ -680,7 +680,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
             // Nullable variable types (and constant types, as of PHP 8.3)
             (
                 $this->Idx->NonMethodMember[$prevCode->id]
-                && $statement->Flags & TokenFlag::NAMED_DECLARATION
+                && $statement->Flags & TokenFlag::DECLARATION
             )
             // Nullable return types
             || ($prevCode->id === \T_COLON && $prevCode->isColonTypeDelimiter())
@@ -703,8 +703,8 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         }
 
         if (
-            $this->Flags & TokenFlag::NAMED_DECLARATION
-            && $this->Data[TokenData::NAMED_DECLARATION_TYPE] === DeclarationType::USE_TRAIT
+            $this->Flags & TokenFlag::DECLARATION
+            && $this->Data[TokenData::DECLARATION_TYPE] === DeclarationType::USE_TRAIT
         ) {
             return TokenSubId::USE_TRAIT;
         }
@@ -744,7 +744,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         return $this->Statement === $this
             || !($prev = $this->PrevCode)
             || $this->Idx->BeforeUnary[$prev->id]
-            || $prev->Flags & TokenFlag::TERNARY_OPERATOR;
+            || $prev->Flags & TokenFlag::TERNARY;
     }
 
     /**
@@ -941,8 +941,8 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
      */
     public function isProperty(): bool
     {
-        return $this->Flags & TokenFlag::NAMED_DECLARATION
-            && $this->Data[TokenData::NAMED_DECLARATION_TYPE] & DeclarationType::PROPERTY;
+        return $this->Flags & TokenFlag::DECLARATION
+            && $this->Data[TokenData::DECLARATION_TYPE] & DeclarationType::PROPERTY;
     }
 
     /**
@@ -980,7 +980,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
 
     private function isAnonymousFunctionOrFn(): bool
     {
-        return !($this->Flags & TokenFlag::NAMED_DECLARATION)
+        return !($this->Flags & TokenFlag::DECLARATION)
             && $this->Idx->FunctionOrFn[$this->skipNextSiblingFrom($this->Idx->AttributeOrStatic)->id];
     }
 
@@ -995,7 +995,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
 
     private function isDeclaration(): bool
     {
-        return $this->Flags & TokenFlag::NAMED_DECLARATION
+        return $this->Flags & TokenFlag::DECLARATION
             || $this->Idx->ClassOrFunction[
                 $this->skipNextSiblingFrom($this->Idx->BeforeAnonymousClassOrFunction)->id
             ];
@@ -1009,7 +1009,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     {
         if (
             $this->Idx->ExpressionDelimiter[$this->id]
-            || $this->Flags & TokenFlag::TERNARY_OPERATOR
+            || $this->Flags & TokenFlag::TERNARY
         ) {
             // @codeCoverageIgnoreStart
             return $this;

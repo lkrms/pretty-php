@@ -114,8 +114,8 @@ final class PlaceComments implements TokenRule
                     && $prev->id === \T_CLOSE_BRACE
                     && $prev->Flags & TokenFlag::STRUCTURAL_BRACE
                     && $prev->Statement
-                    && $prev->Statement->Flags & TokenFlag::NAMED_DECLARATION
-                    && $prev->Statement->Data[TokenData::NAMED_DECLARATION_TYPE] & (
+                    && $prev->Statement->Flags & TokenFlag::DECLARATION
+                    && $prev->Statement->Data[TokenData::DECLARATION_TYPE] & (
                         DeclarationType::_CLASS
                         | DeclarationType::_ENUM
                         | DeclarationType::_INTERFACE
@@ -154,7 +154,7 @@ final class PlaceComments implements TokenRule
 
             if (
                 $token->id !== \T_DOC_COMMENT
-                && !($token->Flags & TokenFlag::INFORMAL_DOC_COMMENT)
+                && !($token->Flags & TokenFlag::C_DOC_COMMENT)
             ) {
                 continue;
             }
@@ -173,8 +173,8 @@ final class PlaceComments implements TokenRule
 
             if (
                 $next
-                && $next->Flags & TokenFlag::NAMED_DECLARATION
-                && ($type = $next->Data[TokenData::NAMED_DECLARATION_TYPE]) & (
+                && $next->Flags & TokenFlag::DECLARATION
+                && ($type = $next->Data[TokenData::DECLARATION_TYPE]) & (
                     DeclarationType::_DECLARE
                     | DeclarationType::_NAMESPACE
                     | DeclarationType::_USE

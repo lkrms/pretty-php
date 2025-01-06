@@ -155,9 +155,9 @@ final class PreserveNewlines implements TokenRule
 
         // Treat `?:` as one operator
         if (
-            ($token->Flags & TokenFlag::TERNARY_OPERATOR)
+            ($token->Flags & TokenFlag::TERNARY)
             && $token->id === \T_COLON
-            && $token->Data[TokenData::OTHER_TERNARY_OPERATOR] === $prev
+            && $token->Data[TokenData::OTHER_TERNARY] === $prev
         ) {
             return false;
         }
@@ -199,9 +199,9 @@ final class PreserveNewlines implements TokenRule
 
         // Treat `?:` as one operator
         if (
-            ($token->Flags & TokenFlag::TERNARY_OPERATOR)
+            ($token->Flags & TokenFlag::TERNARY)
             && $token->id === \T_QUESTION
-            && $token->Data[TokenData::OTHER_TERNARY_OPERATOR] === $next
+            && $token->Data[TokenData::OTHER_TERNARY] === $next
         ) {
             return false;
         }

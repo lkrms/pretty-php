@@ -89,7 +89,7 @@ final class NormaliseComments implements TokenRule
 
             if (
                 $type === TokenFlag::C_COMMENT
-                && !($token->Flags & TokenFlag::INFORMAL_DOC_COMMENT)
+                && !($token->Flags & TokenFlag::C_DOC_COMMENT)
             ) {
                 if ($token->hasNewline()) {
                     continue;
@@ -228,7 +228,7 @@ final class NormaliseComments implements TokenRule
                         || $next->getSubId() !== TokenSubId::USE_IMPORT
                     )
                 )) {
-                    if (!($next && $next->Flags & TokenFlag::NAMED_DECLARATION) || (
+                    if (!($next && $next->Flags & TokenFlag::DECLARATION) || (
                         $next->id === \T_USE
                         && $next->getSubId() === TokenSubId::USE_TRAIT
                     )) {

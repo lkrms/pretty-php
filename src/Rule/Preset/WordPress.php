@@ -113,7 +113,7 @@ final class WordPress implements Preset, TokenRule
         foreach ($tokens as $token) {
             if (
                 $token->id === \T_COMMENT
-                && !($token->Flags & TokenFlag::INFORMAL_DOC_COMMENT)
+                && !($token->Flags & TokenFlag::C_DOC_COMMENT)
             ) {
                 continue;
             }

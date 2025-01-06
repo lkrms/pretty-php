@@ -43,7 +43,7 @@ interface TokenFlag
      * The token is a C-style comment where every line starts with "*" or at
      * least one delimiter appears on its own line
      */
-    public const INFORMAL_DOC_COMMENT = 16;
+    public const C_DOC_COMMENT = 16;
 
     /**
      * The token is a collapsible one-line T_DOC_COMMENT
@@ -56,13 +56,12 @@ interface TokenFlag
     public const CODE = 64;
 
     /**
-     * The token is a T_CLOSE_BRACE or T_CLOSE_TAG that terminates a statement
+     * The token is a T_CLOSE_BRACE or T_CLOSE_TAG at the end of a statement
      */
-    public const STATEMENT_TERMINATOR = 128;
+    public const TERMINATOR = 128;
 
     /**
-     * The token is a T_OPEN_BRACE or T_CLOSE_BRACE that delimits a code block
-     * or trait adaptation
+     * The token is a brace that delimits a code block or trait adaptation
      *
      * Not applied to braces in:
      *
@@ -73,19 +72,19 @@ interface TokenFlag
     public const STRUCTURAL_BRACE = 256;
 
     /**
-     * The token is a T_QUESTION or T_COLON belonging to a ternary operator
+     * The token is a T_QUESTION or T_COLON in a ternary expression
      */
-    public const TERNARY_OPERATOR = 512;
+    public const TERNARY = 512;
 
     /**
-     * The token is a T_DOUBLE_ARROW belonging to an arrow function
+     * The token is a T_DOUBLE_ARROW in an arrow function
      */
     public const FN_DOUBLE_ARROW = 1024;
 
     /**
-     * The token is the first in a statement that declares a named entity
+     * The token is the first in a non-anonymous declaration
      */
-    public const NAMED_DECLARATION = 2048;
+    public const DECLARATION = 2048;
 
     /**
      * The token is the parent of a list of items

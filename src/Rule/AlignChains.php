@@ -79,7 +79,7 @@ final class AlignChains implements TokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            if ($token !== $token->Data[TokenData::CHAIN_OPENED_BY]) {
+            if ($token !== $token->Data[TokenData::CHAIN]) {
                 continue;
             }
 

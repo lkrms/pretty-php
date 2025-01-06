@@ -95,7 +95,7 @@ final class PlaceBraces implements TokenRule
 
             // Don't move subsequent code to the next line if the brace is part
             // of an expression
-            if ($close->Flags & TokenFlag::STATEMENT_TERMINATOR) {
+            if ($close->Flags & TokenFlag::TERMINATOR) {
                 // Keep structures like `} else {` on the same line
                 $next = $close->NextCode;
                 if ($next && $next->continuesControlStructure()) {
