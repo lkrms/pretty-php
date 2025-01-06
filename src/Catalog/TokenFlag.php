@@ -87,17 +87,17 @@ interface TokenFlag
     public const DECLARATION = 2048;
 
     /**
+     * The token is a control structure with an unenclosed body
+     */
+    public const UNENCLOSED_PARENT = 4096;
+
+    /**
      * The token is the parent of a list of items
      */
-    public const LIST_PARENT = 4096;
+    public const LIST_PARENT = 8192;
 
     /**
      * The token is the first in a list item
      */
-    public const LIST_ITEM = 8192;
-
-    /**
-     * The token is a control structure with an unenclosed body
-     */
-    public const UNENCLOSED_PARENT = 16384;
+    public const LIST_ITEM = 16384;
 }

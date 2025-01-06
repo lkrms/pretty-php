@@ -20,9 +20,9 @@
 | 9      | 512   | `TERNARY`               | `Parser`            |
 | 10     | 1024  | `FN_DOUBLE_ARROW`       | `Parser`            |
 | 11     | 2048  | `DECLARATION`           | `Parser`            |
-| 12     | 4096  | `LIST_PARENT`           | `Formatter`         |
-| 13     | 8192  | `LIST_ITEM`             | `Formatter`         |
-| 14     | 16384 | `UNENCLOSED_PARENT`     | `Parser`            |
+| 12     | 4096  | `UNENCLOSED_PARENT`     | `Parser`            |
+| 13     | 8192  | `LIST_PARENT`           | `Formatter`         |
+| 14     | 16384 | `LIST_ITEM`             | `Formatter`         |
 
 ## `Token::$Whitespace`
 

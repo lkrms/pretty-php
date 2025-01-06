@@ -57,7 +57,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
 
     /**
      * @var array<TokenData::*,mixed>
-     * @phpstan-var array{string,int,TokenCollection,int,self,self,self,self,TokenCollection,int,TokenCollection,Closure[],self,bool,self,self|null,self|null}
+     * @phpstan-var array{self,self|null,self|null,self,bool,TokenCollection,int,TokenCollection,self,self,self,int,TokenCollection,int,self,string,Closure[]}
      */
     public array $Data;
 
