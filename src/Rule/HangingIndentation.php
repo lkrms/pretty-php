@@ -43,8 +43,8 @@ final class HangingIndentation implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 800,
-            self::CALLBACK => 800,
+            self::PROCESS_TOKENS => 380,
+            self::CALLBACK => 680,
         ][$method] ?? null;
     }
 

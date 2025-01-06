@@ -35,7 +35,7 @@ final class VerticalSpacing implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 98,
+            self::PROCESS_TOKENS => 240,
         ][$method] ?? null;
     }
 

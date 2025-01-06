@@ -42,7 +42,7 @@ final class Laravel implements Preset, TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 100,
+            self::PROCESS_TOKENS => 440,
         ][$method] ?? null;
     }
 

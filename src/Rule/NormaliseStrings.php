@@ -29,7 +29,7 @@ final class NormaliseStrings implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 60,
+            self::PROCESS_TOKENS => 42,
         ][$method] ?? null;
     }
 

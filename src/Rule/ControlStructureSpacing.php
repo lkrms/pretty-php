@@ -25,7 +25,7 @@ final class ControlStructureSpacing implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 83,
+            self::PROCESS_TOKENS => 122,
         ][$method] ?? null;
     }
 

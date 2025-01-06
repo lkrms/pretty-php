@@ -29,7 +29,7 @@ final class PreserveNewlines implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 93,
+            self::PROCESS_TOKENS => 200,
         ][$method] ?? null;
     }
 

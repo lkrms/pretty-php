@@ -246,25 +246,25 @@ final class Formatter implements Buildable, Immutable
      * @var array<class-string<Rule>>
      */
     public const DEFAULT_RULES = [
-        ProtectStrings::class,
-        NormaliseNumbers::class,
-        NormaliseStrings::class,
         NormaliseComments::class,
+        NormaliseStrings::class,
+        NormaliseNumbers::class,
+        ProtectStrings::class,
+        HeredocIndentation::class,
         IndexSpacing::class,
+        OperatorSpacing::class,
         StandardSpacing::class,
         StatementSpacing::class,
-        OperatorSpacing::class,
         ControlStructureSpacing::class,
-        PlaceComments::class,
         PlaceBraces::class,
+        PlaceComments::class,
         PreserveNewlines::class,
         VerticalSpacing::class,
         ListSpacing::class,
+        DeclarationSpacing::class,
         StandardIndentation::class,
         SwitchIndentation::class,
-        DeclarationSpacing::class,
         HangingIndentation::class,
-        HeredocIndentation::class,
         EssentialSpacing::class,
     ];
 
@@ -272,25 +272,25 @@ final class Formatter implements Buildable, Immutable
      * @var array<class-string<Rule>>
      */
     public const OPTIONAL_RULES = [
-        NormaliseNumbers::class,
         NormaliseStrings::class,
+        NormaliseNumbers::class,
         PreserveNewlines::class,
         PreserveOneLineStatements::class,
         BlankBeforeReturn::class,
+        StrictLists::class,
         StrictExpressions::class,
         SemiStrictExpressions::class,
+        AlignChains::class,
+        DeclarationSpacing::class,
+        AlignArrowFunctions::class,
+        AlignLists::class,
+        AlignTernaryOperators::class,
+        Symfony::class,
         Drupal::class,
         Laravel::class,
-        Symfony::class,
         WordPress::class,
-        AlignChains::class,
-        StrictLists::class,
-        AlignArrowFunctions::class,
-        AlignTernaryOperators::class,
-        AlignLists::class,
-        AlignData::class,
         AlignComments::class,
-        DeclarationSpacing::class,
+        AlignData::class,
     ];
 
     /**

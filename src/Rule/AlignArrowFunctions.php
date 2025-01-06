@@ -23,8 +23,8 @@ final class AlignArrowFunctions implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 380,
-            self::CALLBACK => 710,
+            self::PROCESS_TOKENS => 320,
+            self::CALLBACK => 600,
         ][$method] ?? null;
     }
 

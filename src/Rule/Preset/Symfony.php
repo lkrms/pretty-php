@@ -51,8 +51,8 @@ final class Symfony implements Preset, TokenRule, ListRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 100,
-            self::PROCESS_LIST => 100,
+            self::PROCESS_TOKENS => 400,
+            self::PROCESS_LIST => 400,
         ][$method] ?? null;
     }
 

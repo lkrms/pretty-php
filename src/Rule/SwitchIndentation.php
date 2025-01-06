@@ -23,7 +23,7 @@ final class SwitchIndentation implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 600,
+            self::PROCESS_TOKENS => 302,
         ][$method] ?? null;
     }
 

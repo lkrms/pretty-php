@@ -24,7 +24,7 @@ final class ProtectStrings implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 40,
+            self::PROCESS_TOKENS => 60,
         ][$method] ?? null;
     }
 

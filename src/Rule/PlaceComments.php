@@ -33,7 +33,7 @@ final class PlaceComments implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 90,
+            self::PROCESS_TOKENS => 126,
             self::BEFORE_RENDER => 997,
         ][$method] ?? null;
     }

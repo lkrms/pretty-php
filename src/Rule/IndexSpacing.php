@@ -23,7 +23,7 @@ final class IndexSpacing implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 78,
+            self::PROCESS_TOKENS => 100,
         ][$method] ?? null;
     }
 

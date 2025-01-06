@@ -32,9 +32,9 @@ final class StandardSpacing implements TokenRule, DeclarationRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 80,
-            self::PROCESS_DECLARATIONS => 80,
-            self::CALLBACK => 820,
+            self::PROCESS_TOKENS => 104,
+            self::PROCESS_DECLARATIONS => 104,
+            self::CALLBACK => 699,
         ][$method] ?? null;
     }
 

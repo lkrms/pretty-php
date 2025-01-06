@@ -24,7 +24,7 @@ final class NormaliseNumbers implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 60,
+            self::PROCESS_TOKENS => 44,
         ][$method] ?? null;
     }
 

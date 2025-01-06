@@ -47,8 +47,8 @@ final class Drupal implements Preset, TokenRule, DeclarationRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 100,
-            self::PROCESS_DECLARATIONS => 100,
+            self::PROCESS_TOKENS => 420,
+            self::PROCESS_DECLARATIONS => 420,
         ][$method] ?? null;
     }
 

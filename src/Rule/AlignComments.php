@@ -26,7 +26,7 @@ final class AlignComments implements BlockRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_BLOCK => 340,
+            self::PROCESS_BLOCK => 500,
             self::BEFORE_RENDER => 998,
         ][$method] ?? null;
     }

@@ -24,7 +24,7 @@ final class StrictExpressions implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 98,
+            self::PROCESS_TOKENS => 244,
         ][$method] ?? null;
     }
 

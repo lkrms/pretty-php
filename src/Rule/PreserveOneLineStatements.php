@@ -22,7 +22,7 @@ final class PreserveOneLineStatements implements StatementRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_STATEMENTS => 95,
+            self::PROCESS_STATEMENTS => 202,
         ][$method] ?? null;
     }
 

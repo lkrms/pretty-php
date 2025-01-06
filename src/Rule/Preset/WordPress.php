@@ -52,7 +52,7 @@ final class WordPress implements Preset, TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 100,
+            self::PROCESS_TOKENS => 480,
         ][$method] ?? null;
     }
 

@@ -27,8 +27,8 @@ final class PlaceBraces implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 92,
-            self::BEFORE_RENDER => 400,
+            self::PROCESS_TOKENS => 124,
+            self::BEFORE_RENDER => 920,
         ][$method] ?? null;
     }
 

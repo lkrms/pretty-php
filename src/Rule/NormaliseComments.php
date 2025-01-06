@@ -27,7 +27,7 @@ final class NormaliseComments implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 70,
+            self::PROCESS_TOKENS => 40,
         ][$method] ?? null;
     }
 

@@ -23,7 +23,7 @@ final class StatementSpacing implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 80,
+            self::PROCESS_TOKENS => 120,
         ][$method] ?? null;
     }
 

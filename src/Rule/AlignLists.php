@@ -27,8 +27,8 @@ final class AlignLists implements ListRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_LIST => 400,
-            self::CALLBACK => 710,
+            self::PROCESS_LIST => 322,
+            self::CALLBACK => 600,
         ][$method] ?? null;
     }
 

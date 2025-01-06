@@ -22,7 +22,7 @@ final class BlankBeforeReturn implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 97,
+            self::PROCESS_TOKENS => 220,
         ][$method] ?? null;
     }
 

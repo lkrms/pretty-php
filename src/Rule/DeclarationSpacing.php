@@ -34,7 +34,7 @@ final class DeclarationSpacing implements DeclarationRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_DECLARATIONS => 620,
+            self::PROCESS_DECLARATIONS => 299,
         ][$method] ?? null;
     }
 

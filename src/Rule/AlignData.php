@@ -32,8 +32,8 @@ final class AlignData implements BlockRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_BLOCK => 340,
-            self::CALLBACK => 710,
+            self::PROCESS_BLOCK => 520,
+            self::CALLBACK => 600,
         ][$method] ?? null;
     }
 

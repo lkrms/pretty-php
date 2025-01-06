@@ -25,7 +25,7 @@ final class OperatorSpacing implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 80,
+            self::PROCESS_TOKENS => 102,
         ][$method] ?? null;
     }
 

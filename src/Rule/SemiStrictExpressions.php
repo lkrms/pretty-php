@@ -24,7 +24,7 @@ final class SemiStrictExpressions implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 98,
+            self::PROCESS_TOKENS => 246,
         ][$method] ?? null;
     }
 
