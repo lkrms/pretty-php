@@ -314,7 +314,6 @@ jobs:
     needs:
       - check-ci-runs
       - build
-      - test-phar
     if: ${{ (github.event_name == 'workflow_call' || needs.check-ci-runs.outputs.ci_required == 1) && !cancelled() && !failure() }}
 
     strategy:
@@ -322,15 +321,20 @@ jobs:
       matrix:
         repository:
           - laravel/framework
-        args:
+        config:
           - --include-if-php --preset laravel src tests bin
+        args:
+          - --quiet --timers
         include:
           - repository: drupal/drupal
-            args: --exclude '/\/(\.git|\.hg|\.svn|_?build|dist|vendor|core\/lib\/Drupal\/Component\/Transliteration\/data)\/$/' --include-if-php=/./ --preset drupal .
+            config: --exclude '/\/(\.git|\.hg|\.svn|_?build|dist|vendor|core\/lib\/Drupal\/Component\/Transliteration\/data)\/$/' --include-if-php=/./ --preset drupal .
+            args: --quiet --timers
           - repository: symfony/symfony
-            args: --include-if-php --preset symfony .
+            config: --include-if-php --preset symfony .
+            args: --quiet --timers
           - repository: WordPress/WordPress
-            args: --include-if-php --preset wordpress .
+            config: --include-if-php --preset wordpress .
+            args: --quiet --timers --no-problems
 
     runs-on: ubuntu-latest
 
@@ -344,10 +348,54 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ needs.build.outputs.artifact_name }}
+          path: ~/
 
       - name: Run pretty-php
+        id: run-pretty-php
+        shell: bash
         env:
           artifact_path: ${{ needs.build.outputs.artifact_path }}
+          repository: ${{ matrix.repository }}
         run: |
-          php "$artifact_path" --print-config ${{ matrix.args }} | tee .prettyphp
-          php "$artifact_path" --quiet --timers || { status=$? && [[ $status -eq 4 ]] || (exit $status); }
+          check_status() {
+            local s=$?
+            ((s == 4)) || return $s
+          }
+
+          set -o pipefail
+          shopt -s dotglob extglob
+
+          artifact_path=~/$artifact_path
+          php "$artifact_path" --print-config ${{ matrix.config }} | tee .prettyphp
+          php "$artifact_path" ${{ matrix.args }} || check_status
+
+          echo
+          echo "Downloading latest release to format $repository for comparison"
+          latest_path=~/pretty-php-latest.phar
+          latest_url=https://github.com/lkrms/pretty-php/releases/latest/download/pretty-php.phar
+          diff_path=~/${repository%/*}.diff
+          : >"$diff_path"
+
+          # Stage changes in the background
+          git add !(.prettyphp) &
+          # Download latest release in the foreground
+          curl -fLo "$latest_path" "$latest_url" &&
+            # Wait for background command to finish
+            wait $! &&
+            # Keep index and restore working tree to HEAD
+            git restore -s HEAD . &&
+            { php "$latest_path" --fast ${{ matrix.args }} || check_status; } &&
+            echo &&
+            # Swap inputs so diff is from working tree to index
+            git diff -U5 -R --exit-code | tee "$diff_path" &&
+            echo "No differences found" || true
+
+          printf 'diff_name=%s\n' "${diff_path##*/}" >>"$GITHUB_OUTPUT"
+          printf 'diff_path=%s\n' "$([[ ! -s $diff_path ]] || printf '%s\n' "$diff_path")" >>"$GITHUB_OUTPUT"
+
+      - name: Upload diff artifact
+        if: ${{ !cancelled() && !failure() && steps.run-pretty-php.outputs.diff_path != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.run-pretty-php.outputs.diff_name }}
+          path: ${{ steps.run-pretty-php.outputs.diff_path }}
