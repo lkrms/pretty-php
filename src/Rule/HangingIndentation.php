@@ -49,7 +49,7 @@ final class HangingIndentation implements TokenRule
     }
 
     /**
-     * @inheritDoc
+     * @codeCoverageIgnore
      */
     public static function needsSortedTokens(): bool
     {
@@ -358,7 +358,6 @@ final class HangingIndentation implements TokenRule
                 //   context, followed by the precedence value added previously
                 // - the token added to the last context, followed by the
                 //   precedence value added previously (if present)
-                // - `$lastToken` if no token was added to the last context
                 if (
                     TokenUtil::OPERATOR_PRECEDENCE_INDEX[$trigger->id]
                     && ($precedence = TokenUtil::getOperatorPrecedence($trigger)) < 99

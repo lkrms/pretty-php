@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Tests;
 
+use Lkrms\PrettyPHP\Catalog\FormatterFlag;
 use Lkrms\PrettyPHP\Contract\Extension;
 use Lkrms\PrettyPHP\Contract\HasTokenNames;
 use Lkrms\PrettyPHP\Formatter;
@@ -43,6 +44,7 @@ abstract class TestCase extends PHPUnitTestCase implements HasTokenNames
      * @param array<class-string<Extension>> $enable
      * @param array<class-string<Extension>> $disable
      * @param 2|4|8 $tabSize
+     * @param int-mask-of<FormatterFlag::*> $flags
      */
     public static function assertCodeFormatIs(
         string $expected,
@@ -50,7 +52,8 @@ abstract class TestCase extends PHPUnitTestCase implements HasTokenNames
         array $enable = [],
         array $disable = [],
         bool $insertSpaces = true,
-        int $tabSize = 4
+        int $tabSize = 4,
+        int $flags = FormatterFlag::DETECT_PROBLEMS
     ): void {
         self::assertFormatterOutputIs(
             $expected,
@@ -60,6 +63,7 @@ abstract class TestCase extends PHPUnitTestCase implements HasTokenNames
                 ->tabSize($tabSize)
                 ->enable($enable)
                 ->disable($disable)
+                ->flags($flags)
         );
     }
 

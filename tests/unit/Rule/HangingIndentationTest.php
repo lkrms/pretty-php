@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Tests\Rule;
 
+use Lkrms\PrettyPHP\Catalog\FormatterFlag;
 use Lkrms\PrettyPHP\Rule\AlignChains;
 use Lkrms\PrettyPHP\Tests\TestCase;
 use Lkrms\PrettyPHP\Formatter;
@@ -25,7 +26,8 @@ final class HangingIndentationTest extends TestCase
      */
     public static function outputProvider(): array
     {
-        $formatterB = Formatter::build();
+        $formatterB = Formatter::build()
+                          ->flags(FormatterFlag::DETECT_PROBLEMS);
         $formatter = $formatterB->build();
         $withAlignChains = $formatterB
                                ->enable([AlignChains::class])
