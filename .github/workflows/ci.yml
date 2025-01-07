@@ -17,7 +17,7 @@ jobs:
   check-ci-runs:
     name: Check previous runs
     if: ${{ github.event_name != 'workflow_call' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       ci_required: ${{ steps.check-ci-runs.outputs.ci_required }}
     steps:
@@ -34,7 +34,7 @@ jobs:
     needs:
       - check-ci-runs
     if: ${{ (github.event_name == 'workflow_call' || needs.check-ci-runs.outputs.ci_required == 1) && !cancelled() && !failure() }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout
@@ -77,7 +77,7 @@ jobs:
           - "8.4"
           - "7.4"
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout
@@ -124,21 +124,21 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-latest
+          - ubuntu-24.04
           - windows-latest
           - macos-latest
         php-version:
           - "8.4"
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             php-version: "8.3"
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             php-version: "8.2"
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             php-version: "8.1"
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             php-version: "8.0"
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             php-version: "7.4"
 
     runs-on: ${{ matrix.os }}
@@ -197,7 +197,7 @@ jobs:
       - phpstan
       - unit-tests
     if: ${{ (github.event_name == 'workflow_call' || needs.check-ci-runs.outputs.ci_required == 1) && !cancelled() && !failure() }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       artifact_name: ${{ steps.run-build-script.outputs.artifact_name }}
       artifact_path: ${{ steps.run-build-script.outputs.artifact_path }}
@@ -268,21 +268,21 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-latest
+          - ubuntu-24.04
           - windows-latest
           - macos-latest
         php-version:
           - "8.4"
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             php-version: "8.3"
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             php-version: "8.2"
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             php-version: "8.1"
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             php-version: "8.0"
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             php-version: "7.4"
 
     runs-on: ${{ matrix.os }}
@@ -336,7 +336,7 @@ jobs:
             config: --include-if-php --preset wordpress .
             args: --quiet --timers --no-problems
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout ${{ matrix.repository }}

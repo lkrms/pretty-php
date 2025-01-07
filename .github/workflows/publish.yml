@@ -35,7 +35,7 @@ jobs:
   homebrew:
     name: Update Homebrew formula
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.update-homebrew }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Bump Homebrew formula and push to lkrms/misc tap
@@ -52,7 +52,7 @@ jobs:
   aur:
     name: Update AUR package
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.update-aur }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout
@@ -80,7 +80,7 @@ jobs:
   vscode:
     name: Update VS Code extension
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.update-vscode }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout

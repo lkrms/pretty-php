@@ -8,7 +8,7 @@ on:
 jobs:
   check-ci-runs:
     name: Check CI workflow runs
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       ci_required: ${{ steps.check-ci-runs.outputs.ci_required }}
     steps:
@@ -32,7 +32,7 @@ jobs:
     needs:
       - ci
     if: ${{ !cancelled() && !failure() }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout
