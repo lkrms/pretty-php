@@ -69,12 +69,13 @@ final class AlignData implements BlockRule
      * `AlignLists` nor `StrictLists` are enabled, its `=>` delimiters are
      * ignored.
      *
-     * @prettyphp-callback Assignment operators are aligned unless
-     * `MaxAssignmentPadding` is not `null` and would be exceeded.
+     * @prettyphp-callback Assignment operators are aligned unless the
+     * formatter's `MaxAssignmentPadding` property is not `null` and would be
+     * exceeded.
      *
-     * In arrays and `match` expressions, `=>` delimiters are aligned unless
-     * `MaxDoubleArrowColumn` is not `null`, in which case any found in
-     * subsequent columns are excluded from consideration.
+     * In arrays and `match` expressions, `=>` delimiters are aligned unless the
+     * formatter's `MaxDoubleArrowColumn` property is not `null`, in which case
+     * any found in subsequent columns are excluded from consideration.
      *
      * Alignment is achieved by:
      *

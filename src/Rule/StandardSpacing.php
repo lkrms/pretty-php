@@ -90,7 +90,7 @@ final class StandardSpacing implements TokenRule, DeclarationRule
      * close tag is found in the same scope (or the document has no close tag,
      * and the open tag is in the global scope), a callback is registered to
      * align nested tokens with it. An additional level of indentation is
-     * applied if `IndentBetweenTags` is enabled.
+     * applied if the formatter's `IndentBetweenTags` property is `true`.
      *
      * If a `<?php` tag is followed by a `declare` statement, they are collapsed
      * to one line. This is only applied in strict PSR-12 mode if the `declare`

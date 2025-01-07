@@ -58,10 +58,10 @@ final class IndexSpacing implements TokenRule
     /**
      * Apply the rule to the given tokens
      *
-     * Leading and trailing spaces are:
+     * Leading and/or trailing spaces are:
      *
-     * - added to tokens in the `AddSpace`, `AddSpaceBefore` and `AddSpaceAfter`
-     *   indexes
+     * - added to tokens in the formatter's `AddSpace`, `AddSpaceBefore` and
+     *   `AddSpaceAfter` indexes
      * - suppressed, along with blank lines, for tokens in the
      *   `SuppressSpaceBefore` and `SuppressSpaceAfter` indexes, and inside
      *   brackets other than structural and `match` braces

@@ -52,7 +52,8 @@ final class AlignChains implements TokenRule
      *
      * If there are no object operators with a leading newline in a chain of
      * method calls, or if the first object operator in the chain has a leading
-     * newline and `AlignChainAfterNewline` is disabled, no action is taken.
+     * newline and the formatter's `AlignChainAfterNewline` property is `false`,
+     * no action is taken.
      *
      * Otherwise, if the first object operator in the chain has a leading
      * newline, it is removed if horizontal space on subsequent lines would be

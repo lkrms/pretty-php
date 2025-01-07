@@ -60,8 +60,8 @@ final class FormatHeredocs implements TokenRule
     /**
      * Apply the rule to the given tokens
      *
-     * If `HeredocIndent` has a value other than `NONE`, heredocs are saved for
-     * later processing.
+     * If the formatter's `HeredocIndent` property has a value other than
+     * `NONE`, heredocs are saved for later processing.
      */
     public function processTokens(array $tokens): void
     {

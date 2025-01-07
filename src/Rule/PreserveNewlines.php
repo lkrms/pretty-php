@@ -63,18 +63,20 @@ final class PreserveNewlines implements TokenRule
     /**
      * Apply the rule to the given tokens
      *
-     * If a newline in the input is adjacent to a token in `AllowNewlineBefore`
-     * or `AllowNewlineAfter`, it is applied to the token as a leading or
-     * trailing newline on a best-effort basis. This has the effect of placing
-     * operators before or after newlines as per the formatter's token index.
+     * If a newline in the input is adjacent to a token in the formatter's
+     * `AllowNewlineBefore` or `AllowNewlineAfter` indexes, it is applied to the
+     * token as a leading or trailing newline on a best-effort basis. This has
+     * the effect of placing operators before or after newlines as per the
+     * formatter's token index.
      *
-     * Similarly, blank lines in the input are preserved between tokens in
-     * `AllowBlankBefore` and `AllowBlankAfter`, except:
+     * Similarly, blank lines in the input are preserved between tokens in the
+     * `AllowBlankBefore` and `AllowBlankAfter` indexes, except:
      *
      * - after `:` if there is a subsequent token in the same scope
      * - after `,` other than between `match` expression arms
      * - after `;` in `for` expressions
-     * - after mid-statement comments and comments in non-statement scopes
+     * - before and after mid-statement comments and comments in non-statement
+     *   scopes
      */
     public function processTokens(array $tokens): void
     {

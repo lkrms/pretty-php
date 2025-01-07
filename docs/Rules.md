@@ -61,7 +61,7 @@ Formatting rules applied by `pretty-php` are as follows.
 
 <small>(mandatory, `processTokens()`, priority 40, tokens: `T_COMMENT` | `T_DOC_COMMENT`)</small>
 
-In one-line C-style comments (`/*`), unnecessary asterisks are removed from both delimiters, the remaining content is trimmed, and spaces are added between delimiters and adjacent content.
+In one-line C-style comments (`/*`), unnecessary asterisks are removed from both delimiters, the remaining content is trimmed, and a space is added between delimiters and adjacent content.
 
 Shell-style comments (`#`) are converted to C++-style comments (`//`).
 
@@ -77,7 +77,7 @@ DocBlocks are normalised for PSR-5 compliance as follows:
 
 Multi-line C-style comments where every line starts with an asterisk, or at least one delimiter appears on its own line, receive the same treatment as DocBlocks.
 
-> Multi-line C-style comments that do not meet this criteria are trimmed and reindented by the renderer.
+> Multi-line C-style comments that do not meet this criteria are trimmed and may be reindented by the renderer.
 
 ### `NormaliseStrings`
 
@@ -109,15 +109,15 @@ In non-constant strings, whitespace between tokens is suppressed for inner sibli
 
 <small>(mandatory, `processTokens()`, priority 62, tokens: `T_START_HEREDOC`)</small>
 
-If `HeredocIndent` has a value other than `NONE`, heredocs are saved for later processing.
+If the formatter's `HeredocIndent` property has a value other than `NONE`, heredocs are saved for later processing.
 
 ### `IndexSpacing`
 
 <small>(mandatory, `processTokens()`, priority 100)</small>
 
-Leading and trailing spaces are:
+Leading and/or trailing spaces are:
 
-- added to tokens in the `AddSpace`, `AddSpaceBefore` and `AddSpaceAfter` indexes
+- added to tokens in the formatter's `AddSpace`, `AddSpaceBefore` and `AddSpaceAfter` indexes
 - suppressed, along with blank lines, for tokens in the `SuppressSpaceBefore` and `SuppressSpaceAfter` indexes, and inside brackets other than structural and `match` braces
 
 Blank lines are also suppressed inside alternative syntax blocks.
@@ -152,7 +152,7 @@ Spaces are added before and after operators not mentioned above.
 
 <small>(mandatory, `processTokens()`, priority 104, tokens: `,` | `T_DECLARE` | `T_MATCH` | `T_ATTRIBUTE` | `T_OPEN_TAG` | `T_OPEN_TAG_WITH_ECHO` | `T_CLOSE_TAG` | `T_START_HEREDOC` | `T_ATTRIBUTE_COMMENT`)</small>
 
-If the indentation level of an open tag aligns with a tab stop, and a close tag is found in the same scope (or the document has no close tag, and the open tag is in the global scope), a callback is registered to align nested tokens with it. An additional level of indentation is applied if `IndentBetweenTags` is enabled.
+If the indentation level of an open tag aligns with a tab stop, and a close tag is found in the same scope (or the document has no close tag, and the open tag is in the global scope), a callback is registered to align nested tokens with it. An additional level of indentation is applied if the formatter's `IndentBetweenTags` property is `true`.
 
 If a `<?php` tag is followed by a `declare` statement, they are collapsed to one line. This is only applied in strict PSR-12 mode if the `declare` statement is `declare(strict_types=1);` (semicolon optional), followed by a close tag.
 
@@ -180,7 +180,7 @@ If a property has unimplemented hooks with no modifiers or attributes (e.g. `pub
 
 In `for` loop expressions, a space is added after semicolons where the next expression is not empty.
 
-Whitespace is suppressed before, and newlines are added after, semicolons in other contexts and colons in alternative syntax constructs, `switch` cases and labels.
+For semicolons in other contexts, and colons in alternative syntax constructs, `switch` cases and labels, leading whitespace is suppressed and trailing newlines are added.
 
 ### `ControlStructureSpacing`
 
@@ -188,8 +188,7 @@ Whitespace is suppressed before, and newlines are added after, semicolons in oth
 
 If the body of a control structure has no enclosing braces:
 
-- a newline is added after the body (if empty)
-- a newline is added before and after the body (if non-empty)
+- a newline is added after the body (if empty), or before and after the body (if non-empty)
 - blank lines before the body are suppressed
 - blank lines after the body are suppressed if the control structure continues
 
@@ -202,7 +201,7 @@ Whitespace is applied to structural and `match` expression braces as follows:
 - Blank lines are suppressed after open braces and before close braces.
 - Newlines are added after open braces.
 - Newlines are added after close braces unless they belong to a `match` expression or a control structure that is immediately continued, e.g. `} else {`. In the latter case, trailing newlines are suppressed.
-- Empty class, function and property hook bodies are collapsed to ` {}` on the same line as the declaration they belong to unless `CollapseEmptyDeclarationBodies` is disabled.
+- Empty class, function and property hook bodies are collapsed to ` {}` on the same line as the declaration they belong to unless the formatter's `CollapseEmptyDeclarationBodies` property is `false`.
 - Horizontal whitespace is suppressed between other empty braces.
 
 > Open brace placement is handled by `VerticalSpacing`, which runs after newlines are applied by other rules.
@@ -221,7 +220,7 @@ Newlines are added before and after:
 
 These comments are also saved for alignment with the next code token (unless it's a close bracket).
 
-Leading and trailing spaces are added to comments that don't appear on their own line, and comments where the previous token is a code token are saved to receive padding derived from `SpacesBesideCode` if they are the last token on the line after other rules are applied.
+Leading and trailing spaces are added to comments that don't appear on their own line, and comments where the previous token is a code token are saved to receive padding derived from the value of the formatter's `SpacesBesideCode` property if they are the last token on the line after other rules are applied.
 
 For multi-line DocBlocks, and C-style comments that receive the same treatment:
 
@@ -233,14 +232,14 @@ For multi-line DocBlocks, and C-style comments that receive the same treatment:
 
 <small>(default, `processTokens()`, priority 200, tokens: `* (except virtual)`)</small>
 
-If a newline in the input is adjacent to a token in `AllowNewlineBefore` or `AllowNewlineAfter`, it is applied to the token as a leading or trailing newline on a best-effort basis. This has the effect of placing operators before or after newlines as per the formatter's token index.
+If a newline in the input is adjacent to a token in the formatter's `AllowNewlineBefore` or `AllowNewlineAfter` indexes, it is applied to the token as a leading or trailing newline on a best-effort basis. This has the effect of placing operators before or after newlines as per the formatter's token index.
 
-Similarly, blank lines in the input are preserved between tokens in `AllowBlankBefore` and `AllowBlankAfter`, except:
+Similarly, blank lines in the input are preserved between tokens in the `AllowBlankBefore` and `AllowBlankAfter` indexes, except:
 
 - after `:` if there is a subsequent token in the same scope
 - after `,` other than between `match` expression arms
 - after `;` in `for` expressions
-- after mid-statement comments and comments in non-statement scopes
+- before and after mid-statement comments and comments in non-statement scopes
 
 ### `PreserveOneLineStatements`
 
@@ -319,7 +318,7 @@ Newlines are added before and after control structure expressions with newlines 
 
 <small>(optional, `processTokens()`, priority 280, tokens: `T_OBJECT_OPERATOR` | `T_NULLSAFE_OBJECT_OPERATOR`)</small>
 
-If there are no object operators with a leading newline in a chain of method calls, or if the first object operator in the chain has a leading newline and `AlignChainAfterNewline` is disabled, no action is taken.
+If there are no object operators with a leading newline in a chain of method calls, or if the first object operator in the chain has a leading newline and the formatter's `AlignChainAfterNewline` property is `false`, no action is taken.
 
 Otherwise, if the first object operator in the chain has a leading newline, it is removed if horizontal space on subsequent lines would be saved. Then, a callback is registered to align object operators in the chain with:
 
@@ -335,7 +334,7 @@ One-line declarations with a collapsed or collapsible DocBlock, or no DocBlock a
 
 "Tight" spacing is applied by suppressing blank lines between collapsible declarations of the same type when they appear consecutively and:
 
-- `TightDeclarationSpacing` is enabled, or
+- the formatter's `TightDeclarationSpacing` property is `true`, or
 - there is no blank line in the input between the first and second declarations in the group
 
 DocBlocks in tightly-spaced groups are collapsed to a single line.
@@ -512,9 +511,9 @@ This is achieved by:
 
 <small>(optional, _`callback`_, priority 600)</small>
 
-Assignment operators are aligned unless `MaxAssignmentPadding` is not `null` and would be exceeded.
+Assignment operators are aligned unless the formatter's `MaxAssignmentPadding` property is not `null` and would be exceeded.
 
-In arrays and `match` expressions, `=>` delimiters are aligned unless `MaxDoubleArrowColumn` is not `null`, in which case any found in subsequent columns are excluded from consideration.
+In arrays and `match` expressions, `=>` delimiters are aligned unless the formatter's `MaxDoubleArrowColumn` property is not `null`, in which case any found in subsequent columns are excluded from consideration.
 
 Alignment is achieved by:
 

@@ -77,7 +77,7 @@ final class DeclarationSpacing implements DeclarationRule
      * "Tight" spacing is applied by suppressing blank lines between collapsible
      * declarations of the same type when they appear consecutively and:
      *
-     * - `TightDeclarationSpacing` is enabled, or
+     * - the formatter's `TightDeclarationSpacing` property is `true`, or
      * - there is no blank line in the input between the first and second
      *   declarations in the group
      *

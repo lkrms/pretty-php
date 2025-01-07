@@ -50,8 +50,8 @@ final class ControlStructureSpacing implements TokenRule
      *
      * If the body of a control structure has no enclosing braces:
      *
-     * - a newline is added after the body (if empty)
-     * - a newline is added before and after the body (if non-empty)
+     * - a newline is added after the body (if empty), or before and after the
+     *   body (if non-empty)
      * - blank lines before the body are suppressed
      * - blank lines after the body are suppressed if the control structure
      *   continues

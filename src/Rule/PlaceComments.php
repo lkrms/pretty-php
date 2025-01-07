@@ -82,8 +82,9 @@ final class PlaceComments implements TokenRule
      *
      * Leading and trailing spaces are added to comments that don't appear on
      * their own line, and comments where the previous token is a code token are
-     * saved to receive padding derived from `SpacesBesideCode` if they are the
-     * last token on the line after other rules are applied.
+     * saved to receive padding derived from the value of the formatter's
+     * `SpacesBesideCode` property if they are the last token on the line after
+     * other rules are applied.
      *
      * For multi-line DocBlocks, and C-style comments that receive the same
      * treatment:

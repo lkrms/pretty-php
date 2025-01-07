@@ -51,7 +51,7 @@ final class NormaliseComments implements TokenRule
      * Apply the rule to the given tokens
      *
      * In one-line C-style comments (`/*`), unnecessary asterisks are removed
-     * from both delimiters, the remaining content is trimmed, and spaces are
+     * from both delimiters, the remaining content is trimmed, and a space is
      * added between delimiters and adjacent content.
      *
      * Shell-style comments (`#`) are converted to C++-style comments (`//`).
@@ -79,7 +79,7 @@ final class NormaliseComments implements TokenRule
      * treatment as DocBlocks.
      *
      * > Multi-line C-style comments that do not meet this criteria are trimmed
-     * > and reindented by the renderer.
+     * > and may be reindented by the renderer.
      */
     public function processTokens(array $tokens): void
     {

@@ -52,9 +52,9 @@ final class StatementSpacing implements TokenRule
      * In `for` loop expressions, a space is added after semicolons where the
      * next expression is not empty.
      *
-     * Whitespace is suppressed before, and newlines are added after, semicolons
-     * in other contexts and colons in alternative syntax constructs, `switch`
-     * cases and labels.
+     * For semicolons in other contexts, and colons in alternative syntax
+     * constructs, `switch` cases and labels, leading whitespace is suppressed
+     * and trailing newlines are added.
      */
     public function processTokens(array $tokens): void
     {
