@@ -269,13 +269,13 @@ final class HangingIndentation implements TokenRule
                     ? $prevCode
                     : $token;
 
-            if ($this->Idx->OperatorAssignmentOrDoubleArrow[$trigger->id]) {
+            if ($this->Idx->AssignmentOrDoubleArrow[$trigger->id]) {
                 $assignment = $trigger;
             } else {
                 $assignment = null;
                 $t = $token;
                 do {
-                    $t = $t->prevSiblingFrom($this->Idx->OperatorAssignmentOrDoubleArrow, true);
+                    $t = $t->prevSiblingFrom($this->Idx->AssignmentOrDoubleArrow, true);
                     if ($t->id === \T_NULL) {
                         break;
                     }
@@ -341,12 +341,12 @@ final class HangingIndentation implements TokenRule
             } elseif ($statement !== $token) {
                 // Don't indent subsequent assignments in the same statement
                 if (
-                    $this->Idx->OperatorAssignment[$trigger->id]
+                    $this->Idx->Assignment[$trigger->id]
                     && $lastToken
                     && $lastToken->PrevCode
                     && (
-                        $this->Idx->OperatorAssignment[$lastToken->PrevCode->id]
-                        || $this->Idx->OperatorAssignment[$lastToken->id]
+                        $this->Idx->Assignment[$lastToken->PrevCode->id]
+                        || $this->Idx->Assignment[$lastToken->id]
                     )
                 ) {
                     continue;
@@ -392,13 +392,13 @@ final class HangingIndentation implements TokenRule
                     && !$context[1]
                     && $parent
                     && $parentFlags & self::NO_INDENT
-                    && !$this->Idx->OperatorAssignmentOrDoubleArrow[$trigger->id]
+                    && !$this->Idx->AssignmentOrDoubleArrow[$trigger->id]
                 ) || (
                     $lastToken
                     && $lastToken->PrevCode
                     && (
-                        $this->Idx->OperatorAssignmentOrDoubleArrow[$lastToken->PrevCode->id]
-                        || $this->Idx->OperatorAssignmentOrDoubleArrow[$lastToken->id]
+                        $this->Idx->AssignmentOrDoubleArrow[$lastToken->PrevCode->id]
+                        || $this->Idx->AssignmentOrDoubleArrow[$lastToken->id]
                     )
                 );
             }
@@ -430,7 +430,7 @@ final class HangingIndentation implements TokenRule
             // Indent expressions relative to assignment operators
             if (
                 ($next = $until->NextCode)
-                && $this->Idx->OperatorAssignment[$next->id]
+                && $this->Idx->Assignment[$next->id]
             ) {
                 $until = TokenUtil::getOperatorEndExpression($next);
             }

@@ -102,7 +102,7 @@ final class AlignData implements BlockRule
 
         foreach ($lines as $line => $tokens) {
             foreach ($tokens as $token) {
-                if ($this->Idx->OperatorAssignment[$token->id]) {
+                if ($this->Idx->Assignment[$token->id]) {
                     /** @var Token */
                     $prev = $token->Prev;
                     /** @var Token */
@@ -117,10 +117,10 @@ final class AlignData implements BlockRule
                         // - in the statement
                         // - on the line
                         && !$statement->withNextSiblings($prev)
-                                      ->hasOneFrom($this->Idx->OperatorAssignment)
+                                      ->hasOneFrom($this->Idx->Assignment)
                         && !$token->firstSiblingAfterNewline(false)
                                   ->withNextSiblings($prev)
-                                  ->hasOneFrom($this->Idx->OperatorAssignment)
+                                  ->hasOneFrom($this->Idx->Assignment)
                     ) {
                         $addToIndex(self::TYPE_ASSIGNMENT, $line, $token);
                     }

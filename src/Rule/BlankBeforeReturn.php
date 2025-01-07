@@ -31,7 +31,7 @@ final class BlankBeforeReturn implements TokenRule
      */
     public static function getTokens(TokenIndex $idx): array
     {
-        return $idx->Return;
+        return $idx->ReturnOrYield;
     }
 
     /**
@@ -64,7 +64,7 @@ final class BlankBeforeReturn implements TokenRule
             if (
                 ($prev = $token->skipPrevEmptyStatements()->PrevSibling)
                 && $prev->Statement
-                && $this->Idx->Return[$prev->Statement->id]
+                && $this->Idx->ReturnOrYield[$prev->Statement->id]
             ) {
                 continue;
             }

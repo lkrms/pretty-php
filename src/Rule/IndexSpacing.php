@@ -33,13 +33,17 @@ final class IndexSpacing implements TokenRule
     public static function getTokens(TokenIndex $idx): array
     {
         return TokenIndex::merge(
+            [
+                \T_COLON => true,
+                \T_CLOSE_ALT => true,
+            ],
             $idx->AddSpace,
             $idx->AddSpaceBefore,
             $idx->AddSpaceAfter,
             $idx->SuppressSpaceBefore,
             $idx->SuppressSpaceAfter,
-            $idx->OpenBracketOrAlt,
-            $idx->CloseBracketOrAlt,
+            $idx->OpenBracket,
+            $idx->CloseBracket,
         );
     }
 
@@ -95,7 +99,7 @@ final class IndexSpacing implements TokenRule
                 )
             )) {
                 $token->Whitespace |= Space::NO_BLANK_BEFORE | Space::NO_SPACE_BEFORE;
-            } elseif ($token->id === \T_END_ALT_SYNTAX) {
+            } elseif ($token->id === \T_CLOSE_ALT) {
                 $token->Whitespace |= Space::NO_BLANK_BEFORE;
             }
         }

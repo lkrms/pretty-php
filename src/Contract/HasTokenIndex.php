@@ -35,6 +35,7 @@ interface HasTokenIndex
         \T_CLASS => false,
         \T_CLASS_C => false,
         \T_CLONE => false,
+        \T_CLOSE_ALT => false,
         \T_CLOSE_BRACE => false,
         \T_CLOSE_BRACKET => false,
         \T_CLOSE_PARENTHESIS => false,
@@ -72,7 +73,6 @@ interface HasTokenIndex
         \T_ELSEIF => false,
         \T_EMPTY => false,
         \T_ENCAPSED_AND_WHITESPACE => false,
-        \T_END_ALT_SYNTAX => false,
         \T_END_HEREDOC => false,
         \T_ENDDECLARE => false,
         \T_ENDFOR => false,
@@ -224,6 +224,7 @@ interface HasTokenIndex
         \T_CLASS => true,
         \T_CLASS_C => true,
         \T_CLONE => true,
+        \T_CLOSE_ALT => true,
         \T_CLOSE_BRACE => true,
         \T_CLOSE_BRACKET => true,
         \T_CLOSE_PARENTHESIS => true,
@@ -261,7 +262,6 @@ interface HasTokenIndex
         \T_ELSEIF => true,
         \T_EMPTY => true,
         \T_ENCAPSED_AND_WHITESPACE => true,
-        \T_END_ALT_SYNTAX => true,
         \T_END_HEREDOC => true,
         \T_ENDDECLARE => true,
         \T_ENDFOR => true,
@@ -662,20 +662,25 @@ interface HasTokenIndex
     /**
      * @var array<int,true>
      */
-    public const VISIBILITY = [
-        \T_PRIVATE_SET => true,
-        \T_PROTECTED_SET => true,
-        \T_PUBLIC_SET => true,
-    ]
-        + self::VISIBILITY_GET;
+    public const VISIBILITY = self::VISIBILITY_SYMMETRIC
+        + self::VISIBILITY_ASYMMETRIC;
 
     /**
      * @var array<int,true>
      */
-    public const VISIBILITY_GET = [
+    public const VISIBILITY_SYMMETRIC = [
         \T_PRIVATE => true,
         \T_PROTECTED => true,
         \T_PUBLIC => true,
+    ];
+
+    /**
+     * @var array<int,true>
+     */
+    public const VISIBILITY_ASYMMETRIC = [
+        \T_PRIVATE_SET => true,
+        \T_PROTECTED_SET => true,
+        \T_PUBLIC_SET => true,
     ];
 
     /**
@@ -781,6 +786,14 @@ interface HasTokenIndex
         \T_AND => true,
         \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG => true,
         \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG => true,
+    ];
+
+    /**
+     * @var array<int,true>
+     */
+    public const ATTRIBUTE = [
+        \T_ATTRIBUTE => true,
+        \T_ATTRIBUTE_COMMENT => true,
     ];
 
     /**

@@ -30,7 +30,7 @@ interface HasTokenNames
         \T_PROPERTY_C => 'T_PROPERTY_C',
         // Custom
         \T_ATTRIBUTE_COMMENT => 'T_ATTRIBUTE_COMMENT',
-        \T_END_ALT_SYNTAX => 'T_END_ALT_SYNTAX',
+        \T_CLOSE_ALT => 'T_CLOSE_ALT',
         \T_NULL => 'T_NULL',
         \T_OPEN_UNENCLOSED => 'T_OPEN_UNENCLOSED',
         \T_CLOSE_UNENCLOSED => 'T_CLOSE_UNENCLOSED',

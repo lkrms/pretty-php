@@ -569,11 +569,11 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
 
         if (
             $this->CloseBracket
-            || $this->Idx->AltContinueWithNoExpression[$prevCode->id]
+            || $prevCode->id === \T_ELSE
             || (
                 $prevCode->id === \T_CLOSE_PARENTHESIS
                 && ($prev = $prevCode->PrevSibling)
-                && $this->Idx->AltStartOrContinueWithExpression[$prev->id]
+                && $this->Idx->AltStartOrContinue[$prev->id]
             )
         ) {
             return TokenSubId::COLON_ALT_SYNTAX_DELIMITER;
@@ -733,7 +733,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
 
     public function isUnaryOperator(): bool
     {
-        return $this->Idx->OperatorUnary[$this->id] || (
+        return $this->Idx->Unary[$this->id] || (
             $this->Idx->PlusOrMinus[$this->id]
             && $this->inUnaryContext()
         );
@@ -1008,7 +1008,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     public function skipToStartOfDeclaration(): self
     {
         if (
-            $this->Idx->ExpressionDelimiter[$this->id]
+            $this->Idx->OperatorExceptTernaryOrDelimiter[$this->id]
             || $this->Flags & TokenFlag::TERNARY
         ) {
             // @codeCoverageIgnoreStart

@@ -268,7 +268,7 @@ final class Parser implements Immutable
                         // Don't enclose tokens in alternative syntax constructs
                         && !(
                             $next->id === \T_COLON
-                            && $idx->AltContinueWithNoExpression[$prevCode->id]
+                            && $prevCode->id === \T_ELSE
                         )
                         // Treat `else if` as `elseif`
                         && !(
@@ -282,7 +282,7 @@ final class Parser implements Immutable
                         // Don't enclose tokens in alternative syntax constructs
                         && !(
                             $next->id === \T_COLON
-                            && $idx->AltStartOrContinueWithExpression[$parent->id]
+                            && $idx->AltStartOrContinue[$parent->id]
                         )
                         // Don't enclose tokens after `while` in `do ... while`
                         && !(
@@ -353,27 +353,26 @@ final class Parser implements Immutable
             }
 
             // Add virtual "brackets" around alternative syntax blocks by adding
-            // `T_END_ALT_SYNTAX` tokens as close brackets for `T_COLON`
+            // `T_CLOSE_ALT` tokens as close brackets for `T_COLON`
             if (
-                $idx->AltContinue[$token->id]
-                || $idx->AltEnd[$token->id]
+                $idx->AltContinueOrEnd[$token->id]
             ) {
                 /** @var Token $prev */
-                if ($prev->id !== \T_END_ALT_SYNTAX && ((
+                if ($prev->id !== \T_CLOSE_ALT && ((
                     $prev->Parent
                     && $prev->Parent->id === \T_COLON
                     && ($idx->AltEnd[$token->id] || (
-                        $idx->AltContinueWithExpression[$token->id]
+                        $token->id === \T_ELSEIF
                         && $this->nextSibling($token, 2)->id === \T_COLON
                     ) || (
-                        $idx->AltContinueWithNoExpression[$token->id]
+                        $token->id === \T_ELSE
                         && $this->nextSibling($token)->id === \T_COLON
                     ))
                 ) || (
                     $prev->id === \T_COLON
                     && $prev->isColonAltSyntaxDelimiter()
                 ))) {
-                    $insertVirtual(\T_END_ALT_SYNTAX);
+                    $insertVirtual(\T_CLOSE_ALT);
                 }
             }
 

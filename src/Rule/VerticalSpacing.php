@@ -62,7 +62,7 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
                 \T_QUESTION => true,
             ],
             $idx->Chain,
-            $idx->OperatorBooleanExceptNot,
+            $idx->BooleanExceptNot,
         );
     }
 
@@ -153,7 +153,7 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
             }
         };
 
-        foreach (array_keys(array_filter($this->Idx->OperatorBooleanExceptNot)) as $id) {
+        foreach (array_keys(array_filter($this->Idx->BooleanExceptNot)) as $id) {
             if (
                 $this->Idx->AllowNewlineBefore[$id]
                 || !$this->Idx->AllowNewlineAfter[$id]
@@ -209,7 +209,7 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
         foreach ($tokens as $token) {
             // Propagate newlines adjacent to boolean operators to others of
             // equal or lower precedence in the same statement
-            if ($this->Idx->OperatorBooleanExceptNot[$token->id]) {
+            if ($this->Idx->BooleanExceptNot[$token->id]) {
                 /** @var Token */
                 $statement = $token->Statement;
 
@@ -234,7 +234,7 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
                 foreach ($statement->withNextSiblings($token->EndStatement) as $t) {
                     if (
                         $t === $token
-                        || !$this->Idx->OperatorBooleanExceptNot[$t->id]
+                        || !$this->Idx->BooleanExceptNot[$t->id]
                     ) {
                         continue;
                     }

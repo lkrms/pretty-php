@@ -21,7 +21,7 @@
         'T_PROPERTY_C' => false,
         // Custom
         'T_ATTRIBUTE_COMMENT' => false,
-        'T_END_ALT_SYNTAX' => false,
+        'T_CLOSE_ALT' => false,
         'T_NULL' => false,
         'T_OPEN_UNENCLOSED' => false,
         'T_CLOSE_UNENCLOSED' => false,
@@ -80,7 +80,7 @@
     // Define custom tokens
     $id = 20000;
     defined('T_ATTRIBUTE_COMMENT') || define('T_ATTRIBUTE_COMMENT', $getNextId());
-    defined('T_END_ALT_SYNTAX') || define('T_END_ALT_SYNTAX', $getNextId());
+    defined('T_CLOSE_ALT') || define('T_CLOSE_ALT', $getNextId());
     defined('T_NULL') || define('T_NULL', $getNextId());
     defined('T_OPEN_UNENCLOSED') || define('T_OPEN_UNENCLOSED', $getNextId());
     defined('T_CLOSE_UNENCLOSED') || define('T_CLOSE_UNENCLOSED', $getNextId());

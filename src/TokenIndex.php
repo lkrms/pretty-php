@@ -90,17 +90,6 @@ class TokenIndex implements HasTokenIndex, Immutable
 
     /**
      * T_OPEN_BRACE, T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_ATTRIBUTE,
-     * T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES, T_COLON
-     *
-     * @var array<int,bool>
-     */
-    public array $OpenBracketOrAlt = self::OPEN_BRACKET + [
-        \T_COLON => true,
-    ]
-        + self::TOKEN_INDEX;
-
-    /**
-     * T_OPEN_BRACE, T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_ATTRIBUTE,
      * T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES, T_LOGICAL_NOT, T_NOT
      *
      * @var array<int,bool>
@@ -120,16 +109,6 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_END_ALT_SYNTAX
-     *
-     * @var array<int,bool>
-     */
-    public array $CloseBracketOrAlt = self::CLOSE_BRACKET + [
-        \T_END_ALT_SYNTAX => true,
-    ]
-        + self::TOKEN_INDEX;
-
-    /**
      * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_COMMA
      *
      * @var array<int,bool>
@@ -141,13 +120,13 @@ class TokenIndex implements HasTokenIndex, Immutable
 
     /**
      * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_CLOSE_UNENCLOSED,
-     * T_END_ALT_SYNTAX
+     * T_CLOSE_ALT
      *
      * @var array<int,bool>
      */
     public array $CloseBracketOrVirtual = self::CLOSE_BRACKET + [
         \T_CLOSE_UNENCLOSED => true,
-        \T_END_ALT_SYNTAX => true,
+        \T_CLOSE_ALT => true,
     ]
         + self::TOKEN_INDEX;
 
@@ -214,7 +193,7 @@ class TokenIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $AltStartOrContinueWithExpression = [
+    public array $AltStartOrContinue = [
         \T_DECLARE => true,
         \T_FOR => true,
         \T_FOREACH => true,
@@ -226,33 +205,20 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * T_ELSE, T_ELSEIF
+     * T_ELSEIF, T_ELSE, T_ENDDECLARE, T_ENDFOR, T_ENDFOREACH, T_ENDIF,
+     * T_ENDSWITCH, T_ENDWHILE
      *
      * @var array<int,bool>
      */
-    public array $AltContinue = [
+    public array $AltContinueOrEnd = [
         \T_ELSEIF => true,
         \T_ELSE => true,
-    ]
-        + self::TOKEN_INDEX;
-
-    /**
-     * T_ELSEIF
-     *
-     * @var array<int,bool>
-     */
-    public array $AltContinueWithExpression = [
-        \T_ELSEIF => true,
-    ]
-        + self::TOKEN_INDEX;
-
-    /**
-     * T_ELSE
-     *
-     * @var array<int,bool>
-     */
-    public array $AltContinueWithNoExpression = [
-        \T_ELSE => true,
+        \T_ENDDECLARE => true,
+        \T_ENDFOR => true,
+        \T_ENDFOREACH => true,
+        \T_ENDIF => true,
+        \T_ENDSWITCH => true,
+        \T_ENDWHILE => true,
     ]
         + self::TOKEN_INDEX;
 
@@ -285,10 +251,7 @@ class TokenIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $Attribute = [
-        \T_ATTRIBUTE => true,
-        \T_ATTRIBUTE_COMMENT => true,
-    ]
+    public array $Attribute = self::ATTRIBUTE
         + self::TOKEN_INDEX;
 
     /**
@@ -298,10 +261,7 @@ class TokenIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $AttributeOrDeclaration = [
-        \T_ATTRIBUTE => true,
-        \T_ATTRIBUTE_COMMENT => true,
-    ]
+    public array $AttributeOrDeclaration = self::ATTRIBUTE
         + self::DECLARATION
         + self::TOKEN_INDEX;
 
@@ -311,10 +271,7 @@ class TokenIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $AttributeOrModifier = [
-        \T_ATTRIBUTE => true,
-        \T_ATTRIBUTE_COMMENT => true,
-    ]
+    public array $AttributeOrModifier = self::ATTRIBUTE
         + self::MODIFIER
         + self::TOKEN_INDEX;
 
@@ -323,9 +280,7 @@ class TokenIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $AttributeOrStatic = [
-        \T_ATTRIBUTE => true,
-        \T_ATTRIBUTE_COMMENT => true,
+    public array $AttributeOrStatic = self::ATTRIBUTE + [
         \T_STATIC => true,
     ]
         + self::TOKEN_INDEX;
@@ -501,7 +456,7 @@ class TokenIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $GetVisibility = self::VISIBILITY_GET
+    public array $SymmetricVisibility = self::VISIBILITY_SYMMETRIC
         + self::TOKEN_INDEX;
 
     /**
@@ -521,18 +476,6 @@ class TokenIndex implements HasTokenIndex, Immutable
      * @var array<int,bool>
      */
     public array $ElseIfOrElse = [
-        \T_ELSEIF => true,
-        \T_ELSE => true,
-    ]
-        + self::TOKEN_INDEX;
-
-    /**
-     * T_IF, T_ELSEIF, T_ELSE
-     *
-     * @var array<int,bool>
-     */
-    public array $IfElseIfOrElse = [
-        \T_IF => true,
         \T_ELSEIF => true,
         \T_ELSE => true,
     ]
@@ -636,11 +579,37 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
+     * Arithmetic operators, assignment operators, bitwise operators (except
+     * T_OR, T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG), comparison operators,
+     * logical operators, T_AT, T_CONCAT, T_DOLLAR, T_DOUBLE_ARROW, T_INC,
+     * T_DEC, T_INSTANCEOF
+     *
+     * @var array<int,bool>
+     */
+    public array $OperatorExceptTernaryOrDelimiter = [
+        \T_AT => true,
+        \T_CONCAT => true,
+        \T_DOLLAR => true,
+        \T_DOUBLE_ARROW => true,
+        \T_INC => true,
+        \T_DEC => true,
+        \T_INSTANCEOF => true,
+        \T_OR => false,
+        \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG => false,
+    ]
+        + self::OPERATOR_ARITHMETIC
+        + self::OPERATOR_ASSIGNMENT
+        + self::OPERATOR_BITWISE
+        + self::OPERATOR_COMPARISON
+        + self::OPERATOR_LOGICAL
+        + self::TOKEN_INDEX;
+
+    /**
      * Assignment operators
      *
      * @var array<int,bool>
      */
-    public array $OperatorAssignment = self::OPERATOR_ASSIGNMENT
+    public array $Assignment = self::OPERATOR_ASSIGNMENT
         + self::TOKEN_INDEX;
 
     /**
@@ -648,7 +617,7 @@ class TokenIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $OperatorAssignmentOrDoubleArrow = [
+    public array $AssignmentOrDoubleArrow = [
         \T_DOUBLE_ARROW => true,
     ]
         + self::OPERATOR_ASSIGNMENT
@@ -663,7 +632,7 @@ class TokenIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $OperatorBooleanExceptNot = [
+    public array $BooleanExceptNot = [
         \T_OR => true,
         \T_XOR => true,
         \T_LOGICAL_NOT => false,
@@ -673,19 +642,11 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * Ternary operators
-     *
-     * @var array<int,bool>
-     */
-    public array $OperatorTernary = self::OPERATOR_TERNARY
-        + self::TOKEN_INDEX;
-
-    /**
      * T_AT, T_DEC, T_DOLLAR, T_INC, T_LOGICAL_NOT, T_NOT
      *
      * @var array<int,bool>
      */
-    public array $OperatorUnary = [
+    public array $Unary = [
         \T_AT => true,
         \T_DOLLAR => true,
         \T_INC => true,
@@ -711,7 +672,7 @@ class TokenIndex implements HasTokenIndex, Immutable
      *
      * @var array<int,bool>
      */
-    public array $Return = [
+    public array $ReturnOrYield = [
         \T_RETURN => true,
         \T_YIELD => true,
         \T_YIELD_FROM => true,
@@ -758,24 +719,24 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * T_END_ALT_SYNTAX, T_OPEN_UNENCLOSED, T_CLOSE_UNENCLOSED
+     * T_CLOSE_ALT, T_OPEN_UNENCLOSED, T_CLOSE_UNENCLOSED
      *
      * @var array<int,bool>
      */
     public array $Virtual = [
-        \T_END_ALT_SYNTAX => true,
+        \T_CLOSE_ALT => true,
         \T_OPEN_UNENCLOSED => true,
         \T_CLOSE_UNENCLOSED => true,
     ]
         + self::TOKEN_INDEX;
 
     /**
-     * All (except T_END_ALT_SYNTAX, T_OPEN_UNENCLOSED, T_CLOSE_UNENCLOSED)
+     * All (except T_CLOSE_ALT, T_OPEN_UNENCLOSED, T_CLOSE_UNENCLOSED)
      *
      * @var array<int,bool>
      */
     public array $NotVirtual = [
-        \T_END_ALT_SYNTAX => false,
+        \T_CLOSE_ALT => false,
         \T_OPEN_UNENCLOSED => false,
         \T_CLOSE_UNENCLOSED => false,
     ]
@@ -827,10 +788,9 @@ class TokenIndex implements HasTokenIndex, Immutable
      */
     public array $BeforeAnonymousClassOrFunction = [
         \T_NEW => true,
-        \T_ATTRIBUTE => true,
-        \T_ATTRIBUTE_COMMENT => true,
         \T_STATIC => true,
     ]
+        + self::ATTRIBUTE
         + self::TOKEN_INDEX;
 
     /**
@@ -1105,22 +1065,6 @@ class TokenIndex implements HasTokenIndex, Immutable
         \T_CLOSE_TAG => true,
         \T_QUESTION => true,
     ]
-        + self::TOKEN_INDEX;
-
-    // Parsing:
-
-    /**
-     * Assignment operators, comparison operators (except T_COALESCE),
-     * T_DOUBLE_ARROW
-     *
-     * @var array<int,bool>
-     */
-    public array $ExpressionDelimiter = [
-        \T_DOUBLE_ARROW => true,
-        \T_COALESCE => false,
-    ]
-        + self::OPERATOR_ASSIGNMENT
-        + self::OPERATOR_COMPARISON
         + self::TOKEN_INDEX;
 
     /**

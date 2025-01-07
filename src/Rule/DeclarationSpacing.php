@@ -115,7 +115,7 @@ final class DeclarationSpacing implements DeclarationRule
             if ($type & self::MODIFIER_MASK) {
                 if (
                     $type & self::VISIBILITY_MASK
-                    && ($modifier = $parts->getFirstFrom($this->Idx->GetVisibility))
+                    && ($modifier = $parts->getFirstFrom($this->Idx->SymmetricVisibility))
                 ) {
                     $modifiers[] = $modifier->id;
                 }

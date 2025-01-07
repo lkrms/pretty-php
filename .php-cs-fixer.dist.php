@@ -6,7 +6,7 @@ $customTokens = [
     'T_PUBLIC_SET',
     'T_PROPERTY_C',
     'T_ATTRIBUTE_COMMENT',
-    'T_END_ALT_SYNTAX',
+    'T_CLOSE_ALT',
     'T_NULL',
     'T_OPEN_UNENCLOSED',
     'T_CLOSE_UNENCLOSED',

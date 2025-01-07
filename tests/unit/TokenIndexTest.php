@@ -164,9 +164,6 @@ class TokenIndexTest extends TestCase
         $index = static::getIndex();
         $properties = Reflect::getNames(static::getProperties());
         foreach ($properties as $property) {
-            if (Str::startsWith($property, 'Alt')) {
-                continue;
-            }
             $value = $index->$property;
             if (is_array($value)) {
                 ksort($value, \SORT_NUMERIC);
@@ -201,7 +198,7 @@ class TokenIndexTest extends TestCase
         $this->assertSameSize(TokenIndex::TOKEN_INDEX, array_intersect_key($index->$name, TokenIndex::TOKEN_INDEX), 'Index must cover every token');
         $this->assertEmpty(array_diff_key($index->$name, TokenIndex::TOKEN_INDEX), 'Index must only cover tokens');
         $filtered = array_filter($index->$name);
-        if (Str::startsWith($name, ['Alt', 'AllowBlank', 'Suppress'])) {
+        if (Str::startsWith($name, ['Allow', 'Suppress'])) {
             $this->assertNotEmpty($filtered, 'Index cannot be empty');
             return;
         }
