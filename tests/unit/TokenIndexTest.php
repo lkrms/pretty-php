@@ -2,7 +2,8 @@
 
 namespace Lkrms\PrettyPHP\Tests;
 
-use Lkrms\PrettyPHP\TokenIndex;
+use Lkrms\PrettyPHP\AbstractTokenIndex as TokenIndex;
+use Lkrms\PrettyPHP\TokenIndex as StandardTokenIndex;
 use Salient\PHPDoc\PHPDoc;
 use Salient\Utility\Exception\ShouldNotHappenException;
 use Salient\Utility\Arr;
@@ -493,7 +494,7 @@ class TokenIndexTest extends TestCase
 
     protected static function getIndex(): TokenIndex
     {
-        return new TokenIndex();
+        return new StandardTokenIndex();
     }
 
     /**

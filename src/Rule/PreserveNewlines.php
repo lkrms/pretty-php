@@ -7,8 +7,8 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\AbstractTokenIndex;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenIndex;
 use Lkrms\PrettyPHP\TokenUtil;
 
 /**
@@ -36,7 +36,7 @@ final class PreserveNewlines implements TokenRule
     /**
      * @inheritDoc
      */
-    public static function getTokens(TokenIndex $idx): array
+    public static function getTokens(AbstractTokenIndex $idx): array
     {
         return $idx->NotVirtual;
     }
@@ -54,7 +54,7 @@ final class PreserveNewlines implements TokenRule
      */
     public function boot(): void
     {
-        $this->AllowNewlineIndex = TokenIndex::merge(
+        $this->AllowNewlineIndex = $this->Idx->merge(
             $this->Idx->AllowNewlineBefore,
             $this->Idx->AllowNewlineAfter,
         );

@@ -10,8 +10,8 @@ use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\DeclarationRule;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Internal\TokenCollection;
+use Lkrms\PrettyPHP\AbstractTokenIndex;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenIndex;
 use Lkrms\PrettyPHP\TokenUtil;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
@@ -41,9 +41,9 @@ final class StandardSpacing implements TokenRule, DeclarationRule
     /**
      * @inheritDoc
      */
-    public static function getTokens(TokenIndex $idx): array
+    public static function getTokens(AbstractTokenIndex $idx): array
     {
-        return TokenIndex::merge(
+        return $idx->merge(
             [
                 \T_CLOSE_TAG => true,
                 \T_COMMA => true,

@@ -127,7 +127,7 @@ final class Formatter implements Buildable, Immutable
     /**
      * Token index
      */
-    public TokenIndex $TokenIndex;
+    public AbstractTokenIndex $TokenIndex;
 
     /**
      * End-of-line sequence used when line endings are not preserved or when
@@ -476,7 +476,7 @@ final class Formatter implements Buildable, Immutable
      * @param array<class-string<Extension>> $disable Non-mandatory extensions to disable
      * @param array<class-string<Extension>> $enable Optional extensions to enable
      * @param int-mask-of<FormatterFlag::*> $flags
-     * @param TokenIndex|null $tokenIndex Provide a customised token index
+     * @param AbstractTokenIndex|null $tokenIndex Provide a customised token index
      * @param HeredocIndent::* $heredocIndent
      * @param ImportSortOrder::* $importSortOrder
      */
@@ -486,7 +486,7 @@ final class Formatter implements Buildable, Immutable
         array $disable = [],
         array $enable = [],
         int $flags = 0,
-        ?TokenIndex $tokenIndex = null,
+        ?AbstractTokenIndex $tokenIndex = null,
         string $preferredEol = \PHP_EOL,
         bool $preserveEol = true,
         int $spacesBesideCode = 2,

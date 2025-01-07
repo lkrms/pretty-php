@@ -73,7 +73,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     public ?string $OriginalText = null;
 
     public Formatter $Formatter;
-    public TokenIndex $Idx;
+    public AbstractTokenIndex $Idx;
     public int $Whitespace = 0;
     public ?int $TagIndent = null;
     public int $PreIndent = 0;

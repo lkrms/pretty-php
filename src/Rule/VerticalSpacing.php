@@ -13,8 +13,8 @@ use Lkrms\PrettyPHP\Contract\DeclarationRule;
 use Lkrms\PrettyPHP\Contract\ListRule;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Internal\TokenCollection;
+use Lkrms\PrettyPHP\AbstractTokenIndex;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenIndex;
 use Lkrms\PrettyPHP\TokenUtil;
 use Closure;
 
@@ -53,9 +53,9 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
     /**
      * @inheritDoc
      */
-    public static function getTokens(TokenIndex $idx): array
+    public static function getTokens(AbstractTokenIndex $idx): array
     {
-        return TokenIndex::merge(
+        return $idx->merge(
             [
                 \T_FOR => true,
                 \T_OPEN_BRACE => true,

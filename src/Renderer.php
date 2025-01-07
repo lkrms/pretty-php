@@ -20,7 +20,7 @@ final class Renderer implements Immutable
     private int $TabSize;
     private string $SoftTab;
     private string $Tab;
-    private TokenIndex $Idx;
+    private AbstractTokenIndex $Idx;
 
     public function __construct(Formatter $formatter)
     {
