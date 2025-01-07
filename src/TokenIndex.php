@@ -89,18 +89,6 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * T_OPEN_BRACE, T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_ATTRIBUTE,
-     * T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES, T_LOGICAL_NOT, T_NOT
-     *
-     * @var array<int,bool>
-     */
-    public array $OpenBracketOrNot = self::OPEN_BRACKET + [
-        \T_LOGICAL_NOT => true,
-        \T_NOT => true,
-    ]
-        + self::TOKEN_INDEX;
-
-    /**
      * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS
      *
      * @var array<int,bool>
@@ -109,24 +97,14 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_COMMA
+     * T_OPEN_BRACE, T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_ATTRIBUTE,
+     * T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES, T_LOGICAL_NOT, T_NOT
      *
      * @var array<int,bool>
      */
-    public array $CloseBracketOrComma = self::CLOSE_BRACKET + [
-        \T_COMMA => true,
-    ]
-        + self::TOKEN_INDEX;
-
-    /**
-     * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_CLOSE_UNENCLOSED,
-     * T_CLOSE_ALT
-     *
-     * @var array<int,bool>
-     */
-    public array $CloseBracketOrVirtual = self::CLOSE_BRACKET + [
-        \T_CLOSE_UNENCLOSED => true,
-        \T_CLOSE_ALT => true,
+    public array $OpenBracketOrNot = self::OPEN_BRACKET + [
+        \T_LOGICAL_NOT => true,
+        \T_NOT => true,
     ]
         + self::TOKEN_INDEX;
 
@@ -185,6 +163,28 @@ class TokenIndex implements HasTokenIndex, Immutable
     public array $OpenTag = [
         \T_OPEN_TAG => true,
         \T_OPEN_TAG_WITH_ECHO => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
+     * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_COMMA
+     *
+     * @var array<int,bool>
+     */
+    public array $CloseBracketOrComma = self::CLOSE_BRACKET + [
+        \T_COMMA => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
+     * T_CLOSE_BRACE, T_CLOSE_BRACKET, T_CLOSE_PARENTHESIS, T_CLOSE_UNENCLOSED,
+     * T_CLOSE_ALT
+     *
+     * @var array<int,bool>
+     */
+    public array $CloseBracketOrVirtual = self::CLOSE_BRACKET + [
+        \T_CLOSE_UNENCLOSED => true,
+        \T_CLOSE_ALT => true,
     ]
         + self::TOKEN_INDEX;
 
@@ -398,6 +398,16 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
+     * Visibility modifiers, T_ABSTRACT, T_FINAL, T_READONLY, T_STATIC, T_VAR
+     *
+     * @var array<int,bool>
+     */
+    public array $ModifierOrVar = self::MODIFIER + [
+        \T_VAR => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
      * T_CLASS, T_ENUM, T_INTERFACE, T_TRAIT
      *
      * @var array<int,bool>
@@ -441,6 +451,24 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
+     * T_PRIVATE, T_PROTECTED, T_PUBLIC
+     *
+     * @var array<int,bool>
+     */
+    public array $SymmetricVisibility = self::VISIBILITY_SYMMETRIC
+        + self::TOKEN_INDEX;
+
+    /**
+     * Visibility modifiers, T_READONLY
+     *
+     * @var array<int,bool>
+     */
+    public array $VisibilityOrReadonly = self::VISIBILITY + [
+        \T_READONLY => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
      * T_FN, T_FUNCTION
      *
      * @var array<int,bool>
@@ -449,14 +477,6 @@ class TokenIndex implements HasTokenIndex, Immutable
         \T_FN => true,
         \T_FUNCTION => true,
     ]
-        + self::TOKEN_INDEX;
-
-    /**
-     * T_PRIVATE, T_PROTECTED, T_PUBLIC
-     *
-     * @var array<int,bool>
-     */
-    public array $SymmetricVisibility = self::VISIBILITY_SYMMETRIC
         + self::TOKEN_INDEX;
 
     /**
@@ -491,16 +511,6 @@ class TokenIndex implements HasTokenIndex, Immutable
         \T_OPEN_TAG => true,
         \T_OPEN_TAG_WITH_ECHO => true,
         \T_CLOSE_TAG => true,
-    ]
-        + self::TOKEN_INDEX;
-
-    /**
-     * Visibility modifiers, T_ABSTRACT, T_FINAL, T_READONLY, T_STATIC, T_VAR
-     *
-     * @var array<int,bool>
-     */
-    public array $ModifierOrVar = self::MODIFIER + [
-        \T_VAR => true,
     ]
         + self::TOKEN_INDEX;
 
@@ -741,16 +751,6 @@ class TokenIndex implements HasTokenIndex, Immutable
         \T_CLOSE_UNENCLOSED => false,
     ]
         + self::ALL
-        + self::TOKEN_INDEX;
-
-    /**
-     * Visibility modifiers, T_READONLY
-     *
-     * @var array<int,bool>
-     */
-    public array $VisibilityOrReadonly = self::VISIBILITY + [
-        \T_READONLY => true,
-    ]
         + self::TOKEN_INDEX;
 
     /**
@@ -1055,6 +1055,18 @@ class TokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
+     * T_COLON, T_COMMA, T_SEMICOLON
+     *
+     * @var array<int,bool>
+     */
+    public array $StatementDelimiter = [
+        \T_COLON => true,
+        \T_COMMA => true,
+        \T_SEMICOLON => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
      * T_COLON, T_SEMICOLON, T_CLOSE_TAG, T_QUESTION
      *
      * @var array<int,bool>
@@ -1064,18 +1076,6 @@ class TokenIndex implements HasTokenIndex, Immutable
         \T_SEMICOLON => true,
         \T_CLOSE_TAG => true,
         \T_QUESTION => true,
-    ]
-        + self::TOKEN_INDEX;
-
-    /**
-     * T_COLON, T_COMMA, T_SEMICOLON
-     *
-     * @var array<int,bool>
-     */
-    public array $StatementDelimiter = [
-        \T_COLON => true,
-        \T_COMMA => true,
-        \T_SEMICOLON => true,
     ]
         + self::TOKEN_INDEX;
 
