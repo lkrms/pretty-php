@@ -7,7 +7,7 @@ use Salient\Core\Concern\HasMutator;
 /**
  * @api
  */
-class TokenIndex extends AbstractTokenIndex
+final class TokenIndex extends AbstractTokenIndex
 {
     use HasMutator;
 
@@ -27,9 +27,9 @@ class TokenIndex extends AbstractTokenIndex
             : ($operatorsLast ? self::LAST : self::MIXED);
 
         if ($operators === self::FIRST) {
-            [$before, $after] = $this->getOperatorsFirstIndexes();
+            [$before, $after] = self::getOperatorsFirstIndexes();
         } elseif ($operators === self::LAST) {
-            [$before, $after] = $this->getOperatorsLastIndexes();
+            [$before, $after] = self::getOperatorsLastIndexes();
         }
 
         $this->AllowNewlineBefore = $before ?? self::DEFAULT_ALLOW_NEWLINE_BEFORE;
@@ -42,35 +42,10 @@ class TokenIndex extends AbstractTokenIndex
      */
     public function withLeadingOperators()
     {
-        [$before, $after] = $this->getOperatorsFirstIndexes();
+        [$before, $after] = self::getOperatorsFirstIndexes();
         return $this->with('AllowNewlineBefore', $before)
                     ->with('AllowNewlineAfter', $after)
                     ->with('Operators', self::FIRST);
-    }
-
-    /**
-     * @return array{array<int,bool>,array<int,bool>}
-     */
-    private function getOperatorsFirstIndexes(): array
-    {
-        $both = self::intersect(
-            self::DEFAULT_ALLOW_NEWLINE_BEFORE,
-            self::DEFAULT_ALLOW_NEWLINE_AFTER,
-        );
-
-        $before = self::OPERATOR_COMPARISON
-            + self::OPERATOR_LOGICAL
-            + self::DEFAULT_ALLOW_NEWLINE_BEFORE;
-
-        $after = self::merge(
-            self::diff(
-                self::DEFAULT_ALLOW_NEWLINE_AFTER,
-                $before,
-            ),
-            $both
-        );
-
-        return [$before, $after];
     }
 
     /**
@@ -78,39 +53,10 @@ class TokenIndex extends AbstractTokenIndex
      */
     public function withTrailingOperators()
     {
-        [$before, $after] = $this->getOperatorsLastIndexes();
+        [$before, $after] = self::getOperatorsLastIndexes();
         return $this->with('AllowNewlineBefore', $before)
                     ->with('AllowNewlineAfter', $after)
                     ->with('Operators', self::LAST);
-    }
-
-    /**
-     * @return array{array<int,bool>,array<int,bool>}
-     */
-    private function getOperatorsLastIndexes(): array
-    {
-        $both = self::intersect(
-            self::DEFAULT_ALLOW_NEWLINE_BEFORE,
-            self::DEFAULT_ALLOW_NEWLINE_AFTER,
-        );
-
-        $after = [
-            \T_COALESCE => true,
-            \T_CONCAT => true,
-        ]
-            + self::OPERATOR_ARITHMETIC
-            + self::OPERATOR_BITWISE
-            + self::DEFAULT_ALLOW_NEWLINE_AFTER;
-
-        $before = self::merge(
-            self::diff(
-                self::DEFAULT_ALLOW_NEWLINE_BEFORE,
-                $after,
-            ),
-            $both
-        );
-
-        return [$before, $after];
     }
 
     /**

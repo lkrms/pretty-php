@@ -1369,6 +1369,60 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
     abstract public function withPreserveNewline();
 
     /**
+     * @return array{array<int,bool>,array<int,bool>}
+     */
+    protected static function getOperatorsFirstIndexes(): array
+    {
+        $both = self::intersect(
+            self::DEFAULT_ALLOW_NEWLINE_BEFORE,
+            self::DEFAULT_ALLOW_NEWLINE_AFTER,
+        );
+
+        $before = self::OPERATOR_COMPARISON
+            + self::OPERATOR_LOGICAL
+            + self::DEFAULT_ALLOW_NEWLINE_BEFORE;
+
+        $after = self::merge(
+            self::diff(
+                self::DEFAULT_ALLOW_NEWLINE_AFTER,
+                $before,
+            ),
+            $both
+        );
+
+        return [$before, $after];
+    }
+
+    /**
+     * @return array{array<int,bool>,array<int,bool>}
+     */
+    protected static function getOperatorsLastIndexes(): array
+    {
+        $both = self::intersect(
+            self::DEFAULT_ALLOW_NEWLINE_BEFORE,
+            self::DEFAULT_ALLOW_NEWLINE_AFTER,
+        );
+
+        $after = [
+            \T_COALESCE => true,
+            \T_CONCAT => true,
+        ]
+            + self::OPERATOR_ARITHMETIC
+            + self::OPERATOR_BITWISE
+            + self::DEFAULT_ALLOW_NEWLINE_AFTER;
+
+        $before = self::merge(
+            self::diff(
+                self::DEFAULT_ALLOW_NEWLINE_BEFORE,
+                $after,
+            ),
+            $both
+        );
+
+        return [$before, $after];
+    }
+
+    /**
      * Get an index of every token in the given indexes
      *
      * @param array<int,bool> ...$indexes
