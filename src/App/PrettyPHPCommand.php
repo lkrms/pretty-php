@@ -167,6 +167,7 @@ final class PrettyPHPCommand extends CliCommand
     private bool $ReportTimers = false;
     private bool $Fast = false;
     private bool $Verbose = false;
+    private bool $NoProblems = false;
 
     /**
      * - 0 = print unformatted files, summary, warnings, TTY-only progress
@@ -600,6 +601,13 @@ EOF)
 Report unchanged files.
 EOF)
                 ->bindTo($this->Verbose),
+            CliOption::build()
+                ->long('no-problems')
+                ->short('R')
+                ->description(<<<EOF
+Do not report problems detected while formatting the input as warnings.
+EOF)
+                ->bindTo($this->NoProblems),
             CliOption::build()
                 ->long('quiet')
                 ->short('q')
@@ -1550,7 +1558,7 @@ EOF,
                 $flags |= FormatterFlag::LOG_PROGRESS;
             }
         }
-        if ($this->Quiet < 3) {
+        if ($this->Quiet < 3 && !$this->NoProblems) {
             $flags |= FormatterFlag::DETECT_PROBLEMS;
         }
 
