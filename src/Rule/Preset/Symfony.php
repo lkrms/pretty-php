@@ -98,12 +98,15 @@ final class Symfony implements Preset, TokenRule, ListRule
     /**
      * Apply the rule to a token and the list of items associated with it
      *
-     * Newlines are suppressed between parameters in function declarations that
-     * have no promoted constructor parameters.
+     * Newlines are suppressed in parameter lists with no promoted constructor
+     * parameters and no trailing comma.
      */
     public function processList(Token $parent, TokenCollection $items, Token $lastChild): void
     {
-        if (!$parent->isParameterList()) {
+        if (
+            !$parent->isParameterList()
+            || $lastChild->id === \T_COMMA
+        ) {
             return;
         }
 

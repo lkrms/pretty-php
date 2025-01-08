@@ -396,7 +396,7 @@ Leading and trailing spaces are suppressed for `.` operators.
 
 <small>(optional, `processList()`, priority 400)</small>
 
-Newlines are suppressed between parameters in function declarations that have no promoted constructor parameters.
+Newlines are suppressed in parameter lists with no promoted constructor parameters and no trailing comma.
 
 ### `Drupal` (1)
 
