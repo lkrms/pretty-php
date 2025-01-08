@@ -61,13 +61,13 @@ final class AlignData implements BlockRule
      * When they appear in the same scope, a callback is registered to align
      * consecutive:
      *
-     * - assignment operators
+     * - assignment operators (except as noted below)
      * - `=>` delimiters in array syntax (except as noted below)
      * - `=>` delimiters in `match` expressions
      *
-     * If the open bracket of an array is not followed by a newline and neither
-     * `AlignLists` nor `StrictLists` are enabled, its `=>` delimiters are
-     * ignored.
+     * If the open bracket of an array or parameter list is not followed by a
+     * newline and neither `AlignLists` nor `StrictLists` are enabled, its `=>`
+     * delimiters or assignment operators are ignored.
      *
      * @prettyphp-callback Assignment operators are aligned unless the
      * formatter's `MaxAssignmentPadding` property is not `null` and would be
@@ -112,7 +112,13 @@ final class AlignData implements BlockRule
                         (
                             !$token->Parent
                             || $token->Parent->Flags & TokenFlag::STRUCTURAL_BRACE
-                            || $token->Parent->isParameterList()
+                            || $token->Parent->id === \T_COLON
+                            || (
+                                $token->Parent->isParameterList() && (
+                                    $this->ListRuleEnabled
+                                    || $token->Parent->hasNewlineBeforeNextCode()
+                                )
+                            )
                         )
                         // Ignore assignment operators after the first:
                         // - in the statement

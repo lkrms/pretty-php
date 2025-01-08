@@ -150,6 +150,84 @@ $f)) {
 }
 PHP,
             ],
+            'nested lists + alternative syntax' => [
+                <<<'PHP'
+<?php
+if ($a &&
+    call([$b,
+          $c],
+         $d ||
+             $e,
+         $f)):
+    //
+endif;
+
+if ($a &&
+    call([$b,
+          $c],
+         $d || $e,
+         $f)):
+    //
+endif;
+
+PHP,
+                <<<'PHP'
+<?php
+if ($a &&
+call([$b,
+$c],
+$d ||
+$e,
+$f)):
+//
+endif;
+
+if ($a &&
+call([$b,
+$c],
+$d || $e,
+$f)):
+//
+endif;
+PHP,
+            ],
+            'nested lists + unenclosed control structure body' => [
+                <<<'PHP'
+<?php
+if ($a &&
+    call([$b,
+          $c],
+         $d ||
+             $e,
+         $f))
+    foo();
+
+if ($a &&
+    call([$b,
+          $c],
+         $d || $e,
+         $f))
+    foo();
+
+PHP,
+                <<<'PHP'
+<?php
+if ($a &&
+call([$b,
+$c],
+$d ||
+$e,
+$f))
+foo();
+
+if ($a &&
+call([$b,
+$c],
+$d || $e,
+$f))
+foo();
+PHP,
+            ],
             'nested arrays' => [
                 <<<'PHP'
 <?php

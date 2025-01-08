@@ -456,11 +456,11 @@ C++- and shell-style comments on their own line after a comment beside code are 
 
 When they appear in the same scope, a callback is registered to align consecutive:
 
-- assignment operators
+- assignment operators (except as noted below)
 - `=>` delimiters in array syntax (except as noted below)
 - `=>` delimiters in `match` expressions
 
-If the open bracket of an array is not followed by a newline and neither `AlignLists` nor `StrictLists` are enabled, its `=>` delimiters are ignored.
+If the open bracket of an array or parameter list is not followed by a newline and neither `AlignLists` nor `StrictLists` are enabled, its `=>` delimiters or assignment operators are ignored.
 
 ### `AlignChains` (2)
 

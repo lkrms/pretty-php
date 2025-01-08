@@ -110,7 +110,7 @@ final class HangingIndentation implements TokenRule
                     )
                 ) || (
                     $token->id === \T_COLON
-                    && $token->isColonAltSyntaxDelimiter()
+                    && $token->CloseBracket
                 ) || $token->id === \T_OPEN_UNENCLOSED;
                 $flags = 0;
                 if ($token->hasNewlineBeforeNextCode()) {

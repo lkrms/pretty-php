@@ -246,8 +246,10 @@ final class PreserveNewlines implements TokenRule
                             && $prevCode->Parent === $parent
                             && $prevCode->EndStatement !== $prevCode
                         ) || (
-                            $parent
-                            && !($parent->Flags & TokenFlag::STRUCTURAL_BRACE)
+                            $parent && !(
+                                $parent->Flags & TokenFlag::STRUCTURAL_BRACE
+                                || $parent->id === \T_COLON
+                            )
                         )
                     )
                 ) || (
@@ -258,8 +260,10 @@ final class PreserveNewlines implements TokenRule
                             && $prevCode->EndStatement !== $prevCode
                         ) || (
                             $next->Parent
-                            && !($next->Parent->Flags & TokenFlag::STRUCTURAL_BRACE)
                             && !(
+                                $next->Parent->Flags & TokenFlag::STRUCTURAL_BRACE
+                                || $next->Parent->id === \T_COLON
+                            ) && !(
                                 $next->Parent->id === \T_OPEN_BRACE
                                 && $next->Parent->isMatchOpenBrace()
                                 && ($prevCode = $next->PrevCode)

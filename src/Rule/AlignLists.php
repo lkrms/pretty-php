@@ -117,16 +117,30 @@ final class AlignLists implements ListRule
                     if ($parent->CloseBracket) {
                         // `]` after `2` -> `]` after `5`
                         while (($adjacent = $to->lastSiblingBeforeNewline()) !== $to && !(
-                            $adjacent->id === \T_OPEN_BRACE
-                            && $adjacent->Flags & TokenFlag::STRUCTURAL_BRACE
+                            (
+                                (
+                                    $adjacent->id === \T_OPEN_BRACE
+                                    && $adjacent->Flags & TokenFlag::STRUCTURAL_BRACE
+                                ) || (
+                                    $adjacent->id === \T_COLON
+                                    && $adjacent->CloseBracket
+                                )
+                            )
                             && $adjacent->Depth <= $parent->Depth
                         )) {
                             $to = $adjacent;
                         }
                         // `]` after `5` -> `+` -> `)` after `11`
                         while (($adjacent = $to->adjacentBeforeNewline()) && !(
-                            $adjacent->id === \T_OPEN_BRACE
-                            && $adjacent->Flags & TokenFlag::STRUCTURAL_BRACE
+                            (
+                                (
+                                    $adjacent->id === \T_OPEN_BRACE
+                                    && $adjacent->Flags & TokenFlag::STRUCTURAL_BRACE
+                                ) || (
+                                    $adjacent->id === \T_COLON
+                                    && $adjacent->CloseBracket
+                                )
+                            )
                             && $adjacent->Depth <= $parent->Depth
                         )) {
                             $to = TokenUtil::getOperatorEndExpression($adjacent);

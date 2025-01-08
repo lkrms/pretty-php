@@ -55,7 +55,10 @@ final class BlankBeforeReturn implements TokenRule
             if (
                 $token->Statement !== $token || (
                     $token->Parent
-                    && !($token->Parent->Flags & TokenFlag::STRUCTURAL_BRACE)
+                    && !(
+                        $token->Parent->Flags & TokenFlag::STRUCTURAL_BRACE
+                        || $token->Parent->id === \T_COLON
+                    )
                 )
             ) {
                 continue;
