@@ -263,6 +263,10 @@ pretty-php - Format a PHP file
 
   Report unchanged files.
 
+- **`-R`**, **`--no-problems`**
+
+  Do not report problems detected while formatting the input as warnings.
+
 - **`-q`**, **`--quiet`**
 
   Do not report files that require formatting.

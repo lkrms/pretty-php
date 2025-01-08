@@ -7,8 +7,8 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\AbstractTokenIndex;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenIndex;
 use Lkrms\PrettyPHP\TokenUtil;
 
 /**
@@ -26,17 +26,25 @@ final class AlignChains implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 340,
-            self::CALLBACK => 710,
+            self::PROCESS_TOKENS => 280,
+            self::CALLBACK => 600,
         ][$method] ?? null;
     }
 
     /**
      * @inheritDoc
      */
-    public static function getTokens(TokenIndex $idx): array
+    public static function getTokens(AbstractTokenIndex $idx): array
     {
         return $idx->Chain;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function needsSortedTokens(): bool
+    {
+        return false;
     }
 
     /**
@@ -44,7 +52,8 @@ final class AlignChains implements TokenRule
      *
      * If there are no object operators with a leading newline in a chain of
      * method calls, or if the first object operator in the chain has a leading
-     * newline and `AlignChainAfterNewline` is disabled, no action is taken.
+     * newline and the formatter's `AlignChainAfterNewline` property is `false`,
+     * no action is taken.
      *
      * Otherwise, if the first object operator in the chain has a leading
      * newline, it is removed if horizontal space on subsequent lines would be
@@ -71,7 +80,7 @@ final class AlignChains implements TokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            if ($token !== $token->Data[TokenData::CHAIN_OPENED_BY]) {
+            if ($token !== $token->Data[TokenData::CHAIN]) {
                 continue;
             }
 

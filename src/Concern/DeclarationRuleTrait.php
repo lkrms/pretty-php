@@ -20,12 +20,4 @@ trait DeclarationRuleTrait
     {
         return ['*'];
     }
-
-    /**
-     * @inheritDoc
-     */
-    public static function needsSortedDeclarations(): bool
-    {
-        return true;
-    }
 }

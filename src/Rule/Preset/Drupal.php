@@ -10,9 +10,9 @@ use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\DeclarationRule;
 use Lkrms\PrettyPHP\Contract\Preset;
 use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\AbstractTokenIndex;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenIndex;
 use Salient\PHPDoc\PHPDoc;
 use Throwable;
 
@@ -47,15 +47,15 @@ final class Drupal implements Preset, TokenRule, DeclarationRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 100,
-            self::PROCESS_DECLARATIONS => 100,
+            self::PROCESS_TOKENS => 420,
+            self::PROCESS_DECLARATIONS => 420,
         ][$method] ?? null;
     }
 
     /**
      * @inheritDoc
      */
-    public static function getTokens(TokenIndex $idx): array
+    public static function getTokens(AbstractTokenIndex $idx): array
     {
         return [
             \T_DOC_COMMENT => true,

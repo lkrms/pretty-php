@@ -4,7 +4,7 @@ namespace Lkrms\PrettyPHP\Tests\Rule\Preset\Internal;
 
 use Lkrms\PrettyPHP\Rule\Preset\Internal\WordPressTokenIndex;
 use Lkrms\PrettyPHP\Tests\TokenIndexTest;
-use Lkrms\PrettyPHP\TokenIndex;
+use Lkrms\PrettyPHP\AbstractTokenIndex as TokenIndex;
 
 final class WordPressTokenIndexTest extends TokenIndexTest
 {

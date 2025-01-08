@@ -206,11 +206,11 @@ trait FilterTrait
     {
         /** @var GenericToken */
         $token = $this->getPrevCode($i, $j);
-        return $this->Idx->AltContinueWithNoExpression[$token->id]
+        return $token->id === \T_ELSE
             || (
                 $token->id === \T_CLOSE_PARENTHESIS
                 && ($prev = $this->getPrevSibling($j))
-                && $this->Idx->AltStartOrContinueWithExpression[$prev->id]
+                && $this->Idx->AltStartOrContinue[$prev->id]
             );
     }
 

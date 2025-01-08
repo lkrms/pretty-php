@@ -34,7 +34,7 @@ final class DeclarationSpacing implements DeclarationRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_DECLARATIONS => 620,
+            self::PROCESS_DECLARATIONS => 299,
         ][$method] ?? null;
     }
 
@@ -77,7 +77,7 @@ final class DeclarationSpacing implements DeclarationRule
      * "Tight" spacing is applied by suppressing blank lines between collapsible
      * declarations of the same type when they appear consecutively and:
      *
-     * - `TightDeclarationSpacing` is enabled, or
+     * - the formatter's `TightDeclarationSpacing` property is `true`, or
      * - there is no blank line in the input between the first and second
      *   declarations in the group
      *
@@ -86,8 +86,8 @@ final class DeclarationSpacing implements DeclarationRule
      * Otherwise, "loose" spacing is applied by adding blank lines between
      * declarations.
      *
-     * Blank lines are also added before and after each group of declarations,
-     * and they are suppressed between `use` statements, one-line `declare`
+     * Blank lines are also added before and after each group of declarations.
+     * They are suppressed between `use` statements, one-line `declare`
      * statements, and property hooks not declared over multiple lines.
      */
     public function processDeclarations(array $declarations): void
@@ -97,9 +97,9 @@ final class DeclarationSpacing implements DeclarationRule
         $declDepths = [];
 
         foreach ($declarations as $token) {
-            $type = $token->Data[TokenData::NAMED_DECLARATION_TYPE];
+            $type = $token->Data[TokenData::DECLARATION_TYPE];
             /** @var TokenCollection */
-            $parts = $token->Data[TokenData::NAMED_DECLARATION_PARTS];
+            $parts = $token->Data[TokenData::DECLARATION_PARTS];
 
             // Don't separate `use`, `use function` and `use constant` if
             // imports are not being sorted
@@ -115,7 +115,7 @@ final class DeclarationSpacing implements DeclarationRule
             if ($type & self::MODIFIER_MASK) {
                 if (
                     $type & self::VISIBILITY_MASK
-                    && ($modifier = $parts->getFirstFrom($this->Idx->GetVisibility))
+                    && ($modifier = $parts->getFirstFrom($this->Idx->SymmetricVisibility))
                 ) {
                     $modifiers[] = $modifier->id;
                 }

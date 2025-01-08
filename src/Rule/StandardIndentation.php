@@ -21,12 +21,12 @@ final class StandardIndentation implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 600,
+            self::PROCESS_TOKENS => 300,
         ][$method] ?? null;
     }
 
     /**
-     * @inheritDoc
+     * @codeCoverageIgnore
      */
     public static function needsSortedTokens(): bool
     {

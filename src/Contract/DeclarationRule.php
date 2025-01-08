@@ -38,8 +38,8 @@ interface DeclarationRule extends Rule
      * document. The following values are applied to each token's
      * {@see Token::$Data} array:
      *
-     * - {@see TokenData::NAMED_DECLARATION_PARTS}
-     * - {@see TokenData::NAMED_DECLARATION_TYPE}
+     * - {@see TokenData::DECLARATION_PARTS}
+     * - {@see TokenData::DECLARATION_TYPE}
      * - {@see TokenData::PROPERTY_HOOKS} (if the declaration is a property or
      *   promoted constructor parameter)
      *

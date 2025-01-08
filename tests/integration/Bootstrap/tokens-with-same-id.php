@@ -15,7 +15,7 @@ defined('T_PROTECTED_SET') || define('T_PROTECTED_SET', 10001);
 defined('T_PUBLIC_SET') || define('T_PUBLIC_SET', 10001);
 defined('T_PROPERTY_C') || define('T_PROPERTY_C', 10001);
 defined('T_ATTRIBUTE_COMMENT') || define('T_ATTRIBUTE_COMMENT', 10001);
-defined('T_END_ALT_SYNTAX') || define('T_END_ALT_SYNTAX', 10001);
+defined('T_CLOSE_ALT') || define('T_CLOSE_ALT', 10001);
 defined('T_NULL') || define('T_NULL', 10001);
 defined('T_OPEN_UNENCLOSED') || define('T_OPEN_UNENCLOSED', 10001);
 defined('T_CLOSE_UNENCLOSED') || define('T_CLOSE_UNENCLOSED', 10001);

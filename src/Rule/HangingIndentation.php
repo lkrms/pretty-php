@@ -43,9 +43,17 @@ final class HangingIndentation implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 800,
-            self::CALLBACK => 800,
+            self::PROCESS_TOKENS => 380,
+            self::CALLBACK => 680,
         ][$method] ?? null;
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    public static function needsSortedTokens(): bool
+    {
+        return true;
     }
 
     /**
@@ -102,7 +110,7 @@ final class HangingIndentation implements TokenRule
                     )
                 ) || (
                     $token->id === \T_COLON
-                    && $token->isColonAltSyntaxDelimiter()
+                    && $token->CloseBracket
                 ) || $token->id === \T_OPEN_UNENCLOSED;
                 $flags = 0;
                 if ($token->hasNewlineBeforeNextCode()) {
@@ -143,8 +151,8 @@ final class HangingIndentation implements TokenRule
             $prevSibling = $token->PrevSibling;
             /** @var Token */
             $statement = $token->Statement;
-            $declType = $statement->Flags & TokenFlag::NAMED_DECLARATION
-                ? $statement->Data[TokenData::NAMED_DECLARATION_TYPE]
+            $declType = $statement->Flags & TokenFlag::DECLARATION
+                ? $statement->Data[TokenData::DECLARATION_TYPE]
                 : 0;
             $mayHaveListWithEqual = $declType === Type::_CONST
                 || $declType === Type::PROPERTY
@@ -261,13 +269,13 @@ final class HangingIndentation implements TokenRule
                     ? $prevCode
                     : $token;
 
-            if ($this->Idx->OperatorAssignmentOrDoubleArrow[$trigger->id]) {
+            if ($this->Idx->AssignmentOrDoubleArrow[$trigger->id]) {
                 $assignment = $trigger;
             } else {
                 $assignment = null;
                 $t = $token;
                 do {
-                    $t = $t->prevSiblingFrom($this->Idx->OperatorAssignmentOrDoubleArrow, true);
+                    $t = $t->prevSiblingFrom($this->Idx->AssignmentOrDoubleArrow, true);
                     if ($t->id === \T_NULL) {
                         break;
                     }
@@ -318,10 +326,10 @@ final class HangingIndentation implements TokenRule
                 $firstItem = $listItems->first();
                 $context[] = $firstItem;
             } elseif ($this->Idx->Chain[$token->id]) {
-                $context[] = $token->Data[TokenData::CHAIN_OPENED_BY];
+                $context[] = $token->Data[TokenData::CHAIN];
                 $until = TokenUtil::getOperatorEndExpression($token);
             } elseif (
-                $token->Flags & TokenFlag::TERNARY_OPERATOR
+                $token->Flags & TokenFlag::TERNARY
                 || $token->id === \T_COALESCE
             ) {
                 $ternary = TokenUtil::getTernaryContext($token)
@@ -333,12 +341,12 @@ final class HangingIndentation implements TokenRule
             } elseif ($statement !== $token) {
                 // Don't indent subsequent assignments in the same statement
                 if (
-                    $this->Idx->OperatorAssignment[$trigger->id]
+                    $this->Idx->Assignment[$trigger->id]
                     && $lastToken
                     && $lastToken->PrevCode
                     && (
-                        $this->Idx->OperatorAssignment[$lastToken->PrevCode->id]
-                        || $this->Idx->OperatorAssignment[$lastToken->id]
+                        $this->Idx->Assignment[$lastToken->PrevCode->id]
+                        || $this->Idx->Assignment[$lastToken->id]
                     )
                 ) {
                     continue;
@@ -350,7 +358,6 @@ final class HangingIndentation implements TokenRule
                 //   context, followed by the precedence value added previously
                 // - the token added to the last context, followed by the
                 //   precedence value added previously (if present)
-                // - `$lastToken` if no token was added to the last context
                 if (
                     TokenUtil::OPERATOR_PRECEDENCE_INDEX[$trigger->id]
                     && ($precedence = TokenUtil::getOperatorPrecedence($trigger)) < 99
@@ -384,13 +391,13 @@ final class HangingIndentation implements TokenRule
                     && !$context[1]
                     && $parent
                     && $parentFlags & self::NO_INDENT
-                    && !$this->Idx->OperatorAssignmentOrDoubleArrow[$trigger->id]
+                    && !$this->Idx->AssignmentOrDoubleArrow[$trigger->id]
                 ) || (
                     $lastToken
                     && $lastToken->PrevCode
                     && (
-                        $this->Idx->OperatorAssignmentOrDoubleArrow[$lastToken->PrevCode->id]
-                        || $this->Idx->OperatorAssignmentOrDoubleArrow[$lastToken->id]
+                        $this->Idx->AssignmentOrDoubleArrow[$lastToken->PrevCode->id]
+                        || $this->Idx->AssignmentOrDoubleArrow[$lastToken->id]
                     )
                 );
             }
@@ -412,7 +419,7 @@ final class HangingIndentation implements TokenRule
                 ($next = $until->NextCode)
                 && ((
                     $next->id === \T_QUESTION
-                    && $next->Flags & TokenFlag::TERNARY_OPERATOR
+                    && $next->Flags & TokenFlag::TERNARY
                 ) || $next->id === \T_COALESCE)
                 && !TokenUtil::getTernaryContext($next)
             ) {
@@ -422,7 +429,7 @@ final class HangingIndentation implements TokenRule
             // Indent expressions relative to assignment operators
             if (
                 ($next = $until->NextCode)
-                && $this->Idx->OperatorAssignment[$next->id]
+                && $this->Idx->Assignment[$next->id]
             ) {
                 $until = TokenUtil::getOperatorEndExpression($next);
             }

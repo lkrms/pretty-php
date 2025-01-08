@@ -10,9 +10,9 @@ use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Rule\Preset\Internal\WordPressTokenIndex;
 use Lkrms\PrettyPHP\Rule\AlignData;
 use Lkrms\PrettyPHP\Rule\DeclarationSpacing;
+use Lkrms\PrettyPHP\AbstractTokenIndex;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenIndex;
 
 /**
  * Apply the WordPress code style
@@ -52,14 +52,14 @@ final class WordPress implements Preset, TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 100,
+            self::PROCESS_TOKENS => 480,
         ][$method] ?? null;
     }
 
     /**
      * @inheritDoc
      */
-    public static function getTokens(TokenIndex $idx): array
+    public static function getTokens(AbstractTokenIndex $idx): array
     {
         return [
             \T_COMMENT => true,
@@ -91,7 +91,7 @@ final class WordPress implements Preset, TokenRule
     /**
      * Apply the rule to the given tokens
      *
-     * Suppression of blank lines after DocBlocks is disabled for the first
+     * Suppression of blank lines after DocBlocks is removed for the first
      * DocBlock in each document.
      *
      * Blank lines added before DocBlocks by other rules are removed.
@@ -113,7 +113,7 @@ final class WordPress implements Preset, TokenRule
         foreach ($tokens as $token) {
             if (
                 $token->id === \T_COMMENT
-                && !($token->Flags & TokenFlag::INFORMAL_DOC_COMMENT)
+                && !($token->Flags & TokenFlag::C_DOC_COMMENT)
             ) {
                 continue;
             }
@@ -136,7 +136,7 @@ final class WordPress implements Preset, TokenRule
             }
 
             if ($token->id === \T_COLON) {
-                if (!$token->isColonAltSyntaxDelimiter()) {
+                if (!$token->CloseBracket) {
                     continue;
                 }
                 $token->applyWhitespace(Space::SPACE_BEFORE);

@@ -20,7 +20,7 @@ final class Renderer implements Immutable
     private int $TabSize;
     private string $SoftTab;
     private string $Tab;
-    private TokenIndex $Idx;
+    private AbstractTokenIndex $Idx;
 
     public function __construct(Formatter $formatter)
     {
@@ -304,7 +304,7 @@ final class Renderer implements Immutable
         // alignment if possible
         if (
             $token->id === \T_COMMENT
-            && !($token->Flags & TokenFlag::INFORMAL_DOC_COMMENT)
+            && !($token->Flags & TokenFlag::C_DOC_COMMENT)
         ) {
             $text = $token->expandText(true);
             $delta = $token->OutputColumn - $token->column;

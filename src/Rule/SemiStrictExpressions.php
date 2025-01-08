@@ -5,8 +5,8 @@ namespace Lkrms\PrettyPHP\Rule;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\AbstractTokenIndex;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenIndex;
 
 /**
  * Add newlines before and after control structure expressions with newlines
@@ -24,14 +24,14 @@ final class SemiStrictExpressions implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 98,
+            self::PROCESS_TOKENS => 246,
         ][$method] ?? null;
     }
 
     /**
      * @inheritDoc
      */
-    public static function getTokens(TokenIndex $idx): array
+    public static function getTokens(AbstractTokenIndex $idx): array
     {
         return $idx->HasExpression;
     }

@@ -27,8 +27,8 @@ final class AlignLists implements ListRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_LIST => 400,
-            self::CALLBACK => 710,
+            self::PROCESS_LIST => 322,
+            self::CALLBACK => 600,
         ][$method] ?? null;
     }
 
@@ -47,6 +47,16 @@ final class AlignLists implements ListRule
      * list items, along with their inner and adjacent tokens, with the column
      * after their open brackets, or with the first item in the list if they
      * have no enclosing brackets.
+     *
+     * @prettyphp-callback List items are aligned with the column after their
+     * open bracket, or with the first item in the list if they have no
+     * enclosing brackets.
+     *
+     * This is achieved by:
+     *
+     * - calculating the difference between the current and desired output
+     *   columns of each item
+     * - applying it to the `LinePadding` of the item and its adjacent tokens
      */
     public function processList(Token $parent, TokenCollection $items, Token $lastChild): void
     {
@@ -107,16 +117,30 @@ final class AlignLists implements ListRule
                     if ($parent->CloseBracket) {
                         // `]` after `2` -> `]` after `5`
                         while (($adjacent = $to->lastSiblingBeforeNewline()) !== $to && !(
-                            $adjacent->id === \T_OPEN_BRACE
-                            && $adjacent->Flags & TokenFlag::STRUCTURAL_BRACE
+                            (
+                                (
+                                    $adjacent->id === \T_OPEN_BRACE
+                                    && $adjacent->Flags & TokenFlag::STRUCTURAL_BRACE
+                                ) || (
+                                    $adjacent->id === \T_COLON
+                                    && $adjacent->CloseBracket
+                                )
+                            )
                             && $adjacent->Depth <= $parent->Depth
                         )) {
                             $to = $adjacent;
                         }
                         // `]` after `5` -> `+` -> `)` after `11`
                         while (($adjacent = $to->adjacentBeforeNewline()) && !(
-                            $adjacent->id === \T_OPEN_BRACE
-                            && $adjacent->Flags & TokenFlag::STRUCTURAL_BRACE
+                            (
+                                (
+                                    $adjacent->id === \T_OPEN_BRACE
+                                    && $adjacent->Flags & TokenFlag::STRUCTURAL_BRACE
+                                ) || (
+                                    $adjacent->id === \T_COLON
+                                    && $adjacent->CloseBracket
+                                )
+                            )
                             && $adjacent->Depth <= $parent->Depth
                         )) {
                             $to = TokenUtil::getOperatorEndExpression($adjacent);

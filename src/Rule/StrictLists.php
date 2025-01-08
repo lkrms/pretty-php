@@ -23,7 +23,7 @@ final class StrictLists implements ListRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_LIST => 370,
+            self::PROCESS_LIST => 242,
         ][$method] ?? null;
     }
 

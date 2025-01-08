@@ -50,10 +50,9 @@ use Lkrms\PrettyPHP\Rule\BlankBeforeReturn;
 use Lkrms\PrettyPHP\Rule\ControlStructureSpacing;
 use Lkrms\PrettyPHP\Rule\DeclarationSpacing;
 use Lkrms\PrettyPHP\Rule\EssentialSpacing;
+use Lkrms\PrettyPHP\Rule\FormatHeredocs;
 use Lkrms\PrettyPHP\Rule\HangingIndentation;
-use Lkrms\PrettyPHP\Rule\HeredocIndentation;
 use Lkrms\PrettyPHP\Rule\IndexSpacing;
-use Lkrms\PrettyPHP\Rule\ListSpacing;
 use Lkrms\PrettyPHP\Rule\NormaliseComments;
 use Lkrms\PrettyPHP\Rule\NormaliseNumbers;
 use Lkrms\PrettyPHP\Rule\NormaliseStrings;
@@ -128,7 +127,7 @@ final class Formatter implements Buildable, Immutable
     /**
      * Token index
      */
-    public TokenIndex $TokenIndex;
+    public AbstractTokenIndex $TokenIndex;
 
     /**
      * End-of-line sequence used when line endings are not preserved or when
@@ -246,25 +245,24 @@ final class Formatter implements Buildable, Immutable
      * @var array<class-string<Rule>>
      */
     public const DEFAULT_RULES = [
-        ProtectStrings::class,
-        NormaliseNumbers::class,
-        NormaliseStrings::class,
         NormaliseComments::class,
+        NormaliseStrings::class,
+        NormaliseNumbers::class,
+        ProtectStrings::class,
+        FormatHeredocs::class,
         IndexSpacing::class,
+        OperatorSpacing::class,
         StandardSpacing::class,
         StatementSpacing::class,
-        OperatorSpacing::class,
         ControlStructureSpacing::class,
-        PlaceComments::class,
         PlaceBraces::class,
+        PlaceComments::class,
         PreserveNewlines::class,
         VerticalSpacing::class,
-        ListSpacing::class,
+        DeclarationSpacing::class,
         StandardIndentation::class,
         SwitchIndentation::class,
-        DeclarationSpacing::class,
         HangingIndentation::class,
-        HeredocIndentation::class,
         EssentialSpacing::class,
     ];
 
@@ -272,25 +270,25 @@ final class Formatter implements Buildable, Immutable
      * @var array<class-string<Rule>>
      */
     public const OPTIONAL_RULES = [
-        NormaliseNumbers::class,
         NormaliseStrings::class,
+        NormaliseNumbers::class,
         PreserveNewlines::class,
         PreserveOneLineStatements::class,
         BlankBeforeReturn::class,
+        StrictLists::class,
         StrictExpressions::class,
         SemiStrictExpressions::class,
+        AlignChains::class,
+        DeclarationSpacing::class,
+        AlignArrowFunctions::class,
+        AlignLists::class,
+        AlignTernaryOperators::class,
+        Symfony::class,
         Drupal::class,
         Laravel::class,
-        Symfony::class,
         WordPress::class,
-        AlignChains::class,
-        StrictLists::class,
-        AlignArrowFunctions::class,
-        AlignTernaryOperators::class,
-        AlignLists::class,
-        AlignData::class,
         AlignComments::class,
-        DeclarationSpacing::class,
+        AlignData::class,
     ];
 
     /**
@@ -478,7 +476,7 @@ final class Formatter implements Buildable, Immutable
      * @param array<class-string<Extension>> $disable Non-mandatory extensions to disable
      * @param array<class-string<Extension>> $enable Optional extensions to enable
      * @param int-mask-of<FormatterFlag::*> $flags
-     * @param TokenIndex|null $tokenIndex Provide a customised token index
+     * @param AbstractTokenIndex|null $tokenIndex Provide a customised token index
      * @param HeredocIndent::* $heredocIndent
      * @param ImportSortOrder::* $importSortOrder
      */
@@ -488,7 +486,7 @@ final class Formatter implements Buildable, Immutable
         array $disable = [],
         array $enable = [],
         int $flags = 0,
-        ?TokenIndex $tokenIndex = null,
+        ?AbstractTokenIndex $tokenIndex = null,
         string $preferredEol = \PHP_EOL,
         bool $preserveEol = true,
         int $spacesBesideCode = 2,
@@ -640,6 +638,9 @@ final class Formatter implements Buildable, Immutable
                 $tokenTypes[$rule] = $types;
                 $mainLoop[$rule . '#token'] = [$rule, TokenRule::PROCESS_TOKENS, $i];
             }
+            if (is_a($rule, ListRule::class, true)) {
+                $mainLoop[$rule . '#list'] = [$rule, ListRule::PROCESS_LIST, $i];
+            }
             if (is_a($rule, StatementRule::class, true)) {
                 $mainLoop[$rule . '#statement'] = [$rule, StatementRule::PROCESS_STATEMENTS, $i];
             }
@@ -654,9 +655,6 @@ final class Formatter implements Buildable, Immutable
                 }
                 $declarationTypes[$rule] = $types;
                 $mainLoop[$rule . '#declaration'] = [$rule, DeclarationRule::PROCESS_DECLARATIONS, $i];
-            }
-            if (is_a($rule, ListRule::class, true)) {
-                $mainLoop[$rule . '#list'] = [$rule, ListRule::PROCESS_LIST, $i];
             }
             if (is_a($rule, BlockRule::class, true)) {
                 $blockLoop[$rule] = [$rule, BlockRule::PROCESS_BLOCK, $i];
@@ -982,7 +980,7 @@ final class Formatter implements Buildable, Immutable
                 case \T_STATIC:
                     if (
                         $parent->Statement !== $parent
-                        || $parent->Flags & TokenFlag::NAMED_DECLARATION
+                        || $parent->Flags & TokenFlag::DECLARATION
                     ) {
                         continue 2;
                     }
@@ -1034,8 +1032,8 @@ final class Formatter implements Buildable, Immutable
                     /** @var Token */
                     $statement = $parent->Statement;
                     if (!(
-                        $statement->Flags & TokenFlag::NAMED_DECLARATION
-                        && ($statement->Data[TokenData::NAMED_DECLARATION_TYPE] & (
+                        $statement->Flags & TokenFlag::DECLARATION
+                        && ($statement->Data[TokenData::DECLARATION_TYPE] & (
                             Type::_USE
                             | Type::_TRAIT
                         )) === Type::_USE
@@ -1083,7 +1081,7 @@ final class Formatter implements Buildable, Immutable
             Type::USE_TRAIT => true,
         ]);
         foreach ($parents as $i => $parent) {
-            $type = $parent->Data[TokenData::NAMED_DECLARATION_TYPE];
+            $type = $parent->Data[TokenData::DECLARATION_TYPE];
             $first = null;
             $last = null;
 

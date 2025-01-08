@@ -4,7 +4,7 @@ namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\TokenIndex;
+use Lkrms\PrettyPHP\AbstractTokenIndex;
 use Salient\Utility\Exception\ShouldNotHappenException;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
@@ -24,14 +24,14 @@ final class NormaliseNumbers implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 60,
+            self::PROCESS_TOKENS => 44,
         ][$method] ?? null;
     }
 
     /**
      * @inheritDoc
      */
-    public static function getTokens(TokenIndex $idx): array
+    public static function getTokens(AbstractTokenIndex $idx): array
     {
         return [
             \T_LNUMBER => true,
@@ -58,9 +58,10 @@ final class NormaliseNumbers implements TokenRule
      * empty integer or fractional parts, replacing `E` with `e`, removing `+`
      * from exponents, and expressing them with mantissae between 1.0 and 10.
      *
-     * If present in the input, underscores are applied to decimal values with
-     * no exponent every 3 digits, to hexadecimal values with more than 5 digits
-     * every 4 digits, and to binary values every 4 digits.
+     * If an underscore is present in the input, underscores are applied to
+     * decimal values with no exponent every 3 digits, to hexadecimal values
+     * with more than 5 digits every 4 digits, and to binary values every 4
+     * digits.
      */
     public function processTokens(array $tokens): void
     {

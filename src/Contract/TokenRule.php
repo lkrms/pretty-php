@@ -2,8 +2,8 @@
 
 namespace Lkrms\PrettyPHP\Contract;
 
+use Lkrms\PrettyPHP\AbstractTokenIndex;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenIndex;
 
 /**
  * @api
@@ -22,7 +22,7 @@ interface TokenRule extends Rule
      *
      * @return array<int,bool>|array{'*'}
      */
-    public static function getTokens(TokenIndex $idx): array;
+    public static function getTokens(AbstractTokenIndex $idx): array;
 
     /**
      * Check if the rule requires tokens to be given in document order

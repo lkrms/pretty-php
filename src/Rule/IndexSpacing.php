@@ -6,7 +6,7 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\TokenIndex;
+use Lkrms\PrettyPHP\AbstractTokenIndex;
 
 /**
  * Apply whitespace to tokens as per the formatter's token index
@@ -23,23 +23,27 @@ final class IndexSpacing implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 78,
+            self::PROCESS_TOKENS => 100,
         ][$method] ?? null;
     }
 
     /**
      * @inheritDoc
      */
-    public static function getTokens(TokenIndex $idx): array
+    public static function getTokens(AbstractTokenIndex $idx): array
     {
-        return TokenIndex::merge(
+        return $idx->merge(
+            [
+                \T_COLON => true,
+                \T_CLOSE_ALT => true,
+            ],
             $idx->AddSpace,
             $idx->AddSpaceBefore,
             $idx->AddSpaceAfter,
             $idx->SuppressSpaceBefore,
             $idx->SuppressSpaceAfter,
-            $idx->OpenBracketOrAlt,
-            $idx->CloseBracketOrAlt,
+            $idx->OpenBracket,
+            $idx->CloseBracket,
         );
     }
 
@@ -54,12 +58,15 @@ final class IndexSpacing implements TokenRule
     /**
      * Apply the rule to the given tokens
      *
-     * Leading and trailing spaces are added to tokens in the `AddSpace`,
-     * `AddSpaceBefore` and `AddSpaceAfter` indexes, then suppressed, along with
-     * adjacent blank lines, for tokens in the `SuppressSpaceBefore` and
-     * `SuppressSpaceAfter` indexes, and inside brackets other than structural
-     * and `match` braces. Blank lines are also suppressed after alternative
-     * syntax colons and before their closing counterparts.
+     * Leading and/or trailing spaces are:
+     *
+     * - added to tokens in the formatter's `AddSpace`, `AddSpaceBefore` and
+     *   `AddSpaceAfter` indexes
+     * - suppressed, along with blank lines, for tokens in the
+     *   `SuppressSpaceBefore` and `SuppressSpaceAfter` indexes, and inside
+     *   brackets other than structural and `match` braces
+     *
+     * Blank lines are also suppressed inside alternative syntax blocks.
      */
     public function processTokens(array $tokens): void
     {
@@ -92,7 +99,7 @@ final class IndexSpacing implements TokenRule
                 )
             )) {
                 $token->Whitespace |= Space::NO_BLANK_BEFORE | Space::NO_SPACE_BEFORE;
-            } elseif ($token->id === \T_END_ALT_SYNTAX) {
+            } elseif ($token->id === \T_CLOSE_ALT) {
                 $token->Whitespace |= Space::NO_BLANK_BEFORE;
             }
         }

@@ -6,8 +6,8 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\AbstractTokenIndex;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenIndex;
 
 /**
  * Apply whitespace to structural and match expression braces
@@ -27,15 +27,15 @@ final class PlaceBraces implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 92,
-            self::BEFORE_RENDER => 400,
+            self::PROCESS_TOKENS => 124,
+            self::BEFORE_RENDER => 920,
         ][$method] ?? null;
     }
 
     /**
      * @inheritDoc
      */
-    public static function getTokens(TokenIndex $idx): array
+    public static function getTokens(AbstractTokenIndex $idx): array
     {
         return [
             \T_OPEN_BRACE => true,
@@ -70,8 +70,8 @@ final class PlaceBraces implements TokenRule
      *   expression or a control structure that is immediately continued, e.g.
      *   `} else {`. In the latter case, trailing newlines are suppressed.
      * - Empty class, function and property hook bodies are collapsed to ` {}`
-     *   on the same line as the declaration they belong to unless
-     *   `CollapseEmptyDeclarationBodies` is disabled.
+     *   on the same line as the declaration they belong to unless the
+     *   formatter's `CollapseEmptyDeclarationBodies` property is `false`.
      * - Horizontal whitespace is suppressed between other empty braces.
      *
      * > Open brace placement is handled by `VerticalSpacing`, which runs after
@@ -95,7 +95,7 @@ final class PlaceBraces implements TokenRule
 
             // Don't move subsequent code to the next line if the brace is part
             // of an expression
-            if ($close->Flags & TokenFlag::STATEMENT_TERMINATOR) {
+            if ($close->Flags & TokenFlag::TERMINATOR) {
                 // Keep structures like `} else {` on the same line
                 $next = $close->NextCode;
                 if ($next && $next->continuesControlStructure()) {

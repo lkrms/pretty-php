@@ -5,7 +5,7 @@ namespace Lkrms\PrettyPHP\Rule;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
-use Lkrms\PrettyPHP\TokenIndex;
+use Lkrms\PrettyPHP\AbstractTokenIndex;
 
 /**
  * Add blank lines before return statements
@@ -22,16 +22,16 @@ final class BlankBeforeReturn implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 97,
+            self::PROCESS_TOKENS => 220,
         ][$method] ?? null;
     }
 
     /**
      * @inheritDoc
      */
-    public static function getTokens(TokenIndex $idx): array
+    public static function getTokens(AbstractTokenIndex $idx): array
     {
-        return $idx->Return;
+        return $idx->ReturnOrYield;
     }
 
     /**
@@ -55,7 +55,10 @@ final class BlankBeforeReturn implements TokenRule
             if (
                 $token->Statement !== $token || (
                     $token->Parent
-                    && !($token->Parent->Flags & TokenFlag::STRUCTURAL_BRACE)
+                    && !(
+                        $token->Parent->Flags & TokenFlag::STRUCTURAL_BRACE
+                        || $token->Parent->id === \T_COLON
+                    )
                 )
             ) {
                 continue;
@@ -64,7 +67,7 @@ final class BlankBeforeReturn implements TokenRule
             if (
                 ($prev = $token->skipPrevEmptyStatements()->PrevSibling)
                 && $prev->Statement
-                && $this->Idx->Return[$prev->Statement->id]
+                && $this->Idx->ReturnOrYield[$prev->Statement->id]
             ) {
                 continue;
             }

@@ -5,8 +5,8 @@ namespace Lkrms\PrettyPHP\Rule;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\AbstractTokenIndex;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenIndex;
 
 /**
  * Apply whitespace to statement terminators
@@ -23,14 +23,14 @@ final class StatementSpacing implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 80,
+            self::PROCESS_TOKENS => 120,
         ][$method] ?? null;
     }
 
     /**
      * @inheritDoc
      */
-    public static function getTokens(TokenIndex $idx): array
+    public static function getTokens(AbstractTokenIndex $idx): array
     {
         return [
             \T_COLON => true,
@@ -52,9 +52,9 @@ final class StatementSpacing implements TokenRule
      * In `for` loop expressions, a space is added after semicolons where the
      * next expression is not empty.
      *
-     * Whitespace is suppressed before, and newlines are added after, semicolons
-     * in other contexts and colons in alternative syntax constructs, `switch`
-     * cases and labels.
+     * For semicolons in other contexts, and colons in alternative syntax
+     * constructs, `switch` cases and labels, leading whitespace is suppressed
+     * and trailing newlines are added.
      */
     public function processTokens(array $tokens): void
     {
@@ -63,7 +63,7 @@ final class StatementSpacing implements TokenRule
             if ($token->id === \T_COLON) {
                 if (
                     !$token->CloseBracket
-                    && !$token->isColonStatementDelimiter()
+                    && $token->EndStatement !== $token
                 ) {
                     continue;
                 }

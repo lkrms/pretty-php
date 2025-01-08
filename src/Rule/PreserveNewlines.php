@@ -7,8 +7,8 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\AbstractTokenIndex;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenIndex;
 use Lkrms\PrettyPHP\TokenUtil;
 
 /**
@@ -29,14 +29,14 @@ final class PreserveNewlines implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 93,
+            self::PROCESS_TOKENS => 200,
         ][$method] ?? null;
     }
 
     /**
      * @inheritDoc
      */
-    public static function getTokens(TokenIndex $idx): array
+    public static function getTokens(AbstractTokenIndex $idx): array
     {
         return $idx->NotVirtual;
     }
@@ -54,7 +54,7 @@ final class PreserveNewlines implements TokenRule
      */
     public function boot(): void
     {
-        $this->AllowNewlineIndex = TokenIndex::merge(
+        $this->AllowNewlineIndex = $this->Idx->merge(
             $this->Idx->AllowNewlineBefore,
             $this->Idx->AllowNewlineAfter,
         );
@@ -63,18 +63,20 @@ final class PreserveNewlines implements TokenRule
     /**
      * Apply the rule to the given tokens
      *
-     * If a newline in the input is adjacent to a token in `AllowNewlineBefore`
-     * or `AllowNewlineAfter`, it is applied to the token as a leading or
-     * trailing newline on a best-effort basis. This has the effect of placing
-     * operators before or after newlines as per the formatter's token index.
+     * If a newline in the input is adjacent to a token in the formatter's
+     * `AllowNewlineBefore` or `AllowNewlineAfter` indexes, it is applied to the
+     * token as a leading or trailing newline on a best-effort basis. This has
+     * the effect of placing operators before or after newlines as per the
+     * formatter's token index.
      *
-     * Similarly, blank lines in the input are preserved between tokens in
-     * `AllowBlankBefore` and `AllowBlankAfter`, except:
+     * Similarly, blank lines in the input are preserved between tokens in the
+     * `AllowBlankBefore` and `AllowBlankAfter` indexes, except:
      *
      * - after `:` if there is a subsequent token in the same scope
      * - after `,` other than between `match` expression arms
      * - after `;` in `for` expressions
-     * - after mid-statement comments and comments in non-statement scopes
+     * - before and after mid-statement comments and comments in non-statement
+     *   scopes
      */
     public function processTokens(array $tokens): void
     {
@@ -155,9 +157,9 @@ final class PreserveNewlines implements TokenRule
 
         // Treat `?:` as one operator
         if (
-            ($token->Flags & TokenFlag::TERNARY_OPERATOR)
+            ($token->Flags & TokenFlag::TERNARY)
             && $token->id === \T_COLON
-            && $token->Data[TokenData::OTHER_TERNARY_OPERATOR] === $prev
+            && $token->Data[TokenData::OTHER_TERNARY] === $prev
         ) {
             return false;
         }
@@ -199,9 +201,9 @@ final class PreserveNewlines implements TokenRule
 
         // Treat `?:` as one operator
         if (
-            ($token->Flags & TokenFlag::TERNARY_OPERATOR)
+            ($token->Flags & TokenFlag::TERNARY)
             && $token->id === \T_QUESTION
-            && $token->Data[TokenData::OTHER_TERNARY_OPERATOR] === $next
+            && $token->Data[TokenData::OTHER_TERNARY] === $next
         ) {
             return false;
         }
@@ -244,8 +246,10 @@ final class PreserveNewlines implements TokenRule
                             && $prevCode->Parent === $parent
                             && $prevCode->EndStatement !== $prevCode
                         ) || (
-                            $parent
-                            && !($parent->Flags & TokenFlag::STRUCTURAL_BRACE)
+                            $parent && !(
+                                $parent->Flags & TokenFlag::STRUCTURAL_BRACE
+                                || $parent->id === \T_COLON
+                            )
                         )
                     )
                 ) || (
@@ -256,8 +260,10 @@ final class PreserveNewlines implements TokenRule
                             && $prevCode->EndStatement !== $prevCode
                         ) || (
                             $next->Parent
-                            && !($next->Parent->Flags & TokenFlag::STRUCTURAL_BRACE)
                             && !(
+                                $next->Parent->Flags & TokenFlag::STRUCTURAL_BRACE
+                                || $next->Parent->id === \T_COLON
+                            ) && !(
                                 $next->Parent->id === \T_OPEN_BRACE
                                 && $next->Parent->isMatchOpenBrace()
                                 && ($prevCode = $next->PrevCode)

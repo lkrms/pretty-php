@@ -40,7 +40,7 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
         }
 
         // Don't allow newlines before `:` other than ternary operators
-        if ($token->id === \T_COLON && !($token->Flags & TokenFlag::TERNARY_OPERATOR)) {
+        if ($token->id === \T_COLON && !($token->Flags & TokenFlag::TERNARY)) {
             return false;
         }
 
@@ -208,7 +208,7 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
                     $arity === 0
                     || ($arity === self::UNARY && $token->inUnaryContext())
                     || ($arity === self::BINARY && !$token->inUnaryContext())
-                    || ($arity === self::TERNARY && $token->Flags & TokenFlag::TERNARY_OPERATOR)
+                    || ($arity === self::TERNARY && $token->Flags & TokenFlag::TERNARY)
                 ) {
                     $leftAssociative = $leftAssoc;
                     $rightAssociative = $rightAssoc;
@@ -271,7 +271,7 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
     public static function getTernaryContext(Token $token): ?Token
     {
         $precedence = self::getPrecedenceOf(\T_QUESTION, false, true);
-        if ($ternary = $token->Flags & TokenFlag::TERNARY_OPERATOR) {
+        if ($ternary = $token->Flags & TokenFlag::TERNARY) {
             /** @var Token */
             $before = self::getTernary1($token);
             $short = $before->NextCode === self::getTernary2($token);
@@ -288,10 +288,10 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
         ) {
             if ($t->id === \T_COALESCE) {
                 $context = $t;
-            } elseif ($t->Flags & TokenFlag::TERNARY_OPERATOR) {
+            } elseif ($t->Flags & TokenFlag::TERNARY) {
                 if (
                     self::getTernary1($t) === $t
-                    && $t->Data[TokenData::OTHER_TERNARY_OPERATOR]->index
+                    && $t->Data[TokenData::OTHER_TERNARY]->index
                         < $before->index
                 ) {
                     $context = $t;
@@ -325,7 +325,7 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
             && $prev->Statement === $context->Statement
             && $prev->id !== \T_COMMA
         ) {
-            if ($prev->Flags & TokenFlag::TERNARY_OPERATOR) {
+            if ($prev->Flags & TokenFlag::TERNARY) {
                 return $t;
             }
             if (self::OPERATOR_PRECEDENCE_INDEX[$prev->id]) {
@@ -356,11 +356,11 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
                 || !$token->Idx->StatementDelimiter[$next->id]
             )
         ) {
-            if ($next->Flags & TokenFlag::TERNARY_OPERATOR) {
+            if ($next->Flags & TokenFlag::TERNARY) {
                 if ($next->id === \T_COLON) {
                     return $t->CloseBracket ?? $t;
                 }
-                $next = $next->Data[TokenData::OTHER_TERNARY_OPERATOR];
+                $next = $next->Data[TokenData::OTHER_TERNARY];
             } elseif (self::OPERATOR_PRECEDENCE_INDEX[$next->id]) {
                 $nextPrecedence = self::getOperatorPrecedence($next);
                 if ($nextPrecedence !== -1 && $nextPrecedence < 99 && $nextPrecedence > $precedence) {
@@ -378,10 +378,10 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
      */
     public static function getTernary1(Token $token): ?Token
     {
-        return $token->Flags & TokenFlag::TERNARY_OPERATOR
+        return $token->Flags & TokenFlag::TERNARY
             ? ($token->id === \T_QUESTION
                 ? $token
-                : $token->Data[TokenData::OTHER_TERNARY_OPERATOR])
+                : $token->Data[TokenData::OTHER_TERNARY])
             : null;
     }
 
@@ -391,10 +391,10 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
      */
     public static function getTernary2(Token $token): ?Token
     {
-        return $token->Flags & TokenFlag::TERNARY_OPERATOR
+        return $token->Flags & TokenFlag::TERNARY
             ? ($token->id === \T_COLON
                 ? $token
-                : $token->Data[TokenData::OTHER_TERNARY_OPERATOR])
+                : $token->Data[TokenData::OTHER_TERNARY])
             : null;
     }
 
@@ -411,8 +411,8 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
             if ($t->id === \T_NULL) {
                 return null;
             }
-        } while (!($t->Flags & TokenFlag::TERNARY_OPERATOR));
-        $other = $t->Data[TokenData::OTHER_TERNARY_OPERATOR];
+        } while (!($t->Flags & TokenFlag::TERNARY));
+        $other = $t->Data[TokenData::OTHER_TERNARY];
         return $other->index > $token->index
             ? $other
             : null;

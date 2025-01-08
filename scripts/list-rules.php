@@ -141,14 +141,14 @@ foreach (Arr::extend(Formatter::DEFAULT_RULES, ...Formatter::OPTIONAL_RULES) as 
     if (is_a($rule, TokenRule::class, true)) {
         maybeAddRule($mainLoop, 1, $rule, $isMandatory, $isDefault, TokenRule::PROCESS_TOKENS, true, $callbackDocs);
     }
+    if (is_a($rule, ListRule::class, true)) {
+        maybeAddRule($mainLoop, 1, $rule, $isMandatory, $isDefault, ListRule::PROCESS_LIST, true, $callbackDocs);
+    }
     if (is_a($rule, StatementRule::class, true)) {
         maybeAddRule($mainLoop, 1, $rule, $isMandatory, $isDefault, StatementRule::PROCESS_STATEMENTS, true, $callbackDocs);
     }
     if (is_a($rule, DeclarationRule::class, true)) {
         maybeAddRule($mainLoop, 1, $rule, $isMandatory, $isDefault, DeclarationRule::PROCESS_DECLARATIONS, true, $callbackDocs);
-    }
-    if (is_a($rule, ListRule::class, true)) {
-        maybeAddRule($mainLoop, 1, $rule, $isMandatory, $isDefault, ListRule::PROCESS_LIST, true, $callbackDocs);
     }
     if (is_a($rule, BlockRule::class, true)) {
         maybeAddRule($blockLoop, 2, $rule, $isMandatory, $isDefault, BlockRule::PROCESS_BLOCK, true, $callbackDocs);
@@ -201,30 +201,34 @@ foreach ($rules as $r) {
         $r['priority'],
     ];
 
-    if (!in_array($r['rule'], [
-        IndexSpacing::class,
-        OperatorSpacing::class,
-    ], true)) {
-        if (is_string($r['tokens'][0] ?? null)) {
-            $tokenRules[$r['tokens'][0]][] = $heading;
-        } elseif ($r['tokens']) {
-            foreach (array_keys(array_filter($r['tokens'])) as $id) {
-                $name = token_name($id);
-                if (!Str::startsWith($name, 'T_')) {
-                    $name = HasTokenNames::TOKEN_NAME[$id] ?? $name;
-                }
+    $tokens = null;
+    if (is_string($r['tokens'][0] ?? null)) {
+        $tokenRules[$r['tokens'][0]][] = $heading;
+        $tokens[] = $r['tokens'][0];
+    } elseif ($r['tokens'] && $r['rule'] !== IndexSpacing::class) {
+        $tokenIds = array_keys(array_filter($r['tokens']));
+        sort($tokenIds, \SORT_NUMERIC);
+        foreach ($tokenIds as $id) {
+            $name = HasTokenNames::TOKEN_NAME[$id] ?? token_name($id);
+            if ($r['rule'] !== OperatorSpacing::class) {
                 $tokenRules[$name][] = $heading;
             }
+            $tokens[] = $id < 256
+                ? ($id === \T_BACKTICK ? '` ` `' : chr($id))
+                : $name;
         }
     }
 
+    $declarations = null;
     if ($r['declarations'] === ['*']) {
         $declarationRules['*'][] = $heading;
+        $declarations[] = '*';
     } elseif ($r['declarations']) {
         foreach (array_keys(array_filter($r['declarations'])) as $id) {
             $name = Reflect::getConstantName(DeclarationType::class, $id);
             $name = ltrim($name, '_');
             $declarationRules[$name][] = $heading;
+            $declarations[] = $name;
         }
     }
 
@@ -252,7 +256,12 @@ foreach ($rules as $r) {
                     ? 'default'
                     : 'optional'
             )
-    ) . ', ' . $method . ', priority ' . $r['priority'] . ')</small>';
+    ) . ', ' . $method . ', priority ' . $r['priority'] . (
+        ($with = $tokens ?? $declarations)
+            ? ', ' . ($tokens ? 'tokens' : 'declarations')
+                . ': `' . implode('` | `', $with) . '`'
+            : ''
+    ) . ')</small>';
     // Remove leading ">" after non-empty lines
     $description = Regex::replace('/(?<!\n)(\n\h*+)> ?/m', '$1', $description ?? 'Not documented.');
     $docs[] = Str::unwrap($description, "\n", false, true, true);

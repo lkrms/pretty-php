@@ -12,6 +12,7 @@ use Lkrms\PrettyPHP\Contract\Preset;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\Internal\TokenCollection;
 use Lkrms\PrettyPHP\Rule\BlankBeforeReturn;
+use Lkrms\PrettyPHP\AbstractTokenIndex;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\Token;
 use Lkrms\PrettyPHP\TokenIndex;
@@ -51,15 +52,15 @@ final class Symfony implements Preset, TokenRule, ListRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 100,
-            self::PROCESS_LIST => 100,
+            self::PROCESS_TOKENS => 400,
+            self::PROCESS_LIST => 400,
         ][$method] ?? null;
     }
 
     /**
      * @inheritDoc
      */
-    public static function getTokens(TokenIndex $idx): array
+    public static function getTokens(AbstractTokenIndex $idx): array
     {
         return [
             \T_CONCAT => true,
@@ -97,17 +98,20 @@ final class Symfony implements Preset, TokenRule, ListRule
     /**
      * Apply the rule to a token and the list of items associated with it
      *
-     * Newlines are suppressed between parameters in function declarations that
-     * have no promoted constructor parameters.
+     * Newlines are suppressed in parameter lists with no promoted constructor
+     * parameters and no trailing comma.
      */
     public function processList(Token $parent, TokenCollection $items, Token $lastChild): void
     {
-        if (!$parent->isParameterList()) {
+        if (
+            !$parent->isParameterList()
+            || $lastChild->id === \T_COMMA
+        ) {
             return;
         }
 
         foreach ($items as $item) {
-            if ($item->Flags & TokenFlag::NAMED_DECLARATION) {
+            if ($item->Flags & TokenFlag::DECLARATION) {
                 return;
             }
         }

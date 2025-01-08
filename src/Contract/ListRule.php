@@ -25,6 +25,8 @@ interface ListRule extends Rule
      * Each token in `$items` is the first code token after `$parent` or a
      * delimiter.
      *
+     * `$lastChild` is the last code token in the list. It may be a delimiter.
+     *
      * This method is not called for empty lists.
      */
     public function processList(Token $parent, TokenCollection $items, Token $lastChild): void;

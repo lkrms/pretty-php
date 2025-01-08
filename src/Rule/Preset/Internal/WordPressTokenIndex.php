@@ -2,33 +2,31 @@
 
 namespace Lkrms\PrettyPHP\Rule\Preset\Internal;
 
-use Lkrms\PrettyPHP\TokenIndex;
+use Lkrms\PrettyPHP\AbstractTokenIndex;
 use Salient\Core\Concern\HasMutator;
 
 /**
  * @internal
  */
-final class WordPressTokenIndex extends TokenIndex
+final class WordPressTokenIndex extends AbstractTokenIndex
 {
     use HasMutator;
 
-    /** @var array<int,bool> */
-    private static array $DefaultAllowNewlineBefore;
-    /** @var array<int,bool> */
-    private static array $DefaultAllowNewlineAfter;
+    private self $Original;
 
     public function __construct()
     {
-        parent::__construct(true);
+        [$before, $after] = self::getOperatorsFirstIndexes();
 
         $this->AllowBlankBefore[\T_CLOSE_BRACE] = true;
         $this->AllowBlankAfter[\T_OPEN_BRACE] = true;
-        $this->AllowNewlineBefore[\T_CLOSE_BRACE] = true;
-        $this->AllowNewlineAfter[\T_OPEN_BRACE] = true;
-        $this->AllowNewlineAfter[\T_CONCAT] = true;
+        $before[\T_CLOSE_BRACE] = true;
+        $after[\T_OPEN_BRACE] = true;
+        $after[\T_CONCAT] = true;
 
-        self::$DefaultAllowNewlineBefore ??= $this->AllowNewlineBefore;
-        self::$DefaultAllowNewlineAfter ??= $this->AllowNewlineAfter;
+        $this->AllowNewlineBefore = $before;
+        $this->AllowNewlineAfter = $after;
+        $this->Original = $this;
     }
 
     /**
@@ -55,10 +53,20 @@ final class WordPressTokenIndex extends TokenIndex
         return $this;
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function withoutPreserveNewline()
+    {
+        return $this->with('AllowNewlineBefore', $this->AllowBlankBefore)
+                    ->with('AllowNewlineAfter', $this->AllowBlankAfter);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function withPreserveNewline()
     {
-        return $this->with('AllowNewlineBefore', self::$DefaultAllowNewlineBefore)
-                    ->with('AllowNewlineAfter', self::$DefaultAllowNewlineAfter)
-                    ->with('Operators', self::FIRST);
+        return $this->Original;
     }
 }

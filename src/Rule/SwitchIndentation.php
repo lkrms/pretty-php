@@ -5,8 +5,8 @@ namespace Lkrms\PrettyPHP\Rule;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\AbstractTokenIndex;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenIndex;
 
 /**
  * Apply switch case list indentation
@@ -23,14 +23,14 @@ final class SwitchIndentation implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 600,
+            self::PROCESS_TOKENS => 302,
         ][$method] ?? null;
     }
 
     /**
      * @inheritDoc
      */
-    public static function getTokens(TokenIndex $idx): array
+    public static function getTokens(AbstractTokenIndex $idx): array
     {
         return [
             \T_SWITCH => true,
@@ -52,12 +52,12 @@ final class SwitchIndentation implements TokenRule
      *
      * In switch case lists:
      *
-     * - The `PreIndent` of every token is incremented
+     * - The `PreIndent` of every token is incremented.
      * - The `Deindent` of tokens between `case` or `default` and their
-     *   respective delimiters is incremented
+     *   respective delimiters is incremented.
      * - Newlines are added before `case` and `default` and after their
-     *   respective delimiters
-     * - Blank lines are suppressed after `case` and `default` delimiters
+     *   respective delimiters.
+     * - Blank lines are suppressed after `case` and `default` delimiters.
      */
     public function processTokens(array $tokens): void
     {

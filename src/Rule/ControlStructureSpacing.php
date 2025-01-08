@@ -7,8 +7,8 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\AbstractTokenIndex;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenIndex;
 
 /**
  * Format control structures with unenclosed bodies
@@ -25,14 +25,14 @@ final class ControlStructureSpacing implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 83,
+            self::PROCESS_TOKENS => 122,
         ][$method] ?? null;
     }
 
     /**
      * @inheritDoc
      */
-    public static function getTokens(TokenIndex $idx): array
+    public static function getTokens(AbstractTokenIndex $idx): array
     {
         return $idx->HasOptionalBraces;
     }
@@ -50,8 +50,8 @@ final class ControlStructureSpacing implements TokenRule
      *
      * If the body of a control structure has no enclosing braces:
      *
-     * - a newline is added after the body (if empty)
-     * - a newline is added before and after the body (if non-empty)
+     * - a newline is added after the body (if empty), or before and after the
+     *   body (if non-empty)
      * - blank lines before the body are suppressed
      * - blank lines after the body are suppressed if the control structure
      *   continues

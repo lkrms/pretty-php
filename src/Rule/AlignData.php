@@ -32,8 +32,8 @@ final class AlignData implements BlockRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_BLOCK => 340,
-            self::CALLBACK => 710,
+            self::PROCESS_BLOCK => 520,
+            self::CALLBACK => 600,
         ][$method] ?? null;
     }
 
@@ -61,20 +61,27 @@ final class AlignData implements BlockRule
      * When they appear in the same scope, a callback is registered to align
      * consecutive:
      *
-     * - assignment operators
+     * - assignment operators (except as noted below)
      * - `=>` delimiters in array syntax (except as noted below)
      * - `=>` delimiters in `match` expressions
      *
-     * If the open bracket of an array is not followed by a newline and neither
-     * `AlignLists` nor `StrictLists` are enabled, its `=>` delimiters are
-     * ignored.
+     * If the open bracket of an array or parameter list is not followed by a
+     * newline and neither `AlignLists` nor `StrictLists` are enabled, its `=>`
+     * delimiters or assignment operators are ignored.
      *
-     * @prettyphp-callback Assignment operators are aligned unless
-     * `MaxAssignmentPadding` is not `null` and would be exceeded.
+     * @prettyphp-callback Assignment operators are aligned unless the
+     * formatter's `MaxAssignmentPadding` property is not `null` and would be
+     * exceeded.
      *
-     * In arrays and `match` expressions, `=>` delimiters are aligned unless
-     * `MaxDoubleArrowColumn` is not `null`, in which case any found in
-     * subsequent columns are excluded from consideration.
+     * In arrays and `match` expressions, `=>` delimiters are aligned unless the
+     * formatter's `MaxDoubleArrowColumn` property is not `null`, in which case
+     * any found in subsequent columns are excluded from consideration.
+     *
+     * Alignment is achieved by:
+     *
+     * - calculating the difference between the current and desired output
+     *   columns of each token
+     * - applying it to the `Padding` of the token
      */
     public function processBlock(array $lines): void
     {
@@ -96,7 +103,7 @@ final class AlignData implements BlockRule
 
         foreach ($lines as $line => $tokens) {
             foreach ($tokens as $token) {
-                if ($this->Idx->OperatorAssignment[$token->id]) {
+                if ($this->Idx->Assignment[$token->id]) {
                     /** @var Token */
                     $prev = $token->Prev;
                     /** @var Token */
@@ -105,16 +112,22 @@ final class AlignData implements BlockRule
                         (
                             !$token->Parent
                             || $token->Parent->Flags & TokenFlag::STRUCTURAL_BRACE
-                            || $token->Parent->isParameterList()
+                            || $token->Parent->id === \T_COLON
+                            || (
+                                $token->Parent->isParameterList() && (
+                                    $this->ListRuleEnabled
+                                    || $token->Parent->hasNewlineBeforeNextCode()
+                                )
+                            )
                         )
                         // Ignore assignment operators after the first:
                         // - in the statement
                         // - on the line
                         && !$statement->withNextSiblings($prev)
-                                      ->hasOneFrom($this->Idx->OperatorAssignment)
+                                      ->hasOneFrom($this->Idx->Assignment)
                         && !$token->firstSiblingAfterNewline(false)
                                   ->withNextSiblings($prev)
-                                  ->hasOneFrom($this->Idx->OperatorAssignment)
+                                  ->hasOneFrom($this->Idx->Assignment)
                     ) {
                         $addToIndex(self::TYPE_ASSIGNMENT, $line, $token);
                     }

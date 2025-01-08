@@ -8,8 +8,8 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\AbstractTokenIndex;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenIndex;
 
 /**
  * Place comments above or adjacent to code
@@ -33,7 +33,7 @@ final class PlaceComments implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 90,
+            self::PROCESS_TOKENS => 126,
             self::BEFORE_RENDER => 997,
         ][$method] ?? null;
     }
@@ -41,7 +41,7 @@ final class PlaceComments implements TokenRule
     /**
      * @inheritDoc
      */
-    public static function getTokens(TokenIndex $idx): array
+    public static function getTokens(AbstractTokenIndex $idx): array
     {
         return $idx->Comment;
     }
@@ -67,28 +67,30 @@ final class PlaceComments implements TokenRule
     /**
      * Apply the rule to the given tokens
      *
-     * Critical newlines are added after one-line comments with subsequent close
-     * tags.
+     * Critical newlines are added after one-line comments followed by any token
+     * other than a close tag.
      *
      * Newlines are added before and after:
      *
      * - DocBlocks
      * - comments with a leading newline in the input
-     * - comments after top-level close braces if strict PSR-12 mode is enabled
+     * - comments after top-level close braces (if strict PSR-12 mode is
+     *   enabled)
      *
      * These comments are also saved for alignment with the next code token
      * (unless it's a close bracket).
      *
      * Leading and trailing spaces are added to comments that don't appear on
      * their own line, and comments where the previous token is a code token are
-     * saved to receive padding derived from `SpacesBesideCode` if they are the
-     * last token on the line after other rules are applied.
+     * saved to receive padding derived from the value of the formatter's
+     * `SpacesBesideCode` property if they are the last token on the line after
+     * other rules are applied.
      *
      * For multi-line DocBlocks, and C-style comments that receive the same
      * treatment:
      *
      * - leading blank lines are added unless the comment appears mid-statement
-     *   (deferred for DocBlocks with the `COLLAPSIBLE_COMMENT` flag)
+     *   (deferred for collapsible DocBlocks; see `DeclarationSpacing`)
      * - trailing blank lines are added to file-level comments
      * - trailing blank lines are suppressed for DocBlocks with subsequent code
      */
@@ -113,8 +115,8 @@ final class PlaceComments implements TokenRule
                     && $prev->id === \T_CLOSE_BRACE
                     && $prev->Flags & TokenFlag::STRUCTURAL_BRACE
                     && $prev->Statement
-                    && $prev->Statement->Flags & TokenFlag::NAMED_DECLARATION
-                    && $prev->Statement->Data[TokenData::NAMED_DECLARATION_TYPE] & (
+                    && $prev->Statement->Flags & TokenFlag::DECLARATION
+                    && $prev->Statement->Data[TokenData::DECLARATION_TYPE] & (
                         DeclarationType::_CLASS
                         | DeclarationType::_ENUM
                         | DeclarationType::_INTERFACE
@@ -153,7 +155,7 @@ final class PlaceComments implements TokenRule
 
             if (
                 $token->id !== \T_DOC_COMMENT
-                && !($token->Flags & TokenFlag::INFORMAL_DOC_COMMENT)
+                && !($token->Flags & TokenFlag::C_DOC_COMMENT)
             ) {
                 continue;
             }
@@ -172,8 +174,8 @@ final class PlaceComments implements TokenRule
 
             if (
                 $next
-                && $next->Flags & TokenFlag::NAMED_DECLARATION
-                && ($type = $next->Data[TokenData::NAMED_DECLARATION_TYPE]) & (
+                && $next->Flags & TokenFlag::DECLARATION
+                && ($type = $next->Data[TokenData::DECLARATION_TYPE]) & (
                     DeclarationType::_DECLARE
                     | DeclarationType::_NAMESPACE
                     | DeclarationType::_USE

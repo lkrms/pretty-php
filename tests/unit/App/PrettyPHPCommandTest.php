@@ -35,7 +35,7 @@ final class PrettyPHPCommandTest extends TestCase
 
     private const SYNOPSIS = <<<'EOF'
 
-pretty-php [-1OLTNSnMbvq] [-I <regex>] [-X <regex>] [-P[<regex>]]
+pretty-php [-1OLTNSnMbvRq] [-I <regex>] [-X <regex>] [-P[<regex>]]
     [-i <rule>,...] [-r <rule>,...] [-h <level>] [-m <order>] [--psr12]
     [-c <file>] [--no-config] [-o <file>,...] [--diff[=<type>]] [--check]
     [--print-config] [--] [<path>...]

@@ -7,8 +7,8 @@ use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\AbstractTokenIndex;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenIndex;
 
 /**
  * Apply whitespace to operators
@@ -25,14 +25,14 @@ final class OperatorSpacing implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 80,
+            self::PROCESS_TOKENS => 102,
         ][$method] ?? null;
     }
 
     /**
      * @inheritDoc
      */
-    public static function getTokens(TokenIndex $idx): array
+    public static function getTokens(AbstractTokenIndex $idx): array
     {
         return $idx->Operator;
     }
@@ -48,8 +48,7 @@ final class OperatorSpacing implements TokenRule
     /**
      * Apply the rule to the given tokens
      *
-     * Operators in `declare` expressions are ignored, otherwise spaces are
-     * added before and after operators not mentioned below.
+     * Operators in `declare` expressions are ignored.
      *
      * Whitespace is suppressed:
      *
@@ -59,7 +58,7 @@ final class OperatorSpacing implements TokenRule
      *   PSR-12 mode is enabled)
      * - after `?` in nullable types
      * - between `++` and `--` and the variables they operate on
-     * - after unary operators
+     * - after other unary operators
      * - before `:` in short ternary expressions, e.g. `$a ?: $b`
      *
      * A space is added:
@@ -69,6 +68,8 @@ final class OperatorSpacing implements TokenRule
      * - before `?` in nullable types
      * - before and after `:` in standard ternary expressions
      * - after `:` in other contexts
+     *
+     * Spaces are added before and after operators not mentioned above.
      */
     public function processTokens(array $tokens): void
     {
@@ -148,7 +149,7 @@ final class OperatorSpacing implements TokenRule
                 $token->Whitespace |= Space::NONE_BEFORE | Space::NONE_AFTER;
             } elseif (
                 $token->id === \T_QUESTION
-                && !($token->Flags & TokenFlag::TERNARY_OPERATOR)
+                && !($token->Flags & TokenFlag::TERNARY)
             ) {
                 $token->Whitespace |= Space::SPACE_BEFORE | Space::NONE_AFTER;
             } elseif (
@@ -171,8 +172,8 @@ final class OperatorSpacing implements TokenRule
                 $token->Whitespace |= Space::NONE_AFTER;
             } elseif ($token->id === \T_COLON) {
                 $token->Whitespace |= (
-                    $token->Flags & TokenFlag::TERNARY_OPERATOR
-                        ? ($token->Data[TokenData::OTHER_TERNARY_OPERATOR] === $prev
+                    $token->Flags & TokenFlag::TERNARY
+                        ? ($token->Data[TokenData::OTHER_TERNARY] === $prev
                             ? Space::NONE_BEFORE
                             : Space::SPACE_BEFORE)
                         : 0

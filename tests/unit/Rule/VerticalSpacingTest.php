@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Tests\Rule;
 
+use Lkrms\PrettyPHP\Filter\MoveComments;
 use Lkrms\PrettyPHP\Tests\TestCase;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
@@ -186,6 +187,82 @@ PHP,
 );
 PHP,
                 $formatterB->tokenIndex(new TokenIndex(true)),
+            ],
+            'magic comma #1' => [
+                <<<'PHP'
+<?php
+function getArray()
+{
+    return [
+        'foo',
+        'bar',
+        'baz',
+    ];
+}
+
+PHP,
+                <<<'PHP'
+<?php
+function getArray()
+{
+    return ['foo', 'bar', 'baz',];
+}
+PHP,
+                $formatter,
+            ],
+            'magic comma #2' => [
+                <<<'PHP'
+<?php
+[
+    ,,
+    $foo,
+] = $bar;
+$foo = [  // comment
+    $bar,
+];
+$foo = [
+    ,,  // comment
+    $bar,
+];
+
+PHP,
+                <<<'PHP'
+<?php
+[,, $foo,] = $bar;
+$foo = [  // comment
+$bar,];
+$foo = [  // comment
+,, $bar,];
+PHP,
+                $formatter,
+            ],
+            'magic comma #2 with MoveComments disabled' => [
+                <<<'PHP'
+<?php
+[
+    ,,
+    $foo,
+] = $bar;
+$foo = [  // comment
+    $bar,
+];
+$foo = [  // comment
+    ,,
+    $bar,
+];
+
+PHP,
+                <<<'PHP'
+<?php
+[,, $foo,] = $bar;
+$foo = [  // comment
+$bar,];
+$foo = [  // comment
+,, $bar,];
+PHP,
+                $formatterB
+                    ->disable([MoveComments::class])
+                    ->build(),
             ],
         ];
     }

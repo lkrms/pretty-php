@@ -5,15 +5,15 @@ namespace Lkrms\PrettyPHP\Rule;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\AbstractTokenIndex;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenIndex;
 
 /**
  * Apply indentation to heredocs and nowdocs
  *
  * @api
  */
-final class HeredocIndentation implements TokenRule
+final class FormatHeredocs implements TokenRule
 {
     use TokenRuleTrait;
 
@@ -26,15 +26,15 @@ final class HeredocIndentation implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 900,
-            self::BEFORE_RENDER => 900,
+            self::PROCESS_TOKENS => 62,
+            self::BEFORE_RENDER => 980,
         ][$method] ?? null;
     }
 
     /**
      * @inheritDoc
      */
-    public static function getTokens(TokenIndex $idx): array
+    public static function getTokens(AbstractTokenIndex $idx): array
     {
         return [
             \T_START_HEREDOC => true,
@@ -60,8 +60,8 @@ final class HeredocIndentation implements TokenRule
     /**
      * Apply the rule to the given tokens
      *
-     * If `HeredocIndent` has a value other than `NONE`, heredocs are saved for
-     * later processing.
+     * If the formatter's `HeredocIndent` property has a value other than
+     * `NONE`, heredocs are saved for later processing.
      */
     public function processTokens(array $tokens): void
     {
@@ -75,11 +75,9 @@ final class HeredocIndentation implements TokenRule
      *
      * The indentation of the first inner token of each heredoc saved earlier is
      * applied to the heredoc by adding whitespace after newline characters in
-     * each of its tokens.
-     *
-     * Whitespace added to each heredoc is also applied to the `HeredocIndent`
-     * property of its `T_START_HEREDOC` token, which allows inherited
-     * indentation to be removed when processing nested heredocs.
+     * each of its tokens. (Whitespace added to each heredoc is also applied to
+     * the `HeredocIndent` property of its `T_START_HEREDOC` token, which allows
+     * inherited indentation to be removed when processing nested heredocs.)
      */
     public function beforeRender(array $tokens): void
     {

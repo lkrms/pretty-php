@@ -6,8 +6,8 @@ use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\AbstractTokenIndex;
 use Lkrms\PrettyPHP\Token;
-use Lkrms\PrettyPHP\TokenIndex;
 use Lkrms\PrettyPHP\TokenUtil;
 
 /**
@@ -25,15 +25,15 @@ final class AlignTernaryOperators implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 380,
-            self::CALLBACK => 710,
+            self::PROCESS_TOKENS => 324,
+            self::CALLBACK => 600,
         ][$method] ?? null;
     }
 
     /**
      * @inheritDoc
      */
-    public static function getTokens(TokenIndex $idx): array
+    public static function getTokens(AbstractTokenIndex $idx): array
     {
         return [
             \T_QUESTION => true,
@@ -74,7 +74,7 @@ final class AlignTernaryOperators implements TokenRule
             // start of a line
             if ((
                 $token->id === \T_QUESTION
-                && !($token->Flags & TokenFlag::TERNARY_OPERATOR)
+                && !($token->Flags & TokenFlag::TERNARY)
             ) || !$token->hasNewlineBefore()) {
                 continue;
             }
@@ -129,8 +129,8 @@ final class AlignTernaryOperators implements TokenRule
     private function setAlignedWith(Token $token, Token $alignWith): void
     {
         $token->AlignedWith = $alignWith;
-        if ($token->Flags & TokenFlag::TERNARY_OPERATOR) {
-            $other = $token->Data[TokenData::OTHER_TERNARY_OPERATOR];
+        if ($token->Flags & TokenFlag::TERNARY) {
+            $other = $token->Data[TokenData::OTHER_TERNARY];
             if ($other->hasNewlineBefore()) {
                 $other->AlignedWith = $alignWith;
             }
