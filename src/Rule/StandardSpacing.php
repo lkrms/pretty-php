@@ -279,7 +279,14 @@ final class StandardSpacing implements TokenRule, DeclarationRule
             }
 
             if ($token->id === \T_COMMA) {
-                $token->Whitespace |= Space::NONE_BEFORE | Space::SPACE_AFTER;
+                // Don't collapse vertical whitespace between open brackets and
+                // delimiters
+                $token->Whitespace |= Space::SPACE_AFTER | (
+                    $token->Parent
+                    && $token->Parent === $token->PrevCode
+                        ? Space::NO_SPACE_BEFORE
+                        : Space::NONE_BEFORE
+                );
                 continue;
             }
 
