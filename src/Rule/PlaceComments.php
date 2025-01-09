@@ -90,7 +90,7 @@ final class PlaceComments implements TokenRule
      * treatment:
      *
      * - leading blank lines are added unless the comment appears mid-statement
-     *   (deferred for collapsible DocBlocks; see `DeclarationSpacing`)
+     *   (deferred until after `DeclarationSpacing` for collapsible DocBlocks)
      * - trailing blank lines are added to file-level comments
      * - trailing blank lines are suppressed for DocBlocks with subsequent code
      */
@@ -221,7 +221,7 @@ final class PlaceComments implements TokenRule
                 /** @var Token */
                 $prev = $token->PrevCode;
                 if (!(
-                    $token->Parent === $prev
+                    $prev === $token->Parent
                     || (
                         $prev->collect($token)->hasBlankLineBetweenTokens()
                         && !$token->collect($next)->hasBlankLineBetweenTokens()

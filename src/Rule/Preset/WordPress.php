@@ -100,7 +100,7 @@ final class WordPress implements Preset, TokenRule
      *
      * Trailing spaces are added to `!` operators.
      *
-     * Suppression of blank lines inside braces is disabled.
+     * Suppression of blank lines inside braces is removed.
      *
      * Spaces are added inside non-empty:
      *

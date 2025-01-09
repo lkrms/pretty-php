@@ -54,6 +54,7 @@ final class OperatorSpacing implements TokenRule
      *
      * - after reference-related ampersands
      * - before and after operators in union, intersection and DNF types
+     * - between parentheses in DNF types
      * - before and after exception delimiters in `catch` blocks (unless strict
      *   PSR-12 mode is enabled)
      * - after `?` in nullable types
@@ -132,6 +133,7 @@ final class OperatorSpacing implements TokenRule
                 $token->Whitespace |= Space::NONE_BEFORE | Space::NONE_AFTER;
                 if (!$inTypeContext) {
                     /** @var Token $parent */
+                    $parent->outer()->applyInnerWhitespace(Space::NONE);
                     if (
                         $parent->PrevCode
                         && $parent->PrevCode->id !== \T_OR

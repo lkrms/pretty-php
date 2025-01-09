@@ -2,10 +2,10 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\DeclarationType;
 use Lkrms\PrettyPHP\Catalog\TokenData;
 use Lkrms\PrettyPHP\Catalog\TokenFlag;
 use Lkrms\PrettyPHP\Catalog\TokenFlagMask;
-use Lkrms\PrettyPHP\Catalog\TokenSubId;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\AbstractTokenIndex;
@@ -216,26 +216,20 @@ final class NormaliseComments implements TokenRule
             $collapse = false;
             if ($isDocComment && strpos($text, "\n") === false) {
                 $next = $this->getNextStatement($token);
-                if ((
-                    !$next
-                    && $token->NextSibling
-                ) || (
-                    $next
-                    && $next->id !== \T_DECLARE
-                    && $next->id !== \T_NAMESPACE
-                    && (
-                        $next->id !== \T_USE
-                        || $next->getSubId() !== TokenSubId::USE_IMPORT
-                    )
-                )) {
-                    if (!($next && $next->Flags & TokenFlag::DECLARATION) || (
-                        $next->id === \T_USE
-                        && $next->getSubId() === TokenSubId::USE_TRAIT
-                    )) {
-                        $collapse = true;
-                    } else {
-                        $token->Flags |= TokenFlag::COLLAPSIBLE_COMMENT;
-                    }
+                $declType = $next && $next->Flags & TokenFlag::DECLARATION
+                    ? $next->Data[TokenData::DECLARATION_TYPE]
+                    : 0;
+                if (
+                    (!$declType && $token->NextSibling)
+                    || $declType === DeclarationType::USE_TRAIT
+                ) {
+                    $collapse = true;
+                } elseif ($declType && !($declType & (
+                    DeclarationType::_DECLARE
+                    | DeclarationType::_NAMESPACE
+                    | DeclarationType::_USE
+                ))) {
+                    $token->Flags |= TokenFlag::COLLAPSIBLE_COMMENT;
                 }
             }
 
@@ -269,28 +263,19 @@ final class NormaliseComments implements TokenRule
      */
     private function getNextStatement(Token $token): ?Token
     {
-        $next = $token;
-        while ($next = $next->NextCode) {
-            if ($next === $next->EndStatement) {
-                if ($next->id === \T_CLOSE_BRACE) {
-                    return null;
-                }
-                continue;
-            }
-            if ($next !== $next->Statement) {
-                return null;
-            }
-            /** @var Token */
-            $_next = $token->Next;
-            if ($next === $_next) {
-                return $next;
-            }
-            /** @var Token */
-            $_prev = $next->Prev;
-            return $_next->collect($_prev)->hasOneOf(\T_DOC_COMMENT)
-                ? null
-                : $next;
+        $next = $token->NextCode;
+        if (!$next || $next !== $next->Statement) {
+            return null;
         }
-        return null;
+        if ($next === $token->Next) {
+            return $next;
+        }
+        /** @var Token */
+        $from = $token->Next;
+        /** @var Token */
+        $to = $next->Prev;
+        return $from->collect($to)->hasOneOf(\T_DOC_COMMENT)
+            ? null
+            : $next;
     }
 }

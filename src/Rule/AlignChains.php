@@ -136,7 +136,7 @@ final class AlignChains implements TokenRule
                 if ($chain->count() < 2) {
                     continue;
                 }
-                $token->AlignedWith = $alignWith = $token;
+                $alignWith = $token;
                 $chain = $chain->shift();
             }
 

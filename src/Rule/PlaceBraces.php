@@ -105,9 +105,9 @@ final class PlaceBraces implements TokenRule
                         // close brace is not the body of `if` or `elseif`, the
                         // `if` construct `$next` belongs to must be its parent,
                         // and `$next` should be on a new line
-                        $close->PrevSibling
-                        && $close->PrevSibling->PrevSibling
-                        && $this->Idx->IfOrElseIf[$close->PrevSibling->PrevSibling->id]
+                        ($prev = $close->PrevSibling)
+                        && ($prev = $prev->PrevSibling)
+                        && $this->Idx->IfOrElseIf[$prev->id]
                     )) {
                         $next->Whitespace |= Space::NO_BLANK_BEFORE | Space::NO_LINE_BEFORE;
                     } else {
@@ -127,7 +127,7 @@ final class PlaceBraces implements TokenRule
             // Move empty bodies to the end of the previous line
             if (
                 $this->Formatter->CollapseEmptyDeclarationBodies
-                && $next->id === \T_CLOSE_BRACE
+                && $next === $close
                 && (
                     $parts->hasOneFrom($this->Idx->DeclarationClassOrFunction)
                     || $token->inPropertyOrPropertyHook()
@@ -142,7 +142,7 @@ final class PlaceBraces implements TokenRule
             $token->Whitespace |= Space::SPACE_BEFORE | Space::NO_BLANK_AFTER | Space::LINE_AFTER | Space::SPACE_AFTER;
 
             // Suppress horizontal whitespace between empty braces
-            if ($next->id === \T_CLOSE_BRACE) {
+            if ($next === $close) {
                 $token->Whitespace |= Space::NO_SPACE_AFTER;
             }
 

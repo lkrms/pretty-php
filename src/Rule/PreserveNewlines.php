@@ -122,10 +122,13 @@ final class PreserveNewlines implements TokenRule
 
             $min = $prev->line;
             $max = $token->line;
-            // - Is a newline after $prev OK?
-            // - If $prev moves to the next line, is a newline before it OK?
-            // - Is a newline before $token OK?
-            // - If $token moves to the previous line, is a newline after it OK?
+            // In order of preference, preserve a newline or blank line:
+            // - after `$prev`
+            // - before `$prev` if it can move to the next line and is not a
+            //   bracket
+            // - before `$token`
+            // - after `$token` if it can move to the previous line and is not a
+            //   bracket
             $this->maybePreserveNewlineAfter($prev, $token, $line, $min, $max)
                 || ($prev->Prev && $this->maybePreserveNewlineBefore($prev, $prev->Prev, $line, $min, $max, true))
                 || $this->maybePreserveNewlineBefore($token, $prev, $line, $min, $max)

@@ -363,7 +363,7 @@ final class StandardSpacing implements TokenRule, DeclarationRule
             if ($type === DeclarationType::PARAM) {
                 /** @var Token */
                 $parent = $token->Parent;
-                $parents[$parent->id] = $parent;
+                $parents[$parent->index] = $parent;
             }
 
             if (
@@ -378,9 +378,9 @@ final class StandardSpacing implements TokenRule, DeclarationRule
                     $hasModifier = $name !== $hook
                         && $name->PrevSibling
                         && !$this->Idx->Attribute[$name->PrevSibling->id];
-                    $name = $name->skipNextSiblingFrom($this->Idx->Ampersand);
+                    $name = $name->skipNextCodeFrom($this->Idx->Ampersand);
                     /** @var Token */
-                    $next = $name->NextSibling;
+                    $next = $name->NextCode;
                     if ($hasParameters = $next->id === \T_OPEN_PARENTHESIS) {
                         /** @var Token */
                         $next = $next->NextSibling;

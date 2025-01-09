@@ -13,7 +13,13 @@ use Salient\Utility\Regex;
  */
 final class Declaration
 {
-    private const EXPANDABLE_TAG = '@(?:phan-|phpstan-|psalm-)?(?:api|internal|method|property(?:-read|-write)?|mixin|param(?:-[[:alnum:]]++)*|return|throws|template(?:-covariant|-contravariant)?|(?:(?i)inheritDoc))(?=\s|$)';
+    private const EXPANDABLE_TAG = '@(?:phan-|phpstan-|psalm-)?(?:'
+        . 'api|internal|'
+        . 'method|property(?:-read|-write)?|mixin|'
+        . 'param(?:-[[:alnum:]]++)*|return|throws|'
+        . 'template(?:-covariant|-contravariant)?|'
+        . '(?:(?i)inheritDoc)'
+        . ')(?=\s|$)';
 
     public Token $Token;
     public Token $End;
