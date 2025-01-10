@@ -171,10 +171,15 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     }
 
     /**
-     * Get the column number (1-based) of the token's last character
+     * Get the column number (1-based) of the token's last character, or -1 if
+     * its starting column is unknown
      */
     public function getEndColumn(): int
     {
+        if ($this->column < 1) {
+            return -1;
+        }
+
         $text = $this->OriginalText ?? $this->text;
         return ($pos = mb_strrpos($text, "\n")) === false
             ? $this->column + mb_strlen($text)
