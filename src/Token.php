@@ -1690,36 +1690,4 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
 
         return new TokenCollection($tokens ?? []);
     }
-
-    /**
-     * Get previous siblings in reverse document order, optionally stopping at a
-     * given sibling
-     */
-    public function prevSiblings(?self $to = null): TokenCollection
-    {
-        if (
-            $this->id === \T_NULL
-            || ($to && $to->id === \T_NULL)
-        ) {
-            return new TokenCollection();
-        }
-        $t = $this->OpenBracket ?? $this;
-        if ($to) {
-            if ($this->Parent !== $to->Parent) {
-                return new TokenCollection();
-            }
-            $to = $to->OpenBracket ?? $to;
-            if ($this->index < $to->index) {
-                return new TokenCollection();
-            }
-        }
-        while ($t = $t->PrevSibling) {
-            $tokens[] = $t;
-            if ($to && $t === $to) {
-                break;
-            }
-        }
-
-        return new TokenCollection($tokens ?? []);
-    }
 }
