@@ -14,6 +14,9 @@ use Salient\Utility\Reflect;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 
+/**
+ * @api
+ */
 final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
 {
     /**
@@ -217,11 +220,9 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
                 }
             }
         }
-        // @codeCoverageIgnoreStart
         $leftAssociative = false;
         $rightAssociative = false;
         return -1;
-        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -254,11 +255,9 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
                 }
             }
         }
-        // @codeCoverageIgnoreStart
         $leftAssociative = false;
         $rightAssociative = false;
         return -1;
-        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -494,8 +493,13 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
         }
 
         if (isset($token->Data)) {
+            /** @var array<int,string>|null */
             static $dataTypes;
-            $dataTypes ??= array_flip(self::getTokenDataValues());
+            if ($dataTypes === null) {
+                /** @var array<string,int> */
+                $values = Reflect::getConstants(Data::class);
+                $dataTypes = array_flip($values);
+            }
             foreach ($token->Data as $type => $value) {
                 $t['Data'][$dataTypes[$type] ?? $type] =
                     $value instanceof Token
@@ -508,16 +512,6 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
 
         $t['ExpandedText'] = $token->ExpandedText;
         $t['OriginalText'] = $token->OriginalText;
-        $t['TagIndent'] = $token->TagIndent;
-        $t['PreIndent'] = $token->PreIndent;
-        $t['Indent'] = $token->Indent;
-        $t['Deindent'] = $token->Deindent;
-        $t['HangingIndent'] = $token->HangingIndent;
-        $t['LinePadding'] = $token->LinePadding;
-        $t['LineUnpadding'] = $token->LineUnpadding;
-        $t['Padding'] = $token->Padding;
-        $t['HeredocIndent'] = $token->HeredocIndent;
-        $t['AlignedWith'] = $token->AlignedWith;
 
         if ($token->Whitespace) {
             static $whitespaceFlags;
@@ -550,6 +544,16 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
             }
         }
 
+        $t['TagIndent'] = $token->TagIndent;
+        $t['PreIndent'] = $token->PreIndent;
+        $t['Indent'] = $token->Indent;
+        $t['Deindent'] = $token->Deindent;
+        $t['HangingIndent'] = $token->HangingIndent;
+        $t['LinePadding'] = $token->LinePadding;
+        $t['LineUnpadding'] = $token->LineUnpadding;
+        $t['Padding'] = $token->Padding;
+        $t['AlignedWith'] = $token->AlignedWith;
+        $t['HeredocIndent'] = $token->HeredocIndent;
         $t['OutputLine'] = $token->OutputLine;
         $t['OutputPos'] = $token->OutputPos;
         $t['OutputColumn'] = $token->OutputColumn;
@@ -571,15 +575,6 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
         unset($value);
 
         return $t;
-    }
-
-    /**
-     * @return array<string,int>
-     */
-    private static function getTokenDataValues(): array
-    {
-        /** @var array<string,int> */
-        return Reflect::getConstants(Data::class);
     }
 
     public static function describe(Token $token): string
