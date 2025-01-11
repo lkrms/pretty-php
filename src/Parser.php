@@ -842,7 +842,7 @@ final class Parser implements Immutable
                 // Flag and link ternary operators
                 if (
                     $token->id === \T_QUESTION
-                    && $token->getSubId() === TokenSubId::QUESTION_TERNARY_OPERATOR
+                    && $token->getSubId() === TokenSubId::QUESTION_TERNARY
                 ) {
                     $current = $token;
                     $count = 0;
@@ -852,14 +852,14 @@ final class Parser implements Immutable
                     ) {
                         if (
                             $current->id === \T_QUESTION
-                            && $current->getSubId() === TokenSubId::QUESTION_TERNARY_OPERATOR
+                            && $current->getSubId() === TokenSubId::QUESTION_TERNARY
                         ) {
                             $count++;
                             continue;
                         }
                         if (
                             $current->id === \T_COLON
-                            && $current->getSubId() === TokenSubId::COLON_TERNARY_OPERATOR
+                            && $current->getSubId() === TokenSubId::COLON_TERNARY
                         ) {
                             if ($count--) {
                                 continue;

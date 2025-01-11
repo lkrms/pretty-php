@@ -513,7 +513,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     public function isColonAltSyntaxDelimiter(): bool
     {
         $subId = $this->getSubId();
-        return $subId === TokenSubId::COLON_ALT_SYNTAX_DELIMITER;
+        return $subId === TokenSubId::COLON_ALT_SYNTAX;
     }
 
     /**
@@ -522,8 +522,8 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     public function isColonStatementDelimiter(): bool
     {
         $subId = $this->getSubId();
-        return $subId === TokenSubId::COLON_SWITCH_CASE_DELIMITER
-            || $subId === TokenSubId::COLON_LABEL_DELIMITER;
+        return $subId === TokenSubId::COLON_SWITCH_CASE
+            || $subId === TokenSubId::COLON_LABEL;
     }
 
     /**
@@ -532,8 +532,8 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     public function isColonTypeDelimiter(): bool
     {
         $subId = $this->getSubId();
-        return $subId === TokenSubId::COLON_RETURN_TYPE_DELIMITER
-            || $subId === TokenSubId::COLON_BACKED_ENUM_TYPE_DELIMITER;
+        return $subId === TokenSubId::COLON_RETURN_TYPE
+            || $subId === TokenSubId::COLON_ENUM_TYPE;
     }
 
     /**
@@ -581,7 +581,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
                 && $this->Idx->AltStartOrContinue[$prev->id]
             )
         ) {
-            return TokenSubId::COLON_ALT_SYNTAX_DELIMITER;
+            return TokenSubId::COLON_ALT_SYNTAX;
         }
 
         if (
@@ -591,7 +591,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
             && ($prev = $prevCode->PrevCode)
             && ($prev === $this->Parent || $prev->id === \T_COMMA)
         ) {
-            return TokenSubId::COLON_NAMED_ARGUMENT_DELIMITER;
+            return TokenSubId::COLON_NAMED_ARGUMENT;
         }
 
         if (
@@ -599,15 +599,15 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
             && ($prev = $prevCode->PrevCode)
             && $prev->id === \T_ENUM
         ) {
-            return TokenSubId::COLON_BACKED_ENUM_TYPE_DELIMITER;
+            return TokenSubId::COLON_ENUM_TYPE;
         }
 
         if ($this->isColonReturnTypeDelimiter()) {
-            return TokenSubId::COLON_RETURN_TYPE_DELIMITER;
+            return TokenSubId::COLON_RETURN_TYPE;
         }
 
         if ($this->endOfSwitchCase() === $this) {
-            return TokenSubId::COLON_SWITCH_CASE_DELIMITER;
+            return TokenSubId::COLON_SWITCH_CASE;
         }
 
         if (
@@ -617,11 +617,11 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         ) {
             $subId = $prev->getSubId();
             if (
-                $subId === TokenSubId::COLON_ALT_SYNTAX_DELIMITER
-                || $subId === TokenSubId::COLON_SWITCH_CASE_DELIMITER
-                || $subId === TokenSubId::COLON_LABEL_DELIMITER
+                $subId === TokenSubId::COLON_ALT_SYNTAX
+                || $subId === TokenSubId::COLON_SWITCH_CASE
+                || $subId === TokenSubId::COLON_LABEL
             ) {
-                return TokenSubId::COLON_LABEL_DELIMITER;
+                return TokenSubId::COLON_LABEL;
             }
         }
 
@@ -641,10 +641,10 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
                 )
             )
         )) {
-            return TokenSubId::COLON_LABEL_DELIMITER;
+            return TokenSubId::COLON_LABEL;
         }
 
-        return TokenSubId::COLON_TERNARY_OPERATOR;
+        return TokenSubId::COLON_TERNARY;
     }
 
     private function isColonReturnTypeDelimiter(): bool
@@ -695,7 +695,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
             return TokenSubId::QUESTION_NULLABLE;
         }
 
-        return TokenSubId::QUESTION_TERNARY_OPERATOR;
+        return TokenSubId::QUESTION_TERNARY;
     }
 
     /**
