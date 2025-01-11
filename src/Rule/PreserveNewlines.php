@@ -2,8 +2,8 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\TokenData;
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
@@ -160,9 +160,9 @@ final class PreserveNewlines implements TokenRule
 
         // Treat `?:` as one operator
         if (
-            ($token->Flags & TokenFlag::TERNARY)
+            ($token->Flags & Flag::TERNARY)
             && $token->id === \T_COLON
-            && $token->Data[TokenData::OTHER_TERNARY] === $prev
+            && $token->Data[Data::OTHER_TERNARY] === $prev
         ) {
             return false;
         }
@@ -204,9 +204,9 @@ final class PreserveNewlines implements TokenRule
 
         // Treat `?:` as one operator
         if (
-            ($token->Flags & TokenFlag::TERNARY)
+            ($token->Flags & Flag::TERNARY)
             && $token->id === \T_QUESTION
-            && $token->Data[TokenData::OTHER_TERNARY] === $next
+            && $token->Data[Data::OTHER_TERNARY] === $next
         ) {
             return false;
         }
@@ -250,7 +250,7 @@ final class PreserveNewlines implements TokenRule
                             && $prevCode->EndStatement !== $prevCode
                         ) || (
                             $parent && !(
-                                $parent->Flags & TokenFlag::STRUCTURAL_BRACE
+                                $parent->Flags & Flag::STRUCTURAL_BRACE
                                 || $parent->id === \T_COLON
                             )
                         )
@@ -264,7 +264,7 @@ final class PreserveNewlines implements TokenRule
                         ) || (
                             $next->Parent
                             && !(
-                                $next->Parent->Flags & TokenFlag::STRUCTURAL_BRACE
+                                $next->Parent->Flags & Flag::STRUCTURAL_BRACE
                                 || $next->Parent->id === \T_COLON
                             ) && !(
                                 $next->Parent->id === \T_OPEN_BRACE

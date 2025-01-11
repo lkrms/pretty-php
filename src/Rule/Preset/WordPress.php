@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule\Preset;
 
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\Preset;
@@ -113,7 +113,7 @@ final class WordPress implements Preset, TokenRule
         foreach ($tokens as $token) {
             if (
                 $token->id === \T_COMMENT
-                && !($token->Flags & TokenFlag::C_DOC_COMMENT)
+                && !($token->Flags & Flag::C_DOC_COMMENT)
             ) {
                 continue;
             }

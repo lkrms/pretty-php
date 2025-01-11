@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Concern\BlockRuleTrait;
 use Lkrms\PrettyPHP\Contract\BlockRule;
 use Lkrms\PrettyPHP\Token;
@@ -111,7 +111,7 @@ final class AlignData implements BlockRule
                     if (
                         (
                             !$token->Parent
-                            || $token->Parent->Flags & TokenFlag::STRUCTURAL_BRACE
+                            || $token->Parent->Flags & Flag::STRUCTURAL_BRACE
                             || $token->Parent->id === \T_COLON
                             || (
                                 $token->Parent->isParameterList() && (

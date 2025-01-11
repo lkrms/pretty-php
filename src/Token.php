@@ -2,11 +2,11 @@
 
 namespace Lkrms\PrettyPHP;
 
-use Lkrms\PrettyPHP\Catalog\DeclarationType;
-use Lkrms\PrettyPHP\Catalog\TokenData;
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\TokenFlagMask;
-use Lkrms\PrettyPHP\Catalog\TokenSubId;
+use Lkrms\PrettyPHP\Catalog\DeclarationType as Type;
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
+use Lkrms\PrettyPHP\Catalog\TokenFlagMask as Mask;
+use Lkrms\PrettyPHP\Catalog\TokenSubId as SubId;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Contract\HasTokenNames;
@@ -33,7 +33,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     /**
      * @internal
      *
-     * @var TokenSubId::*|-1|null
+     * @var SubId::*|-1|null
      */
     public ?int $subId = null;
 
@@ -56,7 +56,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     public int $Flags = 0;
 
     /**
-     * @var array<TokenData::*,mixed>
+     * @var array<Data::*,mixed>
      * @phpstan-var array{self,self|null,self|null,self,bool,TokenCollection,int,TokenCollection,self,self,self,int,TokenCollection,int,self,string,Closure[]}
      */
     public array $Data;
@@ -234,10 +234,10 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     public function prevReal(): ?self
     {
         $real = $this->Idx->Virtual[$this->id]
-            ? $this->Data[TokenData::BOUND_TO]
+            ? $this->Data[Data::BOUND_TO]
             : $this;
         return $real->Prev && $this->Idx->Virtual[$real->Prev->id]
-            ? $real->Prev->Data[TokenData::PREV_REAL]
+            ? $real->Prev->Data[Data::PREV_REAL]
             : $real->Prev;
     }
 
@@ -247,10 +247,10 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     public function nextReal(): ?self
     {
         $real = $this->Idx->Virtual[$this->id]
-            ? $this->Data[TokenData::BOUND_TO]
+            ? $this->Data[Data::BOUND_TO]
             : $this;
         return $real->Next && $this->Idx->Virtual[$real->Next->id]
-            ? $real->Next->Data[TokenData::NEXT_REAL]
+            ? $real->Next->Data[Data::NEXT_REAL]
             : $real->Next;
     }
 
@@ -388,7 +388,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         if ($this->id === \T_NULL) {
             return $this;
         }
-        $t = $this->Flags & TokenFlag::CODE
+        $t = $this->Flags & Flag::CODE
             ? $this
             : $this->PrevCode;
         while ($t && $index[$t->id]) {
@@ -409,7 +409,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         if ($this->id === \T_NULL) {
             return $this;
         }
-        $t = $this->Flags & TokenFlag::CODE
+        $t = $this->Flags & Flag::CODE
             ? $this
             : $this->NextCode;
         while ($t && $index[$t->id]) {
@@ -430,7 +430,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         if ($this->id === \T_NULL) {
             return $this;
         }
-        $t = $this->Flags & TokenFlag::CODE
+        $t = $this->Flags & Flag::CODE
             ? $this
             : $this->PrevCode;
         while ($t && $index[$t->id]) {
@@ -451,7 +451,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         if ($this->id === \T_NULL) {
             return $this;
         }
-        $t = $this->Flags & TokenFlag::CODE
+        $t = $this->Flags & Flag::CODE
             ? $this
             : $this->NextCode;
         while ($t && $index[$t->id]) {
@@ -513,7 +513,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     public function isColonAltSyntaxDelimiter(): bool
     {
         $subId = $this->getSubId();
-        return $subId === TokenSubId::COLON_ALT_SYNTAX;
+        return $subId === SubId::COLON_ALT_SYNTAX;
     }
 
     /**
@@ -522,8 +522,8 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     public function isColonStatementDelimiter(): bool
     {
         $subId = $this->getSubId();
-        return $subId === TokenSubId::COLON_SWITCH_CASE
-            || $subId === TokenSubId::COLON_LABEL;
+        return $subId === SubId::COLON_SWITCH_CASE
+            || $subId === SubId::COLON_LABEL;
     }
 
     /**
@@ -532,14 +532,14 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     public function isColonTypeDelimiter(): bool
     {
         $subId = $this->getSubId();
-        return $subId === TokenSubId::COLON_RETURN_TYPE
-            || $subId === TokenSubId::COLON_ENUM_TYPE;
+        return $subId === SubId::COLON_RETURN_TYPE
+            || $subId === SubId::COLON_ENUM_TYPE;
     }
 
     /**
      * Get the sub-id of a T_COLON, T_QUESTION or T_USE token
      *
-     * @return TokenSubId::*|-1
+     * @return SubId::*|-1
      */
     public function getSubId(): int
     {
@@ -565,7 +565,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     }
 
     /**
-     * @return TokenSubId::COLON_*
+     * @return SubId::COLON_*
      */
     private function getColonSubId(): int
     {
@@ -581,7 +581,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
                 && $this->Idx->AltStartOrContinue[$prev->id]
             )
         ) {
-            return TokenSubId::COLON_ALT_SYNTAX;
+            return SubId::COLON_ALT_SYNTAX;
         }
 
         if (
@@ -591,7 +591,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
             && ($prev = $prevCode->PrevCode)
             && ($prev === $this->Parent || $prev->id === \T_COMMA)
         ) {
-            return TokenSubId::COLON_NAMED_ARGUMENT;
+            return SubId::COLON_NAMED_ARGUMENT;
         }
 
         if (
@@ -599,15 +599,15 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
             && ($prev = $prevCode->PrevCode)
             && $prev->id === \T_ENUM
         ) {
-            return TokenSubId::COLON_ENUM_TYPE;
+            return SubId::COLON_ENUM_TYPE;
         }
 
         if ($this->isColonReturnTypeDelimiter()) {
-            return TokenSubId::COLON_RETURN_TYPE;
+            return SubId::COLON_RETURN_TYPE;
         }
 
         if ($this->endOfSwitchCase() === $this) {
-            return TokenSubId::COLON_SWITCH_CASE;
+            return SubId::COLON_SWITCH_CASE;
         }
 
         if (
@@ -617,21 +617,21 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         ) {
             $subId = $prev->getSubId();
             if (
-                $subId === TokenSubId::COLON_ALT_SYNTAX
-                || $subId === TokenSubId::COLON_SWITCH_CASE
-                || $subId === TokenSubId::COLON_LABEL
+                $subId === SubId::COLON_ALT_SYNTAX
+                || $subId === SubId::COLON_SWITCH_CASE
+                || $subId === SubId::COLON_LABEL
             ) {
-                return TokenSubId::COLON_LABEL;
+                return SubId::COLON_LABEL;
             }
         }
 
         if ($prevCode->id === \T_STRING && (
             !($prev = $prevCode->PrevSibling) || (
                 $prev->id === \T_SEMICOLON
-                || $prev->Flags & TokenFlag::TERMINATOR
+                || $prev->Flags & Flag::TERMINATOR
                 || (
                     $prev->CloseBracket
-                    && $prev->CloseBracket->Flags & TokenFlag::TERMINATOR
+                    && $prev->CloseBracket->Flags & Flag::TERMINATOR
                 )
                 || $this->Idx->HasOptionalBraces[$prev->id]
                 || (
@@ -641,10 +641,10 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
                 )
             )
         )) {
-            return TokenSubId::COLON_LABEL;
+            return SubId::COLON_LABEL;
         }
 
-        return TokenSubId::COLON_TERNARY;
+        return SubId::COLON_TERNARY;
     }
 
     private function isColonReturnTypeDelimiter(): bool
@@ -673,7 +673,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     }
 
     /**
-     * @return TokenSubId::QUESTION_*
+     * @return SubId::QUESTION_*
      */
     private function getQuestionSubId(): int
     {
@@ -685,36 +685,36 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
             // Nullable variable types (and constant types, as of PHP 8.3)
             (
                 $this->Idx->NonMethodMember[$prevCode->id]
-                && $statement->Flags & TokenFlag::DECLARATION
+                && $statement->Flags & Flag::DECLARATION
             )
             // Nullable return types
             || ($prevCode->id === \T_COLON && $prevCode->isColonTypeDelimiter())
             // Nullable parameter types
             || $this->inParameterList()
         ) {
-            return TokenSubId::QUESTION_NULLABLE;
+            return SubId::QUESTION_NULLABLE;
         }
 
-        return TokenSubId::QUESTION_TERNARY;
+        return SubId::QUESTION_TERNARY;
     }
 
     /**
-     * @return TokenSubId::USE_*
+     * @return SubId::USE_*
      */
     private function getUseSubId(): int
     {
         if ($this->PrevCode && $this->PrevCode->id === \T_CLOSE_PARENTHESIS) {
-            return TokenSubId::USE_VARIABLES;
+            return SubId::USE_VARIABLES;
         }
 
         if (
-            $this->Flags & TokenFlag::DECLARATION
-            && $this->Data[TokenData::DECLARATION_TYPE] === DeclarationType::USE_TRAIT
+            $this->Flags & Flag::DECLARATION
+            && $this->Data[Data::DECLARATION_TYPE] === Type::USE_TRAIT
         ) {
-            return TokenSubId::USE_TRAIT;
+            return SubId::USE_TRAIT;
         }
 
-        return TokenSubId::USE_IMPORT;
+        return SubId::USE_IMPORT;
     }
 
     public function continuesControlStructure(): bool
@@ -732,7 +732,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         return $this->id === \T_OPEN_BRACKET && (
             !($prev = $this->PrevCode)
             || !$this->Idx->EndOfDereferenceable[$prev->id]
-            || $prev->Flags & TokenFlag::STRUCTURAL_BRACE
+            || $prev->Flags & Flag::STRUCTURAL_BRACE
         );
     }
 
@@ -749,7 +749,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         return $this->Statement === $this
             || !($prev = $this->PrevCode)
             || $this->Idx->BeforeUnary[$prev->id]
-            || $prev->Flags & TokenFlag::TERNARY;
+            || $prev->Flags & Flag::TERNARY;
     }
 
     /**
@@ -946,8 +946,8 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
      */
     public function isProperty(): bool
     {
-        return $this->Flags & TokenFlag::DECLARATION
-            && $this->Data[TokenData::DECLARATION_TYPE] & DeclarationType::PROPERTY;
+        return $this->Flags & Flag::DECLARATION
+            && $this->Data[Data::DECLARATION_TYPE] & Type::PROPERTY;
     }
 
     /**
@@ -985,7 +985,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
 
     private function isAnonymousFunctionOrFn(): bool
     {
-        return !($this->Flags & TokenFlag::DECLARATION)
+        return !($this->Flags & Flag::DECLARATION)
             && $this->Idx->FunctionOrFn[$this->skipNextSiblingFrom($this->Idx->AttributeOrStatic)->id];
     }
 
@@ -1000,7 +1000,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
 
     private function isDeclaration(): bool
     {
-        return $this->Flags & TokenFlag::DECLARATION
+        return $this->Flags & Flag::DECLARATION
             || $this->Idx->ClassOrFunction[
                 $this->skipNextSiblingFrom($this->Idx->BeforeAnonymousClassOrFunction)->id
             ];
@@ -1014,7 +1014,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     {
         if (
             $this->Idx->OperatorExceptTernaryOrDelimiter[$this->id]
-            || $this->Flags & TokenFlag::TERNARY
+            || $this->Flags & Flag::TERNARY
         ) {
             // @codeCoverageIgnoreStart
             return $this;
@@ -1134,7 +1134,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         while (
             !$t->hasNewlineBefore()
             && ($ignoreComments || !(
-                $t->Flags & TokenFlag::MULTILINE_COMMENT
+                $t->Flags & Flag::MULTILINE_COMMENT
                 && $t->hasNewline()
             ))
             && $t->id !== \T_END_HEREDOC
@@ -1155,7 +1155,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         while (
             !$t->hasNewlineAfter()
             && ($ignoreComments || !(
-                $t->Flags & TokenFlag::MULTILINE_COMMENT
+                $t->Flags & Flag::MULTILINE_COMMENT
                 && $t->hasNewline()
             ))
             && $t->id !== \T_START_HEREDOC
@@ -1238,9 +1238,9 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
                 && $prev->column <= $this->column
             ))
             && ($t === $this || (
-                !($t->Flags & TokenFlag::MULTILINE_COMMENT)
-                && ($t->Flags & TokenFlagMask::COMMENT_TYPE)
-                    === ($prev->Flags & TokenFlagMask::COMMENT_TYPE)
+                !($t->Flags & Flag::MULTILINE_COMMENT)
+                && ($t->Flags & Mask::COMMENT_TYPE)
+                    === ($prev->Flags & Mask::COMMENT_TYPE)
             ))
         ) {
             $t = $prev;
@@ -1259,7 +1259,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         // Ignore *_BEFORE if the token is bound to a previous token, *_AFTER if
         // it's bound to a subsequent token
         if ($this->Idx->Virtual[$this->id]) {
-            $whitespace &= $this->Data[TokenData::BOUND_TO]->index < $this->index
+            $whitespace &= $this->Data[Data::BOUND_TO]->index < $this->index
                 ? 0b111000111000111000111000
                 : 0b111000111000111000111;
         }
@@ -1281,7 +1281,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     public function removeWhitespace(int $whitespace): void
     {
         if ($this->Idx->Virtual[$this->id]) {
-            $whitespace &= $this->Data[TokenData::BOUND_TO]->index < $this->index
+            $whitespace &= $this->Data[Data::BOUND_TO]->index < $this->index
                 ? 0b111000111000
                 : 0b111000111;
         }
@@ -1318,7 +1318,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     public function hasNewlineAfterPrevCode(): bool
     {
         $real = $this->Idx->Virtual[$this->id]
-            ? $this->Data[TokenData::BOUND_TO]
+            ? $this->Data[Data::BOUND_TO]
             : $this;
         $prev = $real->PrevCode
             ? $real->PrevCode->skipPrevCodeFrom($this->Idx->Virtual)->or(null)
@@ -1338,7 +1338,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         }
 
         $real = $this->Idx->Virtual[$this->id]
-            ? $this->Data[TokenData::BOUND_TO]
+            ? $this->Data[Data::BOUND_TO]
             : $this;
         $next = $real->NextCode
             ? $real->NextCode->skipNextCodeFrom($this->Idx->Virtual)->or(null)
@@ -1390,10 +1390,10 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     public function getWhitespaceBefore(): int
     {
         $real = $this->Idx->Virtual[$this->id]
-            ? $this->Data[TokenData::BOUND_TO]
+            ? $this->Data[Data::BOUND_TO]
             : $this;
         $prev = $real->Prev && $this->Idx->Virtual[$real->Prev->id]
-            ? $real->Prev->Data[TokenData::PREV_REAL]
+            ? $real->Prev->Data[Data::PREV_REAL]
             : $real->Prev;
 
         return $prev
@@ -1421,10 +1421,10 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     public function getWhitespaceAfter(): int
     {
         $real = $this->Idx->Virtual[$this->id]
-            ? $this->Data[TokenData::BOUND_TO]
+            ? $this->Data[Data::BOUND_TO]
             : $this;
         $next = $real->Next && $this->Idx->Virtual[$real->Next->id]
-            ? $real->Next->Data[TokenData::NEXT_REAL]
+            ? $real->Next->Data[Data::NEXT_REAL]
             : $real->Next;
 
         return $next

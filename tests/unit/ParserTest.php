@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Tests;
 
 use Lkrms\PrettyPHP\Catalog\DeclarationType as Type;
-use Lkrms\PrettyPHP\Catalog\TokenData;
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
 use Lkrms\PrettyPHP\Filter\RemoveWhitespace;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\Parser;
@@ -1061,8 +1061,8 @@ PHP,
                     TokenUtil::describe($token->EndStatement),
                 );
             }
-            $data[] = $token->Data[TokenData::DECLARATION_PARTS]->toString(' ');
-            $data[] = $type = $token->Data[TokenData::DECLARATION_TYPE];
+            $data[] = $token->Data[Data::DECLARATION_PARTS]->toString(' ');
+            $data[] = $type = $token->Data[Data::DECLARATION_TYPE];
             $actual[] = $data;
 
             $type = 'Type::' . Reflect::getConstantName(Type::class, $type);

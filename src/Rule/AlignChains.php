@@ -2,8 +2,8 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\TokenData;
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
@@ -80,7 +80,7 @@ final class AlignChains implements TokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            if ($token !== $token->Data[TokenData::CHAIN]) {
+            if ($token !== $token->Data[Data::CHAIN]) {
                 continue;
             }
 
@@ -115,13 +115,13 @@ final class AlignChains implements TokenRule
                                   ->reverse()
                                   ->find(fn(Token $t) =>
                                              $t === $expr || (
-                                                 $t->Flags & TokenFlag::CODE
+                                                 $t->Flags & Flag::CODE
                                                  && $t->hasNewlineBefore()
                                              ));
 
                 $eol = $alignWith->endOfLine();
                 if (
-                    $eol->Flags & TokenFlag::CODE
+                    $eol->Flags & Flag::CODE
                     && $eol->Next === $token
                     && mb_strlen($alignWith->collect($eol)->render()) <= $this->Formatter->TabSize
                 ) {
@@ -196,7 +196,7 @@ final class AlignChains implements TokenRule
                     $chain->forEach($callback);
                 },
             );
-            $alignWith->Data[TokenData::ALIGNMENT_CALLBACKS][] = $callback;
+            $alignWith->Data[Data::ALIGNMENT_CALLBACKS][] = $callback;
         }
     }
 }

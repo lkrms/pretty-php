@@ -3,8 +3,8 @@
 namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\DeclarationType as Type;
-use Lkrms\PrettyPHP\Catalog\TokenData;
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\DeclarationRuleTrait;
 use Lkrms\PrettyPHP\Concern\ListRuleTrait;
@@ -310,7 +310,7 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
             } elseif ($token->id === \T_OPEN_BRACE) {
                 if (
                     $this->Formatter->OneTrueBraceStyle
-                    || !($token->Flags & TokenFlag::STRUCTURAL_BRACE)
+                    || !($token->Flags & Flag::STRUCTURAL_BRACE)
                     || (
                         $token->Next
                         && $token->Next->id === \T_CLOSE_BRACE
@@ -343,11 +343,11 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
 
                 $token->Whitespace |= Space::LINE_BEFORE;
             } elseif ($token->id === \T_QUESTION) {
-                if (!($token->Flags & TokenFlag::TERNARY)) {
+                if (!($token->Flags & Flag::TERNARY)) {
                     continue;
                 }
 
-                $other = $token->Data[TokenData::OTHER_TERNARY];
+                $other = $token->Data[Data::OTHER_TERNARY];
                 if ($other === $token->Next) {
                     continue;
                 }
@@ -360,7 +360,7 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
                     $token->Whitespace |= Space::LINE_BEFORE;
                 }
             } else {
-                if ($token !== $token->Data[TokenData::CHAIN]) {
+                if ($token !== $token->Data[Data::CHAIN]) {
                     continue;
                 }
 
@@ -441,7 +441,7 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
     public function processDeclarations(array $declarations): void
     {
         foreach ($declarations as $token) {
-            $type = $token->Data[TokenData::DECLARATION_TYPE];
+            $type = $token->Data[Data::DECLARATION_TYPE];
 
             if (
                 $type === Type::_CONST
@@ -460,7 +460,7 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
 
             if ($type & Type::PROPERTY) {
                 /** @var TokenCollection */
-                $hooks = $token->Data[TokenData::PROPERTY_HOOKS];
+                $hooks = $token->Data[Data::PROPERTY_HOOKS];
                 if ($hooks->count()) {
                     $this->normaliseDeclarationList($hooks);
                 }

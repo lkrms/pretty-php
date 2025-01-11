@@ -3,8 +3,8 @@
 namespace Lkrms\PrettyPHP\Rule\Internal;
 
 use Lkrms\PrettyPHP\Catalog\DeclarationType as Type;
-use Lkrms\PrettyPHP\Catalog\TokenData;
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Token;
 use Salient\Utility\Regex;
 
@@ -87,11 +87,11 @@ final class Declaration
 
         return !(
             (
-                $prev->Flags & TokenFlag::COLLAPSIBLE_COMMENT
-                && ($prev->Data[TokenData::COMMENT_CONTENT][0] ?? null) === '@'
+                $prev->Flags & Flag::COLLAPSIBLE_COMMENT
+                && ($prev->Data[Data::COMMENT_CONTENT][0] ?? null) === '@'
                 && !Regex::match(
                     '/^' . self::EXPANDABLE_TAG . '/',
-                    $prev->Data[TokenData::COMMENT_CONTENT],
+                    $prev->Data[Data::COMMENT_CONTENT],
                 )
             ) || (
                 // Check if the comment is already collapsed

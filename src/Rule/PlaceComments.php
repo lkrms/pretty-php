@@ -2,9 +2,9 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\DeclarationType;
-use Lkrms\PrettyPHP\Catalog\TokenData;
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\DeclarationType as Type;
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
@@ -98,7 +98,7 @@ final class PlaceComments implements TokenRule
     {
         foreach ($tokens as $token) {
             if (
-                $token->Flags & TokenFlag::ONELINE_COMMENT
+                $token->Flags & Flag::ONELINE_COMMENT
                 && ($next = $token->nextReal())
                 && $next->id !== \T_CLOSE_TAG
             ) {
@@ -113,14 +113,14 @@ final class PlaceComments implements TokenRule
                     $this->Formatter->Psr12
                     && $prev
                     && $prev->id === \T_CLOSE_BRACE
-                    && $prev->Flags & TokenFlag::STRUCTURAL_BRACE
+                    && $prev->Flags & Flag::STRUCTURAL_BRACE
                     && $prev->Statement
-                    && $prev->Statement->Flags & TokenFlag::DECLARATION
-                    && $prev->Statement->Data[TokenData::DECLARATION_TYPE] & (
-                        DeclarationType::_CLASS
-                        | DeclarationType::_ENUM
-                        | DeclarationType::_INTERFACE
-                        | DeclarationType::_TRAIT
+                    && $prev->Statement->Flags & Flag::DECLARATION
+                    && $prev->Statement->Data[Data::DECLARATION_TYPE] & (
+                        Type::_CLASS
+                        | Type::_ENUM
+                        | Type::_INTERFACE
+                        | Type::_TRAIT
                     )
                 )
             ) {
@@ -129,7 +129,7 @@ final class PlaceComments implements TokenRule
                     $token->Whitespace |= Space::LINE_AFTER;
                 }
                 if ($prev && (
-                    $prev->Flags & TokenFlag::CODE
+                    $prev->Flags & Flag::CODE
                     || $prev->OpenTag === $prev
                 )) {
                     $this->CommentsBesideCode[] = $token;
@@ -155,12 +155,12 @@ final class PlaceComments implements TokenRule
 
             if (
                 $token->id !== \T_DOC_COMMENT
-                && !($token->Flags & TokenFlag::C_DOC_COMMENT)
+                && !($token->Flags & Flag::C_DOC_COMMENT)
             ) {
                 continue;
             }
 
-            if ($token->Flags & TokenFlag::COLLAPSIBLE_COMMENT) {
+            if ($token->Flags & Flag::COLLAPSIBLE_COMMENT) {
                 $this->CollapsibleComments[] = $token;
             } elseif (
                 $token->hasNewline() && !(
@@ -174,13 +174,13 @@ final class PlaceComments implements TokenRule
 
             if (
                 $next
-                && $next->Flags & TokenFlag::DECLARATION
-                && ($type = $next->Data[TokenData::DECLARATION_TYPE]) & (
-                    DeclarationType::_DECLARE
-                    | DeclarationType::_NAMESPACE
-                    | DeclarationType::_USE
+                && $next->Flags & Flag::DECLARATION
+                && ($type = $next->Data[Data::DECLARATION_TYPE]) & (
+                    Type::_DECLARE
+                    | Type::_NAMESPACE
+                    | Type::_USE
                 )
-                && $type !== DeclarationType::USE_TRAIT
+                && $type !== Type::USE_TRAIT
             ) {
                 $token->Whitespace |= Space::BLANK_AFTER;
             } elseif (

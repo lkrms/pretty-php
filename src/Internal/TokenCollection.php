@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Internal;
 
-use Lkrms\PrettyPHP\Catalog\TokenData;
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
 use Lkrms\PrettyPHP\Token;
 use Salient\Collection\Collection;
 use Salient\Utility\Exception\ShouldNotHappenException;
@@ -350,7 +350,7 @@ final class TokenCollection extends Collection implements Stringable
                 $ignore = false;
             } elseif (
                 !$token->Idx->Virtual[$token->id]
-                || $token->Data[TokenData::BOUND_TO]->index > $token->index
+                || $token->Data[Data::BOUND_TO]->index > $token->index
             ) {
                 $token->Whitespace |= $whitespace;
                 if ($remove) {

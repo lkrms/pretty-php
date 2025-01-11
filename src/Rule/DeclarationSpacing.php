@@ -3,8 +3,8 @@
 namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\DeclarationType as Type;
-use Lkrms\PrettyPHP\Catalog\TokenData;
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\DeclarationRuleTrait;
 use Lkrms\PrettyPHP\Contract\DeclarationRule;
@@ -97,9 +97,9 @@ final class DeclarationSpacing implements DeclarationRule
         $declDepths = [];
 
         foreach ($declarations as $token) {
-            $type = $token->Data[TokenData::DECLARATION_TYPE];
+            $type = $token->Data[Data::DECLARATION_TYPE];
             /** @var TokenCollection */
-            $parts = $token->Data[TokenData::DECLARATION_PARTS];
+            $parts = $token->Data[Data::DECLARATION_PARTS];
 
             // Don't separate `use`, `use function` and `use constant` if
             // imports are not being sorted
@@ -365,8 +365,8 @@ final class DeclarationSpacing implements DeclarationRule
     {
         /** @var Token */
         $prev = $token->Prev;
-        if ($prev->Flags & TokenFlag::COLLAPSIBLE_COMMENT) {
-            $prev->setText('/** ' . $prev->Data[TokenData::COMMENT_CONTENT] . ' */');
+        if ($prev->Flags & Flag::COLLAPSIBLE_COMMENT) {
+            $prev->setText('/** ' . $prev->Data[Data::COMMENT_CONTENT] . ' */');
         }
     }
 

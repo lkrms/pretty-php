@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Contract;
 
-use Lkrms\PrettyPHP\Catalog\TokenData;
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
 use Lkrms\PrettyPHP\Token;
 
 /**
@@ -38,9 +38,9 @@ interface DeclarationRule extends Rule
      * document. The following values are applied to each token's
      * {@see Token::$Data} array:
      *
-     * - {@see TokenData::DECLARATION_PARTS}
-     * - {@see TokenData::DECLARATION_TYPE}
-     * - {@see TokenData::PROPERTY_HOOKS} (if the declaration is a property or
+     * - {@see Data::DECLARATION_PARTS}
+     * - {@see Data::DECLARATION_TYPE}
+     * - {@see Data::PROPERTY_HOOKS} (if the declaration is a property or
      *   promoted constructor parameter)
      *
      * @param array<int,Token> $declarations

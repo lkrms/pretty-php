@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
@@ -81,7 +81,7 @@ final class PlaceBraces implements TokenRule
     {
         foreach ($tokens as $token) {
             if (!(
-                $token->Flags & TokenFlag::STRUCTURAL_BRACE
+                $token->Flags & Flag::STRUCTURAL_BRACE
                 || $token->isMatchOpenBrace()
             )) {
                 continue;
@@ -95,12 +95,12 @@ final class PlaceBraces implements TokenRule
 
             // Don't move subsequent code to the next line if the brace is part
             // of an expression
-            if ($close->Flags & TokenFlag::TERMINATOR) {
+            if ($close->Flags & Flag::TERMINATOR) {
                 // Keep structures like `} else {` on the same line
                 $next = $close->NextCode;
                 if ($next && $next->continuesControlStructure()) {
                     $close->Whitespace |= Space::SPACE_AFTER;
-                    if (!($next->Flags & TokenFlag::UNENCLOSED_PARENT) || (
+                    if (!($next->Flags & Flag::UNENCLOSED_PARENT) || (
                         // `$next` can only be `elseif` or `else`, so if the
                         // close brace is not the body of `if` or `elseif`, the
                         // `if` construct `$next` belongs to must be its parent,

@@ -2,8 +2,8 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\TokenData;
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\AbstractTokenIndex;
@@ -74,7 +74,7 @@ final class AlignTernaryOperators implements TokenRule
             // start of a line
             if ((
                 $token->id === \T_QUESTION
-                && !($token->Flags & TokenFlag::TERNARY)
+                && !($token->Flags & Flag::TERNARY)
             ) || !$token->hasNewlineBefore()) {
                 continue;
             }
@@ -95,7 +95,7 @@ final class AlignTernaryOperators implements TokenRule
                               ->reverse()
                               ->find(fn(Token $t) =>
                                          $t === $expr || (
-                                             $t->Flags & TokenFlag::CODE
+                                             $t->Flags & Flag::CODE
                                              && $t->hasNewlineBefore()
                                          ));
 
@@ -120,7 +120,7 @@ final class AlignTernaryOperators implements TokenRule
                             }
                         }
                     })();
-                    $alignWith->Data[TokenData::ALIGNMENT_CALLBACKS][] = $callback;
+                    $alignWith->Data[Data::ALIGNMENT_CALLBACKS][] = $callback;
                 }
             );
         }
@@ -129,8 +129,8 @@ final class AlignTernaryOperators implements TokenRule
     private function setAlignedWith(Token $token, Token $alignWith): void
     {
         $token->AlignedWith = $alignWith;
-        if ($token->Flags & TokenFlag::TERNARY) {
-            $other = $token->Data[TokenData::OTHER_TERNARY];
+        if ($token->Flags & Flag::TERNARY) {
+            $other = $token->Data[Data::OTHER_TERNARY];
             if ($other->hasNewlineBefore()) {
                 $other->AlignedWith = $alignWith;
             }

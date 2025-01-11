@@ -2,10 +2,10 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\DeclarationType;
-use Lkrms\PrettyPHP\Catalog\TokenData;
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\TokenFlagMask;
+use Lkrms\PrettyPHP\Catalog\DeclarationType as Type;
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
+use Lkrms\PrettyPHP\Catalog\TokenFlagMask as Mask;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\AbstractTokenIndex;
@@ -84,12 +84,12 @@ final class NormaliseComments implements TokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            $type = $token->Flags & TokenFlagMask::COMMENT_TYPE;
+            $type = $token->Flags & Mask::COMMENT_TYPE;
             $text = $token->text;
 
             if (
-                $type === TokenFlag::C_COMMENT
-                && !($token->Flags & TokenFlag::C_DOC_COMMENT)
+                $type === Flag::C_COMMENT
+                && !($token->Flags & Flag::C_DOC_COMMENT)
             ) {
                 if ($token->hasNewline()) {
                     continue;
@@ -105,8 +105,8 @@ final class NormaliseComments implements TokenRule
                 continue;
             }
 
-            if ($token->Flags & TokenFlag::ONELINE_COMMENT) {
-                if ($type === TokenFlag::SHELL_COMMENT) {
+            if ($token->Flags & Flag::ONELINE_COMMENT) {
+                if ($type === Flag::SHELL_COMMENT) {
                     $text = '//' . substr($text, 1);
                 }
                 $token->setText(Regex::replace('#^//(?=\S)#', '// ', $text));
@@ -210,26 +210,26 @@ final class NormaliseComments implements TokenRule
                 ['', '', '', "\n"],
                 $text,
             ));
-            $token->Data[TokenData::COMMENT_CONTENT] = $text;
+            $token->Data[Data::COMMENT_CONTENT] = $text;
 
             $isDocComment = $token->id === \T_DOC_COMMENT;
             $collapse = false;
             if ($isDocComment && strpos($text, "\n") === false) {
                 $next = $this->getNextStatement($token);
-                $declType = $next && $next->Flags & TokenFlag::DECLARATION
-                    ? $next->Data[TokenData::DECLARATION_TYPE]
+                $declType = $next && $next->Flags & Flag::DECLARATION
+                    ? $next->Data[Data::DECLARATION_TYPE]
                     : 0;
                 if (
                     (!$declType && $token->NextSibling)
-                    || $declType === DeclarationType::USE_TRAIT
+                    || $declType === Type::USE_TRAIT
                 ) {
                     $collapse = true;
                 } elseif ($declType && !($declType & (
-                    DeclarationType::_DECLARE
-                    | DeclarationType::_NAMESPACE
-                    | DeclarationType::_USE
+                    Type::_DECLARE
+                    | Type::_NAMESPACE
+                    | Type::_USE
                 ))) {
-                    $token->Flags |= TokenFlag::COLLAPSIBLE_COMMENT;
+                    $token->Flags |= Flag::COLLAPSIBLE_COMMENT;
                 }
             }
 

@@ -4,7 +4,7 @@ namespace Lkrms\PrettyPHP\Rule\Preset;
 
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\ListRule;
@@ -111,7 +111,7 @@ final class Symfony implements Preset, TokenRule, ListRule
         }
 
         foreach ($items as $item) {
-            if ($item->Flags & TokenFlag::DECLARATION) {
+            if ($item->Flags & Flag::DECLARATION) {
                 return;
             }
         }

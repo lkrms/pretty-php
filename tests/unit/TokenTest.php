@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Tests;
 
-use Lkrms\PrettyPHP\Catalog\TokenSubId;
+use Lkrms\PrettyPHP\Catalog\TokenSubId as SubId;
 use Lkrms\PrettyPHP\Formatter;
 use Salient\Utility\Reflect;
 
@@ -49,7 +49,7 @@ PHP;
         $actual = [];
         foreach ($formatter->getTokens() ?? [] as $token) {
             if ($token->id === \T_COLON) {
-                $actual[] = Reflect::getConstantName(TokenSubId::class, $token->getSubId());
+                $actual[] = Reflect::getConstantName(SubId::class, $token->getSubId());
             }
         }
 
@@ -96,7 +96,7 @@ PHP;
         $actual = [];
         foreach ($formatter->getTokens() ?? [] as $token) {
             if ($token->id === \T_QUESTION) {
-                $actual[] = Reflect::getConstantName(TokenSubId::class, $token->getSubId());
+                $actual[] = Reflect::getConstantName(SubId::class, $token->getSubId());
             }
         }
 
@@ -136,7 +136,7 @@ PHP;
         $actual = [];
         foreach ($formatter->getTokens() ?? [] as $token) {
             if ($token->id === \T_USE) {
-                $actual[] = Reflect::getConstantName(TokenSubId::class, $token->getSubId());
+                $actual[] = Reflect::getConstantName(SubId::class, $token->getSubId());
             }
         }
 

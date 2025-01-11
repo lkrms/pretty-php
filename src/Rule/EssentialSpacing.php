@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\RuleTrait;
 use Lkrms\PrettyPHP\Contract\Rule;
@@ -49,7 +49,7 @@ final class EssentialSpacing implements Rule
 
             // Add newlines after one-line comments with no subsequent close tag
             if (
-                $token->Flags & TokenFlag::ONELINE_COMMENT
+                $token->Flags & Flag::ONELINE_COMMENT
                 && $next->id !== \T_CLOSE_TAG
             ) {
                 $token->applyWhitespace(Space::LINE_AFTER);

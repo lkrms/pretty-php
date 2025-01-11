@@ -2,8 +2,8 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\TokenData;
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
@@ -59,12 +59,12 @@ final class ControlStructureSpacing implements TokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            if (!($token->Flags & TokenFlag::UNENCLOSED_PARENT)) {
+            if (!($token->Flags & Flag::UNENCLOSED_PARENT)) {
                 continue;
             }
 
             $open = $token->nextSiblingOf(\T_OPEN_UNENCLOSED);
-            $continues = $open->Data[TokenData::UNENCLOSED_CONTINUES];
+            $continues = $open->Data[Data::UNENCLOSED_CONTINUES];
             $inner = $open->inner();
             /** @var Token */
             $close = $open->CloseBracket;

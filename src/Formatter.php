@@ -6,8 +6,8 @@ use Lkrms\PrettyPHP\Catalog\DeclarationType as Type;
 use Lkrms\PrettyPHP\Catalog\FormatterFlag;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
-use Lkrms\PrettyPHP\Catalog\TokenData;
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Contract\BlockRule;
 use Lkrms\PrettyPHP\Contract\DeclarationRule;
@@ -929,7 +929,7 @@ final class Formatter implements Buildable, Immutable
 
             $last = end($this->Tokens);
             if (
-                $last->Flags & TokenFlag::CODE
+                $last->Flags & Flag::CODE
                 && $last->Statement
                 && $last->Statement->id !== \T_HALT_COMPILER
             ) {
@@ -980,7 +980,7 @@ final class Formatter implements Buildable, Immutable
                 case \T_STATIC:
                     if (
                         $parent->Statement !== $parent
-                        || $parent->Flags & TokenFlag::DECLARATION
+                        || $parent->Flags & Flag::DECLARATION
                     ) {
                         continue 2;
                     }
@@ -1011,7 +1011,7 @@ final class Formatter implements Buildable, Immutable
                     if (!$prev || !(
                         $idx->BeforeListParenthesis[$prev->id] || (
                             $prev->id === \T_CLOSE_BRACE
-                            && !($prev->Flags & TokenFlag::STRUCTURAL_BRACE)
+                            && !($prev->Flags & Flag::STRUCTURAL_BRACE)
                         ) || (
                             $prev->PrevCode
                             && $idx->Ampersand[$prev->id]
@@ -1032,8 +1032,8 @@ final class Formatter implements Buildable, Immutable
                     /** @var Token */
                     $statement = $parent->Statement;
                     if (!(
-                        $statement->Flags & TokenFlag::DECLARATION
-                        && ($statement->Data[TokenData::DECLARATION_TYPE] & (
+                        $statement->Flags & Flag::DECLARATION
+                        && ($statement->Data[Data::DECLARATION_TYPE] & (
                             Type::_USE
                             | Type::_TRAIT
                         )) === Type::_USE
@@ -1061,13 +1061,13 @@ final class Formatter implements Buildable, Immutable
             if ($count < $minCount) {
                 continue;
             }
-            $parent->Flags |= TokenFlag::LIST_PARENT;
-            $parent->Data[TokenData::LIST_DELIMITER] = $delimiter;
-            $parent->Data[TokenData::LIST_ITEMS] = $items;
-            $parent->Data[TokenData::LIST_ITEM_COUNT] = $count;
+            $parent->Flags |= Flag::LIST_PARENT;
+            $parent->Data[Data::LIST_DELIMITER] = $delimiter;
+            $parent->Data[Data::LIST_ITEMS] = $items;
+            $parent->Data[Data::LIST_ITEM_COUNT] = $count;
             foreach ($items as $token) {
-                $token->Flags |= TokenFlag::LIST_ITEM;
-                $token->Data[TokenData::LIST_PARENT] = $parent;
+                $token->Flags |= Flag::LIST_ITEM;
+                $token->Data[Data::LIST_PARENT] = $parent;
             }
             $lists[$i] = [$parent, $items, $last];
         }
@@ -1081,7 +1081,7 @@ final class Formatter implements Buildable, Immutable
             Type::USE_TRAIT => true,
         ]);
         foreach ($parents as $i => $parent) {
-            $type = $parent->Data[TokenData::DECLARATION_TYPE];
+            $type = $parent->Data[Data::DECLARATION_TYPE];
             $first = null;
             $last = null;
 
@@ -1128,13 +1128,13 @@ final class Formatter implements Buildable, Immutable
             if ($count < 2) {
                 continue;
             }
-            $parent->Flags |= TokenFlag::LIST_PARENT;
-            $parent->Data[TokenData::LIST_DELIMITER] = \T_COMMA;
-            $parent->Data[TokenData::LIST_ITEMS] = $items;
-            $parent->Data[TokenData::LIST_ITEM_COUNT] = $count;
+            $parent->Flags |= Flag::LIST_PARENT;
+            $parent->Data[Data::LIST_DELIMITER] = \T_COMMA;
+            $parent->Data[Data::LIST_ITEMS] = $items;
+            $parent->Data[Data::LIST_ITEM_COUNT] = $count;
             foreach ($items as $token) {
-                $token->Flags |= TokenFlag::LIST_ITEM;
-                $token->Data[TokenData::LIST_PARENT] = $parent;
+                $token->Flags |= Flag::LIST_ITEM;
+                $token->Data[Data::LIST_PARENT] = $parent;
             }
             $lists[$i] = [$parent, $items, $last];
         }
