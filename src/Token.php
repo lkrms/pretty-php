@@ -554,13 +554,8 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
             case \T_QUESTION:
                 return $this->subId = $this->getQuestionSubId();
 
-            case \T_USE:
-                return $this->subId = $this->getUseSubId();
-
             default:
-                // @codeCoverageIgnoreStart
                 return $this->subId = -1;
-                // @codeCoverageIgnoreEnd
         }
     }
 
@@ -696,25 +691,6 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         }
 
         return SubId::QUESTION_TERNARY;
-    }
-
-    /**
-     * @return SubId::USE_*
-     */
-    private function getUseSubId(): int
-    {
-        if ($this->PrevCode && $this->PrevCode->id === \T_CLOSE_PARENTHESIS) {
-            return SubId::USE_VARIABLES;
-        }
-
-        if (
-            $this->Flags & Flag::DECLARATION
-            && $this->Data[Data::DECLARATION_TYPE] === Type::USE_TRAIT
-        ) {
-            return SubId::USE_TRAIT;
-        }
-
-        return SubId::USE_IMPORT;
     }
 
     public function continuesControlStructure(): bool

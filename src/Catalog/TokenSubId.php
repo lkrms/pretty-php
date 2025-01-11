@@ -18,7 +18,4 @@ interface TokenSubId
     public const COLON_ENUM_TYPE = 6;
     public const QUESTION_TERNARY = 7;
     public const QUESTION_NULLABLE = 8;
-    public const USE_IMPORT = 9;
-    public const USE_TRAIT = 10;
-    public const USE_VARIABLES = 11;
 }

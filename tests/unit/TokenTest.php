@@ -110,44 +110,4 @@ PHP;
         ], $actual);
         $this->assertCount(2, array_unique($actual));
     }
-
-    public function testGetUseSubId(): void
-    {
-        $code = <<<'PHP'
-<?php
-use Foo\Bar;
-use function Foo\baz;
-use const Foo\QUX;
-
-class Foo
-{
-    use Bar;
-    use FooBar {
-        FooBar::func insteadof Bar;
-    }
-}
-
-$foo = function () use ($bar) {};
-PHP;
-
-        $formatter = (new Formatter())->withDebug();
-        $formatter->format($code, \PHP_EOL, null, null, true);
-
-        $actual = [];
-        foreach ($formatter->getTokens() ?? [] as $token) {
-            if ($token->id === \T_USE) {
-                $actual[] = Reflect::getConstantName(SubId::class, $token->getSubId());
-            }
-        }
-
-        $this->assertSame([
-            'USE_IMPORT',
-            'USE_IMPORT',
-            'USE_IMPORT',
-            'USE_TRAIT',
-            'USE_TRAIT',
-            'USE_VARIABLES',
-        ], $actual);
-        $this->assertCount(3, array_unique($actual));
-    }
 }
