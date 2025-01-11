@@ -233,12 +233,9 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
      */
     public function prevReal(): ?self
     {
-        $real = $this->Idx->Virtual[$this->id]
-            ? $this->Data[Data::BOUND_TO]
-            : $this;
-        return $real->Prev && $this->Idx->Virtual[$real->Prev->id]
-            ? $real->Prev->Data[Data::PREV_REAL]
-            : $real->Prev;
+        return $this->Prev && $this->Idx->Virtual[$this->Prev->id]
+            ? $this->Prev->Data[Data::PREV_REAL]
+            : $this->Prev;
     }
 
     /**
@@ -246,12 +243,9 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
      */
     public function nextReal(): ?self
     {
-        $real = $this->Idx->Virtual[$this->id]
-            ? $this->Data[Data::BOUND_TO]
-            : $this;
-        return $real->Next && $this->Idx->Virtual[$real->Next->id]
-            ? $real->Next->Data[Data::NEXT_REAL]
-            : $real->Next;
+        return $this->Next && $this->Idx->Virtual[$this->Next->id]
+            ? $this->Next->Data[Data::NEXT_REAL]
+            : $this->Next;
     }
 
     /**
@@ -927,29 +921,6 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     }
 
     /**
-     * Check if the token is a T_DOUBLE_ARROW associated with an arrow function
-     */
-    public function isDoubleArrowAfterFn(): bool
-    {
-        if ($this->id !== \T_DOUBLE_ARROW) {
-            return false;
-        }
-        /** @var self */
-        $prev = $this->PrevCode;
-        $prev = $prev->skipPrevSiblingFrom($this->Idx->ValueType);
-        if ($prev !== $this->PrevCode && (
-            $prev->id !== \T_COLON
-            || !($prev = $prev->PrevCode)
-        )) {
-            return false;
-        }
-        /** @var self $prev */
-        return $prev->id === \T_CLOSE_PARENTHESIS
-            && ($prev = $prev->PrevSibling)
-            && $prev->skipPrevSiblingFrom($this->Idx->Ampersand)->id === \T_FN;
-    }
-
-    /**
      * Check if the token is part of an anonymous function declaration or arrow
      * function
      */
@@ -962,7 +933,9 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     private function isAnonymousFunctionOrFn(): bool
     {
         return !($this->Flags & Flag::DECLARATION)
-            && $this->Idx->FunctionOrFn[$this->skipNextSiblingFrom($this->Idx->AttributeOrStatic)->id];
+            && $this->Idx->FunctionOrFn[
+                $this->skipNextSiblingFrom($this->Idx->AttributeOrStatic)->id
+            ];
     }
 
     /**
@@ -978,7 +951,9 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
     {
         return $this->Flags & Flag::DECLARATION
             || $this->Idx->ClassOrFunction[
-                $this->skipNextSiblingFrom($this->Idx->BeforeAnonymousClassOrFunction)->id
+                $this->skipNextSiblingFrom(
+                    $this->Idx->BeforeAnonymousClassOrFunction
+                )->id
             ];
     }
 
@@ -992,9 +967,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
             $this->Idx->OperatorExceptTernaryOrDelimiter[$this->id]
             || $this->Flags & Flag::TERNARY
         ) {
-            // @codeCoverageIgnoreStart
             return $this;
-            // @codeCoverageIgnoreEnd
         }
 
         $t = $this;
@@ -1179,7 +1152,10 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
             $adjacent = $this->NextCode;
             return $adjacent
                 && $adjacent->Statement === $this->Statement
-                && $adjacent !== $this->EndStatement
+                && (
+                    $adjacent !== $this->EndStatement
+                    || !$this->Idx->StatementDelimiter[$adjacent->id]
+                )
                     ? $adjacent
                     : null;
         }
@@ -1187,8 +1163,10 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         /** @var self */
         $prev = $adjacent->PrevCode;
         return (
-            $adjacent->Statement === $prev->Statement
-            && $adjacent !== $prev->EndStatement
+            $adjacent->Statement === $prev->Statement && (
+                $adjacent !== $prev->EndStatement
+                || !$this->Idx->StatementDelimiter[$adjacent->id]
+            )
         ) || (
             $prev->id === \T_COMMA
             && $adjacent->Statement === $adjacent
@@ -1274,14 +1252,18 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
 
         if (
             ($before = $whitespace & 0b111000111)
-            && ($prev = $this->prevReal())
+            && ($prev = $this->Prev && $this->Idx->Virtual[$this->Prev->id]
+                ? $this->Prev->Data[Data::PREV_REAL]
+                : $this->Prev)
         ) {
             $prev->Whitespace &= ~($before << 3);
         }
 
         if (
             ($after = $whitespace & 0b111000111000)
-            && ($next = $this->nextReal())
+            && ($next = $this->Next && $this->Idx->Virtual[$this->Next->id]
+                ? $this->Next->Data[Data::NEXT_REAL]
+                : $this->Next)
         ) {
             $next->Whitespace &= ~($after >> 3);
         }
@@ -1296,11 +1278,25 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         $real = $this->Idx->Virtual[$this->id]
             ? $this->Data[Data::BOUND_TO]
             : $this;
-        $prev = $real->PrevCode
-            ? $real->PrevCode->skipPrevCodeFrom($this->Idx->Virtual)->or(null)
-            : null;
+        $t = $this;
+        do {
+            if (
+                $t->getWhitespaceBefore() & (Space::BLANK | Space::LINE)
+                || ($this->Idx->Markup[$t->id] && $t->hasNewline())
+            ) {
+                return true;
+            }
+            $t = $t->Prev;
+        } while ($t && (
+            !($t->Flags & Flag::CODE)
+            || $t === $real
+            || (
+                $this->Idx->Virtual[$t->id]
+                && $t->Data[Data::BOUND_TO] === $real
+            )
+        ));
 
-        return $prev && $prev->hasNewlineBeforeNextCode();
+        return false;
     }
 
     /**
@@ -1309,36 +1305,26 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
      */
     public function hasNewlineBeforeNextCode(): bool
     {
-        if ($this->hasNewlineAfter()) {
-            return true;
-        }
-
         $real = $this->Idx->Virtual[$this->id]
             ? $this->Data[Data::BOUND_TO]
             : $this;
-        $next = $real->NextCode
-            ? $real->NextCode->skipNextCodeFrom($this->Idx->Virtual)->or(null)
-            : null;
-
-        if (!$next || (
-            $real->Next
-            && $next === $real->Next->skipNextFrom($this->Idx->Virtual)
-        )) {
-            return false;
-        }
-
-        $t = $real;
+        $t = $this;
         do {
-            /** @var self */
-            $t = $t->Next;
             if (
-                !$this->Idx->Virtual[$t->id]
-                && ($t->hasNewlineAfter()
-                    || ($this->Idx->Markup[$t->id] && $t->hasNewline()))
+                $t->getWhitespaceAfter() & (Space::BLANK | Space::LINE)
+                || ($this->Idx->Markup[$t->id] && $t->hasNewline())
             ) {
                 return true;
             }
-        } while ($t->Next !== $next);
+            $t = $t->Next;
+        } while ($t && (
+            !($t->Flags & Flag::CODE)
+            || $t === $real
+            || (
+                $this->Idx->Virtual[$t->id]
+                && $t->Data[Data::BOUND_TO] === $real
+            )
+        ));
 
         return false;
     }

@@ -81,7 +81,10 @@ final class PreserveNewlines implements TokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            $prev = $token->prevReal();
+            $prev = $token->Prev;
+            if ($prev && $this->Idx->Virtual[$prev->id]) {
+                $prev = $prev->Data[Data::PREV_REAL];
+            }
             if (
                 !$prev
                 || $prev->line === $token->line

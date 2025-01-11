@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
 use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\RuleTrait;
@@ -39,7 +40,9 @@ final class EssentialSpacing implements Rule
         foreach ($tokens as $token) {
             if (
                 $this->Idx->Virtual[$token->id]
-                || !($next = $token->nextReal())
+                || !($next = $token->Next && $this->Idx->Virtual[$token->Next->id]
+                    ? $token->Next->Data[Data::NEXT_REAL]
+                    : $token->Next)
                 || $next->String
                 || $token->String
                 || ($after = $token->getWhitespaceAfter()) & (Space::BLANK | Space::LINE)

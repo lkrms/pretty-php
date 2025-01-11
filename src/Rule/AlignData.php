@@ -158,7 +158,7 @@ final class AlignData implements BlockRule
                         // - in `fn(...) => ...`
                         // - after the first `=>` on the line
                         && !$statement->withNextSiblings($prev)->hasOneOf(\T_YIELD)
-                        && !$token->isDoubleArrowAfterFn()
+                        && !($token->Flags & Flag::FN_DOUBLE_ARROW)
                         && !$token->firstSiblingAfterNewline(false)
                                   ->withNextSiblings($prev)
                                   ->hasOneOf(\T_DOUBLE_ARROW)

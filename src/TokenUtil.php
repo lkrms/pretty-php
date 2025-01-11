@@ -162,6 +162,7 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
         }
         $ternary2 = self::getTernary2AfterTernary1($token);
         $t = $token;
+        /** @disregard P1006 */
         while (
             ($next = $t->NextSibling)
             && $next->Statement === $token->Statement
