@@ -26,7 +26,7 @@ final class StandardIndentation implements TokenRule
     }
 
     /**
-     * @codeCoverageIgnore
+     * @inheritDoc
      */
     public static function needsSortedTokens(): bool
     {
@@ -56,7 +56,7 @@ final class StandardIndentation implements TokenRule
             $token->Indent = $prev->Indent;
 
             if ($close = $prev->CloseBracket) {
-                if ($hasNewline = $token->hasNewlineAfterPrevCode()) {
+                if ($hasNewline = $prev->hasNewlineBeforeNextCode()) {
                     $token->Indent++;
                 }
 

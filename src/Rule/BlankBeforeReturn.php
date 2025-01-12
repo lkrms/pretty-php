@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\AbstractTokenIndex;
@@ -56,7 +56,7 @@ final class BlankBeforeReturn implements TokenRule
                 $token->Statement !== $token || (
                     $token->Parent
                     && !(
-                        $token->Parent->Flags & TokenFlag::STRUCTURAL_BRACE
+                        $token->Parent->Flags & Flag::STRUCTURAL_BRACE
                         || $token->Parent->id === \T_COLON
                     )
                 )

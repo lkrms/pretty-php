@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
@@ -83,8 +83,8 @@ final class IndexSpacing implements TokenRule
 
             if ($idx->SuppressSpaceAfter[$token->id] || (
                 $idx->OpenBracket[$token->id] && !(
-                    $token->Flags & TokenFlag::STRUCTURAL_BRACE
-                    || $token->isMatchOpenBrace()
+                    $token->Flags & Flag::STRUCTURAL_BRACE
+                    || ($token->id === \T_OPEN_BRACE && $token->isMatchOpenBrace())
                 )
             )) {
                 $token->Whitespace |= Space::NO_BLANK_AFTER | Space::NO_SPACE_AFTER;
@@ -94,8 +94,12 @@ final class IndexSpacing implements TokenRule
 
             if ($idx->SuppressSpaceBefore[$token->id] || (
                 $idx->CloseBracket[$token->id] && !(
-                    $token->Flags & TokenFlag::STRUCTURAL_BRACE
-                    || ($token->OpenBracket && $token->OpenBracket->isMatchOpenBrace())
+                    $token->Flags & Flag::STRUCTURAL_BRACE
+                    || (
+                        $token->OpenBracket
+                        && $token->OpenBracket->id === \T_OPEN_BRACE
+                        && $token->OpenBracket->isMatchOpenBrace()
+                    )
                 )
             )) {
                 $token->Whitespace |= Space::NO_BLANK_BEFORE | Space::NO_SPACE_BEFORE;

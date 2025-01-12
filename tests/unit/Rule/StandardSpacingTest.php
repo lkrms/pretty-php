@@ -251,6 +251,55 @@ $out = match ($in) {0, 1 => 'less than 2 items', default => "$in items"};
 PHP,
                 $formatterB->enable([AlignData::class]),
             ],
+            'promoted constructor parameters #1' => [
+                <<<'PHP'
+<?php
+class Point
+{
+    public function __construct(
+        protected int $x,
+        protected int $y = 0
+    ) {}
+}
+
+PHP,
+                <<<'PHP'
+<?php
+class Point {
+    public function __construct(protected int $x, protected int $y = 0) {}
+}
+PHP,
+                $formatter,
+            ],
+            'promoted constructor parameters #2' => [
+                <<<'PHP'
+<?php
+class Foo
+{
+    public function __construct(
+        private $bar
+    ) {}
+}
+
+class Bar
+{
+    public function __construct(
+        private $bar
+    ) {}
+}
+
+PHP,
+                <<<'PHP'
+<?php
+class Foo {
+    public function __construct(private $bar) {}
+}
+class Bar {
+    public function __construct(private $bar) {}
+}
+PHP,
+                $formatter,
+            ],
         ];
     }
 }

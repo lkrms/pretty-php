@@ -2,8 +2,8 @@
 
 namespace Lkrms\PrettyPHP;
 
-use Lkrms\PrettyPHP\Catalog\TokenData;
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasMutator;
 use Salient\Utility\Regex;
@@ -75,7 +75,7 @@ final class Renderer implements Immutable
                     || !$t->Next
                     || (
                         $this->Idx->Virtual[$t->Next->id]
-                        && !$t->Next->Data[TokenData::NEXT_REAL]
+                        && !$t->Next->Data[Data::NEXT_REAL]
                     );
                 $after = (
                     $noWhitespaceAfter
@@ -304,7 +304,7 @@ final class Renderer implements Immutable
         // alignment if possible
         if (
             $token->id === \T_COMMENT
-            && !($token->Flags & TokenFlag::C_DOC_COMMENT)
+            && !($token->Flags & Flag::C_DOC_COMMENT)
         ) {
             $text = $token->expandText(true);
             $delta = $token->OutputColumn - $token->column;
@@ -314,21 +314,21 @@ final class Renderer implements Immutable
                 $token->column > 1
                 && Regex::match('/\n(?!\*)\S/', $text)
             )) {
-                return $this->maybeUnexpandTabs($text, $softTabs);
+                return $this->normaliseComment($text, $softTabs);
             }
             $spaces = str_repeat(' ', abs($delta));
             if ($delta < 0) {
                 // Don't deindent if any non-empty lines have insufficient
                 // whitespace
                 if (Regex::match("/\\n(?!{$spaces}|\h*+\\n)/", $text)) {
-                    return $this->maybeUnexpandTabs($text, $softTabs);
+                    return $this->normaliseComment($text, $softTabs);
                 }
-                return $this->maybeUnexpandTabs(
+                return $this->normaliseComment(
                     str_replace("\n" . $spaces, "\n", $text),
                     $softTabs,
                 );
             }
-            return $this->maybeUnexpandTabs(
+            return $this->normaliseComment(
                 str_replace("\n", "\n" . $spaces, $text),
                 $softTabs,
             );
@@ -383,10 +383,11 @@ final class Renderer implements Immutable
         return $indent;
     }
 
-    private function maybeUnexpandTabs(string $text, bool $softTabs): string
+    private function normaliseComment(string $text, bool $softTabs): string
     {
         // Remove trailing whitespace
         $text = Regex::replace('/\h++$/m', '', $text);
+        // Convert leading spaces to tabs
         if ($this->Tab === "\t" && !$softTabs) {
             return Regex::replace("/(?<=\\n|\G){$this->SoftTab}/", "\t", $text);
         }

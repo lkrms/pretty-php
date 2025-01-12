@@ -2,9 +2,9 @@
 
 namespace Lkrms\PrettyPHP;
 
-use Lkrms\PrettyPHP\Catalog\TokenData;
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\TokenSubId;
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
+use Lkrms\PrettyPHP\Catalog\TokenSubId as SubId;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Contract\HasOperatorPrecedence;
 use Lkrms\PrettyPHP\Contract\HasTokenIndex;
@@ -14,6 +14,9 @@ use Salient\Utility\Reflect;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 
+/**
+ * @api
+ */
 final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
 {
     /**
@@ -33,14 +36,14 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
 
         // Don't allow newlines before `=>` other than in arrow functions
         if ($token->id === \T_DOUBLE_ARROW && (
-            !($token->Flags & TokenFlag::FN_DOUBLE_ARROW)
+            !($token->Flags & Flag::FN_DOUBLE_ARROW)
             || !$token->Formatter->NewlineBeforeFnDoubleArrow
         )) {
             return false;
         }
 
         // Don't allow newlines before `:` other than ternary operators
-        if ($token->id === \T_COLON && !($token->Flags & TokenFlag::TERNARY)) {
+        if ($token->id === \T_COLON && !($token->Flags & Flag::TERNARY)) {
             return false;
         }
 
@@ -72,7 +75,7 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
 
         if (
             $token->id === \T_CLOSE_BRACE
-            && !($token->Flags & TokenFlag::STRUCTURAL_BRACE)
+            && !($token->Flags & Flag::STRUCTURAL_BRACE)
         ) {
             return false;
         }
@@ -85,7 +88,7 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
 
         // Don't allow newlines after `=>` in arrow functions if disabled
         if (
-            $token->Flags & TokenFlag::FN_DOUBLE_ARROW
+            $token->Flags & Flag::FN_DOUBLE_ARROW
             && $token->Formatter->NewlineBeforeFnDoubleArrow
         ) {
             return false;
@@ -95,7 +98,7 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
         // multiple interfaces
         if (
             ($token->id === \T_IMPLEMENTS || $token->id === \T_EXTENDS)
-            && !($token->Flags & TokenFlag::LIST_PARENT)
+            && !($token->Flags & Flag::LIST_PARENT)
         ) {
             return false;
         }
@@ -162,6 +165,7 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
         }
         $ternary2 = self::getTernary2AfterTernary1($token);
         $t = $token;
+        /** @disregard P1006 */
         while (
             ($next = $t->NextSibling)
             && $next->Statement === $token->Statement
@@ -208,7 +212,7 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
                     $arity === 0
                     || ($arity === self::UNARY && $token->inUnaryContext())
                     || ($arity === self::BINARY && !$token->inUnaryContext())
-                    || ($arity === self::TERNARY && $token->Flags & TokenFlag::TERNARY)
+                    || ($arity === self::TERNARY && $token->Flags & Flag::TERNARY)
                 ) {
                     $leftAssociative = $leftAssoc;
                     $rightAssociative = $rightAssoc;
@@ -216,11 +220,9 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
                 }
             }
         }
-        // @codeCoverageIgnoreStart
         $leftAssociative = false;
         $rightAssociative = false;
         return -1;
-        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -253,11 +255,9 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
                 }
             }
         }
-        // @codeCoverageIgnoreStart
         $leftAssociative = false;
         $rightAssociative = false;
         return -1;
-        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -271,7 +271,7 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
     public static function getTernaryContext(Token $token): ?Token
     {
         $precedence = self::getPrecedenceOf(\T_QUESTION, false, true);
-        if ($ternary = $token->Flags & TokenFlag::TERNARY) {
+        if ($ternary = $token->Flags & Flag::TERNARY) {
             /** @var Token */
             $before = self::getTernary1($token);
             $short = $before->NextCode === self::getTernary2($token);
@@ -288,10 +288,10 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
         ) {
             if ($t->id === \T_COALESCE) {
                 $context = $t;
-            } elseif ($t->Flags & TokenFlag::TERNARY) {
+            } elseif ($t->Flags & Flag::TERNARY) {
                 if (
                     self::getTernary1($t) === $t
-                    && $t->Data[TokenData::OTHER_TERNARY]->index
+                    && $t->Data[Data::OTHER_TERNARY]->index
                         < $before->index
                 ) {
                     $context = $t;
@@ -325,7 +325,7 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
             && $prev->Statement === $context->Statement
             && $prev->id !== \T_COMMA
         ) {
-            if ($prev->Flags & TokenFlag::TERNARY) {
+            if ($prev->Flags & Flag::TERNARY) {
                 return $t;
             }
             if (self::OPERATOR_PRECEDENCE_INDEX[$prev->id]) {
@@ -356,11 +356,11 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
                 || !$token->Idx->StatementDelimiter[$next->id]
             )
         ) {
-            if ($next->Flags & TokenFlag::TERNARY) {
+            if ($next->Flags & Flag::TERNARY) {
                 if ($next->id === \T_COLON) {
                     return $t->CloseBracket ?? $t;
                 }
-                $next = $next->Data[TokenData::OTHER_TERNARY];
+                $next = $next->Data[Data::OTHER_TERNARY];
             } elseif (self::OPERATOR_PRECEDENCE_INDEX[$next->id]) {
                 $nextPrecedence = self::getOperatorPrecedence($next);
                 if ($nextPrecedence !== -1 && $nextPrecedence < 99 && $nextPrecedence > $precedence) {
@@ -378,10 +378,10 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
      */
     public static function getTernary1(Token $token): ?Token
     {
-        return $token->Flags & TokenFlag::TERNARY
+        return $token->Flags & Flag::TERNARY
             ? ($token->id === \T_QUESTION
                 ? $token
-                : $token->Data[TokenData::OTHER_TERNARY])
+                : $token->Data[Data::OTHER_TERNARY])
             : null;
     }
 
@@ -391,10 +391,10 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
      */
     public static function getTernary2(Token $token): ?Token
     {
-        return $token->Flags & TokenFlag::TERNARY
+        return $token->Flags & Flag::TERNARY
             ? ($token->id === \T_COLON
                 ? $token
-                : $token->Data[TokenData::OTHER_TERNARY])
+                : $token->Data[Data::OTHER_TERNARY])
             : null;
     }
 
@@ -411,8 +411,8 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
             if ($t->id === \T_NULL) {
                 return null;
             }
-        } while (!($t->Flags & TokenFlag::TERNARY));
-        $other = $t->Data[TokenData::OTHER_TERNARY];
+        } while (!($t->Flags & Flag::TERNARY));
+        $other = $t->Data[Data::OTHER_TERNARY];
         return $other->index > $token->index
             ? $other
             : null;
@@ -465,7 +465,7 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
 
         if ($token->subId !== null) {
             $t['subId'] = $token->subId !== -1
-                ? Reflect::getConstantName(TokenSubId::class, $token->subId)
+                ? Reflect::getConstantName(SubId::class, $token->subId)
                 : '<unknown>';
         }
 
@@ -479,7 +479,7 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
 
         if ($token->Flags) {
             static $tokenFlags;
-            $tokenFlags ??= Reflect::getConstants(TokenFlag::class);
+            $tokenFlags ??= Reflect::getConstants(Flag::class);
             $flags = [];
             /** @var int $value */
             foreach ($tokenFlags as $name => $value) {
@@ -493,8 +493,13 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
         }
 
         if (isset($token->Data)) {
+            /** @var array<int,string>|null */
             static $dataTypes;
-            $dataTypes ??= array_flip(self::getTokenDataValues());
+            if ($dataTypes === null) {
+                /** @var array<string,int> */
+                $values = Reflect::getConstants(Data::class);
+                $dataTypes = array_flip($values);
+            }
             foreach ($token->Data as $type => $value) {
                 $t['Data'][$dataTypes[$type] ?? $type] =
                     $value instanceof Token
@@ -507,16 +512,6 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
 
         $t['ExpandedText'] = $token->ExpandedText;
         $t['OriginalText'] = $token->OriginalText;
-        $t['TagIndent'] = $token->TagIndent;
-        $t['PreIndent'] = $token->PreIndent;
-        $t['Indent'] = $token->Indent;
-        $t['Deindent'] = $token->Deindent;
-        $t['HangingIndent'] = $token->HangingIndent;
-        $t['LinePadding'] = $token->LinePadding;
-        $t['LineUnpadding'] = $token->LineUnpadding;
-        $t['Padding'] = $token->Padding;
-        $t['HeredocIndent'] = $token->HeredocIndent;
-        $t['AlignedWith'] = $token->AlignedWith;
 
         if ($token->Whitespace) {
             static $whitespaceFlags;
@@ -549,6 +544,16 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
             }
         }
 
+        $t['TagIndent'] = $token->TagIndent;
+        $t['PreIndent'] = $token->PreIndent;
+        $t['Indent'] = $token->Indent;
+        $t['Deindent'] = $token->Deindent;
+        $t['HangingIndent'] = $token->HangingIndent;
+        $t['LinePadding'] = $token->LinePadding;
+        $t['LineUnpadding'] = $token->LineUnpadding;
+        $t['Padding'] = $token->Padding;
+        $t['AlignedWith'] = $token->AlignedWith;
+        $t['HeredocIndent'] = $token->HeredocIndent;
         $t['OutputLine'] = $token->OutputLine;
         $t['OutputPos'] = $token->OutputPos;
         $t['OutputColumn'] = $token->OutputColumn;
@@ -572,20 +577,11 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
         return $t;
     }
 
-    /**
-     * @return array<string,int>
-     */
-    private static function getTokenDataValues(): array
-    {
-        /** @var array<string,int> */
-        return Reflect::getConstants(TokenData::class);
-    }
-
     public static function describe(Token $token): string
     {
         if ($token->Idx->Virtual[$token->id]) {
             $realPrev = $token->skipPrevFrom($token->Idx->Virtual);
-            if ($token->Data[TokenData::BOUND_TO] === $realPrev) {
+            if ($token->Data[Data::BOUND_TO] === $realPrev) {
                 $payload = $realPrev;
                 $suffix = '<<(virtual)';
             } else {

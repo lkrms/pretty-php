@@ -3,7 +3,7 @@
 namespace Lkrms\PrettyPHP\Tests;
 
 use Lkrms\PrettyPHP\Catalog\DeclarationType as Type;
-use Lkrms\PrettyPHP\Catalog\TokenData;
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
 use Lkrms\PrettyPHP\Filter\RemoveWhitespace;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\Parser;
@@ -149,7 +149,7 @@ final class ParserTest extends TestCase
                         'text' => ':',
                         'line' => 3,
                         'pos' => 30,
-                        'subId' => 'COLON_ALT_SYNTAX_DELIMITER',
+                        'subId' => 'COLON_ALT_SYNTAX',
                         'PrevSibling' => "T7:L3:'('",
                         'NextSibling' => "T12:L4:'else'",
                         'Parent' => "T5:L2:')'<<(virtual)",
@@ -185,7 +185,7 @@ final class ParserTest extends TestCase
                         'text' => ':',
                         'line' => 4,
                         'pos' => 40,
-                        'subId' => 'COLON_ALT_SYNTAX_DELIMITER',
+                        'subId' => 'COLON_ALT_SYNTAX',
                         'PrevSibling' => "T12:L4:'else'",
                         'NextSibling' => "T15:L5:'endif'",
                         'Parent' => "T5:L2:')'<<(virtual)",
@@ -433,7 +433,7 @@ PHP,
                         'text' => ':',
                         'line' => 3,
                         'pos' => 54,
-                        'subId' => 'COLON_ALT_SYNTAX_DELIMITER',
+                        'subId' => 'COLON_ALT_SYNTAX',
                         'PrevSibling' => "T9:L3:'('",
                         'NextSibling' => "T15:L4:'else'",
                         'Parent' => "T6:L2:')'<<(virtual)",
@@ -477,7 +477,7 @@ PHP,
                         'text' => ':',
                         'line' => 4,
                         'pos' => 76,
-                        'subId' => 'COLON_ALT_SYNTAX_DELIMITER',
+                        'subId' => 'COLON_ALT_SYNTAX',
                         'PrevSibling' => "T15:L4:'else'",
                         'NextSibling' => "T19:L5:'endif'",
                         'Parent' => "T6:L2:')'<<(virtual)",
@@ -1061,8 +1061,8 @@ PHP,
                     TokenUtil::describe($token->EndStatement),
                 );
             }
-            $data[] = $token->Data[TokenData::DECLARATION_PARTS]->toString(' ');
-            $data[] = $type = $token->Data[TokenData::DECLARATION_TYPE];
+            $data[] = $token->Data[Data::DECLARATION_PARTS]->toString(' ');
+            $data[] = $type = $token->Data[Data::DECLARATION_TYPE];
             $actual[] = $data;
 
             $type = 'Type::' . Reflect::getConstantName(Type::class, $type);

@@ -2,8 +2,8 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\DeclarationType;
-use Lkrms\PrettyPHP\Catalog\TokenData;
+use Lkrms\PrettyPHP\Catalog\DeclarationType as Type;
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\DeclarationRuleTrait;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
@@ -70,8 +70,8 @@ final class StandardSpacing implements TokenRule, DeclarationRule
     public static function getDeclarationTypes(array $all): array
     {
         return [
-            DeclarationType::PROPERTY => true,
-            DeclarationType::PARAM => true,
+            Type::PROPERTY => true,
+            Type::PARAM => true,
         ];
     }
 
@@ -357,18 +357,18 @@ final class StandardSpacing implements TokenRule, DeclarationRule
     {
         $parents = [];
         foreach ($declarations as $token) {
-            $type = $token->Data[TokenData::DECLARATION_TYPE];
+            $type = $token->Data[Data::DECLARATION_TYPE];
 
             // Collect promoted constructor parameters
-            if ($type === DeclarationType::PARAM) {
+            if ($type === Type::PARAM) {
                 /** @var Token */
                 $parent = $token->Parent;
-                $parents[$parent->id] = $parent;
+                $parents[$parent->index] = $parent;
             }
 
             if (
-                $type & DeclarationType::PROPERTY
-                && ($hooks = $token->Data[TokenData::PROPERTY_HOOKS])->count()
+                $type & Type::PROPERTY
+                && ($hooks = $token->Data[Data::PROPERTY_HOOKS])->count()
             ) {
                 /** @var TokenCollection $hooks */
                 $collapse = true;
@@ -378,9 +378,9 @@ final class StandardSpacing implements TokenRule, DeclarationRule
                     $hasModifier = $name !== $hook
                         && $name->PrevSibling
                         && !$this->Idx->Attribute[$name->PrevSibling->id];
-                    $name = $name->skipNextSiblingFrom($this->Idx->Ampersand);
+                    $name = $name->skipNextCodeFrom($this->Idx->Ampersand);
                     /** @var Token */
-                    $next = $name->NextSibling;
+                    $next = $name->NextCode;
                     if ($hasParameters = $next->id === \T_OPEN_PARENTHESIS) {
                         /** @var Token */
                         $next = $next->NextSibling;
@@ -412,7 +412,7 @@ final class StandardSpacing implements TokenRule, DeclarationRule
 
         foreach ($parents as $parent) {
             /** @var TokenCollection */
-            $items = $parent->Data[TokenData::LIST_ITEMS];
+            $items = $parent->Data[Data::LIST_ITEMS];
             foreach ($items as $item) {
                 $item->Whitespace |= Space::LINE_BEFORE;
             }

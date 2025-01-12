@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
-use Lkrms\PrettyPHP\Catalog\DeclarationType;
+use Lkrms\PrettyPHP\Catalog\DeclarationType as Type;
 use Lkrms\PrettyPHP\Contract\BlockRule;
 use Lkrms\PrettyPHP\Contract\DeclarationRule;
 use Lkrms\PrettyPHP\Contract\HasTokenNames;
@@ -95,7 +95,7 @@ function maybeAddRule(
 function getAllDeclarationTypes(): array
 {
     /** @var int[] */
-    $types = Reflect::getConstants(DeclarationType::class);
+    $types = Reflect::getConstants(Type::class);
     return array_fill_keys($types, true);
 }
 
@@ -225,7 +225,7 @@ foreach ($rules as $r) {
         $declarations[] = '*';
     } elseif ($r['declarations']) {
         foreach (array_keys(array_filter($r['declarations'])) as $id) {
-            $name = Reflect::getConstantName(DeclarationType::class, $id);
+            $name = Reflect::getConstantName(Type::class, $id);
             $name = ltrim($name, '_');
             $declarationRules[$name][] = $heading;
             $declarations[] = $name;

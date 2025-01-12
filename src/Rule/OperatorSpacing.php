@@ -2,8 +2,8 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\TokenData;
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
@@ -54,6 +54,7 @@ final class OperatorSpacing implements TokenRule
      *
      * - after reference-related ampersands
      * - before and after operators in union, intersection and DNF types
+     * - between parentheses in DNF types
      * - before and after exception delimiters in `catch` blocks (unless strict
      *   PSR-12 mode is enabled)
      * - after `?` in nullable types
@@ -91,7 +92,7 @@ final class OperatorSpacing implements TokenRule
 
             if (
                 $this->Idx->Ampersand[$token->id]
-                && $next->Flags & TokenFlag::CODE
+                && $next->Flags & Flag::CODE
                 && (
                     // `function &getValue()`
                     ($prevCode && $this->Idx->FunctionOrFn[$prevCode->id])
@@ -132,6 +133,7 @@ final class OperatorSpacing implements TokenRule
                 $token->Whitespace |= Space::NONE_BEFORE | Space::NONE_AFTER;
                 if (!$inTypeContext) {
                     /** @var Token $parent */
+                    $parent->outer()->applyInnerWhitespace(Space::NONE);
                     if (
                         $parent->PrevCode
                         && $parent->PrevCode->id !== \T_OR
@@ -149,7 +151,7 @@ final class OperatorSpacing implements TokenRule
                 $token->Whitespace |= Space::NONE_BEFORE | Space::NONE_AFTER;
             } elseif (
                 $token->id === \T_QUESTION
-                && !($token->Flags & TokenFlag::TERNARY)
+                && !($token->Flags & Flag::TERNARY)
             ) {
                 $token->Whitespace |= Space::SPACE_BEFORE | Space::NONE_AFTER;
             } elseif (
@@ -158,12 +160,12 @@ final class OperatorSpacing implements TokenRule
             ) {
                 $token->Whitespace |= $prev
                     && $this->Idx->EndOfVariable[$prev->id]
-                    && !($prev->Flags & TokenFlag::STRUCTURAL_BRACE)
+                    && !($prev->Flags & Flag::STRUCTURAL_BRACE)
                         ? Space::NONE_BEFORE
                         : Space::NONE_AFTER;
             } elseif (
                 $token->isUnaryOperator()
-                && $next->Flags & TokenFlag::CODE
+                && $next->Flags & Flag::CODE
                 && (
                     !$this->Idx->Operator[$next->id]
                     || $next->isUnaryOperator()
@@ -172,8 +174,8 @@ final class OperatorSpacing implements TokenRule
                 $token->Whitespace |= Space::NONE_AFTER;
             } elseif ($token->id === \T_COLON) {
                 $token->Whitespace |= (
-                    $token->Flags & TokenFlag::TERNARY
-                        ? ($token->Data[TokenData::OTHER_TERNARY] === $prev
+                    $token->Flags & Flag::TERNARY
+                        ? ($token->Data[Data::OTHER_TERNARY] === $prev
                             ? Space::NONE_BEFORE
                             : Space::SPACE_BEFORE)
                         : 0

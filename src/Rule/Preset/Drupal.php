@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule\Preset;
 
-use Lkrms\PrettyPHP\Catalog\DeclarationType;
+use Lkrms\PrettyPHP\Catalog\DeclarationType as Type;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\DeclarationRuleTrait;
@@ -80,10 +80,10 @@ final class Drupal implements Preset, TokenRule, DeclarationRule
     public static function getDeclarationTypes(array $all): array
     {
         return [
-            DeclarationType::_CLASS => true,
-            DeclarationType::_ENUM => true,
-            DeclarationType::_INTERFACE => true,
-            DeclarationType::_TRAIT => true,
+            Type::_CLASS => true,
+            Type::_ENUM => true,
+            Type::_INTERFACE => true,
+            Type::_TRAIT => true,
         ];
     }
 

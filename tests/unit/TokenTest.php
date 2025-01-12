@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Tests;
 
-use Lkrms\PrettyPHP\Catalog\TokenSubId;
+use Lkrms\PrettyPHP\Catalog\TokenSubId as SubId;
 use Lkrms\PrettyPHP\Formatter;
 use Salient\Utility\Reflect;
 
@@ -49,27 +49,27 @@ PHP;
         $actual = [];
         foreach ($formatter->getTokens() ?? [] as $token) {
             if ($token->id === \T_COLON) {
-                $actual[] = Reflect::getConstantName(TokenSubId::class, $token->getSubId());
+                $actual[] = Reflect::getConstantName(SubId::class, $token->getSubId());
             }
         }
 
         $this->assertSame([
-            'COLON_BACKED_ENUM_TYPE_DELIMITER',
-            'COLON_RETURN_TYPE_DELIMITER',
-            'COLON_NAMED_ARGUMENT_DELIMITER',
-            'COLON_TERNARY_OPERATOR',
-            'COLON_NAMED_ARGUMENT_DELIMITER',
-            'COLON_NAMED_ARGUMENT_DELIMITER',
-            'COLON_TERNARY_OPERATOR',
-            'COLON_LABEL_DELIMITER',
-            'COLON_ALT_SYNTAX_DELIMITER',
-            'COLON_SWITCH_CASE_DELIMITER',
-            'COLON_RETURN_TYPE_DELIMITER',
-            'COLON_TERNARY_OPERATOR',
-            'COLON_SWITCH_CASE_DELIMITER',
-            'COLON_SWITCH_CASE_DELIMITER',
-            'COLON_LABEL_DELIMITER',
-            'COLON_LABEL_DELIMITER',
+            'COLON_ENUM_TYPE',
+            'COLON_RETURN_TYPE',
+            'COLON_NAMED_ARGUMENT',
+            'COLON_TERNARY',
+            'COLON_NAMED_ARGUMENT',
+            'COLON_NAMED_ARGUMENT',
+            'COLON_TERNARY',
+            'COLON_LABEL',
+            'COLON_ALT_SYNTAX',
+            'COLON_SWITCH_CASE',
+            'COLON_RETURN_TYPE',
+            'COLON_TERNARY',
+            'COLON_SWITCH_CASE',
+            'COLON_SWITCH_CASE',
+            'COLON_LABEL',
+            'COLON_LABEL',
         ], $actual);
         $this->assertCount(7, array_unique($actual));
     }
@@ -96,58 +96,18 @@ PHP;
         $actual = [];
         foreach ($formatter->getTokens() ?? [] as $token) {
             if ($token->id === \T_QUESTION) {
-                $actual[] = Reflect::getConstantName(TokenSubId::class, $token->getSubId());
+                $actual[] = Reflect::getConstantName(SubId::class, $token->getSubId());
             }
         }
 
         $this->assertSame([
-            'QUESTION_TERNARY_OPERATOR',
+            'QUESTION_TERNARY',
             'QUESTION_NULLABLE',
             'QUESTION_NULLABLE',
-            'QUESTION_TERNARY_OPERATOR',
+            'QUESTION_TERNARY',
             'QUESTION_NULLABLE',
-            'QUESTION_TERNARY_OPERATOR',
+            'QUESTION_TERNARY',
         ], $actual);
         $this->assertCount(2, array_unique($actual));
-    }
-
-    public function testGetUseSubId(): void
-    {
-        $code = <<<'PHP'
-<?php
-use Foo\Bar;
-use function Foo\baz;
-use const Foo\QUX;
-
-class Foo
-{
-    use Bar;
-    use FooBar {
-        FooBar::func insteadof Bar;
-    }
-}
-
-$foo = function () use ($bar) {};
-PHP;
-
-        $formatter = (new Formatter())->withDebug();
-        $formatter->format($code, \PHP_EOL, null, null, true);
-
-        $actual = [];
-        foreach ($formatter->getTokens() ?? [] as $token) {
-            if ($token->id === \T_USE) {
-                $actual[] = Reflect::getConstantName(TokenSubId::class, $token->getSubId());
-            }
-        }
-
-        $this->assertSame([
-            'USE_IMPORT',
-            'USE_IMPORT',
-            'USE_IMPORT',
-            'USE_TRAIT',
-            'USE_TRAIT',
-            'USE_VARIABLES',
-        ], $actual);
-        $this->assertCount(3, array_unique($actual));
     }
 }

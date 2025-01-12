@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\AbstractTokenIndex;
@@ -86,7 +86,7 @@ final class AlignArrowFunctions implements TokenRule
                                ->reverse()
                                ->find(fn(Token $t) =>
                                           $t === $token || (
-                                              $t->Flags & TokenFlag::CODE
+                                              $t->Flags & Flag::CODE
                                               && $t->hasNewlineBefore()
                                           ));
 

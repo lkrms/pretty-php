@@ -4,8 +4,8 @@ namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\DeclarationType as Type;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
-use Lkrms\PrettyPHP\Catalog\TokenData;
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
@@ -49,7 +49,7 @@ final class HangingIndentation implements TokenRule
     }
 
     /**
-     * @codeCoverageIgnore
+     * @inheritDoc
      */
     public static function needsSortedTokens(): bool
     {
@@ -98,14 +98,14 @@ final class HangingIndentation implements TokenRule
                 /** @var Token */
                 $end = $close->PrevCode;
                 $hasList = (
-                    $token->Flags & TokenFlag::LIST_PARENT && (
-                        $token->Data[TokenData::LIST_ITEM_COUNT] > 1
-                        || $start->id === $token->Data[TokenData::LIST_DELIMITER]
-                        || $end->id === $token->Data[TokenData::LIST_DELIMITER]
+                    $token->Flags & Flag::LIST_PARENT && (
+                        $token->Data[Data::LIST_ITEM_COUNT] > 1
+                        || $start->id === $token->Data[Data::LIST_DELIMITER]
+                        || $end->id === $token->Data[Data::LIST_DELIMITER]
                     )
                 ) || (
                     $token->id === \T_OPEN_BRACE && (
-                        $token->Flags & TokenFlag::STRUCTURAL_BRACE
+                        $token->Flags & Flag::STRUCTURAL_BRACE
                         || $token->isMatchOpenBrace()
                     )
                 ) || (
@@ -151,8 +151,8 @@ final class HangingIndentation implements TokenRule
             $prevSibling = $token->PrevSibling;
             /** @var Token */
             $statement = $token->Statement;
-            $declType = $statement->Flags & TokenFlag::DECLARATION
-                ? $statement->Data[TokenData::DECLARATION_TYPE]
+            $declType = $statement->Flags & Flag::DECLARATION
+                ? $statement->Data[Data::DECLARATION_TYPE]
                 : 0;
             $mayHaveListWithEqual = $declType === Type::_CONST
                 || $declType === Type::PROPERTY
@@ -317,19 +317,19 @@ final class HangingIndentation implements TokenRule
 
             if ($prevCode->id === \T_START_HEREDOC) {
                 $context[] = $prevCode;
-            } elseif ($token->Flags & TokenFlag::LIST_ITEM) {
+            } elseif ($token->Flags & Flag::LIST_ITEM) {
                 /** @var Token */
-                $listParent = $token->Data[TokenData::LIST_PARENT];
+                $listParent = $token->Data[Data::LIST_PARENT];
                 /** @var TokenCollection */
-                $listItems = $listParent->Data[TokenData::LIST_ITEMS];
+                $listItems = $listParent->Data[Data::LIST_ITEMS];
                 /** @var Token */
                 $firstItem = $listItems->first();
                 $context[] = $firstItem;
             } elseif ($this->Idx->Chain[$token->id]) {
-                $context[] = $token->Data[TokenData::CHAIN];
+                $context[] = $token->Data[Data::CHAIN];
                 $until = TokenUtil::getOperatorEndExpression($token);
             } elseif (
-                $token->Flags & TokenFlag::TERNARY
+                $token->Flags & Flag::TERNARY
                 || $token->id === \T_COALESCE
             ) {
                 $ternary = TokenUtil::getTernaryContext($token)
@@ -419,7 +419,7 @@ final class HangingIndentation implements TokenRule
                 ($next = $until->NextCode)
                 && ((
                     $next->id === \T_QUESTION
-                    && $next->Flags & TokenFlag::TERNARY
+                    && $next->Flags & Flag::TERNARY
                 ) || $next->id === \T_COALESCE)
                 && !TokenUtil::getTernaryContext($next)
             ) {
@@ -529,7 +529,7 @@ final class HangingIndentation implements TokenRule
                             $t->HangingIndent -= $levels;
                         }
                         foreach ($token->collect($until->endOfLine()) as $t) {
-                            $callbacks = $t->Data[TokenData::ALIGNMENT_CALLBACKS] ?? null;
+                            $callbacks = $t->Data[Data::ALIGNMENT_CALLBACKS] ?? null;
                             if ($callbacks) {
                                 foreach ($callbacks as $callback) {
                                     $callback();
@@ -606,7 +606,7 @@ final class HangingIndentation implements TokenRule
         // starts with a close bracket and there is no comment to fall back on
         $eol = $until->endOfLine(false);
         if (
-            $eol->Flags & TokenFlag::MULTILINE_COMMENT
+            $eol->Flags & Flag::MULTILINE_COMMENT
             && $eol->hasNewline()
             && !$eol->hasNewlineBefore()
         ) {
@@ -630,7 +630,7 @@ final class HangingIndentation implements TokenRule
         // previous line too
         $last = $until->startOfLine(false);
         if (
-            $last->Flags & TokenFlag::MULTILINE_COMMENT
+            $last->Flags & Flag::MULTILINE_COMMENT
             && $last->hasNewline()
         ) {
             return $levels;

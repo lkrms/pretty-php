@@ -2,8 +2,8 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\TokenData;
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
@@ -51,9 +51,7 @@ final class AlignChains implements TokenRule
      * Apply the rule to the given tokens
      *
      * If there are no object operators with a leading newline in a chain of
-     * method calls, or if the first object operator in the chain has a leading
-     * newline and the formatter's `AlignChainAfterNewline` property is `false`,
-     * no action is taken.
+     * method calls, no action is taken.
      *
      * Otherwise, if the first object operator in the chain has a leading
      * newline, it is removed if horizontal space on subsequent lines would be
@@ -80,22 +78,13 @@ final class AlignChains implements TokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            if ($token !== $token->Data[TokenData::CHAIN]) {
+            if ($token !== $token->Data[Data::CHAIN]) {
                 continue;
             }
 
             $hasNewlineBefore = $token->hasNewlineBefore();
-
-            if (
-                $hasNewlineBefore
-                && !$this->Formatter->AlignChainAfterNewline
-            ) {
-                continue;
-            }
-
             $chain = $token->withNextSiblingsFrom($this->Idx->ChainPart)
                            ->getAnyFrom($this->Idx->Chain);
-
             if (!$hasNewlineBefore && (
                 $chain->count() < 2
                 || !$chain->shift()->tokenHasNewlineBefore()
@@ -115,13 +104,13 @@ final class AlignChains implements TokenRule
                                   ->reverse()
                                   ->find(fn(Token $t) =>
                                              $t === $expr || (
-                                                 $t->Flags & TokenFlag::CODE
+                                                 $t->Flags & Flag::CODE
                                                  && $t->hasNewlineBefore()
                                              ));
 
                 $eol = $alignWith->endOfLine();
                 if (
-                    $eol->Flags & TokenFlag::CODE
+                    $eol->Flags & Flag::CODE
                     && $eol->Next === $token
                     && mb_strlen($alignWith->collect($eol)->render()) <= $this->Formatter->TabSize
                 ) {
@@ -136,7 +125,7 @@ final class AlignChains implements TokenRule
                 if ($chain->count() < 2) {
                     continue;
                 }
-                $token->AlignedWith = $alignWith = $token;
+                $alignWith = $token;
                 $chain = $chain->shift();
             }
 
@@ -196,7 +185,7 @@ final class AlignChains implements TokenRule
                     $chain->forEach($callback);
                 },
             );
-            $alignWith->Data[TokenData::ALIGNMENT_CALLBACKS][] = $callback;
+            $alignWith->Data[Data::ALIGNMENT_CALLBACKS][] = $callback;
         }
     }
 }

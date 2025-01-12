@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
@@ -81,7 +81,7 @@ final class PlaceBraces implements TokenRule
     {
         foreach ($tokens as $token) {
             if (!(
-                $token->Flags & TokenFlag::STRUCTURAL_BRACE
+                $token->Flags & Flag::STRUCTURAL_BRACE
                 || $token->isMatchOpenBrace()
             )) {
                 continue;
@@ -95,19 +95,19 @@ final class PlaceBraces implements TokenRule
 
             // Don't move subsequent code to the next line if the brace is part
             // of an expression
-            if ($close->Flags & TokenFlag::TERMINATOR) {
+            if ($close->Flags & Flag::TERMINATOR) {
                 // Keep structures like `} else {` on the same line
                 $next = $close->NextCode;
                 if ($next && $next->continuesControlStructure()) {
                     $close->Whitespace |= Space::SPACE_AFTER;
-                    if (!($next->Flags & TokenFlag::UNENCLOSED_PARENT) || (
+                    if (!($next->Flags & Flag::UNENCLOSED_PARENT) || (
                         // `$next` can only be `elseif` or `else`, so if the
                         // close brace is not the body of `if` or `elseif`, the
                         // `if` construct `$next` belongs to must be its parent,
                         // and `$next` should be on a new line
-                        $close->PrevSibling
-                        && $close->PrevSibling->PrevSibling
-                        && $this->Idx->IfOrElseIf[$close->PrevSibling->PrevSibling->id]
+                        ($prev = $close->PrevSibling)
+                        && ($prev = $prev->PrevSibling)
+                        && $this->Idx->IfOrElseIf[$prev->id]
                     )) {
                         $next->Whitespace |= Space::NO_BLANK_BEFORE | Space::NO_LINE_BEFORE;
                     } else {
@@ -127,7 +127,7 @@ final class PlaceBraces implements TokenRule
             // Move empty bodies to the end of the previous line
             if (
                 $this->Formatter->CollapseEmptyDeclarationBodies
-                && $next->id === \T_CLOSE_BRACE
+                && $next === $close
                 && (
                     $parts->hasOneFrom($this->Idx->DeclarationClassOrFunction)
                     || $token->inPropertyOrPropertyHook()
@@ -142,7 +142,7 @@ final class PlaceBraces implements TokenRule
             $token->Whitespace |= Space::SPACE_BEFORE | Space::NO_BLANK_AFTER | Space::LINE_AFTER | Space::SPACE_AFTER;
 
             // Suppress horizontal whitespace between empty braces
-            if ($next->id === \T_CLOSE_BRACE) {
+            if ($next === $close) {
                 $token->Whitespace |= Space::NO_SPACE_AFTER;
             }
 

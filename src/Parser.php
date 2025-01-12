@@ -3,9 +3,9 @@
 namespace Lkrms\PrettyPHP;
 
 use Lkrms\PrettyPHP\Catalog\DeclarationType as Type;
-use Lkrms\PrettyPHP\Catalog\TokenData;
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
-use Lkrms\PrettyPHP\Catalog\TokenSubId;
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
+use Lkrms\PrettyPHP\Catalog\TokenSubId as SubId;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\Internal\Document;
 use Lkrms\PrettyPHP\Internal\TokenCollection;
@@ -13,6 +13,9 @@ use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasMutator;
 use Salient\Utility\Regex;
 
+/**
+ * @api
+ */
 final class Parser implements Immutable
 {
     use HasMutator;
@@ -133,11 +136,15 @@ final class Parser implements Immutable
     /**
      * Pass 2: build token hierarchy
      *
+     * - add virtual brackets around unenclosed control structure bodies
+     * - add virtual close brackets after alternative syntax blocks
      * - on PHP < 8.0, convert comments that appear to be PHP >= 8.0 attributes
      *   to `T_ATTRIBUTE_COMMENT`
-     * - trim the text of each token
-     * - add virtual close brackets after alternative syntax blocks
-     * - pair open brackets and tags with their counterparts
+     * - trim token text
+     * - apply comment type flags
+     * - detect comments that should receive the same treatment as DocBlocks
+     * - detect close tags that are statement terminators
+     * - flag code tokens
      *
      * Token properties set:
      *
@@ -152,7 +159,7 @@ final class Parser implements Immutable
      * - `Depth`
      * - `String`
      * - `Heredoc`
-     * - `Data[TokenData::END_STRING]`
+     * - `Data[Data::END_STRING]`
      *
      * @param non-empty-list<Token> $tokens
      * @param-out non-empty-list<Token> $tokens
@@ -188,7 +195,9 @@ final class Parser implements Immutable
         $tokens[] = $token;
         $i = 0;
 
-        $insertVirtual = static function (int $id, bool $bindNext = true) use (
+        // This closure is used in the loop below to replace the current token
+        // with a virtual token
+        $addVirtual = static function (int $id, bool $bindNext = true) use (
             &$token,
             &$prev,
             &$i,
@@ -199,11 +208,9 @@ final class Parser implements Immutable
             $virtual = $bindNext
                 ? new Token($id, '', $token->line, $token->pos)
                 : new Token($id, '', $prev->getEndLine(), $prev->getEndPos());
-            if ($prev->column > 0) {
-                $virtual->column = $bindNext
-                    ? $token->column
-                    : $prev->getEndColumn();
-            }
+            $virtual->column = $bindNext
+                ? $token->column
+                : $prev->getEndColumn();
             $virtual->Formatter = $prev->Formatter;
             $virtual->Idx = $prev->Idx;
             $virtual->Prev = $prev;
@@ -216,13 +223,13 @@ final class Parser implements Immutable
             $virtual->CloseTag = &$virtual->OpenTag->CloseTag;
 
             $realPrev = $prev->skipPrevFrom($idx->Virtual);
-            $virtual->Data[TokenData::PREV_REAL] = $realPrev;
-            $virtual->Data[TokenData::NEXT_REAL] = $token->id !== 0 ? $token : null;
+            $virtual->Data[Data::PREV_REAL] = $realPrev;
+            $virtual->Data[Data::NEXT_REAL] = $token->id !== 0 ? $token : null;
             if ($bindNext) {
-                $virtual->Data[TokenData::BOUND_TO] = $token;
+                $virtual->Data[Data::BOUND_TO] = $token;
                 $virtual->Whitespace = &$token->Whitespace;
             } else {
-                $virtual->Data[TokenData::BOUND_TO] = $realPrev;
+                $virtual->Data[Data::BOUND_TO] = $realPrev;
                 $virtual->Whitespace = &$realPrev->Whitespace;
             }
             $token = $virtual;
@@ -232,72 +239,71 @@ final class Parser implements Immutable
             $token = $tokens[$i];
 
             $prevCode = $prev
-                ? ($prev->Flags & TokenFlag::CODE
+                ? ($prev->Flags & Flag::CODE
                     ? $prev
                     : $prev->PrevCode)
                 : null;
 
-            // Add virtual `T_OPEN_UNENCLOSED` and `T_CLOSE_UNENCLOSED`
-            // "brackets" around unenclosed control structure bodies
-            if ($prevCode && !$idx->OutsideCode[$token->id]) {
-                // Skip to the next code token or close tag, falling back to the
-                // current token if necessary
-                $next = $token;
-                while (
-                    $next->id !== \T_CLOSE_TAG
-                    && $idx->NotCode[$next->id]
-                ) {
-                    $next = $next->Next;
-                    if (!$next) {
-                        $next = $token;
+            // Add virtual `T_OPEN_UNENCLOSED` and `T_CLOSE_UNENCLOSED` brackets
+            // around unenclosed control structure bodies
+            $hasOptional = false;
+            $hasOptionalWithExpression = false;
+            if (
+                ($hasBody = $prevCode)
+                && !$idx->OutsideCode[$token->id]
+                && (
+                    ($hasOptional = $idx->HasOptionalBracesWithNoExpression[$hasBody->id])
+                    || ($hasOptionalWithExpression = (
+                        $prevCode->id === \T_CLOSE_PARENTHESIS
+                        && ($hasBody = $prevCode->PrevSibling)
+                        && $idx->HasOptionalBracesWithExpression[$hasBody->id]
+                    ))
+                    || $lastUnenclosed
+                )
+            ) {
+                // The first token enclosed may not be code, so find the next
+                // code token or close tag for unenclosed body checks
+                $code = $token;
+                while ($code->id !== \T_CLOSE_TAG && $idx->NotCode[$code->id]) {
+                    $code = $code->Next;
+                    if (!$code) {
+                        $code = $token;
                         break;
                     }
                 }
 
-                $trigger = $next->id === \T_CLOSE_TAG
-                    ? $this->nextSibling($next)
-                    : $next;
-                $parent = $prevCode;
-                $continues = null;
                 if (
-                    ($next->id === \T_CLOSE_TAG || (
-                        $next->id !== \T_OPEN_BRACE
-                        && !$idx->NotCode[$next->id]
-                    )) && ((
-                        $idx->HasOptionalBracesWithNoExpression[$prevCode->id]
-                        // Don't enclose tokens in alternative syntax constructs
-                        && !(
-                            $next->id === \T_COLON
-                            && $prevCode->id === \T_ELSE
+                    $code->id !== \T_OPEN_BRACE
+                    && ($code->id === \T_CLOSE_TAG || !$idx->NotCode[$code->id])
+                    && (
+                        (
+                            $hasOptional && !(
+                                $hasBody->id === \T_ELSE && (
+                                    // Ignore alternative syntax constructs
+                                    $code->id === \T_COLON
+                                    // Treat `else if` as `elseif`
+                                    || $code->id === \T_IF
+                                )
+                            )
+                        ) || (
+                            $hasOptionalWithExpression && !(
+                                // Ignore alternative syntax constructs
+                                $code->id === \T_COLON
+                                && $idx->AltStartOrContinue[$hasBody->id]
+                            ) && !(
+                                // Ignore `while` in `do ... while`
+                                $hasBody->id === \T_WHILE
+                                && ($prevSibling = $hasBody->PrevSibling)
+                                && $prevSibling->PrevCode
+                                && $prevSibling->PrevCode->id === \T_DO
+                            )
                         )
-                        // Treat `else if` as `elseif`
-                        && !(
-                            $prevCode->id === \T_ELSE
-                            && $next->id === \T_IF
-                        )
-                    ) || (
-                        $prevCode->id === \T_CLOSE_PARENTHESIS
-                        && ($parent = $prevCode->PrevSibling)
-                        && $idx->HasOptionalBracesWithExpression[$parent->id]
-                        // Don't enclose tokens in alternative syntax constructs
-                        && !(
-                            $next->id === \T_COLON
-                            && $idx->AltStartOrContinue[$parent->id]
-                        )
-                        // Don't enclose tokens after `while` in `do ... while`
-                        && !(
-                            $parent->id === \T_WHILE
-                            && ($prevSibling = $parent->PrevSibling)
-                            && $prevSibling->PrevCode
-                            && $prevSibling->PrevCode->id === \T_DO
-                        )
-                    ))
+                    )
                 ) {
-                    /** @var Token $parent */
-                    $insertVirtual(\T_OPEN_UNENCLOSED, false);
+                    $addVirtual(\T_OPEN_UNENCLOSED, false);
 
-                    $parent->Flags |= TokenFlag::UNENCLOSED_PARENT;
-                    $token->Data[TokenData::UNENCLOSED_PARENT] = $parent;
+                    $hasBody->Flags |= Flag::UNENCLOSED_PARENT;
+                    $token->Data[Data::UNENCLOSED_PARENT] = $hasBody;
 
                     if ($lastUnenclosed) {
                         $unenclosed[] = $lastUnenclosed;
@@ -315,36 +321,39 @@ final class Parser implements Immutable
                             $token->id === \T_CLOSE_TAG
                             && $prevCode === $lastUnenclosed
                         )
-                    ) && (
-                        $prevCode->id === \T_SEMICOLON
-                        || (
-                            $prevCode->Flags & TokenFlag::TERMINATOR && !(
-                                $prevCode->id === \T_CLOSE_BRACE
-                                && $this->continuesEnclosed($trigger, $prevCode)
-                            )
-                        ) || (
-                            $prevCode->id === \T_COLON
-                            && $prevCode->isColonStatementDelimiter()
-                        ) || (
-                            $prevCode->id === \T_CLOSE_UNENCLOSED
-                            && !$this->continuesUnenclosed($trigger, $prevCode)
-                            && !(
-                                $token->id === \T_CLOSE_TAG
-                                && ($continues = $this->continuesUnenclosed($trigger, $lastUnenclosed))
-                            )
-                        ) || (
-                            $token->id === \T_CLOSE_TAG
-                            && $prevCode->id !== \T_CLOSE_UNENCLOSED
-                            && !($continues ??= $this->continuesUnenclosed($trigger, $lastUnenclosed))
-                        )
                     )
                 ) {
-                    $continues ??= $this->continuesUnenclosed($trigger, $lastUnenclosed);
-                    $lastUnenclosed->Data[TokenData::UNENCLOSED_CONTINUES] = $continues;
+                    // Close the block if `$prevCode` is a statement terminator
+                    // or `$token` is a close tag (`T_CLOSE_TAG` is handled
+                    // early so virtual tokens aren't added outside PHP tags)
+                    $continues = null;
+                    if ($prevCode->id === \T_SEMICOLON || (
+                        $prevCode->Flags & Flag::TERMINATOR && !(
+                            $prevCode->id === \T_CLOSE_BRACE
+                            && $this->continuesEnclosed($code, $prevCode)
+                        )
+                    ) || (
+                        $prevCode->id === \T_COLON
+                        && $prevCode->isColonStatementDelimiter()
+                    ) || (
+                        $prevCode->id === \T_CLOSE_UNENCLOSED
+                        && !$this->continuesUnenclosed($code, $prevCode)
+                        && !(
+                            $token->id === \T_CLOSE_TAG
+                            && ($continues = $this->continuesUnenclosed($code, $lastUnenclosed))
+                        )
+                    ) || (
+                        $token->id === \T_CLOSE_TAG
+                        && $prevCode->id !== \T_CLOSE_UNENCLOSED
+                        && !($continues ??= $this->continuesUnenclosed($code, $lastUnenclosed))
+                    )) {
+                        $continues ??= $this->continuesUnenclosed($code, $lastUnenclosed);
+                        $lastUnenclosed->Data[Data::UNENCLOSED_CONTINUES] = $continues;
 
-                    $insertVirtual(\T_CLOSE_UNENCLOSED, $continues);
+                        $addVirtual(\T_CLOSE_UNENCLOSED, $continues);
 
-                    $lastUnenclosed = array_pop($unenclosed);
+                        $lastUnenclosed = array_pop($unenclosed);
+                    }
                 }
             }
 
@@ -352,27 +361,27 @@ final class Parser implements Immutable
                 break;
             }
 
-            // Add virtual "brackets" around alternative syntax blocks by adding
-            // `T_CLOSE_ALT` tokens as close brackets for `T_COLON`
-            if (
-                $idx->AltContinueOrEnd[$token->id]
-            ) {
+            // Add virtual `T_CLOSE_ALT` brackets after alternative syntax
+            // blocks to close their `T_COLON` open brackets
+            if ($idx->AltContinueOrEnd[$token->id]) {
                 /** @var Token $prev */
-                if ($prev->id !== \T_CLOSE_ALT && ((
-                    $prev->Parent
-                    && $prev->Parent->id === \T_COLON
-                    && ($idx->AltEnd[$token->id] || (
-                        $token->id === \T_ELSEIF
-                        && $this->nextSibling($token, 2)->id === \T_COLON
+                if ($prev->id !== \T_CLOSE_ALT && (
+                    (
+                        $prev->Parent
+                        && $prev->Parent->id === \T_COLON
+                        && ($idx->AltEnd[$token->id] || (
+                            $token->id === \T_ELSEIF
+                            && $this->nextSibling($token, 2)->id === \T_COLON
+                        ) || (
+                            $token->id === \T_ELSE
+                            && $this->nextSibling($token)->id === \T_COLON
+                        ))
                     ) || (
-                        $token->id === \T_ELSE
-                        && $this->nextSibling($token)->id === \T_COLON
-                    ))
-                ) || (
-                    $prev->id === \T_COLON
-                    && $prev->isColonAltSyntaxDelimiter()
-                ))) {
-                    $insertVirtual(\T_CLOSE_ALT);
+                        $prev->id === \T_COLON
+                        && $prev->isColonAltSyntaxDelimiter()
+                    )
+                )) {
+                    $addVirtual(\T_CLOSE_ALT);
                 }
             }
 
@@ -398,55 +407,6 @@ final class Parser implements Immutable
                 }
             }
 
-            if ($token->id === \T_DOC_COMMENT) {
-                $token->Flags |= TokenFlag::DOC_COMMENT;
-            } elseif ($token->id === \T_COMMENT) {
-                // "//", "/*" or "#"
-                $token->Flags |= (
-                    $text[0] === '/'
-                        ? ($text[1] === '/' ? TokenFlag::CPP_COMMENT : TokenFlag::C_COMMENT)
-                        : TokenFlag::SHELL_COMMENT
-                );
-
-                // Treat multi-line C-style comments as DocBlocks if:
-                // - every line starts with "*", or
-                // - at least one delimiter appears on its own line
-                if (
-                    ($token->Flags & TokenFlag::C_COMMENT) === TokenFlag::C_COMMENT
-                    && strpos($text, "\n") !== false
-                    && (
-                        // Every line starts with "*"
-                        !Regex::match('/\n\h*+(?!\*)\S/', $text)
-                        // The first delimiter is followed by a newline
-                        || !Regex::match('/^\/\*++(\h++|(?!\*))\S/', $text)
-                        // The last delimiter is preceded by a newline
-                        || !Regex::match('/\S((?<!\*)|\h++)\*++\/$/', $text)
-                    )
-                ) {
-                    $token->Flags |= TokenFlag::C_DOC_COMMENT;
-                }
-            }
-
-            // Determine whether or not a close tag is a statement terminator
-            if ($token->id === \T_CLOSE_TAG) {
-                /** @var Token $prev */
-                if (
-                    ($t = $prev->skipPrevFrom($idx->NotCodeBeforeCloseTag)) !== $token->OpenTag
-                    && $t->id !== \T_COLON
-                    && $t->id !== \T_SEMICOLON
-                    && $t->id !== \T_OPEN_BRACE
-                    && (
-                        $t->id !== \T_CLOSE_BRACE
-                        || !($t->Flags & TokenFlag::TERMINATOR)
-                    )
-                ) {
-                    $token->Flags |= TokenFlag::CODE
-                        | TokenFlag::TERMINATOR;
-                }
-            } elseif (!$idx->NotCode[$token->id]) {
-                $token->Flags |= TokenFlag::CODE;
-            }
-
             $built[$index] = $token;
             $tokensById[$token->id][$index] = $token;
             $token->index = $index++;
@@ -456,13 +416,61 @@ final class Parser implements Immutable
                 continue;
             }
 
+            if ($token->id === \T_DOC_COMMENT) {
+                $token->Flags |= Flag::DOC_COMMENT;
+            } elseif ($token->id === \T_COMMENT) {
+                // "//", "/*" or "#"
+                $token->Flags |= (
+                    $text[0] === '/'
+                        ? ($text[1] === '/' ? Flag::CPP_COMMENT : Flag::C_COMMENT)
+                        : Flag::SHELL_COMMENT
+                );
+
+                // Treat multi-line C-style comments as DocBlocks if:
+                // - every line starts with "*", or
+                // - at least one delimiter appears on its own line
+                if (
+                    ($token->Flags & Flag::C_COMMENT) === Flag::C_COMMENT
+                    && strpos($text, "\n") !== false
+                    && (
+                        // Every line starts with "*"
+                        !Regex::match('/\n\h*+(?!\*)\S/', $text)
+                        // The first delimiter is followed by a newline
+                        || !Regex::match('/^\/\*++(\h++|(?!\*))\S/', $text)
+                        // The last delimiter is preceded by a newline
+                        || !Regex::match('/\S((?<!\*)|\h++)\*++\/$/D', $text)
+                    )
+                ) {
+                    $token->Flags |= Flag::C_DOC_COMMENT;
+                }
+            }
+
+            // Check if close tags are statement terminators
+            if ($token->id === \T_CLOSE_TAG) {
+                if (
+                    ($t = $prev->skipPrevFrom($idx->NotCodeBeforeCloseTag)) !== $token->OpenTag
+                    && $t->id !== \T_SEMICOLON
+                    && $t->id !== \T_COLON
+                    && $t->id !== \T_OPEN_BRACE
+                    && (
+                        $t->id !== \T_CLOSE_BRACE
+                        || !($t->Flags & Flag::TERMINATOR)
+                    )
+                ) {
+                    $token->Flags |= Flag::CODE | Flag::TERMINATOR;
+                }
+            } elseif (!$idx->NotCode[$token->id]) {
+                $token->Flags |= Flag::CODE;
+            }
+
             $token->PrevCode = $prevCode;
-            if ($token->Flags & TokenFlag::CODE) {
+            if ($token->Flags & Flag::CODE) {
                 $prev->NextCode = $token;
             } else {
                 $token->NextCode = &$prev->NextCode;
             }
 
+            // Adopt parent and depth from `$prev` unless it's a bracket
             $token->Depth = $prev->Depth;
             if (
                 $idx->OpenBracket[$prev->id]
@@ -478,18 +486,20 @@ final class Parser implements Immutable
                 $token->Parent = $prev->Parent;
             }
 
+            // Handle nested strings in a similar way
             $token->String = $prev->String;
             $token->Heredoc = $prev->Heredoc;
             if ($idx->StringDelimiter[$prev->id]) {
                 if (
                     $prev->String
-                    && isset($prev->String->Data[TokenData::END_STRING])
-                    && $prev->String->Data[TokenData::END_STRING] === $prev
+                    && isset($prev->String->Data[Data::END_STRING])
+                    && $prev->String->Data[Data::END_STRING] === $prev
                 ) {
                     $token->String = $prev->String->String;
                     if ($prev->id === \T_END_HEREDOC) {
-                        assert($prev->Heredoc !== null);
-                        $token->Heredoc = $prev->Heredoc->Heredoc;
+                        /** @var Token */
+                        $heredoc = $prev->Heredoc;
+                        $token->Heredoc = $heredoc->Heredoc;
                     }
                 } else {
                     $token->String = $prev;
@@ -508,11 +518,11 @@ final class Parser implements Immutable
                     || ($token->String->id !== \T_START_HEREDOC && $token->String->id === $token->id)
                 )
             ) {
-                $token->String->Data[TokenData::END_STRING] = $token;
+                $token->String->Data[Data::END_STRING] = $token;
             }
 
             if ($idx->CloseBracketOrVirtual[$token->id]) {
-                assert($token->Parent !== null);
+                /** @var Token */
                 $opener = $token->Parent;
                 $opener->CloseBracket = $token;
                 $token->OpenBracket = $opener;
@@ -520,52 +530,47 @@ final class Parser implements Immutable
                 $token->NextSibling = &$opener->NextSibling;
                 $token->Parent = &$opener->Parent;
 
-                // Treat `$token` as a statement terminator if it's a structural
-                // `T_CLOSE_BRACE` that doesn't enclose an anonymous function or
-                // class
                 if (
-                    $token->id !== \T_CLOSE_BRACE
-                    // Exclude T_CURLY_OPEN and T_DOLLAR_OPEN_CURLY_BRACES
-                    || $opener->id !== \T_OPEN_BRACE
-                    || !$this->isStructuralBrace($opener)
+                    $opener->id === \T_OPEN_BRACE
+                    && $this->isStructuralBrace($opener)
                 ) {
-                    $prev = $token;
-                    continue;
-                }
+                    $opener->Flags |= Flag::STRUCTURAL_BRACE;
+                    $token->Flags |= Flag::STRUCTURAL_BRACE;
 
-                $opener->Flags |= TokenFlag::STRUCTURAL_BRACE;
-                $token->Flags |= TokenFlag::STRUCTURAL_BRACE;
-
-                $t = $token->PrevSibling;
-                while ($t && $idx->DeclarationPartWithNewAndBody[$t->id]) {
-                    if (!$idx->ClassOrFunction[$t->id]) {
-                        $t = $t->PrevSibling;
-                        continue;
-                    }
-                    if ($t->nextSiblingOf(\T_OPEN_BRACE)->CloseBracket === $token) {
-                        /** @var Token */
-                        $_next = $t->NextSibling;
-                        if ($idx->AfterAnonymousClassOrFunction[$_next->id] || (
-                            $idx->Ampersand[$_next->id]
-                            // @phpstan-ignore property.nonObject
-                            && $idx->AfterAnonymousClassOrFunction[$_next->NextSibling->id]
-                        )) {
-                            $prev = $token;
-                            continue 2;
+                    // Flag structural close braces as statement terminators
+                    // unless they close an anonymous class or function body
+                    $isTerminator = true;
+                    $t = $token;
+                    while (
+                        ($t = $t->PrevSibling)
+                        && $idx->DeclarationPartWithNewAndBody[$t->id]
+                        && $t->id !== \T_OPEN_BRACE
+                    ) {
+                        if ($idx->ClassOrFunction[$t->id]) {
+                            /** @var Token */
+                            $t = $t->NextSibling;
+                            if ($idx->AfterAnonymousClassOrFunction[$t->id] || (
+                                $idx->Ampersand[$t->id]
+                                && ($t = $t->NextSibling)
+                                && $idx->AfterAnonymousClassOrFunction[$t->id]
+                            )) {
+                                $isTerminator = false;
+                            }
+                            break;
                         }
                     }
-                    break;
+                    if ($isTerminator) {
+                        $token->Flags |= Flag::TERMINATOR;
+                    }
                 }
-
-                $token->Flags |= TokenFlag::TERMINATOR;
 
                 $prev = $token;
                 continue;
             }
 
-            // If $token continues the previous context (same depth) or is the
+            // If `$token` continues the previous context (same depth) or is the
             // first token after a close bracket (lower depth), set
-            // $token->PrevSibling
+            // `$token->PrevSibling`
             if ($token->Depth <= $prev->Depth && $token->PrevCode) {
                 $prevSibling = $token->PrevCode->OpenBracket ?? $token->PrevCode;
                 if ($prevSibling->Parent === $token->Parent) {
@@ -576,23 +581,19 @@ final class Parser implements Immutable
             }
 
             // Then, if there are gaps between siblings, fill them in
-            if ($token->Flags & TokenFlag::CODE) {
-                if (
-                    $token->PrevSibling
-                    && !$token->PrevSibling->NextSibling
-                ) {
+            if ($token->Flags & Flag::CODE) {
+                if (!$token->PrevSibling) {
                     $t = $token;
-                    assert($t->Prev !== null);
-                    do {
-                        $t = $t->Prev->OpenBracket ?? $t->Prev;
+                    while (($t = $t->Prev) && $t->Parent === $token->Parent) {
                         $t->NextSibling = $token;
-                    } while ($t !== $token->PrevSibling && $t->Prev);
-                } elseif (!$token->PrevSibling) {
-                    $t = $token->Prev;
-                    while ($t && $t->Parent === $token->Parent) {
-                        $t->NextSibling = $token;
-                        $t = $t->Prev;
                     }
+                } elseif (!$token->PrevSibling->NextSibling) {
+                    /** @var Token */
+                    $t = $token->Prev;
+                    do {
+                        $t = $t->OpenBracket ?? $t;
+                        $t->NextSibling = $token;
+                    } while ($t !== $token->PrevSibling && ($t = $t->Prev));
                 }
             }
 
@@ -622,7 +623,7 @@ final class Parser implements Immutable
         $statements = [];
 
         foreach ($scopes as $scope) {
-            if (!($scope->Flags & TokenFlag::CODE)) {
+            if (!($scope->Flags & Flag::CODE)) {
                 if (
                     !$scope->NextCode
                     || $scope->NextCode->Parent !== $scope->Parent
@@ -644,11 +645,12 @@ final class Parser implements Immutable
                     $token->CloseBracket->EndStatement = &$statement->EndStatement;
                 }
 
-                // The following tokens are regarded as statement terminators:
+                // Treat the following as statement terminators:
                 //
-                // - `T_SEMICOLON`, or `T_CLOSE_BRACE` / `T_CLOSE_TAG` where the
-                //   `TERMINATOR` flag is set, unless the next token continues
-                //   an open control structure
+                // - `T_SEMICOLON`
+                // - `T_CLOSE_BRACE` / `T_CLOSE_TAG` where the `TERMINATOR` flag
+                //   is set, or `T_CLOSE_UNENCLOSED`, unless the next token
+                //   continues a control structure
                 // - `T_COLON` after a switch case or a label
                 // - `T_COMMA`:
                 //   - between parentheses and square brackets, e.g. in argument
@@ -656,19 +658,17 @@ final class Parser implements Immutable
                 //   - between non-structural braces, e.g. in `match`
                 //     expressions
                 //   - not after `implements` in anonymous class declarations
-
                 if (
                     !$token->NextSibling
                     || $token->id === \T_SEMICOLON
-                    || $token->Flags & TokenFlag::TERMINATOR
+                    || $token->Flags & Flag::TERMINATOR
                     || (
                         ($close = $token->CloseBracket)
                         && (
                             $close->id === \T_CLOSE_UNENCLOSED
-                            || $close->Flags & TokenFlag::TERMINATOR
+                            || $close->Flags & Flag::TERMINATOR
                         ) && (
-                            !($next = $close->NextCode)
-                            || !(
+                            !($next = $close->NextCode) || !(
                                 $idx->ContinuesControlStructure[$next->id] || (
                                     $next->id === \T_WHILE
                                     && ($prev = $next->PrevSibling)
@@ -685,8 +685,10 @@ final class Parser implements Immutable
                         && ($parent = $token->Parent)
                         && ($idx->OpenBracketExceptBrace[$parent->id] || (
                             $parent->id === \T_OPEN_BRACE
-                            && !($parent->Flags & TokenFlag::STRUCTURAL_BRACE)
+                            && !($parent->Flags & Flag::STRUCTURAL_BRACE)
                         ))
+                        // Necessary to prevent interfaces implemented by
+                        // anonymous classes becoming statements
                         && $token->skipPrevCodeFrom($idx->DeclarationList)->id !== \T_IMPLEMENTS
                     )
                 ) {
@@ -721,11 +723,11 @@ final class Parser implements Immutable
      *
      * Token properties set:
      *
-     * - `Data[TokenData::DECLARATION_PARTS]`
-     * - `Data[TokenData::DECLARATION_TYPE]`
-     * - `Data[TokenData::PROPERTY_HOOKS]`
-     * - `Data[TokenData::OTHER_TERNARY]`
-     * - `Data[TokenData::CHAIN]`
+     * - `Data[Data::DECLARATION_PARTS]`
+     * - `Data[Data::DECLARATION_TYPE]`
+     * - `Data[Data::PROPERTY_HOOKS]`
+     * - `Data[Data::OTHER_TERNARY]`
+     * - `Data[Data::CHAIN]`
      *
      * @param Token[] $statements
      * @param array<int,Token>|null $declarations
@@ -748,6 +750,7 @@ final class Parser implements Immutable
             $end = $statement->EndStatement;
             $end = $end->OpenBracket ?? $end;
 
+            // Detect non-anonymous declarations
             if (
                 $idx->AttributeOrDeclaration[$statement->id]
                 && ($first = $this->skipNextSiblingsFrom($statement, $idx->Attribute))
@@ -783,18 +786,27 @@ final class Parser implements Immutable
                         $type |= self::DECLARATION_MAP[$id];
                     }
                     if (!$type) {
-                        if ($parts->hasOneFrom($idx->ModifierOrVar) && $this->isClassStatement($statement)) {
+                        if (
+                            $parts->hasOneFrom($idx->ModifierOrVar)
+                            && $this->isClassStatement($statement)
+                        ) {
                             $type = Type::PROPERTY;
-                        } elseif ($idx->VisibilityOrReadonly[$first->id] && $statement->inParameterList()) {
+                        } elseif (
+                            $idx->VisibilityOrReadonly[$first->id]
+                            && $statement->inParameterList()
+                        ) {
                             $type = Type::PARAM;
                         }
-                    } elseif ($type === Type::_USE && $this->isClassStatement($statement)) {
+                    } elseif (
+                        $type === Type::_USE
+                        && $this->isClassStatement($statement)
+                    ) {
                         $type = Type::USE_TRAIT;
                     }
                     if ($type) {
-                        $statement->Flags |= TokenFlag::DECLARATION;
-                        $statement->Data[TokenData::DECLARATION_PARTS] = $parts;
-                        $statement->Data[TokenData::DECLARATION_TYPE] = $type;
+                        $statement->Flags |= Flag::DECLARATION;
+                        $statement->Data[Data::DECLARATION_PARTS] = $parts;
+                        $statement->Data[Data::DECLARATION_TYPE] = $type;
                         $declarations[$statement->index] = $statement;
                         $declarationsByType[$type][$statement->index] = $statement;
 
@@ -813,13 +825,13 @@ final class Parser implements Immutable
                                 } while ($current = $current->NextSibling);
                             }
                             foreach ($hooks as $hook) {
-                                $hook->Flags |= TokenFlag::DECLARATION;
-                                $hook->Data[TokenData::DECLARATION_PARTS] = $hook->namedDeclarationParts();
-                                $hook->Data[TokenData::DECLARATION_TYPE] = Type::HOOK;
+                                $hook->Flags |= Flag::DECLARATION;
+                                $hook->Data[Data::DECLARATION_PARTS] = $hook->namedDeclarationParts();
+                                $hook->Data[Data::DECLARATION_TYPE] = Type::HOOK;
                                 $declarations[$hook->index] = $hook;
                                 $declarationsByType[Type::HOOK][$hook->index] = $hook;
                             }
-                            $statement->Data[TokenData::PROPERTY_HOOKS] = new TokenCollection($hooks);
+                            $statement->Data[Data::PROPERTY_HOOKS] = new TokenCollection($hooks);
                         }
                     }
                 }
@@ -830,7 +842,7 @@ final class Parser implements Immutable
                 // Flag and link ternary operators
                 if (
                     $token->id === \T_QUESTION
-                    && $token->getSubId() === TokenSubId::QUESTION_TERNARY_OPERATOR
+                    && $token->getSubId() === SubId::QUESTION_TERNARY
                 ) {
                     $current = $token;
                     $count = 0;
@@ -840,14 +852,14 @@ final class Parser implements Immutable
                     ) {
                         if (
                             $current->id === \T_QUESTION
-                            && $current->getSubId() === TokenSubId::QUESTION_TERNARY_OPERATOR
+                            && $current->getSubId() === SubId::QUESTION_TERNARY
                         ) {
                             $count++;
                             continue;
                         }
                         if (
                             $current->id === \T_COLON
-                            && $current->getSubId() === TokenSubId::COLON_TERNARY_OPERATOR
+                            && $current->getSubId() === SubId::COLON_TERNARY
                         ) {
                             if ($count--) {
                                 continue;
@@ -855,24 +867,27 @@ final class Parser implements Immutable
                         } else {
                             continue;
                         }
-                        $current->Flags |= TokenFlag::TERNARY;
-                        $token->Flags |= TokenFlag::TERNARY;
-                        $current->Data[TokenData::OTHER_TERNARY] = $token;
-                        $token->Data[TokenData::OTHER_TERNARY] = $current;
+                        $current->Flags |= Flag::TERNARY;
+                        $token->Flags |= Flag::TERNARY;
+                        $current->Data[Data::OTHER_TERNARY] = $token;
+                        $token->Data[Data::OTHER_TERNARY] = $current;
                         break;
                     }
                 }
 
                 // Link chained object operators
-                if ($idx->Chain[$token->id] && !isset($token->Data[TokenData::CHAIN])) {
-                    $token->Data[TokenData::CHAIN] = $token;
+                if (
+                    $idx->Chain[$token->id]
+                    && !isset($token->Data[Data::CHAIN])
+                ) {
+                    $token->Data[Data::CHAIN] = $token;
                     $current = $token;
                     while (
                         ($current = $current->NextSibling)
                         && $idx->ChainPart[$current->id]
                     ) {
                         if ($idx->Chain[$current->id]) {
-                            $current->Data[TokenData::CHAIN] = $token;
+                            $current->Data[Data::CHAIN] = $token;
                         }
                     }
                 }
@@ -880,7 +895,7 @@ final class Parser implements Immutable
                 // Flag arrow function double arrow operators
                 if ($token->id === \T_FN) {
                     $next = $token->nextSiblingOf(\T_DOUBLE_ARROW);
-                    $next->Flags |= TokenFlag::FN_DOUBLE_ARROW;
+                    $next->Flags |= Flag::FN_DOUBLE_ARROW;
                 }
 
                 if (!$token->NextSibling || $token === $end) {
@@ -903,18 +918,14 @@ final class Parser implements Immutable
             } elseif ($idx->CloseBracket[$token->id]) {
                 $depth--;
                 if ($depth < 0) {
-                    // @codeCoverageIgnoreStart
                     break;
-                    // @codeCoverageIgnoreEnd
                 }
             }
             $token = $token->Next;
             while ($idx->NotCode[$token->id]) {
                 $token = $token->Next;
                 if (!$token) {
-                    // @codeCoverageIgnoreStart
                     break 2;
-                    // @codeCoverageIgnoreEnd
                 }
             }
             if (!$depth) {
@@ -933,19 +944,21 @@ final class Parser implements Immutable
      */
     private function skipNextSiblingsFrom(Token $token, array $index): ?Token
     {
-        $t = $token;
-        while ($t && $index[$t->id]) {
-            $t = $t->NextSibling;
+        while ($index[$token->id]) {
+            if (!$token->NextSibling) {
+                return null;
+            }
+            $token = $token->NextSibling;
         }
-        return $t;
+        return $token;
     }
 
     private function isStructuralBrace(Token $token): bool
     {
         if (
-            $token->PrevSibling
-            && $token->PrevSibling->PrevSibling
-            && $token->PrevSibling->PrevSibling->id === \T_MATCH
+            ($prev = $token->PrevSibling)
+            && ($prev = $prev->PrevSibling)
+            && $prev->id === \T_MATCH
         ) {
             return false;
         }
@@ -957,12 +970,12 @@ final class Parser implements Immutable
 
         // Braces cannot be empty in dereferencing contexts, but they can be in
         // property hooks and trait adaptations
-        return $t === $token                        // `{}`
-            || $t->id === \T_SEMICOLON              // `{ statement; }`
-            || $t->id === \T_COLON                  // `{ label: }`
-            || ($t->Flags & TokenFlag::TERMINATOR)  /* `{ statement ?>...<?php }` */
-            || $t->id === \T_CLOSE_UNENCLOSED       // `{ if (...) statement; }`
-            || (                                    // `{ { statement; } }`
+        return $t === $token                   // `{}`
+            || $t->id === \T_SEMICOLON         // `{ statement; }`
+            || $t->id === \T_COLON             // `{ label: }`
+            || ($t->Flags & Flag::TERMINATOR)  /* `{ statement ?>...<?php }` */
+            || $t->id === \T_CLOSE_UNENCLOSED  // `{ if (...) statement; }`
+            || (                               // `{ { statement; } }`
                 $t->id === \T_CLOSE_BRACE
                 && $t->OpenBracket
                 && $t->OpenBracket->id === \T_OPEN_BRACE
@@ -977,12 +990,15 @@ final class Parser implements Immutable
     private function continuesUnenclosed(Token $token, Token $parent): bool
     {
         $idx = $this->Formatter->TokenIndex;
+        if ($token->id === \T_CLOSE_TAG) {
+            $token = $this->nextSibling($token);
+        }
 
         if ($parent->OpenBracket) {
             $open = $parent->OpenBracket;
-            $parent = $open->Data[TokenData::UNENCLOSED_PARENT];
+            $parent = $open->Data[Data::UNENCLOSED_PARENT];
         } elseif ($parent->id === \T_OPEN_UNENCLOSED) {
-            $parent = $parent->Data[TokenData::UNENCLOSED_PARENT];
+            $parent = $parent->Data[Data::UNENCLOSED_PARENT];
         }
 
         return ($token->id === \T_WHILE && $parent->id === \T_DO)
@@ -992,6 +1008,9 @@ final class Parser implements Immutable
     private function continuesEnclosed(Token $token, Token $close): bool
     {
         $idx = $this->Formatter->TokenIndex;
+        if ($token->id === \T_CLOSE_TAG) {
+            $token = $this->nextSibling($token);
+        }
 
         /** @var Token */
         $open = $close->OpenBracket;
@@ -1010,8 +1029,6 @@ final class Parser implements Immutable
 
     /**
      * Check if a statement is at class level
-     *
-     * Parent expressions must be resolved before this method is called.
      */
     private function isClassStatement(Token $token): bool
     {

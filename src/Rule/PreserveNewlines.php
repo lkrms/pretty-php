@@ -2,8 +2,8 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\TokenData;
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
@@ -81,7 +81,10 @@ final class PreserveNewlines implements TokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            $prev = $token->prevReal();
+            $prev = $token->Prev;
+            if ($prev && $this->Idx->Virtual[$prev->id]) {
+                $prev = $prev->Data[Data::PREV_REAL];
+            }
             if (
                 !$prev
                 || $prev->line === $token->line
@@ -122,10 +125,13 @@ final class PreserveNewlines implements TokenRule
 
             $min = $prev->line;
             $max = $token->line;
-            // - Is a newline after $prev OK?
-            // - If $prev moves to the next line, is a newline before it OK?
-            // - Is a newline before $token OK?
-            // - If $token moves to the previous line, is a newline after it OK?
+            // In order of preference, preserve a newline or blank line:
+            // - after `$prev`
+            // - before `$prev` if it can move to the next line and is not a
+            //   bracket
+            // - before `$token`
+            // - after `$token` if it can move to the previous line and is not a
+            //   bracket
             $this->maybePreserveNewlineAfter($prev, $token, $line, $min, $max)
                 || ($prev->Prev && $this->maybePreserveNewlineBefore($prev, $prev->Prev, $line, $min, $max, true))
                 || $this->maybePreserveNewlineBefore($token, $prev, $line, $min, $max)
@@ -157,9 +163,9 @@ final class PreserveNewlines implements TokenRule
 
         // Treat `?:` as one operator
         if (
-            ($token->Flags & TokenFlag::TERNARY)
+            ($token->Flags & Flag::TERNARY)
             && $token->id === \T_COLON
-            && $token->Data[TokenData::OTHER_TERNARY] === $prev
+            && $token->Data[Data::OTHER_TERNARY] === $prev
         ) {
             return false;
         }
@@ -201,9 +207,9 @@ final class PreserveNewlines implements TokenRule
 
         // Treat `?:` as one operator
         if (
-            ($token->Flags & TokenFlag::TERNARY)
+            ($token->Flags & Flag::TERNARY)
             && $token->id === \T_QUESTION
-            && $token->Data[TokenData::OTHER_TERNARY] === $next
+            && $token->Data[Data::OTHER_TERNARY] === $next
         ) {
             return false;
         }
@@ -247,7 +253,7 @@ final class PreserveNewlines implements TokenRule
                             && $prevCode->EndStatement !== $prevCode
                         ) || (
                             $parent && !(
-                                $parent->Flags & TokenFlag::STRUCTURAL_BRACE
+                                $parent->Flags & Flag::STRUCTURAL_BRACE
                                 || $parent->id === \T_COLON
                             )
                         )
@@ -261,7 +267,7 @@ final class PreserveNewlines implements TokenRule
                         ) || (
                             $next->Parent
                             && !(
-                                $next->Parent->Flags & TokenFlag::STRUCTURAL_BRACE
+                                $next->Parent->Flags & Flag::STRUCTURAL_BRACE
                                 || $next->Parent->id === \T_COLON
                             ) && !(
                                 $next->Parent->id === \T_OPEN_BRACE

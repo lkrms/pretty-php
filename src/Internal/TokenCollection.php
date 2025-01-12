@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Internal;
 
-use Lkrms\PrettyPHP\Catalog\TokenData;
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
 use Lkrms\PrettyPHP\Token;
 use Salient\Collection\Collection;
 use Salient\Utility\Exception\ShouldNotHappenException;
@@ -32,6 +32,17 @@ final class TokenCollection extends Collection implements Stringable
             } while ($t !== $to && ($t = $t->Next));
         }
         $instance = new self($tokens);
+        $instance->Collected = true;
+        return $instance;
+    }
+
+    /**
+     * @param Token[] $collected Tokens collected by iterating over
+     * {@see Token::$Next}.
+     */
+    public static function from(array $collected): self
+    {
+        $instance = new self($collected);
         $instance->Collected = true;
         return $instance;
     }
@@ -350,7 +361,7 @@ final class TokenCollection extends Collection implements Stringable
                 $ignore = false;
             } elseif (
                 !$token->Idx->Virtual[$token->id]
-                || $token->Data[TokenData::BOUND_TO]->index > $token->index
+                || $token->Data[Data::BOUND_TO]->index > $token->index
             ) {
                 $token->Whitespace |= $whitespace;
                 if ($remove) {

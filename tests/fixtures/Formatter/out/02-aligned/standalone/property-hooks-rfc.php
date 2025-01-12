@@ -42,7 +42,10 @@ class User implements Named
 {
     private bool $isModified = false;
 
-    public function __construct(private string $first, private string $last) {}
+    public function __construct(
+        private string $first,
+        private string $last
+    ) {}
 
     public string $fullName {
         // Override the "read" action with arbitrary logic.
@@ -69,14 +72,19 @@ interface Named
 
 class SimpleUser implements Named
 {
-    public function __construct(public readonly string $fullName) {}
+    public function __construct(
+        public readonly string $fullName
+    ) {}
 }
 
 // -- Example #9
 
 class User
 {
-    public function __construct(private string $first, private string $last) {}
+    public function __construct(
+        private string $first,
+        private string $last
+    ) {}
 
     public string $fullName {
         get {
@@ -110,7 +118,10 @@ print $l->name;  // prints "LARRY"
 
 class User
 {
-    public function __construct(private string $first, private string $last) {}
+    public function __construct(
+        private string $first,
+        private string $last
+    ) {}
 
     public string $fullName {
         set (string $value) {
@@ -135,7 +146,10 @@ print $u->getFirst();
 
 class User
 {
-    public function __construct(public string $first, public string $last) {}
+    public function __construct(
+        public string $first,
+        public string $last
+    ) {}
 
     public string $fullName {
         get {
@@ -207,7 +221,10 @@ var_dump($c->_names);                 // ['Ilija', 'Larry']
 
 class User
 {
-    public function __construct(private string $first, private string $last) {}
+    public function __construct(
+        private string $first,
+        private string $last
+    ) {}
 
     public string $fullName {
         get {

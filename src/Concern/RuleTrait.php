@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Concern;
 
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Contract\Rule;
 use Lkrms\PrettyPHP\Token;
@@ -43,8 +43,8 @@ trait RuleTrait
         }
 
         if ($sameStatement) {
-            $from = $start->Flags & TokenFlag::CODE ? $start : $start->NextCode;
-            $to = $end->Flags & TokenFlag::CODE ? $end : $end->PrevCode;
+            $from = $start->Flags & Flag::CODE ? $start : $start->NextCode;
+            $to = $end->Flags & Flag::CODE ? $end : $end->PrevCode;
             if (
                 $from
                 && $to

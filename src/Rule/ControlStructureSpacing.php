@@ -2,8 +2,8 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\TokenData;
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
@@ -59,21 +59,18 @@ final class ControlStructureSpacing implements TokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            if (
-                !($token->Flags & TokenFlag::UNENCLOSED_PARENT)
-                || ($token->id === \T_WHILE && $token->continuesControlStructure())
-            ) {
+            if (!($token->Flags & Flag::UNENCLOSED_PARENT)) {
                 continue;
             }
 
             $open = $token->nextSiblingOf(\T_OPEN_UNENCLOSED);
-            $continues = $open->Data[TokenData::UNENCLOSED_CONTINUES];
+            $continues = $open->Data[Data::UNENCLOSED_CONTINUES];
             $inner = $open->inner();
             /** @var Token */
             $close = $open->CloseBracket;
             $body = $inner->getFirstNotFrom($this->Idx->Comment);
 
-            // `$body` is `null` if the body is a close tag
+            // `$body` can only be `null` if the body is a close tag
             if (!$body) {
                 $open->applyWhitespace(Space::LINE_AFTER | Space::SPACE_AFTER);
             } elseif ($body->id !== \T_SEMICOLON) {

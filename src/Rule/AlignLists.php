@@ -2,7 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
-use Lkrms\PrettyPHP\Catalog\TokenFlag;
+use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Concern\ListRuleTrait;
 use Lkrms\PrettyPHP\Contract\ListRule;
 use Lkrms\PrettyPHP\Internal\TokenCollection;
@@ -120,7 +120,7 @@ final class AlignLists implements ListRule
                             (
                                 (
                                     $adjacent->id === \T_OPEN_BRACE
-                                    && $adjacent->Flags & TokenFlag::STRUCTURAL_BRACE
+                                    && $adjacent->Flags & Flag::STRUCTURAL_BRACE
                                 ) || (
                                     $adjacent->id === \T_COLON
                                     && $adjacent->CloseBracket
@@ -135,7 +135,7 @@ final class AlignLists implements ListRule
                             (
                                 (
                                     $adjacent->id === \T_OPEN_BRACE
-                                    && $adjacent->Flags & TokenFlag::STRUCTURAL_BRACE
+                                    && $adjacent->Flags & Flag::STRUCTURAL_BRACE
                                 ) || (
                                     $adjacent->id === \T_COLON
                                     && $adjacent->CloseBracket
@@ -172,7 +172,7 @@ final class AlignLists implements ListRule
                     ) use ($until, $tabSize, $parents, $callback) {
                         // Only apply the callback to nested lists once
                         if (
-                            $item->Flags & TokenFlag::LIST_PARENT
+                            $item->Flags & Flag::LIST_PARENT
                             && $parents[$item->index]
                         ) {
                             return;
