@@ -20,8 +20,17 @@ final class TruncateComments implements Filter
     public function filterTokens(array $tokens): array
     {
         foreach ($tokens as $token) {
-            if ($this->Idx->Comment[$token->id]) {
-                $token->text = '';
+            if ($token->id === \T_DOC_COMMENT) {
+                $token->text = '/** */';
+            } elseif ($token->id === \T_COMMENT) {
+                $token->text = $token->text[0] === '/'
+                    ? ($token->text[1] === '/' ? '//' : '/* */')
+                    : (
+                        \PHP_VERSION_ID < 80000
+                        && substr($token->text, 0, 2) === '#['
+                            ? '#'
+                            : '//'
+                    );
             }
         }
 

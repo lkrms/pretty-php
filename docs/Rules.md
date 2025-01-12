@@ -333,7 +333,7 @@ Newlines are added before and after control structure expressions with newlines 
 
 <small>(optional, `processTokens()`, priority 280, tokens: `T_OBJECT_OPERATOR` | `T_NULLSAFE_OBJECT_OPERATOR`)</small>
 
-If there are no object operators with a leading newline in a chain of method calls, or if the first object operator in the chain has a leading newline and the formatter's `AlignChainAfterNewline` property is `false`, no action is taken.
+If there are no object operators with a leading newline in a chain of method calls, no action is taken.
 
 Otherwise, if the first object operator in the chain has a leading newline, it is removed if horizontal space on subsequent lines would be saved. Then, a callback is registered to align object operators in the chain with:
 

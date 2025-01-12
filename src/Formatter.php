@@ -86,7 +86,7 @@ use LogicException;
 use Throwable;
 
 /**
- * Formats PHP code
+ * @api
  *
  * @implements Buildable<FormatterBuilder>
  */
@@ -124,68 +124,56 @@ final class Formatter implements Buildable, Immutable
      */
     public string $Tab;
 
-    /**
-     * Token index
-     */
     public AbstractTokenIndex $TokenIndex;
 
     /**
-     * End-of-line sequence used when line endings are not preserved or when
-     * there are no line breaks in the input
+     * End-of-line sequence used if line endings are not preserved or if there
+     * are no line breaks in the input
      */
     public string $PreferredEol;
 
     /**
-     * True if line endings are preserved
+     * Preserve line endings?
      */
     public bool $PreserveEol;
 
     /**
-     * Spaces between code and comments on the same line
+     * Spaces applied between code and comments on the same line
      */
     public int $SpacesBesideCode;
 
-    /**
-     * Indentation applied to heredocs and nowdocs
-     *
-     * @var HeredocIndent::*
-     */
+    /** @var HeredocIndent::* */
     public int $HeredocIndent;
-
     /** @var ImportSortOrder::* */
     public int $ImportSortOrder;
 
     /**
-     * True if braces are formatted using the One True Brace Style
+     * Format braces using the One True Brace Style?
      */
     public bool $OneTrueBraceStyle;
 
     /**
-     * True if empty declaration bodies are collapsed to the end of the
-     * declaration
+     * Collapse empty declaration bodies to the end of the declaration?
      */
     public bool $CollapseEmptyDeclarationBodies;
 
     /**
-     * True if headers like "<?php declare(strict_types=1);" are collapsed to
-     * one line
+     * Collapse headers like "<?php declare(strict_types=1);" to one line?
      */
     public bool $CollapseDeclareHeaders;
 
     /**
-     * True if blank lines are applied between "<?php" and subsequent
-     * declarations
+     * Apply blank lines between "<?php" and subsequent declarations?
      */
     public bool $ExpandHeaders;
 
     /**
-     * True if blank lines between declarations of the same type are removed
-     * where possible
+     * Remove blank lines between declarations of the same type where possible?
      */
     public bool $TightDeclarationSpacing;
 
     /**
-     * True if a level of indentation is added to code between indented tags
+     * Add a level of indentation to code between indented tags?
      */
     public bool $IndentBetweenTags;
 
@@ -195,12 +183,12 @@ final class Formatter implements Buildable, Immutable
     public bool $Psr12;
 
     /**
-     * False if calls to registerProblem() are ignored
+     * If false, calls to registerProblem() are ignored
      */
     public bool $DetectProblems;
 
     /**
-     * False if line breaks are only preserved between statements
+     * If false, line breaks are only preserved between statements
      *
      * When the {@see PreserveNewlines} rule is disabled, `false` is assigned to
      * this property and the rule is reinstated to preserve blank lines between
@@ -209,35 +197,15 @@ final class Formatter implements Buildable, Immutable
     public bool $PreserveNewlines;
 
     /**
-     * An index of enabled extensions
+     * Enabled extensions
      *
      * @var array<class-string<Extension>,true>
      */
     public array $Enabled;
 
-    // --
-
     public bool $NewlineBeforeFnDoubleArrow = false;
     public ?int $MaxAssignmentPadding = null;
     public ?int $MaxDoubleArrowColumn = null;
-
-    /**
-     * If the first object operator in a chain of method calls has a leading
-     * newline, align with the start of the chain?
-     *
-     * Only applies if {@see AlignChains} is enabled.
-     *
-     * ```php
-     * // If `false`:
-     * $result = $object
-     *     ->method1();
-     *
-     * // If `true`:
-     * $result = $object
-     *               ->method1();
-     * ```
-     */
-    public bool $AlignChainAfterNewline = true;
 
     // --
 
@@ -297,8 +265,8 @@ final class Formatter implements Buildable, Immutable
     public const NO_TAB_RULES = [
         AlignChains::class,
         AlignArrowFunctions::class,
-        AlignTernaryOperators::class,
         AlignLists::class,
+        AlignTernaryOperators::class,
     ];
 
     /**
@@ -381,9 +349,9 @@ final class Formatter implements Buildable, Immutable
 
     /** @var array<class-string<Rule>> */
     private array $Rules;
-    /** @var array<class-string<TokenRule>,array<int,true>|array{'*'}> */
+    /** @var array<class-string<TokenRule>,array{array<int,true>|array{'*'},bool}> */
     private array $TokenRuleTypes;
-    /** @var array<class-string<DeclarationRule>,array<int,true>|array{'*'}> */
+    /** @var array<class-string<DeclarationRule>,array{array<int,true>|array{'*'},bool}> */
     private array $DeclarationRuleTypes;
 
     /**
@@ -473,12 +441,12 @@ final class Formatter implements Buildable, Immutable
      * Creates a new Formatter object
      *
      * @phpstan-param 2|4|8 $tabSize
-     * @param array<class-string<Extension>> $disable Non-mandatory extensions to disable
-     * @param array<class-string<Extension>> $enable Optional extensions to enable
-     * @param int-mask-of<FormatterFlag::*> $flags
-     * @param AbstractTokenIndex|null $tokenIndex Provide a customised token index
-     * @param HeredocIndent::* $heredocIndent
-     * @param ImportSortOrder::* $importSortOrder
+     * @param array<class-string<Extension>> $disable Extensions to disable
+     * @param array<class-string<Extension>> $enable Extensions to enable
+     * @param int-mask-of<FormatterFlag::*> $flags Formatter flags
+     * @param AbstractTokenIndex|null $tokenIndex Custom token index
+     * @param HeredocIndent::* $heredocIndent Heredoc indentation type
+     * @param ImportSortOrder::* $importSortOrder Alias/import statement order
      */
     public function __construct(
         bool $insertSpaces = true,
@@ -527,7 +495,7 @@ final class Formatter implements Buildable, Immutable
         $this->LogProgress = $this->Debug && ($flags & FormatterFlag::LOG_PROGRESS);
         $this->DetectProblems = (bool) ($flags & FormatterFlag::DETECT_PROBLEMS);
 
-        $this->resolveExtensions($rules, $filters, $enable, $disable);
+        [$filters, $rules] = $this->resolveExtensions($enable, $disable);
         $this->PreferredRules = $rules;
         $this->PreferredFilters = $filters;
 
@@ -567,8 +535,9 @@ final class Formatter implements Buildable, Immutable
                 ),
             );
 
-            $this->resolveExtensions($rules, $filters, $enable, $disable);
+            [$filters, $rules] = $this->resolveExtensions($enable, $disable);
         } else {
+            $this->NewlineBeforeFnDoubleArrow = false;
             $rules = $this->PreferredRules;
             $filters = $this->PreferredFilters;
         }
@@ -635,7 +604,7 @@ final class Formatter implements Buildable, Immutable
                 if ($types !== ['*']) {
                     $types = array_filter($types);
                 }
-                $tokenTypes[$rule] = $types;
+                $tokenTypes[$rule] = [$types, $rule::needsSortedTokens()];
                 $mainLoop[$rule . '#token'] = [$rule, TokenRule::PROCESS_TOKENS, $i];
             }
             if (is_a($rule, ListRule::class, true)) {
@@ -653,7 +622,7 @@ final class Formatter implements Buildable, Immutable
                 if ($types !== ['*']) {
                     $types = array_filter($types);
                 }
-                $declarationTypes[$rule] = $types;
+                $declarationTypes[$rule] = [$types, $rule::needsSortedDeclarations()];
                 $mainLoop[$rule . '#declaration'] = [$rule, DeclarationRule::PROCESS_DECLARATIONS, $i];
             }
             if (is_a($rule, BlockRule::class, true)) {
@@ -734,13 +703,12 @@ final class Formatter implements Buildable, Immutable
     /**
      * Get an instance with a value applied to the given setting
      *
-     * @param ("NewlineBeforeFnDoubleArrow"|"MaxAssignmentPadding"|"MaxDoubleArrowColumn"|"AlignChainAfterNewline") $property
-     * @param int|bool $value
+     * @param ("MaxAssignmentPadding"|"MaxDoubleArrowColumn") $property
+     * @param int|null $value
      * @return static
      */
     public function with(string $property, $value): self
     {
-        // @phpstan-ignore salient.property.type
         return $this->withPropertyValue($property, $value)
                     ->apply();
     }
@@ -792,7 +760,7 @@ final class Formatter implements Buildable, Immutable
             );
         }
 
-        $this->resolveExtensions($rules, $filters, $enable, $disable);
+        [$filters, $rules] = $this->resolveExtensions($enable, $disable);
 
         return $this->withPropertyValue('PreferredRules', $rules)
                     ->withPropertyValue('PreferredFilters', $filters);
@@ -833,33 +801,13 @@ final class Formatter implements Buildable, Immutable
     }
 
     /**
-     * Get formatted code
+     * Format PHP code
      *
-     * 1. Load enabled extensions (if not already loaded)
-     * 2. Reset the formatter and enabled extensions
-     * 3. Detect the end-of-line sequence used in `$code` (if not given)
-     * 4. Convert line breaks in `$code` to `"\n"` if needed
-     * 5. Tokenize, filter and parse `$code` (see {@see Parser::parse()})
-     * 6. Find lists comprised of
-     *    - one or more comma-delimited items between `[]` or `()`, or
-     *    - two or more interfaces after `extends` or `implements`
-     * 7. Process enabled {@see TokenRule}, {@see StatementRule},
-     *    {@see DeclarationRule} and {@see ListRule} extensions in one loop,
-     *    ordered by priority
-     * 8. Find blocks comprised of two or more consecutive non-blank lines
-     * 9. Process enabled {@see BlockRule} extensions in priority order
-     * 10. Process callbacks registered in (7) or (9) in priority and token
-     *     order
-     * 11. Call enabled {@see Rule::beforeRender()} methods in priority order
-     * 12. Render output
-     * 13. Validate output (if `$fast` is `false`)
-     *
-     * @param string|null $eol The end-of-line sequence used in `$code`, if
-     * known.
-     * @param Indentation|null $indentation The indentation used in `$code`, if
-     * known.
-     * @param string|null $filename For reporting purposes only. No filesystem
-     * operations are performed on `$filename`.
+     * @param string|null $eol The end-of-line sequence used in `$code`, or
+     * `null` to detect it automatically.
+     * @param Indentation|null $indentation The indentation used in `$code`, or
+     * `null` if not known.
+     * @param string|null $filename The resource from which `$code` was read.
      */
     public function format(
         string $code,
@@ -868,6 +816,8 @@ final class Formatter implements Buildable, Immutable
         ?string $filename = null,
         bool $fast = false
     ): string {
+        $idx = $this->TokenIndex;
+
         $errorLevel = error_reporting();
         if ($errorLevel & \E_COMPILE_WARNING) {
             error_reporting($errorLevel & ~\E_COMPILE_WARNING);
@@ -885,24 +835,28 @@ final class Formatter implements Buildable, Immutable
             }
         }
 
-        $idx = $this->TokenIndex;
-
         Profile::startTimer(__METHOD__ . '#reset');
-        $this->reset();
-        $this->resetExtensions();
-        Profile::stopTimer(__METHOD__ . '#reset');
+        try {
+            $this->reset();
+            $this->resetExtensions();
+        } finally {
+            Profile::stopTimer(__METHOD__ . '#reset');
+        }
 
         Profile::startTimer(__METHOD__ . '#detect-eol');
-        if ($eol === null || $eol === '') {
-            $eol = Get::eol($code);
+        try {
+            if ($eol === null || $eol === '') {
+                $eol = Get::eol($code);
+            }
+            if ($eol !== null && $eol !== "\n") {
+                $code = str_replace($eol, "\n", $code);
+            }
+            if ($eol === null || !$this->PreserveEol) {
+                $eol = $this->PreferredEol;
+            }
+        } finally {
+            Profile::stopTimer(__METHOD__ . '#detect-eol');
         }
-        if ($eol !== null && $eol !== "\n") {
-            $code = str_replace($eol, "\n", $code);
-        }
-        if ($eol === null || !$this->PreserveEol) {
-            $eol = $this->PreferredEol;
-        }
-        Profile::stopTimer(__METHOD__ . '#detect-eol');
 
         Profile::startTimer(__METHOD__ . '#parse-input');
         try {
@@ -917,23 +871,18 @@ final class Formatter implements Buildable, Immutable
 
             if (!$this->Tokens) {
                 if (!$this->Debug) {
-                    unset($this->Document);
-                    unset($this->Tokens);
-                    unset($this->TokensById);
-                    unset($this->Statements);
-                    unset($this->Declarations);
-                    unset($this->DeclarationsByType);
+                    $this->clear();
                 }
                 return '';
             }
 
             $last = end($this->Tokens);
-            if (
-                $last->Flags & Flag::CODE
-                && $last->Statement
-                && $last->Statement->id !== \T_HALT_COMPILER
-            ) {
-                $last->Whitespace |= Space::LINE_AFTER;
+            if ($last->Flags & Flag::CODE) {
+                /** @var Token */
+                $statement = $last->Statement;
+                if ($statement->id !== \T_HALT_COMPILER) {
+                    $last->Whitespace |= Space::LINE_AFTER;
+                }
             }
         } catch (CompileError $ex) {
             throw new InvalidSyntaxException(sprintf(
@@ -1097,6 +1046,7 @@ final class Formatter implements Buildable, Immutable
                     $first = $parent->NextCode;
                     $first = $first->skipNextSiblingFrom($idx->ConstOrFunction);
                     if ($type === Type::USE_TRAIT) {
+                        /** @var Token */
                         $last = $parent->nextSiblingFrom($idx->OpenBraceOrSemicolon)
                                        ->PrevCode;
                     }
@@ -1142,83 +1092,60 @@ final class Formatter implements Buildable, Immutable
         Profile::stopTimer(__METHOD__ . '#find-lists');
 
         $logProgress = $this->LogProgress
-            ? fn(string $rule, string $after) => $this->logProgress($rule, $after)
+            ? [$this, 'logProgress']
             : fn() => null;
 
-        foreach ($this->MainLoop as [$_class, $method]) {
+        foreach ($this->MainLoop as [$class, $method]) {
             /** @var TokenRule|StatementRule|DeclarationRule|ListRule */
-            $rule = $this->RuleMap[$_class];
-            $_rule = Get::basename($_class);
-            Profile::startTimer($_rule, 'rule');
+            $rule = $this->RuleMap[$class];
+            $ruleName = Get::basename($class);
+            Profile::startTimer($ruleName, 'rule');
 
             if ($method === StatementRule::PROCESS_STATEMENTS) {
                 /** @var StatementRule $rule */
                 $rule->processStatements($this->Statements);
-                Profile::stopTimer($_rule, 'rule');
-                $logProgress($_rule, StatementRule::PROCESS_STATEMENTS);
-                continue;
-            }
-
-            if ($method === ListRule::PROCESS_LIST) {
+            } elseif ($method === ListRule::PROCESS_LIST) {
                 foreach ($lists as [$parent, $items, $last]) {
                     /** @var ListRule $rule */
                     $rule->processList($parent, clone $items, $last);
                 }
-                Profile::stopTimer($_rule, 'rule');
-                $logProgress($_rule, ListRule::PROCESS_LIST);
-                continue;
-            }
-
-            [$types, $all, $byType, $needsSortedMethod] = [
-                DeclarationRule::PROCESS_DECLARATIONS => [
-                    $this->DeclarationRuleTypes,
-                    $this->Declarations,
-                    $this->DeclarationsByType,
-                    'needsSortedDeclarations',
-                ],
-                TokenRule::PROCESS_TOKENS => [
-                    $this->TokenRuleTypes,
-                    $this->Tokens,
-                    $this->TokensById,
-                    'needsSortedTokens',
-                ],
-            ][$method];
-
-            $types = $types[$_class];
-            if ($types === []) {
-                Profile::stopTimer($_rule, 'rule');
-                continue;
-            }
-            if ($types === ['*']) {
-                $tokens = $all;
-            } elseif ($rule->$needsSortedMethod()) {
-                /** @var array<int,true> $types */
-                // @phpstan-ignore varTag.nativeType
-                $tokens = $this->sortTokensByType($byType, $types);
             } else {
-                /** @var array<int,true> $types */
-                // @phpstan-ignore varTag.nativeType
-                $tokens = $this->getTokensByType($byType, $types);
+                if ($method === DeclarationRule::PROCESS_DECLARATIONS) {
+                    [$types, $sort] = $this->DeclarationRuleTypes[$class];
+                    $all = $this->Declarations;
+                    $byType = $this->DeclarationsByType;
+                } else {
+                    [$types, $sort] = $this->TokenRuleTypes[$class];
+                    $all = $this->Tokens;
+                    $byType = $this->TokensById;
+                }
+                if ($types) {
+                    $tokens = $types === ['*']
+                        ? $all
+                        : ($sort
+                            // @phpstan-ignore argument.type
+                            ? $this->sortTokensByType($byType, $types)
+                            // @phpstan-ignore argument.type
+                            : $this->getTokensByType($byType, $types));
+                    if ($tokens) {
+                        $rule->$method($tokens);
+                    }
+                }
             }
-            if (!$tokens) {
-                Profile::stopTimer($_rule, 'rule');
-                continue;
-            }
-            $rule->$method($tokens);
-            Profile::stopTimer($_rule, 'rule');
-            $logProgress($_rule, $method);
+            Profile::stopTimer($ruleName, 'rule');
+            $logProgress($ruleName, $method);
         }
 
         if ($this->BlockLoop) {
             Profile::startTimer(__METHOD__ . '#find-blocks');
             $blocks = [];
             $lines = [];
-            $line = new TokenCollection();
+            $line = [];
             $token = reset($this->Tokens);
             $endOfBlock = false;
             $endOfLine = false;
             $keep = true;
-            while (true) {
+            for (;;) {
                 if ($token && $token->id !== \T_INLINE_HTML) {
                     $before = $token->getWhitespaceBefore();
                     if ($before & Space::BLANK) {
@@ -1233,9 +1160,9 @@ final class Formatter implements Buildable, Immutable
                     $keep = false;
                 }
                 if ($endOfLine) {
-                    if ($line->count()) {
-                        $lines[] = $line;
-                        $line = new TokenCollection();
+                    if ($line) {
+                        $lines[] = TokenCollection::from($line);
+                        $line = [];
                     }
                     $endOfLine = false;
                 }
@@ -1258,51 +1185,47 @@ final class Formatter implements Buildable, Immutable
             }
             Profile::stopTimer(__METHOD__ . '#find-blocks');
 
-            foreach ($this->BlockLoop as [$_class]) {
+            foreach ($this->BlockLoop as [$class]) {
                 /** @var BlockRule */
-                $rule = $this->RuleMap[$_class];
-                $_rule = Get::basename($_class);
-                Profile::startTimer($_rule, 'rule');
+                $rule = $this->RuleMap[$class];
+                $ruleName = Get::basename($class);
+                Profile::startTimer($ruleName, 'rule');
                 foreach ($blocks as $block) {
                     $rule->processBlock($block);
                 }
-                Profile::stopTimer($_rule, 'rule');
-                $logProgress($_rule, BlockRule::PROCESS_BLOCK);
+                Profile::stopTimer($ruleName, 'rule');
+                $logProgress($ruleName, BlockRule::PROCESS_BLOCK);
             }
         }
 
         if ($this->Callbacks) {
             ksort($this->Callbacks);
-            foreach ($this->Callbacks as $priority => &$tokenCallbacks) {
+            foreach ($this->Callbacks as $tokenCallbacks) {
                 ksort($tokenCallbacks);
                 foreach ($tokenCallbacks as $index => $callbacks) {
                     foreach ($callbacks as $i => [$rule, $callback]) {
-                        $_rule = Get::basename($rule);
-                        Profile::startTimer($_rule, 'rule');
+                        $ruleName = Get::basename($rule);
+                        Profile::startTimer($ruleName, 'rule');
                         $callback();
-                        Profile::stopTimer($_rule, 'rule');
-                        $logProgress($_rule, "{closure:$index:$i}");
+                        Profile::stopTimer($ruleName, 'rule');
+                        $logProgress($ruleName, "{closure:$index:$i}");
                     }
-                    unset($tokenCallbacks[$index]);
                 }
-                unset($this->Callbacks[$priority]);
             }
         }
 
-        foreach ($this->BeforeRender as [$_class]) {
-            $rule = $this->RuleMap[$_class];
-            $_rule = Get::basename($_class);
-            Profile::startTimer($_rule, 'rule');
+        foreach ($this->BeforeRender as [$class]) {
+            $rule = $this->RuleMap[$class];
+            $ruleName = Get::basename($class);
+            Profile::startTimer($ruleName, 'rule');
             $rule->beforeRender($this->Tokens);
-            Profile::stopTimer($_rule, 'rule');
-            $logProgress($_rule, Rule::BEFORE_RENDER);
+            Profile::stopTimer($ruleName, 'rule');
+            $logProgress($ruleName, Rule::BEFORE_RENDER);
         }
 
         Profile::startTimer(__METHOD__ . '#render');
         try {
-            /** @var Token */
             $first = reset($this->Tokens);
-            /** @var Token */
             $last = end($this->Tokens);
             $out = $this->Renderer->render($first, $last, false, true);
             // @codeCoverageIgnoreStart
@@ -1319,63 +1242,47 @@ final class Formatter implements Buildable, Immutable
         } finally {
             Profile::stopTimer(__METHOD__ . '#render');
             if (!$this->Debug) {
-                unset($this->Document);
-                unset($this->Tokens);
-                unset($this->TokensById);
-                unset($this->Statements);
-                unset($this->Declarations);
-                unset($this->DeclarationsByType);
+                $this->clear();
             }
         }
 
-        if ($fast) {
-            return $eol === "\n"
-                ? $out
-                : str_replace("\n", $eol, $out);
-        }
+        if (!$fast) {
+            Profile::startTimer(__METHOD__ . '#parse-output');
+            try {
+                $after = $this->tokenizeAndSimplify($out);
+                // @codeCoverageIgnoreStart
+            } catch (CompileError $ex) {
+                throw new FormatterException(
+                    'Unable to parse output',
+                    $out,
+                    $this->Debug ? $this->Tokens : null,
+                    $this->Log,
+                    $this->Debug ? $this->getExtensionData() : null,
+                    $ex,
+                );
+                // @codeCoverageIgnoreEnd
+            } finally {
+                Profile::stopTimer(__METHOD__ . '#parse-output');
+            }
 
-        Profile::startTimer(__METHOD__ . '#parse-output');
-        $this->resetExtensions($this->ComparisonFilterList);
-        try {
-            $after = Token::tokenizeForComparison(
-                $out,
-                \TOKEN_PARSE,
-                ...$this->ComparisonFilterList
-            );
-            // @codeCoverageIgnoreStart
-        } catch (CompileError $ex) {
-            throw new FormatterException(
-                'Unable to parse output',
-                $out,
-                $this->Tokens ?? null,
-                $this->Log,
-                $this->Debug ? $this->getExtensionData() : null,
-                $ex,
-            );
-            // @codeCoverageIgnoreEnd
-        } finally {
-            Profile::stopTimer(__METHOD__ . '#parse-output');
-        }
+            Profile::startTimer(__METHOD__ . '#parse-input-for-comparison');
+            try {
+                $before = $this->tokenizeAndSimplify($code);
+            } finally {
+                Profile::stopTimer(__METHOD__ . '#parse-input-for-comparison');
+            }
 
-        $this->resetExtensions($this->ComparisonFilterList);
-        $before = Token::tokenizeForComparison(
-            $code,
-            \TOKEN_PARSE,
-            ...$this->ComparisonFilterList
-        );
-
-        $before = $this->simplifyTokens($before);
-        $after = $this->simplifyTokens($after);
-        if ($before !== $after) {
-            // @codeCoverageIgnoreStart
-            throw new FormatterException(
-                "Parsed output doesn't match input",
-                $out,
-                $this->Tokens ?? null,
-                $this->Log,
-                $this->Debug ? $this->getExtensionData() : null,
-            );
-            // @codeCoverageIgnoreEnd
+            if ($before !== $after) {
+                // @codeCoverageIgnoreStart
+                throw new FormatterException(
+                    "Parsed output doesn't match input",
+                    $out,
+                    $this->Debug ? $this->Tokens : null,
+                    $this->Log,
+                    $this->Debug ? $this->getExtensionData() : null,
+                );
+                // @codeCoverageIgnoreEnd
+            }
         }
 
         return $eol === "\n"
@@ -1420,7 +1327,6 @@ final class Formatter implements Buildable, Immutable
         $sorted = [];
         foreach ($rules as $key => $value) {
             [$rule, $method] = $value;
-            /** @var int|null */
             $priority = $rule::getPriority($method);
             if ($priority === null) {
                 continue;
@@ -1443,17 +1349,22 @@ final class Formatter implements Buildable, Immutable
     }
 
     /**
-     * @param GenericToken[] $tokens
      * @return array<array{int,string}>
      */
-    private function simplifyTokens(array $tokens): array
+    private function tokenizeAndSimplify(string $code): array
     {
-        $simple = [];
+        $this->resetExtensions($this->ComparisonFilterList);
+        $tokens = Token::tokenizeForComparison(
+            $code,
+            \TOKEN_PARSE,
+            ...$this->ComparisonFilterList,
+        );
+
         foreach ($tokens as $token) {
             $simple[] = [$token->id, $token->text];
         }
 
-        return $simple;
+        return $simple ?? [];
     }
 
     /**
@@ -1553,7 +1464,6 @@ final class Formatter implements Buildable, Immutable
      */
     private function getExtension(string $extension): Extension
     {
-        /** @var T&Extension */
         $ext = new $extension($this);
         $ext->boot();
         return $ext;
@@ -1561,27 +1471,29 @@ final class Formatter implements Buildable, Immutable
 
     /**
      * @param Extension[]|null $extensions
+     * @return $this
      */
-    private function resetExtensions(?array $extensions = null): void
+    private function resetExtensions(?array $extensions = null): self
     {
         $extensions ??= $this->Extensions;
         foreach ($extensions as $ext) {
             $ext->reset();
         }
+
+        return $this;
     }
 
     /**
-     * @param array<class-string<Rule>>|null $rules
-     * @param-out array<class-string<Rule>> $rules
-     * @param array<class-string<Filter>>|null $filters
-     * @param-out array<class-string<Filter>> $filters
      * @param array<class-string<Extension>> $enable
      * @param array<class-string<Extension>> $disable
+     * @return array{array<class-string<Filter>>,array<class-string<Rule>>}
      */
-    private function resolveExtensions(?array &$rules, ?array &$filters, array $enable, array $disable): void
+    private function resolveExtensions(array $enable, array $disable): array
     {
-        $rules = $this->getEnabled($enable, $disable, self::DEFAULT_RULES, self::OPTIONAL_RULES);
-        $filters = $this->getEnabled($enable, $disable, self::DEFAULT_FILTERS, self::OPTIONAL_FILTERS);
+        return [
+            $this->getEnabled($enable, $disable, self::DEFAULT_FILTERS, self::OPTIONAL_FILTERS),
+            $this->getEnabled($enable, $disable, self::DEFAULT_RULES, self::OPTIONAL_RULES),
+        ];
     }
 
     /**
@@ -1626,11 +1538,11 @@ final class Formatter implements Buildable, Immutable
     /**
      * Clear state that should not persist beyond a change to the formatter's
      * configuration
+     *
+     * @return $this
      */
-    private function flush(): void
+    private function flush(): self
     {
-        $this->reset();
-
         unset($this->SoftTab);
         unset($this->Tab);
         unset($this->PreserveNewlines);
@@ -1649,27 +1561,47 @@ final class Formatter implements Buildable, Immutable
         $this->ComparisonFilterList = [];
         $this->Extensions = [];
         $this->ExtensionsLoaded = false;
+
+        return $this->reset();
     }
 
     /**
-     * Clear state that should not persist beyond a formatting payload
+     * Clear state that should not persist beyond a payload
+     *
+     * @return $this
      */
-    private function reset(): void
+    private function reset(): self
     {
         $this->Filename = null;
         $this->Indentation = null;
+        $this->Callbacks = null;
+        $this->Problems = null;
+        $this->Log = null;
+
+        return $this->clear();
+    }
+
+    /**
+     * Clear the current payload
+     *
+     * @return $this
+     */
+    private function clear(): self
+    {
         unset($this->Document);
         unset($this->Tokens);
         unset($this->TokensById);
         unset($this->Statements);
         unset($this->Declarations);
         unset($this->DeclarationsByType);
-        $this->Callbacks = null;
-        $this->Problems = null;
-        $this->Log = null;
+
+        return $this;
     }
 
-    private function logProgress(string $rule, string $after): void
+    /**
+     * @return $this
+     */
+    private function logProgress(string $rule, string $after): self
     {
         Profile::startTimer(__METHOD__ . '#render');
         try {
@@ -1693,5 +1625,7 @@ final class Formatter implements Buildable, Immutable
             Profile::stopTimer(__METHOD__ . '#render');
         }
         $this->Log[$rule . '-' . $after] = $out;
+
+        return $this;
     }
 }

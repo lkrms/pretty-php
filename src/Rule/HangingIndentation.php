@@ -49,7 +49,7 @@ final class HangingIndentation implements TokenRule
     }
 
     /**
-     * @codeCoverageIgnore
+     * @inheritDoc
      */
     public static function needsSortedTokens(): bool
     {

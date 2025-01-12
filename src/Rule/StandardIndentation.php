@@ -26,7 +26,7 @@ final class StandardIndentation implements TokenRule
     }
 
     /**
-     * @codeCoverageIgnore
+     * @inheritDoc
      */
     public static function needsSortedTokens(): bool
     {

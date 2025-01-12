@@ -164,7 +164,8 @@ EOF
 
     "$1" vendor/bin/sli generate builder \
         --forward=format,with,withExtensions,withPsr12,withoutExtensions \
-        ${FORCE+--force} 'Lkrms\PrettyPHP\Formatter' || STATUS=$?
+        --desc '' --api ${FORCE+--force} 'Lkrms\PrettyPHP\Formatter' ||
+        STATUS=$?
 
     exit "$STATUS"
 fi

@@ -37,6 +37,17 @@ final class TokenCollection extends Collection implements Stringable
     }
 
     /**
+     * @param Token[] $collected Tokens collected by iterating over
+     * {@see Token::$Next}.
+     */
+    public static function from(array $collected): self
+    {
+        $instance = new self($collected);
+        $instance->Collected = true;
+        return $instance;
+    }
+
+    /**
      * @phpstan-assert-if-true non-empty-array<array-key,Token> $this->all()
      * @phpstan-assert-if-true !null $this->first()
      * @phpstan-assert-if-true !null $this->last()
