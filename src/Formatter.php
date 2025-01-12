@@ -339,12 +339,12 @@ final class Formatter implements Buildable, Immutable
 
     // --
 
-    public ?string $Filename = null;
+    public ?string $Filename;
 
     /**
      * Indentation used in the input, if known
      */
-    public ?Indentation $Indentation = null;
+    public ?Indentation $Indentation;
 
     public Document $Document;
     /** @var Problem[]|null */
@@ -432,14 +432,10 @@ final class Formatter implements Buildable, Immutable
      */
     private ?array $Callbacks = null;
 
-    // --
-
     /** @var array<int,true> */
     private static array $AllDeclarationTypes;
 
     /**
-     * Creates a new Formatter object
-     *
      * @phpstan-param 2|4|8 $tabSize
      * @param array<class-string<Extension>> $disable Extensions to disable
      * @param array<class-string<Extension>> $enable Extensions to enable
@@ -561,17 +557,6 @@ final class Formatter implements Buildable, Immutable
      */
     public function withExtensions(array $enable, array $disable = [], bool $preserveCurrent = true): self
     {
-        return $this->doWithExtensions($enable, $disable, $preserveCurrent)
-                    ->apply();
-    }
-
-    /**
-     * @param array<class-string<Extension>> $enable
-     * @param array<class-string<Extension>> $disable
-     * @return static
-     */
-    private function doWithExtensions(array $enable, array $disable = [], bool $preserveCurrent = true): self
-    {
         if ($preserveCurrent) {
             $enable = array_merge(
                 $enable,
@@ -590,8 +575,9 @@ final class Formatter implements Buildable, Immutable
 
         [$filters, $rules] = $this->resolveExtensions($enable, $disable);
 
-        return $this->withPropertyValue('PreferredRules', $rules)
-                    ->withPropertyValue('PreferredFilters', $filters);
+        return $this->withPropertyValue('PreferredFilters', $filters)
+                    ->withPropertyValue('PreferredRules', $rules)
+                    ->apply();
     }
 
     /**
@@ -1172,17 +1158,15 @@ final class Formatter implements Buildable, Immutable
         ?Token $end = null,
         ...$values
     ): void {
-        if (!$this->DetectProblems) {
-            return;
+        if ($this->DetectProblems) {
+            $this->Problems[] = new Problem(
+                $message,
+                $this->Filename,
+                $start,
+                $end,
+                ...$values,
+            );
         }
-
-        $this->Problems[] = new Problem(
-            $message,
-            $this->Filename,
-            $start,
-            $end,
-            ...$values,
-        );
     }
 
     /**
@@ -1309,7 +1293,7 @@ final class Formatter implements Buildable, Immutable
     }
 
     /**
-     * @return static
+     * @return $this
      */
     private function apply(): self
     {
@@ -1461,9 +1445,10 @@ final class Formatter implements Buildable, Immutable
 
         Profile::stopTimer(__METHOD__ . '#sort-rules');
 
-        /** @var array<class-string<Extension>,true> */
-        $enabled = Arr::toIndex(Arr::extend($rules, ...$withComparison));
-        $this->Enabled = $enabled;
+        $this->Enabled = array_fill_keys(
+            Arr::extend($rules, ...$withComparison),
+            true,
+        );
 
         if ($this->Applied === false) {
             $this->Parser = new Parser($this);
@@ -1567,8 +1552,7 @@ final class Formatter implements Buildable, Immutable
     }
 
     /**
-     * Clear state that should not persist beyond a change to the formatter's
-     * configuration
+     * Clear state that should not persist beyond a change to the formatter
      *
      * @return $this
      */
@@ -1577,21 +1561,21 @@ final class Formatter implements Buildable, Immutable
         unset($this->SoftTab);
         unset($this->Tab);
         unset($this->PreserveNewlines);
-        $this->Enabled = [];
-        $this->FormatFilters = [];
-        $this->ComparisonFilters = [];
-        $this->Rules = [];
-        $this->TokenRuleTypes = [];
-        $this->DeclarationRuleTypes = [];
-        $this->MainLoop = [];
-        $this->BlockLoop = [];
-        $this->BeforeRender = [];
-        $this->CallbackPriorities = [];
+        unset($this->Enabled);
+        unset($this->FormatFilters);
+        unset($this->ComparisonFilters);
+        unset($this->Rules);
+        unset($this->TokenRuleTypes);
+        unset($this->DeclarationRuleTypes);
+        unset($this->MainLoop);
+        unset($this->BlockLoop);
+        unset($this->BeforeRender);
+        unset($this->CallbackPriorities);
         $this->ExtensionsLoaded = false;
-        $this->Extensions = [];
-        $this->FormatFilterList = [];
-        $this->ComparisonFilterList = [];
-        $this->RuleMap = [];
+        unset($this->Extensions);
+        unset($this->FormatFilterList);
+        unset($this->ComparisonFilterList);
+        unset($this->RuleMap);
 
         return $this->reset();
     }
@@ -1603,8 +1587,8 @@ final class Formatter implements Buildable, Immutable
      */
     private function reset(): self
     {
-        $this->Filename = null;
-        $this->Indentation = null;
+        unset($this->Filename);
+        unset($this->Indentation);
         $this->Problems = null;
         $this->Log = null;
         $this->Callbacks = null;

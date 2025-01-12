@@ -28,9 +28,9 @@ use Salient\Core\Indentation;
  * @method $this tightDeclarationSpacing(bool $value = true) Remove blank lines between declarations of the same type where possible? (default: false)
  * @method $this indentBetweenTags(bool $value = true) Add a level of indentation to code between indented tags? (default: false)
  * @method $this psr12(bool $value = true) Enforce strict PSR-12 / PER Coding Style compliance? (default: false)
- * @method Formatter with(("MaxAssignmentPadding"|"MaxDoubleArrowColumn") $property, int|null $value) Get an instance with a value applied to the given setting
  * @method Formatter withoutExtensions(array<class-string<Extension>> $extensions = []) Get an instance with the given extensions disabled
  * @method Formatter withExtensions(array<class-string<Extension>> $enable, array<class-string<Extension>> $disable = [], bool $preserveCurrent = true) Get an instance with the given extensions enabled
+ * @method Formatter with(("MaxAssignmentPadding"|"MaxDoubleArrowColumn") $property, int|null $value) Get an instance with a value applied to the given setting
  * @method string format(string $code, string|null $eol = null, Indentation|null $indentation = null, string|null $filename = null, bool $fast = false) Format PHP code (see {@see Formatter::format()})
  *
  * @api
@@ -55,9 +55,9 @@ final class FormatterBuilder extends AbstractBuilder
     protected static function getTerminators(): array
     {
         return [
-            'with',
             'withoutExtensions',
             'withExtensions',
+            'with',
             'format',
         ];
     }
