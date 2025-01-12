@@ -6,13 +6,13 @@ function &() {
 	return;
 };
 function ((Countable&ArrayAccess)|MyClass|string|null $foo,
-	$bar,
-	$baz) {
+		$bar,
+		$baz) {
 	return;
 };
 function &((Countable&ArrayAccess)|MyClass|string|null $foo,
-	$bar,
-	$baz) {
+		$bar,
+		$baz) {
 	return;
 };
 fn &() =>

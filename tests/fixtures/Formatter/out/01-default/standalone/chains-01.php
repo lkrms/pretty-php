@@ -69,12 +69,12 @@ $foo = (
     ->baz();
 
 $foo = bar('foo',
-    'bar')
+        'bar')
     ->baz()
     ->qux();
 
 $foo = bar('foo',
-    'bar')
+        'bar')
     ->baz();
 
 $foo = ['bar']

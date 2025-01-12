@@ -25,7 +25,9 @@ final class HangingIndentation implements TokenRule
 
     private const NO_INDENT = 1;
     private const OVERHANGING_INDENT = 2;
-    private const NO_INNER_NEWLINE = 4;
+    private const ADJACENT_INDENT = 4;
+    private const NO_INNER_NEWLINE = 8;
+    private const FOR_EXPRESSION = 16;
 
     private int $HeredocIndent;
     /** @var array<int,int> */
@@ -92,8 +94,6 @@ final class HangingIndentation implements TokenRule
             // Populate `$this->ParentFlags` for every open bracket
             if ($close = $token->CloseBracket) {
                 /** @var Token */
-                $statement = $token->Statement;
-                /** @var Token */
                 $start = $token->NextCode;
                 /** @var Token */
                 $end = $close->PrevCode;
@@ -118,13 +118,14 @@ final class HangingIndentation implements TokenRule
                         $flags |= self::NO_INDENT;
                     }
                 } else {
-                    if ($hasList || (
-                        $this->Idx->OpenBracketExceptBrace[$token->id]
-                        && $close->adjacent()
-                    )) {
-                        $flags |= self::OVERHANGING_INDENT;
-                    }
-                    $flags |= self::NO_INNER_NEWLINE;
+                    $hasAdjacent = $this->Idx->OpenBracketExceptBrace[$token->id]
+                        && $close->adjacent();
+                    $flags |= ($hasList ? self::OVERHANGING_INDENT : 0)
+                        | ($hasAdjacent ? self::ADJACENT_INDENT : 0)
+                        | self::NO_INNER_NEWLINE;
+                }
+                if ($token->PrevCode && $token->PrevCode->id === \T_FOR) {
+                    $flags |= self::FOR_EXPRESSION;
                 }
                 $this->ParentFlags[$token->index] = $flags;
             }
@@ -165,21 +166,24 @@ final class HangingIndentation implements TokenRule
 
             // Ignore:
             // - the first token in a statement, unless it has an
-            //   OVERHANGING_INDENT parent
+            //   OVERHANGING_INDENT or ADJACENT_INDENT parent
             // - conditional expressions in `match`
             // - aligned expressions in `for`
             // - tokens after an attribute
             if ((
-                $statement === $token
-                && !($parentFlags & self::OVERHANGING_INDENT)
+                $statement === $token && !(
+                    $parentFlags & (
+                        self::OVERHANGING_INDENT
+                        | self::ADJACENT_INDENT
+                    )
+                )
             ) || (
                 $prevCode->id === \T_COMMA && $parent && (
                     (
                         $parent->id === \T_OPEN_BRACE
                         && $prevCode->isMatchDelimiter()
                     ) || (
-                        $parent->PrevCode
-                        && $parent->PrevCode->id === \T_FOR
+                        $parentFlags & self::FOR_EXPRESSION
                         && ($forExpr = $token->prevSiblingOf(\T_SEMICOLON)->or($parent)->NextCode)
                         && $forExpr->AlignedWith
                     )
@@ -483,7 +487,13 @@ final class HangingIndentation implements TokenRule
                     $collapsible[$parent->index]++;
                 }
 
-                // And one or two more per unseen parent scope
+                // And another for children of parents with adjacent code
+                if ($parentFlags & self::ADJACENT_INDENT) {
+                    $indent++;
+                    $collapsible[$parent->index]++;
+                }
+
+                // And up to 3 more per unseen parent scope
                 $p = $parent;
                 while ($p = $p->Parent) {
                     if (isset($this->CollapsibleLevels[$token->index][$p->index])) {
@@ -494,6 +504,10 @@ final class HangingIndentation implements TokenRule
                         $indent++;
                         $collapsible[$p->index]++;
                         if ($this->ParentFlags[$p->index] & self::OVERHANGING_INDENT) {
+                            $indent++;
+                            $collapsible[$p->index]++;
+                        }
+                        if ($this->ParentFlags[$p->index] & self::ADJACENT_INDENT) {
                             $indent++;
                             $collapsible[$p->index]++;
                         }
