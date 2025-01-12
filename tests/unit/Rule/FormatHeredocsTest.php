@@ -7,7 +7,7 @@ use Lkrms\PrettyPHP\Tests\TestCase;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
 
-final class HeredocIndentationTest extends TestCase
+final class FormatHeredocsTest extends TestCase
 {
     /**
      * @dataProvider outputProvider
