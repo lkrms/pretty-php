@@ -52,14 +52,14 @@ for (; $b;) {
     baz($i);
 }
 for (;
-        $b;) {
+     $b;) {
     baz($i);
 }
 for (;; $c) {
     baz($i);
 }
 for (;;
-        $c) {
+     $c) {
     baz($i);
 }
 for ($i = 0; $i < 10; $i++) {
