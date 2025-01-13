@@ -1404,7 +1404,6 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
         );
 
         $after = [
-            \T_COALESCE => true,
             \T_CONCAT => true,
         ]
             + self::OPERATOR_ARITHMETIC

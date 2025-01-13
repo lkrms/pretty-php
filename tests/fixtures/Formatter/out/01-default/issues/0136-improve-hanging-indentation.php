@@ -4,7 +4,7 @@ fn() =>
     $bar;  // Remove indentation here
 
 $foo = bar('foo',
-    'bar')  // Add indentation here
+        'bar')  // Add indentation here
     ->baz()
     ->qux();
 

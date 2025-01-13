@@ -677,62 +677,62 @@ PHP,
             [
                 <<<'PHP'
 <?php
-$alpha = $bravo ??
-    $charlie
-    ?: $delta ??
-    $echo
+$alpha = $bravo
+    ?? $charlie
+    ?: $delta
+    ?? $echo
     ?: $foxtrot;
 $alpha =
-    $bravo ??
-    $charlie
-        ?: $delta ??
-        $echo
+    $bravo
+        ?? $charlie
+        ?: $delta
+        ?? $echo
         ?: $foxtrot;
 $alpha = $bravo
-    ?: $charlie ??
-        $delta
-    ?: $echo ??
-        $foxtrot;
+    ?: $charlie
+    ?? $delta
+    ?: $echo
+    ?? $foxtrot;
 $alpha =
     $bravo
-        ?: $charlie ??
-            $delta
-        ?: $echo ??
-            $foxtrot;
-$alpha = $bravo ??
-    $charlie ??
-    $delta
+        ?: $charlie
+        ?? $delta
+        ?: $echo
+        ?? $foxtrot;
+$alpha = $bravo
+    ?? $charlie
+    ?? $delta
     ?: $echo
     ?: $foxtrot;
 $alpha =
-    $bravo ??
-    $charlie ??
-    $delta
+    $bravo
+        ?? $charlie
+        ?? $delta
         ?: $echo
         ?: $foxtrot;
 $alpha = $bravo
     ?: $charlie
-    ?: $delta ??
-        $echo ??
-        $foxtrot;
+    ?: $delta
+    ?? $echo
+    ?? $foxtrot;
 $alpha =
     $bravo
         ?: $charlie
-        ?: $delta ??
-            $echo ??
-            $foxtrot;
+        ?: $delta
+        ?? $echo
+        ?? $foxtrot;
 $alpha = $bravo ?: $charlie
-    ?: $delta ?? $echo ??
-        $foxtrot;
-$alpha = $bravo ?? $charlie ??
-    $delta ?: $echo
+    ?: $delta ?? $echo
+    ?? $foxtrot;
+$alpha = $bravo ?? $charlie
+    ?? $delta ?: $echo
     ?: $foxtrot;
 $alpha = $bravo ?? $charlie
     ?: $delta ?? $echo
     ?: $foxtrot;
-$alpha = $bravo ?: $charlie ??
-    $delta ?: $echo ??
-    $foxtrot;
+$alpha = $bravo ?: $charlie
+    ?? $delta ?: $echo
+    ?? $foxtrot;
 
 PHP,
                 <<<'PHP'

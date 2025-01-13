@@ -6,13 +6,13 @@ function &() {
     return;
 };
 function (MyClass|string|null $foo,
-    $bar,
-    $baz) {
+        $bar,
+        $baz) {
     return;
 };
 function &(MyClass|string|null $foo,
-    $bar,
-    $baz) {
+        $bar,
+        $baz) {
     return;
 };
 fn &() =>

@@ -61,7 +61,7 @@ final class AlignLists implements ListRule
     public function processList(Token $parent, TokenCollection $items, Token $lastChild): void
     {
         /** @var Token */
-        $first = $items->first();
+        $first = $parent->NextCode;
         if ($last = $parent->CloseBracket) {
             /** @var Token */
             $until = $last->PrevCode;

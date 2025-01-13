@@ -5,7 +5,7 @@
 Heredocs and nowdocs are indented in one of four ways. [Mixed
 indentation][mixed] is enabled by default.
 
-### No indentation
+### No heredoc indentation
 
 Enabled when `--heredoc-indent none` is given.
 
@@ -18,7 +18,7 @@ EOF,
 ];
 ```
 
-### Line indentation
+### Line heredoc indentation
 
 Enabled when `--heredoc-indent line` is given.
 
@@ -31,7 +31,7 @@ $foo = [
 ];
 ```
 
-### Mixed indentation
+### Mixed heredoc indentation
 
 Line indentation is applied to heredocs that start on their own line, otherwise
 hanging indentation is applied.
@@ -49,7 +49,7 @@ $bar =
     EOF;
 ```
 
-### Hanging indentation
+### Hanging heredoc indentation
 
 Enabled when `--heredoc-indent hanging` is given.
 
@@ -280,7 +280,7 @@ fn($a, $b) =>
 There are many more examples in the `HangingIndentation` [unit
 test][HangingIndentationTest].
 
-[mixed]: #mixed-indentation
+[mixed]: #mixed-heredoc-indentation
 [PSR-12]: https://www.php-fig.org/psr/psr-12/
 [PER]: https://www.php-fig.org/per/coding-style/
 [HangingIndentationTest]: ../tests/unit/Rule/HangingIndentationTest.php

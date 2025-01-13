@@ -97,7 +97,7 @@ comparison operators and logical operators.
 ## Operators last
 
 With **`--operators-last`**, newlines are allowed after, and not before,
-`T_COALESCE`, `T_CONCAT`, arithmetic operators and bitwise operators.
+`T_CONCAT`, arithmetic operators and bitwise operators.
 
 ### After
 
@@ -122,7 +122,7 @@ With **`--operators-last`**, newlines are allowed after, and not before,
 - Arithmetic operators
 - Assignment operators
 - Bitwise operators - `&`, `^`, `|`, `~`, `<<`, `>>`
-- Comparison operators
+- Comparison operators (except `T_COALESCE`)
 - Logical operators (except `T_LOGICAL_NOT`) - `&&`, `||`, `and`, `or`, `xor`
 
 ### Before
@@ -132,6 +132,7 @@ With **`--operators-last`**, newlines are allowed after, and not before,
 - `T_CLOSE_BRACKET`
 - `T_CLOSE_PARENTHESIS`
 - `T_CLOSE_TAG`
+- `T_COALESCE`
 - `T_DOUBLE_ARROW` (in arrow functions if `NewlineBeforeFnDoubleArrow` is
   enabled)
 - `T_LOGICAL_NOT`
