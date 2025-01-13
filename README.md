@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://github.com/lkrms/pretty-php">
-    <img src="https://github.com/lkrms/pretty-php/raw/main/images/logo-600x600-rounded.png" alt="pretty-php logo" width="250">
+    <img src="https://github.com/lkrms/pretty-php/raw/main/images/logo-600x600-rounded.png" alt="pretty-php logo" width="200">
   </a>
 <p>
 
@@ -18,41 +18,37 @@
 ---
 
 `pretty-php` is a fast, deterministic, minimally configurable code formatter for
-PHP.
+PHP, written in PHP.
 
-By taking responsibility for the whitespace in your code, `pretty-php` makes it
-easier to focus on the content, providing time and mental energy savings that
-accrue over time.
+It looks after the whitespace in your code so you have more time and energy for
+the content.
 
-Code formatted by `pretty-php` produces the smallest diffs possible and looks
-the same regardless of the project you're working on, eliminating visual
-dissonance and improving the speed and effectiveness of code review.
+Inspired by [Black][], `pretty-php` aims to produce the smallest diffs possible
+and to make code look the same regardless of the project you're working on,
+eliminating visual dissonance and improving the effectiveness of code review.
 
-You can use `pretty-php` as a standalone tool, run it from your [editor][], pair
-it with a linter, or add it to your CI workflows. Configuration is optional in
-each case.
+You can run `pretty-php` from the command line, use it in your [editor][], add
+it to your CI workflows, pair it with your preferred linter, and more.
+
+It has sensible defaults and runs without configuration.
 
 If you have questions or feedback, I'd love to [hear from you][discuss].
 
-> `pretty-php` isn't stable yet, so updates may introduce formatting changes
-> that affect your code.
-
 ## Features
 
-- Supports code written for **PHP 8.4** and below (when running on a PHP version
-  that can parse it)
-- Formats [property hooks][property-hooks] introduced in PHP 8.4
-- Code is formatted for **readability**, **consistency** and **small diffs**
-- With few [exceptions](#pragmatism), **previous formatting is ignored**, and
-  nothing in the original file other than whitespace is changed
+- Supports code written for **PHP 8.4** and below (when running on a compatible
+  version of PHP), including [property hooks][] introduced in PHP 8.4
+- Code is formatted for **readability**, **consistency**, and **small diffs**
+- Supports **Symfony**, **Drupal**, **Laravel** and **WordPress** code styles
+  via presets
+- **Previous formatting is ignored**, and nothing other than whitespace is
+  changed (see [Pragmatism](#pragmatism) for exceptions)
 - Entire files are formatted in place
 - Formatting options are deliberately limited (`pretty-php` is opinionated so
   you don't have to be)
 - Configuration via a simple JSON file is supported but not required
-- PHP's embedded tokenizer is used to parse input and validate output
 - Formatted and original code are compared for equivalence
-- Output is optionally compliant with [PSR-12][] and [PER][] (details
-  [here](docs/PSR-12.md))
+- Compliant with [PSR-12][] and [PER][] (see [PSR-12 compliance][] for details)
 
 ## Installation
 
@@ -106,7 +102,7 @@ phive install lkrms/pretty-php
 ```
 
 Adding `lkrms/pretty-php` to your project as a Composer dependency is not
-recommended.
+recommended. A separate API package will be provided in the future.
 
 ### Arch Linux
 
@@ -158,14 +154,15 @@ pretty-php --help
 ## Pragmatism
 
 `pretty-php` generally abides by its own rules ("previous formatting is ignored,
-and nothing in the original file other than whitespace is changed"), but
-exceptions are occasionally made and documented here.
+and nothing other than whitespace is changed"), but exceptions are occasionally
+made and documented here.
 
-- **Newlines are preserved** \
+- **Some newlines are preserved** \
   Line breaks adjacent to most operators, delimiters and brackets are copied from
-  the input to the output.
+  the input to the output (see [Newlines][] for details).
 
-  Use `-N/--ignore-newlines` to disable this behaviour.
+  Use `-N/--ignore-newlines`, `-O/--operators-first` or `-L/--operators-last` to
+  disable or modify this behaviour.
 
 - **Strings and numbers are normalised** \
   Single-quoted strings are preferred unless the alternative is shorter or backslash
@@ -174,7 +171,9 @@ exceptions are occasionally made and documented here.
   Use `-S/--no-simplify-strings` and `-n/--no-simplify-numbers` to disable or
   modify this behaviour.
 
-- **Alias/import statements are grouped and sorted alphabetically** \
+- **Imports are grouped and sorted by name, depth-first** \
+  See [Import sorting][] for details.
+
   Use `-M/--no-sort-imports` or `-m/--sort-imports-by` to disable or modify this
   behaviour.
 
@@ -191,13 +190,17 @@ exceptions are occasionally made and documented here.
 
 This project is licensed under the [MIT License][].
 
+[Black]: https://github.com/psf/black
 [discuss]: https://github.com/lkrms/pretty-php/discussions
 [editor]: #editor-integrations
+[Import sorting]: docs/Imports.md
 [MIT License]: LICENSE
+[Newlines]: docs/Newlines.md
 [Open VSX Registry]: https://open-vsx.org/extension/lkrms/pretty-php
 [PER]: https://www.php-fig.org/per/coding-style/
 [PHIVE]: https://phar.io
-[property-hooks]: https://wiki.php.net/rfc/property-hooks
+[property hooks]: https://wiki.php.net/rfc/property-hooks
+[PSR-12 compliance]: docs/PSR-12.md
 [PSR-12]: https://www.php-fig.org/psr/psr-12/
 [Visual Studio Marketplace]:
   https://marketplace.visualstudio.com/items?itemName=lkrms.pretty-php
