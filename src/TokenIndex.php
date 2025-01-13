@@ -22,19 +22,16 @@ final class TokenIndex extends AbstractTokenIndex
         bool $operatorsFirst = false,
         bool $operatorsLast = false
     ) {
-        $operators = $operatorsFirst
-            ? self::FIRST
-            : ($operatorsLast ? self::LAST : self::MIXED);
-
-        if ($operators === self::FIRST) {
+        if ($operatorsFirst) {
+            $this->Operators = self::FIRST;
             [$before, $after] = self::getOperatorsFirstIndexes();
-        } elseif ($operators === self::LAST) {
+        } elseif ($operatorsLast) {
+            $this->Operators = self::LAST;
             [$before, $after] = self::getOperatorsLastIndexes();
         }
-
+        $this->Operators ??= self::MIXED;
         $this->AllowNewlineBefore = $before ?? self::DEFAULT_ALLOW_NEWLINE_BEFORE;
         $this->AllowNewlineAfter = $after ?? self::DEFAULT_ALLOW_NEWLINE_AFTER;
-        $this->Operators = $operators;
     }
 
     /**
