@@ -1446,16 +1446,14 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
      */
     final public static function diff(array $index, array ...$indexes): array
     {
-        if (!$indexes) {
-            // @codeCoverageIgnoreStart
-            return $index + self::TOKEN_INDEX;
-            // @codeCoverageIgnoreEnd
+        if ($indexes) {
+            $index = array_filter($index);
+            foreach ($indexes as $idx) {
+                $filtered[] = array_filter($idx);
+            }
+            return array_diff_key($index, ...$filtered) + self::TOKEN_INDEX;
         }
-        $index = array_filter($index);
-        foreach ($indexes as $idx) {
-            $filtered[] = array_filter($idx);
-        }
-        return array_diff_key($index, ...$filtered) + self::TOKEN_INDEX;
+        return $index + self::TOKEN_INDEX;
     }
 
     /**
@@ -1468,15 +1466,13 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
      */
     final public static function intersect(array $index, array ...$indexes): array
     {
-        if (!$indexes) {
-            // @codeCoverageIgnoreStart
-            return $index + self::TOKEN_INDEX;
-            // @codeCoverageIgnoreEnd
+        if ($indexes) {
+            $index = array_filter($index);
+            foreach ($indexes as $idx) {
+                $filtered[] = array_filter($idx);
+            }
+            return array_intersect_key($index, ...$filtered) + self::TOKEN_INDEX;
         }
-        $index = array_filter($index);
-        foreach ($indexes as $idx) {
-            $filtered[] = array_filter($idx);
-        }
-        return array_intersect_key($index, ...$filtered) + self::TOKEN_INDEX;
+        return $index + self::TOKEN_INDEX;
     }
 }
