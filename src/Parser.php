@@ -162,10 +162,10 @@ final class Parser implements Immutable
      * - `Data[Data::END_STRING]`
      *
      * @param non-empty-list<Token> $tokens
-     * @param-out non-empty-list<Token> $tokens
      * @param array<int,array<int,Token>>|null $tokensById
-     * @param-out array<int,array<int,Token>> $tokensById
      * @param Token[]|null $scopes
+     * @param-out non-empty-list<Token> $tokens
+     * @param-out array<int,array<int,Token>> $tokensById
      * @param-out non-empty-array<Token> $scopes
      */
     private function buildHierarchy(
@@ -731,8 +731,8 @@ final class Parser implements Immutable
      *
      * @param Token[] $statements
      * @param array<int,Token>|null $declarations
-     * @param-out array<int,Token> $declarations
      * @param array<int,array<int,Token>>|null $declarationsByType
+     * @param-out array<int,Token> $declarations
      * @param-out array<int,array<int,Token>> $declarationsByType
      */
     private function parseExpressions(

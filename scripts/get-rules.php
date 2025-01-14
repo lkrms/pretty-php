@@ -26,9 +26,9 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 
 /**
  * @param array<int,array<array{rule:class-string<Rule>,is_mandatory:bool,is_default:bool,pass:int,method:string,priority:int,php_doc:PHPDoc|null,tokens:array<int,bool>|array{string}|null,declarations:array<int,bool>|array{'*'}|null}>> $array
- * @param-out array<int,array<array{rule:class-string<Rule>,is_mandatory:bool,is_default:bool,pass:int,method:string,priority:int,php_doc:PHPDoc|null,tokens:array<int,bool>|array{string}|null,declarations:array<int,bool>|array{'*'}|null}>> $array
  * @param class-string<Rule> $rule
  * @param array<class-string<Rule>,array<string|null>>|null $callbackDocs
+ * @param-out array<int,array<array{rule:class-string<Rule>,is_mandatory:bool,is_default:bool,pass:int,method:string,priority:int,php_doc:PHPDoc|null,tokens:array<int,bool>|array{string}|null,declarations:array<int,bool>|array{'*'}|null}>> $array
  */
 function maybeAddRule(
     array &$array,
