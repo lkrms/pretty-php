@@ -324,7 +324,7 @@ final class TokenCollection extends Collection implements Stringable
     /**
      * @return $this
      */
-    public function setWhitespace(int $whitespace): self
+    public function setTokenWhitespace(int $whitespace): self
     {
         foreach ($this->Items as $token) {
             $token->Whitespace |= $whitespace;
@@ -335,7 +335,7 @@ final class TokenCollection extends Collection implements Stringable
     /**
      * @return $this
      */
-    public function applyWhitespace(int $whitespace): self
+    public function applyTokenWhitespace(int $whitespace): self
     {
         // Shift *_BEFORE and *_AFTER to their NO_* counterparts, then clear
         // other bits

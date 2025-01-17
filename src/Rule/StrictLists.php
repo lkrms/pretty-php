@@ -49,9 +49,9 @@ final class StrictLists implements ListRule
             ) {
                 $items = $items->shift();
             }
-            $items->applyWhitespace(Space::LINE_BEFORE);
+            $items->applyTokenWhitespace(Space::LINE_BEFORE);
         } else {
-            $items->setWhitespace(Space::NO_BLANK_BEFORE | Space::NO_LINE_BEFORE);
+            $items->setTokenWhitespace(Space::NO_BLANK_BEFORE | Space::NO_LINE_BEFORE);
         }
     }
 }

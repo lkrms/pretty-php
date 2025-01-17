@@ -73,7 +73,7 @@ final class SemiStrictExpressions implements TokenRule
                 if ($token->id === \T_FOR) {
                     /** @var TokenCollection */
                     $semicolons = $token->Data[Data::FOR_PARTS][3];
-                    $semicolons->setWhitespace(Space::LINE_AFTER);
+                    $semicolons->setTokenWhitespace(Space::LINE_AFTER);
                 }
             }
         }

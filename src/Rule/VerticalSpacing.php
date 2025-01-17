@@ -272,10 +272,10 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
                     }
                 }
                 if ($hasNewlineAndComma) {
-                    $commas->setWhitespace(Space::LINE_AFTER);
-                    $semicolons->setWhitespace(Space::BLANK_AFTER);
+                    $commas->setTokenWhitespace(Space::LINE_AFTER);
+                    $semicolons->setTokenWhitespace(Space::BLANK_AFTER);
                 } elseif ($hasNewline || $semicolons->tokenHasNewlineAfter()) {
-                    $semicolons->setWhitespace(Space::LINE_AFTER);
+                    $semicolons->setTokenWhitespace(Space::LINE_AFTER);
                 }
             } elseif ($token->id === \T_OPEN_BRACE) {
                 if (
@@ -351,7 +351,7 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
                     $chain = $chain->shift();
                 }
 
-                $chain->setWhitespace(Space::LINE_BEFORE);
+                $chain->setTokenWhitespace(Space::LINE_BEFORE);
             }
         }
     }
@@ -388,7 +388,7 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
         if ($lastChild->id === \T_COMMA) {
             $parent->Whitespace |= Space::LINE_AFTER;
             $items->add($parent->CloseBracket)
-                  ->applyWhitespace(Space::LINE_BEFORE);
+                  ->applyTokenWhitespace(Space::LINE_BEFORE);
         }
 
         if ($parent->id === \T_OPEN_PARENTHESIS && $parent->isParameterList()) {
@@ -424,7 +424,7 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
                     !$this->ListRuleEnabled
                     && $commas->tokenHasNewlineBeforeNextCode()
                 )) {
-                    $commas->setWhitespace(Space::LINE_AFTER);
+                    $commas->setTokenWhitespace(Space::LINE_AFTER);
                 }
             }
 

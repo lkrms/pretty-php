@@ -305,7 +305,7 @@ final class StandardSpacing implements TokenRule, DeclarationRule
                 foreach ([$expr1, $expr2, $expr3] as $i => $expr) {
                     $count = $expr->count();
                     if ($i < 2 && $count === 1) {
-                        $expr->setWhitespace(Space::NONE_BEFORE);
+                        $expr->setTokenWhitespace(Space::NONE_BEFORE);
                     } elseif ($i === 2 && $count === 0) {
                         /** @var Token */
                         $semi2 = $semicolons->last();
