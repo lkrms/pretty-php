@@ -264,6 +264,38 @@ PHP,
                     ->disable([MoveComments::class])
                     ->build(),
             ],
+            'idempotent brackets' => [
+                <<<'PHP'
+<?php
+if (
+    (
+        $foo &&
+        $bar
+    ) || (
+        $baz &&
+        $qux
+    )
+) {
+    //
+}
+
+PHP,
+                <<<'PHP'
+<?php
+if (
+    (
+        $foo
+        && $bar)
+    || (
+        $baz
+        && $qux
+    )
+) {
+    //
+}
+PHP,
+                $formatter,
+            ],
         ];
     }
 }
