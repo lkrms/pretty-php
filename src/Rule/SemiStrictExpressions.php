@@ -2,9 +2,11 @@
 
 namespace Lkrms\PrettyPHP\Rule;
 
+use Lkrms\PrettyPHP\Catalog\TokenData as Data;
 use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
+use Lkrms\PrettyPHP\Internal\TokenCollection;
 use Lkrms\PrettyPHP\AbstractTokenIndex;
 use Lkrms\PrettyPHP\Token;
 
@@ -24,7 +26,7 @@ final class SemiStrictExpressions implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 246,
+            self::PROCESS_TOKENS => 224,
         ][$method] ?? null;
     }
 
@@ -48,7 +50,8 @@ final class SemiStrictExpressions implements TokenRule
      * Apply the rule to the given tokens
      *
      * Newlines are added before and after control structure expressions with
-     * newlines between siblings.
+     * newlines between siblings. In `for` expressions that break over multiple
+     * lines, newlines are also added after semicolons between expressions.
      *
      * > Unlike `StrictExpressions`, this rule does not apply leading and
      * > trailing newlines to expressions that would not break over multiple
@@ -58,15 +61,20 @@ final class SemiStrictExpressions implements TokenRule
     {
         foreach ($tokens as $token) {
             /** @var Token */
-            $first = $token->NextCode;
-            if ($first->hasNewlineAfter()) {
+            $open = $token->NextCode;
+            if ($open->hasNewlineAfter()) {
                 continue;
             }
-            if ($first->children()->pop()->tokenHasNewlineAfter(true)) {
+            if ($open->children()->pop()->tokenHasNewlineAfter(true)) {
                 /** @var Token */
-                $last = $first->CloseBracket;
-                $first->applyWhitespace(Space::LINE_AFTER);
-                $last->applyWhitespace(Space::LINE_BEFORE);
+                $close = $open->CloseBracket;
+                $open->applyWhitespace(Space::LINE_AFTER);
+                $close->applyWhitespace(Space::LINE_BEFORE);
+                if ($token->id === \T_FOR) {
+                    /** @var TokenCollection */
+                    $semicolons = $token->Data[Data::FOR_PARTS][3];
+                    $semicolons->setTokenWhitespace(Space::LINE_AFTER);
+                }
             }
         }
     }

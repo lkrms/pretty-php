@@ -324,7 +324,18 @@ final class TokenCollection extends Collection implements Stringable
     /**
      * @return $this
      */
-    public function applyWhitespace(int $whitespace)
+    public function setTokenWhitespace(int $whitespace): self
+    {
+        foreach ($this->Items as $token) {
+            $token->Whitespace |= $whitespace;
+        }
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function applyTokenWhitespace(int $whitespace): self
     {
         // Shift *_BEFORE and *_AFTER to their NO_* counterparts, then clear
         // other bits
@@ -342,7 +353,7 @@ final class TokenCollection extends Collection implements Stringable
     /**
      * @return $this
      */
-    public function applyInnerWhitespace(int $whitespace)
+    public function setInnerWhitespace(int $whitespace): self
     {
         $this->assertCollected();
 
@@ -354,7 +365,6 @@ final class TokenCollection extends Collection implements Stringable
         if ($this->count() < 2) {
             return $this;
         }
-        $remove = $whitespace << 6 & 0b111111000000;
         $ignore = true;
         foreach ($this->Items as $token) {
             if ($ignore) {
@@ -364,9 +374,6 @@ final class TokenCollection extends Collection implements Stringable
                 || $token->Data[Data::BOUND_TO]->index > $token->index
             ) {
                 $token->Whitespace |= $whitespace;
-                if ($remove) {
-                    $token->doRemoveWhitespace($remove);
-                }
             }
         }
         return $this;

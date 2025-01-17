@@ -58,6 +58,7 @@ use Lkrms\PrettyPHP\Rule\NormaliseNumbers;
 use Lkrms\PrettyPHP\Rule\NormaliseStrings;
 use Lkrms\PrettyPHP\Rule\OperatorSpacing;
 use Lkrms\PrettyPHP\Rule\PlaceBraces;
+use Lkrms\PrettyPHP\Rule\PlaceBrackets;
 use Lkrms\PrettyPHP\Rule\PlaceComments;
 use Lkrms\PrettyPHP\Rule\PreserveNewlines;
 use Lkrms\PrettyPHP\Rule\PreserveOneLineStatements;
@@ -152,6 +153,7 @@ final class Formatter implements Buildable, Immutable
         PlaceComments::class,
         PreserveNewlines::class,
         VerticalSpacing::class,
+        PlaceBrackets::class,
         DeclarationSpacing::class,
         StandardIndentation::class,
         SwitchIndentation::class,
@@ -168,9 +170,9 @@ final class Formatter implements Buildable, Immutable
         PreserveNewlines::class,
         PreserveOneLineStatements::class,
         BlankBeforeReturn::class,
-        StrictLists::class,
         StrictExpressions::class,
         SemiStrictExpressions::class,
+        StrictLists::class,
         AlignChains::class,
         DeclarationSpacing::class,
         AlignArrowFunctions::class,

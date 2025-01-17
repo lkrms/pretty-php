@@ -1394,8 +1394,8 @@ EOF,
 
     /**
      * @param array<string,string> $files
-     * @param-out array<string,string> $files
      * @param array<string,string> $dirs
+     * @param-out array<string,string> $files
      * @param-out array<string,string> $dirs
      */
     private function addDir(string $dir, array &$files, array &$dirs): void
@@ -1434,8 +1434,8 @@ EOF,
     /**
      * @param SplFileInfo|string $file
      * @param array<string,string> $files
-     * @param-out array<string,string> $files
      * @param array<string,string> $dirs
+     * @param-out array<string,string> $files
      * @param-out array<string,string> $dirs
      */
     private function addFile($file, array &$files, array &$dirs): void

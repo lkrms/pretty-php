@@ -54,49 +54,55 @@ interface TokenData
     public const PROPERTY_HOOKS = 7;
 
     /**
+     * Collections of tokens associated with a T_FOR loop: expr1, expr2, expr3,
+     * semicolon delimiters, comma delimiters
+     */
+    public const FOR_PARTS = 8;
+
+    /**
      * The last token of the string opened by the token
      */
-    public const END_STRING = 8;
+    public const END_STRING = 9;
 
     /**
      * The first object operator in a chain of method calls
      */
-    public const CHAIN = 9;
+    public const CHAIN = 10;
 
     /**
      * The other T_QUESTION or T_COLON associated with a TERNARY
      */
-    public const OTHER_TERNARY = 10;
+    public const OTHER_TERNARY = 11;
 
     /**
      * The token ID of the delimiter associated with a LIST_PARENT token
      */
-    public const LIST_DELIMITER = 11;
+    public const LIST_DELIMITER = 12;
 
     /**
      * A collection of items associated with a LIST_PARENT token
      */
-    public const LIST_ITEMS = 12;
+    public const LIST_ITEMS = 13;
 
     /**
      * The number of items associated with a LIST_PARENT token
      */
-    public const LIST_ITEM_COUNT = 13;
+    public const LIST_ITEM_COUNT = 14;
 
     /**
      * The LIST_PARENT of the first token in a LIST_ITEM
      */
-    public const LIST_PARENT = 14;
+    public const LIST_PARENT = 15;
 
     /**
      * The content of a normalised DocBlock token (T_DOC_COMMENT or T_COMMENT)
      * after delimiters and trailing whitespace are removed
      */
-    public const COMMENT_CONTENT = 15;
+    public const COMMENT_CONTENT = 16;
 
     /**
      * An array of closures that align other tokens with the token when its
      * output column changes
      */
-    public const ALIGNMENT_CALLBACKS = 16;
+    public const ALIGNMENT_CALLBACKS = 17;
 }
