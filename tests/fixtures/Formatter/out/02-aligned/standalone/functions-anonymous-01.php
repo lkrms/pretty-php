@@ -51,17 +51,25 @@ function &(?string $alpha, $bravo) use ($foo,
                                         $baz) {
     return;
 };
-function (?string $alpha,
-          $bravo,
-          $charlie) use ($foo,
-                         $bar,
-                         $baz) {
+function (
+    ?string $alpha,
+    $bravo,
+    $charlie
+) use (
+    $foo,
+    $bar,
+    $baz
+) {
     return;
 };
-function &(?string $alpha,
-           $bravo,
-           $charlie) use ($foo,
-                          $bar,
-                          $baz) {
+function &(
+    ?string $alpha,
+    $bravo,
+    $charlie
+) use (
+    $foo,
+    $bar,
+    $baz
+) {
     return;
 };

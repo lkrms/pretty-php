@@ -1,9 +1,13 @@
 <?php
-function ($foo,
-		$bar,
-		$baz) use ($a,
+function (
+	$foo,
+	$bar,
+	$baz
+) use (
+	$a,
 	$b,
-	$c) {};
+	$c
+) {};
 
 // Added for completeness:
 
@@ -15,23 +19,35 @@ $foo = function ($bar
 /* */) use ($baz,
 	$qux) {};
 
-$foo = function ($bar,
-		$baz)  //
-	use ($baz,
-		$qux) {};
+$foo = function (
+	$bar,
+	$baz
+)  //
+	use (
+		$baz,
+		$qux
+	) {};
 
 $foo = [
 	10 =>
-		function ($bar,
-				$baz) /* */ use (&$foo,
-			$qux) {},
+		function (
+			$bar,
+			$baz
+		) /* */ use (
+			&$foo,
+			$qux
+		) {},
 ];
 
-function ($foo,
+function (
+	$foo,
 	$bar,
-	$baz) use ($a,
-		$b,
-		$c) {
+	$baz
+) use (
+	$a,
+	$b,
+	$c
+) {
 	quux();
 };
 
@@ -47,18 +63,26 @@ $foo = function ($bar
 	quux();
 };
 
-$foo = function ($bar,
-		$baz)  //
-	use ($baz,
-			$qux) {
+$foo = function (
+	$bar,
+	$baz
+)  //
+	use (
+		$baz,
+		$qux
+	) {
 		quux();
 	};
 
 $foo = [
 	10 =>
-		function ($bar,
-			$baz) /* */ use (&$foo,
-				$qux) {
+		function (
+			$bar,
+			$baz
+		) /* */ use (
+			&$foo,
+			$qux
+		) {
 			quux();
 		},
 ];
