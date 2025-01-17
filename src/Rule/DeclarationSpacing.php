@@ -224,7 +224,7 @@ final class DeclarationSpacing implements DeclarationRule
                     && !$prev->isMultiLine()
                     && !$decl->isMultiLine()
                 )) {
-                    $prev->End->collect($token)->applyInnerWhitespace(Space::NO_BLANK);
+                    $prev->End->collect($token)->setInnerWhitespace(Space::NO_BLANK);
                     $noBlankApplied = true;
                 } elseif (!$decl->isCollapsible()) {
                     // Apply "loose" spacing to multi-line declarations

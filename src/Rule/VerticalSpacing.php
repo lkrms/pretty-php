@@ -44,9 +44,9 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 240,
-            self::PROCESS_LIST => 240,
-            self::PROCESS_DECLARATIONS => 240,
+            self::PROCESS_TOKENS => 242,
+            self::PROCESS_LIST => 220,
+            self::PROCESS_DECLARATIONS => 220,
         ][$method] ?? null;
     }
 
@@ -191,7 +191,6 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
      *   added after semicolon-delimited expressions.
      * - Otherwise, if the second or third expression has a leading newline, a
      *   newline is added before the other.
-     * - Whitespace in empty expressions is suppressed.
      *
      * Newlines are added before open braces that belong to top-level
      * declarations and anonymous classes declared over multiple lines.
@@ -255,33 +254,14 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
                     }
                 }
             } elseif ($token->id === \T_FOR) {
-                /** @var Token */
-                $open = $token->NextCode;
-                /** @var Token */
-                $close = $open->CloseBracket;
-                /** @var Token */
-                $first = $open->Next;
-                /** @var Token */
-                $last = $close->Prev;
-
-                $children = $open->children();
-                $commas = $children->getAnyOf(\T_COMMA);
-                $semicolons = $children->getAnyOf(\T_SEMICOLON);
-                /** @var Token */
-                $semi1 = $semicolons->first();
-                /** @var Token */
-                $second = $semi1->Next;
-                /** @var Token */
-                $semi2 = $semicolons->last();
-                /** @var Token */
-                $third = $semi2->Next;
-
-                $expr1 = $first->collect($semi1);
-                $expr2 = $second->collect($semi2);
-                $expr3 = $third->collect($last);
-
+                /**
+                 * @var TokenCollection $semicolons
+                 * @var TokenCollection $commas
+                 */
+                [$expr1, $expr2, $expr3, $semicolons, $commas] = $token->Data[Data::FOR_PARTS];
                 $hasNewline = false;
                 $hasNewlineAndComma = false;
+                /** @var TokenCollection $expr */
                 foreach ([$expr1, $expr2, $expr3] as $expr) {
                     if ($expr->hasNewlineBetweenTokens()) {
                         $hasNewline = true;
@@ -292,20 +272,10 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
                     }
                 }
                 if ($hasNewlineAndComma) {
-                    $commas->applyWhitespace(Space::LINE_AFTER);
-                    $semicolons->applyWhitespace(Space::BLANK_AFTER);
+                    $commas->setWhitespace(Space::LINE_AFTER);
+                    $semicolons->setWhitespace(Space::BLANK_AFTER);
                 } elseif ($hasNewline || $semicolons->tokenHasNewlineAfter()) {
-                    $semicolons->applyWhitespace(Space::LINE_AFTER);
-                }
-
-                // Suppress whitespace in empty `for` loop expressions
-                foreach ([$expr1, $expr2, $expr3] as $i => $expr) {
-                    $count = $expr->count();
-                    if ($i < 2 && $count === 1) {
-                        $expr->applyWhitespace(Space::NONE_BEFORE);
-                    } elseif ($i === 2 && $count === 0) {
-                        $semi2->Whitespace |= Space::NONE_AFTER;
-                    }
+                    $semicolons->setWhitespace(Space::LINE_AFTER);
                 }
             } elseif ($token->id === \T_OPEN_BRACE) {
                 if (
@@ -381,7 +351,7 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
                     $chain = $chain->shift();
                 }
 
-                $chain->applyWhitespace(Space::LINE_BEFORE);
+                $chain->setWhitespace(Space::LINE_BEFORE);
             }
         }
     }
@@ -454,7 +424,7 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
                     !$this->ListRuleEnabled
                     && $commas->tokenHasNewlineBeforeNextCode()
                 )) {
-                    $commas->applyWhitespace(Space::LINE_AFTER);
+                    $commas->setWhitespace(Space::LINE_AFTER);
                 }
             }
 

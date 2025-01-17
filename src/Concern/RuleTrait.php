@@ -56,7 +56,7 @@ trait RuleTrait
         }
 
         $start->collect($end)
-              ->applyInnerWhitespace(Space::CRITICAL_NO_BLANK | Space::CRITICAL_NO_LINE);
+              ->setInnerWhitespace(Space::CRITICAL_NO_BLANK | Space::CRITICAL_NO_LINE);
 
         return true;
     }

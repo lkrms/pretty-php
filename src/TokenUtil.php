@@ -506,7 +506,14 @@ final class TokenUtil implements HasOperatorPrecedence, HasTokenIndex
                         ? self::describe($value)
                         : ($value instanceof TokenCollection
                             ? $value->toString(' ')
-                            : (is_array($value) ? count($value) : $value));
+                            : (is_array($value)
+                                ? (Arr::of($value, TokenCollection::class)
+                                    ? array_map(
+                                        fn(TokenCollection $coll) => $coll->toString(' '),
+                                        $value,
+                                    )
+                                    : count($value))
+                                : $value));
             }
         }
 

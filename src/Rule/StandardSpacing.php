@@ -48,6 +48,7 @@ final class StandardSpacing implements TokenRule, DeclarationRule
                 \T_CLOSE_TAG => true,
                 \T_COMMA => true,
                 \T_DECLARE => true,
+                \T_FOR => true,
                 \T_MATCH => true,
                 \T_START_HEREDOC => true,
             ],
@@ -110,6 +111,7 @@ final class StandardSpacing implements TokenRule, DeclarationRule
      *   added.
      * - **`declare` expressions:** whitespace is suppressed between
      *   parentheses.
+     * - **`for` loops:** whitespace in empty expressions is suppressed.
      * - **`match` expressions:** newlines are added after delimiters between
      *   arms.
      * - **Attributes:** in parameters, property hooks, anonymous functions and
@@ -293,7 +295,23 @@ final class StandardSpacing implements TokenRule, DeclarationRule
             if ($token->id === \T_DECLARE) {
                 /** @var Token */
                 $nextCode = $token->NextCode;
-                $nextCode->outer()->applyInnerWhitespace(Space::NONE);
+                $nextCode->outer()->setInnerWhitespace(Space::NONE);
+                continue;
+            }
+
+            if ($token->id === \T_FOR) {
+                [$expr1, $expr2, $expr3, $semicolons] = $token->Data[Data::FOR_PARTS];
+                /** @var TokenCollection $expr */
+                foreach ([$expr1, $expr2, $expr3] as $i => $expr) {
+                    $count = $expr->count();
+                    if ($i < 2 && $count === 1) {
+                        $expr->setWhitespace(Space::NONE_BEFORE);
+                    } elseif ($i === 2 && $count === 0) {
+                        /** @var Token */
+                        $semi2 = $semicolons->last();
+                        $semi2->Whitespace |= Space::NONE_AFTER;
+                    }
+                }
                 continue;
             }
 

@@ -23,7 +23,7 @@ final class StrictLists implements ListRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_LIST => 242,
+            self::PROCESS_LIST => 226,
         ][$method] ?? null;
     }
 
@@ -51,7 +51,7 @@ final class StrictLists implements ListRule
             }
             $items->applyWhitespace(Space::LINE_BEFORE);
         } else {
-            $items->applyWhitespace(Space::NO_BLANK_BEFORE | Space::NO_LINE_BEFORE);
+            $items->setWhitespace(Space::NO_BLANK_BEFORE | Space::NO_LINE_BEFORE);
         }
     }
 }

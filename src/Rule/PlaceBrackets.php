@@ -3,16 +3,18 @@
 namespace Lkrms\PrettyPHP\Rule;
 
 use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Concern\TokenRuleTrait;
 use Lkrms\PrettyPHP\Contract\TokenRule;
 use Lkrms\PrettyPHP\AbstractTokenIndex;
+use Lkrms\PrettyPHP\Token;
 
 /**
- * Add blank lines before return statements
+ * Make brackets symmetrical
  *
  * @api
  */
-final class BlankBeforeReturn implements TokenRule
+final class PlaceBrackets implements TokenRule
 {
     use TokenRuleTrait;
 
@@ -22,7 +24,7 @@ final class BlankBeforeReturn implements TokenRule
     public static function getPriority(string $method): ?int
     {
         return [
-            self::PROCESS_TOKENS => 204,
+            self::PROCESS_TOKENS => 240,
         ][$method] ?? null;
     }
 
@@ -31,7 +33,7 @@ final class BlankBeforeReturn implements TokenRule
      */
     public static function getTokens(AbstractTokenIndex $idx): array
     {
-        return $idx->ReturnOrYield;
+        return $idx->OpenBracket;
     }
 
     /**
@@ -45,34 +47,30 @@ final class BlankBeforeReturn implements TokenRule
     /**
      * Apply the rule to the given tokens
      *
-     * Blank lines are added before non-consecutive `return`, `yield` and `yield
-     * from` statements.
+     * Inner whitespace is copied from open brackets to close brackets.
+     *
+     * Structural and `match` expression braces are ignored.
      */
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            // Ignore `yield` and `yield from` in non-statement contexts
             if (
-                $token->Statement !== $token || (
-                    $token->Parent
-                    && !(
-                        $token->Parent->Flags & Flag::STRUCTURAL_BRACE
-                        || $token->Parent->id === \T_COLON
-                    )
-                )
+                $token->Flags & Flag::STRUCTURAL_BRACE
+                || ($token->id === \T_OPEN_BRACE && $token->isMatchOpenBrace())
             ) {
                 continue;
             }
 
-            if (
-                ($prev = $token->skipPrevEmptyStatements()->PrevSibling)
-                && $prev->Statement
-                && $this->Idx->ReturnOrYield[$prev->Statement->id]
-            ) {
-                continue;
+            /** @var Token */
+            $close = $token->CloseBracket;
+            if (!$token->hasNewlineBeforeNextCode()) {
+                $close->Whitespace |= Space::NO_BLANK_BEFORE | Space::NO_LINE_BEFORE;
+            } else {
+                $close->Whitespace |= Space::LINE_BEFORE;
+                if (!$close->hasNewlineBefore()) {
+                    $close->removeWhitespace(Space::NO_LINE_BEFORE);
+                }
             }
-
-            $token->applyBlankBefore();
         }
     }
 }

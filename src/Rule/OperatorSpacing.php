@@ -133,7 +133,7 @@ final class OperatorSpacing implements TokenRule
                 $token->Whitespace |= Space::NONE_BEFORE | Space::NONE_AFTER;
                 if (!$inTypeContext) {
                     /** @var Token $parent */
-                    $parent->outer()->applyInnerWhitespace(Space::NONE);
+                    $parent->outer()->setInnerWhitespace(Space::NONE);
                     if (
                         $parent->PrevCode
                         && $parent->PrevCode->id !== \T_OR

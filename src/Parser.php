@@ -719,13 +719,14 @@ final class Parser implements Immutable
     }
 
     /**
-     * Pass 4: identify declarations and parse (some) expressions
+     * Pass 4: parse expressions
      *
      * Token properties set:
      *
      * - `Data[Data::DECLARATION_PARTS]`
      * - `Data[Data::DECLARATION_TYPE]`
      * - `Data[Data::PROPERTY_HOOKS]`
+     * - `Data[Data::FOR_PARTS]`
      * - `Data[Data::OTHER_TERNARY]`
      * - `Data[Data::CHAIN]`
      *
@@ -750,7 +751,7 @@ final class Parser implements Immutable
             $end = $statement->EndStatement;
             $end = $end->OpenBracket ?? $end;
 
-            // Detect non-anonymous declarations
+            // Parse non-anonymous declarations and `for` expressions
             if (
                 $idx->AttributeOrDeclaration[$statement->id]
                 && ($first = $this->skipNextSiblingsFrom($statement, $idx->Attribute))
@@ -835,6 +836,39 @@ final class Parser implements Immutable
                         }
                     }
                 }
+            } elseif ($statement->id === \T_FOR) {
+                /** @var Token */
+                $open = $statement->NextCode;
+                /** @var Token */
+                $close = $open->CloseBracket;
+                /** @var Token */
+                $first = $open->Next;
+                /** @var Token */
+                $last = $close->Prev;
+
+                $children = $open->children();
+                $semicolons = $children->getAnyOf(\T_SEMICOLON);
+                $commas = $children->getAnyOf(\T_COMMA);
+                /** @var Token */
+                $semi1 = $semicolons->first();
+                /** @var Token */
+                $second = $semi1->Next;
+                /** @var Token */
+                $semi2 = $semicolons->last();
+                /** @var Token */
+                $third = $semi2->Next;
+
+                $expr1 = $first->collect($semi1);
+                $expr2 = $second->collect($semi2);
+                $expr3 = $third->collect($last);
+
+                $statement->Data[Data::FOR_PARTS] = [
+                    $expr1,
+                    $expr2,
+                    $expr3,
+                    $semicolons,
+                    $commas,
+                ];
             }
 
             $token = $statement;

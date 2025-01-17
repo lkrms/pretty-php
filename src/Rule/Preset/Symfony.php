@@ -116,6 +116,6 @@ final class Symfony implements Preset, TokenRule, ListRule
             }
         }
 
-        $parent->outer()->applyInnerWhitespace(Space::NO_BLANK | Space::NO_LINE);
+        $parent->outer()->setInnerWhitespace(Space::NO_BLANK | Space::NO_LINE);
     }
 }
