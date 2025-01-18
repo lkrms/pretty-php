@@ -60,6 +60,7 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
                 \T_FOR => true,
                 \T_OPEN_BRACE => true,
                 \T_QUESTION => true,
+                \T_USE => true,
             ],
             $idx->Chain,
             $idx->BooleanExceptNot,
@@ -198,6 +199,11 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
      * Newlines are added before both operators in ternary expressions where one
      * operator has a leading newline.
      *
+     * In anonymous functions with lexical variables after parameters that break
+     * over multiple lines, newlines are added before each parameter. If the
+     * list of variables after `use` breaks over multiple lines, newlines are
+     * also added before each variable.
+     *
      * In method chains where an object operator (`->` or `?->`) has a leading
      * newline, newlines are added before every object operator. If the
      * `AlignChains` rule is enabled and strict PSR-12 compliance is not, the
@@ -328,6 +334,34 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
                     $other->Whitespace |= Space::LINE_BEFORE;
                 } elseif (!$op1Newline && $op2Newline) {
                     $token->Whitespace |= Space::LINE_BEFORE;
+                }
+            } elseif ($token->id === \T_USE) {
+                if (
+                    ($close = $token->PrevCode)
+                    && $close->id === \T_CLOSE_PARENTHESIS
+                    && !$close->hasNewlineAfterPrevCode()
+                    && $close->outer()->hasNewline()
+                ) {
+                    /** @var Token */
+                    $open = $close->OpenBracket;
+                    /** @var TokenCollection */
+                    $items = $open->Data[Data::LIST_ITEMS];
+                    $items->add($close)
+                          ->applyTokenWhitespace(Space::LINE_BEFORE);
+
+                    /** @var Token */
+                    $open = $token->NextCode;
+                    if (
+                        !$open->hasNewlineBeforeNextCode()
+                        && $open->outer()->hasNewline()
+                    ) {
+                        /** @var Token */
+                        $close = $open->CloseBracket;
+                        /** @var TokenCollection */
+                        $items = $open->Data[Data::LIST_ITEMS];
+                        $items->add($close)
+                              ->applyTokenWhitespace(Space::LINE_BEFORE);
+                    }
                 }
             } else {
                 if ($token !== $token->Data[Data::CHAIN]) {

@@ -9,6 +9,22 @@ function die() {
     ((!s)) && exit 1 || exit "$s"
 }
 
+# usage [<error-message>]
+function usage() {
+    if (($#)); then
+        cat >&2 && false || die "$@"
+    else
+        cat
+    fi <<EOF
+usage: ${0##*/}            run all tests
+       ${0##*/} --phpstan  run PHPStan
+       ${0##*/} --phpunit  run PHPUnit tests
+       ${0##*/} --build    build and test phar and man page${1:+
+}
+EOF
+    exit
+}
+
 # run <command> [<argument>...]
 function run() {
     printf '==> running:%s\n' "$(printf ' %q' "$@")" >&2
@@ -34,13 +50,59 @@ function run_with_php_versions() {
 [[ ${BASH_SOURCE[0]} -ef scripts/run-tests.sh ]] ||
     die "must run from root of package folder"
 
-run scripts/generate.sh --check
-run php83 tools/php-cs-fixer check --diff --verbose
-run bin/pretty-php --diff
-run_with_php_versions '' 74 vendor/bin/phpstan
-run_with_php_versions 84 83 82 81 80 74 vendor/bin/phpunit
+ASSETS=1
+FORMATTING=1
+PHPSTAN=1
+PHPUNIT=1
+BUILD=1
+if [[ ${1-} == -* ]]; then
+    ASSETS=0
+    FORMATTING=0
+    PHPSTAN=0
+    PHPUNIT=0
+    BUILD=0
+fi
+while [[ ${1-} == -* ]]; do
+    case "$1" in
+    --phpstan)
+        PHPSTAN=1
+        ;;
+    --phpunit)
+        PHPUNIT=1
+        ;;
+    --build)
+        BUILD=1
+        ;;
+    -h | --help)
+        usage
+        ;;
+    *)
+        usage "invalid argument: $1"
+        ;;
+    esac
+    shift
+done
 
-run scripts/build.sh
-run scripts/build.sh man
-run scripts/build.sh man worktree
-run_with_php_versions 84 83 82 81 80 74 build/dist/pretty-php.phar --verbose
+if ((ASSETS)); then
+    run scripts/generate.sh --check
+fi
+
+if ((FORMATTING)); then
+    run php83 tools/php-cs-fixer check --diff --verbose
+    run bin/pretty-php --diff
+fi
+
+if ((PHPSTAN)); then
+    run_with_php_versions '' 74 vendor/bin/phpstan
+fi
+
+if ((PHPUNIT)); then
+    run_with_php_versions 84 83 82 81 80 74 vendor/bin/phpunit
+fi
+
+if ((BUILD)); then
+    run scripts/build.sh
+    run scripts/build.sh man
+    run scripts/build.sh man worktree
+    run_with_php_versions 84 83 82 81 80 74 build/dist/pretty-php.phar --verbose
+fi

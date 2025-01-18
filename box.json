@@ -12,10 +12,10 @@
         {
             "in": "vendor",
             "notName": [
-                "/^(?:LICENSE|README|composer\\.(?:json|lock))$|phpstan\\.|\\.md$/"
+                "/^(?:(?:(?i)README|CHANGELOG)(?:\\.md)?|composer\\.(?:json|lock))$|phpstan\\./"
             ],
             "notPath": [
-                "/^salient\\/contracts\\/(?:Curler|Db|Http|Sync)\\//",
+                "/^salient\\/contracts\\/(?:Core\\/Pipeline|Curler|Db|Http|Sync)\\//",
                 "/^lkrms\\/dice\\/src\\/Loader\\//",
                 "/^psr\\/(?:http-(?:client|message)|log\\/Psr\\/Log\\/Test)\\//"
             ]
@@ -27,8 +27,8 @@
         "",
         "(c) Luke Arms <luke@linacreative.com>",
         "",
-        "For the full copyright and license information, please view the LICENSE",
-        "file that was distributed with this source code."
+        "For the full license and copyright notice, see the LICENSE file distributed",
+        "with the source code."
     ],
     "compactors": [
         "KevinGH\\Box\\Compactor\\Json",
