@@ -47,7 +47,7 @@ PHP;
         $formatter->format($code, \PHP_EOL, null, null, true);
 
         $actual = [];
-        foreach ($formatter->getTokens() ?? [] as $token) {
+        foreach ($formatter->Document->Tokens as $token) {
             if ($token->id === \T_COLON) {
                 $actual[] = Reflect::getConstantName(SubId::class, $token->getSubId());
             }
@@ -94,7 +94,7 @@ PHP;
         $formatter->format($code, \PHP_EOL, null, null, true);
 
         $actual = [];
-        foreach ($formatter->getTokens() ?? [] as $token) {
+        foreach ($formatter->Document->Tokens as $token) {
             if ($token->id === \T_QUESTION) {
                 $actual[] = Reflect::getConstantName(SubId::class, $token->getSubId());
             }

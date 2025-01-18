@@ -530,16 +530,6 @@ final class Formatter implements Buildable, Immutable
     }
 
     /**
-     * Get the formatter's token array
-     *
-     * @return Token[]|null
-     */
-    public function getTokens(): ?array
-    {
-        return $this->Tokens ?? null;
-    }
-
-    /**
      * Get an instance with the given extensions disabled
      *
      * @param array<class-string<Extension>> $extensions
@@ -699,9 +689,7 @@ final class Formatter implements Buildable, Immutable
             $this->DeclarationsByType = $this->Document->DeclarationsByType;
 
             if (!$this->Tokens) {
-                if (!$this->Debug) {
-                    $this->clear();
-                }
+                $this->Debug || $this->clear();
                 return '';
             }
 
@@ -1070,9 +1058,7 @@ final class Formatter implements Buildable, Immutable
             // @codeCoverageIgnoreEnd
         } finally {
             Profile::stopTimer(__METHOD__ . '#render');
-            if (!$this->Debug) {
-                $this->clear();
-            }
+            $this->Debug || $this->clear();
         }
 
         if (!$fast) {
@@ -1244,6 +1230,7 @@ final class Formatter implements Buildable, Immutable
             } else {
                 $out = '';
             }
+            // @codeCoverageIgnoreStart
         } catch (Throwable $ex) {
             throw new FormatterException(
                 'Unable to render partially formatted output',
@@ -1253,6 +1240,7 @@ final class Formatter implements Buildable, Immutable
                 $this->getExtensionData(),
                 $ex,
             );
+            // @codeCoverageIgnoreEnd
         } finally {
             Profile::stopTimer(__METHOD__ . '#render');
         }
