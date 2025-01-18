@@ -1179,6 +1179,15 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
 
     public function applyBlankBefore(bool $force = false): void
     {
+        $t = $this->skipToFirstPinnedComment();
+        $t->Whitespace |= Space::BLANK_BEFORE;
+        if ($force) {
+            $t->removeWhitespace(Space::NO_BLANK_BEFORE);
+        }
+    }
+
+    public function skipToFirstPinnedComment(): self
+    {
         $t = $this;
         while (
             !$t->hasBlankBefore()
@@ -1199,10 +1208,7 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
         ) {
             $t = $prev;
         }
-        $t->Whitespace |= Space::BLANK_BEFORE;
-        if ($force) {
-            $t->removeWhitespace(Space::NO_BLANK_BEFORE);
-        }
+        return $t;
     }
 
     /**

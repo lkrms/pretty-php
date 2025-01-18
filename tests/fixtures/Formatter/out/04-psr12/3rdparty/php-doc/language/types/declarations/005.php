@@ -2,7 +2,6 @@
 
 class C {}
 class D extends C {}
-
 // This doesn't extend C.
 class E {}
 

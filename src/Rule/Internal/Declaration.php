@@ -5,6 +5,7 @@ namespace Lkrms\PrettyPHP\Rule\Internal;
 use Lkrms\PrettyPHP\Catalog\DeclarationType as Type;
 use Lkrms\PrettyPHP\Catalog\TokenData as Data;
 use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
+use Lkrms\PrettyPHP\Catalog\WhitespaceFlag as Space;
 use Lkrms\PrettyPHP\Token;
 use Salient\Utility\Regex;
 
@@ -26,8 +27,9 @@ final class Declaration
     public int $Type;
     /** @var int[] */
     public array $Modifiers;
-    private bool $HasDocComment;
-    private bool $HasDocCommentOrBlankBefore;
+    public ?Token $DocComment = null;
+    private bool $HasMultiLineDocComment;
+    private bool $HasBlankBefore;
     private bool $IsMultiLine;
 
     /**
@@ -45,6 +47,16 @@ final class Declaration
         $this->End = $end;
         $this->Type = $type;
         $this->Modifiers = $modifiers;
+
+        while ($token = $token->Prev) {
+            if ($token->id === \T_DOC_COMMENT) {
+                $this->DocComment = $token;
+                break;
+            }
+            if ($token->id !== \T_COMMENT) {
+                break;
+            }
+        }
     }
 
     /**
@@ -53,62 +65,49 @@ final class Declaration
      */
     public function isCollapsible(): bool
     {
-        return !$this->hasDocComment()
+        return !$this->hasMultiLineDocComment()
             && !$this->isMultiLine();
     }
 
     /**
      * Check if the declaration has a non-collapsible multi-line DocBlock
      */
-    public function hasDocComment(bool $orBlankBefore = false): bool
+    public function hasMultiLineDocComment(): bool
     {
-        if ($orBlankBefore) {
-            return $this->HasDocCommentOrBlankBefore ??=
-                ($this->HasDocComment ?? false)
-                || $this->doHasDocComment(true);
-        }
-        return $this->HasDocComment ??=
-            $this->doHasDocComment(false);
-    }
-
-    private function doHasDocComment(bool $orBlankBefore): bool
-    {
-        $token = $this->Token;
-        /** @var Token */
-        $prev = $token->Prev;
-
-        if ($prev->id !== \T_DOC_COMMENT) {
-            return $orBlankBefore && $token->hasBlankBefore();
-        }
-
-        if (!$prev->hasNewlineBefore() || $prev->hasBlankAfter()) {
-            return false;
-        }
-
-        return !(
-            (
-                $prev->Flags & Flag::COLLAPSIBLE_COMMENT
-                && ($prev->Data[Data::COMMENT_CONTENT][0] ?? null) === '@'
-                && !Regex::match(
-                    '/^' . self::EXPANDABLE_TAG . '/',
-                    $prev->Data[Data::COMMENT_CONTENT],
+        return $this->HasMultiLineDocComment ??=
+            ($comment = $this->DocComment) && !(
+                (
+                    $comment->Flags & Flag::COLLAPSIBLE_COMMENT
+                    && ($comment->Data[Data::COMMENT_CONTENT][0] ?? null) === '@'
+                    && !Regex::match(
+                        '/^' . self::EXPANDABLE_TAG . '/',
+                        $comment->Data[Data::COMMENT_CONTENT],
+                    )
+                ) || (
+                    // Check if the comment is already collapsed
+                    !$comment->hasNewline()
+                    && $comment->text[4] === '@'
+                    && !Regex::match(
+                        '/^\/\*\* ' . self::EXPANDABLE_TAG . '/',
+                        $comment->text,
+                    )
                 )
-            ) || (
-                // Check if the comment is already collapsed
-                !$prev->hasNewline()
-                && $prev->text[4] === '@'
-                && !Regex::match(
-                    '/^\/\*\* ' . self::EXPANDABLE_TAG . '/',
-                    $prev->text,
-                )
-            )
-        ) || (
-            $orBlankBefore && $prev->hasBlankBefore()
-        );
+            );
     }
 
     /**
-     * Check if the declaration breaks over multiple lines
+     * Check if there is a blank line before the declaration's DocBlock, first
+     * pinned comment, or first token (whichever is applicable)
+     */
+    public function hasBlankBefore(): bool
+    {
+        return $this->HasBlankBefore ??=
+            ($this->DocComment ?? $this->Token->skipToFirstPinnedComment())
+                ->hasBlankBefore();
+    }
+
+    /**
+     * Check if the declaration's code breaks over multiple lines
      */
     public function isMultiLine(): bool
     {
@@ -119,10 +118,10 @@ final class Declaration
     private function doIsMultiLine(): bool
     {
         $token = $this->Token;
-        $idx = $token->Idx;
         /** @var Token */
         $end = $this->Type === Type::HOOK
-            ? $token->nextSiblingFrom($idx->StartOfPropertyHookBody)->PrevCode
+            ? $token->nextSiblingFrom($token->Idx->StartOfPropertyHookBody)
+                    ->PrevCode
             : $this->End;
 
         return $token->collect($end)->hasNewline();
@@ -133,11 +132,33 @@ final class Declaration
      */
     public function applyBlankBefore(bool $force = false): void
     {
-        unset(
-            $this->HasDocComment,
-            $this->HasDocCommentOrBlankBefore,
-        );
+        unset($this->HasBlankBefore);
 
-        $this->Token->applyBlankBefore($force);
+        if ($comment = $this->DocComment) {
+            $comment->Whitespace |= Space::BLANK_BEFORE;
+            if ($force) {
+                $comment->removeWhitespace(Space::NO_BLANK_BEFORE);
+            }
+            // Suppress blank lines between the DocBlock and the declaration
+            if ($comment !== $this->Token->Prev) {
+                $comment->collect($this->Token)
+                        ->setInnerWhitespace(Space::NO_BLANK);
+            }
+        } else {
+            $this->Token->applyBlankBefore($force);
+        }
+    }
+
+    /**
+     * Add a blank line after the declaration
+     */
+    public function applyBlankAfter(): void
+    {
+        if (
+            ($next = $this->End->Next)
+            && $next->id !== \T_CLOSE_TAG
+        ) {
+            $this->End->Whitespace |= Space::BLANK_AFTER;
+        }
     }
 }

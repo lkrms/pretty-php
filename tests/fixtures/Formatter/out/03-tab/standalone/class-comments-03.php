@@ -41,6 +41,7 @@ class bar
 {
 	function baz() {}
 }
+
 /** comment */
 
 /**

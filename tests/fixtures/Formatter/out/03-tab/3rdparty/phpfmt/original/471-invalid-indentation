@@ -10,7 +10,6 @@ enum ExampleEnum
 
 	// Note.
 	case Bar;
-
 	// Note.
 	case Qux;
 }
@@ -24,7 +23,6 @@ enum ExampleEnum2: string
 
 	// Note.
 	case Bar = 'b';
-
 	// Note.
 	case Qux = 'c';
 }

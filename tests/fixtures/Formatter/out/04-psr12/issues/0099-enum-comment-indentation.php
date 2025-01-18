@@ -9,7 +9,6 @@ enum ExampleEnum
 
     // Note.
     case Bar;
-
     // Note.
     case Qux;
 }
