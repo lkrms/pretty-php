@@ -24,7 +24,7 @@ It looks after the whitespace in your code so you have more time and energy for
 the content.
 
 Inspired by [Black][], `pretty-php` aims to produce the smallest diffs possible
-and to make code look the same regardless of the project you're working on,
+and for code to look the same regardless of the project you're working on,
 eliminating visual dissonance and improving the effectiveness of code review.
 
 You can run `pretty-php` from the command line, use it in your [editor][], add
@@ -36,11 +36,9 @@ If you have questions or feedback, I'd love to [hear from you][discuss].
 
 ## Features
 
-- Supports code written for **PHP 8.4** and below (when running on a compatible
+- Formats code written for **PHP 8.4** and below (when running on a compatible
   version of PHP), including [property hooks][] introduced in PHP 8.4
 - Code is formatted for **readability**, **consistency**, and **small diffs**
-- Supports **Symfony**, **Drupal**, **Laravel** and **WordPress** code styles
-  via presets
 - **Previous formatting is ignored**, and nothing other than whitespace is
   changed (see [Pragmatism](#pragmatism) for exceptions)
 - Entire files are formatted in place
@@ -49,6 +47,8 @@ If you have questions or feedback, I'd love to [hear from you][discuss].
 - Configuration via a simple JSON file is supported but not required
 - Formatted and original code are compared for equivalence
 - Compliant with [PSR-12][] and [PER][] (see [PSR-12 compliance][] for details)
+- Supports **Symfony**, **Drupal**, **Laravel** and **WordPress** code styles
+  via presets
 
 ## Installation
 
