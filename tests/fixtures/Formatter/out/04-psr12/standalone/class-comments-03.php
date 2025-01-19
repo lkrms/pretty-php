@@ -24,6 +24,7 @@ class bar
  * comment
  */
 class qux {}
+
 // qux
 // continuation
 
@@ -34,6 +35,7 @@ class foo
 {
     function baz() {}
 }
+
 // foo
 // not a continuation
 
@@ -44,6 +46,7 @@ class bar
 {
     function baz() {}
 }
+
 /** comment */
 
 /**

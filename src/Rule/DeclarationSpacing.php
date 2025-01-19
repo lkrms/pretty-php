@@ -169,20 +169,17 @@ final class DeclarationSpacing implements DeclarationRule
             $loose = null;
 
             $finalise = function () use (&$uncollapsed, &$loose) {
-                if (!$loose) {
-                    foreach ($uncollapsed as $decl) {
-                        $token = $decl->Token;
-                        if (
+                foreach ($uncollapsed as $decl) {
+                    if ($loose) {
+                        $decl->applyBlankAfter();
+                    } elseif (
+                        ($comment = $decl->DocComment) && (
                             $this->Formatter->TightDeclarationSpacing
                             || $loose === false
-                            || (
-                                ($prev = $token->Prev)
-                                && $prev->id === \T_DOC_COMMENT
-                                && strpos($prev->OriginalText ?? $prev->text, "\n") === false
-                            )
-                        ) {
-                            $this->maybeCollapseComment($token);
-                        }
+                            || strpos($comment->OriginalText ?? $comment->text, "\n") === false
+                        )
+                    ) {
+                        $this->maybeCollapseComment($decl);
                     }
                 }
                 $uncollapsed = [];
@@ -205,16 +202,19 @@ final class DeclarationSpacing implements DeclarationRule
                     if ($prev) {
                         $finalise();
                     }
-                    if ($decl->isCollapsible()) {
+                    if ($collapsible = $decl->isCollapsible()) {
                         $uncollapsed[] = $decl;
                     }
-                    $this->maybeApplyBlankBefore($decl);
+                    $this->maybeApplyBlankBefore($decl, !$collapsible);
                     $from = $i;
                     continue;
                 }
 
-                $addBlank = false;
+                $addBlankBefore = false;
+                $addBlankAfter = false;
                 $noBlankApplied = false;
+
+                $prevEnd = $prev->End;
 
                 // Suppress blank lines between `use` statements, one-line
                 // `declare` statements, and property hooks not declared over
@@ -224,80 +224,87 @@ final class DeclarationSpacing implements DeclarationRule
                     && !$prev->isMultiLine()
                     && !$decl->isMultiLine()
                 )) {
-                    $prev->End->collect($token)->setInnerWhitespace(Space::NO_BLANK);
+                    $prevEnd->collect($token)
+                            ->setInnerWhitespace(Space::NO_BLANK);
                     $noBlankApplied = true;
                 } elseif (!$decl->isCollapsible()) {
                     // Apply "loose" spacing to multi-line declarations
-                    $addBlank = true;
+                    $addBlankBefore = true;
+                    $addBlankAfter = true;
                 } elseif (!$prev->isCollapsible()) {
                     // And to one-line declarations subsequent to them
-                    $addBlank = true;
+                    $addBlankBefore = true;
                     $uncollapsed[] = $decl;
                 } elseif ($loose === null) {
-                    $addBlank = !$this->Formatter->TightDeclarationSpacing
-                        && $decl->hasDocComment(true);
+                    $addBlankBefore = !$this->Formatter->TightDeclarationSpacing
+                        && $decl->hasBlankBefore();
                     // Propagate the gap between the first and second one-line
                     // declarations to subsequent one-line declarations unless
                     // they have different modifiers
                     if (
-                        !$addBlank
+                        !$addBlankBefore
                         || $decl->Modifiers === $prev->Modifiers
                         || !$this->isGroupedByModifier($group, $from, $i - 1, $type)
                     ) {
-                        $loose = $addBlank;
-                    } elseif ($addBlank) {
+                        $loose = $addBlankBefore;
+                        $addBlankAfter = $addBlankBefore;
+                    } elseif ($addBlankBefore) {
                         $uncollapsed[] = $decl;
                     }
                 } else {
-                    $addBlank = $loose;
+                    $addBlankBefore = $loose;
+                    $addBlankAfter = $loose;
                 }
 
                 // Don't suppress blank lines between declarations with
-                // different modifiers, and add a blank line if there are
-                // non-code tokens other than one DocBlock between declarations
+                // different modifiers
                 if (
-                    !$addBlank
+                    !$addBlankBefore
                     && !$noBlankApplied
-                    && (
-                        (
-                            !$this->Formatter->TightDeclarationSpacing
-                            && $decl->hasDocComment(true)
-                            && $decl->Modifiers !== $prev->Modifiers
-                            && $this->isGroupedByModifier($group, $from, $i - 1, $type)
-                        )
-                        || $this->hasNewlineSince($token, $prev->End)
-                    )
+                    && !$this->Formatter->TightDeclarationSpacing
+                    && $decl->hasBlankBefore()
+                    && $decl->Modifiers !== $prev->Modifiers
+                    && $this->isGroupedByModifier($group, $from, $i - 1, $type)
                 ) {
-                    $addBlank = true;
+                    $addBlankBefore = true;
                     $uncollapsed[] = $decl;
                 }
 
-                if ($addBlank) {
-                    $this->maybeApplyBlankBefore($decl, true);
+                if ($addBlankBefore) {
+                    $this->maybeApplyBlankBefore($decl, $addBlankAfter, true);
                     $from = $i;
                 } else {
-                    // Suppress blank lines and collapse DocBlocks before
-                    // tightly-spaced declarations
                     $token->Whitespace |= Space::LINE_BEFORE;
                     if (!$noBlankApplied) {
-                        $token->Whitespace |= Space::NO_BLANK_BEFORE;
-                        if ($token->Prev && $token->Prev->id === \T_DOC_COMMENT) {
-                            $token->Prev->Whitespace |= Space::NO_BLANK_BEFORE;
+                        // Allow comments to disrupt spacing if there is a blank
+                        // line before the first comment and another between
+                        // comments or before the declaration, otherwise
+                        // suppress blank lines between declarations
+                        $first = $decl->DocComment ?? $token;
+                        if (!(
+                            $prevEnd->hasBlankAfter()
+                            && $prevEnd->collect($first)
+                                       ->shift()
+                                       ->hasBlankLineBetweenTokens()
+                        )) {
+                            /** @var Token */
+                            $first = $prevEnd->Next;
+                        } elseif ($first->hasBlankBefore()) {
+                            // Preserve blank lines before declarations
+                            /** @var Token */
+                            $first = $first->Next;
                         }
+                        $first->collect($token)
+                              ->setTokenWhitespace(Space::NO_BLANK_BEFORE);
                     }
-                    $this->maybeCollapseComment($token);
+                    $this->maybeCollapseComment($decl);
                 }
             }
 
             $finalise();
 
             // Add a blank line after declarations
-            if (
-                ($next = $decl->End->Next)
-                && $next->id !== \T_CLOSE_TAG
-            ) {
-                $decl->End->Whitespace |= Space::BLANK_AFTER;
-            }
+            $decl->applyBlankAfter();
         }
     }
 
@@ -314,16 +321,10 @@ final class DeclarationSpacing implements DeclarationRule
         $count = count($group);
         while (++$i < $count) {
             $decl = $group[$i];
-            $token = $decl->Token;
             if ($decl->Type !== $type || !$decl->isCollapsible()) {
                 break;
             }
-            if (
-                $decl->hasDocComment(true) || (
-                    $token->PrevCode
-                    && $this->hasNewlineSince($token, $token->PrevCode)
-                )
-            ) {
+            if ($decl->hasBlankBefore()) {
                 if ($modifiers) {
                     break;
                 }
@@ -350,28 +351,21 @@ final class DeclarationSpacing implements DeclarationRule
         return true;
     }
 
-    private function hasNewlineSince(Token $token, Token $since): bool
+    private function maybeCollapseComment(Declaration $decl): void
     {
-        /** @var Token */
-        $prev = $token->Prev;
-        if ($prev->id === \T_DOC_COMMENT) {
-            /** @var Token */
-            $prev = $prev->Prev;
-        }
-        return $since->collect($prev)->hasNewline();
-    }
-
-    private function maybeCollapseComment(Token $token): void
-    {
-        /** @var Token */
-        $prev = $token->Prev;
-        if ($prev->Flags & Flag::COLLAPSIBLE_COMMENT) {
-            $prev->setText('/** ' . $prev->Data[Data::COMMENT_CONTENT] . ' */');
+        if (
+            ($comment = $decl->DocComment)
+            && $comment->Flags & Flag::COLLAPSIBLE_COMMENT
+        ) {
+            $comment->setText('/** ' . $comment->Data[Data::COMMENT_CONTENT] . ' */');
         }
     }
 
-    private function maybeApplyBlankBefore(Declaration $decl, bool $force = false): void
-    {
+    private function maybeApplyBlankBefore(
+        Declaration $decl,
+        bool $andAfter,
+        bool $force = false
+    ): void {
         $token = $decl->Token;
         if (
             !$this->Formatter->ExpandHeaders
@@ -381,6 +375,9 @@ final class DeclarationSpacing implements DeclarationRule
             $token->Whitespace |= Space::LINE_BEFORE;
         } else {
             $decl->applyBlankBefore($force);
+        }
+        if ($andAfter) {
+            $decl->applyBlankAfter();
         }
     }
 }

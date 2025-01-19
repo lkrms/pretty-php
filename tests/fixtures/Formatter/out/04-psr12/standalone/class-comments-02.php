@@ -7,6 +7,7 @@ class foo
         quux();
     }  // baz
 }
+
 // foo
 // continuation
 
@@ -17,6 +18,7 @@ class bar
         quux();
     }  // baz
 }
+
 // bar
 // continuation
 

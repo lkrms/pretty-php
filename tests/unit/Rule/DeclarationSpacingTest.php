@@ -35,7 +35,7 @@ final class DeclarationSpacingTest extends TestCase
         $formatterB = Formatter::build();
         $formatter = $formatterB->build();
 
-        $input1 = <<<'PHP'
+        $input = <<<'PHP'
 <?php declare(strict_types=1);
 namespace Foo\Bar;
 use const PREG_UNMATCHED_AS_NULL;
@@ -61,6 +61,79 @@ class Foo
         $this->Qux = $qux;
     }
 }
+PHP;
+
+        $tightOutput = <<<'PHP'
+<?php
+class Foo
+{
+    public const A = 'a';
+    /** @var string */
+    public const B = 'b';
+
+    /**
+     * Comment
+     */
+    public const C = 'c';
+
+    public const D = 'd';
+    public const E = 'e';
+    // Comment
+    // Comment
+    public const F = 'f';
+
+    // Comment
+
+    // Comment
+    public const G = 'g';
+    public const H = 'h';
+    public const I = 'i';
+
+    // Comment
+
+    public const J = 'j';
+    public const K = 'k';
+    public const L = 'l';
+    // Comment
+    public const M = 'm';
+    public const N = 'n';
+    /** @var string */
+    public const O = 'o';
+    // Comment
+    public const P = 'p';
+    public const Q = 'q';
+
+    /**
+     * Comment
+     */
+    public const R = 'r';
+
+    // Comment
+
+    public const S = 's';
+    public const T = 't';
+    /** @var string */
+    // Comment
+    public const U = 'u';
+    public const V = 'v';
+
+    /**
+     * Comment
+     */
+    // Comment
+    public const W = 'w';
+
+    public const X = 'x';
+
+    /**
+     * Comment
+     */
+    public const Y = 'y';
+
+    // Comment
+    public const Z = 'z';
+}
+
 PHP;
 
         return [
@@ -98,7 +171,7 @@ class Foo
 
 PHP,
                 null,
-                $input1,
+                $input,
                 $formatter,
             ],
             [
@@ -133,7 +206,7 @@ class Foo
 
 PHP,
                 null,
-                $input1,
+                $input,
                 $formatterB->disable([SortImports::class]),
             ],
             [
@@ -419,47 +492,7 @@ PHP,
                 $formatterB->enable([PreserveOneLineStatements::class]),
             ],
             [
-                <<<'PHP'
-<?php
-class Foo
-{
-    public const A = 'a';
-    /** @var string */
-    public const B = 'b';
-
-    /**
-     * Comment
-     */
-    public const C = 'c';
-
-    public const D = 'd';
-    public const E = 'e';
-
-    // Comment
-    // Comment
-    public const F = 'f';
-
-    // Comment
-
-    // Comment
-    public const G = 'g';
-    public const H = 'h';
-    public const I = 'i';
-
-    // Comment
-
-    public const J = 'j';
-    public const K = 'k';
-    public const L = 'l';
-    // Comment
-
-    public const M = 'm';
-    public const N = 'n';
-    /** @var string */
-    public const O = 'o';
-}
-
-PHP,
+                $tightOutput,
                 null,
                 <<<'PHP'
 <?php
@@ -500,6 +533,207 @@ class Foo
      * @var string
      */
     public const O = 'o';
+    // Comment
+
+    public const P = 'p';
+    public const Q = 'q';
+    /**
+     * Comment
+     */
+    public const R = 'r';
+    // Comment
+
+    public const S = 's';
+    public const T = 't';
+    /**
+     * @var string
+     */
+    // Comment
+    public const U = 'u';
+    public const V = 'v';
+    /**
+     * Comment
+     */
+    // Comment
+    public const W = 'w';
+    public const X = 'x';
+    /**
+     * Comment
+     */
+    public const Y = 'y';
+    // Comment
+    public const Z = 'z';
+}
+PHP,
+                $formatter,
+            ],
+            [
+                <<<'PHP'
+<?php
+class Foo
+{
+    public const A = 'a';
+
+    /**
+     * @var string
+     */
+    public const B = 'b';
+
+    /**
+     * Comment
+     */
+    public const C = 'c';
+
+    public const D = 'd';
+
+    public const E = 'e';
+
+    // Comment
+    // Comment
+    public const F = 'f';
+
+    // Comment
+
+    // Comment
+    public const G = 'g';
+
+    public const H = 'h';
+
+    public const I = 'i';
+
+    // Comment
+
+    public const J = 'j';
+
+    public const K = 'k';
+
+    public const L = 'l';
+
+    // Comment
+
+    public const M = 'm';
+
+    public const N = 'n';
+
+    /**
+     * @var string
+     */
+    public const O = 'o';
+
+    // Comment
+
+    public const P = 'p';
+
+    public const Q = 'q';
+
+    /**
+     * Comment
+     */
+    public const R = 'r';
+
+    // Comment
+
+    public const S = 's';
+
+    public const T = 't';
+
+    /**
+     * @var string
+     */
+    // Comment
+    public const U = 'u';
+
+    public const V = 'v';
+
+    /**
+     * Comment
+     */
+    // Comment
+    public const W = 'w';
+
+    public const X = 'x';
+
+    /**
+     * Comment
+     */
+    public const Y = 'y';
+
+    // Comment
+    public const Z = 'z';
+}
+
+PHP,
+                $tightOutput,
+                <<<'PHP'
+<?php
+class Foo
+{
+    public const A = 'a';
+
+    /**
+     * @var string
+     */
+    public const B = 'b';
+    /**
+     * Comment
+     */
+    public const C = 'c';
+    public const D = 'd';
+    public const E = 'e';
+    // Comment
+    // Comment
+    public const F = 'f';
+
+    // Comment
+
+    // Comment
+    public const G = 'g';
+    public const H = 'h';
+    public const I = 'i';
+
+    // Comment
+
+    public const J = 'j';
+    public const K = 'k';
+    public const L = 'l';
+    // Comment
+
+    public const M = 'm';
+    public const N = 'n';
+    /**
+     * @var string
+     */
+    public const O = 'o';
+    // Comment
+
+    public const P = 'p';
+    public const Q = 'q';
+    /**
+     * Comment
+     */
+    public const R = 'r';
+    // Comment
+
+    public const S = 's';
+    public const T = 't';
+    /**
+     * @var string
+     */
+    // Comment
+    public const U = 'u';
+    public const V = 'v';
+    /**
+     * Comment
+     */
+    // Comment
+    public const W = 'w';
+    public const X = 'x';
+    /**
+     * Comment
+     */
+    public const Y = 'y';
+    // Comment
+    public const Z = 'z';
 }
 PHP,
                 $formatter,
@@ -872,6 +1106,134 @@ class Baz {
      * @var int
      */
     private const D = 3;
+}
+PHP,
+                $formatter,
+            ],
+            [
+                <<<'PHP'
+<?php
+class Foo
+{
+    /**
+     * Comment
+     */
+    private $Bar;
+
+    // Comment
+
+    private $Baz;
+}
+
+PHP,
+                null,
+                <<<'PHP'
+<?php
+class Foo
+{
+    /**
+     * Comment
+     */
+    private $Bar;
+    // Comment
+
+    private $Baz;
+}
+PHP,
+                $formatter,
+            ],
+            [
+                <<<'PHP'
+<?php
+class Foo
+{
+    private $Bar;
+
+    // Comment
+
+    private $Baz;
+
+    private $Qux;
+}
+
+PHP,
+                <<<'PHP'
+<?php
+class Foo
+{
+    private $Bar;
+    // Comment
+    private $Baz;
+    private $Qux;
+}
+
+PHP,
+                <<<'PHP'
+<?php
+class Foo
+{
+    private $Bar;
+    // Comment
+
+    private $Baz;
+    private $Qux;
+}
+PHP,
+                $formatter,
+            ],
+            [
+                <<<'PHP'
+<?php
+class Foo
+{
+    /**
+     * Comment
+     */
+    // Comment
+    private $Bar;
+
+    private $Baz;
+}
+
+PHP,
+                null,
+                <<<'PHP'
+<?php
+class Foo
+{
+    /**
+     * Comment
+     */
+    // Comment
+    private $Bar;
+    private $Baz;
+}
+PHP,
+                $formatter,
+            ],
+            [
+                <<<'PHP'
+<?php
+class Foo
+{
+    /** @var string */
+    // Comment
+    private $Bar;
+    private $Baz;
+}
+
+PHP,
+                null,
+                <<<'PHP'
+<?php
+class Foo
+{
+    /**
+     * @var string
+     */
+    // Comment
+    private $Bar;
+    private $Baz;
 }
 PHP,
                 $formatter,

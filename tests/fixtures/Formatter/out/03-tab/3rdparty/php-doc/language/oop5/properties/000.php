@@ -8,11 +8,9 @@ class SimpleClass
 		EOD;
 
 	public $var3 = 1 + 2;
-
 	// invalid property declarations:
 	public $var4 = self::myStaticMethod();
 	public $var5 = $myVar;
-
 	// valid property declarations:
 	public $var6 = myConstant;
 	public $var7 = [true, false];

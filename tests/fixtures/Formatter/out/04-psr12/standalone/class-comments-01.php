@@ -7,6 +7,7 @@ class foo
         quux();
     }  // baz
 }
+
 // foo
 
 class bar
@@ -16,6 +17,7 @@ class bar
         quux();
     }  // baz
 }
+
 // bar
 
 class qux {}
