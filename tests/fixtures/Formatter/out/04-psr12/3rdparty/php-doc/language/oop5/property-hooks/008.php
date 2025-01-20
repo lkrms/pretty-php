@@ -1,20 +1,20 @@
 <?php
 
-class Point
+class Person
 {
-    public int $x;
-    public int $y;
-}
+    public string $phone {
+        set => $this->sanitizePhone($value);
+    }
 
-class PositivePoint extends Point
-{
-    public int $x {
-        set {
-            if ($value < 0) {
-                throw new \InvalidArgumentException('Too small');
-            }
-            $this->x = $value;
+    private function sanitizePhone(string $value): string
+    {
+        $value = ltrim($value, '+');
+        $value = ltrim($value, '1');
+
+        if (!preg_match('/\d\d\d\-\d\d\d\-\d\d\d\d/', $value)) {
+            throw new \InvalidArgumentException();
         }
+        return $value;
     }
 }
 ?>

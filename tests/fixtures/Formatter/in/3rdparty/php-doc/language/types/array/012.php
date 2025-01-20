@@ -1,8 +1,10 @@
 <?php
-$source_array = ['foo', 'bar', 'baz'];
+$source_array = [
+    [1, 'John'],
+    [2, 'Jane'],
+];
 
-// Assign the element at index 2 to the variable $baz
-[, , $baz] = $source_array;
-
-echo $baz;    // prints "baz"
+foreach ($source_array as [$id, $name]) {
+    // logic here with $id and $name
+}
 ?>

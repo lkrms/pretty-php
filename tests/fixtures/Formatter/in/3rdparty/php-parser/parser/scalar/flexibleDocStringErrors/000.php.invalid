@@ -1,0 +1,36 @@
+<?php
+
+<<<A
+ 	A;
+
+<<<A
+    FooBar
+ 	A;
+
+echo <<<END
+	   X
+		END;
+
+echo <<<END
+      a
+     b
+    c
+     END;
+
+<<<END
+\ta
+	END;
+
+<<<TEST
+  Foo
+$var
+  TEST;
+
+<<<TEST
+$var
+ TEST;
+
+echo <<<END
+ a
+$a
+ END;

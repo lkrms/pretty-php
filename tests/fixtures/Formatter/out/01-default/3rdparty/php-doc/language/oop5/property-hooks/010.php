@@ -1,17 +1,19 @@
 <?php
-class Strings
+class Point
 {
-    public string $val;
+    public int $x;
+    public int $y;
 }
 
-class CaseFoldingStrings extends Strings
+class PositivePoint extends Point
 {
-    public bool $uppercase = true;
-
-    public string $val {
-        get => $this->uppercase
-            ? strtoupper(parent::$val::get())
-            : strtolower(parent::$val::get());
+    public int $x {
+        set {
+            if ($value < 0) {
+                throw new \InvalidArgumentException('Too small');
+            }
+            $this->x = $value;
+        }
     }
 }
 ?>

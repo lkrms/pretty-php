@@ -1,0 +1,4 @@
+<?php
+
+marker:
+goto marker;

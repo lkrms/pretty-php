@@ -10,6 +10,7 @@ class PropertiesExample
     use PropertiesTrait;
 }
 
-$example = new PropertiesExample;
+$example = new PropertiesExample();
 $example->x;
+
 ?>

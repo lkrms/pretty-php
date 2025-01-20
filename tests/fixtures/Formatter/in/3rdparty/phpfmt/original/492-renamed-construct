@@ -1,0 +1,11 @@
+<?php
+//passes:PSR1ClassNames
+class A {
+    public function __construct() {}
+    public function handle() {
+        Excel::raw(new class() implements Excel\Concerns\FromArray {
+            public function __construct() {}
+            public function __sleep() {}
+        });
+    }
+}

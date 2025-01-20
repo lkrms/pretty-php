@@ -1,4 +1,4 @@
-#!/usr/bin/php
 <?php
-var_dump($argv);
+// Our simple test application named test.php
+echo getcwd(), "\n";
 ?>

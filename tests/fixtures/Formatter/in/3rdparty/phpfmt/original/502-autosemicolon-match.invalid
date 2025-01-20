@@ -1,0 +1,34 @@
+<?php
+//passes:AutoSemicolon
+//version:8.0
+
+match (true) {1 => 2} === 1
+match (true) {1 => 2} != 1
+match(true) { 1 => 2 } + 3
+// won't cover match(true) { 1 => 2 } ? 1 : 0 (already without ; at the end)
+match(true) { 1 => 2 } ? 1 : 0;
+[match(true) { 1 => 2 } => 1]
+match (true) {1 => match (true) {1 => 2}}
+match (true) { match (true) { 1 => 2 } => match (true) {1 => 2}}
+match (true) {default => match (true) {1 => 2}};
+(match(true) { 1 => new \User })->method();
+$a = [
+    'a'=> [match (true) {1 => 2} => 1]
+]
+$a = [
+    'a'=> (match (true) {1 => 2})
+]
+$a = [
+    'a' => [match (true) {1 => 2}]
+];
+$array = [
+    'value' => (match (true) {default => 0})  // must improve
+]
+match (true) {1 => 2}
+match (true) {1 => 2}
+$a=1;
+match (true) {1 => 2}
+($a=1)
+match (true) {1 => 2}
+[$a=1];
+match (true) {1 => 2}

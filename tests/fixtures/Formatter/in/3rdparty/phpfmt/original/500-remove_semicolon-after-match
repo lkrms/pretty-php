@@ -1,0 +1,15 @@
+<?php
+//passes:AutoSemicolon
+//version:8.0
+
+Route::group(function () {
+    Route::match('');
+});
+
+Route::group(function () {
+
+});
+
+Route::match('');
+    Route::group(function () {
+});

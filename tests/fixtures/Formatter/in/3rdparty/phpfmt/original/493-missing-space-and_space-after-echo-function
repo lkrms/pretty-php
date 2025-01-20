@@ -1,0 +1,8 @@
+//passes:ResizeSpaces
+<h1 class="wp-heading-inline"><?php echo esc_html( get_admin_page_title() ); ?></h1>
+<option selected="selected" value=""><?php esc_html_e( 'Select attribute', 'woodmart-child' );?></option>
+<option selected="selected" value=""><?php echa("hello"); ?></option>
+<option selected="selected" value=""><?php echo  "hello"  ; ?></option>
+<option selected="selected" value=""><?php echo("hello"); ?></option>
+<option selected="selected" value=""><?php printf("hello"); ?></option>
+<option selected="selected" value=""><?=fun("hello");?></option>

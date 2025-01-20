@@ -1,8 +1,11 @@
 <?php
+
 function foo($param) { ... }
 
 foo(param: 1, param: 2);
 // Error: Named parameter $param overwrites previous argument
+
 foo(1, param: 2);
 // Error: Named parameter $param overwrites previous argument
+
 ?>

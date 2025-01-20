@@ -1,20 +1,12 @@
 <?php
 
-class Person
+class Example
 {
-    public string $phone {
-        set => $this->sanitizePhone($value);
-    }
-
-    private function sanitizePhone(string $value): string
-    {
-        $value = ltrim($value, '+');
-        $value = ltrim($value, '1');
-
-        if (!preg_match('/\d\d\d\-\d\d\d\-\d\d\d\d/', $value)) {
-            throw new \InvalidArgumentException();
+    public string $foo {
+        get {
+            $temp = __PROPERTY__;
+            return $this->$temp;  // Doesn't refer to $this->foo, so it doesn't count.
         }
-        return $value;
     }
 }
 ?>

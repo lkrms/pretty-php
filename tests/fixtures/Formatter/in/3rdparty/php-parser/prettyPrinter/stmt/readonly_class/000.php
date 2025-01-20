@@ -1,0 +1,5 @@
+<?php
+
+readonly class Foo
+{
+}

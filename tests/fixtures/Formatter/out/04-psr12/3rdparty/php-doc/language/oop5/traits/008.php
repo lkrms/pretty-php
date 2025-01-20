@@ -21,7 +21,8 @@ class C2
 }
 
 $o = new C1();
-$o->inc();  // echo 1
+$o->inc();
 $p = new C2();
-$p->inc();  // echo 1
+$p->inc();
+
 ?>

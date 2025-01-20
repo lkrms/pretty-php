@@ -2,7 +2,7 @@
 
 abstract class AbstractClass
 {
-    // Force Extending class to define this method
+    // Force extending class to define this method
     abstract protected function getValue();
     abstract protected function prefixValue($prefix);
 
@@ -39,11 +39,12 @@ class ConcreteClass2 extends AbstractClass
     }
 }
 
-$class1 = new ConcreteClass1;
+$class1 = new ConcreteClass1();
 $class1->printOut();
-echo $class1->prefixValue('FOO_') . "\n";
+echo $class1->prefixValue('FOO_'), "\n";
 
-$class2 = new ConcreteClass2;
+$class2 = new ConcreteClass2();
 $class2->printOut();
-echo $class2->prefixValue('FOO_') . "\n";
+echo $class2->prefixValue('FOO_'), "\n";
+
 ?>

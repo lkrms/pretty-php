@@ -1,27 +1,35 @@
 <?php
 
-trait ezcReflectionReturnInfo
+trait TraitA
 {
-    function getReturnType()
-    {  /* 1 */
-    }
-
-    function getReturnDescription()
-    {  /* 2 */
+    public function sayHello()
+    {
+        echo 'Hello';
     }
 }
 
-class ezcReflectionMethod extends ReflectionMethod
+trait TraitB
 {
-    use ezcReflectionReturnInfo;
-
-    /* ... */
+    public function sayWorld()
+    {
+        echo 'World';
+    }
 }
 
-class ezcReflectionFunction extends ReflectionFunction
+class MyHelloWorld
 {
-    use ezcReflectionReturnInfo;
+    use TraitA, TraitB;  // A class can use multiple traits
 
-    /* ... */
+    public function sayHelloWorld()
+    {
+        $this->sayHello();
+        echo ' ';
+        $this->sayWorld();
+        echo "!\n";
+    }
 }
+
+$myHelloWorld = new MyHelloWorld();
+$myHelloWorld->sayHelloWorld();
+
 ?>

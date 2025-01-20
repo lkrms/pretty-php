@@ -1,3 +1,4 @@
 <?php
-$stdout = fopen('php://stdout', 'w');
+$line = trim(fgets(STDIN)); // reads one line from STDIN
+fscanf(STDIN, "%d\n", $number); // reads number from STDIN
 ?>

@@ -50,9 +50,9 @@ echo "This works: {$obj->values[3]->name}";
 
 echo "This works: {$obj->$staticProp}";
 
-// Won't work, outputs: C:\folder\{fantastic}.txt
-echo "C:\folder\{$great}.txt";
+// Won't work, outputs: C:\directory\{fantastic}.txt
+echo "C:\directory\{$great}.txt";
 
-// Works, outputs: C:\folder\fantastic.txt
-echo "C:\\folder\\{$great}.txt";
+// Works, outputs: C:\directory\fantastic.txt
+echo "C:\\directory\\{$great}.txt";
 ?>

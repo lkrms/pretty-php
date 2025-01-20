@@ -1,15 +1,8 @@
 <?php
-$array = array(
-    'foo'   => 'bar',
-    42      => 24,
-    'multi' => array(
-        'dimensional' => array(
-            'array' => 'foo'
-        )
-    )
-);
+$array = [];
 
-var_dump($array['foo']);
-var_dump($array[42]);
-var_dump($array['multi']['dimensional']['array']);
+$array[-5] = 1;
+$array[]   = 2;
+
+var_dump($array);
 ?>

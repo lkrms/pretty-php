@@ -1,13 +1,18 @@
 <?php
-trait StaticExample {
-    public static function doSomething() {
+
+trait StaticExample
+{
+    public static function doSomething()
+    {
         return 'Doing something';
     }
 }
 
-class Example {
+class Example
+{
     use StaticExample;
 }
 
-Example::doSomething();
+echo Example::doSomething();
+
 ?>

@@ -1,10 +1,9 @@
 <?php
-$source_array = [
-	[1, 'John'],
-	[2, 'Jane'],
-];
+$source_array = ['foo', 'bar', 'baz'];
 
-foreach ($source_array as [$id, $name]) {
-	// logic here with $id and $name
-}
+[$foo, $bar, $baz] = $source_array;
+
+echo $foo;  // prints "foo"
+echo $bar;  // prints "bar"
+echo $baz;  // prints "baz"
 ?>
