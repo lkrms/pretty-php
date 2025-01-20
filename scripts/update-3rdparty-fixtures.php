@@ -12,24 +12,6 @@ use Salient\Utility\Sys;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
-function run(string $command, string ...$arg): string
-{
-    $command = Sys::escapeCommand([$command, ...$arg]);
-    Console::log('Running:', $command);
-    $pipe = File::openPipe($command, 'rb');
-    $output = File::getContents($pipe);
-    $status = File::closePipe($pipe);
-    if ($status !== 0) {
-        throw new RuntimeException(sprintf('Command exited with status %d: %s', $status, $command));
-    }
-    return $output;
-}
-
-function quote(string $string): string
-{
-    return "'" . str_replace(['\\', "'"], ['\\\\', "\'"], $string) . "'";
-}
-
 $app = new CliApplication(dirname(__DIR__));
 
 error_reporting(error_reporting() & ~\E_COMPILE_WARNING);
@@ -44,8 +26,8 @@ $rootLength = strlen("$fixturesRoot/");
 
 $repos = [
     'php-doc' => 'https://github.com/php/doc-en.git',
-    'per' => 'https://github.com/php-fig/per-coding-style.git',
     'phpfmt' => 'https://github.com/driade/phpfmt8.git',
+    'per' => 'https://github.com/php-fig/per-coding-style.git',
 ];
 
 $data = [
@@ -358,6 +340,24 @@ File::writeContents($outFile, $output);
 $count++;
 $fixtures++;
 $replaced++;
+
+function run(string $command, string ...$arg): string
+{
+    $command = Sys::escapeCommand([$command, ...$arg]);
+    Console::log('Running:', $command);
+    $pipe = File::openPipe($command, 'rb');
+    $output = File::getContents($pipe);
+    $status = File::closePipe($pipe);
+    if ($status !== 0) {
+        throw new RuntimeException(sprintf('Command exited with status %d: %s', $status, $command));
+    }
+    return $output;
+}
+
+function quote(string $string): string
+{
+    return "'" . str_replace(['\\', "'"], ['\\\\', "\'"], $string) . "'";
+}
 
 Console::summary(Inflect::format(
     $fixtures,

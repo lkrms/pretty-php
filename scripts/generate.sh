@@ -103,7 +103,7 @@ if ((FIXTURES)); then (
     rm -rf tests/fixtures/Formatter/versions.json tests/fixtures/Formatter/out/*
 
     for PHP in "$@"; do
-        "$PHP" -dshort_open_tag=on scripts/generate-test-output.php
+        "$PHP" -dshort_open_tag=on scripts/update-out-fixtures.php
     done
 ); fi
 
