@@ -1201,6 +1201,19 @@ function () {};
 static function () {};
 PHP,
             ],
+            [
+                [
+                    [
+                        "T1:L2:'use' - T13:L2:';'",
+                        'use A\\B \\',
+                        Type::_USE,
+                    ],
+                ],
+                <<<'PHP'
+<?php
+use A\B\{C\D, function b\c, const D};
+PHP,
+            ],
         ];
 
         if (\PHP_VERSION_ID < 80000) {

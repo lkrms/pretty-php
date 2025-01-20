@@ -756,6 +756,12 @@ final class Parser implements Immutable
                 $idx->AttributeOrDeclaration[$statement->id]
                 && ($first = $this->skipNextSiblingsFrom($statement, $idx->Attribute))
                 && $idx->Declaration[$first->id]
+                && !(
+                    $idx->ConstOrFunction[$first->id]
+                    && $first->Parent
+                    && $first->Parent->id === \T_OPEN_BRACE
+                    && !($first->Parent->Flags & Flag::STRUCTURAL_BRACE)
+                )
             ) {
                 /** @var Token */
                 $next = $first->NextCode;
