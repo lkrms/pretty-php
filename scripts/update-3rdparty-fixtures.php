@@ -427,6 +427,9 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 $app = new CliApplication(dirname(__DIR__));
 
 error_reporting(error_reporting() & ~\E_COMPILE_WARNING);
+if (\PHP_VERSION_ID < 80000) {
+    error_reporting(error_reporting() & ~\E_DEPRECATED);
+}
 
 $updater = new Updater($app);
 

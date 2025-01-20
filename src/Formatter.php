@@ -641,6 +641,9 @@ final class Formatter implements Buildable, Immutable
         if ($errorLevel & \E_COMPILE_WARNING) {
             error_reporting($errorLevel & ~\E_COMPILE_WARNING);
         }
+        if (\PHP_VERSION_ID < 80000 && $errorLevel & \E_DEPRECATED) {
+            error_reporting($errorLevel & ~\E_DEPRECATED);
+        }
 
         if (!$this->ExtensionsLoaded) {
             Profile::startTimer(__METHOD__ . '#load-extensions');
