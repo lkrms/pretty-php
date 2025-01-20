@@ -1,0 +1,23 @@
+<?php
+
+class Foo extends Bar implements ABC, \DEF, namespace\GHI
+{
+    var $a = 'foo';
+    private $b = 'bar';
+    static $c = 'baz';
+
+    function test()
+    {
+        $this->a = 'bar';
+        echo 'test';
+    }
+
+    protected function baz() {}
+    public function foo() {}
+    abstract static function bar() {}
+}
+
+trait Bar
+{
+    function test() {}
+}

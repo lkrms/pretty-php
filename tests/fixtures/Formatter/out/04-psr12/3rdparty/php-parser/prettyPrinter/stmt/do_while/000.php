@@ -1,0 +1,4 @@
+<?php
+
+do {
+} while (true);

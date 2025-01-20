@@ -1,0 +1,1 @@
+<?php class A { abstract final function a(); }
