@@ -105,6 +105,8 @@ if ((FIXTURES)); then (
     for PHP in "$@"; do
         "$PHP" -dshort_open_tag=on scripts/update-out-fixtures.php
     done
+
+    scripts/update-fixture-index.php "$#"
 ); fi
 
 if ((PRESET_FIXTURES)); then (
