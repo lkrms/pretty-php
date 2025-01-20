@@ -27,6 +27,15 @@ EOF
     exit
 }
 
+# run <command> [<argument>...]
+function run() {
+    printf '==> running:%s\n' "$(printf ' %q' "$@")" >&2
+    local s=0
+    "$@" || s=$?
+    printf '\n' >&2
+    return "$s"
+}
+
 # generate <file> <command> [<argument>...]
 function generate() {
     local FILE=$1
@@ -100,13 +109,13 @@ if ((FIXTURES)); then (
             die "command not found: $PHP"
     done
 
-    rm -rf tests/fixtures/Formatter/versions.json tests/fixtures/Formatter/out/*
+    run rm -rf tests/fixtures/Formatter/versions.json tests/fixtures/Formatter/out/*
 
     for PHP in "$@"; do
-        "$PHP" -dshort_open_tag=on scripts/update-out-fixtures.php
+        run "$PHP" -dshort_open_tag=on scripts/update-out-fixtures.php
     done
 
-    scripts/update-fixture-index.php "$#"
+    run scripts/update-fixture-index.php "$#"
 ); fi
 
 if ((PRESET_FIXTURES)); then (
