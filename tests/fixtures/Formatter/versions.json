@@ -149,7 +149,6 @@
         "3rdparty/phpfmt/unit/twentyfour",
         "3rdparty/phpfmt/unit/twentynine",
         "3rdparty/phpfmt/unit/twentysix",
-        "3rdparty/phpfmt/unit/twentythree",
         "3rdparty/phpfmt/unit/two",
         "issues/0099-enum-comment-indentation.php",
         "standalone/chains-02.php",
@@ -241,7 +240,6 @@
         "3rdparty/phpfmt/unit/thirteen",
         "3rdparty/phpfmt/unit/three",
         "3rdparty/phpfmt/unit/twentysix",
-        "3rdparty/phpfmt/unit/twentythree",
         "issues/0099-enum-comment-indentation.php",
         "standalone/functions-anonymous-03.php",
         "standalone/functions-anonymous-04.php",
@@ -280,7 +278,6 @@
         "3rdparty/phpfmt/original/451-missing-readonly-class",
         "3rdparty/phpfmt/original/486-php84",
         "3rdparty/phpfmt/unit/three",
-        "3rdparty/phpfmt/unit/twentythree",
         "standalone/functions-anonymous-04.php",
         "standalone/native-types-04.php",
         "standalone/property-hooks-rfc.php"
@@ -309,7 +306,6 @@
         "3rdparty/phpfmt/original/352-spacing-interpolated-value",
         "3rdparty/phpfmt/original/448-php83",
         "3rdparty/phpfmt/original/486-php84",
-        "3rdparty/phpfmt/unit/twentythree",
         "standalone/property-hooks-rfc.php"
     ],
     "80300": [
@@ -335,7 +331,6 @@
         "3rdparty/php-doc/language/oop5/visibility/002.php",
         "3rdparty/phpfmt/original/293-namespaces-vs-namespace-named-ns",
         "3rdparty/phpfmt/original/486-php84",
-        "3rdparty/phpfmt/unit/twentythree",
         "standalone/property-hooks-rfc.php"
     ],
     "80400": [
@@ -346,7 +341,6 @@
         "3rdparty/phpfmt/original/218-mild-pre-increment",
         "3rdparty/phpfmt/original/232-wrong-space-variable-variables",
         "3rdparty/phpfmt/original/236-pre-increment-complex-vars",
-        "3rdparty/phpfmt/original/293-namespaces-vs-namespace-named-ns",
-        "3rdparty/phpfmt/unit/twentythree"
+        "3rdparty/phpfmt/original/293-namespaces-vs-namespace-named-ns"
     ]
 }
