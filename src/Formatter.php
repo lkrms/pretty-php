@@ -24,6 +24,7 @@ use Lkrms\PrettyPHP\Filter\CollectColumn;
 use Lkrms\PrettyPHP\Filter\EvaluateNumbers;
 use Lkrms\PrettyPHP\Filter\EvaluateStrings;
 use Lkrms\PrettyPHP\Filter\MoveComments;
+use Lkrms\PrettyPHP\Filter\NormaliseBinaryStrings;
 use Lkrms\PrettyPHP\Filter\NormaliseCasts;
 use Lkrms\PrettyPHP\Filter\NormaliseKeywords;
 use Lkrms\PrettyPHP\Filter\RemoveEmptyDocBlocks;
@@ -80,6 +81,7 @@ use Salient\Core\Indentation;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Salient\Utility\Reflect;
+use Salient\Utility\Str;
 use Closure;
 use CompileError;
 use InvalidArgumentException;
@@ -103,6 +105,7 @@ final class Formatter implements Buildable, Immutable
      * @var array<class-string<Filter>>
      */
     public const DEFAULT_FILTERS = [
+        NormaliseBinaryStrings::class,
         CollectColumn::class,
         RemoveWhitespace::class,
         RemoveHeredocIndentation::class,
@@ -530,16 +533,6 @@ final class Formatter implements Buildable, Immutable
     }
 
     /**
-     * Get the formatter's token array
-     *
-     * @return Token[]|null
-     */
-    public function getTokens(): ?array
-    {
-        return $this->Tokens ?? null;
-    }
-
-    /**
      * Get an instance with the given extensions disabled
      *
      * @param array<class-string<Extension>> $extensions
@@ -651,6 +644,9 @@ final class Formatter implements Buildable, Immutable
         if ($errorLevel & \E_COMPILE_WARNING) {
             error_reporting($errorLevel & ~\E_COMPILE_WARNING);
         }
+        if (\PHP_VERSION_ID < 80000 && $errorLevel & \E_DEPRECATED) {
+            error_reporting($errorLevel & ~\E_DEPRECATED);
+        }
 
         if (!$this->ExtensionsLoaded) {
             Profile::startTimer(__METHOD__ . '#load-extensions');
@@ -677,12 +673,20 @@ final class Formatter implements Buildable, Immutable
             if ($eol === null || $eol === '') {
                 $eol = Get::eol($code);
             }
-            if ($eol !== null && $eol !== "\n") {
+            // If a non-standard end-of-line sequence is given, replace it with
+            // something `Str::setEol()` recognises
+            if ($eol !== null && !([
+                "\n" => true,
+                "\r" => true,
+                "\r\n" => true,
+            ][$eol] ?? false)) {
                 $code = str_replace($eol, "\n", $code);
             }
             if ($eol === null || !$this->PreserveEol) {
                 $eol = $this->PreferredEol;
             }
+            // Normalise every line ending
+            $code = Str::setEol($code);
         } finally {
             Profile::stopTimer(__METHOD__ . '#detect-eol');
         }
@@ -699,9 +703,7 @@ final class Formatter implements Buildable, Immutable
             $this->DeclarationsByType = $this->Document->DeclarationsByType;
 
             if (!$this->Tokens) {
-                if (!$this->Debug) {
-                    $this->clear();
-                }
+                $this->Debug || $this->clear();
                 return '';
             }
 
@@ -1070,9 +1072,7 @@ final class Formatter implements Buildable, Immutable
             // @codeCoverageIgnoreEnd
         } finally {
             Profile::stopTimer(__METHOD__ . '#render');
-            if (!$this->Debug) {
-                $this->clear();
-            }
+            $this->Debug || $this->clear();
         }
 
         if (!$fast) {
@@ -1244,6 +1244,7 @@ final class Formatter implements Buildable, Immutable
             } else {
                 $out = '';
             }
+            // @codeCoverageIgnoreStart
         } catch (Throwable $ex) {
             throw new FormatterException(
                 'Unable to render partially formatted output',
@@ -1253,6 +1254,7 @@ final class Formatter implements Buildable, Immutable
                 $this->getExtensionData(),
                 $ex,
             );
+            // @codeCoverageIgnoreEnd
         } finally {
             Profile::stopTimer(__METHOD__ . '#render');
         }

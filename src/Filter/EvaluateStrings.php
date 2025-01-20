@@ -68,6 +68,11 @@ final class EvaluateStrings implements Filter
                 eval("\$string = \"{$text}\";");
             } elseif ($lastString->id === \T_START_HEREDOC) {
                 $start = trim($lastString->text);
+                // Remove prefix if present, e.g. `b<<<EOF`
+                if ($start[0] !== '<') {
+                    /** @var string */
+                    $start = substr($start, 1);
+                }
                 // Ignore nowdocs
                 if (substr($start, 0, 4) === "<<<'") {
                     continue;

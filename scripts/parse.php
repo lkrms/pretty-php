@@ -102,7 +102,7 @@ $formatter = Formatter::build()
 $formatter->format($code, null, null, null, true);
 
 if ($dump) {
-    dump($formatter->getTokens());
+    dump($formatter->Document->Tokens);
 }
 
 Console::summary('Input formatted by ' . Formatter::class, 'without errors', true);

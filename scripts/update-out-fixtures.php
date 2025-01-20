@@ -83,6 +83,7 @@ if (isset($invalid)) {
     $index[\PHP_VERSION_ID - \PHP_VERSION_ID % 100] = $invalid;
     ksort($index);
 
+    Console::log(file_exists($indexPath) ? 'Replacing' : 'Creating', $indexPath);
     $json = Json::prettyPrint($index);
     File::writeContents($indexPath, $json . \PHP_EOL);
 }

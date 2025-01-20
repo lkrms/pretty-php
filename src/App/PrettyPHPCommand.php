@@ -1142,7 +1142,7 @@ EOF,
                 $this->maybeDumpDebugOutput(
                     $input,
                     null,
-                    $formatter->getTokens(),
+                    $formatter->Document->Tokens ?? null,
                     $formatter->Log,
                     $data,
                 );
@@ -1161,7 +1161,7 @@ EOF,
                 $this->maybeDumpDebugOutput(
                     $input,
                     $output,
-                    $formatter->getTokens(),
+                    $formatter->Document->Tokens ?? null,
                     $formatter->Log,
                     $this->Debug
                         ? $formatter->getExtensionData()
@@ -1648,14 +1648,14 @@ EOF,
     /**
      * @param Token[]|null $tokens
      * @param array<string,string>|null $log
-     * @param mixed $data
+     * @param array<class-string,non-empty-array<string,mixed>|string>|null $data
      */
     private function maybeDumpDebugOutput(
         string $input,
         ?string $output,
         ?array $tokens,
         ?array $log,
-        $data
+        ?array $data
     ): void {
         if ($this->DebugDirectory === null) {
             return;
@@ -1689,10 +1689,10 @@ EOF,
             'input.php' => $input,
             'output.php' => $output,
             'tokens.json' => $tokens !== null ? (object) $tokens : null,
-            'data.out' => is_string($data) ? $data : null,
-            'data.json' => is_string($data) ? null : $data,
+            'data.json' => $data,
         ];
 
+        $flags = \JSON_INVALID_UTF8_IGNORE;
         foreach ($files as $file => $out) {
             $file = "{$this->DebugDirectory}/{$file}";
             File::delete($file);
@@ -1700,10 +1700,7 @@ EOF,
                 continue;
             }
             if (!is_string($out)) {
-                $out = Json::prettyPrint(
-                    $out,
-                    \JSON_INVALID_UTF8_IGNORE
-                ) . \PHP_EOL;
+                $out = Json::prettyPrint($out, $flags) . \PHP_EOL;
             }
             File::writeContents($file, $out);
         }

@@ -2,6 +2,7 @@
 
 namespace Lkrms\PrettyPHP\Exception;
 
+use Lkrms\PrettyPHP\Contract\Extension;
 use Lkrms\PrettyPHP\Token;
 use Salient\Utility\Json;
 use Throwable;
@@ -18,22 +19,22 @@ class FormatterException extends AbstractException
     protected ?array $Tokens;
     /** @var array<string,string>|null */
     protected ?array $Log;
-    /** @var mixed[]|object|null */
-    protected $Data;
+    /** @var array<class-string<Extension>,non-empty-array<string,mixed>>|null */
+    protected ?array $Data;
 
     /**
      * @internal
      *
      * @param Token[]|null $tokens
      * @param array<string,string>|null $log
-     * @param mixed[]|object|null $data
+     * @param array<class-string<Extension>,non-empty-array<string,mixed>>|null $data
      */
     public function __construct(
         string $message = '',
         ?string $output = null,
         ?array $tokens = null,
         ?array $log = null,
-        $data = null,
+        ?array $data = null,
         ?Throwable $previous = null
     ) {
         $this->Output = $output;
@@ -80,9 +81,9 @@ class FormatterException extends AbstractException
     }
 
     /**
-     * @return mixed[]|object|null
+     * @return array<class-string<Extension>,non-empty-array<string,mixed>>|null
      */
-    public function getData()
+    public function getData(): ?array
     {
         return $this->Data;
     }

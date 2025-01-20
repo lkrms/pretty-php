@@ -1,8 +1,8 @@
 # Exclude generated files from GitHub diffs and stats
-versions.json linguist-generated
 in/3rdparty/** linguist-generated
 out/** linguist-generated
+versions.json linguist-generated
 
-out/04-psr12/** text eol=lf
+out/*-psr12/** text eol=lf
 
 **/3rdparty/utf-8.php text diff
