@@ -1,8 +1,8 @@
 <?php
 
-echo (5 % 3) . "\n";    // prints 2
-echo (5 % -3) . "\n";   // prints 2
-echo (-5 % 3) . "\n";   // prints -2
-echo (-5 % -3) . "\n";  // prints -2
+var_dump(5 % 3);
+var_dump(5 % -3);
+var_dump(-5 % 3);
+var_dump(-5 % -3);
 
 ?>

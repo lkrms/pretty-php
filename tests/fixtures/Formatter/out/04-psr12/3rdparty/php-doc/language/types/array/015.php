@@ -1,14 +1,9 @@
 <?php
-$a = array(1 => 'one', 2 => 'two', 3 => 'three');
-unset($a[2]);
+$a = 1;
+$b = 2;
 
-/*
- * will produce an array that would have been defined as
- * $a = array(1 => 'one', 3 => 'three');
- * and NOT
- * $a = array(1 => 'one', 2 =>'three');
- */
+[$b, $a] = [$a, $b];
 
-$b = array_values($a);
-// Now $b is array(0 => 'one', 1 =>'three')
+echo $a;  // prints 2
+echo $b;  // prints 1
 ?>

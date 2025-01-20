@@ -3,9 +3,9 @@
 class BlogPost
 {
     public function __construct(
-        private int $id,
-        private string $title,
-        private string $content,
+        public int $id,
+        public string $title,
+        public string $content,
     ) {}
 }
 

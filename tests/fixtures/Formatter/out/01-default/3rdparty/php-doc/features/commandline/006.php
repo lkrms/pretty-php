@@ -1,3 +1,3 @@
 <?php
-$stderr = fopen('php://stderr', 'w');
+$stdout = fopen('php://stdout', 'w');
 ?>

@@ -1,0 +1,9 @@
+<?php
+//passes:AutoSemicolon
+
+echo "Error moving file '{$file_name}' to folder: {$e->getMessage()}";
+echo "Error moving file '{$file_name}' to folder: '{$e->getMessage()}'";
+echo "Error moving file '{$file_name}' to folder: \"{$e->getMessage()}\"";
+echo 'Error moving file "{$file_name}" to folder: {$e->getMessage()}';
+echo 'Error moving file "{$file_name}" to folder: \'{$e->getMessage()}\'';
+echo 'Error moving file "{$file_name}" to folder: "{$e->getMessage()}"';

@@ -11,5 +11,5 @@ class ConstantsExample
 }
 
 $example = new ConstantsExample;
-echo $example::FLAG_MUTABLE;  // 1
+echo $example::FLAG_MUTABLE;
 ?>

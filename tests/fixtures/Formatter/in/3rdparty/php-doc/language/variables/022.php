@@ -1,13 +1,13 @@
 <?php
-class foo {
-    var $bar = 'I am bar.';
-    var $arr = array('I am A.', 'I am B.', 'I am C.');
-    var $r   = 'I am r.';
+class Foo {
+    public $bar = 'I am bar.';
+    public $arr = ['I am A.', 'I am B.', 'I am C.'];
+    public $r   = 'I am r.';
 }
 
-$foo = new foo();
+$foo = new Foo();
 $bar = 'bar';
-$baz = array('foo', 'bar', 'baz', 'quux');
+$baz = ['foo', 'bar', 'baz', 'quux'];
 echo $foo->$bar . "\n";
 echo $foo->{$baz[1]} . "\n";
 
@@ -17,5 +17,6 @@ echo $foo->{$start . $end} . "\n";
 
 $arr = 'arr';
 echo $foo->{$arr[1]} . "\n";
+echo $foo->{$arr}[1] . "\n";
 
 ?>

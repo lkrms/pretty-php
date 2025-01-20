@@ -44,7 +44,9 @@ class C2 implements I
 	// This example creates a virtual property, which is fine.
 	public string $writeable {
 		get => $this->written;
-		set => $value;
+		set {
+			$this->written = $value;
+		}
 	}
 
 	// This property requires both read and write be possible,
@@ -52,7 +54,9 @@ class C2 implements I
 	// the default behavior.
 	public string $both {
 		get => $this->all;
-		set => strtoupper($value);
+		set {
+			$this->all = strtoupper($value);
+		}
 	}
 }
 ?>

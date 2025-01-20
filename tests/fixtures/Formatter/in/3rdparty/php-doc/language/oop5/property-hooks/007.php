@@ -1,19 +1,15 @@
 <?php
-class User
+readonly class Rectangle
 {
-    public string $username {
-        final set => strtolower($value);
+    // A virtual property.
+    public int $area {
+        get => $this->h * $this->w;
     }
+
+    public function __construct(public int $h, public int $w) {}
 }
 
-class Manager extends User
-{
-    public string $username {
-        // This is allowed
-        get => strtoupper($this->username);
-
-        // But this is NOT allowed, because set is final in the parent.
-        set => strtoupper($value);
-    }
-}
+$s = new Rectangle(4, 5);
+print $s->area; // prints 20
+$s->area = 30; // Error, as there is no set operation defined.
 ?>

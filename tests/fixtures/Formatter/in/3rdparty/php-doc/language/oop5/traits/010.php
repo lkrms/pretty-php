@@ -1,11 +1,28 @@
 <?php
-trait StaticExample {
-    public static $static = 'foo';
+
+trait T
+{
+    public static $counter = 1;
 }
 
-class Example {
-    use StaticExample;
+class A
+{
+    use T;
+
+    public static function incrementCounter()
+    {
+        static::$counter++;
+    }
 }
 
-echo Example::$static;
+class B extends A
+{
+    use T;
+}
+
+A::incrementCounter();
+
+echo A::$counter, "\n";
+echo B::$counter, "\n";
+
 ?>

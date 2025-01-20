@@ -1,11 +1,14 @@
-<?php
 class Example
 {
-    public string $foo {
-        get {
-            $temp = __PROPERTY__;
-            return $this->$temp;  // Doesn't refer to $this->foo, so it doesn't count.
-        }
+    public function __construct(
+        public private(set) DateTimeInterface $created {
+            set (string|DateTimeInterface $value) {
+                if (is_string($value)) {
+                    $value = new DateTimeImmutable($value);
+                }
+                $this->created = $value;
+            }
+        },
+    ) {
     }
 }
-?>

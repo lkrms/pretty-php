@@ -13,5 +13,6 @@ class Example
     use StaticExample;
 }
 
-Example::doSomething();
+echo Example::doSomething();
+
 ?>

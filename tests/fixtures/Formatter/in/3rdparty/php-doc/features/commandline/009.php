@@ -1,11 +1,7 @@
 <?php
 // router.php
-$path = pathinfo($_SERVER["SCRIPT_FILENAME"]);
-if ($path["extension"] == "el") {
-    header("Content-Type: text/x-script.elisp");
-    readfile($_SERVER["SCRIPT_FILENAME"]);
+if (php_sapi_name() == 'cli-server') {
+    /* route static assets and return false */
 }
-else {
-    return FALSE;
-}
+/* go on with normal index.php operations */
 ?>

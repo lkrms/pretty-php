@@ -1,19 +1,18 @@
 <?php
-class Point
+class User
 {
-    public int $x;
-    public int $y;
+    public string $username {
+        final set => strtolower($value);
+    }
 }
 
-class PositivePoint extends Point
+class Manager extends User
 {
-    public int $x {
-        set {
-            if ($value < 0) {
-                throw new \InvalidArgumentException('Too small');
-            }
-            $this->x = $value;
-        }
+    public string $username {
+        // This is allowed
+        get => strtoupper($this->username);
+        // But this is NOT allowed, because set is final in the parent.
+        set => strtoupper($value);
     }
 }
 ?>

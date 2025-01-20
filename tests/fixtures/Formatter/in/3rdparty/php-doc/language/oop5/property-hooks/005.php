@@ -1,15 +1,17 @@
-<?php
-readonly class Rectangle
+class Example
 {
-    // A virtual property.
-    public int $area {
-        get => $this->h * $this->w;
+    public private(set) DateTimeInterface $created {
+        set (string|DateTimeInterface $value) {
+            if (is_string($value)) {
+                $value = new DateTimeImmutable($value);
+            }
+            $this->created = $value;
+        }
     }
 
-    public function __construct(public int $h, public int $w) {}
+    public function __construct(
+        DateTimeInterface $created,
+    ) {
+        $this->created = $created;
+    }
 }
-
-$s = new Rectangle(4, 5);
-print $s->area; // prints 20
-$s->area = 30; // Error, as there is no set operation defined.
-?>

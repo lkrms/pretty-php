@@ -1,4 +1,5 @@
 <?php
+
 trait StaticExample
 {
 	public static function doSomething()
@@ -12,5 +13,6 @@ class Example
 	use StaticExample;
 }
 
-Example::doSomething();
+echo Example::doSomething();
+
 ?>

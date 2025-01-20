@@ -1,0 +1,18 @@
+<?php
+//passes:AlignDoubleArrow,AlignComments,AlignDoubleSlashComments,ResizeSpaces
+
+$a = 1; //Comment 1
+$bb = 22;  // Comment 2
+$ccc = 333;  // Comment 3
+$arr = [
+  'a' => 1,
+  'aa' => 1,
+  'aaaa' => 1,
+  'aaaaaa' => 1,
+];
+$arr = [
+  'b' => 1,    /** xxxx */
+  'bb' => 1,   //xxxx
+  'bbbb' => 1,// xxxxxx
+  'bbbbbb' => 1, // x
+];

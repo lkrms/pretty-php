@@ -1,0 +1,13 @@
+<?php
+//passes:PSR2ModifierVisibilityStaticOrder
+//version:8.1
+class a {
+	public static string $endpoint = '';
+	static string $endpoint0 = '';
+	private static string $endpoint1 = '';
+	private readonly string $endpoint3 = '';
+	private static readonly string $endpoint4 = '';
+	public static readonly string $endpoint5 = '';
+	static readonly string $endpoint6 = '';
+	final readonly string $endpoint7 = '';
+}
