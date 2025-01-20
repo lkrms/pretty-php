@@ -75,10 +75,12 @@ final class NormaliseStrings implements TokenRule
             if ($token->id === \T_ENCAPSED_AND_WHITESPACE) {
                 /** @var Token */
                 $openedBy = $token->String;
-                if (
-                    $openedBy->id === \T_START_HEREDOC
-                    && Str::startsWith($openedBy->text, "<<<'")
-                ) {
+                if ($openedBy->id === \T_START_HEREDOC && (
+                    Str::startsWith($openedBy->text, "<<<'") || (
+                        $openedBy->text[0] !== '<'
+                        && Str::startsWith(substr($openedBy->text, 1), "<<<'")
+                    )
+                )) {
                     continue;
                 }
             } else {
