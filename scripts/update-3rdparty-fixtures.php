@@ -135,17 +135,17 @@ class Updater
         }
 
         $dir = "{$this->TargetRoot}/php-doc";
+        Console::log('Populating:', $dir);
         File::createDir($dir);
         File::pruneDir($dir);
 
         foreach ($listings as $source => $sourceListings) {
             $dir = "{$this->TargetRoot}/php-doc/$source";
-            Console::log('Updating:', $dir);
             File::createDir($dir);
             foreach ($sourceListings as $i => $output) {
                 $outFile = sprintf('%s/%03d.php', $dir, $i);
                 Console::logProgress('Creating', substr($outFile, $this->TargetLength));
-                File::writeContents($outFile, $output);
+                File::writeContents($outFile, Str::setEol($output, \PHP_EOL));
                 $this->Replaced++;
             }
         }
@@ -181,17 +181,17 @@ class Updater
         }
 
         $dir = "{$this->TargetRoot}/php-parser";
+        Console::log('Populating:', $dir);
         File::createDir($dir);
         File::pruneDir($dir);
 
         foreach ($listings as $source => $sourceListings) {
             $dir = "{$this->TargetRoot}/php-parser/$source";
-            Console::log('Updating:', $dir);
             File::createDir($dir);
             foreach ($sourceListings as $i => $output) {
                 $outFile = sprintf('%s/%03d.php', $dir, $i);
                 Console::logProgress('Creating', substr($outFile, $this->TargetLength));
-                File::writeContents($outFile, $output);
+                File::writeContents($outFile, Str::setEol($output, \PHP_EOL));
                 $this->Replaced++;
             }
         }
@@ -204,7 +204,7 @@ class Updater
         Console::info('Updating phpfmt fixtures');
 
         $dir = "{$this->TargetRoot}/phpfmt";
-        Console::log('Updating:', $dir);
+        Console::log('Populating:', $dir);
         File::createDir($dir);
         File::pruneDir($dir);
 
@@ -240,9 +240,10 @@ class Updater
 
         $count = 0;
         foreach ($files as $file => $outFile) {
+            $code = File::getContents((string) $file);
             $outFile = "$dir/" . $outFile;
             Console::logProgress('Creating', substr($outFile, $this->TargetLength));
-            File::copy($file, $outFile);
+            File::writeContents($outFile, Str::setEol($code, \PHP_EOL));
             $count++;
             $this->Fixtures++;
             $this->Replaced++;
@@ -299,7 +300,7 @@ REGEX;
         }
 
         $dir = "{$this->TargetRoot}/php-fig/per";
-        Console::log('Updating:', $dir);
+        Console::log('Populating:', $dir);
         File::createDir($dir);
         File::pruneDir($dir);
 
@@ -329,7 +330,7 @@ REGEX;
                 $index++;
                 $outFile = sprintf('%s/%02d-%s.php', $dir, $index, $heading);
                 Console::logProgress('Creating', substr($outFile, $this->TargetLength));
-                File::writeContents($outFile, $listing);
+                File::writeContents($outFile, Str::setEol($listing, \PHP_EOL));
                 $this->Replaced++;
             }
         }
@@ -341,15 +342,14 @@ REGEX;
     {
         Console::info('Updating utf-8 fixture');
 
-        $output = <<<'PHP'
-<?php
-$ascii = "\0\x01\x02\x03\x04\x05\x06\x07\x08\t\n\v\f\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\e\x1c\x1d\x1e\x1f";
-$blank = "\u{00a0}\u{2000}\u{2001}\u{2002}\u{2003}\u{2004}\u{2005}\u{2006}\u{2007}\u{2008}\u{2009}\u{200a}\u{202f}\u{205f}\u{3000}";
-$bom = "\u{feff}";
-$ignorable = "\u{00ad}\u{202a}\u{202b}\u{202c}\u{202d}\u{202e}\u{2066}\u{2067}\u{2068}\u{2069}";
-$visible = "\u{FE19}";
-
-PHP;
+        $output = implode(\PHP_EOL, [
+            '<?php',
+            '$ascii = "\0\x01\x02\x03\x04\x05\x06\x07\x08\t\n\v\f\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\e\x1c\x1d\x1e\x1f";',
+            '$blank = "\u{00a0}\u{2000}\u{2001}\u{2002}\u{2003}\u{2004}\u{2005}\u{2006}\u{2007}\u{2008}\u{2009}\u{200a}\u{202f}\u{205f}\u{3000}";',
+            '$bom = "\u{feff}";',
+            '$ignorable = "\u{00ad}\u{202a}\u{202b}\u{202c}\u{202d}\u{202e}\u{2066}\u{2067}\u{2068}\u{2069}";',
+            '$visible = "\u{FE19}";',
+        ]) . \PHP_EOL;
 
         Regex::matchAll(
             "/\"[^\"]*(?:[\0-\x08\x0e-\x1f\x7f-\xff][^\"]*)+\"/",

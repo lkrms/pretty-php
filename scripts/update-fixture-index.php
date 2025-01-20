@@ -5,6 +5,7 @@ use Lkrms\PrettyPHP\Tests\FormatterTest;
 use Salient\Cli\CliApplication;
 use Salient\Core\Facade\Console;
 use Salient\Utility\File;
+use Salient\Utility\Inflect;
 use Salient\Utility\Json;
 use Salient\Utility\Test;
 
@@ -36,7 +37,7 @@ if (
     foreach ($invalid as $file) {
         $file = "$dir/$file";
         if (file_exists($file)) {
-            Console::log('Suppressing', $file);
+            Console::logProgress('Suppressing', $file);
             rename($file, $file . '.invalid');
         }
     }
@@ -45,9 +46,14 @@ if (
         $index[$version] = array_values(array_diff($files, $invalid));
     }
 
-    Console::log('Replacing', $indexPath);
+    Console::logProgress('Replacing', $indexPath);
     $json = Json::prettyPrint($index);
     File::writeContents($indexPath, $json . \PHP_EOL);
+
+    Console::summary(Inflect::format(
+        $invalid,
+        '{{#}} {{#:fixture}} removed from testing and fixture index',
+    ), 'successfully', true);
 } else {
     Console::log('Nothing to do:', $indexPath);
 }
