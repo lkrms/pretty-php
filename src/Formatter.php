@@ -81,6 +81,7 @@ use Salient\Core\Indentation;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Salient\Utility\Reflect;
+use Salient\Utility\Str;
 use Closure;
 use CompileError;
 use InvalidArgumentException;
@@ -672,12 +673,20 @@ final class Formatter implements Buildable, Immutable
             if ($eol === null || $eol === '') {
                 $eol = Get::eol($code);
             }
-            if ($eol !== null && $eol !== "\n") {
+            // If a non-standard end-of-line sequence is given, replace it with
+            // something `Str::setEol()` recognises
+            if ($eol !== null && !([
+                "\n" => true,
+                "\r" => true,
+                "\r\n" => true,
+            ][$eol] ?? false)) {
                 $code = str_replace($eol, "\n", $code);
             }
             if ($eol === null || !$this->PreserveEol) {
                 $eol = $this->PreferredEol;
             }
+            // Normalise every line ending
+            $code = Str::setEol($code);
         } finally {
             Profile::stopTimer(__METHOD__ . '#detect-eol');
         }
