@@ -6,7 +6,6 @@ use Lkrms\PrettyPHP\Concern\ExtensionTrait;
 use Lkrms\PrettyPHP\Contract\Filter;
 use Lkrms\PrettyPHP\TokenUtil;
 use Salient\Utility\Exception\ShouldNotHappenException;
-use Salient\Utility\Regex;
 
 /**
  * Evaluate strings for comparison
@@ -31,7 +30,15 @@ final class EvaluateStrings implements Filter
                 if (!$lastString) {
                     $stack[] = $token;
                     $lastString = $token;
+                    // `b"` -> `"`
+                    if ($token->id === \T_DOUBLE_QUOTE) {
+                        $token->text = '"';
+                    }
                     continue;
+                }
+                // `b<<< "EOF"` -> `<<<EOF`
+                if ($lastString->id === \T_START_HEREDOC) {
+                    $lastString->text = '<<<' . trim(ltrim($lastString->text, 'bB'), "< \t\"\n\r") . "\n";
                 }
                 array_pop($stack);
                 $lastString = null;
@@ -67,17 +74,12 @@ final class EvaluateStrings implements Filter
                 $text = TokenUtil::unescapeBackticks($token->text);
                 eval("\$string = \"{$text}\";");
             } elseif ($lastString->id === \T_START_HEREDOC) {
-                $start = trim($lastString->text);
-                // Remove prefix if present, e.g. `b<<<EOF`
-                if ($start[0] !== '<') {
-                    /** @var string */
-                    $start = substr($start, 1);
-                }
+                $start = rtrim($lastString->text);
                 // Ignore nowdocs
-                if (substr($start, 0, 4) === "<<<'") {
+                if ($start[-1] === "'") {
                     continue;
                 }
-                $end = Regex::replace('/[^a-zA-Z0-9_]+/', '', $start);
+                $end = trim(ltrim($start, 'bB'), "< \t\"'");
                 eval("\$string = {$start}\n{$token->text}\n{$end};");
             } else {
                 // @codeCoverageIgnoreStart

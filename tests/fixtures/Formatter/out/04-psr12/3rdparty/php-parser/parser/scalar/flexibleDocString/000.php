@@ -7,12 +7,20 @@ $ary = [
     <<<'BAR'
         Test
         BAR,
-]; <<<'END'
-    END; <<<END
+];
 
-    END; <<<END
+<<<'END'
+    END;
+
+<<<END
+
+    END;
+
+<<<END
      
-    END; <<<'END'
+    END;
+
+<<<'END'
         a
        b
 
@@ -20,13 +28,17 @@ $ary = [
 
      d
     e
-    END; <<<END
+    END;
+
+<<<END
         a
        b
       $test
      d
     e
-    END; <<<'END'
+    END;
+
+<<<'END'
 
         a
 
@@ -38,7 +50,9 @@ $ary = [
 
     e
 
-    END; <<<END
+    END;
+
+<<<END
     \ta\r
 
     \ta
@@ -51,28 +65,50 @@ $ary = [
 
     e
 
-    END; <<<BAR
+    END;
+
+<<<BAR
     $one-
-    BAR; <<<BAR
+    BAR;
+
+<<<BAR
     $two -
-    BAR; <<<BAR
+    BAR;
+
+<<<BAR
     $three\t-
-    BAR; <<<BAR
+    BAR;
+
+<<<BAR
     $four-$four
-    BAR; <<<BAR
+    BAR;
+
+<<<BAR
     $five-$five-
-    BAR; <<<BAR
+    BAR;
+
+<<<BAR
     $six-$six-$six
-    BAR; <<<BAR
+    BAR;
+
+<<<BAR
     $seven
     -
-    BAR; <<<BAR
+    BAR;
+
+<<<BAR
     $eight
      -
-    BAR; <<<BAR
+    BAR;
+
+<<<BAR
     $nine
-    BAR; <<<BAR
+    BAR;
+
+<<<BAR
     -
-    BAR; <<<BAR
+    BAR;
+
+<<<BAR
      -
     BAR;

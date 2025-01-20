@@ -10,7 +10,6 @@ use Lkrms\PrettyPHP\Token;
 use Lkrms\PrettyPHP\TokenUtil;
 use Salient\Utility\Exception\ShouldNotHappenException;
 use Salient\Utility\Regex;
-use Salient\Utility\Str;
 
 /**
  * Normalise strings
@@ -39,6 +38,8 @@ final class NormaliseStrings implements TokenRule
     public static function getTokens(AbstractTokenIndex $idx): array
     {
         return [
+            \T_DOUBLE_QUOTE => true,
+            \T_START_HEREDOC => true,
             \T_CONSTANT_ENCAPSED_STRING => true,
             \T_ENCAPSED_AND_WHITESPACE => true,
         ];
@@ -49,11 +50,14 @@ final class NormaliseStrings implements TokenRule
      */
     public static function needsSortedTokens(): bool
     {
-        return false;
+        return true;
     }
 
     /**
      * Apply the rule to the given tokens
+     *
+     * Double quotes and leading whitespace are removed from heredoc and nowdoc
+     * labels. Binary prefixes are removed from all strings.
      *
      * Strings other than nowdocs are normalised as follows:
      *
@@ -72,15 +76,30 @@ final class NormaliseStrings implements TokenRule
     {
         $string = '';
         foreach ($tokens as $token) {
+            // `b"` -> `"`
+            if ($token->id === \T_DOUBLE_QUOTE) {
+                if ($token->text !== '"') {
+                    $token->setText('"');
+                }
+                continue;
+            }
+
+            // `b<<< "EOF"` -> `<<<EOF`
+            if ($token->id === \T_START_HEREDOC) {
+                $text = '<<<' . trim(ltrim($token->text, 'bB'), "< \t\"\n\r") . "\n";
+                if ($token->text !== $text) {
+                    $token->setText($text);
+                }
+                continue;
+            }
+
             if ($token->id === \T_ENCAPSED_AND_WHITESPACE) {
                 /** @var Token */
                 $openedBy = $token->String;
-                if ($openedBy->id === \T_START_HEREDOC && (
-                    Str::startsWith($openedBy->text, "<<<'") || (
-                        $openedBy->text[0] !== '<'
-                        && Str::startsWith(substr($openedBy->text, 1), "<<<'")
-                    )
-                )) {
+                if (
+                    $openedBy->id === \T_START_HEREDOC
+                    && rtrim($openedBy->text)[-1] === "'"
+                ) {
                     continue;
                 }
             } else {
@@ -132,10 +151,9 @@ final class NormaliseStrings implements TokenRule
                     break;
 
                 case \T_START_HEREDOC:
-                    $closedBy = $openedBy->Data[Data::END_STRING];
-                    $start = trim($openedBy->text);
+                    $start = rtrim($openedBy->text);
+                    $end = trim($start, "<'");
                     $text = $token->text;
-                    $end = trim($closedBy->text);
                     if ($next->id === \T_END_HEREDOC) {
                         $text = substr($text, 0, -1);
                         $suffix = "\n";

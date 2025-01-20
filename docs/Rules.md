@@ -96,7 +96,9 @@ Multi-line C-style comments where every line starts with an asterisk, or at leas
 
 ### `NormaliseStrings`
 
-<small>(default, `processTokens()`, priority 42, tokens: `T_ENCAPSED_AND_WHITESPACE` | `T_CONSTANT_ENCAPSED_STRING`)</small>
+<small>(default, `processTokens()`, priority 42, tokens: `"` | `T_ENCAPSED_AND_WHITESPACE` | `T_CONSTANT_ENCAPSED_STRING` | `T_START_HEREDOC`)</small>
+
+Double quotes and leading whitespace are removed from heredoc and nowdoc labels. Binary prefixes are removed from all strings.
 
 Strings other than nowdocs are normalised as follows:
 
@@ -618,7 +620,7 @@ Newlines and spaces are added after tokens that would otherwise fail to parse. T
 | `T_DO`                                      | `ControlStructureSpacing`                                                                                     |
 | `T_DOC_COMMENT`                             | `Drupal`, `NormaliseComments`, `PlaceComments`, `WordPress`                                                   |
 | `T_DOLLAR_OPEN_CURLY_BRACES`                | `PlaceBrackets`                                                                                               |
-| `T_DOUBLE_QUOTE`                            | `ProtectStrings`                                                                                              |
+| `T_DOUBLE_QUOTE`                            | `NormaliseStrings`, `ProtectStrings`                                                                          |
 | `T_ELSE`                                    | `ControlStructureSpacing`, `Drupal`                                                                           |
 | `T_ELSEIF`                                  | `ControlStructureSpacing`, `Drupal`, `SemiStrictExpressions`, `StrictExpressions`                             |
 | `T_ENCAPSED_AND_WHITESPACE`                 | `NormaliseStrings`                                                                                            |
@@ -644,7 +646,7 @@ Newlines and spaces are added after tokens that would otherwise fail to parse. T
 | `T_QUESTION`                                | `AlignTernaryOperators`, `VerticalSpacing`                                                                    |
 | `T_RETURN`                                  | `BlankBeforeReturn`                                                                                           |
 | `T_SEMICOLON`                               | `StatementSpacing`                                                                                            |
-| `T_START_HEREDOC`                           | `FormatHeredocs`, `ProtectStrings`, `StandardSpacing`                                                         |
+| `T_START_HEREDOC`                           | `FormatHeredocs`, `NormaliseStrings`, `ProtectStrings`, `StandardSpacing`                                     |
 | `T_SWITCH`                                  | `SemiStrictExpressions`, `StrictExpressions`, `SwitchIndentation`                                             |
 | `T_USE`                                     | `VerticalSpacing`                                                                                             |
 | `T_WHILE`                                   | `ControlStructureSpacing`, `SemiStrictExpressions`, `StrictExpressions`                                       |

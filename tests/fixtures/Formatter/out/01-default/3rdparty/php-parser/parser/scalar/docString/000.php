@@ -22,7 +22,7 @@ EOS;
 Test $a and $b->c test
 EOS;
 
-b<<<EOS
+<<<EOS
 Binary
 EOS;
 

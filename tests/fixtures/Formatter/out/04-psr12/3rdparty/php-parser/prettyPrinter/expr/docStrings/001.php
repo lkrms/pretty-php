@@ -1,8 +1,11 @@
 <?php
 if (1) {
-    foo(<<<STR
-        abc
-        STR, <<<STR
-        abc
-        STR);
+    foo(
+        <<<STR
+            abc
+            STR,
+        <<<STR
+            abc
+            STR
+    );
 }

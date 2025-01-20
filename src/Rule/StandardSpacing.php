@@ -354,7 +354,11 @@ final class StandardSpacing implements TokenRule, DeclarationRule
                 continue;
             }
 
-            if ($token->id === \T_START_HEREDOC && $this->Formatter->Psr12) {
+            if (
+                $token->id === \T_START_HEREDOC
+                && $this->Formatter->Psr12
+                && $token !== $token->Statement
+            ) {
                 $token->Whitespace |= Space::NO_BLANK_BEFORE | Space::NO_LINE_BEFORE | Space::SPACE_BEFORE;
             }
         }
