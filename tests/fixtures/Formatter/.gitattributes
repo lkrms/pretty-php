@@ -3,6 +3,6 @@ in/3rdparty/** linguist-generated
 out/** linguist-generated
 versions.json linguist-generated
 
+in/** text diff
+out/** text diff
 out/*-psr12/** text eol=lf
-
-**/3rdparty/utf-8.php text diff
