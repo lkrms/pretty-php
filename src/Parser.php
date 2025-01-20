@@ -7,10 +7,12 @@ use Lkrms\PrettyPHP\Catalog\TokenData as Data;
 use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Lkrms\PrettyPHP\Catalog\TokenSubId as SubId;
 use Lkrms\PrettyPHP\Contract\Filter;
+use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
 use Lkrms\PrettyPHP\Internal\Document;
 use Lkrms\PrettyPHP\Internal\TokenCollection;
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\HasMutator;
+use Salient\Utility\Get;
 use Salient\Utility\Regex;
 
 /**
@@ -105,6 +107,23 @@ final class Parser implements Immutable
             if ($prev) {
                 $token->Prev = $prev;
                 $prev->Next = $token;
+
+                // Make code like this fail with an exception on PHP 7.4:
+                /* class Foo { use Bar { x as y?><?= as z; } } */
+                // See https://github.com/php/php-src/commit/55717656097918baf21fe272a788db501ed33854
+                if (
+                    \PHP_VERSION_ID < 80000
+                    && $prev->CloseTag === $prev
+                    && $token->id === \T_STRING
+                    && $token->text === '<?='
+                ) {
+                    throw new InvalidSyntaxException(sprintf(
+                        '%s error in %s:%d: Cannot use "<?=" as an identifier',
+                        Get::basename(static::class),
+                        $this->Formatter->Filename ?? '<input>',
+                        $token->line,
+                    ));
+                }
             }
 
             /*
