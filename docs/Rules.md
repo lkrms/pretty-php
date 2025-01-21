@@ -379,7 +379,7 @@ Blank lines are also added before and after each group of declarations. They are
 
 ### `SwitchIndentation`
 
-<small>(mandatory, `processTokens()`, priority 302, tokens: `T_SWITCH` | `T_CASE` | `T_DEFAULT`)</small>
+<small>(mandatory, `processTokens()`, priority 302, tokens: `T_SWITCH`)</small>
 
 In switch case lists:
 
@@ -606,7 +606,6 @@ Newlines and spaces are added after tokens that would otherwise fail to parse. T
 | `T_BACKTICK`                                | `ProtectStrings`                                                                                              |
 | `T_BOOLEAN_AND`                             | `VerticalSpacing`                                                                                             |
 | `T_BOOLEAN_OR`                              | `VerticalSpacing`                                                                                             |
-| `T_CASE`                                    | `SwitchIndentation`                                                                                           |
 | `T_CATCH`                                   | `Drupal`                                                                                                      |
 | `T_CLOSE_TAG`                               | `StandardSpacing`                                                                                             |
 | `T_COALESCE`                                | `AlignTernaryOperators`                                                                                       |
@@ -617,7 +616,6 @@ Newlines and spaces are added after tokens that would otherwise fail to parse. T
 | `T_CONSTANT_ENCAPSED_STRING`                | `NormaliseStrings`                                                                                            |
 | `T_CURLY_OPEN`                              | `PlaceBrackets`                                                                                               |
 | `T_DECLARE`                                 | `StandardSpacing`                                                                                             |
-| `T_DEFAULT`                                 | `SwitchIndentation`                                                                                           |
 | `T_DNUMBER`                                 | `NormaliseNumbers`                                                                                            |
 | `T_DO`                                      | `ControlStructureSpacing`                                                                                     |
 | `T_DOC_COMMENT`                             | `Drupal`, `NormaliseComments`, `PlaceComments`, `WordPress`                                                   |
