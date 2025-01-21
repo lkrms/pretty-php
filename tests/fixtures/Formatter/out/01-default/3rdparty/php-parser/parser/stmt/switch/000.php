@@ -3,7 +3,7 @@
 switch ($a) {
     case 0:
         break;
-        // Comment
+    // Comment
     case 1;
     default:
 }

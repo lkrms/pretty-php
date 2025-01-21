@@ -23,69 +23,97 @@ final class PlaceCommentsTest extends TestCase
             'switch comments' => [
                 <<<'PHP'
 <?php
-switch ($a) {
+switch ($foo) {
     //
     case 0:
+        // Indented
     case 1:
-        //
-        func();
+        bar();
         // Indented
     case 2:
-        // Indented
+        break;
+    //
     case 3:
-        func2();
-        break;
+        // Indented
 
         // Indented
 
+    //
     case 4:
-        func2();
-        break;
+        baz();
+        // Indented
 
         // Indented
 
     //
     case 5:
-        func();
+        break;
+        // Indented
+
+    //
+
+    //
+    case 6:
+        qux();
+
+        // Indented
+
+    //
+    case 7:
         break;
 
     //
+
+    //
     default:
-        break;
 }
 
 PHP,
                 <<<'PHP'
 <?php
-switch ($a) {
+switch ($foo) {
 //
 case 0:
+// Indented
 case 1:
-//
-func();
+bar();
 // Indented
 case 2:
-// Indented
+break;
+//
 case 3:
-func2();
-break;
+// Indented
 
 // Indented
 
+//
 case 4:
-func2();
-break;
+baz();
+// Indented
 
 // Indented
 
 //
 case 5:
-func();
+break;
+// Indented
+
+//
+
+//
+case 6:
+qux();
+
+// Indented
+
+//
+case 7:
 break;
 
 //
+
+//
 default:
-break;
 }
 PHP,
             ],

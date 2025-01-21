@@ -578,6 +578,8 @@ The indentation of the first inner token of each heredoc saved earlier is applie
 
 Placement of comments saved earlier is finalised.
 
+A level of indentation is added to comments before `switch` cases unless they appear after the opening brace of the switch, between a blank line and the next case, or after a statement that unconditionally exits the previous case.
+
 ### `AlignComments` (2)
 
 <small>(optional, `beforeRender()`, priority 998)</small>

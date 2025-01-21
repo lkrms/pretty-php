@@ -1072,6 +1072,21 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
     ]
         + self::TOKEN_INDEX;
 
+    /**
+     * T_BREAK, T_CONTINUE, T_EXIT, T_GOTO, T_RETURN, T_THROW
+     *
+     * @var array<int,bool>
+     */
+    public array $SwitchCaseExit = [
+        \T_BREAK => true,
+        \T_CONTINUE => true,
+        \T_EXIT => true,
+        \T_GOTO => true,
+        \T_RETURN => true,
+        \T_THROW => true,
+    ]
+        + self::TOKEN_INDEX;
+
     // Formatting:
 
     /**
