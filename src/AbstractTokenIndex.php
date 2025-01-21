@@ -1002,7 +1002,7 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * T_DO, T_ELSE, T_ELSEIF, T_FOR, T_FOREACH, T_IF, T_WHILE
+     * T_DECLARE, T_DO, T_ELSE, T_ELSEIF, T_FOR, T_FOREACH, T_IF, T_WHILE
      *
      * @var array<int,bool>
      */
@@ -1011,7 +1011,7 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * T_ELSEIF, T_FOR, T_FOREACH, T_IF, T_WHILE
+     * T_DECLARE, T_ELSEIF, T_FOR, T_FOREACH, T_IF, T_WHILE
      *
      * @var array<int,bool>
      */

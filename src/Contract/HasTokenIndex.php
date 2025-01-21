@@ -808,6 +808,7 @@ interface HasTokenIndex
      * @var array<int,true>
      */
     public const HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES = [
+        \T_DECLARE => true,
         \T_ELSEIF => true,
         \T_FOR => true,
         \T_FOREACH => true,
@@ -828,7 +829,6 @@ interface HasTokenIndex
      */
     public const HAS_EXPRESSION_AND_STATEMENT_WITH_BRACES = [
         \T_CATCH => true,
-        \T_DECLARE => true,
         \T_SWITCH => true,
     ];
 

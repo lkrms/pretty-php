@@ -20,4 +20,5 @@ do
     $A;
 while ($a);
 
-declare(a='b') $C;
+declare(a='b')
+    $C;

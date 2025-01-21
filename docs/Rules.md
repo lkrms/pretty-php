@@ -203,7 +203,7 @@ For semicolons in other contexts, and colons in alternative syntax constructs, `
 
 ### `ControlStructureSpacing`
 
-<small>(mandatory, `processTokens()`, priority 122, tokens: `T_IF` | `T_ELSEIF` | `T_ELSE` | `T_DO` | `T_WHILE` | `T_FOR` | `T_FOREACH`)</small>
+<small>(mandatory, `processTokens()`, priority 122, tokens: `T_IF` | `T_ELSEIF` | `T_ELSE` | `T_DO` | `T_WHILE` | `T_FOR` | `T_FOREACH` | `T_DECLARE`)</small>
 
 If the body of a control structure has no enclosing braces:
 
@@ -615,7 +615,7 @@ Newlines and spaces are added after tokens that would otherwise fail to parse. T
 | `T_CONCAT`                                  | `Laravel`, `Symfony`                                                                                          |
 | `T_CONSTANT_ENCAPSED_STRING`                | `NormaliseStrings`                                                                                            |
 | `T_CURLY_OPEN`                              | `PlaceBrackets`                                                                                               |
-| `T_DECLARE`                                 | `StandardSpacing`                                                                                             |
+| `T_DECLARE`                                 | `ControlStructureSpacing`, `StandardSpacing`                                                                  |
 | `T_DNUMBER`                                 | `NormaliseNumbers`                                                                                            |
 | `T_DO`                                      | `ControlStructureSpacing`                                                                                     |
 | `T_DOC_COMMENT`                             | `Drupal`, `NormaliseComments`, `PlaceComments`, `WordPress`                                                   |
