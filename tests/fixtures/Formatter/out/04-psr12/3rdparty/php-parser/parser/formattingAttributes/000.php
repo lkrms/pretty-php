@@ -14,18 +14,26 @@ bar';
 "foo\nbar";
 "foo\nbar{$x}";
 `foo\nbar`;
-`foo\nbar{$x}`; <<<'ABC'
-    ABC; <<<'ABC'
+`foo\nbar{$x}`;
+
+<<<'ABC'
+    ABC;
+<<<'ABC'
     foo bar
-    ABC; <<<'ABC'
+    ABC;
+<<<'ABC'
     foo bar
-    ABC; <<<ABC
+    ABC;
+<<<ABC
     foo\nbar
-    ABC; <<<ABC
+    ABC;
+<<<ABC
     foo\nbar
-    ABC; <<<ABC
+    ABC;
+<<<ABC
     foo\nbar{$x}baz
-    ABC; <<<ABC
+    ABC;
+<<<ABC
     foo\nbar{$x}baz
     ABC;
 

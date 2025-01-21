@@ -2,23 +2,30 @@
 
 // empty strings
 <<<'EOS'
-    EOS; <<<EOS
+    EOS;
+<<<EOS
     EOS;
 
 // constant encapsed strings
 <<<'EOS'
     Test '" $a \n
-    EOS; <<<EOS
+    EOS;
+<<<EOS
     Test '" \$a \n
     EOS;
 
 // encapsed strings
 <<<EOS
     Test $a
-    EOS; <<<EOS
+    EOS;
+<<<EOS
     Test $a and $b->c test
-    EOS; b<<<EOS
+    EOS;
+
+<<<EOS
     Binary
-    EOS; <<<EOS
+    EOS;
+
+<<<EOS
     $x\r
     EOS;

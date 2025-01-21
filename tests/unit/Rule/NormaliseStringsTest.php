@@ -287,7 +287,7 @@ EOF;
 PHP,
                 $formatter,
             ],
-            'maybeEscapeEscapes' => [
+            'maybeEscapeEscapes escapes' => [
                 <<<'PHP'
 <?php
 'Lkrms\\Tests\\Utility\\Debugging\\';
@@ -313,6 +313,142 @@ EOF;
 <<<EOF
 foo \\
 bar \\ baz
+EOF;
+PHP,
+                $formatter,
+            ],
+            'binary prefixes' => [
+                <<<'PHP'
+<?php
+'';
+'foo';
+'';
+'foo';
+<<<EOF
+EOF;
+<<<EOF
+foo
+EOF;
+<<<'EOF'
+EOF;
+<<<'EOF'
+foo
+EOF;
+'';
+'foo';
+'';
+'foo';
+<<<EOF
+EOF;
+<<<EOF
+foo
+EOF;
+<<<'EOF'
+EOF;
+<<<'EOF'
+foo
+EOF;
+
+PHP,
+                <<<'PHP'
+<?php
+b'';
+b'foo';
+b"";
+b"foo";
+b<<<EOF
+EOF;
+b<<<EOF
+foo
+EOF;
+b<<<'EOF'
+EOF;
+b<<<'EOF'
+foo
+EOF;
+B'';
+B'foo';
+B"";
+B"foo";
+B<<<EOF
+EOF;
+B<<<EOF
+foo
+EOF;
+B<<<'EOF'
+EOF;
+B<<<'EOF'
+foo
+EOF;
+PHP,
+                $formatter,
+            ],
+            'heredocs' => [
+                <<<'PHP'
+<?php
+<<<EOF
+EOF;
+<<<EOF
+Foo\$
+EOF;
+<<<'EOF'
+EOF;
+<<<'EOF'
+Foo$
+EOF;
+<<<EOF
+EOF;
+<<<EOF
+Foo\$
+EOF;
+<<<bbb
+bbb;
+<<<BBB
+Foo\$
+BBB;
+<<<'EOF'
+EOF;
+<<<'EOF'
+Foo$
+EOF;
+<<<EOF
+EOF;
+<<<EOF
+Foo\$
+EOF;
+
+PHP,
+                <<<'PHP'
+<?php
+<<< EOF
+EOF;
+<<<	EOF
+Foo$
+EOF;
+<<<	'EOF'
+EOF;
+<<< 'EOF'
+Foo$
+EOF;
+<<<	  "EOF"
+EOF;
+<<< "EOF"
+Foo$
+EOF;
+b<<<	bbb
+bbb;
+B<<< BBB
+Foo$
+BBB;
+b<<< 'EOF'
+EOF;
+b<<<	'EOF'
+Foo$
+EOF;
+b<<< "EOF"
+EOF;
+b<<<	  "EOF"
+Foo$
 EOF;
 PHP,
                 $formatter,

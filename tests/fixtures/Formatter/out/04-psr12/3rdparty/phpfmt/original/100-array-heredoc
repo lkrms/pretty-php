@@ -1,3 +1,5 @@
 <?php
-$a = array(<<<EOT
-    EOT);
+$a = array(
+    <<<EOT
+        EOT
+);
