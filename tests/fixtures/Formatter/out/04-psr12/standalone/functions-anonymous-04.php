@@ -19,7 +19,7 @@ function &(
 ) {
     return;
 };
-fn &()
+fn&()
     => null;
 $foo = function () {
     return;
@@ -27,14 +27,14 @@ $foo = function () {
 $foo = function &() {
     return;
 };
-$foo = fn &()
+$foo = fn&()
     => null;
 fn(
     (Countable&ArrayAccess)|MyClass|string|null $foo,
     $bar,
     $baz
 ) => null;
-fn &(
+fn&(
     (Countable&ArrayAccess)|MyClass|string|null $foo,
     $bar,
     $baz

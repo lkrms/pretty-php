@@ -15,7 +15,7 @@ function &(MyClass|string|null $foo,
         $baz) {
     return;
 };
-fn &() =>
+fn&() =>
     null;
 $foo = function () {
     return;
@@ -23,11 +23,11 @@ $foo = function () {
 $foo = function &() {
     return;
 };
-$foo = fn &() =>
+$foo = fn&() =>
     null;
 fn(MyClass|string|null $foo,
     $bar,
     $baz) => null;
-fn &(MyClass|string|null $foo,
+fn&(MyClass|string|null $foo,
     $bar,
     $baz) => null;

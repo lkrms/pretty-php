@@ -158,7 +158,7 @@ Whitespace is suppressed:
 
 A space is added:
 
-- before reference-related ampersands
+- before reference-related ampersands (except in arrow functions)
 - before DNF types that start with an open parenthesis
 - before `?` in nullable types
 - before and after `:` in standard ternary expressions
