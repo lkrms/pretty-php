@@ -231,7 +231,7 @@ class Updater
 
         $files = [];
         foreach ($finders as $subdir => [$finder, $suffix]) {
-            File::createDir("$dir/$subdir", 0755);
+            File::createDir("$dir/$subdir");
             /** @var SplFileInfo $file */
             foreach ($finder as $file) {
                 $files[(string) $file] = "$subdir/" . $file->getBasename($suffix);
@@ -423,6 +423,8 @@ REGEX;
 }
 
 require dirname(__DIR__) . '/vendor/autoload.php';
+
+umask(022);
 
 $app = new CliApplication(dirname(__DIR__));
 

@@ -758,7 +758,7 @@ EOF,
         unset($this->DefaultFormatter);
 
         if ($this->DebugDirectory !== null) {
-            File::createDir($this->DebugDirectory);
+            File::createDir($this->DebugDirectory, 0777, true);
             $this->DebugDirectory = File::realpath($this->DebugDirectory);
             Env::setDebug(true);
             $this->App->logOutput();
@@ -1373,7 +1373,7 @@ EOF,
     {
         Console::debug('Looking for a configuration file:', $dir);
 
-        $dir = File::getCleanDir($dir);
+        $dir = File::sanitiseDir($dir);
         $found = [];
         foreach (self::CONFIG_FILE_NAME as $file) {
             $file = $dir . '/' . $file;
@@ -1412,7 +1412,7 @@ EOF,
             ]));
         }
 
-        $dir = File::getCleanDir($dir);
+        $dir = File::sanitiseDir($dir);
         $finder = File::find()
                       ->in($dir)
                       ->exclude($this->ExcludeRegex)
@@ -1679,7 +1679,7 @@ EOF,
         // Either empty or completely remove the progress log directory
         $dir = "{$this->DebugDirectory}/" . self::PROGRESS_LOG_DIR;
         if ($files) {
-            File::createDir($dir);
+            File::createDir($dir, 0777, true);
             File::pruneDir($dir);
         } elseif (is_dir($dir)) {
             File::pruneDir($dir, true);
