@@ -64,8 +64,8 @@ final class NormaliseComments implements TokenRule
      * - An asterisk is added to the start of each line that doesn't have one.
      *   The indentation of undelimited lines relative to each other is
      *   maintained if possible.
-     * - If every line starts with an asterisk and ends with `" *"` or `"\t*"`,
-     *   trailing asterisks are removed.
+     * - If every line starts and ends with an asterisk, trailing asterisks are
+     *   removed.
      * - Trailing whitespace is removed from each line.
      * - The content of each DocBlock is applied to its token as
      *   `COMMENT_CONTENT` data.

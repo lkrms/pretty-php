@@ -85,7 +85,7 @@ In C++-style comments (`//`), a space is added between the delimiter and adjacen
 DocBlocks are normalised for PSR-5 compliance as follows:
 
 - An asterisk is added to the start of each line that doesn't have one. The indentation of undelimited lines relative to each other is maintained if possible.
-- If every line starts with an asterisk and ends with `" *"` or `"\t*"`, trailing asterisks are removed.
+- If every line starts and ends with an asterisk, trailing asterisks are removed.
 - Trailing whitespace is removed from each line.
 - The content of each DocBlock is applied to its token as `COMMENT_CONTENT` data.
 - DocBlocks with one line of content are collapsed to a single line unless they appear to describe a file or have a subsequent named declaration. In the latter case, the `COLLAPSIBLE_COMMENT` flag is applied.
@@ -98,13 +98,14 @@ Multi-line C-style comments where every line starts with an asterisk, or at leas
 
 <small>(default, `processTokens()`, priority 42, tokens: `"` | `T_ENCAPSED_AND_WHITESPACE` | `T_CONSTANT_ENCAPSED_STRING` | `T_START_HEREDOC`)</small>
 
-Double quotes and leading whitespace are removed from heredoc and nowdoc labels. Binary prefixes are removed from all strings.
+Double quotes and leading whitespace are removed from heredoc and nowdoc labels, and binary prefixes are removed from all strings.
 
 Strings other than nowdocs are normalised as follows:
 
 - Single- and double-quoted strings are replaced with the most readable and economical syntax. Single-quoted strings are preferred unless escaping is required or the double-quoted equivalent is shorter.
 - Backslash escapes are added in contexts where they improve safety, consistency and readability, otherwise they are removed if possible.
-- Aside from leading and continuation bytes in valid UTF-8 strings, control characters and non-ASCII characters are backslash-escaped using hexadecimal notation with lowercase digits. Invisible characters that don't belong to a recognised Unicode sequence are backslash-escaped using Unicode notation with uppercase digits.
+- Aside from leading and continuation bytes in valid UTF-8 strings, control characters and non-ASCII characters are backslash-escaped using hexadecimal notation with lowercase digits.
+- In valid UTF-8 strings, invisible characters that don't belong to an extended grapheme cluster (e.g. an emoji sequence) are backslash-escaped using Unicode notation with uppercase digits.
 
 ### `NormaliseNumbers`
 
