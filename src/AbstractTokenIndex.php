@@ -1002,7 +1002,7 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * T_DO, T_ELSE, T_ELSEIF, T_FOR, T_FOREACH, T_IF, T_WHILE
+     * T_DECLARE, T_DO, T_ELSE, T_ELSEIF, T_FOR, T_FOREACH, T_IF, T_WHILE
      *
      * @var array<int,bool>
      */
@@ -1011,7 +1011,7 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * T_ELSEIF, T_FOR, T_FOREACH, T_IF, T_WHILE
+     * T_DECLARE, T_ELSEIF, T_FOR, T_FOREACH, T_IF, T_WHILE
      *
      * @var array<int,bool>
      */
@@ -1069,6 +1069,21 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
         \T_SEMICOLON => true,
         \T_CLOSE_TAG => true,
         \T_QUESTION => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
+     * T_BREAK, T_CONTINUE, T_EXIT, T_GOTO, T_RETURN, T_THROW
+     *
+     * @var array<int,bool>
+     */
+    public array $SwitchCaseExit = [
+        \T_BREAK => true,
+        \T_CONTINUE => true,
+        \T_EXIT => true,
+        \T_GOTO => true,
+        \T_RETURN => true,
+        \T_THROW => true,
     ]
         + self::TOKEN_INDEX;
 
@@ -1179,8 +1194,6 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
     /**
      * T_AS, T_FUNCTION, T_INSTEADOF, T_USE
      *
-     * Tokens that require a leading and trailing space.
-     *
      * @var array<int,bool>
      */
     public array $AddSpace = [
@@ -1192,14 +1205,12 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * T_ARRAY, T_CALLABLE, T_ELLIPSIS, T_EXTENDS, T_FN, T_GLOBAL, T_IMPLEMENTS,
-     * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE,
-     * T_NS_SEPARATOR, T_STATIC, T_STRING, T_VARIABLE, T_ABSTRACT, T_CONST,
-     * T_DECLARE, T_FINAL, T_READONLY, T_VAR, T_CLASS, T_ENUM, T_INTERFACE,
-     * T_TRAIT, T_PRIVATE, T_PRIVATE_SET, T_PROTECTED, T_PROTECTED_SET,
-     * T_PUBLIC, T_PUBLIC_SET
-     *
-     * Tokens that require a leading space.
+     * T_ARRAY, T_CALLABLE, T_ELLIPSIS, T_EXTENDS, T_FN, T_IMPLEMENTS,
+     * T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED, T_NAME_RELATIVE, T_STATIC,
+     * T_STRING, T_VARIABLE, T_ABSTRACT, T_CONST, T_DECLARE, T_FINAL,
+     * T_NAMESPACE, T_READONLY, T_VAR, T_CLASS, T_ENUM, T_INTERFACE, T_TRAIT,
+     * T_PRIVATE, T_PRIVATE_SET, T_PROTECTED, T_PROTECTED_SET, T_PUBLIC,
+     * T_PUBLIC_SET
      *
      * @var array<int,bool>
      */
@@ -1209,17 +1220,11 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
         \T_ELLIPSIS => true,
         \T_EXTENDS => true,
         \T_FN => true,
-        \T_GLOBAL => true,
         \T_IMPLEMENTS => true,
-        \T_NAME_FULLY_QUALIFIED => true,
-        \T_NAME_QUALIFIED => true,
-        \T_NAME_RELATIVE => true,
-        \T_NS_SEPARATOR => true,
-        \T_STATIC => true,
-        \T_STRING => true,
         \T_VARIABLE => true,
     ]
         + self::DECLARATION_ONLY
+        + self::DECLARATION_TYPE
         + self::TOKEN_INDEX;
 
     /**
@@ -1227,8 +1232,6 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
      * T_FOR, T_FOREACH, T_GOTO, T_IF, T_INCLUDE, T_INCLUDE_ONCE, T_MATCH,
      * T_NEW, T_PRINT, T_REQUIRE, T_REQUIRE_ONCE, T_RETURN, T_SWITCH, T_THROW,
      * T_WHILE, T_YIELD, T_YIELD_FROM, casts
-     *
-     * Tokens that require a trailing space.
      *
      * @var array<int,bool>
      */
@@ -1265,8 +1268,6 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
     /**
      * T_NS_SEPARATOR
      *
-     * Tokens that must not render with a leading space.
-     *
      * @var array<int,bool>
      */
     public array $SuppressSpaceBefore = [
@@ -1277,8 +1278,6 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
     /**
      * T_DOUBLE_COLON, T_ELLIPSIS, T_NS_SEPARATOR, T_OBJECT_OPERATOR,
      * T_NULLSAFE_OBJECT_OPERATOR
-     *
-     * Tokens that must not render with a trailing space.
      *
      * @var array<int,bool>
      */

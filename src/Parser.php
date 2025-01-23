@@ -315,6 +315,12 @@ final class Parser implements Immutable
                                 && ($prevSibling = $hasBody->PrevSibling)
                                 && $prevSibling->PrevCode
                                 && $prevSibling->PrevCode->id === \T_DO
+                            ) && !(
+                                // Ignore `declare(...);`
+                                $hasBody->id === \T_DECLARE && (
+                                    $code->id === \T_SEMICOLON
+                                    || $code->id === \T_CLOSE_TAG
+                                )
                             )
                         )
                     )

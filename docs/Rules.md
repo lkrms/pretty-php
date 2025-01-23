@@ -158,7 +158,7 @@ Whitespace is suppressed:
 
 A space is added:
 
-- before reference-related ampersands
+- before reference-related ampersands (except in arrow functions)
 - before DNF types that start with an open parenthesis
 - before `?` in nullable types
 - before and after `:` in standard ternary expressions
@@ -203,7 +203,7 @@ For semicolons in other contexts, and colons in alternative syntax constructs, `
 
 ### `ControlStructureSpacing`
 
-<small>(mandatory, `processTokens()`, priority 122, tokens: `T_IF` | `T_ELSEIF` | `T_ELSE` | `T_DO` | `T_WHILE` | `T_FOR` | `T_FOREACH`)</small>
+<small>(mandatory, `processTokens()`, priority 122, tokens: `T_IF` | `T_ELSEIF` | `T_ELSE` | `T_DO` | `T_WHILE` | `T_FOR` | `T_FOREACH` | `T_DECLARE`)</small>
 
 If the body of a control structure has no enclosing braces:
 
@@ -379,7 +379,7 @@ Blank lines are also added before and after each group of declarations. They are
 
 ### `SwitchIndentation`
 
-<small>(mandatory, `processTokens()`, priority 302, tokens: `T_SWITCH` | `T_CASE` | `T_DEFAULT`)</small>
+<small>(mandatory, `processTokens()`, priority 302, tokens: `T_SWITCH`)</small>
 
 In switch case lists:
 
@@ -578,6 +578,8 @@ The indentation of the first inner token of each heredoc saved earlier is applie
 
 Placement of comments saved earlier is finalised.
 
+A level of indentation is added to comments before `switch` cases unless they appear after the opening brace of the switch, between a blank line and the next case, or after a statement that unconditionally exits the previous case.
+
 ### `AlignComments` (2)
 
 <small>(optional, `beforeRender()`, priority 998)</small>
@@ -604,7 +606,6 @@ Newlines and spaces are added after tokens that would otherwise fail to parse. T
 | `T_BACKTICK`                                | `ProtectStrings`                                                                                              |
 | `T_BOOLEAN_AND`                             | `VerticalSpacing`                                                                                             |
 | `T_BOOLEAN_OR`                              | `VerticalSpacing`                                                                                             |
-| `T_CASE`                                    | `SwitchIndentation`                                                                                           |
 | `T_CATCH`                                   | `Drupal`                                                                                                      |
 | `T_CLOSE_TAG`                               | `StandardSpacing`                                                                                             |
 | `T_COALESCE`                                | `AlignTernaryOperators`                                                                                       |
@@ -614,8 +615,7 @@ Newlines and spaces are added after tokens that would otherwise fail to parse. T
 | `T_CONCAT`                                  | `Laravel`, `Symfony`                                                                                          |
 | `T_CONSTANT_ENCAPSED_STRING`                | `NormaliseStrings`                                                                                            |
 | `T_CURLY_OPEN`                              | `PlaceBrackets`                                                                                               |
-| `T_DECLARE`                                 | `StandardSpacing`                                                                                             |
-| `T_DEFAULT`                                 | `SwitchIndentation`                                                                                           |
+| `T_DECLARE`                                 | `ControlStructureSpacing`, `StandardSpacing`                                                                  |
 | `T_DNUMBER`                                 | `NormaliseNumbers`                                                                                            |
 | `T_DO`                                      | `ControlStructureSpacing`                                                                                     |
 | `T_DOC_COMMENT`                             | `Drupal`, `NormaliseComments`, `PlaceComments`, `WordPress`                                                   |

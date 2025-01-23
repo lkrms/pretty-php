@@ -59,7 +59,7 @@ final class StatementSpacing implements TokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            $collapse = true;
+            $before = Space::NONE_BEFORE;
             if ($token->id === \T_COLON) {
                 if (
                     !$token->CloseBracket
@@ -91,8 +91,8 @@ final class StatementSpacing implements TokenRule
                     continue;
                 }
 
-                // Don't collapse vertical whitespace between open braces and
-                // empty statements
+                // Don't collapse vertical whitespace between open brackets/tags
+                // and empty statements
                 if ($statement === $token) {
                     if ($this->Formatter->DetectProblems) {
                         $this->Formatter->registerProblem(
@@ -100,23 +100,22 @@ final class StatementSpacing implements TokenRule
                             $token,
                         );
                     }
+                    /** @var Token */
+                    $prev = $token->Prev;
                     if (
-                        ($prev = $token->Prev)
-                        && (
-                            $this->Idx->OpenBracket[$prev->id]
-                            || ($prev->id === \T_COLON && $prev->CloseBracket)
-                        )
+                        $this->Idx->OpenBracket[$prev->id]
+                        || ($prev->id === \T_COLON && $prev->CloseBracket)
                     ) {
-                        $collapse = false;
+                        $before = Space::NO_SPACE_BEFORE;
+                    } elseif ($prev->id === \T_OPEN_TAG) {
+                        $before = 0;
                     }
                 }
             }
 
-            $token->Whitespace |= Space::LINE_AFTER
-                | Space::SPACE_AFTER
-                | ($collapse
-                    ? Space::NONE_BEFORE
-                    : Space::NO_SPACE_BEFORE);
+            $token->Whitespace |= $before
+                | Space::LINE_AFTER
+                | Space::SPACE_AFTER;
         }
     }
 }

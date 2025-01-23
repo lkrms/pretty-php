@@ -24,7 +24,6 @@ use Lkrms\PrettyPHP\Filter\CollectColumn;
 use Lkrms\PrettyPHP\Filter\EvaluateNumbers;
 use Lkrms\PrettyPHP\Filter\EvaluateStrings;
 use Lkrms\PrettyPHP\Filter\MoveComments;
-use Lkrms\PrettyPHP\Filter\NormaliseBinaryStrings;
 use Lkrms\PrettyPHP\Filter\NormaliseCasts;
 use Lkrms\PrettyPHP\Filter\NormaliseKeywords;
 use Lkrms\PrettyPHP\Filter\RemoveEmptyDocBlocks;
@@ -105,7 +104,6 @@ final class Formatter implements Buildable, Immutable
      * @var array<class-string<Filter>>
      */
     public const DEFAULT_FILTERS = [
-        NormaliseBinaryStrings::class,
         CollectColumn::class,
         RemoveWhitespace::class,
         RemoveHeredocIndentation::class,

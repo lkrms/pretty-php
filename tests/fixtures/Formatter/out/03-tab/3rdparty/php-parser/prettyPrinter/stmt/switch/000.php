@@ -11,7 +11,7 @@ switch ($expr) {
 	case 4:
 		echo 'Third case, return instead of break';
 		return;
-		// Comment
+	// Comment
 	default:
 		echo 'Default case';
 		break;

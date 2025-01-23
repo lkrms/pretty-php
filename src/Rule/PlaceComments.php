@@ -197,6 +197,11 @@ final class PlaceComments implements TokenRule
      * Apply the rule to the given tokens
      *
      * Placement of comments saved earlier is finalised.
+     *
+     * A level of indentation is added to comments before `switch` cases unless
+     * they appear after the opening brace of the switch, between a blank line
+     * and the next case, or after a statement that unconditionally exits the
+     * previous case.
      */
     public function beforeRender(array $tokens): void
     {
@@ -213,21 +218,23 @@ final class PlaceComments implements TokenRule
         }
 
         foreach ($this->Comments as [$token, $next]) {
-            // Add a level of indentation to comments before switch cases unless
-            // they appear after the opening brace of the switch or between a
-            // blank line and the next case
             $indent = 0;
             if ($this->Idx->CaseOrDefault[$next->id] && $next->inSwitch()) {
                 /** @var Token */
                 $prev = $token->PrevCode;
-                if (!(
-                    $prev === $token->Parent
-                    || (
-                        $prev->collect($token)->hasBlankLineBetweenTokens()
-                        && !$token->collect($next)->hasBlankLineBetweenTokens()
-                    )
-                )) {
-                    $indent = 1;
+                if ($prev !== $token->Parent) {
+                    /** @var Token */
+                    $statement = $prev->skipPrevEmptyStatements()->Statement;
+                    $blankBefore = $prev->collect($token)->hasBlankLineBetweenTokens();
+                    $blankAfter = $token->collect($next)->hasBlankLineBetweenTokens();
+                    if (!(
+                        ($blankBefore && !$blankAfter) || (
+                            $this->Idx->SwitchCaseExit[$statement->id]
+                            && ($blankBefore || !$blankAfter)
+                        )
+                    )) {
+                        $indent = 1;
+                    }
                 }
             }
 

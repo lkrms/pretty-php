@@ -3,6 +3,7 @@
 namespace Lkrms\PrettyPHP\Tests\Rule;
 
 use Lkrms\PrettyPHP\Filter\MoveComments;
+use Lkrms\PrettyPHP\Rule\PreserveOneLineStatements;
 use Lkrms\PrettyPHP\Tests\TestCase;
 use Lkrms\PrettyPHP\Formatter;
 use Lkrms\PrettyPHP\FormatterBuilder as FormatterB;
@@ -262,6 +263,29 @@ $foo = [  // comment
 PHP,
                 $formatterB
                     ->disable([MoveComments::class])
+                    ->build(),
+            ],
+            'magic comma #3 (with PreserveOneLineStatements)' => [
+                <<<'PHP'
+<?php
+$foo = [
+    0,
+    1,
+    2,
+];
+bar(
+    $baz,
+    $qux,
+);
+
+PHP,
+                <<<'PHP'
+<?php
+$foo = [0, 1, 2,];
+bar($baz, $qux,);
+PHP,
+                $formatterB
+                    ->enable([PreserveOneLineStatements::class])
                     ->build(),
             ],
             'idempotent brackets' => [

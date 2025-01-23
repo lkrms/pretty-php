@@ -1,3 +1,4 @@
-<?php ;  /* Comment */
+<?php
+;  /* Comment */
 
 namespace Foo;

@@ -470,7 +470,6 @@ interface HasTokenIndex
         \T_EXTENDS => true,
         \T_FUNCTION => true,
         \T_IMPLEMENTS => true,
-        \T_NAMESPACE => true,
         \T_NS_SEPARATOR => true,
         \T_USE => true,
     ]
@@ -484,7 +483,6 @@ interface HasTokenIndex
     public const DECLARATION = [
         \T_CASE => true,
         \T_FUNCTION => true,
-        \T_NAMESPACE => true,
         \T_STATIC => true,
         \T_USE => true,
     ]
@@ -498,6 +496,7 @@ interface HasTokenIndex
         \T_CONST => true,
         \T_DECLARE => true,
         \T_FINAL => true,
+        \T_NAMESPACE => true,
         \T_READONLY => true,
         \T_VAR => true,
     ]
@@ -808,6 +807,7 @@ interface HasTokenIndex
      * @var array<int,true>
      */
     public const HAS_EXPRESSION_AND_STATEMENT_WITH_OPTIONAL_BRACES = [
+        \T_DECLARE => true,
         \T_ELSEIF => true,
         \T_FOR => true,
         \T_FOREACH => true,
@@ -828,7 +828,6 @@ interface HasTokenIndex
      */
     public const HAS_EXPRESSION_AND_STATEMENT_WITH_BRACES = [
         \T_CATCH => true,
-        \T_DECLARE => true,
         \T_SWITCH => true,
     ];
 

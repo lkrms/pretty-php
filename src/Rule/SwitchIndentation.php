@@ -34,8 +34,6 @@ final class SwitchIndentation implements TokenRule
     {
         return [
             \T_SWITCH => true,
-            \T_CASE => true,
-            \T_DEFAULT => true,
         ];
     }
 
@@ -62,20 +60,36 @@ final class SwitchIndentation implements TokenRule
     public function processTokens(array $tokens): void
     {
         foreach ($tokens as $token) {
-            if ($token->id === \T_SWITCH) {
-                /** @var Token */
-                $next = $token->NextSibling;
-                /** @var Token */
-                $next = $next->NextSibling;
-                foreach ($next->inner() as $t) {
-                    $t->PreIndent++;
+            /** @var Token */
+            $next = $token->NextSibling;
+            /** @var Token */
+            $open = $next->NextSibling;
+            /** @var Token */
+            $close = $open->CloseBracket;
+            /** @var Token */
+            $first = $open->NextCode;
+            if ($first === $close) {
+                continue;
+            }
+            if (!$this->Idx->CaseOrDefault[$first->id]) {
+                $first = $first->nextSiblingFrom($this->Idx->CaseOrDefault);
+                if ($first->id === \T_NULL) {
+                    continue;
                 }
-            } elseif ($token->inSwitch()) {
+            }
+            /** @var Token */
+            $last = $close->Prev;
+            foreach ($first->collect($last) as $t) {
+                $t->PreIndent++;
+            }
+            $cases = $first->withNextSiblings()
+                           ->getAnyFrom($this->Idx->CaseOrDefault);
+            foreach ($cases as $case) {
                 /** @var Token */
-                $separator = $token->EndStatement;
-                $token->Whitespace |= Space::LINE_BEFORE;
-                $separator->Whitespace |= Space::NO_BLANK_AFTER | Space::LINE_AFTER | Space::SPACE_AFTER;
-                foreach ($token->collect($separator) as $t) {
+                $end = $case->EndStatement;
+                $case->Whitespace |= Space::LINE_BEFORE;
+                $end->Whitespace |= Space::NO_BLANK_AFTER | Space::LINE_AFTER | Space::SPACE_AFTER;
+                foreach ($case->collect($end) as $t) {
                     $t->Deindent++;
                 }
             }

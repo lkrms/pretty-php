@@ -3,7 +3,7 @@
 switch ($a) {
     case 0:
         break;
-        // Comment
+    // Comment
     case 1;
     default:
 }
@@ -14,8 +14,8 @@ endswitch;
 
 // leading semicolon
 switch ($a) {
-        ;
+    ;
 }
 switch ($a):
-        ;
+    ;
 endswitch;

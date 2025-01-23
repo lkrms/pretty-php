@@ -64,7 +64,7 @@ final class OperatorSpacing implements TokenRule
      *
      * A space is added:
      *
-     * - before reference-related ampersands
+     * - before reference-related ampersands (except in arrow functions)
      * - before DNF types that start with an open parenthesis
      * - before `?` in nullable types
      * - before and after `:` in standard ternary expressions
@@ -109,7 +109,11 @@ final class OperatorSpacing implements TokenRule
                     )
                 )
             ) {
-                $token->Whitespace |= Space::SPACE_BEFORE | Space::NONE_AFTER;
+                $token->Whitespace |= (
+                    $prevCode && $prevCode->id === \T_FN
+                        ? 0
+                        : Space::SPACE_BEFORE
+                ) | Space::NONE_AFTER;
             } elseif (
                 $this->Idx->TypeDelimiter[$token->id] && (
                     ($inTypeContext = $this->inTypeContext($token)) || (

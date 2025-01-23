@@ -79,32 +79,46 @@ code token is a close bracket or switch case:
 switch ($foo) {
     //
     case 0:
+        // Indented
     case 1:
-        //
         bar();
         // Indented
     case 2:
-        // Indented
+        break;
+    //
     case 3:
-        baz();
-        break;
+        // Indented
 
         // Indented
 
+    //
     case 4:
-        qux();
-        break;
+        baz();
+        // Indented
 
         // Indented
 
     //
     case 5:
-        quux();
+        break;
+        // Indented
+
+    //
+
+    //
+    case 6:
+        qux();
+
+        // Indented
+
+    //
+    case 7:
         break;
 
     //
+
+    //
     default:
-        break;
 }
 ```
 

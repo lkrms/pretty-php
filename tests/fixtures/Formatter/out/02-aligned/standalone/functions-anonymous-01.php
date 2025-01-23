@@ -15,7 +15,7 @@ function &(?string $foo,
            $baz) {
     return;
 };
-fn &() =>
+fn&() =>
     null;
 $foo = function () {
     return;
@@ -23,14 +23,14 @@ $foo = function () {
 $foo = function &() {
     return;
 };
-$foo = fn &() =>
+$foo = fn&() =>
            null;
 fn(?string $foo,
    $bar,
    $baz) => null;
-fn &(?string $foo,
-     $bar,
-     $baz) => null;
+fn&(?string $foo,
+    $bar,
+    $baz) => null;
 function () use ($foo,
                  $bar,
                  $baz) {
