@@ -30,7 +30,8 @@
 `SPACE`, `LINE` and `BLANK` flags can be shifted left or right in 3-bit groups
 as needed.
 
-> Critical flags must not be removed after they are applied.
+> Critical flags must not be removed after they are applied. Critical flags that
+> add whitespace take precedence over every other flag.
 
 | Bit    | Value   | Constant(s)                                        | Group                      |
 | ------ | ------- | -------------------------------------------------- | -------------------------- |

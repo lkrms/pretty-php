@@ -422,7 +422,7 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
         if ($lastChild->id === \T_COMMA) {
             $parent->Whitespace |= Space::LINE_AFTER;
             $items->add($parent->CloseBracket)
-                  ->applyTokenWhitespace(Space::LINE_BEFORE);
+                  ->applyTokenWhitespace(Space::CRITICAL_LINE_BEFORE);
         }
 
         if ($parent->id === \T_OPEN_PARENTHESIS && $parent->isParameterList()) {
