@@ -304,13 +304,16 @@ REGEX;
         File::createDir($dir);
         File::pruneDir($dir);
 
-        $index = 0;
         foreach ($byHeading as $heading => $listings) {
             $heading = trim(Regex::replace(
                 '/(?:\.(?![0-9])|[^a-z0-9.])+/i',
                 '-',
                 Str::lower($heading)
             ), '-');
+
+            $section = (float) $heading;
+            $section = (int) ($section * 1000);
+            $index[$section] ??= $section;
 
             foreach ($listings as $i => $listing) {
                 $name = sprintf('%s-%02d', $heading, $i);
@@ -327,8 +330,7 @@ REGEX;
                     Console::warn('Invalid:', $name, null, false);
                 }
 
-                $index++;
-                $outFile = sprintf('%s/%02d-%s.php', $dir, $index, $heading);
+                $outFile = sprintf('%s/%05d-%s.php', $dir, $index[$section]++, $heading);
                 Console::logProgress('Creating', substr($outFile, $this->TargetLength));
                 File::writeContents($outFile, Str::setEol($listing, \PHP_EOL));
                 $this->Replaced++;
