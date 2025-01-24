@@ -57,7 +57,7 @@ final class NormaliseStrings implements TokenRule
      * Apply the rule to the given tokens
      *
      * Double quotes and leading whitespace are removed from heredoc and nowdoc
-     * labels. Binary prefixes are removed from all strings.
+     * labels, and binary prefixes are removed from all strings.
      *
      * Strings other than nowdocs are normalised as follows:
      *
@@ -68,9 +68,10 @@ final class NormaliseStrings implements TokenRule
      *   consistency and readability, otherwise they are removed if possible.
      * - Aside from leading and continuation bytes in valid UTF-8 strings,
      *   control characters and non-ASCII characters are backslash-escaped using
-     *   hexadecimal notation with lowercase digits. Invisible characters that
-     *   don't belong to a recognised Unicode sequence are backslash-escaped
-     *   using Unicode notation with uppercase digits.
+     *   hexadecimal notation with lowercase digits.
+     * - In valid UTF-8 strings, invisible characters that don't belong to an
+     *   extended grapheme cluster (e.g. an emoji sequence) are
+     *   backslash-escaped using Unicode notation with uppercase digits.
      */
     public function processTokens(array $tokens): void
     {

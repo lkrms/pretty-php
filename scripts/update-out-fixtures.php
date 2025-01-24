@@ -11,8 +11,6 @@ use Salient\Utility\Json;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
-umask(022);
-
 $app = new CliApplication(dirname(__DIR__));
 
 if (!ini_get('short_open_tag')) {
