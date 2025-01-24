@@ -38,7 +38,7 @@ if (
         $file = "$dir/$file";
         if (file_exists($file)) {
             Console::logProgress('Suppressing', $file);
-            rename($file, $file . '.invalid');
+            File::rename($file, $file . '.invalid');
         }
     }
 

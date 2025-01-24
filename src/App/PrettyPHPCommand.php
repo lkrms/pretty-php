@@ -758,7 +758,7 @@ EOF,
         unset($this->DefaultFormatter);
 
         if ($this->DebugDirectory !== null) {
-            File::createDir($this->DebugDirectory, 0777, true);
+            File::createDir($this->DebugDirectory);
             $this->DebugDirectory = File::realpath($this->DebugDirectory);
             Env::setDebug(true);
             $this->App->logOutput();
@@ -1679,7 +1679,7 @@ EOF,
         // Either empty or completely remove the progress log directory
         $dir = "{$this->DebugDirectory}/" . self::PROGRESS_LOG_DIR;
         if ($files) {
-            File::createDir($dir, 0777, true);
+            File::createDir($dir);
             File::pruneDir($dir);
         } elseif (is_dir($dir)) {
             File::pruneDir($dir, true);

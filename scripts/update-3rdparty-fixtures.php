@@ -83,7 +83,7 @@ class Updater
     {
         Console::info('Updating php-doc fixtures');
 
-        $exclude = preg_quote("{$this->RepoRoot}/php-doc/reference/", '/');
+        $exclude = Regex::quote("{$this->RepoRoot}/php-doc/reference/", '/');
         $files = File::find()
                      ->in("{$this->RepoRoot}/php-doc")
                      ->exclude("/^$exclude/")
@@ -158,7 +158,7 @@ class Updater
         Console::info('Updating php-parser fixtures');
 
         $dir = "{$this->RepoRoot}/php-parser";
-        $exclude = preg_quote("$dir/test/code/parser/errorHandling/", '/');
+        $exclude = Regex::quote("$dir/test/code/parser/errorHandling/", '/');
         $files = File::find()
                      ->in("$dir/test/code/parser", "$dir/test/code/prettyPrinter")
                      ->exclude("/^$exclude/")
@@ -423,8 +423,6 @@ REGEX;
 }
 
 require dirname(__DIR__) . '/vendor/autoload.php';
-
-umask(022);
 
 $app = new CliApplication(dirname(__DIR__));
 

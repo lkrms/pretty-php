@@ -236,7 +236,7 @@ final class NormaliseComments implements TokenRule
             if ($collapse) {
                 $text = $text === '' ? ' */' : " $text */";
             } else {
-                $text = preg_replace(
+                $text = Regex::replace(
                     ["/\n(?!\n)/", "/\n(?=\n)/"],
                     ["\n * ", "\n *"],
                     $text,
