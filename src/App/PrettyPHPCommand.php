@@ -202,6 +202,15 @@ final class PrettyPHPCommand extends CliCommand
     /**
      * @inheritDoc
      */
+    protected function canRunAsRoot(): bool
+    {
+        // Allow the command to run in containers that elevate privileges
+        return true;
+    }
+
+    /**
+     * @inheritDoc
+     */
     protected function getOptionList(): iterable
     {
         return [
@@ -1342,7 +1351,7 @@ EOF,
         }
 
         try {
-            $config = Json::parseObjectAsArray($json);
+            $config = Json::objectAsArray($json);
         } catch (JsonException $ex) {
             throw new InvalidConfigurationException(sprintf(
                 'Invalid JSON in configuration file: %s (%s)',

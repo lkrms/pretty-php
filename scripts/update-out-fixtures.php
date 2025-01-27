@@ -75,7 +75,7 @@ if (isset($invalid)) {
     $indexPath = FormatterTest::getIndexFixturePath();
     /** @var array<int,string[]> */
     $index = file_exists($indexPath)
-        ? Json::parseObjectAsArray(File::getContents($indexPath))
+        ? Json::objectAsArray(File::getContents($indexPath))
         : [];
 
     $invalid = array_keys($invalid);
