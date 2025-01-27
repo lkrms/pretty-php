@@ -24,7 +24,7 @@ if (
 $indexPath = FormatterTest::getIndexFixturePath();
 /** @var array<int,string[]> */
 $index = file_exists($indexPath)
-    ? Json::parseObjectAsArray(File::getContents($indexPath))
+    ? Json::objectAsArray(File::getContents($indexPath))
     : [];
 
 // Do nothing if a PHP version is missing from the index, otherwise remove any

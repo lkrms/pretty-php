@@ -1342,7 +1342,7 @@ EOF,
         }
 
         try {
-            $config = Json::parseObjectAsArray($json);
+            $config = Json::objectAsArray($json);
         } catch (JsonException $ex) {
             throw new InvalidConfigurationException(sprintf(
                 'Invalid JSON in configuration file: %s (%s)',

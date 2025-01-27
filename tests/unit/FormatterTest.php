@@ -967,7 +967,7 @@ PHP,
         $index = [];
         if (!$all && is_file($indexPath = self::getIndexFixturePath())) {
             /** @var array<int,string[]> */
-            $index = Json::parseObjectAsArray(File::getContents($indexPath));
+            $index = Json::objectAsArray(File::getContents($indexPath));
             $index = $index[\PHP_VERSION_ID - \PHP_VERSION_ID % 100] ?? [];
             $index = array_fill_keys($index, true);
         }
