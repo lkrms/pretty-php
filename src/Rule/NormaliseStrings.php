@@ -188,7 +188,7 @@ final class NormaliseStrings implements TokenRule
             $double = addcslashes($string, "\0..\t\v\f\x0e..\x1f\$\\{$escape}");
 
             // Convert ignorable code points to "\u{xxxx}" unless they belong to
-            // an extended grapheme cluster, i.e. a recognised Unicode sequence
+            // an extended grapheme cluster
             $utf8Escapes = 0;
             if ($utf8) {
                 $double = Regex::replaceCallback(
