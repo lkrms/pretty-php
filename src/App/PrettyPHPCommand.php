@@ -202,6 +202,15 @@ final class PrettyPHPCommand extends CliCommand
     /**
      * @inheritDoc
      */
+    protected function canRunAsRoot(): bool
+    {
+        // Allow the command to run in containers that elevate privileges
+        return true;
+    }
+
+    /**
+     * @inheritDoc
+     */
     protected function getOptionList(): iterable
     {
         return [
