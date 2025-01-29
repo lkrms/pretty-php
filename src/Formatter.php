@@ -238,6 +238,7 @@ final class Formatter implements Buildable, Immutable
     /**
      * The size of a tab, in spaces
      *
+     * @var int<1,max>
      * @phpstan-var 2|4|8
      */
     public int $TabSize;
@@ -439,6 +440,7 @@ final class Formatter implements Buildable, Immutable
     private static array $AllDeclarationTypes;
 
     /**
+     * @param int<1,max> $tabSize
      * @phpstan-param 2|4|8 $tabSize
      * @param array<class-string<Extension>> $disable Extensions to disable
      * @param array<class-string<Extension>> $enable Extensions to enable

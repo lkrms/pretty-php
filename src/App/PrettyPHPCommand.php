@@ -134,7 +134,9 @@ final class PrettyPHPCommand extends CliCommand
     private string $IncludeRegex = '';
     private string $ExcludeRegex = '';
     private ?string $IncludeIfPhpRegex = null;
+    /** @var int<1,max>|null */
     private ?int $Tabs = null;
+    /** @var int<1,max>|null */
     private ?int $Spaces = null;
     private string $Eol = '';
     /** @var string[] */

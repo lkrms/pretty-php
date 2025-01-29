@@ -38,6 +38,7 @@ final class CollectColumn implements Filter
             $text = !$this->Idx->Expandable[$token->id]
                 || strpos($token->text, "\t") === false
                     ? $token->text
+                    // @phpstan-ignore argument.type
                     : Str::expandTabs($token->text, $tabSize, $column);
             if ($text !== $token->text) {
                 $token->ExpandedText = $text;

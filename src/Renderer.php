@@ -17,6 +17,7 @@ final class Renderer implements Immutable
 {
     use HasMutator;
 
+    /** @var int<1,max> */
     private int $TabSize;
     private string $SoftTab;
     private string $Tab;
