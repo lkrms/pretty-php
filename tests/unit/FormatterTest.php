@@ -16,7 +16,6 @@ use Lkrms\PrettyPHP\TokenIndex;
 use Salient\Utility\File;
 use Salient\Utility\Json;
 use Salient\Utility\Regex;
-use Generator;
 use SplFileInfo;
 
 final class FormatterTest extends TestCase
@@ -32,7 +31,7 @@ final class FormatterTest extends TestCase
     }
 
     /**
-     * @return iterable<string,array{string,string,Formatter|FormatterB}>
+     * @return iterable<array{string,string,Formatter|FormatterB}>
      */
     public static function formatProvider(): iterable
     {
@@ -897,21 +896,15 @@ PHP,
     }
 
     /**
-     * @return Generator<string,array{string,string,Formatter}>
+     * @return iterable<array{string,string,Formatter}>
      */
-    public static function filesProvider(): Generator
+    public static function filesProvider(): iterable
     {
         $pathOffset = strlen(self::getInputFixturesPath()) + 1;
         foreach (self::getFileFormats() as $dir => $formatter) {
             $format = substr($dir, 3);
             foreach (self::getFiles($dir) as $file => $outFile) {
                 $inFile = (string) $file;
-
-                // Don't test if the file is expected to fail
-                if ($file->getExtension() === 'fails') {
-                    continue;
-                }
-
                 $path = substr($inFile, $pathOffset);
                 $code = File::getContents($inFile);
                 $expected = File::getContents($outFile);
@@ -927,9 +920,9 @@ PHP,
      *
      * @param string $format The format under test, i.e. one of the keys
      * returned by {@see FormatterTest::getFileFormats()}.
-     * @return Generator<SplFileInfo,string>
+     * @return iterable<SplFileInfo,string>
      */
-    public static function getFiles(string $format): Generator
+    public static function getFiles(string $format): iterable
     {
         return self::doGetFiles($format);
     }
@@ -939,14 +932,12 @@ PHP,
      * pathnames in 'tests/fixtures/Formatter/out/<format>' without excluding
      * incompatible files
      *
-     * Each input file is mapped to an array that contains an output path at
-     * index 0 and, if running on a version of PHP lower than the target
-     * version, a path for version-specific output at index 1, should it be
-     * necessary.
+     * Each input file is mapped to an array that contains an output path and a
+     * path for version-specific output, should it be necessary.
      *
-     * @return Generator<SplFileInfo,array{string,string|null}>
+     * @return iterable<SplFileInfo,array{string,string}>
      */
-    public static function getAllFiles(string $format): Generator
+    public static function getAllFiles(string $format): iterable
     {
         return self::doGetFiles($format, true);
     }
@@ -954,11 +945,11 @@ PHP,
     /**
      * @phpstan-return (
      *     $all is false
-     *     ? Generator<SplFileInfo,string>
-     *     : Generator<SplFileInfo,array{string,string|null}>
+     *     ? iterable<SplFileInfo,string>
+     *     : iterable<SplFileInfo,array{string,string}>
      * )
      */
-    private static function doGetFiles(string $format, bool $all = false): Generator
+    private static function doGetFiles(string $format, bool $all = false): iterable
     {
         $inDir = self::getInputFixturesPath();
         $outDir = self::getOutputFixturesPath($format);
@@ -972,26 +963,14 @@ PHP,
             $index = array_fill_keys($index, true);
         }
 
-        $versionSuffix =
-            \PHP_VERSION_ID < 80000
-                ? '.PHP74'
-                : (\PHP_VERSION_ID < 80100
-                    ? '.PHP80'
-                    : (\PHP_VERSION_ID < 80200
-                        ? '.PHP81'
-                        : (\PHP_VERSION_ID < 80300
-                            ? '.PHP82'
-                            : (\PHP_VERSION_ID < 80400
-                                ? '.PHP83'
-                                : null))));
+        $versionSuffix = '.PHP'
+            . (int) (\PHP_VERSION_ID / 10000)
+            . (int) (\PHP_VERSION_ID % 10000 / 100);
 
-        // Include:
-        // - .php files
-        // - files with no extension, and
-        // - either of the above with a .fails extension
+        // Find .php files and files with no extension
         $files = File::find()
                      ->in($inDir)
-                     ->include('/(\.php|\/[^.\/]+)(\.fails)?$/');
+                     ->include('/(\.php|\/[^.\/]+)$/');
 
         /** @var SplFileInfo $file */
         foreach ($files as $file) {
@@ -1002,17 +981,12 @@ PHP,
                 continue;
             }
 
-            $outFile = Regex::replace('/\.fails$/', '', "$outDir/$path");
-            if ($versionSuffix) {
-                $versionOutFile = Regex::replace('/(?<!\G)(\.php)?$/', "$versionSuffix\$1", $outFile);
-                if (!$all && file_exists($versionOutFile)) {
-                    $outFile = $versionOutFile;
-                }
-            }
+            $outFile = "$outDir/$path";
+            $versionOutFile = Regex::replace('/(\.php|(?<!\.php))$/', "$versionSuffix\$1", $outFile);
 
             yield $file => $all
-                ? [$outFile, $versionOutFile ?? null]
-                : $outFile;
+                ? [$outFile, $versionOutFile]
+                : (file_exists($versionOutFile) ? $versionOutFile : $outFile);
         }
     }
 
@@ -1055,7 +1029,7 @@ PHP,
 
     public static function getIndexFixturePath(): string
     {
-        return self::getFixturesPath(__CLASS__) . '/versions.json';
+        return self::getFixturesPath(__CLASS__) . '/index.json';
     }
 
     public static function getInputFixturesPath(): string

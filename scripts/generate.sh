@@ -109,7 +109,7 @@ if ((FIXTURES)); then (
             die "command not found: $PHP"
     done
 
-    run rm -rf tests/fixtures/Formatter/versions.json tests/fixtures/Formatter/out/*
+    run rm -rf tests/fixtures/Formatter/*.json tests/fixtures/Formatter/out/*
 
     for PHP in "$@"; do
         run "$PHP" -dshort_open_tag=on scripts/update-out-fixtures.php

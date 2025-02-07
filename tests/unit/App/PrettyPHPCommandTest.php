@@ -20,7 +20,6 @@ use Salient\Utility\Json;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use Salient\Utility\Sys;
-use Generator;
 
 /**
  * @backupGlobals enabled
@@ -90,9 +89,9 @@ EOF;
     }
 
     /**
-     * @return Generator<string,array{string}>
+     * @return iterable<array{string}>
      */
-    public static function drupalProvider(): Generator
+    public static function drupalProvider(): iterable
     {
         yield from self::getInputFiles('preset/drupal');
     }
@@ -107,9 +106,9 @@ EOF;
     }
 
     /**
-     * @return Generator<string,array{string}>
+     * @return iterable<array{string}>
      */
-    public static function laravelProvider(): Generator
+    public static function laravelProvider(): iterable
     {
         yield from self::getInputFiles('preset/laravel');
     }
@@ -124,9 +123,9 @@ EOF;
     }
 
     /**
-     * @return Generator<string,array{string}>
+     * @return iterable<array{string}>
      */
-    public static function symfonyProvider(): Generator
+    public static function symfonyProvider(): iterable
     {
         yield from self::getInputFiles('preset/symfony');
     }
@@ -140,9 +139,9 @@ EOF;
     }
 
     /**
-     * @return Generator<string,array{string}>
+     * @return iterable<array{string}>
      */
-    public static function wordpressProvider(): Generator
+    public static function wordpressProvider(): iterable
     {
         yield from self::getInputFiles('preset/wordpress');
     }
@@ -206,7 +205,7 @@ EOF;
     }
 
     /**
-     * @return array<string,array{int,string|null,string|null,string|null,string[],5?:array<array{Level::*,string,2?:array<string,mixed>}>|null}>
+     * @return array<array{int,string|null,string|null,string|null,string[],5?:array<array{Level::*,string,2?:array<string,mixed>}>|null}>
      */
     public static function runProvider(): array
     {
@@ -262,7 +261,7 @@ EOF;
     }
 
     /**
-     * @return array<string,array{int,array<array{Level::*,string,2?:array<string,mixed>}>|string|null,string,3?:bool,4?:string|null,...}>
+     * @return array<array{int,array<array{Level::*,string,2?:array<string,mixed>}>|string|null,string,3?:bool,4?:string|null,...}>
      */
     public static function directoriesProvider(): array
     {
@@ -544,6 +543,9 @@ EOF),
      */
     public function testInvalidOptions(string $message, string ...$args): void
     {
+        $dir = File::createTempDir($this->App->getTempPath());
+        File::chdir($dir);
+        $this->App->setWorkingDirectory();
         $this->assertCommandProduces(null, null, $args, 1, [
             [Level::ERROR, 'Error: ' . $message],
             [Level::INFO, self::SYNOPSIS],
@@ -551,7 +553,7 @@ EOF),
     }
 
     /**
-     * @return array<string,array{string,...}>
+     * @return array<array{string,...}>
      */
     public static function invalidOptionsProvider(): array
     {
@@ -584,31 +586,37 @@ EOF),
                 '--tab and --space cannot both be given',
                 '--tab',
                 '--space',
+                '-',
             ],
             'tab=1' => [
                 "invalid --tab value '1' (expected one of: 2,4,8)",
                 '--tab=1',
+                '-',
             ],
             'space=6' => [
                 "invalid --space value '6' (expected one of: 2,4,8)",
                 '--space=6',
+                '-',
             ],
             'operators first and last' => [
                 '--operators-first and --operators-last cannot both be given',
                 '--operators-first',
                 '--operators-last',
+                '-',
             ],
             'tight and disable declaration spacing' => [
                 '--tight and --disable=declaration-spacing cannot both be given',
                 '--tight',
                 '--disable',
                 'declaration-spacing',
+                '-',
             ],
             'invalid sort-imports #1' => [
                 '--sort-imports-by and --no-sort-imports/--disable=sort-imports cannot both be given',
                 '--sort-imports-by',
                 'name',
                 '--no-sort-imports',
+                '-',
             ],
             'invalid sort-imports #2' => [
                 '--sort-imports-by and --no-sort-imports/--disable=sort-imports cannot both be given',
@@ -616,6 +624,13 @@ EOF),
                 'name',
                 '--disable',
                 'sort-imports',
+                '-',
+            ],
+            'incompatible rules' => [
+                'strict-expressions and semi-strict-expressions cannot be used together',
+                '--enable',
+                'strict-expressions,semi-strict-expressions',
+                '-',
             ],
         ];
     }
@@ -674,7 +689,7 @@ EOF),
     }
 
     /**
-     * @return array<string,array{string,...}>
+     * @return array<array{string,...}>
      */
     public static function printConfigProvider(): array
     {
@@ -715,7 +730,7 @@ EOF,
     }
 
     /**
-     * @return array<string,array{array{string,string}|string}>
+     * @return array<array{array{string,string}|string}>
      */
     public static function printLoadedConfigProvider(): array
     {
@@ -751,7 +766,7 @@ EOF,
     }
 
     /**
-     * @return array<string,array{string,...}>
+     * @return array<array{string,...}>
      */
     public static function configProvider(): array
     {
@@ -832,6 +847,7 @@ EOF,
     {
         $file = self::$FixturesPath . '/empty-config/Foo.php';
         $messages = [
+            [Level::DEBUG, self::DEBUG . '{' . PrettyPHPCommand::class . '->doGetFormatter:'],
             [Level::DEBUG, self::DEBUG . '{' . PrettyPHPCommand::class . '->getConfigFile:'],
             [Level::DEBUG, self::DEBUG . '{' . PrettyPHPCommand::class . '->getConfigValues:'],
             [Level::DEBUG, self::DEBUG . '{' . PrettyPHPCommand::class . '->run:'],
@@ -946,9 +962,9 @@ EOF,
     /**
      * Get *.in files in the given directory
      *
-     * @return Generator<string,array{string}>
+     * @return iterable<array{string}>
      */
-    private static function getInputFiles(string $source): Generator
+    private static function getInputFiles(string $source): iterable
     {
         $dir = self::getFixturesPath(__CLASS__) . "/$source";
         $offset = strlen($dir) + 1;

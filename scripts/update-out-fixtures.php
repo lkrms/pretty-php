@@ -50,16 +50,12 @@ foreach (FormatterTest::getFileFormats() as $format => $formatter) {
             if (File::getContents($outFile) === $output) {
                 continue;
             }
-            if ($versionOutFile) {
-                $outFile = $versionOutFile;
-                $outPath = substr($outFile, $outPathOffset);
-                if (file_exists($outFile)) {
-                    if (File::getContents($outFile) === $output) {
-                        continue;
-                    }
-                    $message = 'Replacing';
+            $outFile = $versionOutFile;
+            $outPath = substr($outFile, $outPathOffset);
+            if (file_exists($outFile)) {
+                if (File::getContents($outFile) === $output) {
+                    continue;
                 }
-            } else {
                 $message = 'Replacing';
             }
         } else {

@@ -11,7 +11,6 @@ use Salient\Utility\File;
 use Salient\Utility\Reflect;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
-use Generator;
 use LogicException;
 use ReflectionClass;
 use ReflectionProperty;
@@ -235,7 +234,7 @@ class TokenIndexTest extends TestCase
     }
 
     /**
-     * @return array<string,array<int[]>>
+     * @return array<array<int[]>>
      */
     public static function addSpaceProvider(): array
     {
@@ -278,7 +277,7 @@ class TokenIndexTest extends TestCase
     }
 
     /**
-     * @return iterable<string,array{int[],int[]}>
+     * @return iterable<array{int[],int[]}>
      */
     public static function preserveNewlineProvider(): iterable
     {
@@ -471,9 +470,9 @@ class TokenIndexTest extends TestCase
     }
 
     /**
-     * @return Generator<string,array{ReflectionProperty,TokenIndex,string}>
+     * @return iterable<array{ReflectionProperty,TokenIndex,string}>
      */
-    public static function propertyProvider(): Generator
+    public static function propertyProvider(): iterable
     {
         $index = static::getIndex();
         foreach (static::getProperties() as $property) {

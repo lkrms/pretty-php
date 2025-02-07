@@ -1366,8 +1366,8 @@ final class Formatter implements Buildable, Immutable
             if (count($incompatible) > 1) {
                 $names = array_map([Get::class, 'basename'], $incompatible);
                 throw new InvalidFormatterException(sprintf(
-                    'Enabled rules are not compatible: %s',
-                    implode(', ', $names),
+                    '%s cannot be used together',
+                    implode(' and ', $names),
                 ));
             }
         }
