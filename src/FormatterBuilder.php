@@ -11,7 +11,7 @@ use Salient\Core\Indentation;
 
 /**
  * @method $this insertSpaces(bool $value = true) Use spaces for indentation? (default: true)
- * @method $this tabSize(int $value) The size of a tab, in spaces
+ * @method $this tabSize(int<1,max> $value) The size of a tab, in spaces
  * @method $this disable(array<class-string<Extension>> $value) Extensions to disable
  * @method $this enable(array<class-string<Extension>> $value) Extensions to enable
  * @method $this flags(int-mask-of<FormatterFlag::*> $value) Formatter flags

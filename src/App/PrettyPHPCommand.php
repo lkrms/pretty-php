@@ -134,7 +134,9 @@ final class PrettyPHPCommand extends CliCommand
     private string $IncludeRegex = '';
     private string $ExcludeRegex = '';
     private ?string $IncludeIfPhpRegex = null;
+    /** @var int<1,max>|null */
     private ?int $Tabs = null;
+    /** @var int<1,max>|null */
     private ?int $Spaces = null;
     private string $Eol = '';
     /** @var string[] */
@@ -991,14 +993,12 @@ EOF,
             throw new CliInvalidArgumentsException(...$errors);
         }
 
+        $this->DefaultFormatter = $this->getFormatter();
+
         if ($this->PrintConfig) {
             $values = $this->getOptionValues(true, true, true);
             echo Json::prettyPrint((object) $values) . \PHP_EOL;
             return;
-        }
-
-        if ($this->Quiet < 2) {
-            $this->App->reportVersion();
         }
 
         // Resolve input directories to the closest applicable configuration
@@ -1052,6 +1052,10 @@ EOF,
             unset($formatter);
         }
 
+        if ($this->Quiet < 2) {
+            $this->App->reportVersion();
+        }
+
         $i = 0;
         $count = count($in);
         $replaced = 0;
@@ -1090,8 +1094,7 @@ EOF,
 
             $dir = dirname($inputFile);
             $formatter = $this->FormatterByDir[$dir] ??=
-                $this->DefaultFormatter ??=
-                $this->getFormatter();
+                $this->DefaultFormatter;
 
             $inputStream = File::open($file, 'rb');
 
@@ -1551,10 +1554,12 @@ EOF,
     {
         try {
             return $this->doGetFormatter();
-            // @codeCoverageIgnoreStart
         } catch (InvalidFormatterException $ex) {
-            throw new $exception($ex->getMessage());
-            // @codeCoverageIgnoreEnd
+            $replace = array_flip(array_map(
+                [Get::class, 'basename'],
+                self::DISABLE_MAP + self::ENABLE_MAP + self::PRESET_MAP,
+            ));
+            throw new $exception(strtr($ex->getMessage(), $replace));
         }
     }
 

@@ -17,7 +17,7 @@ final class AlignListsTest extends TestCase
     }
 
     /**
-     * @return array<string,array{string,string}>
+     * @return array<array{string,string}>
      */
     public static function outputProvider(): array
     {
