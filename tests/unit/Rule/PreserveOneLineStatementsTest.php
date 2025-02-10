@@ -107,6 +107,11 @@ else { qux(); }
 
 if ($foo) { foo(); }
 if ($foo) { foo(); } else { bar(); }
+if ($foo) {
+    foo();
+} else {
+    bar();
+}
 
 try { foo(); }
 catch (LogicException $ex) { bar(); }
@@ -126,6 +131,9 @@ if ($foo) {foo();}
 elseif ($bar) {bar();} else if ($baz) {baz();} else {qux();}
 if ($foo) {foo();}
 if ($foo) {foo();} else {bar();}
+if ($foo) {foo();} else {
+    bar();
+}
 try {foo();}
 catch (LogicException $ex) {bar();}
 catch (Throwable $ex) {baz();}
