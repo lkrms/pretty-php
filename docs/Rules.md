@@ -271,6 +271,12 @@ If a `switch` case and its statement list are on the same line in the input, the
 
 Attributes on their own line are excluded from consideration.
 
+For any control structures that remain where every `if`/`elseif`/`else` or `try`/`catch`/`finally` statement starts and ends on the same line in the input:
+
+- newlines are added before each `elseif`/`else`/`catch`/`finally` token
+- newlines are suppressed between tokens in each statement
+- blank lines are added before and after the control structure
+
 ### `BlankBeforeReturn`
 
 <small>(optional, `processTokens()`, priority 204, tokens: `T_YIELD` | `T_YIELD_FROM` | `T_RETURN`)</small>

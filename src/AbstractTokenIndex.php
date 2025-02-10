@@ -484,6 +484,17 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
+     * T_IF, T_TRY
+     *
+     * @var array<int,bool>
+     */
+    public array $IfOrTry = [
+        \T_IF => true,
+        \T_TRY => true,
+    ]
+        + self::TOKEN_INDEX;
+
+    /**
      * T_ELSEIF, T_ELSE
      *
      * @var array<int,bool>

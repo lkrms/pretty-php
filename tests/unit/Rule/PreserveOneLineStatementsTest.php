@@ -88,6 +88,59 @@ switch ($op) {
 PHP,
                 $formatter,
             ],
+            [
+                <<<'PHP'
+<?php
+if ($foo) { foo(); }  // comment
+elseif ($bar) { bar(); }  // comment
+else { baz(); }  // comment
+
+// comment
+if ($foo) { foo(); }
+elseif ($bar) { bar(); }
+else { baz(); }
+
+if ($foo) { foo(); }
+elseif ($bar) { bar(); }
+else if ($baz) { baz(); }
+else { qux(); }
+
+if ($foo) { foo(); }
+if ($foo) { foo(); } else { bar(); }
+if ($foo) {
+    foo();
+} else {
+    bar();
+}
+
+try { foo(); }
+catch (LogicException $ex) { bar(); }
+catch (Throwable $ex) { baz(); }
+finally { qux(); }
+
+PHP,
+                <<<'PHP'
+<?php
+if ($foo) {foo();} // comment
+elseif ($bar) {bar();} // comment
+else {baz();} // comment
+// comment
+if ($foo) {foo();} elseif ($bar) {bar();}
+else {baz();}
+if ($foo) {foo();}
+elseif ($bar) {bar();} else if ($baz) {baz();} else {qux();}
+if ($foo) {foo();}
+if ($foo) {foo();} else {bar();}
+if ($foo) {foo();} else {
+    bar();
+}
+try {foo();}
+catch (LogicException $ex) {bar();}
+catch (Throwable $ex) {baz();}
+finally {qux();}
+PHP,
+                $formatter,
+            ],
         ];
 
         if (\PHP_VERSION_ID < 80000) {
