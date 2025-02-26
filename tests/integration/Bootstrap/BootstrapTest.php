@@ -3,7 +3,6 @@
 namespace Lkrms\PrettyPHP\Tests\Bootstrap;
 
 use Lkrms\PrettyPHP\Tests\TestCase;
-use Salient\Contract\Core\FileDescriptor;
 use Salient\Core\Process;
 
 final class BootstrapTest extends TestCase
@@ -15,7 +14,7 @@ final class BootstrapTest extends TestCase
     {
         $process = new Process([...self::PHP_COMMAND, __DIR__ . '/' . $file]);
         $this->assertSame(255, $process->run());
-        $this->assertMatchesRegularExpression($pattern, $process->getOutput(FileDescriptor::ERR));
+        $this->assertMatchesRegularExpression($pattern, $process->getOutput(Process::STDERR));
     }
 
     /**

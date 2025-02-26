@@ -3,14 +3,14 @@
 namespace Lkrms\PrettyPHP\Rule\Preset\Internal;
 
 use Lkrms\PrettyPHP\AbstractTokenIndex;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ImmutableTrait;
 
 /**
  * @internal
  */
 final class WordPressTokenIndex extends AbstractTokenIndex
 {
-    use HasMutator;
+    use ImmutableTrait;
 
     private self $Original;
 

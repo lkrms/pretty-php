@@ -6,11 +6,7 @@ use Lkrms\PrettyPHP\App\PrettyPHPCommand;
 use Lkrms\PrettyPHP\Tests\TestCase;
 use Salient\Cli\CliApplication;
 use Salient\Console\ConsoleFormatter;
-use Salient\Contract\Console\ConsoleMessageType as MessageType;
-use Salient\Contract\Core\Exception\ExceptionInterface;
-use Salient\Contract\Core\FileDescriptor;
-use Salient\Contract\Core\MessageLevel as Level;
-use Salient\Contract\Core\MessageLevelGroup as LevelGroup;
+use Salient\Contract\Core\Exception\Exception;
 use Salient\Core\Facade\Console;
 use Salient\Core\Process;
 use Salient\Testing\Console\MockTarget;
@@ -26,11 +22,11 @@ use Salient\Utility\Sys;
  */
 final class PrettyPHPCommandTest extends TestCase
 {
-    private const ERROR = ConsoleFormatter::DEFAULT_LEVEL_PREFIX_MAP[Level::ERROR];
-    private const WARNING = ConsoleFormatter::DEFAULT_LEVEL_PREFIX_MAP[Level::WARNING];
-    private const DEBUG = ConsoleFormatter::DEFAULT_LEVEL_PREFIX_MAP[Level::DEBUG];
-    private const SUMMARY = ConsoleFormatter::DEFAULT_TYPE_PREFIX_MAP[MessageType::SUMMARY];
-    private const SUCCESS = ConsoleFormatter::DEFAULT_TYPE_PREFIX_MAP[MessageType::SUCCESS];
+    private const ERROR = ConsoleFormatter::DEFAULT_LEVEL_PREFIX_MAP[Console::LEVEL_ERROR];
+    private const WARNING = ConsoleFormatter::DEFAULT_LEVEL_PREFIX_MAP[Console::LEVEL_WARNING];
+    private const DEBUG = ConsoleFormatter::DEFAULT_LEVEL_PREFIX_MAP[Console::LEVEL_DEBUG];
+    private const SUMMARY = ConsoleFormatter::DEFAULT_TYPE_PREFIX_MAP[Console::TYPE_SUMMARY];
+    private const SUCCESS = ConsoleFormatter::DEFAULT_TYPE_PREFIX_MAP[Console::TYPE_SUCCESS];
 
     private const SYNOPSIS = <<<'EOF'
 
@@ -58,7 +54,7 @@ EOF;
         parent::setUp();
 
         $this->ConsoleTarget = new MockTarget(null, true, true, false);
-        Console::registerTarget($this->ConsoleTarget, LevelGroup::ALL_EXCEPT_DEBUG);
+        Console::registerTarget($this->ConsoleTarget, Console::LEVELS_ALL_EXCEPT_DEBUG);
 
         $_SERVER['SCRIPT_FILENAME'] = 'pretty-php';
 
@@ -149,8 +145,8 @@ EOF;
     public function testWordpressWithTight(): void
     {
         $messages = [
-            [Level::WARNING, self::WARNING . 'wordpress preset disabled tight declaration spacing'],
-            [Level::INFO, self::SUCCESS . 'Formatted 1 file successfully'],
+            [Console::LEVEL_WARNING, self::WARNING . 'wordpress preset disabled tight declaration spacing'],
+            [Console::LEVEL_INFO, self::SUCCESS . 'Formatted 1 file successfully'],
         ];
         foreach (self::getInputFiles('preset/wordpress') as [$file]) {
             $input = File::getContents($file);
@@ -177,7 +173,7 @@ EOF;
      * @dataProvider runProvider
      *
      * @param string[] $args
-     * @param array<array{Level::*,string,2?:array<string,mixed>}>|null $messages
+     * @param array<array{Console::LEVEL_*,string,2?:array<string,mixed>}>|null $messages
      */
     public function testRun(
         int $exitStatus,
@@ -205,7 +201,7 @@ EOF;
     }
 
     /**
-     * @return array<array{int,string|null,string|null,string|null,string[],5?:array<array{Level::*,string,2?:array<string,mixed>}>|null}>
+     * @return array<array{int,string|null,string|null,string|null,string[],5?:array<array{Console::LEVEL_*,string,2?:array<string,mixed>}>|null}>
      */
     public static function runProvider(): array
     {
@@ -221,7 +217,7 @@ EOF;
                 $noSortImportsFile,
                 $noSortImportsFile,
                 ['-M', '.'],
-                [[Level::INFO, self::SUCCESS . 'Formatted 1 file successfully']],
+                [[Console::LEVEL_INFO, self::SUCCESS . 'Formatted 1 file successfully']],
             ],
         ];
     }
@@ -229,7 +225,7 @@ EOF;
     /**
      * @dataProvider directoriesProvider
      *
-     * @param array<array{Level::*,string,2?:array<string,mixed>}>|string|null $message
+     * @param array<array{Console::LEVEL_*,string,2?:array<string,mixed>}>|string|null $message
      */
     public function testDirectories(
         int $exitStatus,
@@ -244,11 +240,11 @@ EOF;
         } elseif (!$exitStatus) {
             $messages = $message === null
                 ? []
-                : [[Level::INFO, $message]];
+                : [[Console::LEVEL_INFO, $message]];
         } elseif ($exitStatus === 2) {
-            $messages = [[Level::ERROR, self::ERROR . 'InvalidConfigurationException: ' . $message]];
+            $messages = [[Console::LEVEL_ERROR, self::ERROR . 'InvalidConfigurationException: ' . $message]];
         } else {
-            $messages = [[Level::ERROR, (string) $message]];
+            $messages = [[Console::LEVEL_ERROR, (string) $message]];
         }
         if ($chdir) {
             File::chdir(self::$FixturesPath . $dir);
@@ -261,7 +257,7 @@ EOF;
     }
 
     /**
-     * @return array<array{int,array<array{Level::*,string,2?:array<string,mixed>}>|string|null,string,3?:bool,4?:string|null,...}>
+     * @return array<array{int,array<array{Console::LEVEL_*,string,2?:array<string,mixed>}>|string|null,string,3?:bool,4?:string|null,...}>
      */
     public static function directoriesProvider(): array
     {
@@ -368,7 +364,7 @@ EOF;
             ],
             'unformatted + --check' => [
                 8,
-                [[Level::INFO, self::SUMMARY . 'Found 1 unformatted file after checking 2 files in ']],
+                [[Console::LEVEL_INFO, self::SUMMARY . 'Found 1 unformatted file after checking 2 files in ']],
                 '/unformatted',
                 false,
                 null,
@@ -376,7 +372,7 @@ EOF;
             ],
             'unformatted + --check in cwd' => [
                 8,
-                [[Level::INFO, self::SUMMARY . 'Found 1 unformatted file after checking 2 files in ']],
+                [[Console::LEVEL_INFO, self::SUMMARY . 'Found 1 unformatted file after checking 2 files in ']],
                 '/unformatted',
                 true,
                 null,
@@ -401,7 +397,7 @@ EOF;
             'unformatted + --diff' => [
                 8,
                 [
-                    [Level::INFO, self::SUMMARY . 'Found 1 unformatted file after checking 2 files in '],
+                    [Console::LEVEL_INFO, self::SUMMARY . 'Found 1 unformatted file after checking 2 files in '],
                 ],
                 '/unformatted',
                 false,
@@ -428,7 +424,7 @@ EOF),
             'unformatted + --diff in cwd' => [
                 8,
                 [
-                    [Level::INFO, self::SUMMARY . 'Found 1 unformatted file after checking 2 files in '],
+                    [Console::LEVEL_INFO, self::SUMMARY . 'Found 1 unformatted file after checking 2 files in '],
                 ],
                 '/unformatted',
                 true,
@@ -455,16 +451,16 @@ EOF),
             'invalid syntax' => [
                 4,
                 [
-                    [Level::ERROR, self::ERROR . "ParseError in $dir/invalid-syntax/invalid.php:4: "],
-                    [Level::INFO, self::SUMMARY . 'Formatted 2 files with 1 error in '],
+                    [Console::LEVEL_ERROR, self::ERROR . "ParseError in $dir/invalid-syntax/invalid.php:4: "],
+                    [Console::LEVEL_INFO, self::SUMMARY . 'Formatted 2 files with 1 error in '],
                 ],
                 '/invalid-syntax',
             ],
             'invalid syntax in cwd' => [
                 4,
                 [
-                    [Level::ERROR, self::ERROR . 'ParseError in ./invalid.php:4: '],
-                    [Level::INFO, self::SUMMARY . 'Formatted 2 files with 1 error in '],
+                    [Console::LEVEL_ERROR, self::ERROR . 'ParseError in ./invalid.php:4: '],
+                    [Console::LEVEL_INFO, self::SUMMARY . 'Formatted 2 files with 1 error in '],
                 ],
                 '/invalid-syntax',
                 true,
@@ -497,7 +493,7 @@ EOF),
             'tight' => [
                 8,
                 [
-                    [Level::INFO, self::SUMMARY . 'Found 1 unformatted file after checking 1 file in '],
+                    [Console::LEVEL_INFO, self::SUMMARY . 'Found 1 unformatted file after checking 1 file in '],
                 ],
                 '/tight',
                 false,
@@ -521,16 +517,16 @@ EOF),
             'invalid --enable value' => [
                 0,
                 [
-                    [Level::WARNING, "Warning: invalid --enable value 'not-very-strict-expressions' (expected one or more of: "],
-                    [Level::INFO, self::SUMMARY . 'Formatted 1 file with 0 errors and 1 warning in '],
+                    [Console::LEVEL_WARNING, "Warning: invalid --enable value 'not-very-strict-expressions' (expected one or more of: "],
+                    [Console::LEVEL_INFO, self::SUMMARY . 'Formatted 1 file with 0 errors and 1 warning in '],
                 ],
                 '/invalid-enable-value',
             ],
             'invalid --enable value in cwd' => [
                 0,
                 [
-                    [Level::WARNING, "Warning: invalid --enable value 'not-very-strict-expressions' (expected one or more of: "],
-                    [Level::INFO, self::SUMMARY . 'Formatted 1 file with 0 errors and 1 warning in '],
+                    [Console::LEVEL_WARNING, "Warning: invalid --enable value 'not-very-strict-expressions' (expected one or more of: "],
+                    [Console::LEVEL_INFO, self::SUMMARY . 'Formatted 1 file with 0 errors and 1 warning in '],
                 ],
                 '/invalid-enable-value',
                 true,
@@ -547,8 +543,8 @@ EOF),
         File::chdir($dir);
         $this->App->setWorkingDirectory();
         $this->assertCommandProduces(null, null, $args, 1, [
-            [Level::ERROR, 'Error: ' . $message],
-            [Level::INFO, self::SYNOPSIS],
+            [Console::LEVEL_ERROR, 'Error: ' . $message],
+            [Console::LEVEL_INFO, self::SYNOPSIS],
         ]);
     }
 
@@ -653,7 +649,7 @@ EOF),
             $process->pipeInput($pipe);
             $this->assertSame(0, $process->run());
             $this->assertSame($input, $process->getOutput());
-            $this->assertStringContainsString('Copying unseekable input to temporary stream', $process->getOutput(FileDescriptor::ERR));
+            $this->assertStringContainsString('Copying unseekable input to temporary stream', $process->getOutput(Process::STDERR));
         } finally {
             File::closePipe($pipe);
         }
@@ -847,13 +843,13 @@ EOF,
     {
         $file = self::$FixturesPath . '/empty-config/Foo.php';
         $messages = [
-            [Level::DEBUG, self::DEBUG . '{' . PrettyPHPCommand::class . '->doGetFormatter:'],
-            [Level::DEBUG, self::DEBUG . '{' . PrettyPHPCommand::class . '->getConfigFile:'],
-            [Level::DEBUG, self::DEBUG . '{' . PrettyPHPCommand::class . '->getConfigValues:'],
-            [Level::DEBUG, self::DEBUG . '{' . PrettyPHPCommand::class . '->run:'],
-            [Level::DEBUG, self::DEBUG . '{' . PrettyPHPCommand::class . '->doGetFormatter:'],
-            [Level::DEBUG, self::DEBUG . '{' . PrettyPHPCommand::class . '->run:'],
-            [Level::INFO, self::SUCCESS . 'Formatted 1 file successfully in '],
+            [Console::LEVEL_DEBUG, self::DEBUG . '{' . PrettyPHPCommand::class . '->doGetFormatter:'],
+            [Console::LEVEL_DEBUG, self::DEBUG . '{' . PrettyPHPCommand::class . '->getConfigFile:'],
+            [Console::LEVEL_DEBUG, self::DEBUG . '{' . PrettyPHPCommand::class . '->getConfigValues:'],
+            [Console::LEVEL_DEBUG, self::DEBUG . '{' . PrettyPHPCommand::class . '->run:'],
+            [Console::LEVEL_DEBUG, self::DEBUG . '{' . PrettyPHPCommand::class . '->doGetFormatter:'],
+            [Console::LEVEL_DEBUG, self::DEBUG . '{' . PrettyPHPCommand::class . '->run:'],
+            [Console::LEVEL_INFO, self::SUCCESS . 'Formatted 1 file successfully in '],
         ];
         $dir = $this->App->getTempPath() . '/debug';
 
@@ -878,7 +874,7 @@ EOF,
 
     /**
      * @param string[] $args
-     * @param array<array{Level::*,string,2?:array<string,mixed>}>|null $messages
+     * @param array<array{Console::LEVEL_*,string,2?:array<string,mixed>}>|null $messages
      */
     private function assertCommandProduces(
         ?string $output,
@@ -906,7 +902,7 @@ EOF,
             $this->expectOutputString($output);
             $this->assertSame($exitStatus, $this->formatPhp(...[...$args, $src1]));
             $this->assertSame($exitStatus, $this->formatPhp(...[...$args, $src2]));
-        } catch (ExceptionInterface $ex) {
+        } catch (Exception $ex) {
             if (!$exitStatus) {
                 throw $ex;
             }
@@ -924,8 +920,8 @@ EOF,
     }
 
     /**
-     * @param array<array{Level::*,string,2?:array<string,mixed>}> $expected
-     * @param array<array{Level::*,string,2?:array<string,mixed>}> $actual
+     * @param array<array{Console::LEVEL_*,string,2?:array<string,mixed>}> $expected
+     * @param array<array{Console::LEVEL_*,string,2?:array<string,mixed>}> $actual
      */
     private function assertSameMessages(
         array $expected,
@@ -935,7 +931,7 @@ EOF,
         if ($filterVersion) {
             $version = $this->App->getVersionString();
             foreach ($actual as $message) {
-                if ($message !== [Level::INFO, $version]) {
+                if ($message !== [Console::LEVEL_INFO, $version]) {
                     $filtered[] = $message;
                 }
             }
@@ -969,6 +965,7 @@ EOF,
         $dir = self::getFixturesPath(__CLASS__) . "/$source";
         $offset = strlen($dir) + 1;
         $files = File::find()
+                     ->files()
                      ->in($dir)
                      ->include('/\.in$/');
 

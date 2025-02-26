@@ -2,6 +2,6 @@
 
 namespace Lkrms\PrettyPHP\App\Exception;
 
-use Salient\Core\AbstractException;
+use Salient\Core\Exception\Exception;
 
-abstract class AbstractAppException extends AbstractException {}
+abstract class AbstractAppException extends Exception {}

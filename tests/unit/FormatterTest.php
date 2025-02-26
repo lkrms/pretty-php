@@ -969,6 +969,7 @@ PHP,
 
         // Find .php files and files with no extension
         $files = File::find()
+                     ->files()
                      ->in($inDir)
                      ->include('/(\.php|\/[^.\/]+)$/');
 

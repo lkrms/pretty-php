@@ -6,8 +6,8 @@ use Lkrms\PrettyPHP\Catalog\FormatterFlag;
 use Lkrms\PrettyPHP\Catalog\HeredocIndent;
 use Lkrms\PrettyPHP\Catalog\ImportSortOrder;
 use Lkrms\PrettyPHP\Contract\Extension;
-use Salient\Core\AbstractBuilder;
-use Salient\Core\Indentation;
+use Salient\Core\Builder;
+use Salient\Utility\Support\Indentation;
 
 /**
  * @method $this insertSpaces(bool $value = true) Use spaces for indentation? (default: true)
@@ -35,11 +35,11 @@ use Salient\Core\Indentation;
  *
  * @api
  *
- * @extends AbstractBuilder<Formatter>
+ * @extends Builder<Formatter>
  *
  * @generated
  */
-final class FormatterBuilder extends AbstractBuilder
+final class FormatterBuilder extends Builder
 {
     /**
      * @internal

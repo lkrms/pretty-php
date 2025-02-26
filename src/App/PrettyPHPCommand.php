@@ -42,10 +42,8 @@ use Salient\Contract\Cli\CliOptionType;
 use Salient\Contract\Cli\CliOptionValueType;
 use Salient\Contract\Cli\CliOptionValueUnknownPolicy;
 use Salient\Contract\Cli\CliOptionVisibility as Visibility;
-use Salient\Contract\Core\MessageLevel as Level;
 use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Profile;
-use Salient\Core\Indentation;
 use Salient\Utility\Arr;
 use Salient\Utility\Env;
 use Salient\Utility\File;
@@ -781,7 +779,7 @@ EOF,
         Console::registerStderrTarget();
 
         if ($this->ReportTimers) {
-            $this->App->registerShutdownReport(Level::NOTICE);
+            $this->App->registerShutdownReport(Console::LEVEL_NOTICE);
         }
 
         if ($this->Tabs && $this->Spaces) {
@@ -1104,7 +1102,7 @@ EOF,
             }
 
             $defaultIndent = $formatter->getIndentation();
-            $indent = Indentation::from($inputStream, $defaultIndent, false, $file);
+            $indent = File::getIndentation($inputStream, $defaultIndent, false, $file);
             if ($indent !== $defaultIndent) {
                 Console::debug(
                     'Input indentation appears to be:',
@@ -1426,6 +1424,7 @@ EOF,
 
         $dir = File::sanitiseDir($dir);
         $finder = File::find()
+                      ->files()
                       ->in($dir)
                       ->exclude($this->ExcludeRegex)
                       ->include($this->IncludeRegex);

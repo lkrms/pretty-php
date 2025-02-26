@@ -73,10 +73,10 @@ use Lkrms\PrettyPHP\Rule\SwitchIndentation;
 use Lkrms\PrettyPHP\Rule\VerticalSpacing;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\Immutable;
-use Salient\Core\Concern\HasBuilder;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\BuildableTrait;
+use Salient\Core\Concern\ImmutableTrait;
 use Salient\Core\Facade\Profile;
-use Salient\Core\Indentation;
+use Salient\Utility\Support\Indentation;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Salient\Utility\Reflect;
@@ -94,9 +94,9 @@ use Throwable;
  */
 final class Formatter implements Buildable, Immutable
 {
-    /** @use HasBuilder<FormatterBuilder> */
-    use HasBuilder;
-    use HasMutator {
+    /** @use BuildableTrait<FormatterBuilder> */
+    use BuildableTrait;
+    use ImmutableTrait {
         with as withPropertyValue;
     }
 
