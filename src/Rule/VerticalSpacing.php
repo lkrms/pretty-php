@@ -35,7 +35,7 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
     private array $HasNewline;
     /** @var array<int,Closure(Token): void> */
     private array $ApplyNewline;
-    /** @var array<int,true> */
+    /** @var array<string,true> */
     private array $Seen;
 
     /**
@@ -215,19 +215,23 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
             // Propagate newlines adjacent to boolean operators to others of
             // equal or lower precedence in the same statement
             if ($this->Idx->BooleanExceptNot[$token->id]) {
-                /** @var Token */
-                $statement = $token->Statement;
+                $logical = $this->Idx->LogicalExceptNot[$token->id];
+                $minPrecedence = $logical
+                    ? TokenUtil::getPrecedenceOf(\T_LOGICAL_OR)
+                    : TokenUtil::getPrecedenceOf(\T_BOOLEAN_OR);
+                $start = TokenUtil::getOperatorExpression($token, $minPrecedence);
 
                 // Ignore statements already processed and tokens with no
                 // adjacent newline
+                $key = $start->index . ':' . $minPrecedence;
                 if (
-                    isset($this->Seen[$statement->index])
+                    isset($this->Seen[$key])
                     || !($this->HasNewline[$token->id])($token)
                 ) {
                     continue;
                 }
 
-                $this->Seen[$statement->index] = true;
+                $this->Seen[$key] = true;
 
                 // Get the statement's boolean operators and find the
                 // highest-precedence operator with an adjacent newline
@@ -236,10 +240,12 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
                 $byPrecedence = [$precedence => [$token]];
                 $maxPrecedence = $precedence;
 
-                foreach ($statement->withNextSiblings($token->EndStatement) as $t) {
+                $end = TokenUtil::getOperatorEndExpression($token, $minPrecedence);
+                foreach ($start->withNextSiblings($end) as $t) {
                     if (
                         $t === $token
                         || !$this->Idx->BooleanExceptNot[$t->id]
+                        || $logical !== $this->Idx->LogicalExceptNot[$t->id]
                     ) {
                         continue;
                     }

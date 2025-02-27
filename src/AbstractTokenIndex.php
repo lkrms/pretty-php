@@ -55,8 +55,8 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
         \T_LOGICAL_NOT => false,
     ]
         + self::OPERATOR_ASSIGNMENT
+        + self::OPERATOR_BOOLEAN
         + self::OPERATOR_COMPARISON
-        + self::OPERATOR_LOGICAL
         + self::TOKEN_INDEX;
 
     // Syntax:
@@ -569,8 +569,8 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * Arithmetic operators, assignment operators, bitwise operators, comparison
-     * operators, logical operators, ternary operators, T_AT, T_CONCAT,
+     * Arithmetic operators, assignment operators, bitwise operators, boolean
+     * operators, comparison operators, ternary operators, T_AT, T_CONCAT,
      * T_DOLLAR, T_DOUBLE_ARROW, T_INC, T_DEC, T_INSTANCEOF
      *
      * @var array<int,bool>
@@ -587,15 +587,15 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
         + self::OPERATOR_ARITHMETIC
         + self::OPERATOR_ASSIGNMENT
         + self::OPERATOR_BITWISE
+        + self::OPERATOR_BOOLEAN
         + self::OPERATOR_COMPARISON
-        + self::OPERATOR_LOGICAL
         + self::OPERATOR_TERNARY
         + self::TOKEN_INDEX;
 
     /**
      * Arithmetic operators, assignment operators, bitwise operators (except
-     * T_OR, T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG), comparison operators,
-     * logical operators, T_AT, T_CONCAT, T_DOLLAR, T_DOUBLE_ARROW, T_INC,
+     * T_OR, T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG), boolean operators,
+     * comparison operators, T_AT, T_CONCAT, T_DOLLAR, T_DOUBLE_ARROW, T_INC,
      * T_DEC, T_INSTANCEOF
      *
      * @var array<int,bool>
@@ -614,8 +614,8 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
         + self::OPERATOR_ARITHMETIC
         + self::OPERATOR_ASSIGNMENT
         + self::OPERATOR_BITWISE
+        + self::OPERATOR_BOOLEAN
         + self::OPERATOR_COMPARISON
-        + self::OPERATOR_LOGICAL
         + self::TOKEN_INDEX;
 
     /**
@@ -651,8 +651,19 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
         \T_XOR => true,
         \T_LOGICAL_NOT => false,
     ]
-        + self::OPERATOR_LOGICAL
+        + self::OPERATOR_BOOLEAN
         + self::AMPERSAND
+        + self::TOKEN_INDEX;
+
+    /**
+     * T_LOGICAL_AND, T_LOGICAL_OR, T_LOGICAL_XOR
+     *
+     * @var array<int,bool>
+     */
+    public array $LogicalExceptNot = [
+        \T_LOGICAL_NOT => false,
+    ]
+        + self::OPERATOR_LOGICAL
         + self::TOKEN_INDEX;
 
     /**
@@ -826,10 +837,10 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * Arithmetic operators, assignment operators, bitwise operators, comparison
-     * operators, logical operators, casts, keywords, T_AT, T_COMMA, T_CONCAT,
-     * T_DOLLAR_OPEN_CURLY_BRACES, T_DOUBLE_ARROW, T_ELLIPSIS, T_OPEN_BRACE,
-     * T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_SEMICOLON
+     * Arithmetic operators, assignment operators, bitwise operators, boolean
+     * operators, comparison operators, casts, keywords, T_AT, T_COMMA,
+     * T_CONCAT, T_DOLLAR_OPEN_CURLY_BRACES, T_DOUBLE_ARROW, T_ELLIPSIS,
+     * T_OPEN_BRACE, T_OPEN_BRACKET, T_OPEN_PARENTHESIS, T_SEMICOLON
      *
      * Tokens that may appear before unary operators.
      *
@@ -850,8 +861,8 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
         + self::OPERATOR_ARITHMETIC
         + self::OPERATOR_ASSIGNMENT
         + self::OPERATOR_BITWISE
+        + self::OPERATOR_BOOLEAN
         + self::OPERATOR_COMPARISON
-        + self::OPERATOR_LOGICAL
         + self::CAST
         + self::KEYWORD
         + self::TOKEN_INDEX;
@@ -1328,8 +1339,8 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
         + self::TOKEN_INDEX;
 
     /**
-     * Arithmetic operators, assignment operators, bitwise operators, comparison
-     * operators, logical operators, ternary operators, T_COMMA, T_CONCAT,
+     * Arithmetic operators, assignment operators, bitwise operators, boolean
+     * operators, comparison operators, ternary operators, T_COMMA, T_CONCAT,
      * T_DOUBLE_ARROW, T_SEMICOLON, T_OBJECT_OPERATOR,
      * T_NULLSAFE_OBJECT_OPERATOR
      *
@@ -1348,8 +1359,8 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
         + self::OPERATOR_ARITHMETIC
         + self::OPERATOR_ASSIGNMENT
         + self::OPERATOR_BITWISE
+        + self::OPERATOR_BOOLEAN
         + self::OPERATOR_COMPARISON
-        + self::OPERATOR_LOGICAL
         + self::OPERATOR_TERNARY
         + self::TOKEN_INDEX;
 
@@ -1388,8 +1399,8 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
             self::DEFAULT_ALLOW_NEWLINE_AFTER,
         );
 
-        $before = self::OPERATOR_COMPARISON
-            + self::OPERATOR_LOGICAL
+        $before = self::OPERATOR_BOOLEAN
+            + self::OPERATOR_COMPARISON
             + self::DEFAULT_ALLOW_NEWLINE_BEFORE;
 
         $after = self::merge(

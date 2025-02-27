@@ -189,6 +189,34 @@ PHP,
 PHP,
                 $formatterB->tokenIndex(new TokenIndex(true)),
             ],
+            'binary operators #3' => [
+                <<<'PHP'
+<?php
+$foo && $bar
+    ? fn() =>
+        !$foo($long, $list, $of, $arguments) &&
+        $bar($long, $list, $of, $arguments)
+    : ($foo
+        ? fn() =>
+            !$foo($long, $list, $of, $arguments)
+        : fn() =>
+            $bar($long, $list, $of, $arguments));
+
+PHP,
+                <<<'PHP'
+<?php
+$foo && $bar
+? fn() =>
+!$foo($long, $list, $of, $arguments) &&
+$bar($long, $list, $of, $arguments)
+: ($foo
+? fn() =>
+!$foo($long, $list, $of, $arguments)
+: fn() =>
+$bar($long, $list, $of, $arguments));
+PHP,
+                $formatter,
+            ],
             'magic comma #1' => [
                 <<<'PHP'
 <?php
