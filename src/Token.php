@@ -197,7 +197,6 @@ final class Token extends GenericToken implements HasTokenNames, JsonSerializabl
 
         return Str::expandLeadingTabs(
             $this->text,
-            // @phpstan-ignore argument.type
             $forOutput || !$this->Formatter->Indentation
                 ? $this->Formatter->TabSize
                 : $this->Formatter->Indentation->TabSize,

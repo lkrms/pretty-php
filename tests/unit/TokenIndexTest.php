@@ -148,8 +148,8 @@ class TokenIndexTest extends TestCase
         'OPERATOR_ARITHMETIC' => 'arithmetic operators',
         'OPERATOR_ASSIGNMENT' => 'assignment operators',
         'OPERATOR_BITWISE' => 'bitwise operators',
+        'OPERATOR_BOOLEAN' => 'boolean operators',
         'OPERATOR_COMPARISON' => 'comparison operators',
-        'OPERATOR_LOGICAL' => 'logical operators',
         'OPERATOR_TERNARY' => 'ternary operators',
         'CAST' => 'casts',
         'KEYWORD' => 'keywords',
@@ -454,10 +454,10 @@ class TokenIndexTest extends TestCase
                     'Arithmetic' => TokenIndex::OPERATOR_ARITHMETIC,
                     'Assignment' => TokenIndex::OPERATOR_ASSIGNMENT,
                     'Bitwise' => TokenIndex::OPERATOR_BITWISE,
+                    'Boolean' => TokenIndex::OPERATOR_BOOLEAN,
+                    'Boolean,T_LOGICAL_NOT' => [\T_LOGICAL_NOT => false] + TokenIndex::OPERATOR_BOOLEAN,
                     'Comparison' => TokenIndex::OPERATOR_COMPARISON,
                     'Comparison,T_COALESCE' => [\T_COALESCE => false] + TokenIndex::OPERATOR_COMPARISON,
-                    'Logical' => TokenIndex::OPERATOR_LOGICAL,
-                    'Logical,T_LOGICAL_NOT' => [\T_LOGICAL_NOT => false] + TokenIndex::OPERATOR_LOGICAL,
                     'Ternary' => TokenIndex::OPERATOR_TERNARY,
                 ][Arr::implode(',', [$matches['operators'], $matches['exception']], '')] ?? null;
                 if ($operators === null) {

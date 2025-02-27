@@ -136,8 +136,8 @@ final class HasOperatorPrecedenceTest extends TestCase implements HasOperatorPre
             + self::OPERATOR_ARITHMETIC
             + self::OPERATOR_ASSIGNMENT
             + self::OPERATOR_BITWISE
+            + self::OPERATOR_BOOLEAN
             + self::OPERATOR_COMPARISON
-            + self::OPERATOR_LOGICAL
             + self::OPERATOR_TERNARY
             + self::CAST
             + self::HAS_EXPRESSION_WITH_OPTIONAL_PARENTHESES);

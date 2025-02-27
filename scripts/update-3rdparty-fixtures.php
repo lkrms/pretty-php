@@ -85,6 +85,7 @@ class Updater
 
         $exclude = Regex::quote("{$this->RepoRoot}/php-doc/reference/", '/');
         $files = File::find()
+                     ->files()
                      ->in("{$this->RepoRoot}/php-doc")
                      ->exclude("/^$exclude/")
                      ->include('/\.xml$/');
@@ -160,6 +161,7 @@ class Updater
         $dir = "{$this->RepoRoot}/php-parser";
         $exclude = Regex::quote("$dir/test/code/parser/errorHandling/", '/');
         $files = File::find()
+                     ->files()
                      ->in("$dir/test/code/parser", "$dir/test/code/prettyPrinter")
                      ->exclude("/^$exclude/")
                      ->include('/\.test$/');
@@ -211,18 +213,21 @@ class Updater
         $finders = [
             'original' => [
                 File::find()
+                    ->files()
                     ->in("{$this->RepoRoot}/phpfmt/tests/Original")
                     ->include('/\.in$/'),
                 '.in',
             ],
             'psr' => [
                 File::find()
+                    ->files()
                     ->in("{$this->RepoRoot}/phpfmt/tests/PSR")
                     ->include('/\.in$/'),
                 '.in',
             ],
             'unit' => [
                 File::find()
+                    ->files()
                     ->in("{$this->RepoRoot}/phpfmt/tests/Unit/fixtures")
                     ->include('/\.txt$/'),
                 '.txt',

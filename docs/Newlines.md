@@ -27,8 +27,8 @@ By default, newlines are allowed after:
 - `T_OPEN_TAG_WITH_ECHO`
 - `T_SEMICOLON`
 - Assignment operators
+- Boolean operators (except `T_LOGICAL_NOT`) - `&&`, `||`, `and`, `or`, `xor`
 - Comparison operators (except `T_COALESCE`)
-- Logical operators (except `T_LOGICAL_NOT`) - `&&`, `||`, `and`, `or`, `xor`
 
 ### Before
 
@@ -53,7 +53,7 @@ They are also allowed before:
 ## Operators first
 
 If **`--operators-first`** is given, newlines are allowed before, and not after,
-comparison operators and logical operators.
+boolean operators and comparison operators.
 
 ### After
 
@@ -90,8 +90,8 @@ comparison operators and logical operators.
 - `T_OBJECT_OPERATOR`
 - Arithmetic operators
 - Bitwise operators - `&`, `^`, `|`, `~`, `<<`, `>>`
+- Boolean operators - `!`, `&&`, `||`, `and`, `or`, `xor`
 - Comparison operators
-- Logical operators - `!`, `&&`, `||`, `and`, `or`, `xor`
 - Ternary operators
 
 ## Operators last
@@ -122,8 +122,8 @@ With **`--operators-last`**, newlines are allowed after, and not before,
 - Arithmetic operators
 - Assignment operators
 - Bitwise operators - `&`, `^`, `|`, `~`, `<<`, `>>`
+- Boolean operators (except `T_LOGICAL_NOT`) - `&&`, `||`, `and`, `or`, `xor`
 - Comparison operators (except `T_COALESCE`)
-- Logical operators (except `T_LOGICAL_NOT`) - `&&`, `||`, `and`, `or`, `xor`
 
 ### Before
 

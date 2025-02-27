@@ -5,7 +5,7 @@ namespace Lkrms\PrettyPHP;
 use Lkrms\PrettyPHP\Catalog\TokenData as Data;
 use Lkrms\PrettyPHP\Catalog\TokenFlag as Flag;
 use Salient\Contract\Core\Immutable;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use Generator;
@@ -15,7 +15,7 @@ use Generator;
  */
 final class Renderer implements Immutable
 {
-    use HasMutator;
+    use ImmutableTrait;
 
     /** @var int<1,max> */
     private int $TabSize;

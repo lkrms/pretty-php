@@ -2,14 +2,14 @@
 
 namespace Lkrms\PrettyPHP;
 
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ImmutableTrait;
 
 /**
  * @api
  */
 final class TokenIndex extends AbstractTokenIndex
 {
-    use HasMutator;
+    use ImmutableTrait;
 
     protected const FIRST = 0;
     protected const LAST = 1;

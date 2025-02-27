@@ -11,7 +11,7 @@ use Lkrms\PrettyPHP\Exception\InvalidSyntaxException;
 use Lkrms\PrettyPHP\Internal\Document;
 use Lkrms\PrettyPHP\Internal\TokenCollection;
 use Salient\Contract\Core\Immutable;
-use Salient\Core\Concern\HasMutator;
+use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Get;
 use Salient\Utility\Regex;
 
@@ -20,7 +20,7 @@ use Salient\Utility\Regex;
  */
 final class Parser implements Immutable
 {
-    use HasMutator;
+    use ImmutableTrait;
 
     private const DECLARATION_MAP = [
         \T_CASE => Type::_CASE,

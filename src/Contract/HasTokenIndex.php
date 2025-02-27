@@ -761,9 +761,16 @@ interface HasTokenIndex
     /**
      * @var array<int,true>
      */
-    public const OPERATOR_LOGICAL = [
+    public const OPERATOR_BOOLEAN = [
         \T_BOOLEAN_AND => true,
         \T_BOOLEAN_OR => true,
+    ]
+        + self::OPERATOR_LOGICAL;
+
+    /**
+     * @var array<int,true>
+     */
+    public const OPERATOR_LOGICAL = [
         \T_LOGICAL_AND => true,
         \T_LOGICAL_OR => true,
         \T_LOGICAL_XOR => true,
