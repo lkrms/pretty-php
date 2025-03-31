@@ -34,7 +34,6 @@ function dump(?array $tokens): void
 }
 
 $app = new CliApplication(dirname(__DIR__));
-Console::registerStderrTarget();
 
 /** @var bool */
 $tokenize = false;
