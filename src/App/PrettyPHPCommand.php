@@ -770,13 +770,14 @@ EOF,
             File::createDir($this->DebugDirectory);
             $this->DebugDirectory = File::realpath($this->DebugDirectory);
             Env::setDebug(true);
-            $this->App->logOutput();
+            Console::registerStderrTarget();
+            if (!$this->App->hasOutputLog()) {
+                $this->App->logOutput();
+            }
             $this->Debug = true;
         } else {
             $this->Debug = Env::getDebug();
         }
-
-        Console::registerStderrTarget();
 
         if ($this->ReportTimers) {
             $this->App->registerShutdownReport(Console::LEVEL_NOTICE);
@@ -867,7 +868,7 @@ EOF,
                     $config = $this->getConfig($configValues);
                 } finally {
                     if ($restoreDir) {
-                        Console::debug('Returning to:', $this->App->getWorkingDirectory());
+                        Console::debug('Returning to:', $this->App->getInitialWorkingDirectory());
                         $this->App->restoreWorkingDirectory();
                     }
                 }
@@ -1275,7 +1276,7 @@ EOF,
                     : 'Formatted {{#}} {{#:file}}',
                 'successfully',
                 false,
-                Console::getErrorCount() || Console::getWarningCount(),
+                Console::errors() || Console::warnings(),
                 $replaced,
             );
         }

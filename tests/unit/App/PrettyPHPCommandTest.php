@@ -5,7 +5,7 @@ namespace Lkrms\PrettyPHP\Tests\App;
 use Lkrms\PrettyPHP\App\PrettyPHPCommand;
 use Lkrms\PrettyPHP\Tests\TestCase;
 use Salient\Cli\CliApplication;
-use Salient\Console\ConsoleFormatter;
+use Salient\Console\Format\Formatter;
 use Salient\Contract\Core\Exception\Exception;
 use Salient\Core\Facade\Console;
 use Salient\Core\Process;
@@ -22,11 +22,11 @@ use Salient\Utility\Sys;
  */
 final class PrettyPHPCommandTest extends TestCase
 {
-    private const ERROR = ConsoleFormatter::DEFAULT_LEVEL_PREFIX_MAP[Console::LEVEL_ERROR];
-    private const WARNING = ConsoleFormatter::DEFAULT_LEVEL_PREFIX_MAP[Console::LEVEL_WARNING];
-    private const DEBUG = ConsoleFormatter::DEFAULT_LEVEL_PREFIX_MAP[Console::LEVEL_DEBUG];
-    private const SUMMARY = ConsoleFormatter::DEFAULT_TYPE_PREFIX_MAP[Console::TYPE_SUMMARY];
-    private const SUCCESS = ConsoleFormatter::DEFAULT_TYPE_PREFIX_MAP[Console::TYPE_SUCCESS];
+    private const ERROR = Formatter::DEFAULT_LEVEL_PREFIX_MAP[Console::LEVEL_ERROR];
+    private const WARNING = Formatter::DEFAULT_LEVEL_PREFIX_MAP[Console::LEVEL_WARNING];
+    private const DEBUG = Formatter::DEFAULT_LEVEL_PREFIX_MAP[Console::LEVEL_DEBUG];
+    private const SUMMARY = Formatter::DEFAULT_TYPE_PREFIX_MAP[Console::TYPE_SUMMARY];
+    private const SUCCESS = Formatter::DEFAULT_TYPE_PREFIX_MAP[Console::TYPE_SUCCESS];
 
     private const SYNOPSIS = <<<'EOF'
 
@@ -66,7 +66,11 @@ EOF;
     {
         $this->App->unload();
 
+        $targets = Console::getTargets();
         Console::unload();
+        foreach ($targets as $target) {
+            $target->close();
+        }
 
         parent::tearDown();
     }
@@ -187,7 +191,7 @@ EOF;
         $file = $dir . '/code.php';
         File::createDir($dir . '/.git');
         File::chdir($dir);
-        $this->App->setWorkingDirectory();
+        $this->App->setInitialWorkingDirectory($dir);
 
         if ($inputFile !== null) {
             File::writeContents($file, $inputFile);
@@ -246,13 +250,13 @@ EOF;
         } else {
             $messages = [[Console::LEVEL_ERROR, (string) $message]];
         }
+        $dir = self::$FixturesPath . $dir;
         if ($chdir) {
-            File::chdir(self::$FixturesPath . $dir);
-            $this->App->setWorkingDirectory();
+            File::chdir($dir);
+            $this->App->setInitialWorkingDirectory($dir);
             $this->assertCommandProduces($output, null, $args, $exitStatus, $messages);
             return;
         }
-        $dir = self::$FixturesPath . $dir;
         $this->assertCommandProduces($output, null, [...$args, '--', $dir], $exitStatus, $messages);
     }
 
@@ -541,7 +545,7 @@ EOF),
     {
         $dir = File::createTempDir($this->App->getTempPath());
         File::chdir($dir);
-        $this->App->setWorkingDirectory();
+        $this->App->setInitialWorkingDirectory($dir);
         $this->assertCommandProduces(null, null, $args, 1, [
             [Console::LEVEL_ERROR, 'Error: ' . $message],
             [Console::LEVEL_INFO, self::SYNOPSIS],

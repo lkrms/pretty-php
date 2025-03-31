@@ -127,7 +127,6 @@ function printTable(array $table): void
 }
 
 $app = new CliApplication(dirname(__DIR__));
-Console::registerStderrTarget();
 
 $mainLoop = [];
 $blockLoop = [];
