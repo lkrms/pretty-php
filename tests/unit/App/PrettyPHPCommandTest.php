@@ -66,7 +66,11 @@ EOF;
     {
         $this->App->unload();
 
+        $targets = Console::getTargets();
         Console::unload();
+        foreach ($targets as $target) {
+            $target->close();
+        }
 
         parent::tearDown();
     }
