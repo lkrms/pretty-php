@@ -54,6 +54,10 @@ final class NormaliseComments implements TokenRule
      * from both delimiters, the remaining content is trimmed, and a space is
      * added between delimiters and adjacent content.
      *
+     * Region markers recognised by VS Code, including C++-style comments like
+     * `//region`, are converted to shell-style `#region` or `#endregion`
+     * comments if necessary, otherwise they are not modified.
+     *
      * Shell-style comments (`#`) are converted to C++-style comments (`//`).
      *
      * In C++-style comments (`//`), a space is added between the delimiter and
@@ -106,10 +110,20 @@ final class NormaliseComments implements TokenRule
             }
 
             if ($token->Flags & Flag::ONELINE_COMMENT) {
-                if ($type === Flag::SHELL_COMMENT) {
-                    $text = '//' . substr($text, 1);
+                if (
+                    $token->wasFirstOnLine()
+                    && Regex::match('`^(?:#|//)(?:end)?region\b`', $text)
+                ) {
+                    if ($type === Flag::CPP_COMMENT) {
+                        $text = '#' . substr($text, 2);
+                        $token->setText($text);
+                    }
+                } else {
+                    if ($type === Flag::SHELL_COMMENT) {
+                        $text = '//' . substr($text, 1);
+                    }
+                    $token->setText(Regex::replace('#^//(?=\S)#', '// ', $text));
                 }
-                $token->setText(Regex::replace('#^//(?=\S)#', '// ', $text));
                 continue;
             }
 
