@@ -505,6 +505,38 @@ class Foo {
 }
 PHP,
             ],
+            [
+                <<<'PHP'
+<?php
+interface Foo  // region-Not-Actually
+{
+    #region Foo
+    #region
+    public function bar();
+    #endregion
+    #region-baz
+    public function baz();
+
+    #endregion-baz
+    #endregion Foo
+}  // endregion
+
+PHP,
+                <<<'PHP'
+<?php
+interface Foo //region-Not-Actually
+{
+#region Foo
+#region
+public function bar();
+//endregion
+//region-baz
+public function baz();
+//endregion-baz
+#endregion Foo
+} #endregion
+PHP,
+            ],
         ];
     }
 }
