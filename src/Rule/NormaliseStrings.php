@@ -218,6 +218,7 @@ final class NormaliseStrings implements TokenRule
                             ? (($dec = octdec($matches['octal'])) === 27
                                 ? '\e'
                                 : sprintf('\x%02x', $dec))
+                            // @phpstan-ignore offsetAccess.notFound
                             : sprintf('\x%02x', ['a' => 7, 'b' => 8][$matches['cslash']]))),
                 $double,
                 -1,

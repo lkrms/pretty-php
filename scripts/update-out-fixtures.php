@@ -13,6 +13,8 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 
 $app = new CliApplication(dirname(__DIR__));
 
+error_reporting(error_reporting() & ~(\E_COMPILE_WARNING | \E_DEPRECATED));
+
 if (!ini_get('short_open_tag')) {
     throw new RuntimeException('short_open_tag must be enabled');
 }

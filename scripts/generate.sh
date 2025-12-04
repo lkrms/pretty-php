@@ -102,7 +102,7 @@ while [[ ${1-} == -* ]]; do
 done
 
 if ((FIXTURES)); then (
-    (($#)) || set -- php84 php83 php82 php81 php80 php74
+    (($#)) || set -- php85 php84 php83 php82 php81 php80 php74
 
     for PHP in "$@"; do
         type -P "$PHP" >/dev/null ||
