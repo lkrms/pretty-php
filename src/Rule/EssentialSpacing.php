@@ -69,6 +69,10 @@ final class EssentialSpacing implements Rule
 
             if (
                 $token->id === \T_OPEN_TAG
+                || (
+                    $token->id === \T_CONCAT
+                    && $this->Idx->Number[$next->id]
+                )
                 || Regex::match(
                     '/^[a-zA-Z0-9\\\\_\x80-\xff]{2}$/D',
                     ($token->text[-1] ?? '') . ($next->text[0] ?? '')
