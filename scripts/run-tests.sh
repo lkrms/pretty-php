@@ -97,12 +97,12 @@ if ((PHPSTAN)); then
 fi
 
 if ((PHPUNIT)); then
-    run_with_php_versions 84 83 82 81 80 74 vendor/bin/phpunit
+    run_with_php_versions 84 83 82 81 80 74 85 vendor/bin/phpunit
 fi
 
 if ((BUILD)); then
     run scripts/build.sh
     run scripts/build.sh man
     run scripts/build.sh man worktree
-    run_with_php_versions 84 83 82 81 80 74 build/dist/pretty-php.phar --verbose
+    run_with_php_versions 84 83 82 81 80 74 85 build/dist/pretty-php.phar --verbose
 fi
