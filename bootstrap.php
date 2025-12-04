@@ -19,6 +19,9 @@
         'T_PROTECTED_SET' => false,
         'T_PUBLIC_SET' => false,
         'T_PROPERTY_C' => false,
+        // PHP 8.5
+        'T_VOID_CAST' => false,
+        'T_PIPE' => false,
         // Custom
         'T_ATTRIBUTE_COMMENT' => false,
         'T_CLOSE_ALT' => false,
@@ -76,6 +79,10 @@
     defined('T_PROTECTED_SET') || define('T_PROTECTED_SET', $getNextId());
     defined('T_PUBLIC_SET') || define('T_PUBLIC_SET', $getNextId());
     defined('T_PROPERTY_C') || define('T_PROPERTY_C', $getNextId());
+
+    // Define PHP 8.5 tokens
+    defined('T_VOID_CAST') || define('T_VOID_CAST', $getNextId());
+    defined('T_PIPE') || define('T_PIPE', $getNextId());
 
     // Define custom tokens
     $id = 20000;

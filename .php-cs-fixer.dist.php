@@ -5,6 +5,8 @@ $customTokens = [
     'T_PROTECTED_SET',
     'T_PUBLIC_SET',
     'T_PROPERTY_C',
+    'T_VOID_CAST',
+    'T_PIPE',
     'T_ATTRIBUTE_COMMENT',
     'T_CLOSE_ALT',
     'T_NULL',

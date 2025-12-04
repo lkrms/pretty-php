@@ -14,10 +14,12 @@ defined('T_PRIVATE_SET') || define('T_PRIVATE_SET', 10);
 defined('T_PROTECTED_SET') || define('T_PROTECTED_SET', 11);
 defined('T_PUBLIC_SET') || define('T_PUBLIC_SET', 12);
 defined('T_PROPERTY_C') || define('T_PROPERTY_C', 13);
-defined('T_ATTRIBUTE_COMMENT') || define('T_ATTRIBUTE_COMMENT', 14);
-defined('T_CLOSE_ALT') || define('T_CLOSE_ALT', 15);
-defined('T_NULL') || define('T_NULL', 16);
-defined('T_OPEN_UNENCLOSED') || define('T_OPEN_UNENCLOSED', 17);
-defined('T_CLOSE_UNENCLOSED') || define('T_CLOSE_UNENCLOSED', 18);
+defined('T_VOID_CAST') || define('T_VOID_CAST', 14);
+defined('T_PIPE') || define('T_PIPE', 15);
+defined('T_ATTRIBUTE_COMMENT') || define('T_ATTRIBUTE_COMMENT', 16);
+defined('T_CLOSE_ALT') || define('T_CLOSE_ALT', 17);
+defined('T_NULL') || define('T_NULL', 18);
+defined('T_OPEN_UNENCLOSED') || define('T_OPEN_UNENCLOSED', 19);
+defined('T_CLOSE_UNENCLOSED') || define('T_CLOSE_UNENCLOSED', 20);
 
 require dirname(__DIR__, 3) . '/vendor/autoload.php';
