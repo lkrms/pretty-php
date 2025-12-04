@@ -111,7 +111,7 @@
             ]
         },
         {
-            "name": "Format current file, with optional arguments (PHP 8.4)",
+            "name": "Format current file, with optional arguments (PHP 8.5)",
             "type": "php",
             "request": "launch",
             "program": "${workspaceFolder:pretty-php}/bin/pretty-php",
@@ -120,7 +120,7 @@
             "runtimeExecutable": "bash",
             "runtimeArgs": [
                 "-c",
-                "eval \"args=(${*: -1})\" && php84 \"${@:1:$#-1}\" \"${args[@]}\"",
+                "eval \"args=(${*: -1})\" && php85 \"${@:1:$#-1}\" \"${args[@]}\"",
                 "bash",
                 "-dzend_extension=xdebug.so",
                 "-dxdebug.start_with_request=yes",

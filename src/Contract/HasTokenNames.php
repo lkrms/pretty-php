@@ -28,6 +28,9 @@ interface HasTokenNames
         \T_PROTECTED_SET => 'T_PROTECTED_SET',
         \T_PUBLIC_SET => 'T_PUBLIC_SET',
         \T_PROPERTY_C => 'T_PROPERTY_C',
+        // PHP 8.5
+        \T_VOID_CAST => 'T_VOID_CAST',
+        \T_PIPE => 'T_PIPE',
         // Custom
         \T_ATTRIBUTE_COMMENT => 'T_ATTRIBUTE_COMMENT',
         \T_CLOSE_ALT => 'T_CLOSE_ALT',

@@ -140,6 +140,8 @@ jobs:
             php-version: "8.0"
           - os: ubuntu-24.04
             php-version: "7.4"
+          - os: ubuntu-24.04
+            php-version: "8.5"
 
     runs-on: ${{ matrix.os }}
 
@@ -284,6 +286,8 @@ jobs:
             php-version: "8.0"
           - os: ubuntu-24.04
             php-version: "7.4"
+          - os: ubuntu-24.04
+            php-version: "8.5"
 
     runs-on: ${{ matrix.os }}
 

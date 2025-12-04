@@ -179,6 +179,7 @@ foreach ($index as $rule => $keys) {
     }
 }
 
+/** @var array<array{rule:class-string<Rule>,is_mandatory:bool,is_default:bool,pass:int,method:string,priority:int,php_doc:PHPDoc|null,tokens:array<int,bool>|array{string}|null,declarations:array<int,bool>|array{'*'}|null,appearance:int|null}> $rules */
 $table1 = [['Rule', 'Mandatory?', 'Default?', 'Pass', 'Method', 'Priority']];
 $table2 = [['Token', 'Rules']];
 $table3 = [['Declaration', 'Rules']];

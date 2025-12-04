@@ -558,5 +558,25 @@
         "3rdparty/phpfmt/original/232-wrong-space-variable-variables",
         "3rdparty/phpfmt/original/236-pre-increment-complex-vars",
         "3rdparty/phpfmt/original/293-namespaces-vs-namespace-named-ns"
+    ],
+    "80500": [
+        "3rdparty/php-doc/appendices/migration80/incompatible/007.php",
+        "3rdparty/php-parser/parser/expr/alternative_array_syntax/000.php",
+        "3rdparty/php-parser/parser/expr/alternative_array_syntax/001.php",
+        "3rdparty/php-parser/parser/expr/cast/000.php",
+        "3rdparty/php-parser/parser/stmt/class/constModifierErrors/000.php",
+        "3rdparty/php-parser/parser/stmt/class/constModifierErrors/001.php",
+        "3rdparty/php-parser/parser/stmt/class/constModifierErrors/002.php",
+        "3rdparty/php-parser/parser/stmt/class/readonlyAsClassName/000.php",
+        "3rdparty/php-parser/parser/stmt/class/readonlyAsClassName/001.php",
+        "3rdparty/php-parser/parser/stmt/class/readonlyMethod/000.php",
+        "3rdparty/php-parser/prettyPrinter/expr/operators/000.php",
+        "3rdparty/phpfmt/original/116-pre-increment",
+        "3rdparty/phpfmt/original/124-wrong-curly-in-string",
+        "3rdparty/phpfmt/original/130-spacing-coverage",
+        "3rdparty/phpfmt/original/218-mild-pre-increment",
+        "3rdparty/phpfmt/original/232-wrong-space-variable-variables",
+        "3rdparty/phpfmt/original/236-pre-increment-complex-vars",
+        "3rdparty/phpfmt/original/293-namespaces-vs-namespace-named-ns"
     ]
 }
