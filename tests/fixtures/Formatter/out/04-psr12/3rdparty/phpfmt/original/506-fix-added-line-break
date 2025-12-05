@@ -1,0 +1,27 @@
+    <?php
+        if (true) {  // some condition here
+            echo 'aaa';
+            // more php code here
+            ?>
+    <div id="menu-management">
+        <span>more html code</span>
+    </div>
+    <?php } ?>
+
+    <?php
+        if (true) {
+            ?>
+    <div id="menu-management">
+        <span>more html code</span>
+    </div>
+    <?php } ?>
+
+    <?php
+        if (true) {
+            ?>
+    <div id="menu-management">
+        <span>more html code</span>
+    </div>
+    <?php
+        }
+        ?>

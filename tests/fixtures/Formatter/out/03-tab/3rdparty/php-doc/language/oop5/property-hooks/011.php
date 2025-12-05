@@ -12,7 +12,7 @@ class PositivePoint extends Point
 			if ($value < 0) {
 				throw new \InvalidArgumentException('Too small');
 			}
-			$this->x = $value;
+			parent::$x::set($value);
 		}
 	}
 }

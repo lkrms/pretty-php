@@ -1,7 +1,6 @@
 <?php
-
 // Using an anonymous class
-$util->setLogger(new readonly class('[DEBUG]') {
+var_dump(new readonly class('[DEBUG]') {
     public function __construct(private string $prefix)
     {
     }

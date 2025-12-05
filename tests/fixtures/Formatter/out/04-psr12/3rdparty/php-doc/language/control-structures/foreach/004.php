@@ -1,12 +1,8 @@
 <?php
-$array = [
-    [1, 2],
-    [3, 4],
-];
-
-foreach ($array as list($a, $b)) {
-    // $a contains the first element of the nested array,
-    // and $b contains the second element.
-    echo "A: $a; B: $b\n";
+$arr = [1, 2, 3, 4];
+foreach ($arr as &$value) {
+    $value = $value * 2;
 }
+// $arr is now [2, 4, 6, 8]
+unset($value);  // break the reference with the last element
 ?>

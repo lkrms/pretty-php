@@ -1,21 +1,29 @@
 <?php
-function foo()
-{
-    function bar()
+
+$makefoo = true;
+
+/* We can't call foo() from here
+   since it doesn't exist yet,
+   but we can call bar() */
+
+bar();
+
+if ($makefoo) {
+    function foo()
     {
-        echo "I don't exist until foo() is called.\n";
+        echo "I don't exist until program execution reaches me.\n";
     }
 }
 
-/* We can't call bar() yet
-   since it doesn't exist. */
+/* Now we can safely call foo()
+   since $makefoo evaluated to true */
 
-foo();
+if ($makefoo)
+    foo();
 
-/* Now we can call bar(),
-   foo()'s processing has
-   made it accessible. */
-
-bar();
+function bar()
+{
+    echo "I exist immediately upon program start.\n";
+}
 
 ?>

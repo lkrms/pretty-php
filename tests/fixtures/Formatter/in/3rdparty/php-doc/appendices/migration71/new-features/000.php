@@ -1,18 +1,18 @@
 <?php
 
-function testReturn(): ?string
+function testReturnA(): ?string
 {
     return 'elePHPant';
 }
 
-var_dump(testReturn());
+var_dump(testReturnA());
 
-function testReturn(): ?string
+function testReturnB(): ?string
 {
     return null;
 }
 
-var_dump(testReturn());
+var_dump(testReturnB());
 
 function test(?string $name)
 {

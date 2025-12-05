@@ -1,0 +1,20 @@
+<?php
+// Test multiple control structures with different assignment operators
+$a = 1;
+$bb += 2;
+$ccc *= 3;
+
+if ($condition) {
+    $x = 'short';
+    $longer_var .= 'concatenation';
+    $y /= 10;
+}
+
+for ($i = 0; $i < 10; $i++) {
+    $counter = $i;
+    $result >>= 1;
+}
+
+$final = 'end';
+$another_final &= 'bitwise';
+//passes:AlignSuperEquals

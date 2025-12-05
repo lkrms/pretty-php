@@ -1,8 +1,4 @@
 <?php
-$a = 1;  // global scope
-
-function test()
-{
-    echo $a;  // Variable $a is undefined as it refers to a local version of $a
-}
+$a = 1;
+include 'b.inc';  // Variable $a will be available within b.inc
 ?>

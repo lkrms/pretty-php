@@ -1,9 +1,7 @@
 <?php
-$x = 4;
-// this line might result in unexpected output:
-echo 'x minus one equals ' . $x - 1 . ", or so I hope\n";
-// because it is evaluated like this line (prior to PHP 8.0.0):
-echo (('x minus one equals ' . $x) - 1) . ", or so I hope\n";
-// the desired precedence can be enforced by using parentheses:
-echo 'x minus one equals ' . ($x - 1) . ", or so I hope\n";
+$a = 1;
+echo $a + $a++;  // may print either 2 or 3
+
+$i         = 1;
+$array[$i] = $i++;  // may set either index 1 or 2
 ?>

@@ -1,4 +1,6 @@
 <?php
+$some_json_string = '{ "id": 1004, "name": "Elephpant" }';
+$some_xml_string = '<animal><id>1005</id><name>Elephpant</name></animal>';
 
 class Product
 {
@@ -25,11 +27,10 @@ class Product
 
     public static function fromXml(string $xml): static
     {
-        // Custom logic here.
-        $data = convert_xml_to_array($xml);
+        $data = simplexml_load_string($xml);
         $new = new static();
-        $new->id = $data['id'];
-        $new->name = $data['name'];
+        $new->id = (int) $data->id;
+        $new->name = $data->name;
         return $new;
     }
 }
@@ -37,3 +38,5 @@ class Product
 $p1 = Product::fromBasicData(5, 'Widget');
 $p2 = Product::fromJson($some_json_string);
 $p3 = Product::fromXml($some_xml_string);
+
+var_dump($p1, $p2, $p3);

@@ -1,33 +1,26 @@
 <?php
 
 class Foo {
-    public function getPrivateMethod() {
-        return [$this, 'privateMethod'];
-    }
-
-    private function privateMethod() {
-        echo __METHOD__, "\n";
-    }
+   public function method() {}
+   public static function staticmethod() {}
+   public function __invoke() {}
 }
 
-$foo = new Foo;
-$privateMethod = $foo->getPrivateMethod();
-$privateMethod();
-// Fatal error: Call to private method Foo::privateMethod() from global scope
-// This is because call is performed outside from Foo and visibility will be checked from this point.
+$obj = new Foo();
+$classStr = 'Foo';
+$methodStr = 'method';
+$staticmethodStr = 'staticmethod';
 
-class Foo1 {
-    public function getPrivateMethod() {
-        // Uses the scope where the callable is acquired.
-        return $this->privateMethod(...); // identical to Closure::fromCallable([$this, 'privateMethod']);
-    }
 
-    private function privateMethod() {
-        echo __METHOD__, "\n";
-    }
-}
+$f1 = strlen(...);
+$f2 = $obj(...);  // invokable object
+$f3 = $obj->method(...);
+$f4 = $obj->$methodStr(...);
+$f5 = Foo::staticmethod(...);
+$f6 = $classStr::$staticmethodStr(...);
 
-$foo1 = new Foo1;
-$privateMethod = $foo1->getPrivateMethod();
-$privateMethod();  // Foo1::privateMethod
+// traditional callable using string, array
+$f7 = 'strlen'(...);
+$f8 = [$obj, 'method'](...);
+$f9 = [Foo::class, 'staticmethod'](...);
 ?>

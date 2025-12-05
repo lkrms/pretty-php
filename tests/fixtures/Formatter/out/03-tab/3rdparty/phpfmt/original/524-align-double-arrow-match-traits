@@ -1,0 +1,57 @@
+<?php
+// passes: AlignDoubleArrow
+// version:8
+
+class TestManyTraits
+{
+	use T1, T2, T3, T3;
+
+	private function foo($reason)
+	{
+		return match ($reason) {
+			1 => 'ko_not_found',
+			2 => 'ko_rejected_time',
+			default => null
+		};
+	}
+}
+
+class TestSomeTraits
+{
+	use T1, T2;
+
+	private function foo($reason)
+	{
+		return match ($reason) {
+			1 => 'ko_not_found',
+			2 => 'ko_rejected_time',
+			default => null
+		};
+	}
+}
+
+class TestOneTrait
+{
+	use T1;
+
+	private function foo($reason)
+	{
+		return match ($reason) {
+			1 => 'ko_not_found',
+			2 => 'ko_rejected_time',
+			default => null
+		};
+	}
+}
+
+class TestZeroTrait
+{
+	private function foo($reason)
+	{
+		return match ($reason) {
+			1 => 'ko_not_found',
+			2 => 'ko_rejected_time',
+			default => null
+		};
+	}
+}

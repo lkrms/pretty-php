@@ -1,0 +1,13 @@
+<?php
+//passes:AutoSemicolon,IndentPipeOperator,ResizeSpaces
+//version:8.5
+
+$result = "Hello World"
+    |> 'strtoupper'
+    |> str_shuffle(...)
+    |> fn($x) => trim($x)
+    |> function(string $x): string {return strtolower($x);}
+    |> new MyClass()
+    |> [MyClass::class, 'myStaticMethod']
+    |> new MyClass()->myInstanceMethod(...)
+    |> my_function(...)

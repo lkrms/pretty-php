@@ -1,5 +1,10 @@
 <?php
 
+class MyClass
+{
+    const CONST_VALUE = 'A constant value';
+}
+
 class OtherClass extends MyClass
 {
     public static $my_static = 'static var';

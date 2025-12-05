@@ -1,9 +1,15 @@
 <?php
 
-$func = static function() {
-    // function body
+class Foo
+{
+    function __construct()
+    {
+        $func = static function() {
+            var_dump($this);
+        };
+        $func();
+    }
 };
-$func = $func->bindTo(new stdClass);
-$func();
+new Foo();
 
 ?>

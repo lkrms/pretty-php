@@ -1,19 +1,12 @@
 <?php
 
-class Foo
+function foo()
 {
-    public static function counter()
-    {
-        static $counter = 0;
-        $counter++;
-        return $counter;
-    }
+    static $int = 0;  // correct
+    static $int = 1 + 2;  // correct
+    static $int = sqrt(121);  // correct as of PHP 8.3.0
+
+    $int++;
+    echo $int;
 }
-
-class Bar extends Foo {}
-
-var_dump(Foo::counter());  // int(1)
-var_dump(Foo::counter());  // int(2)
-var_dump(Bar::counter());  // int(3), prior to PHP 8.1.0 int(1)
-var_dump(Bar::counter());  // int(4), prior to PHP 8.1.0 int(2)
 ?>

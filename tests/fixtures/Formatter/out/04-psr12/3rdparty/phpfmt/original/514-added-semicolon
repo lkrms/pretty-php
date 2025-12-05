@@ -1,0 +1,10 @@
+<?php
+// passes:AutoSemicolon
+// version:7
+$j->first(fn($a) => $a === 2) ?? 3;
+
+$j->first(fn($a) => $a === 1)
+    ?? 1;
+
+$j->first(fn($a) => $a === 1)
+    < 1;

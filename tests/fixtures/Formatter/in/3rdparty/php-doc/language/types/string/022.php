@@ -1,15 +1,17 @@
 <?php
 $str = 'abc';
 
-var_dump($str['1']);
-var_dump(isset($str['1']));
+$keys = [ '1', '1.0', 'x', '1x' ];
 
-var_dump($str['1.0']);
-var_dump(isset($str['1.0']));
+foreach ($keys as $keyToTry) {
+    var_dump(isset($str[$keyToTry]));
 
-var_dump($str['x']);
-var_dump(isset($str['x']));
+    try {
+        var_dump($str[$keyToTry]);
+    } catch (TypeError $e) {
+        echo $e->getMessage(), PHP_EOL;
+    }
 
-var_dump($str['1x']);
-var_dump(isset($str['1x']));
+    echo PHP_EOL;
+}
 ?>

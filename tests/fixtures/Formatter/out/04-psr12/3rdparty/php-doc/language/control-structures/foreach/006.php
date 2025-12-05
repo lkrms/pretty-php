@@ -1,10 +1,5 @@
 <?php
-$array = [
-    [1, 2],
-    [3, 4],
-];
-
-foreach ($array as list($a, $b, $c)) {
-    echo "A: $a; B: $b; C: $c\n";
+foreach ([1, 2, 3, 4] as &$value) {
+    $value = $value * 2;
 }
 ?>

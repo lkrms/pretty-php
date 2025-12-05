@@ -1,4 +1,3 @@
 <?php
-echo $_POST['username'];
-echo $_REQUEST['username'];
+echo "$a $hello";
 ?>

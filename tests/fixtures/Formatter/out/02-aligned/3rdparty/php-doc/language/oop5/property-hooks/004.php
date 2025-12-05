@@ -1,3 +1,4 @@
+<?php
 class Example
 {
     public function __construct(
@@ -9,6 +10,5 @@ class Example
                 $this->created = $value;
             }
         },
-    ) {
-    }
+    ) {}
 }

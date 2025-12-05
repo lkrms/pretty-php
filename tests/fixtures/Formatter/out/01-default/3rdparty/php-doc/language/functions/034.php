@@ -1,52 +1,46 @@
 <?php
-// A basic shopping cart which contains a list of added products
-// and the quantity of each product. Includes a method which
-// calculates the total price of the items in the cart using a
-// closure as a callback.
-class Cart
-{
-    const PRICE_BUTTER = 1.0;
-    const PRICE_MILK = 3.0;
-    const PRICE_EGGS = 6.95;
+$message = 'hello';
 
-    protected $products = array();
+// No "use"
+$example = function () {
+    var_dump($message);
+};
+$example();
 
-    public function add($product, $quantity)
-    {
-        $this->products[$product] = $quantity;
-    }
+// Inherit $message
+$example = function () use ($message) {
+    var_dump($message);
+};
+$example();
 
-    public function getQuantity($product)
-    {
-        return isset($this->products[$product])
-            ? $this->products[$product]
-            : FALSE;
-    }
+// Inherited variable's value is from when the function
+// is defined, not when called
+$message = 'world';
+$example();
 
-    public function getTotal($tax)
-    {
-        $total = 0.0;
+// Reset message
+$message = 'hello';
 
-        $callback =
-            function ($quantity, $product) use ($tax, &$total) {
-                $pricePerItem = constant(__CLASS__ . '::PRICE_'
-                    . strtoupper($product));
-                $total += ($pricePerItem * $quantity) * ($tax + 1.0);
-            };
+// Inherit by-reference
+$example = function () use (&$message) {
+    var_dump($message);
+};
+$example();
 
-        array_walk($this->products, $callback);
-        return round($total, 2);
-    }
-}
+// The changed value in the parent scope
+// is reflected inside the function call
+$message = 'world';
+$example();
 
-$my_cart = new Cart;
+// Closures can also accept regular arguments
+$example = function ($arg) use ($message) {
+    var_dump($arg . ' ' . $message);
+};
+$example('hello');
 
-// Add some items to the cart
-$my_cart->add('butter', 1);
-$my_cart->add('milk', 3);
-$my_cart->add('eggs', 6);
-
-// Print the total with a 5% sales tax.
-print $my_cart->getTotal(0.05) . "\n";
-// The result is 54.29
+// Return type declaration comes after the use clause
+$example = function () use ($message): string {
+    return "hello $message";
+};
+var_dump($example());
 ?>

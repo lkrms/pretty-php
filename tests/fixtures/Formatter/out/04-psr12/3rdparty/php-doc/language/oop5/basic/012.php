@@ -1,5 +1,13 @@
 <?php
 
+class SimpleClass
+{
+    function displayVar()
+    {
+        echo "Parent class\n";
+    }
+}
+
 class ExtendClass extends SimpleClass
 {
     // Redefine the parent method

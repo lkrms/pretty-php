@@ -4,4 +4,6 @@ function getArray() {
 }
 
 $secondElement = getArray()[1];
+
+var_dump($secondElement);
 ?>

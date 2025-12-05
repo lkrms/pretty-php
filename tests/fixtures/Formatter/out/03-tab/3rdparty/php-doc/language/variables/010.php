@@ -1,6 +1,12 @@
 <?php
-function test_superglobal()
+$a = 1;
+$b = 2;
+
+function Sum()
 {
-	echo $_POST['name'];
+	$GLOBALS['b'] = $GLOBALS['a'] + $GLOBALS['b'];
 }
+
+Sum();
+echo $b;
 ?>

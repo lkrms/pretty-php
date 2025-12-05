@@ -1,0 +1,11 @@
+<?php
+//passes:IndentTernaryConditions
+function multiline_parameters(
+    ?string $first,
+    ?string $second,
+    ?int $third,
+): ?string {
+    return $first == $second
+    ? $third
+    : null;
+}

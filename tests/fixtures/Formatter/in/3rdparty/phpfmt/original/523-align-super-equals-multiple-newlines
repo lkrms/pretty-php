@@ -1,0 +1,22 @@
+<?php
+// Test edge case: assignments with multiple newlines between blocks
+$first = 1;
+$second .= 'test';
+
+
+$after_gap = 'separated';
+$another_after *= 2;
+
+function test_function() {
+    $local = 'inside';
+    $local_concat .= 'function';
+    
+    
+    $after_double_newline = 'gap';
+    $gap_var += 5;
+}
+
+
+$global_after = 'end';
+$global_concat .= 'final';
+//passes:AlignSuperEquals

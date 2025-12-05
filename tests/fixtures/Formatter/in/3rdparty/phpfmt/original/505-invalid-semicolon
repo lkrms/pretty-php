@@ -1,0 +1,8 @@
+<?php
+//passes:Autosemicolon
+
+$a**=
+$b;
+$a =
+1 >
+2;

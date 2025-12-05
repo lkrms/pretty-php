@@ -1,14 +1,8 @@
 <?php
-$a = 1;
-$b = 2;
+$a = 1;  // global scope
 
-function Sum()
+function test()
 {
-    global $a, $b;
-
-    $b = $a + $b;
+    echo $a;  // Variable $a is undefined as it refers to a local version of $a
 }
-
-Sum();
-echo $b;
 ?>

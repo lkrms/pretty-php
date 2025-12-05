@@ -1,7 +1,7 @@
 <?php
 
 function foo($value): int {
-  return $value; 
+  return $value;
 }
 
 var_dump(foo(8.1)); // "Deprecated: Implicit conversion from float 8.1 to int loses precision" as of PHP 8.1.0

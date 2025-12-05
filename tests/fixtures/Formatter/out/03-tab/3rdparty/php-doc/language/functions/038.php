@@ -1,12 +1,9 @@
 <?php
 
-$y = 1;
-
-$fn1 = fn($x) => $x + $y;
-// equivalent to using $y by value:
-$fn2 = function ($x) use ($y) {
-	return $x + $y;
+$func = static function () {
+	// function body
 };
+$func = $func->bindTo(new stdClass);
+$func();
 
-var_export($fn1(3));
 ?>

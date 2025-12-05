@@ -61,8 +61,6 @@ class PropertyTest
     }
 }
 
-echo "<pre>\n";
-
 $obj = new PropertyTest;
 
 $obj->a = 1;

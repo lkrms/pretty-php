@@ -1,0 +1,26 @@
+<?php
+// Test nested blocks and complex structures
+class TestClass {
+    public function method() {
+        $a = 1;
+        $bb = 2;
+        
+        switch ($value) {
+            case 1:
+                $x = 'one';
+                $longer_name .= 'test';
+                break;
+            case 2:
+                $y = 'two';
+                $z *= 3;
+                break;
+        }
+        
+        $result = 'final';
+        $other_result += 10;
+    }
+}
+
+$global = 'outside';
+$another_global *= 5;
+//passes:AlignSuperEquals
