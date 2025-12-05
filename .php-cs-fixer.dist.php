@@ -1,10 +1,6 @@
 <?php
 
 $customTokens = [
-    'T_PRIVATE_SET',
-    'T_PROTECTED_SET',
-    'T_PUBLIC_SET',
-    'T_PROPERTY_C',
     'T_VOID_CAST',
     'T_PIPE',
     'T_ATTRIBUTE_COMMENT',
@@ -42,6 +38,7 @@ $customTokens = [
     'T_NOT',
 ];
 
+/** @disregard P1009 */
 $finder = (new PhpCsFixer\Finder())
               ->in([
                   __DIR__ . '/scripts',
@@ -57,11 +54,14 @@ $finder = (new PhpCsFixer\Finder())
                   __DIR__ . '/bootstrap.php',
               ]);
 
+/** @disregard P1009 */
 return (new PhpCsFixer\Config())
+           ->setParallelConfig(PhpCsFixer\Runner\Parallel\ParallelConfigFactory::detect())
            ->setRules([
                'fully_qualified_strict_types' => true,
                'is_null' => true,
                'native_constant_invocation' => ['include' => $customTokens],
+               'new_with_parentheses' => ['anonymous_class' => false],
                'no_superfluous_phpdoc_tags' => ['allow_mixed' => true],
                'no_unneeded_import_alias' => true,
                'no_unused_imports' => true,
@@ -69,6 +69,8 @@ return (new PhpCsFixer\Config())
                'phpdoc_no_useless_inheritdoc' => true,
                'phpdoc_order' => ['order' => [
                    'todo',
+                   'see',
+                   'link',
                    'property',
                    'property-read',
                    'property-write',
@@ -91,6 +93,7 @@ return (new PhpCsFixer\Config())
                    'param-out',
                    'return',
                    'throws',
+                   'codeCoverageIgnore',
                ]],
                // 'phpdoc_param_order' => true,
                'phpdoc_separation' => ['groups' => [
@@ -103,6 +106,7 @@ return (new PhpCsFixer\Config())
                    ['phpstan-require-extends', 'phpstan-require-implements'],
                    ['readonly', 'var', 'param', 'param-out', 'return', 'throws', 'phpstan-var', 'phpstan-param', 'phpstan-return', 'phpstan-assert*', 'phpstan-ignore*', 'disregard'],
                    ['phpstan-*'],
+                   ['codeCoverageIgnore'],
                ]],
                'phpdoc_tag_casing' => true,
                'phpdoc_trim_consecutive_blank_line_separation' => true,

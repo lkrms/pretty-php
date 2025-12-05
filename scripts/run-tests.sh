@@ -88,12 +88,12 @@ if ((ASSETS)); then
 fi
 
 if ((FORMATTING)); then
-    run php83 tools/php-cs-fixer check --diff --verbose
+    run php84 tools/php-cs-fixer check --diff --verbose
     run bin/pretty-php --diff
 fi
 
 if ((PHPSTAN)); then
-    run_with_php_versions '' 74 vendor/bin/phpstan
+    run_with_php_versions 84 74 vendor/bin/phpstan
 fi
 
 if ((PHPUNIT)); then
