@@ -121,7 +121,6 @@ final class Formatter implements Buildable, Immutable
         RemoveEmptyDocBlocks::class,
         SortImports::class,
         MoveComments::class,
-        NormaliseCasts::class,
         NormaliseKeywords::class,
     ];
 
