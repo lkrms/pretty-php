@@ -299,7 +299,8 @@
         "standalone/native-types-03.php",
         "standalone/native-types-04.php",
         "standalone/numbers-02.php",
-        "standalone/property-hooks-rfc.php"
+        "standalone/property-hooks-rfc.php",
+        "standalone/void-cast.php"
     ],
     "80000": [
         "3rdparty/php-doc/appendices/migration81/new-features/000.php",
@@ -462,7 +463,8 @@
         "standalone/native-types-03.php",
         "standalone/native-types-04.php",
         "standalone/numbers-02.php",
-        "standalone/property-hooks-rfc.php"
+        "standalone/property-hooks-rfc.php",
+        "standalone/void-cast.php"
     ],
     "80100": [
         "3rdparty/php-doc/appendices/migration84/new-features/000.php",
@@ -555,7 +557,8 @@
         "3rdparty/phpfmt/unit/three",
         "standalone/functions-anonymous-04.php",
         "standalone/native-types-04.php",
-        "standalone/property-hooks-rfc.php"
+        "standalone/property-hooks-rfc.php",
+        "standalone/void-cast.php"
     ],
     "80200": [
         "3rdparty/php-doc/appendices/migration84/new-features/000.php",
@@ -634,7 +637,8 @@
         "3rdparty/phpfmt/original/448-php83",
         "3rdparty/phpfmt/original/486-php84",
         "3rdparty/phpfmt/original/504-spacing",
-        "standalone/property-hooks-rfc.php"
+        "standalone/property-hooks-rfc.php",
+        "standalone/void-cast.php"
     ],
     "80300": [
         "3rdparty/php-doc/appendices/migration84/new-features/000.php",
@@ -709,7 +713,8 @@
         "3rdparty/phpfmt/original/293-namespaces-vs-namespace-named-ns",
         "3rdparty/phpfmt/original/486-php84",
         "3rdparty/phpfmt/original/494-missing-static",
-        "standalone/property-hooks-rfc.php"
+        "standalone/property-hooks-rfc.php",
+        "standalone/void-cast.php"
     ],
     "80400": [
         "3rdparty/php-doc/appendices/migration80/incompatible/007.php",
@@ -742,7 +747,8 @@
         "3rdparty/phpfmt/original/218-mild-pre-increment",
         "3rdparty/phpfmt/original/232-wrong-space-variable-variables",
         "3rdparty/phpfmt/original/236-pre-increment-complex-vars",
-        "3rdparty/phpfmt/original/293-namespaces-vs-namespace-named-ns"
+        "3rdparty/phpfmt/original/293-namespaces-vs-namespace-named-ns",
+        "standalone/void-cast.php"
     ],
     "80500": [
         "3rdparty/php-doc/appendices/migration80/incompatible/007.php",
