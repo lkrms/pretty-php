@@ -1,0 +1,9 @@
+<body>
+    <div class="this-is-a-template">
+        <?php echo exampleFunction( '<div class="test">Label</div>' ); ?>
+        <?php echo exampleFunction( '<div class="test">Label</div>' ); ?>
+        <?php echo exampleFunction( '<div class="test">Label</div>' ); ?>
+    </div>
+</body>
+<?php
+//passes:AlignPHPCode

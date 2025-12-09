@@ -14,6 +14,7 @@ $test->i++;
 ++$test->i;
 $test->ary[] = 1;
 $test->ary[0][] = 1;
+unset($test->ary[0]);
 $ref = &$test->i;
 $test->i = &$ref;
 byRef($test->i);

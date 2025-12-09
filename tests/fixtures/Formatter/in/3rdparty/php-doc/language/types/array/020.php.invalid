@@ -1,0 +1,7 @@
+<?php
+// This will not work, and will result in a parse error, such as:
+// Parse error: parse error, expecting T_STRING' or T_VARIABLE' or T_NUM_STRING'
+// This of course applies to using superglobals in strings as well
+print "Hello $arr['fruit']";
+print "Hello $_GET['foo']";
+?>

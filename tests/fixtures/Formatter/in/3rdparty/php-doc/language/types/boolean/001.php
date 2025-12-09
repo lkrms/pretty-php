@@ -1,4 +1,7 @@
 <?php
+$action = "show_version";
+$show_separators = true;
+
 // == is an operator which tests
 // equality and returns a boolean
 if ($action == "show_version") {

@@ -5,3 +5,13 @@ const FOO = 1 + 1;
 
 const FOO = BAR,
     BAR = FOO;
+
+#[Example]
+const FOO = true;
+
+#[First]
+#[Second]
+const FOO = true;
+
+#[First, Second]
+const FOO = true;

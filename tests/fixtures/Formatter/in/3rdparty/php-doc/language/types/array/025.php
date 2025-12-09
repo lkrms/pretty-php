@@ -1,14 +1,13 @@
 <?php
-// Using short array syntax.
-// Also, works with array() syntax.
-$arr1 = [1, 2, 3];
-$arr2 = [...$arr1]; //[1, 2, 3]
-$arr3 = [0, ...$arr1]; //[0, 1, 2, 3]
-$arr4 = [...$arr1, ...$arr2, 111]; //[1, 2, 3, 1, 2, 3, 111]
-$arr5 = [...$arr1, ...$arr1]; //[1, 2, 3, 1, 2, 3]
 
-function getArr() {
-  return ['a', 'b'];
+class A {
+    private $A; // This will become '\0A\0A'
 }
-$arr6 = [...getArr(), 'c' => 'd']; //['a', 'b', 'c' => 'd']
+
+class B extends A {
+    private $A; // This will become '\0B\0A'
+    public $AA; // This will become 'AA'
+}
+
+var_dump((array) new B());
 ?>

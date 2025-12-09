@@ -1,0 +1,11 @@
+<?php
+//passes:StripNewlineWithinClassBody
+function bar($class) {
+    echo $class;
+}
+
+function foo() {
+    bar(class: 'baz');
+}
+
+// EOF

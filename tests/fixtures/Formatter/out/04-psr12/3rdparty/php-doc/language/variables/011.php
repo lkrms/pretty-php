@@ -1,9 +1,7 @@
 <?php
 
-function test()
+function test_superglobal()
 {
-    $a = 0;
-    echo $a;
-    $a++;
+    echo $_POST['name'];
 }
 ?>

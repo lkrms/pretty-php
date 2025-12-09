@@ -10,10 +10,10 @@ enum UserStatus: string
     public function label(): string
     {
         return match ($this) {
-            static::Pending        => 'Pending',
-            static::Active         => 'Active',
-            static::Suspended      => 'Suspended',
-            static::CanceledByUser => 'Canceled by user',
+            self::Pending        => 'Pending',
+            self::Active         => 'Active',
+            self::Suspended      => 'Suspended',
+            self::CanceledByUser => 'Canceled by user',
         };
     }
 }

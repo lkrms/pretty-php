@@ -1,5 +1,4 @@
 <?php
-
 const DATA_KEY = 'const-key';
 $great = 'fantastic';
 $arr = [

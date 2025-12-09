@@ -23,6 +23,7 @@ final class NormaliseCasts implements Filter
         \T_ARRAY_CAST => '(array)',
         \T_OBJECT_CAST => '(object)',
         \T_UNSET_CAST => '(unset)',
+        \T_VOID_CAST => '(void)',
     ];
 
     /**

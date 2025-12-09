@@ -1,4 +1,8 @@
 <?php
+class SimpleClass
+{
+    public string $var;
+}
 
 $instance = new SimpleClass();
 

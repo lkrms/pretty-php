@@ -1,20 +1,15 @@
 <?php
 class Foo
 {
-    static function bar()
+    static $variable = 'static property';
+    static function Variable()
     {
-        echo "bar\n";
-    }
-    function baz()
-    {
-        echo "baz\n";
+        echo 'Method Variable called';
     }
 }
 
-$func = array("Foo", "bar");
-$func(); // prints "bar"
-$func = array(new Foo, "baz");
-$func(); // prints "baz"
-$func = "Foo::bar";
-$func(); // prints "bar"
+echo Foo::$variable; // This prints 'static property'. It does need a $variable in this scope.
+$variable = "Variable";
+Foo::$variable();  // This calls $foo->Variable() reading $variable in this scope.
+
 ?>

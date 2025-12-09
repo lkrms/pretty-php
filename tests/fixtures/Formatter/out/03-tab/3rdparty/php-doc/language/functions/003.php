@@ -1,9 +1,21 @@
 <?php
-function recursion($a)
+function foo()
 {
-	if ($a < 20) {
-		echo "$a\n";
-		recursion($a + 1);
+	function bar()
+	{
+		echo "I don't exist until foo() is called.\n";
 	}
 }
+
+/* We can't call bar() yet
+   since it doesn't exist. */
+
+foo();
+
+/* Now we can call bar(),
+   foo()'s processing has
+   made it accessible. */
+
+bar();
+
 ?>

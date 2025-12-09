@@ -1,5 +1,7 @@
 <?php
-$parts = ['apple', 'pear'];
-$fruits = ['banana', 'orange', ...$parts, 'watermelon'];
-// ['banana', 'orange', 'apple', 'pear', 'watermelon'];
+$array['key'] ??= computeDefault();
+// is roughly equivalent to
+if (!isset($array['key'])) {
+	$array['key'] = computeDefault();
+}
 ?>

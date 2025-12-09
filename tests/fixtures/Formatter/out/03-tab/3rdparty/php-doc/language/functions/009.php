@@ -1,25 +1,10 @@
 <?php
-class DefaultCoffeeMaker
+function makecoffee($types = array('cappuccino'), $coffeeMaker = NULL)
 {
-	public function brew()
-	{
-		return "Making coffee.\n";
-	}
-}
-
-class FancyCoffeeMaker
-{
-	public function brew()
-	{
-		return "Crafting a beautiful coffee just for you.\n";
-	}
-}
-
-function makecoffee($coffeeMaker = new DefaultCoffeeMaker)
-{
-	return $coffeeMaker->brew();
+	$device = is_null($coffeeMaker) ? 'hands' : $coffeeMaker;
+	return 'Making a cup of ' . join(', ', $types) . " with $device.\n";
 }
 
 echo makecoffee();
-echo makecoffee(new FancyCoffeeMaker);
+echo makecoffee(array('cappuccino', 'lavazza'), 'teapot');
 ?>

@@ -1,8 +1,8 @@
 <?php
-function makeyogurt($container = "bowl", $flavour = "raspberry", $style = "Greek")
+function makeyogurt($flavour, $container = "bowl")
 {
-    return "Making a $container of $flavour $style yogurt.\n";
+    return "Making a $container of $flavour yogurt.\n";
 }
 
-echo makeyogurt(style: "natural");
+echo makeyogurt("raspberry"); // "raspberry" is $flavour
 ?>

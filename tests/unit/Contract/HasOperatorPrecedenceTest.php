@@ -27,7 +27,7 @@ final class HasOperatorPrecedenceTest extends TestCase implements HasOperatorPre
         // +, -
         [3, [\T_PLUS, \T_MINUS], self::UNARY],
         // ++, --, ~, (int), (float), (string), (array), (object), (bool), @
-        [3, [\T_INC, \T_DEC, \T_NOT, \T_INT_CAST, \T_DOUBLE_CAST, \T_STRING_CAST, \T_ARRAY_CAST, \T_OBJECT_CAST, \T_BOOL_CAST, \T_UNSET_CAST, \T_AT]],
+        [3, [\T_INC, \T_DEC, \T_NOT, \T_INT_CAST, \T_DOUBLE_CAST, \T_STRING_CAST, \T_ARRAY_CAST, \T_OBJECT_CAST, \T_BOOL_CAST, \T_UNSET_CAST, \T_VOID_CAST, \T_AT]],
         // instanceof
         [4, [\T_INSTANCEOF], self::LEFT_ASSOCIATIVE],
         // !

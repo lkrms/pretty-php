@@ -9,5 +9,9 @@ $arr['x'] = 42;  // This adds a new element to
 
 unset($arr[5]);  // This removes the element from the array
 
+var_dump($arr);
+
 unset($arr);  // This deletes the whole array
+
+var_dump($arr);
 ?>

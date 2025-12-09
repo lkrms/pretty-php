@@ -22,4 +22,5 @@ class B extends A
 }
 
 B::test();
+
 ?>

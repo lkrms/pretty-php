@@ -1,0 +1,4 @@
+<?php
+//passes:ResizeSpaces
+
+bar(empty: false, CLASS: false);

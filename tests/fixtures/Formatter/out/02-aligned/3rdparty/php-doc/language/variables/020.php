@@ -1,3 +1,3 @@
 <?php
-echo "$a {$$a}";
+$a = 'hello';
 ?>

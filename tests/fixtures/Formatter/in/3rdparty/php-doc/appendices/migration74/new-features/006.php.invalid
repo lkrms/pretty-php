@@ -1,7 +1,0 @@
-<?php
-// Returns array containing all the necessary state of the object.
-public function __serialize(): array;
-
-// Restores the object state from the given data array.
-public function __unserialize(array $data): void;
-?>

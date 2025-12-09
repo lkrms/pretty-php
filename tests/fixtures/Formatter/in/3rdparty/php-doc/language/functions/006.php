@@ -1,9 +1,12 @@
 <?php
-function add_some_extra(&$string)
+function takes_many_args(
+    $first_arg,
+    $second_arg,
+    $a_very_long_argument_name,
+    $arg_with_default = 5,
+    $again = 'a default string', // This trailing comma was not permitted before 8.0.0.
+)
 {
-    $string .= 'and something extra.';
+    // ...
 }
-$str = 'This is a string, ';
-add_some_extra($str);
-echo $str;    // outputs 'This is a string, and something extra.'
 ?>

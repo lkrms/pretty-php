@@ -1,3 +1,4 @@
+<?php
 class Example
 {
     public private(set) DateTimeInterface $created {

@@ -2,7 +2,8 @@
 namespace NS {
     class ClassName {
     }
+
+    $c = new ClassName();
+    print $c::class;
 }
-$c = new ClassName();
-print $c::class;
 ?>

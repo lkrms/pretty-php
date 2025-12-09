@@ -121,7 +121,6 @@ final class Formatter implements Buildable, Immutable
         RemoveEmptyDocBlocks::class,
         SortImports::class,
         MoveComments::class,
-        NormaliseCasts::class,
         NormaliseKeywords::class,
     ];
 
@@ -441,13 +440,13 @@ final class Formatter implements Buildable, Immutable
 
     /**
      * @param int<1,max> $tabSize
-     * @phpstan-param 2|4|8 $tabSize
      * @param array<class-string<Extension>> $disable Extensions to disable
      * @param array<class-string<Extension>> $enable Extensions to enable
      * @param int-mask-of<FormatterFlag::*> $flags Formatter flags
      * @param AbstractTokenIndex|null $tokenIndex Custom token index
      * @param HeredocIndent::* $heredocIndent Heredoc indentation type
      * @param ImportSortOrder::* $importSortOrder Alias/import statement order
+     * @phpstan-param 2|4|8 $tabSize
      */
     public function __construct(
         bool $insertSpaces = true,

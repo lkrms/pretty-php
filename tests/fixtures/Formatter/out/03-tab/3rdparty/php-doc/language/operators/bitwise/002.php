@@ -105,6 +105,6 @@ function p($res, $val, $op, $places, $note = '')
 		echo " NOTE: $note\n";
 	}
 
-	echo "\n";
+	echo "\n\n";
 }
 ?>

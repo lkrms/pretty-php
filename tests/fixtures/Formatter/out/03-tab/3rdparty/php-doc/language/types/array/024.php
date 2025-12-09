@@ -2,14 +2,15 @@
 
 class A
 {
-	private $A;  // This will become '\0A\0A'
+	private $B;
+	protected $C;
+	public $D;
+
+	function __construct()
+	{
+		$this->{1} = null;
+	}
 }
 
-class B extends A
-{
-	private $A;  // This will become '\0B\0A'
-	public $AA;  // This will become 'AA'
-}
-
-var_dump((array) new B());
+var_export((array) new A());
 ?>

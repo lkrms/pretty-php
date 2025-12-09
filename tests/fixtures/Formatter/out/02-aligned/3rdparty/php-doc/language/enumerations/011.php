@@ -6,12 +6,12 @@ enum Size
     case Medium;
     case Large;
 
-    public static function fromLength(int $cm): static
+    public static function fromLength(int $cm): self
     {
         return match (true) {
-            $cm < 50  => static::Small,
-            $cm < 100 => static::Medium,
-            default   => static::Large,
+            $cm < 50  => self::Small,
+            $cm < 100 => self::Medium,
+            default   => self::Large,
         };
     }
 }

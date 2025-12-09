@@ -1,45 +1,18 @@
 <?php
-function &get_instance_ref()
+class Foo
 {
-	static $obj;
-
-	echo 'Static object: ';
-	var_dump($obj);
-	if (!isset($obj)) {
-		$new = new stdClass;
-		// Assign a reference to the static variable
-		$obj = &$new;
+	public static function counter()
+	{
+		static $counter = 0;
+		$counter++;
+		return $counter;
 	}
-	if (!isset($obj->property)) {
-		$obj->property = 1;
-	} else {
-		$obj->property++;
-	}
-	return $obj;
 }
 
-function &get_instance_noref()
-{
-	static $obj;
+class Bar extends Foo {}
 
-	echo 'Static object: ';
-	var_dump($obj);
-	if (!isset($obj)) {
-		$new = new stdClass;
-		// Assign the object to the static variable
-		$obj = $new;
-	}
-	if (!isset($obj->property)) {
-		$obj->property = 1;
-	} else {
-		$obj->property++;
-	}
-	return $obj;
-}
-
-$obj1 = get_instance_ref();
-$still_obj1 = get_instance_ref();
-echo "\n";
-$obj2 = get_instance_noref();
-$still_obj2 = get_instance_noref();
+var_dump(Foo::counter());  // int(1)
+var_dump(Foo::counter());  // int(2)
+var_dump(Bar::counter());  // int(3), prior to PHP 8.1.0 int(1)
+var_dump(Bar::counter());  // int(4), prior to PHP 8.1.0 int(2)
 ?>

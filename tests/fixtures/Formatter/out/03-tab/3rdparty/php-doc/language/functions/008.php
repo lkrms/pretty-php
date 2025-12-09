@@ -1,10 +1,10 @@
 <?php
-function makecoffee($types = array('cappuccino'), $coffeeMaker = NULL)
+function makecoffee($type = 'cappuccino')
 {
-	$device = is_null($coffeeMaker) ? 'hands' : $coffeeMaker;
-	return 'Making a cup of ' . join(', ', $types) . " with $device.\n";
+	return "Making a cup of $type.\n";
 }
 
 echo makecoffee();
-echo makecoffee(array('cappuccino', 'lavazza'), 'teapot');
+echo makecoffee(null);
+echo makecoffee('espresso');
 ?>

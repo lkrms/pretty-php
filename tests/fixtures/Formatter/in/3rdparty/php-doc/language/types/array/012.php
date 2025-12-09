@@ -5,6 +5,6 @@ $source_array = [
 ];
 
 foreach ($source_array as [$id, $name]) {
-    // logic here with $id and $name
+    echo "{$id}: '{$name}'\n";
 }
 ?>

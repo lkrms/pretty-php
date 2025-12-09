@@ -8,5 +8,6 @@ class Point {
         public readonly int $a = 0,
         public $h { set => $value; },
         public $g = 1 { get => 2; },
+        final $i,
     ) {}
 }

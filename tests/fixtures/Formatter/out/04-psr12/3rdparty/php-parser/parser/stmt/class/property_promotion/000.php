@@ -13,5 +13,6 @@ class Point
         public $g = 1 {
             get => 2;
         },
+        final $i,
     ) {}
 }

@@ -1,20 +1,17 @@
 <?php
-function test_global_ref()
+function exampleFunction($input)
 {
-    global $obj;
-    $new = new stdClass;
-    $obj = &$new;
+    $result = (static function () use ($input) {
+        static $counter = 0;
+        $counter++;
+        return "Input: $input, Counter: $counter\n";
+    });
+
+    return $result();
 }
 
-function test_global_noref()
-{
-    global $obj;
-    $new = new stdClass;
-    $obj = $new;
-}
-
-test_global_ref();
-var_dump($obj);
-test_global_noref();
-var_dump($obj);
+// Calls to exampleFunction will recreate the anonymous function, so the static
+// variable does not retain its value.
+echo exampleFunction('A');  // Outputs: Input: A, Counter: 1
+echo exampleFunction('B');  // Outputs: Input: B, Counter: 1
 ?>

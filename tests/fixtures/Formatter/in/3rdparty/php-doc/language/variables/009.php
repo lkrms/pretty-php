@@ -4,7 +4,9 @@ $b = 2;
 
 function Sum()
 {
-    $GLOBALS['b'] = $GLOBALS['a'] + $GLOBALS['b'];
+    global $a, $b;
+
+    $b = $a + $b;
 } 
 
 Sum();

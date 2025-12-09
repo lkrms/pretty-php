@@ -5,6 +5,6 @@ $fst = (string) $foo;  // $fst is also a string
 
 // This prints out that "they are the same"
 if ($fst === $str) {
-    echo 'they are the same';
+    echo 'they are the same', PHP_EOL;
 }
 ?>

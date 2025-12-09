@@ -9,3 +9,5 @@ $variable2 = $possibleNullableExpr
 
 $variable3 = $elvisExpr
 	?: 'qix';
+
+$variable4 = '<foo>'|> strtoupper(...)|> htmlspecialchars(...);

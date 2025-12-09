@@ -271,78 +271,88 @@ class Updater
 REGEX;
 
         Console::info('Updating php-fig fixtures');
-        $file = "{$this->RepoRoot}/per/spec.md";
 
-        if (!is_file($file)) {
-            throw new RuntimeException(sprintf('File not found: %s', $file));
-        }
+        $targetDir = "{$this->TargetRoot}/php-fig";
+        File::pruneDir($targetDir);
 
-        if (!Regex::matchAll(
-            "/$markdownRegex/",
-            Str::setEol(File::getContents($file)),
-            $matches,
-            \PREG_UNMATCHED_AS_NULL,
-        )) {
-            throw new RuntimeException(sprintf('No PHP listings: %s', $file));
-        }
+        foreach ([
+            'spec.md' => 'per',
+            'migration-2.0.md' => 'per-migration2',
+            'migration-3.0.md' => 'per-migration3',
+        ] as $file => $dir) {
+            $file = "{$this->RepoRoot}/per/$file";
 
-        $count = 0;
-        $heading = null;
-        $byHeading = [];
-        foreach (array_keys($matches[0]) as $i) {
-            if ($matches[1][$i] !== null) {
-                $heading = $matches[1][$i];
-                continue;
+            if (!is_file($file)) {
+                throw new RuntimeException(sprintf('File not found: %s', $file));
             }
-            if ($heading === null) {
-                Console::warnOnce('PHP listing before heading:', $file, null, false);
-                continue;
+
+            if (!Regex::matchAll(
+                "/$markdownRegex/",
+                Str::setEol(File::getContents($file)),
+                $matches,
+                \PREG_UNMATCHED_AS_NULL,
+            )) {
+                throw new RuntimeException(sprintf('No PHP listings: %s', $file));
             }
-            assert($matches[2][$i] !== null);
-            $byHeading[$heading][] = $matches[2][$i];
-            $count++;
-            $this->Fixtures++;
-        }
 
-        $dir = "{$this->TargetRoot}/php-fig/per";
-        Console::log('Populating:', $dir);
-        File::createDir($dir);
-        File::pruneDir($dir);
-
-        foreach ($byHeading as $heading => $listings) {
-            $heading = trim(Regex::replace(
-                '/(?:\.(?![0-9])|[^a-z0-9.])+/i',
-                '-',
-                Str::lower($heading)
-            ), '-');
-
-            $section = (float) $heading;
-            $section = (int) ($section * 1000);
-            $index[$section] ??= $section;
-
-            foreach ($listings as $i => $listing) {
-                $name = sprintf('%s-%02d', $heading, $i);
-
-                if (!Str::startsWith(ltrim($listing), '<?php')) {
-                    $listing = "<?php\n\n$listing";
-                    Console::warn('No open tag:', $name, null, false);
+            $count = 0;
+            $heading = null;
+            $byHeading = [];
+            foreach (array_keys($matches[0]) as $i) {
+                if ($matches[1][$i] !== null) {
+                    $heading = $matches[1][$i];
+                    continue;
                 }
-
-                try {
-                    // @phpstan-ignore function.resultUnused
-                    token_get_all($listing, \TOKEN_PARSE);
-                } catch (CompileError $ex) {
-                    Console::warn('Invalid:', $name, null, false);
+                if ($heading === null) {
+                    Console::warnOnce('PHP listing before heading:', $file, null, false);
+                    continue;
                 }
-
-                $outFile = sprintf('%s/%05d-%s.php', $dir, $index[$section]++, $heading);
-                Console::logProgress('Creating', substr($outFile, $this->TargetLength));
-                File::writeContents($outFile, Str::setEol($listing, \PHP_EOL));
-                $this->Replaced++;
+                assert($matches[2][$i] !== null);
+                $byHeading[$heading][] = $matches[2][$i];
+                $count++;
+                $this->Fixtures++;
             }
-        }
 
-        Console::log('Listings extracted from PER Coding Style:', (string) $count);
+            $dir = "$targetDir/$dir";
+            Console::log('Populating:', $dir);
+            File::createDir($dir);
+
+            $index = [];
+            foreach ($byHeading as $heading => $listings) {
+                $heading = trim(Regex::replace(
+                    ['/^\[(?:section )?([^]]+)\]\([^)]+\)\h*$/', '/(?:\.(?![0-9])|[^a-z0-9.])+/'],
+                    ['$1', '-'],
+                    Str::lower($heading),
+                ), '-');
+
+                $section = (float) $heading;
+                $section = (int) ($section * 1000);
+                $index[$section] ??= $section;
+
+                foreach ($listings as $i => $listing) {
+                    $name = sprintf('%s-%02d', $heading, $i);
+
+                    if (!Str::startsWith(ltrim($listing), '<?php')) {
+                        $listing = "<?php\n\n$listing";
+                        Console::warn('No open tag:', $name, null, false);
+                    }
+
+                    try {
+                        // @phpstan-ignore function.resultUnused
+                        token_get_all($listing, \TOKEN_PARSE);
+                    } catch (CompileError $ex) {
+                        Console::warn('Invalid:', $name, null, false);
+                    }
+
+                    $outFile = sprintf('%s/%05d-%s.php', $dir, $index[$section]++, $heading);
+                    Console::logProgress('Creating', substr($outFile, $this->TargetLength));
+                    File::writeContents($outFile, Str::setEol($listing, \PHP_EOL));
+                    $this->Replaced++;
+                }
+            }
+
+            Console::log(sprintf('Listings extracted from %s in PER Coding Style:', basename($file)), (string) $count);
+        }
     }
 
     public function updateUtf8Fixture(): void

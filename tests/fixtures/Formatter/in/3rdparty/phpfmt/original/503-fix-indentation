@@ -1,0 +1,27 @@
+<?php
+	//passes:AlignPHPCode,PSR2IndentWithSpace
+    //version:7.3
+?>
+    <select name="code" id='code' onchange="form.submit()">
+        <?php
+                $a=1;
+            //There is a comment up here
+            $sql9 = <<<SQL
+                SELECT Row1, row2, `Someone decided to use spaces`,`in table and column names`
+                FROM sometable
+                WHERE ((SomeField = '$SomeVariable'))
+            SQL;
+                                             //echo '<!--' . $sql9 . '-->'; // old code I think?
+                                             //$result9=mysqli_query($conn, $sql9); // from an include()
+                                             //while($row9=mysqli_fetch_array($result9)){
+$b=1;
+        ?>
+        hello
+        <?php
+            echo "keep indent";
+        ?>
+        hello
+    <?php
+        echo "keep indent";
+    ?>
+    </select>

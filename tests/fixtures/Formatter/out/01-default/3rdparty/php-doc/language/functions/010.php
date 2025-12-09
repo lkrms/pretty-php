@@ -1,8 +1,25 @@
 <?php
-function makeyogurt($container = 'bowl', $flavour)
+class DefaultCoffeeMaker
 {
-    return "Making a $container of $flavour yogurt.\n";
+    public function brew()
+    {
+        return "Making coffee.\n";
+    }
 }
 
-echo makeyogurt('raspberry');  // "raspberry" is $container, not $flavour
+class FancyCoffeeMaker
+{
+    public function brew()
+    {
+        return "Crafting a beautiful coffee just for you.\n";
+    }
+}
+
+function makecoffee($coffeeMaker = new DefaultCoffeeMaker)
+{
+    return $coffeeMaker->brew();
+}
+
+echo makecoffee();
+echo makecoffee(new FancyCoffeeMaker);
 ?>

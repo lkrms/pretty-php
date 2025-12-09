@@ -2,12 +2,13 @@
 
 $url = 'http://www.example.org/header.php';
 
-$opts = array('http' =>
-	array(
+$opts = [
+	'http' => [
 		'method' => 'GET',
 		'max_redirects' => '0',
-		'ignore_errors' => '1'
-	));
+		'ignore_errors' => '1',
+	]
+];
 
 $context = stream_context_create($opts);
 $stream = fopen($url, 'r', false, $context);

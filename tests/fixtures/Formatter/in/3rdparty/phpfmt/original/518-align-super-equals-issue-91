@@ -1,0 +1,11 @@
+<?php
+$salted = '';
+$dx = '';
+while (strlen($salted) < 48) {
+    $dx = md5($dx . $passphrase . $salt, true);
+    $salted .= $dx;
+}
+$key = substr($salted, 0, 32);
+$iv = substr($salted, 32, 16);
+return [$key, $iv];
+//passes:AlignSuperEquals

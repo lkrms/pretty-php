@@ -1,0 +1,14 @@
+<?php
+//passes:OrderAndRemoveUseClauses
+//excludes:EliminateDuplicatedEmptyLines
+declare (strict_types = 1);
+
+use App\Class1;
+
+class MyClass
+{
+    public function a()
+    {
+        $c = new Class1();
+    }
+}

@@ -1,0 +1,2 @@
+<?php
+$callable = $item->doSomething(...);

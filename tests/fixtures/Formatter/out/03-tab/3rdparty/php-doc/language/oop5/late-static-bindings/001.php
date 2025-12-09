@@ -1,4 +1,5 @@
 <?php
+
 class A
 {
 	public static function who()
@@ -21,4 +22,5 @@ class B extends A
 }
 
 B::test();
+
 ?>

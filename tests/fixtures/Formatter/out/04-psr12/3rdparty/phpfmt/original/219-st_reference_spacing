@@ -1,5 +1,5 @@
 <?php
-// version:80000,
+// version:8.2
 ($obj->get() & $var);
 ($obj->get() & ($var));
 ($obj->property & $var);

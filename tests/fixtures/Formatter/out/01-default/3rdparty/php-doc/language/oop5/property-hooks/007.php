@@ -1,5 +1,5 @@
 <?php
-readonly class Rectangle
+class Rectangle
 {
     // A virtual property.
     public int $area {

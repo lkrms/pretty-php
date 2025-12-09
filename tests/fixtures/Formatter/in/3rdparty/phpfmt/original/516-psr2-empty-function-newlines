@@ -1,0 +1,24 @@
+<?php
+// Issue #175: PSR2EmptyFunction removes lines between functions
+function foo() {
+}
+
+function bar(int $baz, string $qux) {
+    noop();
+}
+
+function empty1() {
+}
+
+function empty2() {
+
+
+}
+
+function withComment() {
+    // This should not be collapsed
+}
+
+function anotherEmpty() {
+}
+//passes:PSR2EmptyFunction

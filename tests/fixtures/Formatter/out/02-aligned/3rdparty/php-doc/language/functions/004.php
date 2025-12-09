@@ -1,6 +1,9 @@
 <?php
-function takes_array($input)
+function recursion($a)
 {
-    echo "$input[0] + $input[1] = ", $input[0] + $input[1];
+    if ($a < 20) {
+        echo "$a\n";
+        recursion($a + 1);
+    }
 }
 ?>

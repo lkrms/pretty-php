@@ -1,16 +1,10 @@
 <?php
-function total_intervals($unit, DateInterval ...$intervals) {
-    $time = 0;
-    foreach ($intervals as $interval) {
-        $time += $interval->$unit;
-    }
-    return $time;
+function add($a, $b) {
+    return $a + $b;
 }
 
-$a = new DateInterval('P1D');
-$b = new DateInterval('P2D');
-echo total_intervals('d', $a, $b).' days';
+echo add(...[1, 2])."\n";
 
-// This will fail, since null isn't a DateInterval object.
-echo total_intervals('d', null);
+$a = [1, 2];
+echo add(...$a);
 ?>

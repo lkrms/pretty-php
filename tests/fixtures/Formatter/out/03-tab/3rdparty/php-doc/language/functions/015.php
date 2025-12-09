@@ -1,11 +1,12 @@
 <?php
-function add($a, $b)
+function sum(...$numbers)
 {
-	return $a + $b;
+	$acc = 0;
+	foreach ($numbers as $n) {
+		$acc += $n;
+	}
+	return $acc;
 }
 
-echo add(...[1, 2]) . "\n";
-
-$a = [1, 2];
-echo add(...$a);
+echo sum(1, 2, 3, 4);
 ?>

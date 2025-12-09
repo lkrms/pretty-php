@@ -1,8 +1,8 @@
 <?php
-echo "Hello world";
+echo "Hello world\n";
 
 // ... more code
 
-echo "Last statement";
+echo "Last statement\n";
 
 // the script ends here with no PHP closing tag

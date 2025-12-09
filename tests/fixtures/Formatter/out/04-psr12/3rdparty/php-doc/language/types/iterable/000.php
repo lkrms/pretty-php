@@ -7,4 +7,7 @@ function gen(): iterable
     yield 3;
 }
 
+foreach (gen() as $value) {
+    echo $value, "\n";
+}
 ?>

@@ -1,0 +1,2 @@
+<?php
+$4site = 'not yet';     // invalid; starts with a number

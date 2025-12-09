@@ -32,6 +32,7 @@ interface HasOperatorPrecedence
         \T_OBJECT_CAST => [[0, 3, false, false]],
         \T_BOOL_CAST => [[0, 3, false, false]],
         \T_UNSET_CAST => [[0, 3, false, false]],
+        \T_VOID_CAST => [[0, 3, false, false]],
         \T_AT => [[0, 3, false, false]],
         \T_INSTANCEOF => [[0, 4, true, false]],
         \T_LOGICAL_NOT => [[0, 5, false, false]],

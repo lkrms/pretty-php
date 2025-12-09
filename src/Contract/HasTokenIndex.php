@@ -422,6 +422,7 @@ interface HasTokenIndex
         \T_ARRAY_CAST => true,
         \T_OBJECT_CAST => true,
         \T_UNSET_CAST => true,
+        \T_VOID_CAST => true,
     ];
 
     /**

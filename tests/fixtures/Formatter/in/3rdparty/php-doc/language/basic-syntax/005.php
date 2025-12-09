@@ -1,7 +1,7 @@
 <?php
-    echo 'This is a test';
+    echo "This is a test\n";
 ?>
 
-<?php echo 'This is a test' ?>
+<?php echo "This is a test\n" ?>
 
-<?php echo 'We omitted the last closing tag';
+<?php echo "We omitted the last closing tag\n";

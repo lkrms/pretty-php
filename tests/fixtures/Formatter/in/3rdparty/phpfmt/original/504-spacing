@@ -1,0 +1,7 @@
+<?php
+//passes:ResizeSpaces
+//version:8.3
+class A
+{
+    public const array TYPES = [];
+}

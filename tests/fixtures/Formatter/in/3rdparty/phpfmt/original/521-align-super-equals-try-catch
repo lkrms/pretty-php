@@ -1,0 +1,21 @@
+<?php
+// Test try-catch blocks and exception handling
+$start = 'begin';
+$config .= 'settings';
+
+try {
+    $connection = new PDO($dsn);
+    $prepared_stmt <<= $query;
+    $result_set = $prepared_stmt->execute();
+} catch (Exception $e) {
+    $error = $e->getMessage();
+    $log_entry .= $error;
+    $retry_count += 1;
+} finally {
+    $cleanup = true;
+    $memory_freed *= 0;
+}
+
+$end = 'finished';
+$summary .= 'completed';
+//passes:AlignSuperEquals

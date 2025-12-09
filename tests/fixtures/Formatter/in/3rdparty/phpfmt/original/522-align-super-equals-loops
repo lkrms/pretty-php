@@ -1,0 +1,27 @@
+<?php
+// Test foreach and other loop structures
+$items = ['a', 'b', 'c'];
+$total_count = 0;
+
+foreach ($items as $key => $value) {
+    $processed = strtoupper($value);
+    $key_length += strlen($key);
+    $processed_items[] = $processed;
+}
+
+while ($condition) {
+    $iterator = next($array);
+    $check_value .= $iterator;
+    if ($break_condition) {
+        break;
+    }
+}
+
+do {
+    $attempt = try_operation();
+    $attempts_made += 1;
+} while (!$attempt);
+
+$final_result = 'done';
+$statistics .= 'complete';
+//passes:AlignSuperEquals

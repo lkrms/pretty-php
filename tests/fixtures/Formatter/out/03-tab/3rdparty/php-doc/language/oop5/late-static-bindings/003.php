@@ -1,4 +1,5 @@
 <?php
+
 class A
 {
 	public static function foo()
@@ -36,4 +37,5 @@ class C extends B
 }
 
 C::test();
+
 ?>

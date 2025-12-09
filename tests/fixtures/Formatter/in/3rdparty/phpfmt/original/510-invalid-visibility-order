@@ -1,0 +1,12 @@
+<?php
+//passes:PSR2ModifierVisibilityStaticOrder
+//version:8
+function foo(?string $bar): void {
+}
+class Foo {
+    static public function bar(?string $baz) {
+    }
+}
+
+function faa(?string $bar): void {
+}

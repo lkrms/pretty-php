@@ -1,16 +1,5 @@
 <?php
-
-class A
-{
-    private $B;
-    protected $C;
-    public $D;
-
-    function __construct()
-    {
-        $this->{1} = null;
-    }
-}
-
-var_export((array) new A());
+$error_descriptions[1] = 'A fatal error has occurred';
+$error_descriptions[2] = 'PHP issued a warning';
+$error_descriptions[8] = 'This is just an informal notice';
 ?>

@@ -1,5 +1,16 @@
 <?php
-foreach (array(1, 2, 3, 4) as &$value) {
-    $value = $value * 2;
+$array = [
+    [1, 2, 5],
+    [3, 4, 6],
+];
+
+foreach ($array as [$a, $b]) {
+    // Note that there is no $c here.
+    echo "$a $b\n";
+}
+
+foreach ($array as [, , $c]) {
+    // Skipping over $a and $b
+    echo "$c\n";
 }
 ?>
