@@ -333,7 +333,7 @@ Structural and `match` expression braces are ignored.
 
 ### `VerticalSpacing` (3)
 
-<small>(mandatory, `processTokens()`, priority 242, tokens: `&` | `?` | `^` | `{` | `|` | `T_LOGICAL_OR` | `T_LOGICAL_XOR` | `T_LOGICAL_AND` | `T_FOR` | `T_USE` | `T_BOOLEAN_OR` | `T_BOOLEAN_AND` | `T_OBJECT_OPERATOR` | `T_NULLSAFE_OBJECT_OPERATOR` | `T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG` | `T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG`)</small>
+<small>(mandatory, `processTokens()`, priority 242, tokens: `&` | `?` | `^` | `{` | `|` | `T_LOGICAL_OR` | `T_LOGICAL_XOR` | `T_LOGICAL_AND` | `T_FOR` | `T_USE` | `T_BOOLEAN_OR` | `T_BOOLEAN_AND` | `T_OBJECT_OPERATOR` | `T_NULLSAFE_OBJECT_OPERATOR` | `T_PIPE` | `T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG` | `T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG`)</small>
 
 In expressions where one or more boolean operators have an adjacent newline, newlines are added to other boolean operators of equal or lower precedence.
 
@@ -348,6 +348,8 @@ Newlines are added before open braces that belong to top-level declarations and 
 Newlines are added before both operators in ternary expressions where one operator has a leading newline.
 
 In anonymous functions with lexical variables after parameters that break over multiple lines, newlines are added before each parameter. If the list of variables after `use` breaks over multiple lines, newlines are also added before each variable.
+
+In pipe chains where a pipe operator (`|>`) has a leading newline, newlines are added before every pipe operator.
 
 In method chains where an object operator (`->` or `?->`) has a leading newline, newlines are added before every object operator. If the `AlignChains` rule is enabled and strict PSR-12 compliance is not, the first object operator in the chain is excluded from this operation.
 
@@ -652,6 +654,7 @@ Newlines and spaces are added after tokens that would otherwise fail to parse. T
 | `T_OPEN_TAG`                                | `StandardSpacing`                                                                                             |
 | `T_OPEN_TAG_WITH_ECHO`                      | `StandardSpacing`                                                                                             |
 | `T_OR`                                      | `VerticalSpacing`                                                                                             |
+| `T_PIPE`                                    | `VerticalSpacing`                                                                                             |
 | `T_QUESTION`                                | `AlignTernaryOperators`, `VerticalSpacing`                                                                    |
 | `T_RETURN`                                  | `BlankBeforeReturn`                                                                                           |
 | `T_SEMICOLON`                               | `StatementSpacing`                                                                                            |

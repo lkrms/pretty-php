@@ -59,6 +59,7 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
             [
                 \T_FOR => true,
                 \T_OPEN_BRACE => true,
+                \T_PIPE => true,
                 \T_QUESTION => true,
                 \T_USE => true,
             ],
@@ -203,6 +204,9 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
      * over multiple lines, newlines are added before each parameter. If the
      * list of variables after `use` breaks over multiple lines, newlines are
      * also added before each variable.
+     *
+     * In pipe chains where a pipe operator (`|>`) has a leading newline,
+     * newlines are added before every pipe operator.
      *
      * In method chains where an object operator (`->` or `?->`) has a leading
      * newline, newlines are added before every object operator. If the
@@ -369,6 +373,22 @@ final class VerticalSpacing implements TokenRule, ListRule, DeclarationRule
                               ->applyTokenWhitespace(Space::LINE_BEFORE);
                     }
                 }
+            } elseif ($token->id === \T_PIPE) {
+                if ($token !== $token->Data[Data::PIPE_CHAIN]) {
+                    continue;
+                }
+
+                $chain = $token->withNextSiblings($token->EndStatement)
+                               ->getAnyOf(\T_PIPE);
+
+                if (
+                    $chain->count() < 2
+                    || !$chain->tokenHasNewlineBefore()
+                ) {
+                    continue;
+                }
+
+                $chain->setTokenWhitespace(Space::LINE_BEFORE);
             } else {
                 if ($token !== $token->Data[Data::CHAIN]) {
                     continue;

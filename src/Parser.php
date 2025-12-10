@@ -957,6 +957,23 @@ final class Parser implements Immutable
                     }
                 }
 
+                // Link pipe chains
+                if (
+                    $token->id === \T_PIPE
+                    && !isset($token->Data[Data::PIPE_CHAIN])
+                ) {
+                    $token->Data[Data::PIPE_CHAIN] = $token;
+                    $current = $token;
+                    while ($current = $current->NextSibling) {
+                        if ($current->id === \T_PIPE) {
+                            $current->Data[Data::PIPE_CHAIN] = $token;
+                        }
+                        if ($current === $end) {
+                            break;
+                        }
+                    }
+                }
+
                 // Flag arrow function double arrow operators
                 if ($token->id === \T_FN) {
                     $next = $token->nextSiblingOf(\T_DOUBLE_ARROW);

@@ -70,39 +70,44 @@ interface TokenData
     public const CHAIN = 10;
 
     /**
+     * The first pipe operator in a pipe chain
+     */
+    public const PIPE_CHAIN = 11;
+
+    /**
      * The other T_QUESTION or T_COLON associated with a TERNARY
      */
-    public const OTHER_TERNARY = 11;
+    public const OTHER_TERNARY = 12;
 
     /**
      * The token ID of the delimiter associated with a LIST_PARENT token
      */
-    public const LIST_DELIMITER = 12;
+    public const LIST_DELIMITER = 13;
 
     /**
      * A collection of items associated with a LIST_PARENT token
      */
-    public const LIST_ITEMS = 13;
+    public const LIST_ITEMS = 14;
 
     /**
      * The number of items associated with a LIST_PARENT token
      */
-    public const LIST_ITEM_COUNT = 14;
+    public const LIST_ITEM_COUNT = 15;
 
     /**
      * The LIST_PARENT of the first token in a LIST_ITEM
      */
-    public const LIST_PARENT = 15;
+    public const LIST_PARENT = 16;
 
     /**
      * The content of a normalised DocBlock token (T_DOC_COMMENT or T_COMMENT)
      * after delimiters and trailing whitespace are removed
      */
-    public const COMMENT_CONTENT = 16;
+    public const COMMENT_CONTENT = 17;
 
     /**
      * An array of closures that align other tokens with the token when its
      * output column changes
      */
-    public const ALIGNMENT_CALLBACKS = 17;
+    public const ALIGNMENT_CALLBACKS = 18;
 }
