@@ -40,38 +40,40 @@ final class HasOperatorPrecedenceTest extends TestCase implements HasOperatorPre
         [8, [\T_SL, \T_SR], self::LEFT_ASSOCIATIVE],
         // .
         [9, [\T_CONCAT], self::LEFT_ASSOCIATIVE],
+        // |>
+        [10, [\T_PIPE], self::LEFT_ASSOCIATIVE],
         // <, <=, >, >=
-        [10, [\T_SMALLER, \T_IS_SMALLER_OR_EQUAL, \T_GREATER, \T_IS_GREATER_OR_EQUAL]],
+        [11, [\T_SMALLER, \T_IS_SMALLER_OR_EQUAL, \T_GREATER, \T_IS_GREATER_OR_EQUAL]],
         // ==, !=, ===, !==, <>, <=>
-        [11, [\T_IS_EQUAL, \T_IS_NOT_EQUAL, \T_IS_IDENTICAL, \T_IS_NOT_IDENTICAL, \T_SPACESHIP]],
+        [12, [\T_IS_EQUAL, \T_IS_NOT_EQUAL, \T_IS_IDENTICAL, \T_IS_NOT_IDENTICAL, \T_SPACESHIP]],
         // &
-        [12, [\T_AND, \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG, \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG], self::LEFT_ASSOCIATIVE],
+        [13, [\T_AND, \T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG, \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG], self::LEFT_ASSOCIATIVE],
         // ^
-        [13, [\T_XOR], self::LEFT_ASSOCIATIVE],
+        [14, [\T_XOR], self::LEFT_ASSOCIATIVE],
         // |
-        [14, [\T_OR], self::LEFT_ASSOCIATIVE],
+        [15, [\T_OR], self::LEFT_ASSOCIATIVE],
         // &&
-        [15, [\T_BOOLEAN_AND], self::LEFT_ASSOCIATIVE],
+        [16, [\T_BOOLEAN_AND], self::LEFT_ASSOCIATIVE],
         // ||
-        [16, [\T_BOOLEAN_OR], self::LEFT_ASSOCIATIVE],
+        [17, [\T_BOOLEAN_OR], self::LEFT_ASSOCIATIVE],
         // ??
-        [17, [\T_COALESCE], self::RIGHT_ASSOCIATIVE],
+        [18, [\T_COALESCE], self::RIGHT_ASSOCIATIVE],
         // ?, :
-        [18, [\T_QUESTION, \T_COLON], self::TERNARY],
+        [19, [\T_QUESTION, \T_COLON], self::TERNARY],
         // =, +=, -=, *=, **=, /=, .=, %=, &=, |=, ^=, <<=, >>=, ??=
-        [19, [\T_EQUAL, \T_PLUS_EQUAL, \T_MINUS_EQUAL, \T_MUL_EQUAL, \T_POW_EQUAL, \T_DIV_EQUAL, \T_CONCAT_EQUAL, \T_MOD_EQUAL, \T_AND_EQUAL, \T_OR_EQUAL, \T_XOR_EQUAL, \T_SL_EQUAL, \T_SR_EQUAL, \T_COALESCE_EQUAL], self::RIGHT_ASSOCIATIVE],
+        [20, [\T_EQUAL, \T_PLUS_EQUAL, \T_MINUS_EQUAL, \T_MUL_EQUAL, \T_POW_EQUAL, \T_DIV_EQUAL, \T_CONCAT_EQUAL, \T_MOD_EQUAL, \T_AND_EQUAL, \T_OR_EQUAL, \T_XOR_EQUAL, \T_SL_EQUAL, \T_SR_EQUAL, \T_COALESCE_EQUAL], self::RIGHT_ASSOCIATIVE],
         // yield from
-        [20, [\T_YIELD_FROM]],
+        [21, [\T_YIELD_FROM]],
         // yield
-        [21, [\T_YIELD]],
+        [22, [\T_YIELD]],
         // print
-        [22, [\T_PRINT]],
+        [23, [\T_PRINT]],
         // and
-        [23, [\T_LOGICAL_AND], self::LEFT_ASSOCIATIVE],
+        [24, [\T_LOGICAL_AND], self::LEFT_ASSOCIATIVE],
         // xor
-        [24, [\T_LOGICAL_XOR], self::LEFT_ASSOCIATIVE],
+        [25, [\T_LOGICAL_XOR], self::LEFT_ASSOCIATIVE],
         // or
-        [25, [\T_LOGICAL_OR], self::LEFT_ASSOCIATIVE],
+        [26, [\T_LOGICAL_OR], self::LEFT_ASSOCIATIVE],
     ];
 
     public function testOperatorPrecedence(): void
@@ -132,6 +134,7 @@ final class HasOperatorPrecedenceTest extends TestCase implements HasOperatorPre
             \T_DEC => true,
             \T_INSTANCEOF => true,
             \T_NEW => true,
+            \T_PIPE => true,
         ]
             + self::OPERATOR_ARITHMETIC
             + self::OPERATOR_ASSIGNMENT

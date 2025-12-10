@@ -32,6 +32,7 @@ class TokenIndexTest extends TestCase
         \T_LOGICAL_NOT,
         \T_NULLSAFE_OBJECT_OPERATOR,
         \T_OBJECT_OPERATOR,
+        \T_PIPE,
         \T_QUESTION,
     ];
 
