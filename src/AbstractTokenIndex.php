@@ -25,6 +25,7 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
         \T_LOGICAL_NOT => true,
         \T_OBJECT_OPERATOR => true,
         \T_NULLSAFE_OBJECT_OPERATOR => true,
+        \T_PIPE => true,
     ]
         + self::OPERATOR_ARITHMETIC
         + self::OPERATOR_BITWISE
@@ -571,7 +572,7 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
     /**
      * Arithmetic operators, assignment operators, bitwise operators, boolean
      * operators, comparison operators, ternary operators, T_AT, T_CONCAT,
-     * T_DOLLAR, T_DOUBLE_ARROW, T_INC, T_DEC, T_INSTANCEOF
+     * T_DOLLAR, T_DOUBLE_ARROW, T_INC, T_DEC, T_INSTANCEOF, T_PIPE
      *
      * @var array<int,bool>
      */
@@ -583,6 +584,7 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
         \T_INC => true,
         \T_DEC => true,
         \T_INSTANCEOF => true,
+        \T_PIPE => true,
     ]
         + self::OPERATOR_ARITHMETIC
         + self::OPERATOR_ASSIGNMENT
@@ -596,7 +598,7 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
      * Arithmetic operators, assignment operators, bitwise operators (except
      * T_OR, T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG), boolean operators,
      * comparison operators, T_AT, T_CONCAT, T_DOLLAR, T_DOUBLE_ARROW, T_INC,
-     * T_DEC, T_INSTANCEOF
+     * T_DEC, T_INSTANCEOF, T_PIPE
      *
      * @var array<int,bool>
      */
@@ -608,6 +610,7 @@ abstract class AbstractTokenIndex implements HasTokenIndex, Immutable
         \T_INC => true,
         \T_DEC => true,
         \T_INSTANCEOF => true,
+        \T_PIPE => true,
         \T_OR => false,
         \T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG => false,
     ]

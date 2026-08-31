@@ -46,6 +46,7 @@ They are also allowed before:
 - `T_LOGICAL_NOT`
 - `T_NULLSAFE_OBJECT_OPERATOR`
 - `T_OBJECT_OPERATOR`
+- `T_PIPE`
 - Arithmetic operators
 - Bitwise operators - `&`, `^`, `|`, `~`, `<<`, `>>`
 - Ternary operators
@@ -88,6 +89,7 @@ boolean operators and comparison operators.
   enabled)
 - `T_NULLSAFE_OBJECT_OPERATOR`
 - `T_OBJECT_OPERATOR`
+- `T_PIPE`
 - Arithmetic operators
 - Bitwise operators - `&`, `^`, `|`, `~`, `<<`, `>>`
 - Boolean operators - `!`, `&&`, `||`, `and`, `or`, `xor`
@@ -138,6 +140,7 @@ With **`--operators-last`**, newlines are allowed after, and not before,
 - `T_LOGICAL_NOT`
 - `T_NULLSAFE_OBJECT_OPERATOR`
 - `T_OBJECT_OPERATOR`
+- `T_PIPE`
 - Ternary operators
 
 [unit test]: ../tests/unit/TokenIndexTest.php

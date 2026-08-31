@@ -1,5 +1,5 @@
 <?php
-$result = 'Hello World'|> strlen(...);
+$result = 'Hello World' |> strlen(...);
 echo $result, PHP_EOL;
 
 $result = strlen('Hello World');
