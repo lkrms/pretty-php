@@ -144,7 +144,7 @@ Blank lines are also suppressed inside alternative syntax blocks.
 
 ### `OperatorSpacing`
 
-<small>(mandatory, `processTokens()`, priority 102, tokens: `!` | `$` | `%` | `&` | `*` | `+` | `-` | `.` | `/` | `:` | `<` | `=` | `>` | `?` | `@` | `^` | `|` | `~` | `T_LOGICAL_OR` | `T_LOGICAL_XOR` | `T_LOGICAL_AND` | `T_INSTANCEOF` | `T_PLUS_EQUAL` | `T_MINUS_EQUAL` | `T_MUL_EQUAL` | `T_DIV_EQUAL` | `T_CONCAT_EQUAL` | `T_MOD_EQUAL` | `T_AND_EQUAL` | `T_OR_EQUAL` | `T_XOR_EQUAL` | `T_SL_EQUAL` | `T_SR_EQUAL` | `T_COALESCE_EQUAL` | `T_BOOLEAN_OR` | `T_BOOLEAN_AND` | `T_IS_EQUAL` | `T_IS_NOT_EQUAL` | `T_IS_IDENTICAL` | `T_IS_NOT_IDENTICAL` | `T_IS_SMALLER_OR_EQUAL` | `T_IS_GREATER_OR_EQUAL` | `T_SPACESHIP` | `T_SL` | `T_SR` | `T_INC` | `T_DEC` | `T_DOUBLE_ARROW` | `T_COALESCE` | `T_POW` | `T_POW_EQUAL` | `T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG` | `T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG`)</small>
+<small>(mandatory, `processTokens()`, priority 102, tokens: `!` | `$` | `%` | `&` | `*` | `+` | `-` | `.` | `/` | `:` | `<` | `=` | `>` | `?` | `@` | `^` | `|` | `~` | `T_LOGICAL_OR` | `T_LOGICAL_XOR` | `T_LOGICAL_AND` | `T_INSTANCEOF` | `T_PLUS_EQUAL` | `T_MINUS_EQUAL` | `T_MUL_EQUAL` | `T_DIV_EQUAL` | `T_CONCAT_EQUAL` | `T_MOD_EQUAL` | `T_AND_EQUAL` | `T_OR_EQUAL` | `T_XOR_EQUAL` | `T_SL_EQUAL` | `T_SR_EQUAL` | `T_COALESCE_EQUAL` | `T_BOOLEAN_OR` | `T_BOOLEAN_AND` | `T_IS_EQUAL` | `T_IS_NOT_EQUAL` | `T_IS_IDENTICAL` | `T_IS_NOT_IDENTICAL` | `T_IS_SMALLER_OR_EQUAL` | `T_IS_GREATER_OR_EQUAL` | `T_SPACESHIP` | `T_SL` | `T_SR` | `T_INC` | `T_DEC` | `T_DOUBLE_ARROW` | `T_COALESCE` | `T_POW` | `T_POW_EQUAL` | `T_PIPE` | `T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG` | `T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG`)</small>
 
 Operators in `declare` expressions are ignored.
 

@@ -82,6 +82,27 @@ PHP,
             $formatter,
         ];
 
+        if (\PHP_VERSION_ID >= 80500) {
+            yield 'newlines before pipe operators' => [
+                <<<'PHP'
+<?php
+$result = $value
+    |> first(...)
+    |> (fn($item) => second($item))
+    |> third(...);
+
+PHP,
+                <<<'PHP'
+<?php
+$result=$value
+|>first(...)
+|>(fn($item)=>second($item))
+|>third(...);
+PHP,
+                $formatter,
+            ];
+        }
+
         if (\PHP_VERSION_ID < 80000) {
             return;
         }

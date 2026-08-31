@@ -46,6 +46,7 @@ final class WordPressTokenIndexTest extends TokenIndexTest
         \T_NULLSAFE_OBJECT_OPERATOR,
         \T_OBJECT_OPERATOR,
         \T_OR,
+        \T_PIPE,
         \T_PLUS,
         \T_POW,
         \T_QUESTION,

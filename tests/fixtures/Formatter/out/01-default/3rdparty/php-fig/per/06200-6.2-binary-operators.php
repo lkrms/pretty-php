@@ -5,5 +5,5 @@ if ($a === $b) {
 } elseif ($a > $b) {
     $foo = $a + $b * $c;
 } else {
-    $foo = $a|> log(...)|> round(...);
+    $foo = $a |> log(...) |> round(...);
 }
